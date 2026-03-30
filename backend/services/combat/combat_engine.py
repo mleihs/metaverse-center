@@ -316,14 +316,19 @@ def _resolve_agent_actions(
             narrative_suffix_de = f" +{vis_restore} Sichtbarkeit."
 
         # Utility: stability restore (Reinforce — Tower only)
+        # Blocked during Structural Failure (stability 0): nothing left to reinforce.
         stab_restore = ability.effect_params.get("stability_restore", 0)
         if stab_restore and context.archetype_state.get("max_stability") is not None:
-            max_stab = context.archetype_state.get("max_stability", 100)
             current_stab = context.archetype_state.get("stability", 100)
-            new_stab = min(max_stab, current_stab + stab_restore)
-            context.archetype_state["stability"] = new_stab
-            narrative_suffix_en = f" +{stab_restore} Stability ({current_stab} \u2192 {new_stab})."
-            narrative_suffix_de = f" +{stab_restore} Stabilitaet ({current_stab} \u2192 {new_stab})."
+            if current_stab <= 0:
+                narrative_suffix_en = " Structural failure. Nothing left to reinforce."
+                narrative_suffix_de = " Strukturversagen. Nichts mehr zu verstärken."
+            else:
+                max_stab = context.archetype_state.get("max_stability", 100)
+                new_stab = min(max_stab, current_stab + stab_restore)
+                context.archetype_state["stability"] = new_stab
+                narrative_suffix_en = f" +{stab_restore} Stability ({current_stab} \u2192 {new_stab})."
+                narrative_suffix_de = f" +{stab_restore} Stabilität ({current_stab} \u2192 {new_stab})."
 
         # Utility: trap deployment (Deploy Trap — self-targeting, party-level)
         if ability.effect_params.get("trap"):

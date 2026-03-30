@@ -27,13 +27,13 @@ SHADOW_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         min_difficulty=1,
         description_en=(
             "The air thickens. Two points of cold light drift at the edges of your vision, "
-            "circling like predators testing prey. The whispers start \u2014 not words, "
+            "circling like predators testing prey. The whispers start \u2013 not words, "
             "but the memory of words, scraping against certainty."
         ),
         description_de=(
             "Die Luft wird dicker. Zwei Punkte kalten Lichts treiben am Rand eures "
             "Blickfelds, kreisen wie Raubtiere, die Beute testen. Das Flüstern beginnt "
-            "\u2014 keine Worte, sondern die Erinnerung an Worte, die an der Gewissheit kratzen."
+            "\u2013 keine Worte, sondern die Erinnerung an Worte, die an der Gewissheit kratzen."
         ),
         combat_encounter_id="shadow_whispers_spawn",
     ),
@@ -45,13 +45,13 @@ SHADOW_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=3,
         min_difficulty=1,
         description_en=(
-            "Movement ahead \u2014 rhythmic, predictable. An echo of violence stalks this corridor "
+            "Movement ahead \u2013 rhythmic, predictable. An echo of violence stalks this corridor "
             "with mechanical precision, a tendril of shadow coiling behind it like a leash. "
             "They haven't noticed you yet."
         ),
         description_de=(
-            "Bewegung voraus \u2014 rhythmisch, vorhersehbar. Ein Gewaltecho durchstreift diesen "
-            "Korridor mit mechanischer Prazision, ein Schattenfaden windet sich hinter ihm "
+            "Bewegung voraus \u2013 rhythmisch, vorhersehbar. Ein Gewaltecho durchstreift diesen "
+            "Korridor mit mechanischer Präzision, ein Schattenfaden windet sich hinter ihm "
             "wie eine Leine. Sie haben euch noch nicht bemerkt."
         ),
         combat_encounter_id="shadow_patrol_spawn",
@@ -65,11 +65,11 @@ SHADOW_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=4,
         min_difficulty=2,
         description_en=(
-            "CONTACT! They were waiting. The darkness erupts \u2014 two echoes of violence, "
+            "CONTACT! They were waiting. The darkness erupts \u2013 two echoes of violence, "
             "already moving, already striking. No time to plan. No time to think."
         ),
         description_de=(
-            "KONTAKT! Sie haben gewartet. Die Dunkelheit bricht aus \u2014 zwei Gewaltechos, "
+            "KONTAKT! Sie haben gewartet. Die Dunkelheit bricht aus \u2013 zwei Gewaltechos, "
             "bereits in Bewegung, bereits zuschlagend. Keine Zeit zu planen. Keine Zeit zu denken."
         ),
         combat_encounter_id="shadow_ambush_spawn",
@@ -84,12 +84,12 @@ SHADOW_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=4,
         min_difficulty=2,
         description_en=(
-            "The whispers change. They become specific \u2014 names, fears, secrets your agents "
+            "The whispers change. They become specific \u2013 names, fears, secrets your agents "
             "thought were private. A paranoia shade drifts at the center, flanked by wisps "
             "whose movements no longer match their telegraphed intents. Nothing here is honest."
         ),
         description_de=(
-            "Das Flüstern verandert sich. Es wird spezifisch \u2014 Namen, Ängste, Geheimnisse, "
+            "Das Flüstern verändert sich. Es wird spezifisch \u2013 Namen, Ängste, Geheimnisse, "
             "die eure Agenten für privat hielten. Ein Paranoiaschatten treibt im Zentrum, "
             "flankiert von Glimmern, deren Bewegungen nicht mehr zu ihren angezeigten "
             "Absichten passen. Nichts hier ist ehrlich."
@@ -241,7 +241,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             '"Please," it says. "I\'ve been here since the last resonance. I remember sunlight."'
         ),
         description_de=(
-            "Ein Kafig aus verfestigtem Schatten. Darin kauert etwas, das einmal menschlich war, "
+            "Ein Käfig aus verfestigtem Schatten. Darin kauert etwas, das einmal menschlich war, "
             "und wimmert. Es blickt auf mit Augen, die kein Licht halten.\n\n"
             "\u00bbBitte\u00ab, sagt es. \u00bbIch bin hier seit der letzten Resonanz. "
             "Ich erinnere mich an Sonnenlicht.\u00ab"
@@ -257,11 +257,11 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"stress": 20},
                 fail_effects={"stress": 80, "ambush_trigger": True},
                 success_narrative_en="The shadow cage dissolves. The prisoner fades with a grateful whisper, leaving behind a faint glow that restores your sight.",
-                success_narrative_de="Der Schattenkafig lost sich auf. Der Gefangene verblasst mit einem dankbaren Flüstern und hinterlasst ein schwaches Leuchten, das eure Sicht wiederherstellt.",
+                success_narrative_de="Der Schattenkäfig löst sich auf. Der Gefangene verblasst mit einem dankbaren Flüstern und hinterlässt ein schwaches Leuchten, das eure Sicht wiederherstellt.",
                 partial_narrative_en="The cage cracks but doesn't break cleanly. The prisoner slips free but something else slips out with it.",
-                partial_narrative_de="Der Kafig bricht, aber nicht sauber. Der Gefangene entkommt, aber etwas anderes entkommt mit ihm.",
+                partial_narrative_de="Der Käfig bricht, aber nicht sauber. Der Gefangene entkommt, aber etwas anderes entkommt mit ihm.",
                 fail_narrative_en="The cage was a trap. The 'prisoner' dissolves into shadow tendrils that lash out at the party.",
-                fail_narrative_de="Der Kafig war eine Falle. Der 'Gefangene' lost sich in Schattenfaden auf, die nach der Gruppe schlagen.",
+                fail_narrative_de="Der Käfig war eine Falle. Der 'Gefangene' löst sich in Schattenfäden auf, die nach der Gruppe schlagen.",
             ),
             EncounterChoice(
                 id="interrogate_prisoner",
@@ -277,7 +277,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_narrative_en="It answers in fragments. Some of what it says is useful.",
                 partial_narrative_de="Es antwortet in Fragmenten. Manches davon ist nützlich.",
                 fail_narrative_en="It screams. The sound carries. Something in the next room stirs.",
-                fail_narrative_de="Es schreit. Der Laut tragt. Etwas im nachsten Raum regt sich.",
+                fail_narrative_de="Es schreit. Der Laut trägt. Etwas im nächsten Raum regt sich.",
             ),
             EncounterChoice(
                 id="leave_prisoner",
@@ -294,7 +294,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 requires_aptitude={"assassin": 3},
                 success_effects={"stress": -10, "shadow_resonance": 0.05},
                 success_narrative_en="A clean strike. The shadow dissolves. The mercy of it echoes in the dark.",
-                success_narrative_de="Ein sauberer Schlag. Der Schatten lost sich auf. Die Gnade hallt in der Dunkelheit nach.",
+                success_narrative_de="Ein sauberer Schlag. Der Schatten löst sich auf. Die Gnade hallt in der Dunkelheit nach.",
             ),
         ],
     ),
@@ -306,14 +306,14 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=4,
         min_difficulty=1,
         description_en=(
-            "The walls are mirrors \u2014 but wrong. Each agent sees themselves, distorted. "
+            "The walls are mirrors \u2013 but wrong. Each agent sees themselves, distorted. "
             "Features exaggerated, expressions twisted into something they fear they truly are. "
             "The reflections move independently."
         ),
         description_de=(
-            "Die Wände sind Spiegel \u2014 aber falsch. Jeder Agent sieht sich selbst, verzerrt. "
-            "Züge übertrieben, Ausdruecke verdreht zu etwas, von dem sie fürchten, "
-            "es wirklich zu sein. Die Spiegelbilder bewegen sich unabhaengig."
+            "Die Wände sind Spiegel \u2013 aber falsch. Jeder Agent sieht sich selbst, verzerrt. "
+            "Züge übertrieben, Ausdrücke verdreht zu etwas, von dem sie fürchten, "
+            "es wirklich zu sein. Die Spiegelbilder bewegen sich unabhängig."
         ),
         choices=[
             EncounterChoice(
@@ -330,7 +330,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_narrative_en="The confrontation is painful but inconclusive. The reflection retreats, but doesn't break.",
                 partial_narrative_de="Die Konfrontation ist schmerzhaft, aber ergebnislos. Das Spiegelbild weicht zurück, bricht aber nicht.",
                 fail_narrative_en="The reflection speaks the agent's worst fear aloud. The words hang in the air, impossible to unhear.",
-                fail_narrative_de="Das Spiegelbild spricht die schlimmste Angst des Agenten laut aus. Die Worte hangen in der Luft, unmoglich zu überhören.",
+                fail_narrative_de="Das Spiegelbild spricht die schlimmste Angst des Agenten laut aus. Die Worte hängen in der Luft, unmöglich zu überhören.",
             ),
             EncounterChoice(
                 id="analyze_mirrors",
@@ -341,8 +341,8 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_effects={"reveal_rooms": 1, "stress": 0},
                 partial_effects={"stress": 20},
                 fail_effects={"stress": 40},
-                success_narrative_en="The mirrors aren't just reflecting \u2014 they're showing adjacent rooms. You map what you see.",
-                success_narrative_de="Die Spiegel reflektieren nicht nur \u2014 sie zeigen angrenzende Raume. Ihr kartiert, was ihr seht.",
+                success_narrative_en="The mirrors aren't just reflecting \u2013 they're showing adjacent rooms. You map what you see.",
+                success_narrative_de="Die Spiegel reflektieren nicht nur \u2013 sie zeigen angrenzende Räume. Ihr kartiert, was ihr seht.",
             ),
             EncounterChoice(
                 id="smash_mirrors",
@@ -351,7 +351,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 requires_aptitude={"assassin": 3},
                 success_effects={"stress": 30, "visibility": -1},
                 success_narrative_en="Glass shatters. The reflections scream. Darkness pours from the broken frames.",
-                success_narrative_de="Glas zersplittert. Die Spiegelbilder schreien. Dunkelheit stroemt aus den zerbrochenen Rahmen.",
+                success_narrative_de="Glas zersplittert. Die Spiegelbilder schreien. Dunkelheit strömt aus den zerbrochenen Rahmen.",
             ),
         ],
     ),
@@ -363,12 +363,12 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=4,
         min_difficulty=1,
         description_en=(
-            "The room replays a scene from your simulation's history \u2014 a real event, "
+            "The room replays a scene from your simulation's history \u2013 a real event, "
             "distorted by shadow. The agents involved are here, or echoes of them. "
             "The moment crystallizes, waiting for a different choice."
         ),
         description_de=(
-            "Der Raum spielt eine Szene aus der Geschichte eurer Simulation nach \u2014 "
+            "Der Raum spielt eine Szene aus der Geschichte eurer Simulation nach \u2013 "
             "ein reales Ereignis, verzerrt durch Schatten. Die beteiligten Agenten "
             "sind hier, oder Echos von ihnen. Der Moment kristallisiert sich, "
             "wartend auf eine andere Entscheidung."
@@ -384,7 +384,7 @@ SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"stress": 30, "memory_created": True},
                 fail_effects={"stress": 80},
                 success_narrative_en="History shifts. The echo replays with your change, and something in the fabric of the simulation relaxes.",
-                success_narrative_de="Die Geschichte verschiebt sich. Das Echo spielt sich mit eurer Aenderung ab, und etwas im Gewebe der Simulation entspannt sich.",
+                success_narrative_de="Die Geschichte verschiebt sich. Das Echo spielt sich mit eurer Änderung ab, und etwas im Gewebe der Simulation entspannt sich.",
             ),
             EncounterChoice(
                 id="observe_replay",
@@ -411,12 +411,12 @@ SHADOW_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=4,
         min_difficulty=2,
         description_en=(
-            "The darkness coalesces. A shape forms \u2014 massive, deliberate, ancient. "
+            "The darkness coalesces. A shape forms \u2013 massive, deliberate, ancient. "
             "This is The Remnant: formed from the simulation's strongest unresolved conflict. "
             "It remembers what your agents have tried to forget. Wisps orbit it like satellites."
         ),
         description_de=(
-            "Die Dunkelheit verdichtet sich. Eine Gestalt formt sich \u2014 massiv, bedacht, uralt. "
+            "Die Dunkelheit verdichtet sich. Eine Gestalt formt sich \u2013 massiv, bedacht, uralt. "
             "Das ist Der Überrest: geformt aus dem stärksten ungelösten Konflikt der Simulation. "
             "Er erinnert sich an das, was eure Agenten zu vergessen versucht haben. "
             "Glimmer umkreisen ihn wie Satelliten."
@@ -436,15 +436,15 @@ SHADOW_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=99,
         min_difficulty=1,
         description_en=(
-            "The corridor ends. The darkness ahead is absolute \u2014 not absence of light, "
+            "The corridor ends. The darkness ahead is absolute \u2013 not absence of light, "
             "but presence of something vast. The Remnant awaits: an echo of every suppressed "
             "memory, every buried conflict, given terrible form. The whispers fall silent. "
             "There is only the sound of your agents' breathing."
         ),
         description_de=(
-            "Der Korridor endet. Die Dunkelheit voraus ist absolut \u2014 nicht Abwesenheit von "
+            "Der Korridor endet. Die Dunkelheit voraus ist absolut \u2013 nicht Abwesenheit von "
             "Licht, sondern Anwesenheit von etwas Gewaltigem. Der \u00dcberrest wartet: ein Echo "
-            "jeder unterdrueckten Erinnerung, jedes begrabenen Konflikts, in schrecklicher "
+            "jeder unterdrückten Erinnerung, jedes begrabenen Konflikts, in schrecklicher "
             "Gestalt. Das Flüstern verstummt. Nur noch das Atmen eurer Agenten ist zu hören."
         ),
         combat_encounter_id="shadow_remnant_spawn",
@@ -462,12 +462,12 @@ SHADOW_REST_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=99,
         min_difficulty=1,
         description_en=(
-            "A gap in the darkness \u2014 not light, exactly, but the absence of active malice. "
+            "A gap in the darkness \u2013 not light, exactly, but the absence of active malice. "
             "The walls here are smooth, untouched. The air is still. For the first time "
             "since entering, you can hear your own breathing."
         ),
         description_de=(
-            "Eine Lücke in der Dunkelheit \u2014 kein Licht, genau genommen, aber die Abwesenheit "
+            "Eine Lücke in der Dunkelheit \u2013 kein Licht, genau genommen, aber die Abwesenheit "
             "aktiver Bösartigkeit. Die Wände hier sind glatt, unberührt. Die Luft ist still. "
             "Zum ersten Mal seit dem Eintritt könnt ihr euer eigenes Atmen hören."
         ),
@@ -478,7 +478,7 @@ SHADOW_REST_ENCOUNTERS: list[EncounterTemplate] = [
                 label_de="Rasten (Stress heilen, Hinterhalt-Risiko)",
                 success_effects={"stress_heal": 200, "wounded_to_stressed": True, "ambush_chance": 0.20},
                 success_narrative_en="The party rests. Stress fades. Wounds knit. For a while, the darkness forgets you.",
-                success_narrative_de="Die Gruppe rastet. Stress verblasst. Wunden schliessen sich. Fuer eine Weile vergisst die Dunkelheit euch.",
+                success_narrative_de="Die Gruppe rastet. Stress verblasst. Wunden schließen sich. Für eine Weile vergisst die Dunkelheit euch.",
             ),
             EncounterChoice(
                 id="rest_guarded",
@@ -487,7 +487,7 @@ SHADOW_REST_ENCOUNTERS: list[EncounterTemplate] = [
                 requires_aptitude={"guardian": 3},
                 success_effects={"stress_heal": 200, "wounded_to_stressed": True, "guardian_no_heal": True},
                 success_narrative_en="The Guardian stands watch while others rest. No ambush comes. But the Guardian's own wounds remain.",
-                success_narrative_de="Der Wächter haelt Wache, wahrend die anderen rasten. Kein Hinterhalt kommt. Aber die eigenen Wunden des Wächters bleiben.",
+                success_narrative_de="Der Wächter hält Wache, während die anderen rasten. Kein Hinterhalt kommt. Aber die eigenen Wunden des Wächters bleiben.",
             ),
         ],
     ),
@@ -504,12 +504,12 @@ SHADOW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=99,
         min_difficulty=1,
         description_en=(
-            "A shadow cache \u2014 a pocket of crystallized darkness containing something valuable. "
+            "A shadow cache \u2013 a pocket of crystallized darkness containing something valuable. "
             "The container is locked with mechanisms that respond to finesse, not force."
         ),
         description_de=(
-            "Ein Schattenversteck \u2014 eine Tasche aus kristallisierter Dunkelheit, die etwas "
-            "Wertvolles enthaelt. Der Behalter ist mit Mechanismen verschlossen, "
+            "Ein Schattenversteck \u2013 eine Tasche aus kristallisierter Dunkelheit, die etwas "
+            "Wertvolles enthält. Der Behälter ist mit Mechanismen verschlossen, "
             "die auf Geschick reagieren, nicht auf Gewalt."
         ),
         choices=[
@@ -523,11 +523,11 @@ SHADOW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"loot": True, "loot_tier_penalty": 1},
                 fail_effects={"stress": 75, "trap_triggered": True},
                 success_narrative_en="The mechanism clicks open. Inside: shadows that have hardened into something useful.",
-                success_narrative_de="Der Mechanismus klickt auf. Darin: Schatten, die sich zu etwas Nützlichem verhartet haben.",
+                success_narrative_de="Der Mechanismus klickt auf. Darin: Schatten, die sich zu etwas Nützlichem verhärtet haben.",
                 partial_narrative_en="Partially opened. Some contents spill and dissolve before you can grab them.",
-                partial_narrative_de="Teilweise geoeffnet. Einige Inhalte verschuetten sich und lösen sich auf, bevor ihr sie greifen könnt.",
+                partial_narrative_de="Teilweise geöffnet. Einige Inhalte verschütten sich und lösen sich auf, bevor ihr sie greifen könnt.",
                 fail_narrative_en="A trap! Shadow energy lashes out, scoring the opener's psyche.",
-                fail_narrative_de="Eine Falle! Schattenenergie peitscht hervor und zeichnet die Psyche des Oeffnenden.",
+                fail_narrative_de="Eine Falle! Schattenenergie peitscht hervor und zeichnet die Psyche des Öffnenden.",
             ),
             EncounterChoice(
                 id="force_cache",
@@ -539,7 +539,7 @@ SHADOW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"loot": True, "loot_tier_penalty": 1, "stress": 30},
                 fail_effects={"stress": 50},
                 success_narrative_en="Controlled demolition. The container shatters on your terms.",
-                success_narrative_de="Kontrollierte Sprengung. Der Behalter zerbricht nach euren Regeln.",
+                success_narrative_de="Kontrollierte Sprengung. Der Behälter zerbricht nach euren Regeln.",
             ),
             EncounterChoice(
                 id="leave_cache",
@@ -584,13 +584,13 @@ TOWER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         min_difficulty=1,
         description_en=(
             "Numbers cascade from the ceiling like failed projections. Two figures "
-            "huddle in the margins, nervous, twitching \u2014 Brokers trapped in their "
+            "huddle in the margins, nervous, twitching \u2013 Brokers trapped in their "
             "own recursive calculations. They have noticed you. The figures begin "
             "reciting."
         ),
         description_de=(
             "Zahlen stürzen von der Decke wie gescheiterte Projektionen. Zwei "
-            "Gestalten kauern in den Randbereichen, nervös, zuckend \u2014 Makler, "
+            "Gestalten kauern in den Randbereichen, nervös, zuckend \u2013 Makler, "
             "gefangen in ihren eigenen rekursiven Berechnungen. Sie haben euch "
             "bemerkt. Die Gestalten beginnen zu rezitieren."
         ),
@@ -606,14 +606,14 @@ TOWER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         description_en=(
             "A crowned figure patrols this floor with proprietary confidence, a worm "
             "grinding through the foundations behind it. The assessment is mutual "
-            "\u2014 they measure you for structural tolerance, and you measure them "
+            "\u2013 they measure you for structural tolerance, and you measure them "
             "for weakness."
         ),
         description_de=(
-            "Eine gekroente Gestalt patrouilliert dieses Stockwerk mit herrschaftlicher "
+            "Eine gekrönte Gestalt patrouilliert dieses Stockwerk mit herrschaftlicher "
             "Selbstgewissheit, ein Wurm mahlt hinter ihr durch die Fundamente. Die "
-            "Pruefung ist gegenseitig \u2014 sie messen euch auf strukturelle "
-            "Belastbarkeit, und ihr messt sie auf Schwaechen."
+            "Prüfung ist gegenseitig \u2013 sie messen euch auf strukturelle "
+            "Belastbarkeit, und ihr messt sie auf Schwächen."
         ),
         combat_encounter_id="tower_patrol_spawn",
         requires_aptitude={"infiltrator": 5},
@@ -627,13 +627,13 @@ TOWER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
         min_difficulty=2,
         description_en=(
             "CONTACT. The ledger was a trap. Two shapes materialize from the margins "
-            "of an open account book \u2014 Debt Shades, their forms growing denser "
+            "of an open account book \u2013 Debt Shades, their forms growing denser "
             "with each heartbeat. The interest has been compounding since before you "
             "entered."
         ),
         description_de=(
             "KONTAKT. Das Hauptbuch war eine Falle. Zwei Gestalten materialisieren "
-            "sich aus den Rändern eines offenen Kontobuchs \u2014 Schuldgespenster, "
+            "sich aus den Rändern eines offenen Kontobuchs \u2013 Schuldgespenster, "
             "deren Formen mit jedem Herzschlag dichter werden. Die Zinsen liefen "
             "schon, bevor ihr diesen Raum betreten habt."
         ),
@@ -685,7 +685,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             "Die Lobby ist riesig und falsch. Empfangsschalter krümmen sich in "
             "sich selbst. Abfahrtstafeln listen Stockwerke, die nicht existieren "
             "\u2013 negative Zahlen, imaginäre Ebenen, ein Stockwerk namens "
-            "'Solvenz' ohne Ankunftszeit. Der Marmor unter euren Füssen ist "
+            "'Solvenz' ohne Ankunftszeit. Der Marmor unter euren Füßen ist "
             "entlang tragender Linien gerissen. Jemand ist in Eile gegangen."
         ),
         choices=[
@@ -764,7 +764,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"reveal_rooms": 1, "stress": 30},
                 fail_effects={"stress": 70},
                 success_narrative_en="The pen knows what you know. The audit writes itself \u2013 every flaw, every overloaded column, every deferred repair. The tower shudders at its own truth.",
-                success_narrative_de="Der Stift weiss, was ihr wisst. Der Bericht schreibt sich selbst \u2013 jeder Fehler, jede überladene Säule, jede aufgeschobene Reparatur. Der Turm erschauert vor seiner eigenen Wahrheit.",
+                success_narrative_de="Der Stift weiß, was ihr wisst. Der Bericht schreibt sich selbst \u2013 jeder Fehler, jede überladene Säule, jede aufgeschobene Reparatur. Der Turm erschauert vor seiner eigenen Wahrheit.",
                 partial_narrative_en="The report is half-complete. Some columns resist documentation, as if the tower censors its own failures.",
                 partial_narrative_de="Der Bericht ist halbfertig. Einige Säulen widersetzen sich der Dokumentation, als zensiere der Turm seine eigenen Fehler.",
                 fail_narrative_en="The pen breaks. The audit report fills itself with numbers that don't add up. The desk vibrates with fraudulent energy.",
@@ -806,13 +806,13 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
         description_en=(
             "A room of impossible architecture: staircases that climb into themselves, "
             "columns supporting nothing. In the center, a mechanism produces "
-            "certificates of structural integrity \u2014 for a building that is visibly "
+            "certificates of structural integrity \u2013 for a building that is visibly "
             "crumbling. Someone has been maintaining this fiction."
         ),
         description_de=(
             "Ein Raum unmöglicher Architektur: Treppen, die in sich selbst "
             "hinaufsteigen, Säulen, die nichts tragen. In der Mitte produziert ein "
-            "Mechanismus Bescheinigungen der Gebäudeintegritaet \u2014 für ein "
+            "Mechanismus Bescheinigungen der Gebäudeintegrität \u2013 für ein "
             "Bauwerk, das sichtbar zerfällt. Jemand hat diese Fiktion "
             "aufrechterhalten."
         ),
@@ -829,7 +829,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_narrative_en="The mechanism grinds to a halt. The certificates dissolve. For a moment the building shudders, then settles on honest foundations.",
                 success_narrative_de="Der Mechanismus kommt zum Stillstand. Die Bescheinigungen lösen sich auf. Einen Moment lang bebt das Gebäude, dann setzt es sich auf ehrlichen Fundamenten ab.",
                 partial_narrative_en="The certificates tear, but the mechanism keeps printing. The fiction is dented, not broken.",
-                partial_narrative_de="Die Bescheinigungen reissen, aber der Mechanismus druckt weiter. Die Fiktion ist verbeult, nicht gebrochen.",
+                partial_narrative_de="Die Bescheinigungen reißen, aber der Mechanismus druckt weiter. Die Fiktion ist verbeult, nicht gebrochen.",
                 fail_narrative_en="The mechanism accelerates. More certificates. More lies. The building believes them even if you don't.",
                 fail_narrative_de="Der Mechanismus beschleunigt. Mehr Bescheinigungen. Mehr Lügen. Das Gebäude glaubt ihnen, selbst wenn ihr es nicht tut.",
             ),
@@ -864,7 +864,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_de="Weitergehen",
                 success_effects={"stress": 20},
                 success_narrative_en="You leave the mechanism running. Behind you, the certificates pile up. The fiction persists.",
-                success_narrative_de="Ihr lasst den Mechanismus laufen. Hinter euch haeufen sich die Bescheinigungen. Die Fiktion besteht fort.",
+                success_narrative_de="Ihr lasst den Mechanismus laufen. Hinter euch häufen sich die Bescheinigungen. Die Fiktion besteht fort.",
             ),
         ],
     ),
@@ -908,7 +908,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             EncounterChoice(
                 id="tear_pages",
                 label_en="Tear the pages",
-                label_de="Die Seiten herausreissen",
+                label_de="Die Seiten herausreißen",
                 check_aptitude="saboteur",
                 check_difficulty=0,
                 success_effects={"stability": -5, "discovery": True},
@@ -917,9 +917,9 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_narrative_en="The pages come free with a sound like breaking ribs. The debt is erased, but so is whatever was holding this floor together.",
                 success_narrative_de="Die Seiten lösen sich mit einem Geräusch wie brechender Rippen. Die Schulden sind gelöscht, aber auch was immer dieses Stockwerk zusammenhielt.",
                 partial_narrative_en="Half the pages tear. The rest grip the binding with unnatural strength.",
-                partial_narrative_de="Die Hälfte der Seiten reisst. Der Rest klammert sich mit unnatürlicher Kraft an die Bindung.",
+                partial_narrative_de="Die Hälfte der Seiten reißt. Der Rest klammert sich mit unnatürlicher Kraft an die Bindung.",
                 fail_narrative_en="The ledger bites back. The pages slice skin and the debt compounds on contact.",
-                fail_narrative_de="Das Hauptbuch beisst zurück. Die Seiten schneiden Haut und die Schulden wachsen bei Kontakt.",
+                fail_narrative_de="Das Hauptbuch beißt zurück. Die Seiten schneiden Haut und die Schulden wachsen bei Kontakt.",
             ),
             EncounterChoice(
                 id="read_margins",
@@ -930,8 +930,8 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_effects={"reveal_rooms": 2, "stress": 10},
                 partial_effects={"stress": 30},
                 fail_effects={"stress": 50},
-                success_narrative_en="The margins contain annotations \u2014 floor plans, load calculations, access routes. Someone was auditing this tower from the inside.",
-                success_narrative_de="Die Ränder enthalten Anmerkungen \u2014 Grundrisse, Lastberechnungen, Zugangswege. Jemand hat diesen Turm von innen geprüft.",
+                success_narrative_en="The margins contain annotations \u2013 floor plans, load calculations, access routes. Someone was auditing this tower from the inside.",
+                success_narrative_de="Die Ränder enthalten Anmerkungen \u2013 Grundrisse, Lastberechnungen, Zugangswege. Jemand hat diesen Turm von innen geprüft.",
                 partial_narrative_en="The handwriting dissolves as you read it. You catch fragments before they fade.",
                 partial_narrative_de="Die Handschrift löst sich auf, während ihr sie lest. Ihr fangt Fragmente auf, bevor sie verblassen.",
                 fail_narrative_en="The numbers in the margins are not calculations. They are names. Reading them aloud was a mistake.",
@@ -940,7 +940,7 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             EncounterChoice(
                 id="close_book",
                 label_en="Close the book",
-                label_de="Das Buch schliessen",
+                label_de="Das Buch schließen",
                 success_effects={"stress": 15},
                 success_narrative_en="The cover closes with a sound like a vault door. The debt remains. It always does.",
                 success_narrative_de="Der Deckel schließt sich mit einem Geräusch wie eine Tresortür. Die Schulden bleiben. Das tun sie immer.",
@@ -970,14 +970,14 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             EncounterChoice(
                 id="reinforce_statues",
                 label_en="Reinforce the arrangement",
-                label_de="Die Anordnung verstaerken",
+                label_de="Die Anordnung verstärken",
                 check_aptitude="guardian",
                 check_difficulty=5,
                 success_effects={"stability": 15, "stress": -30},
                 partial_effects={"stability": 5, "stress": 20},
                 fail_effects={"stress": 60, "stability": -10},
                 success_narrative_en="You brace the statues against each other. The arrangement holds. The tower remembers what support felt like.",
-                success_narrative_de="Ihr stützt die Statuen gegeneinander ab. Die Anordnung haelt. Der Turm erinnert sich, wie sich Stützung anfühlte.",
+                success_narrative_de="Ihr stützt die Statuen gegeneinander ab. Die Anordnung hält. Der Turm erinnert sich, wie sich Stützung anfühlte.",
                 partial_narrative_en="Some statues stabilize. Others shift under your hands, settling into new angles of precariousness.",
                 partial_narrative_de="Einige Statuen stabilisieren sich. Andere verschieben sich unter euren Händen und nehmen neue Winkel der Unsicherheit ein.",
                 fail_narrative_en="A statue topples. The chain reaction shakes the floor and costs you more than you gained.",
@@ -1008,8 +1008,8 @@ TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_effects={"reveal_rooms": 1, "stress": 0, "insight": True},
                 partial_effects={"stress": 20},
                 fail_effects={"stress": 40},
-                success_narrative_en="The angles are a language. The statues point to where the tower is weakest \u2014 and strongest. You read both.",
-                success_narrative_de="Die Winkel sind eine Sprache. Die Statuen zeigen, wo der Turm am schwächsten ist \u2014 und am stärksten. Ihr lest beides.",
+                success_narrative_en="The angles are a language. The statues point to where the tower is weakest \u2013 and strongest. You read both.",
+                success_narrative_de="Die Winkel sind eine Sprache. Die Statuen zeigen, wo der Turm am schwächsten ist \u2013 und am stärksten. Ihr lest beides.",
                 partial_narrative_en="You catch patterns but lose them when the vibration shifts. Partial data is better than none.",
                 partial_narrative_de="Ihr erkennt Muster, verliert sie aber, wenn die Vibration sich verschiebt. Teilweise Daten sind besser als keine.",
                 fail_narrative_en="The arrangement is too complex. The patterns dissolve into noise. Your head aches with unused insight.",
@@ -1031,7 +1031,7 @@ TOWER_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
         min_difficulty=2,
         description_en=(
             "The trading floor. Or what remains of it. The boards are cracked, the "
-            "displays shattered, but the Remnant of Commerce still operates \u2014 "
+            "displays shattered, but the Remnant of Commerce still operates \u2013 "
             "buying, selling, collapsing, in an endless loop of proprietary "
             "destruction. A lone broker orbits it, feeding it data from markets that "
             "no longer exist."
@@ -1039,7 +1039,7 @@ TOWER_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
         description_de=(
             "Das Handelsparkett. Oder was davon übrig ist. Die Bretter sind "
             "geborsten, die Anzeigen zerschmettert, aber das Relikt des Handels "
-            "operiert noch \u2014 kaufend, verkaufend, einstürzend, in einer endlosen "
+            "operiert noch \u2013 kaufend, verkaufend, einstürzend, in einer endlosen "
             "Schleife endloser Selbstliquidation. Ein einsamer Makler umkreist es und "
             "füttert es mit Daten von Märkten, die nicht mehr existieren."
         ),
@@ -1058,7 +1058,7 @@ TOWER_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=99,
         min_difficulty=1,
         description_en=(
-            "The Tower screams. Not metaphorically \u2014 the structural frequency "
+            "The Tower screams. Not metaphorically \u2013 the structural frequency "
             "shifts to something your teeth interpret as sound, something your bones "
             "read as countdown. The highest floor begins to compress. The Remnant of "
             "Commerce waits at the center, adjusting its ledgers while the ceiling "
@@ -1066,7 +1066,7 @@ TOWER_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
             "letting go."
         ),
         description_de=(
-            "Der Turm schreit. Nicht metaphorisch \u2014 die Strukturfrequenz "
+            "Der Turm schreit. Nicht metaphorisch \u2013 die Strukturfrequenz "
             "verschiebt sich zu etwas, das eure Zähne als Klang interpretieren, "
             "etwas, das eure Knochen als Countdown lesen. Das oberste Stockwerk "
             "beginnt sich zu komprimieren. Das Relikt des Handels wartet im Zentrum "
@@ -1111,7 +1111,7 @@ TOWER_REST_ENCOUNTERS: list[EncounterTemplate] = [
                     "ambush_chance": 0.20,
                 },
                 success_narrative_en="The party rests against reinforced walls. The tremors subside. For a few minutes, the numbers stop.",
-                success_narrative_de="Die Gruppe rastet an verstärkten Wänden. Die Erschütterungen lassen nach. Fuer ein paar Minuten hören die Zahlen auf.",
+                success_narrative_de="Die Gruppe rastet an verstärkten Wänden. Die Erschütterungen lassen nach. Für ein paar Minuten hören die Zahlen auf.",
             ),
             EncounterChoice(
                 id="tower_rest_guarded",
@@ -1152,14 +1152,14 @@ TOWER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
         min_difficulty=1,
         description_en=(
             "A strongbox embedded in a load-bearing column. The contents are valuable "
-            "\u2014 you can feel the weight of accumulated capital through the metal. "
+            "\u2013 you can feel the weight of accumulated capital through the metal. "
             "Extracting it without weakening the column requires precision or "
             "acceptable risk tolerance."
         ),
         description_de=(
-            "Ein Tresor, eingelassen in eine tragende Saeule. Der Inhalt ist wertvoll "
-            "\u2014 ihr spürt das Gewicht akkumulierten Kapitals durch das Metall. "
-            "Ihn zu bergen, ohne die Saeule zu schwaechen, erfordert Präzision oder "
+            "Ein Tresor, eingelassen in eine tragende Säule. Der Inhalt ist wertvoll "
+            "\u2013 ihr spürt das Gewicht akkumulierten Kapitals durch das Metall. "
+            "Ihn zu bergen, ohne die Säule zu schwächen, erfordert Präzision oder "
             "akzeptable Risikotoleranz."
         ),
         choices=[
@@ -1173,11 +1173,11 @@ TOWER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"loot": True, "loot_tier_penalty": 1},
                 fail_effects={"stress": 75, "stability": -10, "trap_triggered": True},
                 success_narrative_en="Millimeter by millimeter, the strongbox slides free. The column holds. The capital is yours.",
-                success_narrative_de="Millimeter für Millimeter gleitet der Tresor heraus. Die Saeule haelt. Das Kapital gehört euch.",
+                success_narrative_de="Millimeter für Millimeter gleitet der Tresor heraus. Die Säule hält. Das Kapital gehört euch.",
                 partial_narrative_en="The extraction is imperfect. Some contents scatter and devalue on contact with the floor.",
                 partial_narrative_de="Die Bergung ist unvollkommen. Einige Inhalte zerstreuen sich und verlieren an Wert bei Bodenkontakt.",
                 fail_narrative_en="The column cracks. The strongbox contents scatter as the ceiling settles three centimeters lower.",
-                fail_narrative_de="Die Saeule bricht. Die Tresorinhalte zerstreuen sich, während die Decke drei Zentimeter tiefer sinkt.",
+                fail_narrative_de="Die Säule bricht. Die Tresorinhalte zerstreuen sich, während die Decke drei Zentimeter tiefer sinkt.",
             ),
             EncounterChoice(
                 id="tower_demolish_extract",
@@ -1194,11 +1194,11 @@ TOWER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 },
                 fail_effects={"stress": 50, "stability": -10},
                 success_narrative_en="The charge is precise. The column redistributes its load. The strongbox contents are intact.",
-                success_narrative_de="Die Ladung ist präzise. Die Saeule verteilt ihre Last um. Die Tresorinhalte sind intakt.",
+                success_narrative_de="Die Ladung ist präzise. Die Säule verteilt ihre Last um. Die Tresorinhalte sind intakt.",
                 partial_narrative_en="The blast is slightly off. The loot survives, but the floor shudders in protest.",
-                partial_narrative_de="Die Detonation ist leicht daneben. Die Beute ueberlebt, aber der Boden bebt im Protest.",
+                partial_narrative_de="Die Detonation ist leicht daneben. Die Beute überlebt, aber der Boden bebt im Protest.",
                 fail_narrative_en="Miscalculated. The blast propagates through the column into the floor. Structural damage compounds.",
-                fail_narrative_de="Fehlberechnet. Die Detonation pflanzt sich durch die Saeule in den Boden fort. Strukturschaeden kumulieren.",
+                fail_narrative_de="Fehlberechnet. Die Detonation pflanzt sich durch die Säule in den Boden fort. Strukturschäden kumulieren.",
             ),
             EncounterChoice(
                 id="tower_leave_cache",
@@ -1206,7 +1206,7 @@ TOWER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_de="Liegenlassen (kein Risiko)",
                 success_effects={},
                 success_narrative_en="The column keeps its secret. The ceiling stays where it is. Some capital is best left embedded.",
-                success_narrative_de="Die Saeule behält ihr Geheimnis. Die Decke bleibt, wo sie ist. Manches Kapital lässt man besser eingebettet.",
+                success_narrative_de="Die Säule behält ihr Geheimnis. Die Decke bleibt, wo sie ist. Manches Kapital lässt man besser eingebettet.",
             ),
         ],
     ),
@@ -1304,14 +1304,14 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {"conscientiousness": (0.7, 1.0)},
         "text_en": "{agent} checks their equipment methodically. Everything in order. Again.",
-        "text_de": "{agent} überprüft methodisch die Ausruestung. Alles in Ordnung. Wieder.",
+        "text_de": "{agent} überprüft methodisch die Ausrüstung. Alles in Ordnung. Wieder.",
     },
     {
         "id": "sb_05",
         "trigger": "room_entered",
         "personality_filter": {},
         "text_en": "The terminal flickers. For a moment, the amber glow is the only light in the world.",
-        "text_de": "Das Terminal flackert. Fuer einen Moment ist das Bernsteinleuchten das einzige Licht auf der Welt.",
+        "text_de": "Das Terminal flackert. Für einen Moment ist das Bernsteinleuchten das einzige Licht auf der Welt.",
     },
     # Combat won
     {
@@ -1361,8 +1361,8 @@ SHADOW_BANTER: list[dict] = [
         "id": "sb_12",
         "trigger": "visibility_zero",
         "personality_filter": {},
-        "text_en": "The instruments read nothing. Not zero \u2014 nothing. As if measurement itself has been consumed.",
-        "text_de": "Die Instrumente zeigen nichts an. Nicht Null \u2014 nichts. Als ware das Messen selbst verschlungen worden.",
+        "text_en": "The instruments read nothing. Not zero \u2013 nothing. As if measurement itself has been consumed.",
+        "text_de": "Die Instrumente zeigen nichts an. Nicht Null \u2013 nichts. Als wäre das Messen selbst verschlungen worden.",
     },
     # Agent stressed
     {
@@ -1377,7 +1377,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "agent_stressed",
         "personality_filter": {"agreeableness": (0.0, 0.3)},
         "text_en": "{agent}'s expression hardens. They stop looking at the others.",
-        "text_de": "{agent}s Ausdruck verhartet sich. Sie hören auf, die anderen anzusehen.",
+        "text_de": "{agent}s Ausdruck verhärtet sich. Sie hören auf, die anderen anzusehen.",
     },
     # Opinion-driven (positive pair)
     {
@@ -1392,7 +1392,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {"opinion_positive_pair": True},
         "text_en": "{agent_a} and {agent_b} move in practiced coordination, covering each other's blind spots.",
-        "text_de": "{agent_a} und {agent_b} bewegen sich in eingeuebter Koordination und decken die toten Winkel des anderen.",
+        "text_de": "{agent_a} und {agent_b} bewegen sich in eingeübter Koordination und decken die toten Winkel des anderen.",
     },
     # Opinion-driven (negative pair)
     {
@@ -1407,7 +1407,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "combat_won",
         "personality_filter": {"opinion_negative_pair": True},
         "text_en": "{agent_a}: 'Next time, try not to be in my line of fire, {agent_b}.'",
-        "text_de": "{agent_a}: \u00bbNachstes Mal versuch nicht in meiner Schusslinie zu stehen, {agent_b}.\u00ab",
+        "text_de": "{agent_a}: \u00bbNächstes Mal versuch nicht in meiner Schusslinie zu stehen, {agent_b}.\u00ab",
     },
     # Treasure found
     {
@@ -1473,14 +1473,14 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "depth_change",
         "personality_filter": {"neuroticism": (0.5, 1.0)},
         "text_en": "{agent} counts the steps since the last rest. Stops counting.",
-        "text_de": "{agent} zaehlt die Schritte seit der letzten Rast. Hoert auf zu zaehlen.",
+        "text_de": "{agent} zählt die Schritte seit der letzten Rast. Hört auf zu zählen.",
     },
     {
         "id": "sb_32",
         "trigger": "depth_change",
         "personality_filter": {},
         "text_en": "The darkness here has weight. It presses down like accumulated intention.",
-        "text_de": "Die Dunkelheit hier hat Gewicht. Sie drueckt herab wie angesammelte Absicht.",
+        "text_de": "Die Dunkelheit hier hat Gewicht. Sie drückt herab wie angesammelte Absicht.",
     },
     # Elite encounter
     {
@@ -1503,14 +1503,14 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "boss_approach",
         "personality_filter": {},
         "text_en": "The air changes. The whispers stop. In the silence that follows, something enormous draws breath.",
-        "text_de": "Die Luft andert sich. Das Flüstern stoppt. In der folgenden Stille holt etwas Enormes Atem.",
+        "text_de": "Die Luft ändert sich. Das Flüstern verstummt. In der folgenden Stille holt etwas Enormes Atem.",
     },
     {
         "id": "sb_29",
         "trigger": "boss_approach",
         "personality_filter": {"agreeableness": (0.7, 1.0)},
         "text_en": "{agent} reaches out and squeezes the nearest hand. 'Together.'",
-        "text_de": "{agent} greift nach der nachsten Hand und drueckt sie. \u00bbZusammen.\u00ab",
+        "text_de": "{agent} greift nach der nächsten Hand und drückt sie. \u00bbZusammen.\u00ab",
     },
     {
         "id": "sb_30",
@@ -1532,8 +1532,8 @@ SHADOW_BANTER: list[dict] = [
         "id": "sb_32",
         "trigger": "agent_virtue",
         "personality_filter": {},
-        "text_en": "Something snaps in {agent} \u2014 but it's the sound of chains breaking, not bone. They stand straighter.",
-        "text_de": "Etwas bricht in {agent} \u2014 aber es ist das Geräusch brechender Ketten, nicht von Knochen. Sie stehen aufrechter.",
+        "text_en": "Something snaps in {agent} \u2013 but it's the sound of chains breaking, not bone. They stand straighter.",
+        "text_de": "Etwas bricht in {agent} \u2013 aber es ist das Geräusch brechender Ketten, nicht von Knochen. Sie stehen aufrechter.",
     },
     # General atmosphere
     {
@@ -1555,7 +1555,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {"conscientiousness": (0.0, 0.3)},
         "text_en": "{agent} kicks a loose stone. It falls into darkness. You don't hear it land.",
-        "text_de": "{agent} tritt gegen einen losen Stein. Er fallt in die Dunkelheit. Ihr hört ihn nicht aufschlagen.",
+        "text_de": "{agent} tritt gegen einen losen Stein. Er fällt in die Dunkelheit. Ihr hört ihn nicht aufschlagen.",
     },
     # Low stress banter (lighter tone)
     {
@@ -1570,7 +1570,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "combat_won",
         "personality_filter": {"openness": (0.7, 1.0)},
         "text_en": "{agent} pauses to examine the dissolving shadow. 'Fascinating structure. Like frozen smoke.'",
-        "text_de": "{agent} halt inne, um den sich auflösenden Schatten zu untersuchen. \u00bbFaszinierende Struktur. Wie gefrorener Rauch.\u00ab",
+        "text_de": "{agent} hält inne, um den sich auflösenden Schatten zu untersuchen. \u00bbFaszinierende Struktur. Wie gefrorener Rauch.\u00ab",
     },
     # Retreat banter
     {
@@ -1578,7 +1578,7 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "retreat",
         "personality_filter": {},
         "text_en": "The darkness lets you leave. That's the most unsettling part.",
-        "text_de": "Die Dunkelheit lasst euch gehen. Das ist der beunruhigendste Teil.",
+        "text_de": "Die Dunkelheit lässt euch gehen. Das ist der beunruhigendste Teil.",
     },
     {
         "id": "sb_39",
@@ -1593,14 +1593,14 @@ SHADOW_BANTER: list[dict] = [
         "trigger": "dungeon_completed",
         "personality_filter": {},
         "text_en": "Light. Actual light. The party shields their eyes. Behind them, the entrance seals shut.",
-        "text_de": "Licht. Tatsachliches Licht. Die Gruppe schirmt die Augen ab. Hinter ihnen versiegelt sich der Eingang.",
+        "text_de": "Licht. Tatsächliches Licht. Die Gruppe schirmt die Augen ab. Hinter ihnen versiegelt sich der Eingang.",
     },
     {
         "id": "sb_41",
         "trigger": "dungeon_completed",
         "personality_filter": {"neuroticism": (0.6, 1.0)},
         "text_en": "{agent} doesn't celebrate. They keep checking the shadows. They'll keep checking for a long time.",
-        "text_de": "{agent} feiert nicht. Sie pruefen weiter die Schatten. Sie werden das noch lange tun.",
+        "text_de": "{agent} feiert nicht. Sie prüfen weiter die Schatten. Sie werden das noch lange tun.",
     },
 ]
 
@@ -1617,7 +1617,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {"neuroticism": (0.6, 1.0)},
         "text_en": "{agent} counts the cracks in the load-bearing wall. The number has increased since the last room.",
-        "text_de": "{agent} zaehlt die Risse in der tragenden Wand. Die Zahl ist seit dem letzten Raum gestiegen.",
+        "text_de": "{agent} zählt die Risse in der tragenden Wand. Die Zahl ist seit dem letzten Raum gestiegen.",
     },
     {
         "id": "tb_02",
@@ -1630,8 +1630,8 @@ TOWER_BANTER: list[dict] = [
         "id": "tb_03",
         "trigger": "room_entered",
         "personality_filter": {"openness": (0.7, 1.0)},
-        "text_en": "{agent}: 'The geometry here is wrong. Not broken \u2014 bankrupt.'",
-        "text_de": "{agent}: \u00bbDie Geometrie hier ist falsch. Nicht zerbrochen \u2014 bankrott.\u00ab",
+        "text_en": "{agent}: 'The geometry here is wrong. Not broken \u2013 bankrupt.'",
+        "text_de": "{agent}: \u00bbDie Geometrie hier ist falsch. Nicht zerbrochen \u2013 bankrott.\u00ab",
     },
     {
         "id": "tb_04",
@@ -1652,7 +1652,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {},
         "text_en": "Somewhere above, concrete dust sifts down like snow. The tower is shedding.",
-        "text_de": "Irgendwo oben rieselt Betonstaub herab wie Schnee. Der Turm haeutet sich.",
+        "text_de": "Irgendwo oben rieselt Betonstaub herab wie Schnee. Der Turm häutet sich.",
     },
     {
         "id": "tb_07",
@@ -1674,7 +1674,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "combat_won",
         "personality_filter": {"agreeableness": (0.7, 1.0)},
         "text_en": "{agent} checks on the party. 'Everyone still solvent?'",
-        "text_de": "{agent} sieht nach der Gruppe. \u00bbAlle noch zahlungsfaehig?\u00ab",
+        "text_de": "{agent} sieht nach der Gruppe. \u00bbAlle noch zahlungsfähig?\u00ab",
     },
     {
         "id": "tb_10",
@@ -1695,7 +1695,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "combat_won",
         "personality_filter": {},
         "text_en": "The numbers stop cascading. The structural readout ticks back toward green. Briefly.",
-        "text_de": "Die Zahlen hören auf zu stürzen. Die Strukturanzeige tickt zurück Richtung gruen. Kurz.",
+        "text_de": "Die Zahlen hören auf zu stürzen. Die Strukturanzeige tickt zurück Richtung grün. Kurz.",
     },
     # ── Stability critical (Tower-specific, stability <= 20) ───────────────
     {
@@ -1703,7 +1703,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "stability_critical",
         "personality_filter": {},
         "text_en": "STRUCTURAL INTEGRITY: CRITICAL. The instruments display readings they were not calibrated to show.",
-        "text_de": "STRUKTURELLE INTEGRITAET: KRITISCH. Die Instrumente zeigen Werte an, für die sie nicht kalibriert wurden.",
+        "text_de": "STRUKTURELLE INTEGRITÄT: KRITISCH. Die Instrumente zeigen Werte an, für die sie nicht kalibriert wurden.",
     },
     {
         "id": "tb_14",
@@ -1717,7 +1717,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "stability_critical",
         "personality_filter": {"openness": (0.7, 1.0)},
         "text_en": "{agent}: 'Listen. The frequency has changed. The tower is counting down.'",
-        "text_de": "{agent}: \u00bbHört zu. Die Frequenz hat sich verändert. Der Turm zaehlt herunter.\u00ab",
+        "text_de": "{agent}: \u00bbHört zu. Die Frequenz hat sich verändert. Der Turm zählt herunter.\u00ab",
     },
     {
         "id": "tb_16",
@@ -1725,6 +1725,35 @@ TOWER_BANTER: list[dict] = [
         "personality_filter": {"conscientiousness": (0.7, 1.0)},
         "text_en": "{agent} recalculates the remaining load capacity. The margins are no longer margins.",
         "text_de": "{agent} berechnet die verbleibende Tragfähigkeit neu. Die Reserven sind keine Reserven mehr.",
+    },
+    # ── Stability collapse (Tower-specific, stability == 0) ─────────────────
+    {
+        "id": "tb_49",
+        "trigger": "stability_collapse",
+        "personality_filter": {},
+        "text_en": "STRUCTURAL FAILURE. The load-bearing walls have given up the pretence. The building no longer pretends it was designed to be lived in.",
+        "text_de": "STRUKTURVERSAGEN. Die Tragwände haben die Fassade aufgegeben. Das Gebäude tut nicht länger so, als wäre es zum Bewohnen gebaut.",
+    },
+    {
+        "id": "tb_50",
+        "trigger": "stability_collapse",
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent}: 'The readings are at zero. ZERO. That's not a number \u2013 that's a countdown that's already finished.'",
+        "text_de": "{agent}: \u00bbDie Werte sind auf null. NULL. Das ist keine Zahl \u2013 das ist ein Countdown, der schon vorbei ist.\u00ab",
+    },
+    {
+        "id": "tb_51",
+        "trigger": "stability_collapse",
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "The tower has crossed from architecture into archaeology. Every step forward is a step through what this building used to be.",
+        "text_de": "Der Turm ist von Architektur zu Archäologie übergegangen. Jeder Schritt vorwärts ist ein Schritt durch das, was dieses Gebäude einmal war.",
+    },
+    {
+        "id": "tb_52",
+        "trigger": "stability_collapse",
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} stops recording structural data. There is no structure left to record. Only momentum and gravity, negotiating terms.",
+        "text_de": "{agent} hört auf, Strukturdaten aufzuzeichnen. Es gibt keine Struktur mehr, die man erfassen könnte. Nur noch Schwerkraft und Trägheit, die Bedingungen aushandeln.",
     },
     # ── Depth change ───────────────────────────────────────────────────────
     {
@@ -1804,16 +1833,16 @@ TOWER_BANTER: list[dict] = [
         "id": "tb_24",
         "trigger": "agent_afflicted",
         "personality_filter": {},
-        "text_en": "{agent}'s posture shifts. They begin reciting numbers under their breath \u2014 debts that are not theirs. Not yet.",
-        "text_de": "{agent}s Haltung verändert sich. Sie beginnen leise Zahlen zu rezitieren \u2014 Schulden, die nicht ihre sind. Noch nicht.",
+        "text_en": "{agent}'s posture shifts. They begin reciting numbers under their breath \u2013 debts that are not theirs. Not yet.",
+        "text_de": "{agent}s Haltung verändert sich. Sie beginnen leise Zahlen zu rezitieren \u2013 Schulden, die nicht ihre sind. Noch nicht.",
     },
     # ── Agent virtue ───────────────────────────────────────────────────────
     {
         "id": "tb_25",
         "trigger": "agent_virtue",
         "personality_filter": {},
-        "text_en": "Something hardens in {agent} \u2014 not brittle, but load-bearing. They plant their feet as if they are the column this floor needs.",
-        "text_de": "Etwas verhaertet sich in {agent} \u2014 nicht sproede, sondern tragend. Sie stellen sich hin, als waeren sie die Saeule, die dieses Stockwerk braucht.",
+        "text_en": "Something hardens in {agent} \u2013 not brittle, but load-bearing. They plant their feet as if they are the column this floor needs.",
+        "text_de": "Etwas verhärtet sich in {agent} \u2013 nicht spröde, sondern tragend. Sie stellen sich hin, als wären sie die Säule, die dieses Stockwerk braucht.",
     },
     # ── Elite spotted ──────────────────────────────────────────────────────
     {
@@ -1836,21 +1865,21 @@ TOWER_BANTER: list[dict] = [
         "trigger": "loot_found",
         "personality_filter": {"conscientiousness": (0.0, 0.4)},
         "text_en": "{agent} palms the most portable asset before inventory is taken. Old accounting habits.",
-        "text_de": "{agent} steckt den handlichsten Vermoegenswert ein, bevor inventarisiert wird. Alte Buchhaltungsgewohnheiten.",
+        "text_de": "{agent} steckt den handlichsten Vermögenswert ein, bevor inventarisiert wird. Alte Buchhaltungsgewohnheiten.",
     },
     {
         "id": "tb_29",
         "trigger": "loot_found",
         "personality_filter": {},
         "text_en": "The salvage is cold. Condensation forms on the metal as if the tower's climate is rejecting the withdrawal.",
-        "text_de": "Die Bergung ist kalt. Kondenswasser bildet sich auf dem Metall, als wuerde das Klima des Turms die Entnahme ablehnen.",
+        "text_de": "Die Bergung ist kalt. Kondenswasser bildet sich auf dem Metall, als würde das Klima des Turms die Entnahme ablehnen.",
     },
     {
         "id": "tb_30",
         "trigger": "loot_found",
         "personality_filter": {"openness": (0.7, 1.0)},
         "text_en": "{agent} turns the artifact over in their hands. 'This was currency once. Before the tower redefined value.'",
-        "text_de": "{agent} dreht das Artefakt in den Händen. \u00bbDas war einmal Waehrung. Bevor der Turm den Wert neu definiert hat.\u00ab",
+        "text_de": "{agent} dreht das Artefakt in den Händen. \u00bbDas war einmal Währung. Bevor der Turm den Wert neu definiert hat.\u00ab",
     },
     # ── Rest start ─────────────────────────────────────────────────────────
     {
@@ -1880,29 +1909,29 @@ TOWER_BANTER: list[dict] = [
         "trigger": "retreat",
         "personality_filter": {},
         "text_en": "The stairwell down is still intact. The tower permits the withdrawal. The interest, however, continues to accrue.",
-        "text_de": "Das Treppenhaus nach unten ist noch intakt. Der Turm gestattet den Rueckzug. Die Zinsen allerdings laufen weiter.",
+        "text_de": "Das Treppenhaus nach unten ist noch intakt. Der Turm gestattet den Rückzug. Die Zinsen allerdings laufen weiter.",
     },
     {
         "id": "tb_35",
         "trigger": "retreat",
         "personality_filter": {"agreeableness": (0.0, 0.3)},
         "text_en": "{agent}: 'Strategic divestment. Not retreat. There's a difference. On paper.'",
-        "text_de": "{agent}: \u00bbStrategische Desinvestition. Kein Rueckzug. Es gibt einen Unterschied. Auf dem Papier.\u00ab",
+        "text_de": "{agent}: \u00bbStrategische Desinvestition. Kein Rückzug. Es gibt einen Unterschied. Auf dem Papier.\u00ab",
     },
     # ── Dungeon completed ──────────────────────────────────────────────────
     {
         "id": "tb_36",
         "trigger": "dungeon_completed",
         "personality_filter": {},
-        "text_en": "Ground floor. The exit is open. Behind you, the tower settles into its new equilibrium \u2014 lower, quieter, diminished but still standing.",
-        "text_de": "Erdgeschoss. Der Ausgang ist offen. Hinter euch findet der Turm sein neues Gleichgewicht \u2014 niedriger, leiser, vermindert aber noch stehend.",
+        "text_en": "Ground floor. The exit is open. Behind you, the tower settles into its new equilibrium \u2013 lower, quieter, diminished but still standing.",
+        "text_de": "Erdgeschoss. Der Ausgang ist offen. Hinter euch findet der Turm sein neues Gleichgewicht \u2013 niedriger, leiser, vermindert aber noch stehend.",
     },
     {
         "id": "tb_37",
         "trigger": "dungeon_completed",
         "personality_filter": {"neuroticism": (0.6, 1.0)},
         "text_en": "{agent} keeps checking the structural readings. The numbers are stable. They don't trust stable.",
-        "text_de": "{agent} prueft weiter die Strukturwerte. Die Zahlen sind stabil. Sie trauen stabil nicht.",
+        "text_de": "{agent} prüft weiter die Strukturwerte. Die Zahlen sind stabil. Sie trauen stabil nicht.",
     },
     # ── Opinion-driven (positive pair) ─────────────────────────────────────
     {
@@ -1940,7 +1969,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "room_entered",
         "personality_filter": {},
         "text_en": "A clock on the wall runs backward. The hands move with the confidence of a market correction.",
-        "text_de": "Eine Uhr an der Wand laeuft rueckwaerts. Die Zeiger bewegen sich mit der Zuversicht einer Marktkorrektur.",
+        "text_de": "Eine Uhr an der Wand läuft rückwärts. Die Zeiger bewegen sich mit der Zuversicht einer Marktkorrektur.",
     },
     {
         "id": "tb_43",
@@ -1954,7 +1983,7 @@ TOWER_BANTER: list[dict] = [
         "trigger": "stability_critical",
         "personality_filter": {"agreeableness": (0.7, 1.0)},
         "text_en": "{agent}: 'We need to move. Together. Now.' The floor confirms the urgency with a groan.",
-        "text_de": "{agent}: \u00bbWir muessen weiter. Zusammen. Jetzt.\u00ab Der Boden bestaetigt die Dringlichkeit mit einem Ächzen.",
+        "text_de": "{agent}: \u00bbWir müssen weiter. Zusammen. Jetzt.\u00ab Der Boden bestätigt die Dringlichkeit mit einem Ächzen.",
     },
     {
         "id": "tb_45",

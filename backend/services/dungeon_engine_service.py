@@ -104,7 +104,7 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
                     de.append("Ein Raum voraus wird sichtbar.")
                 elif n > 1:
                     en.append(f"{n} rooms ahead become clear.")
-                    de.append(f"{n} Raeume voraus werden sichtbar.")
+                    de.append(f"{n} Räume voraus werden sichtbar.")
             case "stress":
                 n = int(val)
                 if n > 0:
@@ -112,7 +112,7 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
                     de.append(f"Die Anstrengung fordert ihren Tribut. (+{n} Stress)")
                 elif n < 0:
                     en.append(f"The tension eases. ({n} stress)")
-                    de.append(f"Die Anspannung laesst nach. ({n} Stress)")
+                    de.append(f"Die Anspannung lässt nach. ({n} Stress)")
             case "stress_heal":
                 n = int(val)
                 if n > 0:
@@ -124,7 +124,7 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
                     de.append("Etwas Wertvolles taucht auf.")
             case "loot_tier_penalty":
                 en.append("The hasty attempt damages the find.")
-                de.append("Der uebereilte Versuch beschaedigt den Fund.")
+                de.append("Der übereilte Versuch beschädigt den Fund.")
             case "visibility":
                 n = int(val)
                 sign = "+" if n > 0 else ""
@@ -134,13 +134,13 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
                 n = int(val)
                 sign = "+" if n > 0 else ""
                 en.append(f"{sign}{n} Stability.")
-                de.append(f"{sign}{n} Stabilitaet.")
+                de.append(f"{sign}{n} Stabilität.")
             case "shadow_resonance":
                 en.append("The shadows resonate with the encounter.")
                 de.append("Die Schatten resonieren mit der Begegnung.")
             case "resilience_bonus":
                 en.append("Something hardens within. Resilience improved.")
-                de.append("Etwas haertet sich im Inneren. Widerstandskraft verbessert.")
+                de.append("Etwas härtet sich im Inneren. Widerstandskraft verbessert.")
             case "discovery":
                 if val:
                     en.append("A discovery worth remembering.")
@@ -148,11 +148,11 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
             case "insight":
                 if val:
                     en.append("Understanding deepens.")
-                    de.append("Das Verstaendnis vertieft sich.")
+                    de.append("Das Verständnis vertieft sich.")
             case "memory_created":
                 if val:
                     en.append("This moment imprints itself.")
-                    de.append("Dieser Moment praegt sich ein.")
+                    de.append("Dieser Moment prägt sich ein.")
             case "ambush_trigger":
                 pass  # Game mechanic flag — no player-facing narrative
             case _:
@@ -420,8 +420,14 @@ class DungeonEngineService:
         if target_room.depth > current_room.depth:
             banter_trigger = "depth_change"
 
-        # Apply ambient stress
+        # Apply ambient stress (doubled during Tower structural failure)
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
+        if (
+            instance.archetype == "The Tower"
+            and instance.archetype_state.get("stability", 100) <= 0
+        ):
+            mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
+            ambient = int(ambient * mc.get("collapse_stress_multiplier", 2.0))
         for agent in instance.party:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
@@ -1448,7 +1454,10 @@ class DungeonEngineService:
                 return "visibility_zero"
         elif instance.archetype == "The Tower":
             cls._apply_tower_stability_drain(instance)
-            if instance.archetype_state.get("stability", 100) <= 20:
+            stability = instance.archetype_state.get("stability", 100)
+            if stability <= 0:
+                return "stability_collapse"
+            if stability <= 20:
                 return "stability_critical"
         return None
 

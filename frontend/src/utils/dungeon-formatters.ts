@@ -19,7 +19,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
-import { isShadowState, isTowerState } from '../types/dungeon.js';
+import { ARCHETYPE_TOWER, isShadowState, isTowerState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -158,7 +158,7 @@ export function formatDungeonEntry(
 /** Generate archetype-specific protocol briefing for first-time dungeon entry. */
 export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
   const lines: TerminalLine[] = [];
-  const isTower = archetype.toLowerCase().includes('tower');
+  const isTower = archetype === ARCHETYPE_TOWER;
 
   if (isTower) {
     lines.push(combatSystemLine(msg('STRUCTURAL PROTOCOL')));
@@ -438,7 +438,7 @@ export function formatCombatResolution(
 
 /** Format a single combat event with semantic color based on context. */
 function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): TerminalLine {
-  const tag = _eventTag(event);
+  const tag = _eventTag(event, isEnemyAction);
   const summary = `  [${tag}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`;
 
   // Details suffix
@@ -469,12 +469,12 @@ function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): Termina
 }
 
 /** Determine display tag for a combat event. */
-function _eventTag(event: CombatEvent): string {
+function _eventTag(event: CombatEvent, isEnemyAction: boolean): string {
   if (!event.hit) return 'MISS';
   if (event.action === 'defend') return 'DEF';
   if (event.action === 'detonate') return 'TRAP';
   if (event.stress < 0) return 'HEAL';
-  if (event.damage > 0) return 'HIT';
+  if (event.damage > 0) return isEnemyAction ? 'ATK' : 'HIT';
   return 'ACT';
 }
 
@@ -638,7 +638,7 @@ export function formatScoutResult(
   const lines: TerminalLine[] = [];
 
   // Archetype-aware scout text
-  const isTower = archetype.toLowerCase().includes('tower');
+  const isTower = archetype === ARCHETYPE_TOWER;
   const scoutVerb = isTower
     ? msg('surveys the structural layout')
     : msg('probes the surrounding darkness');
@@ -773,7 +773,7 @@ export function formatDungeonComplete(
   }
 
   // ── Closing (archetype-specific) ──
-  const isTowerDungeon = state.archetype.toLowerCase().includes('tower');
+  const isTowerDungeon = state.archetype === ARCHETYPE_TOWER;
   const closingText = isTowerDungeon
     ? msg('The building settles. Your agents descend \u2013 the stairs hold, this time.')
     : msg('The darkness recedes. Your agents emerge \u2013 not unscathed, but something has been understood.');

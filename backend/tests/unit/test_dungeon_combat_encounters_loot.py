@@ -1102,8 +1102,8 @@ class TestRollLootTower:
         assert "foundation_attunement" in ids
 
     def test_tier_1_returns_one_item(self):
-        """Tier 1 returns exactly 1 item."""
-        items = roll_loot(1, 3, 3, archetype="The Tower")
+        """Tier 1 returns exactly 1 item (stability < 80 to avoid upgrade)."""
+        items = roll_loot(1, 3, 3, archetype="The Tower", archetype_state={"stability": 50})
         assert len(items) == 1
         assert items[0].tier == 1
 

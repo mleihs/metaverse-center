@@ -89,6 +89,9 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             # Low-stability ambush chances
             "low_stability_ambush_30": 0.25,  # stability < 30
             "low_stability_ambush_15": 0.50,  # stability < 15
+            # Structural Failure mode (stability == 0)
+            "collapse_ambush_chance": 0.50,  # 50% ambush at stability 0
+            "collapse_stress_multiplier": 2.0,  # double ambient stress at stability 0
             # Stress multiplier at low stability
             "stress_multiplier": 1.20,
         },

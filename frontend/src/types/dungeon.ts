@@ -13,6 +13,11 @@
 
 import type { UUID } from './index.js';
 
+// ── Archetype Constants ─────────────────────────────────────────────────────
+
+export const ARCHETYPE_SHADOW = 'The Shadow';
+export const ARCHETYPE_TOWER = 'The Tower';
+
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
 /** Database-level run status. */

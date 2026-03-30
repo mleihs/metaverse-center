@@ -43,19 +43,19 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
         vulnerabilities=["spy"],
         action_weights={"stress_attack": 60, "evade": 30, "ambient": 10},
         description_en=(
-            "A flickering presence at the edge of perception. It doesn't attack the body \u2014 it erodes certainty."
+            "A flickering presence at the edge of perception. It doesn't attack the body \u2013 it erodes certainty."
         ),
         description_de=(
             "Eine flackernde Präsenz am Rand der Wahrnehmung. "
-            "Sie greift nicht den Körper an \u2014 sie zersetzt Gewissheit."
+            "Sie greift nicht den Körper an \u2013 sie zersetzt Gewissheit."
         ),
         ambient_text_en=[
             "The wisp drifts closer, then retreats. Testing.",
-            "You feel it before you see it \u2014 a chill that starts behind the eyes.",
+            "You feel it before you see it \u2013 a chill that starts behind the eyes.",
         ],
         ambient_text_de=[
             "Der Glimmer treibt näher, dann zurück. Testend.",
-            "Ihr spürt es, bevor ihr es seht \u2014 eine Kälte, die hinter den Augen beginnt.",
+            "Ihr spürt es, bevor ihr es seht \u2013 eine Kälte, die hinter den Augen beginnt.",
         ],
     ),
     "shadow_tendril": EnemyTemplate(
@@ -98,11 +98,11 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
         action_weights={"attack": 40, "stress_attack": 30, "ambush": 20, "defend": 10},
         description_en=(
             "A replay of violence that once scarred this place. It moves with the precision "
-            "of memory \u2014 every strike has happened before."
+            "of memory \u2013 every strike has happened before."
         ),
         description_de=(
             "Eine Wiederholung von Gewalt, die diesen Ort einst gezeichnet hat. "
-            "Sie bewegt sich mit der Prazision der Erinnerung \u2014 jeder Schlag ist schon geschehen."
+            "Sie bewegt sich mit der Prazision der Erinnerung \u2013 jeder Schlag ist schon geschehen."
         ),
         ambient_text_en=[
             "The echo replays a death. Not yours. Not yet.",
@@ -131,11 +131,11 @@ SHADOW_ENEMIES: dict[str, EnemyTemplate] = {
         action_weights={"stress_attack": 50, "disinformation": 30, "hide": 20},
         special_abilities=["disinformation"],
         description_en=(
-            "It whispers. Not lies, exactly \u2014 plausible fears. "
+            "It whispers. Not lies, exactly \u2013 plausible fears. "
             "Things your agents already suspect about each other."
         ),
         description_de=(
-            "Es flüstert. Nicht Lügen, genau genommen \u2014 plausible Ängste. "
+            "Es flüstert. Nicht Lügen, genau genommen \u2013 plausible Ängste. "
             "Dinge, die eure Agenten bereits voneinander vermuten."
         ),
         ambient_text_en=[
@@ -232,12 +232,12 @@ TOWER_ENEMIES: dict[str, EnemyTemplate] = {
         action_weights={"stress_attack": 65, "evade": 25, "ambient": 10},
         description_en=(
             "A nervous figure wreathed in scrolling numbers. It doesn't fight "
-            "\u2014 it recites. Market figures, compound rates, the precise "
+            "\u2013 it recites. Market figures, compound rates, the precise "
             "mathematics of structures that can't hold."
         ),
         description_de=(
             "Eine nervöse Gestalt, umweht von laufenden Zahlen. Sie kämpft "
-            "nicht \u2014 sie rezitiert. Marktkurse, Zinseszinsen, die präzise "
+            "nicht \u2013 sie rezitiert. Marktkurse, Zinseszinsen, die präzise "
             "Mathematik von Strukturen, die nicht halten können."
         ),
         ambient_text_en=[
@@ -333,13 +333,13 @@ TOWER_ENEMIES: dict[str, EnemyTemplate] = {
         description_en=(
             "It speaks in promises that were never kept. Each round it grows, "
             "fed by the compound interest of unresolved obligations. It lies "
-            "about its intentions \u2014 not from malice, but because the "
+            "about its intentions \u2013 not from malice, but because the "
             "ledger demands it."
         ),
         description_de=(
             "Es spricht in Versprechen, die nie gehalten wurden. Jede Runde "
             "wächst es, genährt vom Zinseszins ungelöster Verpflichtungen. "
-            "Es lügt über seine Absichten \u2014 nicht aus Bosheit, sondern "
+            "Es lügt über seine Absichten \u2013 nicht aus Bosheit, sondern "
             "weil das Hauptbuch es verlangt."
         ),
         ambient_text_en=[
@@ -527,6 +527,8 @@ def check_ambush(
     elif archetype == "The Tower":
         tower_config = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
         stability = archetype_state.get("stability", 100)
+        if stability <= 0:
+            return random.random() < tower_config.get("collapse_ambush_chance", 0.50)
         if stability < 15:
             return random.random() < tower_config["low_stability_ambush_15"]
         if stability < 30:

@@ -264,6 +264,7 @@ export async function startDungeonRun(
 
     const { run, state } = resp.data;
     dungeonState.applyState(state);
+    terminalState.clearOutput();
     terminalState.initializeDungeon(String(run.id));
 
     // Atmosphere text from archetype config (placeholder for now)

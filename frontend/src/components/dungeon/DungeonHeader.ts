@@ -17,7 +17,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import { isShadowState, isTowerState } from '../../types/dungeon.js';
+import { ARCHETYPE_TOWER, isShadowState, isTowerState } from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
@@ -55,9 +55,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        color: var(--_phosphor);
+        color: var(--_archetype-color, var(--_phosphor));
         padding: 3px 10px;
-        border: 1px solid color-mix(in srgb, var(--_phosphor) 40%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_archetype-color, var(--_phosphor)) 40%, transparent);
         white-space: nowrap;
         flex-shrink: 0;
       }
@@ -155,8 +155,8 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
       .visibility__pip {
         display: inline-flex;
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         color: var(--_phosphor-dim);
         opacity: 0.25;
       }
@@ -214,6 +214,23 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         background: var(--color-danger);
       }
 
+      .stability__label--collapse {
+        color: var(--color-danger);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .stability__label--collapse {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes collapse-blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
       @media (prefers-reduced-motion: no-preference) {
         .stability__fill--critical {
           animation: stability-pulse 2s ease-in-out infinite;
@@ -267,9 +284,13 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const state = dungeonState.clientState.value;
     if (!state) return nothing;
 
+    const isTower = state.archetype === ARCHETYPE_TOWER;
+    const archetypeColor = isTower
+      ? 'var(--color-warning, #fb923c)'
+      : 'var(--color-info, #a78bfa)';
+
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
-    const totalRooms = rooms.length;
     const depthProgress = dungeonState.depthProgress.value;
     const maxDepth = Math.max(...rooms.map((r) => r.depth), 1);
 
@@ -284,11 +305,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
-        <span class="archetype">${state.archetype}</span>
+        <span class="archetype" style="--_archetype-color: ${archetypeColor}">${state.archetype}</span>
         <span class="sep"></span>
 
         <div class="depth">
-          <span class="depth__label">${msg('Depth')} ${state.depth}/${maxDepth}</span>
+          <span class="depth__label">D${state.depth}/${maxDepth}</span>
           <div
             class="depth__track"
             role="progressbar"
@@ -309,7 +330,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
         <div class="rooms">
           <span class="rooms__icon">${icons.doorOpen(12)}</span>
-          <span>${clearedCount}/${totalRooms}</span>
+          <span>${clearedCount} ${msg('visited')}</span>
         </div>
 
         ${visibility !== null && maxVisibility !== null
@@ -357,7 +378,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                     style="transform: scaleX(${maxStability > 0 ? stability / maxStability : 0})"
                   ></div>
                 </div>
-                <span class="stability__label">${stability}</span>
+                <span class="stability__label ${stability <= 0 ? 'stability__label--collapse' : ''}">${stability <= 0 ? msg('FAILURE') : stability}</span>
               </div>
             `
           : nothing}

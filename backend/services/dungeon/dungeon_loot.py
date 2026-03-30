@@ -40,7 +40,7 @@ SHADOW_LOOT_TIER_1: list[LootItem] = [
             "content_de": "Gelernt, Bewegung in der Dunkelheit zu spüren",
         },
         description_en="A fragment of understanding gained in the dark.",
-        description_de="Ein Fragment des Verstandnisses, gewonnen in der Dunkelheit.",
+        description_de="Ein Fragment des Verständnisses, gewonnen in der Dunkelheit.",
         drop_weight=30,
     ),
     LootItem(
@@ -61,8 +61,8 @@ SHADOW_LOOT_TIER_1: list[LootItem] = [
         tier=1,
         effect_type="dungeon_buff",
         effect_params={"stress_damage_bonus": 0.5, "aptitude": "propagandist", "scope": "this_dungeon"},
-        description_en="Consumable: one Propagandist ability deals +50% stress damage this dungeon.",
-        description_de="Verbrauchsgegenstand: Eine Propagandisten-Fahigkeit verursacht +50% Stressschaden in diesem Dungeon.",
+        description_en="Distilled dread in a vial. Not your fear \u2013 someone else's, concentrated until it weighs something. Applied to words, they cut deeper.",
+        description_de="Destillierter Schrecken in einer Phiole. Nicht eure Angst \u2013 die eines anderen, verdichtet bis sie wiegt. Auf Worte aufgetragen, schneiden sie tiefer.",
         drop_weight=10,
     ),
     LootItem(
@@ -209,7 +209,7 @@ SHADOW_LOOT_TIER_3: list[LootItem] = [
         effect_params={
             "importance": 9,
             "content_en": "Confronted the darkness and prevailed. The experience fundamentally altered how they perceive threat and fear.",
-            "content_de": "Der Dunkelheit entgegengetreten und bestanden. Die Erfahrung veranderte grundlegend, wie sie Bedrohung und Angst wahrnehmen.",
+            "content_de": "Der Dunkelheit entgegengetreten und bestanden. Die Erfahrung veränderte grundlegend, wie sie Bedrohung und Angst wahrnehmen.",
             "behavior_effect": "more_brave_less_avoidant",
         },
         description_en="High-importance Memory: affects agent autonomous behavior (more brave, less avoidant).",
@@ -224,7 +224,7 @@ SHADOW_LOOT_TIER_3: list[LootItem] = [
         effect_type="arc_modifier",
         effect_params={"pressure_reduction": 0.15, "scope": "matching_arc"},
         description_en="If matching narrative arc exists: pressure reduced.",
-        description_de="Falls passender Erzaehlbogen existiert: Druck reduziert.",
+        description_de="Falls passender Erzählbogen existiert: Druck reduziert.",
         drop_weight=50,  # conditional on arc existing
     ),
 ]
@@ -419,7 +419,7 @@ TOWER_LOOT_TIER_3: list[LootItem] = [
             "scope": "permanent",
         },
         description_en="Permanent: +0.05 simulation Overall Health. The tower's sacrifice stabilizes reality.",
-        description_de="Permanent: +0.05 Gesamtgesundheit der Simulation. Das Opfer des Turms stabilisiert die Realitaet.",
+        description_de="Permanent: +0.05 Gesamtgesundheit der Simulation. Das Opfer des Turms stabilisiert die Realität.",
         drop_weight=100,  # guaranteed
     ),
     LootItem(
