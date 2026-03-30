@@ -22,14 +22,13 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
-
-const RETREAT_HOLD_MS = 2000;
+import '../shared/VelgHoldButton.js';
 
 @localized()
 @customElement('velg-dungeon-quick-actions')
@@ -43,44 +42,22 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         display: block;
       }
 
-      /* ── Retreat hold-to-confirm ── */
-      .action-btn--retreat {
-        position: relative;
-        overflow: hidden;
-        touch-action: manipulation;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
-      }
-      .action-btn--retreat .retreat-fill {
-        position: absolute;
-        inset: 0;
-        background: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
-        transform: scaleX(0);
-        transform-origin: left;
-        pointer-events: none;
-      }
-      .action-btn--retreat[data-holding] {
-        border-color: var(--color-danger);
-        color: var(--color-danger);
-      }
-      .action-btn--retreat[data-holding] .retreat-fill {
-        animation: retreat-fill ${RETREAT_HOLD_MS}ms linear forwards;
+      /* ── Hold button terminal theming ── */
+      velg-hold-button {
+        --hold-btn-fill: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
+        font-family: var(--_mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: var(--_phosphor-dim);
       }
 
-      @keyframes retreat-fill {
-        to { transform: scaleX(1); }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .action-btn--retreat[data-holding] .retreat-fill {
-          animation-duration: 300ms;
-        }
+      velg-hold-button button {
+        border: 1px dashed color-mix(in srgb, var(--_border) 70%, transparent);
+        padding: 5px 12px;
       }
     `,
   ];
-
-  @state() private _retreatHolding = false;
 
   private _dispatch(command: string): void {
     this.dispatchEvent(
@@ -255,55 +232,15 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     `;
   }
 
-  /** Render retreat button with hold-to-confirm (2s hold = nuclear launch key pattern). */
   private _renderRetreatButton() {
-    const label = this._retreatHolding ? msg('HOLD\u2026') : msg('Retreat');
     return html`
-      <button
-        class="action-btn action-btn--tier2 action-btn--retreat"
-        ?data-holding=${this._retreatHolding}
-        @pointerdown=${this._onRetreatDown}
-        @pointerup=${this._onRetreatUp}
-        @pointerleave=${this._onRetreatUp}
-        @pointercancel=${this._onRetreatUp}
-        @contextmenu=${(e: Event) => e.preventDefault()}
-        @keydown=${this._onRetreatKey}
+      <velg-hold-button
+        .label=${msg('Retreat')}
+        .holdingLabel=${msg('HOLD\u2026')}
         aria-label=${msg('Hold to retreat')}
-      >
-        <span class="retreat-fill" @animationend=${this._onRetreatConfirm}></span>
-        ${label}
-      </button>
+        @hold-confirmed=${() => this._dispatch('retreat')}
+      ></velg-hold-button>
     `;
-  }
-
-  private _onRetreatDown(e: PointerEvent): void {
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    this._retreatHolding = true;
-  }
-
-  private _onRetreatUp(): void {
-    this._retreatHolding = false;
-  }
-
-  private _onRetreatConfirm(): void {
-    this._retreatHolding = false;
-    this._dispatch('retreat');
-  }
-
-  private _retreatKeyPending = false;
-  private _retreatKeyTimer?: ReturnType<typeof setTimeout>;
-
-  private _onRetreatKey(e: KeyboardEvent): void {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    e.preventDefault();
-    if (this._retreatKeyPending) {
-      clearTimeout(this._retreatKeyTimer);
-      this._retreatKeyPending = false;
-      this._dispatch('retreat');
-    } else {
-      this._retreatKeyPending = true;
-      this._retreatKeyTimer = setTimeout(() => { this._retreatKeyPending = false; }, 3000);
-    }
   }
 
   /** Render move buttons for each adjacent room. Unscouted rooms show "???" (fog-of-war). */

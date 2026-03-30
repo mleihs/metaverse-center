@@ -26,6 +26,7 @@ import { dungeonState } from '../../services/DungeonStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
+import { icons } from '../../utils/icons.js';
 import { parseAndExecute } from '../../utils/terminal-commands.js';
 import { systemLine } from '../../utils/terminal-formatters.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
@@ -213,21 +214,157 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         }
       }
 
-      /* ── Large screens ── */
+      /* ── Map: hidden in grid at <1200px (FAB + dialog instead) ── */
+      @media (max-width: 1199px) {
+        .dungeon-hud__map {
+          display: none;
+        }
+      }
+
+      /* ── Medium screens (1200–1439px): map as sidebar below party ── */
+      @media (min-width: 1200px) and (max-width: 1439px) {
+        .dungeon-hud__map {
+          grid-column: 2;
+          grid-row: 3;
+          border-left: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+          border-top: 1px dashed color-mix(in srgb, var(--_border) 30%, transparent);
+          overflow-y: auto;
+          min-height: 0;
+        }
+        .dungeon-hud__actions {
+          grid-column: 1;
+        }
+      }
+
+      /* ── Large screens (1440px+): 3-column layout ── */
       @media (min-width: 1440px) {
         .dungeon-hud {
-          grid-template-columns: 1fr 320px;
+          grid-template-rows: auto 1fr auto;
+          grid-template-columns: 1fr 300px 260px;
+        }
+        .dungeon-hud__map {
+          grid-column: 3;
+          grid-row: 2;
+          border-left: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+          overflow-y: auto;
+          min-height: 0;
+        }
+        .dungeon-hud__actions {
+          grid-column: 1 / 3;
+          grid-row: 3;
         }
       }
 
       /* ── 4K / Ultra-wide ── */
       @media (min-width: 2560px) {
         .dungeon-hud {
-          grid-template-columns: 1fr 380px;
+          grid-template-columns: 1fr 380px 320px;
         }
 
         .dungeon-hud__party {
           padding: 10px;
+        }
+      }
+
+      /* ── Map FAB (floating action button, <1200px only) ── */
+      .map-fab {
+        display: none;
+        position: fixed;
+        bottom: 80px;
+        right: 24px;
+        z-index: 50;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 50%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 95%, black);
+        color: var(--_phosphor);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+      }
+
+      .map-fab:hover {
+        border-color: var(--_phosphor);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--_phosphor-glow) 40%, transparent);
+      }
+
+      .map-fab:focus-visible {
+        outline: 1px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 1199px) {
+        .map-fab {
+          display: flex;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .map-fab {
+          bottom: 72px;
+          right: 12px;
+          padding: 6px 10px;
+          font-size: 9px;
+        }
+      }
+
+      /* ── Map Dialog (<1200px overlay) ── */
+      .map-dialog {
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 40%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 98%, black);
+        color: var(--_phosphor);
+        padding: 0;
+        max-width: min(90vw, 600px);
+        max-height: 80vh;
+        width: 100%;
+      }
+
+      .map-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(2px);
+      }
+
+      .map-dialog__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-bottom: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor-dim);
+      }
+
+      .map-dialog__close {
+        border: none;
+        background: none;
+        color: var(--_phosphor-dim);
+        cursor: pointer;
+        padding: 4px;
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .map-dialog__close:hover {
+        color: var(--_phosphor);
+      }
+
+      @media (max-width: 767px) {
+        .map-dialog {
+          max-width: 100vw;
+          max-height: 100vh;
+          width: 100vw;
+          height: 100vh;
+          margin: 0;
+          border: none;
         }
       }
     `,
@@ -236,6 +373,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   @property({ type: String }) simulationId = '';
 
   @query('velg-bureau-terminal') private _terminal?: VelgBureauTerminal;
+  @query('.map-dialog') private _mapDialog?: HTMLDialogElement;
 
   @state() private _initialized = false;
   @state() private _error: string | null = null;
@@ -379,7 +517,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           <velg-dungeon-party-panel></velg-dungeon-party-panel>
         </div>
         <div class="dungeon-hud__map" role="region" aria-label=${msg('Dungeon map')}>
-          <velg-dungeon-map></velg-dungeon-map>
+          <velg-dungeon-map persistent></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
           ${inCombat
@@ -387,7 +525,43 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
             : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`}
         </div>
       </div>
+
+      <button
+        class="map-fab"
+        @click=${this._openMapDialog}
+        aria-label=${msg('Open dungeon map')}
+      >
+        ${icons.dungeonMap(16)}
+        <span>${msg('Map')}</span>
+      </button>
+
+      <dialog
+        class="map-dialog"
+        @close=${() => this.requestUpdate()}
+        @click=${this._onMapDialogBackdropClick}
+      >
+        <div class="map-dialog__header">
+          <span>${msg('Dungeon Map')}</span>
+          <button
+            class="map-dialog__close"
+            @click=${() => this._mapDialog?.close()}
+            aria-label=${msg('Close map')}
+          >&times;</button>
+        </div>
+        <velg-dungeon-map persistent></velg-dungeon-map>
+      </dialog>
     `;
+  }
+
+  private _openMapDialog(): void {
+    this._mapDialog?.showModal();
+  }
+
+  /** Close dialog when clicking backdrop (outside content area). */
+  private _onMapDialogBackdropClick(e: MouseEvent): void {
+    if (e.target === this._mapDialog) {
+      this._mapDialog?.close();
+    }
   }
 
   /** No active dungeon: info panel with available archetypes + terminal below. */

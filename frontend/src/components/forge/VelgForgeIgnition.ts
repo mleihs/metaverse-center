@@ -13,6 +13,7 @@ import {
 
 import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';
+import '../shared/VelgHoldButton.js';
 import './VelgForgeCeremony.js';
 
 /**
@@ -149,47 +150,23 @@ export class VelgForgeIgnition extends LitElement {
         margin: 0 0 var(--space-8);
       }
 
-      /* ── Hold-to-Confirm Button ─────────── */
+      /* ── Hold-to-Confirm Button (via VelgHoldButton) ─────────── */
 
-      .btn-hold {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 80px;
-        width: 320px;
+      velg-hold-button {
+        --hold-btn-fill: var(--color-danger);
+        --hold-btn-active-color: var(--color-text-inverse);
+        --hold-btn-active-border: var(--color-danger);
         font-family: var(--font-brutalist);
         font-weight: 900;
         font-size: var(--text-xl);
-        text-transform: uppercase;
         letter-spacing: 0.15em;
         color: var(--color-text-inverse);
-        cursor: pointer;
+      }
+
+      velg-hold-button button {
+        height: 80px;
+        width: 320px;
         border: 2px solid var(--color-danger);
-        position: relative;
-        overflow: hidden;
-        background: transparent;
-        transition: color 0.3s;
-        user-select: none;
-      }
-
-      .btn-hold__fill {
-        position: absolute;
-        inset: 0;
-        background: var(--color-danger);
-        transform-origin: left;
-        transform: scaleX(0);
-        transition: transform 0.05s linear;
-        z-index: 0;
-      }
-
-      .btn-hold__text {
-        position: relative;
-        z-index: 1;
-      }
-
-      .btn-hold:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
       }
 
       /* ── Error Box ───────────────────────── */
@@ -216,9 +193,7 @@ export class VelgForgeIgnition extends LitElement {
   @state() private _materializedName = '';
   @state() private _materializedDescription = '';
   @state() private _error: string | null = null;
-  @state() private _holdProgress = 0;
 
-  private _holdTimer: ReturnType<typeof setInterval> | null = null;
   private _disposeEffects: (() => void)[] = [];
 
   connectedCallback() {
@@ -236,41 +211,7 @@ export class VelgForgeIgnition extends LitElement {
   disconnectedCallback() {
     for (const dispose of this._disposeEffects) dispose();
     this._disposeEffects = [];
-    this._clearHold();
     super.disconnectedCallback();
-  }
-
-  // ── Hold-to-Confirm ───────────────────────
-
-  private _startHold() {
-    if (this._isIgniting) return;
-    this._holdProgress = 0;
-    const startTime = Date.now();
-    const holdDuration = 2000; // 2 seconds
-
-    this._holdTimer = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      this._holdProgress = Math.min(elapsed / holdDuration, 1);
-
-      if (this._holdProgress >= 1) {
-        this._clearHold();
-        this._executeIgnition();
-      }
-    }, 30);
-  }
-
-  private _endHold() {
-    if (this._holdProgress < 1) {
-      this._clearHold();
-      this._holdProgress = 0;
-    }
-  }
-
-  private _clearHold() {
-    if (this._holdTimer) {
-      clearInterval(this._holdTimer);
-      this._holdTimer = null;
-    }
   }
 
   private async _executeIgnition() {
@@ -418,39 +359,14 @@ export class VelgForgeIgnition extends LitElement {
           <h2 class="danger-zone__title">${msg('Final Materialization')}</h2>
           <p class="danger-zone__text">${msg('By igniting this Shard, you will consume 1 Forge Token and permanently add this world to the multiverse. Hold the button for 2 seconds to confirm.')}</p>
 
-          <button
-            class="btn-hold"
-            ?disabled=${this._isIgniting}
-            @mousedown=${this._startHold}
-            @mouseup=${this._endHold}
-            @mouseleave=${this._endHold}
-            @touchstart=${this._startHold}
-            @touchend=${this._endHold}
-            @keydown=${(e: KeyboardEvent) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                this._startHold();
-              }
-            }}
-            @keyup=${(e: KeyboardEvent) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                this._endHold();
-              }
-            }}
-            role="button"
+          <velg-hold-button
+            .label=${msg('HOLD TO IGNITE')}
+            .holdingLabel=${msg('HOLD...')}
+            .executingLabel=${msg('IGNITING...')}
+            ?executing=${this._isIgniting}
             aria-label=${msg('Hold to ignite')}
-          >
-            <div class="btn-hold__fill" style="transform: scaleX(${this._holdProgress})"></div>
-            <span class="btn-hold__text">
-              ${
-                this._isIgniting
-                  ? msg('IGNITING...')
-                  : this._holdProgress > 0
-                    ? msg('HOLD...')
-                    : msg('HOLD TO IGNITE')
-              }
-            </span>
-          </button>
+            @hold-confirmed=${this._executeIgnition}
+          ></velg-hold-button>
         </div>
       </div>
     `;

@@ -17,7 +17,7 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, svg } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { RoomNodeClient } from '../../types/dungeon.js';
@@ -115,6 +115,9 @@ function layoutNodes(rooms: RoomNodeClient[]): {
 @localized()
 @customElement('velg-dungeon-map')
 export class VelgDungeonMap extends SignalWatcher(LitElement) {
+  /** When true, map is always expanded (toggle hidden, no max-height). */
+  @property({ type: Boolean, reflect: true }) persistent = false;
+
   static styles = [
     terminalTokens,
     terminalComponentTokens,
@@ -275,6 +278,32 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         stroke-dasharray: 3 2;
       }
 
+      /* ── Persistent mode (sidebar/column — no toggle, fills container) ── */
+      :host([persistent]) .map-toggle {
+        display: none;
+      }
+
+      :host([persistent]) .map-content {
+        max-height: none;
+        height: 100%;
+        border-top: none;
+      }
+
+      /* ── Boss room: red pulse ── */
+      .node--boss .node__circle {
+        stroke: var(--color-danger);
+      }
+
+      @keyframes boss-pulse {
+        0%, 100% {
+          filter: drop-shadow(0 0 3px var(--color-danger));
+        }
+        50% {
+          filter: drop-shadow(0 0 8px var(--color-danger))
+            drop-shadow(0 0 4px var(--color-danger));
+        }
+      }
+
       /* ── Empty ── */
       .map-empty {
         padding: 8px;
@@ -303,6 +332,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         }
         .node--current .node__circle {
           animation: current-pulse 2s ease-in-out infinite;
+        }
+        .node--boss .node__circle {
+          animation: boss-pulse 3s ease-in-out infinite;
         }
       }
 
@@ -358,7 +390,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     const rooms = dungeonState.rooms.value;
     if (rooms.length === 0) return nothing;
 
-    const expanded = dungeonState.mapExpanded.value;
+    const expanded = this.persistent || dungeonState.mapExpanded.value;
 
     return html`
       <button
@@ -457,6 +489,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
           room.cleared ? 'node--cleared' : '',
           !room.revealed ? 'node--fog' : '',
           isAdj ? 'node--adjacent' : '',
+          room.room_type === 'boss' ? 'node--boss' : '',
         ]
           .filter(Boolean)
           .join(' ');
