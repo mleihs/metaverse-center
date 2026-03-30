@@ -56,8 +56,8 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 | Condition Tracks | `backend/services/combat/condition_tracks.py` | ~110 |
 | Stress System | `backend/services/combat/stress_system.py` | ~115 |
 | Ability Schools (6 Schulen) | `backend/services/combat/ability_schools.py` | ~345 |
-| Dungeon Engine Service | `backend/services/dungeon_engine_service.py` | ~1400 |
-| Dungeon Submodule (6 Dateien) | `backend/services/dungeon/*.py` | ~600 |
+| Dungeon Engine Service | `backend/services/dungeon_engine_service.py` | ~2170 |
+| Dungeon Submodule (7 Dateien) | `backend/services/dungeon/*.py` | ~840 |
 | Router (12 Endpoints) | `backend/routers/resonance_dungeons.py` | ~310 |
 
 ### Architektur-Entscheidungen (implementiert)
@@ -68,6 +68,9 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 4. **CAS für Aptitude-Cap** (Review #20): `pg_advisory_xact_lock` + COUNT-Check in `fn_apply_dungeon_loot`. Maximum +2 per Agent.
 5. **Skill-Check-Formel** (§4.2): `effective_roll = raw_roll + (check_value - 55)`, Bänder bei 30/70. Check Value beeinflusst tatsächlich das Ergebnis (nicht nur informativ).
 6. **Buff-Pipeline**: `has_buff()`, `_apply_buff()`, `_consume_buff()` — One-Shot Shield, defensive Removal.
+7. **Archetype Strategy Pattern** (`archetype_strategies.py`): ABC mit 7 Methoden (4 abstract + 3 optional hooks). `ShadowStrategy` + `TowerStrategy`. Dict-Registry, O(1) Lookup. Archetype N = 1 Subklasse + 1 Registry-Eintrag, 0 Engine-Änderungen. Ersetzt if/elif-Dispatch in 7 Stellen.
+8. **Structured Logging** (stdlib `extra={}`): 21 Log-Calls mit `_log_extra(instance, **kwargs)` Helper. Felder: `run_id`, `sim_id`, `archetype`, `difficulty` + kontextspezifische kwargs (`outcome`, `phase`, `depth`, etc.). Production: JSON via `structlog.ExtraAdder` + `JSONRenderer`. Kein structlog-Import in Engine — rein stdlib `extra={}`.
+9. **Instance TTL Cleanup** (`start_instance_cleanup()`): 60s Sweep-Loop in FastAPI Lifespan. Dual-Cleanup: In-Memory-Eviction (`_instance_last_activity` via `time.monotonic()`) + DB-RPC `fn_expire_abandoned_dungeon_runs`. Cancelt Combat- und Distribution-Timer bei Eviction.
 
 ### Review Findings — Auflösungsstatus
 
@@ -194,11 +197,12 @@ When a simulation's Substrate Resonance magnitude crosses a critical threshold, 
 │                               │                             │
 │ ┌─────────────────────────────▼───────────────────────┐    │
 │ │ services/dungeon/                                    │    │
-│ │ ├── dungeon_generator.py   (room graph generation)   │    │
-│ │ ├── dungeon_combat.py      (combat resolution)       │    │
-│ │ ├── dungeon_encounters.py  (encounter templates)     │    │
-│ │ ├── dungeon_loot.py        (reward calculation)      │    │
-│ │ └── dungeon_archetypes.py  (8 archetype configs)     │    │
+│ │ ├── dungeon_generator.py    (room graph generation)  │    │
+│ │ ├── dungeon_combat.py       (combat resolution)     │    │
+│ │ ├── dungeon_encounters.py   (encounter templates)   │    │
+│ │ ├── dungeon_loot.py         (reward calculation)    │    │
+│ │ ├── dungeon_archetypes.py   (8 archetype configs)   │    │
+│ │ └── archetype_strategies.py (Strategy Pattern ABC)  │    │
 │ └─────────────────────────────────────────────────────┘    │
 │                                                             │
 │ ┌──────────────────────────────────────────┐               │
@@ -1318,7 +1322,7 @@ await DungeonEngineService.cleanup_expired_runs(admin_supabase, simulation_id)
 
 ### Phase 1: Second Archetype — The Tower (COMPLETE, 2026-03-29)
 
-- [x] Backend refactoring: Registry pattern + 3 consolidated dispatch methods
+- [x] Backend refactoring: `ArchetypeStrategy` ABC in `archetype_strategies.py` — `ShadowStrategy` + `TowerStrategy` with dict-Registry. 4 abstract methods (`init_state`, `apply_drain`, `apply_restore`, `apply_encounter_effects`) + 3 optional hooks (`get_ambient_stress_multiplier`, `on_combat_round`, `on_failed_check`). Adding archetype N = 1 Strategy subclass + 1 registry entry, 0 engine changes.
 - [x] The Tower stability countdown mechanic (100→0, depth-based drain, combat drain, failed check drain)
 - [x] 5 Tower enemies: Tremor Broker, Foundation Worm, The Crowned, Debt Shade, Remnant of Commerce
 - [x] 6 Tower spawn configs + fallback spawns
@@ -1583,6 +1587,65 @@ Dual cleanup strategy:
 # Originally timer-based (every 2 min). Now checkpoints on every state
 # transition (Review #1). Zero gameplay loss, writes only when state changes.
 ```
+
+### 9.1.1 Archetype Strategy Dispatch
+
+All archetype-specific mechanics (visibility drain, stability countdown, etc.)
+are delegated to `ArchetypeStrategy` subclasses in
+`backend/services/dungeon/archetype_strategies.py`. The engine service calls
+strategy methods via `get_archetype_strategy(instance.archetype)` — zero
+archetype-specific conditionals in the engine itself.
+
+```python
+# archetype_strategies.py — Strategy Pattern ABC
+
+class ArchetypeStrategy(ABC):
+    """4 abstract core + 3 optional hooks."""
+    def init_state(self) -> dict: ...           # Initial archetype_state
+    def apply_drain(self, inst) -> str | None: ...  # Room-entry drain → banter trigger
+    def apply_restore(self, inst, event) -> None: ... # Victory/rest/treasure/scout restore
+    def apply_encounter_effects(self, inst, effects) -> None: ...  # Encounter deltas
+    def get_ambient_stress_multiplier(self, inst) -> float: ...    # Default: 1.0
+    def on_combat_round(self, inst) -> None: ...  # Default: no-op
+    def on_failed_check(self, inst) -> None: ...  # Default: no-op
+
+class ShadowStrategy(ArchetypeStrategy):  # Visibility mechanic
+class TowerStrategy(ArchetypeStrategy):   # Stability countdown
+
+_ARCHETYPE_STRATEGIES = {
+    "The Shadow": ShadowStrategy(ARCHETYPE_CONFIGS["The Shadow"]),
+    "The Tower": TowerStrategy(ARCHETYPE_CONFIGS["The Tower"]),
+}
+```
+
+### 9.1.2 Structured Logging
+
+All 21 dungeon-specific log calls use stdlib `extra={}` parameter, processed
+by the existing structlog pipeline (`ExtraAdder` → `JSONRenderer` in production).
+
+```python
+def _log_extra(instance: DungeonInstance, **kwargs) -> dict:
+    """Standard structured fields: run_id, sim_id, archetype, difficulty + kwargs."""
+    return {
+        "run_id": str(instance.run_id),
+        "sim_id": str(instance.simulation_id),
+        "archetype": instance.archetype,
+        "difficulty": instance.difficulty,
+        **kwargs,
+    }
+
+# Usage:
+logger.info("Dungeon completed", extra=_log_extra(instance, outcome="completed", rooms_cleared=5))
+# Production JSON: {"event": "Dungeon completed", "run_id": "...", "archetype": "The Shadow", "outcome": "completed", ...}
+```
+
+**Coverage by category:**
+- Run lifecycle: `outcome` field ("completed", "wipe", "retreat", "stalemate", "distributed")
+- Combat: `ability_id`, `agent_id`, `rounds`
+- Encounters: `room_type`, `event_type`, `depth`
+- Loot: `distributable`, `auto_apply`, `loot_items`, `skipped`
+- Errors: `rpc`, `context`, `attempt`, `phase`
+- Infrastructure (6 cleanup-loop calls): inline `extra={"run_id": ...}` without helper
 
 ### 9.2 State Machine
 

@@ -281,7 +281,7 @@ def _evict_stale_instances() -> int:
         dist_timer = _distribution_timers.pop(run_id, None)
         if dist_timer:
             dist_timer.cancel()
-        logger.info("Evicted stale dungeon instance: run_id=%s (TTL expired)", run_id)
+        logger.info("Evicted stale dungeon instance", extra={"run_id": run_id, "reason": "ttl_expired"})
     return len(stale)
 
 
@@ -291,7 +291,7 @@ async def _instance_cleanup_loop() -> None:
         try:
             evicted = _evict_stale_instances()
             if evicted:
-                logger.info("Instance cleanup: evicted %d stale instances", evicted)
+                logger.info("Instance cleanup: evicted stale instances", extra={"evicted": evicted})
             # Also expire abandoned DB rows (handles server-restart orphans)
             admin = await get_admin_supabase()
             result = await admin.rpc(
@@ -300,7 +300,7 @@ async def _instance_cleanup_loop() -> None:
             ).execute()
             db_expired = result.data if result.data else 0
             if db_expired:
-                logger.info("Instance cleanup: expired %d abandoned DB runs", db_expired)
+                logger.info("Instance cleanup: expired abandoned DB runs", extra={"db_expired": db_expired})
         except asyncio.CancelledError:
             logger.info("Instance cleanup loop shutting down")
             raise
