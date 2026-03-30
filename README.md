@@ -325,7 +325,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | RLS policies | 270+ |
 | SQL migrations | 165 |
 | Routers | 49 |
-| Web Components | 238 custom elements |
+| Web Components | 239 custom elements |
 | Unit tests | 2,184+ (pytest) + vitest |
 | Localized UI strings | 5,906 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 2 playable archetypes: The Shadow (visibility mechanic, 3 VP pips) and The Tower (stability countdown 100→0, structural collapse). 8 total designed. Phase-based combat (30s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 2 playable archetypes: The Shadow (visibility mechanic, 3 VP pips) and The Tower (stability countdown 100→0, Structural Failure mode at 0). 8 total designed. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
@@ -446,7 +446,7 @@ backend/
 frontend/
   src/
     app-shell.ts            # Router + auth + simulation context
-    components/             # 238 Lit web components across 31 directories
+    components/             # 239 Lit web components across 31 directories
       dungeon/              # Resonance Dungeons HUD (terminal, combat, map, party, enemy)
     services/               # API, state, theme, i18n, realtime, SEO, analytics
     styles/tokens/          # CSS design tokens (8 files)

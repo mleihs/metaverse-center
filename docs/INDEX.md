@@ -39,8 +39,8 @@ tags: [index, catalog, documentation]
 | [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.8 | 2026-03-17 | de | active |
 | [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 3.3 | 2026-03-26 | de | active |
-| [Frontend Components](references/frontend-components.md) | 3.5 | 2026-03-26 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 3.4 | 2026-03-30 | de | active |
+| [Frontend Components](references/frontend-components.md) | 3.6 | 2026-03-30 | de | active |
 
 ## Guides (16)
 
@@ -74,7 +74,7 @@ tags: [index, catalog, documentation]
 | [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
 | [MUD/Terminal Adventure Concepts (5 Designs)](concepts/mud-terminal-adventure-concepts.md) | 1.0 | 2026-03-27 | de | draft |
 | [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
-| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.2 | 2026-03-29 | en | Phase 0 (Shadow) + Phase 1 (Tower) complete |
+| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.3 | 2026-03-30 | en | Phase 0 (Shadow) + Phase 1 (Tower) complete |
 
 ## Explanations (5)
 

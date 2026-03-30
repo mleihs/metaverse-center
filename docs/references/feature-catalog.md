@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.3"
-date: 2026-03-26
+version: "3.4"
+date: 2026-03-30
 lang: de
 type: reference
 status: active
@@ -414,12 +414,14 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|-------------|
 | RD1 | **Dungeon Engine** | ✅ IMPL | `DungeonEngineService` In-Memory-Orchestrator mit Checkpoint-to-DB nach jeder Transition. 13-Phasen-State-Machine (exploring→combat_planning→combat_resolving→...). Auto-Recovery aus Checkpoint bei Server-Neustart. Migration 163+164+165. |
-| RD2 | **Combat System** | ✅ IMPL | Shared `backend/services/combat/` Modul (6 Dateien). Phase-basierter Kampf: Planning (30s Timer) → Resolution → Outcome. 18 Fähigkeiten in 6 Schulen (Spy/Guardian/Assassin/Propagandist/Saboteur/Infiltrator). Stalemate-Mechanik bei Runde 10. |
+| RD2 | **Combat System** | ✅ IMPL | Shared `backend/services/combat/` Modul (6 Dateien). Phase-basierter Kampf: Planning (45s Timer) → Resolution → Outcome. 18 Fähigkeiten in 6 Schulen (Spy/Guardian/Assassin/Propagandist/Saboteur/Infiltrator). Stalemate-Mechanik bei Runde 10. |
 | RD3 | **The Shadow (Phase 0)** | ✅ IMPL | Erster Archetyp: Sichtbarkeits-Mechanik (3 VP, Drain alle 2 Räume). 5 Feinde, 11 Encounters, 41 Banter, 11 Loot-Items. Boss: "The Remnant". VP0-Bonus: +50% Loot-Upgrade-Chance. 2 Playtests, 755+ Tests. |
-| RD4 | **The Tower (Phase 1)** | ✅ IMPL | Zweiter Archetyp: Stabilitäts-Countdown (100→0, tiefenbasierter Drain). 5 Feinde (Bebenmakler, Grundwurm, Der Gekrönte, Schuldgespenst, Relikt des Handels), 11 Encounters, 45 Banter, 12 Loot-Items. Boss: "The Collapse". Guardian "Reinforce" (+10 Stabilität). Stabilitäts-Loot-Bonus (≥80 → Tier-Upgrade). 119 neue Tests. |
+| RD4 | **The Tower (Phase 1)** | ✅ IMPL | Zweiter Archetyp: Stabilitäts-Countdown (100→0, tiefenbasierter Drain). Structural Failure Mode bei Stabilität 0. 5 Feinde (Bebenmakler, Grundwurm, Der Gekrönte, Schuldgespenst, Relikt des Handels), 11 Encounters, 45 Banter, 12 Loot-Items. Boss: "The Collapse". Guardian "Reinforce" (+10 Stabilität). Stabilitäts-Loot-Bonus (≥80 → Tier-Upgrade). 119 neue Tests. |
 | RD5 | **Multi-Archetype Dispatch** | ✅ IMPL | Registry-Pattern für Enemies/Encounters/Banter/Loot (dict-Lookup, null Conditionals). 3 konsolidierte Dispatch-Methoden (`_init_archetype_state`, `_apply_archetype_drain`, `_apply_archetype_restore`). Archetype N = 3 elif + 3 Handler. |
 | RD6 | **Dungeon Frontend** | ✅ IMPL | DungeonTerminalView (CRT/Submarine-Ästhetik), DungeonHeader (Depth Gauge + Visibility Pips + Stability Gauge), DungeonMap, DungeonCombatBar, DungeonPartyPanel, DungeonEnemyPanel. 5 semantische Combat-Log-Farben. Terminal-Command-Event-Forwarding. |
 | RD7 | **Loot Distribution** | ✅ IMPL | `distributing` Phase zwischen Boss-Sieg und Abschluss. Auto-Apply (Sim-weite Effekte) vs. Distributable (Spieler wählt Empfänger). Smart Suggestions. Migration 165 (CHECK constraint, RPCs). |
+| RD8 | **Persistent Responsive Dungeon Map** | ✅ IMPL | 3-Spalten-Layout ab 1440px+ (Map dauerhaft sichtbar), FAB+Dialog unter 1200px. Responsive Breakpoints mit SimulationShell-Integration. |
+| RD9 | **VelgHoldButton Shared Component** | ✅ IMPL | `<velg-hold-button>` Shared Component fuer Press-and-Hold-Interaktionen. Verwendet in Dungeon-Aktionen. |
 
 ---
 
@@ -488,7 +490,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | **Background-Tasks** | 1 (ResonanceScheduler) |
 | **Storage Buckets** | 4 (agent.portraits, building.images, user.agent.portraits, simulation.assets) |
 | **Theme-Presets** | 6 (dark-brutalist, deep-space-horror, arc-raiders, gaslit-reach, illuminated-literary, custom) |
-| **Shared Components** | 16 + 10 Shared CSS Modules + BaseSettingsPanel |
+| **Shared Components** | 17 + 10 Shared CSS Modules + BaseSettingsPanel |
 | **Backend Services** | 29 Entity + Audit + Simulation + External + Email + Admin + Bot + Notification + Cleanup |
 | **Postgres-Docstring-Convention** | Alle 16 Services mit Postgres-RPC/View-Aufrufen dokumentieren Migration-Nummern im Docstring (siehe ADR-007) |
 

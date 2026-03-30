@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.5"
-date: 2026-03-26
+version: "3.6"
+date: 2026-03-30
 lang: de
 type: reference
 status: active
@@ -20,7 +20,7 @@ tags: [frontend, components, lit, web-components]
 
 ### Plattform-Level
 
-**155 component files** across 21 subdirectories. **129 @customElement** components. **22 shared components + 10 CSS modules + 1 base class.**
+**160 component files** across 21 subdirectories. **134 @customElement** components. **23 shared components + 10 CSS modules + 1 base class.**
 
 ```
 App (Root)                           ⚡ = lazy-loaded via route enter()
@@ -195,11 +195,11 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher, always-
 
 ### Shared Components
 
-**22 components + 10 CSS modules + 1 base class** (33 files total)
+**23 components + 10 CSS modules + 1 base class** (34 files total)
 
 ```
 Shared (wiederverwendbar ueber alle Views)
-├── Components (22)
+├── Components (23)
 │   ├── BaseModal                    Focus trap, Escape-to-close, centered dialog
 │   ├── VelgSidePanel                Slide-from-right panel shell, focus trap, role="dialog", aria-modal="true"
 │   ├── VelgTabs                     Shared tab bar: keyboard nav (Arrow/Home/End), role="tablist", aria-selected, roving tabindex. Ersetzt SettingsView-eigene Tab-Implementierung
@@ -209,6 +209,7 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── VelgBadge                    6 color variants (default, primary, info, warning, danger, success)
 │   ├── VelgAvatar                   Portrait + initials fallback, 3 sizes (sm/md/lg), optional alt override
 │   ├── VelgIconButton               30px icon action button
+│   ├── VelgHoldButton               Hold-to-confirm button. CSS animation + Pointer Events + setPointerCapture. Properties: duration, label, holdingLabel, executingLabel, disabled, executing. Event: hold-confirmed. Used by: VelgForgeIgnition (forge ignition), DungeonQuickActions (dungeon retreat)
 │   ├── VelgSectionHeader            Section titles, 2 variants
 │   ├── VelgAptitudeBars             Operative aptitude bars (3 sizes: sm/md/lg, editable mode, highlight, budget tracking)
 │   ├── EchartsChart                 Apache ECharts 6.0 wrapper (tree-shaken: 5 charts + 5 components + CanvasRenderer), custom tactical dark theme, IntersectionObserver scroll-reveal, auto-resize. Lazy-loaded via HowToPlayView connectedCallback.
@@ -824,7 +825,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
 | terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
-| dungeon/ | 3 | 3 | DungeonTerminalView (route entry, HUD grid + lobby, Wake Lock), DungeonHeader (depth gauge, archetype, visibility pips), DungeonQuickActions (phase-driven, shares terminalActionStyles) |
+| dungeon/ | 7 | 7 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse animation 3s, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
@@ -836,8 +837,8 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | map/ | 5 | 5 | CartographersDesk, CartographicMap, MapAnnotationTool, MapLayerToggle, MultiverseConspiracyBoard |
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 15 | 6 | HowToPlayLanding, HowToPlayQuickstart, HowToPlayGuideHub, HowToPlayTopic, HowToPlayWarRoom, HowToPlayView (legacy) + htp-shared-styles, htp-styles, htp-search, htp-topic-data + 4 content/type files (htp-content-features, htp-content-rules, htp-content-matches, htp-content-demo, htp-types) |
-| shared/ | 32 | 21 | 21 components + 10 CSS modules + 1 base class. terminal-theme-styles.ts exports: terminalTokens, terminalComponentTokens, terminalAnimations, terminalFormStyles, terminalOAuthStyles, terminalFrameStyles, terminalWrapperStyles, terminalActionStyles |
-| **Gesamt** | **175** | **143** (in components/) | **23 Verzeichnisse** |
+| shared/ | 33 | 22 | 22 components + 10 CSS modules + 1 base class. terminal-theme-styles.ts exports: terminalTokens, terminalComponentTokens, terminalAnimations, terminalFormStyles, terminalOAuthStyles, terminalFrameStyles, terminalWrapperStyles, terminalActionStyles |
+| **Gesamt** | **180** | **148** (in components/) | **23 Verzeichnisse** |
 
 ### Utilities
 

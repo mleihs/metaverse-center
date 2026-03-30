@@ -1,9 +1,9 @@
 ---
 title: "Resonance Dungeons — Full Technical Specification"
-version: "1.0"
-date: "2026-03-27"
+version: "1.3"
+date: "2026-03-30"
 type: concept
-status: phase-0-complete-phase-1-next
+status: phase-0-1-complete-polish-done
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -132,7 +132,7 @@ These are not bugs but subtle behaviors worth knowing when extending the system:
 When a simulation's Substrate Resonance magnitude crosses a critical threshold, a **Resonance Dungeon** opens — a procedurally generated, archetypally themed instance that players explore with a party of their agents through the Bureau Terminal. Each of the 8 Substrate Archetypes produces a fundamentally different dungeon with unique mechanics, encounters, and rewards.
 
 **Key design decisions:**
-- **Phase-based combat** (30s planning → simultaneous resolution), not real-time
+- **Phase-based combat** (45s planning → simultaneous resolution), not real-time
 - **FTL-style node graph** topology (branching paths, typed nodes, visible rewards)
 - **Condition tracks** instead of HP (Operational → Stressed → Wounded → Afflicted)
 - **3-tier skill checks** (Success / Partial / Fail) using existing Aptitudes + Personality
@@ -893,8 +893,8 @@ Every room contains something valuable that is decaying in real-time (Heartbeat-
 Identical to the combat system designed in `mud-combat-feasibility-analysis.md`:
 
 ```
-ASSESSMENT (3-5s) → PLANNING (15-30s) → RESOLUTION (5-8s) → OUTCOME (2-3s)
-Total per round: 25-45 seconds
+ASSESSMENT (3-5s) → PLANNING (15-45s) → RESOLUTION (5-8s) → OUTCOME (2-3s)
+Total per round: 25-60 seconds
 Typical combat: 3-5 rounds = 2-4 minutes
 ```
 
@@ -1253,7 +1253,7 @@ await DungeonEngineService.cleanup_expired_runs(admin_supabase, simulation_id)
 >
 > The companion document `mud-combat-feasibility-analysis.md` explicitly recommends **War Room Operations as Phase 1** ("kleinste Brücke zwischen 'was wir haben' und 'instanziertes Abenteuer'") and Resonance Dungeons as **Phase 2-3**. However, this spec's roadmap starts with "Phase 0: The Shadow MVP" as if it's the first thing to build.
 >
-> **Das Problem:** Both systems share the same combat engine (phase-based, 30s planning, simultaneous resolution), ability schools, condition tracks, stress system, and many terminal formatters. Building them independently would create massive code duplication. Building Dungeons first means War Room Ops can't reuse the combat code (it doesn't exist yet in the right shape).
+> **Das Problem:** Both systems share the same combat engine (phase-based, 45s planning, simultaneous resolution), ability schools, condition tracks, stress system, and many terminal formatters. Building them independently would create massive code duplication. Building Dungeons first means War Room Ops can't reuse the combat code (it doesn't exist yet in the right shape).
 >
 > **Empfehlung:** Resolve the sequencing explicitly:
 > - **Option A (recommended by feasibility doc):** Build War Room Ops first. Extract the shared combat engine as `backend/services/combat/` (combat_engine.py, ability_schools.py, condition_tracks.py, stress_system.py). Then Resonance Dungeons wraps this engine with dungeon-specific graph traversal, encounters, and archetype mechanics.
@@ -1301,7 +1301,7 @@ await DungeonEngineService.cleanup_expired_runs(admin_supabase, simulation_id)
 - [x] `DungeonQuickActions.ts` — Phase-driven action buttons (13 phases)
 - [x] `DungeonPartyPanel.ts` — Agent cards, condition/stress/mood bars, buff/debuff pills
 - [x] `DungeonMap.ts` — SVG DAG, fog-of-war, click-to-move, collapsible
-- [x] `DungeonCombatBar.ts` — 30s timer, per-agent ability selection, target picker, EXECUTE
+- [x] `DungeonCombatBar.ts` — 45s timer, per-agent ability selection, target picker, EXECUTE
 - [x] `DungeonEnemyPanel.ts` — Into the Breach-style telegraphs, threat badges
 - [x] `AgentDungeonRewards` component — Loot provenance UI in AgentDetailsPanel
 - [ ] RealtimeService extension: `joinDungeon()` / `leaveDungeon()` — deferred (single-player works)
@@ -1579,7 +1579,7 @@ MAX_CONCURRENT_PER_SIM = 1  # Only one active dungeon per simulation
          │          ▼      ▼                              │
          │   ┌──────────┐ ┌──────────────┐               │
          │   │ ENCOUNTER │ │COMBAT_PLANNING│               │
-         │   │ (choices) │ │ (30s timer)  │               │
+         │   │ (choices) │ │ (45s timer)  │               │
          │   └────┬─────┘ └──────┬───────┘               │
          │        │              │ all submitted / timeout│
          │   choice made         ▼                        │
@@ -1691,7 +1691,7 @@ class DungeonEngineService:
         """
 
     @classmethod
-    async def _start_combat_timer(cls, run_id: UUID, duration_ms: int = 30000):
+    async def _start_combat_timer(cls, run_id: UUID, duration_ms: int = 45000):
         """Asyncio task that auto-resolves after timer expires."""
         async def _timer():
             await asyncio.sleep(duration_ms / 1000)
@@ -2449,8 +2449,8 @@ Replaces Quick Actions during combat. One column per agent with their available 
 - Disabled (agent Afflicted): entire column grayed, "AFFLICTED" stamp overlay (MissionCard disabled pattern)
 
 **Timer bar:**
-- Existing RP meter pattern, countdown from 30→0
-- Color transitions: green (30-15s) → amber (15-5s) → red (5-0s) with pulse
+- Existing RP meter pattern, countdown from 45→0
+- Color transitions: green (45-15s) → amber (15-5s) → red (5-0s) with pulse
 - Auto-submit at 0 (server-side, client shows "AUTO-DEFEND" flash)
 
 **Enemy panel (above combat bar during assessment phase):**
@@ -2620,7 +2620,7 @@ frontend/src/components/dungeon/
 
 ```
 frontend/src/components/dungeon/
-├── DungeonCombatBar.ts       ✅ ~490 lines. 30s timer, per-agent ability radiogroup, smart target picker, EXECUTE
+├── DungeonCombatBar.ts       ✅ ~490 lines. 45s timer, per-agent ability radiogroup, smart target picker, EXECUTE
 └── DungeonEnemyPanel.ts      ✅ ~260 lines. Enemy cards, threat badges, telegraphed intents (◆◆/◆/▸)
 ```
 
@@ -2816,7 +2816,7 @@ agent_ownership: dict[UUID, UUID] = {
 ### 15.2 Action Sync
 
 - **Movement:** Either player can propose movement. Both must confirm (Supabase Broadcast `move_proposed` event → other player sees "Player A wants to move to Room 5. [Confirm] [Reject]")
-- **Combat:** Each player submits actions for their own agents only. Resolution waits for all players OR timer (30s). Broadcast `actions_submitted` shows who has submitted.
+- **Combat:** Each player submits actions for their own agents only. Resolution waits for all players OR timer (45s). Broadcast `actions_submitted` shows who has submitted.
 - **Encounters:** Choice is voted on. If disagreement, the agent with the highest relevant aptitude's player decides (narrative justification: "the expert leads")
 - **Retreat:** Either player can initiate. Other gets 10s to object. If objection, vote (majority wins; tie = stay).
 
@@ -2951,7 +2951,7 @@ Uses existing Supabase Presence on `dungeon:{runId}:presence`:
 
 **Stalemate Mechanic:** Combat auto-resolves at `max_rounds` (default 10). On stalemate: room is cleared, +80 stress to all party agents, no loot awarded. Prevents infinite combat loops. Implemented in `_check_victory_conditions()` returning a 4-tuple with stalemate flag, handled by `_handle_combat_stalemate()`.
 
-**Auto-Submit on Timer Expiry:** When the 30s planning timer hits 0, `DungeonStateManager._autoSubmitOnExpiry()` automatically submits current selections. If no selections made, backend auto-defends all agents using rotation: `(round_num + hash(agent_id)) % len(damage_abilities)` — ensuring variety across rounds. Falls back to `getState()` polling on submission failure.
+**Auto-Submit on Timer Expiry:** When the 45s planning timer hits 0, `DungeonStateManager._autoSubmitOnExpiry()` automatically submits current selections. If no selections made, backend auto-defends all agents using rotation: `(round_num + hash(agent_id)) % len(damage_abilities)` — ensuring variety across rounds. Falls back to `getState()` polling on submission failure.
 
 **Timer Race Condition:** Atomic pop in callback prevents double-resolve. Stale timer guard: `_startTimer()` checks if timer was aborted before interval starts, preventing recursive auto-submit loops. `_autoSubmitFired` flag only resets on fresh timer reset (in `_startTimer` when `remaining > 0`), never in `applyState()`.
 
