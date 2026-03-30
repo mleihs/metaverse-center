@@ -102,6 +102,16 @@ function stressBar(stress: number, width = 10): string {
   return '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, width - filled));
 }
 
+/** Map stress percentage to a descriptive label. */
+function getStressLabel(stressPct: number): string {
+  if (stressPct >= 80) return msg('BREAKING');
+  if (stressPct >= 60) return msg('CRITICAL');
+  if (stressPct >= 40) return msg('STRAINED');
+  if (stressPct >= 25) return msg('TENSE');
+  if (stressPct >= 10) return msg('UNEASY');
+  return '';
+}
+
 // ── Dungeon Entry ────────────────────────────────────────────────────────────
 
 export function formatDungeonEntry(
@@ -131,8 +141,49 @@ export function formatDungeonEntry(
     lines.push(responseLine(`  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`));
   }
 
+  // Archetype protocol briefing (shown once per archetype, persisted via localStorage)
+  const briefingKey = `dungeon-briefing-ack:${state.archetype.toLowerCase().replace(/\s+/g, '-')}`;
+  if (!globalThis.localStorage?.getItem(briefingKey)) {
+    lines.push(systemLine(''));
+    lines.push(...formatArchetypeBriefing(state.archetype));
+    globalThis.localStorage?.setItem(briefingKey, '1');
+  }
+
   lines.push(responseLine(''));
   lines.push(hintLine(msg('Type "map" to see the dungeon layout, "move <room>" to move.')));
+
+  return lines;
+}
+
+/** Generate archetype-specific protocol briefing for first-time dungeon entry. */
+export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const isTower = archetype.toLowerCase().includes('tower');
+
+  if (isTower) {
+    lines.push(combatSystemLine(msg('STRUCTURAL PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The building remembers every footstep as a tremor.')));
+    lines.push(responseLine(msg('Each floor you ascend weakens the one beneath.')));
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u25C9 ${msg('Structural integrity drains each floor.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('Use REINFORCE (Guardian) to restore stability.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('At integrity 0, the building collapses. No retreat.')}`));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('Reinforce what holds you up \u2013 or become what it buries.')));
+  } else {
+    // Shadow (default)
+    lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('You descend into the dark. Visibility is your lifeline \u2013')));
+    lines.push(responseLine(msg('when it fails, the shadows move closer.')));
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u25C9 ${msg('Scout to reveal rooms. Observe to maintain sight.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('The darkness drains visibility each floor.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('At Visibility 0, enemies strike first. Always.')}`));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The darkness does not forgive blindness.')));
+  }
 
   return lines;
 }
@@ -526,14 +577,8 @@ export function formatSkillCheckResult(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  // Probability breakdown
-  const breakdownParts = Object.entries(check.breakdown)
-    .map(([key, val]) => `${key}: ${val > 0 ? '+' : ''}${val}%`)
-    .join(', ');
+  // Check header with aptitude, level, and final chance
   lines.push(systemLine(`[${check.aptitude.toUpperCase()} CHECK \u2014 ${msg('Level')} ${check.level}: ${check.chance}%]`));
-  if (breakdownParts) {
-    lines.push(systemLine(`  ${breakdownParts}`));
-  }
   lines.push(systemLine(''));
 
   // Rolling bar
@@ -557,9 +602,9 @@ export function formatSkillCheckResult(
     }
   }
 
-  // Effects
+  // Effects — pre-narrated by backend (bilingual, proper separation of concerns)
   for (const effect of effects) {
-    lines.push(responseLine(`  \u2192 ${effect}`));
+    if (effect) lines.push(responseLine(`  \u2192 ${effect}`));
   }
 
   return lines;
@@ -587,21 +632,28 @@ export function formatLootDrop(items: LootItem[]): TerminalLine[] {
 export function formatScoutResult(
   agentName: string,
   revealedRooms: number,
-  visibility: number | undefined,
+  visibility: number | undefined | null,
+  archetype = '',
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  lines.push(responseLine(`${agentName} ${msg('scans the surrounding darkness')}...`));
+  // Archetype-aware scout text
+  const isTower = archetype.toLowerCase().includes('tower');
+  const scoutVerb = isTower
+    ? msg('surveys the structural layout')
+    : msg('probes the surrounding darkness');
+  lines.push(responseLine(`${agentName} ${scoutVerb}...`));
 
   if (revealedRooms > 0) {
-    lines.push(systemLine(`[${msg('OBSERVE SUCCESS')}]`));
+    lines.push(systemLine(`[${msg('SCOUT SUCCESS')}]`));
     lines.push(responseLine(`  \u2192 ${revealedRooms} ${revealedRooms === 1 ? msg('room revealed') : msg('rooms revealed')}`));
   } else {
-    lines.push(systemLine(`[${msg('OBSERVE')}]`));
+    lines.push(systemLine(`[${msg('SCOUT')}]`));
     lines.push(responseLine(`  \u2192 ${msg('No new rooms to reveal')}`));
   }
 
-  if (visibility !== undefined) {
+  // Only show visibility for Shadow archetype (where it's a real number, not null)
+  if (visibility != null && !isTower) {
     lines.push(responseLine(`  \u2192 ${msg('Visibility')}: ${visibility}`));
   }
 
@@ -702,8 +754,10 @@ export function formatDungeonComplete(
   for (const agent of state.party) {
     const cond = getConditionLabel(agent.condition).toUpperCase();
     const bar = stressBar(agent.stress, 10);
-    const stressStr = String(agent.stress).padStart(4);
-    const label = `  ${agent.agent_name.padEnd(nameWidth)}  ${cond.padEnd(12)} ${stressStr}/1000 ${bar}`;
+    const stressPct = Math.round(agent.stress / 10);
+    const stressLabel = getStressLabel(stressPct);
+    const stressDisplay = stressLabel ? `${stressPct}% ${stressLabel}` : `${stressPct}%`;
+    const label = `  ${agent.agent_name.padEnd(nameWidth)}  ${cond.padEnd(12)} ${stressDisplay.padStart(14)} ${bar}`;
     lines.push(conditionLine(agent.condition, label));
   }
   lines.push(systemLine(''));
@@ -718,8 +772,12 @@ export function formatDungeonComplete(
     lines.push(systemLine(''));
   }
 
-  // ── Closing ──
-  lines.push(combatMissLine(msg('The darkness recedes. Your agents emerge, changed.')));
+  // ── Closing (archetype-specific) ──
+  const isTowerDungeon = state.archetype.toLowerCase().includes('tower');
+  const closingText = isTowerDungeon
+    ? msg('The building settles. Your agents descend \u2013 the stairs hold, this time.')
+    : msg('The darkness recedes. Your agents emerge \u2013 not unscathed, but something has been understood.');
+  lines.push(combatMissLine(closingText));
   lines.push(combatSystemLine('\u2550'.repeat(W)));
 
   return lines;

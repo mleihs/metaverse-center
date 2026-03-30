@@ -6,6 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { dungeonState } from '../../services/DungeonStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { themeService } from '../../services/ThemeService.js';
 import type { BleedStatus, ThresholdState } from '../../types/health.js';
@@ -1054,7 +1055,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
               : nothing
           }
           ${
-            isCritical
+            isCritical && !dungeonState.isInDungeon.value
               ? html`<velg-entropy-overlay
                 .active=${true}
                 .healthPercent=${Math.round((this._bleedStatus?.bleed_permeability ?? 0) * 100)}

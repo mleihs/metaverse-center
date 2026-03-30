@@ -45,7 +45,7 @@ from backend.models.resonance_dungeon import (
     RoomNode,
     RoomNodeClient,
 )
-from backend.services.combat.ability_schools import get_agent_all_abilities
+from backend.services.combat.ability_schools import get_ability_by_id, get_agent_all_abilities
 from backend.services.combat.combat_engine import (
     AgentAction,
     CombatContext,
@@ -87,9 +87,82 @@ logger = logging.getLogger(__name__)
 _active_instances: dict[str, DungeonInstance] = {}
 _combat_timers: dict[str, asyncio.Task] = {}
 
+def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
+    """Convert raw encounter/treasure effects dict to bilingual narrative descriptions.
+
+    Backend owns all content generation (bilingual, consistent with encounter narratives).
+    Returns (narrative_en_lines, narrative_de_lines).
+    """
+    en: list[str] = []
+    de: list[str] = []
+    for key, val in effects.items():
+        match key:
+            case "reveal_rooms":
+                n = int(val)
+                if n == 1:
+                    en.append("One room ahead becomes clear.")
+                    de.append("Ein Raum voraus wird sichtbar.")
+                elif n > 1:
+                    en.append(f"{n} rooms ahead become clear.")
+                    de.append(f"{n} Raeume voraus werden sichtbar.")
+            case "stress":
+                n = int(val)
+                if n > 0:
+                    en.append(f"The effort takes its toll. (+{n} stress)")
+                    de.append(f"Die Anstrengung fordert ihren Tribut. (+{n} Stress)")
+                elif n < 0:
+                    en.append(f"The tension eases. ({n} stress)")
+                    de.append(f"Die Anspannung laesst nach. ({n} Stress)")
+            case "stress_heal":
+                n = int(val)
+                if n > 0:
+                    en.append(f"A moment of calm. (-{n} stress)")
+                    de.append(f"Ein Moment der Ruhe. (-{n} Stress)")
+            case "loot":
+                if val:
+                    en.append("Something valuable emerges.")
+                    de.append("Etwas Wertvolles taucht auf.")
+            case "loot_tier_penalty":
+                en.append("The hasty attempt damages the find.")
+                de.append("Der uebereilte Versuch beschaedigt den Fund.")
+            case "visibility":
+                n = int(val)
+                sign = "+" if n > 0 else ""
+                en.append(f"{sign}{n} Visibility.")
+                de.append(f"{sign}{n} Sichtbarkeit.")
+            case "stability":
+                n = int(val)
+                sign = "+" if n > 0 else ""
+                en.append(f"{sign}{n} Stability.")
+                de.append(f"{sign}{n} Stabilitaet.")
+            case "shadow_resonance":
+                en.append("The shadows resonate with the encounter.")
+                de.append("Die Schatten resonieren mit der Begegnung.")
+            case "resilience_bonus":
+                en.append("Something hardens within. Resilience improved.")
+                de.append("Etwas haertet sich im Inneren. Widerstandskraft verbessert.")
+            case "discovery":
+                if val:
+                    en.append("A discovery worth remembering.")
+                    de.append("Eine Entdeckung, die es wert ist, erinnert zu werden.")
+            case "insight":
+                if val:
+                    en.append("Understanding deepens.")
+                    de.append("Das Verstaendnis vertieft sich.")
+            case "memory_created":
+                if val:
+                    en.append("This moment imprints itself.")
+                    de.append("Dieser Moment praegt sich ein.")
+            case "ambush_trigger":
+                pass  # Game mechanic flag — no player-facing narrative
+            case _:
+                pass  # Unknown effect keys are intentionally silent
+    return en, de
+
+
 MAX_CONCURRENT_PER_SIM = 1
 INSTANCE_TTL_SECONDS = 1800  # 30 min inactive → auto-cleanup
-COMBAT_PLANNING_TIMEOUT_MS = 30_000
+COMBAT_PLANNING_TIMEOUT_MS = 45_000
 DISTRIBUTION_TIMEOUT_MS = 300_000  # 5 min for loot distribution
 # Client timer expires before server to win the submission race.
 # Server auto-resolves at COMBAT_PLANNING_TIMEOUT_MS; client submits earlier.
@@ -190,7 +263,7 @@ class DungeonEngineService:
                     agent_id=UUID(agent_data["id"]),
                     agent_name=agent_data["name"],
                     portrait_url=agent_data.get("portrait_url"),
-                    stress=agent_data.get("stress_level", 0),
+                    stress=0,  # Dungeon stress starts at 0 (independent of simulation stress)
                     mood=agent_data.get("mood_score", 0),
                     resilience=agent_data.get("resilience", 0.5),
                     aptitudes=aptitudes,
@@ -231,7 +304,7 @@ class DungeonEngineService:
             if "idx_dungeon_runs_one_active_per_sim" in str(exc):
                 raise HTTPException(
                     status.HTTP_409_CONFLICT,
-                    "This simulation already has an active dungeon run",
+                    f"An active {archetype} dungeon run already exists for this simulation",
                 ) from exc
             logger.exception("Failed to create dungeon run")
             with sentry_sdk.push_scope() as scope:
@@ -256,6 +329,12 @@ class DungeonEngineService:
             archetype_state=archetype_state,
             phase="exploring",
         )
+        # Entrance room starts revealed + scouted; adjacent rooms revealed (map) only
+        rooms[0].revealed = True
+        rooms[0].scouted = True
+        for conn_idx in rooms[0].connections:
+            if conn_idx < len(rooms):
+                rooms[conn_idx].revealed = True
         _active_instances[str(run_id)] = instance
 
         # Initial checkpoint
@@ -322,8 +401,9 @@ class DungeonEngineService:
         instance.current_room = room_index
         instance.turn += 1
         target_room.revealed = True
+        target_room.scouted = True  # Entering a room reveals its type
 
-        # Reveal connected rooms
+        # Reveal connected rooms on map (but don't scout — type stays hidden)
         for conn_idx in target_room.connections:
             if conn_idx < len(instance.rooms):
                 instance.rooms[conn_idx].revealed = True
@@ -452,14 +532,23 @@ class DungeonEngineService:
         instance.combat.phase = "resolving"
         instance.phase_timer = None  # Clear timer — planning phase is over
 
-        # Build agent actions from submissions
+        # Build agent actions from submissions, validating ability IDs
         agent_actions: list[AgentAction] = []
         for _uid, actions in instance.combat.submitted_actions.items():
             for action_data in actions:
+                ability_id = action_data["ability_id"]
+                if not get_ability_by_id(ability_id):
+                    logger.warning(
+                        "Invalid ability_id '%s' submitted for agent %s in run %s — auto-defend will cover this agent",
+                        ability_id,
+                        action_data["agent_id"],
+                        instance.run_id,
+                    )
+                    continue  # Skip invalid — auto-defend loop below will assign a valid action
                 agent_actions.append(
                     AgentAction(
                         agent_id=action_data["agent_id"],
-                        ability_id=action_data["ability_id"],
+                        ability_id=ability_id,
                         target_id=action_data.get("target_id"),
                     )
                 )
@@ -473,7 +562,7 @@ class DungeonEngineService:
             if can_act(agent.condition) and str(agent.agent_id) not in submitted_agent_ids:
                 if not alive_enemies:
                     continue
-                abilities = get_agent_all_abilities(agent.aptitudes)
+                abilities = get_agent_all_abilities(agent.aptitudes, instance.archetype)
                 damage_abilities = [
                     a for a in abilities
                     if a.effect_type == "damage" and a.targets == "single_enemy"
@@ -529,8 +618,12 @@ class DungeonEngineService:
             round_num=instance.combat.round_num,
             max_rounds=instance.combat.max_rounds,
             archetype_state=instance.archetype_state,
+            trap_deployed=instance.combat.trap_deployed,
         )
         round_result = resolve_combat_round(context, agent_actions, enemy_actions, enemy_templates)
+
+        # Sync mutable context state back to CombatState
+        instance.combat.trap_deployed = context.trap_deployed
 
         # Update instance state from result
         instance.combat.round_num += 1
@@ -858,10 +951,13 @@ class DungeonEngineService:
 
         await cls._checkpoint(admin_supabase, instance)
 
+        narrative_effects_en, narrative_effects_de = _narrate_effects(effects)
         return {
             "result": result_tier,
             "check": check_result,
             "effects": effects,
+            "narrative_effects_en": narrative_effects_en,
+            "narrative_effects_de": narrative_effects_de,
             "narrative_en": narrative_en,
             "narrative_de": narrative_de,
             "state": cls._build_client_state(instance).model_dump(),
@@ -883,17 +979,20 @@ class DungeonEngineService:
         if spy_level < 3:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent needs Spy 3+ to scout")
 
-        # Reveal rooms connected to current room's connections
+        # Reveal + scout rooms connected to current room's connections
+        # Scout reveals room types (unlike movement which only reveals map position)
         current = instance.rooms[instance.current_room]
         revealed_count = 0
         for conn_idx in current.connections:
             room = instance.rooms[conn_idx]
-            if not room.revealed:
+            if not room.scouted:
                 room.revealed = True
+                room.scouted = True
                 revealed_count += 1
             for sub_conn in room.connections:
-                if sub_conn < len(instance.rooms) and not instance.rooms[sub_conn].revealed:
+                if sub_conn < len(instance.rooms) and not instance.rooms[sub_conn].scouted:
                     instance.rooms[sub_conn].revealed = True
+                    instance.rooms[sub_conn].scouted = True
                     revealed_count += 1
 
         # Restore archetype resource on scout
@@ -1108,14 +1207,16 @@ class DungeonEngineService:
     @classmethod
     def _build_client_state(cls, instance: DungeonInstance) -> DungeonClientState:
         """Build client-safe state with fog of war applied."""
-        # Filter rooms: unrevealed show as "?"
+        # Filter rooms: revealed = visible on map, scouted = room type known.
+        # Movement reveals adjacent rooms on the map but does NOT expose their type.
+        # Only scouting (via scout command) or visiting reveals room types.
         client_rooms = []
         for room in instance.rooms:
             client_rooms.append(
                 RoomNodeClient(
                     index=room.index,
                     depth=room.depth,
-                    room_type=room.room_type if room.revealed else "?",
+                    room_type=room.room_type if room.scouted else "?",
                     connections=room.connections if room.revealed else [],
                     cleared=room.cleared,
                     current=room.index == instance.current_room,
@@ -1126,7 +1227,7 @@ class DungeonEngineService:
         # Build party state with available abilities
         client_party = []
         for agent in instance.party:
-            abilities = get_agent_all_abilities(agent.aptitudes)
+            abilities = get_agent_all_abilities(agent.aptitudes, instance.archetype)
             client_party.append(
                 AgentCombatStateClient(
                     agent_id=agent.agent_id,
@@ -1531,6 +1632,13 @@ class DungeonEngineService:
 
         # ── Fallbacks (no encounter template) ──
         if room_type == "encounter":
+            logger.warning(
+                "No encounter template for room_type=%s depth=%d difficulty=%d archetype=%s — auto-clearing room",
+                room_type,
+                instance.depth,
+                instance.difficulty,
+                instance.archetype,
+            )
             instance.phase = "room_clear"
             room.cleared = True
             return {"encounter": False}

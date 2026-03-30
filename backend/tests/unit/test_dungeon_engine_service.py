@@ -194,7 +194,7 @@ class TestConstants:
         assert INSTANCE_TTL_SECONDS == 1800
 
     def test_combat_planning_timeout(self):
-        assert COMBAT_PLANNING_TIMEOUT_MS == 30_000
+        assert COMBAT_PLANNING_TIMEOUT_MS == 45_000
 
 
 # ── _get_instance ────────────────────────────────────────────────────────
@@ -233,16 +233,19 @@ class TestEnemyConditionDisplay:
             (6, 6, "healthy"),
             (1, 1, "healthy"),
             (3, 3, "healthy"),
-            # >60% → healthy
-            (4, 6, "healthy"),
+            # >80% → healthy
             (5, 6, "healthy"),
-            # 31-60% → damaged
+            # 61-80% → scratched
+            (4, 6, "scratched"),
+            # 41-60% → damaged
             (3, 6, "damaged"),
-            (2, 6, "damaged"),
-            (2, 5, "damaged"),
-            # 1-30% → critical
+            (3, 5, "damaged"),
+            # 21-40% → wounded
+            (2, 6, "wounded"),
+            (2, 5, "wounded"),
+            # 1-20% → critical
             (1, 6, "critical"),
-            (1, 4, "critical"),
+            (1, 5, "critical"),
             # 0 → defeated
             (0, 6, "defeated"),
             (0, 1, "defeated"),
@@ -300,18 +303,27 @@ class TestApplyShadowVisibility:
 class TestBuildClientState:
     """Fog-of-war filtering: unrevealed rooms show as '?', enemy stats hidden."""
 
-    def test_unrevealed_rooms_show_question_mark(self):
+    def test_unscouted_rooms_show_question_mark(self):
+        """Room type depends on `scouted`, not `revealed`.
+        Revealed rooms appear on the map but their type stays hidden until scouted.
+        """
         rooms = _make_rooms()
         rooms[0].revealed = True
+        rooms[0].scouted = True  # visited — type known
         rooms[1].revealed = True
-        rooms[2].revealed = False
+        rooms[1].scouted = True  # scouted via scout command — type known
+        rooms[2].revealed = True
+        rooms[2].scouted = False  # map-visible but type unknown
+        rooms[3].revealed = False
+        rooms[3].scouted = False  # completely hidden
         instance = _make_instance(rooms=rooms)
         _register_instance(instance)
 
         state = DungeonEngineService._build_client_state(instance)
         assert state.rooms[0].room_type == "entrance"
         assert state.rooms[1].room_type == "combat"
-        assert state.rooms[2].room_type == "?"
+        assert state.rooms[2].room_type == "?"  # revealed but not scouted
+        assert state.rooms[3].room_type == "?"  # neither revealed nor scouted
 
     def test_unrevealed_rooms_have_empty_connections(self):
         rooms = _make_rooms()
@@ -504,7 +516,7 @@ class TestCreateRun:
         assert instance.difficulty == 3
         assert len(instance.party) == 2
         assert instance.party[0].agent_name == "Agent Alpha"
-        assert instance.party[0].stress == 50
+        assert instance.party[0].stress == 0  # Dungeon stress starts at 0 (independent of simulation stress)
 
     @pytest.mark.asyncio
     async def test_shadow_archetype_state_initialized(self, noop_checkpoint, noop_timer):

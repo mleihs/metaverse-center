@@ -58,12 +58,12 @@ SPY_ABILITIES: list[Ability] = [
         name_en="Observe",
         name_de="Beobachten",
         school="spy",
-        description_en="Analyze the battlefield. Reveals enemy intents and restores 1 Visibility (Shadow).",
-        description_de="Das Schlachtfeld analysieren. Enthullt Feindabsichten und stellt 1 Sicht wieder her (Schatten).",
+        description_en="Analyze the battlefield. Reveals enemy intents. Restores Visibility (Shadow) or Stability (Tower).",
+        description_de="Das Schlachtfeld analysieren. Enthullt Feindabsichten. Stellt Sicht (Schatten) oder Stabilitaet (Turm) her.",
         min_aptitude=3,
         cooldown=1,
         effect_type="utility",
-        effect_params={"reveal_intents": True, "visibility_restore": 1},
+        effect_params={"reveal_intents": True, "visibility_restore": 1, "stability_restore": 5},
         targets="self",
     ),
     Ability(
@@ -274,7 +274,7 @@ SABOTEUR_ABILITIES: list[Ability] = [
         cooldown=2,
         effect_type="utility",
         effect_params={"trap": True, "auto_damage_steps": 1},
-        targets="single_enemy",
+        targets="self",
     ),
     Ability(
         id="saboteur_disrupt",
@@ -304,6 +304,24 @@ SABOTEUR_ABILITIES: list[Ability] = [
     ),
 ]
 
+# ── Universal Abilities (available to all agents regardless of aptitude) ────
+
+UNIVERSAL_ABILITIES: list[Ability] = [
+    Ability(
+        id="basic_attack",
+        name_en="Basic Attack",
+        name_de="Grundangriff",
+        school="universal",
+        description_en="A standard attack. Low damage, but always available.",
+        description_de="Ein Standardangriff. Geringer Schaden, aber immer verfuegbar.",
+        min_aptitude=0,
+        cooldown=0,
+        effect_type="damage",
+        effect_params={"power": 3, "hit_bonus": 0},
+        targets="single_enemy",
+    ),
+]
+
 # ── School Registry ─────────────────────────────────────────────────────────
 
 ALL_ABILITIES: dict[str, list[Ability]] = {
@@ -313,24 +331,37 @@ ALL_ABILITIES: dict[str, list[Ability]] = {
     "propagandist": PROPAGANDIST_ABILITIES,
     "infiltrator": INFILTRATOR_ABILITIES,
     "saboteur": SABOTEUR_ABILITIES,
+    "universal": UNIVERSAL_ABILITIES,
 }
 
 
 def get_available_abilities(
     school: str,
     aptitude_level: int,
+    archetype: str | None = None,
 ) -> list[Ability]:
-    """Get abilities available to an agent based on school and aptitude.
+    """Get abilities available to an agent based on school, aptitude, and archetype.
 
     Args:
-        school: Ability school name (spy, guardian, etc.)
+        school: Ability school name (spy, guardian, universal, etc.)
         aptitude_level: Agent's aptitude score in this school (0-9).
+        archetype: Current dungeon archetype (e.g. "The Shadow", "The Tower").
+            If provided, abilities with ``archetype_required`` that don't match
+            are excluded.
 
     Returns:
         List of abilities the agent qualifies for.
     """
     school_abilities = ALL_ABILITIES.get(school, [])
-    return [a for a in school_abilities if aptitude_level >= a.min_aptitude]
+    return [
+        a
+        for a in school_abilities
+        if aptitude_level >= a.min_aptitude
+        and (
+            not a.effect_params.get("archetype_required")
+            or a.effect_params["archetype_required"] == archetype
+        )
+    ]
 
 
 def get_ability_by_id(ability_id: str) -> Ability | None:
@@ -342,21 +373,27 @@ def get_ability_by_id(ability_id: str) -> Ability | None:
     return None
 
 
-def get_agent_all_abilities(aptitudes: dict[str, int]) -> list[Ability]:
+def get_agent_all_abilities(
+    aptitudes: dict[str, int],
+    archetype: str | None = None,
+) -> list[Ability]:
     """Get all available abilities for an agent across all their aptitude schools.
+
+    Always includes universal abilities (Basic Attack) so every agent can deal
+    damage regardless of their aptitude profile.
 
     Args:
         aptitudes: Dict of school -> aptitude level, e.g. {"spy": 8, "guardian": 3}.
+        archetype: Current dungeon archetype for filtering archetype-gated abilities.
 
     Returns:
-        Combined list of all unlocked abilities. Always non-empty: if aptitudes
-        yields no abilities, returns basic spy abilities as a safety net.
+        Combined list of all unlocked abilities. Always non-empty due to universal
+        abilities being included unconditionally.
     """
     result: list[Ability] = []
     for school, level in aptitudes.items():
         if level > 0:
-            result.extend(get_available_abilities(school, level))
-    if not result:
-        # Safety net: every combatant must have at least one action.
-        result = get_available_abilities("spy", 3)
+            result.extend(get_available_abilities(school, level, archetype))
+    # Universal abilities are always available (Basic Attack guarantees damage)
+    result.extend(get_available_abilities("universal", 0, archetype))
     return result

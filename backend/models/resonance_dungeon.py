@@ -110,6 +110,7 @@ class RoomNode(BaseModel):
     connections: list[int] = Field(default_factory=list)
     cleared: bool = False
     revealed: bool = False
+    scouted: bool = False  # True when room type is known (visited, scouted, or cleared)
     encounter_template_id: str | None = None
     loot_tier: int = 0  # 0=none, 1=minor, 2=major, 3=legendary
 
@@ -176,6 +177,7 @@ class DungeonInstance(BaseModel):
             "turn": self.turn,
             "room_cleared_flags": [r.index for r in self.rooms if r.cleared],
             "room_revealed_flags": [r.index for r in self.rooms if r.revealed],
+            "room_scouted_flags": [r.index for r in self.rooms if r.scouted],
             "used_banter_ids": self.used_banter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
             "pending_loot": self.pending_loot,
@@ -202,9 +204,11 @@ class DungeonInstance(BaseModel):
         # Restore room flags
         cleared = set(checkpoint.get("room_cleared_flags", []))
         revealed = set(checkpoint.get("room_revealed_flags", []))
+        scouted = set(checkpoint.get("room_scouted_flags", []))
         for room in self.rooms:
             room.cleared = room.index in cleared
             room.revealed = room.index in revealed
+            room.scouted = room.index in scouted
 
 
 # ── API Request Schemas ─────────────────────────────────────────────────────

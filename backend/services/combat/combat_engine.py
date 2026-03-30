@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CombatContext:
-    """Immutable context for a combat round resolution."""
+    """Mutable context for a combat round resolution."""
 
     agents: list[AgentCombatState]
     enemies: list[EnemyInstance]
@@ -52,6 +52,7 @@ class CombatContext:
     max_rounds: int = 10
     archetype_state: dict = field(default_factory=dict)
     is_ambush: bool = False  # enemies get free first action
+    trap_deployed: bool = False  # party-level trap: first enemy to act triggers it
 
 
 @dataclass
@@ -302,24 +303,33 @@ def _resolve_agent_actions(
                 if target_agent:
                     _apply_buff(target_agent, buff_id)
 
-        # Utility: visibility restore (Observe)
+        # Utility: visibility restore (Observe — Shadow only)
+        narrative_suffix_en = ""
+        narrative_suffix_de = ""
         vis_restore = ability.effect_params.get("visibility_restore", 0)
-        if vis_restore:
+        if vis_restore and "visibility" in context.archetype_state:
             current_vis = context.archetype_state.get("visibility", 3)
-            context.archetype_state["visibility"] = min(3, current_vis + vis_restore)
+            max_vis = context.archetype_state.get("max_visibility", 3)
+            new_vis = min(max_vis, current_vis + vis_restore)
+            context.archetype_state["visibility"] = new_vis
+            narrative_suffix_en = f" +{vis_restore} Visibility."
+            narrative_suffix_de = f" +{vis_restore} Sichtbarkeit."
 
         # Utility: stability restore (Reinforce — Tower only)
         stab_restore = ability.effect_params.get("stability_restore", 0)
         if stab_restore and context.archetype_state.get("max_stability") is not None:
             max_stab = context.archetype_state.get("max_stability", 100)
             current_stab = context.archetype_state.get("stability", 100)
-            context.archetype_state["stability"] = min(max_stab, current_stab + stab_restore)
+            new_stab = min(max_stab, current_stab + stab_restore)
+            context.archetype_state["stability"] = new_stab
+            narrative_suffix_en = f" +{stab_restore} Stability ({current_stab} \u2192 {new_stab})."
+            narrative_suffix_de = f" +{stab_restore} Stabilitaet ({current_stab} \u2192 {new_stab})."
 
-        # Utility: trap deployment (Deploy Trap) — apply "trapped" debuff to enemy
-        if ability.effect_params.get("trap") and action.target_id:
-            target_enemy = enemy_map.get(action.target_id)
-            if target_enemy:
-                _apply_debuff_to_enemy(target_enemy, "trapped")
+        # Utility: trap deployment (Deploy Trap — self-targeting, party-level)
+        if ability.effect_params.get("trap"):
+            context.trap_deployed = True
+            narrative_suffix_en = " Trap set."
+            narrative_suffix_de = " Falle gelegt."
 
         if debuff_id and action.target_id:
             target_enemy = enemy_map.get(action.target_id)
@@ -343,8 +353,8 @@ def _resolve_agent_actions(
                 actor=agent.agent_name,
                 action=ability.name_en,
                 target=target_name,
-                narrative_en=f"{agent.agent_name} uses {ability.name_en}.",
-                narrative_de=f"{agent.agent_name} setzt {ability.name_de} ein.",
+                narrative_en=f"{agent.agent_name} uses {ability.name_en}.{narrative_suffix_en}",
+                narrative_de=f"{agent.agent_name} setzt {ability.name_de} ein.{narrative_suffix_de}",
             )
         )
 
@@ -558,9 +568,9 @@ def _resolve_enemy_actions(
         if not target_agent or not can_act(target_agent.condition):
             continue
 
-        # Trap trigger: trapped enemies take auto-damage before their action
-        if has_debuff(enemy, "trapped"):
-            enemy.active_effects.remove("trapped")
+        # Trap trigger: party-level flag, first enemy to act springs it
+        if context.trap_deployed:
+            context.trap_deployed = False  # Consumed — one-shot per Deploy Trap
             enemy.condition_steps_remaining -= 1
             killed_by_trap = enemy.condition_steps_remaining <= 0
             if killed_by_trap:

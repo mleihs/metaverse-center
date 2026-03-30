@@ -118,6 +118,11 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
         color: var(--_phosphor-dim);
       }
 
+      .enemy__threat {
+        display: inline-flex;
+        align-items: center;
+      }
+
       .enemy__threat velg-badge {
         --text-xs: 7px;
         --space-0-5: 1px;
@@ -128,9 +133,36 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
       .enemy__condition {
         font-family: var(--_mono);
         font-size: 8px;
-        color: var(--_phosphor-dim);
         margin-left: auto;
         flex-shrink: 0;
+      }
+
+      /* 5-state condition color coding */
+      .enemy__condition--healthy { color: var(--color-success); }
+      .enemy__condition--scratched { color: color-mix(in oklch, var(--color-success) 50%, var(--color-warning)); }
+      .enemy__condition--damaged { color: var(--color-warning); }
+      .enemy__condition--wounded { color: color-mix(in oklch, var(--color-warning) 40%, var(--color-danger)); }
+      .enemy__condition--critical { color: var(--color-danger); font-weight: 700; }
+      .enemy__condition--defeated { color: var(--_phosphor-dim); }
+
+      /* Diagnostic HP bar — 2px, terminal aesthetic */
+      .enemy__hp-bar {
+        height: 2px;
+        background: color-mix(in srgb, var(--_border) 30%, transparent);
+      }
+      .enemy__hp-fill {
+        height: 100%;
+        transition: width 300ms ease-out, background-color 300ms;
+      }
+      .enemy__hp-fill--healthy { background: var(--color-success); }
+      .enemy__hp-fill--scratched { background: color-mix(in oklch, var(--color-success) 50%, var(--color-warning)); }
+      .enemy__hp-fill--damaged { background: var(--color-warning); }
+      .enemy__hp-fill--wounded { background: color-mix(in oklch, var(--color-warning) 40%, var(--color-danger)); }
+      .enemy__hp-fill--critical { background: var(--color-danger); }
+
+      /* BOSS badge — phosphor burn glow */
+      .enemy__threat--boss velg-badge {
+        text-shadow: 0 0 6px var(--color-danger-glow);
       }
 
       /* -- Intent (telegraphed action) -- */
@@ -174,11 +206,43 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
         .enemy {
           transition: opacity var(--duration-fast, 150ms);
         }
+
+        .enemy__threat--boss velg-badge {
+          animation: boss-burn 3s ease-in-out infinite;
+        }
+
+        /* Signal disruption on hit */
+        .enemy--hit {
+          animation: signal-disrupt 200ms steps(3);
+        }
+
+        /* Phosphor decay on defeat */
+        .enemy--dying {
+          animation: phosphor-decay 500ms ease-out forwards;
+        }
       }
 
       @keyframes threat-pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.25; }
+      }
+
+      @keyframes boss-burn {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      @keyframes signal-disrupt {
+        0%, 100% { transform: none; opacity: 1; }
+        25% { transform: translateX(2px); opacity: 0.6; }
+        50% { transform: translateX(-1px); opacity: 0.8; }
+        75% { transform: translateX(1px); opacity: 0.7; }
+      }
+
+      @keyframes phosphor-decay {
+        0% { opacity: 1; filter: brightness(1); }
+        30% { opacity: 0.8; filter: brightness(1.5); }
+        100% { opacity: 0.15; filter: brightness(0.5); }
       }
 
       /* -- Mobile (<=767px) -- */
@@ -304,22 +368,40 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
   private _renderEnemy(enemy: EnemyCombatStateClient) {
     const variant = THREAT_BADGE[enemy.threat_level] ?? 'default';
     const isDead = !enemy.is_alive;
+    const isBoss = enemy.threat_level === 'critical';
+    const cond = enemy.condition_display;
+
+    // HP fill percentage (approximate from condition state)
+    const hpPct = isDead ? 0
+      : cond === 'healthy' ? 100
+      : cond === 'scratched' ? 70
+      : cond === 'damaged' ? 50
+      : cond === 'wounded' ? 30
+      : 10; // critical
 
     return html`
       <div
         class="enemy ${isDead ? 'enemy--dead' : ''}"
         role="listitem"
-        aria-label=${`${enemy.name_en} ${isDead ? msg('defeated') : enemy.condition_display}`}
+        aria-label=${`${enemy.name_en} ${isDead ? msg('defeated') : cond}`}
       >
         <div class="enemy__header">
           <span class="enemy__name">${enemy.name_en}</span>
-          <span class="enemy__threat">
+          <span class="enemy__threat ${isBoss ? 'enemy__threat--boss' : ''}">
             <velg-badge variant=${variant}>
               ${enemy.threat_level.toUpperCase()}
             </velg-badge>
           </span>
-          <span class="enemy__condition">${enemy.condition_display}</span>
+          <span class="enemy__condition enemy__condition--${cond}">${cond}</span>
         </div>
+        ${!isDead ? html`
+          <div class="enemy__hp-bar">
+            <div
+              class="enemy__hp-fill enemy__hp-fill--${cond}"
+              style="width: ${hpPct}%"
+            ></div>
+          </div>
+        ` : nothing}
         ${!isDead && enemy.telegraphed_action
           ? this._renderIntent(enemy.telegraphed_action)
           : nothing}

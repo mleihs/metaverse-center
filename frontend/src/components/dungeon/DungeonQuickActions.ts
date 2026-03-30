@@ -22,12 +22,14 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
+
+const RETREAT_HOLD_MS = 2000;
 
 @localized()
 @customElement('velg-dungeon-quick-actions')
@@ -40,8 +42,45 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       :host {
         display: block;
       }
+
+      /* ── Retreat hold-to-confirm ── */
+      .action-btn--retreat {
+        position: relative;
+        overflow: hidden;
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .action-btn--retreat .retreat-fill {
+        position: absolute;
+        inset: 0;
+        background: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
+        transform: scaleX(0);
+        transform-origin: left;
+        pointer-events: none;
+      }
+      .action-btn--retreat[data-holding] {
+        border-color: var(--color-danger);
+        color: var(--color-danger);
+      }
+      .action-btn--retreat[data-holding] .retreat-fill {
+        animation: retreat-fill ${RETREAT_HOLD_MS}ms linear forwards;
+      }
+
+      @keyframes retreat-fill {
+        to { transform: scaleX(1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .action-btn--retreat[data-holding] .retreat-fill {
+          animation-duration: 300ms;
+        }
+      }
     `,
   ];
+
+  @state() private _retreatHolding = false;
 
   private _dispatch(command: string): void {
     this.dispatchEvent(
@@ -80,25 +119,17 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           <button class="action-btn" @click=${() => this._dispatch('status')}>
             ${msg('Status')}
           </button>
-          <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('retreat')}>
-            ${msg('Retreat')}
+          <button class="action-btn" @click=${() => this._dispatch('protocol')}>
+            ${msg('Protocol')}
           </button>
+          ${this._renderRetreatButton()}
         `;
 
       case 'room_clear':
         return this._renderMoveButtons();
 
       case 'encounter':
-        // Encounter choices rendered in terminal as numbered options (type `interact 1`).
-        // Quick actions provide navigation fallback.
-        return html`
-          <button class="action-btn" @click=${() => this._dispatch('look')}>
-            ${msg('Look')}
-          </button>
-          <button class="action-btn" @click=${() => this._dispatch('status')}>
-            ${msg('Status')}
-          </button>
-        `;
+        return this._renderEncounterButtons();
 
       case 'rest':
         return html`
@@ -194,7 +225,88 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     `;
   }
 
-  /** Render move buttons for each adjacent revealed room. */
+  /** Render interact buttons for encounter choices (BUG-04 fix). */
+  private _renderEncounterButtons() {
+    const choices = dungeonState.encounterChoices.value;
+    if (choices.length === 0) {
+      return html`
+        <button class="action-btn" @click=${() => this._dispatch('look')}>
+          ${msg('Look')}
+        </button>
+        <button class="action-btn" @click=${() => this._dispatch('status')}>
+          ${msg('Status')}
+        </button>
+      `;
+    }
+    return html`
+      ${choices.map(
+        (choice, i) => html`
+          <button
+            class="action-btn action-btn--primary"
+            @click=${() => this._dispatch(`interact ${i + 1}`)}
+          >
+            [${i + 1}] ${choice.label_en}
+          </button>
+        `,
+      )}
+      <button class="action-btn" @click=${() => this._dispatch('look')}>
+        ${msg('Look')}
+      </button>
+    `;
+  }
+
+  /** Render retreat button with hold-to-confirm (2s hold = nuclear launch key pattern). */
+  private _renderRetreatButton() {
+    const label = this._retreatHolding ? msg('HOLD\u2026') : msg('Retreat');
+    return html`
+      <button
+        class="action-btn action-btn--tier2 action-btn--retreat"
+        ?data-holding=${this._retreatHolding}
+        @pointerdown=${this._onRetreatDown}
+        @pointerup=${this._onRetreatUp}
+        @pointerleave=${this._onRetreatUp}
+        @pointercancel=${this._onRetreatUp}
+        @contextmenu=${(e: Event) => e.preventDefault()}
+        @keydown=${this._onRetreatKey}
+        aria-label=${msg('Hold to retreat')}
+      >
+        <span class="retreat-fill" @animationend=${this._onRetreatConfirm}></span>
+        ${label}
+      </button>
+    `;
+  }
+
+  private _onRetreatDown(e: PointerEvent): void {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    this._retreatHolding = true;
+  }
+
+  private _onRetreatUp(): void {
+    this._retreatHolding = false;
+  }
+
+  private _onRetreatConfirm(): void {
+    this._retreatHolding = false;
+    this._dispatch('retreat');
+  }
+
+  private _retreatKeyPending = false;
+  private _retreatKeyTimer?: ReturnType<typeof setTimeout>;
+
+  private _onRetreatKey(e: KeyboardEvent): void {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    if (this._retreatKeyPending) {
+      clearTimeout(this._retreatKeyTimer);
+      this._retreatKeyPending = false;
+      this._dispatch('retreat');
+    } else {
+      this._retreatKeyPending = true;
+      this._retreatKeyTimer = setTimeout(() => { this._retreatKeyPending = false; }, 3000);
+    }
+  }
+
+  /** Render move buttons for each adjacent room. Unscouted rooms show "???" (fog-of-war). */
   private _renderMoveButtons() {
     const adjacent = dungeonState.adjacentRooms.value;
     if (adjacent.length === 0) return nothing;
@@ -205,7 +317,9 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           class="action-btn action-btn--primary"
           @click=${() => this._dispatch(`move ${room.index}`)}
         >
-          ${msg('Move')} \u2192 ${getRoomTypeLabel(room.room_type, room.index)}
+          ${msg('Move')} \u2192 ${room.room_type !== '?'
+            ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}`
+            : `??? D${room.depth}`}
         </button>
       `,
     );

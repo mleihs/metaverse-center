@@ -478,6 +478,7 @@ class TestCheckpointRoundTrip:
             "turn",
             "room_cleared_flags",
             "room_revealed_flags",
+            "room_scouted_flags",
             "used_banter_ids",
             "phase_timer",
             "loot_assignments",

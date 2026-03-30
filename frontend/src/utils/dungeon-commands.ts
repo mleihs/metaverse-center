@@ -21,7 +21,9 @@ import type {
 } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
+  AUTO_APPLY_EFFECTS,
   formatAgentPicker,
+  formatArchetypeBriefing,
   formatAvailableDungeons,
   formatCombatPlanning,
   formatCombatResolution,
@@ -32,7 +34,6 @@ import {
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
-  AUTO_APPLY_EFFECTS,
   formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
@@ -69,7 +70,7 @@ const DUNGEON_OVERRIDE_VERBS = new Set(['move', 'go', 'map', 'look', 'status']);
  * Outside dungeon mode → return error message (not null).
  */
 const DUNGEON_ONLY_VERBS = new Set([
-  'scout', 'rest', 'retreat', 'interact', 'attack', 'submit', 'assign', 'confirm',
+  'scout', 'rest', 'retreat', 'interact', 'attack', 'submit', 'assign', 'confirm', 'protocol',
 ]);
 
 /**
@@ -140,6 +141,7 @@ export async function dispatchDungeonCommand(
     case 'submit': return handleDungeonSubmit();
     case 'assign': return handleDungeonAssign(ctx);
     case 'confirm': return handleDungeonConfirm();
+    case 'protocol': return handleDungeonProtocol();
     default: return null;
   }
 }
@@ -405,6 +407,14 @@ function handleDungeonStatus(): TerminalLine[] {
   return formatDungeonStatus(state);
 }
 
+// ── Command: protocol ────────────────────────────────────────────────────────
+
+function handleDungeonProtocol(): TerminalLine[] {
+  const state = dungeonState.clientState.value;
+  if (!state) return [errorLine(msg('No active dungeon.'))];
+  return formatArchetypeBriefing(state.archetype);
+}
+
 // ── Command: scout ───────────────────────────────────────────────────────────
 
 async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> {
@@ -441,7 +451,8 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
     }
 
     dungeonState.applyState(resp.data.state);
-    return formatScoutResult(agent.agent_name, resp.data.revealed_rooms, resp.data.visibility);
+    const archetype = dungeonState.clientState.value?.archetype ?? '';
+    return formatScoutResult(agent.agent_name, resp.data.revealed_rooms, resp.data.visibility, archetype);
   } catch (err) {
     captureError(err, { source: 'dungeon-commands.handleDungeonScout' });
     const message = err instanceof Error ? err.message : msg('Scout failed.');
@@ -690,8 +701,9 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
 
     // Skill check result
     if (resp.data.check) {
-      const effects = Object.entries(resp.data.effects)
-        .map(([key, val]) => `${key}: ${val}`);
+      // Use backend-generated narrative effects (bilingual, proper separation of concerns)
+      const effects: string[] = resp.data.narrative_effects_en ?? Object.entries(resp.data.effects)
+        .map(([key, val]: [string, unknown]) => `${key}: ${val}`);
       lines.push(...formatSkillCheckResult(resp.data.check, resp.data.narrative_en, effects));
     } else {
       // No check — direct result

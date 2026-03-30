@@ -430,6 +430,9 @@ export interface EncounterChoiceResponse {
   result: SkillCheckResult;
   check?: SkillCheckDetail | null;
   effects: Record<string, unknown>;
+  /** Backend-generated narrative effect descriptions (bilingual). */
+  narrative_effects_en?: string[];
+  narrative_effects_de?: string[];
   narrative_en: string;
   narrative_de: string;
   state: DungeonClientState;

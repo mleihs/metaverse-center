@@ -91,7 +91,11 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
       .cards {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
+        overflow-y: auto;
+        max-height: calc(100vh - 120px);
+        scrollbar-width: thin;
+        scrollbar-color: var(--_phosphor-dim) transparent;
       }
 
       /* ── Agent Card ── */
@@ -259,10 +263,19 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         opacity: 0.4;
       }
 
+      /* ── Stress severity — diagnostic warning levels ── */
+      .card--stress-high {
+        box-shadow: inset 0 0 8px color-mix(in oklch, var(--color-danger) 30%, transparent);
+      }
+      .card--stress-critical {
+        border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+      }
+
       /* ── Motion (opt-in per DungeonHeader pattern) ── */
       @media (prefers-reduced-motion: no-preference) {
         .card {
-          transition: border-color var(--duration-fast, 150ms);
+          transition: border-color var(--duration-fast, 150ms),
+                      box-shadow var(--duration-slow, 300ms);
         }
         .bar-fill {
           transition: width var(--duration-slow, 300ms) ease-out;
@@ -273,6 +286,24 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         .bar-fill--stress-critical {
           animation: stress-pulse 1.5s ease-in-out infinite;
         }
+        /* System critical pulse — warning light */
+        .card--stress-critical {
+          animation: system-critical 2s ease-in-out infinite;
+        }
+        /* Stress increase flash — brief red scanline */
+        .bar-fill--stress-spike {
+          animation: stress-spike 300ms ease-out;
+        }
+      }
+
+      @keyframes system-critical {
+        0%, 100% { box-shadow: inset 0 0 8px color-mix(in oklch, var(--color-danger) 30%, transparent); }
+        50% { box-shadow: inset 0 0 14px color-mix(in oklch, var(--color-danger) 50%, transparent); }
+      }
+
+      @keyframes stress-spike {
+        0% { box-shadow: 0 0 8px var(--color-danger); filter: brightness(1.4); }
+        100% { box-shadow: none; filter: brightness(1); }
       }
 
       /* ── Mobile ── */
@@ -434,19 +465,27 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         : agent.mood < -20
           ? 'var(--color-danger)'
           : 'var(--_phosphor-dim)';
-    const stressText =
-      agent.stress_threshold === 'critical'
-        ? `${agent.stress} ${msg('CRITICAL')}`
-        : agent.stress_threshold === 'tense'
-          ? `${agent.stress} ${msg('TENSE')}`
-          : `${agent.stress}/1000`;
+    const stressPct = Math.round(stressFill);
+    const stressLabel =
+      stressPct >= 80 ? msg('BREAKING')
+      : stressPct >= 60 ? msg('CRITICAL')
+      : stressPct >= 40 ? msg('STRAINED')
+      : stressPct >= 25 ? msg('TENSE')
+      : stressPct >= 10 ? msg('UNEASY')
+      : '';
+    const stressText = stressLabel ? `${stressPct}% ${stressLabel}` : `${stressPct}%`;
+    // Stress severity class for card glow/pulse
+    const stressSeverity =
+      stressPct >= 80 ? 'stress-critical'
+      : stressPct >= 60 ? 'stress-high'
+      : '';
     const aptColor = primary
       ? OPERATIVE_COLORS[primary.name as OperativeType]
       : undefined;
 
     return html`
       <div
-        class="card card--${agent.condition}"
+        class="card card--${agent.condition} ${stressSeverity ? `card--${stressSeverity}` : ''}"
         role="listitem"
         aria-label=${`${agent.agent_name} \u2013 ${getConditionLabel(agent.condition)}`}
       >

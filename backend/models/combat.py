@@ -76,7 +76,7 @@ class EnemyInstance(BaseModel):
 
     @property
     def condition_display(self) -> str:
-        """Percentage-based condition label for client display.
+        """5-state condition label for client display.
 
         Uses ratio of remaining/max so enemies with low max health
         (e.g. Shadow Wisp: 1 step) show "healthy" at full HP.
@@ -84,10 +84,14 @@ class EnemyInstance(BaseModel):
         if self.condition_steps_remaining <= 0:
             return "defeated"
         ratio = self.condition_steps_remaining / max(self.condition_steps_max, 1)
-        if ratio > 0.6:
+        if ratio > 0.8:
             return "healthy"
-        if ratio > 0.3:
+        if ratio > 0.6:
+            return "scratched"
+        if ratio > 0.4:
             return "damaged"
+        if ratio > 0.2:
+            return "wounded"
         return "critical"
 
 
@@ -101,3 +105,4 @@ class CombatState(BaseModel):
     submitted_actions: dict[str, list[dict]] = Field(default_factory=dict)
     telegraphed_intents: list[dict] = Field(default_factory=list)
     is_ambush: bool = False
+    trap_deployed: bool = False  # Party-level trap: first enemy to act triggers it

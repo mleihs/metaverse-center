@@ -815,7 +815,17 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     enemies: EnemyCombatStateClient[],
   ) {
     const selection = selected.get(agent.agent_id);
-    const isTargeting = this._targetingAgentId === agent.agent_id;
+    // Only show target picker if targeting state is valid AND ability still needs a target.
+    // Prevents stale picker when switching from attack to self-targeting ability.
+    const targetingAbility = this._targetingAbilityId
+      ? agent.available_abilities.find((a) => a.id === this._targetingAbilityId)
+      : null;
+    const isTargeting =
+      this._targetingAgentId === agent.agent_id &&
+      !!targetingAbility &&
+      targetingAbility.targets !== 'self' &&
+      targetingAbility.targets !== 'all_enemies' &&
+      targetingAbility.targets !== 'all_allies';
     const hasSelection = !!selection;
 
     const stripClass = [
@@ -950,6 +960,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     enemies: EnemyCombatStateClient[],
   ): void {
     if (ability.cooldown_remaining > 0) return;
+
+    // Auto-dismiss onboarding briefing on first ability selection (UX-04)
+    if (this._showOnboarding) this._dismissOnboarding();
 
     const alive = enemies.filter((e) => e.is_alive);
 

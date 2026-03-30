@@ -4,9 +4,9 @@ All text is bilingual (en/de) inline per architecture decision #3.
 Archetype data is stored in registries keyed by archetype name.
 
 Shadow encounters (Phase 0):
-  4 combat, 3 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+  4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 Tower encounters (Phase 1):
-  4 combat, 3 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+  4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 """
 
 from __future__ import annotations
@@ -98,9 +98,136 @@ SHADOW_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
     ),
 ]
 
-# ── Narrative Encounters (3) ────────────────────────────────────────────────
+# ── Narrative Encounters (5) ────────────────────────────────────────────────
 
 SHADOW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="shadow_the_threshold",
+        archetype="The Shadow",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "The corridor narrows. Ahead, a line of absolute dark cuts the floor "
+            "like a border crossing \u2013 everything on this side is dim; everything "
+            "beyond is blind. The air carries the faint chemical taste of dissolved "
+            "certainty. Someone has been here before. The scratches on the walls "
+            "are not random."
+        ),
+        description_de=(
+            "Der Korridor verengt sich. Voraus schneidet eine Linie absoluter "
+            "Dunkelheit den Boden wie ein Grenzübergang \u2013 diesseits ist es "
+            "dämmerig; jenseits ist es blind. Die Luft trägt den schwachen "
+            "chemischen Geschmack aufgelöster Gewissheit. Jemand war schon hier. "
+            "Die Kratzer an den Wänden sind nicht zufällig."
+        ),
+        choices=[
+            EncounterChoice(
+                id="investigate_scratches",
+                label_en="Investigate the scratches (Spy)",
+                label_de="Die Kratzer untersuchen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"reveal_rooms": 1, "stress": 0},
+                partial_effects={"stress": 20},
+                fail_effects={"stress": 40},
+                success_narrative_en="The scratches are a map \u2013 crude, desperate, but accurate. Whoever carved them made it further than this.",
+                success_narrative_de="Die Kratzer sind eine Karte \u2013 grob, verzweifelt, aber genau. Wer sie geritzt hat, kam weiter als hierhin.",
+                partial_narrative_en="Some scratches form patterns. Others are just scratches. Sorting them takes longer than expected.",
+                partial_narrative_de="Manche Kratzer bilden Muster. Andere sind nur Kratzer. Sie zu sortieren dauert länger als erwartet.",
+                fail_narrative_en="The scratches rearrange themselves as you study them. Your eyes ache from tracking lines that refuse to hold still.",
+                fail_narrative_de="Die Kratzer ordnen sich neu, während ihr sie studiert. Eure Augen schmerzen vom Verfolgen von Linien, die sich weigern stillzuhalten.",
+            ),
+            EncounterChoice(
+                id="secure_perimeter",
+                label_en="Secure the threshold (Guardian)",
+                label_de="Die Schwelle sichern (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=0,
+                success_effects={"stress": -20, "visibility": 1},
+                partial_effects={"stress": 20},
+                fail_effects={"stress": 50},
+                success_narrative_en="You mark the threshold, set reference points, establish a fallback line. The darkness hasn't changed \u2013 but your footing has.",
+                success_narrative_de="Ihr markiert die Schwelle, setzt Bezugspunkte, legt eine Rückzugslinie fest. Die Dunkelheit hat sich nicht verändert \u2013 aber euer Stand schon.",
+                partial_narrative_en="The markers hold, but the reference points drift. Partial orientation is better than none.",
+                partial_narrative_de="Die Markierungen halten, aber die Bezugspunkte verschieben sich. Teilweise Orientierung ist besser als keine.",
+                fail_narrative_en="The darkness swallows every marker you place. The threshold is not a line \u2013 it is a mouth.",
+                fail_narrative_de="Die Dunkelheit verschluckt jede Markierung, die ihr setzt. Die Schwelle ist keine Linie \u2013 sie ist ein Maul.",
+            ),
+            EncounterChoice(
+                id="cautious_crossing",
+                label_en="Cross cautiously",
+                label_de="Vorsichtig überqueren",
+                success_effects={"stress": 15},
+                success_narrative_en="You step across the line. Nothing happens. The waiting is worse.",
+                success_narrative_de="Ihr tretet über die Linie. Nichts geschieht. Das Warten ist schlimmer.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="shadow_convergence",
+        archetype="The Shadow",
+        room_type="encounter",
+        min_depth=4,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The corridors converge here \u2013 not architecturally, but ontologically. "
+            "Shadows from earlier rooms pool on the floor like spilled ink, forming "
+            "a map of everywhere you have been. The air is dense with accumulated "
+            "memory. Something in the walls is breathing in sync with your party."
+        ),
+        description_de=(
+            "Die Korridore konvergieren hier \u2013 nicht architektonisch, sondern "
+            "ontologisch. Schatten früherer Räume sammeln sich auf dem Boden wie "
+            "verschüttete Tinte und bilden eine Karte überall, wo ihr gewesen seid. "
+            "Die Luft ist dicht von angesammelter Erinnerung. Etwas in den Wänden "
+            "atmet im Gleichklang mit eurer Gruppe."
+        ),
+        choices=[
+            EncounterChoice(
+                id="read_shadow_map",
+                label_en="Read the shadow map (Spy)",
+                label_de="Die Schattenkarte lesen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=10,
+                success_effects={"reveal_rooms": 2, "stress": 10},
+                partial_effects={"reveal_rooms": 1, "stress": 30},
+                fail_effects={"stress": 70},
+                success_narrative_en="The ink-map responds to your attention. It shows not just rooms \u2013 but what waits inside them.",
+                success_narrative_de="Die Tintenkarte reagiert auf eure Aufmerksamkeit. Sie zeigt nicht nur Räume \u2013 sondern was darin wartet.",
+                partial_narrative_en="Fragments of the map are legible. Others dissolve under scrutiny, as if the shadow resents being read.",
+                partial_narrative_de="Fragmente der Karte sind lesbar. Andere lösen sich unter Prüfung auf, als ob der Schatten es übelnimmt, gelesen zu werden.",
+                fail_narrative_en="The map surges upward. For a heartbeat, the accumulated shadow of every room you crossed presses against your mind at once.",
+                fail_narrative_de="Die Karte wogt empor. Für einen Herzschlag drückt der angesammelte Schatten jedes Raums, den ihr durchquert habt, gleichzeitig gegen euren Verstand.",
+            ),
+            EncounterChoice(
+                id="strike_convergence",
+                label_en="Strike the convergence (Assassin)",
+                label_de="Die Konvergenz angreifen (Assassine)",
+                check_aptitude="assassin",
+                check_difficulty=10,
+                success_effects={"stress": -40, "shadow_resonance": 0.05},
+                partial_effects={"stress": 40},
+                fail_effects={"stress": 90, "ambush_trigger": True},
+                success_narrative_en="A precise strike at the node where all shadows meet. The ink-map shatters. The accumulated pressure bleeds away.",
+                success_narrative_de="Ein präziser Schlag auf den Knoten, an dem alle Schatten sich treffen. Die Tintenkarte zerbricht. Der angesammelte Druck entweicht.",
+                partial_narrative_en="The strike lands, but the convergence absorbs part of it. The shadows recoil but do not break.",
+                partial_narrative_de="Der Schlag trifft, aber die Konvergenz absorbiert einen Teil davon. Die Schatten weichen zurück, brechen aber nicht.",
+                fail_narrative_en="The convergence fights back. Every shadow you ever passed through strikes at once.",
+                fail_narrative_de="Die Konvergenz schlägt zurück. Jeder Schatten, den ihr je durchquert habt, schlägt gleichzeitig zu.",
+            ),
+            EncounterChoice(
+                id="cautious_convergence",
+                label_en="Move through carefully",
+                label_de="Vorsichtig hindurchgehen",
+                success_effects={"stress": 25},
+                success_narrative_en="You navigate the pooled shadows without engaging them. They part reluctantly, clinging to your boots like oil.",
+                success_narrative_de="Ihr navigiert durch die gesammelten Schatten, ohne sie zu berühren. Sie teilen sich widerwillig und kleben an euren Stiefeln wie Öl.",
+            ),
+        ],
+    ),
     EncounterTemplate(
         id="shadow_the_prisoner",
         archetype="The Shadow",
@@ -537,9 +664,138 @@ TOWER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
     ),
 ]
 
-# ── Tower Narrative Encounters (3) ─────────────────────────────────────────
+# ── Tower Narrative Encounters (5) ─────────────────────────────────────────
 
 TOWER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="tower_the_lobby",
+        archetype="The Tower",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "The lobby is cavernous and wrong. Reception desks curve into "
+            "themselves. Departure boards list floors that do not exist \u2013 "
+            "negative numbers, imaginary levels, a floor called 'solvency' with "
+            "no arrival time. The marble underfoot is cracked along load-bearing "
+            "lines. Someone left in a hurry."
+        ),
+        description_de=(
+            "Die Lobby ist riesig und falsch. Empfangsschalter krümmen sich in "
+            "sich selbst. Abfahrtstafeln listen Stockwerke, die nicht existieren "
+            "\u2013 negative Zahlen, imaginäre Ebenen, ein Stockwerk namens "
+            "'Solvenz' ohne Ankunftszeit. Der Marmor unter euren Füssen ist "
+            "entlang tragender Linien gerissen. Jemand ist in Eile gegangen."
+        ),
+        choices=[
+            EncounterChoice(
+                id="check_departure_boards",
+                label_en="Check the departure boards (Spy)",
+                label_de="Die Abfahrtstafeln prüfen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"reveal_rooms": 1, "stress": 0},
+                partial_effects={"stress": 20},
+                fail_effects={"stress": 40},
+                success_narrative_en="The imaginary floors encode real information. You map the first level from the contradictions.",
+                success_narrative_de="Die imaginären Stockwerke verschlüsseln echte Information. Ihr kartiert die erste Ebene aus den Widersprüchen.",
+                partial_narrative_en="Some boards flicker with useful data. Others display only debt.",
+                partial_narrative_de="Einige Tafeln flimmern mit nützlichen Daten. Andere zeigen nur Schulden.",
+                fail_narrative_en="The boards reset as you read them. The only consistent number is the one counting down.",
+                fail_narrative_de="Die Tafeln setzen sich zurück, während ihr sie lest. Die einzige beständige Zahl ist die, die herunterzählt.",
+            ),
+            EncounterChoice(
+                id="reinforce_lobby",
+                label_en="Reinforce the cracked marble (Guardian)",
+                label_de="Den gerissenen Marmor verstärken (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=0,
+                success_effects={"stability": 5, "stress": -15},
+                partial_effects={"stress": 20},
+                fail_effects={"stress": 50, "stability": -5},
+                success_narrative_en="You brace the load-bearing fractures with improvised supports. The lobby stops shuddering. For now.",
+                success_narrative_de="Ihr stützt die tragenden Brüche mit improvisierten Stützen ab. Die Lobby hört auf zu beben. Vorerst.",
+                partial_narrative_en="Some cracks hold. Others widen under the correction, as if the building resists being helped.",
+                partial_narrative_de="Einige Risse halten. Andere weiten sich unter der Korrektur, als widersetze sich das Gebäude der Hilfe.",
+                fail_narrative_en="The marble shifts under your hands. The load-bearing lines are deeper than you thought \u2013 the damage is foundational.",
+                fail_narrative_de="Der Marmor verschiebt sich unter euren Händen. Die tragenden Linien sind tiefer als gedacht \u2013 der Schaden ist fundamental.",
+            ),
+            EncounterChoice(
+                id="cautious_lobby",
+                label_en="Move through quickly",
+                label_de="Schnell hindurchgehen",
+                success_effects={"stress": 15},
+                success_narrative_en="You cross the lobby without engaging it. The departure boards flicker in your peripheral vision. You try not to read them.",
+                success_narrative_de="Ihr durchquert die Lobby, ohne euch auf sie einzulassen. Die Abfahrtstafeln flimmern in eurem peripheren Blickfeld. Ihr versucht, sie nicht zu lesen.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="tower_final_audit",
+        archetype="The Tower",
+        room_type="encounter",
+        min_depth=4,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The penultimate floor. Every structural failure in the building below "
+            "resonates here \u2013 the cracks sing, the tilted floors hum, the bent "
+            "rebar conducts a frequency that makes vision blur. In the center of "
+            "the room, a single desk holds a final audit report. The pages are "
+            "blank. The pen is waiting."
+        ),
+        description_de=(
+            "Das vorletzte Stockwerk. Jedes Strukturversagen im Gebäude darunter "
+            "resoniert hier \u2013 die Risse singen, die geneigten Böden summen, "
+            "der verbogene Bewehrungsstahl leitet eine Frequenz, die das Sehen "
+            "verschwimmen lässt. In der Mitte des Raums hält ein einzelner "
+            "Schreibtisch einen letzten Prüfbericht. Die Seiten sind leer. Der "
+            "Stift wartet."
+        ),
+        choices=[
+            EncounterChoice(
+                id="write_true_audit",
+                label_en="Write the true audit (Spy)",
+                label_de="Den wahren Bericht schreiben (Spion)",
+                check_aptitude="spy",
+                check_difficulty=10,
+                success_effects={"reveal_rooms": 2, "stress": 10, "stability": 5},
+                partial_effects={"reveal_rooms": 1, "stress": 30},
+                fail_effects={"stress": 70},
+                success_narrative_en="The pen knows what you know. The audit writes itself \u2013 every flaw, every overloaded column, every deferred repair. The tower shudders at its own truth.",
+                success_narrative_de="Der Stift weiss, was ihr wisst. Der Bericht schreibt sich selbst \u2013 jeder Fehler, jede überladene Säule, jede aufgeschobene Reparatur. Der Turm erschauert vor seiner eigenen Wahrheit.",
+                partial_narrative_en="The report is half-complete. Some columns resist documentation, as if the tower censors its own failures.",
+                partial_narrative_de="Der Bericht ist halbfertig. Einige Säulen widersetzen sich der Dokumentation, als zensiere der Turm seine eigenen Fehler.",
+                fail_narrative_en="The pen breaks. The audit report fills itself with numbers that don't add up. The desk vibrates with fraudulent energy.",
+                fail_narrative_de="Der Stift bricht. Der Prüfbericht füllt sich mit Zahlen, die nicht aufgehen. Der Schreibtisch vibriert mit betrügerischer Energie.",
+            ),
+            EncounterChoice(
+                id="sabotage_last_column",
+                label_en="Sabotage the last load-bearing column (Saboteur)",
+                label_de="Die letzte tragende Säule sabotieren (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=10,
+                success_effects={"stability": -10, "discovery": True, "stress": -20},
+                partial_effects={"stability": -15, "stress": 40},
+                fail_effects={"stability": -20, "stress": 80},
+                success_narrative_en="Controlled structural failure. The column buckles precisely, opening a direct route to the summit. The tower groans but accepts.",
+                success_narrative_de="Kontrolliertes Strukturversagen. Die Säule knickt präzise ein und öffnet einen direkten Weg zum Gipfel. Der Turm stöhnt, akzeptiert aber.",
+                partial_narrative_en="The column weakens but holds. The path opens partially. The building remembers this insult.",
+                partial_narrative_de="Die Säule schwächt sich, hält aber. Der Weg öffnet sich teilweise. Das Gebäude erinnert sich an diese Beleidigung.",
+                fail_narrative_en="The charge propagates. Three columns fail instead of one. The ceiling drops a meter. The route is open, but so is the abyss.",
+                fail_narrative_de="Die Ladung pflanzt sich fort. Drei Säulen versagen statt einer. Die Decke sinkt einen Meter. Der Weg ist offen, aber auch der Abgrund.",
+            ),
+            EncounterChoice(
+                id="cautious_audit",
+                label_en="Leave the desk untouched",
+                label_de="Den Schreibtisch unberührt lassen",
+                success_effects={"stress": 20},
+                success_narrative_en="The pen remains. The blank pages remain. The audit that never happened is perhaps the most honest one.",
+                success_narrative_de="Der Stift bleibt. Die leeren Seiten bleiben. Der Bericht, der nie geschrieben wurde, ist vielleicht der ehrlichste.",
+            ),
+        ],
+    ),
     EncounterTemplate(
         id="tower_confidence_game",
         archetype="The Tower",
@@ -1062,8 +1318,8 @@ SHADOW_BANTER: list[dict] = [
         "id": "sb_06",
         "trigger": "combat_won",
         "personality_filter": {"agreeableness": (0.7, 1.0)},
-        "text_en": "{agent} checks on each party member before allowing themselves to breathe.",
-        "text_de": "{agent} sieht nach jedem Gruppenmitglied, bevor sie sich erlauben durchzuatmen.",
+        "text_en": "{agent} moves through the formation, confirming each operative. Only then does the tension release.",
+        "text_de": "{agent} geht die Reihe ab, prüft jeden einzelnen. Erst danach lässt die Anspannung nach.",
     },
     {
         "id": "sb_07",
@@ -1098,8 +1354,8 @@ SHADOW_BANTER: list[dict] = [
         "id": "sb_11",
         "trigger": "visibility_zero",
         "personality_filter": {"neuroticism": (0.6, 1.0)},
-        "text_en": "{agent}'s breathing accelerates. They're counting their own heartbeats.",
-        "text_de": "{agent}s Atem beschleunigt sich. Sie zahlen ihre eigenen Herzschlage.",
+        "text_en": "{agent}'s composure fractures. They have begun counting the intervals between sounds that are not there.",
+        "text_de": "{agent}s Fassung bricht. Sie zählen die Abstände zwischen Geräuschen, die nicht da sind.",
     },
     {
         "id": "sb_12",
@@ -1187,16 +1443,16 @@ SHADOW_BANTER: list[dict] = [
         "id": "sb_23",
         "trigger": "rest_start",
         "personality_filter": {},
-        "text_en": "The hollow is silent. For a few minutes, the party breathes.",
-        "text_de": "Die Höhle ist still. Fuer ein paar Minuten atmet die Gruppe.",
+        "text_en": "The hollow is silent. For a few minutes, nothing pursues them.",
+        "text_de": "Die Höhle schweigt. Für ein paar Minuten verfolgt sie nichts.",
     },
-    # Depth transitions
+    # Depth transitions — archetype-environmental (no body-specific metaphors)
     {
         "id": "sb_24",
         "trigger": "depth_change",
         "personality_filter": {},
-        "text_en": "Deeper. The air pressure changes. Your ears pop.",
-        "text_de": "Tiefer. Der Luftdruck andert sich. Eure Ohren knacken.",
+        "text_en": "Deeper. The temperature drops. The silence becomes structural.",
+        "text_de": "Tiefer. Die Temperatur sinkt. Die Stille wird baulich.",
     },
     {
         "id": "sb_25",
@@ -1204,6 +1460,27 @@ SHADOW_BANTER: list[dict] = [
         "personality_filter": {"openness": (0.0, 0.3)},
         "text_en": "{agent}: 'We should turn back.' No one responds.",
         "text_de": "{agent}: \u00bbWir sollten umkehren.\u00ab Niemand antwortet.",
+    },
+    {
+        "id": "sb_30",
+        "trigger": "depth_change",
+        "personality_filter": {},
+        "text_en": "The passage narrows. Not physically \u2013 conceptually. There are fewer ways out.",
+        "text_de": "Der Durchgang verengt sich. Nicht physisch \u2013 konzeptuell. Es gibt weniger Wege hinaus.",
+    },
+    {
+        "id": "sb_31",
+        "trigger": "depth_change",
+        "personality_filter": {"neuroticism": (0.5, 1.0)},
+        "text_en": "{agent} counts the steps since the last rest. Stops counting.",
+        "text_de": "{agent} zaehlt die Schritte seit der letzten Rast. Hoert auf zu zaehlen.",
+    },
+    {
+        "id": "sb_32",
+        "trigger": "depth_change",
+        "personality_filter": {},
+        "text_en": "The darkness here has weight. It presses down like accumulated intention.",
+        "text_de": "Die Dunkelheit hier hat Gewicht. Sie drueckt herab wie angesammelte Absicht.",
     },
     # Elite encounter
     {
@@ -1367,8 +1644,8 @@ TOWER_BANTER: list[dict] = [
         "id": "tb_05",
         "trigger": "room_entered",
         "personality_filter": {},
-        "text_en": "The floor tilts two degrees. The instruments confirm what your inner ear already knew.",
-        "text_de": "Der Boden neigt sich zwei Grad. Die Instrumente bestaetigen, was euer Innenohr bereits wusste.",
+        "text_en": "The floor tilts two degrees. The instruments confirm what the structure already warned.",
+        "text_de": "Der Boden neigt sich um zwei Grad. Die Instrumente bestätigen, was das Gebäude längst angekündigt hat.",
     },
     {
         "id": "tb_06",
@@ -1454,8 +1731,8 @@ TOWER_BANTER: list[dict] = [
         "id": "tb_17",
         "trigger": "depth_change",
         "personality_filter": {},
-        "text_en": "Higher. The air pressure drops. The stairwell groans under its own accumulated weight.",
-        "text_de": "Hoeher. Der Luftdruck sinkt. Das Treppenhaus ächzt unter seinem eigenen akkumulierten Gewicht.",
+        "text_en": "Higher. The structure protests. Each floor carries the memory of every floor beneath it.",
+        "text_de": "Höher. Das Gebäude wehrt sich. Jedes Stockwerk trägt die Erinnerung an jedes Stockwerk darunter.",
     },
     {
         "id": "tb_18",
@@ -1463,6 +1740,27 @@ TOWER_BANTER: list[dict] = [
         "personality_filter": {"openness": (0.0, 0.3)},
         "text_en": "{agent}: 'Every floor we climb is a floor that can collapse beneath us.' No one argues.",
         "text_de": "{agent}: \u00bbJedes Stockwerk, das wir erklimmen, ist ein Stockwerk, das unter uns einstürzen kann.\u00ab Niemand widerspricht.",
+    },
+    {
+        "id": "tb_46",
+        "trigger": "depth_change",
+        "personality_filter": {},
+        "text_en": "The stairwell narrows. Not the walls \u2013 the sense that return is possible.",
+        "text_de": "Das Treppenhaus verengt sich. Nicht die Wände \u2013 das Gefühl, dass Umkehr noch möglich ist.",
+    },
+    {
+        "id": "tb_47",
+        "trigger": "depth_change",
+        "personality_filter": {"conscientiousness": (0.6, 1.0)},
+        "text_en": "{agent} notes the load-bearing walls thinning. Structural integrity is a promise the building may not keep.",
+        "text_de": "{agent} registriert die dünner werdenden Tragwände. Statische Integrität ist ein Versprechen, das das Gebäude möglicherweise nicht hält.",
+    },
+    {
+        "id": "tb_48",
+        "trigger": "depth_change",
+        "personality_filter": {"neuroticism": (0.5, 1.0)},
+        "text_en": "{agent} pauses on the landing. Listens to the floor below settle into a position it was not designed to hold.",
+        "text_de": "{agent} verharrt auf dem Absatz. Lauscht, wie sich das Stockwerk darunter in eine Lage senkt, für die es nicht vorgesehen war.",
     },
     # ── Boss approach ──────────────────────────────────────────────────────
     {
@@ -1573,8 +1871,8 @@ TOWER_BANTER: list[dict] = [
         "id": "tb_33",
         "trigger": "rest_start",
         "personality_filter": {},
-        "text_en": "The vault hums at a frequency that almost sounds like quiet. The party allows itself to breathe.",
-        "text_de": "Der Tresorraum summt auf einer Frequenz, die fast wie Stille klingt. Die Gruppe erlaubt sich zu atmen.",
+        "text_en": "The vault hums at a frequency that almost sounds like quiet. For a moment, the ledger balances.",
+        "text_de": "Der Tresorraum summt auf einer Frequenz, die fast nach Stille klingt. Für einen Moment geht die Rechnung auf.",
     },
     # ── Retreat ─────────────────────────────────────────────────────────────
     {

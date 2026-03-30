@@ -205,7 +205,7 @@ class TestGetEnemyTemplatesDict:
 
 class TestEncounterData:
     def test_encounter_count(self):
-        assert len(ALL_SHADOW_ENCOUNTERS) == 11
+        assert len(ALL_SHADOW_ENCOUNTERS) == 13
 
     def test_encounter_type_distribution(self):
         types = {}
@@ -213,7 +213,7 @@ class TestEncounterData:
             types.setdefault(e.room_type, 0)
             types[e.room_type] += 1
         assert types["combat"] == 4
-        assert types["encounter"] == 3
+        assert types["encounter"] == 5
         assert types["elite"] == 1
         assert types["boss"] == 1
         assert types["rest"] == 1
@@ -346,7 +346,7 @@ class TestSelectBanter:
 
 class TestLootTables:
     def test_tier_1_has_4_items(self):
-        assert len(SHADOW_LOOT_TIER_1) == 4
+        assert len(SHADOW_LOOT_TIER_1) == 8
 
     def test_tier_2_has_5_items(self):
         assert len(SHADOW_LOOT_TIER_2) == 5
@@ -726,20 +726,20 @@ class TestGetEnemyTemplatesDictTower:
 
 
 class TestTowerEncounters:
-    """Data integrity of the 11 Tower encounter templates."""
+    """Data integrity of the 13 Tower encounter templates."""
 
     def test_encounter_count(self):
-        """Tower archetype has exactly 11 encounter templates."""
-        assert len(ALL_TOWER_ENCOUNTERS) == 11
+        """Tower archetype has exactly 13 encounter templates."""
+        assert len(ALL_TOWER_ENCOUNTERS) == 13
 
     def test_encounter_type_distribution(self):
-        """Correct distribution: 4 combat, 3 encounter, 1 elite, 1 boss, 1 rest, 1 treasure."""
+        """Correct distribution: 4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure."""
         types: dict[str, int] = {}
         for e in ALL_TOWER_ENCOUNTERS:
             types.setdefault(e.room_type, 0)
             types[e.room_type] += 1
         assert types["combat"] == 4
-        assert types["encounter"] == 3
+        assert types["encounter"] == 5
         assert types["elite"] == 1
         assert types["boss"] == 1
         assert types["rest"] == 1
@@ -1018,7 +1018,7 @@ class TestTowerLootTables:
     """Data integrity of Tower loot tables."""
 
     def test_tier_1_has_4_items(self):
-        assert len(TOWER_LOOT_TIER_1) == 4
+        assert len(TOWER_LOOT_TIER_1) == 8
 
     def test_tier_2_has_5_items(self):
         assert len(TOWER_LOOT_TIER_2) == 5
