@@ -3496,7 +3496,7 @@ Erstellt die Grundlage fuer das Resonance-Dungeon-System.
 | Funktion | Zweck |
 |----------|-------|
 | `fn_apply_dungeon_outcome(p_run_id, p_simulation_id, p_agent_outcomes)` | Atomisch: Mood + Moodlets + Activity-Records fuer Party-Agenten |
-| `fn_expire_abandoned_dungeon_runs(p_ttl_seconds)` | Bulk-Expire inaktiver Runs (Default 30min TTL) |
+| `fn_expire_abandoned_dungeon_runs(p_ttl_seconds)` | Bulk-Expire inaktiver Runs (Default 30min TTL). Setzt `status='abandoned'` + `completed_at=now()` fuer Runs mit `updated_at < now() - TTL`. Aufgerufen alle 60s durch `start_instance_cleanup()` Loop (registriert in FastAPI Lifespan). Dual-Cleanup: In-Memory-Eviction (`_instance_last_activity`) + DB-Orphan-Bereinigung (Server-Restart-Fall). |
 
 ### Migration 164: Resonance Dungeons — Atomare RPCs + VIEW
 

@@ -1527,11 +1527,11 @@ class CombatAction(BaseModel):
 ### 9.1 Instance Manager (Module-Level Singleton)
 
 ```python
-# backend/services/dungeon/dungeon_engine_service.py
+# backend/services/dungeon_engine_service.py
 
 import asyncio
 import logging
-from datetime import UTC, datetime, timedelta
+import time
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
@@ -1539,27 +1539,49 @@ logger = logging.getLogger(__name__)
 # ── Module-level instance store ───────────────────────
 # In-memory dict. NOT shared across workers.
 # For single-worker deployment (sufficient for <100 concurrent dungeons).
-_active_instances: dict[str, "DungeonInstance"] = {}
+_active_instances: dict[str, DungeonInstance] = {}
+_instance_last_activity: dict[str, float] = {}  # run_id → time.monotonic()
 _combat_timers: dict[str, asyncio.Task] = {}
+_distribution_timers: dict[str, asyncio.Task] = {}
 
-CHECKPOINT_INTERVAL_SECONDS = 120  # Persist to DB every 2 minutes
-INSTANCE_TTL_SECONDS = 1800  # 30 min inactive = auto-cleanup
-MAX_CONCURRENT_PER_SIM = 1  # Only one active dungeon per simulation
+INSTANCE_TTL_SECONDS = 1800       # 30 min inactive → auto-cleanup
+MAX_CONCURRENT_PER_SIM = 1        # Only one active dungeon per simulation
+COMBAT_PLANNING_TIMEOUT_MS = 45_000
+DISTRIBUTION_TIMEOUT_MS = 300_000  # 5 min for loot distribution
+```
 
-# [REVIEW #6 — MEDIUM] Checkpoint Strategy Suboptimal
-# Timer-based checkpoints (every 2 min) risk losing up to 2 minutes of
-# gameplay on crash. A 5-depth dungeon with 3-5 round combats might have
-# multiple room transitions + full combat encounters in that window.
-# Additionally, timer-based writes cause unnecessary DB load when dungeon
-# is idle (player reading text, AFK).
-#
-# Empfehlung: Checkpoint on state transitions instead of timer:
-# - After each room_entered
-# - After each combat_resolved
-# - After each encounter_choice
-# - On retreat/abandon
-# This guarantees zero gameplay loss and reduces write frequency
-# (typically 10-15 writes per run vs ~15 timer writes for a 30-min run).
+**Instance TTL Cleanup Loop** (registered in FastAPI lifespan alongside
+ResonanceScheduler, HeartbeatService, ScannerService, etc.):
+
+```python
+_CLEANUP_INTERVAL_SECONDS = 60
+
+async def start_instance_cleanup() -> asyncio.Task:
+    """Launch the instance cleanup loop. Called from app lifespan."""
+    task = asyncio.create_task(_instance_cleanup_loop())
+    return task
+
+async def _instance_cleanup_loop() -> None:
+    """Every 60s: evict stale in-memory instances + expire DB orphans."""
+    while True:
+        _evict_stale_instances()        # In-memory: check _instance_last_activity
+        admin.rpc("fn_expire_abandoned_dungeon_runs", ...)  # DB: check updated_at
+        await asyncio.sleep(_CLEANUP_INTERVAL_SECONDS)
+```
+
+Dual cleanup strategy:
+- **In-memory:** `_instance_last_activity` tracks `time.monotonic()` on every
+  `_get_instance()` call and on creation/recovery. `_evict_stale_instances()`
+  removes entries inactive longer than `INSTANCE_TTL_SECONDS`, cancelling
+  associated combat and distribution timers.
+- **Database:** `fn_expire_abandoned_dungeon_runs(p_ttl_seconds)` SQL function
+  (migration 163) bulk-updates `status='abandoned'` for rows where
+  `updated_at < now() - TTL`. Handles server-restart orphans.
+
+```
+# [REVIEW #6 — RESOLVED] Checkpoint Strategy
+# Originally timer-based (every 2 min). Now checkpoints on every state
+# transition (Review #1). Zero gameplay loss, writes only when state changes.
 ```
 
 ### 9.2 State Machine
@@ -2453,9 +2475,23 @@ Replaces Quick Actions during combat. One column per agent with their available 
 - Disabled (agent Afflicted): entire column grayed, "AFFLICTED" stamp overlay (MissionCard disabled pattern)
 
 **Timer bar:**
-- Existing RP meter pattern, countdown from 45→0
-- Color transitions: green (45-15s) → amber (15-5s) → red (5-0s) with pulse
+- Countdown from 45→0 with percentage-width fill bar
+- Color transitions: amber (45-10s) → warning/yellow (10-5s) → danger/red (≤5s)
+- Critical state (≤5s): multi-layer urgency feedback:
+  - Container: red-tinted background + pulsing inset glow (`critical-container` 0.6s)
+  - Track: red border glow
+  - Seconds: danger color + double text-shadow + scale pump (1.06x, `critical-pulse` 0.6s)
+  - Fill bar: aggressive opacity throb (`critical-bar-pulse` 0.6s)
+  - Label: flashing red (`critical-label-flash` 0.6s)
+  - All animations behind `prefers-reduced-motion: no-preference`; reduced-motion users get color-only changes
 - Auto-submit at 0 (server-side, client shows "AUTO-DEFEND" flash)
+
+**Combat Briefing (Onboarding):**
+- Shown once per user (persisted via `localStorage: dungeon_combat_onboarded`)
+- Compact 2-column grid layout (4 numbered steps, 1-2 left / 3-4 right)
+- Footer: alt-text ("Or type commands in terminal") inline with [ACKNOWLEDGED] dismiss button
+- Mobile (≤767px): falls back to single-column layout
+- Auto-dismisses on first ability click (UX-04)
 
 **Enemy panel (above combat bar during assessment phase):**
 
@@ -2631,7 +2667,7 @@ frontend/src/components/dungeon/
 
 ```
 frontend/src/components/dungeon/
-├── DungeonCombatBar.ts       ✅ ~490 lines. 45s timer, per-agent ability radiogroup, smart target picker, EXECUTE
+├── DungeonCombatBar.ts       ✅ ~1090 lines. 45s timer with 3-stage urgency (amber→warning→critical), per-agent ability radiogroup, smart target picker, compact 2-col onboarding briefing, EXECUTE
 └── DungeonEnemyPanel.ts      ✅ ~260 lines. Enemy cards, threat badges, telegraphed intents (◆◆/◆/▸)
 ```
 

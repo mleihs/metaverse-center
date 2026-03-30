@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+import time
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
@@ -86,6 +87,7 @@ logger = logging.getLogger(__name__)
 # In-memory dict. NOT shared across workers. Sufficient for <100 concurrent dungeons.
 
 _active_instances: dict[str, DungeonInstance] = {}
+_instance_last_activity: dict[str, float] = {}  # run_id → time.monotonic()
 _combat_timers: dict[str, asyncio.Task] = {}
 
 def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
@@ -229,6 +231,69 @@ async def _rpc_with_retry(
                 sentry_sdk.capture_exception(exc)
             raise
     raise last_exc  # type: ignore[misc]  # unreachable, satisfies type checker
+
+
+# ── Instance TTL Cleanup ───────────────────────────────────────────────────
+# Periodic background task that evicts stale in-memory instances and marks
+# orphaned DB rows as abandoned. Started from FastAPI lifespan.
+
+_CLEANUP_INTERVAL_SECONDS = 60
+
+
+def _evict_stale_instances() -> int:
+    """Remove in-memory instances inactive longer than INSTANCE_TTL_SECONDS.
+
+    Also cancels any associated combat/distribution timers. Returns the
+    number of evicted instances.
+    """
+    now = time.monotonic()
+    stale = [
+        rid for rid, ts in _instance_last_activity.items()
+        if now - ts > INSTANCE_TTL_SECONDS
+    ]
+    for run_id in stale:
+        _active_instances.pop(run_id, None)
+        _instance_last_activity.pop(run_id, None)
+        timer = _combat_timers.pop(run_id, None)
+        if timer:
+            timer.cancel()
+        dist_timer = _distribution_timers.pop(run_id, None)
+        if dist_timer:
+            dist_timer.cancel()
+        logger.info("Evicted stale dungeon instance: run_id=%s (TTL expired)", run_id)
+    return len(stale)
+
+
+async def _instance_cleanup_loop() -> None:
+    """Infinite loop: evict stale in-memory instances + expire DB orphans."""
+    while True:
+        try:
+            evicted = _evict_stale_instances()
+            if evicted:
+                logger.info("Instance cleanup: evicted %d stale instances", evicted)
+            # Also expire abandoned DB rows (handles server-restart orphans)
+            admin = await get_admin_supabase()
+            result = await admin.rpc(
+                "fn_expire_abandoned_dungeon_runs",
+                {"p_ttl_seconds": INSTANCE_TTL_SECONDS},
+            ).execute()
+            db_expired = result.data if result.data else 0
+            if db_expired:
+                logger.info("Instance cleanup: expired %d abandoned DB runs", db_expired)
+        except asyncio.CancelledError:
+            logger.info("Instance cleanup loop shutting down")
+            raise
+        except Exception as exc:
+            logger.exception("Instance cleanup loop error")
+            sentry_sdk.capture_exception(exc)
+        await asyncio.sleep(_CLEANUP_INTERVAL_SECONDS)
+
+
+async def start_instance_cleanup() -> asyncio.Task:
+    """Launch the instance cleanup loop. Called from app lifespan."""
+    task = asyncio.create_task(_instance_cleanup_loop())
+    logger.info("Dungeon instance cleanup loop started (TTL=%ds)", INSTANCE_TTL_SECONDS)
+    return task
 
 
 class DungeonEngineService:
@@ -377,6 +442,7 @@ class DungeonEngineService:
             if conn_idx < len(rooms):
                 rooms[conn_idx].revealed = True
         _active_instances[str(run_id)] = instance
+        _instance_last_activity[str(run_id)] = time.monotonic()
 
         # Initial checkpoint
         await cls._checkpoint(admin_supabase, instance)
@@ -851,6 +917,7 @@ class DungeonEngineService:
             }
 
         _active_instances.pop(str(instance.run_id), None)
+        _instance_last_activity.pop(str(instance.run_id), None)
         logger.warning("Party wipe: run_id=%s sim=%s", instance.run_id, instance.simulation_id)
 
         return {
@@ -1162,6 +1229,7 @@ class DungeonEngineService:
             }
 
         _active_instances.pop(str(run_id), None)
+        _instance_last_activity.pop(str(run_id), None)
         logger.info("Dungeon retreat: run_id=%s rooms_cleared=%d", run_id, instance.rooms_cleared)
 
         return {
@@ -1243,6 +1311,7 @@ class DungeonEngineService:
         )
         instance.restore_from_checkpoint(run["checkpoint_state"])
         _active_instances[str(run_id)] = instance
+        _instance_last_activity[str(run_id)] = time.monotonic()
 
         logger.info("Recovered dungeon instance from checkpoint: run_id=%s", run_id)
         return instance
@@ -1400,6 +1469,7 @@ class DungeonEngineService:
         if require_player and require_player not in instance.player_ids:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Not a participant in this dungeon run")
 
+        _instance_last_activity[str(run_id)] = time.monotonic()
         return instance
 
     @classmethod
@@ -1813,6 +1883,7 @@ class DungeonEngineService:
             )
 
         _active_instances.pop(str(instance.run_id), None)
+        _instance_last_activity.pop(str(instance.run_id), None)
         logger.info(
             "Dungeon completed: run_id=%s sim=%s archetype=%s rooms=%d/%d",
             instance.run_id,
@@ -2117,6 +2188,7 @@ class DungeonEngineService:
 
         instance.phase = "completed"
         _active_instances.pop(str(instance.run_id), None)
+        _instance_last_activity.pop(str(instance.run_id), None)
         logger.info(
             "Distribution finalized: run_id=%s sim=%s archetype=%s loot_items=%d",
             instance.run_id,

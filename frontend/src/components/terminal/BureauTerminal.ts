@@ -409,6 +409,11 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         white-space: nowrap;
       }
 
+      .terminal__status-prefix {
+        opacity: 0.65;
+        margin-right: 4px;
+      }
+
       .terminal__status-resources {
         display: flex;
         gap: 12px;
@@ -890,7 +895,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
         <div class="terminal__status">
           <span class="terminal__status-zone">
-            ${terminalState.isDungeonMode.value
+            <span class="terminal__status-prefix">${terminalState.isDungeonMode.value ? msg('RUN:') : msg('LOC:')}</span>${terminalState.isDungeonMode.value
               ? (terminalState.dungeonLabel.value?.toUpperCase() ?? msg('DUNGEON'))
               : (zone ? zone.name.toUpperCase() : msg('NO SECTOR'))}
           </span>

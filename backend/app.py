@@ -86,6 +86,7 @@ from backend.routers import (
     zone_actions,
 )
 from backend.services.bluesky_scheduler import BlueskyScheduler
+from backend.services.dungeon_engine_service import start_instance_cleanup
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
@@ -106,7 +107,9 @@ async def lifespan(app: FastAPI):
     heartbeat_task = await HeartbeatService.start()
     instagram_task = await InstagramScheduler.start()
     bluesky_task = await BlueskyScheduler.start()
+    dungeon_cleanup_task = await start_instance_cleanup()
     yield
+    dungeon_cleanup_task.cancel()
     bluesky_task.cancel()
     instagram_task.cancel()
     heartbeat_task.cancel()

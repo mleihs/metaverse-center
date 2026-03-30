@@ -117,12 +117,25 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       }
 
       .timer--critical {
-        animation: crt-flicker 0.15s infinite alternate;
+        background: color-mix(in srgb, var(--color-danger) 6%, transparent);
+        border-bottom-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+        animation: critical-container 0.6s ease-in-out infinite;
       }
 
-      @keyframes crt-flicker {
-        from { opacity: 1; }
-        to { opacity: 0.85; }
+      @keyframes critical-container {
+        0%, 100% {
+          box-shadow: inset 0 0 12px color-mix(in srgb, var(--color-danger) 8%, transparent);
+        }
+        50% {
+          box-shadow:
+            inset 0 0 20px color-mix(in srgb, var(--color-danger) 15%, transparent),
+            0 0 8px color-mix(in srgb, var(--color-danger) 12%, transparent);
+        }
+      }
+
+      .timer--critical .timer__track {
+        border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+        box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 20%, transparent);
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -131,7 +144,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       .timer--critical .timer__seconds {
         color: var(--color-danger);
-        text-shadow: 0 0 8px var(--color-danger);
+        text-shadow:
+          0 0 8px var(--color-danger),
+          0 0 16px color-mix(in srgb, var(--color-danger) 30%, transparent);
       }
 
       /* -- Agent Strips -- */
@@ -399,11 +414,16 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         }
 
         .timer--critical .timer__seconds {
-          animation: critical-pulse 0.8s ease-in-out infinite;
+          animation: critical-pulse 0.6s ease-in-out infinite;
         }
 
         .timer--critical .timer__fill {
-          animation: critical-bar-pulse 0.8s ease-in-out infinite;
+          animation: critical-bar-pulse 0.6s ease-in-out infinite;
+        }
+
+        .timer--critical .timer__label {
+          animation: critical-label-flash 0.6s step-end infinite;
+          color: var(--color-danger);
         }
 
         .ability {
@@ -433,13 +453,18 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       }
 
       @keyframes critical-pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.35; }
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.3; transform: scale(1.06); }
       }
 
       @keyframes critical-bar-pulse {
         0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        50% { opacity: 0.35; }
+      }
+
+      @keyframes critical-label-flash {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
       }
 
       @keyframes execute-breathe {
@@ -543,9 +568,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         flex-shrink: 0;
       }
 
-      /* -- Onboarding Briefing -- */
+      /* -- Onboarding Briefing (compact) -- */
       .briefing {
-        padding: 8px 12px;
+        padding: 5px 12px;
         border-bottom: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
         background: color-mix(in srgb, var(--_phosphor) 3%, var(--_screen-bg));
       }
@@ -557,21 +582,22 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         text-transform: uppercase;
         letter-spacing: 2px;
         color: var(--_phosphor);
-        margin-bottom: 6px;
-        border-bottom: 1px solid color-mix(in srgb, var(--_phosphor) 20%, transparent);
-        padding-bottom: 4px;
+        margin-bottom: 4px;
       }
 
       .briefing__steps {
         list-style: none;
         padding: 0;
-        margin: 0 0 6px;
+        margin: 0 0 4px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px 12px;
       }
 
       .briefing__step {
         font-family: var(--_mono);
         font-size: 9px;
-        line-height: 1.6;
+        line-height: 1.3;
         color: var(--_phosphor-dim);
         padding-left: 16px;
         position: relative;
@@ -585,12 +611,18 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         font-weight: 700;
       }
 
+      .briefing__footer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
       .briefing__alt {
         font-family: var(--_mono);
         font-size: 8px;
-        color: color-mix(in srgb, var(--_phosphor-dim) 60%, transparent);
+        color: color-mix(in srgb, var(--_phosphor-dim) 50%, transparent);
         font-style: italic;
-        margin-bottom: 6px;
+        flex: 1;
       }
 
       .briefing__ack {
@@ -599,11 +631,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 2px;
-        padding: 4px 12px;
+        padding: 2px 10px;
         background: transparent;
         color: var(--_phosphor);
         border: 1px solid var(--_phosphor-dim);
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .briefing__ack:hover {
@@ -627,6 +660,17 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       @keyframes cursor-blink {
         0%, 100% { opacity: 1; }
         50% { opacity: 0; }
+      }
+
+      @media (max-width: 767px) {
+        .briefing__steps {
+          grid-template-columns: 1fr;
+        }
+        .briefing__footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
       }
 
       /* -- Footer Hint -- */
@@ -1038,10 +1082,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
           <li class="briefing__step" data-num="3.">${msg('Attack abilities require an enemy target')}</li>
           <li class="briefing__step" data-num="4.">${msg('Press EXECUTE when all agents have orders')}</li>
         </ol>
-        <div class="briefing__alt">${msg('Or type "attack <agent> <ability> [target]" + "submit" in terminal')}</div>
-        <button class="briefing__ack" @click=${this._dismissOnboarding}>
-          ${msg('Acknowledged')}
-        </button>
+        <div class="briefing__footer">
+          <span class="briefing__alt">${msg('Or type commands in terminal')}</span>
+          <button class="briefing__ack" @click=${this._dismissOnboarding}>
+            ${msg('Acknowledged')}
+          </button>
+        </div>
       </div>
     `;
   }
