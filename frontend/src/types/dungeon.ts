@@ -405,6 +405,9 @@ export interface CombatSubmitResponse {
   /** Loot items rolled on combat victory. Empty/absent on wipe or stalemate. */
   loot?: LootItem[];
   state: DungeonClientState;
+  /** True when the finalization RPC failed after retry. Instance kept in memory. */
+  rpc_failed?: boolean;
+  rpc_error_message?: string;
 }
 
 /** Resolved combat round result. */
@@ -472,6 +475,7 @@ export interface RetreatResponse {
   retreated: boolean;
   loot: LootItem[];
   rpc_failed?: boolean;
+  rpc_error_message?: string;
 }
 
 /** GET /dungeons/available — available dungeon archetype. */

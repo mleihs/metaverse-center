@@ -524,6 +524,9 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
     }
 
     const lines = formatRetreatResult(resp.data.loot);
+    if (resp.data.rpc_failed) {
+      lines.push(errorLine(resp.data.rpc_error_message ?? msg('Failed to save retreat. Progress will be recovered on next visit.')));
+    }
     _exitDungeon();
     return lines;
   } catch (err) {
@@ -861,6 +864,9 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       // Wipe
       if (resp.data.round_result.wipe) {
         lines.push(...formatPartyWipe());
+        if (resp.data.rpc_failed) {
+          lines.push(errorLine(resp.data.rpc_error_message ?? msg('Failed to save result. Progress will be recovered on next visit.')));
+        }
         _exitDungeon();
       }
 

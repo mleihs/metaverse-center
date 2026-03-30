@@ -20,6 +20,7 @@ import asyncio
 import logging
 import random
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 import sentry_sdk
@@ -164,6 +165,7 @@ MAX_CONCURRENT_PER_SIM = 1
 INSTANCE_TTL_SECONDS = 1800  # 30 min inactive → auto-cleanup
 COMBAT_PLANNING_TIMEOUT_MS = 45_000
 DISTRIBUTION_TIMEOUT_MS = 300_000  # 5 min for loot distribution
+_RPC_MAX_ATTEMPTS = 2
 # Client timer expires before server to win the submission race.
 # Server auto-resolves at COMBAT_PLANNING_TIMEOUT_MS; client submits earlier.
 CLIENT_TIMER_BUFFER_MS = 3_000
@@ -188,6 +190,45 @@ _FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "rest_ambush": "tower_rest_ambush_spawn",
     },
 }
+
+
+async def _rpc_with_retry(
+    admin_supabase: Client,
+    rpc_name: str,
+    params: dict,
+    *,
+    run_id: UUID,
+    context: str,
+) -> Any:
+    """Execute a Postgres RPC with one immediate retry on transient failure.
+
+    All dungeon finalization RPCs are idempotent (status updates, CAS loot),
+    so retrying is safe. Logs + Sentry on final failure, then re-raises.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(_RPC_MAX_ATTEMPTS):
+        try:
+            return await admin_supabase.rpc(rpc_name, params).execute()
+        except PostgrestAPIError as exc:
+            last_exc = exc
+            if attempt < _RPC_MAX_ATTEMPTS - 1:
+                logger.warning(
+                    "RPC %s failed for run %s (attempt %d/%d), retrying",
+                    rpc_name, run_id, attempt + 1, _RPC_MAX_ATTEMPTS,
+                )
+                continue
+            logger.exception(
+                "RPC %s failed for run %s after %d attempts",
+                rpc_name, run_id, _RPC_MAX_ATTEMPTS,
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "dungeon_engine")
+                scope.set_tag("run_id", str(run_id))
+                scope.set_tag("rpc", rpc_name)
+                scope.set_tag("context", context)
+                sentry_sdk.capture_exception(exc)
+            raise
+    raise last_exc  # type: ignore[misc]  # unreachable, satisfies type checker
 
 
 class DungeonEngineService:
@@ -790,8 +831,8 @@ class DungeonEngineService:
             )
 
         try:
-            await admin_supabase.rpc(
-                "fn_wipe_dungeon_run",
+            await _rpc_with_retry(
+                admin_supabase, "fn_wipe_dungeon_run",
                 {
                     "p_run_id": str(instance.run_id),
                     "p_simulation_id": str(instance.simulation_id),
@@ -799,15 +840,15 @@ class DungeonEngineService:
                     "p_depth": instance.depth,
                     "p_room_index": instance.current_room,
                 },
-            ).execute()
+                run_id=instance.run_id, context="party_wipe",
+            )
         except PostgrestAPIError:
-            logger.exception("Failed to wipe dungeon run via RPC for run %s", instance.run_id)
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "dungeon_engine")
-                scope.set_tag("run_id", str(instance.run_id))
-                sentry_sdk.capture_exception()
-            # Keep instance in memory — DB still has active status, retry possible
-            return {"wipe": True, "rpc_failed": True, "state": cls._build_client_state(instance).model_dump()}
+            return {
+                "wipe": True,
+                "rpc_failed": True,
+                "rpc_error_message": "Failed to save wipe result. Your progress will be recovered on next visit.",
+                "state": cls._build_client_state(instance).model_dump(),
+            }
 
         _active_instances.pop(str(instance.run_id), None)
         logger.warning("Party wipe: run_id=%s sim=%s", instance.run_id, instance.simulation_id)
@@ -1101,8 +1142,8 @@ class DungeonEngineService:
         }
 
         try:
-            await admin_supabase.rpc(
-                "fn_abandon_dungeon_run",
+            await _rpc_with_retry(
+                admin_supabase, "fn_abandon_dungeon_run",
                 {
                     "p_run_id": str(run_id),
                     "p_simulation_id": str(instance.simulation_id),
@@ -1110,15 +1151,15 @@ class DungeonEngineService:
                     "p_depth": instance.depth,
                     "p_room_index": instance.current_room,
                 },
-            ).execute()
+                run_id=run_id, context="retreat",
+            )
         except PostgrestAPIError:
-            logger.exception("Failed to abandon dungeon run via RPC for run %s", run_id)
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "dungeon_engine")
-                scope.set_tag("run_id", str(run_id))
-                sentry_sdk.capture_exception()
-            # Keep instance in memory — DB still has active status
-            return {"retreated": True, "rpc_failed": True, "loot": [item.model_dump() for item in loot]}
+            return {
+                "retreated": True,
+                "rpc_failed": True,
+                "rpc_error_message": "Failed to save retreat. Your progress will be recovered on next visit.",
+                "loot": [item.model_dump() for item in loot],
+            }
 
         _active_instances.pop(str(run_id), None)
         logger.info("Dungeon retreat: run_id=%s rooms_cleared=%d", run_id, instance.rooms_cleared)
@@ -1745,8 +1786,8 @@ class DungeonEngineService:
         loot_items = cls._build_loot_items_for_rpc(instance, loot)
 
         try:
-            rpc_result = await admin_supabase.rpc(
-                "fn_complete_dungeon_run",
+            rpc_result = await _rpc_with_retry(
+                admin_supabase, "fn_complete_dungeon_run",
                 {
                     "p_run_id": str(instance.run_id),
                     "p_simulation_id": str(instance.simulation_id),
@@ -1756,15 +1797,10 @@ class DungeonEngineService:
                     "p_depth": instance.depth,
                     "p_room_index": instance.current_room,
                 },
-            ).execute()
+                run_id=instance.run_id, context="complete_run",
+            )
         except PostgrestAPIError:
-            logger.exception("Failed to complete dungeon run via RPC for run %s", instance.run_id)
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "dungeon_engine")
-                scope.set_tag("run_id", str(instance.run_id))
-                scope.set_tag("phase", "complete_run")
-                sentry_sdk.capture_exception()
-            # Keep instance in memory — DB still has active status, retry possible
+            # Instance stays in memory — will be retried on next user action or server cleanup
             return
 
         # Log loot application results (aptitude cap skips, event modifier no-ops)
@@ -1891,8 +1927,8 @@ class DungeonEngineService:
         agent_outcomes = cls._build_agent_outcomes(instance)
 
         try:
-            await admin_supabase.rpc(
-                "fn_begin_distribution",
+            await _rpc_with_retry(
+                admin_supabase, "fn_begin_distribution",
                 {
                     "p_run_id": str(instance.run_id),
                     "p_simulation_id": str(instance.simulation_id),
@@ -1901,23 +1937,70 @@ class DungeonEngineService:
                     "p_depth": instance.depth,
                     "p_room_index": instance.current_room,
                 },
-            ).execute()
+                run_id=instance.run_id, context="begin_distribution",
+            )
         except PostgrestAPIError:
-            logger.exception("Failed to begin distribution for run %s", instance.run_id)
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "dungeon_engine")
-                scope.set_tag("run_id", str(instance.run_id))
-                scope.set_tag("phase", "begin_distribution")
-                sentry_sdk.capture_exception()
+            # Instance stays in memory — will be retried on next user action
             return
 
         await cls._checkpoint(admin_supabase, instance)
+
+        # Start distribution timeout — auto-assigns remaining loot after DISTRIBUTION_TIMEOUT_MS
+        cls._start_distribution_timer(instance)
+
         logger.info(
             "Distribution started: run_id=%s, %d distributable items, %d auto-apply items",
             instance.run_id,
             len([i for i in instance.pending_loot if i.get("effect_type") not in _AUTO_APPLY_EFFECT_TYPES]),
             len(auto_items),
         )
+
+    @classmethod
+    def _start_distribution_timer(cls, instance: DungeonInstance) -> None:
+        """Start a timer that auto-assigns unassigned loot after DISTRIBUTION_TIMEOUT_MS."""
+        run_id_str = str(instance.run_id)
+        existing = _distribution_timers.pop(run_id_str, None)
+        if existing and not existing.done():
+            existing.cancel()
+
+        async def _auto_finalize() -> None:
+            await asyncio.sleep(DISTRIBUTION_TIMEOUT_MS / 1000)
+            if not _distribution_timers.pop(run_id_str, None):
+                return  # Already confirmed by player
+            inst = _active_instances.get(run_id_str)
+            if not inst or inst.phase != "distributing":
+                return
+
+            # Auto-assign unassigned distributable items to the first party agent
+            first_agent_id = str(inst.party[0].agent_id) if inst.party else None
+            if first_agent_id:
+                for item in inst.pending_loot:
+                    if item.get("effect_type") in _AUTO_APPLY_EFFECT_TYPES:
+                        continue
+                    if item["id"] not in inst.loot_assignments:
+                        inst.loot_assignments[item["id"]] = first_agent_id
+
+            logger.info(
+                "Distribution timer expired for run %s — auto-assigned %d items to %s",
+                run_id_str,
+                len(inst.loot_assignments),
+                first_agent_id,
+            )
+
+            # Finalize (no user_id — internal call)
+            try:
+                fresh_admin = await get_admin_supabase()
+                await cls.confirm_distribution(fresh_admin, inst.run_id)
+            except Exception:
+                logger.exception("Auto-finalize distribution failed for run %s", run_id_str)
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "dungeon_engine")
+                    scope.set_tag("run_id", run_id_str)
+                    scope.set_tag("context", "distribution_timer")
+                    sentry_sdk.capture_exception()
+
+        task = asyncio.create_task(_auto_finalize())
+        _distribution_timers[run_id_str] = task
 
     @classmethod
     async def assign_loot(
@@ -1970,6 +2053,11 @@ class DungeonEngineService:
 
         user_id is optional to allow future auto-confirm from distribution timer.
         """
+        # Cancel distribution timer (player confirmed before timeout)
+        timer = _distribution_timers.pop(str(run_id), None)
+        if timer and not timer.done():
+            timer.cancel()
+
         instance = await cls._get_instance(
             run_id, admin_supabase, require_player=user_id,
         )
