@@ -84,6 +84,23 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
+
+def _log_extra(instance: DungeonInstance, **kwargs: Any) -> dict[str, Any]:
+    """Build structured log extra dict from a dungeon instance.
+
+    Standard fields (always included): run_id, sim_id, archetype, difficulty.
+    Additional fields passed via kwargs (e.g. phase, rooms_cleared, outcome).
+    Consumed by structlog ExtraAdder → JSON output in production.
+    """
+    return {
+        "run_id": str(instance.run_id),
+        "sim_id": str(instance.simulation_id),
+        "archetype": instance.archetype,
+        "difficulty": instance.difficulty,
+        **kwargs,
+    }
+
+
 # ── Module-Level Instance Store ─────────────────────────────────────────────
 # In-memory dict. NOT shared across workers. Sufficient for <100 concurrent dungeons.
 
@@ -216,13 +233,16 @@ async def _rpc_with_retry(
             last_exc = exc
             if attempt < _RPC_MAX_ATTEMPTS - 1:
                 logger.warning(
-                    "RPC %s failed for run %s (attempt %d/%d), retrying",
-                    rpc_name, run_id, attempt + 1, _RPC_MAX_ATTEMPTS,
+                    "RPC failed, retrying",
+                    extra={
+                        "run_id": str(run_id), "rpc": rpc_name,
+                        "attempt": attempt + 1, "max_attempts": _RPC_MAX_ATTEMPTS,
+                    },
                 )
                 continue
             logger.exception(
-                "RPC %s failed for run %s after %d attempts",
-                rpc_name, run_id, _RPC_MAX_ATTEMPTS,
+                "RPC failed after all attempts",
+                extra={"run_id": str(run_id), "rpc": rpc_name, "context": context, "attempts": _RPC_MAX_ATTEMPTS},
             )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("service", "dungeon_engine")
@@ -355,6 +375,7 @@ class DungeonEngineService:
                 logger.warning(
                     "Agent %s has no aptitudes, assigning defaults",
                     agent_data.get("name", agent_data["id"]),
+                    extra={"agent_id": agent_data["id"], "archetype": archetype},
                 )
 
             # Extract Big Five traits from personality_profile for combat modifiers
@@ -414,7 +435,10 @@ class DungeonEngineService:
                     status.HTTP_409_CONFLICT,
                     f"An active {archetype} dungeon run already exists for this simulation",
                 ) from exc
-            logger.exception("Failed to create dungeon run")
+            logger.exception(
+                "Failed to create dungeon run",
+                extra={"sim_id": str(simulation_id), "archetype": archetype, "difficulty": difficulty},
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("service", "dungeon_engine")
                 scope.set_tag("simulation_id", str(simulation_id))
@@ -465,12 +489,8 @@ class DungeonEngineService:
         )
 
         logger.info(
-            "Dungeon run created: run_id=%s sim=%s archetype=%s difficulty=%d depth=%d",
-            run_id,
-            simulation_id,
-            archetype,
-            difficulty,
-            depth,
+            "Dungeon run created",
+            extra=_log_extra(instance, depth=depth, party_size=len(party)),
         )
 
         return {
@@ -652,10 +672,8 @@ class DungeonEngineService:
                 ability_id = action_data["ability_id"]
                 if not get_ability_by_id(ability_id):
                     logger.warning(
-                        "Invalid ability_id '%s' submitted for agent %s in run %s — auto-defend will cover this agent",
-                        ability_id,
-                        action_data["agent_id"],
-                        instance.run_id,
+                        "Invalid ability_id submitted — auto-defend will cover this agent",
+                        extra=_log_extra(instance, ability_id=ability_id, agent_id=action_data["agent_id"]),
                     )
                     continue  # Skip invalid — auto-defend loop below will assign a valid action
                 agent_actions.append(
@@ -915,7 +933,10 @@ class DungeonEngineService:
 
         _active_instances.pop(str(instance.run_id), None)
         _instance_last_activity.pop(str(instance.run_id), None)
-        logger.warning("Party wipe: run_id=%s sim=%s", instance.run_id, instance.simulation_id)
+        logger.warning(
+            "Party wipe",
+            extra=_log_extra(instance, outcome="wipe", depth=instance.depth, rooms_cleared=instance.rooms_cleared),
+        )
 
         return {
             "wipe": True,
@@ -962,9 +983,8 @@ class DungeonEngineService:
         )
 
         logger.info(
-            "Combat stalemate after %d rounds: run_id=%s",
-            round_result.round_num,
-            instance.run_id,
+            "Combat stalemate",
+            extra=_log_extra(instance, outcome="stalemate", rounds=round_result.round_num),
         )
 
         return {
@@ -1227,7 +1247,10 @@ class DungeonEngineService:
 
         _active_instances.pop(str(run_id), None)
         _instance_last_activity.pop(str(run_id), None)
-        logger.info("Dungeon retreat: run_id=%s rooms_cleared=%d", run_id, instance.rooms_cleared)
+        logger.info(
+            "Dungeon retreat",
+            extra=_log_extra(instance, outcome="retreat", rooms_cleared=instance.rooms_cleared),
+        )
 
         return {
             "retreated": True,
@@ -1310,7 +1333,10 @@ class DungeonEngineService:
         _active_instances[str(run_id)] = instance
         _instance_last_activity[str(run_id)] = time.monotonic()
 
-        logger.info("Recovered dungeon instance from checkpoint: run_id=%s", run_id)
+        logger.info(
+            "Recovered dungeon instance from checkpoint",
+            extra=_log_extra(instance, phase=instance.phase),
+        )
         return instance
 
     # ── Client State (Fog of War) ───────────────────────────────────────
@@ -1507,7 +1533,7 @@ class DungeonEngineService:
                 .execute()
             )
         except PostgrestAPIError:
-            logger.exception("Checkpoint failed for run %s", instance.run_id)
+            logger.exception("Checkpoint failed", extra=_log_extra(instance, phase=instance.phase))
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("service", "dungeon_engine")
                 scope.set_tag("run_id", str(instance.run_id))
@@ -1547,7 +1573,10 @@ class DungeonEngineService:
                 .execute()
             )
         except PostgrestAPIError:
-            logger.exception("Failed to log dungeon event: %s for run %s", event_type, run_id)
+            logger.exception(
+                "Failed to log dungeon event",
+                extra={"run_id": str(run_id), "sim_id": str(simulation_id), "event_type": event_type},
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("service", "dungeon_engine")
                 scope.set_tag("run_id", str(run_id))
@@ -1638,11 +1667,8 @@ class DungeonEngineService:
         # ── Fallbacks (no encounter template) ──
         if room_type == "encounter":
             logger.warning(
-                "No encounter template for room_type=%s depth=%d difficulty=%d archetype=%s — auto-clearing room",
-                room_type,
-                instance.depth,
-                instance.difficulty,
-                instance.archetype,
+                "No encounter template — auto-clearing room",
+                extra=_log_extra(instance, room_type=room_type, depth=instance.depth),
             )
             instance.phase = "room_clear"
             room.cleared = True
@@ -1737,20 +1763,18 @@ class DungeonEngineService:
         loot_result = rpc_result.data if rpc_result and rpc_result.data else {}
         if isinstance(loot_result, dict) and loot_result.get("loot_result", {}).get("skipped"):
             logger.warning(
-                "Loot items skipped for run %s: %s",
-                instance.run_id,
-                loot_result["loot_result"]["skipped"],
+                "Loot items skipped",
+                extra=_log_extra(instance, skipped=loot_result["loot_result"]["skipped"]),
             )
 
         _active_instances.pop(str(instance.run_id), None)
         _instance_last_activity.pop(str(instance.run_id), None)
         logger.info(
-            "Dungeon completed: run_id=%s sim=%s archetype=%s rooms=%d/%d",
-            instance.run_id,
-            instance.simulation_id,
-            instance.archetype,
-            instance.rooms_cleared,
-            len(instance.rooms),
+            "Dungeon completed",
+            extra=_log_extra(
+                instance, outcome="completed",
+                rooms_cleared=instance.rooms_cleared, total_rooms=len(instance.rooms),
+            ),
         )
 
     @classmethod
@@ -1879,11 +1903,12 @@ class DungeonEngineService:
         # Start distribution timeout — auto-assigns remaining loot after DISTRIBUTION_TIMEOUT_MS
         cls._start_distribution_timer(instance)
 
+        distributable_count = len([
+            i for i in instance.pending_loot if i.get("effect_type") not in _AUTO_APPLY_EFFECT_TYPES
+        ])
         logger.info(
-            "Distribution started: run_id=%s, %d distributable items, %d auto-apply items",
-            instance.run_id,
-            len([i for i in instance.pending_loot if i.get("effect_type") not in _AUTO_APPLY_EFFECT_TYPES]),
-            len(auto_items),
+            "Distribution started",
+            extra=_log_extra(instance, distributable=distributable_count, auto_apply=len(auto_items)),
         )
 
     @classmethod
@@ -1912,10 +1937,8 @@ class DungeonEngineService:
                         inst.loot_assignments[item["id"]] = first_agent_id
 
             logger.info(
-                "Distribution timer expired for run %s — auto-assigned %d items to %s",
-                run_id_str,
-                len(inst.loot_assignments),
-                first_agent_id,
+                "Distribution timer expired — auto-assigned loot",
+                extra=_log_extra(inst, assigned=len(inst.loot_assignments), first_agent=first_agent_id),
             )
 
             # Finalize (no user_id — internal call)
@@ -1923,7 +1946,10 @@ class DungeonEngineService:
                 fresh_admin = await get_admin_supabase()
                 await cls.confirm_distribution(fresh_admin, inst.run_id)
             except Exception:
-                logger.exception("Auto-finalize distribution failed for run %s", run_id_str)
+                logger.exception(
+                    "Auto-finalize distribution failed",
+                    extra={"run_id": run_id_str},
+                )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("service", "dungeon_engine")
                     scope.set_tag("run_id", run_id_str)
@@ -2030,7 +2056,7 @@ class DungeonEngineService:
                 },
             ).execute()
         except PostgrestAPIError:
-            logger.exception("Failed to finalize distribution for run %s", instance.run_id)
+            logger.exception("Failed to finalize distribution", extra=_log_extra(instance))
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("service", "dungeon_engine")
                 scope.set_tag("run_id", str(instance.run_id))
@@ -2041,20 +2067,16 @@ class DungeonEngineService:
         loot_result = rpc_result.data if rpc_result and rpc_result.data else {}
         if isinstance(loot_result, dict) and loot_result.get("loot_result", {}).get("skipped"):
             logger.warning(
-                "Loot items skipped for run %s: %s",
-                instance.run_id,
-                loot_result["loot_result"]["skipped"],
+                "Loot items skipped",
+                extra=_log_extra(instance, skipped=loot_result["loot_result"]["skipped"]),
             )
 
         instance.phase = "completed"
         _active_instances.pop(str(instance.run_id), None)
         _instance_last_activity.pop(str(instance.run_id), None)
         logger.info(
-            "Distribution finalized: run_id=%s sim=%s archetype=%s loot_items=%d",
-            instance.run_id,
-            instance.simulation_id,
-            instance.archetype,
-            len(loot_items),
+            "Distribution finalized",
+            extra=_log_extra(instance, outcome="distributed", loot_items=len(loot_items)),
         )
 
         return {
@@ -2146,7 +2168,7 @@ class DungeonEngineService:
                 return  # Already resolved by user submission
             inst = _active_instances.get(run_id_str)
             if inst and inst.phase == "combat_planning":
-                logger.info("Combat timer expired for run %s, auto-resolving", run_id_str)
+                logger.info("Combat timer expired, auto-resolving", extra=_log_extra(inst))
                 fresh_admin = await get_admin_supabase()
                 await cls._resolve_combat(fresh_admin, inst)
 
