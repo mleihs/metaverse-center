@@ -63,6 +63,7 @@ from backend.services.combat.stress_system import (
     calculate_ambient_stress,
     stress_threshold,
 )
+from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon.dungeon_archetypes import (
     ARCHETYPE_CONFIGS,
     get_depth_for_difficulty,
@@ -380,8 +381,9 @@ class DungeonEngineService:
         # Generate dungeon graph
         rooms = generate_dungeon_graph(archetype, difficulty, depth)
 
-        # Build archetype initial state
-        archetype_state = cls._init_archetype_state(archetype, config)
+        # Build archetype initial state via strategy
+        strategy = get_archetype_strategy(archetype)
+        archetype_state = strategy.init_state()
 
         # Create DB record (unique partial index prevents concurrent runs)
         signature = config.get("signature", "conflict_wave")
@@ -523,20 +525,16 @@ class DungeonEngineService:
 
         # Apply archetype effects (drain on room entry)
         banter_trigger = "room_entered"
-        drain_trigger = cls._apply_archetype_drain(instance)
+        strategy = get_archetype_strategy(instance.archetype)
+        drain_trigger = strategy.apply_drain(instance)
         if drain_trigger:
             banter_trigger = drain_trigger
         if target_room.depth > current_room.depth:
             banter_trigger = "depth_change"
 
-        # Apply ambient stress (doubled during Tower structural failure)
+        # Apply ambient stress (archetype may multiply, e.g. Tower structural failure)
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
-        if (
-            instance.archetype == "The Tower"
-            and instance.archetype_state.get("stability", 100) <= 0
-        ):
-            mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
-            ambient = int(ambient * mc.get("collapse_stress_multiplier", 2.0))
+        ambient = int(ambient * strategy.get_ambient_stress_multiplier(instance))
         for agent in instance.party:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
@@ -762,9 +760,8 @@ class DungeonEngineService:
 
         round_data = cls._build_round_result_dict(round_result)
 
-        # Tower: drain stability per combat round
-        if instance.archetype == "The Tower":
-            cls._apply_tower_combat_drain(instance)
+        # Archetype per-round effects (e.g. Tower stability drain)
+        get_archetype_strategy(instance.archetype).on_combat_round(instance)
 
         if round_result.combat_over:
             if round_result.victory:
@@ -827,7 +824,7 @@ class DungeonEngineService:
         instance.combat = None
 
         # Restore archetype resource on combat victory
-        cls._apply_archetype_restore(instance, "combat_victory")
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "combat_victory")
 
         # Roll loot
         loot = roll_loot(
@@ -1027,9 +1024,9 @@ class DungeonEngineService:
                     "breakdown": outcome.breakdown,
                 }
 
-        # Tower: drain stability on failed skill check
-        if result_tier == "fail" and instance.archetype == "The Tower":
-            cls._apply_tower_failed_check_drain(instance)
+        # Archetype penalty on failed check (e.g. Tower stability drain)
+        if result_tier == "fail":
+            get_archetype_strategy(instance.archetype).on_failed_check(instance)
 
         # Apply effects
         effects = getattr(choice, f"{result_tier}_effects", {})
@@ -1047,7 +1044,7 @@ class DungeonEngineService:
                     agent.stress = max(0, agent.stress - stress_heal)
 
         # Apply archetype state changes from encounter effects
-        cls._apply_encounter_archetype_effects(instance, effects)
+        get_archetype_strategy(instance.archetype).apply_encounter_effects(instance, effects)
 
         # Mark room cleared, return to exploring
         current_room.cleared = True
@@ -1114,7 +1111,7 @@ class DungeonEngineService:
                     revealed_count += 1
 
         # Restore archetype resource on scout
-        cls._apply_archetype_restore(instance, "scout")
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "scout")
 
         await cls._checkpoint(admin_supabase, instance)
 
@@ -1161,7 +1158,7 @@ class DungeonEngineService:
                     agent.condition = "stressed"
 
         # Restore archetype resource on rest
-        cls._apply_archetype_restore(instance, "rest")
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "rest")
 
         current_room.cleared = True
         instance.rooms_cleared += 1
@@ -1557,148 +1554,11 @@ class DungeonEngineService:
                 scope.set_tag("event_type", event_type)
                 sentry_sdk.capture_exception()
 
-    # ── Archetype Dispatch Methods ────────────────────────────────────────
-    # ONE dispatch point per event category. Adding archetype N = N elif lines.
-
-    @classmethod
-    def _init_archetype_state(cls, archetype: str, config: dict) -> dict:
-        """Initialize archetype-specific state. ONE dispatch point for all archetypes."""
-        mechanic = config.get("mechanic")
-        mc = config.get("mechanic_config", {})
-        if mechanic == "visibility":
-            return {
-                "visibility": mc["start_visibility"],
-                "max_visibility": mc["max_visibility"],
-                "rooms_since_vp_loss": 0,
-            }
-        if mechanic == "stability_countdown":
-            return {
-                "stability": mc["start_stability"],
-                "max_stability": mc["max_stability"],
-            }
-        return {}
-
-    @classmethod
-    def _apply_archetype_drain(cls, instance: DungeonInstance) -> str | None:
-        """Apply archetype resource drain on room entry.
-
-        Returns banter trigger override or None. ONE dispatch for all drain events.
-        """
-        if instance.archetype == "The Shadow":
-            cls._apply_shadow_visibility(instance)
-            if instance.archetype_state.get("visibility", 3) == 0:
-                return "visibility_zero"
-        elif instance.archetype == "The Tower":
-            cls._apply_tower_stability_drain(instance)
-            stability = instance.archetype_state.get("stability", 100)
-            if stability <= 0:
-                return "stability_collapse"
-            if stability <= 20:
-                return "stability_critical"
-        return None
-
-    @classmethod
-    def _apply_archetype_restore(cls, instance: DungeonInstance, event: str) -> None:
-        """Apply archetype resource restore on combat_victory/rest/treasure/scout.
-
-        ONE dispatch for all restore events.
-        """
-        mc = ARCHETYPE_CONFIGS.get(instance.archetype, {}).get("mechanic_config", {})
-        if instance.archetype == "The Shadow":
-            restore_key = {
-                "combat_victory": "restore_on_combat_win",
-                "rest": "restore_on_rest",
-                "treasure": "restore_on_treasure",
-                "scout": "restore_on_spy_observe",
-            }.get(event)
-            if restore_key and mc.get(restore_key):
-                instance.archetype_state["visibility"] = min(
-                    mc["max_visibility"],
-                    instance.archetype_state.get("visibility", 0) + mc[restore_key],
-                )
-        elif instance.archetype == "The Tower":
-            restore_key = {
-                "combat_victory": "restore_on_combat_win",
-                "rest": "restore_on_guardian_rest",
-                "treasure": "restore_on_treasure",
-            }.get(event)
-            if restore_key and mc.get(restore_key):
-                instance.archetype_state["stability"] = min(
-                    mc["max_stability"],
-                    instance.archetype_state.get("stability", 0) + mc[restore_key],
-                )
-
-    @classmethod
-    def _apply_encounter_archetype_effects(cls, instance: DungeonInstance, effects: dict) -> None:
-        """Apply archetype state changes from encounter choice effects."""
-        if instance.archetype == "The Shadow":
-            vp_delta = effects.get("visibility", 0)
-            if vp_delta:
-                mc = ARCHETYPE_CONFIGS["The Shadow"]["mechanic_config"]
-                instance.archetype_state["visibility"] = max(
-                    0,
-                    min(
-                        mc["max_visibility"],
-                        instance.archetype_state.get("visibility", 0) + vp_delta,
-                    ),
-                )
-        elif instance.archetype == "The Tower":
-            stab_delta = effects.get("stability", 0)
-            if stab_delta:
-                mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
-                instance.archetype_state["stability"] = max(
-                    0,
-                    min(
-                        mc["max_stability"],
-                        instance.archetype_state.get("stability", 0) + stab_delta,
-                    ),
-                )
-
-    # ── Shadow-Specific Mechanic Methods ──────────────────────────────────
-
-    @classmethod
-    def _apply_shadow_visibility(cls, instance: DungeonInstance) -> None:
-        """Apply Shadow visibility drain: -1 VP per 2 rooms entered (Review #7)."""
-        state = instance.archetype_state
-        rooms_since = state.get("rooms_since_vp_loss", 0) + 1
-        if rooms_since >= 2:
-            state["visibility"] = max(0, state.get("visibility", 3) - 1)
-            state["rooms_since_vp_loss"] = 0
-        else:
-            state["rooms_since_vp_loss"] = rooms_since
-
-    # ── Tower-Specific Mechanic Methods ──────────────────────────────────
-
-    @classmethod
-    def _apply_tower_stability_drain(cls, instance: DungeonInstance) -> None:
-        """Apply Tower stability drain on room entry: -5/-10/-15 by depth."""
-        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
-        depth = instance.depth
-        if depth <= 2:
-            drain = mc["drain_depth_1_2"]
-        elif depth <= 4:
-            drain = mc["drain_depth_3_4"]
-        else:
-            drain = mc["drain_depth_5_plus"]
-        instance.archetype_state["stability"] = max(
-            0, instance.archetype_state.get("stability", 100) - drain,
-        )
-
-    @classmethod
-    def _apply_tower_combat_drain(cls, instance: DungeonInstance) -> None:
-        """Apply Tower stability drain per combat round: -3."""
-        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
-        instance.archetype_state["stability"] = max(
-            0, instance.archetype_state.get("stability", 100) - mc["drain_per_combat_round"],
-        )
-
-    @classmethod
-    def _apply_tower_failed_check_drain(cls, instance: DungeonInstance) -> None:
-        """Apply Tower stability drain on failed skill check: -5."""
-        mc = ARCHETYPE_CONFIGS["The Tower"]["mechanic_config"]
-        instance.archetype_state["stability"] = max(
-            0, instance.archetype_state.get("stability", 100) - mc["drain_on_failed_check"],
-        )
+    # ── Archetype Dispatch ────────────────────────────────────────────────
+    # All archetype-specific logic delegated to ArchetypeStrategy subclasses
+    # in backend/services/dungeon/archetype_strategies.py.
+    # Adding a new archetype = new Strategy subclass + registry entry.
+    # Zero engine changes required.
 
     @classmethod
     async def _enter_combat_room(
@@ -1802,7 +1662,7 @@ class DungeonEngineService:
         instance.phase = "room_clear"
 
         # Restore archetype resource at treasure
-        cls._apply_archetype_restore(instance, "treasure")
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "treasure")
 
         return {
             "treasure": True,

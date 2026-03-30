@@ -11,7 +11,7 @@ Covers all public classmethods and key private methods:
   - get_available_dungeons: VIEW query
   - recover_from_checkpoint: DB restore, graph + mutable state
   - get_client_state / _build_client_state: fog-of-war filtering
-  - _apply_shadow_visibility: VP cost per 2 rooms
+  - ShadowStrategy.apply_drain: VP cost per 2 rooms (via archetype_strategies)
   - _enter_combat_room / _enter_interactive_room (encounter/rest/treasure)
   - EnemyInstance.condition_display: percentage-based step→display property
   - _build_loot_items_for_rpc: loot serialization
@@ -40,6 +40,7 @@ from backend.models.resonance_dungeon import (
     LootItem,
     RoomNode,
 )
+from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon_engine_service import (
     COMBAT_PLANNING_TIMEOUT_MS,
     INSTANCE_TTL_SECONDS,
@@ -258,23 +259,26 @@ class TestEnemyConditionDisplay:
         assert enemy.condition_display == expected
 
 
-# ── _apply_shadow_visibility ─────────────────────────────────────────────
+# ── Shadow Visibility (via ArchetypeStrategy) ───────────────────────────
 
 
-class TestApplyShadowVisibility:
-    """VP cost per 2 rooms entered (Review #7)."""
+class TestShadowVisibilityDrain:
+    """VP cost per 2 rooms entered (Review #7). Tests ShadowStrategy.apply_drain."""
+
+    def setup_method(self):
+        self.strategy = get_archetype_strategy("The Shadow")
 
     def test_first_room_no_loss(self):
         instance = _make_instance()
         instance.archetype_state = {"visibility": 3, "rooms_since_vp_loss": 0}
-        DungeonEngineService._apply_shadow_visibility(instance)
+        self.strategy.apply_drain(instance)
         assert instance.archetype_state["visibility"] == 3
         assert instance.archetype_state["rooms_since_vp_loss"] == 1
 
     def test_second_room_loses_1_vp(self):
         instance = _make_instance()
         instance.archetype_state = {"visibility": 3, "rooms_since_vp_loss": 1}
-        DungeonEngineService._apply_shadow_visibility(instance)
+        self.strategy.apply_drain(instance)
         assert instance.archetype_state["visibility"] == 2
         assert instance.archetype_state["rooms_since_vp_loss"] == 0
 
@@ -282,21 +286,33 @@ class TestApplyShadowVisibility:
         instance = _make_instance()
         instance.archetype_state = {"visibility": 3, "rooms_since_vp_loss": 0}
         for _ in range(4):
-            DungeonEngineService._apply_shadow_visibility(instance)
+            self.strategy.apply_drain(instance)
         assert instance.archetype_state["visibility"] == 1
 
     def test_cannot_go_below_zero(self):
         instance = _make_instance()
         instance.archetype_state = {"visibility": 0, "rooms_since_vp_loss": 1}
-        DungeonEngineService._apply_shadow_visibility(instance)
+        self.strategy.apply_drain(instance)
         assert instance.archetype_state["visibility"] == 0
 
     def test_six_rooms_from_max_reaches_zero(self):
         instance = _make_instance()
         instance.archetype_state = {"visibility": 3, "rooms_since_vp_loss": 0}
         for _ in range(6):
-            DungeonEngineService._apply_shadow_visibility(instance)
+            self.strategy.apply_drain(instance)
         assert instance.archetype_state["visibility"] == 0
+
+    def test_visibility_zero_returns_trigger(self):
+        instance = _make_instance()
+        instance.archetype_state = {"visibility": 1, "rooms_since_vp_loss": 1}
+        trigger = self.strategy.apply_drain(instance)
+        assert trigger == "visibility_zero"
+
+    def test_normal_drain_returns_none(self):
+        instance = _make_instance()
+        instance.archetype_state = {"visibility": 3, "rooms_since_vp_loss": 0}
+        trigger = self.strategy.apply_drain(instance)
+        assert trigger is None
 
 
 # ── _build_client_state ──────────────────────────────────────────────────
