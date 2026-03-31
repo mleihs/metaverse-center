@@ -166,6 +166,13 @@ export function formatDungeonEntry(
   lines.push(systemLine('\u2550'.repeat(50)));
   lines.push(responseLine(''));
 
+  // Archetype-specific entrance atmosphere
+  const entrance = _getEntranceText(state.archetype);
+  if (entrance) {
+    lines.push(responseLine(entrance));
+    lines.push(responseLine(''));
+  }
+
   if (atmosphereText) {
     lines.push(responseLine(atmosphereText));
     lines.push(responseLine(''));
@@ -247,6 +254,22 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
   }
 
   return lines;
+}
+
+/** Archetype-specific entrance atmosphere text — the first thing the player reads. */
+function _getEntranceText(archetype: string): string {
+  switch (archetype) {
+    case 'The Shadow':
+      return msg('The threshold yields without resistance. Beyond it, the darkness is not empty \u2013 it is attentive. The instruments register nothing. Not zero. Nothing. As if measurement itself requires permission here.');
+    case ARCHETYPE_TOWER:
+      return msg('The lobby is pristine. Too pristine. The reception desk is unmanned, the ledger open to today\u2019s date. Someone has been expected. The elevator indicators read floors that should not exist. The building has been preparing for your arrival.');
+    case ARCHETYPE_ENTROPY:
+      return msg('The entrance is indistinct. Not ruined \u2013 reduced. The walls retain the memory of colour without the colour itself. The air tastes of averaged everything. Somewhere ahead, a distinction is being quietly dissolved.');
+    case ARCHETYPE_MOTHER:
+      return msg('The passage opens. Not like a door \u2013 like an invitation. The walls are warm. The floor yields slightly underfoot, accommodating. The air carries a scent that is not unpleasant, not identifiable, but somehow familiar. Something here has been waiting. Patiently. Fondly.');
+    default:
+      return '';
+  }
 }
 
 // ── Dungeon Map (ASCII FTL-style) ────────────────────────────────────────────
