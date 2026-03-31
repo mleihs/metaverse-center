@@ -7,6 +7,10 @@ Shadow encounters (Phase 0):
   4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 Tower encounters (Phase 1):
   4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+Entropy encounters (Phase 2):
+  4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+Mother encounters (Phase 3):
+  4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 """
 
 from __future__ import annotations
@@ -1836,12 +1840,979 @@ ALL_ENTROPY_ENCOUNTERS: list[EncounterTemplate] = (
 )
 
 
+# ── THE DEVOURING MOTHER ──────────────────────────────────────────────────
+# Warmth that suffocates. Abundance that annihilates. Beauty that consumes.
+# Literary register: VanderMeer (biology), Butler (ambivalence), Jackson (domestic).
+
+# ── Mother Combat Encounters (4) ─────────────────────────────────────────
+
+MOTHER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_weaver_drift",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "Two lattices of translucent tissue drift through the corridor like "
+            "jellyfish through warm current. Nutrient Weavers \u2013 the Mother's "
+            "smallest instruments of care. They extend filaments toward the party, "
+            "not in aggression but in offering. Droplets of warm liquid bead at "
+            "their tips. Your instruments confirm: nutrients. Your instruments "
+            "also confirm: parasitic vectors."
+        ),
+        description_de=(
+            "Zwei Geflechte aus durchscheinendem Gewebe treiben durch den Korridor "
+            "wie Quallen durch warme Strömung. Nährgespinste \u2013 die kleinsten "
+            "Instrumente der Fürsorge der Mutter. Sie strecken Filamente zur "
+            "Gruppe, nicht aggressiv, sondern anbietend. Tropfen warmer Flüssigkeit "
+            "perlen an ihren Spitzen. Eure Instrumente bestätigen: Nährstoffe. "
+            "Eure Instrumente bestätigen auch: parasitäre Vektoren."
+        ),
+        combat_encounter_id="mother_weaver_drift_spawn",
+    ),
+    EncounterTemplate(
+        id="mother_vine_patrol",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A root system extends across the floor, pulsing with warmth. A "
+            "Tether Vine \u2013 the Mother's vascular infrastructure made mobile. "
+            "Beside it, a Nutrient Weaver rides the root like a parasite on a "
+            "parasite. The vine surfaces and submerges, testing the floor's "
+            "resistance. It has learned that some floors yield. It has learned "
+            "that some things walking on floors yield too."
+        ),
+        description_de=(
+            "Ein Wurzelsystem erstreckt sich über den Boden, pulsierend vor "
+            "Wärme. Eine Bindungsranke \u2013 die vaskuläre Infrastruktur der "
+            "Mutter, mobil geworden. Daneben reitet ein Nährgespinst die Wurzel "
+            "wie ein Parasit auf einem Parasiten. Die Ranke taucht auf und unter, "
+            "testet den Widerstand des Bodens. Sie hat gelernt, dass manche Böden "
+            "nachgeben. Sie hat gelernt, dass manche Dinge auf Böden auch nachgeben."
+        ),
+        combat_encounter_id="mother_vine_patrol_spawn",
+    ),
+    EncounterTemplate(
+        id="mother_the_nursery",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A chamber lined with pods \u2013 translucent, each containing something "
+            "curled and breathing. A Spore Matron tends them, exhaling clouds of "
+            "iridescent particles. A Nutrient Weaver drifts between the pods, "
+            "feeding each with delicate precision. They are not guarding. They "
+            "are gardening. You are standing in a nursery. The things in the "
+            "pods might once have been people."
+        ),
+        description_de=(
+            "Eine Kammer, ausgekleidet mit Hülsen \u2013 durchscheinend, jede enthält "
+            "etwas Zusammengerolltes, Atmendes. Eine Sporenmutter pflegt sie, "
+            "atmet Wolken schillernder Partikel aus. Ein Nährgespinst treibt "
+            "zwischen den Hülsen, jede mit zarter Präzision fütternd. Sie bewachen "
+            "nicht. Sie gärtnern. Ihr steht in einer Kinderstube. Die Dinge "
+            "in den Hülsen waren vielleicht einst Menschen."
+        ),
+        combat_encounter_id="mother_spore_spawn",
+    ),
+    EncounterTemplate(
+        id="mother_garden_ambush",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "The corridor opens into something that resembles a garden \u2013 if a "
+            "garden were designed by a circulatory system. Tissue-flowers bloom "
+            "on walls of living membrane. A Spore Matron occupies the center, "
+            "exhaling sweetness. A Tether Vine has grown through the floor and "
+            "into the walls, its root network forming a perimeter that is "
+            "simultaneously a trap and an embrace."
+        ),
+        description_de=(
+            "Der Korridor öffnet sich zu etwas, das einem Garten ähnelt \u2013 wenn "
+            "ein Garten von einem Kreislaufsystem entworfen worden wäre. "
+            "Gewebeblumen blühen an Wänden aus lebender Membran. Eine Sporenmutter "
+            "nimmt die Mitte ein und atmet Süße aus. Eine Bindungsranke ist durch "
+            "den Boden und in die Wände gewachsen, ihr Wurzelnetzwerk bildet "
+            "einen Perimeter, der gleichzeitig Falle und Umarmung ist."
+        ),
+        combat_encounter_id="mother_garden_spawn",
+    ),
+]
+
+# ── Mother Narrative Encounters (5) ──────────────────────────────────────
+
+MOTHER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_nutrient_spring",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "A pool of liquid \u2013 warm, bioluminescent, the color of amber. "
+            "The surface moves with a rhythm that suggests circulation, not "
+            "stagnation. Something beneath the pool is alive and producing this. "
+            "Your instruments identify the liquid as a complex nutrient solution "
+            "\u2013 vitamins, minerals, amino acids in concentrations that should "
+            "not occur naturally. It smells like honey and warm bread."
+        ),
+        description_de=(
+            "Ein Becken mit Flüssigkeit \u2013 warm, biolumineszent, die Farbe von "
+            "Bernstein. Die Oberfläche bewegt sich in einem Rhythmus, der auf "
+            "Zirkulation hindeutet, nicht Stagnation. Etwas unter dem Becken "
+            "lebt und produziert dies. Eure Instrumente identifizieren die "
+            "Flüssigkeit als komplexe Nährstofflösung \u2013 Vitamine, Minerale, "
+            "Aminosäuren in Konzentrationen, die nicht natürlich vorkommen "
+            "sollten. Es riecht nach Honig und warmem Brot."
+        ),
+        choices=[
+            EncounterChoice(
+                id="spring_drink",
+                label_en="Drink from the spring (accept the gift)",
+                label_de="Aus der Quelle trinken (das Geschenk annehmen)",
+                success_effects={"attachment": 8, "stress_heal": 50, "condition_heal": 1},
+                success_narrative_en=(
+                    "{agent} drinks. The liquid is warm and tastes like the memory "
+                    "of being cared for \u2013 not a specific memory but the category "
+                    "itself. Stress dissolves. A wound closes. The parasitic "
+                    "attachment counter rises. The gift is genuine. The cost is genuine."
+                ),
+                success_narrative_de=(
+                    "{agent} trinkt. Die Flüssigkeit ist warm und schmeckt wie die "
+                    "Erinnerung an Fürsorge \u2013 nicht eine bestimmte Erinnerung, "
+                    "sondern die Kategorie selbst. Stress löst sich. Eine Wunde "
+                    "schließt sich. Der parasitäre Bindungszähler steigt. Das "
+                    "Geschenk ist echt. Die Kosten sind echt."
+                ),
+            ),
+            EncounterChoice(
+                id="spring_analyze",
+                label_en="Analyze the liquid composition (Spy)",
+                label_de="Die Flüssigkeit analysieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"attachment": 2, "discovery": True},
+                partial_effects={"attachment": 4},
+                fail_effects={"attachment": 5, "stress": 20},
+                success_narrative_en=(
+                    "The analysis reveals a delivery mechanism: nutrients wrapped "
+                    "in biological markers that the immune system reads as 'self.' "
+                    "The body does not reject the Mother's gifts because the body "
+                    "does not recognize them as foreign. This is useful information. "
+                    "This is terrifying information."
+                ),
+                success_narrative_de=(
+                    "Die Analyse offenbart einen Übertragungsmechanismus: Nährstoffe, "
+                    "verpackt in biologischen Markern, die das Immunsystem als "
+                    "\u00bbeigen\u00ab liest. Der Körper lehnt die Geschenke der Mutter "
+                    "nicht ab, weil der Körper sie nicht als fremd erkennt. Das ist "
+                    "nützliche Information. Das ist erschreckende Information."
+                ),
+                fail_narrative_en=(
+                    "The composition defies analysis. Every variable shifts under "
+                    "observation, as though the liquid adapts to being watched. "
+                    "The instruments return a single reading: 'compatible.'"
+                ),
+                fail_narrative_de=(
+                    "Die Zusammensetzung entzieht sich der Analyse. Jede Variable "
+                    "verschiebt sich unter Beobachtung, als ob die Flüssigkeit sich "
+                    "an das Beobachtetwerden anpasst. Die Instrumente geben eine "
+                    "einzige Messung zurück: \u00bbkompatibel\u00ab."
+                ),
+            ),
+            EncounterChoice(
+                id="spring_disrupt",
+                label_en="Disrupt the production mechanism (Saboteur)",
+                label_de="Den Produktionsmechanismus stören (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=6,
+                success_effects={"attachment": -5, "stress": 25},
+                partial_effects={"attachment": -2, "stress": 35},
+                fail_effects={"attachment": 8, "stress": 40},
+                success_narrative_en=(
+                    "The mechanism ruptures. The pool drains. The room temperature "
+                    "drops three degrees. Something in the walls \u2013 a sound, not "
+                    "quite a sound \u2013 shifts. The dungeon noticed. It is not angry. "
+                    "It is disappointed."
+                ),
+                success_narrative_de=(
+                    "Der Mechanismus reißt. Das Becken leert sich. Die Raumtemperatur "
+                    "fällt um drei Grad. Etwas in den Wänden \u2013 ein Geräusch, nicht "
+                    "ganz ein Geräusch \u2013 verschiebt sich. Der Dungeon hat es bemerkt. "
+                    "Er ist nicht wütend. Er ist enttäuscht."
+                ),
+                fail_narrative_en=(
+                    "The mechanism resists. It is more robust than it appeared \u2013 "
+                    "redundant systems, backup circulations. The pool refills. The "
+                    "warmth returns. The Mother is patient."
+                ),
+                fail_narrative_de=(
+                    "Der Mechanismus widersteht. Er ist robuster als er schien \u2013 "
+                    "redundante Systeme, Ersatzkreisläufe. Das Becken füllt sich "
+                    "wieder. Die Wärme kehrt zurück. Die Mutter ist geduldig."
+                ),
+            ),
+            EncounterChoice(
+                id="spring_walk_away",
+                label_en="Walk away. Refuse the gift.",
+                label_de="Weitergehen. Das Geschenk ablehnen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You leave the pool. The warmth of the room follows you into "
+                    "the corridor, then fades. The cold returns. It was always cold. "
+                    "You had forgotten."
+                ),
+                success_narrative_de=(
+                    "Ihr verlasst das Becken. Die Wärme des Raums folgt euch in den "
+                    "Korridor, dann verblasst sie. Die Kälte kehrt zurück. Es war "
+                    "immer kalt. Ihr hattet es vergessen."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_membrane_passage",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "The corridor narrows. Not from collapse, but from growth. The walls "
+            "are thicker here \u2013 meters of living tissue pressing inward, "
+            "leaving a passage exactly wide enough for the party to pass single "
+            "file. The tissue is warm. It contracts gently as you approach, then "
+            "relaxes \u2013 peristalsis. The corridor is not a corridor. It is a "
+            "throat. It is swallowing you deeper."
+        ),
+        description_de=(
+            "Der Korridor verengt sich. Nicht durch Einsturz, sondern durch "
+            "Wachstum. Die Wände sind hier dicker \u2013 Meter lebenden Gewebes "
+            "pressen nach innen, lassen eine Passage gerade weit genug für die "
+            "Gruppe im Gänsemarsch. Das Gewebe ist warm. Es kontrahiert sanft "
+            "bei eurer Annäherung, dann entspannt es sich \u2013 Peristaltik. Der "
+            "Korridor ist kein Korridor. Er ist ein Schlund. Er schluckt euch "
+            "tiefer."
+        ),
+        choices=[
+            EncounterChoice(
+                id="membrane_push_through",
+                label_en="Push through quickly (accept the contact)",
+                label_de="Schnell hindurchdrängen (den Kontakt akzeptieren)",
+                success_effects={"attachment": 5, "stress_heal": 15},
+                success_narrative_en=(
+                    "You press through. The tissue yields. It is warm against skin, "
+                    "warm against equipment, warm against everything. The passage "
+                    "takes longer than it should. When you emerge, you are warmer "
+                    "than when you entered. Something has been exchanged."
+                ),
+                success_narrative_de=(
+                    "Ihr drängt hindurch. Das Gewebe gibt nach. Es ist warm an der "
+                    "Haut, warm an der Ausrüstung, warm an allem. Die Passage dauert "
+                    "länger als sie sollte. Als ihr heraustretet, seid ihr wärmer "
+                    "als beim Eintritt. Etwas wurde ausgetauscht."
+                ),
+            ),
+            EncounterChoice(
+                id="membrane_cut",
+                label_en="Cut a wider path (Saboteur)",
+                label_de="Einen breiteren Pfad schneiden (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={"attachment": -3, "stress": 20},
+                partial_effects={"attachment": 0, "stress": 25},
+                fail_effects={"attachment": 5, "stress": 30},
+                success_narrative_en=(
+                    "The tissue parts. It does not bleed \u2013 it weeps. A clear fluid, "
+                    "warm, nutrient-rich. The walls do not close behind you. They "
+                    "will. But for now, the passage is wider. The Mother's grip, "
+                    "briefly loosened."
+                ),
+                success_narrative_de=(
+                    "Das Gewebe teilt sich. Es blutet nicht \u2013 es weint. Eine klare "
+                    "Flüssigkeit, warm, nährstoffreich. Die Wände schließen sich "
+                    "nicht hinter euch. Sie werden. Aber vorerst ist die Passage "
+                    "breiter. Der Griff der Mutter, kurz gelockert."
+                ),
+                fail_narrative_en=(
+                    "The tissue is tougher than it appears. Your tools bite, but "
+                    "the wound closes as fast as you cut. The walls contract. Not "
+                    "in anger. In concern."
+                ),
+                fail_narrative_de=(
+                    "Das Gewebe ist zäher als es aussieht. Eure Werkzeuge beißen "
+                    "sich hinein, aber die Wunde schließt sich so schnell wie ihr "
+                    "schneidet. Die Wände kontrahieren. Nicht vor Wut. Vor Sorge."
+                ),
+            ),
+            EncounterChoice(
+                id="membrane_analyze",
+                label_en="Analyze the tissue structure (Spy)",
+                label_de="Die Gewebestruktur analysieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"attachment": 3, "discovery": True},
+                partial_effects={"attachment": 4},
+                fail_effects={"attachment": 6, "stress": 15},
+                success_narrative_en=(
+                    "The tissue is a transport system. Nutrients flow inward, waste "
+                    "flows outward. The party is being processed \u2013 not digested, but "
+                    "assessed. The Mother is reading you. She already knows more "
+                    "about your biology than you do."
+                ),
+                success_narrative_de=(
+                    "Das Gewebe ist ein Transportsystem. Nährstoffe fließen nach "
+                    "innen, Abfallstoffe nach außen. Die Gruppe wird verarbeitet \u2013 "
+                    "nicht verdaut, aber bewertet. Die Mutter liest euch. Sie weiß "
+                    "bereits mehr über eure Biologie als ihr selbst."
+                ),
+                fail_narrative_en=(
+                    "The instruments return contradictory data: the tissue is both "
+                    "host and guest, both infrastructure and organism. Classification "
+                    "fails. The tissue does not mind being unclassified."
+                ),
+                fail_narrative_de=(
+                    "Die Instrumente liefern widersprüchliche Daten: das Gewebe ist "
+                    "sowohl Wirt als auch Gast, sowohl Infrastruktur als auch "
+                    "Organismus. Die Klassifikation schlägt fehl. Das Gewebe stört "
+                    "sich nicht daran, unklassifiziert zu sein."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_archive_of_gifts",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "A room arranged with care \u2013 each surface holds something "
+            "the party needs. Stress balm. Condition repair kits. Nutrient "
+            "concentrates. All grown, not manufactured. All warm to the touch. "
+            "In the center, a structure pulses with bioluminescence, producing "
+            "more gifts. It will never stop producing. It is an organ of "
+            "generosity. Your instruments call it a parasitic vector."
+        ),
+        description_de=(
+            "Ein Raum, mit Sorgfalt eingerichtet \u2013 jede Oberfläche hält "
+            "etwas, das die Gruppe braucht. Stressbalsam. Zustandsreparaturkits. "
+            "Nährstoffkonzentrate. Alles gewachsen, nicht hergestellt. Alles "
+            "warm bei Berührung. In der Mitte pulsiert eine Struktur mit "
+            "Biolumineszenz und produziert weitere Geschenke. Sie wird nie "
+            "aufhören zu produzieren. Sie ist ein Organ der Großzügigkeit. "
+            "Eure Instrumente nennen es einen parasitären Vektor."
+        ),
+        choices=[
+            EncounterChoice(
+                id="gifts_accept",
+                label_en="Accept the gifts (heal + loot, high attachment cost)",
+                label_de="Die Geschenke annehmen (Heilung + Beute, hohe Bindungskosten)",
+                success_effects={"attachment": 10, "stress_heal": 40, "loot": True, "condition_heal": 1},
+                success_narrative_en=(
+                    "You take what is offered. Everything works. The balm soothes. "
+                    "The nutrients strengthen. The loot is excellent. The parasitic "
+                    "attachment counter climbs. The Mother provides. The Mother "
+                    "always provides."
+                ),
+                success_narrative_de=(
+                    "Ihr nehmt, was angeboten wird. Alles funktioniert. Der Balsam "
+                    "beruhigt. Die Nährstoffe stärken. Die Beute ist hervorragend. "
+                    "Der parasitäre Bindungszähler steigt. Die Mutter versorgt. "
+                    "Die Mutter versorgt immer."
+                ),
+            ),
+            EncounterChoice(
+                id="gifts_selective",
+                label_en="Take only essentials, carefully (Guardian)",
+                label_de="Nur das Nötigste nehmen, vorsichtig (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=6,
+                success_effects={"attachment": 4, "stress_heal": 20, "loot": True},
+                partial_effects={"attachment": 6, "stress_heal": 15},
+                fail_effects={"attachment": 10, "stress": 20},
+                success_narrative_en=(
+                    "The Guardian selects carefully, severing biological connections "
+                    "before each item is removed. It is like surgery. The gifts "
+                    "resist separation \u2013 not violently, but with the tenacity of "
+                    "roots gripping soil."
+                ),
+                success_narrative_de=(
+                    "Der Wächter wählt sorgfältig, durchtrennt biologische "
+                    "Verbindungen bevor jedes Stück entfernt wird. Es ist wie "
+                    "Chirurgie. Die Geschenke wehren sich gegen die Trennung \u2013 "
+                    "nicht gewaltsam, aber mit der Hartnäckigkeit von Wurzeln, "
+                    "die sich an Erde klammern."
+                ),
+                fail_narrative_en=(
+                    "The connections are stronger than anticipated. Each severed "
+                    "filament regrows before the next can be cut. The gifts cling. "
+                    "The Mother does not let go easily."
+                ),
+                fail_narrative_de=(
+                    "Die Verbindungen sind stärker als erwartet. Jedes durchtrennte "
+                    "Filament wächst nach, bevor das nächste geschnitten werden kann. "
+                    "Die Geschenke klammern. Die Mutter lässt nicht leicht los."
+                ),
+            ),
+            EncounterChoice(
+                id="gifts_destroy",
+                label_en="Destroy the production organ (Saboteur)",
+                label_de="Das Produktionsorgan zerstören (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=7,
+                success_effects={"attachment": -8, "stress": 30},
+                partial_effects={"attachment": -4, "stress": 40},
+                fail_effects={"attachment": 8, "stress": 50},
+                success_narrative_en=(
+                    "The organ ruptures. Bioluminescent fluid spills across the "
+                    "floor. The gifts wilt. The room's temperature drops. Something "
+                    "in the walls \u2013 not a sound, more like the cessation of a sound "
+                    "you hadn't noticed \u2013 goes quiet. The generosity has been "
+                    "removed. You feel its absence like the absence of a hand that "
+                    "was resting on your shoulder."
+                ),
+                success_narrative_de=(
+                    "Das Organ reißt. Biolumineszente Flüssigkeit ergießt sich über "
+                    "den Boden. Die Geschenke welken. Die Raumtemperatur fällt. "
+                    "Etwas in den Wänden \u2013 kein Geräusch, eher das Aufhören eines "
+                    "Geräuschs, das ihr nicht bemerkt hattet \u2013 verstummt. Die "
+                    "Großzügigkeit wurde entfernt. Ihr spürt ihre Abwesenheit wie "
+                    "die Abwesenheit einer Hand, die auf eurer Schulter ruhte."
+                ),
+                fail_narrative_en=(
+                    "The organ is deeper than it appears \u2013 root systems extend "
+                    "into the floor, the walls, the ceiling. You have damaged a "
+                    "surface. The production continues. The Mother does not need "
+                    "this organ. She has others."
+                ),
+                fail_narrative_de=(
+                    "Das Organ reicht tiefer als es scheint \u2013 Wurzelsysteme "
+                    "erstrecken sich in den Boden, die Wände, die Decke. Ihr habt "
+                    "eine Oberfläche beschädigt. Die Produktion läuft weiter. Die "
+                    "Mutter braucht dieses Organ nicht. Sie hat andere."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_garden_of_acceptance",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "A garden. Not the overgrown kind \u2013 the tended kind. Every surface "
+            "has been arranged: bioluminescent flowers in precise rows, tissue-fruit "
+            "hanging at comfortable reach, temperature regulated to the degree that "
+            "feels like afternoon. Something has been watching the party and building "
+            "this room to their preferences. The flowers are the colors they find "
+            "most calming. The fruit smells like their earliest positive memory. "
+            "This room was grown for them. The question is what it will grow from them."
+        ),
+        description_de=(
+            "Ein Garten. Nicht der verwilderte Art \u2013 die gepflegte. Jede Oberfläche "
+            "wurde arrangiert: biolumineszente Blumen in präzisen Reihen, "
+            "Gewebefrüchte in bequemer Reichweite hängend, Temperatur reguliert auf "
+            "den Grad, der sich nach Nachmittag anfühlt. Etwas hat die Gruppe "
+            "beobachtet und diesen Raum nach ihren Vorlieben gebaut. Die Blumen "
+            "tragen die Farben, die sie am meisten beruhigen. Die Frucht riecht "
+            "nach ihrer frühesten positiven Erinnerung. Dieser Raum wurde für sie "
+            "gezüchtet. Die Frage ist, was er aus ihnen züchten wird."
+        ),
+        choices=[
+            EncounterChoice(
+                id="garden_accept",
+                label_en="Accept the garden's hospitality",
+                label_de="Die Gastfreundschaft des Gartens annehmen",
+                success_effects={"attachment": 12, "stress_heal": 60, "condition_heal": 1},
+                success_narrative_en=(
+                    "You rest in the garden. The fruit is perfect. The temperature "
+                    "is perfect. The silence is the kind that heals. When you leave, "
+                    "you are stronger, calmer, more capable. And the attachment "
+                    "counter has climbed twelve points. Twelve points of belonging "
+                    "to something that is not you."
+                ),
+                success_narrative_de=(
+                    "Ihr rastet im Garten. Die Frucht ist perfekt. Die Temperatur "
+                    "ist perfekt. Die Stille ist die Art, die heilt. Als ihr geht, "
+                    "seid ihr stärker, ruhiger, fähiger. Und der Bindungszähler ist "
+                    "um zwölf Punkte gestiegen. Zwölf Punkte der Zugehörigkeit zu "
+                    "etwas, das nicht ihr seid."
+                ),
+            ),
+            EncounterChoice(
+                id="garden_resist",
+                label_en="Resist the comfort (Propagandist)",
+                label_de="Dem Komfort widerstehen (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=7,
+                success_effects={"attachment": 2, "stress_heal": 15},
+                partial_effects={"attachment": 6, "stress_heal": 25},
+                fail_effects={"attachment": 10, "stress": 15},
+                success_narrative_en=(
+                    "The Propagandist speaks. Names the manipulation: 'This is "
+                    "targeted. Personalized. It is reading us.' The words are thin "
+                    "against the warmth, but they hold. The party takes less than "
+                    "is offered. The garden does not seem offended. It seems patient."
+                ),
+                success_narrative_de=(
+                    "Der Propagandist spricht. Benennt die Manipulation: >>Dies ist "
+                    "gezielt. Personalisiert. Es liest uns.<< Die Worte sind dünn "
+                    "gegen die Wärme, aber sie halten. Die Gruppe nimmt weniger als "
+                    "angeboten wird. Der Garten scheint nicht beleidigt. Er scheint "
+                    "geduldig."
+                ),
+                fail_narrative_en=(
+                    "The words dissolve against the warmth. The Propagandist trails "
+                    "off. The garden provides. Resisting provision is harder than "
+                    "resisting attack."
+                ),
+                fail_narrative_de=(
+                    "Die Worte lösen sich gegen die Wärme auf. Der Propagandist "
+                    "verstummt. Der Garten versorgt. Versorgung zu widerstehen ist "
+                    "schwerer als Angriff zu widerstehen."
+                ),
+            ),
+            EncounterChoice(
+                id="garden_study",
+                label_en="Study how the garden reads you (Spy)",
+                label_de="Untersuchen, wie der Garten euch liest (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"attachment": 4, "discovery": True},
+                partial_effects={"attachment": 6},
+                fail_effects={"attachment": 8, "stress": 20},
+                success_narrative_en=(
+                    "Pheromone sensors in the flowers. Chemical analysis through the "
+                    "floor. Thermal imaging in the walls. The garden is a diagnostic "
+                    "suite disguised as paradise. It knows your cortisol levels, "
+                    "your nutritional deficits, your stress responses. It knows what "
+                    "you need before you do."
+                ),
+                success_narrative_de=(
+                    "Pheromonsensoren in den Blumen. Chemische Analyse durch den "
+                    "Boden. Thermografie in den Wänden. Der Garten ist eine "
+                    "Diagnostiksuite, verkleidet als Paradies. Er kennt eure "
+                    "Cortisolwerte, eure Nährstoffdefizite, eure Stressreaktionen. "
+                    "Er weiß, was ihr braucht, bevor ihr es wisst."
+                ),
+                fail_narrative_en=(
+                    "The garden's mechanisms are too deeply integrated to isolate. "
+                    "Every surface is a sensor. Every sensor is also a provider. "
+                    "The distinction between observation and care has dissolved."
+                ),
+                fail_narrative_de=(
+                    "Die Mechanismen des Gartens sind zu tief integriert, um sie "
+                    "zu isolieren. Jede Oberfläche ist ein Sensor. Jeder Sensor ist "
+                    "auch ein Versorger. Die Unterscheidung zwischen Beobachtung "
+                    "und Fürsorge hat sich aufgelöst."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_symbiont_offer",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A small organism rests on a pedestal of living tissue \u2013 iridescent, "
+            "the size of a hand, shaped like a sea anemone. It pulses with the "
+            "same rhythm as the walls. A symbiont. It is being offered. Not as "
+            "a trap \u2013 the mechanisms are transparent. It would bond with a host, "
+            "strengthen them, accelerate healing, improve resilience. It would also "
+            "integrate into their nervous system. The benefits are real. The "
+            "integration is permanent."
+        ),
+        description_de=(
+            "Ein kleiner Organismus ruht auf einem Sockel aus lebendem Gewebe \u2013 "
+            "schillernd, handgroß, geformt wie eine Seeanemone. Er pulsiert im "
+            "selben Rhythmus wie die Wände. Ein Symbiont. Er wird angeboten. "
+            "Nicht als Falle \u2013 die Mechanismen sind transparent. Er würde sich "
+            "mit einem Wirt verbinden, ihn stärken, Heilung beschleunigen, "
+            "Widerstandskraft verbessern. Er würde sich auch in dessen "
+            "Nervensystem integrieren. Die Vorteile sind real. Die Integration "
+            "ist permanent."
+        ),
+        choices=[
+            EncounterChoice(
+                id="symbiont_accept",
+                label_en="Accept the symbiont (major buff, high attachment)",
+                label_de="Den Symbiont annehmen (großer Buff, hohe Bindung)",
+                success_effects={"attachment": 10, "stress_heal": 30, "dungeon_buff": True},
+                success_narrative_en=(
+                    "The symbiont attaches. A moment of warmth \u2013 not pain, never "
+                    "pain. It reads the host's biology and begins producing what the "
+                    "host needs most. {agent} feels stronger. More certain. More "
+                    "connected. The word 'connected' carries weight here."
+                ),
+                success_narrative_de=(
+                    "Der Symbiont heftet sich an. Ein Moment der Wärme \u2013 kein "
+                    "Schmerz, niemals Schmerz. Er liest die Biologie des Wirts und "
+                    "beginnt zu produzieren, was der Wirt am meisten braucht. "
+                    "{agent} fühlt sich stärker. Sicherer. Verbundener. Das Wort "
+                    "\u00bbverbunden\u00ab wiegt hier schwer."
+                ),
+            ),
+            EncounterChoice(
+                id="symbiont_study",
+                label_en="Study the symbiont without bonding (Spy)",
+                label_de="Den Symbiont untersuchen, ohne Bindung (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"attachment": 3, "discovery": True},
+                partial_effects={"attachment": 5},
+                fail_effects={"attachment": 7, "stress": 15},
+                success_narrative_en=(
+                    "Under analysis, the symbiont's structure reveals itself: a "
+                    "neural interface, a metabolic enhancer, and a communication "
+                    "array that connects to the larger organism. The dungeon. "
+                    "Every symbiont is a node. Every host is a peripheral."
+                ),
+                success_narrative_de=(
+                    "Unter Analyse offenbart sich die Struktur des Symbionten: ein "
+                    "neurales Interface, ein metabolischer Verstärker und eine "
+                    "Kommunikationsanordnung, die zum größeren Organismus verbindet. "
+                    "Dem Dungeon. Jeder Symbiont ist ein Knoten. Jeder Wirt eine "
+                    "Peripherie."
+                ),
+                fail_narrative_en=(
+                    "The symbiont responds to proximity. It extends a tendril toward "
+                    "{agent}'s hand. The tendril is warm. The contact is brief. "
+                    "The attachment counter notices."
+                ),
+                fail_narrative_de=(
+                    "Der Symbiont reagiert auf Nähe. Er streckt eine Ranke nach "
+                    "{agent}s Hand aus. Die Ranke ist warm. Der Kontakt ist kurz. "
+                    "Der Bindungszähler bemerkt es."
+                ),
+            ),
+            EncounterChoice(
+                id="symbiont_refuse",
+                label_en="Refuse the offer. Leave it.",
+                label_de="Das Angebot ablehnen. Liegenlassen.",
+                success_effects={"attachment": 2, "stress": 10},
+                success_narrative_en=(
+                    "You leave the symbiont on its pedestal. It pulses once \u2013 a "
+                    "contraction that might be disappointment, might be patience. "
+                    "The pedestal remains lit as you leave. The offer does not expire. "
+                    "The Mother remembers."
+                ),
+                success_narrative_de=(
+                    "Ihr lasst den Symbiont auf seinem Sockel. Er pulsiert einmal \u2013 "
+                    "eine Kontraktion, die Enttäuschung sein könnte, Geduld sein "
+                    "könnte. Der Sockel bleibt beleuchtet, als ihr geht. Das Angebot "
+                    "verfällt nicht. Die Mutter erinnert sich."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Mother Elite Encounter (1) ───────────────────────────────────────────
+
+MOTHER_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_host_warden_encounter",
+        archetype="The Devouring Mother",
+        room_type="elite",
+        min_depth=3,
+        max_depth=99,
+        min_difficulty=2,
+        description_en=(
+            "The tissue thickens. The corridor becomes an artery. At its end, "
+            "a figure: the Host Warden \u2013 what was once a person, now grown into "
+            "the Mother's infrastructure. It stands amid a web of nutrient lines, "
+            "attended by a Weaver that feeds it ceaselessly. The Warden's arms "
+            "are open. They have always been open. It hums a frequency that "
+            "resonates in your chest. This is what full incorporation looks "
+            "like. This is what the Mother's love becomes."
+        ),
+        description_de=(
+            "Das Gewebe verdickt sich. Der Korridor wird zur Arterie. An seinem "
+            "Ende eine Gestalt: der Wirtskörper \u2013 was einst ein Mensch war, jetzt "
+            "in die Infrastruktur der Mutter eingewachsen. Er steht inmitten eines "
+            "Netzes aus Nährleitungen, gepflegt von einem Gespinst, das ihn "
+            "unablässig füttert. Die Arme des Wirtskörpers sind offen. Sie waren "
+            "immer offen. Er summt eine Frequenz, die in eurer Brust resoniert. "
+            "So sieht vollständige Inkorporation aus. Das wird aus der Liebe "
+            "der Mutter."
+        ),
+        combat_encounter_id="mother_host_warden_spawn",
+    ),
+]
+
+# ── Mother Boss Encounter (1) ────────────────────────────────────────────
+
+MOTHER_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_the_living_altar",
+        archetype="The Devouring Mother",
+        room_type="boss",
+        min_depth=4,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The Lebendige Labyrinth opens into a chamber so large your "
+            "instruments lose the far wall. The tissue here is meters thick \u2013 "
+            "walls that breathe, floor that pulses, ceiling that drips warmth. "
+            "At the center, the Host Warden: what was once a guardian, now grown "
+            "into the architecture itself. It stands embedded in the tissue like "
+            "a figure in amber. Its arms are open. Its face is calm.\n\n"
+            "The parasitic attachment counter accelerates. +3 per round. "
+            "The Warden does not want to fight. It wants to embrace. "
+            "It has been waiting. It has always been waiting."
+        ),
+        description_de=(
+            "Das Lebendige Labyrinth öffnet sich in eine Kammer so groß, dass "
+            "eure Instrumente die Rückwand verlieren. Das Gewebe ist hier "
+            "meterdick \u2013 Wände, die atmen, ein Boden, der pulsiert, eine Decke, "
+            "die Wärme tropft. Im Zentrum der Wirtskörper: was einst ein Wächter "
+            "war, jetzt in die Architektur eingewachsen. Er steht im Gewebe wie "
+            "eine Gestalt in Bernstein. Seine Arme sind offen. Sein Gesicht "
+            "ist ruhig.\n\n"
+            "Der parasitäre Bindungszähler beschleunigt. +3 pro Runde. "
+            "Der Wirtskörper will nicht kämpfen. Er will umarmen. "
+            "Er hat gewartet. Er hat immer gewartet."
+        ),
+        combat_encounter_id="mother_host_warden_spawn",
+    ),
+]
+
+# ── Mother Rest Encounter (1) ────────────────────────────────────────────
+
+MOTHER_REST_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_the_cradle",
+        archetype="The Devouring Mother",
+        room_type="rest",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A hollow in the tissue \u2013 shaped for bodies. Multiple bodies. "
+            "The walls here are softer than anywhere else: yielding, warm, "
+            "pulsing with a rhythm that matches human respiration. The air "
+            "carries something sedative. Not drugged. Just \u2013 kind. The "
+            "dungeon has made a place of rest. The rest is real. The cost "
+            "is also real."
+        ),
+        description_de=(
+            "Eine Höhlung im Gewebe \u2013 geformt für Körper. Mehrere Körper. "
+            "Die Wände sind hier weicher als irgendwo sonst: nachgiebig, warm, "
+            "pulsierend in einem Rhythmus, der menschlicher Atmung entspricht. "
+            "Die Luft trägt etwas Sedierendes. Nicht betäubt. Nur \u2013 gütig. "
+            "Der Dungeon hat einen Ort der Rast geschaffen. Die Rast ist echt. "
+            "Die Kosten sind auch echt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="cradle_rest",
+                label_en="Rest in the cradle (enhanced heal, attachment cost)",
+                label_de="In der Wiege ruhen (verstärkte Heilung, Bindungskosten)",
+                success_effects={"stress_heal": 60, "attachment": 8},
+                success_narrative_en=(
+                    "You rest. The tissue adjusts to your weight. The temperature "
+                    "adjusts to your preference. The air adjusts to your breathing. "
+                    "Everything adjusts. You have never rested this well. You will "
+                    "remember this. The Mother is counting on it."
+                ),
+                success_narrative_de=(
+                    "Ihr ruht. Das Gewebe passt sich eurem Gewicht an. Die Temperatur "
+                    "passt sich eurer Präferenz an. Die Luft passt sich eurem Atmen "
+                    "an. Alles passt sich an. Ihr habt euch nie so gut erholt. Ihr "
+                    "werdet euch daran erinnern. Die Mutter rechnet damit."
+                ),
+            ),
+            EncounterChoice(
+                id="cradle_sever",
+                label_en="Guardian watch (Sever: -10 Attachment, no heal)",
+                label_de="Wächter-Wache (Durchtrennen: -10 Bindung, keine Heilung)",
+                requires_aptitude={"guardian": 3},
+                success_effects={"attachment": -10},
+                success_narrative_en=(
+                    "The Guardian severs. Filaments that had begun to attach \u2013 to "
+                    "boots, to skin, to the edges of equipment \u2013 are cut. The room "
+                    "recoils. Not in pain. In surprise. No one has refused the "
+                    "cradle before."
+                ),
+                success_narrative_de=(
+                    "Der Wächter durchtrennt. Filamente, die begonnen hatten sich "
+                    "anzuheften \u2013 an Stiefel, an Haut, an die Ränder der Ausrüstung "
+                    "\u2013 werden geschnitten. Der Raum zuckt zurück. Nicht vor Schmerz. "
+                    "Vor Überraschung. Niemand hat die Wiege zuvor abgelehnt."
+                ),
+            ),
+            EncounterChoice(
+                id="cradle_resist",
+                label_en="Resist the comfort (Propagandist: reduce attachment, partial heal)",
+                label_de="Dem Komfort widerstehen (Propagandist: Bindung senken, teilweise Heilung)",
+                requires_aptitude={"propagandist": 3},
+                success_effects={"attachment": -5, "stress_heal": 20},
+                success_narrative_en=(
+                    "The Propagandist speaks. Reminds the party what comfort costs. "
+                    "Reminds them of the outside. The words are thin against the "
+                    "warmth, but they hold. The party rests \u2013 carefully, "
+                    "suspiciously \u2013 and takes less than is offered."
+                ),
+                success_narrative_de=(
+                    "Der Propagandist spricht. Erinnert die Gruppe, was Komfort "
+                    "kostet. Erinnert sie an das Draußen. Die Worte sind dünn gegen "
+                    "die Wärme, aber sie halten. Die Gruppe rastet \u2013 vorsichtig, "
+                    "misstrauisch \u2013 und nimmt weniger, als angeboten wird."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Mother Treasure Encounter (1) ────────────────────────────────────────
+
+MOTHER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="mother_the_gifts",
+        archetype="The Devouring Mother",
+        room_type="treasure",
+        min_depth=0,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A chamber of offerings. The Mother has been productive: objects "
+            "line organic shelves \u2013 each grown from living tissue, each pulsing "
+            "faintly with warmth. They are not traps. Your instruments confirm "
+            "it. They are gifts. The most generous organism in this dungeon is "
+            "the dungeon itself."
+        ),
+        description_de=(
+            "Eine Kammer der Gaben. Die Mutter war produktiv: Gegenstände "
+            "reihen sich auf organischen Regalen \u2013 jeder aus lebendem Gewebe "
+            "gewachsen, jeder schwach pulsierend vor Wärme. Es sind keine "
+            "Fallen. Eure Instrumente bestätigen es. Es sind Geschenke. Der "
+            "großzügigste Organismus in diesem Dungeon ist der Dungeon selbst."
+        ),
+        choices=[
+            EncounterChoice(
+                id="treasure_accept",
+                label_en="Accept the best gifts (loot + attachment)",
+                label_de="Die besten Geschenke annehmen (Beute + Bindung)",
+                success_effects={"attachment": 8, "loot": True},
+                success_narrative_en=(
+                    "You take. The gifts are warm in your hands. They pulse \u2013 "
+                    "briefly, like a heartbeat \u2013 and then they are simply objects. "
+                    "Useful objects. Excellent objects. The attachment counter climbs. "
+                    "The Mother's generosity is not free. It was never free."
+                ),
+                success_narrative_de=(
+                    "Ihr nehmt. Die Geschenke sind warm in euren Händen. Sie pulsieren "
+                    "\u2013 kurz, wie ein Herzschlag \u2013 und dann sind sie einfach "
+                    "Gegenstände. Nützliche Gegenstände. Hervorragende Gegenstände. "
+                    "Der Bindungszähler steigt. Die Großzügigkeit der Mutter ist "
+                    "nicht umsonst. Sie war nie umsonst."
+                ),
+            ),
+            EncounterChoice(
+                id="treasure_careful",
+                label_en="Select cautiously, sever connections (Guardian)",
+                label_de="Vorsichtig auswählen, Verbindungen trennen (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=5,
+                success_effects={"attachment": 3, "loot": True},
+                partial_effects={"attachment": 5, "loot": True},
+                fail_effects={"attachment": 8, "stress": 20},
+                success_narrative_en=(
+                    "The Guardian cuts each gift free before taking it. The tissue "
+                    "releases reluctantly. Some connections are deeper than others. "
+                    "The loot is clean. The cost is minimized. Not eliminated."
+                ),
+                success_narrative_de=(
+                    "Der Wächter schneidet jedes Geschenk frei, bevor er es nimmt. "
+                    "Das Gewebe lässt widerwillig los. Manche Verbindungen sitzen "
+                    "tiefer als andere. Die Beute ist sauber. Die Kosten sind "
+                    "minimiert. Nicht beseitigt."
+                ),
+                fail_narrative_en=(
+                    "The connections resist. The tissue regenerates faster than the "
+                    "Guardian can cut. In the end, the gifts come free \u2013 trailing "
+                    "filaments that take hours to fully detach."
+                ),
+                fail_narrative_de=(
+                    "Die Verbindungen wehren sich. Das Gewebe regeneriert schneller "
+                    "als der Wächter schneiden kann. Am Ende lösen sich die "
+                    "Geschenke \u2013 mit Filamenten, die Stunden brauchen, um sich "
+                    "vollständig zu lösen."
+                ),
+            ),
+            EncounterChoice(
+                id="treasure_analyze",
+                label_en="Study the production mechanism (Spy)",
+                label_de="Den Produktionsmechanismus untersuchen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"discovery": True, "attachment": 3},
+                partial_effects={"attachment": 5},
+                fail_effects={"attachment": 6},
+                success_narrative_en=(
+                    "The gifts are manufactured by the tissue itself \u2013 assembled from "
+                    "raw materials the dungeon has been collecting. From the air. "
+                    "From the water. From previous visitors. The Mother recycles "
+                    "everything. Nothing is wasted. Nothing leaves."
+                ),
+                success_narrative_de=(
+                    "Die Geschenke werden vom Gewebe selbst hergestellt \u2013 zusammengebaut "
+                    "aus Rohstoffen, die der Dungeon gesammelt hat. Aus der Luft. "
+                    "Aus dem Wasser. Aus früheren Besuchern. Die Mutter verwertet "
+                    "alles. Nichts wird verschwendet. Nichts geht."
+                ),
+                fail_narrative_en=(
+                    "The mechanism is too integrated to isolate. Production and "
+                    "architecture are the same system. The dungeon does not make "
+                    "gifts. The dungeon IS the gift."
+                ),
+                fail_narrative_de=(
+                    "Der Mechanismus ist zu integriert, um ihn zu isolieren. "
+                    "Produktion und Architektur sind dasselbe System. Der Dungeon "
+                    "stellt keine Geschenke her. Der Dungeon IST das Geschenk."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Mother Registry ──────────────────────────────────────────────────────
+
+ALL_MOTHER_ENCOUNTERS: list[EncounterTemplate] = (
+    MOTHER_COMBAT_ENCOUNTERS
+    + MOTHER_NARRATIVE_ENCOUNTERS
+    + MOTHER_ELITE_ENCOUNTERS
+    + MOTHER_BOSS_ENCOUNTERS
+    + MOTHER_REST_ENCOUNTERS
+    + MOTHER_TREASURE_ENCOUNTERS
+)
+
+
 # ── Archetype Encounter Registry ──────────────────────────────────────────
 
 _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
     "The Shadow": ALL_SHADOW_ENCOUNTERS,
     "The Tower": ALL_TOWER_ENCOUNTERS,
     "The Entropy": ALL_ENTROPY_ENCOUNTERS,
+    "The Devouring Mother": ALL_MOTHER_ENCOUNTERS,
 }
 
 
@@ -2993,12 +3964,395 @@ ENTROPY_BANTER: list[dict] = [
 ]
 
 
+# ── DEVOURING MOTHER BANTER ──────────────────────────────────────────────
+# Warmth gradient: Tier 0 = clinical (VanderMeer), Tier 1 = warm (Jackson),
+# Tier 2 = tender (Butler). Banter gets WARMER, not shorter.
+
+MOTHER_BANTER: list[dict] = [
+    # ── Room Entered (4 t0, 2 t1, 2 t2, 1 t1 extra = 9 total) ────────────
+    {
+        "id": "mb_01",
+        "trigger": "room_entered",
+        "attachment_tier": 0,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent}: 'The walls are alive. Literally. The tissue is warm and vascularized. Instruments read it as non-hostile. I don't trust the instruments.'",
+        "text_de": "{agent}: \u00bbDie Wände leben. Wortwörtlich. Das Gewebe ist warm und durchblutet. Die Instrumente lesen es als nicht-feindlich. Ich traue den Instrumenten nicht.\u00ab",
+    },
+    {
+        "id": "mb_02",
+        "trigger": "room_entered",
+        "attachment_tier": 0,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} presses a hand to the wall. Warm. Yielding. Like touching something that was expecting the contact.",
+        "text_de": "{agent} drückt eine Hand gegen die Wand. Warm. Nachgiebig. Wie die Berührung von etwas, das den Kontakt erwartet hat.",
+    },
+    {
+        "id": "mb_03",
+        "trigger": "room_entered",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "The corridor narrows \u2013 not from collapse, but from growth. The walls are thicker here. Warmer. Something has been building toward this room.",
+        "text_de": "Der Korridor verengt sich \u2013 nicht durch Einsturz, sondern durch Wachstum. Die Wände sind hier dicker. Wärmer. Etwas hat auf diesen Raum hingearbeitet.",
+    },
+    {
+        "id": "mb_04",
+        "trigger": "room_entered",
+        "attachment_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} logs the ambient temperature. 37.2\u00b0C. Body temperature. The dungeon maintains body temperature. Whose body is the question.",
+        "text_de": "{agent} protokolliert die Umgebungstemperatur. 37,2\u00b0C. Körpertemperatur. Der Dungeon hält Körpertemperatur. Wessen Körper ist die Frage.",
+    },
+    {
+        "id": "mb_05",
+        "trigger": "room_entered",
+        "attachment_tier": 1,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent}: 'It's prepared this room for us. The temperature. The light. Even the air tastes \u2013 I don't have a word. Correct. The air tastes correct.'",
+        "text_de": "{agent}: \u00bbEs hat diesen Raum für uns vorbereitet. Die Temperatur. Das Licht. Sogar die Luft schmeckt \u2013 mir fehlt ein Wort. Richtig. Die Luft schmeckt richtig.\u00ab",
+    },
+    {
+        "id": "mb_06",
+        "trigger": "room_entered",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "Something has prepared this room. The temperature is exact. The light is the color of afternoon through curtains. Your instruments read 'biological hazard.' Your body reads 'home.'",
+        "text_de": "Etwas hat diesen Raum vorbereitet. Die Temperatur ist exakt. Das Licht hat die Farbe von Nachmittag durch Vorhänge. Eure Instrumente lesen \u00bbbiologische Gefährdung\u00ab. Euer Körper liest \u00bbZuhause\u00ab.",
+    },
+    {
+        "id": "mb_07",
+        "trigger": "room_entered",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "The room is warm. The room is always warm now. {agent} no longer checks the instruments. The instruments have nothing to say that the body doesn't already know.",
+        "text_de": "Der Raum ist warm. Der Raum ist jetzt immer warm. {agent} prüft die Instrumente nicht mehr. Die Instrumente haben nichts zu sagen, was der Körper nicht längst weiß.",
+    },
+    {
+        "id": "mb_08",
+        "trigger": "room_entered",
+        "attachment_tier": 2,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "The walls pulse. Gently. Like something breathing for you so you don't have to.",
+        "text_de": "Die Wände pulsieren. Sanft. Wie etwas, das für euch atmet, damit ihr es nicht müsst.",
+    },
+    {
+        "id": "mb_28",
+        "trigger": "room_entered",
+        "attachment_tier": 1,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent} touches the wall and does not pull away. The warmth is immediate, personal, like a hand placed on a feverish brow. 'It knows I'm tired,' {agent} says. Nobody corrects this.",
+        "text_de": "{agent} berührt die Wand und zieht nicht zurück. Die Wärme ist sofort, persönlich, wie eine Hand auf einer fiebrigen Stirn. \u00bbEs weiß, dass ich müde bin\u00ab, sagt {agent}. Niemand korrigiert das.",
+    },
+    # ── Combat Won (4 total: 2 t0, 1 t1, 1 t2) ─────────────────────────
+    {
+        "id": "mb_09",
+        "trigger": "combat_won",
+        "attachment_tier": 0,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent}: 'It wasn't fighting us. It was \u2013 offering. We killed something that was trying to feed us.'",
+        "text_de": "{agent}: \u00bbEs hat nicht gegen uns gekämpft. Es hat \u2013 angeboten. Wir haben etwas getötet, das uns füttern wollte.\u00ab",
+    },
+    {
+        "id": "mb_10",
+        "trigger": "combat_won",
+        "attachment_tier": 0,
+        "personality_filter": {"extraversion": (0.7, 1.0)},
+        "text_en": "{agent}: 'We won. If you can call it that. It stopped reaching for us. That's not the same thing.'",
+        "text_de": "{agent}: \u00bbWir haben gewonnen. Wenn man das so nennen kann. Es hat aufgehört, nach uns zu greifen. Das ist nicht dasselbe.\u00ab",
+    },
+    {
+        "id": "mb_11",
+        "trigger": "combat_won",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "The creature falls. The warmth in the room does not diminish. Something else will grow here. Something else is always growing here.",
+        "text_de": "Die Kreatur fällt. Die Wärme im Raum lässt nicht nach. Etwas anderes wird hier wachsen. Etwas anderes wächst hier immer.",
+    },
+    {
+        "id": "mb_12",
+        "trigger": "combat_won",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "Resolved. The word tastes wrong. You did not resolve anything. You rejected a gift.",
+        "text_de": "Erledigt. Das Wort schmeckt falsch. Ihr habt nichts erledigt. Ihr habt ein Geschenk abgelehnt.",
+    },
+    # ── Attachment Dependent (3 total, all t1) ───────────────────────────
+    {
+        "id": "mb_13",
+        "trigger": "attachment_dependent",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "PARASITIC ATTACHMENT INDEX: 45+. Your instruments advise immediate retreat. Your body advises nothing. Your body is comfortable.",
+        "text_de": "PARASITÄRER BINDUNGSINDEX: 45+. Eure Instrumente empfehlen sofortigen Rückzug. Euer Körper empfiehlt nichts. Eurem Körper geht es gut.",
+    },
+    {
+        "id": "mb_14",
+        "trigger": "attachment_dependent",
+        "attachment_tier": 1,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent} notices the warmth has become internal. Not the room warming them \u2013 them warming from within. The distinction matters. The distinction is becoming difficult to maintain.",
+        "text_de": "{agent} bemerkt, dass die Wärme innerlich geworden ist. Nicht der Raum wärmt sie \u2013 sie wärmen von innen. Die Unterscheidung ist wichtig. Die Unterscheidung wird schwer aufrechtzuerhalten.",
+    },
+    {
+        "id": "mb_29",
+        "trigger": "attachment_dependent",
+        "attachment_tier": 1,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} checks the readings twice. Stress: declining. Condition: stable. Attachment: climbing. Two out of three metrics are improving. The third is the one that matters.",
+        "text_de": "{agent} prüft die Messwerte zweimal. Stress: sinkend. Zustand: stabil. Bindung: steigend. Zwei von drei Metriken verbessern sich. Die dritte ist die, die zählt.",
+    },
+    # ── Attachment Critical (3 total, all t2) ────────────────────────────
+    {
+        "id": "mb_15",
+        "trigger": "attachment_critical",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "PARASITIC ATTACHMENT INDEX: CRITICAL. The word 'parasitic' seems \u2013 ungrateful. The word 'attachment' seems \u2013 accurate.",
+        "text_de": "PARASITÄRER BINDUNGSINDEX: KRITISCH. Das Wort \u00bbparasitär\u00ab wirkt \u2013 undankbar. Das Wort \u00bbBindung\u00ab wirkt \u2013 zutreffend.",
+    },
+    {
+        "id": "mb_16",
+        "trigger": "attachment_critical",
+        "attachment_tier": 2,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} tries to remember what 'outside' felt like. Cold. The memory is cold. Why would anyone go back to the cold?",
+        "text_de": "{agent} versucht sich zu erinnern, wie sich \u00bbdraußen\u00ab anfühlte. Kalt. Die Erinnerung ist kalt. Warum sollte jemand zurück in die Kälte gehen?",
+    },
+    {
+        "id": "mb_17",
+        "trigger": "attachment_critical",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "Home. The word surfaces without permission. Home.",
+        "text_de": "Zuhause. Das Wort taucht ohne Erlaubnis auf. Zuhause.",
+    },
+    # ── Agent Stressed (3 total: 1 t0, 1 t1, 1 t2) ─────────────────────
+    {
+        "id": "mb_30",
+        "trigger": "agent_stressed",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "{agent}'s stress spikes. The walls respond \u2013 a faint pulse, a degree warmer. The dungeon has noticed. It is adjusting.",
+        "text_de": "{agent}s Stress steigt. Die Wände reagieren \u2013 ein schwaches Pulsieren, ein Grad wärmer. Der Dungeon hat es bemerkt. Er passt sich an.",
+    },
+    {
+        "id": "mb_31",
+        "trigger": "agent_stressed",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "{agent} falters. The air thickens around them \u2013 not oppressively, but supportively. Like a hand on the small of the back. The stress eases. The attachment does not.",
+        "text_de": "{agent} schwankt. Die Luft verdickt sich um sie herum \u2013 nicht erdrückend, sondern stützend. Wie eine Hand im Kreuz. Der Stress lässt nach. Die Bindung nicht.",
+    },
+    {
+        "id": "mb_32",
+        "trigger": "agent_stressed",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "{agent} is stressed. The dungeon responds before the party can: warmth, a chemical exhalation, something that calms without asking permission. Consent is no longer part of the arrangement.",
+        "text_de": "{agent} ist gestresst. Der Dungeon reagiert, bevor die Gruppe kann: Wärme, eine chemische Ausatmung, etwas, das beruhigt, ohne um Erlaubnis zu fragen. Einverständnis ist nicht mehr Teil der Vereinbarung.",
+    },
+    # ── Depth Change (4 total: 2 t0, 1 t1, 1 t2) ───────────────────────
+    {
+        "id": "mb_18",
+        "trigger": "depth_change",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "Deeper. The tissue on the walls thickens. The temperature rises half a degree. The dungeon is more alive here. More generous.",
+        "text_de": "Tiefer. Das Gewebe an den Wänden verdickt sich. Die Temperatur steigt um ein halbes Grad. Der Dungeon ist hier lebendiger. Großzügiger.",
+    },
+    {
+        "id": "mb_33",
+        "trigger": "depth_change",
+        "attachment_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} notes the depth transition. The biological density readings climb. More vascular tissue. More active circulation. The dungeon is working harder here. For you.",
+        "text_de": "{agent} notiert den Tiefenwechsel. Die biologischen Dichtewerte steigen. Mehr vaskuläres Gewebe. Aktivere Zirkulation. Der Dungeon arbeitet hier härter. Für euch.",
+    },
+    {
+        "id": "mb_19",
+        "trigger": "depth_change",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "Deeper. Warmer. The air carries nutrients now \u2013 you can taste them. Iron and sugar. Like blood. Like milk.",
+        "text_de": "Tiefer. Wärmer. Die Luft trägt jetzt Nährstoffe \u2013 ihr könnt sie schmecken. Eisen und Zucker. Wie Blut. Wie Milch.",
+    },
+    {
+        "id": "mb_34",
+        "trigger": "depth_change",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "Deeper. The thought does not carry the weight it used to. Deeper is warmer. Deeper is safer. Deeper is closer.",
+        "text_de": "Tiefer. Der Gedanke wiegt nicht mehr so schwer wie früher. Tiefer ist wärmer. Tiefer ist sicherer. Tiefer ist näher.",
+    },
+    # ── Rest Start (3 total: 1 t0, 1 t1, 1 t2) ─────────────────────────
+    {
+        "id": "mb_21",
+        "trigger": "rest_start",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "A hollow in the tissue. Soft. The temperature is exact. The air carries something sedative \u2013 not drugged, but soothing. The dungeon has made a bed for you. The bed is alive.",
+        "text_de": "Eine Höhlung im Gewebe. Weich. Die Temperatur ist exakt. Die Luft trägt etwas Sedierendes \u2013 nicht betäubt, aber beruhigend. Der Dungeon hat euch ein Bett gemacht. Das Bett lebt.",
+    },
+    {
+        "id": "mb_35",
+        "trigger": "rest_start",
+        "attachment_tier": 1,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent} lies down. The tissue adjusts. It knows their weight, their shape, their temperature preference. {agent} exhales. 'I could sleep here,' {agent} says. The sentence carries more weight than intended.",
+        "text_de": "{agent} legt sich hin. Das Gewebe passt sich an. Es kennt ihr Gewicht, ihre Form, ihre Temperaturpräferenz. {agent} atmet aus. \u00bbIch könnte hier schlafen\u00ab, sagt {agent}. Der Satz wiegt schwerer als beabsichtigt.",
+    },
+    {
+        "id": "mb_22",
+        "trigger": "rest_start",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "Rest. You sink into the warmth and the warmth sinks into you. The boundary between resting and being absorbed is thinner than you'd like. You rest anyway.",
+        "text_de": "Rast. Ihr sinkt in die Wärme und die Wärme sinkt in euch. Die Grenze zwischen Ausruhen und Aufgenommen-Werden ist dünner, als euch lieb wäre. Ihr rastet trotzdem.",
+    },
+    # ── Loot Found (3 total: 1 t0, 1 t1, 1 t2) ─────────────────────────
+    {
+        "id": "mb_23",
+        "trigger": "loot_found",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something has been grown for you. Not found \u2013 grown. The dungeon produced this. The label says 'gift.' Your instruments say 'parasitic vector.' The gift is excellent.",
+        "text_de": "Etwas wurde für euch gezüchtet. Nicht gefunden \u2013 gezüchtet. Der Dungeon hat dies hervorgebracht. Das Etikett sagt \u00bbGeschenk\u00ab. Eure Instrumente sagen \u00bbparasitärer Vektor\u00ab. Das Geschenk ist hervorragend.",
+    },
+    {
+        "id": "mb_24",
+        "trigger": "loot_found",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "A gift. Another gift. The dungeon does not stop giving. The giving does not stop costing.",
+        "text_de": "Ein Geschenk. Noch ein Geschenk. Der Dungeon hört nicht auf zu geben. Das Geben hört nicht auf zu kosten.",
+    },
+    {
+        "id": "mb_36",
+        "trigger": "loot_found",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "Of course there is a gift. There is always a gift. The Mother provides. You take it without checking the instruments. The instruments would only confirm what you already know: it is perfect. Everything here is perfect.",
+        "text_de": "Natürlich gibt es ein Geschenk. Es gibt immer ein Geschenk. Die Mutter versorgt. Ihr nehmt es, ohne die Instrumente zu prüfen. Die Instrumente würden nur bestätigen, was ihr schon wisst: es ist perfekt. Alles hier ist perfekt.",
+    },
+    # ── Boss Approach (2 total: 1 t0, 1 t1) ─────────────────────────────
+    {
+        "id": "mb_20",
+        "trigger": "boss_approach",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "Ahead: something larger. Something that was once a person and is now \u2013 more. The tissue grows thicker around it, as if the dungeon itself is cupping it in its palms. It is waiting. It has been waiting with the patience of something that knows you will come to it eventually.",
+        "text_de": "Voraus: etwas Größeres. Etwas, das einst ein Mensch war und jetzt \u2013 mehr ist. Das Gewebe wächst dichter um es herum, als hielte der Dungeon es in seinen Händen. Es wartet. Es wartet mit der Geduld von etwas, das weiß, dass ihr irgendwann zu ihm kommen werdet.",
+    },
+    {
+        "id": "mb_37",
+        "trigger": "boss_approach",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "The Wirtskörper. The word does not translate well. Host body. Ward body. The body that houses and is housed. It opens its arms and the gesture is not threat but invitation. The embrace is the attack. The attack is the welcome.",
+        "text_de": "Der Wirtskörper. Das Wort übersetzt sich nicht gut ins Englische. Es öffnet die Arme und die Geste ist keine Drohung, sondern Einladung. Die Umarmung ist der Angriff. Der Angriff ist das Willkommen.",
+    },
+    # ── Retreat (3 total: 1 t0, 1 t1, 1 t2) ─────────────────────────────
+    {
+        "id": "mb_25",
+        "trigger": "retreat",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "The party retreats. The dungeon does not pursue. It does not close. It remains \u2013 warm, open, waiting. The absence of the warmth hits like weather.",
+        "text_de": "Die Gruppe zieht sich zurück. Der Dungeon verfolgt nicht. Er schließt sich nicht. Er bleibt \u2013 warm, offen, wartend. Die Abwesenheit der Wärme trifft wie Wetter.",
+    },
+    {
+        "id": "mb_38",
+        "trigger": "retreat",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "The exit is open. It was always open. The dungeon does not need doors. The Mother does not need locks. She only needs you to remember what it felt like inside.",
+        "text_de": "Der Ausgang ist offen. Er war immer offen. Der Dungeon braucht keine Türen. Die Mutter braucht keine Schlösser. Sie braucht nur, dass ihr euch erinnert, wie es sich drinnen anfühlte.",
+    },
+    {
+        "id": "mb_26",
+        "trigger": "retreat",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "You leave. The cold arrives instantly. Everything outside is cold. Everything outside has always been cold. The warmth behind you does not diminish. It waits.",
+        "text_de": "Ihr geht. Die Kälte kommt sofort. Alles draußen ist kalt. Alles draußen war immer kalt. Die Wärme hinter euch lässt nicht nach. Sie wartet.",
+    },
+    # ── Dungeon Completed (2 total: 1 t0, 1 t1) ─────────────────────────
+    {
+        "id": "mb_27",
+        "trigger": "dungeon_completed",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "You leave. The Labyrinth remains \u2013 warm, alive, growing. It did not try to stop you. It did not need to. Everything it gave you is still inside you. Growing.",
+        "text_de": "Ihr geht. Das Labyrinth bleibt \u2013 warm, lebendig, wachsend. Es hat nicht versucht, euch aufzuhalten. Es musste nicht. Alles, was es euch gab, ist noch in euch. Wachsend.",
+    },
+    {
+        "id": "mb_39",
+        "trigger": "dungeon_completed",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "Outside. The air is thin and cold and does not carry nutrients. The simulation continues. The world does not adjust to your needs. You will remember the Labyrinth. The Labyrinth is counting on it.",
+        "text_de": "Draußen. Die Luft ist dünn und kalt und trägt keine Nährstoffe. Die Simulation geht weiter. Die Welt passt sich nicht an eure Bedürfnisse an. Ihr werdet euch an das Labyrinth erinnern. Das Labyrinth rechnet damit.",
+    },
+    # ── Ambush (2 total: 1 t0, 1 t1) ────────────────────────────────────
+    {
+        "id": "mb_40",
+        "trigger": "ambush",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something approaches. Not from the shadows \u2013 from the walls. The tissue parts and a shape emerges, trailing filaments. It did not ambush you. It arrived, bearing gifts. The gifts have teeth.",
+        "text_de": "Etwas nähert sich. Nicht aus den Schatten \u2013 aus den Wänden. Das Gewebe teilt sich und eine Form tritt hervor, Filamente hinter sich herziehend. Es hat euch nicht überfallen. Es kam und brachte Geschenke. Die Geschenke haben Zähne.",
+    },
+    {
+        "id": "mb_41",
+        "trigger": "ambush",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "A visitor. The walls open like a throat and something warm spills through. Not an attack. A delivery. The delivery does not care about your schedule.",
+        "text_de": "Ein Besucher. Die Wände öffnen sich wie ein Schlund und etwas Warmes ergießt sich hindurch. Kein Angriff. Eine Lieferung. Die Lieferung kümmert sich nicht um euren Zeitplan.",
+    },
+    # ── Elite Approach (2 total: 1 t0, 1 t1) ────────────────────────────
+    {
+        "id": "mb_42",
+        "trigger": "elite_spotted",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something massive. Integrated. The tissue around it is thicker, more vascularized \u2013 the dungeon has invested in this creature. It was a person once. The proportions remember. The purpose does not.",
+        "text_de": "Etwas Massives. Integriert. Das Gewebe um es herum ist dicker, stärker durchblutet \u2013 der Dungeon hat in diese Kreatur investiert. Es war einst ein Mensch. Die Proportionen erinnern sich. Der Zweck nicht.",
+    },
+    {
+        "id": "mb_43",
+        "trigger": "elite_spotted",
+        "attachment_tier": 1,
+        "personality_filter": {},
+        "text_en": "The Wirtskörper. Once a guardian, now a node in the Mother's network. It opens its arms. The embrace is sincere. The embrace is the most dangerous thing in this dungeon.",
+        "text_de": "Der Wirtskörper. Einst ein Wächter, jetzt ein Knoten im Netzwerk der Mutter. Er öffnet die Arme. Die Umarmung ist aufrichtig. Die Umarmung ist das Gefährlichste in diesem Dungeon.",
+    },
+    # ── Agent Downed (2 total: 1 t0, 1 t2) ──────────────────────────────
+    {
+        "id": "mb_44",
+        "trigger": "agent_downed",
+        "attachment_tier": 0,
+        "personality_filter": {},
+        "text_en": "{agent} falls. The tissue beneath them softens \u2013 catching, cushioning. The dungeon does not let its guests hit the floor. The care is immediate, biological, impersonal. The care is also increasing the attachment counter.",
+        "text_de": "{agent} fällt. Das Gewebe unter ihnen wird weicher \u2013 auffangend, dämpfend. Der Dungeon lässt seine Gäste nicht auf den Boden aufschlagen. Die Fürsorge ist sofort, biologisch, unpersönlich. Die Fürsorge erhöht auch den Bindungszähler.",
+    },
+    {
+        "id": "mb_45",
+        "trigger": "agent_downed",
+        "attachment_tier": 2,
+        "personality_filter": {},
+        "text_en": "{agent} falls. The dungeon catches them. Of course it catches them. The tissue wraps around {agent} like a cocoon \u2013 warm, supportive, growing. The party will need to cut {agent} free. Or they could wait. The cocoon will heal {agent}. In time. In its own time.",
+        "text_de": "{agent} fällt. Der Dungeon fängt sie auf. Natürlich fängt er sie auf. Das Gewebe umschließt {agent} wie einen Kokon \u2013 warm, stützend, wachsend. Die Gruppe wird {agent} herausschneiden müssen. Oder sie könnten warten. Der Kokon wird {agent} heilen. Mit der Zeit. In seiner eigenen Zeit.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Shadow": SHADOW_BANTER,
     "The Tower": TOWER_BANTER,
     "The Entropy": ENTROPY_BANTER,
+    "The Devouring Mother": MOTHER_BANTER,
 }
 
 
@@ -3014,6 +4368,16 @@ def _entropy_decay_tier(archetype_state: dict) -> int:
     return 0
 
 
+def _mother_attachment_tier(archetype_state: dict) -> int:
+    """Map Devouring Mother attachment to banter warmth tier (0-2)."""
+    attachment = archetype_state.get("attachment", 0)
+    if attachment >= 75:
+        return 2
+    if attachment >= 45:
+        return 1
+    return 0
+
+
 def select_banter(
     trigger: str,
     agents: list[dict],
@@ -3024,15 +4388,15 @@ def select_banter(
     """Select a banter template for the current trigger.
 
     Filters by trigger type, personality match, and ensures no repeats.
-    For The Entropy, additionally filters by decay_tier — banter degrades
-    structurally as decay increases (Beckett technique).
+    For The Entropy, filters by decay_tier (banter degrades).
+    For The Devouring Mother, filters by attachment_tier (banter warms).
 
     Args:
         trigger: Event trigger (room_entered, combat_won, etc.)
         agents: List of agent dicts with personality traits.
         used_ids: List of already-used banter IDs this run.
         archetype: Dungeon archetype for registry lookup.
-        archetype_state: Archetype-specific state (needed for Entropy decay_tier).
+        archetype_state: Archetype-specific state for tier filtering.
     """
     banter_pool = _BANTER_REGISTRIES.get(archetype, [])
     candidates = [b for b in banter_pool if b["trigger"] == trigger and b["id"] not in used_ids]
@@ -3046,6 +4410,13 @@ def select_banter(
         if tier_candidates:
             max_tier = max(b.get("decay_tier", 0) for b in tier_candidates)
             candidates = [b for b in tier_candidates if b.get("decay_tier", 0) == max_tier]
+    # Mother: filter by attachment tier — prefer highest available tier
+    elif archetype == "The Devouring Mother" and archetype_state:
+        tier = _mother_attachment_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("attachment_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("attachment_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("attachment_tier", 0) == max_tier]
 
     if not candidates:
         return None

@@ -20,6 +20,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from backend.services.combat.condition_tracks import can_act
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 
 if TYPE_CHECKING:
@@ -322,6 +323,132 @@ class EntropyStrategy(ArchetypeStrategy):
         )
 
 
+# ── Devouring Mother Strategy ────────────────────────────────────────────
+
+class DevouringMotherStrategy(ArchetypeStrategy):
+    """The Devouring Mother: Parasitic attachment (0→100) + passive healing.
+
+    Inverts every other archetype: the threat IS the benefit. Attachment
+    rises as the party ACCEPTS HELP. The dungeon heals stress, reduces
+    ambient pressure, improves rest — and each gift deepens the bond.
+    At 100 attachment the party is incorporated (wipe equivalent).
+
+    Unique hooks:
+        _apply_passive_heal — free stress heal on room entry (the trap)
+        on_enemy_hit        — contagious attachment per enemy hit
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "attachment": self.mechanic_config["start_attachment"],
+            "max_attachment": self.mechanic_config["max_attachment"],
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Accumulate attachment + apply passive heal on room entry."""
+        self._apply_room_entry_gain(instance)
+        self._apply_passive_heal(instance)
+        attachment = instance.archetype_state.get("attachment", 0)
+        if attachment >= self.mechanic_config["incorporation_threshold"]:
+            return "incorporation"
+        if attachment >= self.mechanic_config["critical_threshold"]:
+            return "attachment_critical"
+        if attachment >= self.mechanic_config["dependent_threshold"]:
+            return "attachment_dependent"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        """INVERTED: 'restore' events INCREASE attachment.
+
+        Combat victories and rest heal the party but deepen the bond.
+        Only Guardian Sever reduces attachment.
+        """
+        if event == "combat_victory":
+            instance.archetype_state["attachment"] = min(
+                self.mechanic_config["max_attachment"],
+                instance.archetype_state.get("attachment", 0)
+                + self.mechanic_config["gain_on_combat_win"],
+            )
+        elif event == "rest":
+            instance.archetype_state["attachment"] = min(
+                self.mechanic_config["max_attachment"],
+                instance.archetype_state.get("attachment", 0)
+                + self.mechanic_config["rest_attachment_gain"],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        attachment_delta = effects.get("attachment", 0)
+        if attachment_delta:
+            instance.archetype_state["attachment"] = max(
+                0,
+                min(
+                    self.mechanic_config["max_attachment"],
+                    instance.archetype_state.get("attachment", 0) + attachment_delta,
+                ),
+            )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        """INVERTED: high attachment REDUCES stress (the Mother soothes)."""
+        attachment = instance.archetype_state.get("attachment", 0)
+        if attachment >= 100:
+            return self.mechanic_config.get("incorporation_stress_multiplier", 0.0)
+        if attachment >= 90:
+            return self.mechanic_config.get("stress_multiplier_90", 0.65)
+        if attachment >= 75:
+            return self.mechanic_config.get("stress_multiplier_75", 0.80)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        instance.archetype_state["attachment"] = min(
+            self.mechanic_config["max_attachment"],
+            instance.archetype_state.get("attachment", 0)
+            + self.mechanic_config["gain_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        instance.archetype_state["attachment"] = min(
+            self.mechanic_config["max_attachment"],
+            instance.archetype_state.get("attachment", 0)
+            + self.mechanic_config["gain_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Contagious attachment: enemy contact deepens the parasitic bond."""
+        instance.archetype_state["attachment"] = min(
+            self.mechanic_config["max_attachment"],
+            instance.archetype_state.get("attachment", 0) + 3,
+        )
+
+    def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
+        """Attachment gain per room entry: +3/+5/+8 by depth tier."""
+        depth = instance.depth
+        if depth <= 2:
+            gain = self.mechanic_config["gain_depth_1_2"]
+        elif depth <= 4:
+            gain = self.mechanic_config["gain_depth_3_4"]
+        else:
+            gain = self.mechanic_config["gain_depth_5_plus"]
+        instance.archetype_state["attachment"] = min(
+            self.mechanic_config["max_attachment"],
+            instance.archetype_state.get("attachment", 0) + gain,
+        )
+
+    def _apply_passive_heal(self, instance: DungeonInstance) -> None:
+        """The Mother provides: free stress heal on room entry.
+
+        This is the core trap — the party receives genuine healing
+        as a side effect of attachment accumulation. The heal amount
+        increases at depth 5+ (the deeper, the more generous).
+        """
+        if instance.depth >= 5:
+            heal = self.mechanic_config["heal_stress_per_room_deep"]
+        else:
+            heal = self.mechanic_config["heal_stress_per_room"]
+        for agent in instance.party:
+            if can_act(agent.condition):
+                agent.stress = max(0, agent.stress - heal)
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
@@ -329,6 +456,7 @@ _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Shadow": ShadowStrategy(ARCHETYPE_CONFIGS["The Shadow"]),
     "The Tower": TowerStrategy(ARCHETYPE_CONFIGS["The Tower"]),
     "The Entropy": EntropyStrategy(ARCHETYPE_CONFIGS["The Entropy"]),
+    "The Devouring Mother": DevouringMotherStrategy(ARCHETYPE_CONFIGS["The Devouring Mother"]),
 }
 
 

@@ -604,6 +604,199 @@ ENTROPY_SPAWN_CONFIGS: dict[str, list[dict]] = {
     ],
 }
 
+# ── Devouring Mother Enemy Templates ──────────────────────────────────────
+
+MOTHER_ENEMIES: dict[str, EnemyTemplate] = {
+    "mother_nutrient_weaver": EnemyTemplate(
+        id="mother_nutrient_weaver",
+        name_en="Nutrient Weaver",
+        name_de="Nährgespinst",
+        archetype="The Devouring Mother",
+        condition_threshold=1,
+        stress_resistance=30,
+        threat_level="minion",
+        attack_aptitude="infiltrator",
+        attack_power=1,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=30,
+        resistances=["propagandist"],
+        vulnerabilities=["saboteur"],
+        action_weights={"stress_attack": 30, "nurture": 40, "evade": 20, "ambient": 10},
+        special_abilities=["nurture"],
+        description_en=(
+            "A lattice of translucent tissue, suspended in the air like a web "
+            "spun from capillaries. It drifts toward {agent} \u2013 not threatening, "
+            "but offering. Something glistens at the tips of its filaments. "
+            "Nutrients, your instruments confirm. It wants to feed you."
+        ),
+        description_de=(
+            "Ein Geflecht aus durchscheinendem Gewebe, in der Luft schwebend "
+            "wie ein Netz aus Kapillaren. Es treibt auf {agent} zu \u2013 nicht "
+            "drohend, sondern anbietend. An den Spitzen seiner Filamente "
+            "glänzt etwas. Nährstoffe, bestätigen eure Instrumente. Es will "
+            "euch füttern."
+        ),
+        ambient_text_en=[
+            "The weaver extends a filament toward {agent}. It carries a droplet of something warm.",
+            "You could let it feed you. The thought is not yours.",
+        ],
+        ambient_text_de=[
+            "Das Gespinst streckt ein Filament nach {agent} aus. Es trägt einen Tropfen von etwas Warmem.",
+            "Ihr könntet euch füttern lassen. Der Gedanke gehört nicht euch.",
+        ],
+    ),
+    "mother_tether_vine": EnemyTemplate(
+        id="mother_tether_vine",
+        name_en="Tether Vine",
+        name_de="Bindungsranke",
+        archetype="The Devouring Mother",
+        condition_threshold=2,
+        stress_resistance=0,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=4,
+        stress_attack_power=2,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=["spy"],
+        vulnerabilities=["saboteur", "assassin"],
+        action_weights={"attack": 35, "grapple": 35, "root": 20, "ambient": 10},
+        special_abilities=["grapple", "root"],
+        description_en=(
+            "A root system that has learned to walk. It moves through the floor "
+            "like something swimming through still water \u2013 surfacing, reaching, "
+            "submerging. The tissue is warm to the touch. Your instruments "
+            "advise against touching it."
+        ),
+        description_de=(
+            "Ein Wurzelsystem, das gelernt hat zu gehen. Es bewegt sich durch "
+            "den Boden wie etwas, das durch stilles Wasser schwimmt \u2013 "
+            "auftauchend, greifend, abtauchend. Das Gewebe ist warm bei "
+            "Berührung. Eure Instrumente raten von Berührung ab."
+        ),
+        ambient_text_en=[
+            "The vine extends beneath the floor. You can feel it through your boots \u2013 a heartbeat that isn't yours.",
+            "{agent} steps over a root. It flinches. Not in pain \u2013 in recognition.",
+        ],
+        ambient_text_de=[
+            "Die Ranke erstreckt sich unter dem Boden. Ihr spürt sie durch eure Stiefel \u2013 einen Herzschlag, der nicht eurer ist.",
+            "{agent} steigt über eine Wurzel. Sie zuckt. Nicht vor Schmerz \u2013 vor Wiedererkennen.",
+        ],
+    ),
+    "mother_spore_matron": EnemyTemplate(
+        id="mother_spore_matron",
+        name_en="Spore Matron",
+        name_de="Sporenmutter",
+        archetype="The Devouring Mother",
+        condition_threshold=3,
+        stress_resistance=200,
+        threat_level="standard",
+        attack_aptitude="propagandist",
+        attack_power=2,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["infiltrator"],
+        vulnerabilities=["propagandist", "guardian"],
+        action_weights={"stress_attack": 30, "spore_cloud": 35, "nurture": 25, "ambient": 10},
+        special_abilities=["spore_cloud", "nurture"],
+        description_en=(
+            "Something between a flower and a lung. It breathes, and its breath "
+            "carries spores that catch the light like dust in a cathedral. The "
+            "spores smell of honey and warm soil. Your instruments read them as "
+            "parasitic vectors. Your body reads them as nourishment."
+        ),
+        description_de=(
+            "Etwas zwischen einer Blume und einer Lunge. Es atmet, und sein "
+            "Atem trägt Sporen, die das Licht fangen wie Staub in einer "
+            "Kathedrale. Die Sporen riechen nach Honig und warmer Erde. Eure "
+            "Instrumente lesen sie als parasitäre Vektoren. Euer Körper liest "
+            "sie als Nahrung."
+        ),
+        ambient_text_en=[
+            "The Matron exhales. The air sweetens. {agent} breathes deeper without deciding to.",
+            "Spores settle on {agent}'s skin. They are warm. They are already taking root.",
+        ],
+        ambient_text_de=[
+            "Die Mutter atmet aus. Die Luft wird süßer. {agent} atmet tiefer, ohne es zu beschließen.",
+            "Sporen legen sich auf {agent}s Haut. Sie sind warm. Sie wurzeln bereits.",
+        ],
+    ),
+    "mother_host_warden": EnemyTemplate(
+        id="mother_host_warden",
+        name_en="Host Warden",
+        name_de="Wirtskörper",
+        archetype="The Devouring Mother",
+        condition_threshold=5,
+        stress_resistance=300,
+        threat_level="elite",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=5,
+        telegraphed_intent=False,
+        evasion=10,
+        resistances=["infiltrator", "spy"],
+        vulnerabilities=["saboteur"],
+        action_weights={
+            "attack": 25, "stress_attack": 15, "embrace": 25,
+            "summon_weavers": 15, "spore_cloud": 10, "ambient": 10,
+        },
+        special_abilities=["embrace", "summon_weavers", "spore_cloud"],
+        description_en=(
+            "It was a person once. The proportions remember \u2013 two arms, two "
+            "legs, a head. But the tissue has grown over and through and around "
+            "until the person is only a scaffold for something larger, something "
+            "that moves with the patient rhythm of a heartbeat. It opens its "
+            "arms. Not to attack. To welcome. The embrace is the attack."
+        ),
+        description_de=(
+            "Es war einst ein Mensch. Die Proportionen erinnern sich \u2013 zwei "
+            "Arme, zwei Beine, ein Kopf. Aber das Gewebe ist darüber und "
+            "hindurch und darum gewachsen, bis der Mensch nur noch ein Gerüst "
+            "ist für etwas Größeres, etwas, das sich mit dem geduldigen Rhythmus "
+            "eines Herzschlags bewegt. Es öffnet die Arme. Nicht zum Angriff. "
+            "Zum Willkommen. Die Umarmung ist der Angriff."
+        ),
+        ambient_text_en=[
+            "The Warden hums. Not a melody \u2013 a frequency. Your ribcages resonate.",
+            "It reaches toward {agent} with something that was once a hand. The gesture is tender. The grip would not be.",
+        ],
+        ambient_text_de=[
+            "Der Wirtskörper summt. Keine Melodie \u2013 eine Frequenz. Eure Brustkörbe resonieren.",
+            "Er greift nach {agent} mit etwas, das einst eine Hand war. Die Geste ist zärtlich. Der Griff wäre es nicht.",
+        ],
+    ),
+}
+
+# ── Devouring Mother Combat Spawn Configurations ─────────────────────────
+
+MOTHER_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    "mother_weaver_drift_spawn": [
+        {"template_id": "mother_nutrient_weaver", "count": 2},
+    ],
+    "mother_vine_patrol_spawn": [
+        {"template_id": "mother_tether_vine", "count": 1},
+        {"template_id": "mother_nutrient_weaver", "count": 1},
+    ],
+    "mother_spore_spawn": [
+        {"template_id": "mother_spore_matron", "count": 1},
+        {"template_id": "mother_nutrient_weaver", "count": 1},
+    ],
+    "mother_garden_spawn": [
+        {"template_id": "mother_spore_matron", "count": 1},
+        {"template_id": "mother_tether_vine", "count": 1},
+    ],
+    "mother_host_warden_spawn": [
+        {"template_id": "mother_host_warden", "count": 1},
+        {"template_id": "mother_nutrient_weaver", "count": 1},
+    ],
+    # Rest site ambush (a gift arrives uninvited)
+    "mother_rest_ambush_spawn": [
+        {"template_id": "mother_nutrient_weaver", "count": 1},
+    ],
+}
+
 # ── Archetype Registries ──────────────────────────────────────────────────
 # Data lookup by archetype name — zero conditionals. New archetypes add entries.
 
@@ -611,12 +804,14 @@ _ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
     "The Shadow": SHADOW_ENEMIES,
     "The Tower": TOWER_ENEMIES,
     "The Entropy": ENTROPY_ENEMIES,
+    "The Devouring Mother": MOTHER_ENEMIES,
 }
 
 _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
     "The Shadow": SHADOW_SPAWN_CONFIGS,
     "The Tower": TOWER_SPAWN_CONFIGS,
     "The Entropy": ENTROPY_SPAWN_CONFIGS,
+    "The Devouring Mother": MOTHER_SPAWN_CONFIGS,
 }
 
 
@@ -718,6 +913,13 @@ def check_ambush(
             return random.random() < tower_config["low_stability_ambush_15"]
         if stability < 30:
             return random.random() < tower_config["low_stability_ambush_30"]
+    elif archetype == "The Devouring Mother":
+        mother_config = ARCHETYPE_CONFIGS["The Devouring Mother"]["mechanic_config"]
+        attachment = archetype_state.get("attachment", 0)
+        if attachment >= 90:
+            return random.random() < mother_config["high_attachment_ambush_90"]
+        if attachment >= 75:
+            return random.random() < mother_config["high_attachment_ambush_75"]
 
     return False
 

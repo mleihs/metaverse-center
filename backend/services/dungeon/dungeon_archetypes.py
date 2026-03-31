@@ -116,16 +116,88 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "Masse jedes Versprechens, auf dem dieser Turm gebaut wurde, fällig werdend zugleich."
         ),
     },
-    # ── Stubbed archetypes (Phase 2+) ──────────────────────────────────────
+    # ── The Devouring Mother ────────────────────────────────────────────────
     "The Devouring Mother": {
         "signature": "biological_tide",
         "title_en": "Das Lebendige Labyrinth",
         "title_de": "Das Lebendige Labyrinth",
-        "tagline_en": "That which sustains life turns against it.",
-        "tagline_de": "Was Leben erhält, wendet sich dagegen.",
+        "tagline_en": "That which sustains you consumes you.",
+        "tagline_de": "Was euch nährt, verzehrt euch.",
+        "prose_style": "Warm. Maternal. Biological. The dungeon described as providing, growing, embracing. Sentences that get warmer instead of shorter.",
         "mechanic": "parasitic_drain",
-        "mechanic_config": {},
+        "mechanic_config": {
+            "start_attachment": 0,
+            "max_attachment": 100,
+            # Accumulation rates (per room entry, by depth)
+            "gain_depth_1_2": 3,
+            "gain_depth_3_4": 5,
+            "gain_depth_5_plus": 8,
+            # Passive healing (the Mother provides — THIS IS THE TRAP)
+            "heal_stress_per_room": 5,
+            "heal_stress_per_room_deep": 10,  # depth 5+: more generous
+            # Rest site bonus
+            "rest_stress_heal": 60,           # vs standard 40
+            "rest_attachment_gain": 8,
+            # Combat accumulation (lower than Entropy — combat RESISTS the Mother)
+            "gain_per_combat_round": 1,
+            # Failed skill check
+            "gain_on_failed_check": 3,
+            # The Mother's Gift: enemy defeat heals but costs attachment
+            "heal_on_combat_win": 15,
+            "gain_on_combat_win": 4,
+            # Loot acceptance cost
+            "gain_on_loot_accept": 5,
+            # Guardian "Sever" ability
+            "reduce_on_guardian_sever": 10,
+            # Thresholds
+            "incorporation_threshold": 100,
+            "critical_threshold": 75,
+            "dependent_threshold": 45,
+            # Warmth gradient: buffs that increase WITH attachment (the trap)
+            "warmth_stress_resist_45": 0.15,   # -15% incoming stress
+            "warmth_stress_resist_75": 0.30,   # -30% incoming stress
+            "warmth_heal_bonus_45": 1.25,      # rest heals 25% more
+            "warmth_heal_bonus_75": 1.50,      # rest heals 50% more
+            # High attachment penalties
+            "high_attachment_retreat_stress_75": 80,
+            "high_attachment_retreat_stress_90": 150,
+            # Exit cost: withdrawal
+            "exit_debuff_threshold": 50,
+            "exit_stress_penalty_per_10": 20,
+            # Ambush modification (lower than other archetypes)
+            "high_attachment_ambush_75": 0.15,
+            "high_attachment_ambush_90": 0.25,
+            # Stress multiplier: INVERTED — REDUCED at high attachment
+            "stress_multiplier_75": 0.80,
+            "stress_multiplier_90": 0.65,
+            "incorporation_stress_multiplier": 0.0,
+        },
+        "aptitude_weights": {
+            "guardian": 30,
+            "propagandist": 25,
+            "spy": 15,
+            "saboteur": 15,
+            "assassin": 10,
+            "infiltrator": 5,
+        },
+        "atmosphere_enter_en": (
+            "Warmth. The air carries it like a gift \u2014 not the sterile warmth of\n"
+            "climate control but the warmth of something alive, something that\n"
+            "has been waiting for you specifically.\n\n"
+            "The walls are soft. Organic. Your instruments read biological mass\n"
+            "in every direction. The parasitic attachment counter reads 0.\n"
+            "The dungeon reads 'welcome.'"
+        ),
+        "atmosphere_enter_de": (
+            "Wärme. Die Luft trägt sie wie ein Geschenk \u2014 nicht die sterile\n"
+            "Wärme einer Klimaanlage, sondern die Wärme von etwas Lebendigem,\n"
+            "etwas, das auf euch gewartet hat. Auf euch im Besonderen.\n\n"
+            "Die Wände sind weich. Organisch. Eure Instrumente messen biologische\n"
+            "Masse in jeder Richtung. Der Bindungszähler zeigt 0.\n"
+            "Der Dungeon liest: \u00bbWillkommen.\u00ab"
+        ),
     },
+    # ── Stubbed archetypes (Phase 2+) ──────────────────────────────────────
     "The Deluge": {
         "signature": "elemental_surge",
         "title_en": "Die Steigende Flut",
