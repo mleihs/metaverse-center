@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 70 documents, 7 categories + 9 ADRs.
+> Auto-generated from frontmatter. 76 documents, 8 categories + 9 ADRs.
 
 ## Specifications (16)
 
@@ -86,7 +86,16 @@ tags: [index, catalog, documentation]
 | [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Analysis (7)
+## Research (4)
+
+| Document | Version | Date | Lang | Status |
+|----------|---------|------|------|--------|
+| [The Devouring Mother — Literary Research](research/devouring-mother-literary-research.md) | 1.0 | 2026-03-31 | en | complete |
+| [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md) | 1.0 | 2026-03-31 | en | complete |
+| [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md) | 1.0 | 2026-03-31 | en | implemented |
+| [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md) | 1.0 | 2026-03-27 | en | implemented |
+
+## Analysis (9)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -97,6 +106,8 @@ tags: [index, catalog, documentation]
 | [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
 | [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
+| [Dungeon Playtest Report #1](analysis/dungeon-playtest-report-2026-03-29.md) | 1.0 | 2026-03-29 | en | active |
+| [Dungeon Playtest Report #2](analysis/dungeon-playtest-2-report-2026-03-30.md) | 1.0 | 2026-03-30 | en | active |
 
 ## Audits (2)
 

@@ -1,3 +1,13 @@
+---
+title: "The Devouring Mother — Deep Literary Research"
+version: "1.0"
+date: "2026-03-31"
+type: research
+status: complete
+lang: en
+tags: [dungeon, archetype, devouring-mother, literary-research, game-design]
+---
+
 # The Devouring Mother — Deep Literary Research for Dungeon Archetype
 
 ## Research Purpose

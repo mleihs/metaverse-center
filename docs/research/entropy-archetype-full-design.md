@@ -1,8 +1,14 @@
-I now have a complete picture of the architecture. Let me compile the full design document.
-
+---
+title: "The Entropy — Full Archetype Design Document"
+version: "1.0"
+date: "2026-03-31"
+type: research
+status: implemented
+lang: en
+tags: [dungeon, archetype, entropy, design-document]
 ---
 
-# The Entropy -- Resonance Dungeon Design Document
+# The Entropy — Resonance Dungeon Design Document
 
 ## 1. Literary Foundation
 

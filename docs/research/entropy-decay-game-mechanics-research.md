@@ -1,3 +1,13 @@
+---
+title: "Entropy, Decay & Degradation Mechanics in Games"
+version: "1.0"
+date: "2026-03-31"
+type: research
+status: complete
+lang: en
+tags: [dungeon, archetype, entropy, game-mechanics-research]
+---
+
 # Entropy, Decay & Degradation Mechanics in Dungeon Crawlers and Roguelikes
 
 ## Research Purpose

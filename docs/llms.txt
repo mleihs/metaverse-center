@@ -56,6 +56,12 @@
 - [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md)
 - [Techstack Recommendation](explanations/techstack-recommendation.md)
 
+## Research
+- [The Devouring Mother — Literary Research](research/devouring-mother-literary-research.md)
+- [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md)
+- [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md)
+- [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md)
+
 ## Analysis
 - [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
 - [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md)
@@ -64,6 +70,8 @@
 - [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md)
 - [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md)
 - [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md)
+- [Dungeon Playtest Report #1](analysis/dungeon-playtest-report-2026-03-29.md)
+- [Dungeon Playtest Report #2](analysis/dungeon-playtest-2-report-2026-03-30.md)
 
 ## Audits
 - [Epoch Gameplay Audit](audits/audit-epoch-gameplay-2026-03-09.md)

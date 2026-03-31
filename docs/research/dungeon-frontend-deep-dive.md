@@ -1,3 +1,13 @@
+---
+title: "Resonance Dungeons Frontend — Research Brief"
+version: "1.0"
+date: "2026-03-27"
+type: research
+status: implemented
+lang: en
+tags: [dungeon, frontend, architecture, research]
+---
+
 # Resonance Dungeons Frontend — Research Brief (2026-03-27)
 
 Destilliert aus 3 Deep-Dive-Agents. Lies dies als Grundlage fuer den Implementierungsplan.
