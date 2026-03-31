@@ -223,7 +223,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
       }
 
       .bar-value {
-        min-width: 60px;
+        min-width: 80px;
         font-family: var(--_mono);
         font-size: 8px;
         color: var(--_phosphor-dim);

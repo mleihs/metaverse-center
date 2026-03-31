@@ -416,7 +416,8 @@ class DevouringMotherStrategy(ArchetypeStrategy):
         """Contagious attachment: enemy contact deepens the parasitic bond."""
         instance.archetype_state["attachment"] = min(
             self.mechanic_config["max_attachment"],
-            instance.archetype_state.get("attachment", 0) + 3,
+            instance.archetype_state.get("attachment", 0)
+            + self.mechanic_config.get("gain_per_enemy_hit", 3),
         )
 
     def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:

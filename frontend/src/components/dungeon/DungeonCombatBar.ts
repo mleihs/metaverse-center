@@ -810,7 +810,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
         <div class="footer">
           <span class="counter" aria-live="polite">
-            ${selected.size}/${actionable.length} ${msg('ACTIONS')}
+            ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length} ${msg('ACTIONS')}
           </span>
           <span class="footer__hint">${msg('or type "submit" in terminal')}</span>
           <button

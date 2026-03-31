@@ -142,6 +142,8 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "gain_per_combat_round": 1,
             # Failed skill check
             "gain_on_failed_check": 3,
+            # Enemy hit = contagious attachment (parallel to Entropy's gain_per_enemy_hit)
+            "gain_per_enemy_hit": 3,
             # The Mother's Gift: enemy defeat heals but costs attachment
             "heal_on_combat_win": 15,
             "gain_on_combat_win": 4,

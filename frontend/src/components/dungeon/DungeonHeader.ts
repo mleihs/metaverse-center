@@ -357,9 +357,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         transition: transform 0.3s ease-out;
       }
 
-      /* Amber: 0-44 (normal — clinical observation) */
+      /* Dim phosphor: 0-44 (normal — clinical observation) */
       .attachment__fill--normal {
-        background: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--_phosphor));
+        background: var(--_phosphor-dim);
       }
 
       /* Warm amber: 45-74 (dependent — comfort sets in) */
@@ -367,18 +367,27 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         background: var(--color-warning, #fb923c);
       }
 
-      /* Deep warm: 75-99 (critical — the dungeon breathes for you) */
-      .attachment__fill--critical {
-        background: color-mix(in srgb, var(--color-warning, #fb923c) 80%, var(--color-danger, #f87171));
+      .attachment__label--dependent {
+        color: var(--color-warning);
       }
 
-      /* Solid warm: 100 (incorporation — you are home) */
+      /* Rose-warm: 75-99 (critical — the dungeon breathes for you) */
+      .attachment__fill--critical {
+        background: color-mix(in srgb, var(--color-danger, #f87171) 70%, var(--color-warning, #fb923c));
+      }
+
+      .attachment__label--critical {
+        color: color-mix(in srgb, var(--color-danger, #f87171) 70%, var(--color-warning, #fb923c));
+        font-weight: 700;
+      }
+
+      /* Solid warm glow: 100 (incorporation — you are home) */
       .attachment__fill--incorporation {
-        background: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171));
+        background: var(--color-danger, #f87171);
       }
 
       .attachment__label--incorporation {
-        color: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171));
+        color: var(--color-danger, #f87171);
         font-weight: 700;
         letter-spacing: 0.1em;
       }
@@ -603,7 +612,13 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                     style="transform: scaleX(${maxAttachment > 0 ? attachment / maxAttachment : 0})"
                   ></div>
                 </div>
-                <span class="attachment__label ${attachment >= 100 ? 'attachment__label--incorporation' : ''}">${attachment >= 100 ? msg('HOME') : attachment}</span>
+                <span class="attachment__label ${attachment >= 100
+                      ? 'attachment__label--incorporation'
+                      : attachment >= 75
+                        ? 'attachment__label--critical'
+                        : attachment >= 45
+                          ? 'attachment__label--dependent'
+                          : ''}">${attachment >= 100 ? msg('HOME') : attachment}</span>
               </div>
             `
           : nothing}

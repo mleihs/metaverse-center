@@ -84,8 +84,8 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         grid-row: 2;
         display: flex;
         flex-direction: column;
-        min-height: 0;
-        overflow: hidden;
+        min-height: 250px;
+        overflow-y: auto;
       }
 
       .dungeon-hud__party {
