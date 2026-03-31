@@ -1,11 +1,5 @@
--- get_ai_usage_stats — Aggregates AI usage data in Postgres instead of Python.
---
--- Replaces the Python in-memory aggregation in admin.py that fetched 10k rows
--- and bucketed them in dict loops. This RPC returns the exact same JSON shape
--- used by AdminAIUsageTab.ts.
---
--- Called via: admin_supabase.rpc("get_ai_usage_stats", {"p_days": 30})
--- Security: SECURITY INVOKER (admin_supabase = service_role)
+-- Fix: row_to_jsonb does not exist in Postgres — use to_jsonb instead.
+-- Repair migration for 152_ai_usage_stats_rpc.sql.
 
 CREATE OR REPLACE FUNCTION get_ai_usage_stats(p_days INTEGER DEFAULT 30)
 RETURNS JSONB
@@ -24,7 +18,6 @@ DECLARE
   v_daily_trend JSONB;
   v_key_sources JSONB;
 BEGIN
-  -- Totals
   SELECT
     count(*),
     coalesce(sum(total_tokens), 0),
@@ -33,64 +26,47 @@ BEGIN
   FROM ai_usage_log
   WHERE created_at >= v_since;
 
-  -- By provider (sorted by cost desc)
   SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.cost DESC), '[]'::jsonb)
   INTO v_by_provider
   FROM (
-    SELECT
-      provider,
-      count(*)::INT AS calls,
+    SELECT provider, count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
-    FROM ai_usage_log WHERE created_at >= v_since
-    GROUP BY provider
+    FROM ai_usage_log WHERE created_at >= v_since GROUP BY provider
   ) t;
 
-  -- By model (sorted by cost desc)
   SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.cost DESC), '[]'::jsonb)
   INTO v_by_model
   FROM (
-    SELECT
-      model,
-      count(*)::INT AS calls,
+    SELECT model, count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
-    FROM ai_usage_log WHERE created_at >= v_since
-    GROUP BY model
+    FROM ai_usage_log WHERE created_at >= v_since GROUP BY model
   ) t;
 
-  -- By purpose (sorted by cost desc)
   SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.cost DESC), '[]'::jsonb)
   INTO v_by_purpose
   FROM (
-    SELECT
-      purpose,
-      count(*)::INT AS calls,
+    SELECT purpose, count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
-    FROM ai_usage_log WHERE created_at >= v_since
-    GROUP BY purpose
+    FROM ai_usage_log WHERE created_at >= v_since GROUP BY purpose
   ) t;
 
-  -- By simulation (sorted by cost desc)
   SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.cost DESC), '[]'::jsonb)
   INTO v_by_simulation
   FROM (
-    SELECT
-      coalesce(simulation_id::TEXT, 'platform') AS simulation_id,
+    SELECT coalesce(simulation_id::TEXT, 'platform') AS simulation_id,
       count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
-    FROM ai_usage_log WHERE created_at >= v_since
-    GROUP BY simulation_id
+    FROM ai_usage_log WHERE created_at >= v_since GROUP BY simulation_id
   ) t;
 
-  -- Daily trend (sorted by date asc)
   SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.date ASC), '[]'::jsonb)
   INTO v_daily_trend
   FROM (
-    SELECT
-      (created_at AT TIME ZONE 'UTC')::DATE::TEXT AS date,
+    SELECT (created_at AT TIME ZONE 'UTC')::DATE::TEXT AS date,
       count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
@@ -98,19 +74,15 @@ BEGIN
     GROUP BY (created_at AT TIME ZONE 'UTC')::DATE
   ) t;
 
-  -- Key sources (as object, not array — matches current frontend expectation)
   SELECT coalesce(jsonb_object_agg(t.key_source, jsonb_build_object(
     'calls', t.calls, 'tokens', t.tokens, 'cost', t.cost
   )), '{}'::jsonb)
   INTO v_key_sources
   FROM (
-    SELECT
-      key_source,
-      count(*)::INT AS calls,
+    SELECT key_source, count(*)::INT AS calls,
       sum(total_tokens)::INT AS tokens,
       round(sum(estimated_cost_usd)::NUMERIC, 6) AS cost
-    FROM ai_usage_log WHERE created_at >= v_since
-    GROUP BY key_source
+    FROM ai_usage_log WHERE created_at >= v_since GROUP BY key_source
   ) t;
 
   RETURN jsonb_build_object(
@@ -131,6 +103,3 @@ BEGIN
   );
 END;
 $$;
-
-COMMENT ON FUNCTION get_ai_usage_stats IS
-  'Aggregates AI usage log for admin dashboard. Returns the same JSON shape as the Python aggregation it replaces (admin.py:532-603).';

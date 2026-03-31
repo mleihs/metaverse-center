@@ -148,7 +148,7 @@ async def update_setting(
 # --- User Management Endpoints ---
 
 
-@router.get("/users", response_model=SuccessResponse[list])
+@router.get("/users", response_model=SuccessResponse[dict])
 async def list_users(
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=50, ge=1, le=100),
