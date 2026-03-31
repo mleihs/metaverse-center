@@ -88,6 +88,14 @@ class ArchetypeStrategy(ABC):
         """
         return None
 
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Optional hook: called when an enemy lands a hit on an agent.
+
+        Default: no-op. Override for contagion-style mechanics
+        (e.g. Entropy contagious decay per enemy hit).
+        """
+        return None
+
 
 # ── Shadow Strategy ────────────────────────────────────────────────────────
 
@@ -215,12 +223,112 @@ class TowerStrategy(ArchetypeStrategy):
         )
 
 
+# ── Entropy Strategy ──────────────────────────────────────────────────────
+
+class EntropyStrategy(ArchetypeStrategy):
+    """The Entropy: Decay accumulation mechanic (0→100, room-entry + contagion).
+
+    Inverts Shadow/Tower drain-down pattern: decay counts UP. The threat
+    is not losing a resource — it is gaining dissolution. Contact with
+    decaying entities accelerates party decay (contagious mechanic).
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "decay": self.mechanic_config["start_decay"],
+            "max_decay": self.mechanic_config["max_decay"],
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Accumulate decay on room entry (opposite direction to Shadow/Tower)."""
+        self._apply_room_entry_gain(instance)
+        decay = instance.archetype_state.get("decay", 0)
+        if decay >= self.mechanic_config["dissolution_threshold"]:
+            return "dissolution"
+        if decay >= self.mechanic_config["critical_threshold"]:
+            return "decay_critical"
+        if decay >= self.mechanic_config["degraded_threshold"]:
+            return "decay_degraded"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        reduce_key = {
+            "combat_victory": "reduce_on_combat_win",
+            "rest": "reduce_on_rest",
+            "treasure": "reduce_on_treasure",
+        }.get(event)
+        if reduce_key and self.mechanic_config.get(reduce_key):
+            instance.archetype_state["decay"] = max(
+                0,
+                instance.archetype_state.get("decay", 0)
+                - self.mechanic_config[reduce_key],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        decay_delta = effects.get("decay", 0)
+        if decay_delta:
+            instance.archetype_state["decay"] = max(
+                0,
+                min(
+                    self.mechanic_config["max_decay"],
+                    instance.archetype_state.get("decay", 0) + decay_delta,
+                ),
+            )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        decay = instance.archetype_state.get("decay", 0)
+        if decay >= self.mechanic_config["dissolution_threshold"]:
+            return self.mechanic_config.get("dissolution_stress_multiplier", 2.0)
+        if decay >= 85:
+            return self.mechanic_config.get("stress_multiplier_85", 1.50)
+        if decay >= self.mechanic_config["critical_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_70", 1.25)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        instance.archetype_state["decay"] = min(
+            self.mechanic_config["max_decay"],
+            instance.archetype_state.get("decay", 0)
+            + self.mechanic_config["gain_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        instance.archetype_state["decay"] = min(
+            self.mechanic_config["max_decay"],
+            instance.archetype_state.get("decay", 0)
+            + self.mechanic_config["gain_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Contagious decay: each enemy hit on an agent accelerates party decay."""
+        instance.archetype_state["decay"] = min(
+            self.mechanic_config["max_decay"],
+            instance.archetype_state.get("decay", 0)
+            + self.mechanic_config["gain_per_enemy_hit"],
+        )
+
+    def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
+        """Decay gain per room entry: +4/+7/+10 by depth tier."""
+        depth = instance.depth
+        if depth <= 2:
+            gain = self.mechanic_config["gain_depth_1_2"]
+        elif depth <= 4:
+            gain = self.mechanic_config["gain_depth_3_4"]
+        else:
+            gain = self.mechanic_config["gain_depth_5_plus"]
+        instance.archetype_state["decay"] = min(
+            self.mechanic_config["max_decay"],
+            instance.archetype_state.get("decay", 0) + gain,
+        )
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
 _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Shadow": ShadowStrategy(ARCHETYPE_CONFIGS["The Shadow"]),
     "The Tower": TowerStrategy(ARCHETYPE_CONFIGS["The Tower"]),
+    "The Entropy": EntropyStrategy(ARCHETYPE_CONFIGS["The Entropy"]),
 }
 
 

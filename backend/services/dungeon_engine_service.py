@@ -569,6 +569,7 @@ class DungeonEngineService:
             [{"personality": a.personality} for a in instance.party],
             instance.used_banter_ids,
             instance.archetype,
+            archetype_state=instance.archetype_state,
         )
         banter_text = None
         if banter:
@@ -779,7 +780,14 @@ class DungeonEngineService:
         round_data = cls._build_round_result_dict(round_result)
 
         # Archetype per-round effects (e.g. Tower stability drain)
-        get_archetype_strategy(instance.archetype).on_combat_round(instance)
+        strategy = get_archetype_strategy(instance.archetype)
+        strategy.on_combat_round(instance)
+
+        # Contagious decay: call on_enemy_hit for each successful enemy attack
+        enemy_names = {e.name_en for e in instance.combat.enemies}
+        for event in round_result.events:
+            if event.actor in enemy_names and event.hit and event.damage_steps > 0:
+                strategy.on_enemy_hit(instance)
 
         if round_result.combat_over:
             if round_result.victory:

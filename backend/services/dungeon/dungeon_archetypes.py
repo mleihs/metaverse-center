@@ -168,8 +168,67 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "title_de": "Der Verfall-Garten",
         "tagline_en": "Decay is not destruction \u2014 it is transformation's dark twin.",
         "tagline_de": "Verfall ist nicht Zerstörung \u2014 er ist der dunkle Zwilling der Verwandlung.",
-        "mechanic": "restoration_vs_speed",
-        "mechanic_config": {},
+        "prose_style": "Minimalist. Observational. The dungeon described as losing distinctions. Short sentences that get shorter.",
+        "mechanic": "decay_accumulation",
+        "mechanic_config": {
+            "start_decay": 0,
+            "max_decay": 100,
+            # Accumulation rates (per room entry, by depth)
+            "gain_depth_1_2": 4,
+            "gain_depth_3_4": 7,
+            "gain_depth_5_plus": 10,
+            # Combat accumulation
+            "gain_per_combat_round": 2,
+            # Failed skill check
+            "gain_on_failed_check": 5,
+            # Enemy hit = contagious decay (unique twist)
+            "gain_per_enemy_hit": 3,
+            # Restore (reduction) rates
+            "reduce_on_combat_win": 3,
+            "reduce_on_treasure": 5,
+            "reduce_on_guardian_preserve": 8,
+            "reduce_on_rest": 5,
+            # Thresholds
+            "dissolution_threshold": 100,
+            "critical_threshold": 70,
+            "degraded_threshold": 40,
+            # High-decay ambush chances
+            "high_decay_ambush_70": 0.30,
+            "high_decay_ambush_85": 0.50,
+            # Ability effectiveness reduction at high decay
+            "ability_penalty_per_10_decay": 0.02,
+            # Loot quality degradation
+            "loot_downgrade_threshold": 60,
+            "loot_downgrade_chance": 0.30,
+            # Low-decay loot bonus
+            "loot_upgrade_threshold": 20,
+            "loot_upgrade_chance": 0.50,
+            # Stress multiplier at high decay
+            "stress_multiplier_70": 1.25,
+            "stress_multiplier_85": 1.50,
+            "dissolution_stress_multiplier": 2.0,
+        },
+        "aptitude_weights": {
+            "guardian": 30,
+            "spy": 20,
+            "saboteur": 20,
+            "propagandist": 15,
+            "assassin": 8,
+            "infiltrator": 7,
+        },
+        "atmosphere_enter_en": (
+            "The air is the same temperature as the walls. The walls are the\n"
+            "same color as the floor. The floor is the same texture as the silence.\n\n"
+            "Your instruments work. They confirm that everything is becoming\n"
+            "everything else. The decay counter reads 0. It will not read 0 again."
+        ),
+        "atmosphere_enter_de": (
+            "Die Luft hat die gleiche Temperatur wie die Wände. Die Wände haben\n"
+            "die gleiche Farbe wie der Boden. Der Boden hat die gleiche Textur\n"
+            "wie die Stille.\n\n"
+            "Eure Instrumente funktionieren. Sie bestätigen, dass alles zu allem\n"
+            "anderen wird. Der Verfallszähler zeigt 0. Er wird nicht wieder 0 zeigen."
+        ),
     },
 }
 

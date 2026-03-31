@@ -17,7 +17,13 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import { ARCHETYPE_TOWER, isShadowState, isTowerState } from '../../types/dungeon.js';
+import {
+  ARCHETYPE_ENTROPY,
+  ARCHETYPE_TOWER,
+  isEntropyState,
+  isShadowState,
+  isTowerState,
+} from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
@@ -247,6 +253,75 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Decay Gauge (archetype-specific: Entropy) ── */
+      .decay {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .decay__icon {
+        display: inline-flex;
+        color: var(--_phosphor-dim);
+      }
+
+      .decay__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+      }
+
+      .decay__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--_phosphor) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .decay__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out;
+      }
+
+      /* Green: 0-39 (normal) */
+      .decay__fill--normal {
+        background: var(--color-success, #4ade80);
+      }
+
+      /* Amber: 40-69 (degraded) */
+      .decay__fill--degraded {
+        background: var(--color-warning, #fb923c);
+      }
+
+      /* Red: 70-84 (critical) */
+      .decay__fill--critical {
+        background: var(--color-danger, #f87171);
+      }
+
+      /* Pulsing red: 85-99 (near-dissolution) */
+      .decay__fill--dissolution {
+        background: var(--color-danger, #f87171);
+      }
+
+      .decay__label--dissolution {
+        color: var(--color-danger);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .decay__fill--dissolution {
+          animation: stability-pulse 2s ease-in-out infinite;
+        }
+
+        .decay__label--dissolution {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -285,9 +360,12 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     if (!state) return nothing;
 
     const isTower = state.archetype === ARCHETYPE_TOWER;
+    const isEntropy = state.archetype === ARCHETYPE_ENTROPY;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
-      : 'var(--color-info, #a78bfa)';
+      : isEntropy
+        ? 'var(--color-success, #4ade80)'
+        : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -298,10 +376,13 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const archState = dungeonState.archetypeState.value;
     const shadowState = isShadowState(archState) ? archState : null;
     const towerState = isTowerState(archState) ? archState : null;
+    const entropyState = isEntropyState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
     const maxStability = towerState?.max_stability ?? null;
+    const decay = entropyState?.decay ?? null;
+    const maxDecay = entropyState?.max_decay ?? null;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -379,6 +460,34 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   ></div>
                 </div>
                 <span class="stability__label ${stability <= 0 ? 'stability__label--collapse' : ''}">${stability <= 0 ? msg('FAILURE') : stability}</span>
+              </div>
+            `
+          : nothing}
+        ${decay !== null && maxDecay !== null
+          ? html`
+              <span class="sep"></span>
+              <div class="decay" aria-label=${msg('Decay') + ` ${decay}/${maxDecay}`}>
+                <span class="decay__icon">${icons.alertTriangle(12)}</span>
+                <div
+                  class="decay__track"
+                  role="progressbar"
+                  aria-valuenow=${decay}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxDecay}
+                  aria-label=${msg('Dissolution index')}
+                >
+                  <div
+                    class="decay__fill ${decay >= 85
+                      ? 'decay__fill--dissolution'
+                      : decay >= 70
+                        ? 'decay__fill--critical'
+                        : decay >= 40
+                          ? 'decay__fill--degraded'
+                          : 'decay__fill--normal'}"
+                    style="transform: scaleX(${maxDecay > 0 ? decay / maxDecay : 0})"
+                  ></div>
+                </div>
+                <span class="decay__label ${decay >= 100 ? 'decay__label--dissolution' : ''}">${decay >= 100 ? msg('DISSOLUTION') : decay}</span>
               </div>
             `
           : nothing}

@@ -1225,11 +1225,623 @@ ALL_TOWER_ENCOUNTERS: list[EncounterTemplate] = (
 )
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# ── THE ENTROPY ──────────────────────────────────────────────────────────
+# Literary DNA: Pynchon (thermodynamic equalization), Beckett (language
+# wearing out), Lem (epistemic futility). Entropy is NOT destruction —
+# it is equalization. Things do not break; they become indistinguishable.
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── Entropy Combat Encounters (4) ─────────────────────────────────────────
+
+ENTROPY_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_drift_convergence",
+        archetype="The Entropy",
+        room_type="combat",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "Two shapes drift at the far end of the corridor, barely distinguishable "
+            "from the walls behind them. Rust Phantoms \u2013 residual patterns of "
+            "something that once had purpose. They flicker as you approach, not in "
+            "alarm but in the way a dying signal flickers: automatically, without intent."
+        ),
+        description_de=(
+            "Zwei Formen treiben am fernen Ende des Korridors, kaum von den Wänden "
+            "dahinter zu unterscheiden. Rostphantome \u2013 residuale Muster von "
+            "etwas, das einst Zweck hatte. Sie flackern bei eurem Näherkommen, nicht "
+            "alarmiert, sondern so, wie ein sterbendes Signal flackert: automatisch, "
+            "ohne Absicht."
+        ),
+        combat_encounter_id="entropy_drift_spawn",
+    ),
+    EncounterTemplate(
+        id="entropy_last_differential",
+        archetype="The Entropy",
+        room_type="combat",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "Two shapes drift in the corridor \u2013 a Fade Echo and a Rust Phantom. "
+            "They were different once. Now they are converging. When they finish "
+            "converging, they will be one thing, and that thing will be nothing. "
+            "Until then, they are still dangerous in their own diminishing ways."
+        ),
+        description_de=(
+            "Zwei Formen treiben im Korridor \u2013 ein Verblassecho und ein Rostphantom. "
+            "Sie waren einst verschieden. Nun konvergieren sie. Wenn sie fertig "
+            "konvergiert sind, werden sie eines sein, und dieses Eine wird nichts sein. "
+            "Bis dahin sind sie noch gefährlich, auf ihre jeweils schwindende Weise."
+        ),
+        combat_encounter_id="entropy_erosion_patrol_spawn",
+    ),
+    EncounterTemplate(
+        id="entropy_dissolution_front",
+        archetype="The Entropy",
+        room_type="combat",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "The air thickens with particulate matter \u2013 the remains of surfaces "
+            "that have given up the pretense of solidity. A Dissolution Swarm fills "
+            "the room like a weather system, mindless and pervasive, attended by a "
+            "Rust Phantom orbiting its periphery like a satellite that has forgotten "
+            "what it orbits."
+        ),
+        description_de=(
+            "Die Luft verdickt sich mit Schwebstoffen \u2013 den Überresten von "
+            "Oberflächen, die den Anschein von Festigkeit aufgegeben haben. Ein "
+            "Auflösungsschwarm füllt den Raum wie ein Wettersystem, gedankenlos und "
+            "allgegenwärtig, begleitet von einem Rostphantom, das seine Peripherie "
+            "umkreist wie ein Satellit, der vergessen hat, was er umkreist."
+        ),
+        combat_encounter_id="entropy_swarm_spawn",
+    ),
+    EncounterTemplate(
+        id="entropy_the_equalization",
+        archetype="The Entropy",
+        room_type="combat",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "Two swarms. The room is dense with dissolution \u2013 particles that "
+            "were once two different things drift between two different masses, "
+            "exchanging components. You are standing in a conversation between "
+            "two clouds of former matter. The conversation is about becoming the "
+            "same cloud."
+        ),
+        description_de=(
+            "Zwei Schwärme. Der Raum ist dicht von Auflösung \u2013 Partikel, die "
+            "einst zwei verschiedene Dinge waren, treiben zwischen zwei verschiedenen "
+            "Massen und tauschen Bestandteile. Ihr steht in einem Gespräch zwischen "
+            "zwei Wolken einstiger Materie. Das Gespräch handelt davon, dieselbe Wolke "
+            "zu werden."
+        ),
+        combat_encounter_id="entropy_dissolution_spawn",
+    ),
+]
+
+# ── Entropy Narrative Encounters (5) ──────────────────────────────────────
+
+ENTROPY_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_catalogue",
+        archetype="The Entropy",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "A room lined with shelves. Each shelf holds objects that were once "
+            "distinct: a tool, a weapon, a musical instrument, a compass. They are "
+            "becoming the same object. The labels remain, but the labels are wrong "
+            "now. Or the objects are. It is increasingly difficult to tell."
+        ),
+        description_de=(
+            "Ein Raum voller Regale. Jedes Regal enthält Gegenstände, die einst "
+            "verschieden waren: ein Werkzeug, eine Waffe, ein Musikinstrument, ein "
+            "Kompass. Sie werden zum selben Gegenstand. Die Beschriftungen bleiben, "
+            "aber die Beschriftungen stimmen nicht mehr. Oder die Gegenstände nicht. "
+            "Es wird zunehmend schwieriger, das zu unterscheiden."
+        ),
+        choices=[
+            EncounterChoice(
+                id="catalogue_preserve",
+                label_en="Preserve the most distinct object (Guardian)",
+                label_de="Den unterscheidbarsten Gegenstand bewahren (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=5,
+                success_effects={"decay": -8, "loot": True, "discovery": True},
+                partial_effects={"decay": -4},
+                fail_effects={"decay": 5, "stress": 30},
+                success_narrative_en="You isolate an artifact that still remembers what it is. The shelves groan with envy.",
+                success_narrative_de="Ihr isoliert ein Artefakt, das sich noch erinnert, was es ist. Die Regale ächzen vor Neid.",
+                fail_narrative_en="The object dissolves in your hands. It was already too late. Everything is always already too late here.",
+                fail_narrative_de="Der Gegenstand löst sich in euren Händen auf. Es war bereits zu spät. Hier ist alles immer bereits zu spät.",
+            ),
+            EncounterChoice(
+                id="catalogue_analyze",
+                label_en="Study the dissolution pattern (Spy)",
+                label_de="Das Auflösungsmuster untersuchen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"decay": -3, "discovery": True},
+                partial_effects={"decay": -1},
+                fail_effects={"decay": 5, "stress": 20},
+                success_narrative_en="You map the rate of dissolution. The data is valuable. Briefly.",
+                success_narrative_de="Ihr kartiert die Geschwindigkeit der Auflösung. Die Daten sind wertvoll. Kurz.",
+                fail_narrative_en="The pattern is there. You are certain. The certainty dissolves on examination.",
+                fail_narrative_de="Das Muster ist da. Ihr seid sicher. Die Sicherheit löst sich bei Untersuchung auf.",
+            ),
+            EncounterChoice(
+                id="catalogue_redirect",
+                label_en="Redirect the decay outward (Saboteur)",
+                label_de="Den Verfall nach außen umlenken (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=6,
+                success_effects={"decay": -10, "stress": 20},
+                partial_effects={"decay": -5, "stress": 30},
+                fail_effects={"decay": 8, "stress": 40},
+                success_narrative_en="The decay flows outward, briefly. The room clarifies. For now.",
+                success_narrative_de="Der Verfall fließt nach außen, kurz. Der Raum klärt sich. Vorerst.",
+                fail_narrative_en="The decay redirects into you. Briefly, you understand what the objects felt.",
+                fail_narrative_de="Der Verfall leitet sich in euch um. Kurz versteht ihr, was die Gegenstände empfanden.",
+            ),
+            EncounterChoice(
+                id="catalogue_walk_away",
+                label_en="Walk away. Some things cannot be saved.",
+                label_de="Weitergehen. Manche Dinge kann man nicht retten.",
+                success_effects={"decay": 3},
+                success_narrative_en="You leave. The objects continue their convergence. They do not notice.",
+                success_narrative_de="Ihr geht. Die Gegenstände setzen ihre Konvergenz fort. Sie bemerken es nicht.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="entropy_repeated_room",
+        archetype="The Entropy",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "You have been here before. Or the room has become identical to one "
+            "you have been in. The distinction matters less than it should. The "
+            "walls bear marks that might be yours. The marks bear messages that "
+            "might be from you. The messages say: we have been here before."
+        ),
+        description_de=(
+            "Ihr seid schon einmal hier gewesen. Oder der Raum ist identisch "
+            "mit einem geworden, in dem ihr wart. Die Unterscheidung ist weniger "
+            "wichtig, als sie sein sollte. Die Wände tragen Markierungen, die von "
+            "euch sein könnten. Die Markierungen tragen Botschaften, die von euch "
+            "stammen könnten. Die Botschaften sagen: Wir sind schon einmal hier gewesen."
+        ),
+        choices=[
+            EncounterChoice(
+                id="repeated_investigate",
+                label_en="Investigate the difference (Spy)",
+                label_de="Den Unterschied untersuchen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"decay": -5, "discovery": True},
+                partial_effects={"decay": -2},
+                fail_effects={"decay": 6, "stress": 25},
+                success_narrative_en="There IS a difference. Hairline, microscopic, but real. The instruments confirm it. Confirmation feels like a small victory against thermodynamics.",
+                success_narrative_de="Es GIBT einen Unterschied. Haarfein, mikroskopisch, aber real. Die Instrumente bestätigen ihn. Die Bestätigung fühlt sich an wie ein kleiner Sieg gegen die Thermodynamik.",
+                fail_narrative_en="You look. You compare. The rooms are the same. Your memory of 'different' may itself be decaying.",
+                fail_narrative_de="Ihr schaut. Ihr vergleicht. Die Räume sind gleich. Eure Erinnerung an 'verschieden' verfällt womöglich selbst.",
+            ),
+            EncounterChoice(
+                id="repeated_fortify",
+                label_en="Fortify this room's identity (Guardian)",
+                label_de="Die Identität dieses Raums festigen (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=5,
+                success_effects={"decay": -6},
+                partial_effects={"decay": -3},
+                fail_effects={"decay": 4, "stress": 20},
+                success_narrative_en="You mark the walls. This room is THIS room. The marks hold. The distinction persists. For now.",
+                success_narrative_de="Ihr markiert die Wände. Dieser Raum ist DIESER Raum. Die Markierungen halten. Die Unterscheidung besteht. Vorerst.",
+                fail_narrative_en="You mark the walls. The marks are already there. You marked them last time. Or the room did.",
+                fail_narrative_de="Ihr markiert die Wände. Die Markierungen sind schon da. Ihr habt sie letztes Mal angebracht. Oder der Raum.",
+            ),
+            EncounterChoice(
+                id="repeated_accept",
+                label_en="Accept the sameness. Move on.",
+                label_de="Die Gleichheit akzeptieren. Weitergehen.",
+                success_effects={"decay": 4, "stress": -20},
+                success_narrative_en="You stop trying to distinguish. The relief is immediate and slightly alarming.",
+                success_narrative_de="Ihr hört auf zu unterscheiden. Die Erleichterung ist sofort und leicht beunruhigend.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="entropy_last_machine",
+        archetype="The Entropy",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A machine. It performs a function \u2013 gears turning, pistons cycling, "
+            "readouts flickering. It performs this function with absolute dedication. "
+            "The function itself has decayed. The machine no longer knows what it "
+            "makes or measures or protects. It continues anyway. The dedication is "
+            "the last thing to go."
+        ),
+        description_de=(
+            "Eine Maschine. Sie erfüllt eine Funktion \u2013 Zahnräder drehen, "
+            "Kolben arbeiten, Anzeigen flackern. Sie erfüllt diese Funktion mit "
+            "absoluter Hingabe. Die Funktion selbst ist verfallen. Die Maschine "
+            "weiß nicht mehr, was sie herstellt oder misst oder schützt. Sie macht "
+            "trotzdem weiter. Die Hingabe ist das Letzte, das schwindet."
+        ),
+        choices=[
+            EncounterChoice(
+                id="machine_repair",
+                label_en="Repair the function, not just the machine (Saboteur)",
+                label_de="Die Funktion reparieren, nicht nur die Maschine (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=7,
+                success_effects={"decay": -12, "discovery": True},
+                partial_effects={"decay": -5},
+                fail_effects={"decay": 8, "stress": 30},
+                success_narrative_en="You restore meaning to mechanism. The machine pauses, recalibrates, and produces something that is unambiguously one thing. The room brightens by a category.",
+                success_narrative_de="Ihr gebt dem Mechanismus Bedeutung zurück. Die Maschine hält inne, kalibriert sich neu und produziert etwas, das unmissverständlich ein Ding ist. Der Raum wird um eine Kategorie heller.",
+                fail_narrative_en="The repair accelerates the wrong function. The machine produces sameness more efficiently.",
+                fail_narrative_de="Die Reparatur beschleunigt die falsche Funktion. Die Maschine produziert Gleichheit effizienter.",
+            ),
+            EncounterChoice(
+                id="machine_analyze",
+                label_en="Study the original design (Spy)",
+                label_de="Das ursprüngliche Design studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"decay": -3, "discovery": True},
+                partial_effects={"discovery": True},
+                fail_effects={"decay": 4, "stress": 15},
+                success_narrative_en="The blueprints are 40% legible. Enough to understand what was lost. Understanding what was lost is a form of preservation.",
+                success_narrative_de="Die Baupläne sind zu 40% lesbar. Genug, um zu verstehen, was verloren ging. Zu verstehen, was verloren ging, ist eine Form der Bewahrung.",
+                fail_narrative_en="The blueprints describe a machine. Or this machine. Or all machines. The specificity has bled away.",
+                fail_narrative_de="Die Baupläne beschreiben eine Maschine. Oder diese Maschine. Oder alle Maschinen. Die Spezifität ist verronnen.",
+            ),
+            EncounterChoice(
+                id="machine_leave",
+                label_en="Let it work. It has earned that.",
+                label_de="Sie arbeiten lassen. Das hat sie sich verdient.",
+                success_effects={"decay": 2},
+                success_narrative_en="You leave the machine to its purposeless devotion. There is something admirable in it. Something doomed.",
+                success_narrative_de="Ihr überlasst die Maschine ihrer zwecklosen Hingabe. Es liegt etwas Bewundernswertes darin. Etwas Verurteiltes.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="entropy_the_residual",
+        archetype="The Entropy",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "An entity sits in the center of the room. It was an agent once \u2013 "
+            "the posture is there, the proportions are correct, the hands are folded "
+            "as if waiting for instructions. But the face has averaged. The features "
+            "have equalized into a composite of every face it once knew. It asks you "
+            "a question. The question no longer has content. Only the grammar of "
+            "asking remains."
+        ),
+        description_de=(
+            "Ein Wesen sitzt in der Mitte des Raums. Es war einst ein Agent \u2013 "
+            "die Haltung stimmt, die Proportionen sind korrekt, die Hände gefaltet, "
+            "als wartete es auf Anweisungen. Aber das Gesicht hat sich gemittelt. Die "
+            "Züge haben sich zu einem Komposit jedes Gesichts angeglichen, das es "
+            "einst kannte. Es stellt euch eine Frage. Die Frage hat keinen Inhalt "
+            "mehr. Nur die Grammatik des Fragens besteht noch."
+        ),
+        choices=[
+            EncounterChoice(
+                id="residual_answer",
+                label_en="Answer with meaning (Propagandist)",
+                label_de="Mit Bedeutung antworten (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=6,
+                success_effects={"decay": -8, "stress": -30},
+                partial_effects={"decay": -3, "stress": -10},
+                fail_effects={"decay": 6, "stress": 40},
+                success_narrative_en="You answer. The content doesn't matter \u2013 the conviction does. For a moment, the entity's face resolves into a single expression. It nods. Then the expression averages again. But slower.",
+                success_narrative_de="Ihr antwortet. Der Inhalt ist unwichtig \u2013 die Überzeugung zählt. Einen Moment lang löst sich das Gesicht des Wesens zu einem einzelnen Ausdruck auf. Es nickt. Dann mittelt sich der Ausdruck wieder. Aber langsamer.",
+                fail_narrative_en="You answer. The words arrive. They arrive the same as the silence they replaced.",
+                fail_narrative_de="Ihr antwortet. Die Worte kommen an. Sie kommen genauso an wie die Stille, die sie ersetzt haben.",
+            ),
+            EncounterChoice(
+                id="residual_decode",
+                label_en="Decode the original question (Spy)",
+                label_de="Die ursprüngliche Frage entschlüsseln (Spion)",
+                check_aptitude="spy",
+                check_difficulty=7,
+                success_effects={"decay": -5, "discovery": True},
+                partial_effects={"decay": -2},
+                fail_effects={"decay": 5, "stress": 25},
+                success_narrative_en="Beneath the entropy, a question. A real one. About purpose. About whether continuation without purpose is continuation at all. You have no answer. But identifying the question is something.",
+                success_narrative_de="Unter der Entropie eine Frage. Eine echte. Über Zweck. Darüber, ob Fortbestehen ohne Zweck überhaupt Fortbestehen ist. Ihr habt keine Antwort. Aber die Frage zu identifizieren ist etwas.",
+                fail_narrative_en="You analyze. The question was about something. The analysis yields more questions. The questions are about the same something. The something is nothing.",
+                fail_narrative_de="Ihr analysiert. Die Frage handelte von etwas. Die Analyse ergibt weitere Fragen. Die Fragen handeln von demselben Etwas. Das Etwas ist nichts.",
+            ),
+            EncounterChoice(
+                id="residual_silence",
+                label_en="Sit with it in silence.",
+                label_de="In Stille bei ihm sitzen.",
+                success_effects={"decay": 3, "stress": -15},
+                success_narrative_en="You sit. It sits. The silence is not uncomfortable. The silence is the most honest thing in this dungeon.",
+                success_narrative_de="Ihr sitzt. Es sitzt. Die Stille ist nicht unangenehm. Die Stille ist das Ehrlichste in diesem Dungeon.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="entropy_the_temperature",
+        archetype="The Entropy",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=4,
+        min_difficulty=2,
+        description_en=(
+            "The temperature. You notice it because you stop noticing it. "
+            "The air is the same temperature as your skin. The walls are the "
+            "same temperature as the air. Your instruments confirm: all thermal "
+            "gradients in this room have resolved. There is no hot. There is no cold. "
+            "There is only the temperature at which difference ceases to register."
+        ),
+        description_de=(
+            "Die Temperatur. Ihr bemerkt sie, weil ihr aufhört, sie zu bemerken. "
+            "Die Luft hat die gleiche Temperatur wie eure Oberfläche. Die Wände "
+            "haben die gleiche Temperatur wie die Luft. Eure Instrumente bestätigen: "
+            "Alle thermischen Gradienten in diesem Raum haben sich aufgelöst. Es gibt "
+            "kein Warm. Es gibt kein Kalt. Es gibt nur die Temperatur, bei der "
+            "Unterschied aufhört, sich zu registrieren."
+        ),
+        choices=[
+            EncounterChoice(
+                id="temperature_preserve",
+                label_en="Preserve the gradient (Guardian)",
+                label_de="Den Gradienten bewahren (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=6,
+                success_effects={"decay": -10},
+                partial_effects={"decay": -5},
+                fail_effects={"decay": 8, "stress": 30},
+                success_narrative_en="You generate a differential. Friction, motion, resistance \u2013 anything to create a gap between one temperature and another. The gradient holds. Temperature exists again. It cost you something.",
+                success_narrative_de="Ihr erzeugt ein Differential. Reibung, Bewegung, Widerstand \u2013 irgendetwas, um eine Lücke zwischen einer Temperatur und einer anderen zu schaffen. Der Gradient hält. Temperatur existiert wieder. Es hat euch etwas gekostet.",
+                fail_narrative_en="You push against equilibrium. Equilibrium does not push back. It simply absorbs the push.",
+                fail_narrative_de="Ihr drückt gegen das Gleichgewicht. Das Gleichgewicht drückt nicht zurück. Es absorbiert einfach den Druck.",
+            ),
+            EncounterChoice(
+                id="temperature_accept",
+                label_en="Accept the equilibrium.",
+                label_de="Das Gleichgewicht akzeptieren.",
+                success_effects={"decay": 5, "stress": -25},
+                success_narrative_en="You stop resisting. The temperature is comfortable. That is the problem. Comfort without cause is the first symptom.",
+                success_narrative_de="Ihr hört auf, euch zu wehren. Die Temperatur ist angenehm. Das ist das Problem. Komfort ohne Ursache ist das erste Symptom.",
+            ),
+        ],
+    ),
+]
+
+# ── Entropy Elite Encounter (1) ───────────────────────────────────────────
+
+ENTROPY_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_warden_encounter",
+        archetype="The Entropy",
+        room_type="elite",
+        min_depth=3,
+        max_depth=99,
+        min_difficulty=2,
+        description_en=(
+            "The corridor opens into a hall where something stands guard over "
+            "nothing. An Entropy Warden \u2013 armored in flaking metal that "
+            "remembers being armor. It patrols a perimeter around an empty "
+            "plinth. Whatever it guarded is gone. The patrol continues. A "
+            "Rust Phantom orbits it at a respectful distance, as though decay "
+            "itself pays deference to older decay."
+        ),
+        description_de=(
+            "Der Korridor öffnet sich zu einer Halle, in der etwas über nichts "
+            "Wache hält. Ein Entropiewächter \u2013 gepanzert in blätterndem "
+            "Metall, das sich erinnert, Rüstung gewesen zu sein. Er patrouilliert "
+            "einen Perimeter um einen leeren Sockel. Was immer er bewachte, ist "
+            "fort. Die Patrouille geht weiter. Ein Rostphantom umkreist ihn in "
+            "respektvollem Abstand, als zollte Verfall selbst älterem Verfall "
+            "Ehrerbietung."
+        ),
+        combat_encounter_id="entropy_warden_spawn",
+    ),
+]
+
+# ── Entropy Boss Encounter (1) ────────────────────────────────────────────
+
+ENTROPY_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_the_garden",
+        archetype="The Entropy",
+        room_type="boss",
+        min_depth=4,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The Verfall-Garten. An open space that was once something beautiful "
+            "\u2013 a plaza, a courtyard, a park. Now it is all three and none of "
+            "them. At its center, a structure: the last thing here that resists "
+            "dissolution. An Entropy Warden circles it, performing maintenance "
+            "gestures on an artifact that no longer exists in quite the way the "
+            "Warden remembers.\n\n"
+            "The decay counter accelerates. +3 per round. The Warden does not "
+            "want to fight. It wants to continue its work. You are interference."
+        ),
+        description_de=(
+            "Der Verfall-Garten. Ein offener Raum, der einst etwas Schönes war "
+            "\u2013 ein Platz, ein Hof, ein Park. Nun ist er alle drei und keines "
+            "davon. In seiner Mitte eine Struktur: das Letzte hier, das sich der "
+            "Auflösung widersetzt. Ein Entropiewächter umkreist sie und vollführt "
+            "Wartungsgesten an einem Artefakt, das nicht mehr ganz so existiert, "
+            "wie der Wächter sich erinnert.\n\n"
+            "Der Verfallszähler beschleunigt. +3 pro Runde. Der Wächter will nicht "
+            "kämpfen. Er will seine Arbeit fortsetzen. Ihr seid eine Störung."
+        ),
+        combat_encounter_id="entropy_warden_spawn",
+    ),
+]
+
+# ── Entropy Rest Encounter (1) ────────────────────────────────────────────
+
+ENTROPY_REST_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_the_rest",
+        archetype="The Entropy",
+        room_type="rest",
+        min_depth=0,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A pocket of slower decay. The walls here retain their texture. "
+            "The floor remembers it is a floor. These are luxuries now."
+        ),
+        description_de=(
+            "Eine Tasche langsameren Verfalls. Die Wände hier behalten ihre Textur. "
+            "Der Boden erinnert sich, dass er ein Boden ist. Das sind jetzt "
+            "Luxusgüter."
+        ),
+        choices=[
+            EncounterChoice(
+                id="entropy_rest_heal",
+                label_en="Rest (heal stress, 20% ambush chance)",
+                label_de="Rasten (Stress heilen, 20% Hinterhaltchance)",
+                success_effects={
+                    "stress_heal": 200,
+                    "wounded_to_stressed": True,
+                    "ambush_chance": 0.20,
+                },
+                success_narrative_en="Rest. The concept holds. Barely.",
+                success_narrative_de="Rast. Das Konzept hält. Gerade so.",
+            ),
+            EncounterChoice(
+                id="entropy_rest_preserve",
+                label_en="Guardian watch (Preserve: \u22128 Decay, no heal)",
+                label_de="Wächter-Wache (Bewahren: \u22128 Verfall, keine Heilung)",
+                requires_aptitude={"guardian": 3},
+                success_effects={"decay": -8},
+                success_narrative_en="The Guardian holds the line against dissolution. The decay slows. Briefly, something is preserved that would otherwise not be.",
+                success_narrative_de="Der Wächter hält die Linie gegen die Auflösung. Der Verfall verlangsamt sich. Kurz wird etwas bewahrt, das sonst nicht wäre.",
+            ),
+            EncounterChoice(
+                id="entropy_rest_study",
+                label_en="Spy assessment (\u22123 Decay, reveal adjacent rooms)",
+                label_de="Spion-Erkundung (\u22123 Verfall, angrenzende Räume aufdecken)",
+                requires_aptitude={"spy": 3},
+                success_effects={"decay": -3, "discovery": True},
+                success_narrative_en="The Spy maps what remains. The map will be less accurate tomorrow. Today, it helps.",
+                success_narrative_de="Der Spion kartiert, was übrig ist. Die Karte wird morgen weniger genau sein. Heute hilft sie.",
+            ),
+        ],
+    ),
+]
+
+# ── Entropy Treasure Encounter (1) ────────────────────────────────────────
+
+ENTROPY_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="entropy_residue_archive",
+        archetype="The Entropy",
+        room_type="treasure",
+        min_depth=0,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A vault. Something here was preserved \u2013 intentionally, at great "
+            "cost. A mechanism still runs, powered by a source that is itself "
+            "decaying. The preserved artifacts are 60% intact. The mechanism has "
+            "perhaps twelve minutes of operation remaining. Perhaps less."
+        ),
+        description_de=(
+            "Ein Tresor. Etwas hier wurde bewahrt \u2013 absichtlich, unter großen "
+            "Kosten. Ein Mechanismus läuft noch, angetrieben von einer Quelle, die "
+            "selbst verfällt. Die bewahrten Artefakte sind zu 60% intakt. Der "
+            "Mechanismus hat vielleicht noch zwölf Minuten Betriebszeit. Vielleicht "
+            "weniger."
+        ),
+        choices=[
+            EncounterChoice(
+                id="archive_repair",
+                label_en="Repair the mechanism (Guardian)",
+                label_de="Den Mechanismus reparieren (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=6,
+                success_effects={"decay": -12, "loot": True},
+                partial_effects={"decay": -6, "loot": True},
+                fail_effects={"decay": 8, "stress": 30},
+                success_narrative_en="The mechanism steadies. The artifacts hold. You have bought them \u2013 and yourselves \u2013 more time. Time is the most decaying currency here.",
+                success_narrative_de="Der Mechanismus stabilisiert sich. Die Artefakte halten. Ihr habt ihnen \u2013 und euch \u2013 mehr Zeit erkauft. Zeit ist die am schnellsten verfallende Währung hier.",
+                fail_narrative_en="The mechanism fails under your hands. Not dramatically. Quietly. The way everything here fails.",
+                fail_narrative_de="Der Mechanismus versagt unter euren Händen. Nicht dramatisch. Leise. So wie hier alles versagt.",
+            ),
+            EncounterChoice(
+                id="archive_extract",
+                label_en="Extract the most valuable artifact (Infiltrator)",
+                label_de="Das wertvollste Artefakt extrahieren (Infiltrator)",
+                check_aptitude="infiltrator",
+                check_difficulty=5,
+                success_effects={"loot": True, "decay": 3},
+                partial_effects={"loot": True, "decay": 6, "loot_tier_penalty": True},
+                fail_effects={"decay": 8, "stress": 25},
+                success_narrative_en="You take the best of what remains. The mechanism falters. The rest dissolves.",
+                success_narrative_de="Ihr nehmt das Beste von dem, was bleibt. Der Mechanismus stockt. Der Rest löst sich auf.",
+                partial_narrative_en="The extraction is hasty. What you save is diminished. What you leave behind was probably already gone.",
+                partial_narrative_de="Die Bergung ist hastig. Was ihr rettet, ist vermindert. Was ihr zurücklasst, war wahrscheinlich schon fort.",
+                fail_narrative_en="The mechanism interprets extraction as intrusion. It consumes what it was protecting. A last act of purposeful entropy.",
+                fail_narrative_de="Der Mechanismus interpretiert Entnahme als Einbruch. Er verzehrt, was er beschützte. Ein letzter Akt zweckgerichteter Entropie.",
+            ),
+            EncounterChoice(
+                id="archive_study",
+                label_en="Study who built this (Spy)",
+                label_de="Untersuchen, wer dies erbaut hat (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"discovery": True, "decay": 2},
+                partial_effects={"decay": 4},
+                fail_effects={"decay": 6},
+                success_narrative_en="The mechanism was built by someone who understood what was coming. The notes are partially legible. Enough to learn from. Not enough to replicate.",
+                success_narrative_de="Der Mechanismus wurde von jemandem gebaut, der verstand, was kommen würde. Die Notizen sind teilweise leserlich. Genug, um daraus zu lernen. Nicht genug, um es nachzubauen.",
+                fail_narrative_en="The notes dissolve as you read them. The information they contained is now in you, and will decay at the same rate.",
+                fail_narrative_de="Die Notizen lösen sich auf, während ihr sie lest. Die Information, die sie enthielten, ist nun in euch und wird mit derselben Geschwindigkeit verfallen.",
+            ),
+        ],
+    ),
+]
+
+
+# ── Entropy Registry ─────────────────────────────────────────────────────
+
+ALL_ENTROPY_ENCOUNTERS: list[EncounterTemplate] = (
+    ENTROPY_COMBAT_ENCOUNTERS
+    + ENTROPY_NARRATIVE_ENCOUNTERS
+    + ENTROPY_ELITE_ENCOUNTERS
+    + ENTROPY_BOSS_ENCOUNTERS
+    + ENTROPY_REST_ENCOUNTERS
+    + ENTROPY_TREASURE_ENCOUNTERS
+)
+
+
 # ── Archetype Encounter Registry ──────────────────────────────────────────
 
 _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
     "The Shadow": ALL_SHADOW_ENCOUNTERS,
     "The Tower": ALL_TOWER_ENCOUNTERS,
+    "The Entropy": ALL_ENTROPY_ENCOUNTERS,
 }
 
 
@@ -1995,12 +2607,411 @@ TOWER_BANTER: list[dict] = [
 ]
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# ── ENTROPY BANTER ───────────────────────────────────────────────────────
+# Literary DNA: Pynchon (scientific precision), Beckett (language erosion),
+# Lem (epistemic futility). Unique feature: banter DEGRADES structurally
+# with decay counter. decay_tier 0=full, 1=shortened, 2=fragments, 3=silence.
+# ══════════════════════════════════════════════════════════════════════════
+
+ENTROPY_BANTER: list[dict] = [
+    # ── Room Entered (9 templates: 4×t0, 2×t1, 2×t2, 1×t3) ──────────────
+    {
+        "id": "eb_01",
+        "trigger": "room_entered",
+        "decay_tier": 0,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent}: 'The corridor was here yesterday. Today it is mostly here. The distinction is the first thing to go.'",
+        "text_de": "{agent}: \u00bbDer Korridor war gestern hier. Heute ist er größtenteils hier. Die Unterscheidung ist das Erste, das schwindet.\u00ab",
+    },
+    {
+        "id": "eb_02",
+        "trigger": "room_entered",
+        "decay_tier": 0,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} checks the instruments. The readings are accurate. They are also indistinguishable from the last room's readings.",
+        "text_de": "{agent} prüft die Instrumente. Die Werte sind genau. Sie sind auch nicht von den Werten des letzten Raums zu unterscheiden.",
+    },
+    {
+        "id": "eb_03",
+        "trigger": "room_entered",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "The air is the temperature of resignation. The instruments confirm it precisely.",
+        "text_de": "Die Luft hat die Temperatur der Resignation. Die Instrumente bestätigen es präzise.",
+    },
+    {
+        "id": "eb_04",
+        "trigger": "room_entered",
+        "decay_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} catalogs the room's features. Wall. Floor. Ceiling. Door. The same four features as the last room. And the one before.",
+        "text_de": "{agent} katalogisiert die Merkmale des Raums. Wand. Boden. Decke. Tür. Dieselben vier Merkmale wie im letzten Raum. Und dem davor.",
+    },
+    {
+        "id": "eb_05",
+        "trigger": "room_entered",
+        "decay_tier": 1,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent}: 'Room. Another one.'",
+        "text_de": "{agent}: \u00bbRaum. Noch einer.\u00ab",
+    },
+    {
+        "id": "eb_06",
+        "trigger": "room_entered",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "The instruments still work. The information they provide has stopped mattering.",
+        "text_de": "Die Instrumente funktionieren noch. Die Information, die sie liefern, hat aufgehört, relevant zu sein.",
+    },
+    {
+        "id": "eb_07",
+        "trigger": "room_entered",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Room. Walls.",
+        "text_de": "Raum. Wände.",
+    },
+    {
+        "id": "eb_08",
+        "trigger": "room_entered",
+        "decay_tier": 2,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} starts to speak. Doesn't.",
+        "text_de": "{agent} setzt zum Sprechen an. Tut es nicht.",
+    },
+    {
+        "id": "eb_09",
+        "trigger": "room_entered",
+        "decay_tier": 3,
+        "personality_filter": {},
+        "text_en": ".",
+        "text_de": ".",
+    },
+    # ── Combat Won (4 templates: 2×t0, 1×t1, 1×t2) ──────────────────────
+    {
+        "id": "eb_10",
+        "trigger": "combat_won",
+        "decay_tier": 0,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent}: 'It stopped. Not because we won. Because it ran out of reasons to continue.'",
+        "text_de": "{agent}: \u00bbEs hat aufgehört. Nicht weil wir gewonnen haben. Weil ihm die Gründe ausgingen weiterzumachen.\u00ab",
+    },
+    {
+        "id": "eb_11",
+        "trigger": "combat_won",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Victory. Though the word means less here than it did a floor ago.",
+        "text_de": "Sieg. Obwohl das Wort hier weniger bedeutet als noch ein Stockwerk zuvor.",
+    },
+    {
+        "id": "eb_12",
+        "trigger": "combat_won",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "The enemy dissipates. The party remains. For now, that distinction holds.",
+        "text_de": "Der Feind vergeht. Die Gruppe bleibt. Vorerst hält diese Unterscheidung.",
+    },
+    {
+        "id": "eb_13",
+        "trigger": "combat_won",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Resolved. The word feels generous.",
+        "text_de": "Erledigt. Das Wort fühlt sich großzügig an.",
+    },
+    # ── Decay Degraded (3 templates at t1, triggered at decay ≥40) ───────
+    {
+        "id": "eb_14",
+        "trigger": "decay_degraded",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "The decay counter passes 40. Somewhere, a distinction that existed no longer does.",
+        "text_de": "Der Verfallszähler überschreitet 40. Irgendwo existiert eine Unterscheidung nicht mehr, die es gab.",
+    },
+    {
+        "id": "eb_15",
+        "trigger": "decay_degraded",
+        "decay_tier": 1,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent} notices the edges of things blurring. Not visually. Categorically.",
+        "text_de": "{agent} bemerkt, dass die Ränder der Dinge verschwimmen. Nicht visuell. Kategorial.",
+    },
+    {
+        "id": "eb_16",
+        "trigger": "decay_degraded",
+        "decay_tier": 1,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} speaks. The words arrive, but they arrive quieter than they left.",
+        "text_de": "{agent} spricht. Die Worte kommen an, aber sie kommen leiser an, als sie aufgebrochen sind.",
+    },
+    # ── Decay Critical (3 templates at t2, triggered at decay ≥70) ───────
+    {
+        "id": "eb_17",
+        "trigger": "decay_critical",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "DISSOLUTION INDEX: CRITICAL. The instruments still function. The readings have converged.",
+        "text_de": "AUFLÖSUNGSINDEX: KRITISCH. Die Instrumente funktionieren noch. Die Werte sind konvergiert.",
+    },
+    {
+        "id": "eb_18",
+        "trigger": "decay_critical",
+        "decay_tier": 2,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} tries to remember the entrance. The memory has the quality of a rumor.",
+        "text_de": "{agent} versucht, sich an den Eingang zu erinnern. Die Erinnerung hat die Qualität eines Gerüchts.",
+    },
+    {
+        "id": "eb_19",
+        "trigger": "decay_critical",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Less. Of everything. Less.",
+        "text_de": "Weniger. Von allem. Weniger.",
+    },
+    # ── Dissolution (2 templates at t3, triggered at decay =100) ─────────
+    {
+        "id": "eb_20",
+        "trigger": "dissolution",
+        "decay_tier": 3,
+        "personality_filter": {},
+        "text_en": "The decay counter reads 100. The instruments agree with the walls agree with the floor agree with the silence. Agreement is total. Agreement is final.",
+        "text_de": "Der Verfallszähler zeigt 100. Die Instrumente stimmen den Wänden zu, die dem Boden zustimmen, der der Stille zustimmt. Übereinstimmung ist vollständig. Übereinstimmung ist endgültig.",
+    },
+    {
+        "id": "eb_21",
+        "trigger": "dissolution",
+        "decay_tier": 3,
+        "personality_filter": {},
+        "text_en": "Equilibrium.",
+        "text_de": "Gleichgewicht.",
+    },
+    # ── Agent Stressed (3 templates: 2×t0, 1×t1) ────────────────────────
+    {
+        "id": "eb_22",
+        "trigger": "agent_stressed",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "{agent} falters. Not from fear \u2013 from the effort of maintaining a self that the environment considers redundant.",
+        "text_de": "{agent} stockt. Nicht vor Angst \u2013 vor der Anstrengung, ein Selbst aufrechtzuerhalten, das die Umgebung für überflüssig hält.",
+    },
+    {
+        "id": "eb_23",
+        "trigger": "agent_stressed",
+        "decay_tier": 0,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent}'s composure fragments. They have begun counting differences. The count is shortening.",
+        "text_de": "{agent}s Fassung splittert. Sie haben begonnen, Unterschiede zu zählen. Die Zählung wird kürzer.",
+    },
+    {
+        "id": "eb_24",
+        "trigger": "agent_stressed",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "{agent} falters. The reason is becoming general.",
+        "text_de": "{agent} stockt. Der Grund wird allgemein.",
+    },
+    # ── Depth Change (4 templates: 2×t0, 1×t1, 1×t2) ───────────────────
+    {
+        "id": "eb_25",
+        "trigger": "depth_change",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Deeper. The word implies a direction. Direction implies difference. The difference is becoming theoretical.",
+        "text_de": "Tiefer. Das Wort impliziert eine Richtung. Richtung impliziert Unterschied. Der Unterschied wird theoretisch.",
+    },
+    {
+        "id": "eb_26",
+        "trigger": "depth_change",
+        "decay_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} notes the depth change in the log. The log is beginning to repeat itself. The log does not notice.",
+        "text_de": "{agent} notiert die Tiefenänderung im Protokoll. Das Protokoll beginnt sich zu wiederholen. Das Protokoll bemerkt es nicht.",
+    },
+    {
+        "id": "eb_27",
+        "trigger": "depth_change",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "Deeper. Probably.",
+        "text_de": "Tiefer. Wahrscheinlich.",
+    },
+    {
+        "id": "eb_28",
+        "trigger": "depth_change",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Down.",
+        "text_de": "Runter.",
+    },
+    # ── Rest (3 templates: 2×t0, 1×t2) ──────────────────────────────────
+    {
+        "id": "eb_29",
+        "trigger": "rest_start",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "A space where the decay is marginally slower. The instruments call it a sanctuary. The instruments are optimistic.",
+        "text_de": "Ein Raum, in dem der Verfall geringfügig langsamer ist. Die Instrumente nennen es ein Refugium. Die Instrumente sind optimistisch.",
+    },
+    {
+        "id": "eb_30",
+        "trigger": "rest_start",
+        "decay_tier": 0,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent}: 'Rest here. The walls still have texture. That is more than we deserve.'",
+        "text_de": "{agent}: \u00bbRastet hier. Die Wände haben noch Textur. Das ist mehr, als wir verdienen.\u00ab",
+    },
+    {
+        "id": "eb_31",
+        "trigger": "rest_start",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Rest. The concept erodes even as you practice it.",
+        "text_de": "Rast. Das Konzept erodiert, selbst während ihr es praktiziert.",
+    },
+    # ── Loot Found (3 templates: 2×t0, 1×t1) ────────────────────────────
+    {
+        "id": "eb_32",
+        "trigger": "loot_found",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something here has resisted the dissolution. Not for long, but long enough.",
+        "text_de": "Etwas hier hat der Auflösung widerstanden. Nicht lange, aber lang genug.",
+    },
+    {
+        "id": "eb_33",
+        "trigger": "loot_found",
+        "decay_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} examines the find with the reverence of an archaeologist. In the Verfall-Garten, anything that remains itself is a museum piece.",
+        "text_de": "{agent} untersucht den Fund mit der Ehrfurcht eines Archäologen. Im Verfall-Garten ist alles, was noch es selbst ist, ein Museumsstück.",
+    },
+    {
+        "id": "eb_34",
+        "trigger": "loot_found",
+        "decay_tier": 1,
+        "personality_filter": {},
+        "text_en": "A remnant. Take it before it isn't.",
+        "text_de": "Ein Überrest. Nehmt ihn, bevor er keiner mehr ist.",
+    },
+    # ── Boss Approach (2 templates at t0) ────────────────────────────────
+    {
+        "id": "eb_35",
+        "trigger": "boss_approach",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something ahead retains more definition than its surroundings. This passes for remarkable.",
+        "text_de": "Etwas voraus behält mehr Definition als seine Umgebung. Das gilt hier als bemerkenswert.",
+    },
+    {
+        "id": "eb_36",
+        "trigger": "boss_approach",
+        "decay_tier": 0,
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent}: 'It's still trying to be something. That makes it the most dangerous thing here.'",
+        "text_de": "{agent}: \u00bbEs versucht noch, etwas zu sein. Das macht es zum Gefährlichsten hier.\u00ab",
+    },
+    # ── Retreat (2 templates: 1×t0, 1×t2) ───────────────────────────────
+    {
+        "id": "eb_37",
+        "trigger": "retreat",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "The party retreats. The dungeon does not pursue. It does not need to. It is patient. It is also everywhere.",
+        "text_de": "Die Gruppe zieht sich zurück. Der Dungeon verfolgt nicht. Er muss nicht. Er ist geduldig. Er ist auch überall.",
+    },
+    {
+        "id": "eb_38",
+        "trigger": "retreat",
+        "decay_tier": 2,
+        "personality_filter": {},
+        "text_en": "Back. If 'back' still means anything.",
+        "text_de": "Zurück. Falls 'zurück' noch etwas bedeutet.",
+    },
+    # ── Dungeon Completed (1 template at t0) ─────────────────────────────
+    {
+        "id": "eb_39",
+        "trigger": "dungeon_completed",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "You leave. The garden remains. It is very patient. It has nothing but time. And less and less of everything else.",
+        "text_de": "Ihr geht. Der Garten bleibt. Er ist sehr geduldig. Er hat nichts als Zeit. Und immer weniger von allem anderen.",
+    },
+    # ── Party Wipe (2 templates at t0) ───────────────────────────────────
+    {
+        "id": "eb_40",
+        "trigger": "party_wipe",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "The party dissolves. Not violently. Gently. The way a word dissolves when you say it too many times. The garden accepts them without ceremony.",
+        "text_de": "Die Gruppe löst sich auf. Nicht gewaltsam. Sanft. So wie ein Wort sich auflöst, wenn man es zu oft sagt. Der Garten nimmt sie auf, ohne Zeremonie.",
+    },
+    {
+        "id": "eb_41",
+        "trigger": "party_wipe",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Dissolution complete. The instruments record this accurately. The instruments will be next.",
+        "text_de": "Auflösung vollständig. Die Instrumente verzeichnen dies genau. Die Instrumente sind als Nächstes dran.",
+    },
+    # ── Rest Safe (2 templates at t0) ────────────────────────────────────
+    {
+        "id": "eb_42",
+        "trigger": "rest_safe",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "No ambush. The decay pauses. Not stops \u2013 pauses. The difference is everything. The difference is also decaying.",
+        "text_de": "Kein Hinterhalt. Der Verfall pausiert. Hält nicht an \u2013 pausiert. Der Unterschied ist alles. Der Unterschied verfällt ebenfalls.",
+    },
+    {
+        "id": "eb_43",
+        "trigger": "rest_safe",
+        "decay_tier": 0,
+        "personality_filter": {"agreeableness": (0.7, 1.0)},
+        "text_en": "{agent}: 'We're still different from each other. That counts for something. I think.'",
+        "text_de": "{agent}: \u00bbWir sind noch verschieden voneinander. Das zählt für etwas. Glaube ich.\u00ab",
+    },
+    # ── Rest Ambush (2 templates at t0) ──────────────────────────────────
+    {
+        "id": "eb_44",
+        "trigger": "rest_ambush",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something drifts through the walls. Even sanctuaries are temporary. Especially sanctuaries.",
+        "text_de": "Etwas treibt durch die Wände. Auch Refugien sind vorübergehend. Besonders Refugien.",
+    },
+    {
+        "id": "eb_45",
+        "trigger": "rest_ambush",
+        "decay_tier": 0,
+        "personality_filter": {},
+        "text_en": "The decay found you resting. It did not hesitate. Hesitation requires purpose.",
+        "text_de": "Der Verfall fand euch rastend. Er zögerte nicht. Zögern erfordert Absicht.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Shadow": SHADOW_BANTER,
     "The Tower": TOWER_BANTER,
+    "The Entropy": ENTROPY_BANTER,
 }
+
+
+def _entropy_decay_tier(archetype_state: dict) -> int:
+    """Map Entropy decay counter to banter degradation tier (0-3)."""
+    decay = archetype_state.get("decay", 0)
+    if decay >= 85:
+        return 3
+    if decay >= 70:
+        return 2
+    if decay >= 40:
+        return 1
+    return 0
 
 
 def select_banter(
@@ -2008,23 +3019,35 @@ def select_banter(
     agents: list[dict],
     used_ids: list[str],
     archetype: str = "The Shadow",
+    archetype_state: dict | None = None,
 ) -> dict | None:
     """Select a banter template for the current trigger.
 
     Filters by trigger type, personality match, and ensures no repeats.
-    Returns None if no suitable banter found.
+    For The Entropy, additionally filters by decay_tier — banter degrades
+    structurally as decay increases (Beckett technique).
 
     Args:
         trigger: Event trigger (room_entered, combat_won, etc.)
         agents: List of agent dicts with personality traits.
         used_ids: List of already-used banter IDs this run.
         archetype: Dungeon archetype for registry lookup.
+        archetype_state: Archetype-specific state (needed for Entropy decay_tier).
     """
     banter_pool = _BANTER_REGISTRIES.get(archetype, [])
     candidates = [b for b in banter_pool if b["trigger"] == trigger and b["id"] not in used_ids]
     if not candidates:
         return None
 
-    # Simple selection: random from matching candidates
-    # Future: weight by personality match quality
+    # Entropy: filter by decay tier — prefer highest available tier
+    if archetype == "The Entropy" and archetype_state:
+        tier = _entropy_decay_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("decay_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("decay_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("decay_tier", 0) == max_tier]
+
+    if not candidates:
+        return None
+
     return random.choice(candidates)

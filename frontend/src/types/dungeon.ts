@@ -17,6 +17,7 @@ import type { UUID } from './index.js';
 
 export const ARCHETYPE_SHADOW = 'The Shadow';
 export const ARCHETYPE_TOWER = 'The Tower';
+export const ARCHETYPE_ENTROPY = 'The Entropy';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -130,8 +131,18 @@ export interface TowerArchetypeState {
   max_stability: number;
 }
 
-/** Archetype-specific state. Shadow and Tower have typed shapes; others are empty objects. */
-export type ArchetypeState = ShadowArchetypeState | TowerArchetypeState | Record<string, unknown>;
+/** Entropy archetype: decay accumulation mechanic state (0→100). */
+export interface EntropyArchetypeState {
+  decay: number;
+  max_decay: number;
+}
+
+/** Archetype-specific state. Shadow, Tower, and Entropy have typed shapes; others are empty objects. */
+export type ArchetypeState =
+  | ShadowArchetypeState
+  | TowerArchetypeState
+  | EntropyArchetypeState
+  | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
 export function isShadowState(state: ArchetypeState): state is ShadowArchetypeState {
@@ -141,6 +152,11 @@ export function isShadowState(state: ArchetypeState): state is ShadowArchetypeSt
 /** Type guard: narrows ArchetypeState to TowerArchetypeState. */
 export function isTowerState(state: ArchetypeState): state is TowerArchetypeState {
   return 'stability' in state && typeof state.stability === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to EntropyArchetypeState. */
+export function isEntropyState(state: ArchetypeState): state is EntropyArchetypeState {
+  return 'decay' in state && typeof state.decay === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────
