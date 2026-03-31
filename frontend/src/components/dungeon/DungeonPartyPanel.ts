@@ -94,8 +94,6 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         gap: 4px;
         overflow-y: auto;
         max-height: calc(100vh - 120px);
-        scrollbar-width: thin;
-        scrollbar-color: var(--_phosphor-dim) transparent;
       }
 
       /* ── Agent Card ── */
