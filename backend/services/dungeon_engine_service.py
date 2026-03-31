@@ -1328,7 +1328,7 @@ class DungeonEngineService:
     @classmethod
     async def get_available_dungeons(
         cls,
-        supabase: Client,
+        admin_supabase: Client,
         simulation_id: UUID,
     ) -> list[AvailableDungeonResponse]:
         """Check which archetypes have active resonances above threshold.
@@ -1336,12 +1336,23 @@ class DungeonEngineService:
         Uses the available_dungeons VIEW (migration 164) which encapsulates
         the join, filtering, and difficulty/depth calculation in Postgres.
 
-        When the admin override ``dungeon_all_archetypes_unlocked`` is enabled
-        for this simulation, all implemented archetypes are returned regardless
-        of resonance state.  Resonance-based entries take priority (they carry
-        real difficulty data); admin-filled gaps use sensible defaults.
+        When the admin override is enabled for this simulation, admin-selected
+        archetypes are merged with (supplement) or replace (override) the
+        resonance results.  Resonance-based entries carry real difficulty data;
+        admin-filled gaps use sensible defaults (difficulty 3, depth 5).
+
+        Uses admin_supabase (service_role) to bypass RLS — this reads admin
+        config (simulation_settings) and checks active runs across all users.
+        Auth is enforced at the router level via require_simulation_member.
         """
-        resp = await supabase.table("available_dungeons").select("*").eq("simulation_id", str(simulation_id)).execute()
+        sim_id_str = str(simulation_id)
+
+        resp = (
+            await admin_supabase.table("available_dungeons")
+            .select("*")
+            .eq("simulation_id", sim_id_str)
+            .execute()
+        )
 
         results: list[AvailableDungeonResponse] = [
             AvailableDungeonResponse(
@@ -1361,9 +1372,9 @@ class DungeonEngineService:
 
         # ── Admin override: per-archetype unlock via simulation_settings ──
         override_resp = (
-            await supabase.table("simulation_settings")
+            await admin_supabase.table("simulation_settings")
             .select("setting_value")
-            .eq("simulation_id", str(simulation_id))
+            .eq("simulation_id", sim_id_str)
             .eq("category", "game")
             .eq("setting_key", "dungeon_override")
             .maybe_single()
@@ -1374,30 +1385,24 @@ class DungeonEngineService:
         override_archetypes = set(override_config.get("archetypes", [])) if isinstance(override_config, dict) else set()
 
         if override_mode == "override":
-            # Replace resonance results entirely — only admin-selected archetypes
             results = []
 
         if override_mode in ("supplement", "override") and override_archetypes:
             existing_archetypes = {r.archetype for r in results}
-            sim_id_str = str(simulation_id)
 
-            # Mark existing resonance-based entries that are also admin-selected
             for r in results:
                 if r.archetype in override_archetypes:
                     r.admin_override = True
 
-            # Add admin-selected archetypes not already present from resonance
             for archetype in override_archetypes:
                 if archetype not in existing_archetypes and archetype in ARCHETYPE_CONFIGS:
                     config = ARCHETYPE_CONFIGS[archetype]
-                    # Check for active run blocking this archetype
                     active_run_resp = (
-                        await supabase.table("resonance_dungeon_runs")
+                        await admin_supabase.table("resonance_dungeon_runs")
                         .select("id")
                         .eq("simulation_id", sim_id_str)
                         .eq("archetype", archetype)
                         .in_("status", ["active", "combat", "exploring", "distributing"])
-                        .maybe_single()
                         .execute()
                     )
                     results.append(
@@ -1406,7 +1411,7 @@ class DungeonEngineService:
                             signature=config.get("signature", "unknown"),
                             suggested_difficulty=3,
                             suggested_depth=5,
-                            available=active_run_resp.data is None,
+                            available=not bool(active_run_resp.data),
                             admin_override=True,
                         )
                     )

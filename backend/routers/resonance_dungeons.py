@@ -60,10 +60,10 @@ async def list_available_dungeons(
     simulation_id: UUID = Query(...),
     user: CurrentUser = Depends(get_current_user),
     _member: str = Depends(require_simulation_member("viewer")),
-    supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """List archetypes with active resonances above dungeon threshold."""
-    available = await DungeonEngineService.get_available_dungeons(supabase, simulation_id)
+    available = await DungeonEngineService.get_available_dungeons(admin_supabase, simulation_id)
     return {"success": True, "data": [a.model_dump() for a in available]}
 
 
