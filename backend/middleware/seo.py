@@ -22,6 +22,38 @@ def _get_anon_client() -> Client:
     return _anon_client
 
 
+# ── Legacy redirects (old WordPress portfolio site → new platform pages) ──────
+# These URLs are still being crawled by Google from the previous site.
+# 301 permanent redirects transfer link equity and signal index removal.
+_LEGACY_REDIRECTS: dict[str, str] = {
+    "/portfolio/edge-genetics-in-suedkorea": "/perspectives/ai-powered-worldbuilding",
+    "/portfolio/edge-genetics-website": "/worldbuilding",
+    "/portfolio/edge-genetics-dna-studie": "/ai-characters",
+    "/portfolio/edge-genetics-reagiert-auf-bioethics": "/perspectives/digital-sovereignty",
+    "/portfolio/apix-praesentationsunterlage": "/worlds",
+    "/portfolio/apix-werbematerial": "/chronicles",
+    "/internes-edge-genetics-forum": "/archives",
+    "/damokles": "/epoch",
+    "/apix-werbematerial": "/strategy-game",
+}
+# Catch-all prefix: any /portfolio/* not explicitly mapped → homepage
+_LEGACY_PREFIX_REDIRECTS: dict[str, str] = {
+    "/portfolio/": "/",
+}
+
+
+def get_legacy_redirect(url_path: str) -> str | None:
+    """Return a redirect target for legacy WordPress URLs, or None."""
+    clean = url_path.rstrip("/")
+    target = _LEGACY_REDIRECTS.get(clean)
+    if target:
+        return target
+    for prefix, fallback in _LEGACY_PREFIX_REDIRECTS.items():
+        if url_path.startswith(prefix):
+            return fallback
+    return None
+
+
 _CRAWLER_RE = re.compile(
     r"Googlebot|bingbot|Twitterbot|facebookexternalhit|LinkedInBot|Slackbot"
     r"|Discordbot|WhatsApp|TelegramBot|Applebot"

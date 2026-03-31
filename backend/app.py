@@ -34,7 +34,13 @@ from backend.dependencies import get_admin_supabase
 from backend.middleware.logging_context import LoggingContextMiddleware
 from backend.middleware.rate_limit import limiter
 from backend.middleware.security import SecurityHeadersMiddleware
-from backend.middleware.seo import enrich_html_for_crawler, get_crawler_redirect, get_prerendered_html, is_crawler
+from backend.middleware.seo import (
+    enrich_html_for_crawler,
+    get_crawler_redirect,
+    get_legacy_redirect,
+    get_prerendered_html,
+    is_crawler,
+)
 from backend.routers import (
     admin,
     agent_autonomy,
@@ -251,6 +257,10 @@ if _static_dir.is_dir():
         file_path = _static_dir / full_path
         if file_path.is_file() and ".." not in full_path:
             return FileResponse(file_path)
+        # Legacy WordPress URLs → 301 redirect (all visitors, not just crawlers)
+        legacy_target = get_legacy_redirect(request.url.path)
+        if legacy_target:
+            return RedirectResponse(url=legacy_target, status_code=301)
         # For crawlers: serve prerendered HTML or enriched meta tags
         if is_crawler(request.headers.get("user-agent", "")):
             redirect_path = get_crawler_redirect(request.url.path)
