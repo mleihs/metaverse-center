@@ -1377,6 +1377,8 @@ class DungeonEngineService:
         ]
 
         # ── Admin override: per-archetype unlock via simulation_settings ──
+        # maybe_single() returns None response when PostgREST gives 406 (no
+        # matching row). Guard both the response object and .data safely.
         override_resp = (
             await admin_supabase.table("simulation_settings")
             .select("setting_value")
@@ -1386,7 +1388,8 @@ class DungeonEngineService:
             .maybe_single()
             .execute()
         )
-        override_config = (override_resp.data or {}).get("setting_value", {})
+        override_data = override_resp.data if override_resp else None
+        override_config = override_data.get("setting_value", {}) if isinstance(override_data, dict) else {}
         override_mode = override_config.get("mode", "off") if isinstance(override_config, dict) else "off"
         override_archetypes = set(override_config.get("archetypes", [])) if isinstance(override_config, dict) else set()
 
