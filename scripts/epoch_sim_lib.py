@@ -98,18 +98,30 @@ class Player:
         return max(avail, key=lambda a: self.aptitudes.get(a["id"], {}).get(op_type, 6))
 
 
-# ── Global State (reset per game) ──
+# ── Per-Game State ──
+
+
+@dataclass
+class GameContext:
+    """Per-game mutable state. A fresh instance is created by reset_game_state()."""
+
+    stats: dict = field(default_factory=lambda: {k: {} for k in _FLAT_STAT_KEYS + _NESTED_STAT_KEYS})
+    score_history: dict = field(default_factory=dict)
+    cycle_actions: list = field(default_factory=list)
+    current_cycle: int = 0
+    current_phase: str = "foundation"
+    game_start_time: float = 0.0
+    total_failures: int = 0
+    current_players: dict = field(default_factory=dict)  # tag → Player
+
+
+_ctx: GameContext | None = None  # Set by reset_game_state(), used by api()/_check_game_abort()
+
+# ── Battery / Session State (persists across games) ──
 
 LOG = []
-STATS = {}
-SCORE_HISTORY = {}
 ALL_GAME_RESULTS = []
-CYCLE_ACTIONS = []
-_current_cycle = 0
-_current_phase = "foundation"
 _active_tags = []
-_current_players = {}  # tag→Player, for token refresh propagation
-_game_start_time = 0   # Wall clock when game started (for timeout)
 TEST_USERS = {}  # tag → {"email", "password", "token", "user_id"} — populated by provision_test_users()
 
 
@@ -128,11 +140,10 @@ _NESTED_STAT_KEYS = ["deployed_by_type", "success_by_type", "detected_by_type", 
 
 
 def reset_game_state():
-    global STATS, SCORE_HISTORY, CYCLE_ACTIONS, _game_total_failures
-    STATS = {k: {} for k in _FLAT_STAT_KEYS + _NESTED_STAT_KEYS}
-    SCORE_HISTORY = {}
-    CYCLE_ACTIONS = []
-    _game_total_failures = 0
+    """Create a fresh per-game context. Returns the new GameContext."""
+    global _ctx
+    _ctx = GameContext()
+    return _ctx
 
 
 def log(msg):
@@ -140,7 +151,7 @@ def log(msg):
     LOG.append(msg)
 
 
-def action_log(cycle, phase, player_tag, action, detail, result="",
+def action_log(ctx, cycle, phase, player_tag, action, detail, result="",
                *, op_type=None, cost=None, prob=None, target=None, aptitude=None, caught=None):
     entry = {
         "cycle": cycle,
@@ -163,7 +174,7 @@ def action_log(cycle, phase, player_tag, action, detail, result="",
         entry["aptitude"] = aptitude
     if caught is not None:
         entry["caught"] = caught
-    CYCLE_ACTIONS.append(entry)
+    ctx.cycle_actions.append(entry)
 
 
 # ── Port Exhaustion Monitor ──
@@ -276,7 +287,6 @@ def _wait_for_ports(label=""):
 # ── API & Auth ──
 
 _api_call_count = 0
-_game_total_failures = 0   # Total failures in current game (not reset by drain)
 _GAME_FAILURE_CAP = 30     # Abort game after this many total failures
 
 def _refresh_all_tokens():
@@ -285,7 +295,8 @@ def _refresh_all_tokens():
     With per-user provisioning (P1.2), each player re-authenticates
     with their own credentials instead of sharing the admin token.
     """
-    for tag, p in _current_players.items():
+    players = _ctx.current_players if _ctx else {}
+    for tag, p in players.items():
         if tag in TEST_USERS:
             new_tok = _login_as(TEST_USERS[tag]["email"], TEST_USERS[tag]["password"])
             TEST_USERS[tag]["token"] = new_tok
@@ -294,8 +305,8 @@ def _refresh_all_tokens():
             new_token = auth_login()
             p.token = new_token
     # Return any player's token for callers that expect a return value
-    if _current_players:
-        return next(iter(_current_players.values())).token
+    if players:
+        return next(iter(players.values())).token
     return auth_login()
 
 
@@ -318,7 +329,7 @@ def _parse_error_detail(resp):
 
 
 def api(method, path, player=None, retries=2, **kwargs):
-    global _api_call_count, _consecutive_failures, _game_total_failures
+    global _api_call_count, _consecutive_failures
     _api_call_count += 1
     # Throttle: pause every call to avoid macOS ephemeral port exhaustion.
     # Backend doubles our connections (each request → GoTrue set_session() call),
@@ -328,7 +339,7 @@ def api(method, path, player=None, retries=2, **kwargs):
     if _api_call_count % 15 == 0:
         _wait_for_ports(f"api call #{_api_call_count}")
     # If too many total failures in this game, the backend is toast — bail out
-    if _game_total_failures >= _GAME_FAILURE_CAP:
+    if _ctx and _ctx.total_failures >= _GAME_FAILURE_CAP:
         return _api_error(0, f"game failure cap ({_GAME_FAILURE_CAP}) exceeded")
     # If we've had consecutive failures, back off hard — the backend is drowning
     if _consecutive_failures >= 3:
@@ -356,7 +367,8 @@ def api(method, path, player=None, retries=2, **kwargs):
                 continue
             if resp.status_code >= 500:
                 _consecutive_failures += 1
-                _game_total_failures += 1
+                if _ctx:
+                    _ctx.total_failures += 1
                 if attempt < retries:
                     time.sleep(3 + attempt * 3)  # 3s, 6s backoff
                     _wait_for_ports(f"500 on {path}")
@@ -366,7 +378,8 @@ def api(method, path, player=None, retries=2, **kwargs):
                 return _api_error(resp.status_code, detail)
             if resp.status_code >= 400:
                 _consecutive_failures += 1
-                _game_total_failures += 1
+                if _ctx:
+                    _ctx.total_failures += 1
                 if attempt < retries:
                     time.sleep(1)
                     continue
@@ -377,7 +390,8 @@ def api(method, path, player=None, retries=2, **kwargs):
             return resp.json()
         except httpx.ConnectError:
             _consecutive_failures += 1
-            _game_total_failures += 1
+            if _ctx:
+                _ctx.total_failures += 1
             if attempt < retries:
                 _wait_for_ports(f"ConnectError on {path}")
                 time.sleep(5)
@@ -386,7 +400,8 @@ def api(method, path, player=None, retries=2, **kwargs):
             return _api_error(0, f"port exhaustion on {path}")
         except Exception as e:
             _consecutive_failures += 1
-            _game_total_failures += 1
+            if _ctx:
+                _ctx.total_failures += 1
             if attempt < retries:
                 time.sleep(2)
                 continue
@@ -540,12 +555,12 @@ def provision_test_users(tags):
     log(f"  {len(TEST_USERS)} test users ready")
 
 
-def init_stats(tag):
+def init_stats(ctx, tag):
     for key in _FLAT_STAT_KEYS:
-        STATS[key].setdefault(tag, 0)
+        ctx.stats[key].setdefault(tag, 0)
     for key in _NESTED_STAT_KEYS:
-        STATS[key].setdefault(tag, {})
-    SCORE_HISTORY.setdefault(tag, [])
+        ctx.stats[key].setdefault(tag, {})
+    ctx.score_history.setdefault(tag, [])
 
 
 def _psql(sql):
@@ -642,13 +657,12 @@ def force_expire(epoch_id):
                     f"AND operative_type != 'guardian';"], capture_output=True, text=True)
 
 
-def deploy(epoch_id, player, op_type, target_tag, players,
+def deploy(ctx, epoch_id, player, op_type, target_tag, players,
            target_entity_id=None, target_entity_type=None):
-    global _current_cycle, _current_phase
     # Use aptitude-aware agent selection
     agent = player.best_agent_for(op_type)
     if not agent:
-        action_log(_current_cycle, _current_phase, player.tag,
+        action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                    f"deploy_{op_type}", "No agents available", "SKIP",
                    op_type=op_type)
         return None
@@ -663,7 +677,7 @@ def deploy(epoch_id, player, op_type, target_tag, players,
         body["target_simulation_id"] = target.instance_id
         emb = player.embassies.get(target.instance_id)
         if not emb:
-            action_log(_current_cycle, _current_phase, player.tag,
+            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                        f"deploy_{op_type}", f"No embassy to {target_tag}", "SKIP",
                        op_type=op_type, target=target_tag)
             return None
@@ -681,38 +695,38 @@ def deploy(epoch_id, player, op_type, target_tag, players,
         player.deployed_agents.add(agent["id"])
         cost = mission.get("cost_rp", 0)
         prob = mission.get("success_probability", "?")
-        STATS["deployed"][player.tag] += 1
-        by_type = STATS["deployed_by_type"][player.tag]
+        ctx.stats["deployed"][player.tag] += 1
+        by_type = ctx.stats["deployed_by_type"][player.tag]
         by_type[op_type] = by_type.get(op_type, 0) + 1
-        STATS["rp_spent"][player.tag] += cost
+        ctx.stats["rp_spent"][player.tag] += cost
         if op_type == "guardian":
-            STATS["guardians"][player.tag] += 1
+            ctx.stats["guardians"][player.tag] += 1
             player.guardians += 1
-            action_log(_current_cycle, _current_phase, player.tag,
+            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                        "deploy_guardian", detail, f"OK cost={cost}",
                        op_type=op_type, cost=cost, aptitude=apt_level)
         else:
-            action_log(_current_cycle, _current_phase, player.tag,
+            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                        f"deploy_{op_type}", detail, f"OK cost={cost} prob={prob}",
                        op_type=op_type, cost=cost, prob=prob, target=target_tag,
                        aptitude=apt_level)
         log(f"    {player.tag}: {op_type} {agent_name}→{target_tag or 'self'} cost={cost} prob={prob}")
     else:
         err = resp.get("detail", "unknown error")
-        action_log(_current_cycle, _current_phase, player.tag,
+        action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                    f"deploy_{op_type}", detail, f"FAIL: {err}",
                    op_type=op_type, target=target_tag)
         log(f"    {player.tag}: {op_type} FAILED — {err}")
     return mission
 
 
-def counter_intel(epoch_id, player):
+def counter_intel(ctx, epoch_id, player):
     resp = api("POST", f"/api/v1/epochs/{epoch_id}/operatives/counter-intel?simulation_id={player.instance_id}", player)
-    STATS["ci_sweeps"][player.tag] += 1
-    STATS["rp_spent"][player.tag] += 3
+    ctx.stats["ci_sweeps"][player.tag] += 1
+    ctx.stats["rp_spent"][player.tag] += 3
     caught = resp.get("data", [])
-    STATS["ci_caught"][player.tag] += len(caught)
-    action_log(_current_cycle, _current_phase, player.tag,
+    ctx.stats["ci_caught"][player.tag] += len(caught)
+    action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
                "counter_intel", f"Sweep (RP:{player.rp}→{player.rp-3})",
                f"caught={len(caught)}",
                caught=len(caught))
@@ -720,9 +734,8 @@ def counter_intel(epoch_id, player):
     return caught
 
 
-def resolve_and_score(epoch_id, admin, cycle, players):
-    global _current_cycle
-    _current_cycle = cycle
+def resolve_and_score(ctx, epoch_id, admin, cycle, players):
+    ctx.current_cycle = cycle
     force_expire(epoch_id)
     time.sleep(0.15)
 
@@ -742,11 +755,11 @@ def resolve_and_score(epoch_id, admin, cycle, players):
         target_tag = next((t for t, p in players.items() if p.instance_id == target_sim), "?")
 
         if outcome == "success":
-            STATS["success"][tag] += 1
-            by_type = STATS["success_by_type"][tag]
+            ctx.stats["success"][tag] += 1
+            by_type = ctx.stats["success_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
             effect = mr.get("effect_description", "")
-            action_log(cycle, "resolve", tag, f"outcome_{op_type}",
+            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
                        f"→{target_tag} prob={prob}", f"SUCCESS {effect}",
                        op_type=op_type, prob=prob, target=target_tag)
             # Spy success → update intel snapshot for the attacker
@@ -765,23 +778,23 @@ def resolve_and_score(epoch_id, admin, cycle, players):
                     snap.agent_ids = spy_intel.get("agent_ids", [])
                     snap.has_buildings = len(snap.building_ids) > 0
                     snap.has_agents = len(snap.agent_ids) > 0
-                    STATS["intel_gathered"][tag] += 1
+                    ctx.stats["intel_gathered"][tag] += 1
         elif outcome == "detected":
-            STATS["detected"][tag] += 1
-            by_type = STATS["detected_by_type"][tag]
+            ctx.stats["detected"][tag] += 1
+            by_type = ctx.stats["detected_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
-            action_log(cycle, "resolve", tag, f"outcome_{op_type}",
+            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
                        f"→{target_tag} prob={prob}", "DETECTED (-2 mil)",
                        op_type=op_type, prob=prob, target=target_tag)
         elif outcome == "failed":
-            STATS["failed"][tag] += 1
-            by_type = STATS["failed_by_type"][tag]
+            ctx.stats["failed"][tag] += 1
+            by_type = ctx.stats["failed_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
-            action_log(cycle, "resolve", tag, f"outcome_{op_type}",
+            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
                        f"→{target_tag} prob={prob}", "FAILED (undetected)",
                        op_type=op_type, prob=prob, target=target_tag)
         else:
-            action_log(cycle, "resolve", tag, f"outcome_{op_type}",
+            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
                        f"→{target_tag} prob={prob}", f"{outcome}",
                        op_type=op_type, prob=prob, target=target_tag)
 
@@ -810,8 +823,8 @@ def resolve_and_score(epoch_id, admin, cycle, players):
                 for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]
             }
             sd["composite"] = s.get("composite_score", 0)
-            SCORE_HISTORY[tag].append((cycle, sd))
-            action_log(cycle, "score", tag, "score",
+            ctx.score_history[tag].append((cycle, sd))
+            action_log(ctx, cycle, "score", tag, "score",
                        f"stab={sd['stability']:.1f} inf={sd['influence']:.1f} sov={sd['sovereignty']:.1f} "
                        f"dip={sd['diplomatic']:.1f} mil={sd['military']:.1f}",
                        f"composite={sd['composite']:.2f}")
@@ -822,7 +835,7 @@ def resolve_and_score(epoch_id, admin, cycle, players):
             old_rp = p.rp
             p.rp = part_map[p.instance_id].get("current_rp", 0)
             if p.rp != old_rp:
-                action_log(cycle, "rp_grant", tag, "rp_update",
+                action_log(ctx, cycle, "rp_grant", tag, "rp_update",
                            f"RP: {old_rp}→{p.rp}", f"+{p.rp - old_rp}")
 
 
@@ -845,17 +858,16 @@ def api_join_team(epoch_id, players, joiner_tag, leader_tag):
 
 # ── Game Setup & Finish ──
 
-def setup_game(token, name, config, tags, alliances=None):
-    global _current_players, _game_start_time
-    _game_start_time = time.time()
+def setup_game(ctx, token, name, config, tags, alliances=None):
+    ctx.game_start_time = time.time()
     players = {}
     for tag in tags:
         # Use per-user token if provisioned (P1.2), else fall back to shared token
         player_token = TEST_USERS[tag]["token"] if tag in TEST_USERS else token
         p = Player(tag, ALL_SIMS[tag], player_token)
-        init_stats(tag)
+        init_stats(ctx, tag)
         players[tag] = p
-    _current_players = players  # Register for token refresh propagation
+    ctx.current_players = players  # Register for token refresh propagation
     admin = players[tags[0]]
 
     resp = api("POST", "/api/v1/epochs", admin, json={"name": name, "description": name, "config": config})
@@ -933,7 +945,7 @@ def shorten_name(name):
     return name
 
 
-def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_def=None):
+def finish_game(ctx, epoch_id, admin, players, game_name, game_desc, tags, *, game_def=None):
     for _ in range(3):
         resp = api("POST", f"/api/v1/epochs/{epoch_id}/advance", admin)
         if resp.get("data", {}).get("status") == "completed":
@@ -944,11 +956,11 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_de
 
     # Capture final RP before serializing stats (P3.2)
     for tag in tags:
-        STATS["rp_remaining"][tag] = players[tag].rp
+        ctx.stats["rp_remaining"][tag] = players[tag].rp
 
     # Deep-copy nested stat dicts to isolate result from future state resets
     serialized_stats = {}
-    for k, v in STATS.items():
+    for k, v in ctx.stats.items():
         serialized_stats[k] = {
             t: (dict(inner) if isinstance(inner, dict) else inner)
             for t, inner in v.items()
@@ -960,8 +972,8 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_de
         "epoch_id": epoch_id,
         "leaderboard": leaderboard,
         "stats": serialized_stats,
-        "scores": {t: list(h) for t, h in SCORE_HISTORY.items()},
-        "actions": list(CYCLE_ACTIONS),
+        "scores": {t: list(h) for t, h in ctx.score_history.items()},
+        "actions": list(ctx.cycle_actions),
         "tags": tags,
     }
 
@@ -994,29 +1006,28 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_de
         log(f"    #{e.get('rank')} {name}: {e.get('composite', 0):.1f}")
     log("  STATS:")
     for tag in tags:
-        s = STATS["success"].get(tag, 0)
-        d = STATS["detected"].get(tag, 0)
-        f = STATS["failed"].get(tag, 0)
+        s = ctx.stats["success"].get(tag, 0)
+        d = ctx.stats["detected"].get(tag, 0)
+        f = ctx.stats["failed"].get(tag, 0)
         total = s + d + f
         rate = f"{s}/{total} ({100*s/total:.0f}%)" if total else "0/0"
-        log(f"    {tag}: deployed={STATS['deployed'].get(tag,0)} success={rate} "
-            f"guards={STATS['guardians'].get(tag,0)} ci={STATS['ci_sweeps'].get(tag,0)}")
+        log(f"    {tag}: deployed={ctx.stats['deployed'].get(tag,0)} success={rate} "
+            f"guards={ctx.stats['guardians'].get(tag,0)} ci={ctx.stats['ci_sweeps'].get(tag,0)}")
 
     return result
 
 
 # ── Phase Runners ──
 
-def run_foundation(epoch_id, players, admin, guardian_counts, cycles=3):
-    global _current_phase, _current_cycle
-    _current_phase = "foundation"
+def run_foundation(ctx, epoch_id, players, admin, guardian_counts, cycles=3):
+    ctx.current_phase = "foundation"
     log(f"\n  FOUNDATION (cycles 1-{cycles}):")
     for cycle in range(1, cycles + 1):
-        _current_cycle = cycle
+        ctx.current_cycle = cycle
         for tag, count in guardian_counts.items():
             while players[tag].guardians < count and players[tag].available_agents():
-                deploy(epoch_id, players[tag], "guardian", None, players)
-        resolve_and_score(epoch_id, admin, cycle, players)
+                deploy(ctx, epoch_id, players[tag], "guardian", None, players)
+        resolve_and_score(ctx, epoch_id, admin, cycle, players)
     api("POST", f"/api/v1/epochs/{epoch_id}/advance", admin)
     return cycles
 
@@ -1026,37 +1037,37 @@ _GAME_TIMEOUT = 1800  # 30 minutes max per game
 
 def _check_game_abort():
     """Return True if the current game should be aborted (timeout or too many failures)."""
-    if _game_start_time and (time.time() - _game_start_time) > _GAME_TIMEOUT:
-        elapsed = int(time.time() - _game_start_time)
+    if not _ctx:
+        return False
+    if _ctx.game_start_time and (time.time() - _ctx.game_start_time) > _GAME_TIMEOUT:
+        elapsed = int(time.time() - _ctx.game_start_time)
         log(f"  ⏰ GAME TIMEOUT after {elapsed}s — aborting")
         return True
-    if _game_total_failures >= _GAME_FAILURE_CAP:
-        log(f"  ❌ GAME FAILURE CAP ({_game_total_failures} failures) — aborting")
+    if _ctx.total_failures >= _GAME_FAILURE_CAP:
+        log(f"  ❌ GAME FAILURE CAP ({_ctx.total_failures} failures) — aborting")
         return True
     return False
 
 
-def run_competition(epoch_id, players, admin, start_cycle, end_cycle, strategy_fn):
-    global _current_phase, _current_cycle
-    _current_phase = "competition"
+def run_competition(ctx, epoch_id, players, admin, start_cycle, end_cycle, strategy_fn):
+    ctx.current_phase = "competition"
     for cycle in range(start_cycle, end_cycle + 1):
         if _check_game_abort():
             return
-        _current_cycle = cycle
+        ctx.current_cycle = cycle
         strategy_fn(epoch_id, players, cycle)
-        resolve_and_score(epoch_id, admin, cycle, players)
+        resolve_and_score(ctx, epoch_id, admin, cycle, players)
     api("POST", f"/api/v1/epochs/{epoch_id}/advance", admin)
 
 
-def run_reckoning(epoch_id, players, admin, start_cycle, end_cycle, strategy_fn):
-    global _current_phase, _current_cycle
-    _current_phase = "reckoning"
+def run_reckoning(ctx, epoch_id, players, admin, start_cycle, end_cycle, strategy_fn):
+    ctx.current_phase = "reckoning"
     for cycle in range(start_cycle, end_cycle + 1):
         if _check_game_abort():
             return
-        _current_cycle = cycle
+        ctx.current_cycle = cycle
         strategy_fn(epoch_id, players, cycle)
-        resolve_and_score(epoch_id, admin, cycle, players)
+        resolve_and_score(ctx, epoch_id, admin, cycle, players)
 
 
 # ── Parametric Game Generation ──
@@ -1264,17 +1275,17 @@ def generate_parametric_game(game_num, player_count, all_tags, rng, *, fog_of_wa
 
 def run_parametric_game(token, game_def):
     """Execute a single parametric game."""
-    reset_game_state()
+    ctx = reset_game_state()
     tags = game_def["tags"]
     epoch_id, players, admin = setup_game(
-        token, game_def["name"], game_def["config"], tags, game_def.get("alliances"))
+        ctx, token, game_def["name"], game_def["config"], tags, game_def.get("alliances"))
 
     if epoch_id is None:
         log("  SKIPPING game — setup failed")
         return None
 
     # Foundation
-    last = run_foundation(epoch_id, players, admin,
+    last = run_foundation(ctx, epoch_id, players, admin,
                           game_def["guardian_counts"], game_def["foundation_cycles"])
 
     strategies = game_def["strategies"]
@@ -1286,7 +1297,7 @@ def run_parametric_game(token, game_def):
             # Counter-intel
             freq = ci_freq.get(tag, 0)
             if freq > 0 and cyc % freq == 0 and pl[tag].rp >= 3:
-                counter_intel(eid, pl[tag])
+                counter_intel(ctx, eid, pl[tag])
 
             # Pick target (round-robin among reachable enemies)
             others = [t for t in tags if t != tag]
@@ -1339,14 +1350,14 @@ def run_parametric_game(token, game_def):
                     else:
                         op = "spy"  # No valid target, fallback
 
-            deploy(eid, pl[tag], op, t, pl, target_entity_id, target_entity_type)
+            deploy(ctx, eid, pl[tag], op, t, pl, target_entity_id, target_entity_type)
 
     comp_end = game_def["comp_end"]
     reck_end = game_def["reck_end"]
-    run_competition(epoch_id, players, admin, last + 1, comp_end, strategy_fn)
-    run_reckoning(epoch_id, players, admin, comp_end + 1, reck_end, strategy_fn)
+    run_competition(ctx, epoch_id, players, admin, last + 1, comp_end, strategy_fn)
+    run_reckoning(ctx, epoch_id, players, admin, comp_end + 1, reck_end, strategy_fn)
 
-    return finish_game(epoch_id, admin, players, game_def["name"],
+    return finish_game(ctx, epoch_id, admin, players, game_def["name"],
                        game_def["desc"], tags, game_def=game_def)
 
 
