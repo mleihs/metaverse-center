@@ -56,6 +56,7 @@ from backend.routers import (
     chronicles,
     cipher,
     connections,
+    dungeon_content_admin,
     echoes,
     embassies,
     epoch_chat,
@@ -92,6 +93,7 @@ from backend.routers import (
     zone_actions,
 )
 from backend.services.bluesky_scheduler import BlueskyScheduler
+from backend.services.dungeon_content_service import load_all_content as load_dungeon_content
 from backend.services.dungeon_engine_service import start_instance_cleanup
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
@@ -107,6 +109,7 @@ async def lifespan(app: FastAPI):
     admin_sb = await get_admin_supabase()
     await ensure_model_config(admin_sb)
     await ensure_research_domains(admin_sb)
+    await load_dungeon_content(admin_sb)
 
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()
@@ -191,6 +194,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # --- Routers ---
 app.include_router(health.router)
 app.include_router(admin.router)
+app.include_router(dungeon_content_admin.router)
 app.include_router(users.router)
 app.include_router(simulations.router)
 app.include_router(agents.router)

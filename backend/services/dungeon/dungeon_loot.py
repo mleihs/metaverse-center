@@ -969,7 +969,9 @@ def roll_loot(
         List of LootItem drops. Tier 3 returns all guaranteed items.
         Tiers 1-2 return 1 item via weighted random.
     """
-    loot_tables = _LOOT_REGISTRIES.get(archetype, {})
+    from backend.services.dungeon_content_service import get_loot_registry
+
+    loot_tables = get_loot_registry().get(archetype, {})
     table = loot_tables.get(tier, loot_tables.get(1, []))
 
     if not table:

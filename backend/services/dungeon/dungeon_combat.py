@@ -890,15 +890,16 @@ def spawn_enemies(
         List of EnemyInstance ready for combat.
     """
     from backend.services.dungeon.dungeon_archetypes import DIFFICULTY_MULTIPLIERS
+    from backend.services.dungeon_content_service import get_enemy_registry, get_spawn_registry
 
-    spawn_registry = _SPAWN_REGISTRIES.get(archetype, {})
+    spawn_registry = get_spawn_registry().get(archetype, {})
     config = spawn_registry.get(encounter_id, [])
     if not config:
         logger.warning("No spawn config for encounter %s (archetype: %s)", encounter_id, archetype)
         return []
 
     diff_mult = DIFFICULTY_MULTIPLIERS.get(difficulty, DIFFICULTY_MULTIPLIERS[1])
-    enemy_registry = _ENEMY_REGISTRIES.get(archetype, {})
+    enemy_registry = get_enemy_registry().get(archetype, {})
     instances: list[EnemyInstance] = []
 
     for entry in config:
@@ -981,5 +982,7 @@ def check_ambush(
 
 def get_enemy_templates_dict(archetype: str = "The Shadow") -> dict[str, dict]:
     """Get enemy templates as plain dicts for combat engine."""
-    registry = _ENEMY_REGISTRIES.get(archetype, {})
+    from backend.services.dungeon_content_service import get_enemy_registry
+
+    registry = get_enemy_registry().get(archetype, {})
     return {eid: template.model_dump() for eid, template in registry.items()}

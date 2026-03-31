@@ -2497,7 +2497,9 @@ def get_barometer_text(
     current_tier = _barometer_tier(archetype, archetype_state)
     if current_tier == last_tier:
         return None, last_tier
-    tiers = BAROMETER_TEXTS.get(archetype, [])
+    from backend.services.dungeon_content_service import get_barometer_registry
+
+    tiers = get_barometer_registry().get(archetype, [])
     for entry in tiers:
         if entry["tier"] == current_tier:
             return {"text_en": entry["text_en"], "text_de": entry["text_de"]}, current_tier
@@ -2519,7 +2521,9 @@ def select_anchor_text(
     Returns list of dicts with text_en, text_de, anchor_id, phase.
     Boss room returns up to 2 (both climaxes). Normal rooms return 0 or 1.
     """
-    anchor_pool = ANCHOR_OBJECTS.get(instance.archetype, [])
+    from backend.services.dungeon_content_service import get_anchor_objects
+
+    anchor_pool = get_anchor_objects().get(instance.archetype, [])
     # Build lookup: id → object data
     obj_lookup = {obj["id"]: obj for obj in anchor_pool}
 

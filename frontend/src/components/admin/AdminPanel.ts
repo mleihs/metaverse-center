@@ -17,11 +17,13 @@ import './AdminSocialTab.js';
 import './AdminPlatformConfigTab.js';
 import './AdminAIUsageTab.js';
 import './AdminDungeonsTab.js';
+import './AdminDungeonContentTab.js';
 
 type AdminTab =
   | 'users'
   | 'simulations'
   | 'dungeons'
+  | 'dungeon_content'
   | 'health'
   | 'heartbeat'
   | 'resonances'
@@ -158,6 +160,7 @@ export class VelgAdminPanel extends LitElement {
       { key: 'heartbeat', label: msg('Heartbeat'), group: msg('Systems') },
       { key: 'resonances', label: msg('Resonances'), group: msg('Systems') },
       { key: 'dungeons', label: msg('Dungeons'), group: msg('Systems') },
+      { key: 'dungeon_content', label: msg('Dungeon Content'), group: msg('Systems') },
       // AI & Generation
       { key: 'forge', label: msg('Forge'), group: msg('AI & Gen'), badge: forgeCount > 0 ? forgeCount : undefined },
       { key: 'ai_usage', label: msg('AI Usage'), group: msg('AI & Gen') },
@@ -212,6 +215,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-resonances-tab></velg-admin-resonances-tab>`;
       case 'dungeons':
         return html`<velg-admin-dungeons-tab></velg-admin-dungeons-tab>`;
+      case 'dungeon_content':
+        return html`<velg-admin-dungeon-content-tab></velg-admin-dungeon-content-tab>`;
       case 'scanner':
         return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
       case 'forge':

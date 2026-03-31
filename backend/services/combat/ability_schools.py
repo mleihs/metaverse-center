@@ -352,7 +352,9 @@ def get_available_abilities(
     Returns:
         List of abilities the agent qualifies for.
     """
-    school_abilities = ALL_ABILITIES.get(school, [])
+    from backend.services.dungeon_content_service import get_ability_registry
+
+    school_abilities = get_ability_registry().get(school, [])
     return [
         a
         for a in school_abilities
@@ -366,7 +368,9 @@ def get_available_abilities(
 
 def get_ability_by_id(ability_id: str) -> Ability | None:
     """Look up an ability by its ID across all schools."""
-    for abilities in ALL_ABILITIES.values():
+    from backend.services.dungeon_content_service import get_ability_registry
+
+    for abilities in get_ability_registry().values():
         for ability in abilities:
             if ability.id == ability_id:
                 return ability

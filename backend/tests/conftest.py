@@ -7,9 +7,66 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_current_user
 from backend.models.common import CurrentUser
+from backend.services import dungeon_content_service as _dcs
 
 MOCK_USER_ID = UUID("11111111-1111-1111-1111-111111111111")
 MOCK_USER_EMAIL = "test@velgarien.dev"
+
+
+def _seed_content_cache() -> None:
+    """Populate dungeon content cache from Python data for tests.
+
+    Called once at session start so all tests see content without DB.
+    Uses the same Python dicts that are still in the codebase (PR 1 fallback).
+    """
+    if _dcs._content is not None:
+        return  # already seeded
+
+    from backend.services.combat.ability_schools import ALL_ABILITIES, Ability
+    from backend.services.dungeon.dungeon_banter import _BANTER_REGISTRIES
+    from backend.services.dungeon.dungeon_combat import _ENEMY_REGISTRIES, _SPAWN_REGISTRIES
+    from backend.services.dungeon.dungeon_encounters import _ENCOUNTER_REGISTRIES
+    from backend.services.dungeon.dungeon_loot import _LOOT_REGISTRIES
+    from backend.services.dungeon.dungeon_objektanker import (
+        ANCHOR_OBJECTS,
+        BAROMETER_TEXTS,
+        ENTRANCE_TEXTS,
+    )
+
+    # Build encounter index
+    encounter_index = {}
+    for encounters in _ENCOUNTER_REGISTRIES.values():
+        for e in encounters:
+            encounter_index[e.id] = e
+
+    # Build entrance text dicts (strip to {text_en, text_de})
+    entrance = {
+        arch: [{"text_en": t["text_en"], "text_de": t["text_de"]} for t in texts]
+        for arch, texts in ENTRANCE_TEXTS.items()
+    }
+
+    # Build anchor object dicts (strip to {id, phases})
+    anchors = {
+        arch: [{"id": obj["id"], "phases": obj.get("phases", {})} for obj in objs]
+        for arch, objs in ANCHOR_OBJECTS.items()
+    }
+
+    _dcs._content = _dcs._ContentCache(
+        banter=dict(_BANTER_REGISTRIES),
+        encounters=dict(_ENCOUNTER_REGISTRIES),
+        encounter_index=encounter_index,
+        enemies=dict(_ENEMY_REGISTRIES),
+        spawns=dict(_SPAWN_REGISTRIES),
+        loot=dict(_LOOT_REGISTRIES),
+        anchors=anchors,
+        entrance_texts=entrance,
+        barometer_texts=dict(BAROMETER_TEXTS),
+        abilities=dict(ALL_ABILITIES),
+    )
+
+
+# Auto-seed before any test collection
+_seed_content_cache()
 
 
 @pytest.fixture()

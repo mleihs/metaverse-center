@@ -1553,7 +1553,9 @@ def select_banter(
         archetype: Dungeon archetype for registry lookup.
         archetype_state: Archetype-specific state for tier filtering.
     """
-    banter_pool = _BANTER_REGISTRIES.get(archetype, [])
+    from backend.services.dungeon_content_service import get_banter_registry
+
+    banter_pool = get_banter_registry().get(archetype, [])
     candidates = [b for b in banter_pool if b["trigger"] == trigger and b["id"] not in used_ids]
     if not candidates:
         return None

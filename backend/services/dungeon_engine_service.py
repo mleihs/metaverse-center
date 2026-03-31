@@ -81,9 +81,11 @@ from backend.services.dungeon.dungeon_encounters import (
 from backend.services.dungeon.dungeon_generator import generate_dungeon_graph
 from backend.services.dungeon.dungeon_loot import roll_loot
 from backend.services.dungeon.dungeon_objektanker import (
-    ANCHOR_OBJECTS,
     get_barometer_text,
     select_anchor_text,
+)
+from backend.services.dungeon_content_service import (
+    get_anchor_objects as _get_anchor_objects_cache,
 )
 from supabase import AsyncClient as Client
 
@@ -416,7 +418,7 @@ class DungeonEngineService:
         archetype_state = strategy.init_state()
 
         # Select 2 anchor objects for this run (Objektanker Variation C)
-        anchor_pool = ANCHOR_OBJECTS.get(archetype, [])
+        anchor_pool = _get_anchor_objects_cache().get(archetype, [])
         selected_anchors = random.sample(anchor_pool, min(2, len(anchor_pool)))
         anchor_object_ids = [a["id"] for a in selected_anchors]
 
@@ -511,9 +513,9 @@ class DungeonEngineService:
         )
 
         # Select random entrance atmosphere text from pool
-        from backend.services.dungeon.dungeon_objektanker import ENTRANCE_TEXTS
+        from backend.services.dungeon_content_service import get_entrance_texts
 
-        entrance_pool = ENTRANCE_TEXTS.get(archetype, [])
+        entrance_pool = get_entrance_texts().get(archetype, [])
         entrance_text = random.choice(entrance_pool) if entrance_pool else None
 
         return {

@@ -4010,7 +4010,9 @@ _ENCOUNTER_BY_ID: dict[str, EncounterTemplate] = _build_encounter_index()
 
 def get_encounter_by_id(encounter_id: str) -> EncounterTemplate | None:
     """Look up an encounter template by ID (any archetype)."""
-    return _ENCOUNTER_BY_ID.get(encounter_id)
+    from backend.services.dungeon_content_service import get_encounter_by_id_cached
+
+    return get_encounter_by_id_cached(encounter_id)
 
 
 def select_encounter(
@@ -4024,7 +4026,9 @@ def select_encounter(
     Filters by room_type, depth, difficulty, and archetype.
     Returns None if no matching encounter exists (shouldn't happen for Shadow).
     """
-    encounter_pool = _ENCOUNTER_REGISTRIES.get(archetype, [])
+    from backend.services.dungeon_content_service import get_encounter_registry
+
+    encounter_pool = get_encounter_registry().get(archetype, [])
     candidates = [
         e
         for e in encounter_pool
