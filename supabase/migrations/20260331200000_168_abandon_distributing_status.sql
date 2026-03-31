@@ -42,3 +42,37 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION fn_abandon_dungeon_run(UUID, UUID, JSONB, INT, INT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION fn_abandon_dungeon_run(UUID, UUID, JSONB, INT, INT) TO service_role;
+
+-- Also update available_dungeons VIEW to treat 'distributing' as an active/blocking status.
+-- Previously only ('active', 'combat', 'exploring') blocked new runs, so a stuck distributing
+-- run would make the dungeon permanently unavailable.
+CREATE OR REPLACE VIEW available_dungeons AS
+SELECT
+    sr.archetype,
+    sr.resonance_signature AS signature,
+    sr.id AS resonance_id,
+    ri.simulation_id,
+    sr.magnitude,
+    ri.susceptibility,
+    ri.effective_magnitude,
+    LEAST(5, GREATEST(1, ROUND(ri.effective_magnitude * 5)::INT)) AS suggested_difficulty,
+    CASE LEAST(5, GREATEST(1, ROUND(ri.effective_magnitude * 5)::INT))
+        WHEN 1 THEN 4 WHEN 2 THEN 5 WHEN 3 THEN 5 WHEN 4 THEN 6 WHEN 5 THEN 7
+    END AS suggested_depth,
+    (SELECT MAX(dr.created_at) FROM resonance_dungeon_runs dr
+     WHERE dr.simulation_id = ri.simulation_id AND dr.archetype = sr.archetype) AS last_run_at,
+    NOT EXISTS (
+        SELECT 1 FROM resonance_dungeon_runs dr
+        WHERE dr.simulation_id = ri.simulation_id
+        AND dr.archetype = sr.archetype
+        AND dr.status IN ('active', 'combat', 'exploring', 'distributing')
+    ) AS available
+FROM resonance_impacts ri
+LEFT JOIN substrate_resonances sr ON sr.id = ri.resonance_id
+WHERE ri.status IN ('completed', 'generating')
+AND sr.id IS NOT NULL
+AND sr.status IN ('detected', 'impacting')
+AND sr.deleted_at IS NULL
+AND ri.effective_magnitude >= 0.3;
+
+GRANT SELECT ON available_dungeons TO authenticated;

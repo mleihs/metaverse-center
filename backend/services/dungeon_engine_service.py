@@ -68,6 +68,7 @@ from backend.services.dungeon.dungeon_archetypes import (
     ARCHETYPE_CONFIGS,
     get_depth_for_difficulty,
 )
+from backend.services.dungeon.dungeon_banter import select_banter
 from backend.services.dungeon.dungeon_combat import (
     check_ambush,
     get_enemy_templates_dict,
@@ -75,11 +76,15 @@ from backend.services.dungeon.dungeon_combat import (
 )
 from backend.services.dungeon.dungeon_encounters import (
     get_encounter_by_id,
-    select_banter,
     select_encounter,
 )
 from backend.services.dungeon.dungeon_generator import generate_dungeon_graph
 from backend.services.dungeon.dungeon_loot import roll_loot
+from backend.services.dungeon.dungeon_objektanker import (
+    ANCHOR_OBJECTS,
+    get_barometer_text,
+    select_anchor_text,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -406,6 +411,11 @@ class DungeonEngineService:
         strategy = get_archetype_strategy(archetype)
         archetype_state = strategy.init_state()
 
+        # Select 2 anchor objects for this run (Objektanker Variation C)
+        anchor_pool = ANCHOR_OBJECTS.get(archetype, [])
+        selected_anchors = random.sample(anchor_pool, min(2, len(anchor_pool)))
+        anchor_object_ids = [a["id"] for a in selected_anchors]
+
         # Create DB record (unique partial index prevents concurrent runs)
         signature = config.get("signature", "conflict_wave")
         try:
@@ -460,6 +470,9 @@ class DungeonEngineService:
             player_ids=[user_id],
             archetype_state=archetype_state,
             phase="exploring",
+            anchor_objects=anchor_object_ids,
+            anchor_phases_shown={obj_id: [] for obj_id in anchor_object_ids},
+            last_barometer_tier=-1,
         )
         # Entrance room starts revealed + scouted; adjacent rooms revealed (map) only
         rooms[0].revealed = True
@@ -516,7 +529,7 @@ class DungeonEngineService:
         """
         instance = await cls._get_instance(run_id, admin_supabase, require_player=user_id)
 
-        if instance.phase not in ("exploring", "room_clear"):
+        if instance.phase not in ("exploring", "room_clear", "exit"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot move in phase: {instance.phase}")
 
         current_room = instance.rooms[instance.current_room]
@@ -592,8 +605,33 @@ class DungeonEngineService:
                             )
             banter_text = banter
 
+        # ── Anchor Object Text (Variation C) ──
+        anchor_texts = select_anchor_text(instance, target_room)
+        for at in anchor_texts:
+            obj_id = at["anchor_id"]
+            phase = at["phase"]
+            instance.anchor_phases_shown.setdefault(obj_id, []).append(phase)
+            # Resolve {agent} placeholder in echo-phase texts
+            if "{agent}" in at.get("text_en", ""):
+                alive = [a for a in instance.party if can_act(a.condition)]
+                if alive:
+                    agent_for_anchor = random.choice(alive)
+                    at["text_en"] = at["text_en"].replace("{agent}", agent_for_anchor.agent_name)
+                    at["text_de"] = at["text_de"].replace("{agent}", agent_for_anchor.agent_name)
+
+        # ── Barometer Text (Variation B) ──
+        baro_text, new_baro_tier = get_barometer_text(
+            instance.archetype, instance.archetype_state, instance.last_barometer_tier,
+        )
+        if baro_text:
+            instance.last_barometer_tier = new_baro_tier
+
         # Process room by type
-        result: dict = {"banter": banter_text}
+        result: dict = {
+            "banter": banter_text,
+            "anchor_texts": anchor_texts if anchor_texts else None,
+            "barometer_text": baro_text,
+        }
 
         if target_room.room_type in ("combat", "elite"):
             result.update(await cls._enter_combat_room(admin_supabase, instance, target_room))
