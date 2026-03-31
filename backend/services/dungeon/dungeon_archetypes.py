@@ -327,9 +327,9 @@ ARCHETYPE_ROOM_DISTRIBUTIONS: dict[str, dict[str, int]] = {
 DIFFICULTY_MULTIPLIERS: dict[int, dict[str, float | int]] = {
     1: {"enemy_power": 1.0, "enemy_condition": 1.0, "stress_mult": 0.8, "loot_quality": 1.0, "depth": 4},
     2: {"enemy_power": 1.15, "enemy_condition": 1.0, "stress_mult": 1.0, "loot_quality": 1.15, "depth": 5},
-    3: {"enemy_power": 1.3, "enemy_condition": 1.5, "stress_mult": 1.2, "loot_quality": 1.3, "depth": 5},
-    4: {"enemy_power": 1.5, "enemy_condition": 2.0, "stress_mult": 1.4, "loot_quality": 1.5, "depth": 6},
-    5: {"enemy_power": 1.75, "enemy_condition": 2.0, "stress_mult": 1.6, "loot_quality": 1.75, "depth": 7},
+    3: {"enemy_power": 1.25, "enemy_condition": 1.3, "stress_mult": 1.15, "loot_quality": 1.3, "depth": 5},
+    4: {"enemy_power": 1.4, "enemy_condition": 1.6, "stress_mult": 1.3, "loot_quality": 1.5, "depth": 6},
+    5: {"enemy_power": 1.6, "enemy_condition": 1.8, "stress_mult": 1.5, "loot_quality": 1.75, "depth": 7},
 }
 
 
