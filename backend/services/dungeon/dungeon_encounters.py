@@ -10,7 +10,7 @@ Tower encounters (Phase 1):
 Entropy encounters (Phase 2):
   4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 Mother encounters (Phase 3):
-  4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+  6 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 """
 
 from __future__ import annotations
@@ -1944,6 +1944,62 @@ MOTHER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
             "nimmt die Mitte ein und atmet Süße aus. Eine Bindungsranke ist durch "
             "den Boden und in die Wände gewachsen, ihr Wurzelnetzwerk bildet "
             "einen Perimeter, der gleichzeitig Falle und Umarmung ist."
+        ),
+        combat_encounter_id="mother_garden_spawn",
+    ),
+    EncounterTemplate(
+        id="mother_spore_nursery_deep",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The nursery is larger here. Deeper. The pods line the walls in "
+            "rows \u2013 dozens, perhaps hundreds, each pulsing with the slow "
+            "rhythm of gestation. A Spore Matron moves between them, trailing "
+            "clouds of luminous spores. A Nutrient Weaver tends the nearest "
+            "pods, feeding them with the patience of something that has never "
+            "known urgency. The nursery does not need to hurry. The nursery "
+            "has all the time in the world. It is growing the world."
+        ),
+        description_de=(
+            "Die Kinderstube ist hier größer. Tiefer. Die Hülsen reihen sich "
+            "an den Wänden \u2013 Dutzende, vielleicht Hunderte, jede pulsierend "
+            "im langsamen Rhythmus der Reifung. Eine Sporenmutter bewegt sich "
+            "zwischen ihnen und hinterlässt Wolken leuchtender Sporen. Ein "
+            "Nährgespinst pflegt die nächsten Hülsen und füttert sie mit der "
+            "Geduld von etwas, das nie Eile gekannt hat. Die Kinderstube muss "
+            "sich nicht beeilen. Die Kinderstube hat alle Zeit der Welt. "
+            "Sie züchtet die Welt."
+        ),
+        combat_encounter_id="mother_spore_spawn",
+    ),
+    EncounterTemplate(
+        id="mother_vine_network",
+        archetype="The Devouring Mother",
+        room_type="combat",
+        min_depth=4,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "The floor is roots. Not overgrown with roots \u2013 the floor IS "
+            "roots, woven into a living mat that yields underfoot like muscle. "
+            "A Tether Vine surfaces at the far wall, its root system extending "
+            "in every direction. Beside it, a Spore Matron has grown directly "
+            "into the vine network \u2013 no longer a separate organism but a "
+            "node in the Mother's circulatory infrastructure. They are "
+            "waiting. Not for prey. For guests."
+        ),
+        description_de=(
+            "Der Boden ist Wurzeln. Nicht von Wurzeln überwachsen \u2013 der "
+            "Boden IST Wurzeln, zu einer lebenden Matte verwoben, die unter "
+            "den Füßen nachgibt wie Muskel. Eine Bindungsranke taucht an der "
+            "fernen Wand auf, ihr Wurzelsystem erstreckt sich in alle "
+            "Richtungen. Daneben ist eine Sporenmutter direkt in das "
+            "Rankennetzwerk eingewachsen \u2013 kein separater Organismus mehr, "
+            "sondern ein Knoten in der vaskulären Infrastruktur der Mutter. "
+            "Sie warten. Nicht auf Beute. Auf Gäste."
         ),
         combat_encounter_id="mother_garden_spawn",
     ),

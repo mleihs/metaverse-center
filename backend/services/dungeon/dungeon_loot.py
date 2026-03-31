@@ -712,7 +712,7 @@ MOTHER_LOOT_TIER_1: list[LootItem] = [
             "Eine warme Kapsel biologischen Materials. Eure Instrumente lesen "
             "Vitamine, Minerale, Aminosäuren. Euer Körper liest Geborgenheit."
         ),
-        drop_weight=35,
+        drop_weight=25,
     ),
     LootItem(
         id="mother_binding_insight",
@@ -734,7 +734,7 @@ MOTHER_LOOT_TIER_1: list[LootItem] = [
             "Bedürfnisse zu antizipieren. Das Wissen ist nützlich. Das Wissen "
             "ist auch der Mechanismus."
         ),
-        drop_weight=30,
+        drop_weight=25,
     ),
     LootItem(
         id="mother_warmth_fragment",
@@ -751,7 +751,7 @@ MOTHER_LOOT_TIER_1: list[LootItem] = [
             "Ein Splitter, der Wärme abstrahlt. Er widersteht dem emotionalen Sog "
             "der Mutter. Propagandist-Proben +5%."
         ),
-        drop_weight=20,
+        drop_weight=25,
     ),
     LootItem(
         id="mother_tissue_sample",
@@ -768,7 +768,7 @@ MOTHER_LOOT_TIER_1: list[LootItem] = [
             "Eine Probe des Gewebes der Mutter, noch lebendig. Noch warm. "
             "Sie verstärkt Rastheilung um 25%. Sie hört nicht auf zu wachsen."
         ),
-        drop_weight=15,
+        drop_weight=25,
     ),
 ]
 

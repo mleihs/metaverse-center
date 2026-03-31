@@ -565,10 +565,15 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         if (!target) continue;
 
         const foggy = !room.revealed || !target.room.revealed;
+        // Shorten lines so they stop at the circle edge, not the center
+        const dx = target.x - x;
+        const dy = target.y - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const offset = dist > 0 ? NODE_R / dist : 0;
         lines.push(
           svg`<line
-            x1=${x} y1=${y}
-            x2=${target.x} y2=${target.y}
+            x1=${x + dx * offset} y1=${y + dy * offset}
+            x2=${target.x - dx * offset} y2=${target.y - dy * offset}
             class="edge ${foggy ? 'edge--fog' : ''}"
           />`,
         );
