@@ -195,8 +195,13 @@ class DungeonStateManager {
       this.selectedActions.value = new Map();
     }
 
-    // Clear encounter choices when leaving encounter phase
-    if (state.phase !== 'encounter' && state.phase !== 'rest') {
+    // Restore or clear encounter choices based on phase
+    if (
+      (state.phase === 'encounter' || state.phase === 'rest') &&
+      state.encounter_choices?.length
+    ) {
+      this.encounterChoices.value = state.encounter_choices;
+    } else if (state.phase !== 'encounter' && state.phase !== 'rest') {
       this.encounterChoices.value = [];
     }
 

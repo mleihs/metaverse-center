@@ -123,6 +123,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
   private _previouslyRevealed = new Set<number>();
   private _previousDepth: number | undefined;
   private _newlyRevealed = new Set<number>();
+  private _newlyTracedEdges = new Set<string>();
   private _depthHighlight = new Set<number>();
 
   static styles = [
@@ -217,6 +218,10 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         stroke-dasharray: 4 3;
         opacity: 0.12;
         filter: none;
+      }
+
+      .edge--just-traced {
+        opacity: 0;
       }
 
       /* ── Nodes ── */
@@ -335,6 +340,31 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         100% { opacity: 1; }
       }
 
+      /* ── Room reveal: circle stroke trace (draws circumference) ── */
+      @keyframes reveal-stroke {
+        0% { stroke-dashoffset: 113.1; }
+        100% { stroke-dashoffset: 0; }
+      }
+
+      /* ── Edge trace: line draws from source to target ── */
+      @keyframes edge-trace {
+        0% { stroke-dashoffset: var(--_edge-len); opacity: 0.15; }
+        100% { stroke-dashoffset: 0; opacity: 0.4; }
+      }
+
+      /* ── Boss approach: intensified danger flare when adjacent ── */
+      @keyframes boss-approach-flare {
+        0%, 100% {
+          filter: drop-shadow(0 0 5px var(--color-danger));
+          stroke-width: 2;
+        }
+        50% {
+          filter: drop-shadow(0 0 12px var(--color-danger))
+            drop-shadow(0 0 5px var(--color-danger));
+          stroke-width: 2.5;
+        }
+      }
+
       /* ── Depth transition: sonar-ping glow ── */
       @keyframes depth-ping {
         0% { filter: none; }
@@ -343,6 +373,13 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
             drop-shadow(0 0 4px var(--_phosphor));
         }
         100% { filter: none; }
+      }
+
+      /* ── Cleared rooms: SVG strike line through node ── */
+      .node__strike {
+        stroke: var(--_node-color, var(--_phosphor-dim));
+        stroke-width: 1.5;
+        opacity: 0.6;
       }
 
       /* ── Empty ── */
@@ -377,11 +414,21 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         .node--boss .node__circle {
           animation: boss-pulse 3s ease-in-out infinite;
         }
+        .node--boss.node--adjacent .node__circle {
+          animation: boss-approach-flare 1.8s ease-in-out infinite;
+        }
         .node--just-revealed .node__circle {
-          animation: reveal-blip 300ms ease-out;
+          stroke-dasharray: 113.1;
+          animation:
+            reveal-blip 300ms ease-out,
+            reveal-stroke 400ms 200ms ease-out forwards;
         }
         .node--just-revealed .node__label {
           animation: reveal-fade 300ms ease-out;
+        }
+        .edge--just-traced {
+          stroke-dasharray: var(--_edge-len);
+          animation: edge-trace 500ms ease-out forwards;
         }
         .node--depth-highlight .node__circle {
           animation: depth-ping 500ms ease-out;
@@ -444,6 +491,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     const currentRoom = dungeonState.currentRoom.value;
 
     this._newlyRevealed.clear();
+    this._newlyTracedEdges.clear();
     this._depthHighlight.clear();
 
     if (!this._diffInitialized) {
@@ -455,6 +503,26 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     for (const room of rooms) {
       if (room.revealed && !this._previouslyRevealed.has(room.index)) {
         this._newlyRevealed.add(room.index);
+      }
+    }
+
+    // Detect edges where both endpoints are now revealed but weren't before
+    for (const room of rooms) {
+      if (!room.revealed) continue;
+      for (const ci of room.connections) {
+        const peer = rooms.find((r) => r.index === ci);
+        if (!peer?.revealed) continue;
+        // Edge is visible now — was it visible last render?
+        const wasBothRevealed =
+          this._previouslyRevealed.has(room.index) &&
+          this._previouslyRevealed.has(ci);
+        if (!wasBothRevealed) {
+          const key =
+            room.index < ci
+              ? `${room.index}-${ci}`
+              : `${ci}-${room.index}`;
+          this._newlyTracedEdges.add(key);
+        }
       }
     }
 
@@ -565,16 +633,20 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         if (!target) continue;
 
         const foggy = !room.revealed || !target.room.revealed;
+        const justTraced = this._newlyTracedEdges.has(key);
         // Shorten lines so they stop at the circle edge, not the center
         const dx = target.x - x;
         const dy = target.y - y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const offset = dist > 0 ? NODE_R / dist : 0;
+        // Edge length for stroke animation
+        const edgeLen = Math.max(dist - NODE_R * 2, 1);
         lines.push(
           svg`<line
             x1=${x + dx * offset} y1=${y + dy * offset}
             x2=${target.x - dx * offset} y2=${target.y - dy * offset}
-            class="edge ${foggy ? 'edge--fog' : ''}"
+            class="edge ${foggy ? 'edge--fog' : ''} ${justTraced ? 'edge--just-traced' : ''}"
+            style=${justTraced ? `--_edge-len: ${edgeLen}` : nothing}
           />`,
         );
       }
@@ -636,6 +708,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
             <title>${room.revealed ? getRoomTypeLabel(room.room_type) : msg('Unknown')}</title>
             <circle r=${NODE_R} class="node__circle" />
             <text class="node__label" text-anchor="middle" dominant-baseline="central">${label}</text>
+            ${room.cleared && !room.current ? svg`<line x1=${-NODE_R + 4} y1="0" x2=${NODE_R - 4} y2="0" class="node__strike" aria-hidden="true" />` : nothing}
           </g>
         `;
       })}

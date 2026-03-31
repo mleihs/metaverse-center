@@ -398,7 +398,19 @@ function handleDungeonLook(): TerminalLine[] {
   const room = dungeonState.currentRoom.value;
   if (!room) return [errorLine(msg('Current room unknown.'))];
 
-  return formatRoomEntry(room, null, state.archetype_state);
+  const lines = formatRoomEntry(room, null, state.archetype_state);
+
+  // Re-display encounter choices when in encounter/rest phase
+  const choices = dungeonState.encounterChoices.value;
+  if (
+    (state.phase === 'encounter' || state.phase === 'rest') &&
+    choices.length > 0
+  ) {
+    const desc = state.encounter_description_en ?? '';
+    lines.push(...formatEncounterChoices(desc, choices, state.party, room.room_type));
+  }
+
+  return lines;
 }
 
 // ── Command: status ──────────────────────────────────────────────────────────

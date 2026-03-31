@@ -465,7 +465,7 @@ class DungeonEngineService:
         rooms[0].revealed = True
         rooms[0].scouted = True
         for conn_idx in rooms[0].connections:
-            if conn_idx < len(rooms):
+            if 0 <= conn_idx < len(rooms):
                 rooms[conn_idx].revealed = True
         _active_instances[str(run_id)] = instance
         _instance_last_activity[str(run_id)] = time.monotonic()
@@ -536,7 +536,7 @@ class DungeonEngineService:
 
         # Reveal connected rooms on map (but don't scout — type stays hidden)
         for conn_idx in target_room.connections:
-            if conn_idx < len(instance.rooms):
+            if 0 <= conn_idx < len(instance.rooms):
                 instance.rooms[conn_idx].revealed = True
 
         # Track depth changes
@@ -1318,22 +1318,20 @@ class DungeonEngineService:
         """Restore in-memory instance from DB checkpoint after server restart."""
         run_resp = (
             await admin_supabase.table("resonance_dungeon_runs")
-            .select(
-                "*",
-            )
+            .select("*")
             .eq("id", str(run_id))
             .in_(
                 "status",
                 ["active", "combat", "exploring", "distributing"],
             )
-            .maybe_single()
+            .limit(1)
             .execute()
         )
 
         if not run_resp.data:
             return None
 
-        run = run_resp.data
+        run = run_resp.data[0]
         config_data = run.get("config", {})
         rooms_data = config_data.get("rooms", [])
 
@@ -1454,6 +1452,19 @@ class DungeonEngineService:
             loot_assignments = instance.loot_assignments
             loot_suggestions = cls._compute_loot_suggestions(instance)
 
+        # Encounter fields (only during encounter/rest phase)
+        encounter_choices = None
+        encounter_desc_en = None
+        encounter_desc_de = None
+        if instance.phase in ("encounter", "rest"):
+            current_room = instance.rooms[instance.current_room]
+            if current_room.encounter_template_id:
+                encounter = get_encounter_by_id(current_room.encounter_template_id)
+                if encounter:
+                    encounter_choices = cls._format_encounter_choices(encounter.choices)
+                    encounter_desc_en = encounter.description_en
+                    encounter_desc_de = encounter.description_de
+
         return DungeonClientState(
             run_id=instance.run_id,
             archetype=instance.archetype,
@@ -1470,6 +1481,9 @@ class DungeonEngineService:
             pending_loot=pending_loot,
             loot_assignments=loot_assignments,
             loot_suggestions=loot_suggestions,
+            encounter_choices=encounter_choices,
+            encounter_description_en=encounter_desc_en,
+            encounter_description_de=encounter_desc_de,
         )
 
     @staticmethod

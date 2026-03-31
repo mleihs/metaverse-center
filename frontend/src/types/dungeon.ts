@@ -207,6 +207,13 @@ export interface DungeonClientState {
   loot_assignments?: Record<string, string>;
   /** Suggested assignments: loot_id → agent_id (computed by backend). */
   loot_suggestions?: Record<string, string>;
+
+  /** Encounter choices (only during 'encounter' or 'rest' phase). */
+  encounter_choices?: EncounterChoiceClient[] | null;
+  /** Encounter description in English (only during 'encounter' or 'rest' phase). */
+  encounter_description_en?: string | null;
+  /** Encounter description in German (only during 'encounter' or 'rest' phase). */
+  encounter_description_de?: string | null;
 }
 
 /** Room as seen by the client (fog of war applied). */

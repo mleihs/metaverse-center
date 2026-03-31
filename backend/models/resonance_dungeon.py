@@ -178,6 +178,11 @@ class DungeonInstance(BaseModel):
             "room_cleared_flags": [r.index for r in self.rooms if r.cleared],
             "room_revealed_flags": [r.index for r in self.rooms if r.revealed],
             "room_scouted_flags": [r.index for r in self.rooms if r.scouted],
+            "room_encounter_ids": {
+                r.index: r.encounter_template_id
+                for r in self.rooms
+                if r.encounter_template_id
+            },
             "used_banter_ids": self.used_banter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
             "pending_loot": self.pending_loot,
@@ -205,10 +210,12 @@ class DungeonInstance(BaseModel):
         cleared = set(checkpoint.get("room_cleared_flags", []))
         revealed = set(checkpoint.get("room_revealed_flags", []))
         scouted = set(checkpoint.get("room_scouted_flags", []))
+        encounter_ids: dict = checkpoint.get("room_encounter_ids", {})
         for room in self.rooms:
             room.cleared = room.index in cleared
             room.revealed = room.index in revealed
             room.scouted = room.index in scouted
+            room.encounter_template_id = encounter_ids.get(str(room.index)) or encounter_ids.get(room.index)
 
 
 # ── API Request Schemas ─────────────────────────────────────────────────────
@@ -485,6 +492,11 @@ class DungeonClientState(BaseModel):
     pending_loot: list[dict] | None = None
     loot_assignments: dict[str, str] = Field(default_factory=dict)
     loot_suggestions: dict[str, str] = Field(default_factory=dict)
+
+    # Encounter (populated only when phase is "encounter" or "rest")
+    encounter_choices: list[dict] | None = None
+    encounter_description_en: str | None = None
+    encounter_description_de: str | None = None
 
 
 # ── Encounter/Loot Data Models ──────────────────────────────────────────────
