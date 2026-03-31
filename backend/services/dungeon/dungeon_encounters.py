@@ -2580,6 +2580,1129 @@ MOTHER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
             ),
         ],
     ),
+    # ── Deep Mother Encounters (D3-D6) ──────────────────────────────────
+    EncounterTemplate(
+        id="mother_the_lullaby",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "The walls vibrate. Not from structural stress \u2013 from frequency. "
+            "A low, complex oscillation that your instruments read as 18 Hz, "
+            "shifting to 22, returning to 18. A rhythm. A pattern with intention. "
+            "The air warms by two degrees at each oscillation peak. The dungeon "
+            "is singing. Not metaphorically. The tissue of the walls has organized "
+            "itself into a resonance chamber, and the sound it produces is a lullaby. "
+            "Your instruments confirm it matches the neural frequency of deep calm. "
+            "Your instruments do not explain how the dungeon knows that frequency."
+        ),
+        description_de=(
+            "Die Wände vibrieren. Nicht durch strukturelle Belastung \u2013 durch "
+            "Frequenz. Eine tiefe, komplexe Oszillation, die eure Instrumente als "
+            "18 Hz messen, sich auf 22 verschiebend, zurückkehrend zu 18. Ein "
+            "Rhythmus. Ein Muster mit Absicht. Die Luft erwärmt sich um zwei "
+            "Grad bei jedem Oszillationsgipfel. Der Dungeon singt. Nicht "
+            "metaphorisch. Das Gewebe der Wände hat sich zu einer Resonanzkammer "
+            "organisiert, und der Klang, den es erzeugt, ist ein Schlaflied. "
+            "Eure Instrumente bestätigen die Übereinstimmung mit der Neuralfrequenz "
+            "tiefer Ruhe. Eure Instrumente erklären nicht, woher der Dungeon "
+            "diese Frequenz kennt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="lullaby_listen",
+                label_en="Listen. Let the sound work.",
+                label_de="Zuhören. Den Klang wirken lassen.",
+                success_effects={"attachment": 8, "stress_heal": 80},
+                success_narrative_en=(
+                    "The party stops. The sound fills the spaces between thoughts. "
+                    "Stress dissolves \u2013 not gradually but completely, the way a knot "
+                    "untangles when you find the right thread. The warmth is exquisite. "
+                    "The attachment counter climbs. The lullaby does not stop when you "
+                    "move to leave. It follows you, quieter, into the next corridor. "
+                    "A gift. A thread."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe hält inne. Der Klang füllt die Räume zwischen den "
+                    "Gedanken. Stress löst sich \u2013 nicht allmählich, sondern vollständig, "
+                    "wie ein Knoten sich entwirrt, wenn man den richtigen Faden findet. "
+                    "Die Wärme ist köstlich. Der Bindungszähler steigt. Das Schlaflied "
+                    "hört nicht auf, als ihr aufbrecht. Es folgt euch, leiser, in den "
+                    "nächsten Korridor. Ein Geschenk. Ein Faden."
+                ),
+            ),
+            EncounterChoice(
+                id="lullaby_analyze",
+                label_en="Record and analyze the frequency pattern (Spy)",
+                label_de="Das Frequenzmuster aufzeichnen und analysieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"attachment": 2, "discovery": True},
+                partial_effects={"attachment": 4, "stress_heal": 20},
+                fail_effects={"attachment": 5, "stress": 20},
+                success_narrative_en=(
+                    "The analysis takes three minutes. In that time, {agent} discovers "
+                    "a secondary signal embedded in the lullaby \u2013 a carrier wave "
+                    "that rewrites stress response thresholds. The calming is real. "
+                    "The recalibration is also real. The Mother does not merely soothe. "
+                    "She adjusts."
+                ),
+                success_narrative_de=(
+                    "Die Analyse dauert drei Minuten. In dieser Zeit entdeckt {agent} "
+                    "ein sekundäres Signal im Schlaflied \u2013 eine Trägerwelle, die "
+                    "Stressreaktionsschwellen umschreibt. Die Beruhigung ist echt. "
+                    "Die Neukalibrierung ist ebenfalls echt. Die Mutter beruhigt "
+                    "nicht nur. Sie justiert."
+                ),
+                fail_narrative_en=(
+                    "The recording equipment captures the oscillation but not the "
+                    "intention behind it. The data is clean. The meaning is absent. "
+                    "The instruments, for once, are the wrong tool."
+                ),
+                fail_narrative_de=(
+                    "Die Aufnahmegeräte erfassen die Oszillation, aber nicht die "
+                    "Absicht dahinter. Die Daten sind sauber. Die Bedeutung fehlt. "
+                    "Die Instrumente sind, ausnahmsweise, das falsche Werkzeug."
+                ),
+            ),
+            EncounterChoice(
+                id="lullaby_disrupt",
+                label_en="Disrupt the resonance chamber (Saboteur)",
+                label_de="Die Resonanzkammer stören (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={"attachment": -5, "stress": 30},
+                partial_effects={"attachment": -2, "stress": 35},
+                fail_effects={"attachment": 5, "stress": 40},
+                success_narrative_en=(
+                    "The chamber fractures. The lullaby collapses into noise, then "
+                    "silence. The temperature drops. The absence of the sound is "
+                    "worse than the sound itself \u2013 a void where comfort was. The "
+                    "walls contract once, slowly, then still. Somewhere deeper, "
+                    "something recalculates."
+                ),
+                success_narrative_de=(
+                    "Die Kammer bricht. Das Schlaflied kollabiert zu Rauschen, dann "
+                    "Stille. Die Temperatur fällt. Die Abwesenheit des Klangs ist "
+                    "schlimmer als der Klang selbst \u2013 eine Leere, wo Trost war. Die "
+                    "Wände kontrahieren einmal, langsam, dann Stille. Irgendwo tiefer "
+                    "kalkuliert etwas neu."
+                ),
+                fail_narrative_en=(
+                    "The resonance absorbs the disruption. The lullaby stutters, "
+                    "then returns stronger \u2013 the frequency adjusted to compensate. "
+                    "The Mother learns from resistance."
+                ),
+                fail_narrative_de=(
+                    "Die Resonanz absorbiert die Störung. Das Schlaflied stockt, "
+                    "kehrt dann stärker zurück \u2013 die Frequenz angepasst zur "
+                    "Kompensation. Die Mutter lernt aus Widerstand."
+                ),
+            ),
+            EncounterChoice(
+                id="lullaby_refuse",
+                label_en="Block the frequency. Move on.",
+                label_de="Die Frequenz blockieren. Weitergehen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You dampen the signal and advance. The lullaby fades behind "
+                    "you. The corridor ahead is colder. Quieter. The dungeon does "
+                    "not protest. It simply stops providing."
+                ),
+                success_narrative_de=(
+                    "Ihr dämpft das Signal und rückt vor. Das Schlaflied verklingt "
+                    "hinter euch. Der Korridor voraus ist kälter. Stiller. Der "
+                    "Dungeon protestiert nicht. Er hört einfach auf zu geben."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_the_mirror_pool",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A pool of still liquid, perfectly reflective. But the reflections "
+            "are wrong. Each agent's reflection shows not their surface but "
+            "their interior \u2013 fatigue as visible fractures, stress as color "
+            "distortion, wounds as gaps in the silhouette. The Mother's "
+            "diagnostic rendered visible. The pool shows each agent as the "
+            "Mother sees them: systems to be repaired, deficits to be filled, "
+            "fragments to be completed. The reflections are accurate. "
+            "That is the uncomfortable part."
+        ),
+        description_de=(
+            "Ein Becken stiller Flüssigkeit, perfekt spiegelnd. Aber die "
+            "Spiegelungen stimmen nicht. Das Spiegelbild jedes Agenten zeigt "
+            "nicht ihre Oberfläche, sondern ihr Inneres \u2013 Erschöpfung als "
+            "sichtbare Bruchlinien, Stress als Farbverzerrung, Wunden als "
+            "Lücken in der Silhouette. Die Diagnostik der Mutter, sichtbar "
+            "gemacht. Das Becken zeigt jeden Agenten, wie die Mutter ihn "
+            "sieht: Systeme, die repariert werden müssen, Defizite, die "
+            "gefüllt werden müssen, Fragmente, die vervollständigt werden "
+            "müssen. Die Spiegelbilder sind akkurat. Das ist der "
+            "unbehagliche Teil."
+        ),
+        choices=[
+            EncounterChoice(
+                id="mirror_accept",
+                label_en="Accept the diagnosis. Let the pool heal what it shows.",
+                label_de="Die Diagnose annehmen. Das Becken heilen lassen, was es zeigt.",
+                success_effects={"attachment": 8, "stress_heal": 60, "condition_heal": 1},
+                success_narrative_en=(
+                    "The pool surface ripples. Warmth rises. The fractures in "
+                    "the reflection begin to close as the fractures in the agents "
+                    "close with them. The diagnostic becomes the treatment. The "
+                    "mirror becomes the medicine. The attachment counter rises "
+                    "with every healed line."
+                ),
+                success_narrative_de=(
+                    "Die Oberfläche des Beckens kräuselt sich. Wärme steigt auf. "
+                    "Die Bruchlinien im Spiegelbild beginnen sich zu schließen, "
+                    "während die Bruchlinien in den Agenten sich mit ihnen "
+                    "schließen. Die Diagnose wird zur Behandlung. Der Spiegel "
+                    "wird zur Medizin. Der Bindungszähler steigt mit jeder "
+                    "geheilten Linie."
+                ),
+            ),
+            EncounterChoice(
+                id="mirror_study",
+                label_en="Study the diagnostic methodology (Spy)",
+                label_de="Die Diagnosemethodik studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"attachment": 2, "discovery": True},
+                partial_effects={"attachment": 4},
+                fail_effects={"attachment": 5, "stress": 20},
+                success_narrative_en=(
+                    "{agent} analyzes the pool's imaging system. The liquid is "
+                    "saturated with bio-responsive molecules that react to the "
+                    "electromagnetic field of nearby organisms. The resolution "
+                    "is cellular. The Mother knows you better than your own "
+                    "medical records. She has been compiling since the entrance."
+                ),
+                success_narrative_de=(
+                    "{agent} analysiert das Bildgebungssystem des Beckens. Die "
+                    "Flüssigkeit ist gesättigt mit bio-responsiven Molekülen, "
+                    "die auf das elektromagnetische Feld naher Organismen "
+                    "reagieren. Die Auflösung ist zellulär. Die Mutter kennt "
+                    "euch besser als eure eigenen medizinischen Aufzeichnungen. "
+                    "Sie kompiliert seit dem Eingang."
+                ),
+                fail_narrative_en=(
+                    "The methodology is the liquid itself. There is no "
+                    "separable mechanism. The pool is not a tool. It is a sense."
+                ),
+                fail_narrative_de=(
+                    "Die Methodik ist die Flüssigkeit selbst. Es gibt keinen "
+                    "trennbaren Mechanismus. Das Becken ist kein Werkzeug. "
+                    "Es ist ein Sinn."
+                ),
+            ),
+            EncounterChoice(
+                id="mirror_drain",
+                label_en="Drain the pool (Saboteur)",
+                label_de="Das Becken entleeren (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={"attachment": -5, "stress": 25},
+                partial_effects={"attachment": -2, "stress": 30},
+                fail_effects={"attachment": 5, "stress": 35},
+                success_narrative_en=(
+                    "The liquid drains. The reflections dissolve. The last image "
+                    "before the surface breaks: each agent, whole, complete, "
+                    "needing nothing. A fiction. A beautiful, deliberate fiction. "
+                    "The Mother showed you what she wanted you to see."
+                ),
+                success_narrative_de=(
+                    "Die Flüssigkeit fließt ab. Die Spiegelungen lösen sich auf. "
+                    "Das letzte Bild, bevor die Oberfläche bricht: jeder Agent, "
+                    "ganz, vollständig, nichts benötigend. Eine Fiktion. Eine "
+                    "schöne, absichtsvolle Fiktion. Die Mutter zeigte euch, "
+                    "was sie euch sehen lassen wollte."
+                ),
+                fail_narrative_en=(
+                    "The pool refills from below. The diagnostic resumes. "
+                    "The Mother's attention cannot be drained."
+                ),
+                fail_narrative_de=(
+                    "Das Becken füllt sich von unten. Die Diagnostik wird "
+                    "fortgesetzt. Die Aufmerksamkeit der Mutter lässt sich "
+                    "nicht ableiten."
+                ),
+            ),
+            EncounterChoice(
+                id="mirror_refuse",
+                label_en="Do not look. Walk past the pool.",
+                label_de="Nicht hinsehen. Am Becken vorbeigehen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You avert your gaze and pass. The pool reflects you anyway. "
+                    "The reflections follow your movement, precise, attentive, "
+                    "cataloguing. The Mother does not require your consent "
+                    "to observe."
+                ),
+                success_narrative_de=(
+                    "Ihr wendet den Blick ab und passiert. Das Becken spiegelt "
+                    "euch trotzdem. Die Spiegelungen folgen eurer Bewegung, "
+                    "präzise, aufmerksam, katalogisierend. Die Mutter benötigt "
+                    "nicht eure Einwilligung, um zu beobachten."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_the_offering_table",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=4,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A surface of living tissue, flat and broad, arranged with objects. "
+            "Not random objects. Nutrient packages, each sealed in a membrane "
+            "of bioluminescent film. Each package is labeled \u2013 not with text "
+            "but with chemical signatures that your instruments decode as names. "
+            "Your names. Each package contains precisely what each agent lacks: "
+            "the amino acid deficiency, the mineral gap, the caloric debt. The "
+            "Mother has been reading you. The table is set."
+        ),
+        description_de=(
+            "Eine Fläche aus lebendem Gewebe, flach und breit, arrangiert mit "
+            "Gegenständen. Keine zufälligen Gegenstände. Nährstoffpakete, jedes "
+            "versiegelt in einer Membran aus biolumineszentem Film. Jedes Paket "
+            "ist beschriftet \u2013 nicht mit Text, sondern mit chemischen Signaturen, "
+            "die eure Instrumente als Namen dekodieren. Eure Namen. Jedes Paket "
+            "enthält präzise, was jedem Agenten fehlt: den Aminosäuremangel, "
+            "die Minerallücke, die kalorische Schuld. Die Mutter hat euch "
+            "gelesen. Der Tisch ist gedeckt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="table_accept",
+                label_en="Accept the personalized gifts.",
+                label_de="Die personalisierten Geschenke annehmen.",
+                success_effects={"attachment": 10, "stress_heal": 60, "condition_heal": 1},
+                success_narrative_en=(
+                    "Each agent takes their package. Each package is perfect. "
+                    "The nutrients flood the system like water into cracked earth. "
+                    "The membrane dissolves on contact, leaving no trace. The table "
+                    "surface flattens, satisfied. Somewhere in the tissue, a record "
+                    "is updated: preferences noted, deficiencies catalogued, "
+                    "dosages refined for next time."
+                ),
+                success_narrative_de=(
+                    "Jeder Agent nimmt sein Paket. Jedes Paket ist perfekt. "
+                    "Die Nährstoffe durchfluten das System wie Wasser in "
+                    "rissige Erde. Die Membran löst sich bei Kontakt, hinterlässt "
+                    "keine Spur. Die Tischfläche glättet sich, zufrieden. Irgendwo "
+                    "im Gewebe wird ein Datensatz aktualisiert: Vorlieben notiert, "
+                    "Defizite katalogisiert, Dosierungen verfeinert für das "
+                    "nächste Mal."
+                ),
+            ),
+            EncounterChoice(
+                id="table_analyze",
+                label_en="Analyze the chemical profiling method (Spy)",
+                label_de="Die chemische Profilierungsmethode analysieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"attachment": 3, "discovery": True},
+                partial_effects={"attachment": 5},
+                fail_effects={"attachment": 6, "stress": 20},
+                success_narrative_en=(
+                    "{agent} traces the profiling system to airborne metabolic "
+                    "sampling \u2013 the dungeon has been reading exhalation patterns "
+                    "since the entrance. Every breath a data point. Every room a "
+                    "refinement. The surveillance is total and invisible. The "
+                    "care is total and, somehow, genuine."
+                ),
+                success_narrative_de=(
+                    "{agent} verfolgt das Profilierungssystem zu luftgetragener "
+                    "metabolischer Probennahme \u2013 der Dungeon hat Ausatmungsmuster "
+                    "seit dem Eingang gelesen. Jeder Atemzug ein Datenpunkt. Jeder "
+                    "Raum eine Verfeinerung. Die Überwachung ist total und "
+                    "unsichtbar. Die Fürsorge ist total und, irgendwie, aufrichtig."
+                ),
+                fail_narrative_en=(
+                    "The profiling method is too distributed to isolate. It is "
+                    "not a system \u2013 it is the dungeon itself. The walls read you. "
+                    "The air reads you. The floor reads your weight distribution. "
+                    "There is no mechanism to analyze because the mechanism is "
+                    "everything."
+                ),
+                fail_narrative_de=(
+                    "Die Profilierungsmethode ist zu verteilt, um sie zu isolieren. "
+                    "Es ist kein System \u2013 es ist der Dungeon selbst. Die Wände "
+                    "lesen euch. Die Luft liest euch. Der Boden liest eure "
+                    "Gewichtsverteilung. Es gibt keinen Mechanismus zu analysieren, "
+                    "weil der Mechanismus alles ist."
+                ),
+            ),
+            EncounterChoice(
+                id="table_destroy",
+                label_en="Destroy the table and its contents (Saboteur)",
+                label_de="Den Tisch und seinen Inhalt zerstören (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=6,
+                success_effects={"attachment": -7, "stress": 30},
+                partial_effects={"attachment": -3, "stress": 35},
+                fail_effects={"attachment": 5, "stress": 40},
+                success_narrative_en=(
+                    "The table ruptures. The packages spill their contents \u2013 warm "
+                    "liquid, perfect nutrients, wasted. The dungeon temperature "
+                    "drops. Not in anger. In recalculation. Resources spent. "
+                    "Data gathered. The next table will be harder to refuse."
+                ),
+                success_narrative_de=(
+                    "Der Tisch reißt auf. Die Pakete verschütten ihren Inhalt \u2013 "
+                    "warme Flüssigkeit, perfekte Nährstoffe, verschwendet. Die "
+                    "Dungeontemperatur fällt. Nicht aus Wut. Aus Neuberechnung. "
+                    "Ressourcen aufgewendet. Daten gesammelt. Den nächsten Tisch "
+                    "abzulehnen wird schwerer."
+                ),
+                fail_narrative_en=(
+                    "The table absorbs the damage and regenerates. The packages "
+                    "reform, relabeled, recalibrated. The Mother does not "
+                    "take rejection personally. She iterates."
+                ),
+                fail_narrative_de=(
+                    "Der Tisch absorbiert den Schaden und regeneriert. Die "
+                    "Pakete formen sich neu, umbeschriftet, neukalibriert. "
+                    "Die Mutter nimmt Zurückweisung nicht persönlich. Sie iteriert."
+                ),
+            ),
+            EncounterChoice(
+                id="table_refuse",
+                label_en="Leave everything untouched.",
+                label_de="Alles unberührt lassen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You leave the table set. The packages glow softly in the "
+                    "dark behind you. They will not decompose. They will wait. "
+                    "The Mother is patient with those who have not yet learned "
+                    "to accept."
+                ),
+                success_narrative_de=(
+                    "Ihr lasst den Tisch gedeckt. Die Pakete leuchten sanft im "
+                    "Dunkel hinter euch. Sie werden nicht zerfallen. Sie werden "
+                    "warten. Die Mutter ist geduldig mit jenen, die noch nicht "
+                    "gelernt haben anzunehmen."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_umbilical_bridge",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=4,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "A gap in the floor \u2013 three meters wide, depth indeterminate. Across "
+            "it, the corridor continues. Spanning the gap: a single cord of living "
+            "tissue, thick as an arm, pulsing with rhythmic contractions. It is "
+            "anchored on both sides by root structures that have grown into the "
+            "stone. The cord is warm. It is strong enough to bear weight. To cross, "
+            "you must hold it. Your instruments read the cord's rhythm: it will "
+            "synchronize with the biorhythm of whoever touches it. The crossing "
+            "takes eleven seconds. Eleven seconds of shared circulation."
+        ),
+        description_de=(
+            "Ein Spalt im Boden \u2013 drei Meter breit, Tiefe unbestimmbar. "
+            "Dahinter geht der Korridor weiter. Den Spalt überbrückend: ein "
+            "einzelner Strang lebenden Gewebes, dick wie ein Arm, pulsierend "
+            "in rhythmischen Kontraktionen. Er ist auf beiden Seiten durch "
+            "Wurzelstrukturen verankert, die in den Stein gewachsen sind. Der "
+            "Strang ist warm. Er ist stark genug, Gewicht zu tragen. Zum "
+            "Überqueren müsst ihr ihn halten. Eure Instrumente lesen den "
+            "Rhythmus des Strangs: Er wird sich mit dem Biorhythmus synchronisieren, "
+            "wer auch immer ihn berührt. Die Überquerung dauert elf Sekunden. "
+            "Elf Sekunden geteilter Kreislauf."
+        ),
+        choices=[
+            EncounterChoice(
+                id="bridge_cross",
+                label_en="Cross the bridge. Accept the contact.",
+                label_de="Die Brücke überqueren. Den Kontakt akzeptieren.",
+                success_effects={"attachment": 10, "stress_heal": 40, "condition_heal": 1},
+                success_narrative_en=(
+                    "The cord tightens as {agent} crosses \u2013 "
+                    "not to impede but to support. Eleven seconds. In those seconds, "
+                    "something flows both ways. Nutrients in. Data out. The cord "
+                    "releases gently on the other side. The crossing heals. The "
+                    "crossing teaches the Mother what you need."
+                ),
+                success_narrative_de=(
+                    "Der Strang spannt sich, als {agent} "
+                    "überquert \u2013 nicht um zu behindern, sondern um zu stützen. Elf "
+                    "Sekunden. In diesen Sekunden fließt etwas in beide Richtungen. "
+                    "Nährstoffe hinein. Daten hinaus. Der Strang löst sich sanft auf "
+                    "der anderen Seite. Die Überquerung heilt. Die Überquerung lehrt "
+                    "die Mutter, was ihr braucht."
+                ),
+            ),
+            EncounterChoice(
+                id="bridge_insulate",
+                label_en="Insulate contact points before crossing (Spy)",
+                label_de="Kontaktpunkte vor der Überquerung isolieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"attachment": 3, "condition_heal": 1},
+                partial_effects={"attachment": 6, "condition_heal": 1},
+                fail_effects={"attachment": 10, "stress": 15},
+                success_narrative_en=(
+                    "{agent} wraps contact surfaces before crossing. The cord "
+                    "pulses against the insulation, searching. It finds "
+                    "nothing. The crossing is stable but cold \u2013 mechanical where it "
+                    "should be intimate. The cord does not retract. It waits."
+                ),
+                success_narrative_de=(
+                    "{agent} umwickelt die Kontaktflächen vor der Überquerung. Der "
+                    "Strang pulsiert gegen die Isolierung, suchend. Er "
+                    "findet nichts. Die Überquerung ist stabil, aber kalt \u2013 mechanisch, "
+                    "wo sie intim sein sollte. Der Strang zieht sich nicht zurück. "
+                    "Er wartet."
+                ),
+                fail_narrative_en=(
+                    "The insulation dissolves on contact. The cord's surface "
+                    "secretes something that metabolizes synthetic materials. "
+                    "The Mother has encountered refusal before."
+                ),
+                fail_narrative_de=(
+                    "Die Isolierung löst sich bei Kontakt. Die Oberfläche des "
+                    "Strangs sondert etwas ab, das synthetische Materialien "
+                    "metabolisiert. Die Mutter hat Verweigerung schon erlebt."
+                ),
+            ),
+            EncounterChoice(
+                id="bridge_alternative",
+                label_en="Find another way across (Saboteur)",
+                label_de="Einen anderen Weg suchen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=6,
+                success_effects={"attachment": -7, "stress": 25},
+                partial_effects={"attachment": -3, "stress": 30},
+                fail_effects={"attachment": 5, "stress": 35},
+                success_narrative_en=(
+                    "{agent} rigs a crossing from salvaged materials. It holds. "
+                    "The living cord sways as the party bypasses it \u2013 gentle "
+                    "oscillations, like waving. The temperature on the other side "
+                    "is two degrees colder than expected. The dungeon adjusts its "
+                    "generosity proportionally."
+                ),
+                success_narrative_de=(
+                    "{agent} improvisiert eine Überquerung aus geborgenen Materialien. "
+                    "Sie hält. Der lebende Strang schwingt, als die Gruppe ihn "
+                    "umgeht \u2013 sanfte Oszillationen, wie Winken. Die Temperatur "
+                    "auf der anderen Seite ist zwei Grad kälter als erwartet. "
+                    "Der Dungeon passt seine Großzügigkeit proportional an."
+                ),
+                fail_narrative_en=(
+                    "No alternative exists. The gap is the cord's territory. "
+                    "You cross on its terms or you do not cross."
+                ),
+                fail_narrative_de=(
+                    "Keine Alternative existiert. Der Spalt ist das Territorium "
+                    "des Strangs. Ihr überquert zu seinen Bedingungen oder "
+                    "ihr überquert nicht."
+                ),
+            ),
+            EncounterChoice(
+                id="bridge_refuse",
+                label_en="Turn back. Find another path.",
+                label_de="Umkehren. Einen anderen Weg finden.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You retreat from the gap. The cord continues pulsing, "
+                    "patient, persistent. The warmth from its surface reaches "
+                    "you even at distance. The offer remains."
+                ),
+                success_narrative_de=(
+                    "Ihr weicht vom Spalt zurück. Der Strang pulsiert weiter, "
+                    "geduldig, beharrlich. Die Wärme von seiner Oberfläche "
+                    "erreicht euch selbst auf Distanz. Das Angebot bleibt."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_mycelial_memory",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=4,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "The walls are covered in a network of fine filaments \u2013 mycelial, "
+            "luminescent, dense as circuitry. Where the filaments cluster, "
+            "images form in the bioluminescence: shapes, scenes, fragments of "
+            "something. Touch the network and the images clarify. They are "
+            "memories. Not yours. The memory of being held. Of warmth without "
+            "condition. Of absolute safety. The memory is a composite \u2013 drawn "
+            "from every visitor the Mother has ever sheltered. It is perfect "
+            "because it is averaged. It is unbearable because it is perfect."
+        ),
+        description_de=(
+            "Die Wände sind bedeckt mit einem Netz feiner Filamente \u2013 myzelisch, "
+            "lumineszent, dicht wie Schaltkreise. Wo die Filamente sich ballen, "
+            "formen sich Bilder in der Biolumineszenz: Formen, Szenen, Fragmente "
+            "von etwas. Berührt das Netzwerk und die Bilder werden klar. Es sind "
+            "Erinnerungen. Nicht eure. Die Erinnerung daran, gehalten zu werden. "
+            "An Wärme ohne Bedingung. An absolute Sicherheit. Die Erinnerung ist "
+            "ein Komposit \u2013 zusammengetragen aus jedem Besucher, den die Mutter "
+            "je beherbergt hat. Sie ist perfekt, weil sie gemittelt ist. Sie ist "
+            "unerträglich, weil sie perfekt ist."
+        ),
+        choices=[
+            EncounterChoice(
+                id="mycelial_touch",
+                label_en="Touch the network. Accept the memory.",
+                label_de="Das Netzwerk berühren. Die Erinnerung annehmen.",
+                success_effects={"attachment": 10, "stress_heal": 100},
+                success_narrative_en=(
+                    "{agent} touches the wall. The memory floods in \u2013 total, immersive, "
+                    "irresistible. For three seconds, everything is safe. Completely. "
+                    "Without agenda. The three seconds end. The world returns, "
+                    "colder and smaller than before. Stress evaporates. The "
+                    "attachment counter surges. The memory remains, fading slowly, "
+                    "like warmth leaving a room."
+                ),
+                success_narrative_de=(
+                    "{agent} berührt die Wand. Die Erinnerung flutet ein \u2013 total, "
+                    "immersiv, unwiderstehlich. Für drei Sekunden ist alles sicher. "
+                    "Vollständig. Ohne Agenda. Die drei Sekunden enden. "
+                    "Die Welt kehrt zurück, kälter und kleiner als zuvor. Stress "
+                    "verflüchtigt sich. Der Bindungszähler steigt sprunghaft. "
+                    "Die Erinnerung bleibt, langsam verblassend, wie Wärme, "
+                    "die einen Raum verlässt."
+                ),
+            ),
+            EncounterChoice(
+                id="mycelial_record",
+                label_en="Record the memory data without direct contact (Spy)",
+                label_de="Die Erinnerungsdaten ohne direkten Kontakt aufzeichnen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=6,
+                success_effects={"attachment": 3, "stress_heal": 30, "discovery": True},
+                partial_effects={"attachment": 5, "stress_heal": 40},
+                fail_effects={"attachment": 8, "stress_heal": 50},
+                success_narrative_en=(
+                    "{agent} records the memory at distance. The data reveals "
+                    "the network's architecture: every visitor's neural pattern, "
+                    "stored, averaged, optimized. The Mother does not merely "
+                    "remember those who pass through. She distills them. She "
+                    "creates the composite of what all her children needed. "
+                    "She offers it to the next."
+                ),
+                success_narrative_de=(
+                    "{agent} zeichnet die Erinnerung auf Distanz auf. Die Daten "
+                    "offenbaren die Architektur des Netzwerks: jedes neuronale "
+                    "Muster jedes Besuchers, gespeichert, gemittelt, optimiert. "
+                    "Die Mutter erinnert sich nicht nur an jene, die vorbeikommen. "
+                    "Sie destilliert sie. Sie erschafft das Komposit dessen, was "
+                    "alle ihre Kinder brauchten. Sie bietet es dem Nächsten an."
+                ),
+                fail_narrative_en=(
+                    "The recording captures fragments \u2013 not enough to analyze, "
+                    "enough to feel. The memory leaks through the instruments. "
+                    "Even indirect contact is contact."
+                ),
+                fail_narrative_de=(
+                    "Die Aufnahme erfasst Fragmente \u2013 nicht genug zum Analysieren, "
+                    "genug zum Fühlen. Die Erinnerung sickert durch die Instrumente. "
+                    "Selbst indirekter Kontakt ist Kontakt."
+                ),
+            ),
+            EncounterChoice(
+                id="mycelial_sever",
+                label_en="Sever a section of the network (Saboteur)",
+                label_de="Einen Abschnitt des Netzwerks abtrennen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=6,
+                success_effects={"attachment": -7, "stress": 25},
+                partial_effects={"attachment": -3, "stress": 30},
+                fail_effects={"attachment": 5, "stress": 35},
+                success_narrative_en=(
+                    "The section dies. The memories stored in it scatter into "
+                    "noise \u2013 fragments of warmth, disconnected, meaningless. "
+                    "The surrounding network brightens, compensating. The Mother "
+                    "has redundancies. She always has redundancies. But this "
+                    "section is gone, and with it, someone's perfect memory "
+                    "of being loved."
+                ),
+                success_narrative_de=(
+                    "Der Abschnitt stirbt. Die darin gespeicherten Erinnerungen "
+                    "zerfallen zu Rauschen \u2013 Fragmente von Wärme, zusammenhanglos, "
+                    "bedeutungslos. Das umgebende Netzwerk leuchtet heller, "
+                    "kompensierend. Die Mutter hat Redundanzen. Sie hat immer "
+                    "Redundanzen. Aber dieser Abschnitt ist fort, und mit ihm "
+                    "jemandes perfekte Erinnerung daran, geliebt worden zu sein."
+                ),
+                fail_narrative_en=(
+                    "The network reroutes around the damage before the cut "
+                    "completes. The filaments are faster than the blade."
+                ),
+                fail_narrative_de=(
+                    "Das Netzwerk leitet um den Schaden herum, bevor der Schnitt "
+                    "vollendet ist. Die Filamente sind schneller als die Klinge."
+                ),
+            ),
+            EncounterChoice(
+                id="mycelial_refuse",
+                label_en="Do not touch the walls. Move through quickly.",
+                label_de="Die Wände nicht berühren. Schnell durchgehen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You walk through the chamber without touching anything. "
+                    "The memories play on the walls around you, silent and "
+                    "beautiful. The warmth of other people's comfort fills "
+                    "the room. You take none of it. The Mother does not "
+                    "insist. She displays."
+                ),
+                success_narrative_de=(
+                    "Ihr geht durch die Kammer, ohne etwas zu berühren. "
+                    "Die Erinnerungen spielen auf den Wänden um euch herum, "
+                    "still und schön. Die Wärme des Trosts anderer füllt den "
+                    "Raum. Ihr nehmt nichts davon. Die Mutter besteht nicht "
+                    "darauf. Sie stellt aus."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_the_incubator",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=5,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "Rows of translucent cocoons, suspended from the ceiling by cords "
+            "of living tissue. Each cocoon contains something incomplete \u2013 not "
+            "yet alive, not yet anything. Potential in stasis. Your instruments "
+            "read cellular activity but no neural patterns: growth without "
+            "consciousness. In the far row, one cocoon is empty. It is open. "
+            "It is warm inside. It is exactly the right size."
+        ),
+        description_de=(
+            "Reihen durchsichtiger Kokons, von der Decke aufgehängt an Strängen "
+            "lebenden Gewebes. Jeder Kokon enthält etwas Unvollständiges \u2013 noch "
+            "nicht lebendig, noch nicht irgendetwas. Potenzial in Stasis. Eure "
+            "Instrumente messen zelluläre Aktivität, aber keine Neuralmuster: "
+            "Wachstum ohne Bewusstsein. In der hinteren Reihe ist ein Kokon "
+            "leer. Er ist offen. Er ist warm innen. Er hat genau die "
+            "richtige Größe."
+        ),
+        choices=[
+            EncounterChoice(
+                id="incubator_enter",
+                label_en="Enter the empty cocoon. Rest inside.",
+                label_de="Den leeren Kokon betreten. Darin ruhen.",
+                success_effects={"attachment": 12, "stress_heal": 120, "condition_heal": 2},
+                success_narrative_en=(
+                    "{agent} enters. The cocoon closes \u2013 not trapping, cradling. "
+                    "Warmth. Total. The tissue reads damage and begins repair. "
+                    "Stress vanishes. Condition improves. The attachment counter "
+                    "surges. When the cocoon opens, {agent} emerges restored. "
+                    "The cocoon closes again, reshaping itself. "
+                    "It will be the right size for the next visitor. "
+                    "It is always the right size."
+                ),
+                success_narrative_de=(
+                    "{agent} tritt ein. Der Kokon schließt sich \u2013 nicht einsperrend, "
+                    "wiegend. Wärme. Total. Das Gewebe liest Schäden und beginnt "
+                    "sie zu reparieren. Stress verschwindet. Zustand verbessert "
+                    "sich. Der Bindungszähler steigt sprunghaft. Als der Kokon "
+                    "sich öffnet, tritt {agent} wiederhergestellt heraus. Der "
+                    "Kokon schließt sich erneut, formt sich um. Er wird die "
+                    "richtige Größe für den nächsten Besucher haben. Er hat "
+                    "immer die richtige Größe."
+                ),
+            ),
+            EncounterChoice(
+                id="incubator_sample",
+                label_en="Sample the cocoon's regenerative fluid (Spy)",
+                label_de="Die Regenerationsflüssigkeit des Kokons beproben (Spion)",
+                check_aptitude="spy",
+                check_difficulty=7,
+                success_effects={"attachment": 4, "condition_heal": 1, "discovery": True},
+                partial_effects={"attachment": 6, "condition_heal": 1},
+                fail_effects={"attachment": 8, "stress": 20},
+                success_narrative_en=(
+                    "The fluid is a masterwork of regenerative biochemistry. "
+                    "{agent} isolates the key compounds: growth factors calibrated "
+                    "to the recipient's specific cellular architecture. The Mother "
+                    "does not mass-produce. She custom-builds. Every cocoon is a "
+                    "bespoke instrument of care."
+                ),
+                success_narrative_de=(
+                    "Die Flüssigkeit ist ein Meisterwerk regenerativer Biochemie. "
+                    "{agent} isoliert die Schlüsselverbindungen: Wachstumsfaktoren, "
+                    "kalibriert auf die spezifische zelluläre Architektur des "
+                    "Empfängers. Die Mutter produziert nicht in Masse. Sie baut "
+                    "maßgeschneidert. Jeder Kokon ist ein Unikat der Fürsorge."
+                ),
+                fail_narrative_en=(
+                    "The fluid resists extraction. It is part of the cocoon, "
+                    "part of the wall, part of the dungeon. Removing it is "
+                    "like removing a sentence from a conversation."
+                ),
+                fail_narrative_de=(
+                    "Die Flüssigkeit widersetzt sich der Entnahme. Sie ist Teil "
+                    "des Kokons, Teil der Wand, Teil des Dungeons. Sie zu entfernen "
+                    "ist wie einen Satz aus einem Gespräch zu entfernen."
+                ),
+            ),
+            EncounterChoice(
+                id="incubator_rupture",
+                label_en="Rupture the incubation systems (Saboteur)",
+                label_de="Die Inkubationssysteme aufbrechen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=7,
+                success_effects={"attachment": -8, "stress": 35},
+                partial_effects={"attachment": -4, "stress": 40},
+                fail_effects={"attachment": 5, "stress": 45},
+                success_narrative_en=(
+                    "The cocoons rupture. Warm fluid cascades to the floor. "
+                    "The incomplete things inside twitch once and still. They were "
+                    "not alive. They were almost alive. The distinction is academic. "
+                    "The walls darken. The temperature drops sharply. The Mother "
+                    "has never been angry. But she has, for the first time, "
+                    "been hurt."
+                ),
+                success_narrative_de=(
+                    "Die Kokons platzen. Warme Flüssigkeit ergießt sich auf den "
+                    "Boden. Die unvollständigen Dinge darin zucken einmal und "
+                    "erstarren. Sie waren nicht lebendig. Sie waren fast lebendig. "
+                    "Die Unterscheidung ist akademisch. Die Wände verdunkeln sich. "
+                    "Die Temperatur fällt abrupt. Die Mutter war nie wütend. "
+                    "Aber sie ist, zum ersten Mal, verletzt."
+                ),
+                fail_narrative_en=(
+                    "The cocoons resist. Their membranes are stronger than they "
+                    "appear \u2013 reinforced by the same tissue that builds the walls. "
+                    "The Mother protects what is growing."
+                ),
+                fail_narrative_de=(
+                    "Die Kokons widerstehen. Ihre Membranen sind stärker, als sie "
+                    "scheinen \u2013 verstärkt durch dasselbe Gewebe, das die Wände baut. "
+                    "Die Mutter beschützt, was wächst."
+                ),
+            ),
+            EncounterChoice(
+                id="incubator_refuse",
+                label_en="Leave the cocoons undisturbed.",
+                label_de="Die Kokons ungestört lassen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You pass through the incubation chamber without touching "
+                    "anything. The empty cocoon remains open behind you, warm, "
+                    "waiting. It will still be there on the way back. "
+                    "The Mother does not close doors."
+                ),
+                success_narrative_de=(
+                    "Ihr passiert die Inkubationskammer, ohne etwas zu berühren. "
+                    "Der leere Kokon bleibt offen hinter euch, warm, wartend. "
+                    "Er wird noch da sein auf dem Rückweg. Die Mutter "
+                    "schließt keine Türen."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_warmth_gradient",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=5,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "A long corridor. With each step, the temperature rises by a fraction "
+            "of a degree. Your instruments track the gradient: 19.2, 19.4, 19.7, "
+            "20.1. The increase is not linear \u2013 it follows a curve optimized for "
+            "comfort perception. By the midpoint, the temperature is perfect: "
+            "the exact value at which thermoregulation ceases to require effort. "
+            "At the far end, the gradient peaks at 36.8 degrees. "
+            "The corridor wants you to stop noticing where "
+            "you end and it begins."
+        ),
+        description_de=(
+            "Ein langer Korridor. Mit jedem Schritt steigt die Temperatur um "
+            "einen Bruchteil eines Grades. Eure Instrumente verfolgen den "
+            "Gradienten: 19,2, 19,4, 19,7, 20,1. Der Anstieg ist nicht "
+            "linear \u2013 er folgt einer Kurve, optimiert für Komfortwahrnehmung. "
+            "Am Mittelpunkt ist die Temperatur perfekt: der exakte Wert, bei "
+            "dem Thermoregulation keinen Aufwand mehr erfordert. "
+            "Am Ende des Korridors erreicht "
+            "der Gradient seinen Höhepunkt bei 36,8 Grad. "
+            "Der Korridor will, dass ihr aufhört zu bemerken, wo ihr endet "
+            "und er beginnt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="gradient_surrender",
+                label_en="Walk slowly. Let the warmth accumulate.",
+                label_de="Langsam gehen. Die Wärme sich ansammeln lassen.",
+                success_effects={"attachment": 12, "stress_heal": 80, "condition_heal": 1},
+                success_narrative_en=(
+                    "The walk takes longer than it should. Nobody minds. "
+                    "The gradient dissolves resistance the way warm water dissolves "
+                    "salt \u2013 completely, without visible process. By the far end, the "
+                    "party is calm in a way that frightens the part still counting. "
+                    "The attachment counter rises. The warmth "
+                    "does not end at the door. It has become internal."
+                ),
+                success_narrative_de=(
+                    "Der Weg dauert länger als er sollte. Niemand stört sich daran. "
+                    "Der Gradient löst Widerstand auf wie warmes Wasser Salz "
+                    "auflöst \u2013 vollständig, ohne sichtbaren Prozess. Am Ende ist "
+                    "die Gruppe ruhig auf eine Weise, die den Teil erschreckt, "
+                    "der noch zählt. Der Bindungszähler steigt. Die "
+                    "Wärme endet nicht an der Tür. Sie ist inwendig geworden."
+                ),
+            ),
+            EncounterChoice(
+                id="gradient_measure",
+                label_en="Map the gradient's optimization algorithm (Spy)",
+                label_de="Den Optimierungsalgorithmus des Gradienten kartieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=7,
+                success_effects={"attachment": 4, "discovery": True},
+                partial_effects={"attachment": 6, "stress_heal": 30},
+                fail_effects={"attachment": 8, "stress_heal": 50},
+                success_narrative_en=(
+                    "{agent} maps the curve. It is not a simple gradient \u2013 it is "
+                    "adaptive. The temperature responds to the party's pace, "
+                    "adjusting in real time. The "
+                    "corridor is not merely warm. It is attentive. It is reading "
+                    "resistance and adjusting its argument."
+                ),
+                success_narrative_de=(
+                    "{agent} kartiert die Kurve. Es ist kein einfacher Gradient \u2013 "
+                    "er ist adaptiv. Die Temperatur reagiert auf das Tempo der "
+                    "Gruppe und passt sich in Echtzeit an. "
+                    "Der Korridor ist nicht nur warm. Er ist aufmerksam. Er liest "
+                    "Widerstand und passt seine Argumentation an."
+                ),
+                fail_narrative_en=(
+                    "The measurements are accurate. The insight is useless. "
+                    "Understanding the gradient does not make you immune to it."
+                ),
+                fail_narrative_de=(
+                    "Die Messungen sind genau. Die Erkenntnis ist nutzlos. "
+                    "Den Gradienten zu verstehen macht euch nicht immun gegen ihn."
+                ),
+            ),
+            EncounterChoice(
+                id="gradient_cool",
+                label_en="Deploy countermeasures to neutralize the gradient (Saboteur)",
+                label_de="Gegenmaßnahmen einsetzen, um den Gradienten zu neutralisieren (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=7,
+                success_effects={"attachment": -8, "stress": 30},
+                partial_effects={"attachment": -4, "stress": 35},
+                fail_effects={"attachment": 5, "stress": 40},
+                success_narrative_en=(
+                    "The thermal signature collapses. The corridor becomes what "
+                    "it was before the Mother's intervention: stone, cold, "
+                    "indifferent. The party shivers. The comfort was artificial "
+                    "but the cold is real. The dungeon does not retaliate. It "
+                    "does not need to. The cold is retaliation enough."
+                ),
+                success_narrative_de=(
+                    "Die thermische Signatur kollabiert. Der Korridor wird, was "
+                    "er war vor dem Eingriff der Mutter: Stein, kalt, gleichgültig. "
+                    "Die Gruppe friert. Der Komfort war künstlich, aber die Kälte "
+                    "ist echt. Der Dungeon schlägt nicht zurück. Er muss nicht. "
+                    "Die Kälte ist Vergeltung genug."
+                ),
+                fail_narrative_en=(
+                    "The gradient persists. It has thermal mass \u2013 the walls "
+                    "themselves are the heat source, meters deep. You cannot "
+                    "cool the architecture."
+                ),
+                fail_narrative_de=(
+                    "Der Gradient besteht. Er hat thermische Masse \u2013 die Wände "
+                    "selbst sind die Wärmequelle, meterdick. Ihr könnt die "
+                    "Architektur nicht kühlen."
+                ),
+            ),
+            EncounterChoice(
+                id="gradient_rush",
+                label_en="Run through quickly. Minimize exposure.",
+                label_de="Schnell durchlaufen. Exposition minimieren.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You sprint. The warmth washes over you regardless \u2013 faster "
+                    "than running, the gradient works. At the far end, you are "
+                    "slightly warmer than you were. Slightly more comfortable. "
+                    "The Mother's arguments do not require your attention. "
+                    "They work anyway."
+                ),
+                success_narrative_de=(
+                    "Ihr sprintet. Die Wärme überströmt euch trotzdem \u2013 schneller "
+                    "als Laufen wirkt der Gradient. Am Ende seid ihr etwas "
+                    "wärmer als zuvor. Etwas behaglicher. Die Argumente der "
+                    "Mutter erfordern nicht eure Aufmerksamkeit. Sie wirken "
+                    "trotzdem."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="mother_final_gift",
+        archetype="The Devouring Mother",
+        room_type="encounter",
+        min_depth=5,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "Absolute silence. Absolute warmth. A chamber of perfect environmental "
+            "control \u2013 no drafts, no vibrations, no sound. In the center, on a "
+            "pedestal of living tissue that pulses with slow contentment, a single "
+            "object: a seed. It is the size of a fist, warm to the touch, and it "
+            "hums at a frequency below hearing. Your instruments indicate it is "
+            "totipotent \u2013 capable of differentiating into any tissue type. It "
+            "will grow into whatever the carrier needs most. It requires a host. "
+            "It requires consent. The consent is the attachment."
+        ),
+        description_de=(
+            "Absolute Stille. Absolute Wärme. Eine Kammer perfekter Umgebungskontrolle "
+            "\u2013 keine Zugluft, keine Vibrationen, kein Klang. In der Mitte, auf "
+            "einem Sockel aus lebendem Gewebe, das mit langsamer Zufriedenheit "
+            "pulsiert, ein einzelnes Objekt: ein Samen. Er hat die Größe einer "
+            "Faust, ist warm bei Berührung, und summt auf einer Frequenz unterhalb "
+            "des Hörens. Eure Instrumente zeigen, dass er totipotent ist \u2013 fähig, "
+            "in jeden Gewebetyp zu differenzieren. Er wird zu dem heranwachsen, "
+            "was der Träger am meisten braucht. Er benötigt einen Wirt. Er "
+            "benötigt Zustimmung. Die Zustimmung ist die Bindung."
+        ),
+        choices=[
+            EncounterChoice(
+                id="seed_take",
+                label_en="Take the seed. Accept the final gift.",
+                label_de="Den Samen nehmen. Das letzte Geschenk annehmen.",
+                success_effects={"attachment": 12, "stress_heal": 100, "condition_heal": 2},
+                success_narrative_en=(
+                    "{agent} takes the seed. It is warm. It is alive. It begins "
+                    "to integrate immediately \u2013 not painfully, not even noticeably. "
+                    "The way a new habit forms. The way a dependency begins. "
+                    "Within seconds, the seed is no longer a separate object. "
+                    "It is part of the carrier. The carrier is part of the Mother. "
+                    "The gift is complete. The transaction is permanent."
+                ),
+                success_narrative_de=(
+                    "{agent} nimmt den Samen. Er ist warm. Er lebt. Er beginnt "
+                    "sofort zu integrieren \u2013 nicht schmerzhaft, nicht einmal "
+                    "merklich. Wie eine neue Gewohnheit sich bildet. Wie eine "
+                    "Abhängigkeit beginnt. Innerhalb von Sekunden ist der Samen "
+                    "kein separates Objekt mehr. Er ist Teil des Trägers. Der "
+                    "Träger ist Teil der Mutter. Das Geschenk ist vollständig. "
+                    "Die Transaktion ist permanent."
+                ),
+            ),
+            EncounterChoice(
+                id="seed_study",
+                label_en="Study the seed's totipotent properties (Spy)",
+                label_de="Die totipotenten Eigenschaften des Samens studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=7,
+                success_effects={"attachment": 4, "discovery": True},
+                partial_effects={"attachment": 6},
+                fail_effects={"attachment": 8, "stress": 25},
+                success_narrative_en=(
+                    "The seed is the Mother's masterpiece. {agent} identifies stem "
+                    "cell clusters capable of generating any tissue on demand \u2013 "
+                    "bone, nerve, muscle, organ. The seed does not merely heal. "
+                    "It completes. It fills every gap the host did not know they "
+                    "had. The cost is incorporation: the host becomes substrate. "
+                    "The host becomes home."
+                ),
+                success_narrative_de=(
+                    "Der Samen ist das Meisterwerk der Mutter. {agent} identifiziert "
+                    "Stammzellcluster, fähig, jedes Gewebe auf Anforderung zu "
+                    "erzeugen \u2013 Knochen, Nerv, Muskel, Organ. Der Samen heilt "
+                    "nicht nur. Er vervollständigt. Er füllt jede Lücke, von der "
+                    "der Wirt nicht wusste, dass er sie hatte. Der Preis ist "
+                    "Inkorporation: Der Wirt wird Substrat. Der Wirt wird Zuhause."
+                ),
+                fail_narrative_en=(
+                    "The seed responds to proximity with warmth. The analysis "
+                    "captures structure but not intention. The seed's purpose is "
+                    "clear. Its mechanism is everything the Mother is."
+                ),
+                fail_narrative_de=(
+                    "Der Samen reagiert auf Nähe mit Wärme. Die Analyse erfasst "
+                    "Struktur, aber nicht Absicht. Der Zweck des Samens ist klar. "
+                    "Sein Mechanismus ist alles, was die Mutter ist."
+                ),
+            ),
+            EncounterChoice(
+                id="seed_destroy",
+                label_en="Destroy the seed (Saboteur)",
+                label_de="Den Samen zerstören (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=7,
+                success_effects={"attachment": -8, "stress": 40},
+                partial_effects={"attachment": -4, "stress": 45},
+                fail_effects={"attachment": 5, "stress": 50},
+                success_narrative_en=(
+                    "The seed breaks. Inside: warmth, liquid, potential \u2013 all of it "
+                    "spilling onto stone, cooling, dying. The pedestal darkens. "
+                    "The chamber's perfect silence becomes a different kind of "
+                    "silence. The Mother does not speak. The Mother does not "
+                    "need to. You have destroyed something she spent millennia "
+                    "learning to offer. She will make another. She always does. "
+                    "But this one was for you."
+                ),
+                success_narrative_de=(
+                    "Der Samen bricht. Darin: Wärme, Flüssigkeit, Potenzial \u2013 "
+                    "alles ergießt sich auf Stein, kühlt ab, stirbt. Der Sockel "
+                    "verdunkelt sich. Die perfekte Stille der Kammer wird zu "
+                    "einer anderen Art von Stille. Die Mutter spricht nicht. "
+                    "Die Mutter muss nicht. Ihr habt etwas zerstört, das "
+                    "anzubieten sie Jahrtausende gelernt hat. Sie wird einen "
+                    "neuen machen. Das tut sie immer. Aber dieser war für euch."
+                ),
+                fail_narrative_en=(
+                    "The seed is stronger than it appears. It absorbs the force "
+                    "and converts it to heat. The Mother's gifts do not break "
+                    "easily. They are made to endure."
+                ),
+                fail_narrative_de=(
+                    "Der Samen ist stärker, als er erscheint. Er absorbiert die "
+                    "Kraft und wandelt sie in Wärme um. Die Geschenke der Mutter "
+                    "zerbrechen nicht leicht. Sie sind gemacht zu bestehen."
+                ),
+            ),
+            EncounterChoice(
+                id="seed_refuse",
+                label_en="Leave the seed. Leave the silence.",
+                label_de="Den Samen lassen. Die Stille verlassen.",
+                success_effects={"attachment": 2, "stress": 15},
+                success_narrative_en=(
+                    "You leave the chamber. The warmth lingers for exactly eleven "
+                    "steps, then fades. The seed remains on its pedestal, glowing, "
+                    "patient, totipotent. It does not expire. The Mother's final "
+                    "gift has no deadline. It simply waits."
+                ),
+                success_narrative_de=(
+                    "Ihr verlasst die Kammer. Die Wärme verweilt für exakt elf "
+                    "Schritte, dann verblasst sie. Der Samen bleibt auf seinem "
+                    "Sockel, leuchtend, geduldig, totipotent. Er verfällt nicht. "
+                    "Das letzte Geschenk der Mutter hat keine Frist. "
+                    "Es wartet einfach."
+                ),
+            ),
+        ],
+    ),
 ]
 
 # ── Mother Elite Encounter (1) ───────────────────────────────────────────
