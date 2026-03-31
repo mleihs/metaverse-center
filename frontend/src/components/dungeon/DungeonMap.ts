@@ -391,6 +391,61 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     const depths = [...new Set(rooms.map(r => r.depth))].sort((a, b) => a - b);
     const minDepth = depths[0] ?? 0;
 
+    // ── Pre-compute SVG content as svg tagged templates ──────────────
+    // Event bindings (@click, @keydown) on SVG elements only work inside
+    // svg tagged templates. Lit's html parser creates SVG child elements
+    // in the wrong namespace, silently dropping event bindings. All SVG
+    // children with expressions must therefore be built as svg`` results
+    // and injected as expressions into the html template's <svg>.
+
+    const depthLines = depths.map(d => {
+      const y = DEFAULT_MAP_CONFIG.padding + (d - minDepth) * DEFAULT_MAP_CONFIG.vGap;
+      return svg`<line
+        x1="0" y1=${y} x2=${layout.width} y2=${y}
+        class="depth-line" aria-hidden="true"
+      />`;
+    });
+
+    const edgesGroup = svg`<g aria-hidden="true">
+      ${layout.edges.map(edge => {
+        const src = posMap.get(edge.sourceIndex);
+        const tgt = posMap.get(edge.targetIndex);
+        if (!src || !tgt) return nothing;
+        return renderMapEdge({
+          x1: src.x, y1: src.y,
+          x2: tgt.x, y2: tgt.y,
+          nodeRadius: DEFAULT_MAP_CONFIG.nodeRadius,
+          foggy: edge.foggy,
+          justTraced: this._newlyTracedEdges.has(edge.key),
+        });
+      })}
+    </g>`;
+
+    const ripples = [...this._newlyRevealed].map(idx => {
+      const pos = posMap.get(idx);
+      if (!pos) return nothing;
+      return svg`<circle
+        cx=${pos.x} cy=${pos.y} r="30"
+        class="reveal-ripple" aria-hidden="true"
+      />`;
+    });
+
+    const nodesGroup = svg`<g>
+      ${layout.nodes.map(({ room, x, y }) => {
+        const isAdj = adjacentSet.has(room.index);
+        return renderMapNode({
+          room, x, y,
+          current: room.current,
+          adjacent: isAdj,
+          justRevealed: this._newlyRevealed.has(room.index),
+          depthHighlight: this._depthHighlight.has(room.index),
+          selected: this._selectedRoom?.index === room.index,
+          onClick: (r: RoomNodeClient) => this._handleNodeClick(r),
+          onDeselect: () => this._handleNodeDeselect(),
+        });
+      })}
+    </g>`;
+
     return html`
       ${heading}
       <div class="map-content" id="dungeon-map-content">
@@ -401,66 +456,13 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
           aria-label=${msg('Dungeon map')}
           preserveAspectRatio="xMidYMin meet"
         >
-          <!-- SVG Filter Definitions -->
           ${this._renderDefs()}
-
-          <!-- Topographic depth lines (subtle horizontal guides) -->
-          ${depths.map(d => {
-            const y = DEFAULT_MAP_CONFIG.padding + (d - minDepth) * DEFAULT_MAP_CONFIG.vGap;
-            return svg`<line
-              x1="0" y1=${y} x2=${layout.width} y2=${y}
-              class="depth-line"
-              aria-hidden="true"
-            />`;
-          })}
-
-          <!-- Edges (render functions, not custom elements — SVG namespace) -->
-          <g aria-hidden="true">
-            ${layout.edges.map(edge => {
-              const src = posMap.get(edge.sourceIndex);
-              const tgt = posMap.get(edge.targetIndex);
-              if (!src || !tgt) return nothing;
-              return renderMapEdge({
-                x1: src.x, y1: src.y,
-                x2: tgt.x, y2: tgt.y,
-                nodeRadius: DEFAULT_MAP_CONFIG.nodeRadius,
-                foggy: edge.foggy,
-                justTraced: this._newlyTracedEdges.has(edge.key),
-              });
-            })}
-          </g>
-
-          <!-- Reveal ripple rings (appear behind nodes) -->
-          ${[...this._newlyRevealed].map(idx => {
-            const pos = posMap.get(idx);
-            if (!pos) return nothing;
-            return svg`<circle
-              cx=${pos.x} cy=${pos.y}
-              r="30"
-              class="reveal-ripple"
-              aria-hidden="true"
-            />`;
-          })}
-
-          <!-- Nodes (render functions, not custom elements — SVG namespace) -->
-          <g>
-            ${layout.nodes.map(({ room, x, y }) => {
-              const isAdj = adjacentSet.has(room.index);
-              return renderMapNode({
-                room, x, y,
-                current: room.current,
-                adjacent: isAdj,
-                justRevealed: this._newlyRevealed.has(room.index),
-                depthHighlight: this._depthHighlight.has(room.index),
-                selected: this._selectedRoom?.index === room.index,
-                onClick: (r) => this._handleNodeClick(r),
-                onDeselect: () => this._handleNodeDeselect(),
-              });
-            })}
-          </g>
+          ${depthLines}
+          ${edgesGroup}
+          ${ripples}
+          ${nodesGroup}
         </svg>
 
-        <!-- Room detail panel (HTML context, below SVG) -->
         ${this._renderRoomPanel(adjacentSet)}
       </div>
     `;
