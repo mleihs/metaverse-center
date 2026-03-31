@@ -28,6 +28,326 @@ class AnchorTextResult(TypedDict):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# ── Entrance Texts — Per-archetype atmosphere pool ───────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 5 variants per archetype. One chosen at random per run in create_run().
+# Literary rules follow the same authoring guidelines as anchor objects.
+# ─────────────────────────────────────────────────────────────────────────────
+
+ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
+    "The Shadow": [
+        {
+            "text_en": (
+                "The threshold yields without resistance."
+                " Beyond it, the darkness is not empty \u2013 it is attentive."
+                " The instruments register nothing. Not zero. Nothing."
+                " As if measurement itself requires permission here."
+            ),
+            "text_de": (
+                "Die Schwelle gibt widerstandslos nach."
+                " Dahinter ist die Dunkelheit nicht leer \u2013 sie ist aufmerksam."
+                " Die Instrumente registrieren nichts. Nicht Null. Nichts."
+                " Als br\u00e4uchte das Messen selbst hier eine Erlaubnis."
+            ),
+        },
+        {
+            "text_en": (
+                "The air changes at the threshold. Not colder \u2013 denser."
+                " Sound travels differently here: further, and in directions"
+                " that should not exist. Something exhales in the distance."
+                " It has been holding its breath."
+            ),
+            "text_de": (
+                "Die Luft ver\u00e4ndert sich an der Schwelle. Nicht k\u00e4lter \u2013 dichter."
+                " Schall breitet sich hier anders aus: weiter, und in Richtungen,"
+                " die es nicht geben sollte. Etwas atmet in der Ferne aus."
+                " Es hat den Atem angehalten."
+            ),
+        },
+        {
+            "text_en": (
+                "The descent begins. The last light does not fade \u2013"
+                " it is consumed, methodically, as if the darkness were"
+                " cataloguing what it has taken."
+                " Your shadows arrive before you do."
+            ),
+            "text_de": (
+                "Der Abstieg beginnt. Das letzte Licht verblasst nicht \u2013"
+                " es wird verzehrt, methodisch, als w\u00fcrde die Dunkelheit"
+                " katalogisieren, was sie genommen hat."
+                " Eure Schatten kommen vor euch an."
+            ),
+        },
+        {
+            "text_en": (
+                "Silence. Not the silence of emptiness \u2013"
+                " the silence of something listening."
+                " The walls absorb your footsteps"
+                " and return them a fraction of a second later."
+                " The echo is learning your rhythm."
+            ),
+            "text_de": (
+                "Stille. Nicht die Stille der Leere \u2013"
+                " die Stille von etwas, das zuh\u00f6rt."
+                " Die W\u00e4nde absorbieren eure Schritte"
+                " und geben sie einen Sekundenbruchteil sp\u00e4ter zur\u00fcck."
+                " Das Echo lernt euren Rhythmus."
+            ),
+        },
+        {
+            "text_en": (
+                "A gap in the architecture. The corridor opens"
+                " into a space that your instruments insist is small"
+                " but your instincts know is vast."
+                " The darkness here has weight. It has patience."
+                " It has been here longer than the walls."
+            ),
+            "text_de": (
+                "Eine L\u00fccke in der Architektur. Der Korridor \u00f6ffnet sich"
+                " in einen Raum, den eure Instrumente als klein bezeichnen,"
+                " den eure Instinkte aber als riesig kennen."
+                " Die Dunkelheit hier hat Gewicht. Sie hat Geduld."
+                " Sie ist l\u00e4nger hier als die W\u00e4nde."
+            ),
+        },
+    ],
+    "The Tower": [
+        {
+            "text_en": (
+                "The lobby is pristine. Too pristine."
+                " The reception desk is unmanned, the ledger open to today's date."
+                " Someone has been expected."
+                " The elevator indicators read floors that should not exist."
+            ),
+            "text_de": (
+                "Die Lobby ist makellos. Zu makellos."
+                " Der Empfangstresen ist unbesetzt, das Hauptbuch auf dem heutigen Datum aufgeschlagen."
+                " Jemand wurde erwartet."
+                " Die Fahrstuhlanzeigen zeigen Stockwerke, die nicht existieren sollten."
+            ),
+        },
+        {
+            "text_en": (
+                "The revolving door deposits you into a foyer"
+                " that smells of floor wax and compounding interest."
+                " A clock on the wall runs backward."
+                " The building does not acknowledge this as unusual."
+            ),
+            "text_de": (
+                "Die Dreht\u00fcr setzt euch in einem Foyer ab,"
+                " das nach Bodenwachs und Zinseszins riecht."
+                " Eine Uhr an der Wand l\u00e4uft r\u00fcckw\u00e4rts."
+                " Das Geb\u00e4ude erkennt daran nichts Ungew\u00f6hnliches."
+            ),
+        },
+        {
+            "text_en": (
+                "Ground floor. The architecture is reasonable here \u2013"
+                " load-bearing walls where they should be,"
+                " exits where regulation demands them."
+                " This will not last."
+                " The building is only polite on the ground floor."
+            ),
+            "text_de": (
+                "Erdgeschoss. Die Architektur ist hier vern\u00fcnftig \u2013"
+                " Tragw\u00e4nde, wo sie sein sollten,"
+                " Ausg\u00e4nge, wo die Vorschrift sie verlangt."
+                " Das wird nicht anhalten."
+                " Das Geb\u00e4ude ist nur im Erdgeschoss h\u00f6flich."
+            ),
+        },
+        {
+            "text_en": (
+                "A placard by the entrance reads:"
+                " 'This building has been inspected and found structurally sound.'"
+                " The date has been scratched out. The inspector's name"
+                " has been replaced with a floor number."
+            ),
+            "text_de": (
+                "Ein Schild am Eingang lautet:"
+                " \u00bbDieses Geb\u00e4ude wurde gepr\u00fcft und f\u00fcr strukturell einwandfrei befunden.\u00ab"
+                " Das Datum wurde ausgekratzt. Der Name des Pr\u00fcfers"
+                " durch eine Stockwerknummer ersetzt."
+            ),
+        },
+        {
+            "text_en": (
+                "The foundation hums. A low, structural vibration"
+                " that travels upward through the soles."
+                " Not mechanical. Organic."
+                " The building is aware that you have entered."
+                " It adjusts."
+            ),
+            "text_de": (
+                "Das Fundament brummt. Eine tiefe, strukturelle Vibration,"
+                " die durch die Sohlen nach oben wandert."
+                " Nicht mechanisch. Organisch."
+                " Das Geb\u00e4ude wei\u00df, dass ihr eingetreten seid."
+                " Es passt sich an."
+            ),
+        },
+    ],
+    "The Entropy": [
+        {
+            "text_en": (
+                "The entrance is indistinct. Not ruined \u2013 reduced."
+                " The walls retain the memory of colour without the colour itself."
+                " The air tastes of averaged everything."
+                " Somewhere ahead, a distinction is being quietly dissolved."
+            ),
+            "text_de": (
+                "Der Eingang ist unbestimmt. Nicht zerst\u00f6rt \u2013 reduziert."
+                " Die W\u00e4nde bewahren die Erinnerung an Farbe ohne die Farbe selbst."
+                " Die Luft schmeckt nach dem Durchschnitt von allem."
+                " Irgendwo voraus wird eine Unterscheidung leise aufgel\u00f6st."
+            ),
+        },
+        {
+            "text_en": (
+                "You enter. Or the room receives you."
+                " The distinction is already softer than it should be."
+                " The threshold is the same material as the floor."
+                " The floor is the same temperature as the air."
+            ),
+            "text_de": (
+                "Ihr tretet ein. Oder der Raum empf\u00e4ngt euch."
+                " Die Unterscheidung ist bereits weicher, als sie sein sollte."
+                " Die Schwelle besteht aus demselben Material wie der Boden."
+                " Der Boden hat dieselbe Temperatur wie die Luft."
+            ),
+        },
+        {
+            "text_en": (
+                "The corridor ahead is visible. Featureless."
+                " Not stripped \u2013 equalized."
+                " Every surface approaches the same shade."
+                " The instruments confirm what the instruments measure."
+                " They do not confirm what the instruments mean."
+            ),
+            "text_de": (
+                "Der Korridor voraus ist sichtbar. Merkmalslos."
+                " Nicht entbl\u00f6\u00dft \u2013 angeglichen."
+                " Jede Fl\u00e4che n\u00e4hert sich demselben Farbton."
+                " Die Instrumente best\u00e4tigen, was die Instrumente messen."
+                " Sie best\u00e4tigen nicht, was die Instrumente bedeuten."
+            ),
+        },
+        {
+            "text_en": (
+                "A room. Probably the first."
+                " The ordinal is already uncertain."
+                " There are walls. There is a floor."
+                " The ceiling is the same distance from both."
+            ),
+            "text_de": (
+                "Ein Raum. Wahrscheinlich der erste."
+                " Die Ordnungszahl ist bereits unsicher."
+                " Es gibt W\u00e4nde. Es gibt einen Boden."
+                " Die Decke hat von beiden denselben Abstand."
+            ),
+        },
+        {
+            "text_en": (
+                "The information here is precise."
+                " Temperature: ambient. Humidity: ambient."
+                " Threat level: ambient."
+                " Everything is ambient. That is the threat."
+            ),
+            "text_de": (
+                "Die Informationen hier sind pr\u00e4zise."
+                " Temperatur: Umgebung. Luftfeuchtigkeit: Umgebung."
+                " Bedrohungsstufe: Umgebung."
+                " Alles ist Umgebung. Das ist die Bedrohung."
+            ),
+        },
+    ],
+    "The Devouring Mother": [
+        {
+            "text_en": (
+                "The passage opens. Not like a door \u2013 like an invitation."
+                " The walls are warm. The floor yields slightly underfoot, accommodating."
+                " The air carries a scent that is not unpleasant, not identifiable,"
+                " but somehow familiar. Something here has been waiting. Patiently. Fondly."
+            ),
+            "text_de": (
+                "Der Durchgang \u00f6ffnet sich. Nicht wie eine T\u00fcr \u2013 wie eine Einladung."
+                " Die W\u00e4nde sind warm. Der Boden gibt leicht nach, entgegenkommend."
+                " Die Luft tr\u00e4gt einen Duft, der nicht unangenehm ist, nicht bestimmbar,"
+                " aber irgendwie vertraut. Etwas hier hat gewartet. Geduldig. Liebevoll."
+            ),
+        },
+        {
+            "text_en": (
+                "Warmth. Immediate and specific."
+                " Not the warmth of a climate system"
+                " \u2013 the warmth of proximity. Of being expected."
+                " The tissue-walls contract gently as you enter."
+                " A welcome. Or an embrace that has not yet decided to let go."
+            ),
+            "text_de": (
+                "W\u00e4rme. Unmittelbar und spezifisch."
+                " Nicht die W\u00e4rme einer Klimaanlage"
+                " \u2013 die W\u00e4rme von N\u00e4he. Von Erwartetsein."
+                " Die Gewebew\u00e4nde ziehen sich sanft zusammen, als ihr eintretet."
+                " Ein Willkommen. Oder eine Umarmung, die noch nicht beschlossen hat loszulassen."
+            ),
+        },
+        {
+            "text_en": (
+                "The entrance smells of growth."
+                " Not the sharp green of new shoots \u2013"
+                " the deep, humid warmth of things that have been growing"
+                " for a long time in the dark."
+                " The walls pulse. Once. As if acknowledging your arrival."
+            ),
+            "text_de": (
+                "Der Eingang riecht nach Wachstum."
+                " Nicht das scharfe Gr\u00fcn neuer Triebe \u2013"
+                " die tiefe, feuchte W\u00e4rme von Dingen, die lange"
+                " im Dunkeln gewachsen sind."
+                " Die W\u00e4nde pulsieren. Einmal. Als w\u00fcrden sie eure Ankunft zur Kenntnis nehmen."
+            ),
+        },
+        {
+            "text_en": (
+                "The corridor narrows. Not threatening \u2013 intimate."
+                " The dimensions suggest that this space was grown,"
+                " not built, and grown for a specific number of occupants."
+                " Your number. The fit is perfect."
+                " That should concern you more than it does."
+            ),
+            "text_de": (
+                "Der Korridor verengt sich. Nicht bedrohlich \u2013 intim."
+                " Die Ma\u00dfe legen nahe, dass dieser Raum gewachsen ist,"
+                " nicht gebaut, und gewachsen f\u00fcr eine bestimmte Anzahl von Bewohnern."
+                " Eure Anzahl. Die Passform ist perfekt."
+                " Das sollte euch mehr beunruhigen, als es das tut."
+            ),
+        },
+        {
+            "text_en": (
+                "Something is humming behind the walls."
+                " Low. Rhythmic. Biological."
+                " It is not a machine. It is not music."
+                " It is the sound a living thing makes"
+                " when it is content. When it is fed."
+                " When it is about to be fed again."
+            ),
+            "text_de": (
+                "Etwas summt hinter den W\u00e4nden."
+                " Tief. Rhythmisch. Biologisch."
+                " Es ist keine Maschine. Es ist keine Musik."
+                " Es ist das Ger\u00e4usch, das ein lebendiges Wesen macht,"
+                " wenn es zufrieden ist. Wenn es gef\u00fcttert wurde."
+                " Wenn es gleich wieder gef\u00fcttert wird."
+            ),
+        },
+    ],
+}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # ── Objektanker: Variation C — "Wandernde Dinge" ─────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════════
 #

@@ -403,6 +403,7 @@ export interface DungeonRunDetailResponse extends DungeonRunResponse {
 export interface CreateRunResponse {
   run: DungeonRunResponse;
   state: DungeonClientState;
+  entrance_text?: { text_en: string; text_de: string } | null;
 }
 
 /** Anchor object text entry (Objektanker Variation C). */

@@ -263,13 +263,12 @@ export async function startDungeonRun(
       return [errorLine(resp.error?.message ?? msg('Failed to create dungeon run.'))];
     }
 
-    const { run, state } = resp.data;
+    const { run, state, entrance_text } = resp.data;
     dungeonState.applyState(state);
     terminalState.clearOutput();
     terminalState.initializeDungeon(String(run.id), state.archetype);
 
-    // Atmosphere text from archetype config (placeholder for now)
-    const atmosphereText = '';
+    const atmosphereText = entrance_text?.text_en ?? '';
 
     return formatDungeonEntry(state, atmosphereText);
   } catch (err) {

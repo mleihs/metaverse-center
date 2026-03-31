@@ -47,16 +47,10 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "propagandist": "medium",
         },
         # Atmosphere text for terminal
-        "atmosphere_enter_en": (
-            "You descend into absolute darkness. The terminal flickers.\n\n"
-            "The shadows here are not the absence of light \u2014 they are the presence\n"
-            "of something else. Your instruments read nothing."
-        ),
-        "atmosphere_enter_de": (
-            "Ihr steigt in absolute Dunkelheit hinab. Das Terminal flackert.\n\n"
-            "Die Schatten hier sind nicht die Abwesenheit von Licht \u2014 sie sind die Anwesenheit\n"
-            "von etwas anderem. Eure Instrumente zeigen nichts an."
-        ),
+        # Entrance atmosphere text — legacy single text (superseded by ENTRANCE_TEXTS pool
+        # in dungeon_objektanker.py which provides multiple variants per archetype).
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     # ── The Tower (Phase 1) ───────────────────────────────────────────────────
     "The Tower": {
@@ -103,18 +97,9 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "assassin": 8,
             "infiltrator": 10,
         },
-        "atmosphere_enter_en": (
-            "Vertigo. The building leans. Numbers cascade down walls like stock\n"
-            "tickers counting toward zero. The floor counter reads 100.\n\n"
-            "The structure groans. Not from wind \u2014 from weight. From the accumulated\n"
-            "mass of every promise this tower was built on, coming due simultaneously."
-        ),
-        "atmosphere_enter_de": (
-            "Schwindel. Das Gebäude neigt sich. Zahlen rinnen die Wände herab wie\n"
-            "Kursticker, die gegen Null zählen. Der Stockwerkzähler zeigt 100.\n\n"
-            "Die Struktur ächzt. Nicht vom Wind \u2014 vom Gewicht. Von der akkumulierten\n"
-            "Masse jedes Versprechens, auf dem dieser Turm gebaut wurde, fällig werdend zugleich."
-        ),
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     # ── The Devouring Mother ────────────────────────────────────────────────
     "The Devouring Mother": {
@@ -182,22 +167,9 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "assassin": 10,
             "infiltrator": 5,
         },
-        "atmosphere_enter_en": (
-            "Warmth. The air carries it like a gift \u2014 not the sterile warmth of\n"
-            "climate control but the warmth of something alive, something that\n"
-            "has been waiting for you specifically.\n\n"
-            "The walls are soft. Organic. Your instruments read biological mass\n"
-            "in every direction. The parasitic attachment counter reads 0.\n"
-            "The dungeon reads 'welcome.'"
-        ),
-        "atmosphere_enter_de": (
-            "Wärme. Die Luft trägt sie wie ein Geschenk \u2014 nicht die sterile\n"
-            "Wärme einer Klimaanlage, sondern die Wärme von etwas Lebendigem,\n"
-            "etwas, das auf euch gewartet hat. Auf euch im Besonderen.\n\n"
-            "Die Wände sind weich. Organisch. Eure Instrumente messen biologische\n"
-            "Masse in jeder Richtung. Der Bindungszähler zeigt 0.\n"
-            "Der Dungeon liest: \u00bbWillkommen.\u00ab"
-        ),
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     # ── Stubbed archetypes (Phase 2+) ──────────────────────────────────────
     "The Deluge": {
@@ -290,19 +262,9 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "assassin": 8,
             "infiltrator": 7,
         },
-        "atmosphere_enter_en": (
-            "The air is the same temperature as the walls. The walls are the\n"
-            "same color as the floor. The floor is the same texture as the silence.\n\n"
-            "Your instruments work. They confirm that everything is becoming\n"
-            "everything else. The decay counter reads 0. It will not read 0 again."
-        ),
-        "atmosphere_enter_de": (
-            "Die Luft hat die gleiche Temperatur wie die Wände. Die Wände haben\n"
-            "die gleiche Farbe wie der Boden. Der Boden hat die gleiche Textur\n"
-            "wie die Stille.\n\n"
-            "Eure Instrumente funktionieren. Sie bestätigen, dass alles zu allem\n"
-            "anderen wird. Der Verfallszähler zeigt 0. Er wird nicht wieder 0 zeigen."
-        ),
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
 }
 

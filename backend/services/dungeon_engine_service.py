@@ -510,9 +510,16 @@ class DungeonEngineService:
             extra=_log_extra(instance, depth=depth, party_size=len(party)),
         )
 
+        # Select random entrance atmosphere text from pool
+        from backend.services.dungeon.dungeon_objektanker import ENTRANCE_TEXTS
+
+        entrance_pool = ENTRANCE_TEXTS.get(archetype, [])
+        entrance_text = random.choice(entrance_pool) if entrance_pool else None
+
         return {
             "run": DungeonRunResponse(**run).model_dump(),
             "state": cls._build_client_state(instance).model_dump(),
+            "entrance_text": entrance_text,
         }
 
     # ── Room Movement ───────────────────────────────────────────────────
