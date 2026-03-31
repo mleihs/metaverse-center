@@ -3,6 +3,7 @@
 import logging
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import HTTPException, status
 
 from backend.services.epoch_service import EpochService
@@ -231,6 +232,8 @@ class EpochChatService:
                     result["new_cycle"] = epoch_data.get("current_cycle", 1)
                 except Exception:  # noqa: BLE001 — auto-resolve is best-effort, must not crash toggle_ready
                     logger.exception("Auto-resolve failed", extra={"epoch_id": str(epoch_id)})
+                    sentry_sdk.capture_exception()
+                    result["auto_resolve_error"] = True
 
         return result
 

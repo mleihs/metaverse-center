@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
 
+from backend.services.constants import OPERATIVE_TARGET_TYPE
+
 # ── Scoring Dimensions (canonical list) ──────────────────────────
 
 SCORING_DIMENSIONS: list[str] = [
@@ -219,6 +221,27 @@ class OperativeDeploy(BaseModel):
     target_entity_id: UUID | None = None
     target_entity_type: Literal["building", "agent", "embassy", "zone"] | None = None
     target_zone_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def _validate_target_entity(self) -> "OperativeDeploy":
+        has_id = self.target_entity_id is not None
+        has_type = self.target_entity_type is not None
+        if has_id != has_type:
+            raise ValueError(
+                "target_entity_id and target_entity_type must both be set or both be omitted"
+            )
+        if has_type:
+            expected = OPERATIVE_TARGET_TYPE.get(self.operative_type, "none")
+            if expected == "none":
+                raise ValueError(
+                    f"{self.operative_type} operatives do not accept target entities"
+                )
+            if self.target_entity_type != expected:
+                raise ValueError(
+                    f"{self.operative_type} requires target_entity_type='{expected}', "
+                    f"got '{self.target_entity_type}'"
+                )
+        return self
 
 
 class MissionResponse(BaseModel):

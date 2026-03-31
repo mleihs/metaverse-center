@@ -693,7 +693,12 @@ class OperativeMissionService:
 
     @classmethod
     async def _apply_spy_effect(cls, supabase: Client, mission: dict) -> dict:
-        """Spy: gather intel on target simulation (zone security + guardian count)."""
+        """Spy: gather intel on target simulation.
+
+        Returns zone security, guardian count, building inventory, and agent
+        roster.  The building/agent data enables targeted saboteur and
+        assassin follow-up missions (reconnaissance → strike chain).
+        """
         target_sim_id = mission.get("target_simulation_id")
         intel = {}
         if target_sim_id:
@@ -711,6 +716,18 @@ class OperativeMissionService:
                 .eq("status", "active")
                 .execute()
             )
+            buildings_resp = await (
+                supabase.table("buildings")
+                .select("id, name, building_condition")
+                .eq("simulation_id", target_sim_id)
+                .execute()
+            )
+            agents_resp = await (
+                supabase.table("agents")
+                .select("id, name")
+                .eq("simulation_id", target_sim_id)
+                .execute()
+            )
             zones_data = zones_resp.data or []
             zone_levels = [z["security_level"] for z in zones_data]
             zone_details = [
@@ -718,10 +735,20 @@ class OperativeMissionService:
                 for z in zones_data
             ]
             guardian_count = guardian_resp.count or 0
+            buildings_data = buildings_resp.data or []
+            agents_data = agents_resp.data or []
             intel: dict = {
                 "zone_security": zone_levels,
                 "zone_details": zone_details,
                 "guardian_count": guardian_count,
+                "building_ids": [b["id"] for b in buildings_data],
+                "building_count": len(buildings_data),
+                "buildings": [
+                    {"id": b["id"], "name": b["name"], "condition": b["building_condition"]}
+                    for b in buildings_data
+                ],
+                "agent_ids": [a["id"] for a in agents_data],
+                "agent_count": len(agents_data),
             }
 
             # Check for zone fortifications in target simulation
@@ -767,6 +794,7 @@ class OperativeMissionService:
                 cycle,
                 "intel_report",
                 f"Spy intel: {guardian_count} guardians, "
+                f"{len(buildings_data)} buildings, {len(agents_data)} agents, "
                 f"zones: {', '.join(f'{z['name']}: {z['security_level']}' for z in zone_details)}",
                 source_simulation_id=UUID(mission["source_simulation_id"]),
                 target_simulation_id=UUID(target_sim_id),

@@ -14,6 +14,7 @@ import sys
 import time
 import traceback
 from collections import defaultdict
+from dataclasses import dataclass, field
 
 import httpx
 
@@ -50,6 +51,25 @@ ADMIN_PASSWORD = os.environ.get("PLATFORM_ADMIN_PASSWORD", "met123")
 _TEST_PASSWORD = "sim-test-pw-2026"  # noqa: S105 — test harness only, never production
 
 
+@dataclass
+class IntelSnapshot:
+    """What a player knows about one opponent from spy reconnaissance.
+
+    Defaults assume the worst (buildings/agents exist) so that strategies
+    without intel still attempt offensive operations.  Once a spy succeeds,
+    ``scouted`` flips to True and the fields reflect actual recon data.
+    """
+
+    guardian_count: int = 0
+    zone_security: list = field(default_factory=list)
+    building_ids: list = field(default_factory=list)
+    agent_ids: list = field(default_factory=list)
+    has_buildings: bool = True   # assume true when unscouted
+    has_agents: bool = True      # assume true when unscouted
+    scouted: bool = False
+    last_spy_cycle: int = -1
+
+
 class Player:
     def __init__(self, tag, sim_id, token):
         self.tag = tag
@@ -61,6 +81,7 @@ class Player:
         self.rp, self.guardians = 0, 0
         self.deployed_agents = set()
         self.aptitudes = {}  # agent_id → {spy: int, guardian: int, ...}
+        self.intel: dict[str, IntelSnapshot] = {}  # target_tag → recon snapshot
 
     def headers(self):
         return {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
@@ -100,7 +121,7 @@ def set_active_tags(tags):
 # Flat stat keys: per-player int counters
 _FLAT_STAT_KEYS = [
     "deployed", "success", "detected", "failed", "guardians",
-    "ci_sweeps", "rp_spent", "ci_caught", "rp_remaining",
+    "ci_sweeps", "rp_spent", "ci_caught", "rp_remaining", "intel_gathered",
 ]
 # Nested stat keys: per-player dicts of {op_type: count}
 _NESTED_STAT_KEYS = ["deployed_by_type", "success_by_type", "detected_by_type", "failed_by_type"]
@@ -650,7 +671,8 @@ def deploy(epoch_id, player, op_type, target_tag, players,
         if target_entity_id:
             body["target_entity_id"] = target_entity_id
             body["target_entity_type"] = target_entity_type
-        detail = f"{agent_name} (apt:{apt_level}) → {target_tag} ({op_type}, RP:{player.rp})"
+        tgt = f", target:{target_entity_type}" if target_entity_id else ""
+        detail = f"{agent_name} (apt:{apt_level}) → {target_tag} ({op_type}, RP:{player.rp}{tgt})"
 
     resp = api("POST", f"/api/v1/epochs/{epoch_id}/operatives?simulation_id={player.instance_id}",
                player, json=body)
@@ -727,6 +749,23 @@ def resolve_and_score(epoch_id, admin, cycle, players):
             action_log(cycle, "resolve", tag, f"outcome_{op_type}",
                        f"→{target_tag} prob={prob}", f"SUCCESS {effect}",
                        op_type=op_type, prob=prob, target=target_tag)
+            # Spy success → update intel snapshot for the attacker
+            if op_type == "spy" and target_tag != "?":
+                spy_intel = mr.get("intel", {})
+                if spy_intel:
+                    snap = players[tag].intel.get(target_tag)
+                    if snap is None:
+                        snap = IntelSnapshot()
+                        players[tag].intel[target_tag] = snap
+                    snap.scouted = True
+                    snap.last_spy_cycle = cycle
+                    snap.guardian_count = spy_intel.get("guardian_count", 0)
+                    snap.zone_security = spy_intel.get("zone_security", [])
+                    snap.building_ids = spy_intel.get("building_ids", [])
+                    snap.agent_ids = spy_intel.get("agent_ids", [])
+                    snap.has_buildings = len(snap.building_ids) > 0
+                    snap.has_agents = len(snap.agent_ids) > 0
+                    STATS["intel_gathered"][tag] += 1
         elif outcome == "detected":
             STATS["detected"][tag] += 1
             by_type = STATS["detected_by_type"][tag]
@@ -926,6 +965,13 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_de
         "tags": tags,
     }
 
+    # Determine winner tag from leaderboard (first entry = highest composite)
+    winner_tag = None
+    if leaderboard:
+        winner_sim = leaderboard[0].get("simulation_id", "")
+        winner_tag = next((t for t, p in players.items() if p.instance_id == winner_sim), None)
+    result["winner_tag"] = winner_tag
+
     # Store structured game definition for machine-parseable analysis (P3.1)
     if game_def is not None:
         result["config"] = game_def["config"]
@@ -933,6 +979,7 @@ def finish_game(epoch_id, admin, players, game_name, game_desc, tags, *, game_de
         result["ci_freq"] = game_def["ci_freq"]
         result["alliances"] = game_def.get("alliances")
         result["guardian_counts"] = game_def["guardian_counts"]
+        result["fog_of_war"] = game_def.get("fog_of_war", False)
         result["phase_timing"] = {
             "foundation_cycles": game_def["foundation_cycles"],
             "comp_end": game_def["comp_end"],
@@ -1032,10 +1079,19 @@ STRATEGY_PRESETS = [
 ]
 
 
-def pick_op_for_strategy(strategy, cycle, rp, target_player):
-    """Pick an operative type based on strategy preset and current state."""
-    has_buildings = bool(target_player.buildings)
-    has_agents = bool(target_player.agents)
+def pick_op_for_strategy(strategy, cycle, rp, target_info):
+    """Pick an operative type based on strategy preset and current state.
+
+    ``target_info`` is a :class:`Player` (perfect information) or an
+    :class:`IntelSnapshot` (fog of war).  Both expose ``has_buildings``
+    and ``has_agents`` — only the data source differs.
+    """
+    if isinstance(target_info, IntelSnapshot):
+        has_buildings = target_info.has_buildings
+        has_agents = target_info.has_agents
+    else:
+        has_buildings = bool(target_info.buildings)
+        has_agents = bool(target_info.agents)
 
     if strategy == "balanced":
         ops = ["spy", "propagandist", "saboteur"]
@@ -1142,7 +1198,7 @@ def generate_game_config(game_num, player_count, rng):
     return config, guardian_range
 
 
-def generate_parametric_game(game_num, player_count, all_tags, rng):
+def generate_parametric_game(game_num, player_count, all_tags, rng, *, fog_of_war=False):
     """Generate a complete parametric game definition."""
     # Pick players
     tags = list(rng.sample(all_tags, player_count))
@@ -1185,6 +1241,8 @@ def generate_parametric_game(game_num, player_count, all_tags, rng):
     desc = f"RP:{config['rp_per_cycle']}/{config['rp_cap']} {guard_str} {weight_str} {strat_str}"
     if alliances:
         desc += f" alliance={list(alliances.values())[0]}"
+    if fog_of_war:
+        desc += " FOG"
 
     name = f"G{game_num}: {'+'.join(tags)} {weight_str}"
 
@@ -1200,6 +1258,7 @@ def generate_parametric_game(game_num, player_count, all_tags, rng):
         "foundation_cycles": foundation_cycles,
         "comp_end": comp_end,
         "reck_end": reck_end,
+        "fog_of_war": fog_of_war,
     }
 
 
@@ -1220,6 +1279,7 @@ def run_parametric_game(token, game_def):
 
     strategies = game_def["strategies"]
     ci_freq = game_def["ci_freq"]
+    fog = game_def.get("fog_of_war", False)
 
     def strategy_fn(eid, pl, cyc):
         for tag in tags:
@@ -1235,7 +1295,12 @@ def run_parametric_game(token, game_def):
             if not t:
                 continue
 
-            op = pick_op_for_strategy(strategies[tag], cyc, pl[tag].rp, pl[t])
+            # Operative selection: fog uses intel snapshot, perfect info uses full state
+            if fog:
+                intel = pl[tag].intel.get(t, IntelSnapshot())
+                op = pick_op_for_strategy(strategies[tag], cyc, pl[tag].rp, intel)
+            else:
+                op = pick_op_for_strategy(strategies[tag], cyc, pl[tag].rp, pl[t])
             if op is None:
                 continue  # econ_build skip
 
@@ -1246,19 +1311,33 @@ def run_parametric_game(token, game_def):
                 else:
                     continue
 
+            # Targeting: fog uses intel for entity IDs, perfect info uses player state
             target_entity_id = None
             target_entity_type = None
-            if op == "saboteur" and pl[t].buildings:
-                idx = cyc % len(pl[t].buildings)
-                target_entity_id = pl[t].buildings[idx]["id"]
-                target_entity_type = "building"
-            elif op == "assassin" and pl[t].agents:
-                avail_targets = [a for a in pl[t].agents if a["id"] not in pl[t].deployed_agents]
-                if avail_targets:
-                    target_entity_id = avail_targets[0]["id"]
+            if fog:
+                intel = pl[tag].intel.get(t, IntelSnapshot())
+                if op == "saboteur" and intel.building_ids:
+                    idx = cyc % len(intel.building_ids)
+                    target_entity_id = intel.building_ids[idx]
+                    target_entity_type = "building"
+                elif op == "assassin" and intel.agent_ids:
+                    target_entity_id = intel.agent_ids[0]
                     target_entity_type = "agent"
-                else:
-                    op = "spy"  # No valid target, fallback
+                elif op == "assassin" and not intel.agent_ids:
+                    op = "spy"  # Can't assassinate blind — recon instead
+                # saboteur without building intel → untargeted (zone downgrade only)
+            else:
+                if op == "saboteur" and pl[t].buildings:
+                    idx = cyc % len(pl[t].buildings)
+                    target_entity_id = pl[t].buildings[idx]["id"]
+                    target_entity_type = "building"
+                elif op == "assassin" and pl[t].agents:
+                    avail_targets = [a for a in pl[t].agents if a["id"] not in pl[t].deployed_agents]
+                    if avail_targets:
+                        target_entity_id = avail_targets[0]["id"]
+                        target_entity_type = "agent"
+                    else:
+                        op = "spy"  # No valid target, fallback
 
             deploy(eid, pl[tag], op, t, pl, target_entity_id, target_entity_type)
 
@@ -1842,6 +1921,124 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     else:
         lines.append("*No probability data available in action logs.*")
 
+    # 9. Fog of War Impact + Intel ROI
+    fog_games = [g for g in ALL_GAME_RESULTS if g.get("fog_of_war")]
+    if fog_games:
+        lines += ["", "## Fog of War Impact", "",
+                  f"**{len(fog_games)}** games played with fog of war enabled.", ""]
+
+        # Win rate by strategy under fog
+        fog_strat_wins = defaultdict(lambda: [0, 0])  # [wins, games]
+        for g in fog_games:
+            winner_tag = g.get("winner_tag")
+            strategies = g.get("strategies", {})
+            for tag, strat in strategies.items():
+                fog_strat_wins[strat][1] += 1
+                if tag == winner_tag:
+                    fog_strat_wins[strat][0] += 1
+
+        if fog_strat_wins:
+            lines.append("| Strategy | Games | Wins | Win Rate | Fog Advantage |")
+            lines.append("|----------|-------|------|----------|---------------|")
+            sorted_strats = sorted(
+                fog_strat_wins,
+                key=lambda s: fog_strat_wins[s][0] / max(1, fog_strat_wins[s][1]),
+                reverse=True,
+            )
+            for strat in sorted_strats:
+                wins, total = fog_strat_wins[strat]
+                rate = 100 * wins / total if total > 0 else 0
+                # Compare to overall strategy win rate (if available)
+                advantage = "—"
+                strats_in_use = {
+                    s for g2 in ALL_GAME_RESULTS
+                    for s in g2.get("strategies", {}).values()
+                }
+                if strat in strats_in_use:
+                    all_wins = sum(
+                        1 for g2 in ALL_GAME_RESULTS
+                        if g2.get("strategies", {}).get(g2.get("winner_tag")) == strat
+                    )
+                    all_total = sum(
+                        1 for g2 in ALL_GAME_RESULTS
+                        for _t, s in g2.get("strategies", {}).items()
+                        if s == strat
+                    )
+                    all_rate = 100 * all_wins / all_total if all_total > 0 else 0
+                    diff = rate - all_rate
+                    if abs(diff) > 1:
+                        advantage = f"{diff:+.0f}pp"
+                lines.append(f"| {strat} | {total} | {wins} | {rate:.0f}% | {advantage} |")
+            lines.append("")
+
+        # Targeted vs untargeted deployments (saboteur/assassin only)
+        targeted = 0
+        untargeted = 0
+        for g in fog_games:
+            for a in g.get("actions", []):
+                if a.get("action", "").startswith("deploy_"):
+                    if a.get("result", "").startswith("SKIP"):
+                        continue
+                    op = a.get("op_type", "")
+                    if op in ("saboteur", "assassin"):
+                        detail = a.get("detail", "")
+                        if "target:" in detail:
+                            targeted += 1
+                        else:
+                            untargeted += 1
+        if targeted + untargeted > 0:
+            lines.append(f"Targeted saboteur/assassin deployments: **{targeted}** "
+                        f"({100*targeted/(targeted+untargeted):.0f}%)")
+            lines.append(f"Untargeted (blind) deployments: **{untargeted}** "
+                        f"({100*untargeted/(targeted+untargeted):.0f}%)")
+            lines.append("")
+
+        # Intel ROI: spy investment correlation with winning
+        lines += ["## Intel ROI", "",
+                  "Correlation between spy intelligence gathering and game outcomes.", ""]
+
+        winner_intel = []
+        loser_intel = []
+        for g in fog_games:
+            winner_tag = g.get("winner_tag")
+            stats = g.get("stats", {})
+            intel_stats = stats.get("intel_gathered", {})
+            for tag, count in intel_stats.items():
+                if tag == winner_tag:
+                    winner_intel.append(count)
+                else:
+                    loser_intel.append(count)
+
+        if winner_intel or loser_intel:
+            avg_w = sum(winner_intel) / len(winner_intel) if winner_intel else 0
+            avg_l = sum(loser_intel) / len(loser_intel) if loser_intel else 0
+            lines.append(f"Average intel reports gathered by **winners**: {avg_w:.1f}")
+            lines.append(f"Average intel reports gathered by **losers**: {avg_l:.1f}")
+            if avg_l > 0:
+                lines.append(f"Intel advantage ratio: **{avg_w/avg_l:.1f}x**")
+            lines.append("")
+
+            # Spy deployment rate for winners vs losers
+            winner_spies = []
+            loser_spies = []
+            for g in fog_games:
+                winner_tag = g.get("winner_tag")
+                stats = g.get("stats", {})
+                deployed_by_type = stats.get("deployed_by_type", {})
+                for tag, types in deployed_by_type.items():
+                    spy_count = types.get("spy", 0)
+                    if tag == winner_tag:
+                        winner_spies.append(spy_count)
+                    else:
+                        loser_spies.append(spy_count)
+
+            if winner_spies or loser_spies:
+                avg_ws = sum(winner_spies) / len(winner_spies) if winner_spies else 0
+                avg_ls = sum(loser_spies) / len(loser_spies) if loser_spies else 0
+                lines.append(f"Average spy deployments by **winners**: {avg_ws:.1f}")
+                lines.append(f"Average spy deployments by **losers**: {avg_ls:.1f}")
+                lines.append("")
+
     # Per-game condensed details (no cycle-by-cycle actions for 60-game runs)
     if len(ALL_GAME_RESULTS) <= 20 or include_actions:
         lines += ["", "## Per-Game Details", ""]
@@ -1972,7 +2169,10 @@ def _load_checkpoint(md_path):
         return None
 
 
-def run_parametric_battery(title, player_count, num_games, all_tags, log_path, md_path, seed=42, batch_size=15):
+def run_parametric_battery(
+    title, player_count, num_games, all_tags, log_path, md_path,
+    seed=42, batch_size=15, *, fog_of_war=False,
+):
     """Generate and run N parametric games in batches to avoid macOS port exhaustion.
 
     Saves a checkpoint after every game so that a crashed run can be resumed.
@@ -1996,7 +2196,8 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
         ALL_GAME_RESULTS = []
         log("=" * 70)
         log(f"EPOCH SIMULATION BATTERY — {title}")
-        log(f"  {num_games} games, {player_count} players each, seed={seed}, batch_size={batch_size}")
+        fog_label = " [FOG OF WAR]" if fog_of_war else ""
+        log(f"  {num_games} games, {player_count} players each, seed={seed}, batch_size={batch_size}{fog_label}")
         log("=" * 70)
 
     # Ensure Nova Meridian exists (test-only 5th sim, not in any migration)
@@ -2012,10 +2213,10 @@ def run_parametric_battery(title, player_count, num_games, all_tags, log_path, m
     # Regenerate RNG to the correct position (deterministic skip)
     rng = random.Random(seed)
     for i in range(1, start_game):
-        generate_parametric_game(i, player_count, all_tags, rng)
+        generate_parametric_game(i, player_count, all_tags, rng, fog_of_war=fog_of_war)
 
     for i in range(start_game, num_games + 1):
-        game_def = generate_parametric_game(i, player_count, all_tags, rng)
+        game_def = generate_parametric_game(i, player_count, all_tags, rng, fog_of_war=fog_of_war)
         log(f"\n{'='*70}")
         log(f"GAME {i}/{num_games}: {game_def['name']}")
         log(f"  {game_def['desc']}")

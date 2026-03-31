@@ -9,6 +9,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
 from backend.dependencies import get_anon_supabase, resolve_simulation_id
@@ -84,7 +85,12 @@ async def get_platform_stats(
     anon: Client = Depends(get_anon_supabase),
 ) -> dict:
     """Aggregated platform statistics for landing page."""
-    data = await SimulationService.get_platform_stats(anon)
+    try:
+        data = await SimulationService.get_platform_stats(anon)
+    except Exception:  # noqa: BLE001 — landing page must never show error; degrade to zeros
+        logger.warning("Platform stats unavailable", exc_info=True)
+        sentry_sdk.capture_exception()
+        data = {"simulation_count": 0, "active_epoch_count": 0, "resonance_count": 0}
     return {"success": True, "data": data}
 
 
@@ -103,8 +109,13 @@ async def list_simulations(
     """List all active template simulations (public). Excludes game instances."""
     max_age = get_ttl("cache_http_simulations_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
-    data, total = await SimulationService.list_active_public(supabase, limit=limit, offset=offset)
-    await SimulationService.enrich_with_counts(supabase, data)
+    try:
+        data, total = await SimulationService.list_active_public(supabase, limit=limit, offset=offset)
+        await SimulationService.enrich_with_counts(supabase, data)
+    except Exception:  # noqa: BLE001 — public browsing must never produce errors; degrade to empty
+        logger.warning("Public simulation list unavailable", exc_info=True)
+        sentry_sdk.capture_exception()
+        data, total = [], 0
     return _paginated(data, total, limit, offset)
 
 

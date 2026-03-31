@@ -18,6 +18,10 @@ NUM_GAMES = 50
 # Which player counts to run (can be overridden via CLI args)
 PLAYER_COUNTS = [2, 3, 4, 5]
 
+# Fog of War: when True, strategy functions operate under partial information.
+# Spy missions must succeed before the attacker learns target building/agent IDs.
+FOG_OF_WAR = True
+
 
 def run_2p():
     tags_2p = ["V", "GR", "SN", "SP"]  # NM excluded from 2P (only 4 possible matchups)
@@ -27,6 +31,7 @@ def run_2p():
         f"{BASE_DIR}/epoch-2p-simulation.log",
         f"{BASE_DIR}/epoch-2p-analysis.md",
         seed=2000,
+        fog_of_war=FOG_OF_WAR,
     )
 
 
@@ -39,6 +44,7 @@ def run_3p():
         f"{BASE_DIR}/epoch-3p-analysis.md",
         seed=3000,
         batch_size=5,
+        fog_of_war=FOG_OF_WAR,
     )
 
 
@@ -51,6 +57,7 @@ def run_4p():
         f"{BASE_DIR}/epoch-4p-analysis.md",
         seed=4000,
         batch_size=4,
+        fog_of_war=FOG_OF_WAR,
     )
 
 
@@ -63,6 +70,7 @@ def run_5p():
         f"{BASE_DIR}/epoch-5p-analysis.md",
         seed=5000,
         batch_size=3,
+        fog_of_war=FOG_OF_WAR,
     )
 
 
@@ -75,8 +83,9 @@ if __name__ == "__main__":
     runners = {2: run_2p, 3: run_3p, 4: run_4p, 5: run_5p}
     for pc in counts:
         if pc in runners:
+            fog_label = " [FOG OF WAR]" if FOG_OF_WAR else ""
             print(f"\n{'#'*70}")
-            print(f"# STARTING {pc}-PLAYER BATTERY ({NUM_GAMES} games)")
+            print(f"# STARTING {pc}-PLAYER BATTERY ({NUM_GAMES} games){fog_label}")
             print(f"{'#'*70}\n")
             runners[pc]()
         else:

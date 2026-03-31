@@ -1,8 +1,8 @@
 ---
 title: "Epochs & Competitive Layer"
 id: epochs-competitive-layer
-version: "2.2"
-date: 2026-03-17
+version: "2.3"
+date: 2026-03-31
 lang: de
 type: spec
 status: active
@@ -245,7 +245,7 @@ RP is the action economy currency. Each simulation receives RP at the start of e
 
 | Type | Cost | Deploy Time | Duration | Effect |
 |------|------|-------------|----------|--------|
-| **Spy** | 3 RP | Instant | 3 cycles | Reveals target zone security levels and guardian count (intel report in battle log). +2 Influence, +1 Diplomatic, −2 Sovereignty. |
+| **Spy** | 3 RP | Instant | 3 cycles | Reveals target zone security levels, guardian count, building inventory (IDs + condition), and agent roster (IDs + names) via intel report in battle log. Enables targeted saboteur/assassin follow-up missions. +2 Influence, +1 Diplomatic, −2 Sovereignty. |
 | **Saboteur** | 5 RP | 1 cycle | Single action | Downgrades random zone security −1 tier + building condition −1. Generates crisis event (impact 3, diminishing: 3→2→1, skip at 3+). −6 Stability, −8 Sovereignty. |
 | **Propagandist** | 4 RP | 1 cycle | 2 cycles | Generates a destabilizing event (impact 6-8) in target zone |
 | **Assassin** | 7 RP | 2 cycles | Single action | Wounds target agent — reduces relationships by 2, removes ambassador status for 3 cycles |
@@ -1268,10 +1268,14 @@ Each bot personality archetype has a distinct approach to zone fortification dur
 New tab in EpochCommandCenter (`EpochIntelDossierTab`) showing per-opponent intelligence gathered from spy missions. Each opponent card displays:
 - Zone security level distribution (badges showing low/medium/high counts)
 - Guardian deployment count
+- Building inventory (IDs, names, condition — enables targeted saboteur follow-up)
+- Agent roster (IDs, names — enables targeted assassin follow-up)
 - Fortification indicators (if revealed by spy intel)
 - Staleness indicator (cycles since last intel report)
 
 Cards are only populated when the player has successful spy intel reports in the battle log. Empty state when no intel has been gathered.
+
+**Reconnaissance-Strike Chain:** Spy intel now includes building and agent data, creating a genuine two-step tactical loop: deploy spy first (3 RP) to reveal targets, then deploy targeted saboteur (5 RP, specific building) or assassin (7 RP, specific agent). Without prior spy intel, saboteurs can still deploy (untargeted zone downgrade only) but assassins have no valid target.
 
 ### Frontend: EpochOverviewTab Fortify Section
 
@@ -1341,6 +1345,7 @@ Includes a dismiss button to cancel the selection.
 
 ## Changelog
 
+**Change v2.3:** Spy Intel Extension + Validation Hardening + Fog of War Simulation — `_apply_spy_effect()` now returns building inventory (IDs, names, condition) and agent roster (IDs, names) alongside zone security and guardian count, enabling a reconnaissance→strike tactical chain. `OperativeDeploy` model gains `model_validator` enforcing `target_entity_type` matches `OPERATIVE_TARGET_TYPE` (prevents saboteur with agent target, etc.). Auto-resolve in `epoch_chat_service.py` now captures exceptions to Sentry and sets `auto_resolve_error` flag. Public landing page endpoints degrade gracefully on DB unavailability. Simulation battery (`epoch_sim_lib.py`) gains fog-of-war mode: `IntelSnapshot` dataclass, per-player intel tracking from spy mission results, `pick_op_for_strategy()` polymorphic (accepts `Player` or `IntelSnapshot`), parametric games configurable via `fog_of_war` flag. New analysis sections: "Fog of War Impact" (strategy win rates under fog) and "Intel ROI" (spy investment correlation with victory).
 **Change v2.2:** Audit Phase 2 — Scoring via `fn_compute_cycle_scores()` RPC (Migration 127, ersetzt 12 Python-Queries), `fn_auto_draft_participants()` RPC (Migration 128, ersetzt N per-Participant Loop). LeaderboardEntry erweitert: `ally_count`, `ally_bonus_pct`, `betrayal_penalty`. Neuer Endpoint: `GET /epochs/{epoch_id}/scores/intel-dossiers` (vorab-aggregierte Intel Dossiers mit `is_stale` Flag). Results-Summary N+1 Fix (Batch-Queries statt per-Participant Loops).
 **Change v2.1:** Alliance Redesign — Proposal-basiertes Beitreten (einstimmige Abstimmung), Shared Intelligence (RLS), Upkeep (1 RP/Mitglied/Zyklus), Tension (Auto-Auflösung bei 80). Neue Tabellen: `epoch_alliance_proposals`, `epoch_alliance_votes`. Neue Spalte: `epoch_teams.tension`. 5 Postgres-Funktionen, 2 Trigger, 5 RLS-Policies. 3 neue API-Endpunkte. 6 neue `battle_log`-Event-Typen. Bot-Abstimmungsstrategien pro Persönlichkeitsarchetyp.
 **Change v1.9:** Foundation Phase Redesign ("Nebelkrieg") + Open Epoch Participation — Migration 048: `zone_fortifications` table, Foundation phase now allows spies + guardians (was guardian-only), spy intel includes fortifications metadata, bot personalities with per-archetype fortification strategies, `/operatives/fortify-zone` endpoint, `zone_fortified` battle log event type. Migration 049: `user_id` column on `epoch_participants`, any authenticated user can join any template simulation (no membership required), `require_epoch_participant()` dependency replaces `require_simulation_member("editor")` on competitive endpoints, RLS rewritten to direct `user_id` checks, `user_has_simulation_access()` extended for epoch participants, DELETE policy added for `epoch_participants`. Frontend: EpochIntelDossierTab (new), MissionCard (new), operative-icons.ts (new), EpochOverviewTab fortify zone section, EpochLobbyActions sim picker with faction cards, `_myParticipant` matching via `user_id`.
