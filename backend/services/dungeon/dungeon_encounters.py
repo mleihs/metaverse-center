@@ -1913,12 +1913,13 @@ MOTHER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
             "pods might once have been people."
         ),
         description_de=(
-            "Eine Kammer, ausgekleidet mit Hülsen \u2013 durchscheinend, jede enthält "
-            "etwas Zusammengerolltes, Atmendes. Eine Sporenmutter pflegt sie, "
-            "atmet Wolken schillernder Partikel aus. Ein Nährgespinst treibt "
-            "zwischen den Hülsen, jede mit zarter Präzision fütternd. Sie bewachen "
-            "nicht. Sie gärtnern. Ihr steht in einer Kinderstube. Die Dinge "
-            "in den Hülsen waren vielleicht einst Menschen."
+            "Eine Kammer, ausgekleidet mit Brutkokons \u2013 durchscheinend, "
+            "jeder enthält etwas Zusammengerolltes, Atmendes. Eine Sporenmutter "
+            "pflegt sie, atmet Wolken schillernder Partikel aus. Ein "
+            "Nährgespinst treibt zwischen den Kokons, jeden mit zarter "
+            "Präzision fütternd. Sie bewachen nicht. Sie gärtnern. Ihr steht "
+            "in einer Kinderstube. Die Dinge in den Kokons waren vielleicht "
+            "einst Menschen."
         ),
         combat_encounter_id="mother_spore_spawn",
     ),
@@ -1964,14 +1965,14 @@ MOTHER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
             "has all the time in the world. It is growing the world."
         ),
         description_de=(
-            "Die Kinderstube ist hier größer. Tiefer. Die Hülsen reihen sich "
-            "an den Wänden \u2013 Dutzende, vielleicht Hunderte, jede pulsierend "
-            "im langsamen Rhythmus der Reifung. Eine Sporenmutter bewegt sich "
-            "zwischen ihnen und hinterlässt Wolken leuchtender Sporen. Ein "
-            "Nährgespinst pflegt die nächsten Hülsen und füttert sie mit der "
-            "Geduld von etwas, das nie Eile gekannt hat. Die Kinderstube muss "
-            "sich nicht beeilen. Die Kinderstube hat alle Zeit der Welt. "
-            "Sie züchtet die Welt."
+            "Die Kinderstube ist hier größer. Tiefer. Brutkokons säumen die "
+            "Wände in Reihen \u2013 Dutzende, vielleicht Hunderte, jeder "
+            "pulsierend im geduldigen Rhythmus der Reifung. Eine Sporenmutter "
+            "bewegt sich zwischen ihnen, hinterlässt Wolken schillernder "
+            "Partikel. Ein Nährgespinst pflegt die nächsten Kokons, füttert "
+            "jeden mit der Beharrlichkeit von etwas, das Eile nie gekannt "
+            "hat. Hier herrscht keine Hast. Hier herrscht Wachstum. "
+            "Das Wachstum kennt kein Ende. Das Wachstum ist der Zweck."
         ),
         combat_encounter_id="mother_spore_spawn",
     ),
@@ -1992,14 +1993,14 @@ MOTHER_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
             "waiting. Not for prey. For guests."
         ),
         description_de=(
-            "Der Boden ist Wurzeln. Nicht von Wurzeln überwachsen \u2013 der "
-            "Boden IST Wurzeln, zu einer lebenden Matte verwoben, die unter "
-            "den Füßen nachgibt wie Muskel. Eine Bindungsranke taucht an der "
-            "fernen Wand auf, ihr Wurzelsystem erstreckt sich in alle "
-            "Richtungen. Daneben ist eine Sporenmutter direkt in das "
-            "Rankennetzwerk eingewachsen \u2013 kein separater Organismus mehr, "
-            "sondern ein Knoten in der vaskulären Infrastruktur der Mutter. "
-            "Sie warten. Nicht auf Beute. Auf Gäste."
+            "Der Boden ist Wurzeln. Nicht von Wurzeln überwuchert \u2013 der "
+            "Boden IST Wurzeln, zu einem lebenden Geflecht verwoben, das "
+            "unter den Füßen nachgibt wie Muskelgewebe. Eine Bindungsranke "
+            "taucht an der fernen Wand auf, ihr Wurzelsystem erstreckt sich "
+            "in alle Richtungen. Daneben ist eine Sporenmutter direkt in das "
+            "Rankennetzwerk eingewachsen \u2013 kein eigenständiger Organismus "
+            "mehr, sondern ein Knoten in der vaskulären Infrastruktur der "
+            "Mutter. Sie warten. Nicht auf Beute. Auf Gäste."
         ),
         combat_encounter_id="mother_garden_spawn",
     ),
@@ -2776,7 +2777,7 @@ MOTHER_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                 ),
                 success_narrative_de=(
                     "Ihr nehmt. Die Geschenke sind warm in euren Händen. Sie pulsieren "
-                    "\u2013 kurz, wie ein Herzschlag \u2013 und dann sind sie einfach "
+                    "\u2013 kurz, wie ein Herzschlag \u2013 und dann sind sie nur noch "
                     "Gegenstände. Nützliche Gegenstände. Hervorragende Gegenstände. "
                     "Der Bindungszähler steigt. Die Großzügigkeit der Mutter ist "
                     "nicht umsonst. Sie war nie umsonst."
