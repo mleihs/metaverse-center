@@ -119,7 +119,11 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         transform: rotate(-90deg);
       }
 
-      /* ── SVG Container ── */
+      /* ── SVG Container ──
+       * No explicit scrollbar-width/scrollbar-color: the native OS scrollbar
+       * is theme-aware (adapts to light/dark) and uses overlay mode on macOS
+       * (only appears on scroll, hides when idle). Explicit scrollbar-color
+       * forces a permanent visible scrollbar even when content doesn't overflow. */
       .map-content {
         overflow-y: auto;
         overflow-x: hidden;
@@ -127,8 +131,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         border-top: 1px solid
           color-mix(in srgb, var(--_border) 20%, transparent);
         background: color-mix(in srgb, var(--_screen-bg) 95%, transparent);
-        scrollbar-width: thin;
-        scrollbar-color: var(--_phosphor-dim) transparent;
         position: relative;
       }
 
