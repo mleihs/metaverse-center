@@ -36,6 +36,7 @@ import {
   responseLine,
   systemLine,
 } from './terminal-formatters.js';
+import { localized } from './locale-fields.js';
 
 // ── Room Type Symbols (ASCII map) ────────────────────────────────────────────
 
@@ -78,21 +79,23 @@ export function buildEnemyDisplayNames(
 ): Map<string, string> {
   const nameCounts = new Map<string, number>();
   for (const e of enemies) {
-    nameCounts.set(e.name_en, (nameCounts.get(e.name_en) ?? 0) + 1);
+    const name = localized(e, 'name');
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
   }
 
   const nameIndexes = new Map<string, number>();
   const displayNames = new Map<string, string>();
 
   for (const e of enemies) {
-    const count = nameCounts.get(e.name_en) ?? 1;
+    const name = localized(e, 'name');
+    const count = nameCounts.get(name) ?? 1;
     if (count > 1) {
-      const idx = nameIndexes.get(e.name_en) ?? 0;
-      nameIndexes.set(e.name_en, idx + 1);
+      const idx = nameIndexes.get(name) ?? 0;
+      nameIndexes.set(name, idx + 1);
       const suffix = String.fromCharCode(65 + idx); // A, B, C...
-      displayNames.set(e.instance_id, `${e.name_en} ${suffix}`);
+      displayNames.set(e.instance_id, `${name} ${suffix}`);
     } else {
-      displayNames.set(e.instance_id, e.name_en);
+      displayNames.set(e.instance_id, name);
     }
   }
 
@@ -325,7 +328,7 @@ export function formatRoomEntry(
   // Anchor object text (environmental narrative — part of the room)
   if (anchorTexts && anchorTexts.length > 0) {
     for (const anchor of anchorTexts) {
-      const text = anchor.text_en;
+      const text = localized(anchor, 'text');
       if (text) {
         lines.push(responseLine(''));
         lines.push(responseLine(text));
@@ -412,7 +415,7 @@ export function formatCombatStart(
     const intentStr = enemy.telegraphed_action
       ? `  ${msg('INTENT')}: \u25BA ${enemy.telegraphed_action.intent}`
       : '';
-    lines.push(responseLine(`  ${enemy.name_en} ${condBar} ${threatBadge}${intentStr}`));
+    lines.push(responseLine(`  ${localized(enemy, 'name')} ${condBar} ${threatBadge}${intentStr}`));
   }
 
   lines.push(systemLine(''));
@@ -637,7 +640,7 @@ export function formatEncounterChoices(
   // Choices
   for (let i = 0; i < choices.length; i++) {
     const choice = choices[i];
-    lines.push(systemLine(`[${i + 1}] ${choice.label_en}`));
+    lines.push(systemLine(`[${i + 1}] ${localized(choice, 'label')}`));
 
     // Aptitude requirements
     if (choice.requires_aptitude) {
@@ -722,8 +725,8 @@ export function formatLootDrop(items: LootItem[]): TerminalLine[] {
 
   for (const item of items) {
     const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
-    lines.push(combatHealLine(`  ${marker} ${item.name_en} (${msg('Tier')} ${item.tier})`));
-    lines.push(combatHealLine(`    ${item.description_en}`));
+    lines.push(combatHealLine(`  ${marker} ${localized(item, 'name')} (${msg('Tier')} ${item.tier})`));
+    lines.push(combatHealLine(`    ${localized(item, 'description')}`));
   }
 
   return lines;
@@ -799,7 +802,7 @@ export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
     lines.push(systemLine(msg('PARTIAL LOOT:')));
     for (const item of loot) {
       const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
-      lines.push(responseLine(`  ${marker} ${item.name_en}`));
+      lines.push(responseLine(`  ${marker} ${localized(item, 'name')}`));
     }
   }
 
@@ -869,7 +872,7 @@ export function formatDungeonComplete(
     lines.push(combatSystemLine(msg('SPOILS CLAIMED')));
     for (const item of loot) {
       const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
-      lines.push(combatHealLine(`  ${marker} ${item.name_en} \u2014 ${item.description_en}`));
+      lines.push(combatHealLine(`  ${marker} ${localized(item, 'name')} \u2014 ${localized(item, 'description')}`));
     }
     lines.push(systemLine(''));
   }
@@ -964,7 +967,7 @@ export function formatLootDistribution(
   if (autoItems.length > 0) {
     lines.push(combatSystemLine(msg('SYSTEM EFFECTS')));
     for (const item of autoItems) {
-      lines.push(combatMissLine(`  [${msg('AUTO')}] ${_effectLabel(item.effect_type)} \u2014 ${item.description_en}`));
+      lines.push(combatMissLine(`  [${msg('AUTO')}] ${_effectLabel(item.effect_type)} \u2014 ${localized(item, 'description')}`));
     }
     lines.push(systemLine(''));
   }
@@ -984,8 +987,8 @@ export function formatLootDistribution(
       const suggestedName = suggestedAgentId ? partyMap.get(suggestedAgentId) : null;
 
       // Item header: number + marker + name
-      lines.push(combatPlayerLine(`  [${i + 1}] ${marker} ${item.name_en}`));
-      lines.push(responseLine(`      ${item.description_en}`));
+      lines.push(combatPlayerLine(`  [${i + 1}] ${marker} ${localized(item, 'name')}`));
+      lines.push(responseLine(`      ${localized(item, 'description')}`));
 
       // Assignment status
       if (assignedName) {

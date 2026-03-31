@@ -15,6 +15,7 @@ import { dungeonApi } from '../services/api/DungeonApiService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
+import { localized } from './locale-fields.js';
 import type {
   CombatSubmission,
   DungeonRunCreate,
@@ -268,7 +269,7 @@ export async function startDungeonRun(
     terminalState.clearOutput();
     terminalState.initializeDungeon(String(run.id), state.archetype);
 
-    const atmosphereText = entrance_text?.text_en ?? '';
+    const atmosphereText = localized(entrance_text, 'text');
 
     return formatDungeonEntry(state, atmosphereText);
   } catch (err) {
@@ -333,10 +334,10 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       lines.push(
         ...formatRoomEntry(
           room,
-          result.banter ? (result.banter.text_en ?? null) : null,
+          result.banter ? (localized(result.banter, 'text') || null) : null,
           result.state.archetype_state,
           result.anchor_texts ?? null,
-          result.barometer_text ? (result.barometer_text.text_en ?? null) : null,
+          result.barometer_text ? (localized(result.barometer_text, 'text') || null) : null,
         ),
       );
     }
@@ -348,9 +349,10 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     }
 
     // Encounter / treasure / rest choices (any room with interactive choices)
-    if (result.choices && result.description_en) {
+    const encounterDesc = localized(result, 'description');
+    if (result.choices && encounterDesc) {
       dungeonState.encounterChoices.value = result.choices;
-      lines.push(...formatEncounterChoices(result.description_en, result.choices, result.state.party, room?.room_type));
+      lines.push(...formatEncounterChoices(encounterDesc, result.choices, result.state.party, room?.room_type));
     }
 
     // Treasure (auto-loot, no choices)
@@ -407,7 +409,7 @@ function handleDungeonLook(): TerminalLine[] {
     (state.phase === 'encounter' || state.phase === 'rest') &&
     choices.length > 0
   ) {
-    const desc = state.encounter_description_en ?? '';
+    const desc = localized(state, 'encounter_description');
     lines.push(...formatEncounterChoices(desc, choices, state.party, room.room_type));
   }
 
@@ -720,13 +722,14 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     // Skill check result
     if (resp.data.check) {
       // Use backend-generated narrative effects (bilingual, proper separation of concerns)
-      const effects: string[] = resp.data.narrative_effects_en ?? Object.entries(resp.data.effects)
-        .map(([key, val]: [string, unknown]) => `${key}: ${val}`);
-      lines.push(...formatSkillCheckResult(resp.data.check, resp.data.narrative_en, effects));
+      const effects: string[] = localized(resp.data, 'narrative_effects') as unknown as string[]
+        ?? Object.entries(resp.data.effects).map(([key, val]: [string, unknown]) => `${key}: ${val}`);
+      lines.push(...formatSkillCheckResult(resp.data.check, localized(resp.data, 'narrative'), effects));
     } else {
       // No check — direct result
-      if (resp.data.narrative_en) {
-        lines.push(responseLine(resp.data.narrative_en));
+      const narrative = localized(resp.data, 'narrative');
+      if (narrative) {
+        lines.push(responseLine(narrative));
       }
     }
 
@@ -800,10 +803,10 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   let targetId: string | undefined;
 
   if (targetArg && state.combat) {
-    const enemyNames = state.combat.enemies.filter(e => e.is_alive).map(e => e.name_en);
+    const enemyNames = state.combat.enemies.filter(e => e.is_alive).map(e => localized(e, 'name'));
     const matchedEnemy = fuzzyName(targetArg, enemyNames);
     if (matchedEnemy) {
-      const enemy = state.combat.enemies.find(e => e.name_en === matchedEnemy);
+      const enemy = state.combat.enemies.find(e => localized(e, 'name') === matchedEnemy);
       targetId = enemy?.instance_id;
     }
   }
