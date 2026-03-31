@@ -767,6 +767,55 @@ MOTHER_ENEMIES: dict[str, EnemyTemplate] = {
             "Er greift nach {agent} mit etwas, das einst eine Hand war. Die Geste ist zärtlich. Der Griff wäre es nicht.",
         ],
     ),
+    # Boss-tier: the Host Warden fused with the architecture (The Living Altar)
+    "mother_living_altar": EnemyTemplate(
+        id="mother_living_altar",
+        name_en="The Living Altar",
+        name_de="Der Lebendige Altar",
+        archetype="The Devouring Mother",
+        condition_threshold=7,
+        stress_resistance=500,
+        threat_level="boss",
+        attack_aptitude="guardian",
+        attack_power=6,
+        stress_attack_power=7,
+        telegraphed_intent=False,
+        evasion=5,
+        resistances=["infiltrator", "spy", "guardian"],
+        vulnerabilities=["saboteur"],
+        action_weights={
+            "attack": 20, "stress_attack": 20, "embrace": 25,
+            "summon_weavers": 10, "spore_cloud": 10, "ambient": 15,
+        },
+        special_abilities=["embrace", "summon_weavers", "spore_cloud"],
+        description_en=(
+            "What was once a Host Warden has become something larger. It has "
+            "grown into the walls, the floor, the ceiling \u2013 a figure embedded "
+            "in architecture, arms open, face calm, the tissue around it pulsing "
+            "with the rhythm of something that has been waiting for millennia. "
+            "The Living Altar does not guard the dungeon. It is the dungeon. "
+            "The embrace it offers is permanent. The warmth is absolute."
+        ),
+        description_de=(
+            "Was einst ein Wirtskörper war, ist zu etwas Größerem geworden. "
+            "Er ist in die Wände gewachsen, den Boden, die Decke \u2013 eine Gestalt, "
+            "eingebettet in Architektur, Arme geöffnet, Gesicht ruhig, das Gewebe "
+            "um ihn herum pulsierend im Rhythmus von etwas, das Jahrtausende "
+            "gewartet hat. Der Lebendige Altar bewacht den Dungeon nicht. "
+            "Er ist der Dungeon. Die Umarmung, die er anbietet, ist permanent. "
+            "Die Wärme ist absolut."
+        ),
+        ambient_text_en=[
+            "The Altar pulses. The walls pulse with it. The floor yields slightly beneath your feet.",
+            "It reaches for {agent}. Not quickly. It has no need for speed. Nothing leaves.",
+            "The temperature rises another degree. The Altar is patient. It has always been patient.",
+        ],
+        ambient_text_de=[
+            "Der Altar pulsiert. Die Wände pulsieren mit ihm. Der Boden gibt leicht nach unter euren Füßen.",
+            "Er greift nach {agent}. Nicht schnell. Er braucht keine Eile. Nichts entkommt.",
+            "Die Temperatur steigt um einen weiteren Grad. Der Altar ist geduldig. Er war immer geduldig.",
+        ],
+    ),
 }
 
 # ── Devouring Mother Combat Spawn Configurations ─────────────────────────
@@ -790,6 +839,12 @@ MOTHER_SPAWN_CONFIGS: dict[str, list[dict]] = {
     "mother_host_warden_spawn": [
         {"template_id": "mother_host_warden", "count": 1},
         {"template_id": "mother_nutrient_weaver", "count": 1},
+    ],
+    # Boss: The Living Altar with protective entourage
+    "mother_living_altar_spawn": [
+        {"template_id": "mother_living_altar", "count": 1},
+        {"template_id": "mother_spore_matron", "count": 1},
+        {"template_id": "mother_tether_vine", "count": 1},
     ],
     # Rest site ambush (a gift arrives uninvited)
     "mother_rest_ambush_spawn": [

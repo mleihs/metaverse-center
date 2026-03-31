@@ -214,6 +214,11 @@ _FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "default": "tower_tremor_spawn",
         "rest_ambush": "tower_rest_ambush_spawn",
     },
+    "The Devouring Mother": {
+        "boss": "mother_living_altar_spawn",
+        "default": "mother_weaver_drift_spawn",
+        "rest_ambush": "mother_rest_ambush_spawn",
+    },
 }
 
 

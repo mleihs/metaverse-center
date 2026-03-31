@@ -3771,7 +3771,7 @@ MOTHER_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
             "Der Wirtskörper will nicht kämpfen. Er will umarmen. "
             "Er hat gewartet. Er hat immer gewartet."
         ),
-        combat_encounter_id="mother_host_warden_spawn",
+        combat_encounter_id="mother_living_altar_spawn",
     ),
 ]
 
