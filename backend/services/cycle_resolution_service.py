@@ -338,6 +338,11 @@ class CycleResolutionService:
     ) -> dict:
         """Resolve a cycle: allocate RP, increment cycle counter.
 
+        When ``use_atomic_cycle_advance`` platform setting is enabled,
+        cycle increment + phase transition use ``fn_advance_epoch_cycle``
+        RPC (migration 167) for atomicity. Otherwise falls back to
+        separate PostgREST UPDATEs.
+
         Mission resolution and scoring are handled by OperativeService
         and ScoringService respectively.
         """
@@ -391,6 +396,89 @@ class CycleResolutionService:
             await db.table("operative_missions").update(
                 {"resolves_at": new_ts}
             ).in_("id", ids).execute()
+
+        # ─── Atomic cycle advancement (migration 167) ───────────────
+        use_atomic_advance = await PlatformConfigService.get(
+            db, "use_atomic_cycle_advance", False,
+        )
+        if use_atomic_advance:
+            rpc_resp = await db.rpc("fn_advance_epoch_cycle", {
+                "p_epoch_id": str(epoch_id),
+                "p_expected_cycle": epoch["current_cycle"],
+            }).execute()
+            result = rpc_resp.data or {}
+
+            if result.get("error_code") == "concurrent_resolution":
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT,
+                    "Cycle was resolved concurrently. Please retry.",
+                )
+            if result.get("error_code") == "epoch_not_found":
+                raise HTTPException(status.HTTP_404_NOT_FOUND, "Epoch not found.")
+
+            # Phase overlap warning
+            foundation_end = result.get("foundation_end", 0)
+            reckoning_start = result.get("reckoning_start", 0)
+            if reckoning_start <= foundation_end:
+                logger.warning(
+                    "Phase overlap detected",
+                    extra={
+                        "epoch_id": str(epoch_id),
+                        "foundation_end": foundation_end,
+                        "reckoning_start": reckoning_start,
+                    },
+                )
+
+            # Post-transition side effects (same as legacy path)
+            if result.get("phase_changed"):
+                old_status = result["old_status"]
+                new_status = result["new_status"]
+                new_cycle_num = result["new_cycle"]
+                logger.info(
+                    "Epoch auto-advancing phase",
+                    extra={
+                        "epoch_id": str(epoch_id), "old_status": old_status,
+                        "new_status": new_status, "cycle_number": new_cycle_num,
+                    },
+                )
+                if new_status == "completed":
+                    await GameInstanceService.archive_instances(
+                        admin_supabase or supabase, epoch_id,
+                    )
+
+                await BattleLogService.log_phase_change(
+                    db, epoch_id, new_cycle_num, old_status, new_status,
+                )
+                try:
+                    from backend.services.cycle_notification_service import CycleNotificationService
+                    if new_status == "completed":
+                        await CycleNotificationService.send_epoch_completed_notifications(
+                            admin_supabase or supabase, str(epoch_id),
+                        )
+                    else:
+                        await CycleNotificationService.send_phase_change_notifications(
+                            admin_supabase or supabase, str(epoch_id),
+                            old_status, new_status,
+                        )
+                except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
+                    logger.warning(
+                        "Auto-phase notification failed",
+                        extra={"epoch_id": str(epoch_id)},
+                        exc_info=True,
+                    )
+                    sentry_sdk.capture_exception()
+
+            # Re-fetch full epoch row for downstream consumers
+            epoch_resp = await (
+                db.table("game_epochs")
+                .select("*")
+                .eq("id", str(epoch_id))
+                .single()
+                .execute()
+            )
+            return epoch_resp.data
+
+        # ─── Legacy path: separate cycle-increment + phase-update ───
 
         # Increment cycle (optimistic lock: only if current_cycle hasn't changed)
         resp = await (
