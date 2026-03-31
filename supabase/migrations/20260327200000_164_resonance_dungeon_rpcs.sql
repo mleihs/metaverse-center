@@ -494,7 +494,7 @@ LANGUAGE sql SECURITY INVOKER AS $$
         SELECT jsonb_build_object(
             'id', a.id,
             'name', a.name,
-            'portrait_url', a.portrait_url,
+            'portrait_url', a.portrait_image_url,
             'aptitudes', COALESCE(apt_agg.aptitudes, '{}'::JSONB),
             'personality', COALESCE(a.personality_profile, '{}'::JSONB),
             'mood_score', COALESCE(m.mood_score, 0),

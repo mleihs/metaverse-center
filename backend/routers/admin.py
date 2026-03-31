@@ -65,6 +65,20 @@ class HealthEffectsToggle(BaseModel):
     enabled: bool
 
 
+class DungeonOverrideUpdate(BaseModel):
+    """Configure which dungeons are admin-unlocked for a simulation.
+
+    mode:
+      - "supplement": Admin archetypes added alongside resonance-based ones
+      - "override": Only admin archetypes available, resonance logic bypassed
+      - "off": No admin overrides (resonance logic only)
+    archetypes: List of archetype names to unlock (e.g. ["The Shadow", "The Tower"])
+    """
+
+    mode: str = Field(default="off", pattern="^(off|supplement|override)$")
+    archetypes: list[str] = Field(default_factory=list)
+
+
 class ImpersonateRequest(BaseModel):
     user_id: UUID
 
@@ -406,6 +420,111 @@ async def update_simulation_health_effects(
         details={"enabled": body.enabled},
     )
     return {"success": True, "data": {"enabled": body.enabled}}
+
+
+# --- Dungeon Override ---
+
+
+@router.get("/dungeon-override", response_model=SuccessResponse[list[dict]])
+async def list_dungeon_overrides(
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """List all simulations with their dungeon override configs (bulk)."""
+    # Fetch all active simulations
+    sim_resp = (
+        await admin_supabase.table("simulations")
+        .select("id, name, slug")
+        .is_("deleted_at", "null")
+        .order("name")
+        .execute()
+    )
+    simulations = sim_resp.data or []
+
+    # Fetch all dungeon override settings in one query
+    override_resp = (
+        await admin_supabase.table("simulation_settings")
+        .select("simulation_id, setting_value")
+        .eq("category", "game")
+        .eq("setting_key", "dungeon_override")
+        .execute()
+    )
+    overrides_by_sim: dict[str, dict] = {
+        row["simulation_id"]: row["setting_value"]
+        for row in (override_resp.data or [])
+        if isinstance(row.get("setting_value"), dict)
+    }
+
+    result = []
+    for sim in simulations:
+        config = overrides_by_sim.get(sim["id"], {})
+        result.append({
+            "id": sim["id"],
+            "name": sim["name"],
+            "slug": sim["slug"],
+            "mode": config.get("mode", "off"),
+            "archetypes": config.get("archetypes", []),
+        })
+
+    return {"success": True, "data": result}
+
+
+@router.get("/dungeon-override/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+async def get_dungeon_override(
+    simulation_id: UUID,
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Get dungeon override config for a simulation."""
+    resp = (
+        await admin_supabase.table("simulation_settings")
+        .select("setting_value")
+        .eq("simulation_id", str(simulation_id))
+        .eq("category", "game")
+        .eq("setting_key", "dungeon_override")
+        .maybe_single()
+        .execute()
+    )
+    config = resp.data.get("setting_value", {}) if resp.data else {}
+    return {
+        "success": True,
+        "data": {
+            "mode": config.get("mode", "off"),
+            "archetypes": config.get("archetypes", []),
+        },
+    }
+
+
+@router.put("/dungeon-override/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+async def update_dungeon_override(
+    simulation_id: UUID,
+    body: DungeonOverrideUpdate,
+    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Configure dungeon override for a simulation.
+
+    mode=off: resonance logic only (default).
+    mode=supplement: admin archetypes added alongside resonance results.
+    mode=override: only admin archetypes, resonance bypassed.
+    """
+    config = {"mode": body.mode, "archetypes": body.archetypes}
+    await SettingsService.upsert_setting(
+        admin_supabase,
+        simulation_id,
+        user.id,
+        {
+            "category": "game",
+            "setting_key": "dungeon_override",
+            "setting_value": config,
+        },
+    )
+    await AuditService.safe_log(
+        admin_supabase, simulation_id, user.id,
+        "simulation_settings", "dungeon_override", "update",
+        details=config,
+    )
+    return {"success": True, "data": config}
 
 
 # --- Impersonation ---

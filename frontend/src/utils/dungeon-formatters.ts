@@ -1069,7 +1069,7 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
 // ── Available Dungeons ───────────────────────────────────────────────────────
 
 export function formatAvailableDungeons(
-  dungeons: Array<{ archetype: string; signature: string; suggested_difficulty: number; available: boolean }>,
+  dungeons: Array<{ archetype: string; signature: string; suggested_difficulty: number; available: boolean; admin_override?: boolean }>,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -1083,8 +1083,11 @@ export function formatAvailableDungeons(
   lines.push(systemLine(''));
 
   for (const d of dungeons) {
-    const availStr = d.available ? '' : ` [${msg('COOLDOWN')}]`;
-    lines.push(responseLine(`  ${d.archetype} (${d.signature}) \u2014 ${msg('Suggested')}: ${'*'.repeat(d.suggested_difficulty)}${availStr}`));
+    const badges: string[] = [];
+    if (!d.available) badges.push(`[${msg('COOLDOWN')}]`);
+    if (d.admin_override) badges.push('[ADMIN]');
+    const badgeStr = badges.length > 0 ? ` ${badges.join(' ')}` : '';
+    lines.push(responseLine(`  ${d.archetype} (${d.signature}) \u2014 ${msg('Suggested')}: ${'*'.repeat(d.suggested_difficulty)}${badgeStr}`));
   }
 
   lines.push(responseLine(''));

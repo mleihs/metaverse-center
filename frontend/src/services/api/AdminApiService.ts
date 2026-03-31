@@ -369,6 +369,25 @@ export class AdminApiService extends BaseApiService {
   async restoreSimulation(simulationId: string): Promise<ApiResponse<unknown>> {
     return this.post(`/admin/simulations/${simulationId}/restore`, {});
   }
+
+  // --- Dungeon Override ---
+
+  async listDungeonOverrides(): Promise<ApiResponse<DungeonOverrideSimulation[]>> {
+    return this.get('/admin/dungeon-override');
+  }
+
+  async getDungeonOverride(
+    simulationId: string,
+  ): Promise<ApiResponse<DungeonOverrideConfig>> {
+    return this.get(`/admin/dungeon-override/simulations/${simulationId}`);
+  }
+
+  async updateDungeonOverride(
+    simulationId: string,
+    config: DungeonOverrideConfig,
+  ): Promise<ApiResponse<DungeonOverrideConfig>> {
+    return this.put(`/admin/dungeon-override/simulations/${simulationId}`, config);
+  }
 }
 
 export interface HealthEffectsData {
@@ -629,6 +648,21 @@ export interface AIUsageStats {
   by_simulation: (AIUsageBreakdown & { simulation_id: string })[];
   daily_trend: (AIUsageBreakdown & { date: string })[];
   key_sources: Record<string, AIUsageBreakdown>;
+}
+
+// ── Dungeon Override ──────────────────────────────────────────────────
+
+export interface DungeonOverrideConfig {
+  mode: 'off' | 'supplement' | 'override';
+  archetypes: string[];
+}
+
+export interface DungeonOverrideSimulation {
+  id: string;
+  name: string;
+  slug: string;
+  mode: 'off' | 'supplement' | 'override';
+  archetypes: string[];
 }
 
 export const adminApi = new AdminApiService();

@@ -350,14 +350,15 @@ class AvailableDungeonResponse(BaseModel):
 
     archetype: str
     signature: str
-    resonance_id: UUID
-    magnitude: float
-    susceptibility: float
-    effective_magnitude: float
-    suggested_difficulty: int = Field(..., ge=1, le=5)
-    suggested_depth: int = Field(..., ge=3, le=7)
+    resonance_id: UUID | None = None  # None when admin-overridden (no resonance)
+    magnitude: float = 0.5
+    susceptibility: float = 0.5
+    effective_magnitude: float = 0.5
+    suggested_difficulty: int = Field(default=3, ge=1, le=5)
+    suggested_depth: int = Field(default=5, ge=3, le=7)
     last_run_at: datetime | None = None
     available: bool = True
+    admin_override: bool = False  # True when unlocked via admin setting
 
 
 class AgentLootEffectResponse(BaseModel):

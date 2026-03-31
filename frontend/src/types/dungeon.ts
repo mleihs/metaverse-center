@@ -528,7 +528,7 @@ export interface RetreatResponse {
 export interface AvailableDungeonResponse {
   archetype: string;
   signature: string;
-  resonance_id: UUID;
+  resonance_id: UUID | null;
   magnitude: number;
   susceptibility: number;
   effective_magnitude: number;
@@ -536,6 +536,7 @@ export interface AvailableDungeonResponse {
   suggested_depth: number;
   last_run_at: string | null;
   available: boolean;
+  admin_override: boolean;
 }
 
 /** Single dungeon event from the event log. */
