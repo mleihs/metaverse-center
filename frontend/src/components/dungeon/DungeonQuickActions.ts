@@ -27,6 +27,7 @@ import { customElement } from 'lit/decorators.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
+import { localized as localizedField } from '../../utils/locale-fields.js';
 import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgHoldButton.js';
 
@@ -267,7 +268,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
             class="action-btn action-btn--primary"
             @click=${() => this._dispatch(`interact ${i + 1}`)}
           >
-            [${i + 1}] ${choice.label_en}
+            [${i + 1}] ${localizedField(choice, 'label')}
           </button>
         `,
       )}

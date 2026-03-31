@@ -190,7 +190,8 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
       }
 
       .bar-label {
-        width: 32px;
+        min-width: 32px;
+        width: max-content;
         font-family: var(--_mono);
         font-size: 8px;
         text-transform: uppercase;

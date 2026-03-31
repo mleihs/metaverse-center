@@ -26,6 +26,7 @@ import { dungeonState } from '../../services/DungeonStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
+import { getArchetypeDisplayName } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 import { parseAndExecute } from '../../utils/terminal-commands.js';
 import { systemLine } from '../../utils/terminal-formatters.js';
@@ -417,7 +418,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         // Active dungeon found — sync terminal mode + acquire wake lock
         terminalState.initializeDungeon(
           dungeonState.runId.value!,
-          dungeonState.clientState.value?.archetype,
+          getArchetypeDisplayName(dungeonState.clientState.value?.archetype ?? ''),
         );
         await this._acquireWakeLock();
       } else {
@@ -606,7 +607,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
               class="lobby-dungeon ${d.available ? '' : 'lobby-dungeon--unavailable'}"
               role="listitem"
             >
-              <span class="lobby-dungeon__name">${d.archetype}</span>
+              <span class="lobby-dungeon__name">${getArchetypeDisplayName(d.archetype)}</span>
               <span class="lobby-dungeon__meta">
                 <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
                 <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>

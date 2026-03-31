@@ -21,7 +21,7 @@ import type {
   EnemyCombatStateClient,
   TelegraphedAction,
 } from '../../types/dungeon.js';
-import { buildEnemyDisplayNames } from '../../utils/dungeon-formatters.js';
+import { buildEnemyDisplayNames, getEnemyConditionLabel } from '../../utils/dungeon-formatters.js';
 import {
   terminalComponentTokens,
   terminalTokens,
@@ -396,7 +396,7 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
               ${enemy.threat_level.toUpperCase()}
             </velg-badge>
           </span>
-          <span class="enemy__condition enemy__condition--${cond}">${cond}</span>
+          <span class="enemy__condition enemy__condition--${cond}">${getEnemyConditionLabel(cond)}</span>
         </div>
         ${!isDead ? html`
           <div class="enemy__hp-bar">

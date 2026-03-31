@@ -1527,9 +1527,11 @@ class DungeonEngineService:
                     available_abilities=[
                         AbilityOption(
                             id=a.id,
-                            name=a.name_en,
+                            name_en=a.name_en,
+                            name_de=a.name_de,
                             school=a.school,
-                            description=a.description_en,
+                            description_en=a.description_en,
+                            description_de=a.description_de,
                             cooldown_remaining=agent.cooldowns.get(a.id, 0),
                             is_ultimate=a.is_ultimate,
                             targets=a.targets,

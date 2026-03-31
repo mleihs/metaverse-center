@@ -26,6 +26,7 @@ import {
   formatAgentPicker,
   formatArchetypeBriefing,
   formatAvailableDungeons,
+  getArchetypeDisplayName,
   formatCombatPlanning,
   formatCombatResolution,
   formatCombatStalemate,
@@ -267,7 +268,7 @@ export async function startDungeonRun(
     const { run, state, entrance_text } = resp.data;
     dungeonState.applyState(state);
     terminalState.clearOutput();
-    terminalState.initializeDungeon(String(run.id), state.archetype);
+    terminalState.initializeDungeon(String(run.id), getArchetypeDisplayName(state.archetype));
 
     const atmosphereText = localized(entrance_text, 'text');
 
@@ -789,14 +790,14 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   const abilityArg = ctx.args[1].toLowerCase();
   const abilityNames = agent.available_abilities
     .filter(a => a.cooldown_remaining === 0)
-    .map(a => a.name);
+    .map(a => localized(a, 'name'));
   const matchedAbility = fuzzyName(abilityArg, abilityNames);
 
   if (!matchedAbility) {
     return [errorLine(`${msg('Unknown or unavailable ability')}: ${abilityArg}`)];
   }
 
-  const ability = agent.available_abilities.find(a => a.name === matchedAbility)!;
+  const ability = agent.available_abilities.find(a => localized(a, 'name') === matchedAbility)!;
 
   // Optional target (enemy)
   const targetArg = ctx.args.length > 2 ? ctx.args.slice(2).join(' ') : undefined;

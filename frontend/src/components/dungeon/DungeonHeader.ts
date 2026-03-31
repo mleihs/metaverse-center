@@ -26,6 +26,7 @@ import {
   isShadowState,
   isTowerState,
 } from '../../types/dungeon.js';
+import { getArchetypeDisplayName } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
@@ -483,7 +484,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
-        <span class="archetype" style="--_archetype-color: ${archetypeColor}">${state.archetype}</span>
+        <span class="archetype" style="--_archetype-color: ${archetypeColor}">${getArchetypeDisplayName(state.archetype)}</span>
         <span class="sep"></span>
 
         <div class="depth">

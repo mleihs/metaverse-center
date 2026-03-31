@@ -266,10 +266,12 @@ export interface BuffDebuff {
 /** Available ability for combat planning. */
 export interface AbilityOption {
   id: string;
-  name: string;
+  name_en: string;
+  name_de: string;
   /** Ability school (spy, guardian, etc.). */
   school: string;
-  description: string;
+  description_en: string;
+  description_de: string;
   /** Pre-calculated check info (e.g. "Spy 8: 73% success"). Null if auto-success. */
   check_info: string | null;
   /** Rounds until usable. 0 = ready. */

@@ -31,7 +31,8 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
-import { buildEnemyDisplayNames, getConditionLabel } from '../../utils/dungeon-formatters.js';
+import { buildEnemyDisplayNames, getConditionLabel, getEnemyConditionLabel } from '../../utils/dungeon-formatters.js';
+import { localized as localizedField } from '../../utils/locale-fields.js';
 import {
   terminalComponentTokens,
   terminalTokens,
@@ -929,10 +930,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         ?disabled=${onCooldown}
         role="radio"
         aria-checked=${isSelected ? 'true' : 'false'}
-        title=${ability.description}
+        title=${localizedField(ability, 'description')}
         @click=${() => this._handleAbilityClick(agent, ability, enemies)}
       >
-        ${ability.is_ultimate ? '\u2605 ' : ''}${ability.name}${onCooldown
+        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedField(ability, 'name')}${onCooldown
           ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
           : nothing}${ability.check_info
           ? html`<span class="ability__check"> ${ability.check_info}</span>`
@@ -985,7 +986,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         <span class="targets__label">\u25BA ${msg('Target')}:</span>
         ${enemies.map((enemy) => {
           const baseName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
-          const cond = enemy.condition_display !== 'healthy' ? ` (${enemy.condition_display})` : '';
+          const cond = enemy.condition_display !== 'healthy' ? ` (${getEnemyConditionLabel(enemy.condition_display)})` : '';
           return html`
             <button
               class="target"

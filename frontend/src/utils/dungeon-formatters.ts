@@ -22,7 +22,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
-import { ARCHETYPE_ENTROPY, ARCHETYPE_MOTHER, ARCHETYPE_TOWER, isMotherState, isShadowState, isTowerState } from '../types/dungeon.js';
+import { ARCHETYPE_ENTROPY, ARCHETYPE_MOTHER, ARCHETYPE_SHADOW, ARCHETYPE_TOWER, isMotherState, isShadowState, isTowerState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -55,6 +55,19 @@ const ROOM_SYMBOLS: Record<string, string> = {
 
 /** Unicode markers for loot tiers: ◆ minor, ★ major, ✦ legendary. */
 export const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
+
+// ── Archetype Display Names ─────────────────────────────────────────────────
+
+/** Locale-aware archetype display name (EN key → localized label via msg()). */
+export function getArchetypeDisplayName(archetype: string): string {
+  switch (archetype) {
+    case ARCHETYPE_SHADOW: return msg('The Shadow');
+    case ARCHETYPE_TOWER: return msg('The Tower');
+    case ARCHETYPE_ENTROPY: return msg('The Entropy');
+    case ARCHETYPE_MOTHER: return msg('The Devouring Mother');
+    default: return archetype;
+  }
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -116,6 +129,19 @@ export function getConditionLabel(condition: string): string {
   return labels[condition]?.() ?? condition;
 }
 
+/** i18n-aware enemy condition label for UI components. */
+export function getEnemyConditionLabel(condition: string): string {
+  const labels: Record<string, () => string> = {
+    healthy: () => msg('healthy'),
+    scratched: () => msg('scratched'),
+    damaged: () => msg('damaged'),
+    wounded: () => msg('wounded'),
+    critical: () => msg('critical'),
+    defeated: () => msg('defeated'),
+  };
+  return labels[condition]?.() ?? condition;
+}
+
 /** i18n-aware room type label for UI components. */
 export function getRoomTypeLabel(type: string, fallbackIndex?: number): string {
   const labels: Record<string, () => string> = {
@@ -163,7 +189,7 @@ export function formatDungeonEntry(
   const lines: TerminalLine[] = [];
 
   lines.push(systemLine('\u2550'.repeat(50)));
-  lines.push(systemLine(`  RESONANCE DUNGEON \u2014 ${state.archetype.toUpperCase()}`));
+  lines.push(systemLine(`  ${msg('RESONANCE DUNGEON')} \u2014 ${getArchetypeDisplayName(state.archetype).toUpperCase()}`));
   const depthDisplay = getMaxDepth(state.rooms) || '?';
   lines.push(systemLine(`  ${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}${'·'.repeat(5 - state.difficulty)}  ${msg('Depth')}: ${depthDisplay}`));
   lines.push(systemLine('\u2550'.repeat(50)));
@@ -461,8 +487,8 @@ export function formatCombatPlanning(
       const checkStr = ability.check_info ? ` (${ability.check_info})` : '';
       const available = ability.cooldown_remaining === 0;
       const marker = ability.is_ultimate ? '\u2605' : available ? '\u25C9' : '\u25CB';
-      lines.push(responseLine(`  ${marker} ${ability.name}${checkStr}${cdStr}${ultStr}`));
-      lines.push(responseLine(`    ${ability.description}`));
+      lines.push(responseLine(`  ${marker} ${localized(ability, 'name')}${checkStr}${cdStr}${ultStr}`));
+      lines.push(responseLine(`    ${localized(ability, 'description')}`));
     }
     lines.push(systemLine(''));
   }

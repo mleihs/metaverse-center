@@ -409,9 +409,11 @@ class AbilityOption(BaseModel):
     """Available ability for combat planning."""
 
     id: str
-    name: str
+    name_en: str
+    name_de: str
     school: str
-    description: str
+    description_en: str
+    description_de: str
     check_info: str | None = None  # "Spy 8: 73% success"
     cooldown_remaining: int = 0
     is_ultimate: bool = False

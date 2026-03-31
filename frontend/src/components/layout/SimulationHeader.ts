@@ -234,6 +234,16 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     return 'badge--archived';
   }
 
+  private _getStatusLabel(status: string): string {
+    switch (status) {
+      case 'active': return msg('active');
+      case 'draft': return msg('draft');
+      case 'configuring': return msg('configuring');
+      case 'archived': return msg('archived');
+      default: return status;
+    }
+  }
+
   private _openDispatch(): void {
     this.dispatchEvent(new CustomEvent('open-bureau-dispatch', { bubbles: true, composed: true }));
   }
@@ -256,7 +266,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     return html`
       <div class="header">
         <h2 class="header__name">${sim.name}</h2>
-        <span class="header__badge ${this._getBadgeClass(sim.status)}">${sim.status}</span>
+        <span class="header__badge ${this._getBadgeClass(sim.status)}">${this._getStatusLabel(sim.status)}</span>
         ${
           this._threatLevel
             ? html`<velg-threat-level
