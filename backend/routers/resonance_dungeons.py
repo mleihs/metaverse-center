@@ -76,11 +76,11 @@ async def create_run(
     simulation_id: UUID = Query(...),
     user: CurrentUser = Depends(get_current_user),
     _member: str = Depends(require_simulation_member("editor")),
-    supabase: Client = Depends(get_supabase),
+    _supabase: Client = Depends(get_supabase),
     admin: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Start a new dungeon run."""
-    result = await DungeonEngineService.create_run(admin, supabase, simulation_id, user.id, body)
+    result = await DungeonEngineService.create_run(admin, simulation_id, user.id, body)
     await AuditService.safe_log(
         admin,
         simulation_id,

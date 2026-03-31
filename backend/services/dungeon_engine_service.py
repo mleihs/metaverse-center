@@ -336,7 +336,6 @@ class DungeonEngineService:
     async def create_run(
         cls,
         admin_supabase: Client,
-        supabase: Client,
         simulation_id: UUID,
         user_id: UUID,
         body: DungeonRunCreate,
