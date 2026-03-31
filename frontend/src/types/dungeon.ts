@@ -405,9 +405,19 @@ export interface CreateRunResponse {
   state: DungeonClientState;
 }
 
+/** Anchor object text entry (Objektanker Variation C). */
+export interface AnchorText {
+  text_en: string;
+  text_de: string;
+  anchor_id: string;
+  phase: string;
+}
+
 /** POST /dungeons/runs/{id}/move — room entry response. */
 export interface MoveToRoomResponse {
   banter?: Record<string, string> | null;
+  anchor_texts?: AnchorText[] | null;
+  barometer_text?: Record<string, string> | null;
   combat?: boolean;
   encounter?: boolean;
   encounter_id?: string;

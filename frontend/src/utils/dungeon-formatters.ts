@@ -10,6 +10,7 @@ import { msg } from '@lit/localize';
 
 import type {
   AgentCombatStateClient,
+  AnchorText,
   ArchetypeState,
   CombatRoundResult,
   CombatStateClient,
@@ -305,6 +306,8 @@ export function formatRoomEntry(
   room: RoomNodeClient,
   banterText: string | null,
   archetypeState: ArchetypeState,
+  anchorTexts?: AnchorText[] | null,
+  barometerText?: string | null,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -317,6 +320,17 @@ export function formatRoomEntry(
   // Room header
   lines.push(responseLine(''));
   lines.push(systemLine(`\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2014 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`));
+
+  // Anchor object text (environmental narrative — part of the room)
+  if (anchorTexts && anchorTexts.length > 0) {
+    for (const anchor of anchorTexts) {
+      const text = anchor.text_en;
+      if (text) {
+        lines.push(responseLine(''));
+        lines.push(responseLine(text));
+      }
+    }
+  }
 
   // Archetype-specific state (Shadow: visibility)
   if (isShadowState(archetypeState)) {
@@ -334,6 +348,11 @@ export function formatRoomEntry(
     const empty = Math.round((max_attachment - attachment) / 5);
     const bar = '\u2591'.repeat(empty) + '\u2588'.repeat(filled);
     lines.push(systemLine(`PARASITIC ATTACHMENT: ${bar} [${attachment}/${max_attachment}]`));
+  }
+
+  // Barometer text (archetype state → prose narrative, after the numeric bar)
+  if (barometerText) {
+    lines.push(responseLine(barometerText));
   }
 
   // Room type header

@@ -159,6 +159,16 @@ class DungeonInstance(BaseModel):
     loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
     auto_apply_loot: list[dict] = Field(default_factory=list)  # pre-built auto-apply items
 
+    # Objektanker (Variation C — "Wandernde Dinge")
+    # 2 object IDs selected from ANCHOR_OBJECTS pool at run creation
+    anchor_objects: list[str] = Field(default_factory=list)
+    # Tracks which phases have been shown per object, e.g. {"shadow_note": ["discovery", "echo"]}
+    anchor_phases_shown: dict[str, list[str]] = Field(default_factory=dict)
+
+    # Resonanz-Barometer (Variation B — archetype state → prose)
+    # Last displayed barometer tier (0-based). -1 = never shown.
+    last_barometer_tier: int = -1
+
     def to_checkpoint(self) -> dict:
         """Serialize only mutable state for DB checkpoint (Review #17).
 
@@ -188,6 +198,9 @@ class DungeonInstance(BaseModel):
             "pending_loot": self.pending_loot,
             "loot_assignments": self.loot_assignments,
             "auto_apply_loot": self.auto_apply_loot,
+            "anchor_objects": self.anchor_objects,
+            "anchor_phases_shown": self.anchor_phases_shown,
+            "last_barometer_tier": self.last_barometer_tier,
         }
 
     def restore_from_checkpoint(self, checkpoint: dict) -> None:
@@ -206,6 +219,9 @@ class DungeonInstance(BaseModel):
         self.pending_loot = checkpoint.get("pending_loot", [])
         self.loot_assignments = checkpoint.get("loot_assignments", {})
         self.auto_apply_loot = checkpoint.get("auto_apply_loot", [])
+        self.anchor_objects = checkpoint.get("anchor_objects", [])
+        self.anchor_phases_shown = checkpoint.get("anchor_phases_shown", {})
+        self.last_barometer_tier = checkpoint.get("last_barometer_tier", -1)
         # Restore room flags
         cleared = set(checkpoint.get("room_cleared_flags", []))
         revealed = set(checkpoint.get("room_revealed_flags", []))

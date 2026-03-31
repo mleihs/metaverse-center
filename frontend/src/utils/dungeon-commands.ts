@@ -336,6 +336,8 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
           room,
           result.banter ? (result.banter.text_en ?? null) : null,
           result.state.archetype_state,
+          result.anchor_texts ?? null,
+          result.barometer_text ? (result.barometer_text.text_en ?? null) : null,
         ),
       );
     }

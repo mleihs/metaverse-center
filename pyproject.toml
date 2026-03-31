@@ -68,9 +68,11 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "backend/services/combat/stress_system.py" = ["S311"]  # Game RNG is intentional
 "backend/services/dungeon/dungeon_archetypes.py" = ["E501"]  # Config dict lines
 "backend/services/dungeon/dungeon_generator.py" = ["S311"]  # Game RNG is intentional
+"backend/services/dungeon/dungeon_banter.py" = ["S311", "E501"]  # Game RNG + bilingual banter
 "backend/services/dungeon/dungeon_encounters.py" = ["S311", "E501"]  # Game RNG + bilingual narratives
 "backend/services/dungeon/dungeon_combat.py" = ["S311", "E501"]  # Game RNG + bilingual descriptions
 "backend/services/dungeon/dungeon_loot.py" = ["S311", "E501"]  # Game RNG + bilingual descriptions
+"backend/services/dungeon/dungeon_objektanker.py" = ["E501"]  # Bilingual anchor/barometer prose
 "backend/services/ambient_weather_service.py" = ["S311"]  # SHA-256 seeded PRNG is intentional (deterministic text, not crypto)
 "scripts/**/*.py" = ["T201", "E402"]
 
