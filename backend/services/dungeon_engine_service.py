@@ -1223,6 +1223,15 @@ class DungeonEngineService:
         instance.phase = "retreated"
         instance.phase_timer = None
 
+        # Select retreat banter (archetype-specific farewell)
+        retreat_banter = select_banter(
+            "retreat",
+            [{"personality": a.personality} for a in instance.party],
+            instance.used_banter_ids,
+            instance.archetype,
+            instance.archetype_state,
+        )
+
         # Partial loot: Tier 1 for rooms cleared
         loot = []
         if instance.rooms_cleared > 0:
@@ -1260,10 +1269,16 @@ class DungeonEngineService:
             extra=_log_extra(instance, outcome="retreat", rooms_cleared=instance.rooms_cleared),
         )
 
-        return {
+        result: dict = {
             "retreated": True,
             "loot": [item.model_dump() for item in loot],
         }
+        if retreat_banter:
+            result["banter"] = {
+                "text_en": retreat_banter.get("text_en", ""),
+                "text_de": retreat_banter.get("text_de", ""),
+            }
+        return result
 
     # ── Available Dungeons ──────────────────────────────────────────────
 
