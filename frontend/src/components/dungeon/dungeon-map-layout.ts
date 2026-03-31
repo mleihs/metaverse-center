@@ -1,0 +1,137 @@
+/**
+ * Dungeon Map Layout Engine — pure function, no DOM, no Lit.
+ *
+ * Computes node positions for a vertical depth-first DAG layout.
+ * Depth axis runs top-to-bottom, branches spread left-to-right.
+ * Fully unit-testable.
+ *
+ * Pattern: Pure data transformation (like dungeon-formatters.ts).
+ */
+
+import type { RoomNodeClient } from '../../types/dungeon.js';
+
+// ── Public Types ────────────────────────────────────────────────────────────
+
+export interface MapLayoutConfig {
+  nodeRadius: number;
+  /** Vertical gap between depth layers (top-to-bottom). */
+  vGap: number;
+  /** Horizontal gap between nodes in the same depth layer. */
+  hGap: number;
+  /** Canvas padding around all edges. */
+  padding: number;
+}
+
+export interface NodePosition {
+  room: RoomNodeClient;
+  x: number;
+  y: number;
+}
+
+export interface EdgeDefinition {
+  /** Canonical key: `min-max` of room indices. */
+  key: string;
+  sourceIndex: number;
+  targetIndex: number;
+  /** Both endpoints revealed? */
+  foggy: boolean;
+}
+
+export interface MapLayout {
+  nodes: NodePosition[];
+  edges: EdgeDefinition[];
+  width: number;
+  height: number;
+}
+
+// ── Default Config ──────────────────────────────────────────────────────────
+
+export const DEFAULT_MAP_CONFIG: MapLayoutConfig = {
+  nodeRadius: 30,
+  vGap: 90,
+  hGap: 72,
+  padding: 36,
+};
+
+// ── Layout Function ─────────────────────────────────────────────────────────
+
+/**
+ * Position nodes in a vertical depth-first DAG.
+ *
+ * - Y-axis = depth (top-to-bottom), spaced by `config.vGap`
+ * - X-axis = branching within a layer, centered horizontally
+ * - Each depth layer sorted by room index for stable ordering
+ *
+ * Also extracts the unique edge list for rendering.
+ */
+export function layoutDungeonMap(
+  rooms: RoomNodeClient[],
+  config: MapLayoutConfig = DEFAULT_MAP_CONFIG,
+): MapLayout {
+  if (rooms.length === 0) {
+    return { nodes: [], edges: [], width: 0, height: 0 };
+  }
+
+  const { vGap, hGap, padding } = config;
+
+  // ── Group by depth ──────────────────────────────────────────────────────
+  const byDepth = new Map<number, RoomNodeClient[]>();
+  for (const r of rooms) {
+    const arr = byDepth.get(r.depth) ?? [];
+    arr.push(r);
+    byDepth.set(r.depth, arr);
+  }
+
+  const depths = [...byDepth.keys()].sort((a, b) => a - b);
+  const maxPerLayer = Math.max(...depths.map((d) => byDepth.get(d)!.length), 1);
+
+  // Canvas dimensions
+  const canvasW = Math.max(padding * 2 + (maxPerLayer - 1) * hGap, padding * 2 + hGap);
+  const canvasH = Math.max(padding * 2 + (depths.length - 1) * vGap, padding * 2);
+
+  // ── Position nodes ────────────────────────────────────────────────────
+  const nodes: NodePosition[] = [];
+
+  for (const depth of depths) {
+    const layer = byDepth.get(depth)!;
+    layer.sort((a, b) => a.index - b.index);
+
+    const layerW = (layer.length - 1) * hGap;
+    const startX = (canvasW - layerW) / 2;
+    const y = padding + (depth - depths[0]) * vGap;
+
+    for (let i = 0; i < layer.length; i++) {
+      nodes.push({
+        room: layer[i],
+        x: startX + i * hGap,
+        y,
+      });
+    }
+  }
+
+  // ── Extract edges ─────────────────────────────────────────────────────
+  // Pre-build index for O(1) peer lookup (avoids O(n) find per edge)
+  const roomByIndex = new Map<number, RoomNodeClient>();
+  for (const r of rooms) roomByIndex.set(r.index, r);
+
+  const edgeSet = new Set<string>();
+  const edges: EdgeDefinition[] = [];
+
+  for (const room of rooms) {
+    for (const ci of room.connections) {
+      const key = room.index < ci ? `${room.index}-${ci}` : `${ci}-${room.index}`;
+      if (edgeSet.has(key)) continue;
+      edgeSet.add(key);
+
+      const peer = roomByIndex.get(ci);
+      edges.push({
+        key,
+        sourceIndex: Math.min(room.index, ci),
+        targetIndex: Math.max(room.index, ci),
+        foggy: !room.revealed || !peer?.revealed,
+      });
+    }
+  }
+
+  return { nodes, edges, width: canvasW, height: canvasH };
+}

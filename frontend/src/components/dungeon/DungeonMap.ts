@@ -1,15 +1,24 @@
 /**
- * Dungeon Map — interactive SVG DAG with fog-of-war.
+ * Dungeon Map — interactive vertical SVG DAG with fog-of-war.
  *
- * Renders the dungeon room graph as an FTL-style horizontal node map.
- * Nodes grouped by depth (columns, left-to-right). Supports:
- *   - Click-to-move for adjacent revealed rooms
- *   - Fog-of-war (unrevealed rooms at reduced opacity)
- *   - Visual status: current (pulsing glow), cleared (dimmed)
- *   - Collapsible via header toggle
+ * Orchestrates the dungeon map display:
+ *   - Vertical depth-first layout (top-to-bottom depth, left-to-right branches)
+ *   - SVG filter definitions (fog noise, beacon glow)
+ *   - Edges via renderMapEdge() (render module, not custom element)
+ *   - Nodes via renderMapNode() (render module, not custom element)
+ *   - DungeonRoomPanel for room inspection (HTML custom element, outside SVG)
+ *   - Auto-scroll to current room on depth change
+ *   - Animation diff state (reveal, trace, depth ping)
+ *
+ * Architecture note: SVG sub-elements (nodes, edges) are render functions, not
+ * custom elements, because custom elements only exist in the HTML namespace —
+ * they cannot be nested inside <svg>. DungeonRoomPanel IS a custom element
+ * because it renders in HTML context below the SVG.
  *
  * Pure signal consumer — reads rooms, currentRoom, adjacentRooms from state.
  * Click dispatches `terminal-command` CustomEvent (same as QuickActions).
+ *
+ * External API unchanged: <velg-dungeon-map persistent></velg-dungeon-map>
  *
  * Pattern: DungeonHeader.ts (signal-reactive, terminal tokens).
  */
@@ -17,106 +26,34 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, svg } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { RoomNodeClient } from '../../types/dungeon.js';
-import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 import {
   terminalComponentTokens,
   terminalTokens,
 } from '../shared/terminal-theme-styles.js';
+import {
+  DEFAULT_MAP_CONFIG,
+  layoutDungeonMap,
+  type NodePosition,
+} from './dungeon-map-layout.js';
+import { mapEdgeStyles, renderMapEdge } from './DungeonMapEdge.js';
+import { mapNodeStyles, renderMapNode } from './DungeonMapNode.js';
+import './DungeonRoomPanel.js';
 
-// ── Layout Engine ────────────────────────────────────────────────────────────
-
-interface NodePosition {
-  room: RoomNodeClient;
-  x: number;
-  y: number;
-}
-
-const NODE_R = 18;
-const H_GAP = 100;
-const V_GAP = 60;
-const PAD = 28;
-
-/** Room type → color CSS value (all reference design tokens). */
-const ROOM_COLOR: Record<string, string> = {
-  combat: 'var(--_phosphor-dim)',
-  elite: 'var(--color-warning)',
-  encounter: 'var(--color-info)',
-  treasure: 'var(--color-ascendant-gold)',
-  rest: 'var(--color-success)',
-  boss: 'var(--color-danger)',
-  entrance: 'var(--_phosphor)',
-  exit: 'var(--_phosphor)',
-};
-
-/** Room type → single-character label for SVG nodes. */
-const ROOM_LABEL: Record<string, string> = {
-  combat: 'C',
-  elite: '!',
-  encounter: '?',
-  treasure: 'T',
-  rest: 'R',
-  boss: 'B',
-  entrance: 'E',
-  exit: 'X',
-};
-
-/** Position nodes in FTL-style horizontal depth layers. */
-function layoutNodes(rooms: RoomNodeClient[]): {
-  nodes: NodePosition[];
-  w: number;
-  h: number;
-} {
-  if (rooms.length === 0) return { nodes: [], w: 0, h: 0 };
-
-  const byDepth = new Map<number, RoomNodeClient[]>();
-  for (const r of rooms) {
-    const arr = byDepth.get(r.depth) ?? [];
-    arr.push(r);
-    byDepth.set(r.depth, arr);
-  }
-
-  const depths = [...byDepth.keys()].sort((a, b) => a - b);
-  const maxPerLayer = Math.max(
-    ...depths.map((d) => byDepth.get(d)!.length),
-    1,
-  );
-  const totalH = PAD * 2 + (maxPerLayer - 1) * V_GAP;
-  const nodes: NodePosition[] = [];
-
-  for (const depth of depths) {
-    const layer = byDepth.get(depth)!;
-    layer.sort((a, b) => a.index - b.index);
-    const layerH = (layer.length - 1) * V_GAP;
-    const startY = (totalH - layerH) / 2;
-
-    for (let i = 0; i < layer.length; i++) {
-      nodes.push({
-        room: layer[i],
-        x: PAD + (depth - depths[0]) * H_GAP,
-        y: startY + i * V_GAP,
-      });
-    }
-  }
-
-  return {
-    nodes,
-    w: Math.max(PAD * 2 + (depths.length - 1) * H_GAP, 100),
-    h: Math.max(totalH, PAD * 2),
-  };
-}
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 @localized()
 @customElement('velg-dungeon-map')
 export class VelgDungeonMap extends SignalWatcher(LitElement) {
   /** When true, map is always expanded (toggle hidden, no max-height). */
   @property({ type: Boolean, reflect: true }) persistent = false;
+
+  /** Currently selected room for the detail panel. */
+  @state() private _selectedRoom: RoomNodeClient | null = null;
 
   // ── Animation state-diffing (non-reactive) ────────────────────────────
   private _diffInitialized = false;
@@ -125,10 +62,15 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
   private _newlyRevealed = new Set<number>();
   private _newlyTracedEdges = new Set<string>();
   private _depthHighlight = new Set<number>();
+  /** Track whether we need to scroll after render. */
+  private _shouldScrollToCurrentAfterUpdate = false;
 
   static styles = [
     terminalTokens,
     terminalComponentTokens,
+    // Compose sub-module styles into this component's shadow root
+    mapNodeStyles,
+    mapEdgeStyles,
     css`
       :host {
         display: block;
@@ -179,14 +121,20 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
       /* ── SVG Container ── */
       .map-content {
-        max-height: 180px;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         padding: 4px 8px;
         border-top: 1px solid
           color-mix(in srgb, var(--_border) 20%, transparent);
         background: color-mix(in srgb, var(--_screen-bg) 95%, transparent);
         scrollbar-width: thin;
         scrollbar-color: var(--_phosphor-dim) transparent;
+        position: relative;
+      }
+
+      /* Non-persistent mode: capped height */
+      :host(:not([persistent])) .map-content {
+        max-height: 320px;
       }
 
       /* ── Persistent mode heading (no toggle visible) ── */
@@ -204,105 +152,10 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         display: block;
         width: 100%;
         height: auto;
-        min-height: 60px;
+        min-height: 80px;
       }
 
-      /* ── Edges ── */
-      .edge {
-        stroke: var(--_phosphor-dim);
-        stroke-width: 1.5;
-        opacity: 0.4;
-      }
-
-      .edge--fog {
-        stroke-dasharray: 4 3;
-        opacity: 0.12;
-        filter: none;
-      }
-
-      .edge--just-traced {
-        opacity: 0;
-      }
-
-      /* ── Nodes ── */
-      .node {
-        cursor: default;
-      }
-
-      .node__circle {
-        fill: var(--_screen-bg);
-        stroke: var(--_node-color, var(--_phosphor-dim));
-        stroke-width: 1.5;
-      }
-
-      .node__label {
-        fill: var(--_node-color, var(--_phosphor-dim));
-        font-family: var(--_mono);
-        font-size: 12px;
-        font-weight: 700;
-        pointer-events: none;
-      }
-
-      /* Current room: pulsing amber glow */
-      .node--current {
-        opacity: 1;
-      }
-
-      .node--current .node__circle {
-        stroke-width: 2.5;
-        filter: drop-shadow(0 0 6px var(--_phosphor-glow))
-          drop-shadow(0 0 3px var(--_phosphor));
-      }
-
-      @keyframes current-pulse {
-        0%,
-        100% {
-          filter: drop-shadow(0 0 4px var(--_phosphor-glow))
-            drop-shadow(0 0 2px var(--_phosphor));
-        }
-        50% {
-          filter: drop-shadow(0 0 8px var(--_phosphor-glow))
-            drop-shadow(0 0 4px var(--_phosphor));
-        }
-      }
-
-      /* Cleared rooms: dimmed */
-      .node--cleared {
-        opacity: 0.35;
-      }
-
-      /* Fog of war */
-      .node--fog {
-        opacity: 0.25;
-      }
-
-      /* Adjacent (clickable) rooms */
-      .node--adjacent {
-        cursor: pointer;
-      }
-
-      .node--adjacent .node__circle {
-        stroke-width: 2;
-      }
-
-      .node--adjacent:hover .node__circle {
-        stroke-width: 2.5;
-        filter: drop-shadow(
-          0 0 4px var(--_node-color, var(--_phosphor-glow))
-        );
-      }
-
-      .node--adjacent:focus-visible {
-        outline: none;
-      }
-
-      .node--adjacent:focus-visible .node__circle {
-        stroke-width: 3;
-        stroke: var(--_phosphor);
-        stroke-dasharray: 3 2;
-      }
-
-      /* ── Persistent mode (sidebar/column — no toggle, fills container) ── */
+      /* ── Persistent mode (sidebar — no toggle, fills container) ── */
       :host([persistent]) .map-toggle {
         display: none;
       }
@@ -311,75 +164,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         max-height: none;
         height: 100%;
         border-top: none;
-      }
-
-      /* ── Boss room: red pulse ── */
-      .node--boss .node__circle {
-        stroke: var(--color-danger);
-      }
-
-      @keyframes boss-pulse {
-        0%, 100% {
-          filter: drop-shadow(0 0 3px var(--color-danger));
-        }
-        50% {
-          filter: drop-shadow(0 0 8px var(--color-danger))
-            drop-shadow(0 0 4px var(--color-danger));
-        }
-      }
-
-      /* ── Room reveal: radar-blip effect (circle scales in, label fades) ── */
-      @keyframes reveal-blip {
-        0% { transform: scale(0); opacity: 0; }
-        60% { transform: scale(1.15); opacity: 1; }
-        100% { transform: scale(1); }
-      }
-
-      @keyframes reveal-fade {
-        0%, 40% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-
-      /* ── Room reveal: circle stroke trace (draws circumference) ── */
-      @keyframes reveal-stroke {
-        0% { stroke-dashoffset: 113.1; }
-        100% { stroke-dashoffset: 0; }
-      }
-
-      /* ── Edge trace: line draws from source to target ── */
-      @keyframes edge-trace {
-        0% { stroke-dashoffset: var(--_edge-len); opacity: 0.15; }
-        100% { stroke-dashoffset: 0; opacity: 0.4; }
-      }
-
-      /* ── Boss approach: intensified danger flare when adjacent ── */
-      @keyframes boss-approach-flare {
-        0%, 100% {
-          filter: drop-shadow(0 0 5px var(--color-danger));
-          stroke-width: 2;
-        }
-        50% {
-          filter: drop-shadow(0 0 12px var(--color-danger))
-            drop-shadow(0 0 5px var(--color-danger));
-          stroke-width: 2.5;
-        }
-      }
-
-      /* ── Depth transition: sonar-ping glow ── */
-      @keyframes depth-ping {
-        0% { filter: none; }
-        35% {
-          filter: drop-shadow(0 0 10px var(--_phosphor-glow))
-            drop-shadow(0 0 4px var(--_phosphor));
-        }
-        100% { filter: none; }
-      }
-
-      /* ── Cleared rooms: SVG strike line through node ── */
-      .node__strike {
-        stroke: var(--_node-color, var(--_phosphor-dim));
-        stroke-width: 1.5;
-        opacity: 0.6;
       }
 
       /* ── Empty ── */
@@ -394,7 +178,22 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         letter-spacing: 0.5px;
       }
 
-      /* ── Motion (opt-in per DungeonHeader pattern) ── */
+      /* ── Depth indicator line (topographic) ── */
+      .depth-line {
+        stroke: color-mix(in srgb, var(--_phosphor-dim) 12%, transparent);
+        stroke-width: 1;
+        stroke-dasharray: 2 6;
+      }
+
+      /* ── Reveal ripple ring ── */
+      .reveal-ripple {
+        fill: none;
+        stroke: var(--_phosphor);
+        stroke-width: 1;
+        pointer-events: none;
+      }
+
+      /* ── Motion ── */
       @media (prefers-reduced-motion: no-preference) {
         .map-toggle {
           transition: color var(--duration-fast, 150ms);
@@ -402,51 +201,26 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         .map-toggle__icon {
           transition: transform var(--duration-fast, 150ms);
         }
-        .node__circle {
-          transition: stroke-width var(--duration-fast, 150ms);
+
+        .reveal-ripple {
+          animation: map-reveal-ripple 600ms ease-out forwards;
         }
-        .edge {
-          filter: drop-shadow(0 0 1px var(--_phosphor-glow));
-        }
-        .node--current .node__circle {
-          animation: current-pulse 2s ease-in-out infinite;
-        }
-        .node--boss .node__circle {
-          animation: boss-pulse 3s ease-in-out infinite;
-        }
-        .node--boss.node--adjacent .node__circle {
-          animation: boss-approach-flare 1.8s ease-in-out infinite;
-        }
-        .node--just-revealed .node__circle {
-          stroke-dasharray: 113.1;
-          animation:
-            reveal-blip 300ms ease-out,
-            reveal-stroke 400ms 200ms ease-out forwards;
-        }
-        .node--just-revealed .node__label {
-          animation: reveal-fade 300ms ease-out;
-        }
-        .edge--just-traced {
-          stroke-dasharray: var(--_edge-len);
-          animation: edge-trace 500ms ease-out forwards;
-        }
-        .node--depth-highlight .node__circle {
-          animation: depth-ping 500ms ease-out;
-        }
+      }
+
+      @keyframes map-reveal-ripple {
+        0% { r: 30; opacity: 0.6; stroke-width: 2; }
+        100% { r: 52; opacity: 0; stroke-width: 0.5; }
       }
 
       /* ── Mobile ── */
       @media (max-width: 767px) {
-        .map-content {
-          max-height: 140px;
+        :host(:not([persistent])) .map-content {
+          max-height: 240px;
         }
       }
 
       /* ── Large screens (1440px+) ── */
       @media (min-width: 1440px) {
-        .map-content {
-          max-height: 220px;
-        }
         .map-toggle {
           font-size: 10px;
           padding: 5px 10px;
@@ -455,9 +229,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
       /* ── 4K / Ultra-wide (2560px+) ── */
       @media (min-width: 2560px) {
-        .map-content {
-          max-height: 280px;
-        }
         .map-toggle {
           font-size: 11px;
           padding: 6px 12px;
@@ -512,7 +283,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       for (const ci of room.connections) {
         const peer = rooms.find((r) => r.index === ci);
         if (!peer?.revealed) continue;
-        // Edge is visible now — was it visible last render?
         const wasBothRevealed =
           this._previouslyRevealed.has(room.index) &&
           this._previouslyRevealed.has(ci);
@@ -538,10 +308,20 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
           this._depthHighlight.add(room.index);
         }
       }
+      this._shouldScrollToCurrentAfterUpdate = true;
+    }
+
+    // Deselect room if it's no longer in the room list (moved to willUpdate
+    // to avoid state mutation during render — which causes re-render loops)
+    if (this._selectedRoom) {
+      const freshRoom = rooms.find(r => r.index === this._selectedRoom!.index);
+      if (!freshRoom) {
+        this._selectedRoom = null;
+      }
     }
   }
 
-  /** Post-render: snapshot current state for next diff cycle. */
+  /** Post-render: snapshot current state for next diff cycle + auto-scroll. */
   override updated(): void {
     const rooms = dungeonState.rooms.value;
     const currentRoom = dungeonState.currentRoom.value;
@@ -551,9 +331,18 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       if (room.revealed) this._previouslyRevealed.add(room.index);
     }
     this._previousDepth = currentRoom?.depth;
+
+    // Auto-scroll to current room on depth transition
+    if (this._shouldScrollToCurrentAfterUpdate) {
+      this._shouldScrollToCurrentAfterUpdate = false;
+      requestAnimationFrame(() => {
+        const currentNodeEl = this.renderRoot?.querySelector('.node--current') as HTMLElement | null;
+        currentNodeEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────
 
   protected render() {
     const rooms = dungeonState.rooms.value;
@@ -571,16 +360,15 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         <span>${msg('Map')}</span>
         <span
           class="map-toggle__icon ${expanded ? 'map-toggle__icon--expanded' : 'map-toggle__icon--collapsed'}"
-          >${icons.chevronDown(10)}</span
-        >
+        >${icons.chevronDown(10)}</span>
       </button>
       ${expanded ? this._renderMapContent(rooms) : nothing}
     `;
   }
 
   private _renderMapContent(rooms: RoomNodeClient[]) {
-    const { nodes, w, h } = layoutNodes(rooms);
-    if (nodes.length === 0) {
+    const layout = layoutDungeonMap(rooms, DEFAULT_MAP_CONFIG);
+    if (layout.nodes.length === 0) {
       return html`<div class="map-empty" id="dungeon-map-content">
         ${msg('No rooms mapped')}
       </div>`;
@@ -593,126 +381,152 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       dungeonState.adjacentRooms.value.map((r) => r.index),
     );
 
+    // Build position lookup
     const posMap = new Map<number, NodePosition>();
-    for (const n of nodes) posMap.set(n.room.index, n);
+    for (const n of layout.nodes) posMap.set(n.room.index, n);
+
+    // Unique depth values for topographic lines
+    const depths = [...new Set(rooms.map(r => r.depth))].sort((a, b) => a - b);
+    const minDepth = depths[0] ?? 0;
 
     return html`
       ${heading}
       <div class="map-content" id="dungeon-map-content">
         <svg
-          viewBox="0 0 ${w} ${h}"
+          viewBox="0 0 ${layout.width} ${layout.height}"
           class="map-svg"
           role="img"
           aria-label=${msg('Dungeon map')}
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio="xMidYMin meet"
         >
-          ${this._renderEdges(nodes, posMap)}
-          ${this._renderNodes(nodes, adjacentSet)}
+          <!-- SVG Filter Definitions -->
+          ${this._renderDefs()}
+
+          <!-- Topographic depth lines (subtle horizontal guides) -->
+          ${depths.map(d => {
+            const y = DEFAULT_MAP_CONFIG.padding + (d - minDepth) * DEFAULT_MAP_CONFIG.vGap;
+            return svg`<line
+              x1="0" y1=${y} x2=${layout.width} y2=${y}
+              class="depth-line"
+              aria-hidden="true"
+            />`;
+          })}
+
+          <!-- Edges (render functions, not custom elements — SVG namespace) -->
+          <g aria-hidden="true">
+            ${layout.edges.map(edge => {
+              const src = posMap.get(edge.sourceIndex);
+              const tgt = posMap.get(edge.targetIndex);
+              if (!src || !tgt) return nothing;
+              return renderMapEdge({
+                x1: src.x, y1: src.y,
+                x2: tgt.x, y2: tgt.y,
+                nodeRadius: DEFAULT_MAP_CONFIG.nodeRadius,
+                foggy: edge.foggy,
+                justTraced: this._newlyTracedEdges.has(edge.key),
+              });
+            })}
+          </g>
+
+          <!-- Reveal ripple rings (appear behind nodes) -->
+          ${[...this._newlyRevealed].map(idx => {
+            const pos = posMap.get(idx);
+            if (!pos) return nothing;
+            return svg`<circle
+              cx=${pos.x} cy=${pos.y}
+              r="30"
+              class="reveal-ripple"
+              aria-hidden="true"
+            />`;
+          })}
+
+          <!-- Nodes (render functions, not custom elements — SVG namespace) -->
+          <g>
+            ${layout.nodes.map(({ room, x, y }) => {
+              const isAdj = adjacentSet.has(room.index);
+              return renderMapNode({
+                room, x, y,
+                current: room.current,
+                adjacent: isAdj,
+                justRevealed: this._newlyRevealed.has(room.index),
+                depthHighlight: this._depthHighlight.has(room.index),
+                selected: this._selectedRoom?.index === room.index,
+                onClick: (r) => this._handleNodeClick(r),
+                onDeselect: () => this._handleNodeDeselect(),
+              });
+            })}
+          </g>
         </svg>
+
+        <!-- Room detail panel (HTML context, below SVG) -->
+        ${this._renderRoomPanel(adjacentSet)}
       </div>
     `;
   }
 
-  // ── SVG Rendering ─────────────────────────────────────────────────────
+  // ── SVG Filters ───────────────────────────────────────────────────────
 
-  private _renderEdges(
-    nodes: NodePosition[],
-    posMap: Map<number, NodePosition>,
-  ) {
-    const drawn = new Set<string>();
-    const lines: unknown[] = [];
+  private _renderDefs() {
+    // Note: SVG filter attributes like flood-color cannot use CSS custom
+    // properties. The amber value matches --color-accent-amber (#f59e0b)
+    // from _colors.css. This is a documented exception per design-tokens.md.
+    return svg`
+      <defs>
+        <!-- Fog noise overlay for unrevealed nodes -->
+        <filter id="dungeon-fog" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3"
+            seed="42" result="noise">
+            <animate attributeName="baseFrequency" values="0.015;0.025;0.015"
+              dur="8s" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="8"
+            xChannelSelector="R" yChannelSelector="G" />
+        </filter>
 
-    for (const { room, x, y } of nodes) {
-      for (const ci of room.connections) {
-        const key =
-          room.index < ci ? `${room.index}-${ci}` : `${ci}-${room.index}`;
-        if (drawn.has(key)) continue;
-        drawn.add(key);
-
-        const target = posMap.get(ci);
-        if (!target) continue;
-
-        const foggy = !room.revealed || !target.room.revealed;
-        const justTraced = this._newlyTracedEdges.has(key);
-        // Shorten lines so they stop at the circle edge, not the center
-        const dx = target.x - x;
-        const dy = target.y - y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const offset = dist > 0 ? NODE_R / dist : 0;
-        // Edge length for stroke animation
-        const edgeLen = Math.max(dist - NODE_R * 2, 1);
-        lines.push(
-          svg`<line
-            x1=${x + dx * offset} y1=${y + dy * offset}
-            x2=${target.x - dx * offset} y2=${target.y - dy * offset}
-            class="edge ${foggy ? 'edge--fog' : ''} ${justTraced ? 'edge--just-traced' : ''}"
-            style=${justTraced ? `--_edge-len: ${edgeLen}` : nothing}
-          />`,
-        );
-      }
-    }
-
-    return svg`<g class="edges" aria-hidden="true">${lines}</g>`;
+        <!-- Breathing glow for current room beacon -->
+        <filter id="beacon-glow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur">
+            <animate attributeName="stdDeviation" values="2;5;2" dur="2.5s"
+              repeatCount="indefinite" />
+          </feGaussianBlur>
+          <feFlood flood-color="#f59e0b" flood-opacity="0.3" result="color" /> <!-- lint-color-ok: SVG filter attr -->
+          <feComposite in="color" in2="blur" operator="in" result="glow" />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+    `;
   }
 
-  private _renderNodes(nodes: NodePosition[], adjacentSet: Set<number>) {
-    return svg`<g class="nodes">
-      ${nodes.map(({ room, x, y }) => {
-        const isAdj = adjacentSet.has(room.index);
-        // Revealed rooms: type color. Unrevealed adjacent: depth-risk tint. Fog: dim.
-        let color: string;
-        let label: string;
-        if (room.revealed) {
-          color = ROOM_COLOR[room.room_type] ?? 'var(--_phosphor-dim)';
-          label = ROOM_LABEL[room.room_type] ?? '?';
-        } else if (isAdj) {
-          // Depth-based risk gradient for reachable unrevealed rooms
-          color = room.depth >= 4
-            ? 'var(--color-danger)'
-            : room.depth >= 3
-              ? 'var(--color-warning)'
-              : 'var(--_phosphor-dim)';
-          label = '?';
-        } else {
-          color = 'var(--_phosphor-dim)';
-          label = '?';
-        }
-        const cls = [
-          'node',
-          room.current ? 'node--current' : '',
-          room.cleared ? 'node--cleared' : '',
-          !room.revealed ? 'node--fog' : '',
-          isAdj ? 'node--adjacent' : '',
-          room.room_type === 'boss' ? 'node--boss' : '',
-          this._newlyRevealed.has(room.index) ? 'node--just-revealed' : '',
-          this._depthHighlight.has(room.index) ? 'node--depth-highlight' : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
+  // ── Room Panel ────────────────────────────────────────────────────────
 
-        const ariaLabel = room.revealed
-          ? `${getRoomTypeLabel(room.room_type)} ${msg('room')} ${room.index}${room.cleared ? ` (${msg('cleared')})` : ''}${room.current ? ` (${msg('current')})` : ''}`
-          : msg('Unknown room');
+  private _renderRoomPanel(adjacentSet: Set<number>) {
+    if (!this._selectedRoom) return nothing;
 
-        return svg`
-          <g
-            class=${cls}
-            transform="translate(${x}, ${y})"
-            style="--_node-color: ${color}"
-            tabindex=${isAdj ? '0' : nothing}
-            role=${isAdj ? 'button' : 'img'}
-            aria-label=${ariaLabel}
-            @click=${isAdj ? () => this._handleNodeClick(room) : nothing}
-            @keydown=${isAdj ? (e: KeyboardEvent) => this._handleNodeKeydown(e, room) : nothing}
-          >
-            <title>${room.revealed ? getRoomTypeLabel(room.room_type) : msg('Unknown')}</title>
-            <circle r=${NODE_R} class="node__circle" />
-            <text class="node__label" text-anchor="middle" dominant-baseline="central">${label}</text>
-            ${room.cleared && !room.current ? svg`<line x1=${-NODE_R + 4} y1="0" x2=${NODE_R - 4} y2="0" class="node__strike" aria-hidden="true" />` : nothing}
-          </g>
-        `;
-      })}
-    </g>`;
+    // Get fresh room data from state (selected room may have changed state)
+    const freshRoom = dungeonState.rooms.value.find(
+      r => r.index === this._selectedRoom!.index,
+    );
+    if (!freshRoom || !freshRoom.revealed) {
+      // Don't mutate state during render — willUpdate handles cleanup.
+      // Return nothing for this render cycle; next willUpdate will clear.
+      return nothing;
+    }
+
+    const isAdjacent = adjacentSet.has(freshRoom.index);
+    const isCurrent = freshRoom.current;
+
+    return html`
+      <velg-dungeon-room-panel
+        .room=${freshRoom}
+        .adjacent=${isAdjacent}
+        .current=${isCurrent}
+        style="margin: 8px auto; max-width: 220px;"
+        @room-deselect=${this._handleNodeDeselect}
+      ></velg-dungeon-room-panel>
+    `;
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────
@@ -722,20 +536,29 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
   }
 
   private _handleNodeClick(room: RoomNodeClient): void {
-    this.dispatchEvent(
-      new CustomEvent('terminal-command', {
-        detail: `move ${room.index}`,
-        bubbles: true,
-        composed: true,
-      }),
+    // Toggle: clicking the same room deselects
+    if (this._selectedRoom?.index === room.index) {
+      this._selectedRoom = null;
+      return;
+    }
+
+    // Revealed rooms: show detail panel
+    if (room.revealed) {
+      this._selectedRoom = room;
+      return;
+    }
+
+    // Unrevealed adjacent rooms: still show panel (limited info)
+    const adjacentSet = new Set(
+      dungeonState.adjacentRooms.value.map((r) => r.index),
     );
+    if (adjacentSet.has(room.index)) {
+      this._selectedRoom = room;
+    }
   }
 
-  private _handleNodeKeydown(e: KeyboardEvent, room: RoomNodeClient): void {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      this._handleNodeClick(room);
-    }
+  private _handleNodeDeselect(): void {
+    this._selectedRoom = null;
   }
 }
 
