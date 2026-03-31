@@ -54,3 +54,8 @@ frontend/test-results/
 
 # Claude
 .claude/settings.local.json
+.claude/plans/
+.claude/worktrees/
+
+# Database backups (may contain credentials/data)
+backups/
