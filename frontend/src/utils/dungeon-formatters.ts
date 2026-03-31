@@ -20,7 +20,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
-import { ARCHETYPE_ENTROPY, ARCHETYPE_TOWER, isShadowState, isTowerState } from '../types/dungeon.js';
+import { ARCHETYPE_ENTROPY, ARCHETYPE_MOTHER, ARCHETYPE_TOWER, isMotherState, isShadowState, isTowerState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -218,6 +218,18 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     lines.push(systemLine(`\u25C9 ${msg('At integrity 0, the building collapses. No retreat.')}`));
     lines.push(systemLine(''));
     lines.push(responseLine(msg('Reinforce what holds you up \u2013 or become what it buries.')));
+  } else if (archetype === ARCHETYPE_MOTHER) {
+    lines.push(combatSystemLine(msg('PARASITIC PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The dungeon provides. The provision is the threat.')));
+    lines.push(responseLine(msg('Everything here heals you. Everything here binds you.')));
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u25C9 ${msg('Attachment rises each floor. The dungeon heals stress in return.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('Accepting gifts deepens the bond. Refusing costs stress.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('Use SEVER (Guardian) to cut the parasitic attachment.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('At Attachment 100, the party is incorporated. No exit.')}`));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The warmth is genuine. The warmth is also the trap.')));
   } else {
     // Shadow (default)
     lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
@@ -316,6 +328,12 @@ export function formatRoomEntry(
     const empty = Math.round((max_stability - stability) / 5);
     const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
     lines.push(systemLine(`STRUCTURAL INTEGRITY: ${bar} [${stability}/${max_stability}]`));
+  } else if (isMotherState(archetypeState)) {
+    const { attachment, max_attachment } = archetypeState;
+    const filled = Math.round(attachment / 5);
+    const empty = Math.round((max_attachment - attachment) / 5);
+    const bar = '\u2591'.repeat(empty) + '\u2588'.repeat(filled);
+    lines.push(systemLine(`PARASITIC ATTACHMENT: ${bar} [${attachment}/${max_attachment}]`));
   }
 
   // Room type header

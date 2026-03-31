@@ -18,6 +18,7 @@ import type { UUID } from './index.js';
 export const ARCHETYPE_SHADOW = 'The Shadow';
 export const ARCHETYPE_TOWER = 'The Tower';
 export const ARCHETYPE_ENTROPY = 'The Entropy';
+export const ARCHETYPE_MOTHER = 'The Devouring Mother';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -137,11 +138,18 @@ export interface EntropyArchetypeState {
   max_decay: number;
 }
 
-/** Archetype-specific state. Shadow, Tower, and Entropy have typed shapes; others are empty objects. */
+/** Devouring Mother archetype: parasitic attachment mechanic state (0→100). */
+export interface MotherArchetypeState {
+  attachment: number;
+  max_attachment: number;
+}
+
+/** Archetype-specific state. Shadow, Tower, Entropy, and Mother have typed shapes; others are empty objects. */
 export type ArchetypeState =
   | ShadowArchetypeState
   | TowerArchetypeState
   | EntropyArchetypeState
+  | MotherArchetypeState
   | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
@@ -157,6 +165,11 @@ export function isTowerState(state: ArchetypeState): state is TowerArchetypeStat
 /** Type guard: narrows ArchetypeState to EntropyArchetypeState. */
 export function isEntropyState(state: ArchetypeState): state is EntropyArchetypeState {
   return 'decay' in state && typeof state.decay === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to MotherArchetypeState. */
+export function isMotherState(state: ArchetypeState): state is MotherArchetypeState {
+  return 'attachment' in state && typeof state.attachment === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────

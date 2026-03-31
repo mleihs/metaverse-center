@@ -19,8 +19,10 @@ import { customElement } from 'lit/decorators.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import {
   ARCHETYPE_ENTROPY,
+  ARCHETYPE_MOTHER,
   ARCHETYPE_TOWER,
   isEntropyState,
+  isMotherState,
   isShadowState,
   isTowerState,
 } from '../../types/dungeon.js';
@@ -322,6 +324,86 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Attachment Gauge (archetype-specific: Devouring Mother) ── */
+      .attachment {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .attachment__icon {
+        display: inline-flex;
+        color: var(--color-warning, #fb923c);
+      }
+
+      .attachment__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+      }
+
+      .attachment__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--color-warning, #fb923c) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .attachment__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out;
+      }
+
+      /* Amber: 0-44 (normal — clinical observation) */
+      .attachment__fill--normal {
+        background: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--_phosphor));
+      }
+
+      /* Warm amber: 45-74 (dependent — comfort sets in) */
+      .attachment__fill--dependent {
+        background: var(--color-warning, #fb923c);
+      }
+
+      /* Deep warm: 75-99 (critical — the dungeon breathes for you) */
+      .attachment__fill--critical {
+        background: color-mix(in srgb, var(--color-warning, #fb923c) 80%, var(--color-danger, #f87171));
+      }
+
+      /* Solid warm: 100 (incorporation — you are home) */
+      .attachment__fill--incorporation {
+        background: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171));
+      }
+
+      .attachment__label--incorporation {
+        color: color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171));
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        /* Slow breathing pulse at critical — calming, not alarming */
+        .attachment__fill--critical {
+          animation: attachment-breathe 3s ease-in-out infinite;
+        }
+
+        .attachment__label--incorporation {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes attachment-breathe {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -361,11 +443,14 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
     const isTower = state.archetype === ARCHETYPE_TOWER;
     const isEntropy = state.archetype === ARCHETYPE_ENTROPY;
+    const isMother = state.archetype === ARCHETYPE_MOTHER;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
       : isEntropy
         ? 'var(--color-success, #4ade80)'
-        : 'var(--color-info, #a78bfa)';
+        : isMother
+          ? 'color-mix(in srgb, var(--color-warning, #fb923c) 80%, var(--color-danger, #f87171))'
+          : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -377,12 +462,15 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const shadowState = isShadowState(archState) ? archState : null;
     const towerState = isTowerState(archState) ? archState : null;
     const entropyState = isEntropyState(archState) ? archState : null;
+    const motherState = isMotherState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
     const maxStability = towerState?.max_stability ?? null;
     const decay = entropyState?.decay ?? null;
     const maxDecay = entropyState?.max_decay ?? null;
+    const attachment = motherState?.attachment ?? null;
+    const maxAttachment = motherState?.max_attachment ?? null;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -488,6 +576,34 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   ></div>
                 </div>
                 <span class="decay__label ${decay >= 100 ? 'decay__label--dissolution' : ''}">${decay >= 100 ? msg('DISSOLUTION') : decay}</span>
+              </div>
+            `
+          : nothing}
+        ${attachment !== null && maxAttachment !== null
+          ? html`
+              <span class="sep"></span>
+              <div class="attachment" aria-label=${msg('Attachment') + ` ${attachment}/${maxAttachment}`}>
+                <span class="attachment__icon">${icons.heartbeat(12)}</span>
+                <div
+                  class="attachment__track"
+                  role="progressbar"
+                  aria-valuenow=${attachment}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxAttachment}
+                  aria-label=${msg('Parasitic attachment')}
+                >
+                  <div
+                    class="attachment__fill ${attachment >= 100
+                      ? 'attachment__fill--incorporation'
+                      : attachment >= 75
+                        ? 'attachment__fill--critical'
+                        : attachment >= 45
+                          ? 'attachment__fill--dependent'
+                          : 'attachment__fill--normal'}"
+                    style="transform: scaleX(${maxAttachment > 0 ? attachment / maxAttachment : 0})"
+                  ></div>
+                </div>
+                <span class="attachment__label ${attachment >= 100 ? 'attachment__label--incorporation' : ''}">${attachment >= 100 ? msg('HOME') : attachment}</span>
               </div>
             `
           : nothing}
