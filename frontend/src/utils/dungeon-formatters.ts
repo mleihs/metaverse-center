@@ -20,7 +20,7 @@ import type {
   RoomNodeClient,
   SkillCheckDetail,
 } from '../types/dungeon.js';
-import { ARCHETYPE_TOWER, isShadowState, isTowerState } from '../types/dungeon.js';
+import { ARCHETYPE_ENTROPY, ARCHETYPE_TOWER, isShadowState, isTowerState } from '../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -194,9 +194,20 @@ export function formatDungeonEntry(
 /** Generate archetype-specific protocol briefing for first-time dungeon entry. */
 export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
   const lines: TerminalLine[] = [];
-  const isTower = archetype === ARCHETYPE_TOWER;
 
-  if (isTower) {
+  if (archetype === ARCHETYPE_ENTROPY) {
+    lines.push(combatSystemLine(msg('ENTROPY PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('Everything here is becoming everything else.')));
+    lines.push(responseLine(msg('Decay accumulates. It does not reverse on its own.')));
+    lines.push(systemLine(''));
+    lines.push(systemLine(`\u25C9 ${msg('Decay increases each floor and each combat round.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('Enemy contact accelerates decay (contagious).')}`));
+    lines.push(systemLine(`\u25C9 ${msg('Use PRESERVE (Guardian) to slow dissolution.')}`));
+    lines.push(systemLine(`\u25C9 ${msg('At Decay 100, the party dissolves. No retreat.')}`));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('Reinforce the differences. Or join the equilibrium.')));
+  } else if (archetype === ARCHETYPE_TOWER) {
     lines.push(combatSystemLine(msg('STRUCTURAL PROTOCOL')));
     lines.push(systemLine(''));
     lines.push(responseLine(msg('The building remembers every footstep as a tremor.')));
