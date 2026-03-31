@@ -12,6 +12,7 @@ import type {
   AgentCombatStateClient,
   AnchorText,
   ArchetypeState,
+  AvailableDungeonResponse,
   CombatRoundResult,
   CombatStateClient,
   DungeonClientState,
@@ -1069,7 +1070,7 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
 // ── Available Dungeons ───────────────────────────────────────────────────────
 
 export function formatAvailableDungeons(
-  dungeons: Array<{ archetype: string; signature: string; suggested_difficulty: number; available: boolean; admin_override?: boolean }>,
+  dungeons: AvailableDungeonResponse[],
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
