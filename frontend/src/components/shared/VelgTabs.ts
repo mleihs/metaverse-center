@@ -28,14 +28,9 @@ export class VelgTabs extends LitElement {
 
     .tabs {
       display: flex;
+      flex-wrap: wrap;
       gap: 0;
       border-bottom: var(--border-default);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
     }
 
     .tab {

@@ -101,7 +101,7 @@ export class VelgAdminPanel extends LitElement {
     }
 
     .admin-tabs-wrapper {
-      max-width: 1200px;
+      max-width: min(100%, 1600px);
       margin: 0 auto;
       padding: 0 var(--space-6);
     }
