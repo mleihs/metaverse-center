@@ -42,6 +42,51 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         display: block;
       }
 
+      /* ── Room-type risk colors on move buttons ── */
+      .action-btn--room-combat {
+        border-color: color-mix(in srgb, var(--color-danger) 60%, transparent) !important;
+        color: var(--color-danger) !important;
+      }
+      .action-btn--room-elite {
+        border-color: color-mix(in srgb, var(--color-danger) 80%, transparent) !important;
+        color: var(--color-danger) !important;
+      }
+      .action-btn--room-boss {
+        border-color: var(--color-danger) !important;
+        color: var(--color-danger) !important;
+        font-weight: 700 !important;
+      }
+      .action-btn--room-encounter {
+        border-color: color-mix(in srgb, var(--color-warning) 60%, transparent) !important;
+        color: var(--color-warning) !important;
+      }
+      .action-btn--room-treasure {
+        border-color: color-mix(in srgb, var(--color-success) 60%, transparent) !important;
+        color: var(--color-success) !important;
+      }
+      .action-btn--room-rest {
+        border-color: color-mix(in srgb, var(--color-success) 60%, transparent) !important;
+        color: var(--color-success) !important;
+      }
+      .action-btn--room-exit {
+        border-color: color-mix(in srgb, var(--_phosphor) 60%, transparent) !important;
+        color: var(--_phosphor) !important;
+      }
+      .action-btn--room-unknown {
+        border-color: color-mix(in srgb, var(--_phosphor-dim) 40%, transparent) !important;
+        color: var(--_phosphor-dim) !important;
+      }
+
+      /* Depth-based risk shimmer for unknown rooms */
+      .action-btn--risk-high {
+        border-color: color-mix(in srgb, var(--color-warning) 50%, transparent) !important;
+        color: var(--color-warning) !important;
+      }
+      .action-btn--risk-extreme {
+        border-color: color-mix(in srgb, var(--color-danger) 40%, transparent) !important;
+        color: color-mix(in srgb, var(--color-danger) 80%, var(--color-warning)) !important;
+      }
+
       /* ── Hold button terminal theming ── */
       velg-hold-button {
         --hold-btn-fill: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
@@ -243,23 +288,63 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     `;
   }
 
-  /** Render move buttons for each adjacent room. Unscouted rooms show "???" (fog-of-war). */
+  /** Path labels for differentiating rooms at the same depth. */
+  private static readonly _PATH_LABELS = ['\u03b1', '\u03b2', '\u03b3', '\u03b4'];
+
+  /**
+   * Render move buttons for each adjacent room.
+   *
+   * Three UX enhancements over plain "??? D2" buttons:
+   * 1. Path labels (\u03b1/\u03b2) differentiate rooms at the same depth
+   * 2. Risk colors based on room type (red=combat, green=rest/treasure, amber=encounter)
+   * 3. Depth-based risk for unknown rooms (deeper = warmer border color)
+   */
   private _renderMoveButtons() {
     const adjacent = dungeonState.adjacentRooms.value;
     if (adjacent.length === 0) return nothing;
 
-    return adjacent.map(
-      (room) => html`
+    // Group by depth to assign path labels within each depth tier
+    const byDepth = new Map<number, typeof adjacent>();
+    for (const room of adjacent) {
+      const arr = byDepth.get(room.depth) ?? [];
+      arr.push(room);
+      byDepth.set(room.depth, arr);
+    }
+
+    return adjacent.map((room) => {
+      const isRevealed = room.room_type !== '?';
+      const sameDepthRooms = byDepth.get(room.depth) ?? [];
+      const pathIdx = sameDepthRooms.indexOf(room);
+      const pathLabel = sameDepthRooms.length > 1
+        ? ` ${VelgDungeonQuickActions._PATH_LABELS[pathIdx] ?? pathIdx + 1}`
+        : '';
+
+      // Risk CSS class: room-type color if known, depth-risk if unknown
+      let riskClass = '';
+      if (isRevealed) {
+        riskClass = `action-btn--room-${room.room_type}`;
+      } else if (room.depth >= 4) {
+        riskClass = 'action-btn--risk-extreme';
+      } else if (room.depth >= 3) {
+        riskClass = 'action-btn--risk-high';
+      } else {
+        riskClass = 'action-btn--room-unknown';
+      }
+
+      // Button label: full info if scouted, path label + depth if fog
+      const label = isRevealed
+        ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}`
+        : `D${room.depth}${pathLabel}`;
+
+      return html`
         <button
-          class="action-btn action-btn--primary"
+          class="action-btn action-btn--primary ${riskClass}"
           @click=${() => this._dispatch(`move ${room.index}`)}
         >
-          ${msg('Move')} \u2192 ${room.room_type !== '?'
-            ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}`
-            : `??? D${room.depth}`}
+          ${msg('Move')} \u2192 ${label}
         </button>
-      `,
-    );
+      `;
+    });
   }
 }
 

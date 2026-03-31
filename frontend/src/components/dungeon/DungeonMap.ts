@@ -582,12 +582,24 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     return svg`<g class="nodes">
       ${nodes.map(({ room, x, y }) => {
         const isAdj = adjacentSet.has(room.index);
-        const color = room.revealed
-          ? (ROOM_COLOR[room.room_type] ?? 'var(--_phosphor-dim)')
-          : 'var(--_phosphor-dim)';
-        const label = room.revealed
-          ? (ROOM_LABEL[room.room_type] ?? '?')
-          : '?';
+        // Revealed rooms: type color. Unrevealed adjacent: depth-risk tint. Fog: dim.
+        let color: string;
+        let label: string;
+        if (room.revealed) {
+          color = ROOM_COLOR[room.room_type] ?? 'var(--_phosphor-dim)';
+          label = ROOM_LABEL[room.room_type] ?? '?';
+        } else if (isAdj) {
+          // Depth-based risk gradient for reachable unrevealed rooms
+          color = room.depth >= 4
+            ? 'var(--color-danger)'
+            : room.depth >= 3
+              ? 'var(--color-warning)'
+              : 'var(--_phosphor-dim)';
+          label = '?';
+        } else {
+          color = 'var(--_phosphor-dim)';
+          label = '?';
+        }
         const cls = [
           'node',
           room.current ? 'node--current' : '',
