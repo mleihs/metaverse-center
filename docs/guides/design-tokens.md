@@ -216,6 +216,7 @@ These files are exempt from the token-only rule:
 | `HowToPlayView.ts` | ECharts config (requires raw hex) |
 | `HowToPlayWarRoom.ts` | ECharts config — simulation hex colors, radar/heatmap/bar charts |
 | `CartographerMap.ts` | Always-dark `:host` theme override |
+| `DungeonTerminalView.ts` | Forces platform-dark tokens on `:host` — dungeon HUD must always be dark regardless of simulation theme (brutalist/light themes override `--color-surface` to `#fff`, breaking amber-on-dark contrast in Header, Map, Party Panel, Quick Actions) |
 | `VelgForgeTable.ts` | Card preview theme blocks |
 | `CartographicMap.ts` | SVG texture pattern definitions |
 | `rgba(0,0,0,0.X)` backdrops | Black overlays are direction-neutral |

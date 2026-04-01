@@ -161,6 +161,7 @@ Adding icons to a "terminal aesthetic" is already a compromise — 1980s termina
 **Color:** `fill="currentColor"`, `stroke="none"`.
 **Usage:** Dungeon map nodes, dungeon action buttons, tactical displays, loot tier markers.
 **Principle:** RPG manual illustrations. Heavy, solid, tactile. Read as radar signatures or tactical object classifications on dark backgrounds.
+**Contrast note (2026-04-01):** These icons are designed for dark backgrounds. When simulation themes override `--color-surface` to light, map node icons lose contrast (amber fill on white = ~1.8:1). Fixed by forcing platform-dark tokens on `DungeonTerminalView` `:host`. If adding Tier 3 icons to any context outside the dungeon HUD, verify the background is dark.
 
 ### Terminal Output — Unicode (Preserved)
 

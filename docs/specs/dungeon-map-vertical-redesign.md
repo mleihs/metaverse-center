@@ -126,7 +126,7 @@ Each node is an SVG `<g>` group containing:
 |-------|-----------|
 | **Current** | 3px stroke, room-type color, pulsing glow animation |
 | **Adjacent (reachable)** | 2px stroke, room-type color, slight glow on hover |
-| **Cleared** | 1px stroke, dimmed color (40% opacity), no glow |
+| **Cleared** | 1px stroke, dimmed color (65% opacity), no glow |
 | **Fog (unrevealed)** | 1.5px dashed stroke, `--_phosphor-dim` at 25% opacity |
 | **Boss** | 2.5px stroke, `--color-danger`, pulsing red glow |
 

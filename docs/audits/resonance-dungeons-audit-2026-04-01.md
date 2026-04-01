@@ -393,3 +393,38 @@ Supabase (PostgreSQL + RLS)
 | H6 | Checkpoint serialization overhead | ~2 Tage | Delta checkpointing: serialize only changed fields instead of full 50-150KB JSONB per transition |
 | H8 | God-File dungeon_encounters.py | ~1 Woche | Remove Python-side encounter definitions, load exclusively from DB content tables (migration 170/171 already seeded) |
 | C2 | Multi-worker split-brain | Bei Bedarf | Only relevant if Railway deploys with >1 worker. Currently single-worker. Fix: Redis-backed state or enforce `--workers 1` explicitly |
+
+---
+
+## 17. Visual / UX Audit (2026-04-01, WebMCP 1920×1080)
+
+### Critical Contrast Issue: Simulation Theme Bleeds Into Dungeon HUD
+
+**Root cause**: Simulations with light themes (e.g. Velgarien's brutalist preset) override `--color-surface` to `#ffffff`. The Dungeon HUD components (Header, Map, Party Panel, Quick Actions) inherit this via `terminalComponentTokens` → `--hud-bg` → `--_screen-bg`. Result: amber elements (#f59e0b) rendered on white background — ~1.8:1 contrast ratio, far below WCAG AA 4.5:1. The Terminal itself is unaffected because `BureauTerminal` hardcodes `--_screen-bg: #0a0a08`.
+
+**Fix applied**: `DungeonTerminalView.ts` `:host` now forces platform-dark tokens (`--color-surface: #0a0a0a`, `--color-text-primary: #e5e5e5`, etc.) regardless of simulation theme. All child components inherit the dark tokens via CSS cascade.
+
+### Findings
+
+| # | Area | Issue | Severity | Status |
+|---|------|-------|----------|--------|
+| F3 | Header | Amber badge/text on white (~1.8:1) | CRITICAL | FIXED (dark override) |
+| F4 | Header | Grey counters ("D0/5", "1 visited") on white | HIGH | FIXED (dark override) |
+| F5 | Party | Agent names amber on white | CRITICAL | FIXED (dark override) |
+| F6 | Party | Aptitude codes barely readable | HIGH | FIXED (dark override) |
+| F7 | Party | COND/STR/MOOD labels 8px + low contrast | HIGH | FIXED (dark override) |
+| F8 | Party | "Operational"/"0%"/"0" near-invisible | CRITICAL | FIXED (dark override) |
+| F9 | Map | Entrance node icon invisible | CRITICAL | FIXED (dark override) |
+| F10 | Map | Depth separator lines invisible | MEDIUM | FIXED (dark override) |
+| F12 | Map | Cleared node opacity 0.4 too aggressive | HIGH | FIXED (0.4 → 0.65) |
+| F14 | Actions | Button text amber on white | HIGH | FIXED (dark override) |
+| F15 | Console | 404 on state endpoint after page reload | LOW | Open (race condition in run recovery) |
+
+### What Passed
+
+- Terminal: excellent contrast (hardcoded dark) ✓
+- Map click → Room Panel → "Move Here" flow ✓
+- Room movement → Header/Map/Party all update correctly ✓
+- Combat auto-resolve, Victory banner, Loot display ✓
+- Quick Actions context-switch (Lobby → Dungeon → Post-Combat) ✓
+- Sim-Nav tabs: all 13 visible, active state correct ✓

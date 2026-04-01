@@ -12,9 +12,11 @@
       "command": "npx",
       "args": [
         "-y",
-        "@tech-sumit/mcp-webmcp",
-        "--launch",
-        "--channel=chrome-beta"
+        "@playwright/mcp@latest",
+        "--browser",
+        "chrome",
+        "--viewport-size",
+        "1920x1080"
       ]
     }
   }

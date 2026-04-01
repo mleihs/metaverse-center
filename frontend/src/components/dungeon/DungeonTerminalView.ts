@@ -63,6 +63,17 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         min-height: 400px;
         padding: 0 16px 16px;
         box-sizing: border-box;
+
+        /* Force platform-dark tokens regardless of simulation theme.
+           Dungeon HUD must always be dark — sim themes (e.g. Velgarien brutalist)
+           override --color-surface to #fff which breaks all amber-on-dark contrast
+           in Header, Map, Party Panel, and Quick Actions. */
+        --color-surface: #0a0a0a; /* lint-color-ok */
+        --color-surface-raised: #111111; /* lint-color-ok */
+        --color-text-primary: #e5e5e5; /* lint-color-ok */
+        --color-text-secondary: #a0a0a0; /* lint-color-ok */
+        --color-text-muted: #888888; /* lint-color-ok */
+        --color-border: #333333; /* lint-color-ok */
       }
 
       /* ── HUD Grid Layout (active dungeon) ── */
