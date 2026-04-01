@@ -1,4 +1,4 @@
-"""Service for platform-level settings (cache TTLs, etc.).
+"""Service for platform-level settings (cache TTLs, dungeon global config, etc.).
 
 Uses admin (service_role) client — platform_settings has RLS enabled with no
 anon/authenticated policies, so only service_role can read/write.
@@ -6,8 +6,10 @@ anon/authenticated policies, so only service_role can read/write.
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
+from typing import TypedDict
 from uuid import UUID
 
 import httpx
@@ -137,3 +139,151 @@ class PlatformSettingsService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning("Failed to load platform settings, using defaults")
             return dict(DEFAULT_SETTINGS)
+
+    # ── Dungeon Global Config ──────────────────────────────────────────
+
+    # Platform-settings keys for global dungeon configuration.
+    _DG_MODE = "dungeon_global_mode"
+    _DG_ARCHETYPES = "dungeon_global_archetypes"
+    _DG_CLEARANCE_MODE = "dungeon_clearance_mode"
+    _DG_CLEARANCE_THRESHOLD = "dungeon_clearance_threshold"
+
+    @classmethod
+    def _parse_dungeon_global(cls, by_key: dict[str, str]) -> DungeonGlobalConfig:
+        """Parse raw platform_settings key-value pairs into typed config."""
+        archetypes_raw = by_key.get(cls._DG_ARCHETYPES, "[]")
+        try:
+            archetypes = json.loads(archetypes_raw) if isinstance(archetypes_raw, str) else archetypes_raw
+        except (json.JSONDecodeError, TypeError):
+            archetypes = []
+
+        threshold_raw = by_key.get(cls._DG_CLEARANCE_THRESHOLD, "10")
+        try:
+            threshold = int(threshold_raw)
+        except (ValueError, TypeError):
+            threshold = 10
+
+        mode = by_key.get(cls._DG_MODE, "off")
+        if mode not in ("off", "supplement", "override"):
+            mode = "off"
+
+        clearance = by_key.get(cls._DG_CLEARANCE_MODE, "standard")
+        if clearance not in ("off", "standard", "custom"):
+            clearance = "standard"
+
+        return DungeonGlobalConfig(
+            override_mode=mode,
+            override_archetypes=archetypes if isinstance(archetypes, list) else [],
+            clearance_mode=clearance,
+            clearance_threshold=threshold,
+        )
+
+    @classmethod
+    async def get_dungeon_global_config(
+        cls, admin_supabase: Client,
+    ) -> DungeonGlobalConfig:
+        """Full dungeon global config (admin panel). Reads 4 keys."""
+        response = await (
+            admin_supabase.table(cls.table_name)
+            .select("setting_key, setting_value")
+            .in_("setting_key", [
+                cls._DG_MODE, cls._DG_ARCHETYPES,
+                cls._DG_CLEARANCE_MODE, cls._DG_CLEARANCE_THRESHOLD,
+            ])
+            .execute()
+        )
+        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        return cls._parse_dungeon_global(by_key)
+
+    @classmethod
+    async def get_dungeon_clearance_config(
+        cls, admin_supabase: Client,
+    ) -> DungeonClearanceConfig:
+        """Clearance-only subset (public endpoint). Reads 2 keys."""
+        response = await (
+            admin_supabase.table(cls.table_name)
+            .select("setting_key, setting_value")
+            .in_("setting_key", [cls._DG_CLEARANCE_MODE, cls._DG_CLEARANCE_THRESHOLD])
+            .execute()
+        )
+        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        parsed = cls._parse_dungeon_global(by_key)
+        return DungeonClearanceConfig(
+            clearance_mode=parsed["clearance_mode"],
+            clearance_threshold=parsed["clearance_threshold"],
+        )
+
+    @classmethod
+    async def get_dungeon_override_config(
+        cls, admin_supabase: Client,
+    ) -> tuple[str, set[str]]:
+        """Override-only subset (engine service). Returns (mode, archetypes)."""
+        response = await (
+            admin_supabase.table(cls.table_name)
+            .select("setting_key, setting_value")
+            .in_("setting_key", [cls._DG_MODE, cls._DG_ARCHETYPES])
+            .execute()
+        )
+        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        parsed = cls._parse_dungeon_global(by_key)
+        return (parsed["override_mode"], set(parsed["override_archetypes"]))
+
+    @classmethod
+    async def update_dungeon_global_config(
+        cls,
+        admin_supabase: Client,
+        user_id: UUID,
+        *,
+        override_mode: str,
+        override_archetypes: list[str],
+        clearance_mode: str,
+        clearance_threshold: int,
+    ) -> DungeonGlobalConfig:
+        """Batch-upsert all 4 dungeon global config keys atomically."""
+        now = datetime.now(UTC).isoformat()
+        rows = [
+            {
+                "setting_key": key,
+                "setting_value": value,
+                "updated_by_id": str(user_id),
+                "updated_at": now,
+            }
+            for key, value in {
+                cls._DG_MODE: override_mode,
+                cls._DG_ARCHETYPES: json.dumps(override_archetypes),
+                cls._DG_CLEARANCE_MODE: clearance_mode,
+                cls._DG_CLEARANCE_THRESHOLD: str(clearance_threshold),
+            }.items()
+        ]
+        response = await (
+            admin_supabase.table(cls.table_name)
+            .upsert(rows, on_conflict="setting_key")
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to save global dungeon configuration.",
+            )
+        return DungeonGlobalConfig(
+            override_mode=override_mode,
+            override_archetypes=override_archetypes,
+            clearance_mode=clearance_mode,
+            clearance_threshold=clearance_threshold,
+        )
+
+
+class DungeonGlobalConfig(TypedDict):
+    """Full global dungeon configuration."""
+
+    override_mode: str          # "off" | "supplement" | "override"
+    override_archetypes: list[str]
+    clearance_mode: str         # "off" | "standard" | "custom"
+    clearance_threshold: int
+
+
+class DungeonClearanceConfig(TypedDict):
+    """Clearance-only subset (public API)."""
+
+    clearance_mode: str
+    clearance_threshold: int

@@ -1,9 +1,9 @@
 ---
 title: "Resonance Dungeons — Full Technical Specification"
-version: "1.3"
-date: "2026-03-30"
+version: "1.4"
+date: "2026-04-01"
 type: concept
-status: phase-0-1-complete-polish-done
+status: phase-0-1-complete-admin-config
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -71,6 +71,46 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 7. **Archetype Strategy Pattern** (`archetype_strategies.py`): ABC mit 7 Methoden (4 abstract + 3 optional hooks). `ShadowStrategy` + `TowerStrategy`. Dict-Registry, O(1) Lookup. Archetype N = 1 Subklasse + 1 Registry-Eintrag, 0 Engine-Änderungen. Ersetzt if/elif-Dispatch in 7 Stellen.
 8. **Structured Logging** (stdlib `extra={}`): 21 Log-Calls mit `_log_extra(instance, **kwargs)` Helper. Felder: `run_id`, `sim_id`, `archetype`, `difficulty` + kontextspezifische kwargs (`outcome`, `phase`, `depth`, etc.). Production: JSON via `structlog.ExtraAdder` + `JSONRenderer`. Kein structlog-Import in Engine — rein stdlib `extra={}`.
 9. **Instance TTL Cleanup** (`start_instance_cleanup()`): 60s Sweep-Loop in FastAPI Lifespan. Dual-Cleanup: In-Memory-Eviction (`_instance_last_activity` via `time.monotonic()`) + DB-RPC `fn_expire_abandoned_dungeon_runs`. Cancelt Combat- und Distribution-Timer bei Eviction.
+
+### Admin Configuration (2026-04-01)
+
+#### Global Dungeon Config (`PlatformSettingsService`)
+
+Platform-level settings that cascade to all simulations unless a per-simulation override is set. Stored in `platform_settings` as 4 keys:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `dungeon_global_mode` | `off\|supplement\|override` | `off` | Global archetype override mode |
+| `dungeon_global_archetypes` | JSON string array | `[]` | Archetypes to unlock globally |
+| `dungeon_clearance_mode` | `off\|standard\|custom` | `standard` | Terminal clearance requirement |
+| `dungeon_clearance_threshold` | int (0-100) | `10` | Command count for Tier 2 (custom mode) |
+
+**Cascade order** (per-sim wins): Per-Simulation Override > Global Config > Resonance Default.
+
+**Clearance modes:**
+- `off`: All dungeon commands bypass the tier check entirely.
+- `standard`: Tier 2 after 10 executed commands (default `CLEARANCE_THRESHOLDS`). Affects general tier progression (fortify, quarantine, etc.).
+- `custom`: Tier 2 requirement checked per-command-count only for dungeon verbs. Does NOT alter general tier progression.
+
+**Endpoints:**
+- `GET /api/v1/admin/dungeon-config/global` — admin only, returns full config
+- `PUT /api/v1/admin/dungeon-config/global` — admin only, batch upserts 4 keys atomically
+- `GET /api/v1/public/dungeons/clearance-config` — public, returns clearance subset only
+
+**Frontend:** `AdminDungeonsTab.ts` with Global Config Card (corner brackets, segmented controls) + Per-Simulation Override Grid (provenance badges: "Local Override" / "Inherited" / "Resonance Only").
+
+#### All 8 Archetypes
+
+| Archetype | Signature | Status |
+|-----------|-----------|--------|
+| The Shadow | `conflict_wave` | Implemented |
+| The Tower | `economic_tremor` | Implemented |
+| The Entropy | `decay_bloom` | Implemented |
+| The Devouring Mother | `biological_tide` | Implemented |
+| The Prometheus | `innovation_spark` | Implemented |
+| The Deluge | `elemental_surge` | Config only |
+| The Overthrow | `authority_fracture` | Config only |
+| The Awakening | `consciousness_drift` | Config only |
 
 ### Review Findings — Auflösungsstatus
 
@@ -844,19 +884,46 @@ Each floor has 2-3 competing factions. The party must choose which to ally with.
 
 ---
 
-### 3.6 THE PROMETHEUS (innovation_spark) — "Die Werkstatt der Goetter"
+### 3.6 THE PROMETHEUS (innovation_spark) — "Die Werkstatt der Götter"
 
+> *"Den Göttern gestohlenes Feuer. Jede Gabe ist auch eine Waffe."*
 > *"Fire stolen from the gods. Every gift is also a weapon."*
+
+**Literary Research:** See `docs/research/prometheus-literary-research.md` (comprehensive, 19 authors + 8 philosophical sources)
+
+**Literary DNA:** Mary Shelley (*Frankenstein*), Bruno Schulz (*Street of Crocodiles*), Stanisław Lem (*The Cyberiad*), Patrick Süskind (*Das Parfum*), E.T.A. Hoffmann (*Der Sandmann*), Gaston Bachelard (*Psychoanalysis of Fire*), Ernst Jünger (*Gläserne Bienen*), Ted Chiang (*Exhalation*), Primo Levi (*The Periodic Table*). Philosophical: Bernard Stiegler (technology as pharmakon), Heidegger (techne as poiesis), Lévi-Strauss (the bricoleur). Deep cuts: Villiers de l'Isle-Adam (*L'Ève future*), Gustav Meyrink (*Der Golem*), Adolfo Bioy Casares (*The Invention of Morel*), Andrei Platonov (*The Foundation Pit*), Karel Čapek (*R.U.R.*). Mythological: Prometheus/Hephaestus/Daedalus/Pygmalion/Tsukumogami.
+
+**Tone:** NOT horror, NOT dread, NOT resignation. **Innovation fever** — the ecstasy and vertigo of creation. The workshop is alive. Components have personality. Crafting banter is procedural. Humor (Lem's cosmic irony) is permitted. The pharmakon principle is non-negotiable: every crafted item carries both benefit and cost.
+
+**Emotional gradient:** No items → Levi/Chiang precision + wonder. 1–2 items → Lem/Schulz constructor-humor. 3–4 items → Shelley/Hoffmann complications + uncanny. 5+ items → Schulz/Meyrink matter-with-its-own-agenda. Failed → Lem irony + Platonov tragedy. Brilliant → Bachelard fire-reverie + Novalis wonder.
 
 #### Core Mechanic: CRAFTING / COMBINATION
 
-Rooms contain components instead of loot. Components can be combined (Saboteur + profession skills) to create unique items. Some combinations are brilliant, others catastrophic (Cultist Simulator opacity pattern). The dungeon rewards experimentation and punishes playing safe (no components = no boss-fight tools).
+Rooms contain **components** instead of loot. Components can be combined (Saboteur + profession skills) to create unique items. Some combinations are brilliant, others catastrophic (Cultist Simulator opacity pattern). The dungeon rewards experimentation and punishes playing safe (no components = no boss-fight tools).
+
+**The Pharmakon Principle (Stiegler/Derrida):** Every crafted item has BOTH a benefit and a cost. This is architecturally non-negotiable — no pure-upside items exist. Fire warms AND burns. The alloy strengthens AND resonates at a dangerous frequency. The innovation empowers AND creates dependency.
+
+**The Bricoleur Principle (Lévi-Strauss):** The party works with whatever components they find, not ideal ones. There is no "correct" combination. Mythical thought as creative recombination — the bricoleur constructs things using whatever materials are at hand.
+
+**Component Personality (Schulz):** Components are not generic. Each has material-specific behavior. Metals resist combination. Fluids merge eagerly. Crystals shatter precisely. Powders dissipate under stress. Energy sources hum with intent. Components REACH toward certain partners and REJECT others. "In the depth of matter, indistinct smiles are shaped, tensions build up, attempts at form appear."
+
+**Crafting Consumption (Bioy Casares):** Components are consumed when crafted. You cannot craft AND keep the originals. The perfect copy destroys the original. This creates genuine scarcity and forces triage decisions.
+
+**Emergent Properties (Čapek/Tsukumogami):** Crafted items may develop properties that weren't in either component. Consciousness arrives uninvited. Objects used long enough gain their own trajectories. The crafting system must allow for results that exceed component values.
 
 #### Encounter Palette: 40% puzzle (combination challenges), 30% combat (guardian constructs), 20% encounter (invention opportunities), 10% rest.
 
-#### Boss: "The Prototype" — A malfunctioning construct that can only be defeated using crafted items from the dungeon. Each crafted item has a different effect on the boss. Party must figure out which combination works.
+#### Boss: "The Prototype" — A malfunctioning construct that can only be defeated using crafted items from the dungeon. Each crafted item has a different effect on the boss. Party must figure out which combination works (Ted Chiang's "Seventy-Two Letters" principle: the right combination of signs = function; the wrong combination = nothing). The Prototype adapts — using the same crafted item twice has diminishing returns. The boss is a puzzle, not a tank-and-spank.
 
 #### Loot: **Innovation Blueprint** — player chooses: +1 Aptitude for one agent, OR +0.15 Building Readiness for one building, OR Fortify duration doubled for one zone
+
+#### Banter Register
+
+- **Workshop-as-actor:** The workspace is alive. Tools arrange themselves. Reagents crystallize autonomously. Surfaces change temperature. The workshop has preferences.
+- **Procedural narration:** Unlike Shadow (atmospheric) or Tower (structural), Prometheus banter describes PROCESS. "The {component_a} meets the {component_b}. For a moment, nothing. Then: heat. Then: light. Then: something that was not there before."
+- **German compound nouns:** Werkstatt, Schmelztiegel, Versuchsanordnung, Legierungsbruch, Destillationsrückstand. German's compounding ability is perfect for this register.
+- **Anti-patterns:** No Shadow vocabulary (darkness, void, absence). No Entropy vocabulary (decay, dissolution). No Mother vocabulary (warmth, growth, absorption). No Tower vocabulary (structural, load-bearing). No body horror.
+- **S-tier example:** "The components align. Not chemically — intentionally. As if the alloy wanted to exist before {agent} thought to forge it."
 
 ---
 

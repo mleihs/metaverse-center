@@ -370,7 +370,24 @@ export class AdminApiService extends BaseApiService {
     return this.post(`/admin/simulations/${simulationId}/restore`, {});
   }
 
-  // --- Dungeon Override ---
+  // --- Dungeon Global Config ---
+
+  async getDungeonGlobalConfig(): Promise<ApiResponse<DungeonGlobalConfig>> {
+    return this.get('/admin/dungeon-config/global');
+  }
+
+  async updateDungeonGlobalConfig(
+    config: DungeonGlobalConfig,
+  ): Promise<ApiResponse<DungeonGlobalConfig>> {
+    return this.put('/admin/dungeon-config/global', {
+      override_mode: config.override_mode,
+      override_archetypes: config.override_archetypes,
+      clearance_mode: config.clearance_mode,
+      clearance_threshold: config.clearance_threshold,
+    });
+  }
+
+  // --- Dungeon Per-Simulation Override ---
 
   async listDungeonOverrides(): Promise<ApiResponse<DungeonOverrideSimulation[]>> {
     return this.get('/admin/dungeon-override');
@@ -650,7 +667,16 @@ export interface AIUsageStats {
   key_sources: Record<string, AIUsageBreakdown>;
 }
 
-// ── Dungeon Override ──────────────────────────────────────────────────
+// ── Dungeon Global Config ────────────────────────────────────────────
+
+export interface DungeonGlobalConfig {
+  override_mode: 'off' | 'supplement' | 'override';
+  override_archetypes: string[];
+  clearance_mode: 'off' | 'standard' | 'custom';
+  clearance_threshold: number;
+}
+
+// ── Dungeon Per-Simulation Override ─────────────────────────────────
 
 export interface DungeonOverrideConfig {
   mode: 'off' | 'supplement' | 'override';

@@ -78,6 +78,16 @@ class TerminalStateManager {
   readonly dungeonRunId = signal<string | null>(null);
   /** Archetype label shown in statusbar during dungeon mode (e.g. "The Shadow"). */
   readonly dungeonLabel = signal<string | null>(null);
+  /**
+   * Admin-configured clearance for dungeon commands only.
+   * - bypass=true: dungeon verbs skip tier check entirely (clearance_mode=off).
+   * - customThreshold: when set, dungeon commands require this many prior
+   *   commands instead of the standard 10 (clearance_mode=custom).
+   * Does NOT affect general tier progression (fortify, quarantine, etc.).
+   * Fetched from public API on init — not persisted locally.
+   */
+  readonly dungeonClearanceBypass = signal<boolean>(false);
+  readonly dungeonClearanceThreshold = signal<number | null>(null);
 
   // --- Computed ---
   readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
@@ -177,6 +187,9 @@ class TerminalStateManager {
     }
     this.conversationMode.value = null;
     this.isLoading.value = false;
+
+    // Fetch admin-configured dungeon clearance settings (non-blocking).
+    void this.loadDungeonClearanceConfig();
   }
 
   // ── Epoch Context ────────────────────────────────────────────────────
@@ -274,6 +287,34 @@ class TerminalStateManager {
   }
 
   // ── Clearance ──────────────────────────────────────────────────────────
+
+  /**
+   * Load admin-configured dungeon clearance settings from public API.
+   * Called once during terminal initialization. Non-blocking — uses defaults
+   * if the fetch fails (standard tier system, no bypass).
+   */
+  async loadDungeonClearanceConfig(): Promise<void> {
+    try {
+      const { dungeonApi } = await import('../services/api/DungeonApiService.js');
+      const result = await dungeonApi.getClearanceConfig();
+      if (result.success && result.data) {
+        const { clearance_mode, clearance_threshold } = result.data;
+        if (clearance_mode === 'off') {
+          this.dungeonClearanceBypass.value = true;
+          this.dungeonClearanceThreshold.value = null;
+        } else if (clearance_mode === 'custom') {
+          this.dungeonClearanceBypass.value = false;
+          this.dungeonClearanceThreshold.value = clearance_threshold;
+        } else {
+          // "standard" — use module-level CLEARANCE_THRESHOLDS defaults
+          this.dungeonClearanceBypass.value = false;
+          this.dungeonClearanceThreshold.value = null;
+        }
+      }
+    } catch {
+      // Silently use defaults — dungeon clearance is non-critical
+    }
+  }
 
   /**
    * Check if the current command count triggers a clearance upgrade.

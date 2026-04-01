@@ -12,7 +12,7 @@ from uuid import UUID
 import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
-from backend.dependencies import get_anon_supabase, resolve_simulation_id
+from backend.dependencies import get_admin_supabase, get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.agent_memory_service import AgentMemoryService
@@ -43,6 +43,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.location_service import LocationService
+from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.relationship_service import RelationshipService
 from backend.services.resonance_service import ResonanceService
 from backend.services.scoring_service import ScoringService
@@ -1121,3 +1122,20 @@ async def public_dungeon_run(
     """Public: get a completed dungeon run detail."""
     data = await DungeonQueryService.get_run_public(supabase, run_id)
     return {"success": True, "data": data}
+
+
+@router.get("/dungeons/clearance-config", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def public_dungeon_clearance_config(
+    request: Request,
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Public: get global dungeon clearance configuration.
+
+    Returns the admin-configured clearance mode and threshold so the
+    terminal can decide whether to enforce tier-gating on dungeon commands.
+    Uses admin client because platform_settings has no anon RLS policy.
+    Only exposes clearance settings — never override archetypes.
+    """
+    config = await PlatformSettingsService.get_dungeon_clearance_config(admin_supabase)
+    return {"success": True, "data": dict(config)}

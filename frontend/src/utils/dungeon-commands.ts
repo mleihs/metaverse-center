@@ -107,11 +107,22 @@ export async function dispatchDungeonCommand(
   _args: string[],
   ctx: CommandContext,
 ): Promise<TerminalLine[] | null> {
-  // Clearance check: respect the tier requirement for this verb
+  // Clearance check for dungeon verbs.
+  // Three admin-configured modes (platform_settings):
+  //   off:      bypass entirely — all dungeon commands available immediately.
+  //   standard: tier 2 after 10 commands (default CLEARANCE_THRESHOLDS).
+  //   custom:   tier 2 after N commands (only for dungeon verbs, not general tier).
   const requiredTier = DUNGEON_VERB_TIER[verb];
-  if (requiredTier !== undefined) {
+  if (requiredTier !== undefined && !terminalState.dungeonClearanceBypass.value) {
     const clearance = terminalState.effectiveClearance.value;
-    if (clearance < requiredTier) {
+    // Custom threshold: check command count directly instead of tier level.
+    // This avoids polluting the general tier-2 progression (fortify, quarantine, etc.).
+    const customThreshold = terminalState.dungeonClearanceThreshold.value;
+    if (customThreshold !== null && requiredTier === 2) {
+      if (clearance < 2 && terminalState.commandCount.value < customThreshold) {
+        return formatInsufficientClearance(verb, requiredTier);
+      }
+    } else if (clearance < requiredTier) {
       return formatInsufficientClearance(verb, requiredTier);
     }
   }
@@ -732,6 +743,35 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
       if (narrative) {
         lines.push(responseLine(narrative));
       }
+    }
+
+    // Boss deployment loop: re-render updated choices if still in encounter phase
+    if (
+      resp.data.state.phase === 'encounter' &&
+      resp.data.state.encounter_choices?.length
+    ) {
+      dungeonState.encounterChoices.value = resp.data.state.encounter_choices;
+      const desc = localized(resp.data.state, 'encounter_description');
+      if (desc) {
+        lines.push(
+          ...formatEncounterChoices(
+            desc,
+            resp.data.state.encounter_choices,
+            resp.data.state.party,
+            dungeonState.currentRoom.value?.room_type,
+          ),
+        );
+      }
+    }
+
+    // Boss deployment → combat transition
+    if (
+      resp.data.combat &&
+      resp.data.state.phase === 'combat_planning' &&
+      resp.data.state.combat
+    ) {
+      lines.push(...formatCombatStart(resp.data.state.combat));
+      lines.push(...formatCombatPlanning(resp.data.state.party));
     }
 
     // Check for completion/wipe after encounter

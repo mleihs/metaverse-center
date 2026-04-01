@@ -158,6 +158,16 @@ export class DungeonApiService extends BaseApiService {
       offset: String(offset),
     });
   }
+
+  /** Public: get global dungeon clearance configuration. */
+  getClearanceConfig(): Promise<ApiResponse<DungeonClearanceConfig>> {
+    return this.getPublic('/dungeons/clearance-config');
+  }
+}
+
+export interface DungeonClearanceConfig {
+  clearance_mode: 'off' | 'standard' | 'custom';
+  clearance_threshold: number;
 }
 
 export const dungeonApi = new DungeonApiService();

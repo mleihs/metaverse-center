@@ -87,6 +87,7 @@ from backend.services.dungeon.dungeon_objektanker import (
 from backend.services.dungeon_content_service import (
     get_anchor_objects as _get_anchor_objects_cache,
 )
+from backend.services.platform_settings_service import PlatformSettingsService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -181,6 +182,37 @@ def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
                 if val:
                     en.append("This moment imprints itself.")
                     de.append("Dieser Moment prägt sich ein.")
+            case "add_component":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "a component")
+                    name_de = val.get("name_de", "eine Komponente")
+                    en.append(f"Component acquired: {name_en}.")
+                    de.append(f"Komponente erworben: {name_de}.")
+            case "remove_components":
+                if isinstance(val, list) and val:
+                    n = len(val)
+                    if n == 1:
+                        en.append("One component consumed in the process.")
+                        de.append("Eine Komponente im Prozess verbraucht.")
+                    else:
+                        en.append(f"{n} components consumed in the process.")
+                        de.append(f"{n} Komponenten im Prozess verbraucht.")
+            case "add_crafted_item":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "something new")
+                    name_de = val.get("name_de", "etwas Neues")
+                    en.append(f"Crafted: {name_en}.")
+                    de.append(f"Geschmiedet: {name_de}.")
+            case "craft_failed":
+                if val:
+                    en.append("The combination fails. But the residue is interesting.")
+                    de.append("Die Kombination scheitert. Aber der Rückstand ist interessant.")
+            case "deploy_crafted_item":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "an item")
+                    name_de = val.get("name_de", "ein Gegenstand")
+                    en.append(f"Deployed against The Prototype: {name_en}.")
+                    de.append(f"Gegen den Prototypen eingesetzt: {name_de}.")
             case "ambush_trigger":
                 pass  # Game mechanic flag — no player-facing narrative
             case _:
@@ -220,6 +252,11 @@ _FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "boss": "mother_living_altar_spawn",
         "default": "mother_weaver_drift_spawn",
         "rest_ambush": "mother_rest_ambush_spawn",
+    },
+    "The Prometheus": {
+        "boss": "prometheus_prototype_boss_spawn",
+        "default": "prometheus_workshop_patrol_spawn",
+        "rest_ambush": "prometheus_rest_ambush_spawn",
     },
 }
 
@@ -651,7 +688,12 @@ class DungeonEngineService:
         elif target_room.room_type in ("encounter", "rest", "treasure"):
             result.update(cls._enter_interactive_room(instance, target_room))
         elif target_room.room_type == "boss":
-            result.update(await cls._enter_combat_room(admin_supabase, instance, target_room, is_boss=True))
+            strategy = get_archetype_strategy(instance.archetype)
+            deployment_choices = strategy.get_boss_deployment_choices(instance)
+            if deployment_choices:
+                result.update(cls._enter_boss_deployment(instance, target_room, deployment_choices))
+            else:
+                result.update(await cls._enter_combat_room(admin_supabase, instance, target_room, is_boss=True))
         elif target_room.room_type == "exit":
             instance.phase = "exit"
             result["exit_available"] = True
@@ -780,7 +822,11 @@ class DungeonEngineService:
                         )
 
         # Generate enemy actions
-        enemy_templates = get_enemy_templates_dict()
+        enemy_templates = get_enemy_templates_dict(instance.archetype)
+        # Apply archetype pre-combat modifications (e.g. Prometheus boss debuffs)
+        enemy_templates = get_archetype_strategy(instance.archetype).modify_enemy_templates(
+            instance, enemy_templates,
+        )
         enemy_actions = generate_enemy_actions(
             instance.combat.enemies,
             instance.party,
@@ -1069,7 +1115,14 @@ class DungeonEngineService:
         if instance.phase not in ("encounter", "rest"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
 
+        # Boss deployment intercept — dynamic choices from archetype_state
         current_room = instance.rooms[instance.current_room]
+        if (
+            current_room.room_type == "boss"
+            and "_boss_deployment_choices" in instance.archetype_state
+        ):
+            return await cls._handle_boss_deployment(admin_supabase, instance, action)
+
         encounter = get_encounter_by_id(current_room.encounter_template_id or "")
         if not encounter:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "No encounter in current room")
@@ -1378,7 +1431,7 @@ class DungeonEngineService:
             for row in (resp.data or [])
         ]
 
-        # ── Admin override: per-archetype unlock via simulation_settings ──
+        # ── Admin override: per-sim config takes precedence, then global ──
         # maybe_single() returns None response when PostgREST gives 406 (no
         # matching row). Guard both the response object and .data safely.
         override_resp = (
@@ -1394,6 +1447,10 @@ class DungeonEngineService:
         override_config = override_data.get("setting_value", {}) if isinstance(override_data, dict) else {}
         override_mode = override_config.get("mode", "off") if isinstance(override_config, dict) else "off"
         override_archetypes = set(override_config.get("archetypes", [])) if isinstance(override_config, dict) else set()
+
+        # Cascade: if per-sim is "off", fall through to global platform config.
+        if override_mode == "off":
+            override_mode, override_archetypes = await cls._get_global_dungeon_override(admin_supabase)
 
         if override_mode == "override":
             results = []
@@ -1428,6 +1485,22 @@ class DungeonEngineService:
                     )
 
         return results
+
+    @classmethod
+    async def _get_global_dungeon_override(
+        cls,
+        admin_supabase: Client,
+    ) -> tuple[str, set[str]]:
+        """Read global dungeon override from platform_settings.
+
+        Delegates to PlatformSettingsService (single source of truth for
+        key names, parsing, and defaults). Returns (mode, archetypes).
+        """
+        try:
+            return await PlatformSettingsService.get_dungeon_override_config(admin_supabase)
+        except Exception:
+            logger.warning("Failed to read global dungeon override, using defaults")
+            return ("off", set())
 
     # ── State Recovery ──────────────────────────────────────────────────
 
@@ -1578,7 +1651,15 @@ class DungeonEngineService:
         encounter_desc_de = None
         if instance.phase in ("encounter", "rest"):
             current_room = instance.rooms[instance.current_room]
-            if current_room.encounter_template_id:
+            # Boss deployment: dynamic choices from archetype_state
+            boss_deploy_choices = instance.archetype_state.get("_boss_deployment_choices")
+            if boss_deploy_choices and current_room.room_type == "boss":
+                encounter_choices = cls._format_encounter_choices(boss_deploy_choices)
+                encounter = get_encounter_by_id(current_room.encounter_template_id or "")
+                if encounter:
+                    encounter_desc_en = encounter.description_en
+                    encounter_desc_de = encounter.description_de
+            elif current_room.encounter_template_id:
                 encounter = get_encounter_by_id(current_room.encounter_template_id)
                 if encounter:
                     encounter_choices = cls._format_encounter_choices(encounter.choices)
@@ -1608,15 +1689,22 @@ class DungeonEngineService:
 
     @staticmethod
     def _format_encounter_choices(choices: list) -> list[dict]:
-        """Format encounter choices for client response with check info."""
+        """Format encounter choices for client response with check info.
+
+        Accepts both ``EncounterChoice`` model instances (attribute access) and
+        plain dicts (boss deployment dynamic choices).
+        """
+        def _get(c, key: str, default=None):  # noqa: ANN001
+            return c[key] if isinstance(c, dict) else getattr(c, key, default)
+
         return [
             {
-                "id": c.id,
-                "label_en": c.label_en,
-                "label_de": c.label_de,
-                "requires_aptitude": c.requires_aptitude,
-                "check_aptitude": c.check_aptitude,
-                "check_difficulty": c.check_difficulty,
+                "id": _get(c, "id"),
+                "label_en": _get(c, "label_en"),
+                "label_de": _get(c, "label_de"),
+                "requires_aptitude": _get(c, "requires_aptitude"),
+                "check_aptitude": _get(c, "check_aptitude"),
+                "check_difficulty": _get(c, "check_difficulty", 0),
             }
             for c in choices
         ]
@@ -1851,6 +1939,200 @@ class DungeonEngineService:
             "treasure": True,
             "auto_loot": True,
             "loot": [item.model_dump() for item in loot],
+        }
+
+    @classmethod
+    def _enter_boss_deployment(
+        cls, instance: DungeonInstance, room, choices: list[dict],
+    ) -> dict:
+        """Enter pre-combat deployment phase for a boss room.
+
+        The party chooses which crafted items to deploy as debuffs against the
+        boss before combat begins.  Reuses ``phase="encounter"`` so the
+        existing encounter-choice UI works without frontend changes.  Dynamic
+        choices are stored in ``archetype_state["_boss_deployment_choices"]``
+        for checkpoint survival.
+        """
+        encounter = select_encounter(
+            "boss", instance.depth, instance.difficulty, instance.archetype,
+        )
+        room.encounter_template_id = encounter.id if encounter else None
+        instance.phase = "encounter"
+        instance.archetype_state["_boss_deployment_choices"] = choices
+        return {
+            "boss_deployment": True,
+            "description_en": encounter.description_en if encounter else "",
+            "description_de": encounter.description_de if encounter else "",
+            "choices": cls._format_encounter_choices(choices),
+        }
+
+    @classmethod
+    async def _handle_boss_deployment(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        action: DungeonAction,
+    ) -> dict:
+        """Handle a boss deployment choice: deploy a crafted item or begin combat.
+
+        Deployment loop: after deploying an item, the engine regenerates
+        remaining choices and stays in ``phase="encounter"``.  Choosing
+        "begin_combat" cleans up deployment state and enters combat.
+
+        Items are NOT consumed — they remain in inventory for re-deployment
+        with diminishing returns (spec §3.6).
+        """
+        boss_choices = instance.archetype_state.get("_boss_deployment_choices", [])
+        choice = next((c for c in boss_choices if c["id"] == action.choice_id), None)
+        if not choice:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Unknown deployment choice: {action.choice_id}",
+            )
+
+        current_room = instance.rooms[instance.current_room]
+
+        # ── "Begin combat" — transition to combat with accumulated debuffs ──
+        if action.choice_id == "begin_combat":
+            instance.archetype_state.pop("_boss_deployment_choices", None)
+            combat_result = await cls._enter_combat_room(
+                admin_supabase, instance, current_room, is_boss=True,
+            )
+            await cls._checkpoint(admin_supabase, instance)
+
+            narrative_en = (
+                "The Prototype activates. It has cataloged your preparations. "
+                "It does not care. It is, after all, unfinished \u2013 "
+                "and unfinished things do not fear revision."
+            )
+            narrative_de = (
+                "Der Prototyp aktiviert sich. Er hat eure Vorbereitungen katalogisiert. "
+                "Es kümmert ihn nicht. Er ist, immerhin, unfertig \u2013 "
+                "und unfertige Dinge fürchten keine Überarbeitung."
+            )
+            await cls._log_event(
+                admin_supabase,
+                instance.run_id,
+                instance.simulation_id,
+                instance.depth,
+                current_room.index,
+                "encounter_choice",
+                {"choice_id": "begin_combat", "boss_deployment": True},
+                narrative_en=narrative_en,
+                narrative_de=narrative_de,
+            )
+            return {
+                "result": "success",
+                "narrative_en": narrative_en,
+                "narrative_de": narrative_de,
+                "narrative_effects_en": [],
+                "narrative_effects_de": [],
+                "effects": {},
+                "state": cls._build_client_state(instance).model_dump(),
+                **combat_result,
+            }
+
+        # ── Deploy a crafted item ──
+        item_id = action.choice_id.removeprefix("deploy_")
+        crafted_items = instance.archetype_state.get("crafted_items", [])
+        item = next((i for i in crafted_items if i["id"] == item_id), None)
+        if not item or not item.get("boss_effect"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Invalid deployment item: {item_id}",
+            )
+
+        boss_effect = item["boss_effect"]
+        boss_debuffs: list[dict] = instance.archetype_state.setdefault("_boss_debuffs", [])
+
+        # Diminishing returns: 0.5^(n-1) where n = total deploy count for this item
+        prev_count = sum(1 for d in boss_debuffs if d["item_id"] == item_id)
+        effectiveness = 0.5 ** prev_count
+        effective_value = boss_effect["value"] * effectiveness
+
+        boss_debuffs.append({
+            "item_id": item_id,
+            "effect_type": boss_effect["type"],
+            "base_value": boss_effect["value"],
+            "effective_value": effective_value,
+            "school": boss_effect.get("school"),
+            "deploy_count": prev_count + 1,
+        })
+        instance.archetype_state["_boss_debuffs"] = boss_debuffs
+
+        # Build deployment narrative (Shelley/Lem register)
+        eff_pct = int(effectiveness * 100)
+        item_name_en = item["name_en"]
+        item_name_de = item["name_de"]
+
+        if prev_count == 0:
+            narrative_en = (
+                f"The {item_name_en} is deployed. The Prototype's surface "
+                "ripples \u2013 recognition. Not of the party. Of kinship. "
+                "For the first time, it looks uncertain."
+            )
+            narrative_de = (
+                f"{item_name_de} wird eingesetzt. Die Oberfläche des Prototypen "
+                "kräuselt sich \u2013 Wiedererkennung. Nicht des Trupps. "
+                "Der Verwandtschaft. Zum ersten Mal sieht er unsicher aus."
+            )
+        else:
+            narrative_en = (
+                f"The {item_name_en} is deployed again. The Prototype recognizes "
+                f"the frequency \u2013 it has begun to compensate. "
+                f"Effectiveness: {eff_pct}%. Adaptation is, after all, "
+                "what unfinished things do best."
+            )
+            narrative_de = (
+                f"{item_name_de} wird erneut eingesetzt. Der Prototyp erkennt "
+                f"die Frequenz \u2013 er hat begonnen zu kompensieren. "
+                f"Wirksamkeit: {eff_pct}%. Anpassung ist, immerhin, "
+                "was unfertige Dinge am besten können."
+            )
+
+        await cls._log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            current_room.index,
+            "encounter_choice",
+            {
+                "choice_id": action.choice_id,
+                "boss_deployment": True,
+                "item_id": item_id,
+                "effectiveness": eff_pct,
+                "deploy_count": prev_count + 1,
+            },
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
+        )
+
+        # Regenerate choices for next deployment round
+        strategy = get_archetype_strategy(instance.archetype)
+        new_choices = strategy.get_boss_deployment_choices(instance)
+        if new_choices:
+            instance.archetype_state["_boss_deployment_choices"] = new_choices
+        else:
+            instance.archetype_state.pop("_boss_deployment_choices", None)
+
+        await cls._checkpoint(admin_supabase, instance)
+
+        effects: dict = {
+            "deploy_crafted_item": {
+                "name_en": item_name_en,
+                "name_de": item_name_de,
+            },
+        }
+        narrative_effects_en, narrative_effects_de = _narrate_effects(effects)
+
+        return {
+            "result": "success",
+            "effects": effects,
+            "narrative_en": narrative_en,
+            "narrative_de": narrative_de,
+            "narrative_effects_en": narrative_effects_en,
+            "narrative_effects_de": narrative_effects_de,
+            "state": cls._build_client_state(instance).model_dump(),
         }
 
     @classmethod

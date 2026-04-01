@@ -79,6 +79,24 @@ class DungeonOverrideUpdate(BaseModel):
     archetypes: list[str] = Field(default_factory=list)
 
 
+class DungeonGlobalConfigUpdate(BaseModel):
+    """Global dungeon configuration — cascading defaults for all simulations.
+
+    override_mode: Global archetype override (same semantics as per-sim).
+    override_archetypes: Global archetype list.
+    clearance_mode: Terminal clearance requirement for dungeon commands.
+      - "off": All dungeon commands bypass clearance tier check.
+      - "standard": Tier 2 after 10 commands (default).
+      - "custom": Tier 2 after custom threshold commands.
+    clearance_threshold: Command count threshold (used when clearance_mode=custom).
+    """
+
+    override_mode: str = Field(default="off", pattern="^(off|supplement|override)$")
+    override_archetypes: list[str] = Field(default_factory=list)
+    clearance_mode: str = Field(default="standard", pattern="^(off|standard|custom)$")
+    clearance_threshold: int = Field(default=10, ge=0, le=100)
+
+
 class ImpersonateRequest(BaseModel):
     user_id: UUID
 
@@ -422,7 +440,43 @@ async def update_simulation_health_effects(
     return {"success": True, "data": {"enabled": body.enabled}}
 
 
-# --- Dungeon Override ---
+# --- Dungeon Global Config ---
+
+
+@router.get("/dungeon-config/global", response_model=SuccessResponse[dict])
+async def get_dungeon_global_config(
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Return global dungeon configuration (override mode + clearance)."""
+    config = await PlatformSettingsService.get_dungeon_global_config(admin_supabase)
+    return {"success": True, "data": dict(config)}
+
+
+@router.put("/dungeon-config/global", response_model=SuccessResponse[dict])
+async def update_dungeon_global_config(
+    body: DungeonGlobalConfigUpdate,
+    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Update global dungeon configuration (override mode + clearance)."""
+    config = await PlatformSettingsService.update_dungeon_global_config(
+        admin_supabase,
+        user.id,
+        override_mode=body.override_mode,
+        override_archetypes=body.override_archetypes,
+        clearance_mode=body.clearance_mode,
+        clearance_threshold=body.clearance_threshold,
+    )
+    await AuditService.safe_log(
+        admin_supabase, None, user.id,
+        "platform_settings", "dungeon_global_config", "update",
+        details=dict(config),
+    )
+    return {"success": True, "data": dict(config)}
+
+
+# --- Dungeon Per-Simulation Override ---
 
 
 @router.get("/dungeon-override", response_model=SuccessResponse[list[dict]])
