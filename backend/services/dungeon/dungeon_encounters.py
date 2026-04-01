@@ -5172,6 +5172,733 @@ ALL_PROMETHEUS_ENCOUNTERS: list[EncounterTemplate] = (
 )
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# THE DELUGE — Rising Water (Phase 5)
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── Combat Encounters (6) ────────────────────────────────────────────────
+
+DELUGE_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_trickle_probe",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "First currents testing the party's resolve. Two tendrils of water "
+            "extend from the floor drain, probing the space the party occupies. "
+            "They are not fast. They are patient."
+        ),
+        description_de=(
+            "Erste Strömungen, die die Entschlossenheit der Gruppe testen. Zwei "
+            "Wasserranken strecken sich aus dem Bodenabfluss, tasten den Raum ab, "
+            "den die Gruppe einnimmt. Sie sind nicht schnell. Sie sind geduldig."
+        ),
+        combat_encounter_id="deluge_trickle_spawn",
+    ),
+    EncounterTemplate(
+        id="dc_surge_corridor",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "A corridor where the water moves with purpose. A Pressure Surge "
+            "occupies the center \u2013 a wall of dense water that advances without "
+            "hurry. A Riptide Tendril flanks from the drainage channel. "
+            "The corridor narrows. The water does not."
+        ),
+        description_de=(
+            "Ein Korridor, in dem das Wasser sich mit Absicht bewegt. Eine "
+            "Druckwelle besetzt die Mitte \u2013 eine Wand dichten Wassers, die "
+            "ohne Eile vorrückt. Eine Sogranke flankiert aus dem Abflusskanal. "
+            "Der Korridor verengt sich. Das Wasser nicht."
+        ),
+        combat_encounter_id="deluge_surge_patrol_spawn",
+    ),
+    EncounterTemplate(
+        id="dc_sediment_ambush",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=2,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "The silt remembers shapes. Some of them fight back. A Silt Revenant "
+            "assembles from the sediment layer \u2013 mineral, debris, the residue of "
+            "dissolved architecture. A tendril assists, pulling from below."
+        ),
+        description_de=(
+            "Der Schlick erinnert sich an Formen. Einige davon wehren sich. "
+            "Ein Schlickwiedergänger setzt sich aus der Sedimentschicht zusammen "
+            "\u2013 Mineral, Trümmer, der Rückstand aufgelöster Architektur. "
+            "Eine Ranke assistiert und zieht von unten."
+        ),
+        combat_encounter_id="deluge_sediment_spawn",
+    ),
+    EncounterTemplate(
+        id="dc_deep_water_clash",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=3,
+        max_depth=6,
+        min_difficulty=2,
+        description_en=(
+            "Waist-deep. Every step costs something. A Pressure Surge and a "
+            "Silt Revenant occupy a junction room where three corridors meet. "
+            "The water here has momentum \u2013 it flows, it carries, it resists."
+        ),
+        description_de=(
+            "Hüfttief. Jeder Schritt kostet. Eine Druckwelle und ein "
+            "Schlickwiedergänger besetzen einen Knotenpunkt, an dem drei Korridore "
+            "zusammentreffen. Das Wasser hier hat Schwung \u2013 es fließt, "
+            "es trägt, es widersteht."
+        ),
+        combat_encounter_id="deluge_deep_water_spawn",
+    ),
+    EncounterTemplate(
+        id="dc_warden_chamber",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=4,
+        max_depth=7,
+        min_difficulty=2,
+        description_en=(
+            "The water has posted a guard at this depth. An Undertow Warden "
+            "\u2013 water given mass and purpose \u2013 fills the chamber. "
+            "A tendril circles the perimeter. "
+            "The warden does not approach. The water level rises to meet it."
+        ),
+        description_de=(
+            "Das Wasser hat einen Wächter auf dieser Tiefe postiert. Ein "
+            "Sogwächter \u2013 Wasser mit Masse und Absicht versehen \u2013 füllt "
+            "die Kammer. Eine Ranke umkreist den Rand. "
+            "Der Wächter nähert sich nicht. Der Pegel steigt, um ihm entgegenzukommen."
+        ),
+        combat_encounter_id="deluge_warden_spawn",
+    ),
+    EncounterTemplate(
+        id="dc_whirlpool_room",
+        archetype="The Deluge",
+        room_type="combat",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The current circles. The party is in the center. A Pressure Surge "
+            "and a Silt Revenant orbit the room's perimeter, riding the "
+            "whirlpool. Fighting here means fighting the water's geometry."
+        ),
+        description_de=(
+            "Die Strömung kreist. Die Gruppe ist im Zentrum. Eine Druckwelle "
+            "und ein Schlickwiedergänger umkreisen den Raumrand, reiten auf dem "
+            "Strudel. Hier kämpfen heißt gegen die Geometrie des Wassers kämpfen."
+        ),
+        combat_encounter_id="deluge_deep_water_spawn",
+    ),
+]
+
+# ── Narrative Encounters (5) ─────────────────────────────────────────────
+
+DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_the_watermark",
+        archetype="The Deluge",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A line on the wall. Faint. Mineral-white. The watermark shows "
+            "how high the water reached last time."
+        ),
+        description_de=(
+            "Eine Linie an der Wand. Schwach. Mineralweiß. Das Wasserzeichen "
+            "zeigt, wie hoch das Wasser beim letzten Mal stand."
+        ),
+        choices=[
+            EncounterChoice(
+                id="watermark_study",
+                label_en="Study the watermark (Spy)",
+                label_de="Das Wasserzeichen studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"water_level": -3},
+                partial_effects={},
+                fail_effects={"water_level": 3},
+                success_narrative_en=(
+                    "The pattern reveals itself. {agent} reads the intervals "
+                    "between marks \u2013 the tide's rhythm, predictable as breathing. "
+                    "The next recession will be stronger."
+                ),
+                success_narrative_de=(
+                    "{agent} liest die Abstände zwischen den Markierungen \u2013 "
+                    "der Rhythmus der Gezeiten, vorhersagbar wie Atmen. "
+                    "Der nächste Rückgang wird stärker sein."
+                ),
+                fail_narrative_en=(
+                    "The marks blur. Time wasted. The water does not wait "
+                    "for comprehension."
+                ),
+                fail_narrative_de=(
+                    "Die Markierungen verschwimmen. Verschwendete Zeit. "
+                    "Das Wasser wartet nicht auf Verständnis."
+                ),
+            ),
+            EncounterChoice(
+                id="watermark_seal",
+                label_en="Seal below the mark (Guardian)",
+                label_de="Unterhalb der Markierung abdichten (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=-5,
+                success_effects={"water_level": -8},
+                partial_effects={"water_level": -4},
+                fail_effects={"water_level": 5},
+                success_narrative_en=(
+                    "The seal holds. The water below the mark is contained \u2013 "
+                    "for now. {agent}'s hands are raw but the arithmetic improves."
+                ),
+                success_narrative_de=(
+                    "Die Abdichtung hält. Das Wasser unterhalb der Markierung "
+                    "ist eingedämmt \u2013 vorerst. {agent}s Hände sind wund, "
+                    "aber die Arithmetik verbessert sich."
+                ),
+                fail_narrative_en=(
+                    "The seal breaches. The water finds the weakness before "
+                    "{agent} can reinforce it."
+                ),
+                fail_narrative_de=(
+                    "Die Abdichtung bricht. Das Wasser findet die Schwachstelle, "
+                    "bevor {agent} sie verstärken kann."
+                ),
+            ),
+            EncounterChoice(
+                id="watermark_ignore",
+                label_en="Ignore it and move",
+                label_de="Ignorieren und weitergehen",
+                success_effects={},
+                success_narrative_en="The party moves on. The watermark remains.",
+                success_narrative_de="Die Gruppe geht weiter. Das Wasserzeichen bleibt.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_submerged_cache",
+        archetype="The Deluge",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "Through the water below \u2013 shapes. Containers. Something the "
+            "flood deposited here from a room that no longer exists."
+        ),
+        description_de=(
+            "Durch das Wasser darunter \u2013 Formen. Behälter. Etwas, das die "
+            "Flut hier ablagerte, aus einem Raum, der nicht mehr existiert."
+        ),
+        choices=[
+            EncounterChoice(
+                id="cache_dive",
+                label_en="Dive for it (Guardian)",
+                label_de="Danach tauchen (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=-5,
+                success_effects={"loot_tier": 2},
+                partial_effects={"loot_tier": 1, "stress": 10},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "{agent} surfaces with a sealed container. The contents "
+                    "are dry. The flood carried this from somewhere valuable."
+                ),
+                success_narrative_de=(
+                    "{agent} taucht mit einem versiegelten Behälter auf. "
+                    "Der Inhalt ist trocken. Die Flut trug dies von "
+                    "irgendwo Wertvollem hierher."
+                ),
+                fail_narrative_en=(
+                    "The current pulls {agent} deeper than intended. "
+                    "Nothing retrieved. Stress accumulated."
+                ),
+                fail_narrative_de=(
+                    "Die Strömung zieht {agent} tiefer als beabsichtigt. "
+                    "Nichts geborgen. Stress angesammelt."
+                ),
+            ),
+            EncounterChoice(
+                id="cache_eyes",
+                label_en="Send the sharpest eyes (Spy)",
+                label_de="Die schärfsten Augen schicken (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"loot_tier": 2},
+                partial_effects={"loot_tier": 1},
+                fail_effects={},
+                success_narrative_en=(
+                    "{agent} identifies the best container through the water's "
+                    "distortion. Precise. The flood reveals to those who observe."
+                ),
+                success_narrative_de=(
+                    "{agent} identifiziert den besten Behälter durch die "
+                    "Verzerrung des Wassers. Präzise. Die Flut offenbart "
+                    "sich denen, die beobachten."
+                ),
+                fail_narrative_en="The water distorts. Nothing distinct. The flood keeps its inventory.",
+                fail_narrative_de="Das Wasser verzerrt. Nichts Deutliches. Die Flut behält ihr Inventar.",
+            ),
+            EncounterChoice(
+                id="cache_leave",
+                label_en="Leave it. The water owns it now.",
+                label_de="Es lassen. Das Wasser besitzt es jetzt.",
+                success_effects={"stress": -5},
+                success_narrative_en=(
+                    "The party moves on. The containers settle. "
+                    "Acceptance is its own economy."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe geht weiter. Die Behälter setzen sich ab. "
+                    "Akzeptanz ist ihre eigene Ökonomie."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_the_breach",
+        archetype="The Deluge",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A crack in the wall. Water doesn't pour through it \u2013 it persuades. "
+            "A thin, persistent line of moisture that widens as you watch."
+        ),
+        description_de=(
+            "Ein Riss in der Wand. Wasser strömt nicht hindurch \u2013 es überredet. "
+            "Eine dünne, beharrliche Feuchtigkeitslinie, die sich verbreitert, "
+            "während man zusieht."
+        ),
+        choices=[
+            EncounterChoice(
+                id="breach_seal",
+                label_en="Seal it (Saboteur)",
+                label_de="Abdichten (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=-5,
+                success_effects={"water_level": -10},
+                partial_effects={"water_level": -5},
+                fail_effects={"water_level": 8},
+                success_narrative_en=(
+                    "The breach is sealed. {agent}'s work is precise \u2013 the "
+                    "kind of engineering that holds against water's patience."
+                ),
+                success_narrative_de=(
+                    "Die Bresche ist abgedichtet. {agent}s Arbeit ist präzise \u2013 "
+                    "die Art Ingenieurkunst, die der Geduld des Wassers standhält."
+                ),
+                fail_narrative_en="The breach widens. The water had already planned for this.",
+                fail_narrative_de="Die Bresche verbreitert sich. Das Wasser hatte dies bereits eingeplant.",
+            ),
+            EncounterChoice(
+                id="breach_redirect",
+                label_en="Redirect it (Spy)",
+                label_de="Umleiten (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"water_level": -5},
+                partial_effects={"water_level": -2},
+                fail_effects={"water_level": 5},
+                success_narrative_en=(
+                    "{agent} reads the water's intent and redirects the flow "
+                    "into an adjacent corridor. The breach remains, but its "
+                    "consequences are elsewhere."
+                ),
+                success_narrative_de=(
+                    "{agent} liest die Absicht des Wassers und lenkt den Fluss "
+                    "in einen benachbarten Korridor. Die Bresche bleibt, aber "
+                    "ihre Konsequenzen sind anderswo."
+                ),
+                fail_narrative_en="The redirection fails. The water knows this route better.",
+                fail_narrative_de="Die Umleitung scheitert. Das Wasser kennt diesen Weg besser.",
+            ),
+            EncounterChoice(
+                id="breach_use",
+                label_en="Use it (Assassin)",
+                label_de="Ausnutzen (Assassine)",
+                check_aptitude="assassin",
+                check_difficulty=0,
+                success_effects={"water_level": 3, "next_combat_bonus": "enemy_condition_step"},
+                partial_effects={"water_level": 5},
+                fail_effects={"water_level": 10},
+                success_narrative_en=(
+                    "{agent} weaponizes the breach. The next combat will begin "
+                    "with enemies already battered by the water's force."
+                ),
+                success_narrative_de=(
+                    "{agent} macht die Bresche zur Waffe. Der nächste Kampf "
+                    "beginnt mit Feinden, die bereits von der Kraft des "
+                    "Wassers geschwächt sind."
+                ),
+                fail_narrative_en="The breach becomes a flood. The water does not serve.",
+                fail_narrative_de="Die Bresche wird zur Flut. Das Wasser dient nicht.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_survivors_message",
+        archetype="The Deluge",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "Carved into the wall above the current waterline. Recent. "
+            "Someone else tried this. The message is incomplete \u2013 "
+            "the water reached it before they finished."
+        ),
+        description_de=(
+            "In die Wand geritzt, über der aktuellen Wasserlinie. Kürzlich. "
+            "Jemand anderes hat dies versucht. Die Nachricht ist unvollständig "
+            "\u2013 das Wasser erreichte sie, bevor sie fertig waren."
+        ),
+        choices=[
+            EncounterChoice(
+                id="message_read",
+                label_en="Read what remains (Propagandist)",
+                label_de="Lesen, was bleibt (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=-5,
+                success_effects={"reveal_rooms": 2},
+                partial_effects={"reveal_rooms": 1},
+                fail_effects={"stress": 15},
+                success_narrative_en=(
+                    "The message is a map. Partial, but legible. {agent} "
+                    "decodes the previous party's observations \u2013 room types, "
+                    "water routes, a warning about the depth below."
+                ),
+                success_narrative_de=(
+                    "Die Nachricht ist eine Karte. Unvollständig, aber lesbar. "
+                    "{agent} entschlüsselt die Beobachtungen der vorherigen "
+                    "Gruppe \u2013 Raumtypen, Wasserwege, eine Warnung über die Tiefe darunter."
+                ),
+                fail_narrative_en=(
+                    "The message is unsettling. The handwriting deteriorates. "
+                    "The last word is either 'rising' or 'run'."
+                ),
+                fail_narrative_de=(
+                    "Die Nachricht ist beunruhigend. Die Handschrift "
+                    "verschlechtert sich. Das letzte Wort ist entweder "
+                    "»steigend« oder »lauf«."
+                ),
+            ),
+            EncounterChoice(
+                id="message_add",
+                label_en="Add to it (Spy)",
+                label_de="Ergänzen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={},
+                partial_effects={},
+                fail_effects={"water_level": 3},
+                success_narrative_en=(
+                    "{agent} carves observations into the wall. Precise. "
+                    "Economical. Future parties will find better intelligence."
+                ),
+                success_narrative_de=(
+                    "{agent} ritzt Beobachtungen in die Wand. Präzise. "
+                    "Ökonomisch. Zukünftige Gruppen werden bessere Informationen finden."
+                ),
+                fail_narrative_en="Time wasted. The water rises while {agent} carves.",
+                fail_narrative_de="Verschwendete Zeit. Das Wasser steigt, während {agent} ritzt.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_sound_of_depth",
+        archetype="The Deluge",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=6,
+        min_difficulty=2,
+        description_en=(
+            "The water below has reached a resonance. A low hum. Not mechanical "
+            "\u2013 geological. The sound the planet makes when it remembers "
+            "it is mostly ocean."
+        ),
+        description_de=(
+            "Das Wasser darunter hat eine Resonanz erreicht. Ein tiefes Summen. "
+            "Nicht mechanisch \u2013 geologisch. Das Geräusch, das der Planet "
+            "macht, wenn er sich erinnert, dass er hauptsächlich Ozean ist."
+        ),
+        choices=[
+            EncounterChoice(
+                id="depth_listen",
+                label_en="Listen (Propagandist)",
+                label_de="Lauschen (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=0,
+                success_effects={"boss_intel": "first_attack_crit"},
+                partial_effects={},
+                fail_effects={"stress": 10},
+                success_narrative_en=(
+                    "The resonance reveals a pattern. {agent} understands \u2013 "
+                    "the boss's rhythm, its weakness. The first strike will "
+                    "find the fault line."
+                ),
+                success_narrative_de=(
+                    "Die Resonanz offenbart ein Muster. {agent} versteht \u2013 "
+                    "den Rhythmus des Bosses, seine Schwäche. Der erste Schlag "
+                    "wird die Bruchlinie finden."
+                ),
+                fail_narrative_en="The sound is disorienting. It fills {agent}'s head and refuses to leave.",
+                fail_narrative_de="Das Geräusch ist desorientierend. Es füllt {agent}s Kopf und weigert sich zu gehen.",
+            ),
+            EncounterChoice(
+                id="depth_measure",
+                label_en="Measure it (Spy)",
+                label_de="Vermessen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"reveal_water_calc": True},
+                partial_effects={},
+                fail_effects={},
+                success_narrative_en=(
+                    "Precise calculations. {agent} now knows exactly how many "
+                    "rooms remain before the submerged threshold. "
+                    "The arithmetic is merciless but clear."
+                ),
+                success_narrative_de=(
+                    "Präzise Berechnungen. {agent} weiß jetzt genau, wie viele "
+                    "Räume bis zur Überschwemmungsschwelle verbleiben. "
+                    "Die Arithmetik ist gnadenlos, aber klar."
+                ),
+                fail_narrative_en="Instruments damaged. The water's vibration is not compatible with measurement.",
+                fail_narrative_de="Instrumente beschädigt. Die Vibration des Wassers ist nicht messungskompatibel.",
+            ),
+            EncounterChoice(
+                id="depth_block",
+                label_en="Block it out",
+                label_de="Ausblenden",
+                success_effects={},
+                success_narrative_en="The party moves on. The sound continues without them.",
+                success_narrative_de="Die Gruppe geht weiter. Das Geräusch setzt sich ohne sie fort.",
+            ),
+        ],
+    ),
+]
+
+# ── Elite Encounter (1) ──────────────────────────────────────────────────
+
+DELUGE_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_tidal_gate",
+        archetype="The Deluge",
+        room_type="elite",
+        min_depth=4,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "A mechanism. Ancient. Not built by anyone in this simulation. "
+            "The gate controls a section of the flood \u2013 open it and the "
+            "water surges through, closed it holds. But the mechanism "
+            "requires a sacrifice."
+        ),
+        description_de=(
+            "Ein Mechanismus. Uralt. Nicht von jemandem in dieser Simulation "
+            "erbaut. Das Tor kontrolliert einen Abschnitt der Flut \u2013 "
+            "öffnet man es, bricht das Wasser durch; geschlossen hält es. "
+            "Aber der Mechanismus fordert ein Opfer."
+        ),
+        combat_encounter_id="deluge_warden_spawn",
+    ),
+]
+
+# ── Boss Encounter (1) ───────────────────────────────────────────────────
+
+DELUGE_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_the_current_boss",
+        archetype="The Deluge",
+        room_type="boss",
+        min_depth=4,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The water has found its shape. It fills the room from below, "
+            "from the walls, from the ceiling. The Current is not something "
+            "IN the water. The Current IS the water, organized into purpose. "
+            "It does not attack. It arrives."
+        ),
+        description_de=(
+            "Das Wasser hat seine Form gefunden. Es füllt den Raum von unten, "
+            "von den Wänden, von der Decke. Die Strömung ist nicht etwas "
+            "IM Wasser. Die Strömung IST das Wasser, zu Absicht organisiert. "
+            "Sie greift nicht an. Sie kommt."
+        ),
+        combat_encounter_id="deluge_warden_spawn",
+    ),
+]
+
+# ── Rest Encounters (2) ──────────────────────────────────────────────────
+
+DELUGE_REST_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_dry_shelf",
+        archetype="The Deluge",
+        room_type="rest",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A ledge. Above the current waterline. Dry, for now. The "
+            "mathematical certainty of the rising water makes this rest "
+            "temporary, but temporary is enough."
+        ),
+        description_de=(
+            "Ein Vorsprung. Über der aktuellen Wasserlinie. Trocken, vorerst. "
+            "Die mathematische Gewissheit des steigenden Wassers macht diese "
+            "Rast vorübergehend, aber vorübergehend reicht."
+        ),
+        choices=[
+            EncounterChoice(
+                id="dry_shelf_rest",
+                label_en="Rest on the dry shelf",
+                label_de="Auf dem trockenen Vorsprung rasten",
+                success_effects={"stress_heal": 40, "water_level": -5},
+                success_narrative_en=(
+                    "The party rests. The water level drops slightly \u2013 "
+                    "pumping, seepage, the ledge's drainage. When they rise, "
+                    "the waterline is 5cm lower. It will not stay there."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe rastet. Der Pegel sinkt leicht \u2013 Pumpen, "
+                    "Sickern, die Drainage des Vorsprungs. Als sie aufstehen, "
+                    "ist die Wasserlinie 5cm niedriger. Sie wird nicht dort bleiben."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_air_pocket",
+        archetype="The Deluge",
+        room_type="rest",
+        min_depth=3,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A pocket of trapped air in a partially flooded section. The "
+            "ceiling is close. The water is at chest height. But the air "
+            "is breathable and the current is still."
+        ),
+        description_de=(
+            "Eine Lufttasche in einem teilweise überfluteten Abschnitt. "
+            "Die Decke ist nah. Das Wasser steht auf Brusthöhe. Aber die "
+            "Luft ist atembar und die Strömung ist ruhig."
+        ),
+        choices=[
+            EncounterChoice(
+                id="air_pocket_rest",
+                label_en="Rest in the air pocket",
+                label_de="In der Lufttasche rasten",
+                success_effects={"stress_heal": 25, "water_level": -3, "stress": 5},
+                success_narrative_en=(
+                    "Reduced rest. Not comfortable \u2013 the ceiling is close, "
+                    "the water is cold. But the current is still and the air "
+                    "is breathable. Claustrophobia is the price of shelter."
+                ),
+                success_narrative_de=(
+                    "Eingeschränkte Rast. Nicht bequem \u2013 die Decke ist nah, "
+                    "das Wasser ist kalt. Aber die Strömung ist ruhig und die "
+                    "Luft atembar. Klaustrophobie ist der Preis für Schutz."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Treasure Encounters (2) ──────────────────────────────────────────────
+
+DELUGE_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="dc_flotsam_cache",
+        archetype="The Deluge",
+        room_type="treasure",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The current deposited this. From where? From a room that is no "
+            "longer above the waterline. The objects are waterlogged but intact."
+        ),
+        description_de=(
+            "Die Strömung lagerte dies ab. Woher? Aus einem Raum, der nicht "
+            "mehr über der Wasserlinie liegt. Die Objekte sind durchnässt, "
+            "aber intakt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="flotsam_take",
+                label_en="Salvage the flotsam",
+                label_de="Das Treibgut bergen",
+                success_effects={"loot_tier": 1},
+                success_narrative_en="Salvaged. The water will want it back.",
+                success_narrative_de="Geborgen. Das Wasser wird es zurückverlangen.",
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="dc_preserved_chamber",
+        archetype="The Deluge",
+        room_type="treasure",
+        min_depth=2,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "Someone sealed this room. The seal held \u2013 until now. Inside, "
+            "everything is dry. The dust on the surfaces has not been "
+            "disturbed by water. A time capsule from before the flood."
+        ),
+        description_de=(
+            "Jemand hat diesen Raum versiegelt. Das Siegel hielt \u2013 bis "
+            "jetzt. Drinnen ist alles trocken. Der Staub auf den Oberflächen "
+            "wurde nicht vom Wasser gestört. Eine Zeitkapsel von vor der Flut."
+        ),
+        choices=[
+            EncounterChoice(
+                id="preserved_open",
+                label_en="Open the sealed chamber",
+                label_de="Die versiegelte Kammer öffnen",
+                success_effects={"loot_tier": 2, "water_level": 3},
+                success_narrative_en=(
+                    "The seal breaks. Quality salvage inside \u2013 dry, preserved, "
+                    "valuable. But the seal is now broken. The room will flood "
+                    "on the next tidal surge."
+                ),
+                success_narrative_de=(
+                    "Das Siegel bricht. Qualitätsgut drinnen \u2013 trocken, "
+                    "konserviert, wertvoll. Aber das Siegel ist jetzt gebrochen. "
+                    "Der Raum wird beim nächsten Gezeitenstoß überflutet."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Deluge Master List ───────────────────────────────────────────────────
+
+ALL_DELUGE_ENCOUNTERS: list[EncounterTemplate] = (
+    DELUGE_COMBAT_ENCOUNTERS
+    + DELUGE_NARRATIVE_ENCOUNTERS
+    + DELUGE_ELITE_ENCOUNTERS
+    + DELUGE_BOSS_ENCOUNTERS
+    + DELUGE_REST_ENCOUNTERS
+    + DELUGE_TREASURE_ENCOUNTERS
+)
+
+
 # ── Archetype Encounter Registry ──────────────────────────────────────────
 
 _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
@@ -5180,6 +5907,7 @@ _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
     "The Entropy": ALL_ENTROPY_ENCOUNTERS,
     "The Devouring Mother": ALL_MOTHER_ENCOUNTERS,
     "The Prometheus": ALL_PROMETHEUS_ENCOUNTERS,
+    "The Deluge": ALL_DELUGE_ENCOUNTERS,
 }
 
 

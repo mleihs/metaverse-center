@@ -483,6 +483,67 @@ class DungeonMovementService:
             "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
         }
 
+    # ── Seal Breach (Deluge) ─────────────────────────────────────────────
+
+    @classmethod
+    async def seal_breach(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
+        async with _store.lock(run_id):
+            return await cls._seal_breach_locked(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
+    async def _seal_breach_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.archetype != "The Deluge":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Seal Breach only available in Deluge dungeons")
+
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+
+        from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
+
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        guardian_level = agent.aptitudes.get("guardian", 0)
+        if guardian_level < mc.get("seal_min_aptitude", 40):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Agent needs Guardian {mc.get('seal_min_aptitude', 40)}+ to Seal Breach",
+            )
+
+        # Cooldown: once per N rooms (design doc §2.6)
+        cooldown = mc.get("seal_cooldown_rooms", 3)
+        last_seal_room = instance.archetype_state.get("_last_seal_room", -cooldown)
+        rooms_entered = instance.archetype_state.get("rooms_entered", 0)
+        if rooms_entered - last_seal_room < cooldown:
+            rooms_remaining = cooldown - (rooms_entered - last_seal_room)
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Seal Breach on cooldown ({rooms_remaining} rooms remaining)",
+            )
+
+        strategy = get_archetype_strategy(instance.archetype)
+        strategy.apply_restore(instance, "seal")
+        instance.archetype_state["_last_seal_room"] = rooms_entered
+
+        stress_cost = mc.get("seal_stress_cost", 15)
+        agent.stress = min(1000, agent.stress + stress_cost)
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "water_level": instance.archetype_state.get("water_level"),
+            "stress_cost": stress_cost,
+            "agent_stress": agent.stress,
+            "cooldown_until_room": rooms_entered + cooldown,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
     # ── Rest ───────────────────────────────────────────────────────────────
 
     @classmethod
@@ -635,7 +696,12 @@ class DungeonMovementService:
         instance: DungeonInstance,
         action: DungeonAction,
     ) -> dict:
-        """Handle a boss deployment choice: deploy a crafted item or begin combat."""
+        """Handle a boss deployment choice: deploy item, aptitude check, or begin combat.
+
+        Supports two deployment patterns:
+        - Prometheus: inventory-based (deploy crafted items with diminishing returns)
+        - Deluge: check-based (aptitude checks with success/partial/fail effects)
+        """
         boss_choices = instance.archetype_state.get("_boss_deployment_choices", [])
         choice = next((c for c in boss_choices if c["id"] == action.choice_id), None)
         if not choice:
@@ -645,8 +711,9 @@ class DungeonMovementService:
             )
 
         current_room = instance.rooms[instance.current_room]
+        strategy = get_archetype_strategy(instance.archetype)
 
-        # "Begin combat" — transition to combat with accumulated debuffs
+        # ── "Begin combat" — transition to boss fight ──
         if action.choice_id == "begin_combat":
             instance.archetype_state.pop("_boss_deployment_choices", None)
             combat_result = await DungeonCombatService.enter_combat_room(
@@ -657,16 +724,28 @@ class DungeonMovementService:
             )
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-            narrative_en = (
-                "The Prototype activates. It has cataloged your preparations. "
-                "It does not care. It is, after all, unfinished \u2013 "
-                "and unfinished things do not fear revision."
+            # Archetype-specific narrative
+            _boss_narratives = {
+                "The Prometheus": (
+                    "The Prototype activates. It has cataloged your preparations. "
+                    "It does not care. It is, after all, unfinished \u2013 "
+                    "and unfinished things do not fear revision.",
+                    "Der Prototyp aktiviert sich. Er hat eure Vorbereitungen katalogisiert. "
+                    "Es kümmert ihn nicht. Er ist, immerhin, unfertig \u2013 "
+                    "und unfertige Dinge fürchten keine Überarbeitung.",
+                ),
+                "The Deluge": (
+                    "The Current fills the room. Not like water entering \u2013 "
+                    "like water remembering it was always here.",
+                    "Die Strömung füllt den Raum. Nicht wie einströmendes Wasser \u2013 "
+                    "wie Wasser, das sich erinnert, schon immer hier gewesen zu sein.",
+                ),
+            }
+            narrative_en, narrative_de = _boss_narratives.get(
+                instance.archetype,
+                ("The boss emerges.", "Der Boss erscheint."),
             )
-            narrative_de = (
-                "Der Prototyp aktiviert sich. Er hat eure Vorbereitungen katalogisiert. "
-                "Es kümmert ihn nicht. Er ist, immerhin, unfertig \u2013 "
-                "und unfertige Dinge fürchten keine Überarbeitung."
-            )
+
             await DungeonCheckpointService.log_event(
                 admin_supabase,
                 instance.run_id,
@@ -689,7 +768,69 @@ class DungeonMovementService:
                 **combat_result,
             }
 
-        # Deploy a crafted item
+        # ── Check-based deployment (Deluge pattern) ──
+        if choice.get("check_aptitude"):
+            agent = next(
+                (a for a in instance.party if a.agent_id == action.agent_id),
+                None,
+            ) if action.agent_id else (instance.party[0] if instance.party else None)
+
+            if not agent:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "No agent for deployment check")
+
+            check_ctx = SkillCheckContext(
+                agent=agent,
+                aptitude=choice["check_aptitude"],
+                difficulty=choice.get("check_difficulty", 0),
+            )
+            check_result = resolve_skill_check(check_ctx)
+
+            if check_result.outcome == "success":
+                effects = choice.get("effects_success", {})
+            elif check_result.outcome == "partial":
+                effects = choice.get("effects_partial", {})
+            else:
+                effects = choice.get("effects_fail", {})
+
+            strategy.apply_encounter_effects(instance, effects)
+
+            # Store deployment result for combat phase
+            deployed = instance.archetype_state.setdefault("deployed_boss_effects", [])
+            deployed.append({
+                "choice_id": choice["id"],
+                "outcome": check_result.outcome,
+                **effects,
+            })
+
+            # Regenerate remaining choices (remove used choice)
+            remaining = [c for c in boss_choices if c["id"] != choice["id"]]
+            instance.archetype_state["_boss_deployment_choices"] = remaining
+
+            await DungeonCheckpointService.log_event(
+                admin_supabase,
+                instance.run_id,
+                instance.simulation_id,
+                instance.depth,
+                current_room.index,
+                "encounter_choice",
+                {
+                    "choice_id": action.choice_id,
+                    "boss_deployment": True,
+                    "check_aptitude": choice["check_aptitude"],
+                    "outcome": check_result.outcome,
+                },
+            )
+            await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+            return {
+                "result": check_result.outcome,
+                "effects": effects,
+                "narrative_effects_en": [],
+                "narrative_effects_de": [],
+                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+            }
+
+        # ── Item-based deployment (Prometheus pattern) ──
         item_id = action.choice_id.removeprefix("deploy_")
         crafted_items = instance.archetype_state.get("crafted_items", [])
         item = next((i for i in crafted_items if i["id"] == item_id), None)
@@ -717,7 +858,6 @@ class DungeonMovementService:
         deploy_counts[item["id"]] = deploy_counts.get(item["id"], 0) + 1
 
         # Regenerate remaining choices (strategy handles diminishing returns)
-        strategy = get_archetype_strategy(instance.archetype)
         new_choices = strategy.get_boss_deployment_choices(instance)
         instance.archetype_state["_boss_deployment_choices"] = new_choices
 

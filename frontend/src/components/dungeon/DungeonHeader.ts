@@ -21,7 +21,9 @@ import {
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
   ARCHETYPE_PROMETHEUS,
+  ARCHETYPE_DELUGE,
   ARCHETYPE_TOWER,
+  isDelugeState,
   isEntropyState,
   isMotherState,
   isPrometheusState,
@@ -540,6 +542,125 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Water Level Gauge (archetype-specific: Deluge) ── */
+      .water {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .water__icon {
+        display: inline-flex;
+        color: var(--color-info, #60a5fa);
+      }
+
+      .water__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--color-info, #60a5fa);
+        min-width: 22px;
+        text-align: right;
+      }
+
+      .water__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--color-info, #60a5fa) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .water__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out, background 0.5s ease;
+      }
+
+      /* Dry: 0-24 — dim blue, the water is a fact, not yet a threat */
+      .water__fill--dry {
+        background: color-mix(in srgb, var(--color-info, #60a5fa) 40%, var(--_phosphor-dim));
+      }
+
+      /* Shallow: 25-49 — blue, the water speaks */
+      .water__fill--shallow {
+        background: var(--color-info, #60a5fa);
+      }
+
+      /* Rising: 50-74 — blue-amber, the water insists */
+      .water__fill--rising {
+        background: color-mix(in srgb, var(--color-info, #60a5fa) 50%, var(--color-warning, #fb923c));
+      }
+
+      /* Critical: 75-99 — blue-red, the water is correct */
+      .water__fill--critical {
+        background: color-mix(in srgb, var(--color-info, #60a5fa) 30%, var(--color-danger, #f87171));
+      }
+
+      .water__label--critical {
+        color: color-mix(in srgb, var(--color-info) 30%, var(--color-danger));
+        font-weight: 700;
+      }
+
+      /* Submerged: 100 — danger red, pulsing */
+      .water__fill--submerged {
+        background: var(--color-danger, #f87171);
+      }
+
+      .water__label--submerged {
+        color: var(--color-danger);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      /* Tidal recession badge */
+      .water__tide {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+        padding: 1px 5px;
+        border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .water__fill--critical {
+          animation: water-surge 2s ease-in-out infinite;
+        }
+
+        .water__fill--submerged {
+          animation: water-drown 1.2s ease-in-out infinite;
+        }
+
+        .water__label--submerged {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes water-surge {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.65;
+        }
+      }
+
+      @keyframes water-drown {
+        0%,
+        100% {
+          opacity: 1;
+          filter: brightness(1);
+        }
+        50% {
+          opacity: 0.8;
+          filter: brightness(1.3);
+        }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -581,6 +702,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const isEntropy = state.archetype === ARCHETYPE_ENTROPY;
     const isMother = state.archetype === ARCHETYPE_MOTHER;
     const isPrometheus = state.archetype === ARCHETYPE_PROMETHEUS;
+    const isDeluge = state.archetype === ARCHETYPE_DELUGE;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
       : isEntropy
@@ -589,7 +711,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           ? 'color-mix(in srgb, var(--color-warning, #fb923c) 80%, var(--color-danger, #f87171))'
           : isPrometheus
             ? 'color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171))'
-            : 'var(--color-info, #a78bfa)';
+            : isDeluge
+              ? 'var(--color-info, #60a5fa)'
+              : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -603,6 +727,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const entropyState = isEntropyState(archState) ? archState : null;
     const motherState = isMotherState(archState) ? archState : null;
     const prometheusState = isPrometheusState(archState) ? archState : null;
+    const delugeState = isDelugeState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
@@ -615,6 +740,10 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const maxInsight = prometheusState?.max_insight ?? null;
     const componentCount = prometheusState?.components?.length ?? 0;
     const craftedCount = prometheusState?.crafted_items?.length ?? 0;
+    const waterLevel = delugeState?.water_level ?? null;
+    const maxWater = delugeState?.max_water_level ?? null;
+    const roomsEntered = delugeState?.rooms_entered ?? 0;
+    const recessionIn = roomsEntered > 0 ? 3 - (roomsEntered % 3) : 3;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -826,6 +955,49 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   `
                   : nothing
               }
+            `
+            : nothing
+        }
+        ${
+          waterLevel !== null && maxWater !== null
+            ? html`
+              <span class="sep"></span>
+              <div class="water" aria-label=${msg('Water level') + ` ${waterLevel}/${maxWater}`}>
+                <span class="water__icon">${icons.droplet(12)}</span>
+                <div
+                  class="water__track"
+                  role="progressbar"
+                  aria-valuenow=${waterLevel}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxWater}
+                  aria-label=${msg('Rising water')}
+                >
+                  <div
+                    class="water__fill ${
+                      waterLevel >= 100
+                        ? 'water__fill--submerged'
+                        : waterLevel >= 75
+                          ? 'water__fill--critical'
+                          : waterLevel >= 50
+                            ? 'water__fill--rising'
+                            : waterLevel >= 25
+                              ? 'water__fill--shallow'
+                              : 'water__fill--dry'
+                    }"
+                    style="transform: scaleX(${maxWater > 0 ? waterLevel / maxWater : 0})"
+                  ></div>
+                </div>
+                <span class="water__label ${
+                  waterLevel >= 100
+                    ? 'water__label--submerged'
+                    : waterLevel >= 75
+                      ? 'water__label--critical'
+                      : ''
+                }">${waterLevel >= 100 ? msg('FLOOD') : waterLevel}</span>
+              </div>
+              <span class="water__tide" aria-label=${msg('Tidal recession') + ` ${recessionIn}`}>
+                ${recessionIn === 3 ? msg('Tide') : `${recessionIn}`}
+              </span>
             `
             : nothing
         }

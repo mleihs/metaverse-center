@@ -423,6 +423,70 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
             ),
         },
     ],
+    # ── The Deluge ────────────────────────────────────────────────────────
+    "The Deluge": [
+        {
+            "text_en": (
+                "The stairs descend. The last three steps are wet."
+                " Not splashed \u2013 saturated. The water has been here before"
+                " and left a mineral signature. It will return."
+            ),
+            "text_de": (
+                "Die Treppe führt hinab. Die letzten drei Stufen sind nass."
+                " Nicht bespritzt \u2013 durchtränkt. Das Wasser war schon hier"
+                " und hinterließ eine mineralische Signatur. Es wird zurückkehren."
+            ),
+        },
+        {
+            "text_en": (
+                "Dripping. Rhythmic. The sound precedes the dungeon"
+                " \u2013 a metronome set by geology. {agent} counts the interval."
+                " 3.2 seconds. The interval will shorten."
+            ),
+            "text_de": (
+                "Tropfen. Rhythmisch. Das Geräusch geht dem Dungeon voraus"
+                " \u2013 ein von der Geologie eingestelltes Metronom."
+                " {agent} zählt das Intervall. 3,2 Sekunden."
+                " Das Intervall wird sich verkürzen."
+            ),
+        },
+        {
+            "text_en": (
+                "The air is different here. Humid. Heavy."
+                " The kind of air that has passed through water recently"
+                " and carries its memory. Salt. Mineral. Patience."
+            ),
+            "text_de": (
+                "Die Luft ist hier anders. Feucht. Schwer."
+                " Die Art Luft, die kürzlich durch Wasser ging"
+                " und seine Erinnerung trägt. Salz. Mineral. Geduld."
+            ),
+        },
+        {
+            "text_en": (
+                "A watermark on the entrance arch."
+                " Faint. Mineral-white. Evidence of a previous visit"
+                " by something that does not knock."
+            ),
+            "text_de": (
+                "Ein Wasserzeichen am Eingangsbogen."
+                " Schwach. Mineralweiß. Beweis für einen früheren Besuch"
+                " durch etwas, das nicht anklopft."
+            ),
+        },
+        {
+            "text_en": (
+                "The threshold is damp. Beyond it, the floor slopes"
+                " downward \u2013 gently, deliberately. The architecture"
+                " was designed for drainage. The drainage has failed."
+            ),
+            "text_de": (
+                "Die Schwelle ist feucht. Dahinter fällt der Boden"
+                " ab \u2013 sanft, absichtlich. Die Architektur"
+                " wurde für Entwässerung entworfen. Die Entwässerung hat versagt."
+            ),
+        },
+    ],
 }
 
 
@@ -2535,6 +2599,177 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             },
         },
     ],
+    # ── The Deluge ────────────────────────────────────────────────────────
+    "The Deluge": [
+        {
+            "id": "deluge_watermark",
+            "phases": {
+                "discovery": {
+                    "text_en": "A line. Mineral-white. Evidence.",
+                    "text_de": "Eine Linie. Mineralweiß. Beweis.",
+                },
+                "echo": {
+                    "text_en": "{agent} checks the watermark. It's higher.",
+                    "text_de": "{agent} prüft das Wasserzeichen. Es ist höher.",
+                },
+                "mutation": {
+                    "text_en": "The watermark moves while the party watches.",
+                    "text_de": "Das Wasserzeichen bewegt sich, während die Gruppe zusieht.",
+                },
+                "climax": {
+                    "text_en": "Both watermarks converge at the ceiling.",
+                    "text_de": "Beide Wasserzeichen laufen an der Decke zusammen.",
+                },
+            },
+        },
+        {
+            "id": "deluge_seal",
+            "phases": {
+                "discovery": {
+                    "text_en": "A seal. Intact. Holding something back.",
+                    "text_de": "Ein Siegel. Intakt. Hält etwas zurück.",
+                },
+                "echo": {
+                    "text_en": "The seal shows hairline cracks. {agent} examines.",
+                    "text_de": "Das Siegel zeigt Haarrisse. {agent} untersucht.",
+                },
+                "mutation": {
+                    "text_en": "The seal is wet on the inside.",
+                    "text_de": "Das Siegel ist innen nass.",
+                },
+                "climax": {
+                    "text_en": "The seal dissolves. What it held is here.",
+                    "text_de": "Das Siegel löst sich auf. Was es hielt, ist hier.",
+                },
+            },
+        },
+        {
+            "id": "deluge_raft",
+            "phases": {
+                "discovery": {
+                    "text_en": "A piece of a raft. Someone planned.",
+                    "text_de": "Ein Stück eines Floßes. Jemand hat geplant.",
+                },
+                "echo": {
+                    "text_en": "The raft fragment floats in the current. Familiar.",
+                    "text_de": "Das Floßfragment treibt in der Strömung. Vertraut.",
+                },
+                "mutation": {
+                    "text_en": "The raft has been repaired. By the water.",
+                    "text_de": "Das Floß wurde repariert. Vom Wasser.",
+                },
+                "climax": {
+                    "text_en": "The raft is whole. It was always whole.",
+                    "text_de": "Das Floß ist ganz. Es war immer ganz.",
+                },
+            },
+        },
+        {
+            "id": "deluge_compass",
+            "phases": {
+                "discovery": {
+                    "text_en": "A compass. The needle points down.",
+                    "text_de": "Ein Kompass. Die Nadel zeigt nach unten.",
+                },
+                "echo": {
+                    "text_en": "{agent} consults the compass. It still points down.",
+                    "text_de": "{agent} konsultiert den Kompass. Er zeigt immer noch nach unten.",
+                },
+                "mutation": {
+                    "text_en": "The compass needle has rusted to its position.",
+                    "text_de": "Die Kompassnadel ist in ihrer Position verrostet.",
+                },
+                "climax": {
+                    "text_en": "The compass is underwater. The needle is still.",
+                    "text_de": "Der Kompass ist unter Wasser. Die Nadel ist ruhig.",
+                },
+            },
+        },
+        {
+            "id": "deluge_bottle",
+            "phases": {
+                "discovery": {
+                    "text_en": "A sealed bottle. Air inside.",
+                    "text_de": "Eine versiegelte Flasche. Luft darin.",
+                },
+                "echo": {
+                    "text_en": "The bottle has drifted to the other side of the room.",
+                    "text_de": "Die Flasche ist auf die andere Seite des Raums getrieben.",
+                },
+                "mutation": {
+                    "text_en": "The seal is degrading. Bubbles escape.",
+                    "text_de": "Das Siegel zersetzt sich. Blasen entweichen.",
+                },
+                "climax": {
+                    "text_en": "The bottle is empty. The air is in the water now.",
+                    "text_de": "Die Flasche ist leer. Die Luft ist jetzt im Wasser.",
+                },
+            },
+        },
+        {
+            "id": "deluge_depth_gauge",
+            "phases": {
+                "discovery": {
+                    "text_en": "A gauge. Calibrated for a depth this room hasn't reached. Yet.",
+                    "text_de": "Eine Anzeige. Kalibriert für eine Tiefe, die dieser Raum noch nicht erreicht hat. Noch nicht.",
+                },
+                "echo": {
+                    "text_en": "The gauge reads higher. {agent} didn't touch it.",
+                    "text_de": "Die Anzeige zeigt höher an. {agent} hat sie nicht berührt.",
+                },
+                "mutation": {
+                    "text_en": "The gauge is calibrated for THIS room now.",
+                    "text_de": "Die Anzeige ist jetzt für DIESEN Raum kalibriert.",
+                },
+                "climax": {
+                    "text_en": "The gauge reads exactly 100. It was always going to.",
+                    "text_de": "Die Anzeige zeigt genau 100 an. Das war immer so vorgesehen.",
+                },
+            },
+        },
+        {
+            "id": "deluge_photograph",
+            "phases": {
+                "discovery": {
+                    "text_en": "A photograph. Water-damaged. A room that looks like this one, dry.",
+                    "text_de": "Eine Fotografie. Wasserbeschädigt. Ein Raum, der aussieht wie dieser, trocken.",
+                },
+                "echo": {
+                    "text_en": "The photograph shows more water than before. {agent} looks closer.",
+                    "text_de": "Die Fotografie zeigt mehr Wasser als zuvor. {agent} schaut genauer hin.",
+                },
+                "mutation": {
+                    "text_en": "The photograph and the room are the same image.",
+                    "text_de": "Die Fotografie und der Raum sind dasselbe Bild.",
+                },
+                "climax": {
+                    "text_en": "The photograph IS the room. The room is the photograph, submerged.",
+                    "text_de": "Die Fotografie IST der Raum. Der Raum ist die Fotografie, überflutet.",
+                },
+            },
+        },
+        {
+            "id": "deluge_stone",
+            "phases": {
+                "discovery": {
+                    "text_en": "A stone. Smooth. River-polished over centuries.",
+                    "text_de": "Ein Stein. Glatt. Vom Fluss poliert über Jahrhunderte.",
+                },
+                "echo": {
+                    "text_en": "{agent} feels the stone's weight differently. Heavier.",
+                    "text_de": "{agent} spürt das Gewicht des Steins anders. Schwerer.",
+                },
+                "mutation": {
+                    "text_en": "The stone is wet even above the waterline.",
+                    "text_de": "Der Stein ist nass, selbst über der Wasserlinie.",
+                },
+                "climax": {
+                    "text_en": "The stone sinks through the floor. The floor is water.",
+                    "text_de": "Der Stein sinkt durch den Boden. Der Boden ist Wasser.",
+                },
+            },
+        },
+    ],
 }
 
 
@@ -2815,6 +3050,29 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
             ),
         },
     ],
+    # ── Deluge: "Der Pegel" (Water Level barometer) ──────────────────────
+    "The Deluge": [
+        {
+            "tier": 0,
+            "text_en": "The level is silent.",
+            "text_de": "Der Pegel schweigt.",
+        },
+        {
+            "tier": 1,
+            "text_en": "The level speaks.",
+            "text_de": "Der Pegel spricht.",
+        },
+        {
+            "tier": 2,
+            "text_en": "The level insists.",
+            "text_de": "Der Pegel besteht.",
+        },
+        {
+            "tier": 3,
+            "text_en": "The level is correct.",
+            "text_de": "Der Pegel hat Recht.",
+        },
+    ],
 }
 
 
@@ -2860,6 +3118,15 @@ def _barometer_tier(archetype: str, archetype_state: dict) -> int:
         if insight < 45:
             return 1
         if insight < 75:
+            return 2
+        return 3
+    if archetype == "The Deluge":
+        water = archetype_state.get("water_level", 0)
+        if water <= 24:
+            return 0
+        if water <= 49:
+            return 1
+        if water <= 74:
             return 2
         return 3
     return 0

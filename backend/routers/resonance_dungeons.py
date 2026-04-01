@@ -195,6 +195,23 @@ async def scout(
     return {"success": True, "data": result}
 
 
+# ── Seal Breach (Deluge) ────────────────────────────────────────────────────
+
+
+@router.post("/runs/{run_id}/seal", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def seal_breach(
+    request: Request,
+    run_id: UUID,
+    body: ScoutRequest,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
+    result = await DungeonEngineService.seal_breach(admin, run_id, body.agent_id, user_id=user.id)
+    return {"success": True, "data": result}
+
+
 # ── Rest ────────────────────────────────────────────────────────────────────
 
 

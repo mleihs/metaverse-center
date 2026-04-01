@@ -62,6 +62,11 @@ FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "default": "prometheus_workshop_patrol_spawn",
         "rest_ambush": "prometheus_rest_ambush_spawn",
     },
+    "The Deluge": {
+        "boss": "deluge_warden_spawn",
+        "default": "deluge_trickle_spawn",
+        "rest_ambush": "deluge_rest_ambush_spawn",
+    },
 }
 
 

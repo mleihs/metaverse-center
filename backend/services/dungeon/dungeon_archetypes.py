@@ -176,10 +176,70 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "signature": "elemental_surge",
         "title_en": "Die Steigende Flut",
         "title_de": "Die Steigende Flut",
-        "tagline_en": "The world reminds its inhabitants that they are guests.",
-        "tagline_de": "Die Welt erinnert ihre Bewohner, dass sie Gaeste sind.",
+        "tagline_en": "The world reminds its inhabitants that they are guests, not owners.",
+        "tagline_de": "Die Welt erinnert ihre Bewohner, dass sie Gäste sind, nicht Eigentümer.",
+        "prose_style": (
+            "Tidal rhythm. Precision over metaphor. The dungeon described as "
+            "filling, carrying, revealing. Water-as-actor. Banter pulses "
+            "short/long/short like waves. Grammar compresses as water rises."
+        ),
         "mechanic": "rising_water",
-        "mechanic_config": {},
+        "mechanic_config": {
+            "start_water_level": 0,
+            "max_water_level": 100,
+            # ── Tidal surge (per room entry, by depth) ──
+            "surge_depth_1_2": 5,
+            "surge_depth_3_4": 8,
+            "surge_depth_5_plus": 12,
+            # ── Tidal recession ──
+            "recession_interval": 3,
+            "recession_amount": 8,
+            "recession_decay_per_cycle": 2,
+            # ── Event-driven water changes ──
+            "surge_per_combat_round": 3,
+            "surge_on_failed_check": 5,
+            "surge_per_enemy_hit": 2,
+            # ── Water reduction ──
+            "reduce_on_combat_win": 0,
+            "reduce_on_rest": 5,
+            "reduce_on_treasure": 0,
+            "reduce_on_seal_action": 10,
+            # ── Thresholds ──
+            "ankle_threshold": 25,
+            "waist_threshold": 50,
+            "chest_threshold": 75,
+            "submerged_threshold": 100,
+            # ── Threshold effects ──
+            "flooded_room_stress_penalty": 0.10,
+            "deep_water_condition_cost": True,
+            "critical_vision_radius": 2,
+            # ── Stress multipliers ──
+            "stress_multiplier_50": 1.15,
+            "stress_multiplier_75": 1.40,
+            "submerged_stress_multiplier": 2.0,
+            # ── Ambush modification ──
+            "high_water_ambush_50": 0.15,
+            "high_water_ambush_75": 0.35,
+            # ── Loot mechanics ──
+            "submerged_loot_check_aptitude": "guardian",
+            "submerged_loot_check_bonus": 10,
+            "low_water_loot_bonus_threshold": 25,
+            "low_water_loot_bonus_chance": 0.50,
+            # ── Seal Breach ability ──
+            "seal_stress_cost": 15,
+            "seal_min_aptitude": 40,
+            "seal_cooldown_rooms": 3,
+        },
+        "aptitude_weights": {
+            "guardian": 30,
+            "spy": 25,
+            "saboteur": 15,
+            "assassin": 12,
+            "propagandist": 10,
+            "infiltrator": 8,
+        },
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     "The Overthrow": {
         "signature": "authority_fracture",

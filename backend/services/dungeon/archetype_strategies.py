@@ -781,6 +781,200 @@ class PrometheusStrategy(ArchetypeStrategy):
         )
 
 
+# ── Deluge Strategy ───────────────────────────────────────────────────────
+
+
+class DelugeStrategy(ArchetypeStrategy):
+    """The Deluge: Rising water mechanic (0→100, tidal pulse, inverted dungeon).
+
+    Water rises on room entry (depth-scaled), surges in combat, partially
+    recedes every 3rd room (tidal rhythm). Unlike monotonic archetypes,
+    the Deluge oscillates — creating strategic exploration windows.
+    At water_level 100: submersion (wipe).
+
+    Unique hooks:
+        on_combat_round  — water rises during combat (urgency)
+        on_failed_check  — breach: failed checks accelerate flooding
+        on_enemy_hit     — structural disruption per hit
+        get_boss_deployment_choices — barrier construction before The Current
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "water_level": self.mechanic_config["start_water_level"],
+            "max_water_level": self.mechanic_config["max_water_level"],
+            "rooms_entered": 0,
+            "recession_cycle": 0,
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Water rises on room entry. Tidal recession every Nth room.
+
+        CRITICAL: recession check happens BEFORE surge (design doc §11.4).
+        Returns banter trigger on threshold crossing or tidal event.
+        """
+        state = instance.archetype_state
+        state["rooms_entered"] = state.get("rooms_entered", 0) + 1
+
+        # ── Tidal recession (every Nth room) ──
+        interval = self.mechanic_config["recession_interval"]
+        recession_triggered = False
+        if state["rooms_entered"] % interval == 0:
+            cycle = state.get("recession_cycle", 0)
+            decay = self.mechanic_config["recession_decay_per_cycle"]
+            recession = max(0, self.mechanic_config["recession_amount"] - (cycle * decay))
+            if recession > 0:
+                state["water_level"] = max(0, state.get("water_level", 0) - recession)
+                recession_triggered = True
+            state["recession_cycle"] = cycle + 1
+
+        # ── Room entry surge (depth-scaled) ──
+        self._apply_room_entry_surge(instance)
+
+        # ── Threshold check ──
+        water = state.get("water_level", 0)
+        if water >= self.mechanic_config["submerged_threshold"]:
+            return "submerged"
+
+        # Tidal recession banter takes priority over threshold banter
+        if recession_triggered:
+            return "tidal_recession"
+
+        if water >= self.mechanic_config["chest_threshold"]:
+            return "flood_imminent"
+        if water >= self.mechanic_config["waist_threshold"]:
+            return "waist_threshold"
+        if water >= self.mechanic_config["ankle_threshold"]:
+            return "ankle_threshold"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        """Reduce water on rest, seal breach, or other events."""
+        reduce_key = {
+            "combat_victory": "reduce_on_combat_win",
+            "rest": "reduce_on_rest",
+            "treasure": "reduce_on_treasure",
+            "seal": "reduce_on_seal_action",
+        }.get(event)
+        if reduce_key and self.mechanic_config.get(reduce_key):
+            instance.archetype_state["water_level"] = max(
+                0,
+                instance.archetype_state.get("water_level", 0)
+                - self.mechanic_config[reduce_key],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        """Apply water_level delta from encounter choices."""
+        water_delta = effects.get("water_level", 0)
+        if water_delta:
+            instance.archetype_state["water_level"] = max(
+                0,
+                min(
+                    self.mechanic_config["max_water_level"],
+                    instance.archetype_state.get("water_level", 0) + water_delta,
+                ),
+            )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        """Stress scales with water depth: 1.15x at waist, 1.40x at chest, 2.0x submerged."""
+        water = instance.archetype_state.get("water_level", 0)
+        if water >= self.mechanic_config["submerged_threshold"]:
+            return self.mechanic_config.get("submerged_stress_multiplier", 2.0)
+        if water >= self.mechanic_config["chest_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_75", 1.40)
+        if water >= self.mechanic_config["waist_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_50", 1.15)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        """Water rises each combat round — delay means drowning."""
+        instance.archetype_state["water_level"] = min(
+            self.mechanic_config["max_water_level"],
+            instance.archetype_state.get("water_level", 0)
+            + self.mechanic_config["surge_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        """Breach: failed skill checks accelerate flooding."""
+        instance.archetype_state["water_level"] = min(
+            self.mechanic_config["max_water_level"],
+            instance.archetype_state.get("water_level", 0)
+            + self.mechanic_config["surge_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Physical disruption of seals — each hit raises water."""
+        instance.archetype_state["water_level"] = min(
+            self.mechanic_config["max_water_level"],
+            instance.archetype_state.get("water_level", 0)
+            + self.mechanic_config["surge_per_enemy_hit"],
+        )
+
+    def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
+        """3 strategic deployment choices before The Current boss fight.
+
+        Unlike Prometheus (inventory-based), Deluge offers fixed barrier
+        construction options with aptitude checks (design doc §2.7).
+        """
+        return [
+            {
+                "id": "construct_barrier",
+                "label_en": "Construct a barrier against the current (Saboteur)",
+                "label_de": "Eine Barriere gegen die Strömung errichten (Saboteur)",
+                "requires_aptitude": None,
+                "check_aptitude": "saboteur",
+                "check_difficulty": 0,
+                "effects_success": {"buff": "barricade", "duration": 3},
+                "effects_partial": {"buff": "fragile_barricade", "duration": 2},
+                "effects_fail": {"water_level": 15},
+            },
+            {
+                "id": "read_the_current",
+                "label_en": "Study the current's pattern (Spy)",
+                "label_de": "Das Muster der Strömung studieren (Spion)",
+                "requires_aptitude": None,
+                "check_aptitude": "spy",
+                "check_difficulty": 0,
+                "effects_success": {"reveal_intent": 2},
+                "effects_partial": {"reveal_intent": 1},
+                "effects_fail": {"stress": 10},
+            },
+            {
+                "id": "brace_for_impact",
+                "label_en": "Brace the party for what comes (Guardian)",
+                "label_de": "Die Gruppe auf das Kommende vorbereiten (Wächter)",
+                "requires_aptitude": None,
+                "check_aptitude": "guardian",
+                "check_difficulty": 0,
+                "effects_success": {"condition_bonus": 1, "targets": "all"},
+                "effects_partial": {"condition_bonus": 1, "targets": 2},
+                "effects_fail": {"stress": 20},
+            },
+            {
+                "id": "begin_combat",
+                "label_en": "Enough preparation. Face The Current.",
+                "label_de": "Genug Vorbereitung. Der Strömung entgegentreten.",
+                "requires_aptitude": None,
+                "check_aptitude": None,
+                "check_difficulty": 0,
+            },
+        ]
+
+    def _apply_room_entry_surge(self, instance: DungeonInstance) -> None:
+        """Depth-scaled water surge on room entry."""
+        depth = instance.depth
+        if depth <= 2:
+            surge = self.mechanic_config["surge_depth_1_2"]
+        elif depth <= 4:
+            surge = self.mechanic_config["surge_depth_3_4"]
+        else:
+            surge = self.mechanic_config["surge_depth_5_plus"]
+        instance.archetype_state["water_level"] = min(
+            self.mechanic_config["max_water_level"],
+            instance.archetype_state.get("water_level", 0) + surge,
+        )
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
@@ -790,6 +984,7 @@ _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Entropy": EntropyStrategy(ARCHETYPE_CONFIGS["The Entropy"]),
     "The Devouring Mother": DevouringMotherStrategy(ARCHETYPE_CONFIGS["The Devouring Mother"]),
     "The Prometheus": PrometheusStrategy(ARCHETYPE_CONFIGS["The Prometheus"]),
+    "The Deluge": DelugeStrategy(ARCHETYPE_CONFIGS["The Deluge"]),
 }
 
 

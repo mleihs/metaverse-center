@@ -23,8 +23,10 @@ import type {
   SkillCheckDetail,
 } from '../types/dungeon.js';
 import {
+  ARCHETYPE_DELUGE,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
+  ARCHETYPE_PROMETHEUS,
   ARCHETYPE_SHADOW,
   ARCHETYPE_TOWER,
   isMotherState,
@@ -77,9 +79,33 @@ export function getArchetypeDisplayName(archetype: string): string {
       return msg('The Entropy');
     case ARCHETYPE_MOTHER:
       return msg('The Devouring Mother');
+    case ARCHETYPE_PROMETHEUS:
+      return msg('The Prometheus');
+    case ARCHETYPE_DELUGE:
+      return msg('The Deluge');
     default:
       return archetype;
   }
+}
+
+// ── Water Level Formatters (Deluge) ────────────────────────────────────────
+
+/** Format water level into a stage label. */
+export function formatWaterLevel(waterLevel: number): string {
+  if (waterLevel >= 100) return msg('SUBMERGED');
+  if (waterLevel >= 75) return msg('CRITICAL');
+  if (waterLevel >= 50) return msg('RISING');
+  if (waterLevel >= 25) return msg('SHALLOW');
+  return msg('DRY');
+}
+
+/** Format tidal recession countdown. */
+export function formatTidalStatus(roomsEntered: number, recessionInterval = 3): string {
+  const roomsUntilRecession = recessionInterval - (roomsEntered % recessionInterval);
+  if (roomsUntilRecession === recessionInterval && roomsEntered > 0) {
+    return msg('Tide receding');
+  }
+  return `${roomsUntilRecession} ${msg('rooms until recession')}`;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

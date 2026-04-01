@@ -1196,6 +1196,219 @@ PROMETHEUS_SPAWN_CONFIGS: dict[str, list[dict]] = {
 }
 
 
+# ── The Deluge: Enemies ───────────────────────────────────────────────────
+
+DELUGE_ENEMIES: dict[str, EnemyTemplate] = {
+    "deluge_riptide_tendril": EnemyTemplate(
+        id="deluge_riptide_tendril",
+        name_en="Riptide Tendril",
+        name_de="Sogranke",
+        archetype="The Deluge",
+        condition_threshold=1,
+        stress_resistance=20,
+        threat_level="minion",
+        attack_aptitude="assassin",
+        attack_power=2,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=40,
+        resistances=["infiltrator"],
+        vulnerabilities=["guardian"],
+        action_weights={"attack": 40, "drag": 30, "evade": 20, "ambient": 10},
+        special_abilities=["drag"],
+        description_en=(
+            "A current given form. It does not strike \u2013 it pulls. "
+            "The direction is always down, always toward deeper water."
+        ),
+        description_de=(
+            "Eine Strömung, die Form angenommen hat. Sie schlägt nicht zu \u2013 "
+            "sie zieht. Die Richtung ist immer abwärts, immer in tieferes Wasser."
+        ),
+        ambient_text_en=[
+            "The tendril tests the space between {agent}'s feet and the floor.",
+            "Something in the current reaches. Not aggressively \u2013 patiently.",
+        ],
+        ambient_text_de=[
+            "Die Ranke prüft den Raum zwischen {agent}s Füßen und dem Boden.",
+            "Etwas in der Strömung greift. Nicht aggressiv \u2013 geduldig.",
+        ],
+    ),
+    "deluge_pressure_surge": EnemyTemplate(
+        id="deluge_pressure_surge",
+        name_en="Pressure Surge",
+        name_de="Druckwelle",
+        archetype="The Deluge",
+        condition_threshold=2,
+        stress_resistance=100,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=4,
+        stress_attack_power=5,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=["assassin"],
+        vulnerabilities=["saboteur", "spy"],
+        action_weights={"attack": 45, "flood_pulse": 30, "stress_attack": 15, "ambient": 10},
+        special_abilities=["flood_pulse"],
+        description_en=(
+            "The water's memory of what it once displaced. It arrives as a wall \u2013 "
+            "not tall, not dramatic, but dense. The kind of force that moves "
+            "furniture and doesn't notice."
+        ),
+        description_de=(
+            "Die Erinnerung des Wassers an das, was es einst verdrängte. Es kommt "
+            "als Wand \u2013 nicht hoch, nicht dramatisch, aber dicht. Die Art Kraft, "
+            "die Möbel verschiebt und es nicht bemerkt."
+        ),
+        ambient_text_en=[
+            "The water level in the room rises 2cm. Then 2cm more. Then stops.",
+            "The pressure surge gathers. {agent} feels it in the floor before seeing it.",
+        ],
+        ambient_text_de=[
+            "Der Pegel im Raum steigt um 2cm. Dann nochmal 2cm. Dann hört es auf.",
+            "{agent} spürt die Druckwelle im Boden, bevor sie sichtbar wird.",
+        ],
+    ),
+    "deluge_silt_revenant": EnemyTemplate(
+        id="deluge_silt_revenant",
+        name_en="Silt Revenant",
+        name_de="Schlickwiedergänger",
+        archetype="The Deluge",
+        condition_threshold=3,
+        stress_resistance=60,
+        threat_level="standard",
+        attack_aptitude="propagandist",
+        attack_power=3,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["spy"],
+        vulnerabilities=["propagandist", "guardian"],
+        action_weights={"stress_attack": 40, "obscure": 30, "attack": 20, "ambient": 10},
+        special_abilities=["obscure"],
+        description_en=(
+            "It emerged from the sediment when the water reached this level. "
+            "A shape made of what the flood deposited \u2013 silt, mineral, "
+            "the residue of dissolved rooms. It does not speak. "
+            "It broadcasts the sound of water in enclosed spaces."
+        ),
+        description_de=(
+            "Es stieg aus dem Sediment, als das Wasser diesen Pegel erreichte. "
+            "Eine Gestalt aus dem, was die Flut ablagerte \u2013 Schlick, Mineral, "
+            "der Rückstand aufgelöster Räume. Es spricht nicht. "
+            "Es sendet das Geräusch von Wasser in geschlossenen Räumen."
+        ),
+        ambient_text_en=[
+            "The revenant shifts. Silt falls from it like memory from a dream.",
+            "{agent} recognizes something in the revenant's shape. A doorframe. A railing.",
+        ],
+        ambient_text_de=[
+            "Der Wiedergänger bewegt sich. Schlick fällt von ihm wie Erinnerung aus einem Traum.",
+            "{agent} erkennt etwas in der Form des Wiedergängers. Einen Türrahmen. Ein Geländer.",
+        ],
+    ),
+    "deluge_undertow_warden": EnemyTemplate(
+        id="deluge_undertow_warden",
+        name_en="Undertow Warden",
+        name_de="Sogwächter",
+        archetype="The Deluge",
+        condition_threshold=4,
+        stress_resistance=200,
+        threat_level="elite",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=5,
+        resistances=["assassin", "infiltrator"],
+        vulnerabilities=["saboteur"],
+        action_weights={"attack": 35, "drag": 25, "flood_pulse": 20, "stress_attack": 10, "ambient": 10},
+        special_abilities=["drag", "flood_pulse"],
+        description_en=(
+            "The water's enforcer. Not an entity that lives in water \u2013 "
+            "an entity that IS water, given mass and purpose. "
+            "It does not guard a door. It guards a depth."
+        ),
+        description_de=(
+            "Der Vollstrecker des Wassers. Keine Entität, die im Wasser lebt \u2013 "
+            "eine Entität, die Wasser IST, mit Masse und Absicht versehen. "
+            "Es bewacht keine Tür. Es bewacht eine Tiefe."
+        ),
+        ambient_text_en=[
+            "The warden does not approach. The water level in the room rises to meet it.",
+            "Its shape changes with the current. {agent} cannot determine where it begins.",
+        ],
+        ambient_text_de=[
+            "Der Wächter nähert sich nicht. Der Pegel im Raum steigt, um ihm entgegenzukommen.",
+            "Seine Form ändert sich mit der Strömung. {agent} kann nicht bestimmen, wo er beginnt.",
+        ],
+    ),
+    "deluge_the_current": EnemyTemplate(
+        id="deluge_the_current",
+        name_en="The Current",
+        name_de="Die Strömung",
+        archetype="The Deluge",
+        condition_threshold=6,
+        stress_resistance=350,
+        threat_level="boss",
+        attack_aptitude="guardian",
+        attack_power=6,
+        stress_attack_power=8,
+        telegraphed_intent=False,
+        evasion=0,
+        resistances=["assassin", "infiltrator", "spy"],
+        vulnerabilities=["saboteur", "guardian"],
+        action_weights={"attack": 30, "flood_pulse": 25, "drag": 20, "tidal_wave": 15, "ambient": 10},
+        special_abilities=["flood_pulse", "drag", "tidal_wave"],
+        description_en=(
+            "Not an enemy. A direction. The Current is the flood's final argument: "
+            "that everything flows downward, that every barrier is temporary, "
+            "that what the water claims, the water keeps. "
+            "It does not attack. It arrives."
+        ),
+        description_de=(
+            "Kein Feind. Eine Richtung. Die Strömung ist das letzte Argument der Flut: "
+            "dass alles abwärts fließt, dass jede Barriere vorübergehend ist, "
+            "dass was das Wasser beansprucht, das Wasser behält. "
+            "Sie greift nicht an. Sie kommt."
+        ),
+        ambient_text_en=[
+            "The Current fills the room. Not like water entering \u2013 like water remembering it was always here.",
+            "The walls are underwater. The ceiling is not. For now.",
+        ],
+        ambient_text_de=[
+            "Die Strömung füllt den Raum. Nicht wie einströmendes Wasser \u2013 wie Wasser, das sich erinnert, schon immer hier gewesen zu sein.",
+            "Die Wände sind unter Wasser. Die Decke nicht. Noch nicht.",
+        ],
+    ),
+}
+
+DELUGE_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    "deluge_trickle_spawn": [
+        {"template_id": "deluge_riptide_tendril", "count": 2},
+    ],
+    "deluge_surge_patrol_spawn": [
+        {"template_id": "deluge_pressure_surge", "count": 1},
+        {"template_id": "deluge_riptide_tendril", "count": 1},
+    ],
+    "deluge_sediment_spawn": [
+        {"template_id": "deluge_silt_revenant", "count": 1},
+        {"template_id": "deluge_riptide_tendril", "count": 1},
+    ],
+    "deluge_deep_water_spawn": [
+        {"template_id": "deluge_pressure_surge", "count": 1},
+        {"template_id": "deluge_silt_revenant", "count": 1},
+    ],
+    "deluge_warden_spawn": [
+        {"template_id": "deluge_undertow_warden", "count": 1},
+        {"template_id": "deluge_riptide_tendril", "count": 1},
+    ],
+    "deluge_rest_ambush_spawn": [
+        {"template_id": "deluge_riptide_tendril", "count": 1},
+    ],
+}
+
+
 # ── Archetype Registries ──────────────────────────────────────────────────
 # Data lookup by archetype name — zero conditionals. New archetypes add entries.
 
@@ -1205,6 +1418,7 @@ _ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
     "The Entropy": ENTROPY_ENEMIES,
     "The Devouring Mother": MOTHER_ENEMIES,
     "The Prometheus": PROMETHEUS_ENEMIES,
+    "The Deluge": DELUGE_ENEMIES,
 }
 
 _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
@@ -1213,6 +1427,7 @@ _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
     "The Entropy": ENTROPY_SPAWN_CONFIGS,
     "The Devouring Mother": MOTHER_SPAWN_CONFIGS,
     "The Prometheus": PROMETHEUS_SPAWN_CONFIGS,
+    "The Deluge": DELUGE_SPAWN_CONFIGS,
 }
 
 
@@ -1322,6 +1537,13 @@ def check_ambush(
             return random.random() < mother_config["high_attachment_ambush_90"]
         if attachment >= 75:
             return random.random() < mother_config["high_attachment_ambush_75"]
+    elif archetype == "The Deluge":
+        deluge_config = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        water = archetype_state.get("water_level", 0)
+        if water >= 75:
+            return random.random() < deluge_config["high_water_ambush_75"]
+        if water >= 50:
+            return random.random() < deluge_config["high_water_ambush_50"]
 
     return False
 

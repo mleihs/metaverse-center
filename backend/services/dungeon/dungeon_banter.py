@@ -1863,6 +1863,228 @@ PROMETHEUS_BANTER: list[dict] = [
 ]
 
 
+# ── The Deluge: Banter ────────────────────────────────────────────────────
+
+DELUGE_BANTER: list[dict] = [
+    # ── Room Entered (8: 2×t0, 2×t1, 2×t2, 2×t3) ───────────────────────
+    {
+        "id": "db_01",
+        "trigger": "room_entered",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The floor is damp. Not wet \u2013 damp. The kind of moisture that precedes a statement.",
+        "text_de": "Der Boden ist feucht. Nicht nass \u2013 feucht. Die Art Feuchtigkeit, die einer Aussage vorausgeht.",
+    },
+    {
+        "id": "db_02",
+        "trigger": "room_entered",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "Water at 12cm. Clear. The room is legible through it. That will change.",
+        "text_de": "Wasser bei 12cm. Klar. Der Raum ist hindurch lesbar. Das wird sich ändern.",
+    },
+    {
+        "id": "db_03",
+        "trigger": "room_entered",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "12cm now. The sound of movement has changed \u2013 each action announces itself.",
+        "text_de": "12cm jetzt. Das Geräusch der Bewegung hat sich verändert \u2013 jede Aktion kündigt sich an.",
+    },
+    {
+        "id": "db_04",
+        "trigger": "room_entered",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "The waterline on the wall is 7cm higher than when the party entered this floor. The arithmetic is not complicated.",
+        "text_de": "Die Wasserlinie an der Wand ist 7cm höher als beim Betreten dieser Etage. Die Arithmetik ist nicht kompliziert.",
+    },
+    {
+        "id": "db_05",
+        "trigger": "room_entered",
+        "water_tier": 2,
+        "personality_filter": {},
+        "text_en": "Half-submerged. The water is cold and has opinions about which direction the party should move.",
+        "text_de": "Halb überflutet. Das Wasser ist kalt und hat Meinungen darüber, in welche Richtung sich die Gruppe bewegen sollte.",
+    },
+    {
+        "id": "db_06",
+        "trigger": "room_entered",
+        "water_tier": 2,
+        "personality_filter": {},
+        "text_en": "The current carries debris from rooms below. Fragments of encounters that are now depths.",
+        "text_de": "Die Strömung trägt Trümmer aus Räumen darunter. Fragmente von Begegnungen, die jetzt Tiefen sind.",
+    },
+    {
+        "id": "db_07",
+        "trigger": "room_entered",
+        "water_tier": 3,
+        "personality_filter": {},
+        "text_en": "The surface is close. {agent} keeps the instruments above the waterline. Everything below is concession.",
+        "text_de": "Die Oberfläche ist nah. {agent} hält die Instrumente über der Wasserlinie. Alles darunter ist Zugeständnis.",
+    },
+    {
+        "id": "db_08",
+        "trigger": "room_entered",
+        "water_tier": 3,
+        "personality_filter": {},
+        "text_en": "Three rooms above the waterline. Two hours ago there were five. The mathematics has not changed, only the denominator.",
+        "text_de": "Drei Räume über der Wasserlinie. Vor zwei Stunden waren es fünf. Die Mathematik hat sich nicht geändert, nur der Nenner.",
+    },
+    # ── Combat (4) ───────────────────────────────────────────────────────
+    {
+        "id": "db_09",
+        "trigger": "combat_start",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The water shifts. Something in the current organizes itself into opposition.",
+        "text_de": "Das Wasser verlagert sich. Etwas in der Strömung ordnet sich zum Widerstand.",
+    },
+    {
+        "id": "db_10",
+        "trigger": "combat_start",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "Combat in water. Every action costs twice \u2013 once for the act, once for the medium.",
+        "text_de": "Kampf im Wasser. Jede Aktion kostet doppelt \u2013 einmal für die Tat, einmal für das Medium.",
+    },
+    {
+        "id": "db_11",
+        "trigger": "combat_victory",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The current relents. Not defeated \u2013 redirected. It will find another path.",
+        "text_de": "Die Strömung gibt nach. Nicht besiegt \u2013 umgelenkt. Sie wird einen anderen Weg finden.",
+    },
+    {
+        "id": "db_12",
+        "trigger": "combat_victory",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "Quiet. The water level drops 2cm. The flood acknowledges the party's right to this room. Temporarily.",
+        "text_de": "Stille. Der Pegel sinkt um 2cm. Die Flut erkennt das Recht der Gruppe auf diesen Raum an. Vorübergehend.",
+    },
+    # ── Loot Found (2) ───────────────────────────────────────────────────
+    {
+        "id": "db_13",
+        "trigger": "loot_found",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The current brought this. From below. From a room that is no longer a room \u2013 it is a depth.",
+        "text_de": "Die Strömung brachte dies. Von unten. Aus einem Raum, der kein Raum mehr ist \u2013 er ist eine Tiefe.",
+    },
+    {
+        "id": "db_14",
+        "trigger": "loot_found",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "Salvaged. The water will want it back.",
+        "text_de": "Geborgen. Das Wasser wird es zurückverlangen.",
+    },
+    # ── Rest (2) ─────────────────────────────────────────────────────────
+    {
+        "id": "db_15",
+        "trigger": "rest_start",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "Dry. The word has become a luxury. {agent} remains above the waterline and measures the silence.",
+        "text_de": "Trocken. Das Wort ist zum Luxus geworden. {agent} verharrt über der Wasserlinie und misst die Stille.",
+    },
+    {
+        "id": "db_16",
+        "trigger": "rest_start",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "For a moment the water level stabilizes. Not recedes \u2013 stabilizes. In the Deluge, that is rest.",
+        "text_de": "Für einen Moment stabilisiert sich der Pegel. Sinkt nicht \u2013 stabilisiert sich. In der Flut ist das Ruhe.",
+    },
+    # ── Tidal Events (3) ─────────────────────────────────────────────────
+    {
+        "id": "db_17",
+        "trigger": "tidal_recession",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The water pulls back. 8cm. A breath. Not generosity \u2013 mechanics. The tide returns.",
+        "text_de": "Das Wasser zieht sich zurück. 8cm. Ein Atemzug. Keine Großzügigkeit \u2013 Mechanik. Die Flut kommt wieder.",
+    },
+    {
+        "id": "db_18",
+        "trigger": "tidal_recession",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "Recession. The watermarks on the wall tell two stories: how high the water was, and how high it will be.",
+        "text_de": "Rückgang. Die Wasserzeichen an der Wand erzählen zwei Geschichten: wie hoch das Wasser war und wie hoch es sein wird.",
+    },
+    {
+        "id": "db_19",
+        "trigger": "tidal_surge",
+        "water_tier": 2,
+        "personality_filter": {},
+        "text_en": "The tide returns. Higher. It always returns higher.",
+        "text_de": "Die Flut kehrt zurück. Höher. Sie kehrt immer höher zurück.",
+    },
+    # ── Threshold Triggers (4) ───────────────────────────────────────────
+    {
+        "id": "db_20",
+        "trigger": "ankle_threshold",
+        "water_tier": 1,
+        "personality_filter": {},
+        "text_en": "The water has reached the third step. It does not rush. It has been doing this for longer than the stairwell has existed.",
+        "text_de": "Das Wasser hat die dritte Stufe erreicht. Es eilt nicht. Es tut dies seit länger als das Treppenhaus existiert.",
+    },
+    {
+        "id": "db_21",
+        "trigger": "waist_threshold",
+        "water_tier": 2,
+        "personality_filter": {},
+        "text_en": "Half-submerged. The operational vocabulary contracts. Salvage. Seal. Ascend.",
+        "text_de": "Halb überflutet. Das operative Vokabular schrumpft. Bergen. Abdichten. Aufsteigen.",
+    },
+    {
+        "id": "db_22",
+        "trigger": "chest_threshold",
+        "water_tier": 3,
+        "personality_filter": {},
+        "text_en": "\u00bbDer Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.\u00ab",
+        "text_de": "\u00bbDer Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.\u00ab",
+    },
+    {
+        "id": "db_23",
+        "trigger": "flood_imminent",
+        "water_tier": 3,
+        "personality_filter": {},
+        "text_en": "Cold. Rising. {agent} adjusts. There is nothing else to adjust.",
+        "text_de": "Kalt. Steigend. {agent} passt sich an. Es gibt nichts anderes anzupassen.",
+    },
+    # ── Retreat (1) ──────────────────────────────────────────────────────
+    {
+        "id": "db_24",
+        "trigger": "retreat",
+        "water_tier": 0,
+        "personality_filter": {},
+        "text_en": "The party ascends. Behind them, the water fills what they leave. No sound of pursuit \u2013 only the sound of level.",
+        "text_de": "Die Gruppe steigt auf. Hinter ihnen füllt das Wasser, was sie verlassen. Kein Geräusch der Verfolgung \u2013 nur das Geräusch des Pegels.",
+    },
+    # ── Submerged Room (2) ───────────────────────────────────────────────
+    {
+        "id": "db_25",
+        "trigger": "submerged_room_entered",
+        "water_tier": 2,
+        "personality_filter": {},
+        "text_en": "The submerged corridor is beautiful. {agent} was not prepared for that.",
+        "text_de": "Der überflutete Korridor ist schön. {agent} war darauf nicht vorbereitet.",
+    },
+    {
+        "id": "db_26",
+        "trigger": "submerged_room_entered",
+        "water_tier": 3,
+        "personality_filter": {},
+        "text_en": "Under the surface, the room has reorganized itself. What was ceiling is now a mirror. What was door is now a passage to somewhere the map does not name.",
+        "text_de": "Unter der Oberfläche hat sich der Raum neu geordnet. Was Decke war, ist jetzt ein Spiegel. Was Tür war, ist jetzt ein Durchgang zu etwas, das die Karte nicht benennt.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
@@ -1871,6 +2093,7 @@ _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Entropy": ENTROPY_BANTER,
     "The Devouring Mother": MOTHER_BANTER,
     "The Prometheus": PROMETHEUS_BANTER,
+    "The Deluge": DELUGE_BANTER,
 }
 
 
@@ -1910,6 +2133,24 @@ def _prometheus_insight_tier(archetype_state: dict) -> int:
     if insight >= 45:
         return 2
     if insight >= 20:
+        return 1
+    return 0
+
+
+def _deluge_water_tier(archetype_state: dict) -> int:
+    """Map Deluge water_level to banter intensity tier (0-3).
+
+    0 = dry (water_level 0-24)
+    1 = shallow (25-49)
+    2 = rising (50-74)
+    3 = critical (75+)
+    """
+    water = archetype_state.get("water_level", 0)
+    if water >= 75:
+        return 3
+    if water >= 50:
+        return 2
+    if water >= 25:
         return 1
     return 0
 
@@ -1963,6 +2204,13 @@ def select_banter(
         if tier_candidates:
             max_tier = max(b.get("insight_tier", 0) for b in tier_candidates)
             candidates = [b for b in tier_candidates if b.get("insight_tier", 0) == max_tier]
+    # Deluge: filter by water tier — prefer highest available tier
+    elif archetype == "The Deluge" and archetype_state:
+        tier = _deluge_water_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("water_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("water_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("water_tier", 0) == max_tier]
 
     if not candidates:
         return None

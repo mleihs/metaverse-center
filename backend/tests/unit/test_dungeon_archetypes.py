@@ -177,3 +177,209 @@ class TestGetDepthForDifficulty:
 
     def test_zero_difficulty_falls_back(self):
         assert get_depth_for_difficulty(0) == 4
+
+
+# ── DELUGE-SPECIFIC ──────────────────────────────────────────────────────
+
+
+class TestDelugeConfig:
+    """Verify The Deluge mechanic_config is fully populated (not stubbed)."""
+
+    def test_deluge_mechanic_is_rising_water(self):
+        config = ARCHETYPE_CONFIGS["The Deluge"]
+        assert config["mechanic"] == "rising_water"
+
+    def test_deluge_mechanic_config_not_empty(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc, "Deluge mechanic_config should not be empty"
+
+    def test_deluge_water_thresholds(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc["ankle_threshold"] == 25
+        assert mc["waist_threshold"] == 50
+        assert mc["chest_threshold"] == 75
+        assert mc["submerged_threshold"] == 100
+
+    def test_deluge_tidal_recession_config(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc["recession_interval"] == 3
+        assert mc["recession_amount"] == 8
+        assert mc["recession_decay_per_cycle"] == 2
+
+    def test_deluge_stress_multipliers(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc["stress_multiplier_50"] == 1.15
+        assert mc["stress_multiplier_75"] == 1.40
+        assert mc["submerged_stress_multiplier"] == 2.0
+
+    def test_deluge_surge_rates(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc["surge_depth_1_2"] == 5
+        assert mc["surge_depth_3_4"] == 8
+        assert mc["surge_depth_5_plus"] == 12
+        assert mc["surge_per_combat_round"] == 3
+
+    def test_deluge_aptitude_weights(self):
+        config = ARCHETYPE_CONFIGS["The Deluge"]
+        assert "aptitude_weights" in config
+        assert config["aptitude_weights"]["guardian"] == 30
+        assert config["aptitude_weights"]["spy"] == 25
+
+    def test_deluge_signature(self):
+        assert ARCHETYPE_CONFIGS["The Deluge"]["signature"] == "elemental_surge"
+
+    def test_deluge_has_seal_breach_config(self):
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        assert mc["seal_stress_cost"] == 15
+        assert mc["seal_min_aptitude"] == 40
+        assert mc["reduce_on_seal_action"] == 10
+
+
+class TestDelugeStrategy:
+    """Test DelugeStrategy mechanics."""
+
+    def test_deluge_strategy_registered(self):
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        assert strategy is not None
+
+    def test_deluge_init_state(self):
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        state = strategy.init_state()
+        assert state["water_level"] == 0
+        assert state["max_water_level"] == 100
+        assert state["rooms_entered"] == 0
+        assert state["recession_cycle"] == 0
+
+    def test_deluge_apply_drain_increases_water(self):
+        from backend.models.resonance_dungeon import DungeonInstance
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        instance = DungeonInstance(
+            run_id="00000000-0000-0000-0000-000000000001",
+            simulation_id="00000000-0000-0000-0000-000000000002",
+            archetype="The Deluge",
+            signature="elemental_surge",
+            archetype_state=strategy.init_state(),
+            phase="exploring",
+            depth=1,
+            current_room=0,
+            party=[],
+            combat=None,
+            rooms=[],
+            difficulty=1,
+        )
+        strategy.apply_drain(instance)
+        assert instance.archetype_state["water_level"] > 0
+        assert instance.archetype_state["rooms_entered"] == 1
+
+    def test_deluge_tidal_recession_on_third_room(self):
+        from backend.models.resonance_dungeon import DungeonInstance
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        instance = DungeonInstance(
+            run_id="00000000-0000-0000-0000-000000000001",
+            simulation_id="00000000-0000-0000-0000-000000000002",
+            archetype="The Deluge",
+            signature="elemental_surge",
+            archetype_state=strategy.init_state(),
+            phase="exploring",
+            depth=1,
+            current_room=0,
+            party=[],
+            combat=None,
+            rooms=[],
+            difficulty=1,
+        )
+        # Enter 3 rooms — recession should fire on 3rd
+        strategy.apply_drain(instance)  # room 1: +5
+        strategy.apply_drain(instance)  # room 2: +5
+        water_before_3rd = instance.archetype_state["water_level"]
+        strategy.apply_drain(instance)  # room 3: recession -8, then +5
+        water_after_3rd = instance.archetype_state["water_level"]
+        # Net: water_before_3rd + 5 - 8 = water_before_3rd - 3
+        assert water_after_3rd == water_before_3rd - 3
+
+    def test_deluge_boss_deployment_returns_choices(self):
+        from backend.models.resonance_dungeon import DungeonInstance
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        instance = DungeonInstance(
+            run_id="00000000-0000-0000-0000-000000000001",
+            simulation_id="00000000-0000-0000-0000-000000000002",
+            archetype="The Deluge",
+            signature="elemental_surge",
+            archetype_state=strategy.init_state(),
+            phase="exploring",
+            depth=5,
+            current_room=0,
+            party=[],
+            combat=None,
+            rooms=[],
+            difficulty=1,
+        )
+        choices = strategy.get_boss_deployment_choices(instance)
+        assert choices is not None
+        assert len(choices) == 4  # 3 aptitude choices + begin_combat
+        assert choices[0]["check_aptitude"] == "saboteur"
+        assert choices[1]["check_aptitude"] == "spy"
+        assert choices[2]["check_aptitude"] == "guardian"
+        assert choices[3]["id"] == "begin_combat"
+
+    def test_deluge_water_does_not_go_below_zero(self):
+        from backend.models.resonance_dungeon import DungeonInstance
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        instance = DungeonInstance(
+            run_id="00000000-0000-0000-0000-000000000001",
+            simulation_id="00000000-0000-0000-0000-000000000002",
+            archetype="The Deluge",
+            signature="elemental_surge",
+            archetype_state={"water_level": 2, "max_water_level": 100, "rooms_entered": 0, "recession_cycle": 0},
+            phase="exploring",
+            depth=1,
+            current_room=0,
+            party=[],
+            combat=None,
+            rooms=[],
+            difficulty=1,
+        )
+        strategy.apply_restore(instance, "rest")  # -5
+        assert instance.archetype_state["water_level"] == 0  # clamped at 0
+
+    def test_deluge_stress_multiplier_at_thresholds(self):
+        from backend.models.resonance_dungeon import DungeonInstance
+        from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+
+        strategy = get_archetype_strategy("The Deluge")
+        instance = DungeonInstance(
+            run_id="00000000-0000-0000-0000-000000000001",
+            simulation_id="00000000-0000-0000-0000-000000000002",
+            archetype="The Deluge",
+            signature="elemental_surge",
+            archetype_state={"water_level": 0, "max_water_level": 100, "rooms_entered": 0, "recession_cycle": 0},
+            phase="exploring",
+            depth=1,
+            current_room=0,
+            party=[],
+            combat=None,
+            rooms=[],
+            difficulty=1,
+        )
+        assert strategy.get_ambient_stress_multiplier(instance) == 1.0
+
+        instance.archetype_state["water_level"] = 50
+        assert strategy.get_ambient_stress_multiplier(instance) == 1.15
+
+        instance.archetype_state["water_level"] = 75
+        assert strategy.get_ambient_stress_multiplier(instance) == 1.40
+
+        instance.archetype_state["water_level"] = 100
+        assert strategy.get_ambient_stress_multiplier(instance) == 2.0

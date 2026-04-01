@@ -20,6 +20,7 @@ export const ARCHETYPE_TOWER = 'The Tower';
 export const ARCHETYPE_ENTROPY = 'The Entropy';
 export const ARCHETYPE_MOTHER = 'The Devouring Mother';
 export const ARCHETYPE_PROMETHEUS = 'The Prometheus';
+export const ARCHETYPE_DELUGE = 'The Deluge';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -175,13 +176,22 @@ export interface PrometheusArchetypeState {
   failed_crafts: number;
 }
 
-/** Archetype-specific state. Shadow, Tower, Entropy, Mother, and Prometheus have typed shapes; others are empty objects. */
+/** Deluge archetype: rising water mechanic (0→100, tidal pulse). */
+export interface DelugeArchetypeState {
+  water_level: number;
+  max_water_level: number;
+  rooms_entered: number;
+  recession_cycle: number;
+}
+
+/** Archetype-specific state. Shadow, Tower, Entropy, Mother, Prometheus, and Deluge have typed shapes; others are empty objects. */
 export type ArchetypeState =
   | ShadowArchetypeState
   | TowerArchetypeState
   | EntropyArchetypeState
   | MotherArchetypeState
   | PrometheusArchetypeState
+  | DelugeArchetypeState
   | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
@@ -207,6 +217,11 @@ export function isMotherState(state: ArchetypeState): state is MotherArchetypeSt
 /** Type guard: narrows ArchetypeState to PrometheusArchetypeState. */
 export function isPrometheusState(state: ArchetypeState): state is PrometheusArchetypeState {
   return 'insight' in state && typeof state.insight === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to DelugeArchetypeState. */
+export function isDelugeState(state: ArchetypeState): state is DelugeArchetypeState {
+  return 'water_level' in state && typeof state.water_level === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────

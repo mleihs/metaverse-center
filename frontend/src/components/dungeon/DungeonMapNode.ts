@@ -52,6 +52,8 @@ export interface MapNodeProps {
   justRevealed: boolean;
   depthHighlight: boolean;
   selected: boolean;
+  /** Deluge: room affected by rising water (water_level >= 50). */
+  submerged?: boolean;
   /** Callback when node is clicked. */
   onClick: (room: RoomNodeClient) => void;
   /** Callback when Escape is pressed on a focused node. */
@@ -101,7 +103,7 @@ export const mapNodeStyles = css`
 
   /* ── State: Cleared ── */
   .node--cleared {
-    opacity: 0.4;
+    opacity: 0.65;
   }
   .node--cleared .node__ring {
     stroke-width: 1;
@@ -119,6 +121,14 @@ export const mapNodeStyles = css`
   .node--selected .node__ring {
     stroke-width: 3;
     stroke-dasharray: none;
+  }
+
+  /* ── State: Submerged (Deluge water overlay) ── */
+  .node--submerged .node__fill {
+    fill: color-mix(in srgb, var(--color-info, #60a5fa) 25%, var(--_screen-bg, #0a0e14));
+  }
+  .node--submerged .node__ring {
+    stroke: color-mix(in srgb, var(--color-info, #60a5fa) 40%, var(--_phosphor, #e0c97a));
   }
 
   /* ── Cleared checkmark badge ── */
@@ -288,6 +298,7 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
     justRevealed,
     depthHighlight,
     selected,
+    submerged,
     onClick,
     onDeselect,
   } = props;
@@ -308,6 +319,7 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
     justRevealed ? 'node--just-revealed' : '',
     depthHighlight ? 'node--depth-highlight' : '',
     selected ? 'node--selected' : '',
+    submerged && room.revealed ? 'node--submerged' : '',
   ]
     .filter(Boolean)
     .join(' ');

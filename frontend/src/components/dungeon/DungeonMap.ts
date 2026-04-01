@@ -29,7 +29,7 @@ import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import type { RoomNodeClient } from '../../types/dungeon.js';
+import { ARCHETYPE_DELUGE, isDelugeState, type RoomNodeClient } from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import { mapEdgeStyles, renderMapEdge } from './DungeonMapEdge.js';
@@ -418,6 +418,14 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       />`;
     });
 
+    // Deluge water overlay: rooms are submerged when water_level >= 50
+    const clientState = dungeonState.clientState.value;
+    const isDelugeRun = clientState?.archetype === ARCHETYPE_DELUGE;
+    const waterLevel = isDelugeRun && isDelugeState(dungeonState.archetypeState.value)
+      ? dungeonState.archetypeState.value.water_level
+      : 0;
+    const showWaterOverlay = isDelugeRun && waterLevel >= 50;
+
     const nodesGroup = svg`<g>
       ${layout.nodes.map(({ room, x, y }) => {
         const isAdj = adjacentSet.has(room.index);
@@ -430,6 +438,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
           justRevealed: this._newlyRevealed.has(room.index),
           depthHighlight: this._depthHighlight.has(room.index),
           selected: this._selectedRoom?.index === room.index,
+          submerged: showWaterOverlay && !room.current,
           onClick: (r: RoomNodeClient) => this._handleNodeClick(r),
           onDeselect: () => this._handleNodeDeselect(),
         });

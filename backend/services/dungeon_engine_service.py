@@ -368,6 +368,11 @@ class DungeonEngineService:
         return await DungeonMovementService.scout(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
+    async def seal_breach(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Guardian: Seal Breach — reduce water level (Deluge only)."""
+        return await DungeonMovementService.seal_breach(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
     async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
         """Rest at a rest site."""
         return await DungeonMovementService.rest(admin_supabase, run_id, agent_ids, user_id=user_id)

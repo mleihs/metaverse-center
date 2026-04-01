@@ -90,6 +90,7 @@ Write operations require:
 - Never grant SECURITY DEFINER functions to `anon` or `authenticated`. Admin RPCs must be callable only via backend with role validation (see ADR-006, incident migration 096→147).
 - Never use `httpx`/`requests` directly for user-provided URLs. Use `backend/utils/safe_fetch.py` for SSRF protection.
 - Never implement fetch-compute-update patterns in Python for concurrent-access data. Use atomic Postgres RPCs with compare-and-swap logic (see ADR-007, migration 148).
+- Never add dungeon content (enemies, encounters, banter, loot, objektanker) only to Python files without a corresponding SQL seed migration. Runtime reads from DB via `dungeon_content_service` (`get_banter_registry()`, `get_enemy_registry()`, etc.). Python dicts in `backend/services/dungeon/` are the canonical source for tests and migration generation, but the DB migration in `supabase/migrations/` is what the production system reads. Pattern: define in Python dict → seed via `INSERT ... ON CONFLICT DO UPDATE` migration → runtime reads from DB.
 
 ### Observability & Error Tracking
 
