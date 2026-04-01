@@ -410,7 +410,10 @@ export class VelgToast extends LitElement {
     // Start auto-dismiss timer
     this._remaining.set(id, duration);
     this._startTimes.set(id, Date.now());
-    this._timers.set(id, setTimeout(() => this._removeToast(id), duration));
+    this._timers.set(
+      id,
+      setTimeout(() => this._removeToast(id), duration),
+    );
 
     // Enforce max visible — dismiss oldest if over limit
     const active = this._toasts.filter((t) => !t.removing);
@@ -459,7 +462,10 @@ export class VelgToast extends LitElement {
     // Resume auto-dismiss with remaining time
     const remaining = this._remaining.get(id) ?? 2000;
     this._startTimes.set(id, Date.now());
-    this._timers.set(id, setTimeout(() => this._removeToast(id), remaining));
+    this._timers.set(
+      id,
+      setTimeout(() => this._removeToast(id), remaining),
+    );
 
     this._toasts = this._toasts.map((t) => (t.id === id ? { ...t, paused: false } : t));
   }

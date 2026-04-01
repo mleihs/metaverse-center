@@ -138,7 +138,9 @@ export class VelgTabs extends LitElement {
 
   private _handleClick(key: string) {
     if (key === this.active) return;
-    this.dispatchEvent(new CustomEvent('tab-change', { detail: { key }, bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('tab-change', { detail: { key }, bubbles: true, composed: true }),
+    );
   }
 
   private _handleKeyDown(e: KeyboardEvent) {
@@ -181,11 +183,10 @@ export class VelgTabs extends LitElement {
 
     return html`
       <nav class="tabs" role="tablist" aria-label="${msg('Navigation tabs')}" @keydown=${this._handleKeyDown}>
-        ${visibleTabs.map(
-          (tab, i) => {
-            const prevGroup = i > 0 ? visibleTabs[i - 1].group : undefined;
-            const isGroupStart = hasGroups && i > 0 && tab.group !== prevGroup;
-            return html`
+        ${visibleTabs.map((tab, i) => {
+          const prevGroup = i > 0 ? visibleTabs[i - 1].group : undefined;
+          const isGroupStart = hasGroups && i > 0 && tab.group !== prevGroup;
+          return html`
               <button
                 role="tab"
                 id="tab-${tab.key}"
@@ -200,8 +201,7 @@ export class VelgTabs extends LitElement {
                 ${tab.badge !== undefined ? html`<span class="tab__badge">${tab.badge}</span>` : ''}
               </button>
             `;
-          },
-        )}
+        })}
       </nav>
     `;
   }

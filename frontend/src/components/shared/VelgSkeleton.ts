@@ -107,9 +107,7 @@ export class VelgSkeleton extends LitElement {
     }
 
     return html`
-      ${items.map(
-        () => html`<div class="skeleton skeleton--${this.variant}"></div>`,
-      )}
+      ${items.map(() => html`<div class="skeleton skeleton--${this.variant}"></div>`)}
     `;
   }
 }

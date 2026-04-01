@@ -167,11 +167,13 @@ export class VelgToggle extends LitElement {
   private _toggle() {
     if (this.disabled) return;
     this.checked = !this.checked;
-    this.dispatchEvent(new CustomEvent('toggle-change', {
-      detail: { checked: this.checked },
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('toggle-change', {
+        detail: { checked: this.checked },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _onKeydown(e: KeyboardEvent) {

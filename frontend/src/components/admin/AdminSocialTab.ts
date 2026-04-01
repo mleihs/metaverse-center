@@ -47,7 +47,9 @@ export class VelgAdminSocialTab extends LitElement {
           class="subnav__btn ${this._channel === 'instagram' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._channel === 'instagram'}
-          @click=${() => { this._channel = 'instagram'; }}
+          @click=${() => {
+            this._channel = 'instagram';
+          }}
         >
           ${icons.instagram(16)}
           ${msg('Instagram')}
@@ -57,7 +59,9 @@ export class VelgAdminSocialTab extends LitElement {
           class="subnav__btn ${this._channel === 'bluesky' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._channel === 'bluesky'}
-          @click=${() => { this._channel = 'bluesky'; }}
+          @click=${() => {
+            this._channel = 'bluesky';
+          }}
         >
           ${icons.antenna(16)}
           ${msg('Bluesky')}
@@ -66,9 +70,10 @@ export class VelgAdminSocialTab extends LitElement {
       </div>
 
       <div class="subnav__content" role="tabpanel">
-        ${this._channel === 'instagram'
-          ? html`<velg-admin-instagram-tab></velg-admin-instagram-tab>`
-          : html`<velg-admin-bluesky-tab></velg-admin-bluesky-tab>`
+        ${
+          this._channel === 'instagram'
+            ? html`<velg-admin-instagram-tab></velg-admin-instagram-tab>`
+            : html`<velg-admin-bluesky-tab></velg-admin-bluesky-tab>`
         }
       </div>
     `;

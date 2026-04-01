@@ -352,9 +352,7 @@ export class VelgAdminResearchTab extends LitElement {
 
     // Return focus to input
     this.updateComplete.then(() => {
-      const input = this.shadowRoot?.querySelector<HTMLInputElement>(
-        `input[data-key="${key}"]`,
-      );
+      const input = this.shadowRoot?.querySelector<HTMLInputElement>(`input[data-key="${key}"]`);
       input?.focus();
     });
   }
@@ -368,9 +366,7 @@ export class VelgAdminResearchTab extends LitElement {
 
     // Return focus to input
     this.updateComplete.then(() => {
-      const input = this.shadowRoot?.querySelector<HTMLInputElement>(
-        `input[data-key="${key}"]`,
-      );
+      const input = this.shadowRoot?.querySelector<HTMLInputElement>(`input[data-key="${key}"]`);
       input?.focus();
     });
   }
@@ -429,8 +425,9 @@ export class VelgAdminResearchTab extends LitElement {
           ${renderInfoBubble(m.description, tooltipId)}
         </div>
 
-        ${domains.length > 0
-          ? html`
+        ${
+          domains.length > 0
+            ? html`
               <div class="domain-chips" role="list">
                 ${domains.map(
                   (domain, i) => html`
@@ -446,7 +443,8 @@ export class VelgAdminResearchTab extends LitElement {
                 )}
               </div>
             `
-          : html`<div class="domain-chips--empty">${msg('No domains configured')}</div>`}
+            : html`<div class="domain-chips--empty">${msg('No domains configured')}</div>`
+        }
 
         <div class="domain-card__add-row">
           <input

@@ -105,9 +105,7 @@ export class VelgContentPage extends LitElement {
         ...(data.structuredData.dateModified
           ? { dateModified: data.structuredData.dateModified }
           : {}),
-        ...(data.structuredData.wordCount
-          ? { wordCount: data.structuredData.wordCount }
-          : {}),
+        ...(data.structuredData.wordCount ? { wordCount: data.structuredData.wordCount } : {}),
         author: {
           '@type': 'Organization',
           name: 'Bureau of Impossible Geography',
@@ -256,26 +254,34 @@ export class VelgContentPage extends LitElement {
       <div class="hero">
         <div class="hero__scanlines"></div>
         <div class="hero__inner">
-          ${d.hero.classification
-            ? html`<div class="hero__classification">${d.hero.classification}</div>`
-            : nothing}
+          ${
+            d.hero.classification
+              ? html`<div class="hero__classification">${d.hero.classification}</div>`
+              : nothing
+          }
           <h1 class="hero__title">${d.hero.title}</h1>
           <p class="hero__sub">${d.hero.subtitle}</p>
           <div class="hero__line"></div>
-          ${d.hero.byline || d.hero.datePublished || d.hero.readTime
-            ? html`
+          ${
+            d.hero.byline || d.hero.datePublished || d.hero.readTime
+              ? html`
               <div class="hero__byline">
                 ${d.hero.byline ? html`<span>${d.hero.byline}</span>` : nothing}
-                ${d.hero.byline && d.hero.datePublished
-                  ? html`<span class="hero__byline-sep"></span>`
-                  : nothing}
+                ${
+                  d.hero.byline && d.hero.datePublished
+                    ? html`<span class="hero__byline-sep"></span>`
+                    : nothing
+                }
                 ${d.hero.datePublished ? html`<span>${d.hero.datePublished}</span>` : nothing}
-                ${d.hero.readTime
-                  ? html`<span class="hero__byline-sep"></span><span>${d.hero.readTime}</span>`
-                  : nothing}
+                ${
+                  d.hero.readTime
+                    ? html`<span class="hero__byline-sep"></span><span>${d.hero.readTime}</span>`
+                    : nothing
+                }
               </div>
             `
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;

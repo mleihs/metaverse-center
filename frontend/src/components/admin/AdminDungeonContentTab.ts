@@ -8,15 +8,15 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
+import { dungeonContentApi } from '../../services/api/DungeonContentAdminApi.js';
+import { VelgToast } from '../shared/Toast.js';
 import {
   adminAnimationStyles,
-  adminSectionHeaderStyles,
   adminLoadingStyles,
+  adminSectionHeaderStyles,
   adminSubNavStyles,
 } from './admin-shared-styles.js';
-import { dungeonContentApi } from '../../services/api/DungeonContentAdminApi.js';
-import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
-import { VelgToast } from '../shared/Toast.js';
 
 import './DungeonContentTable.js';
 import './DungeonContentEditor.js';
@@ -133,7 +133,10 @@ export class AdminDungeonContentTab extends LitElement {
     if (result.success && result.data) {
       // BaseApiService extracts json.data → result.data is the array directly
       // json.meta → result.meta is the pagination metadata
-      const rawResult = result as unknown as { data: Record<string, unknown>[]; meta?: { total: number } };
+      const rawResult = result as unknown as {
+        data: Record<string, unknown>[];
+        meta?: { total: number };
+      };
       this._items = Array.isArray(rawResult.data) ? rawResult.data : [];
       this._total = rawResult.meta?.total ?? this._items.length;
     } else {
@@ -156,7 +159,9 @@ export class AdminDungeonContentTab extends LitElement {
     await this._loadContent();
   }
 
-  private async _handleFilterChange(e: CustomEvent<{ search: string; archetype: string }>): Promise<void> {
+  private async _handleFilterChange(
+    e: CustomEvent<{ search: string; archetype: string }>,
+  ): Promise<void> {
     this._search = e.detail.search;
     this._archetype = e.detail.archetype;
     this._page = 1;
@@ -180,7 +185,9 @@ export class AdminDungeonContentTab extends LitElement {
     this._selectedId = '';
   }
 
-  private async _handleEditorSave(e: CustomEvent<{ item: Record<string, unknown>; contentType: string }>): Promise<void> {
+  private async _handleEditorSave(
+    e: CustomEvent<{ item: Record<string, unknown>; contentType: string }>,
+  ): Promise<void> {
     this._editorSaving = true;
     const { item } = e.detail;
     const itemId = String(item.id ?? '');
@@ -245,7 +252,7 @@ export class AdminDungeonContentTab extends LitElement {
       <!-- Sub-navigation -->
       <div class="subnav" role="tablist" aria-label=${msg('Content type navigation')}>
         ${this._contentTypes.map(
-          ct => html`
+          (ct) => html`
             <button
               class="subnav__btn ${this._activeType === ct.key ? 'subnav__btn--active' : ''}"
               role="tab"
@@ -258,9 +265,10 @@ export class AdminDungeonContentTab extends LitElement {
 
       <!-- Content area -->
       <div class="content-area subnav__content">
-        ${this._loading
-          ? html`<div class="loading">${msg('Loading content...')}</div>`
-          : html`
+        ${
+          this._loading
+            ? html`<div class="loading">${msg('Loading content...')}</div>`
+            : html`
             <velg-dungeon-content-table
               .items=${this._items}
               .contentType=${this._activeType}
@@ -271,7 +279,8 @@ export class AdminDungeonContentTab extends LitElement {
               @filter-change=${this._handleFilterChange}
               @page-change=${this._handlePageChange}
             ></velg-dungeon-content-table>
-          `}
+          `
+        }
       </div>
 
       <!-- Editor drawer -->

@@ -11,9 +11,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
-import { formatDateTimeShort } from '../../utils/date-format.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { EpochInvitation } from '../../types/index.js';
+import { formatDateTimeShort } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSidePanel.js';
 

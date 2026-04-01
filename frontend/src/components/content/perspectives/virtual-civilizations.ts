@@ -38,7 +38,10 @@ export function getVirtualCivilizationsPage(): ContentPageData {
     breadcrumbs: [
       { name: 'Home', url: 'https://metaverse.center/' },
       { name: 'Perspectives', url: 'https://metaverse.center/perspectives/virtual-civilizations' },
-      { name: 'Virtual Civilizations', url: 'https://metaverse.center/perspectives/virtual-civilizations' },
+      {
+        name: 'Virtual Civilizations',
+        url: 'https://metaverse.center/perspectives/virtual-civilizations',
+      },
     ],
 
     sections: [

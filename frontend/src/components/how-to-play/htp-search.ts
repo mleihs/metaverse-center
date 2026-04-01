@@ -173,11 +173,7 @@ export function highlightMatch(text: string, query: string): [string, string, st
   const q = query.toLowerCase().trim();
   const idx = lower.indexOf(q);
   if (idx === -1) return [text, '', ''];
-  return [
-    text.slice(0, idx),
-    text.slice(idx, idx + q.length),
-    text.slice(idx + q.length),
-  ];
+  return [text.slice(0, idx), text.slice(idx, idx + q.length), text.slice(idx + q.length)];
 }
 
 // ── Debounce Utility ─────────────────────────────────────────────────────────
@@ -201,6 +197,9 @@ export function debounce<T extends (...args: any[]) => void>(fn: T, ms = 150): D
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), ms);
   }) as DebouncedFn<T>;
-  debounced.cancel = () => { clearTimeout(timer); timer = undefined; };
+  debounced.cancel = () => {
+    clearTimeout(timer);
+    timer = undefined;
+  };
   return debounced;
 }

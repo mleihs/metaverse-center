@@ -7,7 +7,6 @@
  * Error capture handled by BaseApiService.request() → SentryService.captureError().
  */
 
-import type { ApiResponse } from '../../types/index.js';
 import type {
   AgentLootEffect,
   AvailableDungeonResponse,
@@ -23,11 +22,12 @@ import type {
   EncounterChoiceResponse,
   LootAssignmentRequest,
   LootAssignmentResponse,
+  MoveToRoomResponse,
   RestResponse,
   RetreatResponse,
   ScoutResponse,
-  MoveToRoomResponse,
 } from '../../types/dungeon.js';
+import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class DungeonApiService extends BaseApiService {
@@ -39,10 +39,7 @@ export class DungeonApiService extends BaseApiService {
   }
 
   /** Start a new dungeon run. */
-  createRun(
-    simulationId: string,
-    body: DungeonRunCreate,
-  ): Promise<ApiResponse<CreateRunResponse>> {
+  createRun(simulationId: string, body: DungeonRunCreate): Promise<ApiResponse<CreateRunResponse>> {
     return this.post(`/dungeons/runs?simulation_id=${simulationId}`, body);
   }
 
@@ -106,11 +103,7 @@ export class DungeonApiService extends BaseApiService {
   }
 
   /** Get dungeon event log (paginated). */
-  getEvents(
-    runId: string,
-    limit = 50,
-    offset = 0,
-  ): Promise<ApiResponse<DungeonEventResponse[]>> {
+  getEvents(runId: string, limit = 50, offset = 0): Promise<ApiResponse<DungeonEventResponse[]>> {
     return this.get(`/dungeons/runs/${runId}/events`, {
       limit: String(limit),
       offset: String(offset),

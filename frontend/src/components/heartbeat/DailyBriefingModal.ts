@@ -765,9 +765,7 @@ export class VelgDailyBriefing extends LitElement {
       this._open = false;
       this._exiting = false;
       document.body.style.overflow = '';
-      this.dispatchEvent(
-        new CustomEvent('briefing-dismissed', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('briefing-dismissed', { bubbles: true, composed: true }));
     }, EXIT_DURATION_MS);
   }
 
@@ -781,9 +779,7 @@ export class VelgDailyBriefing extends LitElement {
       this._open = false;
       this._exiting = false;
       document.body.style.overflow = '';
-      this.dispatchEvent(
-        new CustomEvent('briefing-dismissed', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('briefing-dismissed', { bubbles: true, composed: true }));
       this.dispatchEvent(
         new CustomEvent('navigate', {
           detail: `/simulations/${slug}/pulse`,

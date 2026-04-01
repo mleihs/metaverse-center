@@ -13,8 +13,8 @@
  */
 
 import { settingsApi } from './api/index.js';
-import { THEME_PRESETS } from './theme-presets.js';
 import type { ThemePresetName } from './theme-presets.js';
+import { THEME_PRESETS } from './theme-presets.js';
 
 /** Maximum allowed size for custom CSS (bytes). */
 const MAX_CUSTOM_CSS_BYTES = 10_240;
@@ -27,10 +27,23 @@ const GOOGLE_FONTS_PREFIX = 'velg-gf-';
 
 /** System fonts that should never be loaded from Google Fonts. */
 const SYSTEM_FONTS = new Set([
-  'system-ui', '-apple-system', 'segoe ui', 'arial', 'arial narrow',
-  'helvetica', 'helvetica neue', 'georgia', 'times new roman',
-  'courier new', 'comic sans ms', 'inherit', 'sans-serif',
-  'serif', 'monospace', 'cursive', 'fantasy',
+  'system-ui',
+  '-apple-system',
+  'segoe ui',
+  'arial',
+  'arial narrow',
+  'helvetica',
+  'helvetica neue',
+  'georgia',
+  'times new roman',
+  'courier new',
+  'comic sans ms',
+  'inherit',
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'fantasy',
 ]);
 
 /** Track which Google Fonts have been loaded to avoid duplicate requests. */
@@ -351,10 +364,7 @@ class ThemeService {
       ['--ring-danger', '0 0 0 3px color-mix(in srgb, var(--color-danger) 40%, transparent)'],
       ['--ring-success', '0 0 0 3px color-mix(in srgb, var(--color-success) 40%, transparent)'],
       ['--ring-warning', '0 0 0 3px color-mix(in srgb, var(--color-warning) 40%, transparent)'],
-      [
-        '--ring-focus',
-        '0 0 0 3px color-mix(in srgb, var(--color-border-focus) 40%, transparent)',
-      ],
+      ['--ring-focus', '0 0 0 3px color-mix(in srgb, var(--color-border-focus) 40%, transparent)'],
     ];
     for (const [token, value] of ringPairs) {
       hostElement.style.setProperty(token, value);
@@ -500,7 +510,10 @@ function ensurePreconnect(): void {
  * E.g. "'Playfair Display', Georgia, serif" → ["Playfair Display", "Georgia", "serif"]
  */
 function extractAllFamilies(cssValue: string): string[] {
-  return cssValue.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+  return cssValue
+    .split(',')
+    .map((f) => f.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
 }
 
 /**

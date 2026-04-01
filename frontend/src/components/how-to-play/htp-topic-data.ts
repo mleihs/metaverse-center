@@ -15,7 +15,6 @@
 import { msg } from '@lit/localize';
 import { html, type TemplateResult } from 'lit';
 import type { IconKey } from '../../utils/icons.js';
-import type { DemoStep } from './htp-types.js';
 import type { ForgeStep } from './htp-content-features.js';
 import {
   getAgentChatGuideSteps,
@@ -50,6 +49,7 @@ import {
   getScorePresets,
   getSuccessFormula,
 } from './htp-content-rules.js';
+import type { DemoStep } from './htp-types.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -115,7 +115,9 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'world',
     title: msg('The Simulation World'),
     icon: 'heartbeat',
-    description: msg('What is metaverse.center? Simulations, lore, health, and the substrate pulse.'),
+    description: msg(
+      'What is metaverse.center? Simulations, lore, health, and the substrate pulse.',
+    ),
     accent: '--color-info',
     readTime: msg('6 min'),
     tldr: () => [
@@ -172,9 +174,7 @@ export const TOPICS: TopicDefinition[] = [
       msg('Every result is unique \u2013 same seed, different anchor, radically different world'),
       msg('Ignition is permanent and consumes 1 Forge Token'),
     ],
-    sections: () => [
-      { kind: 'steps', title: msg('The Forge Process'), steps: getForgeGuideSteps },
-    ],
+    sections: () => [{ kind: 'steps', title: msg('The Forge Process'), steps: getForgeGuideSteps }],
     related: ['world', 'agents', 'living-world'],
   },
 
@@ -208,7 +208,9 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'events',
     title: msg('Events & Dynamics'),
     icon: 'explosion',
-    description: msg('Events drive the narrative: manual, AI-generated, or spawned by game mechanics.'),
+    description: msg(
+      'Events drive the narrative: manual, AI-generated, or spawned by game mechanics.',
+    ),
     accent: '--color-warning',
     readTime: msg('8 min'),
     tldr: () => [
@@ -232,12 +234,18 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'living-world',
     title: msg('The Living World'),
     icon: 'brain',
-    description: msg('Agent autonomy: moods, needs, opinions, relationships, and autonomous events.'),
+    description: msg(
+      'Agent autonomy: moods, needs, opinions, relationships, and autonomous events.',
+    ),
     accent: '--color-success',
     readTime: msg('10 min'),
     tldr: () => [
-      msg('Agents act autonomously between visits \u2013 moods shift, relationships form, events fire'),
-      msg('Five core needs (Social, Purpose, Safety, Comfort, Stimulation) drive Utility AI activity selection'),
+      msg(
+        'Agents act autonomously between visits \u2013 moods shift, relationships form, events fire',
+      ),
+      msg(
+        'Five core needs (Social, Purpose, Safety, Comfort, Stimulation) drive Utility AI activity selection',
+      ),
       msg('Agent mood affects epoch performance: happy agents get +3% operative success'),
       msg('Real-world weather data creates atmospheric zone events via geographic anchoring'),
     ],
@@ -256,7 +264,9 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'map',
     title: msg('The Multiverse Map'),
     icon: 'compassRose',
-    description: msg('Interactive force-directed graph of the entire multiverse and active epochs.'),
+    description: msg(
+      'Interactive force-directed graph of the entire multiverse and active epochs.',
+    ),
     accent: '--color-info',
     readTime: msg('4 min'),
     tldr: () => [
@@ -266,7 +276,11 @@ export const TOPICS: TopicDefinition[] = [
       msg('Battle feed ticker shows public events across all active epochs'),
     ],
     sections: () => [
-      { kind: 'steps', title: msg('The Cartographer\u2019s Map'), steps: getMultiverseMapGuideSteps },
+      {
+        kind: 'steps',
+        title: msg('The Cartographer\u2019s Map'),
+        steps: getMultiverseMapGuideSteps,
+      },
     ],
     related: ['world', 'epochs', 'advanced'],
   },
@@ -278,12 +292,16 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'epochs',
     title: msg('Epochs: The Basics'),
     icon: 'crossedSwords',
-    description: msg('Time-limited PvP seasons scored across five dimensions. The competitive core.'),
+    description: msg(
+      'Time-limited PvP seasons scored across five dimensions. The competitive core.',
+    ),
     accent: '--color-danger',
     readTime: msg('7 min'),
     tldr: () => [
       msg('Epochs clone simulations into balanced game instances \u2013 originals stay untouched'),
-      msg('Five phases: Lobby, Foundation (+50% RP), Competition, Reckoning (amplified bleed), Completed'),
+      msg(
+        'Five phases: Lobby, Foundation (+50% RP), Competition, Reckoning (amplified bleed), Completed',
+      ),
       msg('All simulations normalized at start: 6 agents, 8 buildings, balanced security'),
       msg('Academy Mode: solo sprint training against AI bots with compressed cycles'),
     ],
@@ -334,7 +352,8 @@ export const TOPICS: TopicDefinition[] = [
       {
         kind: 'readout',
         title: msg('Normalization Rules'),
-        data: () => getNormalizationRules().map((r) => ({ label: r.attribute, value: r.normalizedTo })),
+        data: () =>
+          getNormalizationRules().map((r) => ({ label: r.attribute, value: r.normalizedTo })),
       },
       {
         kind: 'callouts',
@@ -405,7 +424,9 @@ export const TOPICS: TopicDefinition[] = [
     tldr: () => [
       msg('Six types: Spy, Saboteur, Propagandist, Assassin, Guardian, Infiltrator'),
       msg('Each costs RP, takes deploy + mission cycles, and has a score value on success'),
-      msg('Success probability: 55% base + aptitude bonus \u2212 zone security \u2212 guardian defense'),
+      msg(
+        'Success probability: 55% base + aptitude bonus \u2212 zone security \u2212 guardian defense',
+      ),
       msg('Detected missions cost \u22123 military and negate the effect'),
     ],
     sections: () => [
@@ -488,7 +509,9 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'scoring',
     title: msg('Scoring & Economy'),
     icon: 'trophy',
-    description: msg('Five scoring dimensions, RP economy, weighted presets, and the composite formula.'),
+    description: msg(
+      'Five scoring dimensions, RP economy, weighted presets, and the composite formula.',
+    ),
     accent: '--color-primary',
     readTime: msg('6 min'),
     tldr: () => [
@@ -542,9 +565,7 @@ export const TOPICS: TopicDefinition[] = [
                 (p) => html`
                   <div class="topic-presets-table__row">
                     <span class="topic-presets-table__name">${p.name}</span>
-                    ${dims.map(
-                      (d) => html`<span>${p.weights[d.key]}%</span>`,
-                    )}
+                    ${dims.map((d) => html`<span>${p.weights[d.key]}%</span>`)}
                   </div>
                 `,
               )}
@@ -569,7 +590,9 @@ export const TOPICS: TopicDefinition[] = [
     tldr: () => [
       msg('Each ally gives +15% diplomatic score; a 3-member alliance means +30% each'),
       msg('Alliance upkeep: 1 RP per member per cycle (scales with size)'),
-      msg('Tension rises on target overlap (+10) and decays naturally (\u22125/cycle); at 80 the alliance dissolves'),
+      msg(
+        'Tension rises on target overlap (+10) and decays naturally (\u22125/cycle); at 80 the alliance dissolves',
+      ),
       msg('Betrayal risk: detected attack on ally = \u221225% diplomatic score penalty'),
     ],
     sections: () => [
@@ -585,7 +608,9 @@ export const TOPICS: TopicDefinition[] = [
           {
             type: 'tip',
             label: msg('Alliance Bonus'),
-            text: msg('Each active ally gives +15% to your diplomatic score. A 3-member alliance means each member gets +30% diplomatic.'),
+            text: msg(
+              'Each active ally gives +15% to your diplomatic score. A 3-member alliance means each member gets +30% diplomatic.',
+            ),
           },
           {
             type: 'info',
@@ -641,9 +666,15 @@ export const TOPICS: TopicDefinition[] = [
     readTime: msg('9 min'),
     tldr: () => [
       msg('Events above impact threshold bleed into connected simulations as echoes'),
-      msg('Seven bleed vectors (Commerce, Language, Memory, Resonance, Architecture, Dream, Desire)'),
-      msg('Substrate Resonances modify gameplay: boost/suppress operative types, alter RP, shift scores'),
-      msg('Results screen reveals all operations with podium, commendations, and dimension breakdowns'),
+      msg(
+        'Seven bleed vectors (Commerce, Language, Memory, Resonance, Architecture, Dream, Desire)',
+      ),
+      msg(
+        'Substrate Resonances modify gameplay: boost/suppress operative types, alter RP, shift scores',
+      ),
+      msg(
+        'Results screen reveals all operations with podium, commendations, and dimension breakdowns',
+      ),
     ],
     sections: () => [
       {
@@ -768,9 +799,13 @@ export const TOPICS: TopicDefinition[] = [
     accent: '--color-primary',
     readTime: msg('7 min'),
     tldr: () => [
-      msg('Type commands instead of clicking dashboards \u2013 local perspective, zone-limited view'),
+      msg(
+        'Type commands instead of clicking dashboards \u2013 local perspective, zone-limited view',
+      ),
       msg('Tier 1 (Observation): look, go, examine, talk, status, map, where, weather, help'),
-      msg('Tier 2 (Field Ops, 10 cmds): fortify, quarantine, assign \u2013 costs Operations Points'),
+      msg(
+        'Tier 2 (Field Ops, 10 cmds): fortify, quarantine, assign \u2013 costs Operations Points',
+      ),
       msg('Tier 3 (Intel, 25 cmds): scan, investigate, debrief, ask \u2013 costs Intel Points'),
     ],
     sections: () => [
@@ -786,13 +821,17 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'dungeons',
     title: msg('Resonance Dungeons'),
     icon: 'dungeonMap',
-    description: msg('Procedural dungeons born from substrate resonances. Combat, loot, and permanent agent upgrades.'),
+    description: msg(
+      'Procedural dungeons born from substrate resonances. Combat, loot, and permanent agent upgrades.',
+    ),
     accent: '--color-danger',
     readTime: msg('10 min'),
     tldr: () => [
       msg('Substrate resonances spawn explorable dungeons with FTL-style node maps'),
       msg('Phase-based combat: 30-second planning phase, then simultaneous resolution'),
-      msg('8 dungeon archetypes \u2013 each tied to a resonance type with unique enemies and encounters'),
+      msg(
+        '8 dungeon archetypes \u2013 each tied to a resonance type with unique enemies and encounters',
+      ),
       msg('Loot grants permanent aptitude boosts (+2 cap per agent), memories, and moodlets'),
       msg('Party of up to 4 agents \u2013 condition tracks from Operational to Afflicted'),
     ],
@@ -885,7 +924,10 @@ export function getTopicBySlug(slug: string): TopicDefinition | undefined {
 }
 
 /** Get adjacent topics for prev/next navigation. */
-export function getAdjacentTopics(slug: string): { prev?: TopicDefinition; next?: TopicDefinition } {
+export function getAdjacentTopics(slug: string): {
+  prev?: TopicDefinition;
+  next?: TopicDefinition;
+} {
   const idx = TOPICS.findIndex((t) => t.slug === slug);
   if (idx === -1) return {};
   return {

@@ -351,7 +351,8 @@ export class VelgHowToPlayLanding extends LitElement {
         padding: var(--space-6) var(--space-4) var(--space-4);
       }
     }
-  `];
+  `,
+  ];
 
   // ── State ──────────────────────────────────────────────────────────────
 
@@ -363,7 +364,9 @@ export class VelgHowToPlayLanding extends LitElement {
     super.connectedCallback();
     seoService.setTitle([msg('How to Play')]);
     seoService.setDescription(
-      msg('Learn how to play metaverse.center: quick start guide, game mechanics reference, and competitive strategy resources.'),
+      msg(
+        'Learn how to play metaverse.center: quick start guide, game mechanics reference, and competitive strategy resources.',
+      ),
     );
     seoService.setCanonical('/how-to-play');
     seoService.setBreadcrumbs([
@@ -382,7 +385,9 @@ export class VelgHowToPlayLanding extends LitElement {
         icon: icons.bolt(24),
         title: msg('Quick Start'),
         subtitle: msg('"I\'m new here"'),
-        description: msg('Everything you need to know in 5 minutes. What is this place, how to explore, and what to do first.'),
+        description: msg(
+          'Everything you need to know in 5 minutes. What is this place, how to explore, and what to do first.',
+        ),
         detail: msg('5 min read'),
         href: '/how-to-play/quickstart',
         accentVar: '--_accent-quickstart',
@@ -392,7 +397,9 @@ export class VelgHowToPlayLanding extends LitElement {
         icon: icons.book(24),
         title: msg('Game Guide'),
         subtitle: msg('"How does X work?"'),
-        description: msg('12 topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.'),
+        description: msg(
+          '12 topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.',
+        ),
         detail: msg('12 topics'),
         href: '/how-to-play/guide',
         accentVar: '--_accent-guide',
@@ -402,7 +409,9 @@ export class VelgHowToPlayLanding extends LitElement {
         icon: icons.target(24),
         title: msg('War Room'),
         subtitle: msg('"I want to win"'),
-        description: msg('Competitive tactics, worked-out match replays, 200-game balance analytics, and the meta-strategy tier list.'),
+        description: msg(
+          'Competitive tactics, worked-out match replays, 200-game balance analytics, and the meta-strategy tier list.',
+        ),
         detail: msg('Tactics & data'),
         href: '/how-to-play/competitive',
         accentVar: '--_accent-warroom',
@@ -423,11 +432,13 @@ export class VelgHowToPlayLanding extends LitElement {
   // ── Navigation ─────────────────────────────────────────────────────────
 
   private _navigate(path: string) {
-    this.dispatchEvent(new CustomEvent('navigate', {
-      detail: path,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        detail: path,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleDoorClick(e: Event, href: string) {
@@ -484,7 +495,8 @@ export class VelgHowToPlayLanding extends LitElement {
   private _renderDoors() {
     return html`
       <nav class="doors" aria-label=${msg('Guide sections')}>
-        ${this._doors.map((door) => html`
+        ${this._doors.map(
+          (door) => html`
           <a
             class="door"
             href=${door.href}
@@ -501,7 +513,8 @@ export class VelgHowToPlayLanding extends LitElement {
               <span class="door__arrow" aria-hidden="true">\u25B8</span>
             </div>
           </a>
-        `)}
+        `,
+        )}
       </nav>
     `;
   }
@@ -530,13 +543,15 @@ export class VelgHowToPlayLanding extends LitElement {
     return html`
       <div class="popular">
         <span class="popular__label">${msg('Popular')}:</span>
-        ${topics.map((t, i) => html`${
-          i > 0 ? html`<span class="popular__sep" aria-hidden="true">\u00b7</span>` : nothing
-        }<a
+        ${topics.map(
+          (t, i) => html`${
+            i > 0 ? html`<span class="popular__sep" aria-hidden="true">\u00b7</span>` : nothing
+          }<a
             class="popular__link"
             href=${`/how-to-play/guide/${t.slug}`}
             @click=${(e: Event) => this._handleTopicClick(e, t.slug)}
-          >${t.label}</a>`)}
+          >${t.label}</a>`,
+        )}
       </div>
     `;
   }

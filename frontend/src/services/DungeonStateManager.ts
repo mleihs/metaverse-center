@@ -13,11 +13,11 @@ import { computed, signal } from '@preact/signals-core';
 
 import type {
   AgentCombatStateClient,
+  ArchetypeState,
   AvailableDungeonResponse,
   CombatAction,
-  ArchetypeState,
-  CombatSubmission,
   CombatStateClient,
+  CombatSubmission,
   DungeonClientState,
   DungeonPhase,
   EncounterChoiceClient,
@@ -102,18 +102,13 @@ class DungeonStateManager {
   readonly isInDungeon = computed(() => this.runId.value !== null);
 
   /** Current state machine phase. Null when not in dungeon. */
-  readonly phase = computed((): DungeonPhase | null =>
-    this.clientState.value?.phase ?? null,
-  );
+  readonly phase = computed((): DungeonPhase | null => this.clientState.value?.phase ?? null);
 
   /** Whether the current phase is any combat phase. */
   readonly isInCombat = computed(() => {
     const p = this.phase.value;
     return (
-      p === 'combat_planning' ||
-      p === 'combat_resolving' ||
-      p === 'combat_outcome' ||
-      p === 'boss'
+      p === 'combat_planning' || p === 'combat_resolving' || p === 'combat_outcome' || p === 'boss'
     );
   });
 
@@ -121,14 +116,10 @@ class DungeonStateManager {
   readonly isDistributing = computed(() => this.phase.value === 'distributing');
 
   /** Party agents with combat state. */
-  readonly party = computed((): AgentCombatStateClient[] =>
-    this.clientState.value?.party ?? [],
-  );
+  readonly party = computed((): AgentCombatStateClient[] => this.clientState.value?.party ?? []);
 
   /** All rooms in the dungeon graph (fog-of-war applied). */
-  readonly rooms = computed((): RoomNodeClient[] =>
-    this.clientState.value?.rooms ?? [],
-  );
+  readonly rooms = computed((): RoomNodeClient[] => this.clientState.value?.rooms ?? []);
 
   /** The room the party is currently in. */
   readonly currentRoom = computed((): RoomNodeClient | null => {
@@ -146,14 +137,13 @@ class DungeonStateManager {
   });
 
   /** Active combat state. Null when not in combat. */
-  readonly combat = computed((): CombatStateClient | null =>
-    this.clientState.value?.combat ?? null,
+  readonly combat = computed(
+    (): CombatStateClient | null => this.clientState.value?.combat ?? null,
   );
 
   /** Archetype-specific state (e.g. Shadow visibility). */
   readonly archetypeState = computed(
-    (): ArchetypeState =>
-      this.clientState.value?.archetype_state ?? {},
+    (): ArchetypeState => this.clientState.value?.archetype_state ?? {},
   );
 
   /** Whether all agents that can act have selected a combat action.

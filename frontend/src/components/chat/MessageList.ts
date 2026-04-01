@@ -265,7 +265,6 @@ export class VelgMessageList extends LitElement {
   /** Event references to show as in-chat separators */
   @property({ type: Array }) eventReferences: ChatEventReference[] = [];
 
-
   private _isSameDay(a: string, b: string): boolean {
     try {
       const da = new Date(a);
@@ -279,7 +278,6 @@ export class VelgMessageList extends LitElement {
       return false;
     }
   }
-
 
   /** Get agent color by position in agents array */
   private _getAgentColor(agentId: string | undefined): string {
@@ -381,7 +379,6 @@ export class VelgMessageList extends LitElement {
       </div>
     `;
   }
-
 
   protected render() {
     if (this.messages.length === 0) {

@@ -5,7 +5,6 @@
  */
 
 import type { EChartsOption } from 'echarts';
-import * as echarts from 'echarts/core';
 import { BarChart, CustomChart, HeatmapChart, LineChart, RadarChart } from 'echarts/charts';
 import {
   GridComponent,
@@ -14,6 +13,7 @@ import {
   TooltipComponent,
   VisualMapComponent,
 } from 'echarts/components';
+import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
@@ -57,8 +57,16 @@ const TACTICAL_THEME: Record<string, unknown> = {
 };
 
 echarts.use([
-  BarChart, LineChart, HeatmapChart, RadarChart, CustomChart,
-  GridComponent, LegendComponent, TooltipComponent, VisualMapComponent, RadarComponent,
+  BarChart,
+  LineChart,
+  HeatmapChart,
+  RadarChart,
+  CustomChart,
+  GridComponent,
+  LegendComponent,
+  TooltipComponent,
+  VisualMapComponent,
+  RadarComponent,
   CanvasRenderer,
 ]);
 

@@ -183,7 +183,9 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
             ${msg('When enabled, agents act autonomously between player sessions: forming opinions, pursuing activities, reacting to events, and generating social dynamics. The world lives while you are away.')}
           </p>
 
-          ${this._canEnable ? html`
+          ${
+            this._canEnable
+              ? html`
             <div class="toggle-row">
               <velg-toggle
                 .checked=${this._enabled}
@@ -191,33 +193,52 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
               ></velg-toggle>
               <span class="toggle-row__label">
                 ${msg('Enable Living World')}
-                ${this._adminActivated
-                  ? renderInfoBubble(msg('Autonomy has been activated by the platform admin. AI narrative costs are covered by the platform. You can toggle it on or off for this simulation.'))
-                  : renderInfoBubble(msg('You are using your personal OpenRouter API key to power agent autonomy. AI narrative generation (autonomous events, morning briefings) will use your key. Rule-based mechanics (needs, mood, opinions, activity selection) have zero AI cost.'))
+                ${
+                  this._adminActivated
+                    ? renderInfoBubble(
+                        msg(
+                          'Autonomy has been activated by the platform admin. AI narrative costs are covered by the platform. You can toggle it on or off for this simulation.',
+                        ),
+                      )
+                    : renderInfoBubble(
+                        msg(
+                          'You are using your personal OpenRouter API key to power agent autonomy. AI narrative generation (autonomous events, morning briefings) will use your key. Rule-based mechanics (needs, mood, opinions, activity selection) have zero AI cost.',
+                        ),
+                      )
                 }
               </span>
             </div>
 
-            ${this._adminActivated && !this._hasKey ? html`
+            ${
+              this._adminActivated && !this._hasKey
+                ? html`
               <p class="settings-section__help" style="color: var(--color-info)">
                 ${msg('AI costs are covered by the platform admin. No personal API key required.')}
               </p>
-            ` : nothing}
-          ` : html`
+            `
+                : nothing
+            }
+          `
+              : html`
             <div class="disabled-notice">
               ${msg('Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). You can add your personal key in your profile settings under "API Keys". Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.')}
               ${renderInfoBubble(msg('The platform admin can also activate autonomy globally, which covers AI costs with the platform key. Contact your admin to request activation for this simulation.'))}
             </div>
-          `}
+          `
+          }
         </div>
 
         ${this._enabled && this._canEnable ? this._renderOptions() : nothing}
 
-        ${!this._enabled && this._canEnable ? html`
+        ${
+          !this._enabled && this._canEnable
+            ? html`
           <div class="disabled-notice">
             ${msg('Agent autonomy is disabled for this simulation. Toggle the switch above to activate the Living World system.')}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <div class="settings-panel__footer">
           <button
@@ -331,7 +352,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
           ></velg-toggle>
           <span class="toggle-row__label">
             ${msg('Auto-Create Relationships')}
-            ${renderInfoBubble(msg('When an agent\'s opinion of another crosses +60, a positive relationship (ally/friend) is automatically created. When it crosses -60, a hostile relationship (rival) is created or an existing one is downgraded. Disable to keep manual control over all relationships.'))}
+            ${renderInfoBubble(msg("When an agent's opinion of another crosses +60, a positive relationship (ally/friend) is automatically created. When it crosses -60, a hostile relationship (rival) is created or an existing one is downgraded. Disable to keep manual control over all relationships."))}
           </span>
         </div>
       </div>
@@ -358,7 +379,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
             <span class="range-row__value">${llmBudget}</span>
           </div>
           <div class="cost-estimate">
-            ${msg('Estimated cost')}: ~$${((llmBudget * 6 * 30 * 2500 * 0.00000026) + (llmBudget * 6 * 30 * 500 * 0.00000038)).toFixed(2)}/${msg('month')}
+            ${msg('Estimated cost')}: ~$${(llmBudget * 6 * 30 * 2500 * 0.00000026 + llmBudget * 6 * 30 * 500 * 0.00000038).toFixed(2)}/${msg('month')}
           </div>
         </div>
 

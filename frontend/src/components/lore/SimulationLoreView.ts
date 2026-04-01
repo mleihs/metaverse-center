@@ -150,8 +150,11 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     if (!section) return;
     // Scroll to section after render
     requestAnimationFrame(() => {
-      const el = this.shadowRoot?.querySelector(`[data-lore-slug="${slug}"]`)
-        ?? this.shadowRoot?.querySelector(`[data-section-index="${this._rawSections!.indexOf(section)}"]`);
+      const el =
+        this.shadowRoot?.querySelector(`[data-lore-slug="${slug}"]`) ??
+        this.shadowRoot?.querySelector(
+          `[data-section-index="${this._rawSections!.indexOf(section)}"]`,
+        );
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }

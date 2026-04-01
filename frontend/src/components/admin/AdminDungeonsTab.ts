@@ -1,15 +1,15 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { adminApi } from '../../services/api/index.js';
 import type { DungeonGlobalConfig } from '../../services/api/AdminApiService.js';
+import { adminApi } from '../../services/api/index.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {
   adminAnimationStyles,
-  adminSectionHeaderStyles,
   adminGlobalCardStyles,
   adminLoadingStyles,
+  adminSectionHeaderStyles,
 } from './admin-shared-styles.js';
 
 /** All dungeon archetypes — must match backend ARCHETYPE_CONFIGS keys + signatures. */
@@ -17,7 +17,12 @@ const ARCHETYPES = [
   { id: 'The Shadow', label: 'The Shadow', signature: 'conflict_wave', icon: '\u25C8' },
   { id: 'The Tower', label: 'The Tower', signature: 'economic_tremor', icon: '\u25B2' },
   { id: 'The Entropy', label: 'The Entropy', signature: 'decay_bloom', icon: '\u25CC' },
-  { id: 'The Devouring Mother', label: 'The Devouring Mother', signature: 'biological_tide', icon: '\u25C9' },
+  {
+    id: 'The Devouring Mother',
+    label: 'The Devouring Mother',
+    signature: 'biological_tide',
+    icon: '\u25C9',
+  },
   { id: 'The Prometheus', label: 'The Prometheus', signature: 'innovation_spark', icon: '\u2662' },
   { id: 'The Deluge', label: 'The Deluge', signature: 'elemental_surge', icon: '\u2248' },
   { id: 'The Overthrow', label: 'The Overthrow', signature: 'authority_fracture', icon: '\u2694' },
@@ -542,7 +547,7 @@ export class VelgAdminDungeonsTab extends LitElement {
     }
 
     if (simResult.success && simResult.data) {
-      this._simulations = simResult.data.map(s => ({
+      this._simulations = simResult.data.map((s) => ({
         id: s.id,
         name: s.name,
         slug: s.slug,
@@ -568,7 +573,7 @@ export class VelgAdminDungeonsTab extends LitElement {
   private _toggleGlobalArchetype(archetype: string): void {
     const has = this._globalConfig.override_archetypes.includes(archetype);
     const archetypes = has
-      ? this._globalConfig.override_archetypes.filter(a => a !== archetype)
+      ? this._globalConfig.override_archetypes.filter((a) => a !== archetype)
       : [...this._globalConfig.override_archetypes, archetype];
     this._globalConfig = { ...this._globalConfig, override_archetypes: archetypes };
   }
@@ -576,13 +581,17 @@ export class VelgAdminDungeonsTab extends LitElement {
   private _selectAllGlobalArchetypes(): void {
     this._globalConfig = {
       ...this._globalConfig,
-      override_archetypes: ARCHETYPES.map(a => a.id),
+      override_archetypes: ARCHETYPES.map((a) => a.id),
     };
   }
 
   private _setGlobalClearanceMode(mode: ClearanceMode): void {
     const threshold = mode === 'standard' ? 10 : this._globalConfig.clearance_threshold;
-    this._globalConfig = { ...this._globalConfig, clearance_mode: mode, clearance_threshold: threshold };
+    this._globalConfig = {
+      ...this._globalConfig,
+      clearance_mode: mode,
+      clearance_threshold: threshold,
+    };
   }
 
   private _setGlobalClearanceThreshold(value: number): void {
@@ -619,7 +628,7 @@ export class VelgAdminDungeonsTab extends LitElement {
   // ── Per-Simulation Mutations ───────────────────────────────────────────
 
   private _setMode(simId: string, mode: OverrideMode): void {
-    this._simulations = this._simulations.map(s => {
+    this._simulations = this._simulations.map((s) => {
       if (s.id !== simId) return s;
       const archetypes = mode === 'off' ? [] : s.archetypes;
       return { ...s, mode, archetypes };
@@ -629,11 +638,11 @@ export class VelgAdminDungeonsTab extends LitElement {
   }
 
   private _toggleArchetype(simId: string, archetype: string): void {
-    this._simulations = this._simulations.map(s => {
+    this._simulations = this._simulations.map((s) => {
       if (s.id !== simId) return s;
       const has = s.archetypes.includes(archetype);
       const archetypes = has
-        ? s.archetypes.filter(a => a !== archetype)
+        ? s.archetypes.filter((a) => a !== archetype)
         : [...s.archetypes, archetype];
       return { ...s, archetypes };
     });
@@ -642,9 +651,9 @@ export class VelgAdminDungeonsTab extends LitElement {
   }
 
   private _selectAll(simId: string): void {
-    this._simulations = this._simulations.map(s => {
+    this._simulations = this._simulations.map((s) => {
       if (s.id !== simId) return s;
-      return { ...s, archetypes: ARCHETYPES.map(a => a.id) };
+      return { ...s, archetypes: ARCHETYPES.map((a) => a.id) };
     });
     this._dirty.add(simId);
     this.requestUpdate();
@@ -654,7 +663,7 @@ export class VelgAdminDungeonsTab extends LitElement {
     if (this._savingId) return;
     this._savingId = simId;
 
-    const sim = this._simulations.find(s => s.id === simId);
+    const sim = this._simulations.find((s) => s.id === simId);
     if (!sim) {
       this._savingId = null;
       return;
@@ -692,7 +701,7 @@ export class VelgAdminDungeonsTab extends LitElement {
     if (!this._filter) return this._simulations;
     const q = this._filter.toLowerCase();
     return this._simulations.filter(
-      s => s.name.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q),
+      (s) => s.name.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q),
     );
   }
 
@@ -743,10 +752,12 @@ export class VelgAdminDungeonsTab extends LitElement {
                 ${this._renderSegBtn('override', gc.override_mode, () => this._setGlobalOverrideMode('override'), msg('Override'))}
               </div>
 
-              ${gc.override_mode !== 'off' ? html`
+              ${
+                gc.override_mode !== 'off'
+                  ? html`
                 <div style="margin-top: var(--space-3);">
                   <div class="archetype-list">
-                    ${ARCHETYPES.map(arch => {
+                    ${ARCHETYPES.map((arch) => {
                       const checked = gc.override_archetypes.includes(arch.id);
                       return html`
                         <div
@@ -769,7 +780,9 @@ export class VelgAdminDungeonsTab extends LitElement {
                     @click=${() => this._selectAllGlobalArchetypes()}
                   >${msg('Select All')}</button>
                 </div>
-              ` : nothing}
+              `
+                  : nothing
+              }
             </div>
 
             <!-- Right: Clearance Control -->
@@ -786,14 +799,18 @@ export class VelgAdminDungeonsTab extends LitElement {
               </div>
 
               <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: var(--space-2) 0 0 0; line-height: 1.5;">
-                ${gc.clearance_mode === 'off'
-                  ? msg('All dungeon commands are available immediately, no clearance required.')
-                  : gc.clearance_mode === 'standard'
-                    ? msg('Tier 2 unlocks after 10 executed commands (default).')
-                    : msg('Tier 2 unlocks after a custom number of commands.')}
+                ${
+                  gc.clearance_mode === 'off'
+                    ? msg('All dungeon commands are available immediately, no clearance required.')
+                    : gc.clearance_mode === 'standard'
+                      ? msg('Tier 2 unlocks after 10 executed commands (default).')
+                      : msg('Tier 2 unlocks after a custom number of commands.')
+                }
               </p>
 
-              ${gc.clearance_mode === 'custom' ? html`
+              ${
+                gc.clearance_mode === 'custom'
+                  ? html`
                 <div class="threshold-row">
                   <input
                     class="threshold-input"
@@ -808,23 +825,29 @@ export class VelgAdminDungeonsTab extends LitElement {
                   />
                   <span class="threshold-unit">${msg('commands')}</span>
                 </div>
-              ` : nothing}
+              `
+                  : nothing
+              }
             </div>
           </div>
 
           <!-- Footer: Save -->
           <div class="global-config__footer">
-            ${isActive ? html`
+            ${
+              isActive
+                ? html`
               <div class="global-card__status global-card__status--active">
                 <span class="global-card__status-dot"></span>
                 ${this._globalStatusLabel}
               </div>
-            ` : html`
+            `
+                : html`
               <div class="global-card__status global-card__status--disabled">
                 <span class="global-card__status-dot"></span>
                 ${msg('Default')}
               </div>
-            `}
+            `
+            }
 
             <button
               class="btn-save"
@@ -861,7 +884,9 @@ export class VelgAdminDungeonsTab extends LitElement {
           type="text"
           placeholder=${msg('Filter simulations...')}
           .value=${this._filter}
-          @input=${(e: InputEvent) => { this._filter = (e.target as HTMLInputElement).value; }}
+          @input=${(e: InputEvent) => {
+            this._filter = (e.target as HTMLInputElement).value;
+          }}
         />
         <span class="filter-bar__count">${filtered.length} / ${this._simulations.length}</span>
       </div>
@@ -885,7 +910,9 @@ export class VelgAdminDungeonsTab extends LitElement {
       isLocalOverride ? 'sim-card--active' : '',
       inheritsGlobal ? 'sim-card--inherited' : '',
       isDirty ? 'sim-card--dirty' : '',
-    ].filter(Boolean).join(' ');
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return html`
       <div class=${cardClass} style="animation-delay: ${index * 40}ms">
@@ -906,7 +933,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
         <!-- Archetype checkboxes -->
         <div class="archetype-list" style="margin-top: var(--space-2);">
-          ${ARCHETYPES.map(arch => {
+          ${ARCHETYPES.map((arch) => {
             const checked = isLocalOverride
               ? sim.archetypes.includes(arch.id)
               : inheritsGlobal
@@ -931,20 +958,28 @@ export class VelgAdminDungeonsTab extends LitElement {
 
         <!-- Footer: select all + save -->
         <div class="sim-card__footer">
-          ${isLocalOverride ? html`
+          ${
+            isLocalOverride
+              ? html`
             <button
               class="btn-select-all"
               @click=${() => this._selectAll(sim.id)}
             >${msg('Select All')}</button>
-          ` : html`<span></span>`}
+          `
+              : html`<span></span>`
+          }
 
-          ${isDirty ? html`
+          ${
+            isDirty
+              ? html`
             <button
               class="btn-save"
               ?disabled=${isSaving}
               @click=${() => this._save(sim.id)}
             >${isSaving ? msg('Saving...') : msg('Save')}</button>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -978,12 +1013,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
   // ── Segmented Button ───────────────────────────────────────────────────
 
-  private _renderSegBtn(
-    value: string,
-    current: string,
-    onClick: () => void,
-    label: string,
-  ) {
+  private _renderSegBtn(value: string, current: string, onClick: () => void, label: string) {
     return html`
       <button
         class="seg__btn ${value === current ? 'seg__btn--active' : ''}"

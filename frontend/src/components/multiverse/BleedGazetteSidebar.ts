@@ -6,7 +6,8 @@ import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/LoadingState.js';
 
-const VECTOR_COLORS: Record<string, string> = { // lint-color-ok
+const VECTOR_COLORS: Record<string, string> = {
+  // lint-color-ok
   commerce: '#d4a843',
   language: '#5bbcd6',
   memory: '#a78bfa',

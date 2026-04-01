@@ -17,15 +17,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import type {
-  EnemyCombatStateClient,
-  TelegraphedAction,
-} from '../../types/dungeon.js';
+import type { EnemyCombatStateClient, TelegraphedAction } from '../../types/dungeon.js';
 import { buildEnemyDisplayNames, getEnemyConditionLabel } from '../../utils/dungeon-formatters.js';
-import {
-  terminalComponentTokens,
-  terminalTokens,
-} from '../shared/terminal-theme-styles.js';
+import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgBadge.js';
 
 /** Threat level to VelgBadge variant. */
@@ -376,12 +370,17 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     const displayName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
 
     // HP fill percentage (approximate from condition state)
-    const hpPct = isDead ? 0
-      : cond === 'healthy' ? 100
-      : cond === 'scratched' ? 70
-      : cond === 'damaged' ? 50
-      : cond === 'wounded' ? 30
-      : 10; // critical
+    const hpPct = isDead
+      ? 0
+      : cond === 'healthy'
+        ? 100
+        : cond === 'scratched'
+          ? 70
+          : cond === 'damaged'
+            ? 50
+            : cond === 'wounded'
+              ? 30
+              : 10; // critical
 
     return html`
       <div
@@ -398,17 +397,23 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
           </span>
           <span class="enemy__condition enemy__condition--${cond}">${getEnemyConditionLabel(cond)}</span>
         </div>
-        ${!isDead ? html`
+        ${
+          !isDead
+            ? html`
           <div class="enemy__hp-bar">
             <div
               class="enemy__hp-fill enemy__hp-fill--${cond}"
               style="width: ${hpPct}%"
             ></div>
           </div>
-        ` : nothing}
-        ${!isDead && enemy.telegraphed_action
-          ? this._renderIntent(enemy.telegraphed_action)
-          : nothing}
+        `
+            : nothing
+        }
+        ${
+          !isDead && enemy.telegraphed_action
+            ? this._renderIntent(enemy.telegraphed_action)
+            : nothing
+        }
       </div>
     `;
   }
@@ -428,9 +433,11 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
           aria-hidden="true"
         >${marker}</span>
         <span class="intent__text">
-          ${action.intent}${action.target
-            ? html` <span class="intent__target">\u2192 ${action.target}</span>`
-            : nothing}
+          ${action.intent}${
+            action.target
+              ? html` <span class="intent__target">\u2192 ${action.target}</span>`
+              : nothing
+          }
         </span>
       </div>
     `;

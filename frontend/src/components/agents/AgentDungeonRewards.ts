@@ -281,9 +281,7 @@ export class VelgAgentDungeonRewards extends LitElement {
 
     return html`
       <div class="rewards">
-        ${this._effects.map(
-          (effect, i) => this._renderReward(effect, i),
-        )}
+        ${this._effects.map((effect, i) => this._renderReward(effect, i))}
       </div>
     `;
   }
@@ -301,25 +299,29 @@ export class VelgAgentDungeonRewards extends LitElement {
         <div class="reward__header">
           <span class="reward__marker">${marker}</span>
           <span class="reward__name">${getEffectLabel(effect.effect_type)}</span>
-          ${effect.consumed
-            ? html`<span class="reward__consumed-tag">${msg('Used')}</span>`
-            : nothing}
+          ${
+            effect.consumed
+              ? html`<span class="reward__consumed-tag">${msg('Used')}</span>`
+              : nothing
+          }
         </div>
-        ${detail
-          ? html`<div class="reward__detail">${detail}</div>`
-          : nothing}
-        ${effect.source_archetype
-          ? html`
+        ${detail ? html`<div class="reward__detail">${detail}</div>` : nothing}
+        ${
+          effect.source_archetype
+            ? html`
             <div class="reward__source">
               <span class="reward__source-icon">${icons.dungeonDepth(10)}</span>
               <span>${effect.source_archetype}</span>
-              ${effect.source_difficulty
-                ? html`<span class="reward__difficulty">${difficultyStars(effect.source_difficulty)}</span>`
-                : nothing}
+              ${
+                effect.source_difficulty
+                  ? html`<span class="reward__difficulty">${difficultyStars(effect.source_difficulty)}</span>`
+                  : nothing
+              }
               <span class="reward__date">${this._formatDate(effect.source_completed_at)}</span>
             </div>
           `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

@@ -8,8 +8,8 @@ import type {
   CleanupStats,
   CleanupType,
 } from '../../types/index.js';
-import { VelgToast } from '../shared/Toast.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import { adminLoadingStyles } from './admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
@@ -77,12 +77,24 @@ function getCleanupMeta(): Record<CleanupType, CleanupMeta> {
 
 function getCleanupTip(): Record<CleanupType, string> {
   return {
-    completed_epochs: msg('IRREVERSIBLE. Permanently deletes all data for finished epoch matches: final scores, player rankings, chat history, bot decision logs, and cloned game instances. This data cannot be recovered. Keep for at least 30 days after epoch end for post-mortem analysis and balance tuning. Only purge once you are certain no further analysis is needed.'),
-    cancelled_epochs: msg('Safe to purge. Cancelled matches were aborted before completion and contain no meaningful gameplay data. However, orphan game instances from cancelled matches may still consume Supabase storage. Purging reclaims storage and removes clutter from the epoch history view.'),
-    stale_lobbies: msg('Very safe to purge. Lobbies that never transitioned to an active match contain only participant signup records and lobby configuration. No game data, no scores, no chat messages exist. These accumulate over time when players create lobbies but never start the game.'),
-    archived_instances: msg('Frozen simulation state snapshots created when an epoch completes. These preserve the exact simulation state at epoch end for balance analysis. Safe to remove once you have extracted any needed metrics or screenshots. Archived instances do not affect active simulations or ongoing gameplay.'),
-    audit_log: msg('Chronological CRUD audit trail recording every mutation (create, update, delete) across all platform entities. Essential for debugging recent issues, investigating user reports, and compliance. Recommended retention: 90 days minimum. Older entries are rarely needed but provide long-term forensics capability. Grows ~1-5 MB/month depending on activity.'),
-    bot_decision_log: msg('Detailed AI decision records generated every heartbeat tick cycle. Logs which actions each bot agent considered, evaluated, and chose. Grows very fast during active playtesting (10-100 MB/day with many simulations). Safe to purge after bot behavior tuning is complete. Keep recent entries (7-14 days) during active development for debugging bot logic.'),
+    completed_epochs: msg(
+      'IRREVERSIBLE. Permanently deletes all data for finished epoch matches: final scores, player rankings, chat history, bot decision logs, and cloned game instances. This data cannot be recovered. Keep for at least 30 days after epoch end for post-mortem analysis and balance tuning. Only purge once you are certain no further analysis is needed.',
+    ),
+    cancelled_epochs: msg(
+      'Safe to purge. Cancelled matches were aborted before completion and contain no meaningful gameplay data. However, orphan game instances from cancelled matches may still consume Supabase storage. Purging reclaims storage and removes clutter from the epoch history view.',
+    ),
+    stale_lobbies: msg(
+      'Very safe to purge. Lobbies that never transitioned to an active match contain only participant signup records and lobby configuration. No game data, no scores, no chat messages exist. These accumulate over time when players create lobbies but never start the game.',
+    ),
+    archived_instances: msg(
+      'Frozen simulation state snapshots created when an epoch completes. These preserve the exact simulation state at epoch end for balance analysis. Safe to remove once you have extracted any needed metrics or screenshots. Archived instances do not affect active simulations or ongoing gameplay.',
+    ),
+    audit_log: msg(
+      'Chronological CRUD audit trail recording every mutation (create, update, delete) across all platform entities. Essential for debugging recent issues, investigating user reports, and compliance. Recommended retention: 90 days minimum. Older entries are rarely needed but provide long-term forensics capability. Grows ~1-5 MB/month depending on activity.',
+    ),
+    bot_decision_log: msg(
+      'Detailed AI decision records generated every heartbeat tick cycle. Logs which actions each bot agent considered, evaluated, and chose. Grows very fast during active playtesting (10-100 MB/day with many simulations). Safe to purge after bot behavior tuning is complete. Keep recent entries (7-14 days) during active development for debugging bot logic.',
+    ),
   };
 }
 

@@ -3,9 +3,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
-import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
+import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 
@@ -563,7 +563,6 @@ export class VelgChronicleView extends LitElement {
     this._offset = e.detail.offset;
     this._load();
   }
-
 
   private _renderArticle(content: string) {
     // Replace literal \n sequences (backslash + n) with actual newlines

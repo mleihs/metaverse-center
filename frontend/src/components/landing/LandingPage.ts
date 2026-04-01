@@ -17,8 +17,8 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
-import { getThemeColor } from '../../utils/theme-colors.js';
 import type { Simulation } from '../../types/index.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import './LandingAgentShowcase.js';
 
@@ -1943,15 +1943,17 @@ export class VelgLandingPage extends LitElement {
                 >
                   <div class="monitor-card__strip"></div>
                   <div class="monitor-card__feed">
-                    ${sim.banner_url
-                      ? html`<img
+                    ${
+                      sim.banner_url
+                        ? html`<img
                           class="monitor-card__img"
                           src=${sim.banner_url}
                           alt=${sim.name}
                           loading="lazy"
                           decoding="async"
                         />`
-                      : ''}
+                        : ''
+                    }
                     <div class="monitor-card__overlay"></div>
                     <div class="monitor-card__scanline"></div>
                     <span class="monitor-card__rec" aria-hidden="true">REC</span>

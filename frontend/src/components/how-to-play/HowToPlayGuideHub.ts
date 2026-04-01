@@ -25,16 +25,22 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
-import { icons } from '../../utils/icons.js';
-import { TOPICS, type TopicDefinition } from './htp-topic-data.js';
 import type { IconKey } from '../../utils/icons.js';
-import { clearSearchIndex, debounce, highlightMatch, searchTopics, type SearchResult } from './htp-search.js';
+import { icons } from '../../utils/icons.js';
+import {
+  clearSearchIndex,
+  debounce,
+  highlightMatch,
+  type SearchResult,
+  searchTopics,
+} from './htp-search.js';
 import {
   htpBackStyles,
   htpFooterNavStyles,
   htpHeroStyles,
   htpReducedMotionBase,
 } from './htp-shared-styles.js';
+import { TOPICS, type TopicDefinition } from './htp-topic-data.js';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -518,7 +524,8 @@ export class VelgHowToPlayGuideHub extends LitElement {
         max-width: 800px;
       }
     }
-  `];
+  `,
+  ];
 
   // ── State ──────────────────────────────────────────────────────────────
 
@@ -534,7 +541,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     seoService.setTitle([msg('Game Guide'), msg('How to Play')]);
-    seoService.setDescription(msg('Browse 12 topics covering every game system in metaverse.center.'));
+    seoService.setDescription(
+      msg('Browse 12 topics covering every game system in metaverse.center.'),
+    );
     seoService.setCanonical('/how-to-play/guide');
     seoService.setBreadcrumbs([
       { name: msg('Home'), url: 'https://metaverse.center/' },
@@ -634,11 +643,13 @@ export class VelgHowToPlayGuideHub extends LitElement {
   // ── Navigation ─────────────────────────────────────────────────────────
 
   private _navigate(path: string) {
-    this.dispatchEvent(new CustomEvent('navigate', {
-      detail: path,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        detail: path,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _navigateToTopic(slug: string) {
@@ -758,7 +769,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
               role="option"
               aria-selected=${i === this._activeResultIdx}
               @click=${() => this._navigateToTopic(result.topic.slug)}
-              @mouseenter=${() => { this._activeResultIdx = i; }}
+              @mouseenter=${() => {
+                this._activeResultIdx = i;
+              }}
             >
               <span class="search__result-icon">${this._getIcon(result.topic.icon, 16)}</span>
               <div class="search__result-body">

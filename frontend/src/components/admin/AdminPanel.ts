@@ -162,7 +162,12 @@ export class VelgAdminPanel extends LitElement {
       { key: 'dungeons', label: msg('Dungeons'), group: msg('Systems') },
       { key: 'dungeon_content', label: msg('Dungeon Content'), group: msg('Systems') },
       // AI & Generation
-      { key: 'forge', label: msg('Forge'), group: msg('AI & Gen'), badge: forgeCount > 0 ? forgeCount : undefined },
+      {
+        key: 'forge',
+        label: msg('Forge'),
+        group: msg('AI & Gen'),
+        badge: forgeCount > 0 ? forgeCount : undefined,
+      },
       { key: 'ai_usage', label: msg('AI Usage'), group: msg('AI & Gen') },
       { key: 'scanner', label: msg('Scanner'), group: msg('AI & Gen') },
       // Configuration

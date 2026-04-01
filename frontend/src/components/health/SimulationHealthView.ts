@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
+import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { zoneActionsApi } from '../../services/api/index.js';
 import type {
   BuildingReadiness,
@@ -12,10 +13,9 @@ import type {
   ZoneActionType,
   ZoneStability,
 } from '../../types/index.js';
-import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { icons } from '../../utils/icons.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
-import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
 
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -817,8 +817,17 @@ export class VelgSimulationHealthView extends LitElement {
   @state() private _refreshing = false;
   @state() private _selectedZoneForAction: string | null = null;
   @state() private _actionLoading = false;
-  @state() private _attunements: Array<{ resonance_signature: string; depth: number; positive_threshold: number }> = [];
-  @state() private _anchors: Array<{ name: string; strength: number; status: string; anchor_simulation_ids: string[] }> = [];
+  @state() private _attunements: Array<{
+    resonance_signature: string;
+    depth: number;
+    positive_threshold: number;
+  }> = [];
+  @state() private _anchors: Array<{
+    name: string;
+    strength: number;
+    status: string;
+    anchor_simulation_ids: string[];
+  }> = [];
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -831,8 +840,12 @@ export class VelgSimulationHealthView extends LitElement {
     try {
       const [healthResult, attResult, anchorResult] = await Promise.all([
         healthApi.getDashboard(this.simulationId),
-        heartbeatApi.listAttunements(this.simulationId).catch(() => ({ success: false, data: null })),
-        heartbeatApi.listAnchors({ simulation_id: this.simulationId }).catch(() => ({ success: false, data: null })),
+        heartbeatApi
+          .listAttunements(this.simulationId)
+          .catch(() => ({ success: false, data: null })),
+        heartbeatApi
+          .listAnchors({ simulation_id: this.simulationId })
+          .catch(() => ({ success: false, data: null })),
       ]);
       if (healthResult.success && healthResult.data) {
         this._dashboard = healthResult.data;
@@ -1329,7 +1342,9 @@ export class VelgSimulationHealthView extends LitElement {
           </h3>
         </div>
 
-        ${this._attunements.length > 0 ? html`
+        ${
+          this._attunements.length > 0
+            ? html`
           <div class="hb-subsection">
             <span class="hb-subsection__label">${msg('Attunements')}</span>
             ${this._attunements.map((att) => {
@@ -1348,9 +1363,13 @@ export class VelgSimulationHealthView extends LitElement {
               `;
             })}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
-        ${this._anchors.length > 0 ? html`
+        ${
+          this._anchors.length > 0
+            ? html`
           <div class="hb-subsection">
             <span class="hb-subsection__label">${msg('Anchors')}</span>
             ${this._anchors.map((anchor) => {
@@ -1366,7 +1385,9 @@ export class VelgSimulationHealthView extends LitElement {
               `;
             })}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }

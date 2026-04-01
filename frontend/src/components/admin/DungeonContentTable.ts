@@ -11,11 +11,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import {
-  adminAnimationStyles,
-  adminBadgeStyles,
-} from './admin-shared-styles.js';
 import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
+import { adminAnimationStyles, adminBadgeStyles } from './admin-shared-styles.js';
 
 /** Archetype → visual config */
 const ARCHETYPE_COLORS: Record<string, { token: string; label: string; icon: string }> = {
@@ -455,15 +452,18 @@ export class DungeonContentTable extends LitElement {
 
       <!-- Table -->
       <div class="table-wrap">
-        ${this.items.length === 0
-          ? html`<div class="empty">${msg('No content found')}</div>`
-          : html`
+        ${
+          this.items.length === 0
+            ? html`<div class="empty">${msg('No content found')}</div>`
+            : html`
             <table class="table" role="grid" @keydown=${this._handleTableKeydown}>
               <thead class="table__head">
                 <tr role="row">
-                  ${columns.map(col => html`
+                  ${columns.map(
+                    (col) => html`
                     <th class="table__th" role="columnheader">${col.label}</th>
-                  `)}
+                  `,
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -472,7 +472,9 @@ export class DungeonContentTable extends LitElement {
             </table>
 
             <!-- Pagination -->
-            ${this.total > this.perPage ? html`
+            ${
+              this.total > this.perPage
+                ? html`
               <div class="pagination">
                 <span>${msg('Page')} ${this.page} / ${totalPages}</span>
                 <div class="pagination__btns">
@@ -488,8 +490,11 @@ export class DungeonContentTable extends LitElement {
                   >${msg('Next')} &raquo;</button>
                 </div>
               </div>
-            ` : nothing}
-          `}
+            `
+                : nothing
+            }
+          `
+        }
       </div>
     `;
   }
@@ -515,9 +520,11 @@ export class DungeonContentTable extends LitElement {
           }
         }}
       >
-        ${columns.map(col => html`
+        ${columns.map(
+          (col) => html`
           <td class="table__td" role="gridcell">${this._renderCell(item, col.key)}</td>
-        `)}
+        `,
+        )}
       </tr>
     `;
   }

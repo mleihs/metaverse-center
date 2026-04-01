@@ -886,15 +886,19 @@ export class VelgForgeAstrolabe extends LitElement {
             )}
           </div>
 
-          ${this._researchSource
-            ? html`
+          ${
+            this._researchSource
+              ? html`
               <div class="research-source-hint ${this._researchSource === 'tavily' ? 'research-source-hint--tavily' : ''}">
                 <span class="research-source-hint__dot"></span>
-                ${this._researchSource === 'tavily'
-                  ? msg('Research grounded in web sources + AI analysis')
-                  : msg('Research based on AI analysis (web search unavailable)')}
+                ${
+                  this._researchSource === 'tavily'
+                    ? msg('Research grounded in web sources + AI analysis')
+                    : msg('Research based on AI analysis (web search unavailable)')
+                }
               </div>`
-            : nothing}
+              : nothing
+          }
 
           ${
             this._selectedIdx !== null

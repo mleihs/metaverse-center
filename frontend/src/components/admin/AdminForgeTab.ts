@@ -7,12 +7,16 @@ import {
   adminApi,
   type TokenEconomyStats,
 } from '../../services/api/AdminApiService.js';
-import { formatDateTime } from '../../utils/date-format.js';
 import { forgeApi } from '../../services/api/index.js';
+import { formatDateTime } from '../../utils/date-format.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
-import { adminAnimationStyles, adminForgeSectionStyles, adminLoadingStyles } from './admin-shared-styles.js';
+import {
+  adminAnimationStyles,
+  adminForgeSectionStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 import '../forge/ClearanceQueue.js';
 import '../shared/VelgMetricCard.js';
 
@@ -685,7 +689,6 @@ export class VelgAdminForgeTab extends LitElement {
   }
 
   // ── Helpers ──
-
 
   private _formatCents(cents: number): string {
     return `$${(cents / 100).toFixed(2)}`;

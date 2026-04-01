@@ -21,7 +21,9 @@ type CandidateFilter = 'all' | 'pending' | 'approved' | 'rejected';
 @localized()
 @customElement('velg-admin-scanner-tab')
 export class VelgAdminScannerTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -1159,7 +1161,8 @@ export class VelgAdminScannerTab extends LitElement {
         gap: var(--space-2);
       }
     }
-  `];
+  `,
+  ];
 
   @state() private _loading = true;
   @state() private _error: string | null = null;

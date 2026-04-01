@@ -17,15 +17,11 @@
  */
 
 import { msg } from '@lit/localize';
-import { css, nothing, svg, type SVGTemplateResult } from 'lit';
+import { css, nothing, type SVGTemplateResult, svg } from 'lit';
 
 import type { RoomNodeClient } from '../../types/dungeon.js';
 import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
-import {
-  resolveRoomColor,
-  ROOM_ICON,
-  ROOM_ICON_UNKNOWN,
-} from './dungeon-map-icons.js';
+import { ROOM_ICON, ROOM_ICON_UNKNOWN, resolveRoomColor } from './dungeon-map-icons.js';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -283,7 +279,18 @@ export const mapNodeStyles = css`
 
 /** Render a single map node as SVG <g> group. */
 export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
-  const { room, x, y, current, adjacent, justRevealed, depthHighlight, selected, onClick, onDeselect } = props;
+  const {
+    room,
+    x,
+    y,
+    current,
+    adjacent,
+    justRevealed,
+    depthHighlight,
+    selected,
+    onClick,
+    onDeselect,
+  } = props;
 
   const isBoss = room.room_type === 'boss';
   const isTreasure = room.room_type === 'treasure' && !room.cleared && room.revealed;
@@ -301,7 +308,9 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
     justRevealed ? 'node--just-revealed' : '',
     depthHighlight ? 'node--depth-highlight' : '',
     selected ? 'node--selected' : '',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // Aria label
   const ariaLabel = room.revealed
@@ -310,7 +319,7 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
 
   // Icon
   const iconFn = room.revealed
-    ? ROOM_ICON[room.room_type] ?? ROOM_ICON_UNKNOWN
+    ? (ROOM_ICON[room.room_type] ?? ROOM_ICON_UNKNOWN)
     : ROOM_ICON_UNKNOWN;
 
   // Event handlers
@@ -350,22 +359,32 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
       </g>
 
       <!-- Cleared badge: checkmark at top-right -->
-      ${room.cleared && !current ? svg`
+      ${
+        room.cleared && !current
+          ? svg`
         <g transform="translate(18, -18)">
           <circle r="7" fill="var(--_screen-bg)" stroke="var(--color-success)" stroke-width="1" />
           <path d="M-3 0 L-1 2 L3 -2" class="node__badge-check" />
         </g>
-      ` : nothing}
+      `
+          : nothing
+      }
 
       <!-- Treasure sparkle particles -->
-      ${isTreasure ? svg`
+      ${
+        isTreasure
+          ? svg`
         <g aria-hidden="true">
-          ${SPARKLES.map(s => svg`
+          ${SPARKLES.map(
+            (s) => svg`
             <circle cx=${s.cx} cy=${s.cy} r=${s.r} class="node__sparkle"
               style="--_sparkle-delay: ${s.delay}s" />
-          `)}
+          `,
+          )}
         </g>
-      ` : nothing}
+      `
+          : nothing
+      }
     </g>
   `;
 }

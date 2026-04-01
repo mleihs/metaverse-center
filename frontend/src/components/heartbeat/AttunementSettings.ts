@@ -14,7 +14,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { ResonanceSignature, SubstrateAttunement } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 /* ── Wave frequency offsets per signature (in deg) for unique patterns ── */
@@ -32,11 +32,23 @@ const WAVE_PHASES: Record<ResonanceSignature, number> = {
 const SIGNATURES: { key: ResonanceSignature; label: string; icon: () => unknown }[] = [
   { key: 'economic_tremor', label: 'Economic Tremor', icon: () => icons.archetypeTower(20) },
   { key: 'conflict_wave', label: 'Conflict Wave', icon: () => icons.archetypeShadow(20) },
-  { key: 'biological_tide', label: 'Biological Tide', icon: () => icons.archetypeDevouringMother(20) },
+  {
+    key: 'biological_tide',
+    label: 'Biological Tide',
+    icon: () => icons.archetypeDevouringMother(20),
+  },
   { key: 'elemental_surge', label: 'Elemental Surge', icon: () => icons.archetypeDeluge(20) },
-  { key: 'authority_fracture', label: 'Authority Fracture', icon: () => icons.archetypeOverthrow(20) },
+  {
+    key: 'authority_fracture',
+    label: 'Authority Fracture',
+    icon: () => icons.archetypeOverthrow(20),
+  },
   { key: 'innovation_spark', label: 'Innovation Spark', icon: () => icons.archetypePrometheus(20) },
-  { key: 'consciousness_drift', label: 'Consciousness Drift', icon: () => icons.archetypeAwakening(20) },
+  {
+    key: 'consciousness_drift',
+    label: 'Consciousness Drift',
+    icon: () => icons.archetypeAwakening(20),
+  },
   { key: 'decay_bloom', label: 'Decay Bloom', icon: () => icons.archetypeEntropy(20) },
 ];
 
@@ -45,7 +57,9 @@ const VU_SEGMENTS = 10;
 @localized()
 @customElement('velg-attunement-settings')
 export class VelgAttunementSettings extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     /* ═══════════════════════════════════════════════════════
        SUBSTRATE FREQUENCY TUNER
        ═══════════════════════════════════════════════════════ */
@@ -491,7 +505,8 @@ export class VelgAttunementSettings extends LitElement {
         transition: none;
       }
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
   @state() private _attunements: SubstrateAttunement[] = [];
@@ -600,7 +615,7 @@ export class VelgAttunementSettings extends LitElement {
         <div class="header__left">
           <h3 class="header__title">
             ${msg('Substrate Harmonics')}
-            ${renderInfoBubble(msg('Attune to up to 2 resonance signatures. Depth grows passively and faster when matching events are active. At threshold, positive events may spawn. Choose signatures that match your simulation\'s threats.'))}
+            ${renderInfoBubble(msg("Attune to up to 2 resonance signatures. Depth grows passively and faster when matching events are active. At threshold, positive events may spawn. Choose signatures that match your simulation's threats."))}
           </h3>
           <div class="header__ekg">
             <svg viewBox="0 0 300 12" preserveAspectRatio="none">
@@ -662,22 +677,27 @@ export class VelgAttunementSettings extends LitElement {
         aria-pressed=${isAttuned}
         aria-label=${`${sig.label}${isAttuned ? ` – ${msg('attuned')}` : ''}${harmonized ? ` – ${msg('harmonized')}` : ''}`}
       >
-        ${isFull
-          ? html`
+        ${
+          isFull
+            ? html`
               <div class="locked-overlay">
                 <span class="locked-overlay__text">${msg('Locked')}</span>
               </div>
             `
-          : nothing}
-        ${harmonized
-          ? html`
-              ${showStarburst
-                ? html`
+            : nothing
+        }
+        ${
+          harmonized
+            ? html`
+              ${
+                showStarburst
+                  ? html`
                     <svg class="starburst starburst--animate" viewBox="0 0 60 24" aria-hidden="true">
                       <polygon class="starburst__ray" points="30,0 33,9 42,4 35,11 44,12 35,13 42,20 33,15 30,24 27,15 18,20 25,13 16,12 25,11 18,4 27,9" />
                     </svg>
                   `
-                : nothing}
+                  : nothing
+              }
               <span
                 class="harmonized-badge ${showStarburst ? 'harmonized-badge--animate' : ''}"
                 @animationend=${() => this._clearStarburst(sig.key)}
@@ -685,7 +705,8 @@ export class VelgAttunementSettings extends LitElement {
                 ${msg('Harmonized')}
               </span>
             `
-          : nothing}
+            : nothing
+        }
 
         <!-- Frequency wave -->
         <div class="wave-track" aria-hidden="true">
@@ -698,18 +719,21 @@ export class VelgAttunementSettings extends LitElement {
         <div class="channel__identity">
           <span class="channel__icon">${sig.icon()}</span>
           <span class="channel__name">${sig.label}</span>
-          ${hasCooldown
-            ? html`
+          ${
+            hasCooldown
+              ? html`
                 <span class="channel__cooldown">
                   ${att!.switching_cooldown_ticks}T
                 </span>
               `
-            : nothing}
+              : nothing
+          }
         </div>
 
         <!-- VU meter depth bar (only when attuned) -->
-        ${isAttuned
-          ? html`
+        ${
+          isAttuned
+            ? html`
               <div
                 class="vu-meter"
                 role="meter"
@@ -734,7 +758,8 @@ export class VelgAttunementSettings extends LitElement {
                 <span>${att!.ticks_exposed} ${msg('ticks')}</span>
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </button>
     `;
   }

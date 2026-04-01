@@ -11,7 +11,9 @@ import '../shared/ConfirmDialog.js';
 @localized()
 @customElement('velg-admin-users-tab')
 export class VelgAdminUsersTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -374,7 +376,8 @@ export class VelgAdminUsersTab extends LitElement {
         max-width: none;
       }
     }
-  `];
+  `,
+  ];
 
   @state() private _users: AdminUser[] = [];
   @state() private _loading = true;

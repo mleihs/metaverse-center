@@ -7,9 +7,9 @@
  */
 
 import DOMPurify from 'dompurify';
-import { marked } from 'marked';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import type { DirectiveResult } from 'lit/directive.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { marked } from 'marked';
 
 // Configure marked for safe defaults
 marked.setOptions({

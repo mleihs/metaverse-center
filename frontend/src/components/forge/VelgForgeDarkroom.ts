@@ -400,9 +400,7 @@ export class VelgForgeDarkroom extends LitElement {
       this._themeConfig = result;
       VelgToast.success(msg('Visual identity generated.'));
     } else {
-      VelgToast.error(
-        forgeStateManager.error.value ?? msg('Theme generation failed. Try again.'),
-      );
+      VelgToast.error(forgeStateManager.error.value ?? msg('Theme generation failed. Try again.'));
     }
   }
 
@@ -665,7 +663,8 @@ export class VelgForgeDarkroom extends LitElement {
               'color_accent',
               'color_background',
               'color_surface',
-            ].map( // lint-color-ok
+            ].map(
+              // lint-color-ok
               (key) => html`
               <div class="preview-swatch" style="background:${tc[key] || '#333'}">
                 <span class="preview-swatch__label">${key.replace('color_', '')}</span>

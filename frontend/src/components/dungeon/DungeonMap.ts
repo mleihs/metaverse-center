@@ -31,17 +31,10 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { RoomNodeClient } from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
-import {
-  terminalComponentTokens,
-  terminalTokens,
-} from '../shared/terminal-theme-styles.js';
-import {
-  DEFAULT_MAP_CONFIG,
-  layoutDungeonMap,
-  type NodePosition,
-} from './dungeon-map-layout.js';
+import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import { mapEdgeStyles, renderMapEdge } from './DungeonMapEdge.js';
 import { mapNodeStyles, renderMapNode } from './DungeonMapNode.js';
+import { DEFAULT_MAP_CONFIG, layoutDungeonMap, type NodePosition } from './dungeon-map-layout.js';
 import './DungeonRoomPanel.js';
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -246,10 +239,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
   override connectedCallback(): void {
     super.connectedCallback();
     // Collapse map by default on mobile (only when actively in a dungeon)
-    if (
-      window.matchMedia('(max-width: 767px)').matches &&
-      dungeonState.isInDungeon.value
-    ) {
+    if (window.matchMedia('(max-width: 767px)').matches && dungeonState.isInDungeon.value) {
       dungeonState.mapExpanded.value = false;
     }
   }
@@ -286,13 +276,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         const peer = rooms.find((r) => r.index === ci);
         if (!peer?.revealed) continue;
         const wasBothRevealed =
-          this._previouslyRevealed.has(room.index) &&
-          this._previouslyRevealed.has(ci);
+          this._previouslyRevealed.has(room.index) && this._previouslyRevealed.has(ci);
         if (!wasBothRevealed) {
-          const key =
-            room.index < ci
-              ? `${room.index}-${ci}`
-              : `${ci}-${room.index}`;
+          const key = room.index < ci ? `${room.index}-${ci}` : `${ci}-${room.index}`;
           this._newlyTracedEdges.add(key);
         }
       }
@@ -316,7 +302,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // Deselect room if it's no longer in the room list (moved to willUpdate
     // to avoid state mutation during render — which causes re-render loops)
     if (this._selectedRoom) {
-      const freshRoom = rooms.find(r => r.index === this._selectedRoom!.index);
+      const freshRoom = rooms.find((r) => r.index === this._selectedRoom!.index);
       if (!freshRoom) {
         this._selectedRoom = null;
       }
@@ -338,7 +324,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     if (this._shouldScrollToCurrentAfterUpdate) {
       this._shouldScrollToCurrentAfterUpdate = false;
       requestAnimationFrame(() => {
-        const currentNodeEl = this.renderRoot?.querySelector('.node--current') as HTMLElement | null;
+        const currentNodeEl = this.renderRoot?.querySelector(
+          '.node--current',
+        ) as HTMLElement | null;
         currentNodeEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
@@ -379,16 +367,14 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       ? html`<div class="map-heading" aria-hidden="true">${msg('Map')}</div>`
       : nothing;
 
-    const adjacentSet = new Set(
-      dungeonState.adjacentRooms.value.map((r) => r.index),
-    );
+    const adjacentSet = new Set(dungeonState.adjacentRooms.value.map((r) => r.index));
 
     // Build position lookup
     const posMap = new Map<number, NodePosition>();
     for (const n of layout.nodes) posMap.set(n.room.index, n);
 
     // Unique depth values for topographic lines
-    const depths = [...new Set(rooms.map(r => r.depth))].sort((a, b) => a - b);
+    const depths = [...new Set(rooms.map((r) => r.depth))].sort((a, b) => a - b);
     const minDepth = depths[0] ?? 0;
 
     // ── Pre-compute SVG content as svg tagged templates ──────────────
@@ -398,7 +384,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // children with expressions must therefore be built as svg`` results
     // and injected as expressions into the html template's <svg>.
 
-    const depthLines = depths.map(d => {
+    const depthLines = depths.map((d) => {
       const y = DEFAULT_MAP_CONFIG.padding + (d - minDepth) * DEFAULT_MAP_CONFIG.vGap;
       return svg`<line
         x1="0" y1=${y} x2=${layout.width} y2=${y}
@@ -407,13 +393,15 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     });
 
     const edgesGroup = svg`<g aria-hidden="true">
-      ${layout.edges.map(edge => {
+      ${layout.edges.map((edge) => {
         const src = posMap.get(edge.sourceIndex);
         const tgt = posMap.get(edge.targetIndex);
         if (!src || !tgt) return nothing;
         return renderMapEdge({
-          x1: src.x, y1: src.y,
-          x2: tgt.x, y2: tgt.y,
+          x1: src.x,
+          y1: src.y,
+          x2: tgt.x,
+          y2: tgt.y,
           nodeRadius: DEFAULT_MAP_CONFIG.nodeRadius,
           foggy: edge.foggy,
           justTraced: this._newlyTracedEdges.has(edge.key),
@@ -421,7 +409,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       })}
     </g>`;
 
-    const ripples = [...this._newlyRevealed].map(idx => {
+    const ripples = [...this._newlyRevealed].map((idx) => {
       const pos = posMap.get(idx);
       if (!pos) return nothing;
       return svg`<circle
@@ -434,7 +422,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       ${layout.nodes.map(({ room, x, y }) => {
         const isAdj = adjacentSet.has(room.index);
         return renderMapNode({
-          room, x, y,
+          room,
+          x,
+          y,
           current: room.current,
           adjacent: isAdj,
           justRevealed: this._newlyRevealed.has(room.index),
@@ -510,9 +500,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     if (!this._selectedRoom) return nothing;
 
     // Get fresh room data from state (selected room may have changed state)
-    const freshRoom = dungeonState.rooms.value.find(
-      r => r.index === this._selectedRoom!.index,
-    );
+    const freshRoom = dungeonState.rooms.value.find((r) => r.index === this._selectedRoom!.index);
     if (!freshRoom || !freshRoom.revealed) {
       // Don't mutate state during render — willUpdate handles cleanup.
       // Return nothing for this render cycle; next willUpdate will clear.
@@ -553,9 +541,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     }
 
     // Unrevealed adjacent rooms: still show panel (limited info)
-    const adjacentSet = new Set(
-      dungeonState.adjacentRooms.value.map((r) => r.index),
-    );
+    const adjacentSet = new Set(dungeonState.adjacentRooms.value.map((r) => r.index));
     if (adjacentSet.has(room.index)) {
       this._selectedRoom = room;
     }

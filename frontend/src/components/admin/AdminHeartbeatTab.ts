@@ -13,10 +13,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-
-import { adminApi } from '../../services/api/index.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
-import { VelgToast } from '../shared/Toast.js';
+import { adminApi } from '../../services/api/index.js';
 import type {
   HeartbeatDashboard,
   HeartbeatSimulationStatus,
@@ -24,12 +22,13 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {
   adminAnimationStyles,
-  adminSectionHeaderStyles,
   adminGlobalCardStyles,
   adminLoadingStyles,
+  adminSectionHeaderStyles,
 } from './admin-shared-styles.js';
 
 /* ── Local interfaces for config/cascade data ─────────────── */
@@ -81,22 +80,54 @@ type ConfigKey = (typeof CONFIG_KEYS)[number];
 /** Tooltip text for each heartbeat config key (i18n-wrapped). */
 function getConfigTooltip(key: string): string {
   const tooltips: Record<string, string> = {
-    heartbeat_enabled: msg('Master switch for the entire heartbeat tick engine. When disabled, no simulations receive periodic ticks, meaning all autonomous simulation mechanics stop: health decay, scar healing, attunement growth, Bureau responses, and event aging. Turn off during maintenance or to freeze all simulations.'),
-    heartbeat_interval_seconds: msg('Seconds between heartbeat ticks across all active simulations. Lower values (10-30s) make simulations feel alive and responsive but increase server CPU and DB load proportionally. Higher values (60-120s) reduce load but make gameplay feel sluggish. Default 30s is a good balance for up to 20 active simulations.'),
-    heartbeat_scar_decay_rate: msg('How fast scar tissue heals per tick (0.0-1.0). Scars are accumulated damage from critical events like entropy spikes or cascade failures. At 0.05, a fully scarred simulation takes ~20 ticks to heal. Higher values (0.1+) mean rapid recovery, lower values (0.01) create long-lasting consequences from crises.'),
-    heartbeat_attunement_growth_rate: msg('Rate at which agent attunement bonds strengthen per tick when proximity and alignment conditions are met (0.0-1.0). Controls how quickly operatives align with their simulation environment. Higher values create fast, volatile bonds. Lower values produce slow, stable relationships. Affects the pace of emergent narrative.'),
-    heartbeat_anchor_growth_per_sim: msg('Anchor stability points gained per simulation per tick cycle. Anchors act as structural stabilizers that resist health decay and dampen cascade pressure. More anchors = more resilient simulations. Set higher (2-5) for casual play, lower (0.5-1) for challenging, high-stakes scenarios.'),
-    heartbeat_escalation_threshold: msg('Health percentage (0-100) below which escalation mechanics activate. When a simulation drops below this threshold, desperate actions unlock, entropy effects intensify, and Bureau containment can trigger. Lower values (20-30) delay escalation, creating a larger safe zone. Higher values (50-60) make simulations more volatile and dramatic.'),
-    heartbeat_cascade_pressure_trigger: msg('Cumulative pressure value (0.0-1.0) that triggers cross-simulation cascade effects. When one simulation accumulates enough negative pressure, it can cascade into neighboring simulations. Higher values (0.7+) make cascades rare but dramatic. Lower values (0.3-0.5) create frequent interconnected chaos across simulations.'),
-    heartbeat_bureau_contain_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau containment response when a simulation enters critical state. Containment slows health decay and dampens negative events. At 1.0 (default), containment provides moderate protection. At 2.0+, the Bureau can nearly halt a crisis. At 0.5, containment is weak and simulations spiral faster.'),
-    heartbeat_bureau_remediate_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau remediation response during active incidents. Remediation actively heals simulation health and repairs damage. Higher values accelerate recovery during crises. At 1.0 (default), healing is gradual. At 3.0+, even severe damage recovers within a few ticks.'),
-    heartbeat_bureau_adapt_multiplier: msg('Strength multiplier (0.0-5.0) for Bureau adaptation response after crises resolve. Adaptation normalizes simulation parameters and reduces lingering scar tissue. Higher values speed up post-crisis normalization. At 1.0 (default), recovery takes several tick cycles. At 0 the Bureau does not adapt at all.'),
-    heartbeat_bureau_max_agents: msg('Maximum number of Bureau agents (automated system responders) that can be deployed simultaneously across all active simulations. Bureau agents consume server resources per tick. Limit this to prevent overload with many simulations. Recommended: 3-5 for small deployments, 10-15 for production with many active simulations.'),
-    heartbeat_positive_event_probability: msg('Probability (0.0-1.0) that a positive attunement event spawns per tick per simulation. Positive events create moments of hope, bonding, or discovery that counterbalance entropy. At 0.1, roughly 1 in 10 ticks produces a positive moment. At 0.3+, simulations feel optimistic. At 0.01, positivity is rare and precious.'),
-    heartbeat_max_attunements: msg('Maximum number of concurrent attunement bonds allowed per simulation. Attunements are resonance connections between agents and their environment. More bonds create richer narrative but increase tick processing time. Recommended: 5-10 for typical simulations, up to 20 for large simulations with many agents.'),
-    heartbeat_switching_cooldown_ticks: msg('Number of ticks an agent must wait before switching attunement targets. Prevents rapid oscillation where agents flip between targets every tick, which creates incoherent narrative. At 3-5 ticks, bonds feel meaningful. At 1, agents can switch freely. At 10+, bonds are very sticky and hard to break.'),
-    heartbeat_anchor_protection_cap: msg('Maximum protection percentage (0-100) that anchor points can provide against health decay. Caps how much structural stability can shield a simulation from damage. At 80 (default), even fully anchored simulations take 20% damage. At 100, a fully anchored simulation is invulnerable. At 50, anchors provide only moderate protection.'),
-    heartbeat_event_aging_rules: msg('JSON configuration defining how simulation events age and decay over time. Controls event visibility duration, severity decay curves, and cleanup thresholds. Advanced setting: incorrect values can cause events to disappear too quickly or accumulate indefinitely. Edit with caution and test in a dev simulation first.'),
+    heartbeat_enabled: msg(
+      'Master switch for the entire heartbeat tick engine. When disabled, no simulations receive periodic ticks, meaning all autonomous simulation mechanics stop: health decay, scar healing, attunement growth, Bureau responses, and event aging. Turn off during maintenance or to freeze all simulations.',
+    ),
+    heartbeat_interval_seconds: msg(
+      'Seconds between heartbeat ticks across all active simulations. Lower values (10-30s) make simulations feel alive and responsive but increase server CPU and DB load proportionally. Higher values (60-120s) reduce load but make gameplay feel sluggish. Default 30s is a good balance for up to 20 active simulations.',
+    ),
+    heartbeat_scar_decay_rate: msg(
+      'How fast scar tissue heals per tick (0.0-1.0). Scars are accumulated damage from critical events like entropy spikes or cascade failures. At 0.05, a fully scarred simulation takes ~20 ticks to heal. Higher values (0.1+) mean rapid recovery, lower values (0.01) create long-lasting consequences from crises.',
+    ),
+    heartbeat_attunement_growth_rate: msg(
+      'Rate at which agent attunement bonds strengthen per tick when proximity and alignment conditions are met (0.0-1.0). Controls how quickly operatives align with their simulation environment. Higher values create fast, volatile bonds. Lower values produce slow, stable relationships. Affects the pace of emergent narrative.',
+    ),
+    heartbeat_anchor_growth_per_sim: msg(
+      'Anchor stability points gained per simulation per tick cycle. Anchors act as structural stabilizers that resist health decay and dampen cascade pressure. More anchors = more resilient simulations. Set higher (2-5) for casual play, lower (0.5-1) for challenging, high-stakes scenarios.',
+    ),
+    heartbeat_escalation_threshold: msg(
+      'Health percentage (0-100) below which escalation mechanics activate. When a simulation drops below this threshold, desperate actions unlock, entropy effects intensify, and Bureau containment can trigger. Lower values (20-30) delay escalation, creating a larger safe zone. Higher values (50-60) make simulations more volatile and dramatic.',
+    ),
+    heartbeat_cascade_pressure_trigger: msg(
+      'Cumulative pressure value (0.0-1.0) that triggers cross-simulation cascade effects. When one simulation accumulates enough negative pressure, it can cascade into neighboring simulations. Higher values (0.7+) make cascades rare but dramatic. Lower values (0.3-0.5) create frequent interconnected chaos across simulations.',
+    ),
+    heartbeat_bureau_contain_multiplier: msg(
+      'Strength multiplier (0.0-5.0) for Bureau containment response when a simulation enters critical state. Containment slows health decay and dampens negative events. At 1.0 (default), containment provides moderate protection. At 2.0+, the Bureau can nearly halt a crisis. At 0.5, containment is weak and simulations spiral faster.',
+    ),
+    heartbeat_bureau_remediate_multiplier: msg(
+      'Strength multiplier (0.0-5.0) for Bureau remediation response during active incidents. Remediation actively heals simulation health and repairs damage. Higher values accelerate recovery during crises. At 1.0 (default), healing is gradual. At 3.0+, even severe damage recovers within a few ticks.',
+    ),
+    heartbeat_bureau_adapt_multiplier: msg(
+      'Strength multiplier (0.0-5.0) for Bureau adaptation response after crises resolve. Adaptation normalizes simulation parameters and reduces lingering scar tissue. Higher values speed up post-crisis normalization. At 1.0 (default), recovery takes several tick cycles. At 0 the Bureau does not adapt at all.',
+    ),
+    heartbeat_bureau_max_agents: msg(
+      'Maximum number of Bureau agents (automated system responders) that can be deployed simultaneously across all active simulations. Bureau agents consume server resources per tick. Limit this to prevent overload with many simulations. Recommended: 3-5 for small deployments, 10-15 for production with many active simulations.',
+    ),
+    heartbeat_positive_event_probability: msg(
+      'Probability (0.0-1.0) that a positive attunement event spawns per tick per simulation. Positive events create moments of hope, bonding, or discovery that counterbalance entropy. At 0.1, roughly 1 in 10 ticks produces a positive moment. At 0.3+, simulations feel optimistic. At 0.01, positivity is rare and precious.',
+    ),
+    heartbeat_max_attunements: msg(
+      'Maximum number of concurrent attunement bonds allowed per simulation. Attunements are resonance connections between agents and their environment. More bonds create richer narrative but increase tick processing time. Recommended: 5-10 for typical simulations, up to 20 for large simulations with many agents.',
+    ),
+    heartbeat_switching_cooldown_ticks: msg(
+      'Number of ticks an agent must wait before switching attunement targets. Prevents rapid oscillation where agents flip between targets every tick, which creates incoherent narrative. At 3-5 ticks, bonds feel meaningful. At 1, agents can switch freely. At 10+, bonds are very sticky and hard to break.',
+    ),
+    heartbeat_anchor_protection_cap: msg(
+      'Maximum protection percentage (0-100) that anchor points can provide against health decay. Caps how much structural stability can shield a simulation from damage. At 80 (default), even fully anchored simulations take 20% damage. At 100, a fully anchored simulation is invulnerable. At 50, anchors provide only moderate protection.',
+    ),
+    heartbeat_event_aging_rules: msg(
+      'JSON configuration defining how simulation events age and decay over time. Controls event visibility duration, severity decay curves, and cleanup thresholds. Advanced setting: incorrect values can cause events to disappear too quickly or accumulate indefinitely. Edit with caution and test in a dev simulation first.',
+    ),
   };
   return tooltips[key] ?? '';
 }
@@ -760,9 +791,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
     this._selectedOverrideSimId = simId;
     const existing = this._overrides.find((o) => o.simulation_id === simId);
     this._overrideIntervalDraft =
-      existing?.interval_override_seconds != null
-        ? String(existing.interval_override_seconds)
-        : '';
+      existing?.interval_override_seconds != null ? String(existing.interval_override_seconds) : '';
     this._overrideEnabledDraft = existing?.enabled ?? true;
   }
 
@@ -770,9 +799,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
     if (!this._selectedOverrideSimId || this._savingOverride) return;
     this._savingOverride = true;
 
-    const interval = this._overrideIntervalDraft
-      ? parseInt(this._overrideIntervalDraft, 10)
-      : null;
+    const interval = this._overrideIntervalDraft ? parseInt(this._overrideIntervalDraft, 10) : null;
 
     /* Save as a per-simulation setting via admin settings API */
     const overrideKey = `heartbeat_override_${this._selectedOverrideSimId}`;
@@ -821,9 +848,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       this._cascadeRules = updatedRules;
       const rule = updatedRules.find((r) => r.id === ruleId);
       VelgToast.success(
-        rule?.is_active
-          ? msg('Cascade rule activated.')
-          : msg('Cascade rule deactivated.'),
+        rule?.is_active ? msg('Cascade rule activated.') : msg('Cascade rule deactivated.'),
       );
     } else {
       VelgToast.error(result.error?.message ?? msg('Failed to update rule.'));
@@ -986,8 +1011,9 @@ export class VelgAdminHeartbeatTab extends LitElement {
           ${numericKeys.map((key) => this._renderConfigItem(key))}
         </div>
 
-        ${hasDirty
-          ? html`
+        ${
+          hasDirty
+            ? html`
               <div style="margin-top: var(--space-4)">
                 <button
                   class="save-btn"
@@ -999,7 +1025,8 @@ export class VelgAdminHeartbeatTab extends LitElement {
                 </button>
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -1025,13 +1052,13 @@ export class VelgAdminHeartbeatTab extends LitElement {
             step="any"
             .value=${this._configValues[key]}
             ?disabled=${isSaving}
-            @input=${(e: Event) =>
-              this._onConfigChange(key, (e.target as HTMLInputElement).value)}
+            @input=${(e: Event) => this._onConfigChange(key, (e.target as HTMLInputElement).value)}
             aria-label=${this._configLabel(key)}
             aria-describedby=${tooltip ? `tip-${key}` : nothing}
           />
-          ${isDirty
-            ? html`
+          ${
+            isDirty
+              ? html`
                 <button
                   class="save-btn"
                   ?disabled=${isSaving}
@@ -1042,7 +1069,8 @@ export class VelgAdminHeartbeatTab extends LitElement {
                   ${icons.checkCircle(14)}
                 </button>
               `
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -1136,10 +1164,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
 
     const onFieldChange = (fieldKey: string, value: string) => {
       const updated = { ...rules, [fieldKey]: parseInt(value, 10) || 0 };
-      this._onConfigChange(
-        'heartbeat_event_aging_rules',
-        JSON.stringify(updated),
-      );
+      this._onConfigChange('heartbeat_event_aging_rules', JSON.stringify(updated));
     };
 
     return html`
@@ -1179,8 +1204,9 @@ export class VelgAdminHeartbeatTab extends LitElement {
           )}
         </div>
 
-        ${isDirty
-          ? html`
+        ${
+          isDirty
+            ? html`
               <div style="margin-top: var(--space-4)">
                 <button
                   class="save-btn"
@@ -1192,7 +1218,8 @@ export class VelgAdminHeartbeatTab extends LitElement {
                 </button>
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -1311,9 +1338,10 @@ export class VelgAdminHeartbeatTab extends LitElement {
           <h2 class="section-header__title">${msg('Cascade Rules')}</h2>
         </div>
 
-        ${this._cascadeRules.length === 0
-          ? html`<div class="empty">${msg('No cascade rules configured.')}</div>`
-          : html`
+        ${
+          this._cascadeRules.length === 0
+            ? html`<div class="empty">${msg('No cascade rules configured.')}</div>`
+            : html`
               <div class="rules-table-wrap">
                 <table class="rules-table" role="grid">
                   <thead>
@@ -1331,7 +1359,8 @@ export class VelgAdminHeartbeatTab extends LitElement {
                   </tbody>
                 </table>
               </div>
-            `}
+            `
+        }
       </div>
     `;
   }
@@ -1362,9 +1391,11 @@ export class VelgAdminHeartbeatTab extends LitElement {
         </td>
         <td>
           <span class="rules-table__timestamp">
-            ${rule.last_triggered_at
-              ? new Date(rule.last_triggered_at).toLocaleString()
-              : msg('Never')}
+            ${
+              rule.last_triggered_at
+                ? new Date(rule.last_triggered_at).toLocaleString()
+                : msg('Never')
+            }
           </span>
         </td>
       </tr>
@@ -1383,13 +1414,15 @@ export class VelgAdminHeartbeatTab extends LitElement {
           <h2 class="section-header__title">${msg('Simulation Heartbeats')}</h2>
         </div>
 
-        ${d.simulations.length === 0
-          ? html`<div class="empty">${msg('No active simulations.')}</div>`
-          : html`
+        ${
+          d.simulations.length === 0
+            ? html`<div class="empty">${msg('No active simulations.')}</div>`
+            : html`
               <div class="sim-grid">
                 ${d.simulations.map((sim, i) => this._renderSimCard(sim, i))}
               </div>
-            `}
+            `
+        }
       </div>
     `;
   }
@@ -1426,13 +1459,15 @@ export class VelgAdminHeartbeatTab extends LitElement {
           </div>
         </div>
 
-        ${sim.last_heartbeat_at
-          ? html`
+        ${
+          sim.last_heartbeat_at
+            ? html`
               <div class="sim-card__countdown">
                 ${msg('Last tick')}: ${new Date(sim.last_heartbeat_at).toLocaleString()}
               </div>
             `
-          : nothing}
+            : nothing
+        }
 
         <button
           class="force-tick-btn"

@@ -296,7 +296,6 @@ export class VelgMissionCard extends LitElement {
       }),
     );
   }
-
 }
 
 declare global {

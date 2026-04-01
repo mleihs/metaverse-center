@@ -1,8 +1,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { formatDate } from '../../utils/date-format.js';
 import type { SocialMediaPost } from '../../types/index.js';
+import { formatDate } from '../../utils/date-format.js';
 import '../shared/VelgBadge.js';
 import { cardStyles } from '../shared/card-styles.js';
 
@@ -41,7 +41,6 @@ export class VelgPostCard extends LitElement {
   ];
 
   @property({ type: Object }) post!: SocialMediaPost;
-
 
   private _handleTransform(): void {
     this.dispatchEvent(

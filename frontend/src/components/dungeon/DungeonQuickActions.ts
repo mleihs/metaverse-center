@@ -28,7 +28,11 @@ import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { localized as localizedField } from '../../utils/locale-fields.js';
-import { terminalActionStyles, terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
+import {
+  terminalActionStyles,
+  terminalComponentTokens,
+  terminalTokens,
+} from '../shared/terminal-theme-styles.js';
 import '../shared/VelgHoldButton.js';
 
 @localized()
@@ -210,13 +214,13 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     const state = dungeonState.clientState.value;
     if (!state?.pending_loot) return nothing;
 
-    const distributable = state.pending_loot.filter(i => !AUTO_APPLY_EFFECTS.has(i.effect_type));
+    const distributable = state.pending_loot.filter((i) => !AUTO_APPLY_EFFECTS.has(i.effect_type));
     const assignments = state.loot_assignments ?? {};
     const suggestions = state.loot_suggestions ?? {};
-    const party = state.party.filter(a => a.condition !== 'captured');
+    const party = state.party.filter((a) => a.condition !== 'captured');
 
     // Find first unassigned item
-    const nextItem = distributable.find(i => !assignments[i.id]);
+    const nextItem = distributable.find((i) => !assignments[i.id]);
     const nextIndex = nextItem ? distributable.indexOf(nextItem) + 1 : -1;
 
     if (nextItem) {
@@ -225,7 +229,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       return html`
         <span class="phase-label">${nextItem.name_en}:</span>
         ${party.map(
-          agent => html`
+          (agent) => html`
             <button
               class="action-btn ${agent.agent_id === suggestedId ? 'action-btn--primary' : ''}"
               @click=${() => this._dispatch(`assign ${nextIndex} ${agent.agent_name}`)}
@@ -316,9 +320,10 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       const isRevealed = room.room_type !== '?';
       const sameDepthRooms = byDepth.get(room.depth) ?? [];
       const pathIdx = sameDepthRooms.indexOf(room);
-      const pathLabel = sameDepthRooms.length > 1
-        ? ` ${VelgDungeonQuickActions._PATH_LABELS[pathIdx] ?? pathIdx + 1}`
-        : '';
+      const pathLabel =
+        sameDepthRooms.length > 1
+          ? ` ${VelgDungeonQuickActions._PATH_LABELS[pathIdx] ?? pathIdx + 1}`
+          : '';
 
       // Risk CSS class: room-type color if known, depth-risk if unknown
       let riskClass = '';

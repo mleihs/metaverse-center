@@ -14,13 +14,13 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
+import type { EpochParticipant, EpochStatus, EpochTeam } from '../../types/index.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
-import type {
-  EpochParticipant,
-  EpochStatus,
-  EpochTeam,
-} from '../../types/index.js';
-import { terminalTokens, terminalAnimations, terminalWrapperStyles } from '../shared/terminal-theme-styles.js';
+import {
+  terminalAnimations,
+  terminalTokens,
+  terminalWrapperStyles,
+} from '../shared/terminal-theme-styles.js';
 import './BureauTerminal.js';
 
 @localized()

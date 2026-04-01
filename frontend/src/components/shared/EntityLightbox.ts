@@ -464,10 +464,10 @@ export class VelgEntityLightbox extends LitElement {
 
     // Wait for container exit transition, with safety timeout
     await Promise.race([
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         this._container?.addEventListener('transitionend', () => resolve(), { once: true });
       }),
-      new Promise<void>(resolve => setTimeout(resolve, 380)),
+      new Promise<void>((resolve) => setTimeout(resolve, 380)),
     ]);
 
     // If re-opened during animation, abort close

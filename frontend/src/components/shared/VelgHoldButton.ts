@@ -165,9 +165,9 @@ export class VelgHoldButton extends LitElement {
 
   protected render() {
     const activeLabel = this.executing
-      ? (this.executingLabel || this.label)
+      ? this.executingLabel || this.label
       : this._holding
-        ? (this.holdingLabel || this.label)
+        ? this.holdingLabel || this.label
         : this.label;
 
     const isDisabled = this.disabled || this.executing;
@@ -185,11 +185,13 @@ export class VelgHoldButton extends LitElement {
       >
         <span class="fill" @animationend=${this._onAnimationEnd}></span>
         <span class="label">${activeLabel}</span>
-        ${this._keyArmed
-          ? html`<span class="visually-hidden" role="status" aria-live="assertive">
+        ${
+          this._keyArmed
+            ? html`<span class="visually-hidden" role="status" aria-live="assertive">
               ${msg('Press again to confirm')}
             </span>`
-          : ''}
+            : ''
+        }
       </button>
     `;
   }

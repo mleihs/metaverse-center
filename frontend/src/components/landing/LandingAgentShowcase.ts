@@ -15,9 +15,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
-import { getThemeColor } from '../../utils/theme-colors.js';
-import { t } from '../../utils/locale-fields.js';
 import type { Agent, AgentAptitude, AptitudeSet, Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import '../agents/AgentCard.js';
 
 interface ShowcaseAgent {
@@ -457,7 +457,10 @@ export class VelgLandingAgentShowcase extends LitElement {
     this._loading = true;
     const layout = this._getLayout();
     try {
-      const simResp = await simulationsApi.listPublic({ limit: String(layout.simLimit), offset: '0' });
+      const simResp = await simulationsApi.listPublic({
+        limit: String(layout.simLimit),
+        offset: '0',
+      });
       if (!simResp.success || !Array.isArray(simResp.data)) {
         this._loading = false;
         return;
@@ -477,9 +480,7 @@ export class VelgLandingAgentShowcase extends LitElement {
 
           const agents = agentResp.data as Agent[];
           const aptitudes =
-            aptResp.success && Array.isArray(aptResp.data)
-              ? (aptResp.data as AgentAptitude[])
-              : [];
+            aptResp.success && Array.isArray(aptResp.data) ? (aptResp.data as AgentAptitude[]) : [];
 
           // Build aptitude sets per agent
           const aptMap = new Map<string, Record<string, number>>();
@@ -626,9 +627,7 @@ export class VelgLandingAgentShowcase extends LitElement {
     const el = this.renderRoot.querySelector<HTMLElement>('.showcase__tagline-text');
     if (!el) return;
 
-    const fullText = msg(
-      'These are real AI characters. They remember. They hold grudges.',
-    );
+    const fullText = msg('These are real AI characters. They remember. They hold grudges.');
     let charIndex = 0;
 
     const type = () => {
@@ -646,9 +645,7 @@ export class VelgLandingAgentShowcase extends LitElement {
     this._typed = true;
     const el = this.renderRoot.querySelector<HTMLElement>('.showcase__tagline-text');
     if (el) {
-      el.textContent = msg(
-        'These are real AI characters. They remember. They hold grudges.',
-      );
+      el.textContent = msg('These are real AI characters. They remember. They hold grudges.');
     }
   }
 
@@ -672,11 +669,8 @@ export class VelgLandingAgentShowcase extends LitElement {
         '@type': 'ListItem',
         position: i + 1,
         name: entry.agent.name,
-        description:
-          t(entry.agent, 'character') || t(entry.agent, 'primary_profession') || '',
-        ...(entry.agent.portrait_image_url
-          ? { image: entry.agent.portrait_image_url }
-          : {}),
+        description: t(entry.agent, 'character') || t(entry.agent, 'primary_profession') || '',
+        ...(entry.agent.portrait_image_url ? { image: entry.agent.portrait_image_url } : {}),
       })),
     });
     document.head.appendChild(script);

@@ -615,7 +615,6 @@ export class VelgWarRoomPanel extends LitElement {
     );
   }
 
-
   private _renderHeader() {
     const phaseColor = PHASE_COLORS[this.status] || 'var(--color-text-muted)';
     return html`

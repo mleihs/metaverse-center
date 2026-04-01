@@ -16,18 +16,19 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { terminalState } from '../../services/TerminalStateManager.js';
-import { heartbeatApi } from '../../services/api/index.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { appState } from '../../services/AppStateManager.js';
-import { parseAndExecute, getBootSequence, getReentrySequence } from '../../utils/terminal-commands.js';
-import { formatFeedEntry } from '../../utils/terminal-formatters.js';
-import {
-  terminalTokens,
-  terminalAnimations,
-} from '../shared/terminal-theme-styles.js';
+import { heartbeatApi } from '../../services/api/index.js';
+import { terminalState } from '../../services/TerminalStateManager.js';
 import type { TerminalLine } from '../../types/terminal.js';
+import {
+  getBootSequence,
+  getReentrySequence,
+  parseAndExecute,
+} from '../../utils/terminal-commands.js';
+import { formatFeedEntry } from '../../utils/terminal-formatters.js';
+import { terminalAnimations, terminalTokens } from '../shared/terminal-theme-styles.js';
 import './TerminalQuickActions.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -799,7 +800,9 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
         // Announce for screen readers
         this._announcement = msg('New intelligence feed entries received.');
-        setTimeout(() => { this._announcement = ''; }, 3000);
+        setTimeout(() => {
+          this._announcement = '';
+        }, 3000);
       }
 
       // Cap seen sets to prevent memory leak
@@ -830,9 +833,11 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
     return html`<div
       class=${classMap(classes)}
-      .style=${line.type === 'system' && !this._bootComplete
-        ? `animation-delay: ${(this._getBootIndex(line)) * BOOT_LINE_DELAY_MS}ms`
-        : ''}
+      .style=${
+        line.type === 'system' && !this._bootComplete
+          ? `animation-delay: ${this._getBootIndex(line) * BOOT_LINE_DELAY_MS}ms`
+          : ''
+      }
     >${line.content}</div>`;
   }
 
@@ -870,7 +875,11 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
           @scroll=${this._handleScroll}
           @click=${this._handleScreenClick}
         >
-          ${repeat(lines, (l) => l.id, (l) => this._renderLine(l))}
+          ${repeat(
+            lines,
+            (l) => l.id,
+            (l) => this._renderLine(l),
+          )}
           ${isLoading ? html`<div class="terminal__loading" aria-hidden="true">_</div>` : nothing}
         </div>
 
@@ -879,12 +888,14 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
           <input
             class="terminal__input"
             type="text"
-            aria-label=${inConversation
-              ? msg('Message to agent')
-              : msg('Terminal command input')}
-            placeholder=${this._bootComplete
-              ? (inConversation ? msg('Type your message...') : msg('Enter command...'))
-              : ''}
+            aria-label=${inConversation ? msg('Message to agent') : msg('Terminal command input')}
+            placeholder=${
+              this._bootComplete
+                ? inConversation
+                  ? msg('Type your message...')
+                  : msg('Enter command...')
+                : ''
+            }
             ?disabled=${!this._bootComplete}
             autocomplete="off"
             autocapitalize="off"
@@ -895,9 +906,13 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
         <div class="terminal__status">
           <span class="terminal__status-zone">
-            <span class="terminal__status-prefix">${terminalState.isDungeonMode.value ? msg('RUN:') : msg('LOC:')}</span>${terminalState.isDungeonMode.value
-              ? (terminalState.dungeonLabel.value?.toUpperCase() ?? msg('DUNGEON'))
-              : (zone ? zone.name.toUpperCase() : msg('NO SECTOR'))}
+            <span class="terminal__status-prefix">${terminalState.isDungeonMode.value ? msg('RUN:') : msg('LOC:')}</span>${
+              terminalState.isDungeonMode.value
+                ? (terminalState.dungeonLabel.value?.toUpperCase() ?? msg('DUNGEON'))
+                : zone
+                  ? zone.name.toUpperCase()
+                  : msg('NO SECTOR')
+            }
           </span>
           <div class="terminal__status-resources">
             <span>LVL ${clearance}</span>
@@ -909,14 +924,18 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         <div class="terminal__bottom-corners"></div>
       </div>
 
-      ${this.dungeonMode ? nothing : html`
+      ${
+        this.dungeonMode
+          ? nothing
+          : html`
         <velg-terminal-quick-actions
           .clearanceLevel=${clearance}
           .inConversation=${inConversation}
           .epochMode=${terminalState.isEpochMode.value}
           @terminal-command=${this._handleQuickAction}
         ></velg-terminal-quick-actions>
-      `}
+      `
+      }
 
       <!-- Screen reader announcements -->
       <div class="sr-announce" role="status" aria-live="assertive">

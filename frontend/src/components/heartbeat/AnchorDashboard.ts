@@ -14,13 +14,15 @@ import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { CollaborativeAnchor } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { describeArc } from '../../utils/svg.js';
-import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
 @customElement('velg-anchor-dashboard')
 export class VelgAnchorDashboard extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     /* ── Host ──────────────────────────────────────────────── */
 
     :host {
@@ -559,7 +561,8 @@ export class VelgAnchorDashboard extends LitElement {
       border-color: var(--color-danger);
       background: color-mix(in srgb, var(--color-danger) 8%, transparent);
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
   @state() private _anchors: CollaborativeAnchor[] = [];
@@ -617,15 +620,17 @@ export class VelgAnchorDashboard extends LitElement {
         </h3>
       </div>
 
-      ${this._loading
-        ? html`<div class="loading">${msg('Loading...')}</div>`
-        : this._anchors.length === 0
-          ? this._renderEmpty()
-          : html`
+      ${
+        this._loading
+          ? html`<div class="loading">${msg('Loading...')}</div>`
+          : this._anchors.length === 0
+            ? this._renderEmpty()
+            : html`
               <div class="anchors" role="list" aria-label=${msg('Active anchors')}>
                 ${this._anchors.map((a) => this._renderAnchor(a))}
               </div>
-            `}
+            `
+      }
     `;
   }
 
@@ -659,11 +664,13 @@ export class VelgAnchorDashboard extends LitElement {
         <div class="card-ping" aria-hidden="true"></div>
 
         <!-- Forming status: animated dashed border overlay -->
-        ${anchor.status === 'forming'
-          ? svg`<svg class="forming-border" aria-hidden="true">
+        ${
+          anchor.status === 'forming'
+            ? svg`<svg class="forming-border" aria-hidden="true">
               <rect x="0.5" y="0.5" width="calc(100% - 1px)" height="calc(100% - 1px)" rx="0" />
             </svg>`
-          : nothing}
+            : nothing
+        }
 
         <!-- Top row: icon + name + status -->
         <div class="anchor-card__top">
@@ -707,8 +714,9 @@ export class VelgAnchorDashboard extends LitElement {
 
         <!-- Actions -->
         <div class="anchor-card__actions">
-          ${participating
-            ? html`
+          ${
+            participating
+              ? html`
                 <button
                   class="radio-btn radio-btn--danger"
                   @click=${() => this._leaveAnchor(anchor.id)}
@@ -716,8 +724,8 @@ export class VelgAnchorDashboard extends LitElement {
                   ${msg('Leave')}
                 </button>
               `
-            : anchor.status !== 'dissolved'
-              ? html`
+              : anchor.status !== 'dissolved'
+                ? html`
                   <button
                     class="radio-btn"
                     @click=${() => this._joinAnchor(anchor.id)}
@@ -725,7 +733,8 @@ export class VelgAnchorDashboard extends LitElement {
                     ${msg('Join Anchor')}
                   </button>
                 `
-              : nothing}
+                : nothing
+          }
         </div>
       </div>
     `;

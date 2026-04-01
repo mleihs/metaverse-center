@@ -226,8 +226,7 @@ class AnalyticsService {
 
     // Defer the heavy gtag.js script load until main thread is idle.
     // Safari lacks requestIdleCallback — setTimeout(fn, 1) is equivalent.
-    const schedule = window.requestIdleCallback
-      ?? ((cb: () => void) => setTimeout(cb, 1));
+    const schedule = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1));
     schedule(() => this._loadGtagScript(), { timeout: 3000 } as IdleRequestOptions);
 
     this._initWebVitals();

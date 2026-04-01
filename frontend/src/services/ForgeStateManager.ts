@@ -349,10 +349,7 @@ class ForgeStateManager {
   }
 
   /** Per-entity incremental generation for agents/buildings. */
-  private async _generateEntitiesIncremental(
-    draftId: string,
-    entityType: 'agents' | 'buildings',
-  ) {
+  private async _generateEntitiesIncremental(draftId: string, entityType: 'agents' | 'buildings') {
     const total =
       entityType === 'agents'
         ? this.generationConfig.value.agent_count
@@ -870,10 +867,7 @@ class ForgeStateManager {
    * Attempt to recover from a research timeout/network error.
    * Re-fetches the draft and checks if new anchors appeared.
    */
-  private async _tryRecoverResearch(
-    draftId: string,
-    anchorsBefore: number,
-  ): Promise<boolean> {
+  private async _tryRecoverResearch(draftId: string, anchorsBefore: number): Promise<boolean> {
     const delays = [5_000, 10_000, 15_000, 20_000];
     for (let attempt = 0; attempt <= delays.length; attempt++) {
       if (attempt > 0) {
@@ -906,9 +900,7 @@ class ForgeStateManager {
       const raw = localStorage.getItem(TIMING_STORAGE_KEY);
       if (!raw) return DEFAULT_ESTIMATES[type] ?? 60_000;
       const records: TimingRecord[] = JSON.parse(raw);
-      const matching = records
-        .filter((r) => r.type === type)
-        .slice(-TIMING_AVERAGE_WINDOW);
+      const matching = records.filter((r) => r.type === type).slice(-TIMING_AVERAGE_WINDOW);
       if (matching.length === 0) return DEFAULT_ESTIMATES[type] ?? 60_000;
       const sum = matching.reduce((acc, r) => acc + r.durationMs, 0);
       return Math.round(sum / matching.length);

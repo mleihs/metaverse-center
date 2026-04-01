@@ -3,9 +3,7 @@ import { BaseApiService } from './BaseApiService.js';
 
 export class ChronicleApiService extends BaseApiService {
   /** Cross-simulation chronicle feed — recent chronicles from all worlds. */
-  listGlobal(
-    params?: { limit?: number; offset?: number },
-  ): Promise<ApiResponse<Chronicle[]>> {
+  listGlobal(params?: { limit?: number; offset?: number }): Promise<ApiResponse<Chronicle[]>> {
     const p: Record<string, string> = {};
     if (params?.limit != null) p.limit = String(params.limit);
     if (params?.offset != null) p.offset = String(params.offset);

@@ -31,12 +31,13 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
-import { buildEnemyDisplayNames, getConditionLabel, getEnemyConditionLabel } from '../../utils/dungeon-formatters.js';
-import { localized as localizedField } from '../../utils/locale-fields.js';
 import {
-  terminalComponentTokens,
-  terminalTokens,
-} from '../shared/terminal-theme-styles.js';
+  buildEnemyDisplayNames,
+  getConditionLabel,
+  getEnemyConditionLabel,
+} from '../../utils/dungeon-formatters.js';
+import { localized as localizedField } from '../../utils/locale-fields.js';
+import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
 /** Timer urgency thresholds (milliseconds). */
 const TIMER_WARNING_MS = 10_000;
@@ -736,8 +737,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
   @state() private _targetingAbilityId: string | null = null;
 
   /** Combat onboarding briefing (shown once, persisted via localStorage). */
-  @state() private _showOnboarding =
-    !globalThis.localStorage?.getItem('dungeon_combat_onboarded');
+  @state() private _showOnboarding = !globalThis.localStorage?.getItem('dungeon_combat_onboarded');
 
   // -- Event Dispatch -------------------------------------------------------
 
@@ -804,9 +804,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         ${this._renderTimer(remaining, combat?.timer?.duration_ms ?? 30_000)}
 
         <div class="agents" role="list" aria-label=${msg('Agent actions')}>
-          ${actionable.map((agent) =>
-            this._renderAgent(agent, selected, enemies),
-          )}
+          ${actionable.map((agent) => this._renderAgent(agent, selected, enemies))}
         </div>
 
         <div class="footer">
@@ -889,9 +887,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       >
         <div class="agent__row">
           <span class="agent__name">${agent.agent_name}</span>
-          ${hasSelection
-            ? html`<span class="agent__done" aria-label=${msg('Action selected')}>${msg('OK')}</span>`
-            : nothing}
+          ${
+            hasSelection
+              ? html`<span class="agent__done" aria-label=${msg('Action selected')}>${msg('OK')}</span>`
+              : nothing
+          }
           <span class="agent__condition">${getConditionLabel(agent.condition)}</span>
           <div class="agent__abilities" role="radiogroup" aria-label=${msg('Abilities')}>
             ${agent.available_abilities.map((ability) =>
@@ -899,9 +899,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
             )}
           </div>
         </div>
-        ${isTargeting
-          ? this._renderTargetPicker(agent, enemies)
-          : nothing}
+        ${isTargeting ? this._renderTargetPicker(agent, enemies) : nothing}
       </div>
     `;
   }
@@ -933,19 +931,20 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         title=${localizedField(ability, 'description')}
         @click=${() => this._handleAbilityClick(agent, ability, enemies)}
       >
-        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedField(ability, 'name')}${onCooldown
-          ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
-          : nothing}${ability.check_info
-          ? html`<span class="ability__check"> ${ability.check_info}</span>`
-          : nothing}
+        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedField(ability, 'name')}${
+          onCooldown
+            ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
+            : nothing
+        }${
+          ability.check_info
+            ? html`<span class="ability__check"> ${ability.check_info}</span>`
+            : nothing
+        }
       </button>
     `;
   }
 
-  private _renderTargetPicker(
-    agent: AgentCombatStateClient,
-    enemies: EnemyCombatStateClient[],
-  ) {
+  private _renderTargetPicker(agent: AgentCombatStateClient, enemies: EnemyCombatStateClient[]) {
     // Determine if targeting allies or enemies based on selected ability
     const selectedAbility = agent.available_abilities.find(
       (a) => a.id === this._targetingAbilityId,
@@ -986,7 +985,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         <span class="targets__label">\u25BA ${msg('Target')}:</span>
         ${enemies.map((enemy) => {
           const baseName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
-          const cond = enemy.condition_display !== 'healthy' ? ` (${getEnemyConditionLabel(enemy.condition_display)})` : '';
+          const cond =
+            enemy.condition_display !== 'healthy'
+              ? ` (${getEnemyConditionLabel(enemy.condition_display)})`
+              : '';
           return html`
             <button
               class="target"

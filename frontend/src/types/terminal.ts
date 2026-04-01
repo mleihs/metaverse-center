@@ -9,26 +9,20 @@ import type { EpochParticipant, EpochStatus } from './index.js';
 // ── Terminal Output ────────────────────────────────────────────────────────
 
 /** Channel prefixes for realtime feed entries (EVE Online pattern). */
-export type TerminalChannel =
-  | 'INTEL'
-  | 'WEATHER'
-  | 'ALERT'
-  | 'DISTANT'
-  | 'COMMS'
-  | 'SYSTEM';
+export type TerminalChannel = 'INTEL' | 'WEATHER' | 'ALERT' | 'DISTANT' | 'COMMS' | 'SYSTEM';
 
 /** Classification of a terminal output line — drives styling and ARIA roles. */
 export type TerminalLineType =
-  | 'command'        // echoed player input
-  | 'response'       // command output (formatted prose)
-  | 'system'         // [SYSTEM] clearance upgrades, boot sequence
-  | 'error'          // unknown command, insufficient points
-  | 'feed'           // realtime heartbeat feed entry
-  | 'hint'           // onboarding guidance
-  | 'combat-player'  // party attack/ability hits (bright amber)
-  | 'combat-miss'    // missed attacks, failed checks (dim olive, italic)
-  | 'combat-damage'  // damage received by party (danger red)
-  | 'combat-heal'    // stress heals, condition recovery (success green)
+  | 'command' // echoed player input
+  | 'response' // command output (formatted prose)
+  | 'system' // [SYSTEM] clearance upgrades, boot sequence
+  | 'error' // unknown command, insufficient points
+  | 'feed' // realtime heartbeat feed entry
+  | 'hint' // onboarding guidance
+  | 'combat-player' // party attack/ability hits (bright amber)
+  | 'combat-miss' // missed attacks, failed checks (dim olive, italic)
+  | 'combat-damage' // damage received by party (danger red)
+  | 'combat-heal' // stress heals, condition recovery (success green)
   | 'combat-system'; // round headers, victory, stalemate (bold amber)
 
 /** A single line (or block) of terminal output. */

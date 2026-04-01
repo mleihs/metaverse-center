@@ -15,23 +15,17 @@ import { dungeonApi } from '../services/api/DungeonApiService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import { localized } from './locale-fields.js';
-import type {
-  CombatSubmission,
-  DungeonRunCreate,
-} from '../types/dungeon.js';
+import type { CombatSubmission, DungeonRunCreate } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
   AUTO_APPLY_EFFECTS,
   formatAgentPicker,
   formatArchetypeBriefing,
   formatAvailableDungeons,
-  getArchetypeDisplayName,
   formatCombatPlanning,
   formatCombatResolution,
   formatCombatStalemate,
   formatCombatStart,
-  formatRoundTransition,
   formatDungeonComplete,
   formatDungeonEntry,
   formatDungeonMap,
@@ -43,18 +37,25 @@ import {
   formatRestResult,
   formatRetreatResult,
   formatRoomEntry,
+  formatRoundTransition,
   formatScoutResult,
   formatSkillCheckResult,
+  getArchetypeDisplayName,
 } from './dungeon-formatters.js';
-import {
-  combatSystemLine, systemLine, hintLine, errorLine, responseLine,
-  formatInsufficientClearance,
-} from './terminal-formatters.js';
 import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
+import { localized } from './locale-fields.js';
+import {
+  combatSystemLine,
+  errorLine,
+  formatInsufficientClearance,
+  hintLine,
+  responseLine,
+  systemLine,
+} from './terminal-formatters.js';
 
 /** Fuzzy match a string against a list of names. Returns matched name or null. */
 function fuzzyName(query: string, names: string[]): string | null {
-  const entities = names.map(n => ({ id: n, name: n }));
+  const entities = names.map((n) => ({ id: n, name: n }));
   const matches = fuzzyMatchEntities(query, entities);
   return matches.length > 0 ? matches[0].name : null;
 }
@@ -73,7 +74,15 @@ const DUNGEON_OVERRIDE_VERBS = new Set(['move', 'go', 'map', 'look', 'status']);
  * Outside dungeon mode → return error message (not null).
  */
 const DUNGEON_ONLY_VERBS = new Set([
-  'scout', 'rest', 'retreat', 'interact', 'attack', 'submit', 'assign', 'confirm', 'protocol',
+  'scout',
+  'rest',
+  'retreat',
+  'interact',
+  'attack',
+  'submit',
+  'assign',
+  'confirm',
+  'protocol',
 ]);
 
 /**
@@ -82,10 +91,20 @@ const DUNGEON_ONLY_VERBS = new Set([
  * Tier 2: dungeon-specific actions (dungeon, scout, rest, retreat, interact, attack, submit).
  */
 const DUNGEON_VERB_TIER: Record<string, number> = {
-  move: 1, go: 1, map: 1, look: 1, status: 1,
-  dungeon: 2, scout: 2, rest: 2, retreat: 2,
-  interact: 2, attack: 2, submit: 2,
-  assign: 2, confirm: 2,
+  move: 1,
+  go: 1,
+  map: 1,
+  look: 1,
+  status: 1,
+  dungeon: 2,
+  scout: 2,
+  rest: 2,
+  retreat: 2,
+  interact: 2,
+  attack: 2,
+  submit: 2,
+  assign: 2,
+  confirm: 2,
 };
 
 // ── Main Dispatcher ──────────────────────────────────────────────────────────
@@ -143,20 +162,34 @@ export async function dispatchDungeonCommand(
 
   switch (verb) {
     case 'move':
-    case 'go': return handleDungeonMove(ctx);
-    case 'map': return handleDungeonMap();
-    case 'look': return handleDungeonLook();
-    case 'status': return handleDungeonStatus();
-    case 'scout': return handleDungeonScout(ctx);
-    case 'rest': return handleDungeonRest();
-    case 'retreat': return handleDungeonRetreat();
-    case 'interact': return handleDungeonInteract(ctx);
-    case 'attack': return handleDungeonAttack(ctx);
-    case 'submit': return handleDungeonSubmit();
-    case 'assign': return handleDungeonAssign(ctx);
-    case 'confirm': return handleDungeonConfirm();
-    case 'protocol': return handleDungeonProtocol();
-    default: return null;
+    case 'go':
+      return handleDungeonMove(ctx);
+    case 'map':
+      return handleDungeonMap();
+    case 'look':
+      return handleDungeonLook();
+    case 'status':
+      return handleDungeonStatus();
+    case 'scout':
+      return handleDungeonScout(ctx);
+    case 'rest':
+      return handleDungeonRest();
+    case 'retreat':
+      return handleDungeonRetreat();
+    case 'interact':
+      return handleDungeonInteract(ctx);
+    case 'attack':
+      return handleDungeonAttack(ctx);
+    case 'submit':
+      return handleDungeonSubmit();
+    case 'assign':
+      return handleDungeonAssign(ctx);
+    case 'confirm':
+      return handleDungeonConfirm();
+    case 'protocol':
+      return handleDungeonProtocol();
+    default:
+      return null;
   }
 }
 
@@ -184,18 +217,17 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   }
 
   // Parse archetype from first arg (fuzzy match against known names)
-  const archetypeNames = available.map(d => d.archetype);
+  const archetypeNames = available.map((d) => d.archetype);
   const firstArg = ctx.args[0].toLowerCase();
   const matched = fuzzyName(firstArg, archetypeNames);
 
   if (!matched) {
-    return [
-      errorLine(msg('Unknown archetype.')),
-      ...formatAvailableDungeons(available),
-    ];
+    return [errorLine(msg('Unknown archetype.')), ...formatAvailableDungeons(available)];
   }
 
-  const selectedDungeon = available.find(d => d.archetype.toLowerCase() === matched.toLowerCase());
+  const selectedDungeon = available.find(
+    (d) => d.archetype.toLowerCase() === matched.toLowerCase(),
+  );
   if (!selectedDungeon || !selectedDungeon.available) {
     return [errorLine(msg('That dungeon is not available (cooldown active or no resonance).'))];
   }
@@ -209,7 +241,9 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   const aptMap = dungeonState.pickerAptitudes.value;
 
   if (agents.length < 2) {
-    return [errorLine(msg('Need at least 2 agents for a dungeon party. Recruit more agents first.'))];
+    return [
+      errorLine(msg('Need at least 2 agents for a dungeon party. Recruit more agents first.')),
+    ];
   }
 
   // Remaining args after archetype determine action
@@ -222,13 +256,13 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
 
   // "auto" → smart-pick top 3 by aggregate aptitude score
   if (selectionArgs[0] === 'auto') {
-    const scored = agents.map(a => {
+    const scored = agents.map((a) => {
       const apts = aptMap.get(a.id);
       const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
       return { agent: a, score: total };
     });
     scored.sort((a, b) => b.score - a.score);
-    const partyIds = scored.slice(0, 3).map(s => s.agent.id);
+    const partyIds = scored.slice(0, 3).map((s) => s.agent.id);
     return startDungeonRun(sid, {
       archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
       party_agent_ids: partyIds,
@@ -237,7 +271,9 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   }
 
   // Numeric args → indices into the agent list (1-based)
-  const indices = selectionArgs.map(Number).filter(n => !isNaN(n) && n >= 1 && n <= agents.length);
+  const indices = selectionArgs
+    .map(Number)
+    .filter((n) => !isNaN(n) && n >= 1 && n <= agents.length);
   if (indices.length < 2) {
     return [
       errorLine(msg('Select 2\u20134 agents by number.')),
@@ -249,7 +285,7 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   }
 
   // Map 1-based indices to agent IDs
-  const partyIds = [...new Set(indices)].map(i => agents[i - 1].id);
+  const partyIds = [...new Set(indices)].map((i) => agents[i - 1].id);
   if (partyIds.length < 2) {
     return [errorLine(msg('Need at least 2 unique agents.'))];
   }
@@ -310,7 +346,9 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     for (const room of adjacent) {
       const typeStr = room.room_type === '?' ? msg('Unknown') : room.room_type;
       const clearedStr = room.cleared ? ` [${msg('cleared')}]` : '';
-      lines.push(responseLine(`  [${room.index}] ${typeStr} (${msg('depth')} ${room.depth})${clearedStr}`));
+      lines.push(
+        responseLine(`  [${room.index}] ${typeStr} (${msg('depth')} ${room.depth})${clearedStr}`),
+      );
     }
     lines.push(hintLine(msg('Type "move <number>" to move to a room.')));
     return lines;
@@ -324,7 +362,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
   // Validate: is this room adjacent?
   const adjacent = dungeonState.adjacentRooms.value;
-  if (!adjacent.some(r => r.index === roomIndex)) {
+  if (!adjacent.some((r) => r.index === roomIndex)) {
     return [errorLine(msg('Cannot reach that room. Move to an adjacent room.'))];
   }
 
@@ -341,15 +379,15 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     const lines: TerminalLine[] = [];
 
     // Room entry formatting
-    const room = result.state.rooms.find(r => r.index === result.state.current_room);
+    const room = result.state.rooms.find((r) => r.index === result.state.current_room);
     if (room) {
       lines.push(
         ...formatRoomEntry(
           room,
-          result.banter ? (localized(result.banter, 'text') || null) : null,
+          result.banter ? localized(result.banter, 'text') || null : null,
           result.state.archetype_state,
           result.anchor_texts ?? null,
-          result.barometer_text ? (localized(result.barometer_text, 'text') || null) : null,
+          result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
         ),
       );
     }
@@ -364,7 +402,14 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     const encounterDesc = localized(result, 'description');
     if (result.choices && encounterDesc) {
       dungeonState.encounterChoices.value = result.choices;
-      lines.push(...formatEncounterChoices(encounterDesc, result.choices, result.state.party, room?.room_type));
+      lines.push(
+        ...formatEncounterChoices(
+          encounterDesc,
+          result.choices,
+          result.state.party,
+          room?.room_type,
+        ),
+      );
     }
 
     // Treasure (auto-loot, no choices)
@@ -417,10 +462,7 @@ function handleDungeonLook(): TerminalLine[] {
 
   // Re-display encounter choices when in encounter/rest phase
   const choices = dungeonState.encounterChoices.value;
-  if (
-    (state.phase === 'encounter' || state.phase === 'rest') &&
-    choices.length > 0
-  ) {
+  if ((state.phase === 'encounter' || state.phase === 'rest') && choices.length > 0) {
     const desc = localized(state, 'encounter_description');
     lines.push(...formatEncounterChoices(desc, choices, state.party, room.room_type));
   }
@@ -452,16 +494,16 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
   if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
 
   // Find the best spy agent (or specified agent)
-  const party = dungeonState.party.value.filter(a => a.condition !== 'captured');
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
   if (party.length === 0) return [errorLine(msg('No agents available.'))];
 
   let agent = party[0];
   if (ctx.args.length > 0) {
     const agentName = ctx.args.join(' ');
-    const names = party.map(a => a.agent_name);
+    const names = party.map((a) => a.agent_name);
     const matched = fuzzyName(agentName, names);
     if (matched) {
-      agent = party.find(a => a.agent_name === matched) ?? agent;
+      agent = party.find((a) => a.agent_name === matched) ?? agent;
     } else {
       return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
     }
@@ -481,7 +523,12 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
 
     dungeonState.applyState(resp.data.state);
     const archetype = dungeonState.clientState.value?.archetype ?? '';
-    return formatScoutResult(agent.agent_name, resp.data.revealed_rooms, resp.data.visibility, archetype);
+    return formatScoutResult(
+      agent.agent_name,
+      resp.data.revealed_rooms,
+      resp.data.visibility,
+      archetype,
+    );
   } catch (err) {
     captureError(err, { source: 'dungeon-commands.handleDungeonScout' });
     const message = err instanceof Error ? err.message : msg('Scout failed.');
@@ -506,8 +553,8 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
 
   // Rest all non-captured agents
   const restAgents = dungeonState.party.value
-    .filter(a => a.condition !== 'captured')
-    .map(a => a.agent_id);
+    .filter((a) => a.condition !== 'captured')
+    .map((a) => a.agent_id);
 
   if (restAgents.length === 0) return [errorLine(msg('No agents available to rest.'))];
 
@@ -552,7 +599,12 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
 
     const lines = formatRetreatResult(resp.data.loot);
     if (resp.data.rpc_failed) {
-      lines.push(errorLine(resp.data.rpc_error_message ?? msg('Failed to save retreat. Progress will be recovered on next visit.')));
+      lines.push(
+        errorLine(
+          resp.data.rpc_error_message ??
+            msg('Failed to save retreat. Progress will be recovered on next visit.'),
+        ),
+      );
     }
     _exitDungeon();
     return lines;
@@ -585,9 +637,7 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
 
   // Find the distributable items (same filter as formatter)
   const autoEffects = AUTO_APPLY_EFFECTS;
-  const distributable = (state.pending_loot ?? []).filter(
-    i => !autoEffects.has(i.effect_type),
-  );
+  const distributable = (state.pending_loot ?? []).filter((i) => !autoEffects.has(i.effect_type));
 
   if (isNaN(itemNum) || itemNum < 1 || itemNum > distributable.length) {
     return [errorLine(msg('Invalid item number.'))];
@@ -597,13 +647,13 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
 
   // Fuzzy match agent name (same pattern as attack/encounter commands)
   const operationalNames = state.party
-    .filter(a => a.condition !== 'captured')
-    .map(a => a.agent_name);
+    .filter((a) => a.condition !== 'captured')
+    .map((a) => a.agent_name);
   const matchedName = fuzzyName(agentNameInput, operationalNames);
   if (!matchedName) {
     return [errorLine(msg('Agent not found or captured.'))];
   }
-  const agent = state.party.find(a => a.agent_name === matchedName)!;
+  const agent = state.party.find((a) => a.agent_name === matchedName)!;
 
   try {
     const resp = await dungeonApi.assignLoot(runId, {
@@ -643,11 +693,9 @@ async function handleDungeonConfirm(): Promise<TerminalLine[]> {
 
   // Check all distributable items are assigned
   const autoEffects = AUTO_APPLY_EFFECTS;
-  const distributable = (state.pending_loot ?? []).filter(
-    i => !autoEffects.has(i.effect_type),
-  );
+  const distributable = (state.pending_loot ?? []).filter((i) => !autoEffects.has(i.effect_type));
   const assignments = state.loot_assignments ?? {};
-  const unassigned = distributable.filter(i => !assignments[i.id]);
+  const unassigned = distributable.filter((i) => !assignments[i.id]);
   if (unassigned.length > 0) {
     return [errorLine(msg('Not all items assigned. Use "assign" first.'))];
   }
@@ -710,8 +758,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
       .filter((a) => a.condition !== 'captured')
       .sort(
         (a, b) =>
-          (b.aptitudes[choice.check_aptitude!] ?? 0) -
-          (a.aptitudes[choice.check_aptitude!] ?? 0),
+          (b.aptitudes[choice.check_aptitude!] ?? 0) - (a.aptitudes[choice.check_aptitude!] ?? 0),
       );
     agentId = candidates[0]?.agent_id;
   }
@@ -734,9 +781,12 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     // Skill check result
     if (resp.data.check) {
       // Use backend-generated narrative effects (bilingual, proper separation of concerns)
-      const effects: string[] = localized(resp.data, 'narrative_effects') as unknown as string[]
-        ?? Object.entries(resp.data.effects).map(([key, val]: [string, unknown]) => `${key}: ${val}`);
-      lines.push(...formatSkillCheckResult(resp.data.check, localized(resp.data, 'narrative'), effects));
+      const effects: string[] =
+        (localized(resp.data, 'narrative_effects') as unknown as string[]) ??
+        Object.entries(resp.data.effects).map(([key, val]: [string, unknown]) => `${key}: ${val}`);
+      lines.push(
+        ...formatSkillCheckResult(resp.data.check, localized(resp.data, 'narrative'), effects),
+      );
     } else {
       // No check — direct result
       const narrative = localized(resp.data, 'narrative');
@@ -746,10 +796,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     }
 
     // Boss deployment loop: re-render updated choices if still in encounter phase
-    if (
-      resp.data.state.phase === 'encounter' &&
-      resp.data.state.encounter_choices?.length
-    ) {
+    if (resp.data.state.phase === 'encounter' && resp.data.state.encounter_choices?.length) {
       dungeonState.encounterChoices.value = resp.data.state.encounter_choices;
       const desc = localized(resp.data.state, 'encounter_description');
       if (desc) {
@@ -765,11 +812,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     }
 
     // Boss deployment → combat transition
-    if (
-      resp.data.combat &&
-      resp.data.state.phase === 'combat_planning' &&
-      resp.data.state.combat
-    ) {
+    if (resp.data.combat && resp.data.state.phase === 'combat_planning' && resp.data.state.combat) {
       lines.push(...formatCombatStart(resp.data.state.combat));
       lines.push(...formatCombatPlanning(resp.data.state.party));
     }
@@ -812,42 +855,44 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   }
 
   const party = dungeonState.party.value.filter(
-    a => a.condition !== 'captured' && a.available_abilities.length > 0,
+    (a) => a.condition !== 'captured' && a.available_abilities.length > 0,
   );
 
   // Fuzzy match agent
   const agentName = ctx.args[0];
-  const agentNames = party.map(a => a.agent_name);
+  const agentNames = party.map((a) => a.agent_name);
   const matchedAgent = fuzzyName(agentName, agentNames);
 
   if (!matchedAgent) {
     return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
   }
 
-  const agent = party.find(a => a.agent_name === matchedAgent)!;
+  const agent = party.find((a) => a.agent_name === matchedAgent)!;
 
   // Fuzzy match ability
   const abilityArg = ctx.args[1].toLowerCase();
   const abilityNames = agent.available_abilities
-    .filter(a => a.cooldown_remaining === 0)
-    .map(a => localized(a, 'name'));
+    .filter((a) => a.cooldown_remaining === 0)
+    .map((a) => localized(a, 'name'));
   const matchedAbility = fuzzyName(abilityArg, abilityNames);
 
   if (!matchedAbility) {
     return [errorLine(`${msg('Unknown or unavailable ability')}: ${abilityArg}`)];
   }
 
-  const ability = agent.available_abilities.find(a => localized(a, 'name') === matchedAbility)!;
+  const ability = agent.available_abilities.find((a) => localized(a, 'name') === matchedAbility)!;
 
   // Optional target (enemy)
   const targetArg = ctx.args.length > 2 ? ctx.args.slice(2).join(' ') : undefined;
   let targetId: string | undefined;
 
   if (targetArg && state.combat) {
-    const enemyNames = state.combat.enemies.filter(e => e.is_alive).map(e => localized(e, 'name'));
+    const enemyNames = state.combat.enemies
+      .filter((e) => e.is_alive)
+      .map((e) => localized(e, 'name'));
     const matchedEnemy = fuzzyName(targetArg, enemyNames);
     if (matchedEnemy) {
-      const enemy = state.combat.enemies.find(e => localized(e, 'name') === matchedEnemy);
+      const enemy = state.combat.enemies.find((e) => localized(e, 'name') === matchedEnemy);
       targetId = enemy?.instance_id;
     }
   }
@@ -922,7 +967,12 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       if (resp.data.round_result.wipe) {
         lines.push(...formatPartyWipe());
         if (resp.data.rpc_failed) {
-          lines.push(errorLine(resp.data.rpc_error_message ?? msg('Failed to save result. Progress will be recovered on next visit.')));
+          lines.push(
+            errorLine(
+              resp.data.rpc_error_message ??
+                msg('Failed to save result. Progress will be recovered on next visit.'),
+            ),
+          );
         }
         _exitDungeon();
       }
@@ -942,12 +992,14 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Check for distribution phase (boss victory with distributable loot)
     if (resp.data.state.phase === 'distributing') {
-      lines.push(...formatLootDistribution(
-        resp.data.state,
-        resp.data.loot ?? [],
-        resp.data.state.loot_assignments ?? {},
-        resp.data.state.loot_suggestions ?? {},
-      ));
+      lines.push(
+        ...formatLootDistribution(
+          resp.data.state,
+          resp.data.loot ?? [],
+          resp.data.state.loot_assignments ?? {},
+          resp.data.state.loot_suggestions ?? {},
+        ),
+      );
     }
 
     // Check for completion (boss victory — auto-complete path)

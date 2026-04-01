@@ -276,7 +276,8 @@ export class VelgAdminBlueskyTab extends LitElement {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-  `];
+  `,
+  ];
 
   // ── State ────────────────────────────────────────────
 
@@ -475,7 +476,6 @@ export class VelgAdminBlueskyTab extends LitElement {
 
   // ── Formatting ───────────────────────────────────────
 
-
   private _formatNumber(n: number): string {
     if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
     return String(n);
@@ -550,14 +550,20 @@ export class VelgAdminBlueskyTab extends LitElement {
   // ── Tab Bar ──────────────────────────────────────────
 
   private _renderTabBar() {
-    const tabs: { key: PanelTab; label: string; icon: ReturnType<typeof icons.antenna>; badge?: unknown }[] = [
+    const tabs: {
+      key: PanelTab;
+      label: string;
+      icon: ReturnType<typeof icons.antenna>;
+      badge?: unknown;
+    }[] = [
       {
         key: 'operations',
         label: msg('Operations'),
         icon: icons.antenna(13),
-        badge: this._actionableCount > 0
-          ? html`<span class="tab__badge">${this._actionableCount}</span>`
-          : nothing,
+        badge:
+          this._actionableCount > 0
+            ? html`<span class="tab__badge">${this._actionableCount}</span>`
+            : nothing,
       },
       {
         key: 'configure',
@@ -573,16 +579,20 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     return html`
       <div class="tab-bar">
-        ${tabs.map((t) => html`
+        ${tabs.map(
+          (t) => html`
           <button
             class="tab ${this._activeTab === t.key ? 'tab--active' : ''}"
-            @click=${() => { this._activeTab = t.key; }}
+            @click=${() => {
+              this._activeTab = t.key;
+            }}
           >
             ${t.icon}
             ${t.label}
             ${t.badge ?? nothing}
           </button>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -593,9 +603,10 @@ export class VelgAdminBlueskyTab extends LitElement {
     return html`
       <div>
         ${this._renderStatusBar()}
-        ${this._loading
-          ? html`<div class="loading-state">${msg('Scanning Bluesky relay channels...')}</div>`
-          : this._renderDispatchList()
+        ${
+          this._loading
+            ? html`<div class="loading-state">${msg('Scanning Bluesky relay channels...')}</div>`
+            : this._renderDispatchList()
         }
       </div>
     `;
@@ -612,17 +623,21 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     return html`
       <div class="status-bar">
-        ${tabs.map((t) => html`
+        ${tabs.map(
+          (t) => html`
           <button
             class="status-tab ${this._statusFilter === t.key ? 'status-tab--active' : ''}"
-            @click=${() => { this._statusFilter = t.key; }}
+            @click=${() => {
+              this._statusFilter = t.key;
+            }}
           >
             ${t.label}
             <span class="status-tab__count">
               ${t.key === 'all' ? this._queue.length : this._statusCount(t.key)}
             </span>
           </button>
-        `)}
+        `,
+        )}
         <span class="queue-total">
           ${msg(str`${this._filteredQueue.length} dispatches`)}
         </span>
@@ -655,86 +670,117 @@ export class VelgAdminBlueskyTab extends LitElement {
     return html`
       <div class="dispatch dispatch--${post.status}">
         <div class="dispatch__thumb">
-          ${hasImage
-            ? html`<img src="${post.image_urls[0]}" alt="${post.alt_text ?? ''}" loading="lazy" />`
-            : msg('N/A')
+          ${
+            hasImage
+              ? html`<img src="${post.image_urls[0]}" alt="${post.alt_text ?? ''}" loading="lazy" />`
+              : msg('N/A')
           }
         </div>
 
         <div class="dispatch__body">
           <div class="dispatch__header">
             <span class="dispatch__type-tag">${post.content_source_type}</span>
-            ${post.simulation_name
-              ? html`<span class="dispatch__shard">${post.simulation_name}</span>`
-              : nothing
+            ${
+              post.simulation_name
+                ? html`<span class="dispatch__shard">${post.simulation_name}</span>`
+                : nothing
             }
             <span class="badge badge--${badgeColor}">${post.status}</span>
             <span class="dispatch__timestamp">
-              ${post.status === 'published'
-                ? formatDateTimeShort(post.published_at)
-                : post.status === 'pending'
-                  ? formatDateTimeShort(post.scheduled_at)
-                  : formatDateTimeShort(post.created_at)
+              ${
+                post.status === 'published'
+                  ? formatDateTimeShort(post.published_at)
+                  : post.status === 'pending'
+                    ? formatDateTimeShort(post.scheduled_at)
+                    : formatDateTimeShort(post.created_at)
               }
             </span>
           </div>
 
           <div class="dispatch__caption">${post.caption}</div>
 
-          ${post.status === 'published' ? html`
+          ${
+            post.status === 'published'
+              ? html`
             <div class="dispatch__metrics">
               <span class="metric">${icons.sparkle(12)} ${this._formatNumber(post.likes_count)}</span>
               <span class="metric">${icons.messageCircle(12)} ${this._formatNumber(post.replies_count)}</span>
               <span class="metric metric--accent">${this._formatNumber(post.reposts_count)} ${msg('reposts')}</span>
               <span class="metric">${this._formatNumber(post.quotes_count)} ${msg('quotes')}</span>
             </div>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.failure_reason ? html`
+          ${
+            post.failure_reason
+              ? html`
             <div class="dispatch__failure">${post.failure_reason}</div>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.instagram_permalink ? html`
+          ${
+            post.instagram_permalink
+              ? html`
             <div class="dispatch__ig-link">
               ${icons.instagram(12)}
               <a href="${post.instagram_permalink}" target="_blank" rel="noopener">${msg('View on Instagram')}</a>
               ${post.instagram_status ? html` <span class="badge badge--${STATUS_COLORS[post.instagram_status] ?? 'info'}">${post.instagram_status}</span>` : nothing}
             </div>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
 
         <div class="dispatch__actions">
-          ${post.status === 'pending' ? html`
+          ${
+            post.status === 'pending'
+              ? html`
             <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
               ${msg('Publish')}
             </button>
             <button class="act act--skip" ?disabled=${disabled} @click=${() => this._handleSkip(post)}>
               ${msg('Skip')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'failed' ? html`
+          ${
+            post.status === 'failed'
+              ? html`
             <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
               ${msg('Retry')}
             </button>
             <button class="act act--skip" ?disabled=${disabled} @click=${() => this._handleSkip(post)}>
               ${msg('Skip')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'skipped' ? html`
+          ${
+            post.status === 'skipped'
+              ? html`
             <button class="act act--unskip" ?disabled=${disabled} @click=${() => this._handleUnskip(post)}>
               ${msg('Re-enable')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'published' && post.bsky_uri ? html`
+          ${
+            post.status === 'published' && post.bsky_uri
+              ? html`
             <a class="act act--link"
                href="https://bsky.app/profile/${this._connectionStatus?.handle ?? ''}/post/${post.bsky_uri.split('/').pop()}"
                target="_blank" rel="noopener">
               ${msg('View')}
             </a>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -772,7 +818,9 @@ export class VelgAdminBlueskyTab extends LitElement {
                 .value=${this._handleDraft}
                 placeholder="handle.bsky.social"
                 aria-label=${msg('Bluesky Handle')}
-                @input=${(e: InputEvent) => { this._handleDraft = (e.target as HTMLInputElement).value; }}
+                @input=${(e: InputEvent) => {
+                  this._handleDraft = (e.target as HTMLInputElement).value;
+                }}
               />
               <button
                 class="config-save-btn"
@@ -794,7 +842,9 @@ export class VelgAdminBlueskyTab extends LitElement {
                 .value=${this._passwordDraft}
                 placeholder=${msg('Enter app password')}
                 aria-label=${msg('Bluesky App Password')}
-                @input=${(e: InputEvent) => { this._passwordDraft = (e.target as HTMLInputElement).value; }}
+                @input=${(e: InputEvent) => {
+                  this._passwordDraft = (e.target as HTMLInputElement).value;
+                }}
               />
               <button
                 class="config-save-btn"
@@ -816,7 +866,9 @@ export class VelgAdminBlueskyTab extends LitElement {
                 .value=${this._pdsDraft}
                 placeholder="https://bsky.social"
                 aria-label=${msg('Personal Data Server URL')}
-                @input=${(e: InputEvent) => { this._pdsDraft = (e.target as HTMLInputElement).value; }}
+                @input=${(e: InputEvent) => {
+                  this._pdsDraft = (e.target as HTMLInputElement).value;
+                }}
               />
               <button
                 class="config-save-btn"
@@ -864,7 +916,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
           <div class="config-row">
             <div class="config-row__label">
-              <div class="config-row__name">${msg('Auto Cross-Post')} ${renderInfoBubble(msg('When enabled, every Instagram post that gets published automatically creates a corresponding Bluesky post. The caption is reformatted for Bluesky (300 char limit with facets/links). Images are re-uploaded to Bluesky\'s blob store.'))}</div>
+              <div class="config-row__name">${msg('Auto Cross-Post')} ${renderInfoBubble(msg("When enabled, every Instagram post that gets published automatically creates a corresponding Bluesky post. The caption is reformatted for Bluesky (300 char limit with facets/links). Images are re-uploaded to Bluesky's blob store."))}</div>
               <div class="config-row__desc">${msg('Automatically create Bluesky posts from Instagram')}</div>
             </div>
             <button
@@ -926,20 +978,26 @@ export class VelgAdminBlueskyTab extends LitElement {
         ></velg-metric-card>
       </div>
 
-      ${a.engagement_by_type.length > 0 ? html`
+      ${
+        a.engagement_by_type.length > 0
+          ? html`
         <h3 style="font-family: var(--font-brutalist); text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--text-sm); margin-bottom: var(--space-3);">
           ${msg('By Content Type')}
         </h3>
         <div class="intel-grid">
-          ${a.engagement_by_type.map((e) => html`
+          ${a.engagement_by_type.map(
+            (e) => html`
             <velg-metric-card
               label=${e.content_type}
               value="${e.post_count} ${msg('posts')}"
               sublabel=${msg(str`avg ${e.avg_likes} likes`)}
             ></velg-metric-card>
-          `)}
+          `,
+          )}
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 }

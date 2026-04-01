@@ -210,13 +210,13 @@ export class AdminApiService extends BaseApiService {
     return this.post('/admin/instagram/generate', body);
   }
 
-  async listInstagramCandidates(
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<unknown[]>> {
+  async listInstagramCandidates(params?: Record<string, string>): Promise<ApiResponse<unknown[]>> {
     return this.get('/admin/instagram/candidates', params);
   }
 
-  async createInstagramPost(body: Record<string, unknown>): Promise<ApiResponse<InstagramQueueItem>> {
+  async createInstagramPost(
+    body: Record<string, unknown>,
+  ): Promise<ApiResponse<InstagramQueueItem>> {
     return this.post('/admin/instagram/queue', body);
   }
 
@@ -238,9 +238,7 @@ export class AdminApiService extends BaseApiService {
     return this.post(`/admin/instagram/queue/${postId}/publish`, {});
   }
 
-  async getInstagramAnalytics(
-    days = 30,
-  ): Promise<ApiResponse<InstagramAnalytics>> {
+  async getInstagramAnalytics(days = 30): Promise<ApiResponse<InstagramAnalytics>> {
     return this.get('/admin/instagram/analytics', { days: String(days) });
   }
 
@@ -291,9 +289,7 @@ export class AdminApiService extends BaseApiService {
     return this.post(`/admin/bluesky/queue/${postId}/publish`, {});
   }
 
-  async getBlueskyAnalytics(
-    days = 30,
-  ): Promise<ApiResponse<BlueskyAnalytics>> {
+  async getBlueskyAnalytics(days = 30): Promise<ApiResponse<BlueskyAnalytics>> {
     return this.get('/admin/bluesky/analytics', { days: String(days) });
   }
 
@@ -393,9 +389,7 @@ export class AdminApiService extends BaseApiService {
     return this.get('/admin/dungeon-override');
   }
 
-  async getDungeonOverride(
-    simulationId: string,
-  ): Promise<ApiResponse<DungeonOverrideConfig>> {
+  async getDungeonOverride(simulationId: string): Promise<ApiResponse<DungeonOverrideConfig>> {
     return this.get(`/admin/dungeon-override/simulations/${simulationId}`);
   }
 
@@ -517,7 +511,11 @@ export interface InstagramAnalytics {
   total_shares: number | null;
   total_comments: number | null;
   top_content_type: string | null;
-  engagement_by_simulation: { simulation_name: string; post_count: number; avg_engagement_rate: number }[];
+  engagement_by_simulation: {
+    simulation_name: string;
+    post_count: number;
+    avg_engagement_rate: number;
+  }[];
   engagement_by_type: { content_type: string; post_count: number; avg_engagement_rate: number }[];
 }
 

@@ -246,7 +246,6 @@ export class VelgEventCard extends LitElement {
 
   @property({ type: Object }) event!: SimEvent;
 
-
   private _getImpactClass(level: number): string {
     if (level >= 8) return 'high';
     if (level >= 5) return 'medium';

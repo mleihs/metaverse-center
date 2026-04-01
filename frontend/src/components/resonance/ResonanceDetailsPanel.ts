@@ -759,7 +759,6 @@ export class VelgResonanceDetailsPanel extends LitElement {
     }
   }
 
-
   private _navigateToSim(slug: string): void {
     if (!slug) return;
     window.history.pushState({}, '', `/simulations/${slug}/events`);

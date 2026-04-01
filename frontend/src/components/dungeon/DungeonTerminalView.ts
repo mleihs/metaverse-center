@@ -437,9 +437,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   private async _acquireWakeLock(): Promise<void> {
     try {
       if ('wakeLock' in navigator) {
-        this._wakeLock = await (navigator as Navigator & {
-          wakeLock: { request(type: string): Promise<WakeLockSentinel> };
-        }).wakeLock.request('screen');
+        this._wakeLock = await (
+          navigator as Navigator & {
+            wakeLock: { request(type: string): Promise<WakeLockSentinel> };
+          }
+        ).wakeLock.request('screen');
       }
     } catch {
       // Non-critical — silently fail (battery saver, permissions, etc.)
@@ -528,9 +530,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           <velg-dungeon-map persistent></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
-          ${inCombat
-            ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
-            : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`}
+          ${
+            inCombat
+              ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
+              : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
+          }
         </div>
       </div>
 
@@ -581,11 +585,13 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       <div class="dungeon-lobby">
         <div class="lobby-info">
           <div class="lobby-info__title">${msg('Resonance Dungeons')}</div>
-          ${loading
-            ? html`<span>${msg('Scanning resonance frequencies...')}</span>`
-            : available.length > 0
-              ? this._renderAvailableList(available)
-              : html`<span>${msg('No dungeon archetypes detected in this simulation.')}</span>`}
+          ${
+            loading
+              ? html`<span>${msg('Scanning resonance frequencies...')}</span>`
+              : available.length > 0
+                ? this._renderAvailableList(available)
+                : html`<span>${msg('No dungeon archetypes detected in this simulation.')}</span>`
+          }
           <div class="lobby-info__hint">
             ${msg("Type 'dungeon' in the terminal to start a run.")}
           </div>
@@ -612,9 +618,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
                 <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
                 <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>
                 <span>${msg('Depth')}: ${d.suggested_depth}</span>
-                ${d.last_run_at
-                  ? html`<span>${msg('Last run')}: ${new Date(d.last_run_at).toLocaleDateString()}</span>`
-                  : nothing}
+                ${
+                  d.last_run_at
+                    ? html`<span>${msg('Last run')}: ${new Date(d.last_run_at).toLocaleDateString()}</span>`
+                    : nothing
+                }
               </span>
             </div>
           `,

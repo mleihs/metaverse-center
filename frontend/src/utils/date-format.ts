@@ -244,11 +244,7 @@ export function formatDateLabel(dateStr: string): string {
  * Date range: "Mar 20, 2026 - Mar 26, 2026"
  * Uses en-dash (\u2013) as separator.
  */
-export function formatDateRange(
-  start: string,
-  end: string,
-  options?: { locale?: string },
-): string {
+export function formatDateRange(start: string, end: string, options?: { locale?: string }): string {
   const locale = options?.locale;
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
   const s = new Date(start);

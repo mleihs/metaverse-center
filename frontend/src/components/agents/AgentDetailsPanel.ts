@@ -1014,25 +1014,33 @@ export class VelgAgentDetailsPanel extends LitElement {
     const pct = Math.round(score * 100);
     const color = this._influenceColor(score);
     const tier = score < 0.25 ? 'weak' : score <= 0.55 ? 'average' : 'strong';
-    const tierLabel = tier === 'weak' ? msg('WEAK') : tier === 'strong' ? msg('STRONG') : msg('AVG');
+    const tierLabel =
+      tier === 'weak' ? msg('WEAK') : tier === 'strong' ? msg('STRONG') : msg('AVG');
 
     // Natural language: relationships
     const relCount = Math.min(this._relationships.length, 5);
-    const avgIntensity = relCount > 0
-      ? Math.round(this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount)
-      : 0;
-    const relText = relCount > 0
-      ? msg(str`${relCount} ${relCount === 1 ? 'ally' : 'allies'} (avg ${avgIntensity}/10)`)
-      : msg('No relationships');
+    const avgIntensity =
+      relCount > 0
+        ? Math.round(
+            this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount,
+          )
+        : 0;
+    const relText =
+      relCount > 0
+        ? msg(str`${relCount} ${relCount === 1 ? 'ally' : 'allies'} (avg ${avgIntensity}/10)`)
+        : msg('No relationships');
 
     // Natural language: professions
     const profs = this.agent.professions ?? [];
-    const profText = profs.length > 0
-      ? profs.map((p) => `${p.profession} (Lv. ${p.qualification_level ?? 1}/5)`).join(', ')
-      : msg('No professions');
+    const profText =
+      profs.length > 0
+        ? profs.map((p) => `${p.profession} (Lv. ${p.qualification_level ?? 1}/5)`).join(', ')
+        : msg('No professions');
 
     // Natural language: ambassador
-    const ambText = this.agent.is_ambassador ? msg('Ambassador (active)') : msg('Not an ambassador');
+    const ambText = this.agent.is_ambassador
+      ? msg('Ambassador (active)')
+      : msg('Not an ambassador');
 
     return html`
       <div class="panel__influence">
@@ -1065,11 +1073,15 @@ export class VelgAgentDetailsPanel extends LitElement {
             <span class="panel__influence-row-detail">${ambText}</span>
           </div>
         </div>
-        ${tier === 'weak' ? html`
+        ${
+          tier === 'weak'
+            ? html`
           <div class="panel__influence-hint">
             ${msg('Low influence. Assign to a building matching their profession to increase readiness.')}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }

@@ -2,7 +2,11 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AIUsageStats, adminApi } from '../../services/api/AdminApiService.js';
-import { adminAnimationStyles, adminForgeSectionStyles, adminLoadingStyles } from './admin-shared-styles.js';
+import {
+  adminAnimationStyles,
+  adminForgeSectionStyles,
+  adminLoadingStyles,
+} from './admin-shared-styles.js';
 import '../shared/VelgMetricCard.js';
 
 /**
@@ -161,17 +165,19 @@ export class VelgAdminAIUsageTab extends LitElement {
           </div>
         </div>
 
-        ${s.daily_trend.length > 0 ? html`
+        ${
+          s.daily_trend.length > 0
+            ? html`
           <div class="forge-section">
             <h3 class="forge-section__title">${msg('Daily Trend')}</h3>
             ${this._renderDailyTable(s.daily_trend)}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
-
-
 
   private _formatTokens(n: number): string {
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -195,20 +201,24 @@ export class VelgAdminAIUsageTab extends LitElement {
           </tr>
         </thead>
         <tbody>
-          ${items.map((item) => html`
+          ${items.map(
+            (item) => html`
             <tr>
               <td>${(item as Record<string, unknown>)[keyField]}</td>
               <td class="num">${item.calls.toLocaleString()}</td>
               <td class="num">${this._formatTokens(item.tokens)}</td>
               <td class="num">$${item.cost.toFixed(4)}</td>
             </tr>
-          `)}
+          `,
+          )}
         </tbody>
       </table>
     `;
   }
 
-  private _renderKeySourcesTable(sources: Record<string, { calls: number; tokens: number; cost: number }>) {
+  private _renderKeySourcesTable(
+    sources: Record<string, { calls: number; tokens: number; cost: number }>,
+  ) {
     const entries = Object.entries(sources);
     if (!entries.length) return html`<p class="empty-state">${msg('No data')}</p>`;
     return html`
@@ -221,20 +231,24 @@ export class VelgAdminAIUsageTab extends LitElement {
           </tr>
         </thead>
         <tbody>
-          ${entries.map(([source, data]) => html`
+          ${entries.map(
+            ([source, data]) => html`
             <tr>
               <td>${source}</td>
               <td class="num">${data.calls.toLocaleString()}</td>
               <td class="num">$${data.cost.toFixed(4)}</td>
             </tr>
-          `)}
+          `,
+          )}
         </tbody>
       </table>
     `;
   }
 
-  private _renderDailyTable(trend: { date: string; calls: number; tokens: number; cost: number }[]) {
-    const recent = trend.slice(-14);  // Last 14 days
+  private _renderDailyTable(
+    trend: { date: string; calls: number; tokens: number; cost: number }[],
+  ) {
+    const recent = trend.slice(-14); // Last 14 days
     return html`
       <table class="breakdown-table">
         <thead>
@@ -246,14 +260,16 @@ export class VelgAdminAIUsageTab extends LitElement {
           </tr>
         </thead>
         <tbody>
-          ${recent.map((day) => html`
+          ${recent.map(
+            (day) => html`
             <tr>
               <td>${day.date}</td>
               <td class="num">${day.calls.toLocaleString()}</td>
               <td class="num">${this._formatTokens(day.tokens)}</td>
               <td class="num">$${day.cost.toFixed(4)}</td>
             </tr>
-          `)}
+          `,
+          )}
         </tbody>
       </table>
     `;

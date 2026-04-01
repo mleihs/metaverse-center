@@ -17,8 +17,8 @@ import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
-  agentAutonomyApi,
   type AgentActivity,
+  agentAutonomyApi,
   type MorningBriefing,
   type SimulationMoodSummary,
 } from '../../services/api/AgentAutonomyApiService.js';
@@ -287,9 +287,10 @@ export class VelgAutonomyBriefing extends LitElement {
     const b = this._briefing;
     const mood = b.mood_summary;
     // Only show mood overview when there's meaningful data (not all zeros)
-    const hasMoodData = mood
-      && mood.agent_count > 0
-      && (mood.agents_happy > 0 || mood.agents_unhappy > 0 || mood.agents_in_crisis > 0);
+    const hasMoodData =
+      mood &&
+      mood.agent_count > 0 &&
+      (mood.agents_happy > 0 || mood.agents_unhappy > 0 || mood.agents_in_crisis > 0);
     const hasCritical = b.critical_activities.length > 0;
     const hasImportant = b.important_activities.length > 0;
     const hasNarrative = !!b.narrative_text;
@@ -338,8 +339,8 @@ export class VelgAutonomyBriefing extends LitElement {
 
   private _renderHighlights(b: MorningBriefing) {
     const combined: Array<{ activity: AgentActivity; level: 'critical' | 'important' }> = [
-      ...b.critical_activities.map(a => ({ activity: a, level: 'critical' as const })),
-      ...b.important_activities.map(a => ({ activity: a, level: 'important' as const })),
+      ...b.critical_activities.map((a) => ({ activity: a, level: 'critical' as const })),
+      ...b.important_activities.map((a) => ({ activity: a, level: 'important' as const })),
     ];
 
     if (combined.length === 0) return nothing;
@@ -347,7 +348,8 @@ export class VelgAutonomyBriefing extends LitElement {
     return html`
       <div class="section-label">${msg('Significant activity')}</div>
       <div class="highlights">
-        ${combined.slice(0, 8).map((item, i) => html`
+        ${combined.slice(0, 8).map(
+          (item, i) => html`
           <div class="highlight" style="--_delay: ${(i + 3) * 60}ms">
             <div class="highlight__dot highlight__dot--${item.level}"></div>
             <span class="highlight__agent">${item.activity.agent_name ?? '?'}</span>
@@ -356,7 +358,8 @@ export class VelgAutonomyBriefing extends LitElement {
             </span>
             <span class="highlight__type">${item.activity.activity_type}</span>
           </div>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -367,7 +370,7 @@ export class VelgAutonomyBriefing extends LitElement {
     return html`
       <div class="section-label">${msg('Relationship shifts')}</div>
       <div class="rel-changes">
-        ${b.opinion_changes.slice(0, 5).map(change => {
+        ${b.opinion_changes.slice(0, 5).map((change) => {
           const opChange = (change as Record<string, unknown>).opinion_change as number;
           const isPositive = opChange > 0;
           return html`

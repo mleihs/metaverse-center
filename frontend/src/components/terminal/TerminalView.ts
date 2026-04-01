@@ -13,7 +13,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
-import { terminalTokens, terminalAnimations, terminalWrapperStyles } from '../shared/terminal-theme-styles.js';
+import {
+  terminalAnimations,
+  terminalTokens,
+  terminalWrapperStyles,
+} from '../shared/terminal-theme-styles.js';
 import './BureauTerminal.js';
 
 @localized()

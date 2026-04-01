@@ -13,10 +13,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import type { Agent, BureauResponse, BureauResponseType } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
-const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: () => string; desc: () => string; cost: () => string }> = {
+const RESPONSE_DESCRIPTIONS: Record<
+  BureauResponseType,
+  { label: () => string; desc: () => string; cost: () => string }
+> = {
   contain: {
     label: () => msg('Contain'),
     desc: () => msg('Dispatch containment team to stabilize the situation.'),
@@ -37,7 +40,9 @@ const RESPONSE_DESCRIPTIONS: Record<BureauResponseType, { label: () => string; d
 @localized()
 @customElement('velg-bureau-response-panel')
 export class VelgBureauResponsePanel extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     /* ═══════════════════════════════════════
        KEYFRAMES
        ═══════════════════════════════════════ */
@@ -793,7 +798,8 @@ export class VelgBureauResponsePanel extends LitElement {
         max-width: 80px;
       }
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
   @property({ type: String }) eventId = '';
@@ -882,12 +888,14 @@ export class VelgBureauResponsePanel extends LitElement {
 
         <div class="panel__body">
           ${this._hasPending ? this._renderPendingDispatch() : this._renderTypeSelector()}
-          ${this._error
-            ? html`<div class="error-msg" role="alert">
+          ${
+            this._error
+              ? html`<div class="error-msg" role="alert">
                 <span class="error-msg__icon">${icons.alertTriangle(14)}</span>
                 ${this._error}
               </div>`
-            : nothing}
+              : nothing
+          }
           ${this._responses.length > 0 ? this._renderHistory() : nothing}
         </div>
       </div>
@@ -921,7 +929,9 @@ export class VelgBureauResponsePanel extends LitElement {
               class="type-card type-card--${type} ${selected ? 'type-card--selected' : ''}"
               role="radio"
               aria-checked=${selected}
-              @click=${() => { this._selectedType = type; }}
+              @click=${() => {
+                this._selectedType = type;
+              }}
             >
               <span class="type-card__icon">${typeIcons[type]}</span>
               <div class="type-card__content">
@@ -947,13 +957,15 @@ export class VelgBureauResponsePanel extends LitElement {
           <span class="submit-btn__icon">${icons.deploy(14)}</span>
           ${this._loading ? msg('Dispatching...') : msg('Deploy Response')}
         </button>
-        ${this._selectedType
-          ? html`<button
+        ${
+          this._selectedType
+            ? html`<button
               class="cancel-btn"
               @click=${this._cancelSelection}
               aria-label=${msg('Cancel selection')}
             >${msg('Cancel')}</button>`
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -970,19 +982,23 @@ export class VelgBureauResponsePanel extends LitElement {
             (agent) => html`
               <div class="dossier-card">
                 <div class="dossier-card__portrait">
-                  ${agent.portrait_image_url
-                    ? html`<img
+                  ${
+                    agent.portrait_image_url
+                      ? html`<img
                         src=${agent.portrait_image_url}
                         alt=${agent.name}
                         loading="lazy"
                       />`
-                    : html`<span class="dossier-card__portrait-placeholder">${icons.users(16)}</span>`}
+                      : html`<span class="dossier-card__portrait-placeholder">${icons.users(16)}</span>`
+                  }
                 </div>
                 <div class="dossier-card__info">
                   <span class="dossier-card__name">${agent.name}</span>
-                  ${agent.primary_profession
-                    ? html`<span class="dossier-card__role">${agent.primary_profession}</span>`
-                    : nothing}
+                  ${
+                    agent.primary_profession
+                      ? html`<span class="dossier-card__role">${agent.primary_profession}</span>`
+                      : nothing
+                  }
                 </div>
               </div>
             `,
@@ -1010,8 +1026,9 @@ export class VelgBureauResponsePanel extends LitElement {
                 ${r.agent_count} ${msg('agent(s)')}
               </span>
               <span class="history-entry__eff">
-                ${r.status === 'resolved'
-                  ? html`
+                ${
+                  r.status === 'resolved'
+                    ? html`
                       <span class="eff-meter">
                         <span class="eff-meter__bar">
                           <span
@@ -1024,7 +1041,8 @@ export class VelgBureauResponsePanel extends LitElement {
                         </span>
                       </span>
                     `
-                  : nothing}
+                    : nothing
+                }
               </span>
             </div>
           `,

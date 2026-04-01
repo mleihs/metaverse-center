@@ -646,8 +646,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           <span>${clearedCount} ${msg('visited')}</span>
         </div>
 
-        ${visibility !== null && maxVisibility !== null
-          ? html`
+        ${
+          visibility !== null && maxVisibility !== null
+            ? html`
               <span class="sep"></span>
               <div
                 class="visibility"
@@ -658,9 +659,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   { length: maxVisibility },
                   (_, i) => html`
                     <span
-                      class="visibility__pip ${i < visibility
-                        ? 'visibility__pip--filled'
-                        : ''}"
+                      class="visibility__pip ${i < visibility ? 'visibility__pip--filled' : ''}"
                     >
                       ${i < visibility ? icons.diamond(10) : icons.diamondEmpty(10)}
                     </span>
@@ -668,9 +667,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                 )}
               </div>
             `
-          : nothing}
-        ${stability !== null && maxStability !== null
-          ? html`
+            : nothing
+        }
+        ${
+          stability !== null && maxStability !== null
+            ? html`
               <span class="sep"></span>
               <div class="stability" aria-label=${msg('Stability') + ` ${stability}/${maxStability}`}>
                 <span class="stability__icon">${icons.shield(12)}</span>
@@ -683,20 +684,24 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   aria-label=${msg('Structural integrity')}
                 >
                   <div
-                    class="stability__fill ${stability <= 20
-                      ? 'stability__fill--critical'
-                      : stability <= 40
-                        ? 'stability__fill--warning'
-                        : ''}"
+                    class="stability__fill ${
+                      stability <= 20
+                        ? 'stability__fill--critical'
+                        : stability <= 40
+                          ? 'stability__fill--warning'
+                          : ''
+                    }"
                     style="transform: scaleX(${maxStability > 0 ? stability / maxStability : 0})"
                   ></div>
                 </div>
                 <span class="stability__label ${stability <= 0 ? 'stability__label--collapse' : ''}">${stability <= 0 ? msg('FAILURE') : stability}</span>
               </div>
             `
-          : nothing}
-        ${decay !== null && maxDecay !== null
-          ? html`
+            : nothing
+        }
+        ${
+          decay !== null && maxDecay !== null
+            ? html`
               <span class="sep"></span>
               <div class="decay" aria-label=${msg('Decay') + ` ${decay}/${maxDecay}`}>
                 <span class="decay__icon">${icons.alertTriangle(12)}</span>
@@ -709,22 +714,26 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   aria-label=${msg('Dissolution index')}
                 >
                   <div
-                    class="decay__fill ${decay >= 85
-                      ? 'decay__fill--dissolution'
-                      : decay >= 70
-                        ? 'decay__fill--critical'
-                        : decay >= 40
-                          ? 'decay__fill--degraded'
-                          : 'decay__fill--normal'}"
+                    class="decay__fill ${
+                      decay >= 85
+                        ? 'decay__fill--dissolution'
+                        : decay >= 70
+                          ? 'decay__fill--critical'
+                          : decay >= 40
+                            ? 'decay__fill--degraded'
+                            : 'decay__fill--normal'
+                    }"
                     style="transform: scaleX(${maxDecay > 0 ? decay / maxDecay : 0})"
                   ></div>
                 </div>
                 <span class="decay__label ${decay >= 100 ? 'decay__label--dissolution' : ''}">${decay >= 100 ? msg('DISSOLUTION') : decay}</span>
               </div>
             `
-          : nothing}
-        ${attachment !== null && maxAttachment !== null
-          ? html`
+            : nothing
+        }
+        ${
+          attachment !== null && maxAttachment !== null
+            ? html`
               <span class="sep"></span>
               <div class="attachment" aria-label=${msg('Attachment') + ` ${attachment}/${maxAttachment}`}>
                 <span class="attachment__icon">${icons.heartbeat(12)}</span>
@@ -737,28 +746,34 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   aria-label=${msg('Parasitic attachment')}
                 >
                   <div
-                    class="attachment__fill ${attachment >= 100
-                      ? 'attachment__fill--incorporation'
-                      : attachment >= 75
-                        ? 'attachment__fill--critical'
-                        : attachment >= 45
-                          ? 'attachment__fill--dependent'
-                          : 'attachment__fill--normal'}"
+                    class="attachment__fill ${
+                      attachment >= 100
+                        ? 'attachment__fill--incorporation'
+                        : attachment >= 75
+                          ? 'attachment__fill--critical'
+                          : attachment >= 45
+                            ? 'attachment__fill--dependent'
+                            : 'attachment__fill--normal'
+                    }"
                     style="transform: scaleX(${maxAttachment > 0 ? attachment / maxAttachment : 0})"
                   ></div>
                 </div>
-                <span class="attachment__label ${attachment >= 100
-                      ? 'attachment__label--incorporation'
-                      : attachment >= 75
-                        ? 'attachment__label--critical'
-                        : attachment >= 45
-                          ? 'attachment__label--dependent'
-                          : ''}">${attachment >= 100 ? msg('HOME') : attachment}</span>
+                <span class="attachment__label ${
+                  attachment >= 100
+                    ? 'attachment__label--incorporation'
+                    : attachment >= 75
+                      ? 'attachment__label--critical'
+                      : attachment >= 45
+                        ? 'attachment__label--dependent'
+                        : ''
+                }">${attachment >= 100 ? msg('HOME') : attachment}</span>
               </div>
             `
-          : nothing}
-        ${insight !== null && maxInsight !== null
-          ? html`
+            : nothing
+        }
+        ${
+          insight !== null && maxInsight !== null
+            ? html`
               <span class="sep"></span>
               <div class="insight" aria-label=${msg('Insight') + ` ${insight}/${maxInsight}`}>
                 <span class="insight__icon">${icons.bolt(12)}</span>
@@ -771,40 +786,49 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                   aria-label=${msg('Creative insight')}
                 >
                   <div
-                    class="insight__fill ${insight >= 100
-                      ? 'insight__fill--breakthrough'
-                      : insight >= 75
-                        ? 'insight__fill--feverish'
-                        : insight >= 45
-                          ? 'insight__fill--inspired'
-                          : insight >= 20
-                            ? 'insight__fill--warming'
-                            : 'insight__fill--cold'}"
+                    class="insight__fill ${
+                      insight >= 100
+                        ? 'insight__fill--breakthrough'
+                        : insight >= 75
+                          ? 'insight__fill--feverish'
+                          : insight >= 45
+                            ? 'insight__fill--inspired'
+                            : insight >= 20
+                              ? 'insight__fill--warming'
+                              : 'insight__fill--cold'
+                    }"
                     style="transform: scaleX(${maxInsight > 0 ? insight / maxInsight : 0})"
                   ></div>
                 </div>
-                <span class="insight__label ${insight >= 100
-                      ? 'insight__label--breakthrough'
-                      : insight >= 75
-                        ? 'insight__label--feverish'
-                        : ''}">${insight >= 100 ? msg('FIRE') : insight}</span>
+                <span class="insight__label ${
+                  insight >= 100
+                    ? 'insight__label--breakthrough'
+                    : insight >= 75
+                      ? 'insight__label--feverish'
+                      : ''
+                }">${insight >= 100 ? msg('FIRE') : insight}</span>
               </div>
-              ${componentCount > 0
-                ? html`
+              ${
+                componentCount > 0
+                  ? html`
                     <span class="insight__badge" aria-label=${msg('Components') + ` ${componentCount}`}>
                       ${icons.sparkle(10)}${componentCount}
                     </span>
                   `
-                : nothing}
-              ${craftedCount > 0
-                ? html`
+                  : nothing
+              }
+              ${
+                craftedCount > 0
+                  ? html`
                     <span class="insight__badge insight__badge--crafted" aria-label=${msg('Crafted items') + ` ${craftedCount}`}>
                       ${icons.archetypePrometheus(10)}${craftedCount}
                     </span>
                   `
-                : nothing}
+                  : nothing
+              }
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

@@ -737,7 +737,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     return `$${(cents / 100).toFixed(2)}`;
   }
 
-
   private _renderBundle(bundle: TokenBundle) {
     const selected = this._selectedSlug === bundle.slug;
     const priceLabel = `${bundle.display_name}: ${bundle.tokens} ${bundle.tokens === 1 ? 'token' : 'tokens'} ${msg('for')} ${this._formatPrice(bundle.price_cents)}`;

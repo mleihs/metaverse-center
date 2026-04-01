@@ -190,7 +190,10 @@ export class HowToPlayWarRoom extends LitElement {
 
     // Deep link via hash
     const hash = window.location.hash.slice(1);
-    if (hash && Object.values(TAB_KEYS).includes(hash as (typeof TAB_KEYS)[keyof typeof TAB_KEYS])) {
+    if (
+      hash &&
+      Object.values(TAB_KEYS).includes(hash as (typeof TAB_KEYS)[keyof typeof TAB_KEYS])
+    ) {
       this._activeTab = hash;
     }
   }
@@ -400,12 +403,14 @@ export class HowToPlayWarRoom extends LitElement {
       <div class="match__body">
         <div class="match__desc">${match.description}</div>
 
-        ${match.specialRules
-          ? html`<div class="callout callout--warn">
+        ${
+          match.specialRules
+            ? html`<div class="callout callout--warn">
               <div class="callout__label">${msg('Special Rules')}</div>
               <div class="callout__text">${match.specialRules}</div>
             </div>`
-          : nothing}
+            : nothing
+        }
 
         <div class="match__players">
           ${match.players.map((p) => html`<span class="match__player">${p}</span>`)}
@@ -450,12 +455,14 @@ export class HowToPlayWarRoom extends LitElement {
             <td>${cycle.cycle}</td>
             <td><span class="cycle-phase cycle-phase--${cycle.phase}">${cycle.phase}</span></td>
             <td colspan="4" style="color: var(--color-text-muted); font-style: italic;">
-              ${cycle.scoreSnapshot
-                ? html`${msg('Final scores')}:
+              ${
+                cycle.scoreSnapshot
+                  ? html`${msg('Final scores')}:
                     ${Object.entries(cycle.scoreSnapshot).map(
                       ([name, score]) => html`<strong>${name}</strong>: ${score} `,
                     )}`
-                : msg('No actions')}
+                  : msg('No actions')
+              }
             </td>
           </tr>
         `,
@@ -467,9 +474,11 @@ export class HowToPlayWarRoom extends LitElement {
         <tr>
           <td>${i === 0 ? cycle.cycle : ''}</td>
           <td>
-            ${i === 0
-              ? html`<span class="cycle-phase cycle-phase--${cycle.phase}">${cycle.phase}</span>`
-              : ''}
+            ${
+              i === 0
+                ? html`<span class="cycle-phase cycle-phase--${cycle.phase}">${cycle.phase}</span>`
+                : ''
+            }
           </td>
           <td>${a.simulation}</td>
           <td>
@@ -1139,8 +1148,9 @@ export class HowToPlayWarRoom extends LitElement {
         <div class="demo-step__body">
           <h3 class="demo-step__title">${step.title}</h3>
 
-          ${step.image
-            ? html`
+          ${
+            step.image
+              ? html`
                 <button
                   class="demo-evidence"
                   @click=${() => this._openLightbox(step.image ?? '', step.imageAlt ?? step.title, step.title)}
@@ -1157,14 +1167,16 @@ export class HowToPlayWarRoom extends LitElement {
                   <span class="demo-evidence__enlarge">${msg('ENLARGE')}</span>
                 </button>
               `
-            : nothing}
+              : nothing
+          }
 
           <p class="demo-step__narration">${step.narration}</p>
 
           ${step.detail ? html`<p class="demo-step__detail">${step.detail}</p>` : nothing}
 
-          ${step.readout
-            ? html`
+          ${
+            step.readout
+              ? html`
                 <div class="demo-readout">
                   ${step.readout.map(
                     (r) => html`
@@ -1176,25 +1188,30 @@ export class HowToPlayWarRoom extends LitElement {
                   )}
                 </div>
               `
-            : nothing}
+              : nothing
+          }
 
-          ${step.tip
-            ? html`
+          ${
+            step.tip
+              ? html`
                 <div class="callout callout--tip" style="margin-top: var(--space-3)">
                   <div class="callout__label">${msg('Tactical Tip')}</div>
                   <div class="callout__text">${step.tip}</div>
                 </div>
               `
-            : nothing}
+              : nothing
+          }
 
-          ${step.warning
-            ? html`
+          ${
+            step.warning
+              ? html`
                 <div class="callout callout--warn" style="margin-top: var(--space-3)">
                   <div class="callout__label">${msg('Warning')}</div>
                   <div class="callout__text">${step.warning}</div>
                 </div>
               `
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -1239,8 +1256,9 @@ export class HowToPlayWarRoom extends LitElement {
           <span class="match__toggle ${expanded ? 'match__toggle--open' : ''}">\u25BC</span>
         </button>
 
-        ${expanded
-          ? html`
+        ${
+          expanded
+            ? html`
               <div class="match__body">
                 <ul class="moments-list">
                   ${entry.highlights.map((h) => html`<li>${h}</li>`)}
@@ -1258,7 +1276,8 @@ export class HowToPlayWarRoom extends LitElement {
                 )}
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

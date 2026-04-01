@@ -376,16 +376,22 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
                   size="sm"
                 ></velg-avatar>
                 <span class="lineup__name">${agent.name}</span>
-                ${aptitudes ? html`
+                ${
+                  aptitudes
+                    ? html`
                   <div class="lineup__bars">
                     <velg-aptitude-bars
                       .aptitudes=${aptitudes}
                       size="sm"
                     ></velg-aptitude-bars>
                   </div>
-                ` : agent.primary_profession ? html`
+                `
+                    : agent.primary_profession
+                      ? html`
                   <span class="lineup__role">${agent.primary_profession}</span>
-                ` : nothing}
+                `
+                      : nothing
+                }
               </div>
             `;
           })}

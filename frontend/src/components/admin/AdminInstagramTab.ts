@@ -31,7 +31,14 @@ import '../shared/ConfirmDialog.js';
 import '../shared/VelgMetricCard.js';
 
 type PanelTab = 'operations' | 'configure' | 'intelligence';
-type StatusFilter = 'all' | 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'rejected';
+type StatusFilter =
+  | 'all'
+  | 'draft'
+  | 'scheduled'
+  | 'publishing'
+  | 'published'
+  | 'failed'
+  | 'rejected';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'info',
@@ -1206,7 +1213,8 @@ export class VelgAdminInstagramTab extends LitElement {
         gap: var(--space-2);
       }
     }
-  `];
+  `,
+  ];
 
   // ══════════════════════════════════════════════════════
   // STATE
@@ -1253,16 +1261,23 @@ export class VelgAdminInstagramTab extends LitElement {
     this._error = null;
 
     try {
-      const [queueResp, analyticsResp, rateLimitResp, cipherResp, settingsResp, statusResp, storiesResp] =
-        await Promise.all([
-          adminApi.listInstagramQueue({ limit: '100' }),
-          adminApi.getInstagramAnalytics(30),
-          adminApi.getInstagramRateLimit(),
-          adminApi.getInstagramCipherStats(),
-          adminApi.getInstagramSettings(),
-          adminApi.getInstagramStatus(),
-          adminApi.listSocialStories({ limit: '50' }),
-        ]);
+      const [
+        queueResp,
+        analyticsResp,
+        rateLimitResp,
+        cipherResp,
+        settingsResp,
+        statusResp,
+        storiesResp,
+      ] = await Promise.all([
+        adminApi.listInstagramQueue({ limit: '100' }),
+        adminApi.getInstagramAnalytics(30),
+        adminApi.getInstagramRateLimit(),
+        adminApi.getInstagramCipherStats(),
+        adminApi.getInstagramSettings(),
+        adminApi.getInstagramStatus(),
+        adminApi.listSocialStories({ limit: '50' }),
+      ]);
 
       if (queueResp.success && queueResp.data) {
         this._queue = queueResp.data;
@@ -1404,7 +1419,7 @@ export class VelgAdminInstagramTab extends LitElement {
   private _handleTrendingSave(): void {
     const tags = this._trendingDraft
       .split('\n')
-      .map((l) => l.trim().startsWith('#') ? l.trim() : l.trim() ? `#${l.trim()}` : '')
+      .map((l) => (l.trim().startsWith('#') ? l.trim() : l.trim() ? `#${l.trim()}` : ''))
       .filter(Boolean);
     this._config = { ...this._config, trending_tags: tags };
     void this._saveSetting('instagram_trending_tags', JSON.stringify(tags));
@@ -1534,7 +1549,6 @@ export class VelgAdminInstagramTab extends LitElement {
   // HELPERS
   // ══════════════════════════════════════════════════════
 
-
   private _formatNumber(n: number | null | undefined): string {
     if (n == null) return '0';
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -1562,11 +1576,15 @@ export class VelgAdminInstagramTab extends LitElement {
 
   protected render() {
     return html`
-      ${this._error ? html`
+      ${
+        this._error
+          ? html`
         <div class="error-banner">
           ${icons.alertTriangle(14)} ${this._error}
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
 
       ${this._renderHeader()}
       ${this._renderConnectionStatus()}
@@ -1648,14 +1666,20 @@ export class VelgAdminInstagramTab extends LitElement {
   }
 
   private _renderTabBar() {
-    const tabs: { key: PanelTab; label: string; icon: ReturnType<typeof icons.antenna>; badge?: unknown }[] = [
+    const tabs: {
+      key: PanelTab;
+      label: string;
+      icon: ReturnType<typeof icons.antenna>;
+      badge?: unknown;
+    }[] = [
       {
         key: 'operations',
         label: msg('Operations'),
         icon: icons.antenna(13),
-        badge: this._actionableCount > 0
-          ? html`<span class="tab__badge">${this._actionableCount}</span>`
-          : nothing,
+        badge:
+          this._actionableCount > 0
+            ? html`<span class="tab__badge">${this._actionableCount}</span>`
+            : nothing,
       },
       {
         key: 'configure',
@@ -1674,16 +1698,20 @@ export class VelgAdminInstagramTab extends LitElement {
 
     return html`
       <div class="tab-bar">
-        ${tabs.map((t) => html`
+        ${tabs.map(
+          (t) => html`
           <button
             class="tab ${this._activeTab === t.key ? 'tab--active' : ''}"
-            @click=${() => { this._activeTab = t.key; }}
+            @click=${() => {
+              this._activeTab = t.key;
+            }}
           >
             ${t.icon}
             ${t.label}
             ${t.badge ?? nothing}
           </button>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -1695,9 +1723,10 @@ export class VelgAdminInstagramTab extends LitElement {
       <div class="queue-section">
         ${this._renderQueueHeader()}
         ${this._renderStatusBar()}
-        ${this._loading
-          ? html`<div class="loading-state">${msg('Scanning Bureau dispatch channels...')}</div>`
-          : this._renderDispatchList()
+        ${
+          this._loading
+            ? html`<div class="loading-state">${msg('Scanning Bureau dispatch channels...')}</div>`
+            : this._renderDispatchList()
         }
       </div>
       ${this._renderStoriesSection()}
@@ -1725,15 +1754,19 @@ export class VelgAdminInstagramTab extends LitElement {
 
     return html`
       <div class="status-bar">
-        ${tabs.map((t) => html`
+        ${tabs.map(
+          (t) => html`
           <button
             class="status-tab ${this._statusFilter === t.key ? 'status-tab--active' : ''}"
-            @click=${() => { this._statusFilter = t.key; }}
+            @click=${() => {
+              this._statusFilter = t.key;
+            }}
           >
             ${t.key === 'all' ? msg('All') : t.label}
             <span class="status-tab__count">${t.key === 'all' ? this._queue.length : this._statusCount(t.key)}</span>
           </button>
-        `)}
+        `,
+        )}
         <span class="queue-total">
           ${msg(str`${this._filteredQueue.length} dispatches`)}
         </span>
@@ -1767,44 +1800,57 @@ export class VelgAdminInstagramTab extends LitElement {
     return html`
       <div class="dispatch dispatch--${post.status}">
         <div class="dispatch__thumb ${!hasImage ? 'dispatch__thumb--empty' : ''}">
-          ${hasImage
-            ? html`<img src="${post.image_urls[0]}" alt="${post.alt_text ?? ''}" loading="lazy" />`
-            : msg('N/A')
+          ${
+            hasImage
+              ? html`<img src="${post.image_urls[0]}" alt="${post.alt_text ?? ''}" loading="lazy" />`
+              : msg('N/A')
           }
         </div>
 
         <div class="dispatch__body">
           <div class="dispatch__header">
             <span class="dispatch__type-tag">${post.content_source_type}</span>
-            ${post.simulation_name
-              ? html`<span class="dispatch__shard">${post.simulation_name}</span>`
-              : nothing
+            ${
+              post.simulation_name
+                ? html`<span class="dispatch__shard">${post.simulation_name}</span>`
+                : nothing
             }
             <span class="badge badge--${badgeColor}">${post.status}</span>
-            ${post.bsky_status ? html`
+            ${
+              post.bsky_status
+                ? html`
               <span class="badge badge--${post.bsky_status === 'published' ? 'success' : post.bsky_status === 'failed' ? 'danger' : post.bsky_status === 'skipped' ? 'muted' : 'info'}" title=${msg('Bluesky')}>
                 ${icons.antenna(10)} ${post.bsky_status}
               </span>
-            ` : nothing}
+            `
+                : nothing
+            }
             <span class="dispatch__timestamp">
-              ${post.status === 'published'
-                ? formatDateTimeShort(post.published_at)
-                : post.status === 'scheduled'
-                  ? formatDateTimeShort(post.scheduled_at)
-                  : formatDateTimeShort(post.created_at)
+              ${
+                post.status === 'published'
+                  ? formatDateTimeShort(post.published_at)
+                  : post.status === 'scheduled'
+                    ? formatDateTimeShort(post.scheduled_at)
+                    : formatDateTimeShort(post.created_at)
               }
             </span>
           </div>
 
           <div class="dispatch__caption">${post.caption}</div>
 
-          ${post.hashtags.length > 0 ? html`
+          ${
+            post.hashtags.length > 0
+              ? html`
             <div class="dispatch__tags">
               ${post.hashtags.map((h) => html`<span class="dispatch__tag">${h}</span>`)}
             </div>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'published' ? html`
+          ${
+            post.status === 'published'
+              ? html`
             <div class="dispatch__metrics">
               <span class="metric">${icons.sparkle(12)} ${this._formatNumber(post.likes_count)}</span>
               <span class="metric">${icons.messageCircle(12)} ${this._formatNumber(post.comments_count)}</span>
@@ -1812,15 +1858,23 @@ export class VelgAdminInstagramTab extends LitElement {
               <span class="metric">${icons.eye(12)} ${this._formatNumber(post.reach)}</span>
               <span class="metric metric--accent">${(post.engagement_rate * 100).toFixed(1)}%</span>
             </div>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.failure_reason ? html`
+          ${
+            post.failure_reason
+              ? html`
             <div class="dispatch__failure">${post.failure_reason}</div>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
 
         <div class="dispatch__actions">
-          ${post.status === 'draft' ? html`
+          ${
+            post.status === 'draft'
+              ? html`
             <button class="act act--approve" ?disabled=${disabled} @click=${() => this._handleApprove(post)}>
               ${msg('Approve')}
             </button>
@@ -1830,22 +1884,32 @@ export class VelgAdminInstagramTab extends LitElement {
             <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
               ${msg('Publish')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'scheduled' ? html`
+          ${
+            post.status === 'scheduled'
+              ? html`
             <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handleForcePublish(post)}>
               ${msg('Publish Now')}
             </button>
             <button class="act act--reject" ?disabled=${disabled} @click=${() => this._openRejectModal(post)}>
               ${msg('Cancel')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
 
-          ${post.status === 'published' && post.ig_permalink ? html`
+          ${
+            post.status === 'published' && post.ig_permalink
+              ? html`
             <a class="act act--link" href="${post.ig_permalink}" target="_blank" rel="noopener">
               ${msg('View on IG')}
             </a>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -1859,7 +1923,12 @@ export class VelgAdminInstagramTab extends LitElement {
   }
 
   /** Group stories by resonance_id into sequences. */
-  private get _storySequences(): { resonanceId: string; archetype: string; magnitude: number; stories: SocialStoryItem[] }[] {
+  private get _storySequences(): {
+    resonanceId: string;
+    archetype: string;
+    magnitude: number;
+    stories: SocialStoryItem[];
+  }[] {
     const map = new Map<string, SocialStoryItem[]>();
     for (const s of this._filteredStories) {
       const key = s.resonance_id ?? 'unknown';
@@ -1902,9 +1971,10 @@ export class VelgAdminInstagramTab extends LitElement {
           <span class="stories-header__count">${this._stories.length} ${msg('stories')}</span>
         </div>
         ${this._renderStoryFilterBar()}
-        ${this._storySequences.length === 0
-          ? html`<div class="story-empty">${msg('No stories match this filter.')}</div>`
-          : this._storySequences.map((seq) => this._renderSequenceAccordion(seq))
+        ${
+          this._storySequences.length === 0
+            ? html`<div class="story-empty">${msg('No stories match this filter.')}</div>`
+            : this._storySequences.map((seq) => this._renderSequenceAccordion(seq))
         }
       </div>
     `;
@@ -1922,20 +1992,29 @@ export class VelgAdminInstagramTab extends LitElement {
 
     return html`
       <div class="story-filter-bar">
-        ${filters.map((f) => html`
+        ${filters.map(
+          (f) => html`
           <button
             class="status-tab ${this._storyFilter === f.key ? 'status-tab--active' : ''}"
-            @click=${() => { this._storyFilter = f.key; }}
+            @click=${() => {
+              this._storyFilter = f.key;
+            }}
           >
             ${f.label}
             <span class="status-tab__count">${f.key === 'all' ? this._stories.length : this._storyStatusCount(f.key)}</span>
           </button>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
 
-  private _renderSequenceAccordion(seq: { resonanceId: string; archetype: string; magnitude: number; stories: SocialStoryItem[] }) {
+  private _renderSequenceAccordion(seq: {
+    resonanceId: string;
+    archetype: string;
+    magnitude: number;
+    stories: SocialStoryItem[];
+  }) {
     const isOpen = this._expandedSequences.has(seq.resonanceId);
     const accentHex = ARCHETYPE_HEX[seq.archetype] ?? 'var(--color-primary)';
     const published = seq.stories.filter((s) => s.status === 'published').length;
@@ -1960,11 +2039,15 @@ export class VelgAdminInstagramTab extends LitElement {
           </span>
           <span class="seq-header__summary">${published}/${total} ${msg('published')}</span>
         </button>
-        ${isOpen ? html`
+        ${
+          isOpen
+            ? html`
           <div class="seq-body">
             ${seq.stories.map((s) => this._renderStoryCard(s))}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
@@ -1978,9 +2061,10 @@ export class VelgAdminInstagramTab extends LitElement {
     return html`
       <div class="story-card">
         <div class="story-card__thumb ${!hasImage ? 'story-card__thumb--empty' : ''}">
-          ${hasImage
-            ? html`<img src="${story.image_url}" alt="${story.caption ?? ''}" loading="lazy" />`
-            : html`<span>9:16</span>`
+          ${
+            hasImage
+              ? html`<img src="${story.image_url}" alt="${story.caption ?? ''}" loading="lazy" />`
+              : html`<span>9:16</span>`
           }
         </div>
         <div class="story-card__body">
@@ -1991,31 +2075,51 @@ export class VelgAdminInstagramTab extends LitElement {
             <span class="story-card__time">${formatDateTimeShort(story.scheduled_at, { fallback: '\u2014' })}</span>
           </div>
           <div class="story-card__caption">${story.caption ?? ''}</div>
-          ${story.failure_reason ? html`
+          ${
+            story.failure_reason
+              ? html`
             <div class="story-card__failure">${story.failure_reason}</div>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
         <div class="story-card__actions">
-          ${story.status === 'pending' || story.status === 'ready' ? html`
+          ${
+            story.status === 'pending' || story.status === 'ready'
+              ? html`
             <button class="act act--reject" ?disabled=${disabled} @click=${() => this._handleSkipStory(story)}>
               ${msg('Skip')}
             </button>
-          ` : nothing}
-          ${story.status === 'skipped' ? html`
+          `
+              : nothing
+          }
+          ${
+            story.status === 'skipped'
+              ? html`
             <button class="act" ?disabled=${disabled} @click=${() => this._handleUnskipStory(story)}>
               ${msg('Unskip')}
             </button>
-          ` : nothing}
-          ${story.status === 'pending' ? html`
+          `
+              : nothing
+          }
+          ${
+            story.status === 'pending'
+              ? html`
             <button class="act" ?disabled=${disabled} @click=${() => this._handleComposeStory(story)}>
               ${msg('Compose')}
             </button>
-          ` : nothing}
-          ${story.status === 'pending' || story.status === 'ready' ? html`
+          `
+              : nothing
+          }
+          ${
+            story.status === 'pending' || story.status === 'ready'
+              ? html`
             <button class="act act--publish" ?disabled=${disabled} @click=${() => this._handlePublishStory(story)}>
               ${msg('Publish')}
             </button>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
       </div>
     `;
@@ -2177,9 +2281,10 @@ export class VelgAdminInstagramTab extends LitElement {
               ${icons.clipboard(14)} ${msg('Content Mix')}
               ${renderInfoBubble(msg('Proportional weights for content type selection when generating batches. Higher weight = more posts of that type. Set to 0 to disable a type entirely. The percentage shows the expected share in a batch.'))}
             </div>
-            ${this._savingKey === 'instagram_content_mix'
-              ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
-              : nothing
+            ${
+              this._savingKey === 'instagram_content_mix'
+                ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
+                : nothing
             }
           </div>
 
@@ -2218,9 +2323,10 @@ export class VelgAdminInstagramTab extends LitElement {
               ${icons.lock(14)} ${msg('Moderation Blocklist')}
               ${renderInfoBubble(msg('Custom terms that block caption generation. One term per line. Captions containing any of these terms are rejected before draft creation. A default safety blocklist (violence, hate speech, NSFW) is always active in addition to these custom terms.'))}
             </div>
-            ${this._savingKey === 'instagram_blocklist'
-              ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
-              : nothing
+            ${
+              this._savingKey === 'instagram_blocklist'
+                ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
+                : nothing
             }
           </div>
 
@@ -2230,7 +2336,9 @@ export class VelgAdminInstagramTab extends LitElement {
               placeholder=${msg('One blocked term per line...')}
               aria-label=${msg('Moderation blocklist')}
               .value=${this._blocklistDraft}
-              @input=${(e: Event) => { this._blocklistDraft = (e.target as HTMLTextAreaElement).value; }}
+              @input=${(e: Event) => {
+                this._blocklistDraft = (e.target as HTMLTextAreaElement).value;
+              }}
             ></textarea>
             <div class="blocklist-editor__hint">
               ${msg(str`${this._blocklistDraft.split('\n').filter((l) => l.trim()).length} terms. Default safety blocklist is always active.`)}
@@ -2250,9 +2358,10 @@ export class VelgAdminInstagramTab extends LitElement {
               ${icons.target(14)} ${msg('Trending Tags')}
               ${renderInfoBubble(msg('Momentum hashtags mixed into posts (1 per post, rotated). Update weekly with tags trending in the AI art, worldbuilding, or indie creator space. Instagram 2026: 3-5 relevant tags per post, varied per post – one trending tag per dispatch boosts discovery without looking spammy.'))}
             </div>
-            ${this._savingKey === 'instagram_trending_tags'
-              ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
-              : nothing
+            ${
+              this._savingKey === 'instagram_trending_tags'
+                ? html`<span class="saving-indicator">${msg('Saving...')}</span>`
+                : nothing
             }
           </div>
 
@@ -2262,7 +2371,9 @@ export class VelgAdminInstagramTab extends LitElement {
               placeholder=${msg('One trending hashtag per line (e.g. #AIrevolution)...')}
               aria-label=${msg('Trending hashtags')}
               .value=${this._trendingDraft}
-              @input=${(e: Event) => { this._trendingDraft = (e.target as HTMLTextAreaElement).value; }}
+              @input=${(e: Event) => {
+                this._trendingDraft = (e.target as HTMLTextAreaElement).value;
+              }}
             ></textarea>
             <div class="blocklist-editor__hint">
               ${msg(str`${this._trendingDraft.split('\n').filter((l) => l.trim()).length} trending tags. One is mixed into each generated post for momentum.`)}
@@ -2292,7 +2403,8 @@ export class VelgAdminInstagramTab extends LitElement {
   private _renderSegmented(key: string, current: string, options: readonly string[]) {
     return html`
       <div class="segmented">
-        ${options.map((opt) => html`
+        ${options.map(
+          (opt) => html`
           <button
             class="segmented__option ${current === opt ? 'segmented__option--active' : ''}"
             ?disabled=${this._savingKey === key}
@@ -2300,7 +2412,8 @@ export class VelgAdminInstagramTab extends LitElement {
           >
             ${opt}
           </button>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -2336,9 +2449,11 @@ export class VelgAdminInstagramTab extends LitElement {
 
           <velg-metric-card
             label=${msg('Engagement Rate')}
-            value=${a?.avg_engagement_rate != null
-              ? `${(a.avg_engagement_rate * 100).toFixed(1)}%`
-              : '\u2014'}
+            value=${
+              a?.avg_engagement_rate != null
+                ? `${(a.avg_engagement_rate * 100).toFixed(1)}%`
+                : '\u2014'
+            }
             sublabel=${msg('avg across published')}
           ></velg-metric-card>
 
@@ -2418,8 +2533,9 @@ export class VelgAdminInstagramTab extends LitElement {
           ></velg-metric-card>
         </div>
 
-        ${cs.recent_redemptions.length > 0
-          ? html`
+        ${
+          cs.recent_redemptions.length > 0
+            ? html`
             <div class="cipher-table">
               <div class="cipher-table__header">
                 <span>${msg('Redeemed')}</span>
@@ -2439,14 +2555,15 @@ export class VelgAdminInstagramTab extends LitElement {
               )}
             </div>
           `
-          : html`
+            : html`
             <div class="empty-state">
               ${msg('No cipher redemptions yet.')}
               <div class="empty-state__hint">
                 ${msg('Ciphers are generated automatically when enabled in platform settings.')}
               </div>
             </div>
-          `}
+          `
+        }
       </div>
     `;
   }

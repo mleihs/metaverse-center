@@ -2,9 +2,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { formatDate } from '../../utils/date-format.js';
 import { usersApi } from '../../services/api/index.js';
 import type { MembershipInfo } from '../../types/index.js';
+import { formatDate } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
@@ -314,7 +314,6 @@ export class VelgUserProfileView extends LitElement {
       }),
     );
   }
-
 
   private _renderProfileForm() {
     const user = appState.user.value;

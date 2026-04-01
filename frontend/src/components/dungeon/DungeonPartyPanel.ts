@@ -27,10 +27,7 @@ import type {
 import type { OperativeType } from '../../types/index.js';
 import { getConditionLabel } from '../../utils/dungeon-formatters.js';
 import { OPERATIVE_COLORS, OPERATIVE_SHORT } from '../../utils/operative-constants.js';
-import {
-  terminalComponentTokens,
-  terminalTokens,
-} from '../shared/terminal-theme-styles.js';
+import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
 
@@ -67,9 +64,7 @@ function getPrimaryAptitude(
 ): { name: string; value: number } | null {
   const entries = Object.entries(aptitudes);
   if (entries.length === 0) return null;
-  const [name, value] = entries.reduce((max, curr) =>
-    curr[1] > max[1] ? curr : max,
-  );
+  const [name, value] = entries.reduce((max, curr) => (curr[1] > max[1] ? curr : max));
   return { name, value };
 }
 
@@ -466,21 +461,22 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
           : 'var(--_phosphor-dim)';
     const stressPct = Math.round(stressFill);
     const stressLabel =
-      stressPct >= 80 ? msg('BREAKING')
-      : stressPct >= 60 ? msg('CRITICAL')
-      : stressPct >= 40 ? msg('STRAINED')
-      : stressPct >= 25 ? msg('TENSE')
-      : stressPct >= 10 ? msg('UNEASY')
-      : '';
+      stressPct >= 80
+        ? msg('BREAKING')
+        : stressPct >= 60
+          ? msg('CRITICAL')
+          : stressPct >= 40
+            ? msg('STRAINED')
+            : stressPct >= 25
+              ? msg('TENSE')
+              : stressPct >= 10
+                ? msg('UNEASY')
+                : '';
     const stressText = stressLabel ? `${stressPct}% ${stressLabel}` : `${stressPct}%`;
     // Stress severity class for card glow/pulse
     const stressSeverity =
-      stressPct >= 80 ? 'stress-critical'
-      : stressPct >= 60 ? 'stress-high'
-      : '';
-    const aptColor = primary
-      ? OPERATIVE_COLORS[primary.name as OperativeType]
-      : undefined;
+      stressPct >= 80 ? 'stress-critical' : stressPct >= 60 ? 'stress-high' : '';
+    const aptColor = primary ? OPERATIVE_COLORS[primary.name as OperativeType] : undefined;
 
     return html`
       <div
@@ -497,26 +493,35 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
           ></velg-avatar>
           <div class="card-header__info">
             <div class="card-header__name">${agent.agent_name}</div>
-            ${primary
-              ? html`<div
+            ${
+              primary
+                ? html`<div
                   class="card-header__aptitude"
                   style=${aptColor ? `color: ${aptColor}` : 'color: var(--_phosphor-dim)'}
                 >
                   ${primary.name.toUpperCase()} ${primary.value}
                 </div>`
-              : nothing}
+                : nothing
+            }
           </div>
         </div>
 
         <!-- All Aptitudes (compact) -->
-        ${Object.keys(agent.aptitudes).length > 0 ? html`
+        ${
+          Object.keys(agent.aptitudes).length > 0
+            ? html`
           <div class="card-aptitudes">
             ${Object.entries(agent.aptitudes)
               .filter(([, v]) => v > 0)
               .sort(([, a], [, b]) => (b as number) - (a as number))
-              .map(([k, v]) => html`<span class="apt">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`)}
+              .map(
+                ([k, v]) =>
+                  html`<span class="apt">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`,
+              )}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <!-- Gauge Bars -->
         <div class="bars">
@@ -576,14 +581,16 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         </div>
 
         <!-- Buff/Debuff Pills -->
-        ${agent.active_buffs.length > 0 || agent.active_debuffs.length > 0
-          ? html`
+        ${
+          agent.active_buffs.length > 0 || agent.active_debuffs.length > 0
+            ? html`
               <div class="effects" aria-label=${msg('Active effects')}>
                 ${agent.active_buffs.map((b) => this._renderEffect(b, true))}
                 ${agent.active_debuffs.map((b) => this._renderEffect(b, false))}
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -591,8 +598,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
   private _renderEffect(effect: BuffDebuff, isBuff: boolean) {
     const symbol = isBuff ? '\u25C6' : '\u25C7';
     const variant = isBuff ? 'success' : 'danger';
-    const duration =
-      effect.duration_rounds !== null ? ` (${effect.duration_rounds})` : '';
+    const duration = effect.duration_rounds !== null ? ` (${effect.duration_rounds})` : '';
 
     return html`
       <velg-badge variant=${variant} title=${effect.description}>

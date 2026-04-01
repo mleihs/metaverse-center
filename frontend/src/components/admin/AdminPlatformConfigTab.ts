@@ -31,25 +31,33 @@ export class VelgAdminPlatformConfigTab extends LitElement {
           class="subnav__btn ${this._section === 'apikeys' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._section === 'apikeys'}
-          @click=${() => { this._section = 'apikeys'; }}
+          @click=${() => {
+            this._section = 'apikeys';
+          }}
         >${msg('API Keys')}</button>
         <button
           class="subnav__btn ${this._section === 'models' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._section === 'models'}
-          @click=${() => { this._section = 'models'; }}
+          @click=${() => {
+            this._section = 'models';
+          }}
         >${msg('Models')}</button>
         <button
           class="subnav__btn ${this._section === 'research' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._section === 'research'}
-          @click=${() => { this._section = 'research'; }}
+          @click=${() => {
+            this._section = 'research';
+          }}
         >${msg('Research')}</button>
         <button
           class="subnav__btn ${this._section === 'caching' ? 'subnav__btn--active' : ''}"
           role="tab"
           aria-selected=${this._section === 'caching'}
-          @click=${() => { this._section = 'caching'; }}
+          @click=${() => {
+            this._section = 'caching';
+          }}
         >${msg('Caching')}</button>
       </div>
 

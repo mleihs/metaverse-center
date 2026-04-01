@@ -38,7 +38,10 @@ export function getWhatIsTheMetaversePage(): ContentPageData {
     breadcrumbs: [
       { name: 'Home', url: 'https://metaverse.center/' },
       { name: 'Perspectives', url: 'https://metaverse.center/perspectives/what-is-the-metaverse' },
-      { name: 'What Is the Metaverse?', url: 'https://metaverse.center/perspectives/what-is-the-metaverse' },
+      {
+        name: 'What Is the Metaverse?',
+        url: 'https://metaverse.center/perspectives/what-is-the-metaverse',
+      },
     ],
 
     sections: [

@@ -105,7 +105,7 @@ function getModelTip(key: string): string {
       'Used for high-volume, lower-stakes bulk operations: Astrolabe research queries, anchor point generation, trend analysis, and background enrichment tasks. Runs 10-50x more requests than the default model. Choose a cost-effective model since individual output quality is less critical. Haiku or Gemini Flash are good choices.',
     ),
     model_forge: msg(
-      'Dedicated model for the Forge creative pipeline: lore generation, theme composition, entity translation, simulation seed content, and world-building prompts. Quality directly impacts Forge output richness. Architect users see this model\'s output during simulation creation. Recommended: a top-tier model (Opus, GPT-4o) for the best creative results.',
+      "Dedicated model for the Forge creative pipeline: lore generation, theme composition, entity translation, simulation seed content, and world-building prompts. Quality directly impacts Forge output richness. Architect users see this model's output during simulation creation. Recommended: a top-tier model (Opus, GPT-4o) for the best creative results.",
     ),
   };
   // Dev keys share the same tips as their prod counterparts

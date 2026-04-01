@@ -12,12 +12,12 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/ChronicleApiService.js';
 import { seoService } from '../../services/SeoService.js';
-import { appState } from '../../services/AppStateManager.js';
+import type { Chronicle } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
-import type { Chronicle } from '../../types/index.js';
 import '../shared/PlatformFooter.js';
 
 /** Extended chronicle with simulation metadata from the cross-sim endpoint. */
@@ -491,7 +491,9 @@ export class VelgChronicleFeed extends LitElement {
             '@type': 'Article',
             headline: c.title ?? `Edition #${c.edition_number}`,
             datePublished: c.created_at,
-            ...(c.simulation ? { author: { '@type': 'Organization', name: c.simulation.name } } : {}),
+            ...(c.simulation
+              ? { author: { '@type': 'Organization', name: c.simulation.name } }
+              : {}),
           },
         })),
       },
@@ -530,7 +532,6 @@ export class VelgChronicleFeed extends LitElement {
     const els = this.renderRoot.querySelectorAll('.scroll-reveal:not(.in-view)');
     for (const el of els) this._observer.observe(el);
   }
-
 
   /** Extract first paragraph or first N characters as excerpt. */
   private _excerpt(content: string, maxLen = 300): string {
@@ -588,9 +589,7 @@ export class VelgChronicleFeed extends LitElement {
     const themeColor = sim ? getThemeColor(sim.theme) : 'var(--color-text-muted)';
     const simSlug = sim?.slug ?? '';
     const simName = sim?.name ?? msg('Unknown World');
-    const readMoreHref = sim
-      ? `/simulations/${simSlug}/chronicle`
-      : '#';
+    const readMoreHref = sim ? `/simulations/${simSlug}/chronicle` : '#';
 
     return html`
       <article class="dispatch scroll-reveal" style="--i: ${index}">
@@ -617,9 +616,11 @@ export class VelgChronicleFeed extends LitElement {
 
         <p class="dispatch__masthead">${chronicle.title}</p>
 
-        ${chronicle.headline
-          ? html`<h2 class="dispatch__headline">${chronicle.headline}</h2>`
-          : nothing}
+        ${
+          chronicle.headline
+            ? html`<h2 class="dispatch__headline">${chronicle.headline}</h2>`
+            : nothing
+        }
 
         <p class="dispatch__excerpt">${this._excerpt(chronicle.content)}</p>
 
@@ -655,21 +656,23 @@ export class VelgChronicleFeed extends LitElement {
 
       ${this._renderTicker()}
 
-      ${this._loading
-        ? html`<div class="feed-loading"><span class="feed-loading__text">${msg('Decoding transmissions...')}</span></div>`
-        : this._chronicles.length === 0
-          ? html`
+      ${
+        this._loading
+          ? html`<div class="feed-loading"><span class="feed-loading__text">${msg('Decoding transmissions...')}</span></div>`
+          : this._chronicles.length === 0
+            ? html`
               <div class="feed-empty">
                 <p class="feed-empty__title">${msg('No Dispatches')}</p>
                 <p class="feed-empty__text">${msg('No chronicles have been published yet. Worlds are still writing their stories.')}</p>
               </div>
             `
-          : html`
+            : html`
               <div class="feed">
                 ${this._chronicles.map((c, i) => this._renderDispatch(c, i))}
 
-                ${this._total > this._limit
-                  ? html`
+                ${
+                  this._total > this._limit
+                    ? html`
                       <div class="feed-pagination">
                         <button
                           class="feed-pagination__btn"
@@ -687,12 +690,15 @@ export class VelgChronicleFeed extends LitElement {
                         </button>
                       </div>
                     `
-                  : nothing}
+                    : nothing
+                }
               </div>
-            `}
+            `
+      }
 
-      ${isGuest
-        ? html`
+      ${
+        isGuest
+          ? html`
             <div class="feed-cta">
               <p class="feed-cta__text">
                 ${msg('These stories write themselves. Build a world and watch it generate its own newspaper.')}
@@ -709,7 +715,8 @@ export class VelgChronicleFeed extends LitElement {
               </a>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <velg-platform-footer></velg-platform-footer>
     `;

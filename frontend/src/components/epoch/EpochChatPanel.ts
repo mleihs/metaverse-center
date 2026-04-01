@@ -520,7 +520,6 @@ export class VelgEpochChatPanel extends LitElement {
     });
   }
 
-
   private _isActive(): boolean {
     return !['completed', 'cancelled'].includes(this.epochStatus);
   }

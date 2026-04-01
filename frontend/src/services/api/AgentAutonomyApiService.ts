@@ -161,10 +161,7 @@ export class AgentAutonomyApiService extends BaseApiService {
   ): Promise<ApiResponse<OpinionModifier[]>> {
     const params: Record<string, string> = {};
     if (targetAgentId) params.target_agent_id = targetAgentId;
-    return this.get(
-      `/simulations/${simulationId}/agents/${agentId}/opinion-modifiers`,
-      params,
-    );
+    return this.get(`/simulations/${simulationId}/agents/${agentId}/opinion-modifiers`, params);
   }
 
   // ── Activities ────────────────────────────────────────────────

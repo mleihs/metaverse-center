@@ -2005,7 +2005,7 @@ export class VelgHowToPlay extends LitElement {
       <section class="section" id="ambient-weather">
         ${this._renderSectionHeader('24', msg('Ambient Weather'))}
         <p class="section__text">
-          ${msg('Real-world weather data from your simulation\'s geographic anchor influences zone atmosphere and agent mood every heartbeat tick. Prague fog drifts through Velgarien\'s government quarter, Arctic storms batter Station Null, Mediterranean heat parches Speranza. Over 1,000 bilingual template fragments compose unique narrative descriptions that never repeat. Zero AI cost.')}
+          ${msg("Real-world weather data from your simulation's geographic anchor influences zone atmosphere and agent mood every heartbeat tick. Prague fog drifts through Velgarien's government quarter, Arctic storms batter Station Null, Mediterranean heat parches Speranza. Over 1,000 bilingual template fragments compose unique narrative descriptions that never repeat. Zero AI cost.")}
         </p>
         <div class="demo-steps">
           ${steps.map((step, i) => this._renderDemoStep(step, i))}

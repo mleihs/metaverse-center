@@ -6,6 +6,11 @@
 
 import { msg } from '@lit/localize';
 import type {
+  AgentMood,
+  AgentMoodlet,
+  AgentNeeds,
+} from '../services/api/AgentAutonomyApiService.js';
+import type {
   Agent,
   Building,
   BuildingReadiness,
@@ -17,7 +22,6 @@ import type {
   Zone,
   ZoneStability,
 } from '../types/index.js';
-import type { AgentMood, AgentMoodlet, AgentNeeds } from '../services/api/AgentAutonomyApiService.js';
 import type { TerminalCommand, TerminalLine } from '../types/terminal.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -158,14 +162,16 @@ export function formatLook(
   const security = stability?.security_level ?? zone.security_level ?? 'unknown';
 
   // Header
-  lines.push(responseLine(
-    `${zone.name.toUpperCase()}${zone.description ? ` \u2013 ${zone.description}` : ''}`,
-  ));
+  lines.push(
+    responseLine(
+      `${zone.name.toUpperCase()}${zone.description ? ` \u2013 ${zone.description}` : ''}`,
+    ),
+  );
 
   // Stability + Security
-  lines.push(responseLine(
-    `${msg('Stability')}: ${stabPct}% [${stabLbl}] | ${msg('Security')}: ${security}`,
-  ));
+  lines.push(
+    responseLine(`${msg('Stability')}: ${stabPct}% [${stabLbl}] | ${msg('Security')}: ${security}`),
+  );
 
   // Weather
   if (weatherNarrative) {
@@ -195,9 +201,7 @@ export function formatLook(
   // Active events
   if (events.length > 0) {
     const eventStrs = events.map((e) => `${e.title} [${e.event_status}]`);
-    lines.push(responseLine(
-      `${msg('Active events')}: ${events.length} (${eventStrs.join(', ')})`,
-    ));
+    lines.push(responseLine(`${msg('Active events')}: ${events.length} (${eventStrs.join(', ')})`));
   }
 
   // Exits (all other zones, numbered for quick navigation: "go 1")
@@ -235,33 +239,35 @@ export function formatExamineAgent(
   const systemStr = agent.system ? capitalize(agent.system) : msg('Unknown');
   const profStr = primaryProf
     ? `${primaryProf.profession} (Lv ${primaryProf.qualification_level})`
-    : agent.primary_profession ?? msg('None');
-  lines.push(responseLine(
-    `${msg('System')}: ${systemStr} | ${msg('Profession')}: ${profStr}`,
-  ));
+    : (agent.primary_profession ?? msg('None'));
+  lines.push(responseLine(`${msg('System')}: ${systemStr} | ${msg('Profession')}: ${profStr}`));
 
   // Mood + Stress
   if (mood) {
     const moodLbl = moodLabel(mood.mood_score);
-    lines.push(responseLine(
-      `${msg('Mood')}: ${mood.mood_score > 0 ? '+' : ''}${mood.mood_score} (${moodLbl}) | ${msg('Stress')}: ${mood.stress_level} (${mood.dominant_emotion})`,
-    ));
+    lines.push(
+      responseLine(
+        `${msg('Mood')}: ${mood.mood_score > 0 ? '+' : ''}${mood.mood_score} (${moodLbl}) | ${msg('Stress')}: ${mood.stress_level} (${mood.dominant_emotion})`,
+      ),
+    );
   }
 
   // Needs
   if (needs) {
-    lines.push(responseLine(
-      `${msg('Needs')}: ` +
-      `${msg('Social')} ${needsBar(needs.social)} ${Math.round(needs.social)}  ` +
-      `${msg('Purpose')} ${needsBar(needs.purpose)} ${Math.round(needs.purpose)}  ` +
-      `${msg('Safety')} ${needsBar(needs.safety)} ${Math.round(needs.safety)}`,
-    ));
+    lines.push(
+      responseLine(
+        `${msg('Needs')}: ` +
+          `${msg('Social')} ${needsBar(needs.social)} ${Math.round(needs.social)}  ` +
+          `${msg('Purpose')} ${needsBar(needs.purpose)} ${Math.round(needs.purpose)}  ` +
+          `${msg('Safety')} ${needsBar(needs.safety)} ${Math.round(needs.safety)}`,
+      ),
+    );
   }
 
   // Moodlets
   if (moodlets.length > 0) {
-    const moodletStrs = moodlets.map((m) =>
-      `${m.moodlet_type} (${m.emotion}, ${m.strength > 0 ? '+' : ''}${m.strength})`,
+    const moodletStrs = moodlets.map(
+      (m) => `${m.moodlet_type} (${m.emotion}, ${m.strength > 0 ? '+' : ''}${m.strength})`,
     );
     lines.push(responseLine(`${msg('Moodlets')}: ${moodletStrs.join(', ')}`));
   }
@@ -293,28 +299,33 @@ export function formatExamineBuilding(
   // Type + Condition
   const bType = building.building_type ?? msg('Unknown');
   const condition = building.building_condition ?? msg('Unknown');
-  lines.push(responseLine(
-    `${msg('Type')}: ${bType} | ${msg('Condition')}: ${condition} | ${msg('Capacity')}: ${building.population_capacity}`,
-  ));
+  lines.push(
+    responseLine(
+      `${msg('Type')}: ${bType} | ${msg('Condition')}: ${condition} | ${msg('Capacity')}: ${building.population_capacity}`,
+    ),
+  );
 
   // Readiness factors (Victoria 3 pattern)
   if (readiness) {
     const pct = Math.round(readiness.readiness * 100);
     lines.push(responseLine(`${msg('Readiness')}: ${pct}%`));
-    lines.push(responseLine(
-      `  ${msg('Staffing')}: ${Math.round(readiness.staffing_ratio * 100)}% (${readiness.assigned_agents}/${building.population_capacity}) [${readiness.staffing_status}]`,
-    ));
-    lines.push(responseLine(
-      `  ${msg('Qualification')}: ${Math.round(readiness.qualification_match * 100)}%`,
-    ));
-    lines.push(responseLine(
-      `  ${msg('Condition')}: ${Math.round(readiness.condition_factor * 100)}%`,
-    ));
+    lines.push(
+      responseLine(
+        `  ${msg('Staffing')}: ${Math.round(readiness.staffing_ratio * 100)}% (${readiness.assigned_agents}/${building.population_capacity}) [${readiness.staffing_status}]`,
+      ),
+    );
+    lines.push(
+      responseLine(
+        `  ${msg('Qualification')}: ${Math.round(readiness.qualification_match * 100)}%`,
+      ),
+    );
+    lines.push(
+      responseLine(`  ${msg('Condition')}: ${Math.round(readiness.condition_factor * 100)}%`),
+    );
     const influencePct = Math.round(readiness.avg_influence * 100);
-    const influenceTier = influencePct > 55 ? msg('STRONG') : influencePct > 30 ? msg('AVG') : msg('WEAK');
-    lines.push(responseLine(
-      `  ${msg('Influence')}: ${influencePct}% [${influenceTier}]`,
-    ));
+    const influenceTier =
+      influencePct > 55 ? msg('STRONG') : influencePct > 30 ? msg('AVG') : msg('WEAK');
+    lines.push(responseLine(`  ${msg('Influence')}: ${influencePct}% [${influenceTier}]`));
   }
 
   // Assigned agents
@@ -353,12 +364,22 @@ export function formatWeather(entry: HeartbeatEntry | null): TerminalLine[] {
     if (typeof meta.wind_speed === 'number') parts.push(`${msg('Wind')}: ${meta.wind_speed} km/h`);
     if (typeof meta.visibility === 'number') {
       const vis = meta.visibility as number;
-      parts.push(`${msg('Visibility')}: ${vis >= 1000 ? `${(vis / 1000).toFixed(1)}km` : `${Math.round(vis)}m`}`);
+      parts.push(
+        `${msg('Visibility')}: ${vis >= 1000 ? `${(vis / 1000).toFixed(1)}km` : `${Math.round(vis)}m`}`,
+      );
     }
     if (typeof meta.moon_phase === 'number') {
       const mp = meta.moon_phase as number;
-      const phase = mp < 0.125 ? msg('New Moon') : mp < 0.375 ? msg('Waxing Crescent') :
-        mp < 0.625 ? msg('Full Moon') : mp < 0.875 ? msg('Waning Gibbous') : msg('New Moon');
+      const phase =
+        mp < 0.125
+          ? msg('New Moon')
+          : mp < 0.375
+            ? msg('Waxing Crescent')
+            : mp < 0.625
+              ? msg('Full Moon')
+              : mp < 0.875
+                ? msg('Waning Gibbous')
+                : msg('New Moon');
       parts.push(`${msg('Moon')}: ${phase} (${Math.round(mp * 100)}%)`);
     }
     if (parts.length > 0) {
@@ -391,23 +412,25 @@ export function formatStatus(
     const pct = Math.round(zs.stability * 100);
     const lbl = zs.stability_label?.toUpperCase() ?? stabilityLabel(pct);
     const bar = stabilityBar(pct);
-    lines.push(responseLine(
-      `  ${pad(zs.zone_name, 22)} ${pad(`${pct}%`, 5)} [${pad(lbl, 10)}] ${bar}`,
-    ));
+    lines.push(
+      responseLine(`  ${pad(zs.zone_name, 22)} ${pad(`${pct}%`, 5)} [${pad(lbl, 10)}] ${bar}`),
+    );
   }
 
   // Embassies
   if (dashboard.embassies && dashboard.embassies.length > 0) {
-    const active = dashboard.embassies.filter((e) => (e as unknown as Record<string, unknown>).is_active);
-    lines.push(responseLine(
-      `${msg('Embassies')}: ${active.length} ${msg('active')}`,
-    ));
+    const active = dashboard.embassies.filter(
+      (e) => (e as unknown as Record<string, unknown>).is_active,
+    );
+    lines.push(responseLine(`${msg('Embassies')}: ${active.length} ${msg('active')}`));
   }
 
   // Resource budgets
-  lines.push(responseLine(
-    `${msg('Operations points')}: ${opsPoints}/${3} | ${msg('Intel points')}: ${intelPoints}/${2}`,
-  ));
+  lines.push(
+    responseLine(
+      `${msg('Operations points')}: ${opsPoints}/${3} | ${msg('Intel points')}: ${intelPoints}/${2}`,
+    ),
+  );
 
   return lines;
 }
@@ -432,15 +455,17 @@ export function formatMap(
     const zs = stabMap.get(zone.id);
     const pct = zs ? Math.round(zs.stability * 100) : 0;
     const lbl = zs?.stability_label?.toUpperCase() ?? stabilityLabel(pct);
-    lines.push(responseLine(
-      `${marker}${pad(zone.name.toUpperCase(), 24)} ${pad(String(pct) + '%', 5)} [${lbl}]`,
-    ));
+    lines.push(
+      responseLine(
+        `${marker}${pad(zone.name.toUpperCase(), 24)} ${pad(String(pct) + '%', 5)} [${lbl}]`,
+      ),
+    );
   }
 
   lines.push(responseLine(''));
-  lines.push(responseLine(
-    `* = ${msg('current position')} | ${msg("Use 'go {zone name}' to travel")}`,
-  ));
+  lines.push(
+    responseLine(`* = ${msg('current position')} | ${msg("Use 'go {zone name}' to travel")}`),
+  );
 
   return lines;
 }
@@ -450,24 +475,19 @@ export function formatMap(
  */
 export function formatWhere(zone: Zone): TerminalLine[] {
   const desc = zone.description ? ` (${zone.description})` : '';
-  return [
-    responseLine(`${msg('You are in')} ${zone.name.toUpperCase()}${desc}.`),
-  ];
+  return [responseLine(`${msg('You are in')} ${zone.name.toUpperCase()}${desc}.`)];
 }
 
 /**
  * Format the `help` command output — list all available commands.
  */
-export function formatHelp(
-  commands: TerminalCommand[],
-  clearanceLevel: number,
-): TerminalLine[] {
+export function formatHelp(commands: TerminalCommand[], clearanceLevel: number): TerminalLine[] {
   const lines: TerminalLine[] = [];
   const available = commands.filter((c) => c.tier <= clearanceLevel);
 
-  lines.push(responseLine(
-    `${msg('AVAILABLE COMMANDS')} (${msg('Clearance Level')} ${clearanceLevel})`,
-  ));
+  lines.push(
+    responseLine(`${msg('AVAILABLE COMMANDS')} (${msg('Clearance Level')} ${clearanceLevel})`),
+  );
 
   for (const cmd of available) {
     lines.push(responseLine(`  ${pad(cmd.verb, 14)} ${resolveDescription(cmd.description)}`));
@@ -476,9 +496,11 @@ export function formatHelp(
   lines.push(responseLine(''));
   lines.push(responseLine(msg("Type 'help {command}' for detailed usage.")));
   lines.push(responseLine(''));
-  lines.push(responseLine(
-    `OPS = ${msg('Operations Points (fortify, quarantine)')} | INT = ${msg('Intel Points (future: debrief, scan)')}`,
-  ));
+  lines.push(
+    responseLine(
+      `OPS = ${msg('Operations Points (fortify, quarantine)')} | INT = ${msg('Intel Points (future: debrief, scan)')}`,
+    ),
+  );
 
   return lines;
 }
@@ -502,24 +524,28 @@ export function formatHelpCommand(cmd: TerminalCommand): TerminalLine[] {
 
 export function formatFortify(zoneName: string, remainingOps: number): TerminalLine[] {
   return [
-    responseLine(`[${msg('ZONE ACTION')}] ${msg('Deploying fortification resources to')} ${zoneName}.`),
+    responseLine(
+      `[${msg('ZONE ACTION')}] ${msg('Deploying fortification resources to')} ${zoneName}.`,
+    ),
     responseLine(`${msg('Effect')}: -15% ${msg('event pressure for 7 days')}.`),
-    responseLine(`${msg('Cost')}: 1 ${msg('ops point')} (${remainingOps} ${msg('remaining')}). ${msg('Cooldown')}: 14 ${msg('days')}.`),
+    responseLine(
+      `${msg('Cost')}: 1 ${msg('ops point')} (${remainingOps} ${msg('remaining')}). ${msg('Cooldown')}: 14 ${msg('days')}.`,
+    ),
   ];
 }
 
 export function formatQuarantine(zoneName: string, remainingOps: number): TerminalLine[] {
   return [
     responseLine(`[${msg('ZONE ACTION')}] ${msg('Quarantine established in')} ${zoneName}.`),
-    responseLine(`${msg('Effect')}: ${msg('Events cannot spread to/from zone for 14 days. Agents locked in place.')}`),
+    responseLine(
+      `${msg('Effect')}: ${msg('Events cannot spread to/from zone for 14 days. Agents locked in place.')}`,
+    ),
     responseLine(`${msg('Cost')}: 2 ${msg('ops points')} (${remainingOps} ${msg('remaining')}).`),
   ];
 }
 
 export function formatAssign(agentName: string, buildingName: string): TerminalLine[] {
-  return [
-    responseLine(`[${msg('TRANSFER')}] ${agentName} ${msg('assigned to')} ${buildingName}.`),
-  ];
+  return [responseLine(`[${msg('TRANSFER')}] ${agentName} ${msg('assigned to')} ${buildingName}.`)];
 }
 
 export function formatUnassign(agentName: string): TerminalLine[] {
@@ -620,11 +646,14 @@ function getThemeAsciiArt(theme: string): string[] {
   }
 }
 
-export function formatBootSequence(simulationName: string, theme?: string, customArt?: string, clearanceLevel = 1): TerminalLine[] {
+export function formatBootSequence(
+  simulationName: string,
+  theme?: string,
+  customArt?: string,
+  clearanceLevel = 1,
+): TerminalLine[] {
   // Prefer AI-generated art from simulation_settings, fall back to theme defaults
-  const artLines = customArt
-    ? customArt.split('\n')
-    : getThemeAsciiArt(theme ?? 'custom');
+  const artLines = customArt ? customArt.split('\n') : getThemeAsciiArt(theme ?? 'custom');
   const lines: TerminalLine[] = [];
 
   // ASCII art header (AI-generated or theme fallback)
@@ -659,25 +688,15 @@ export function formatBootSequence(simulationName: string, theme?: string, custo
 export function formatOnboardingHint(step: number, _context?: string): TerminalLine | null {
   switch (step) {
     case 0:
-      return hintLine(
-        msg("Hint: Use 'examine {agent name}' to access a dossier."),
-      );
+      return hintLine(msg("Hint: Use 'examine {agent name}' to access a dossier."));
     case 1:
-      return hintLine(
-        msg("Hint: Use 'talk {agent name}' to initiate contact."),
-      );
+      return hintLine(msg("Hint: Use 'talk {agent name}' to initiate contact."));
     case 2:
-      return hintLine(
-        msg("Hint: Use 'go {zone name}' to move to another sector."),
-      );
+      return hintLine(msg("Hint: Use 'go {zone name}' to move to another sector."));
     case 3:
-      return hintLine(
-        msg("Hint: Use 'status' for a full situation report."),
-      );
+      return hintLine(msg("Hint: Use 'status' for a full situation report."));
     case 4:
-      return hintLine(
-        msg('Onboarding complete. You have full LEVEL 1 clearance.'),
-      );
+      return hintLine(msg('Onboarding complete. You have full LEVEL 1 clearance.'));
     default:
       return null;
   }
@@ -744,7 +763,9 @@ export function formatFeedEntry(
 
 export function formatUnknownCommand(input: string, suggestion?: string): TerminalLine[] {
   const lines = [
-    errorLine(`${msg('Unknown command')} '${input}'. ${msg("Type 'help' for available commands.")}`),
+    errorLine(
+      `${msg('Unknown command')} '${input}'. ${msg("Type 'help' for available commands.")}`,
+    ),
   ];
   if (suggestion) {
     lines.push(hintLine(`${msg('Did you mean')} '${suggestion}'?`));
@@ -765,34 +786,26 @@ export function formatInsufficientPoints(
   have: number,
   need: number,
 ): TerminalLine[] {
-  return [
-    errorLine(
-      `${msg('Insufficient')} ${poolName} (${have}/${need} ${msg('required')}).`,
-    ),
-  ];
+  return [errorLine(`${msg('Insufficient')} ${poolName} (${have}/${need} ${msg('required')}).`)];
 }
 
-export function formatAmbiguousTarget(
-  matches: Array<{ name: string }>,
-): TerminalLine[] {
+export function formatAmbiguousTarget(matches: Array<{ name: string }>): TerminalLine[] {
   const names = matches.map((m) => m.name).join(', ');
-  return [
-    errorLine(`${msg('Multiple matches')}: ${names}. ${msg('Please be more specific.')}`),
-  ];
+  return [errorLine(`${msg('Multiple matches')}: ${names}. ${msg('Please be more specific.')}`)];
 }
 
 export function formatDirectionNotAvailable(): TerminalLine[] {
   return [
     errorLine(
-      msg("Directional navigation is not available. Use 'go {zone name}' or type 'map' to see available zones."),
+      msg(
+        "Directional navigation is not available. Use 'go {zone name}' or type 'map' to see available zones.",
+      ),
     ),
   ];
 }
 
 export function formatNoTarget(verb: string): TerminalLine[] {
-  return [
-    errorLine(`${verb} ${msg('requires a target. Example')}: ${verb} {${msg('name')}}`),
-  ];
+  return [errorLine(`${verb} ${msg('requires a target. Example')}: ${verb} {${msg('name')}}`)];
 }
 
 // ── Stage 3: Intelligence Network Formatters ─────────────────────────────
@@ -807,7 +820,9 @@ export function formatScan(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
   lines.push(systemLine(`[${msg('RADAR SWEEP')}] ${msg('All sectors')}`));
-  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(
+    systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`),
+  );
   lines.push(systemLine(''));
 
   // Table header
@@ -825,9 +840,8 @@ export function formatScan(
     const marker = zs.zone_id === currentZoneId ? '►' : ' ';
     const name = zs.zone_name.padEnd(23);
     const stab = `${Math.round(zs.stability * 100)}%`.padEnd(12);
-    const pressure = zs.event_pressure > 0
-      ? `${zs.event_pressure.toFixed(1)}`.padEnd(8)
-      : '–'.padEnd(8);
+    const pressure =
+      zs.event_pressure > 0 ? `${zs.event_pressure.toFixed(1)}`.padEnd(8) : '–'.padEnd(8);
     const agents = `${zs.total_agents}`;
     lines.push(responseLine(`${marker} ${name}${stab}${pressure}${agents}`));
   }
@@ -840,14 +854,13 @@ export function formatScan(
 /**
  * Format investigate output: event deep dive.
  */
-export function formatInvestigate(
-  event: Event,
-  remainingIntel: number,
-): TerminalLine[] {
+export function formatInvestigate(event: Event, remainingIntel: number): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
   lines.push(systemLine(`[${msg('INVESTIGATE')}] ${event.title}`));
-  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(
+    systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`),
+  );
   lines.push(systemLine(''));
 
   // Event metadata
@@ -950,10 +963,12 @@ export function formatDebrief(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  const buildingName = (agent as unknown as Record<string, unknown>).current_building_name
-    ?? msg('field position');
+  const buildingName =
+    (agent as unknown as Record<string, unknown>).current_building_name ?? msg('field position');
   lines.push(systemLine(`[${msg('DEBRIEF')}] ${agent.name} – ${buildingName}`));
-  lines.push(systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`));
+  lines.push(
+    systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`),
+  );
   lines.push(systemLine(''));
 
   // AI response wrapped
@@ -1034,7 +1049,11 @@ function _timeAgo(date: Date): string {
 /** Format AI sitrep narrative. */
 export function formatSitrep(narrative: string, cycle: number, status: string): TerminalLine[] {
   const lines: TerminalLine[] = [];
-  lines.push(systemLine(`[SITREP] ${msg('Tactical Briefing')} \u2013 ${msg('Cycle')} ${cycle} (${status.toUpperCase()})`));
+  lines.push(
+    systemLine(
+      `[SITREP] ${msg('Tactical Briefing')} \u2013 ${msg('Cycle')} ${cycle} (${status.toUpperCase()})`,
+    ),
+  );
   lines.push(systemLine('\u2500'.repeat(60)));
 
   // Word-wrap the narrative into terminal-width lines
@@ -1066,13 +1085,21 @@ export function formatDossier(dossier: IntelDossier, playerName: string): Termin
   if (dossier.fortifications && dossier.fortifications.length > 0) {
     lines.push(responseLine(`${msg('Fortifications')}:`));
     for (const f of dossier.fortifications) {
-      lines.push(responseLine(`  ${f.zone_name}: +${f.security_bonus} (${msg('expires cycle')} ${f.expires_at_cycle})`));
+      lines.push(
+        responseLine(
+          `  ${f.zone_name}: +${f.security_bonus} (${msg('expires cycle')} ${f.expires_at_cycle})`,
+        ),
+      );
     }
   } else {
     lines.push(responseLine(`${msg('Fortifications')}: ${msg('none detected')}`));
   }
 
-  lines.push(responseLine(`${msg('Intel Reports')}: ${dossier.report_count ?? 0} | ${msg('Last Update')}: ${msg('Cycle')} ${dossier.last_intel_cycle ?? 0}${dossier.is_stale ? ` [${msg('STALE')}]` : ''}`));
+  lines.push(
+    responseLine(
+      `${msg('Intel Reports')}: ${dossier.report_count ?? 0} | ${msg('Last Update')}: ${msg('Cycle')} ${dossier.last_intel_cycle ?? 0}${dossier.is_stale ? ` [${msg('STALE')}]` : ''}`,
+    ),
+  );
 
   lines.push(systemLine('\u2500'.repeat(50)));
   return lines;
@@ -1093,15 +1120,24 @@ export function formatThreats(threats: OperativeMission[]): TerminalLine[] {
     const type = (t.operative_type ?? 'unknown').toUpperCase();
     const status = (t.status ?? 'active').toUpperCase();
     const sourceName = t.target_sim?.name ?? msg('Unknown');
-    lines.push(responseLine(`  ${type} | ${msg('Source')}: ${sourceName} | ${msg('Status')}: ${status}`));
+    lines.push(
+      responseLine(`  ${type} | ${msg('Source')}: ${sourceName} | ${msg('Status')}: ${status}`),
+    );
   }
   lines.push(systemLine('\u2500'.repeat(55)));
-  lines.push(systemLine(`${threats.length} ${msg('threat(s) detected')}. ${msg("Use 'intercept' to attempt capture.")}`));
+  lines.push(
+    systemLine(
+      `${threats.length} ${msg('threat(s) detected')}. ${msg("Use 'intercept' to attempt capture.")}`,
+    ),
+  );
   return lines;
 }
 
 /** Format counter-intelligence sweep results. */
-export function formatInterceptSweep(detected: OperativeMission[], remainingRP: number): TerminalLine[] {
+export function formatInterceptSweep(
+  detected: OperativeMission[],
+  remainingRP: number,
+): TerminalLine[] {
   const lines: TerminalLine[] = [];
   lines.push(systemLine(`[COUNTER-INTEL] ${msg('Sweep Complete')}`));
 
@@ -1131,8 +1167,14 @@ export function formatEpochStatusExtension(
   const lines: TerminalLine[] = [];
   lines.push(systemLine(''));
   lines.push(systemLine(`\u2550\u2550\u2550 ${msg('EPOCH INTELLIGENCE')} \u2550\u2550\u2550`));
-  lines.push(responseLine(`${msg('Phase')}: ${epochStatus.toUpperCase()} | ${msg('Cycle')}: ${currentCycle}`));
-  lines.push(responseLine(`${msg('Resource Points')}: ${rp} | ${msg('Active Missions')}: ${missionCount}`));
+  lines.push(
+    responseLine(
+      `${msg('Phase')}: ${epochStatus.toUpperCase()} | ${msg('Cycle')}: ${currentCycle}`,
+    ),
+  );
+  lines.push(
+    responseLine(`${msg('Resource Points')}: ${rp} | ${msg('Active Missions')}: ${missionCount}`),
+  );
   if (rank !== null) {
     lines.push(responseLine(`${msg('Current Rank')}: #${rank}`));
   }
@@ -1142,12 +1184,22 @@ export function formatEpochStatusExtension(
 /** Format insufficient RP error. */
 export function formatInsufficientRP(have: number, need: number): TerminalLine[] {
   return [
-    errorLine(`${msg('Insufficient Resource Points.')} ${msg('Required')}: ${need} | ${msg('Available')}: ${have}`),
+    errorLine(
+      `${msg('Insufficient Resource Points.')} ${msg('Required')}: ${need} | ${msg('Available')}: ${have}`,
+    ),
     hintLine(msg('RP refreshes each cycle. Plan operations carefully.')),
   ];
 }
 
 export {
-  commandLine, systemLine, errorLine, responseLine, hintLine,
-  combatPlayerLine, combatMissLine, combatDamageLine, combatHealLine, combatSystemLine,
+  commandLine,
+  systemLine,
+  errorLine,
+  responseLine,
+  hintLine,
+  combatPlayerLine,
+  combatMissLine,
+  combatDamageLine,
+  combatHealLine,
+  combatSystemLine,
 };

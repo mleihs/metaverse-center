@@ -168,16 +168,20 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
             ></velg-toggle>
             <span class="toggle-row__label">
               ${msg('Enable Weather Seeding')}
-              ${renderInfoBubble(msg('When enabled, real-world weather at the simulation\'s geographic anchor generates ambient zone events and applies mood effects to agents. Zero AI cost -- all narratives are template-based. One API call per tick.'))}
+              ${renderInfoBubble(msg("When enabled, real-world weather at the simulation's geographic anchor generates ambient zone events and applies mood effects to agents. Zero AI cost -- all narratives are template-based. One API call per tick."))}
             </span>
           </div>
         </div>
 
-        ${this._enabled ? this._renderOptions() : html`
+        ${
+          this._enabled
+            ? this._renderOptions()
+            : html`
           <div class="disabled-notice">
-            ${msg('Weather seeding is disabled. Enable it to let real-world conditions influence your simulation\'s atmosphere.')}
+            ${msg("Weather seeding is disabled. Enable it to let real-world conditions influence your simulation's atmosphere.")}
           </div>
-        `}
+        `
+        }
 
         <div class="settings-panel__footer">
           <button
@@ -202,7 +206,7 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
       <div class="settings-section">
         <velg-section-header variant="large">${msg('Geographic Anchor')}</velg-section-header>
         <p class="settings-section__help">
-          ${msg('The real-world location used for weather data. Leave empty to use the default for your simulation\'s theme.')}
+          ${msg("The real-world location used for weather data. Leave empty to use the default for your simulation's theme.")}
         </p>
 
         <div class="settings-form__group">
@@ -252,7 +256,7 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
         <div class="settings-form__group">
           <label class="settings-form__label settings-form__label--xs" for="weather-theme-override">
             ${msg('Weather Description Style')}
-            ${renderInfoBubble(msg('Override the narrative tone of weather descriptions. By default, your simulation\'s theme determines the style (spy-thriller gets surveillance metaphors, sci-fi gets system alerts, etc.). Override only if you want a different atmosphere.'))}
+            ${renderInfoBubble(msg("Override the narrative tone of weather descriptions. By default, your simulation's theme determines the style (spy-thriller gets surveillance metaphors, sci-fi gets system alerts, etc.). Override only if you want a different atmosphere."))}
           </label>
           <select
             class="theme-select"

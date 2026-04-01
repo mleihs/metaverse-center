@@ -21,10 +21,10 @@ import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
-  agentAutonomyApi,
   type AgentMood,
   type AgentMoodlet,
   type AgentNeeds,
+  agentAutonomyApi,
 } from '../../services/api/AgentAutonomyApiService.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -958,7 +958,7 @@ export class AgentMoodPanel extends LitElement {
     if (!this._needs) return nothing;
 
     const needs = this._needs;
-    const values: number[] = NEED_KEYS.map(k => needs[k]);
+    const values: number[] = NEED_KEYS.map((k) => needs[k]);
 
     // Compute polygon points
     const points = values.map((val, i) => {
@@ -970,7 +970,7 @@ export class AgentMoodPanel extends LitElement {
     const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
 
     // Grid rings (25%, 50%, 75%, 100%)
-    const gridRings = [0.25, 0.5, 0.75, 1].map(pct => {
+    const gridRings = [0.25, 0.5, 0.75, 1].map((pct) => {
       const ringPoints = NEED_KEYS.map((_, i) => {
         const angle = (i * 360) / 5 - 90;
         return polarToCartesian(RADAR_CENTER, RADAR_CENTER, pct * RADAR_RADIUS, angle);
@@ -993,7 +993,9 @@ export class AgentMoodPanel extends LitElement {
       return { ...pos, key, value: values[i] };
     });
 
-    const ariaLabel = NEED_KEYS.map((k, i) => `${NEED_LABELS[k]()}: ${Math.round(values[i])}`).join(', ');
+    const ariaLabel = NEED_KEYS.map((k, i) => `${NEED_LABELS[k]()}: ${Math.round(values[i])}`).join(
+      ', ',
+    );
 
     return html`
       <div class="needs panel__section">
@@ -1006,25 +1008,30 @@ export class AgentMoodPanel extends LitElement {
             aria-label=${msg('Needs radar') + ` - ${ariaLabel}`}
           >
             <!-- Grid rings -->
-            ${gridRings.map(d => html`<path class="needs__grid-line" d=${d} />`)}
+            ${gridRings.map((d) => html`<path class="needs__grid-line" d=${d} />`)}
 
             <!-- Axes -->
-            ${axes.map(a => html`
+            ${axes.map(
+              (a) => html`
               <line class="needs__axis" x1=${a.x1} y1=${a.y1} x2=${a.x2} y2=${a.y2} />
-            `)}
+            `,
+            )}
 
             <!-- Data area -->
             <path class="needs__area" d=${pathD} />
 
             <!-- Data points -->
-            ${points.map(p => html`
+            ${points.map(
+              (p) => html`
               <circle class="needs__dot" cx=${p.x} cy=${p.y} />
-            `)}
+            `,
+            )}
           </svg>
 
           <!-- HTML overlay labels (reliable in Shadow DOM) -->
           <div class="needs__html-labels" aria-hidden="true">
-            ${labels.map(l => html`
+            ${labels.map(
+              (l) => html`
               <div
                 class="needs__html-label"
                 style="left: ${(l.x / RADAR_SIZE) * 100}%; top: ${(l.y / RADAR_SIZE) * 100}%"
@@ -1032,7 +1039,8 @@ export class AgentMoodPanel extends LitElement {
                 <div class="needs__html-label-name">${NEED_LABELS[l.key]()}</div>
                 <div class="needs__html-label-value">${Math.round(l.value)}</div>
               </div>
-            `)}
+            `,
+            )}
           </div>
         </div>
       </div>
@@ -1045,9 +1053,10 @@ export class AgentMoodPanel extends LitElement {
     return html`
       <div class="moodlets panel__section">
         <span class="moodlets__title">${msg('Active influences')} ${renderInfoBubble(msg('Individual mood modifiers from events, social interactions, and zone conditions. Each has a strength (\u00b120) and a decay type: permanent (gray dot), timed (yellow dot, expires at set time), or decaying (blue dot, strength fades gradually).'))}</span>
-        ${this._moodlets.length === 0
-          ? html`<div class="moodlets__empty">${msg('No active influences')}</div>`
-          : html`
+        ${
+          this._moodlets.length === 0
+            ? html`<div class="moodlets__empty">${msg('No active influences')}</div>`
+            : html`
             <div class="moodlets__list" role="list">
               ${this._moodlets.map((m, i) => this._renderMoodlet(m, i))}
             </div>
@@ -1070,9 +1079,10 @@ export class AgentMoodPanel extends LitElement {
         <div class="moodlet__dot"></div>
         <div class="moodlet__info">
           <div class="moodlet__type">${moodlet.moodlet_type.replace(/_/g, ' ')}</div>
-          ${moodlet.source_description
-            ? html`<div class="moodlet__source">${moodlet.source_description}</div>`
-            : nothing
+          ${
+            moodlet.source_description
+              ? html`<div class="moodlet__source">${moodlet.source_description}</div>`
+              : nothing
           }
         </div>
         <span class="moodlet__strength ${isPositive ? 'moodlet__strength--positive' : 'moodlet__strength--negative'}">

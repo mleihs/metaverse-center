@@ -2031,12 +2031,14 @@ export class VelgForgeCeremony extends LitElement {
               ${this._lorePhaseLabel(this._progress.lore_progress)}
             </span>
             ${
-              this._progress.lore_progress.phase === 'translating' && this._progress.lore_progress.section_title
+              this._progress.lore_progress.phase === 'translating' &&
+              this._progress.lore_progress.section_title
                 ? html`<span class="ceremony__lore-title">${this._progress.lore_progress.section_title}</span>`
                 : nothing
             }
             ${
-              this._progress.lore_progress.phase === 'translating' && (this._progress.lore_progress.total ?? 0) > 0
+              this._progress.lore_progress.phase === 'translating' &&
+              (this._progress.lore_progress.total ?? 0) > 0
                 ? html`
               <div class="ceremony__lore-dots" aria-hidden="true">
                 ${Array.from({ length: this._progress.lore_progress.total! }, (_, i) => {

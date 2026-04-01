@@ -10,12 +10,24 @@ import { adminButtonStyles, adminLoadingStyles } from './admin-shared-styles.js'
 /** Operational tips for each cache setting (shown as info bubbles). */
 function getCacheTip(): Record<string, string> {
   return {
-    cache_map_data_ttl: msg('In-process (server-side) cache for cartographic map tile data. Set to 0 to disable caching entirely, which forces a fresh DB query on every map load. Low values (1-5s) increase database load significantly during peak hours. Recommended: 10-30s for active maps with frequent updates, 60-120s for stable production maps.'),
-    cache_seo_metadata_ttl: msg('Server-side cache for SEO metadata served to search engine crawlers (Google, Bing). Only affects bot requests, not normal users. Safe to set high (300-600s) since simulation metadata changes rarely. Lower values waste DB queries on crawlers without SEO benefit.'),
-    cache_http_simulations_max_age: msg('HTTP Cache-Control max-age header for simulation list and detail endpoints. Controls how long browsers cache simulation data before re-fetching. Users see stale data for this duration after any simulation changes (health updates, new events). 60s is a safe default. Set lower (10-15s) during active playtesting, higher (120-300s) for quiet periods.'),
-    cache_http_map_data_max_age: msg('HTTP Cache-Control max-age for the cartographic map data endpoint. Affects map freshness for all users. During active playtesting or epoch battles, set low (5-15s) so players see real-time map changes. For production stability with low activity, 60-120s reduces server load without noticeable staleness.'),
-    cache_http_battle_feed_max_age: msg('HTTP Cache-Control max-age for epoch battle feed and live combat data. During active epochs with real-time player engagement, set very low (5-10s) for a responsive, live-action feel. Between epochs or during quiet periods, 30-60s is fine. Setting too high makes battles feel laggy and unresponsive.'),
-    cache_http_connections_max_age: msg('HTTP Cache-Control max-age for agent connection/relationship data. Higher values (30-60s) reduce server load but delay visibility of newly formed or broken agent connections. Set lower (5-10s) when players are actively building networks or during relationship-heavy gameplay phases.'),
+    cache_map_data_ttl: msg(
+      'In-process (server-side) cache for cartographic map tile data. Set to 0 to disable caching entirely, which forces a fresh DB query on every map load. Low values (1-5s) increase database load significantly during peak hours. Recommended: 10-30s for active maps with frequent updates, 60-120s for stable production maps.',
+    ),
+    cache_seo_metadata_ttl: msg(
+      'Server-side cache for SEO metadata served to search engine crawlers (Google, Bing). Only affects bot requests, not normal users. Safe to set high (300-600s) since simulation metadata changes rarely. Lower values waste DB queries on crawlers without SEO benefit.',
+    ),
+    cache_http_simulations_max_age: msg(
+      'HTTP Cache-Control max-age header for simulation list and detail endpoints. Controls how long browsers cache simulation data before re-fetching. Users see stale data for this duration after any simulation changes (health updates, new events). 60s is a safe default. Set lower (10-15s) during active playtesting, higher (120-300s) for quiet periods.',
+    ),
+    cache_http_map_data_max_age: msg(
+      'HTTP Cache-Control max-age for the cartographic map data endpoint. Affects map freshness for all users. During active playtesting or epoch battles, set low (5-15s) so players see real-time map changes. For production stability with low activity, 60-120s reduces server load without noticeable staleness.',
+    ),
+    cache_http_battle_feed_max_age: msg(
+      'HTTP Cache-Control max-age for epoch battle feed and live combat data. During active epochs with real-time player engagement, set very low (5-10s) for a responsive, live-action feel. Between epochs or during quiet periods, 30-60s is fine. Setting too high makes battles feel laggy and unresponsive.',
+    ),
+    cache_http_connections_max_age: msg(
+      'HTTP Cache-Control max-age for agent connection/relationship data. Higher values (30-60s) reduce server load but delay visibility of newly formed or broken agent connections. Set lower (5-10s) when players are actively building networks or during relationship-heavy gameplay phases.',
+    ),
   };
 }
 

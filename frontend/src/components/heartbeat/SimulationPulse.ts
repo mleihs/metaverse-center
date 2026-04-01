@@ -25,7 +25,7 @@ import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import './AgentLifeTimeline.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { renderInfoBubble, infoBubbleStyles } from '../shared/info-bubble-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 
 type FilterKey = 'all' | 'zone' | 'events' | 'resonance' | 'bureau' | 'diplomatic' | 'arcs';
 
@@ -42,7 +42,9 @@ const FILTER_TYPES: Record<FilterKey, HeartbeatEntryType[] | null> = {
 @localized()
 @customElement('velg-simulation-pulse')
 export class VelgSimulationPulse extends SignalWatcher(LitElement) {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     /* ═══════════════════════════════════════
        SUBSTRATE MONITORING STATION
        Classified Medical Monitoring Aesthetic
@@ -840,7 +842,8 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         animation: none !important;
       }
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
   @state() private _entries: HeartbeatEntry[] = [];
@@ -962,26 +965,46 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
 
   private _getTypeLabel(type: HeartbeatEntryType): string {
     switch (type) {
-      case 'zone_shift': return msg('Zone Shift');
-      case 'event_aging': return msg('Event Aging');
-      case 'event_escalation': return msg('Escalation');
-      case 'event_resolution': return msg('Resolution');
-      case 'scar_tissue': return msg('Scar Tissue');
-      case 'resonance_pressure': return msg('Resonance');
-      case 'cascade_spawn': return msg('Cascade');
-      case 'bureau_response': return msg('Bureau');
-      case 'attunement_deepen': return msg('Attunement');
-      case 'anchor_strengthen': return msg('Anchor');
-      case 'convergence': return msg('Convergence');
-      case 'positive_event': return msg('Harvest');
-      case 'narrative_arc': return msg('Arc');
-      case 'system_note': return msg('System');
-      case 'agent_crisis': return msg('Crisis');
-      case 'relationship_shift': return msg('Relationship');
-      case 'social_event': return msg('Social');
-      case 'autonomous_event': return msg('Autonomous');
-      case 'ambient_weather': return msg('Weather');
-      default: return type;
+      case 'zone_shift':
+        return msg('Zone Shift');
+      case 'event_aging':
+        return msg('Event Aging');
+      case 'event_escalation':
+        return msg('Escalation');
+      case 'event_resolution':
+        return msg('Resolution');
+      case 'scar_tissue':
+        return msg('Scar Tissue');
+      case 'resonance_pressure':
+        return msg('Resonance');
+      case 'cascade_spawn':
+        return msg('Cascade');
+      case 'bureau_response':
+        return msg('Bureau');
+      case 'attunement_deepen':
+        return msg('Attunement');
+      case 'anchor_strengthen':
+        return msg('Anchor');
+      case 'convergence':
+        return msg('Convergence');
+      case 'positive_event':
+        return msg('Harvest');
+      case 'narrative_arc':
+        return msg('Arc');
+      case 'system_note':
+        return msg('System');
+      case 'agent_crisis':
+        return msg('Crisis');
+      case 'relationship_shift':
+        return msg('Relationship');
+      case 'social_event':
+        return msg('Social');
+      case 'autonomous_event':
+        return msg('Autonomous');
+      case 'ambient_weather':
+        return msg('Weather');
+      default:
+        return type;
     }
   }
 
@@ -997,9 +1020,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     return html`
       ${this._renderHeader()}
       ${this._renderFilters()}
-      ${this._loading
-        ? html`<div class="loading" role="status" aria-live="polite">${msg('Loading chronicle...')}</div>`
-        : this._renderFeed()}
+      ${
+        this._loading
+          ? html`<div class="loading" role="status" aria-live="polite">${msg('Loading chronicle...')}</div>`
+          : this._renderFeed()
+      }
 
       <!-- Agent Autonomy Activity Log -->
       <velg-agent-life-timeline
@@ -1024,16 +1049,24 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
           ${msg('Substrate Pulse')}
           ${renderInfoBubble(msg('The Substrate Pulse monitors all heartbeat activity. Every tick, the simulation processes events, narrative arcs, and zone dynamics. Filter by category to focus on specific systems.'))}
         </h2>
-        ${o ? html`
+        ${
+          o
+            ? html`
           <span class="pulse-header__tick" aria-label=${msg('Current tick')}>
             ${msg('Tick')} #${o.last_tick}
           </span>
-        ` : nothing}
-        ${countdown ? html`
+        `
+            : nothing
+        }
+        ${
+          countdown
+            ? html`
           <span class="pulse-header__countdown" aria-label=${msg('Next heartbeat countdown')}>
             ${msg('Next heartbeat in')} ${countdown}
           </span>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
@@ -1102,7 +1135,10 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
                 <span class="tick-header__line"></span>
                 <span class="tick-header__count">${entries.length} ${entries.length === 1 ? msg('entry') : msg('entries')}</span>
               </button>
-              ${collapsed ? nothing : html`
+              ${
+                collapsed
+                  ? nothing
+                  : html`
                 <div id="tick-${tickNum}" role="group" aria-label=${msg('Tick entries')}>
                   ${this._renderTickSummary(entries)}
                   ${entries.map((entry) => {
@@ -1110,18 +1146,23 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
                     return this._renderEntry(entry, idx);
                   })}
                 </div>
-              `}
+              `
+              }
             </div>
           `;
         })}
       </div>
-      ${this._entries.length < this._total ? html`
+      ${
+        this._entries.length < this._total
+          ? html`
         <div class="load-more">
           <button class="load-more__btn" @click=${this._loadMore}>
             ${msg('Load older entries')}
           </button>
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
     `;
   }
 
@@ -1140,14 +1181,37 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     }
 
     const parts: string[] = [];
-    if (counts['events']) parts.push(`${counts['events']} ${counts['events'] === 1 ? msg('event update') : msg('event updates')}`);
-    if (counts['arcs']) parts.push(`${counts['arcs']} ${counts['arcs'] === 1 ? msg('arc shift') : msg('arc shifts')}`);
-    if (counts['bureau']) parts.push(`${counts['bureau']} ${counts['bureau'] === 1 ? msg('bureau action') : msg('bureau actions')}`);
-    if (counts['diplomatic']) parts.push(`${counts['diplomatic']} ${counts['diplomatic'] === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`);
-    if (counts['zone']) parts.push(`${counts['zone']} ${counts['zone'] === 1 ? msg('zone change') : msg('zone changes')}`);
-    if (counts['system']) parts.push(`${counts['system']} ${counts['system'] === 1 ? msg('system note') : msg('system notes')}`);
+    if (counts['events'])
+      parts.push(
+        `${counts['events']} ${counts['events'] === 1 ? msg('event update') : msg('event updates')}`,
+      );
+    if (counts['arcs'])
+      parts.push(
+        `${counts['arcs']} ${counts['arcs'] === 1 ? msg('arc shift') : msg('arc shifts')}`,
+      );
+    if (counts['bureau'])
+      parts.push(
+        `${counts['bureau']} ${counts['bureau'] === 1 ? msg('bureau action') : msg('bureau actions')}`,
+      );
+    if (counts['diplomatic'])
+      parts.push(
+        `${counts['diplomatic']} ${counts['diplomatic'] === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`,
+      );
+    if (counts['zone'])
+      parts.push(
+        `${counts['zone']} ${counts['zone'] === 1 ? msg('zone change') : msg('zone changes')}`,
+      );
+    if (counts['system'])
+      parts.push(
+        `${counts['system']} ${counts['system'] === 1 ? msg('system note') : msg('system notes')}`,
+      );
 
-    const severityClass = criticalCount > 0 ? 'tick-summary--critical' : positiveCount > 0 ? 'tick-summary--positive' : '';
+    const severityClass =
+      criticalCount > 0
+        ? 'tick-summary--critical'
+        : positiveCount > 0
+          ? 'tick-summary--positive'
+          : '';
 
     return html`
       <div class="tick-summary ${severityClass}">

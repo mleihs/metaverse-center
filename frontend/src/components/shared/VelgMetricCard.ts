@@ -122,7 +122,8 @@ export class VelgMetricCard extends LitElement {
   @property({ type: String }) label = '';
   @property({ type: String }) value = '';
   @property({ type: String }) sublabel = '';
-  @property({ type: String, reflect: true }) variant: 'default' | 'danger' | 'success' | 'warning' = 'default';
+  @property({ type: String, reflect: true }) variant: 'default' | 'danger' | 'success' | 'warning' =
+    'default';
 
   protected render() {
     return html`

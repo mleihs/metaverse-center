@@ -1,9 +1,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { formatDate } from '../../utils/date-format.js';
 import { eventsApi } from '../../services/api/index.js';
 import type { Event as SimEvent } from '../../types/index.js';
+import { formatDate } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/BaseModal.js';
@@ -250,7 +250,6 @@ export class VelgEventPicker extends LitElement {
       }),
     );
   }
-
 
   private _renderImpactBar(level: number): TemplateResult {
     const pct = Math.max(0, Math.min(100, level * 10));

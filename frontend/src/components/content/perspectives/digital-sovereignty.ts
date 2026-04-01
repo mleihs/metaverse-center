@@ -39,7 +39,10 @@ export function getDigitalSovereigntyPage(): ContentPageData {
     breadcrumbs: [
       { name: 'Home', url: 'https://metaverse.center/' },
       { name: 'Perspectives', url: 'https://metaverse.center/perspectives/digital-sovereignty' },
-      { name: 'Digital Sovereignty', url: 'https://metaverse.center/perspectives/digital-sovereignty' },
+      {
+        name: 'Digital Sovereignty',
+        url: 'https://metaverse.center/perspectives/digital-sovereignty',
+      },
     ],
 
     sections: [

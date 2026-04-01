@@ -1,8 +1,6 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { formatDateFull } from '../../utils/date-format.js';
-import { renderSafeMarkdown } from '../../utils/markdown.js';
 import { appState } from '../../services/AppStateManager.js';
 import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
@@ -16,8 +14,10 @@ import type {
   Simulation,
   SimulationConnection,
 } from '../../types/index.js';
+import { formatDateFull } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { renderSafeMarkdown } from '../../utils/markdown.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -859,7 +859,6 @@ export class VelgEventDetailsPanel extends LitElement {
   private _renderMarkdown(text: string) {
     return renderSafeMarkdown(text);
   }
-
 
   private _getImpactClass(level: number): string {
     if (level >= 8) return 'high';

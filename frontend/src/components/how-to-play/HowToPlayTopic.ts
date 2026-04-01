@@ -29,9 +29,9 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
-import { icons, type IconKey } from '../../utils/icons.js';
-import type { DemoStep } from './htp-types.js';
+import { type IconKey, icons } from '../../utils/icons.js';
 import type { ForgeStep } from './htp-content-features.js';
+import { htpBackStyles, htpHeroStyles, htpReducedMotionBase } from './htp-shared-styles.js';
 import {
   getAdjacentTopics,
   getTopicBySlug,
@@ -41,11 +41,7 @@ import {
   type TopicReadout,
   type TopicSection,
 } from './htp-topic-data.js';
-import {
-  htpBackStyles,
-  htpHeroStyles,
-  htpReducedMotionBase,
-} from './htp-shared-styles.js';
+import type { DemoStep } from './htp-types.js';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -1119,7 +1115,8 @@ export class VelgHowToPlayTopic extends LitElement {
         font-size: var(--text-base);
       }
     }
-  `];
+  `,
+  ];
 
   // ── Properties ──────────────────────────────────────────────────────────
 
@@ -1207,15 +1204,20 @@ export class VelgHowToPlayTopic extends LitElement {
   // ── Helpers ────────────────────────────────────────────────────────────
 
   private _slugify(text: string): string {
-    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   }
 
   private _navigate(path: string) {
-    this.dispatchEvent(new CustomEvent('navigate', {
-      detail: path,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        detail: path,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleLinkClick(e: Event, href: string) {
@@ -1306,12 +1308,14 @@ export class VelgHowToPlayTopic extends LitElement {
       <div class="tldr">
         <div class="tldr__eyebrow">${msg('Executive Summary')}</div>
         <ul class="tldr__list">
-          ${bullets.map((b) => html`
+          ${bullets.map(
+            (b) => html`
             <li class="tldr__item">
               <span class="tldr__bullet" aria-hidden="true"></span>
               <span>${b}</span>
             </li>
-          `)}
+          `,
+          )}
         </ul>
       </div>
     `;
@@ -1359,12 +1363,14 @@ export class VelgHowToPlayTopic extends LitElement {
   private _renderReadout(data: TopicReadout[]) {
     return html`
       <div class="readout">
-        ${data.map((r) => html`
+        ${data.map(
+          (r) => html`
           <div class="readout__cell">
             <span class="readout__label">${r.label}</span>
             <span class="readout__value">${r.value}</span>
           </div>
-        `)}
+        `,
+        )}
       </div>
     `;
   }
@@ -1378,28 +1384,42 @@ export class VelgHowToPlayTopic extends LitElement {
         </div>
         <p class="demo-step__narration">${step.narration}</p>
         ${step.detail ? html`<p class="demo-step__detail">${step.detail}</p>` : nothing}
-        ${step.readout?.length ? html`
+        ${
+          step.readout?.length
+            ? html`
           <div class="demo-step__readout">
-            ${step.readout.map((r) => html`
+            ${step.readout.map(
+              (r) => html`
               <div class="demo-step__readout-cell">
                 <span class="demo-step__readout-label">${r.label}</span>
                 <span class="demo-step__readout-value">${r.value}</span>
               </div>
-            `)}
+            `,
+            )}
           </div>
-        ` : nothing}
-        ${step.tip ? html`
+        `
+            : nothing
+        }
+        ${
+          step.tip
+            ? html`
           <div class="demo-step__tip">
             <div class="demo-step__tip-label">${msg('Tip')}</div>
             <div class="demo-step__tip-text">${step.tip}</div>
           </div>
-        ` : nothing}
-        ${step.warning ? html`
+        `
+            : nothing
+        }
+        ${
+          step.warning
+            ? html`
           <div class="demo-step__warning">
             <div class="demo-step__warning-label">${msg('Warning')}</div>
             <div class="demo-step__warning-text">${step.warning}</div>
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
@@ -1417,7 +1437,8 @@ export class VelgHowToPlayTopic extends LitElement {
       <div class="related">
         <h3 class="related__title">${msg('Related Topics')}</h3>
         <div class="related__grid">
-          ${relatedTopics.map((t) => html`
+          ${relatedTopics.map(
+            (t) => html`
             <a
               class="related__link"
               href=${`/how-to-play/guide/${t.slug}`}
@@ -1426,7 +1447,8 @@ export class VelgHowToPlayTopic extends LitElement {
               ${this._getIcon(t.icon, 14)}
               ${t.title}
             </a>
-          `)}
+          `,
+          )}
         </div>
       </div>
     `;
@@ -1437,7 +1459,9 @@ export class VelgHowToPlayTopic extends LitElement {
   private _renderTopicNav(prev?: TopicDefinition, next?: TopicDefinition) {
     return html`
       <nav class="topic-nav" aria-label=${msg('Topic navigation')}>
-        ${prev ? html`
+        ${
+          prev
+            ? html`
           <a
             class="topic-nav__link"
             href=${`/how-to-play/guide/${prev.slug}`}
@@ -1446,8 +1470,12 @@ export class VelgHowToPlayTopic extends LitElement {
             <span class="topic-nav__label">\u25C2 ${msg('Previous')}</span>
             <span class="topic-nav__title">${prev.title}</span>
           </a>
-        ` : html`<div></div>`}
-        ${next ? html`
+        `
+            : html`<div></div>`
+        }
+        ${
+          next
+            ? html`
           <a
             class="topic-nav__link topic-nav__link--next"
             href=${`/how-to-play/guide/${next.slug}`}
@@ -1456,7 +1484,9 @@ export class VelgHowToPlayTopic extends LitElement {
             <span class="topic-nav__label">${msg('Next')} \u25B8</span>
             <span class="topic-nav__title">${next.title}</span>
           </a>
-        ` : html`<div></div>`}
+        `
+            : html`<div></div>`
+        }
       </nav>
     `;
   }
@@ -1464,14 +1494,18 @@ export class VelgHowToPlayTopic extends LitElement {
   // ── Sidebar ────────────────────────────────────────────────────────────
 
   private _renderSidebar(def: TopicDefinition, sections: TopicSection[]) {
-    const titledSections = sections.filter((s) => 'title' in s && s.title) as (TopicSection & { title: string })[];
+    const titledSections = sections.filter((s) => 'title' in s && s.title) as (TopicSection & {
+      title: string;
+    })[];
     const relatedTopics = def.related
       .map((slug) => TOPICS.find((t) => t.slug === slug))
       .filter(Boolean) as TopicDefinition[];
 
     return html`
       <aside class="sidebar">
-        ${titledSections.length > 0 ? html`
+        ${
+          titledSections.length > 0
+            ? html`
           <div class="sidebar__title">${msg('In this topic')}</div>
           <ul class="sidebar__nav">
             ${titledSections.map((s) => {
@@ -1486,11 +1520,16 @@ export class VelgHowToPlayTopic extends LitElement {
               `;
             })}
           </ul>
-        ` : nothing}
-        ${relatedTopics.length > 0 ? html`
+        `
+            : nothing
+        }
+        ${
+          relatedTopics.length > 0
+            ? html`
           <div class="sidebar__related-title">${msg('Related')}</div>
           <ul class="sidebar__related-list">
-            ${relatedTopics.map((t) => html`
+            ${relatedTopics.map(
+              (t) => html`
               <li>
                 <a
                   class="sidebar__related-link"
@@ -1498,9 +1537,12 @@ export class VelgHowToPlayTopic extends LitElement {
                   @click=${(e: Event) => this._handleLinkClick(e, `/how-to-play/guide/${t.slug}`)}
                 >${t.title}</a>
               </li>
-            `)}
+            `,
+            )}
           </ul>
-        ` : nothing}
+        `
+            : nothing
+        }
       </aside>
     `;
   }
@@ -1508,14 +1550,18 @@ export class VelgHowToPlayTopic extends LitElement {
   // ── Mobile Sidebar (Disclosure Widget) ─────────────────────────────────
 
   private _renderMobileSidebar(sections: TopicSection[]) {
-    const titledSections = sections.filter((s) => 'title' in s && s.title) as (TopicSection & { title: string })[];
+    const titledSections = sections.filter((s) => 'title' in s && s.title) as (TopicSection & {
+      title: string;
+    })[];
     if (titledSections.length === 0) return nothing;
 
     return html`
       <div class="sidebar-disclosure ${this._sidebarOpen ? 'sidebar-disclosure--open' : ''}">
         <button
           class="sidebar-disclosure__toggle"
-          @click=${() => { this._sidebarOpen = !this._sidebarOpen; }}
+          @click=${() => {
+            this._sidebarOpen = !this._sidebarOpen;
+          }}
           aria-expanded=${this._sidebarOpen}
         >
           <span class="sidebar-disclosure__chevron">${icons.chevronDown(12)}</span>

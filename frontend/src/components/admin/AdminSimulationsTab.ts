@@ -14,7 +14,9 @@ type SimView = 'active' | 'trash';
 @localized()
 @customElement('velg-admin-simulations-tab')
 export class VelgAdminSimulationsTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -300,7 +302,8 @@ export class VelgAdminSimulationsTab extends LitElement {
         justify-content: flex-end;
       }
     }
-  `];
+  `,
+  ];
 
   @state() private _view: SimView = 'active';
   @state() private _simulations: AdminSimulation[] = [];
@@ -428,7 +431,6 @@ export class VelgAdminSimulationsTab extends LitElement {
       this._actionInProgress = null;
     }
   }
-
 
   private _getStatusBadgeClass(sim: AdminSimulation): string {
     if (sim.deleted_at) return 'badge badge--deleted';

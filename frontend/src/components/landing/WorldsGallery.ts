@@ -12,11 +12,11 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
-import { appState } from '../../services/AppStateManager.js';
-import { getThemeColor } from '../../utils/theme-colors.js';
 import type { Simulation } from '../../types/index.js';
+import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 
 @localized()
@@ -598,16 +598,17 @@ export class VelgWorldsGallery extends LitElement {
         </span>
       </div>
 
-      ${this._loading
-        ? html`<div class="gallery-loading"><span class="gallery-loading__text">${msg('Scanning multiverse...')}</span></div>`
-        : this._filtered.length === 0
-          ? html`
+      ${
+        this._loading
+          ? html`<div class="gallery-loading"><span class="gallery-loading__text">${msg('Scanning multiverse...')}</span></div>`
+          : this._filtered.length === 0
+            ? html`
               <div class="gallery-empty">
                 <p class="gallery-empty__title">${msg('No Worlds Found')}</p>
                 <p class="gallery-empty__text">${msg('No simulations match your search.')}</p>
               </div>
             `
-          : html`
+            : html`
               <div class="gallery-grid">
                 ${this._filtered.map(
                   (sim, i) => html`
@@ -627,15 +628,17 @@ export class VelgWorldsGallery extends LitElement {
                       <div
                         class="world-card__banner"
                       >
-                        ${sim.banner_url
-                          ? html`<img
+                        ${
+                          sim.banner_url
+                            ? html`<img
                               class="world-card__banner-img"
                               src=${sim.banner_url}
                               alt=${sim.name}
                               loading="lazy"
                               decoding="async"
                             />`
-                          : nothing}
+                            : nothing
+                        }
                         <div class="world-card__banner-overlay"></div>
                         <div class="world-card__signal"></div>
                         <span
@@ -650,9 +653,11 @@ export class VelgWorldsGallery extends LitElement {
                         style="--portal-color: ${getThemeColor(sim.theme ?? 'custom')}"
                       >
                         <h2 class="world-card__name">${sim.name}</h2>
-                        ${sim.description
-                          ? html`<p class="world-card__tagline">${sim.description}</p>`
-                          : nothing}
+                        ${
+                          sim.description
+                            ? html`<p class="world-card__tagline">${sim.description}</p>`
+                            : nothing
+                        }
                         <div class="world-card__stats">
                           <span class="world-card__stat">
                             <span class="world-card__stat-value">${sim.agent_count ?? '–'}</span> ${msg('agents')}
@@ -670,8 +675,9 @@ export class VelgWorldsGallery extends LitElement {
                 )}
               </div>
 
-              ${this._total > this._limit
-                ? html`
+              ${
+                this._total > this._limit
+                  ? html`
                     <div class="gallery-pagination">
                       <button
                         class="gallery-pagination__btn"
@@ -689,11 +695,14 @@ export class VelgWorldsGallery extends LitElement {
                       </button>
                     </div>
                   `
-                : nothing}
-            `}
+                  : nothing
+              }
+            `
+      }
 
-      ${isGuest
-        ? html`
+      ${
+        isGuest
+          ? html`
             <div class="gallery-cta">
               <p class="gallery-cta__text">
                 ${msg('Every world here was forged from a single idea. Create yours.')}
@@ -710,7 +719,8 @@ export class VelgWorldsGallery extends LitElement {
               </a>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <velg-platform-footer></velg-platform-footer>
     `;

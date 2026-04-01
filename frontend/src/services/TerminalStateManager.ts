@@ -6,12 +6,6 @@
 
 import { computed, signal } from '@preact/signals-core';
 import type {
-  ConversationMode,
-  FeedFilter,
-  TerminalLine,
-  TerminalPersistedState,
-} from '../types/terminal.js';
-import type {
   Agent,
   Building,
   EpochParticipant,
@@ -20,6 +14,12 @@ import type {
   Zone,
   ZoneStability,
 } from '../types/index.js';
+import type {
+  ConversationMode,
+  FeedFilter,
+  TerminalLine,
+  TerminalPersistedState,
+} from '../types/terminal.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -32,8 +32,8 @@ const DEFAULT_INTEL_POINTS = 2;
 
 /** Command count thresholds for clearance upgrades (spec 4.4.4). */
 const CLEARANCE_THRESHOLDS: Record<number, number> = {
-  2: 10,  // Tier 2 unlocks after 10 successful commands
-  3: 25,  // Tier 3 unlocks after 25 commands (Intelligence Network)
+  2: 10, // Tier 2 unlocks after 10 successful commands
+  3: 25, // Tier 3 unlocks after 25 commands (Intelligence Network)
   // Tier 4-5 are gated by Stage 4-5 features (Epoch)
 };
 
@@ -144,10 +144,19 @@ class TerminalStateManager {
       if (typeof stored.conversationMap !== 'object' || stored.conversationMap === null) {
         stored.conversationMap = {};
       }
-      if (typeof stored.clearanceLevel !== 'number' || isNaN(stored.clearanceLevel) || stored.clearanceLevel < 1 || stored.clearanceLevel > 5) {
+      if (
+        typeof stored.clearanceLevel !== 'number' ||
+        isNaN(stored.clearanceLevel) ||
+        stored.clearanceLevel < 1 ||
+        stored.clearanceLevel > 5
+      ) {
         stored.clearanceLevel = 1;
       }
-      if (typeof stored.commandCount !== 'number' || isNaN(stored.commandCount) || stored.commandCount < 0) {
+      if (
+        typeof stored.commandCount !== 'number' ||
+        isNaN(stored.commandCount) ||
+        stored.commandCount < 0
+      ) {
         stored.commandCount = 0;
       }
       if (typeof stored.operationsPoints !== 'number' || isNaN(stored.operationsPoints)) {
@@ -157,7 +166,8 @@ class TerminalStateManager {
         stored.intelPoints = DEFAULT_INTEL_POINTS;
       }
       if (typeof stored.onboarded !== 'boolean') stored.onboarded = false;
-      if (typeof stored.onboardingStep !== 'number' || isNaN(stored.onboardingStep)) stored.onboardingStep = 0;
+      if (typeof stored.onboardingStep !== 'number' || isNaN(stored.onboardingStep))
+        stored.onboardingStep = 0;
 
       this.currentZoneId.value = stored.currentZoneId;
       this.clearanceLevel.value = stored.clearanceLevel;

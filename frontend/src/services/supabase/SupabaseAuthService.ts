@@ -2,10 +2,10 @@ import { msg, str } from '@lit/localize';
 import type { AuthError, RealtimeChannel, Session, User } from '@supabase/supabase-js';
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
-import { captureError } from '../SentryService.js';
 import { forgeApi } from '../api/ForgeApiService.js';
 import { forgeStateManager } from '../ForgeStateManager.js';
 import { localeService } from '../i18n/locale-service.js';
+import { captureError } from '../SentryService.js';
 import { supabase } from './client.js';
 
 const CLEARANCE_TOAST_KEY = 'velg_clearance_toast_shown';

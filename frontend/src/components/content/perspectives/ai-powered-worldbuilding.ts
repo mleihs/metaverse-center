@@ -37,8 +37,14 @@ export function getAiPoweredWorldbuildingPage(): ContentPageData {
 
     breadcrumbs: [
       { name: 'Home', url: 'https://metaverse.center/' },
-      { name: 'Perspectives', url: 'https://metaverse.center/perspectives/ai-powered-worldbuilding' },
-      { name: 'AI-Powered Worldbuilding', url: 'https://metaverse.center/perspectives/ai-powered-worldbuilding' },
+      {
+        name: 'Perspectives',
+        url: 'https://metaverse.center/perspectives/ai-powered-worldbuilding',
+      },
+      {
+        name: 'AI-Powered Worldbuilding',
+        url: 'https://metaverse.center/perspectives/ai-powered-worldbuilding',
+      },
     ],
 
     sections: [

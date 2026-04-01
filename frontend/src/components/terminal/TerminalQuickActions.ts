@@ -12,7 +12,11 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { terminalTokens, terminalComponentTokens, terminalActionStyles } from '../shared/terminal-theme-styles.js';
+import {
+  terminalActionStyles,
+  terminalComponentTokens,
+  terminalTokens,
+} from '../shared/terminal-theme-styles.js';
 
 @localized()
 @customElement('velg-terminal-quick-actions')
@@ -71,8 +75,9 @@ export class VelgTerminalQuickActions extends LitElement {
         <button class="action-btn" @click=${() => this._dispatch('help')}>
           ${msg('Help')}
         </button>
-        ${this.clearanceLevel >= 2 && !this.epochMode
-          ? html`
+        ${
+          this.clearanceLevel >= 2 && !this.epochMode
+            ? html`
             <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('fortify')}>
               ${msg('Fortify')}
             </button>
@@ -80,9 +85,11 @@ export class VelgTerminalQuickActions extends LitElement {
               ${msg('Assign')}
             </button>
           `
-          : ''}
-        ${this.epochMode
-          ? html`
+            : ''
+        }
+        ${
+          this.epochMode
+            ? html`
             <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('sitrep')}>
               ${msg('Sitrep')}
             </button>
@@ -96,7 +103,8 @@ export class VelgTerminalQuickActions extends LitElement {
               ${msg('Dossier')}
             </button>
           `
-          : ''}
+            : ''
+        }
       </div>
     `;
   }

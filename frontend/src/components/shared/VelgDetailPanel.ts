@@ -164,9 +164,7 @@ export class VelgDetailPanel extends LitElement {
       return html`
         <div class="error" role="alert">
           <h3 class="error__title">${msg('Failed to load')}</h3>
-          ${this.errorMessage
-            ? html`<p class="error__message">${this.errorMessage}</p>`
-            : nothing}
+          ${this.errorMessage ? html`<p class="error__message">${this.errorMessage}</p>` : nothing}
           <button class="error__retry" @click=${this._handleRetry}>
             ${msg('Retry')}
           </button>

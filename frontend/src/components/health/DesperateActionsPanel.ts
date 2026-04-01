@@ -6,7 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import type { SimulationHealthDashboard, ZoneStability } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { trapFocus, focusFirstElement } from '../shared/focus-trap.js';
+import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 
 interface PanelAction {
   type: string;

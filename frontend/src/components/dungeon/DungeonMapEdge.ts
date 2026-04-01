@@ -14,7 +14,7 @@
  * Pattern: Render helper module (pure function, no DOM state).
  */
 
-import { css, nothing, svg, type SVGTemplateResult } from 'lit';
+import { css, nothing, type SVGTemplateResult, svg } from 'lit';
 
 // ── Props ───────────────────────────────────────────────────────────────────
 
@@ -103,11 +103,9 @@ export function renderMapEdge(props: MapEdgeProps): SVGTemplateResult | typeof n
   // Edge length for stroke animation
   const edgeLen = Math.max(dist - nodeRadius * 2, 1);
 
-  const cls = [
-    'edge',
-    foggy ? 'edge--fog' : '',
-    justTraced ? 'edge--just-traced' : '',
-  ].filter(Boolean).join(' ');
+  const cls = ['edge', foggy ? 'edge--fog' : '', justTraced ? 'edge--just-traced' : '']
+    .filter(Boolean)
+    .join(' ');
 
   // Spark at midpoint
   const midX = (sx + ex) / 2;
@@ -121,12 +119,16 @@ export function renderMapEdge(props: MapEdgeProps): SVGTemplateResult | typeof n
       style=${justTraced ? `--_edge-len: ${edgeLen}` : nothing}
       aria-hidden="true"
     />
-    ${justTraced ? svg`
+    ${
+      justTraced
+        ? svg`
       <circle
         cx=${midX} cy=${midY} r="2.5"
         class="edge__spark edge__spark--active"
         aria-hidden="true"
       />
-    ` : nothing}
+    `
+        : nothing
+    }
   `;
 }

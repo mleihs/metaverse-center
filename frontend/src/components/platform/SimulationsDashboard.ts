@@ -1951,7 +1951,14 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private _renderMyWorldItem(m: MembershipInfo) {
     return html`
-      <div class="my-world-item" role="button" tabindex="0" @click=${() => this._navigateTo(`/simulations/${m.simulation_slug}/lore`)} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._navigateTo(`/simulations/${m.simulation_slug}/lore`); } }}>
+      <div class="my-world-item" role="button" tabindex="0" @click=${() => this._navigateTo(`/simulations/${m.simulation_slug}/lore`)} @keydown=${(
+        e: KeyboardEvent,
+      ) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this._navigateTo(`/simulations/${m.simulation_slug}/lore`);
+        }
+      }}>
         <span class="my-world-item__name">${m.simulation_name}</span>
         <span class="my-world-item__role">${humanizeEnum(m.member_role)}</span>
       </div>
@@ -2225,7 +2232,14 @@ export class VelgSimulationsDashboard extends LitElement {
           resonances.length > 0
             ? resonances.map(
                 (r) => html`
-            <div class="resonance-item" role="button" tabindex="0" @click=${() => this._navigateTo('/dashboard')} @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._navigateTo('/dashboard'); } }}>
+            <div class="resonance-item" role="button" tabindex="0" @click=${() => this._navigateTo('/dashboard')} @keydown=${(
+              e: KeyboardEvent,
+            ) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this._navigateTo('/dashboard');
+              }
+            }}>
               <span class="resonance-item__pip resonance-item__pip--${r.status}"></span>
               <span class="resonance-item__name">${r.title}</span>
               <div class="resonance-item__bar">

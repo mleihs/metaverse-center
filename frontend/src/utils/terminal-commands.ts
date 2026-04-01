@@ -8,19 +8,22 @@ import { msg } from '@lit/localize';
 import { appState } from '../services/AppStateManager.js';
 import { agentAutonomyApi } from '../services/api/AgentAutonomyApiService.js';
 import { epochsApi } from '../services/api/EpochsApiService.js';
-import { agentsApi } from '../services/api/index.js';
-import { buildingsApi } from '../services/api/index.js';
-import { chatApi } from '../services/api/index.js';
-import { eventsApi } from '../services/api/index.js';
-import { healthApi } from '../services/api/index.js';
-import { heartbeatApi } from '../services/api/index.js';
-import { zoneActionsApi } from '../services/api/index.js';
+import {
+  agentsApi,
+  buildingsApi,
+  chatApi,
+  eventsApi,
+  healthApi,
+  heartbeatApi,
+  zoneActionsApi,
+} from '../services/api/index.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { Agent, BuildingReadiness, ChatMessage } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';
 import { dispatchDungeonCommand } from './dungeon-commands.js';
 import {
   commandLine,
+  errorLine,
   formatAmbiguousTarget,
   formatAskResponse,
   formatAssign,
@@ -28,14 +31,18 @@ import {
   formatClearanceUpgrade,
   formatDebrief,
   formatDirectionNotAvailable,
+  formatDossier,
+  formatEpochStatusExtension,
   formatExamineAgent,
   formatExamineBuilding,
   formatFortify,
   formatHelp,
-  formatInvestigate,
   formatHelpCommand,
   formatInsufficientClearance,
   formatInsufficientPoints,
+  formatInsufficientRP,
+  formatInterceptSweep,
+  formatInvestigate,
   formatLook,
   formatMap,
   formatNoTarget,
@@ -43,82 +50,118 @@ import {
   formatQuarantine,
   formatReport,
   formatScan,
+  formatSitrep,
   formatStatus,
   formatTalkEnter,
   formatTalkExit,
   formatTalkResponse,
+  formatThreats,
   formatUnassign,
   formatUnknownCommand,
   formatWeather,
   formatWhere,
-  formatSitrep,
-  formatDossier,
-  formatThreats,
-  formatInterceptSweep,
-  formatEpochStatusExtension,
-  formatInsufficientRP,
-  errorLine,
   hintLine,
   systemLine,
 } from './terminal-formatters.js';
 
 // ── Levenshtein Distance (shared) ─────────────────────────────────────────
 
-import { levenshtein, fuzzyMatch } from './fuzzy-search.js';
+import { fuzzyMatch, levenshtein } from './fuzzy-search.js';
 
 // ── Synonym Map ────────────────────────────────────────────────────────────
 
 const SYNONYM_MAP = new Map<string, string>([
   // look
-  ['l', 'look'], ['observe', 'look'], ['survey', 'look'],
+  ['l', 'look'],
+  ['observe', 'look'],
+  ['survey', 'look'],
   // go
-  ['move', 'go'], ['walk', 'go'], ['travel', 'go'],
+  ['move', 'go'],
+  ['walk', 'go'],
+  ['travel', 'go'],
   // examine
-  ['ex', 'examine'], ['inspect', 'examine'], ['x', 'examine'],
+  ['ex', 'examine'],
+  ['inspect', 'examine'],
+  ['x', 'examine'],
   // talk
-  ['speak', 'talk'], ['contact', 'talk'], ['hail', 'talk'],
+  ['speak', 'talk'],
+  ['contact', 'talk'],
+  ['hail', 'talk'],
   // weather
-  ['wx', 'weather'], ['conditions', 'weather'],
+  ['wx', 'weather'],
+  ['conditions', 'weather'],
   // status
   ['sit', 'status'],
   // fortify
-  ['reinforce', 'fortify'], ['defend', 'fortify'],
+  ['reinforce', 'fortify'],
+  ['defend', 'fortify'],
   // quarantine
-  ['lockdown', 'quarantine'], ['isolate', 'quarantine'],
+  ['lockdown', 'quarantine'],
+  ['isolate', 'quarantine'],
   // assign
-  ['station', 'assign'], ['post', 'assign'], ['transfer', 'assign'],
+  ['station', 'assign'],
+  ['post', 'assign'],
+  ['transfer', 'assign'],
   // exitconversation
-  ['leave', 'exitconversation'], ['bye', 'exitconversation'], ['exit', 'exitconversation'],
+  ['leave', 'exitconversation'],
+  ['bye', 'exitconversation'],
+  ['exit', 'exitconversation'],
   // filter
   ['feed', 'filter'],
   // config
   ['settings', 'config'],
   // Stage 3: Intelligence
-  ['intel', 'debrief'], ['brief', 'debrief'],
-  ['query', 'ask'], ['question', 'ask'],
-  ['probe', 'investigate'], ['research', 'investigate'],
-  ['radar', 'scan'], ['sweep', 'scan'],
-  ['summary', 'report'], ['log', 'report'],
+  ['intel', 'debrief'],
+  ['brief', 'debrief'],
+  ['query', 'ask'],
+  ['question', 'ask'],
+  ['probe', 'investigate'],
+  ['research', 'investigate'],
+  ['radar', 'scan'],
+  ['sweep', 'scan'],
+  ['summary', 'report'],
+  ['log', 'report'],
   // Dungeon commands
-  ['explore', 'dungeon'], ['delve', 'dungeon'],
+  ['explore', 'dungeon'],
+  ['delve', 'dungeon'],
   ['camp', 'rest'],
-  ['flee', 'retreat'], ['escape', 'retreat'],
+  ['flee', 'retreat'],
+  ['escape', 'retreat'],
   ['choose', 'interact'],
-  ['fight', 'attack'], ['strike', 'attack'],
+  ['fight', 'attack'],
+  ['strike', 'attack'],
   ['ready', 'submit'],
   // Stage 4: Epoch Intelligence (tier 4)
   ['briefing', 'sitrep'],
-  ['file', 'dossier'], ['profile', 'dossier'],
-  ['incoming', 'threats'], ['alert', 'threats'],
-  ['counter', 'intercept'], ['countersweep', 'intercept'],
+  ['file', 'dossier'],
+  ['profile', 'dossier'],
+  ['incoming', 'threats'],
+  ['alert', 'threats'],
+  ['counter', 'intercept'],
+  ['countersweep', 'intercept'],
 ]);
 
 // ── Cardinal Directions ────────────────────────────────────────────────────
 
 const DIRECTIONS = new Set([
-  'north', 'south', 'east', 'west', 'n', 's', 'e', 'w',
-  'northeast', 'northwest', 'southeast', 'southwest',
-  'ne', 'nw', 'se', 'sw', 'up', 'down',
+  'north',
+  'south',
+  'east',
+  'west',
+  'n',
+  's',
+  'e',
+  'w',
+  'northeast',
+  'northwest',
+  'southeast',
+  'southwest',
+  'ne',
+  'nw',
+  'se',
+  'sw',
+  'up',
+  'down',
 ]);
 
 // ── Helper: Get Simulation ID ──────────────────────────────────────────────
@@ -179,9 +222,10 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
     healthApi.listBuildingReadiness(sid, { zone_id: zoneId }),
   ]);
 
-  const stability = stabResp.success && stabResp.data
-    ? stabResp.data.find((zs) => zs.zone_id === zoneId) ?? null
-    : null;
+  const stability =
+    stabResp.success && stabResp.data
+      ? (stabResp.data.find((zs) => zs.zone_id === zoneId) ?? null)
+      : null;
 
   // Cache stabilities for map command
   if (stabResp.success && stabResp.data) {
@@ -200,26 +244,34 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Filter events to current zone (simple: check if event location matches zone name)
-  const zoneEvents = (eventsResp.success && eventsResp.data)
-    ? eventsResp.data.filter((e) => {
-        const loc = (e.location ?? '').toLowerCase();
-        return loc.includes(zone.name.toLowerCase());
-      }).map((e) => ({
-        title: e.title,
-        event_status: e.event_status,
-        event_type: e.event_type ?? undefined,
-      }))
-    : [];
+  const zoneEvents =
+    eventsResp.success && eventsResp.data
+      ? eventsResp.data
+          .filter((e) => {
+            const loc = (e.location ?? '').toLowerCase();
+            return loc.includes(zone.name.toLowerCase());
+          })
+          .map((e) => ({
+            title: e.title,
+            event_status: e.event_status,
+            event_type: e.event_type ?? undefined,
+          }))
+      : [];
 
-  const weatherEntry = weatherResp.success && weatherResp.data?.[0]
-    ? weatherResp.data[0]
-    : null;
+  const weatherEntry = weatherResp.success && weatherResp.data?.[0] ? weatherResp.data[0] : null;
   const weatherNarrative = weatherEntry?.narrative_en ?? undefined;
 
   const allZones = Array.from(terminalState.zoneCache.value.values());
 
   const lookOutput = formatLook(
-    zone, stability, agents, buildings, readinessMap, zoneEvents, allZones, weatherNarrative,
+    zone,
+    stability,
+    agents,
+    buildings,
+    readinessMap,
+    zoneEvents,
+    allZones,
+    weatherNarrative,
   );
 
   // Epoch mode: append threat detection for current zone
@@ -230,12 +282,10 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
       const threatResp = await epochsApi.listThreats(epochId, participant.simulation_id);
       if (threatResp.success && Array.isArray(threatResp.data) && threatResp.data.length > 0) {
         lookOutput.push(systemLine(''));
-        lookOutput.push(systemLine(
-          `[!] ${msg('Foreign operative detected in this zone. Identity unknown.')}`,
-        ));
-        lookOutput.push(hintLine(
-          msg("Use 'intercept' to attempt identification and capture."),
-        ));
+        lookOutput.push(
+          systemLine(`[!] ${msg('Foreign operative detected in this zone. Identity unknown.')}`),
+        );
+        lookOutput.push(hintLine(msg("Use 'intercept' to attempt identification and capture.")));
       }
     } catch {
       // Silently degrade — threat detection is supplementary
@@ -313,10 +363,10 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
       agentAutonomyApi.getAgentNeeds(sid, agent.id),
       agentAutonomyApi.getAgentMoodlets(sid, agent.id),
     ]);
-    const fullAgent = (detailResp.success && detailResp.data) ? detailResp.data : agent;
-    const mood = (moodResp.success && moodResp.data) ? moodResp.data : null;
-    const needs = (needsResp.success && needsResp.data) ? needsResp.data : null;
-    const moodlets = (moodletsResp.success && moodletsResp.data) ? moodletsResp.data : [];
+    const fullAgent = detailResp.success && detailResp.data ? detailResp.data : agent;
+    const mood = moodResp.success && moodResp.data ? moodResp.data : null;
+    const needs = needsResp.success && needsResp.data ? needsResp.data : null;
+    const moodlets = moodletsResp.success && moodletsResp.data ? moodletsResp.data : [];
     return formatExamineAgent(fullAgent, mood, needs, moodlets);
   }
 
@@ -334,9 +384,10 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
       healthApi.listBuildingReadiness(sid, { zone_id: zoneId }),
       buildingsApi.getAgents(sid, building.id),
     ]);
-    const readiness = readinessResp.success && readinessResp.data
-      ? readinessResp.data.find((r) => r.building_id === building.id) ?? null
-      : null;
+    const readiness =
+      readinessResp.success && readinessResp.data
+        ? (readinessResp.data.find((r) => r.building_id === building.id) ?? null)
+        : null;
     const assignedAgents: Agent[] = [];
     if (agentsResp.success && agentsResp.data) {
       // Building agents response may have agent data embedded
@@ -454,11 +505,13 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
         epochsApi.listMissions(epochId, { simulation_id: participant.simulation_id }),
       ]);
 
-      const leaderboard = leaderResp.success && Array.isArray(leaderResp.data) ? leaderResp.data : [];
+      const leaderboard =
+        leaderResp.success && Array.isArray(leaderResp.data) ? leaderResp.data : [];
       const myRank = leaderboard.findIndex(
         (e: { simulation_id: string }) => e.simulation_id === participant.simulation_id,
       );
-      const missions = missionsResp.success && Array.isArray(missionsResp.data) ? missionsResp.data : [];
+      const missions =
+        missionsResp.success && Array.isArray(missionsResp.data) ? missionsResp.data : [];
       const activeMissions = missions.filter(
         (m: { status: string }) => m.status === 'active' || m.status === 'deploying',
       ).length;
@@ -472,13 +525,15 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
         if (me) terminalState.updateParticipant(me);
       }
 
-      statusOutput.push(...formatEpochStatusExtension(
-        terminalState.epochStatus.value ?? 'competition',
-        0, // cycle — will be fetched below
-        terminalState.currentRP.value,
-        activeMissions,
-        myRank >= 0 ? myRank + 1 : null,
-      ));
+      statusOutput.push(
+        ...formatEpochStatusExtension(
+          terminalState.epochStatus.value ?? 'competition',
+          0, // cycle — will be fetched below
+          terminalState.currentRP.value,
+          activeMissions,
+          myRank >= 0 ? myRank + 1 : null,
+        ),
+      );
 
       // Get current cycle from epoch data
       const epochResp = await epochsApi.getEpoch(epochId);
@@ -489,7 +544,10 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
           const line = statusOutput[cycleIdx];
           statusOutput[cycleIdx] = {
             ...line,
-            content: line.content.replace(`${msg('Cycle')}: 0`, `${msg('Cycle')}: ${epochResp.data.current_cycle}`),
+            content: line.content.replace(
+              `${msg('Cycle')}: 0`,
+              `${msg('Cycle')}: ${epochResp.data.current_cycle}`,
+            ),
           };
         }
       }
@@ -557,14 +615,14 @@ async function handleFilter(ctx: CommandContext): Promise<TerminalLine[]> {
   const target = ctx.args[0]?.toLowerCase();
   const valid = ['all', 'intel', 'alert', 'weather', 'off'] as const;
 
-  if (!target || !valid.includes(target as typeof valid[number])) {
+  if (!target || !valid.includes(target as (typeof valid)[number])) {
     return [
       systemLine(`${msg('Feed filter')}: ${terminalState.feedFilter.value}`),
       systemLine(`${msg('Usage')}: filter ${valid.join('|')}`),
     ];
   }
 
-  terminalState.setFeedFilter(target as typeof valid[number]);
+  terminalState.setFeedFilter(target as (typeof valid)[number]);
   return [systemLine(`${msg('Feed filter set to')}: ${target}`)];
 }
 
@@ -575,7 +633,11 @@ async function handleFortify(ctx: CommandContext): Promise<TerminalLine[]> {
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
   if (!terminalState.consumeOps(1)) {
-    return formatInsufficientPoints(msg('operations points'), terminalState.operationsPoints.value, 1);
+    return formatInsufficientPoints(
+      msg('operations points'),
+      terminalState.operationsPoints.value,
+      1,
+    );
   }
 
   // Target zone (default: current)
@@ -609,7 +671,11 @@ async function handleQuarantine(ctx: CommandContext): Promise<TerminalLine[]> {
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
   if (!terminalState.consumeOps(2)) {
-    return formatInsufficientPoints(msg('operations points'), terminalState.operationsPoints.value, 2);
+    return formatInsufficientPoints(
+      msg('operations points'),
+      terminalState.operationsPoints.value,
+      2,
+    );
   }
 
   let zoneId = terminalState.currentZoneId.value;
@@ -644,14 +710,14 @@ async function handleAssign(ctx: CommandContext): Promise<TerminalLine[]> {
   const fullArgs = ctx.args.join(' ');
   const toIndex = fullArgs.toLowerCase().indexOf(' to ');
   if (toIndex === -1) {
-    return [systemLine(msg("Syntax: assign {agent name} to {building name}"))];
+    return [systemLine(msg('Syntax: assign {agent name} to {building name}'))];
   }
 
   const agentQuery = fullArgs.slice(0, toIndex).trim();
   const buildingQuery = fullArgs.slice(toIndex + 4).trim();
 
   if (!agentQuery || !buildingQuery) {
-    return [systemLine(msg("Syntax: assign {agent name} to {building name}"))];
+    return [systemLine(msg('Syntax: assign {agent name} to {building name}'))];
   }
 
   // Resolve agent (all agents in simulation, not just current zone)
@@ -715,7 +781,9 @@ async function handleUnassign(ctx: CommandContext): Promise<TerminalLine[]> {
 
 async function handleCeremony(_ctx: CommandContext): Promise<TerminalLine[]> {
   if (!appState.canForge.value) {
-    return [systemLine(msg('Insufficient clearance for ceremony initiation. Architect access required.'))];
+    return [
+      systemLine(msg('Insufficient clearance for ceremony initiation. Architect access required.')),
+    ];
   }
 
   // Navigate to forge
@@ -795,11 +863,7 @@ async function handleScan(_ctx: CommandContext): Promise<TerminalLine[]> {
   // Cache stabilities for other commands
   terminalState.zoneStabilities.value = resp.data;
 
-  return formatScan(
-    resp.data,
-    terminalState.currentZoneId.value,
-    terminalState.intelPoints.value,
-  );
+  return formatScan(resp.data, terminalState.currentZoneId.value, terminalState.intelPoints.value);
 }
 
 async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
@@ -820,7 +884,10 @@ async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Investigation failed. Points refunded.'))];
   }
 
-  const matches = fuzzyMatch(target, listResp.data.map((e) => ({ id: e.id, name: e.title })));
+  const matches = fuzzyMatch(
+    target,
+    listResp.data.map((e) => ({ id: e.id, name: e.title })),
+  );
   if (matches.length === 0) {
     terminalState.intelPoints.value += 1;
     return [errorLine(`${msg('No matching event found for')}: "${target}"`)];
@@ -983,9 +1050,10 @@ async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Failed to generate situation report.'))];
   }
 
-  const narrative = typeof resp.data === 'string'
-    ? resp.data
-    : (resp.data as { narrative?: string }).narrative ?? JSON.stringify(resp.data);
+  const narrative =
+    typeof resp.data === 'string'
+      ? resp.data
+      : ((resp.data as { narrative?: string }).narrative ?? JSON.stringify(resp.data));
   return formatSitrep(narrative, currentCycle, terminalState.epochStatus.value ?? 'competition');
 }
 
@@ -1012,7 +1080,11 @@ async function handleDossier(ctx: CommandContext): Promise<TerminalLine[]> {
 
   const matches = fuzzyMatch(target, players);
   if (matches.length === 0) {
-    return [errorLine(msg('Unknown operative. Available targets: ') + players.map((p) => p.name).join(', '))];
+    return [
+      errorLine(
+        msg('Unknown operative. Available targets: ') + players.map((p) => p.name).join(', '),
+      ),
+    ];
   }
   if (matches.length > 1) {
     return formatAmbiguousTarget(matches);
@@ -1032,8 +1104,10 @@ async function handleDossier(ctx: CommandContext): Promise<TerminalLine[]> {
   );
 
   if (!dossier) {
-    return [systemLine(msg('No intelligence gathered on ') + targetPlayer.name + '.'),
-      systemLine(msg('Recommend spy deployment via Operations Console.'))];
+    return [
+      systemLine(msg('No intelligence gathered on ') + targetPlayer.name + '.'),
+      systemLine(msg('Recommend spy deployment via Operations Console.')),
+    ];
   }
 
   return formatDossier(dossier, targetPlayer.name);
@@ -1066,7 +1140,8 @@ async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
 
   const resp = await epochsApi.counterIntelSweep(epochId, participant.simulation_id);
   if (!resp.success) {
-    const errMsg = typeof resp.error === 'string' ? resp.error : msg('Counter-intelligence sweep failed.');
+    const errMsg =
+      typeof resp.error === 'string' ? resp.error : msg('Counter-intelligence sweep failed.');
     // Check for insufficient RP
     if (errMsg.toLowerCase().includes('rp') || errMsg.toLowerCase().includes('points')) {
       return formatInsufficientRP(terminalState.currentRP.value, 4);
@@ -1095,178 +1170,411 @@ async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
 export const COMMAND_REGISTRY = new Map<string, TerminalCommand>([
   // Stage 1: Observation
   // NOTE: descriptions use () => msg() to avoid module-level i18n gotcha (see i18n-gotchas.md)
-  ['look', {
-    verb: 'look', synonyms: ['l', 'observe', 'survey'], tier: 1,
-    syntax: 'look', description: () => msg('Observe your current zone'),
-    requiresTarget: false, handler: handleLook,
-  }],
-  ['go', {
-    verb: 'go', synonyms: ['move', 'walk', 'travel'], tier: 1,
-    syntax: 'go {zone name}', description: () => msg('Travel to another zone'),
-    requiresTarget: true, targetType: 'zone', handler: handleGo,
-  }],
-  ['examine', {
-    verb: 'examine', synonyms: ['ex', 'inspect', 'x'], tier: 1,
-    syntax: 'examine {name}', description: () => msg('Inspect an agent or building'),
-    requiresTarget: true, targetType: 'agent', handler: handleExamine,
-  }],
-  ['talk', {
-    verb: 'talk', synonyms: ['speak', 'contact', 'hail'], tier: 1,
-    syntax: 'talk {agent name}', description: () => msg('Start a conversation with an agent'),
-    requiresTarget: true, targetType: 'agent', handler: handleTalk,
-  }],
-  ['weather', {
-    verb: 'weather', synonyms: ['wx', 'conditions'], tier: 1,
-    syntax: 'weather', description: () => msg('Show current weather conditions'),
-    requiresTarget: false, handler: handleWeather,
-  }],
-  ['status', {
-    verb: 'status', synonyms: ['sit'], tier: 1,
-    syntax: 'status', description: () => msg('Full situation report'),
-    requiresTarget: false, handler: handleStatus,
-  }],
-  ['help', {
-    verb: 'help', synonyms: [], tier: 1,
-    syntax: 'help [command]', description: () => msg('List available commands'),
-    requiresTarget: false, handler: handleHelp,
-  }],
-  ['map', {
-    verb: 'map', synonyms: [], tier: 1,
-    syntax: 'map', description: () => msg('Show sector map'),
-    requiresTarget: false, handler: handleMap,
-  }],
-  ['where', {
-    verb: 'where', synonyms: [], tier: 1,
-    syntax: 'where', description: () => msg('Show your current location'),
-    requiresTarget: false, handler: handleWhere,
-  }],
-  ['history', {
-    verb: 'history', synonyms: [], tier: 1,
-    syntax: 'history', description: () => msg('Show command history'),
-    requiresTarget: false, handler: handleHistory,
-  }],
-  ['filter', {
-    verb: 'filter', synonyms: ['feed'], tier: 1,
-    syntax: 'filter {channel}', description: () => msg('Filter realtime feed'),
-    requiresTarget: false, handler: handleFilter,
-  }],
-  ['exitconversation', {
-    verb: 'exitconversation', synonyms: ['leave', 'bye', 'exit'], tier: 1,
-    syntax: 'leave', description: () => msg('Exit current conversation'),
-    requiresTarget: false, handler: handleExitConversation,
-  }],
+  [
+    'look',
+    {
+      verb: 'look',
+      synonyms: ['l', 'observe', 'survey'],
+      tier: 1,
+      syntax: 'look',
+      description: () => msg('Observe your current zone'),
+      requiresTarget: false,
+      handler: handleLook,
+    },
+  ],
+  [
+    'go',
+    {
+      verb: 'go',
+      synonyms: ['move', 'walk', 'travel'],
+      tier: 1,
+      syntax: 'go {zone name}',
+      description: () => msg('Travel to another zone'),
+      requiresTarget: true,
+      targetType: 'zone',
+      handler: handleGo,
+    },
+  ],
+  [
+    'examine',
+    {
+      verb: 'examine',
+      synonyms: ['ex', 'inspect', 'x'],
+      tier: 1,
+      syntax: 'examine {name}',
+      description: () => msg('Inspect an agent or building'),
+      requiresTarget: true,
+      targetType: 'agent',
+      handler: handleExamine,
+    },
+  ],
+  [
+    'talk',
+    {
+      verb: 'talk',
+      synonyms: ['speak', 'contact', 'hail'],
+      tier: 1,
+      syntax: 'talk {agent name}',
+      description: () => msg('Start a conversation with an agent'),
+      requiresTarget: true,
+      targetType: 'agent',
+      handler: handleTalk,
+    },
+  ],
+  [
+    'weather',
+    {
+      verb: 'weather',
+      synonyms: ['wx', 'conditions'],
+      tier: 1,
+      syntax: 'weather',
+      description: () => msg('Show current weather conditions'),
+      requiresTarget: false,
+      handler: handleWeather,
+    },
+  ],
+  [
+    'status',
+    {
+      verb: 'status',
+      synonyms: ['sit'],
+      tier: 1,
+      syntax: 'status',
+      description: () => msg('Full situation report'),
+      requiresTarget: false,
+      handler: handleStatus,
+    },
+  ],
+  [
+    'help',
+    {
+      verb: 'help',
+      synonyms: [],
+      tier: 1,
+      syntax: 'help [command]',
+      description: () => msg('List available commands'),
+      requiresTarget: false,
+      handler: handleHelp,
+    },
+  ],
+  [
+    'map',
+    {
+      verb: 'map',
+      synonyms: [],
+      tier: 1,
+      syntax: 'map',
+      description: () => msg('Show sector map'),
+      requiresTarget: false,
+      handler: handleMap,
+    },
+  ],
+  [
+    'where',
+    {
+      verb: 'where',
+      synonyms: [],
+      tier: 1,
+      syntax: 'where',
+      description: () => msg('Show your current location'),
+      requiresTarget: false,
+      handler: handleWhere,
+    },
+  ],
+  [
+    'history',
+    {
+      verb: 'history',
+      synonyms: [],
+      tier: 1,
+      syntax: 'history',
+      description: () => msg('Show command history'),
+      requiresTarget: false,
+      handler: handleHistory,
+    },
+  ],
+  [
+    'filter',
+    {
+      verb: 'filter',
+      synonyms: ['feed'],
+      tier: 1,
+      syntax: 'filter {channel}',
+      description: () => msg('Filter realtime feed'),
+      requiresTarget: false,
+      handler: handleFilter,
+    },
+  ],
+  [
+    'exitconversation',
+    {
+      verb: 'exitconversation',
+      synonyms: ['leave', 'bye', 'exit'],
+      tier: 1,
+      syntax: 'leave',
+      description: () => msg('Exit current conversation'),
+      requiresTarget: false,
+      handler: handleExitConversation,
+    },
+  ],
 
   // Stage 2: Field Operations
   // Resonance Dungeons — Registry entries for help listing and Levenshtein matching.
   // Actual dispatch happens via dispatchDungeonCommand() intercept in parseAndExecute().
   // These handlers are fallback-only (dispatcher handles all cases including error states).
-  ['dungeon', {
-    verb: 'dungeon', synonyms: ['explore', 'delve'], tier: 2,
-    syntax: 'dungeon [archetype]', description: () => msg('Enter a resonance dungeon'),
-    requiresTarget: false, handler: async (ctx) => {
-      const result = await dispatchDungeonCommand('dungeon', ctx.args, ctx);
-      return result ?? [errorLine(msg('Dungeon command unavailable.'))];
+  [
+    'dungeon',
+    {
+      verb: 'dungeon',
+      synonyms: ['explore', 'delve'],
+      tier: 2,
+      syntax: 'dungeon [archetype]',
+      description: () => msg('Enter a resonance dungeon'),
+      requiresTarget: false,
+      handler: async (ctx) => {
+        const result = await dispatchDungeonCommand('dungeon', ctx.args, ctx);
+        return result ?? [errorLine(msg('Dungeon command unavailable.'))];
+      },
     },
-  }],
-  ['scout', {
-    verb: 'scout', synonyms: [], tier: 2,
-    syntax: 'scout [agent]', description: () => msg('Spy: reveal adjacent dungeon rooms'),
-    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
-  }],
-  ['retreat', {
-    verb: 'retreat', synonyms: ['flee', 'escape'], tier: 2,
-    syntax: 'retreat', description: () => msg('Leave dungeon with partial loot'),
-    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
-  }],
-  ['interact', {
-    verb: 'interact', synonyms: ['choose'], tier: 2,
-    syntax: 'interact {choice}', description: () => msg('Make an encounter choice'),
-    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
-  }],
-  ['attack', {
-    verb: 'attack', synonyms: ['fight', 'strike'], tier: 2,
-    syntax: 'attack {agent} {ability} [target]', description: () => msg('Select combat action'),
-    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
-  }],
-  ['submit', {
-    verb: 'submit', synonyms: ['ready'], tier: 2,
-    syntax: 'submit', description: () => msg('Submit combat actions'),
-    requiresTarget: false, handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
-  }],
-  ['fortify', {
-    verb: 'fortify', synonyms: ['reinforce', 'defend'], tier: 2,
-    syntax: 'fortify [zone]', description: () => msg('Fortify a zone (-15% event pressure, 7 days)'),
-    requiresTarget: false, handler: handleFortify,
-  }],
-  ['quarantine', {
-    verb: 'quarantine', synonyms: ['lockdown', 'isolate'], tier: 2,
-    syntax: 'quarantine [zone]', description: () => msg('Quarantine a zone (14 days, 2 ops points)'),
-    requiresTarget: false, handler: handleQuarantine,
-  }],
-  ['assign', {
-    verb: 'assign', synonyms: ['station', 'post', 'transfer'], tier: 2,
-    syntax: 'assign {agent} to {building}', description: () => msg('Assign agent to building'),
-    requiresTarget: true, targetType: 'freetext', handler: handleAssign,
-  }],
-  ['unassign', {
-    verb: 'unassign', synonyms: [], tier: 2,
-    syntax: 'unassign {agent}', description: () => msg('Remove agent from current building'),
-    requiresTarget: true, targetType: 'agent', handler: handleUnassign,
-  }],
-  ['ceremony', {
-    verb: 'ceremony', synonyms: [], tier: 2,
-    syntax: 'ceremony', description: () => msg('Initiate a Forge ceremony'),
-    requiresTarget: false, handler: handleCeremony,
-  }],
+  ],
+  [
+    'scout',
+    {
+      verb: 'scout',
+      synonyms: [],
+      tier: 2,
+      syntax: 'scout [agent]',
+      description: () => msg('Spy: reveal adjacent dungeon rooms'),
+      requiresTarget: false,
+      handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+    },
+  ],
+  [
+    'retreat',
+    {
+      verb: 'retreat',
+      synonyms: ['flee', 'escape'],
+      tier: 2,
+      syntax: 'retreat',
+      description: () => msg('Leave dungeon with partial loot'),
+      requiresTarget: false,
+      handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+    },
+  ],
+  [
+    'interact',
+    {
+      verb: 'interact',
+      synonyms: ['choose'],
+      tier: 2,
+      syntax: 'interact {choice}',
+      description: () => msg('Make an encounter choice'),
+      requiresTarget: false,
+      handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+    },
+  ],
+  [
+    'attack',
+    {
+      verb: 'attack',
+      synonyms: ['fight', 'strike'],
+      tier: 2,
+      syntax: 'attack {agent} {ability} [target]',
+      description: () => msg('Select combat action'),
+      requiresTarget: false,
+      handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+    },
+  ],
+  [
+    'submit',
+    {
+      verb: 'submit',
+      synonyms: ['ready'],
+      tier: 2,
+      syntax: 'submit',
+      description: () => msg('Submit combat actions'),
+      requiresTarget: false,
+      handler: async () => [errorLine(msg('Not in a dungeon. Type "dungeon" to enter one.'))],
+    },
+  ],
+  [
+    'fortify',
+    {
+      verb: 'fortify',
+      synonyms: ['reinforce', 'defend'],
+      tier: 2,
+      syntax: 'fortify [zone]',
+      description: () => msg('Fortify a zone (-15% event pressure, 7 days)'),
+      requiresTarget: false,
+      handler: handleFortify,
+    },
+  ],
+  [
+    'quarantine',
+    {
+      verb: 'quarantine',
+      synonyms: ['lockdown', 'isolate'],
+      tier: 2,
+      syntax: 'quarantine [zone]',
+      description: () => msg('Quarantine a zone (14 days, 2 ops points)'),
+      requiresTarget: false,
+      handler: handleQuarantine,
+    },
+  ],
+  [
+    'assign',
+    {
+      verb: 'assign',
+      synonyms: ['station', 'post', 'transfer'],
+      tier: 2,
+      syntax: 'assign {agent} to {building}',
+      description: () => msg('Assign agent to building'),
+      requiresTarget: true,
+      targetType: 'freetext',
+      handler: handleAssign,
+    },
+  ],
+  [
+    'unassign',
+    {
+      verb: 'unassign',
+      synonyms: [],
+      tier: 2,
+      syntax: 'unassign {agent}',
+      description: () => msg('Remove agent from current building'),
+      requiresTarget: true,
+      targetType: 'agent',
+      handler: handleUnassign,
+    },
+  ],
+  [
+    'ceremony',
+    {
+      verb: 'ceremony',
+      synonyms: [],
+      tier: 2,
+      syntax: 'ceremony',
+      description: () => msg('Initiate a Forge ceremony'),
+      requiresTarget: false,
+      handler: handleCeremony,
+    },
+  ],
 
   // Stage 3: Intelligence Network
-  ['scan', {
-    verb: 'scan', synonyms: ['radar', 'sweep'], tier: 3,
-    syntax: 'scan', description: () => msg('Radar sweep of all sectors (1 intel point)'),
-    requiresTarget: false, handler: handleScan,
-  }],
-  ['investigate', {
-    verb: 'investigate', synonyms: ['probe', 'research'], tier: 3,
-    syntax: 'investigate {event}', description: () => msg('Deep investigation of an event (1 intel point)'),
-    requiresTarget: true, targetType: 'event', handler: handleInvestigate,
-  }],
-  ['report', {
-    verb: 'report', synonyms: ['summary', 'log'], tier: 3,
-    syntax: 'report', description: () => msg('Generate session report'),
-    requiresTarget: false, handler: handleReport,
-  }],
-  ['debrief', {
-    verb: 'debrief', synonyms: ['intel', 'brief'], tier: 3,
-    syntax: 'debrief {agent}', description: () => msg('Formal agent debrief (1 intel point, AI)'),
-    requiresTarget: true, targetType: 'agent', handler: handleDebrief,
-  }],
-  ['ask', {
-    verb: 'ask', synonyms: ['query', 'question'], tier: 3,
-    syntax: 'ask {agent} about {topic}', description: () => msg('Ask agent about a specific topic (AI)'),
-    requiresTarget: true, targetType: 'freetext', handler: handleAsk,
-  }],
+  [
+    'scan',
+    {
+      verb: 'scan',
+      synonyms: ['radar', 'sweep'],
+      tier: 3,
+      syntax: 'scan',
+      description: () => msg('Radar sweep of all sectors (1 intel point)'),
+      requiresTarget: false,
+      handler: handleScan,
+    },
+  ],
+  [
+    'investigate',
+    {
+      verb: 'investigate',
+      synonyms: ['probe', 'research'],
+      tier: 3,
+      syntax: 'investigate {event}',
+      description: () => msg('Deep investigation of an event (1 intel point)'),
+      requiresTarget: true,
+      targetType: 'event',
+      handler: handleInvestigate,
+    },
+  ],
+  [
+    'report',
+    {
+      verb: 'report',
+      synonyms: ['summary', 'log'],
+      tier: 3,
+      syntax: 'report',
+      description: () => msg('Generate session report'),
+      requiresTarget: false,
+      handler: handleReport,
+    },
+  ],
+  [
+    'debrief',
+    {
+      verb: 'debrief',
+      synonyms: ['intel', 'brief'],
+      tier: 3,
+      syntax: 'debrief {agent}',
+      description: () => msg('Formal agent debrief (1 intel point, AI)'),
+      requiresTarget: true,
+      targetType: 'agent',
+      handler: handleDebrief,
+    },
+  ],
+  [
+    'ask',
+    {
+      verb: 'ask',
+      synonyms: ['query', 'question'],
+      tier: 3,
+      syntax: 'ask {agent} about {topic}',
+      description: () => msg('Ask agent about a specific topic (AI)'),
+      requiresTarget: true,
+      targetType: 'freetext',
+      handler: handleAsk,
+    },
+  ],
 
   // Stage 4: Epoch Intelligence (OPERATIONAL MODE only)
-  ['sitrep', {
-    verb: 'sitrep', synonyms: ['briefing'], tier: 4,
-    syntax: 'sitrep', description: () => msg('AI tactical situation briefing'),
-    requiresTarget: false, handler: handleSitrep,
-  }],
-  ['dossier', {
-    verb: 'dossier', synonyms: ['file', 'profile'], tier: 4,
-    syntax: 'dossier {player}', description: () => msg('Intelligence file on an opponent'),
-    requiresTarget: true, targetType: 'player', handler: handleDossier,
-  }],
-  ['threats', {
-    verb: 'threats', synonyms: ['incoming', 'alert'], tier: 4,
-    syntax: 'threats', description: () => msg('List detected incoming operatives'),
-    requiresTarget: false, handler: handleThreats,
-  }],
-  ['intercept', {
-    verb: 'intercept', synonyms: ['counter', 'countersweep'], tier: 4,
-    syntax: 'intercept', description: () => msg('Counter-intelligence sweep (4 RP)'),
-    requiresTarget: false, handler: handleIntercept,
-  }],
+  [
+    'sitrep',
+    {
+      verb: 'sitrep',
+      synonyms: ['briefing'],
+      tier: 4,
+      syntax: 'sitrep',
+      description: () => msg('AI tactical situation briefing'),
+      requiresTarget: false,
+      handler: handleSitrep,
+    },
+  ],
+  [
+    'dossier',
+    {
+      verb: 'dossier',
+      synonyms: ['file', 'profile'],
+      tier: 4,
+      syntax: 'dossier {player}',
+      description: () => msg('Intelligence file on an opponent'),
+      requiresTarget: true,
+      targetType: 'player',
+      handler: handleDossier,
+    },
+  ],
+  [
+    'threats',
+    {
+      verb: 'threats',
+      synonyms: ['incoming', 'alert'],
+      tier: 4,
+      syntax: 'threats',
+      description: () => msg('List detected incoming operatives'),
+      requiresTarget: false,
+      handler: handleThreats,
+    },
+  ],
+  [
+    'intercept',
+    {
+      verb: 'intercept',
+      synonyms: ['counter', 'countersweep'],
+      tier: 4,
+      syntax: 'intercept',
+      description: () => msg('Counter-intelligence sweep (4 RP)'),
+      requiresTarget: false,
+      handler: handleIntercept,
+    },
+  ],
 ]);
 
 // ── Main Parser ────────────────────────────────────────────────────────────
@@ -1292,8 +1600,11 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
     const lower = trimmed.toLowerCase();
     if (lower === 'leave' || lower === 'bye' || lower === 'exit') {
       const result = await handleExitConversation({
-        simulationId: simId(), currentZoneId: terminalState.currentZoneId.value ?? '',
-        rawInput: trimmed, verb: 'exitconversation', args: [],
+        simulationId: simId(),
+        currentZoneId: terminalState.currentZoneId.value ?? '',
+        rawInput: trimmed,
+        verb: 'exitconversation',
+        args: [],
       });
       output.push(...result);
     } else {
@@ -1418,9 +1729,11 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
  */
 function resolveSimulationName(): string {
   if (terminalState.isEpochMode.value) {
-    return terminalState.epochParticipant.value?.simulations?.name
-      ?? appState.currentSimulation.value?.name
-      ?? 'Unknown';
+    return (
+      terminalState.epochParticipant.value?.simulations?.name ??
+      appState.currentSimulation.value?.name ??
+      'Unknown'
+    );
   }
   return appState.currentSimulation.value?.name ?? 'Unknown';
 }
@@ -1430,12 +1743,9 @@ export function getBootSequence(): TerminalLine[] {
   const theme = appState.currentSimulation.value?.theme;
 
   // Read AI-generated boot art from simulation design settings
-  const bootArtSetting = appState.settings.value.find(
-    (s) => s.setting_key === 'terminal_boot_art',
-  );
-  const customArt = typeof bootArtSetting?.setting_value === 'string'
-    ? bootArtSetting.setting_value
-    : undefined;
+  const bootArtSetting = appState.settings.value.find((s) => s.setting_key === 'terminal_boot_art');
+  const customArt =
+    typeof bootArtSetting?.setting_value === 'string' ? bootArtSetting.setting_value : undefined;
 
   return formatBootSequence(simName, theme, customArt, terminalState.effectiveClearance.value);
 }
@@ -1455,8 +1765,14 @@ export function getReentrySequence(): TerminalLine[] {
 
   if (isEpoch) {
     lines.push(systemLine(`BUREAU INTELLIGENCE STATION — ${simName.toUpperCase()}`));
-    lines.push(systemLine(`${msg('Mode')}: OPERATIONAL | ${msg('Operator clearance')}: LEVEL ${level}`));
-    lines.push(systemLine(`${msg('Resource Points')}: ${terminalState.currentRP.value} | ${msg('Phase')}: ${(terminalState.epochStatus.value ?? 'competition').toUpperCase()}`));
+    lines.push(
+      systemLine(`${msg('Mode')}: OPERATIONAL | ${msg('Operator clearance')}: LEVEL ${level}`),
+    );
+    lines.push(
+      systemLine(
+        `${msg('Resource Points')}: ${terminalState.currentRP.value} | ${msg('Phase')}: ${(terminalState.epochStatus.value ?? 'competition').toUpperCase()}`,
+      ),
+    );
   } else {
     lines.push(systemLine(`BUREAU FIELD TERMINAL — ${simName.toUpperCase()}`));
     lines.push(systemLine(`${msg('Operator clearance')}: LEVEL ${level}`));

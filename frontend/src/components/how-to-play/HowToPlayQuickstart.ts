@@ -295,7 +295,8 @@ export class VelgHowToPlayQuickstart extends LitElement {
         font-size: var(--text-xs);
       }
     }
-  `];
+  `,
+  ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -303,7 +304,9 @@ export class VelgHowToPlayQuickstart extends LitElement {
     super.connectedCallback();
     seoService.setTitle([msg('Quick Start'), msg('How to Play')]);
     seoService.setDescription(
-      msg('Get started with metaverse.center in 5 minutes. Create AI-driven worlds, chat with agents, and compete in epochs.'),
+      msg(
+        'Get started with metaverse.center in 5 minutes. Create AI-driven worlds, chat with agents, and compete in epochs.',
+      ),
     );
     seoService.setCanonical('/how-to-play/quickstart');
     seoService.setBreadcrumbs([
@@ -368,11 +371,13 @@ export class VelgHowToPlayQuickstart extends LitElement {
   // ── Navigation ─────────────────────────────────────────────────────────
 
   private _navigate(path: string) {
-    this.dispatchEvent(new CustomEvent('navigate', {
-      detail: path,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        detail: path,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleLinkClick(e: Event, href: string) {
@@ -434,12 +439,18 @@ export class VelgHowToPlayQuickstart extends LitElement {
         </div>
         <h2 class="step__title">${step.title}</h2>
         <p class="step__body">${step.body}</p>
-        ${step.items ? html`
+        ${
+          step.items
+            ? html`
           <ol class="step__items">
             ${step.items.map((item) => html`<li class="step__item">${item}</li>`)}
           </ol>
-        ` : nothing}
-        ${step.action ? html`
+        `
+            : nothing
+        }
+        ${
+          step.action
+            ? html`
           <a
             class="step__action"
             href=${step.action.href}
@@ -448,7 +459,9 @@ export class VelgHowToPlayQuickstart extends LitElement {
             ${step.action.label}
             <span aria-hidden="true">\u25B8</span>
           </a>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }

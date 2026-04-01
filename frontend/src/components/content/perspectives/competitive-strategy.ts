@@ -39,7 +39,10 @@ export function getCompetitiveStrategyPage(): ContentPageData {
     breadcrumbs: [
       { name: 'Home', url: 'https://metaverse.center/' },
       { name: 'Perspectives', url: 'https://metaverse.center/perspectives/competitive-strategy' },
-      { name: 'Competitive Strategy', url: 'https://metaverse.center/perspectives/competitive-strategy' },
+      {
+        name: 'Competitive Strategy',
+        url: 'https://metaverse.center/perspectives/competitive-strategy',
+      },
     ],
 
     sections: [

@@ -20,10 +20,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { RoomNodeClient } from '../../types/dungeon.js';
 import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
-import {
-  terminalComponentTokens,
-  terminalTokens,
-} from '../shared/terminal-theme-styles.js';
+import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import { ROOM_ICON, ROOM_ICON_UNKNOWN } from './dungeon-map-icons.js';
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -254,7 +251,9 @@ export class VelgDungeonRoomPanel extends LitElement {
         </div>
 
         <!-- Move action (only for adjacent, non-current rooms) -->
-        ${adjacent && !current ? html`
+        ${
+          adjacent && !current
+            ? html`
           <button
             class="panel__action ${isBoss ? 'panel__action--danger' : ''}"
             @click=${this._moveToRoom}
@@ -262,7 +261,9 @@ export class VelgDungeonRoomPanel extends LitElement {
             ${icons.footprints(14)}
             ${isBoss ? msg('Enter Boss Room') : msg('Move Here')}
           </button>
-        ` : nothing}
+        `
+            : nothing
+        }
       </div>
     `;
   }
@@ -270,19 +271,23 @@ export class VelgDungeonRoomPanel extends LitElement {
   // ── Handlers ────────────────────────────────────────────────────────────
 
   private _close(): void {
-    this.dispatchEvent(new CustomEvent('room-deselect', {
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('room-deselect', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _moveToRoom(): void {
     if (!this.room) return;
-    this.dispatchEvent(new CustomEvent('terminal-command', {
-      detail: `move ${this.room.index}`,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent('terminal-command', {
+        detail: `move ${this.room.index}`,
+        bubbles: true,
+        composed: true,
+      }),
+    );
     // Close panel after dispatching
     this._close();
   }

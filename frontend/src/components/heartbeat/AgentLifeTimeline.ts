@@ -17,8 +17,8 @@ import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
-  agentAutonomyApi,
   type AgentActivity,
+  agentAutonomyApi,
 } from '../../services/api/AgentAutonomyApiService.js';
 import { formatTimestamp } from '../../utils/date-format.js';
 import '../shared/VelgAvatar.js';
@@ -81,7 +81,6 @@ const ACTIVITY_BADGE_VARIANT: Record<string, string> = {
   celebrate: 'success',
   mourn: 'default',
 };
-
 
 function significanceLevel(sig: number): 'routine' | 'important' | 'critical' {
   if (sig >= 8) return 'critical';
@@ -683,7 +682,7 @@ export class AgentLifeTimeline extends LitElement {
       if (this._filter !== 'all') {
         const types = FILTER_TO_TYPES[this._filter];
         if (types.length > 1) {
-          data = data.filter(a => types.includes(a.activity_type));
+          data = data.filter((a) => types.includes(a.activity_type));
         }
       }
 
@@ -725,11 +724,12 @@ export class AgentLifeTimeline extends LitElement {
     return html`
       <div class="timeline">
         ${this._renderHeader()}
-        ${this._loading
-          ? html`<div class="loading"><span class="loading__text">${msg('Scanning intercepts...')}</span></div>`
-          : this._activities.length === 0
-            ? this._renderEmpty()
-            : this._renderFeed()
+        ${
+          this._loading
+            ? html`<div class="loading"><span class="loading__text">${msg('Scanning intercepts...')}</span></div>`
+            : this._activities.length === 0
+              ? this._renderEmpty()
+              : this._renderFeed()
         }
       </div>
     `;
@@ -740,7 +740,8 @@ export class AgentLifeTimeline extends LitElement {
       <div class="timeline__header">
         <div class="timeline__title">${msg('Activity intercept log')}</div>
         <div class="filters" role="group" aria-label=${msg('Activity filters')}>
-          ${FILTER_OPTIONS.map(opt => html`
+          ${FILTER_OPTIONS.map(
+            (opt) => html`
             <button
               class="filter-chip ${this._filter === opt.key ? 'filter-chip--active' : ''}"
               @click=${() => this._handleFilterChange(opt.key)}
@@ -748,7 +749,8 @@ export class AgentLifeTimeline extends LitElement {
             >
               ${opt.label()}
             </button>
-          `)}
+          `,
+          )}
         </div>
       </div>
     `;
@@ -759,8 +761,9 @@ export class AgentLifeTimeline extends LitElement {
       <div class="feed" role="feed" aria-label=${msg('Agent activity feed')}>
         <div class="feed__spine ${this._spineDrawn ? 'feed__spine--drawn' : ''}"></div>
         ${this._activities.map((activity, i) => this._renderEntry(activity, i))}
-        ${this._hasMore
-          ? html`
+        ${
+          this._hasMore
+            ? html`
             <div class="load-more">
               <button
                 class="load-more__btn"
@@ -771,7 +774,7 @@ export class AgentLifeTimeline extends LitElement {
               </button>
             </div>
           `
-          : nothing
+            : nothing
         }
       </div>
     `;
@@ -816,32 +819,32 @@ export class AgentLifeTimeline extends LitElement {
               aria-label=${significanceLabel(activity.significance)}
               title=${significanceLabel(activity.significance)}
             >
-              ${Array.from({ length: Math.ceil(sigDots / 2) }, () =>
-                html`<span class="sig__dot"></span>`,
+              ${Array.from(
+                { length: Math.ceil(sigDots / 2) },
+                () => html`<span class="sig__dot"></span>`,
               )}
             </div>
             <span class="entry__timestamp">${formatTimestamp(activity.created_at)}</span>
           </div>
         </div>
 
-        ${activity.narrative_text
-          ? html`<div class="entry__narrative">${activity.narrative_text}</div>`
-          : nothing
+        ${
+          activity.narrative_text
+            ? html`<div class="entry__narrative">${activity.narrative_text}</div>`
+            : nothing
         }
 
-        ${activity.target_agent_id
-          ? html`
+        ${
+          activity.target_agent_id
+            ? html`
             <div class="entry__target">
               ${msg('with')} <span class="entry__target-name">${activity.target_agent_name ?? activity.target_agent_id.slice(0, 8)}</span>
             </div>
           `
-          : nothing
+            : nothing
         }
 
-        ${effectsText
-          ? html`<div class="entry__effects">${effectsText}</div>`
-          : nothing
-        }
+        ${effectsText ? html`<div class="entry__effects">${effectsText}</div>` : nothing}
       </div>
     `;
   }

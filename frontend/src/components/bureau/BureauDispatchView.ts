@@ -2,9 +2,8 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-
-import { bureauApi } from '../../services/api/BureauApiService.js';
 import type { CipherRedemptionResult } from '../../services/api/BureauApiService.js';
+import { bureauApi } from '../../services/api/BureauApiService.js';
 import { icons } from '../../utils/icons.js';
 
 type ViewState = 'idle' | 'decoding' | 'success' | 'error' | 'rate_limited';
@@ -794,11 +793,13 @@ export class VelgBureauDispatch extends LitElement {
     return html`
       <div class="error-msg" role="alert" id="cipher-error">
         <span class="error-msg__text">${this._errorMessage}</span>
-        ${this._attemptsRemaining !== null
-          ? html`<span class="error-msg__attempts">
+        ${
+          this._attemptsRemaining !== null
+            ? html`<span class="error-msg__attempts">
               ${msg('Attempts remaining')}: ${this._attemptsRemaining}
             </span>`
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -837,11 +838,13 @@ export class VelgBureauDispatch extends LitElement {
         </div>
 
         <div class="reward__content">
-          ${this._rewardType === 'agent_dossier'
-            ? this._renderAgentDossier(snapshot)
-            : this._rewardType === 'bureau_commendation'
-              ? this._renderCommendation(snapshot)
-              : this._renderLoreFragment(snapshot)}
+          ${
+            this._rewardType === 'agent_dossier'
+              ? this._renderAgentDossier(snapshot)
+              : this._rewardType === 'bureau_commendation'
+                ? this._renderCommendation(snapshot)
+                : this._renderLoreFragment(snapshot)
+          }
         </div>
 
         <div class="reward__reset">
@@ -854,7 +857,8 @@ export class VelgBureauDispatch extends LitElement {
   }
 
   private _renderLoreFragment(snapshot: Record<string, unknown>) {
-    const title = (snapshot.name as string) ?? (snapshot.title as string) ?? msg('Classified Document');
+    const title =
+      (snapshot.name as string) ?? (snapshot.title as string) ?? msg('Classified Document');
     const body =
       (snapshot.body as string) ??
       (snapshot.epigraph as string) ??

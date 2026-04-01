@@ -182,7 +182,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-cartographer-map></velg-cartographer-map>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/multiverse/CartographerMap.js'))) return false;
+          if (!(await this._lazy(() => import('./components/multiverse/CartographerMap.js'))))
+            return false;
           seoService.setTitle(['Multiverse Map']);
           seoService.setDescription(
             'Explore the multiverse map — view active simulations, connections, and live battle statistics.',
@@ -201,7 +202,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-epoch-command-center></velg-epoch-command-center>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))) return false;
+          if (!(await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))))
+            return false;
           seoService.setTitle(['Epoch Command Center']);
           seoService.setCanonical('/epoch');
           seoService.setBreadcrumbs([
@@ -217,7 +219,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-epoch-invite-accept-view></velg-epoch-invite-accept-view>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/epoch/EpochInviteAcceptView.js'))) return false;
+          if (!(await this._lazy(() => import('./components/epoch/EpochInviteAcceptView.js'))))
+            return false;
           seoService.setTitle(['Epoch Summons']);
           seoService.setDescription(
             'Accept an epoch invitation — join competitive PvP operations and deploy your simulation.',
@@ -237,7 +240,8 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
-          if (!await this._lazy(() => import('./components/forge/VelgForgeWizard.js'))) return false;
+          if (!(await this._lazy(() => import('./components/forge/VelgForgeWizard.js'))))
+            return false;
           seoService.setTitle(['The Simulation Forge']);
           seoService.setDescription(
             'Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.',
@@ -252,7 +256,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play-landing></velg-how-to-play-landing>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayLanding.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayLanding.js'))))
+            return false;
           // SEO handled inside component
           return true;
         },
@@ -262,7 +267,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play-quickstart></velg-how-to-play-quickstart>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayQuickstart.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayQuickstart.js'))))
+            return false;
           return true;
         },
       },
@@ -271,16 +277,19 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play-guide-hub></velg-how-to-play-guide-hub>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayGuideHub.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayGuideHub.js'))))
+            return false;
           return true;
         },
       },
       {
         path: '/how-to-play/guide/:topic',
-        render: ({ topic }) => html`<velg-how-to-play-topic .topic=${topic ?? ''}></velg-how-to-play-topic>`,
+        render: ({ topic }) =>
+          html`<velg-how-to-play-topic .topic=${topic ?? ''}></velg-how-to-play-topic>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayTopic.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayTopic.js'))))
+            return false;
           return true;
         },
       },
@@ -289,7 +298,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play-war-room></velg-how-to-play-war-room>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayWarRoom.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayWarRoom.js'))))
+            return false;
           return true;
         },
       },
@@ -298,7 +308,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-how-to-play></velg-how-to-play>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/how-to-play/HowToPlayView.js'))) return false;
+          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayView.js'))))
+            return false;
           seoService.setTitle(['How to Play (Legacy)']);
           seoService.setCanonical('/how-to-play');
           analyticsService.trackPageView('/how-to-play/legacy', document.title);
@@ -310,7 +321,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-bureau-archives></velg-bureau-archives>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/lore/BureauArchives.js'))) return false;
+          if (!(await this._lazy(() => import('./components/lore/BureauArchives.js'))))
+            return false;
           seoService.setTitle(['Bureau Archives']);
           seoService.setDescription(
             'Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.',
@@ -329,7 +341,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-bureau-dispatch-terminal></velg-bureau-dispatch-terminal>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/bureau/BureauDispatchView.js'))) return false;
+          if (!(await this._lazy(() => import('./components/bureau/BureauDispatchView.js'))))
+            return false;
           seoService.setTitle(['Bureau Dispatch Terminal']);
           seoService.setDescription(
             'Decode classified Bureau transmissions. Enter your cipher code to unlock declassified dispatches.',
@@ -396,7 +409,7 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
-          if (!await this._lazy(() => import('./components/admin/AdminPanel.js'))) return false;
+          if (!(await this._lazy(() => import('./components/admin/AdminPanel.js')))) return false;
           seoService.setTitle(['Admin']);
           seoService.setDescription(
             'Platform administration — manage users, simulations, settings, and system health.',
@@ -409,8 +422,7 @@ export class VelgApp extends LitElement {
       // --- Simulation-scoped routes (public read, auth for mutations) ---
       {
         path: '/simulations/:id/lore/:entitySlug',
-        render: ({ id, entitySlug }) =>
-          this._renderSimulationView(id ?? '', 'lore', entitySlug),
+        render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'lore', entitySlug),
         enter: async ({ id }) => this._enterSimulationRoute(id, 'lore'),
       },
       {
@@ -436,8 +448,7 @@ export class VelgApp extends LitElement {
       // Entity slug routes BEFORE list routes (first-match routing)
       {
         path: '/simulations/:id/agents/:entitySlug',
-        render: ({ id, entitySlug }) =>
-          this._renderSimulationView(id ?? '', 'agents', entitySlug),
+        render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'agents', entitySlug),
         enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
       },
       {
@@ -510,7 +521,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-worlds-gallery></velg-worlds-gallery>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/landing/WorldsGallery.js'))) return false;
+          if (!(await this._lazy(() => import('./components/landing/WorldsGallery.js'))))
+            return false;
           seoService.setTitle(['Explore Living Worlds']);
           seoService.setDescription(
             'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
@@ -529,7 +541,8 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-chronicle-feed></velg-chronicle-feed>`,
         enter: async () => {
           await this._authReady;
-          if (!await this._lazy(() => import('./components/landing/ChronicleFeed.js'))) return false;
+          if (!(await this._lazy(() => import('./components/landing/ChronicleFeed.js'))))
+            return false;
           seoService.setTitle(['The Chronicle Feed']);
           seoService.setDescription(
             'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations — fiction tied to real gameplay events.',
@@ -746,7 +759,7 @@ export class VelgApp extends LitElement {
     }
     if (view) {
       const importFn = getSimViewImport(view);
-      if (importFn && !await this._lazy(importFn)) return false;
+      if (importFn && !(await this._lazy(importFn))) return false;
     }
     return true;
   }

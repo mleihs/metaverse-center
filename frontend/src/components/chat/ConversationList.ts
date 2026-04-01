@@ -1,8 +1,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { formatRelativeTime } from '../../utils/date-format.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
+import { formatRelativeTime } from '../../utils/date-format.js';
 import '../shared/VelgAvatar.js';
 
 @localized()
@@ -203,7 +203,6 @@ export class VelgConversationList extends LitElement {
   @property({ type: Array }) conversations: ChatConversation[] = [];
   @property({ type: String }) selectedId = '';
   @property({ type: Boolean }) readonly = false;
-
 
   private _truncate(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;

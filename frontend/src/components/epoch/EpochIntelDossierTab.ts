@@ -12,8 +12,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { Epoch, EpochParticipant, IntelDossier } from '../../types/index.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import type { Epoch, EpochParticipant, IntelDossier } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 
 const SECURITY_COLORS: Record<string, string> = {
@@ -27,7 +27,6 @@ const SECURITY_COLORS: Record<string, string> = {
   contested: 'var(--color-success)',
   lawless: 'var(--color-success)',
 };
-
 
 @localized()
 @customElement('velg-epoch-intel-dossier-tab')

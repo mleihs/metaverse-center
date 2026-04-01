@@ -17,7 +17,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { trapFocus, focusFirstElement } from '../shared/focus-trap.js';
+import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import { adminAnimationStyles } from './admin-shared-styles.js';
 import './DungeonTerminalPreview.js';
 
@@ -514,12 +514,16 @@ export class DungeonContentEditor extends LitElement {
         </div>
 
         <!-- Dirty indicator -->
-        ${this._dirty ? html`
+        ${
+          this._dirty
+            ? html`
           <div class="dirty-bar" aria-live="polite">
             <span class="dirty-bar__dot"></span>
             ${msg('Unsaved changes')}
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <!-- Body -->
         <div class="sheet__body">
@@ -544,9 +548,13 @@ export class DungeonContentEditor extends LitElement {
             class="btn-delete"
             @click=${this._delete}
           >${msg('Delete')}</button>
-          ${updatedAt ? html`
+          ${
+            updatedAt
+              ? html`
             <span class="sheet__timestamp">${msg('Updated')}: ${updatedAt}</span>
-          ` : nothing}
+          `
+              : nothing
+          }
         </div>
       </aside>
     `;
@@ -603,8 +611,16 @@ export class DungeonContentEditor extends LitElement {
       case 'choices':
         return [
           { enKey: 'label_en', deKey: 'label_de', label: msg('Choice Label') },
-          { enKey: 'success_narrative_en', deKey: 'success_narrative_de', label: msg('Success Narrative') },
-          { enKey: 'partial_narrative_en', deKey: 'partial_narrative_de', label: msg('Partial Narrative') },
+          {
+            enKey: 'success_narrative_en',
+            deKey: 'success_narrative_de',
+            label: msg('Success Narrative'),
+          },
+          {
+            enKey: 'partial_narrative_en',
+            deKey: 'partial_narrative_de',
+            label: msg('Partial Narrative'),
+          },
           { enKey: 'fail_narrative_en', deKey: 'fail_narrative_de', label: msg('Fail Narrative') },
         ];
       case 'loot':
@@ -640,8 +656,18 @@ export class DungeonContentEditor extends LitElement {
                 .value=${String(this._draft.trigger ?? '')}
                 @change=${(e: Event) => this._updateField('trigger', (e.target as HTMLSelectElement).value)}
               >
-                ${['room_entered', 'combat_won', 'visibility_zero', 'low_stability', 'high_decay', 'high_attachment', 'rest', 'retreat'].map(
-                  t => html`<option value=${t} ?selected=${this._draft.trigger === t}>${t}</option>`,
+                ${[
+                  'room_entered',
+                  'combat_won',
+                  'visibility_zero',
+                  'low_stability',
+                  'high_decay',
+                  'high_attachment',
+                  'rest',
+                  'retreat',
+                ].map(
+                  (t) =>
+                    html`<option value=${t} ?selected=${this._draft.trigger === t}>${t}</option>`,
                 )}
               </select>
             </div>
@@ -698,7 +724,8 @@ export class DungeonContentEditor extends LitElement {
                 @change=${(e: Event) => this._updateField('threat_level', (e.target as HTMLSelectElement).value)}
               >
                 ${['minion', 'standard', 'elite', 'boss'].map(
-                  t => html`<option value=${t} ?selected=${this._draft.threat_level === t}>${t}</option>`,
+                  (t) =>
+                    html`<option value=${t} ?selected=${this._draft.threat_level === t}>${t}</option>`,
                 )}
               </select>
             </div>
@@ -746,7 +773,8 @@ export class DungeonContentEditor extends LitElement {
                 @change=${(e: Event) => this._updateField('room_type', (e.target as HTMLSelectElement).value)}
               >
                 ${['combat', 'encounter', 'elite', 'boss', 'rest', 'treasure'].map(
-                  t => html`<option value=${t} ?selected=${this._draft.room_type === t}>${t}</option>`,
+                  (t) =>
+                    html`<option value=${t} ?selected=${this._draft.room_type === t}>${t}</option>`,
                 )}
               </select>
             </div>
@@ -819,8 +847,17 @@ export class DungeonContentEditor extends LitElement {
                 .value=${String(this._draft.school ?? '')}
                 @change=${(e: Event) => this._updateField('school', (e.target as HTMLSelectElement).value)}
               >
-                ${['spy', 'guardian', 'assassin', 'propagandist', 'infiltrator', 'saboteur', 'universal'].map(
-                  s => html`<option value=${s} ?selected=${this._draft.school === s}>${s}</option>`,
+                ${[
+                  'spy',
+                  'guardian',
+                  'assassin',
+                  'propagandist',
+                  'infiltrator',
+                  'saboteur',
+                  'universal',
+                ].map(
+                  (s) =>
+                    html`<option value=${s} ?selected=${this._draft.school === s}>${s}</option>`,
                 )}
               </select>
             </div>
@@ -847,7 +884,8 @@ export class DungeonContentEditor extends LitElement {
                 @change=${(e: Event) => this._updateField('targets', (e.target as HTMLSelectElement).value)}
               >
                 ${['single_enemy', 'all_enemies', 'single_ally', 'all_allies', 'self'].map(
-                  t => html`<option value=${t} ?selected=${this._draft.targets === t}>${t}</option>`,
+                  (t) =>
+                    html`<option value=${t} ?selected=${this._draft.targets === t}>${t}</option>`,
                 )}
               </select>
             </div>

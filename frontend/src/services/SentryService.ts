@@ -33,10 +33,7 @@ export function initSentry(): void {
  * Report an error to Sentry with optional contextual tags.
  * Falls back to `console.error` when Sentry is not configured.
  */
-export function captureError(
-  error: unknown,
-  context?: Record<string, string>,
-): void {
+export function captureError(error: unknown, context?: Record<string, string>): void {
   if (!_initialized) {
     console.error('[Sentry not configured]', error, context);
     return;

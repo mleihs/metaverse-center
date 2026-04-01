@@ -1,7 +1,7 @@
 import { localized, msg } from '@lit/localize';
-import { formatElapsedMs } from '../../utils/date-format.js';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { formatElapsedMs } from '../../utils/date-format.js';
 
 /**
  * Shared cinematic scan overlay for Forge generation phases.
@@ -560,9 +560,8 @@ export class VelgForgeScanOverlay extends LitElement {
       if (this.estimatedDurationMs > 0 && this._elapsedMs > 0) {
         const entityElapsed = this._elapsedMs;
         const ratio = entityElapsed / this.estimatedDurationMs;
-        const subPercent = ratio <= 0.9
-          ? (ratio / 0.9) * 0.9
-          : 0.9 + 0.08 * (1 - Math.exp(-(ratio - 0.9) * 2));
+        const subPercent =
+          ratio <= 0.9 ? (ratio / 0.9) * 0.9 : 0.9 + 0.08 * (1 - Math.exp(-(ratio - 0.9) * 2));
         const entitySlice = 100 / this.entityTotal;
         return Math.min(98, basePercent + subPercent * entitySlice);
       }
@@ -596,7 +595,6 @@ export class VelgForgeScanOverlay extends LitElement {
     return this._scanPhase >= threshold;
   }
 
-
   private _renderTimer() {
     if (this.estimatedDurationMs <= 0 && this.entityTotal <= 0) return nothing;
 
@@ -626,9 +624,10 @@ export class VelgForgeScanOverlay extends LitElement {
     return html`
       <div class="scan-timer">
         <span class="scan-timer__elapsed">${msg('MISSION CLOCK')}: ${formatElapsedMs(this._elapsedMs)}</span>
-        ${isPastEstimate
-          ? html`<span class="scan-timer__recalibrating">${msg('RECALIBRATING...')}</span>`
-          : html`<span class="scan-timer__eta">ETA: ~${formatElapsedMs(remaining)}</span>`
+        ${
+          isPastEstimate
+            ? html`<span class="scan-timer__recalibrating">${msg('RECALIBRATING...')}</span>`
+            : html`<span class="scan-timer__eta">ETA: ~${formatElapsedMs(remaining)}</span>`
         }
       </div>
     `;
@@ -649,9 +648,7 @@ export class VelgForgeScanOverlay extends LitElement {
     const currentPhase = this.recovering
       ? recoveryPhases[this._scanPhase % recoveryPhases.length]
       : (this.phases[this._scanPhase] ?? msg('Processing...'));
-    const headerText = this.recovering
-      ? msg('Signal Disrupted')
-      : this.headerLabel;
+    const headerText = this.recovering ? msg('Signal Disrupted') : this.headerLabel;
 
     return html`
       <div class="scan-overlay" role="status" aria-live="polite" aria-label=${headerText || msg('Processing')}>
@@ -676,11 +673,7 @@ export class VelgForgeScanOverlay extends LitElement {
         }
 
         <div class="scan-status">
-          ${
-            headerText
-              ? html`<div class="scan-status__label">${headerText}</div>`
-              : nothing
-          }
+          ${headerText ? html`<div class="scan-status__label">${headerText}</div>` : nothing}
           <div class="scan-status__phase">
             ${currentPhase}<span class="scan-status__cursor"></span>
           </div>

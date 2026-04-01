@@ -105,9 +105,11 @@ export class VelgTerminalPreview extends LitElement {
           <span class="preview__label-dot"></span>
           ${this.label}
         </div>
-        ${this.text
-          ? html`<div class="preview__text">${this._renderHighlighted()}</div>`
-          : html`<div class="preview__empty">${msg('No text to preview')}</div>`}
+        ${
+          this.text
+            ? html`<div class="preview__text">${this._renderHighlighted()}</div>`
+            : html`<div class="preview__empty">${msg('No text to preview')}</div>`
+        }
       </div>
     `;
   }
@@ -115,7 +117,7 @@ export class VelgTerminalPreview extends LitElement {
   private _renderHighlighted() {
     // Highlight {agent} and other template variables
     const parts = this.text.split(/(\{[^}]+\})/g);
-    return parts.map(part =>
+    return parts.map((part) =>
       part.startsWith('{') && part.endsWith('}')
         ? html`<span class="tpl-var">${part}</span>`
         : part,

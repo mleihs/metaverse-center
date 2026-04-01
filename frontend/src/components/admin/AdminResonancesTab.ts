@@ -35,7 +35,9 @@ const STATUS_TRANSITIONS: Record<string, string> = {
 @localized()
 @customElement('velg-admin-resonances-tab')
 export class VelgAdminResonancesTab extends LitElement {
-  static styles = [infoBubbleStyles, css`
+  static styles = [
+    infoBubbleStyles,
+    css`
     :host {
       display: block;
       color: var(--color-text-primary);
@@ -605,7 +607,8 @@ export class VelgAdminResonancesTab extends LitElement {
         flex-wrap: wrap;
       }
     }
-  `];
+  `,
+  ];
 
   @state() private _view: ResView = 'active';
   @state() private _statusFilter: StatusFilter = 'all';
@@ -878,7 +881,6 @@ export class VelgAdminResonancesTab extends LitElement {
   private _isPast(isoStr: string): boolean {
     return new Date(isoStr).getTime() <= Date.now();
   }
-
 
   // ── Render ────────────────────────────────────────────
 

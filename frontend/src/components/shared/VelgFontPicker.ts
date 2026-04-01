@@ -367,11 +367,7 @@ export class VelgFontPicker extends LitElement {
   private get _filtered(): { category: string; fonts: FontEntry[] }[] {
     const q = this._search.toLowerCase();
     const matching = q
-      ? GOOGLE_FONTS.filter(
-          (f) =>
-            f.name.toLowerCase().includes(q) ||
-            f.category.includes(q),
-        )
+      ? GOOGLE_FONTS.filter((f) => f.name.toLowerCase().includes(q) || f.category.includes(q))
       : GOOGLE_FONTS;
 
     // Group by category
@@ -487,8 +483,7 @@ export class VelgFontPicker extends LitElement {
 
   protected render() {
     const displayName =
-      GOOGLE_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())
-        ?.name ||
+      GOOGLE_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())?.name ||
       this.value ||
       '\u2014';
     const groups = this._filtered;
@@ -555,8 +550,15 @@ export class VelgFontPicker extends LitElement {
                     class="picker__custom"
                     type="text"
                     .value=${this._customInput}
-                    @input=${(e: Event) => { this._customInput = (e.target as HTMLInputElement).value; }}
-                    @keydown=${(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); this._selectCustom(); } }}
+                    @input=${(e: Event) => {
+                      this._customInput = (e.target as HTMLInputElement).value;
+                    }}
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this._selectCustom();
+                      }
+                    }}
                     placeholder=${msg('e.g. Playfair Display')}
                   />
                   <button

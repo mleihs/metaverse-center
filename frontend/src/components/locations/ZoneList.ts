@@ -9,8 +9,8 @@ import { t } from '../../utils/locale-fields.js';
  * Parent maps heartbeat entry's narrative_en → narrative when building this.
  */
 export interface ZoneWeather {
-  narrative: string;      // EN (t() base field)
-  narrative_de: string;   // DE (t() locale field)
+  narrative: string; // EN (t() base field)
+  narrative_de: string; // DE (t() locale field)
   categories: string[];
   temperature: number;
   weather_code: number;
@@ -18,23 +18,23 @@ export interface ZoneWeather {
 
 /** Map WMO weather code categories to Unicode weather symbols. */
 const WEATHER_SYMBOLS: Record<string, string> = {
-  clear: '\u2600',           // ☀
-  overcast: '\u2601',        // ☁
+  clear: '\u2600', // ☀
+  overcast: '\u2601', // ☁
   fog: '\uD83C\uDF2B\uFE0F', // 🌫️
   fog_dense: '\uD83C\uDF2B\uFE0F',
   rain_light: '\uD83C\uDF26\uFE0F', // 🌦️
   rain: '\uD83C\uDF27\uFE0F', // 🌧️
   rain_freezing: '\u2744\uFE0F', // ❄️
-  storm: '\u26C8\uFE0F',    // ⛈️
-  snow: '\u2744\uFE0F',      // ❄️
+  storm: '\u26C8\uFE0F', // ⛈️
+  snow: '\u2744\uFE0F', // ❄️
   storm_snow: '\u2744\uFE0F',
-  thunderstorm: '\u26A1',    // ⚡
+  thunderstorm: '\u26A1', // ⚡
   thunderstorm_severe: '\u26A1',
-  heat: '\uD83D\uDD25',      // 🔥
-  cold: '\u2744\uFE0F',      // ❄️
-  wind: '\uD83D\uDCA8',      // 💨
+  heat: '\uD83D\uDD25', // 🔥
+  cold: '\u2744\uFE0F', // ❄️
+  wind: '\uD83D\uDCA8', // 💨
   full_moon: '\uD83C\uDF15', // 🌕
-  new_moon: '\uD83C\uDF11',  // 🌑
+  new_moon: '\uD83C\uDF11', // 🌑
 };
 
 @localized()
@@ -371,8 +371,13 @@ export class VelgZoneList extends LitElement {
    */
   private _eventMultiplier(stability: number): number {
     const bp: [number, number][] = [
-      [0.0, 1.5], [0.1, 1.5], [0.3, 1.3], [0.5, 1.0],
-      [0.7, 0.8], [0.9, 0.5], [1.0, 0.5],
+      [0.0, 1.5],
+      [0.1, 1.5],
+      [0.3, 1.3],
+      [0.5, 1.0],
+      [0.7, 0.8],
+      [0.9, 0.5],
+      [1.0, 0.5],
     ];
     const s = Math.max(0, Math.min(1, stability));
     for (let i = 0; i < bp.length - 1; i++) {
@@ -396,11 +401,16 @@ export class VelgZoneList extends LitElement {
 
   private _riskLabel(tier: string): string {
     switch (tier) {
-      case 'low': return msg('LOW');
-      case 'medium': return msg('MEDIUM');
-      case 'high': return msg('HIGH');
-      case 'critical': return msg('CRITICAL');
-      default: return msg('UNKNOWN');
+      case 'low':
+        return msg('LOW');
+      case 'medium':
+        return msg('MEDIUM');
+      case 'high':
+        return msg('HIGH');
+      case 'critical':
+        return msg('CRITICAL');
+      default:
+        return msg('UNKNOWN');
     }
   }
 
@@ -424,8 +434,10 @@ export class VelgZoneList extends LitElement {
     const multiplier = this._eventMultiplier(stability.stability);
     const tier = this._riskTier(multiplier);
     const riskHint =
-      tier === 'critical' ? msg('Fortify to reduce pressure')
-        : tier === 'high' ? msg('Consider zone fortification')
+      tier === 'critical'
+        ? msg('Fortify to reduce pressure')
+        : tier === 'high'
+          ? msg('Consider zone fortification')
           : '';
 
     return html`

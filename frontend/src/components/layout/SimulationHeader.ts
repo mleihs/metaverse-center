@@ -236,11 +236,16 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
   private _getStatusLabel(status: string): string {
     switch (status) {
-      case 'active': return msg('active');
-      case 'draft': return msg('draft');
-      case 'configuring': return msg('configuring');
-      case 'archived': return msg('archived');
-      default: return status;
+      case 'active':
+        return msg('active');
+      case 'draft':
+        return msg('draft');
+      case 'configuring':
+        return msg('configuring');
+      case 'archived':
+        return msg('archived');
+      default:
+        return status;
     }
   }
 

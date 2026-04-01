@@ -1,16 +1,16 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { adminApi } from '../../services/api/index.js';
 import type { HealthEffectsSimulation } from '../../services/api/AdminApiService.js';
-import { VelgToast } from '../shared/Toast.js';
+import { adminApi } from '../../services/api/index.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {
   adminAnimationStyles,
-  adminSectionHeaderStyles,
   adminGlobalCardStyles,
   adminLoadingStyles,
+  adminSectionHeaderStyles,
 } from './admin-shared-styles.js';
 
 @localized()
@@ -291,9 +291,7 @@ export class VelgAdminHealthTab extends LitElement {
     const result = await adminApi.updateSimulationHealthEffects(simId, newVal);
     if (result.success) {
       VelgToast.success(
-        newVal
-          ? msg('Effects enabled for simulation.')
-          : msg('Effects suppressed for simulation.'),
+        newVal ? msg('Effects enabled for simulation.') : msg('Effects suppressed for simulation.'),
       );
       await this._loadData();
     } else {
@@ -364,8 +362,9 @@ export class VelgAdminHealthTab extends LitElement {
         </h2>
       </div>
 
-      ${this._simulations.length > 0
-        ? html`
+      ${
+        this._simulations.length > 0
+          ? html`
             <div class="filter-bar">
               <input
                 class="filter-bar__input"
@@ -382,19 +381,22 @@ export class VelgAdminHealthTab extends LitElement {
               </span>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${filtered.length === 0
-        ? html`<div class="empty">${
-            this._simulations.length === 0
-              ? msg('No active simulations found.')
-              : msg('No simulations match the filter.')
-          }</div>`
-        : html`
+      ${
+        filtered.length === 0
+          ? html`<div class="empty">${
+              this._simulations.length === 0
+                ? msg('No active simulations found.')
+                : msg('No simulations match the filter.')
+            }</div>`
+          : html`
             <div class="sim-grid">
               ${filtered.map((sim) => this._renderSimCard(sim))}
             </div>
-          `}
+          `
+      }
     `;
   }
 
@@ -429,17 +431,21 @@ export class VelgAdminHealthTab extends LitElement {
 
         <div class="sim-card__footer">
           <span class="badge badge--${ts}">
-            ${ts === 'critical'
-              ? msg('Critical')
-              : ts === 'ascendant'
-                ? msg('Ascendant')
-                : msg('Normal')}
+            ${
+              ts === 'critical'
+                ? msg('Critical')
+                : ts === 'ascendant'
+                  ? msg('Ascendant')
+                  : msg('Normal')
+            }
           </span>
 
           <div class="sim-card__toggle-area">
-            ${isDisabledGlobally
-              ? html`<span class="sim-card__disabled-hint">${msg('Globally Disabled')}</span>`
-              : nothing}
+            ${
+              isDisabledGlobally
+                ? html`<span class="sim-card__disabled-hint">${msg('Globally Disabled')}</span>`
+                : nothing
+            }
             <velg-toggle
               variant="scif"
               .checked=${sim.effects_enabled}
