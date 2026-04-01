@@ -20,9 +20,11 @@ import { dungeonState } from '../../services/DungeonStateManager.js';
 import {
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
+  ARCHETYPE_PROMETHEUS,
   ARCHETYPE_TOWER,
   isEntropyState,
   isMotherState,
+  isPrometheusState,
   isShadowState,
   isTowerState,
 } from '../../types/dungeon.js';
@@ -414,6 +416,130 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Insight Gauge (archetype-specific: Prometheus) ── */
+      .insight {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .insight__icon {
+        display: inline-flex;
+        color: var(--_phosphor-dim);
+      }
+
+      .insight__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+        min-width: 22px;
+        text-align: right;
+      }
+
+      .insight__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--_phosphor) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .insight__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out, background 0.5s ease;
+      }
+
+      /* Cold Forge: 0-19 — dormant, blue-grey dim */
+      .insight__fill--cold {
+        background: color-mix(in srgb, var(--_phosphor-dim) 60%, var(--color-info, #60a5fa));
+      }
+
+      /* Warming: 20-44 — standard amber phosphor */
+      .insight__fill--warming {
+        background: var(--_phosphor);
+      }
+
+      /* Inspired: 45-74 — warm orange-gold */
+      .insight__fill--inspired {
+        background: var(--color-warning, #fb923c);
+      }
+
+      /* Feverish: 75-99 — hot orange-red with glow */
+      .insight__fill--feverish {
+        background: color-mix(in srgb, var(--color-danger, #f87171) 50%, var(--color-warning, #fb923c));
+      }
+
+      .insight__label--feverish {
+        color: color-mix(in srgb, var(--color-danger) 50%, var(--color-warning));
+        font-weight: 700;
+      }
+
+      /* Breakthrough: 100 — white-hot, dramatic */
+      .insight__fill--breakthrough {
+        background: color-mix(in srgb, var(--color-danger, #f87171) 30%, var(--color-warning, #fbbf24));
+      }
+
+      .insight__label--breakthrough {
+        color: var(--color-danger);
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      /* Component and crafted item badges */
+      .insight__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--_phosphor-dim);
+        padding: 1px 5px;
+        border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+      }
+
+      .insight__badge--crafted {
+        color: var(--color-warning, #fb923c);
+        border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .insight__fill--feverish {
+          animation: forge-pulse 2s ease-in-out infinite;
+        }
+
+        .insight__fill--breakthrough {
+          animation: forge-blaze 1.2s ease-in-out infinite;
+        }
+
+        .insight__label--breakthrough {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes forge-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      @keyframes forge-blaze {
+        0%,
+        100% {
+          opacity: 1;
+          filter: brightness(1);
+        }
+        50% {
+          opacity: 0.85;
+          filter: brightness(1.3);
+        }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -454,13 +580,16 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const isTower = state.archetype === ARCHETYPE_TOWER;
     const isEntropy = state.archetype === ARCHETYPE_ENTROPY;
     const isMother = state.archetype === ARCHETYPE_MOTHER;
+    const isPrometheus = state.archetype === ARCHETYPE_PROMETHEUS;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
       : isEntropy
         ? 'var(--color-success, #4ade80)'
         : isMother
           ? 'color-mix(in srgb, var(--color-warning, #fb923c) 80%, var(--color-danger, #f87171))'
-          : 'var(--color-info, #a78bfa)';
+          : isPrometheus
+            ? 'color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171))'
+            : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -473,6 +602,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const towerState = isTowerState(archState) ? archState : null;
     const entropyState = isEntropyState(archState) ? archState : null;
     const motherState = isMotherState(archState) ? archState : null;
+    const prometheusState = isPrometheusState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
@@ -481,6 +611,10 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const maxDecay = entropyState?.max_decay ?? null;
     const attachment = motherState?.attachment ?? null;
     const maxAttachment = motherState?.max_attachment ?? null;
+    const insight = prometheusState?.insight ?? null;
+    const maxInsight = prometheusState?.max_insight ?? null;
+    const componentCount = prometheusState?.components?.length ?? 0;
+    const craftedCount = prometheusState?.crafted_items?.length ?? 0;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -621,6 +755,54 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                           ? 'attachment__label--dependent'
                           : ''}">${attachment >= 100 ? msg('HOME') : attachment}</span>
               </div>
+            `
+          : nothing}
+        ${insight !== null && maxInsight !== null
+          ? html`
+              <span class="sep"></span>
+              <div class="insight" aria-label=${msg('Insight') + ` ${insight}/${maxInsight}`}>
+                <span class="insight__icon">${icons.bolt(12)}</span>
+                <div
+                  class="insight__track"
+                  role="progressbar"
+                  aria-valuenow=${insight}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxInsight}
+                  aria-label=${msg('Creative insight')}
+                >
+                  <div
+                    class="insight__fill ${insight >= 100
+                      ? 'insight__fill--breakthrough'
+                      : insight >= 75
+                        ? 'insight__fill--feverish'
+                        : insight >= 45
+                          ? 'insight__fill--inspired'
+                          : insight >= 20
+                            ? 'insight__fill--warming'
+                            : 'insight__fill--cold'}"
+                    style="transform: scaleX(${maxInsight > 0 ? insight / maxInsight : 0})"
+                  ></div>
+                </div>
+                <span class="insight__label ${insight >= 100
+                      ? 'insight__label--breakthrough'
+                      : insight >= 75
+                        ? 'insight__label--feverish'
+                        : ''}">${insight >= 100 ? msg('FIRE') : insight}</span>
+              </div>
+              ${componentCount > 0
+                ? html`
+                    <span class="insight__badge" aria-label=${msg('Components') + ` ${componentCount}`}>
+                      ${icons.sparkle(10)}${componentCount}
+                    </span>
+                  `
+                : nothing}
+              ${craftedCount > 0
+                ? html`
+                    <span class="insight__badge insight__badge--crafted" aria-label=${msg('Crafted items') + ` ${craftedCount}`}>
+                      ${icons.archetypePrometheus(10)}${craftedCount}
+                    </span>
+                  `
+                : nothing}
             `
           : nothing}
       </div>

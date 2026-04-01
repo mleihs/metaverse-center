@@ -479,11 +479,15 @@ class TestCheckpointRoundTrip:
             "room_cleared_flags",
             "room_revealed_flags",
             "room_scouted_flags",
+            "room_encounter_ids",
             "used_banter_ids",
             "phase_timer",
             "loot_assignments",
             "auto_apply_loot",
             "pending_loot",
+            "anchor_objects",
+            "anchor_phases_shown",
+            "last_barometer_tier",
         }
         assert set(checkpoint.keys()) == expected_keys
 

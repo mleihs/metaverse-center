@@ -435,7 +435,7 @@ class TestCreateRun:
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
-                await DungeonEngineService.create_run(mock_sb, mock_sb, uuid4(), uuid4(), body)
+                await DungeonEngineService.create_run(mock_sb, uuid4(), uuid4(), body)
             assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -452,7 +452,7 @@ class TestCreateRun:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.create_run(mock_sb, mock_sb, uuid4(), uuid4(), body)
+            await DungeonEngineService.create_run(mock_sb, uuid4(), uuid4(), body)
         assert exc_info.value.status_code == 400
         assert "not found" in exc_info.value.detail.lower()
 
@@ -460,7 +460,6 @@ class TestCreateRun:
     async def test_successful_creation(self, noop_checkpoint, noop_timer):
         """Full happy path: RPC → graph → DB insert → in-memory → checkpoint."""
         admin_sb = MagicMock()
-        user_sb = MagicMock()
 
         agent1_id = uuid4()
         agent2_id = uuid4()
@@ -520,7 +519,7 @@ class TestCreateRun:
             difficulty=3,
         )
 
-        result = await DungeonEngineService.create_run(admin_sb, user_sb, sim_id, user_id, body)
+        result = await DungeonEngineService.create_run(admin_sb, sim_id, user_id, body)
 
         # Verify result structure
         assert "run" in result
@@ -540,7 +539,6 @@ class TestCreateRun:
     async def test_shadow_archetype_state_initialized(self, noop_checkpoint, noop_timer):
         """Shadow archetype starts with visibility mechanic state."""
         admin_sb = MagicMock()
-        user_sb = MagicMock()
         agent1_id = uuid4()
         agent2_id = uuid4()
         run_id = uuid4()
@@ -563,7 +561,7 @@ class TestCreateRun:
         admin_sb.table.return_value = insert_chain
 
         body = DungeonRunCreate(archetype="The Shadow", party_agent_ids=[agent1_id, agent2_id], difficulty=1)
-        await DungeonEngineService.create_run(admin_sb, user_sb, sim_id, uuid4(), body)
+        await DungeonEngineService.create_run(admin_sb, sim_id, uuid4(), body)
 
         instance = _active_instances[str(run_id)]
         assert "visibility" in instance.archetype_state
@@ -1277,9 +1275,12 @@ class TestRetreat:
 
 class TestGetAvailableDungeons:
     @pytest.mark.asyncio
-    async def test_returns_available_dungeons(self):
+    @patch.object(DungeonEngineService, "_get_global_dungeon_override", return_value=("off", set()))
+    async def test_returns_available_dungeons(self, _mock_global):
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data=[
+
+        # available_dungeons query returns resonance data
+        dungeons_chain = make_chain_mock(execute_data=[
             {
                 "archetype": "The Shadow",
                 "signature": "shadow_conflict",
@@ -1293,20 +1294,36 @@ class TestGetAvailableDungeons:
                 "available": True,
             },
         ])
-        mock_sb.table.return_value = chain
+        # simulation_settings override query returns no data
+        override_chain = make_chain_mock(execute_data=None)
+
+        # Route table calls to the correct mock chain
+        def _table_side_effect(name):
+            if name == "available_dungeons":
+                return dungeons_chain
+            return override_chain
+
+        mock_sb.table.side_effect = _table_side_effect
 
         result = await DungeonEngineService.get_available_dungeons(mock_sb, uuid4())
 
         assert len(result) == 1
         assert result[0].archetype == "The Shadow"
         assert result[0].magnitude == 0.7
-        mock_sb.table.assert_called_with("available_dungeons")
 
     @pytest.mark.asyncio
-    async def test_returns_empty_for_no_matches(self):
+    @patch.object(DungeonEngineService, "_get_global_dungeon_override", return_value=("off", set()))
+    async def test_returns_empty_for_no_matches(self, _mock_global):
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data=[])
-        mock_sb.table.return_value = chain
+        dungeons_chain = make_chain_mock(execute_data=[])
+        override_chain = make_chain_mock(execute_data=None)
+
+        def _table_side_effect(name):
+            if name == "available_dungeons":
+                return dungeons_chain
+            return override_chain
+
+        mock_sb.table.side_effect = _table_side_effect
 
         result = await DungeonEngineService.get_available_dungeons(mock_sb, uuid4())
         assert result == []
@@ -1328,7 +1345,7 @@ class TestRecoverFromCheckpoint:
     @pytest.mark.asyncio
     async def test_no_checkpoint_state_returns_none(self):
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data={
+        chain = make_chain_mock(execute_data=[{
             "id": str(uuid4()),
             "simulation_id": str(uuid4()),
             "archetype": "The Shadow",
@@ -1337,7 +1354,7 @@ class TestRecoverFromCheckpoint:
             "config": {"rooms": [{"index": 0, "depth": 0, "room_type": "entrance", "connections": [1]}]},
             "checkpoint_state": None,
             "party_player_ids": [],
-        })
+        }])
         mock_sb.table.return_value = chain
 
         result = await DungeonEngineService.recover_from_checkpoint(mock_sb, uuid4())
@@ -1363,7 +1380,7 @@ class TestRecoverFromCheckpoint:
         }
 
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data={
+        chain = make_chain_mock(execute_data=[{
             "id": str(run_id),
             "simulation_id": str(sim_id),
             "archetype": "The Shadow",
@@ -1372,7 +1389,7 @@ class TestRecoverFromCheckpoint:
             "config": {"rooms": rooms_data},
             "checkpoint_state": checkpoint,
             "party_player_ids": [],
-        })
+        }])
         mock_sb.table.return_value = chain
 
         result = await DungeonEngineService.recover_from_checkpoint(mock_sb, run_id)

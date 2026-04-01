@@ -19,6 +19,7 @@ export const ARCHETYPE_SHADOW = 'The Shadow';
 export const ARCHETYPE_TOWER = 'The Tower';
 export const ARCHETYPE_ENTROPY = 'The Entropy';
 export const ARCHETYPE_MOTHER = 'The Devouring Mother';
+export const ARCHETYPE_PROMETHEUS = 'The Prometheus';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -144,12 +145,43 @@ export interface MotherArchetypeState {
   max_attachment: number;
 }
 
-/** Archetype-specific state. Shadow, Tower, Entropy, and Mother have typed shapes; others are empty objects. */
+/** Component held in the Prometheus workshop inventory. */
+export interface PrometheusComponent {
+  id: string;
+  name_en: string;
+  name_de: string;
+  /** Material category: metal, fluid, crystal, powder, energy. */
+  type: string;
+}
+
+/** Crafted item produced by combining components (pharmakon: benefit + cost). */
+export interface PrometheusCraftedItem {
+  id: string;
+  name_en: string;
+  name_de: string;
+  benefit_en: string;
+  benefit_de: string;
+  cost_en: string;
+  cost_de: string;
+}
+
+/** Prometheus archetype: crafting insight mechanic (0→100, pharmakon accumulation). */
+export interface PrometheusArchetypeState {
+  insight: number;
+  max_insight: number;
+  components: PrometheusComponent[];
+  crafted_items: PrometheusCraftedItem[];
+  total_crafted: number;
+  failed_crafts: number;
+}
+
+/** Archetype-specific state. Shadow, Tower, Entropy, Mother, and Prometheus have typed shapes; others are empty objects. */
 export type ArchetypeState =
   | ShadowArchetypeState
   | TowerArchetypeState
   | EntropyArchetypeState
   | MotherArchetypeState
+  | PrometheusArchetypeState
   | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
@@ -170,6 +202,11 @@ export function isEntropyState(state: ArchetypeState): state is EntropyArchetype
 /** Type guard: narrows ArchetypeState to MotherArchetypeState. */
 export function isMotherState(state: ArchetypeState): state is MotherArchetypeState {
   return 'attachment' in state && typeof state.attachment === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to PrometheusArchetypeState. */
+export function isPrometheusState(state: ArchetypeState): state is PrometheusArchetypeState {
+  return 'insight' in state && typeof state.insight === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────
@@ -493,6 +530,11 @@ export interface EncounterChoiceResponse {
   narrative_en: string;
   narrative_de: string;
   state: DungeonClientState;
+  /** Boss deployment → combat transition fields (Prometheus). */
+  combat?: boolean;
+  is_ambush?: boolean;
+  encounter_description_en?: string;
+  encounter_description_de?: string;
 }
 
 /** Detailed skill check breakdown. */

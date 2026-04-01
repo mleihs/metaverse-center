@@ -97,6 +97,29 @@ class ArchetypeStrategy(ABC):
         """
         return None
 
+    def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
+        """Generate dynamic pre-combat deployment choices for boss room.
+
+        Called when entering a boss room. If non-empty, the engine shows an
+        encounter phase with these choices before starting combat.
+        Default: ``None`` (no pre-combat deployment — normal boss combat).
+
+        Returns a list of dicts compatible with ``_format_encounter_choices``
+        or ``None`` to skip deployment entirely.
+        """
+        return None
+
+    def modify_enemy_templates(
+        self, instance: DungeonInstance, templates: dict[str, dict],
+    ) -> dict[str, dict]:
+        """Modify enemy template dicts before combat resolution.
+
+        Called after ``get_enemy_templates_dict()`` which returns fresh
+        ``model_dump()`` copies — safe to mutate in place.
+        Default: no-op (return unchanged).
+        """
+        return templates
+
 
 # ── Shadow Strategy ────────────────────────────────────────────────────────
 
@@ -450,6 +473,314 @@ class DevouringMotherStrategy(ArchetypeStrategy):
                 agent.stress = max(0, agent.stress - heal)
 
 
+# ── Prometheus Strategy ───────────────────────────────────────────────────
+
+class PrometheusStrategy(ArchetypeStrategy):
+    """The Prometheus: Crafting insight mechanic (0→100, pharmakon accumulation).
+
+    Insight is BOTH resource and threat — the pharmakon principle made
+    mechanical. High insight enables powerful crafting (encounter-based
+    combination system) but amplifies ambient stress. The party WANTS
+    high insight for crafting power and FEARS it for survival.
+
+    Unique to Prometheus:
+        - archetype_state carries ``components`` (list) and ``crafted_items`` (list)
+          alongside the primary ``insight`` gauge
+        - ``apply_encounter_effects()`` handles custom keys: ``insight``,
+          ``add_component``, ``remove_components``, ``add_crafted_item``
+        - Enemy hits and combat rounds DRAIN insight (disruption),
+          inverting Entropy's contagion-accumulation pattern
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "insight": self.mechanic_config["start_insight"],
+            "max_insight": self.mechanic_config["max_insight"],
+            "components": [],
+            "crafted_items": [],
+            "total_crafted": 0,
+            "failed_crafts": 0,
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Accumulate insight on room entry — the workshop reveals itself.
+
+        Insight rises with depth (Bachelard's fire spreads). Returns
+        banter trigger at threshold crossings for procedural narration.
+        """
+        prev_insight = instance.archetype_state.get("insight", 0)
+        self._apply_room_entry_gain(instance)
+        insight = instance.archetype_state.get("insight", 0)
+
+        # Trigger only on CROSSING a threshold, not every room at that level
+        if insight >= self.mechanic_config["breakthrough_threshold"]:
+            if prev_insight < self.mechanic_config["breakthrough_threshold"]:
+                return "insight_breakthrough"
+            return None
+        if insight >= self.mechanic_config["feverish_threshold"]:
+            if prev_insight < self.mechanic_config["feverish_threshold"]:
+                return "insight_feverish"
+            return None
+        if insight >= self.mechanic_config["inspired_threshold"]:
+            if prev_insight < self.mechanic_config["inspired_threshold"]:
+                return "insight_inspired"
+            return None
+        if insight < self.mechanic_config["cold_forge_threshold"]:
+            return "insight_cold"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        """Insight changes on restore events.
+
+        combat_victory / treasure / scout → gain insight (studying, discovering)
+        rest → REDUCE insight (the fire cools — Jünger's elegiac register)
+        """
+        if event == "rest":
+            # Rest deliberately reduces insight: the forge cools, the party
+            # breathes. This creates meaningful rest-room decisions — rest
+            # heals stress but costs crafting potential.
+            instance.archetype_state["insight"] = max(
+                0,
+                instance.archetype_state.get("insight", 0)
+                - self.mechanic_config["reduce_on_rest"],
+            )
+            return
+
+        gain_key = {
+            "combat_victory": "gain_on_combat_win",
+            "treasure": "gain_on_treasure",
+        }.get(event)
+        if gain_key and self.mechanic_config.get(gain_key):
+            instance.archetype_state["insight"] = min(
+                self.mechanic_config["max_insight"],
+                instance.archetype_state.get("insight", 0)
+                + self.mechanic_config[gain_key],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        """Apply encounter choice effects including Prometheus-specific keys.
+
+        Standard key:
+            ``insight`` (int) — direct delta to insight gauge
+
+        Crafting keys (set by workshop encounter choices):
+            ``add_component`` (dict)      — component to add to inventory
+            ``remove_components`` (list)   — component IDs consumed by crafting
+            ``add_crafted_item`` (dict)    — crafted item to add to inventory
+            ``craft_failed`` (bool)        — increment failed_crafts counter
+        """
+        state = instance.archetype_state
+        max_insight = self.mechanic_config["max_insight"]
+
+        # ── Insight delta ──
+        insight_delta = effects.get("insight", 0)
+        if insight_delta:
+            state["insight"] = max(
+                0, min(max_insight, state.get("insight", 0) + insight_delta),
+            )
+
+        # ── Component acquisition ──
+        component = effects.get("add_component")
+        if component and isinstance(component, dict):
+            components = state.get("components", [])
+            max_comp = self.mechanic_config.get("max_components", 8)
+            if len(components) < max_comp:
+                components.append(component)
+                state["components"] = components
+
+        # ── Component consumption (crafting) ──
+        remove_ids = effects.get("remove_components")
+        if remove_ids and isinstance(remove_ids, list):
+            components = state.get("components", [])
+            state["components"] = [
+                c for c in components if c.get("id") not in remove_ids
+            ]
+
+        # ── Crafted item creation ──
+        crafted_item = effects.get("add_crafted_item")
+        if crafted_item and isinstance(crafted_item, dict):
+            crafted = state.get("crafted_items", [])
+            max_crafted = self.mechanic_config.get("max_crafted_items", 6)
+            if len(crafted) < max_crafted:
+                crafted.append(crafted_item)
+                state["crafted_items"] = crafted
+            state["total_crafted"] = state.get("total_crafted", 0) + 1
+            # Creative momentum: successful craft boosts insight
+            state["insight"] = min(
+                max_insight,
+                state.get("insight", 0)
+                + self.mechanic_config.get("gain_on_craft_success", 8),
+            )
+
+        # ── Failed craft tracking ──
+        if effects.get("craft_failed"):
+            state["failed_crafts"] = state.get("failed_crafts", 0) + 1
+            # Lem: "the residue is interesting" — failed crafts still teach
+            state["insight"] = min(
+                max_insight,
+                state.get("insight", 0)
+                + self.mechanic_config.get("gain_on_craft_fail", 4),
+            )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        """The pharmakon: high insight amplifies stress (the fire burns).
+
+        Thresholds mirror Entropy's scaling but represent a fundamentally
+        different tension — the party CHOSE to push insight high for
+        crafting power, knowing the stress cost.
+        """
+        insight = instance.archetype_state.get("insight", 0)
+        if insight >= self.mechanic_config["breakthrough_threshold"]:
+            return self.mechanic_config.get("breakthrough_stress_multiplier", 2.0)
+        if insight >= 90:
+            return self.mechanic_config.get("stress_multiplier_90", 1.50)
+        if insight >= self.mechanic_config["feverish_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_75", 1.25)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        """Combat disrupts creative focus — insight drains per round.
+
+        Inverts Entropy's per-round accumulation. In Prometheus, combat
+        is COSTLY because it disrupts the forge-trance (Bachelard).
+        """
+        instance.archetype_state["insight"] = max(
+            0,
+            instance.archetype_state.get("insight", 0)
+            - self.mechanic_config["drain_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        """Confusion breaks the creative flow — insight drains on failed checks."""
+        instance.archetype_state["insight"] = max(
+            0,
+            instance.archetype_state.get("insight", 0)
+            - self.mechanic_config["drain_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Physical disruption scatters creative focus — insight drains per hit.
+
+        Inverts Entropy's contagion-accumulation: enemy contact DISRUPTS
+        rather than spreading. Guardian protection becomes critical for
+        maintaining crafting momentum.
+        """
+        instance.archetype_state["insight"] = max(
+            0,
+            instance.archetype_state.get("insight", 0)
+            - self.mechanic_config["drain_per_enemy_hit"],
+        )
+
+    def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
+        """Generate pre-combat deployment choices from crafted items inventory.
+
+        Each crafted item with a ``boss_effect`` becomes a deployment choice.
+        Items are NOT consumed — they can be re-deployed with diminishing
+        returns (spec §3.6: "using the same crafted item twice has
+        diminishing returns").
+
+        Returns ``None`` if no crafted items available (skip deployment,
+        proceed directly to combat).
+        """
+        crafted_items = instance.archetype_state.get("crafted_items", [])
+        if not crafted_items:
+            return None
+
+        boss_debuffs: list[dict] = instance.archetype_state.get("_boss_debuffs", [])
+        choices: list[dict] = []
+
+        for item in crafted_items:
+            if not item.get("boss_effect"):
+                continue
+            item_id = item["id"]
+            deploy_count = sum(1 for d in boss_debuffs if d["item_id"] == item_id)
+            # Diminishing returns label
+            suffix_en = ""
+            suffix_de = ""
+            if deploy_count > 0:
+                effectiveness = int(100 * (0.5 ** deploy_count))
+                suffix_en = f" [{effectiveness}% effectiveness]"
+                suffix_de = f" [{effectiveness}% Wirksamkeit]"
+
+            choices.append({
+                "id": f"deploy_{item_id}",
+                "label_en": f"Deploy: {item['name_en']}{suffix_en}",
+                "label_de": f"Einsetzen: {item['name_de']}{suffix_de}",
+                "requires_aptitude": None,
+                "check_aptitude": None,
+                "check_difficulty": 0,
+            })
+
+        if not choices:
+            return None
+
+        choices.append({
+            "id": "begin_combat",
+            "label_en": "Enough preparation. Engage The Prototype.",
+            "label_de": "Genug Vorbereitung. Den Prototypen angreifen.",
+            "requires_aptitude": None,
+            "check_aptitude": None,
+            "check_difficulty": 0,
+        })
+        return choices
+
+    def modify_enemy_templates(
+        self, instance: DungeonInstance, templates: dict[str, dict],
+    ) -> dict[str, dict]:
+        """Apply boss debuffs from pre-combat crafted item deployment.
+
+        Effective values are pre-computed at deploy time with diminishing
+        returns: ``base_value * 0.5^(n-1)`` where *n* is the deploy count
+        for that item.
+        """
+        boss_debuffs: list[dict] = instance.archetype_state.get("_boss_debuffs", [])
+        if not boss_debuffs:
+            return templates
+
+        boss_key = "prometheus_the_prototype"
+        if boss_key not in templates:
+            return templates
+
+        boss = templates[boss_key]
+        for debuff in boss_debuffs:
+            eff_val = debuff["effective_value"]
+            match debuff["effect_type"]:
+                case "add_vulnerability":
+                    school = debuff.get("school")
+                    if school:
+                        vulns: list[str] = boss.get("vulnerabilities", [])
+                        if school not in vulns:
+                            vulns.append(school)
+                        boss["vulnerabilities"] = vulns
+                case "reduce_evasion":
+                    boss["evasion"] = max(0, boss.get("evasion", 0) - int(eff_val))
+                case "reduce_attack_power":
+                    boss["attack_power"] = max(1, boss.get("attack_power", 3) - int(eff_val))
+                case "reduce_stress_attack":
+                    boss["stress_attack_power"] = max(
+                        1, boss.get("stress_attack_power", 3) - int(eff_val),
+                    )
+        return templates
+
+    def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
+        """Insight gain per room entry: +4/+7/+10 by depth tier.
+
+        The workshop reveals itself progressively (Schulz: matter sends
+        'dull shivers' through itself, attempting forms on its own).
+        """
+        depth = instance.depth
+        if depth <= 2:
+            gain = self.mechanic_config["gain_depth_1_2"]
+        elif depth <= 4:
+            gain = self.mechanic_config["gain_depth_3_4"]
+        else:
+            gain = self.mechanic_config["gain_depth_5_plus"]
+        instance.archetype_state["insight"] = min(
+            self.mechanic_config["max_insight"],
+            instance.archetype_state.get("insight", 0) + gain,
+        )
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
@@ -458,6 +789,7 @@ _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Tower": TowerStrategy(ARCHETYPE_CONFIGS["The Tower"]),
     "The Entropy": EntropyStrategy(ARCHETYPE_CONFIGS["The Entropy"]),
     "The Devouring Mother": DevouringMotherStrategy(ARCHETYPE_CONFIGS["The Devouring Mother"]),
+    "The Prometheus": PrometheusStrategy(ARCHETYPE_CONFIGS["The Prometheus"]),
 }
 
 

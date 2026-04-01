@@ -344,6 +344,85 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
             ),
         },
     ],
+    # ── The Prometheus ────────────────────────────────────────────────────
+    "The Prometheus": [
+        {
+            "text_en": (
+                "The threshold does not yield. It opens. Deliberately."
+                " Beyond it, the air is warm and charged with potential."
+                " Tools line the walls in arrangements that suggest use, not storage."
+                " The workshop has been expecting someone."
+            ),
+            "text_de": (
+                "Die Schwelle gibt nicht nach. Sie öffnet sich. Absichtlich."
+                " Dahinter ist die Luft warm und geladen mit Potential."
+                " Werkzeuge säumen die Wände in Anordnungen, die Benutzung suggerieren, nicht Lagerung."
+                " Die Werkstatt hat jemanden erwartet."
+            ),
+        },
+        {
+            "text_en": (
+                "Heat. Not the heat of fire \u2013 the heat of process."
+                " The air smells of ozone and possibility."
+                " Somewhere deeper, metal rings against metal."
+                " Not randomly. Rhythmically. A heartbeat made of industry."
+            ),
+            "text_de": (
+                "Hitze. Nicht die Hitze von Feuer \u2013 die Hitze von Prozess."
+                " Die Luft riecht nach Ozon und Möglichkeit."
+                " Irgendwo tiefer klingt Metall gegen Metall."
+                " Nicht zufällig. Rhythmisch. Ein Herzschlag aus Industrie."
+            ),
+        },
+        {
+            "text_en": (
+                "The descent into the workshop begins with a question"
+                " written on the lintel in a script older than the stone:"
+                " 'What do you intend to make?'"
+                " The party has no answer yet."
+                " The workshop will provide the materials for one."
+            ),
+            "text_de": (
+                "Der Abstieg in die Werkstatt beginnt mit einer Frage,"
+                " die am Türsturz steht, in einer Schrift, älter als der Stein:"
+                " \u00bbWas beabsichtigt ihr herzustellen?\u00ab"
+                " Der Trupp hat noch keine Antwort."
+                " Die Werkstatt wird die Materialien für eine liefern."
+            ),
+        },
+        {
+            "text_en": (
+                "The first room is a catalogue of components."
+                " Not displayed \u2013 arranged. Each material in its place,"
+                " each place chosen by a logic that makes no sense"
+                " until you pick something up and feel where it wants to go."
+                " The workshop teaches through inventory."
+            ),
+            "text_de": (
+                "Der erste Raum ist ein Katalog von Komponenten."
+                " Nicht ausgestellt \u2013 arrangiert. Jedes Material an seinem Platz,"
+                " jeder Platz gewählt nach einer Logik, die keinen Sinn ergibt,"
+                " bis man etwas aufnimmt und spürt, wohin es will."
+                " Die Werkstatt lehrt durch Inventar."
+            ),
+        },
+        {
+            "text_en": (
+                "A forge-glow illuminates the entrance."
+                " Not from a furnace \u2013 from the walls themselves."
+                " The workshop provides its own light, its own heat,"
+                " its own purpose. All it lacks is hands."
+                " Yours will do."
+            ),
+            "text_de": (
+                "Ein Schmiedeglühen beleuchtet den Eingang."
+                " Nicht von einem Ofen \u2013 von den Wänden selbst."
+                " Die Werkstatt liefert ihr eigenes Licht, ihre eigene Hitze,"
+                " ihren eigenen Zweck. Alles, was ihr fehlt, sind Hände."
+                " Eure werden genügen."
+            ),
+        },
+    ],
 }
 
 
@@ -2224,6 +2303,238 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             },
         },
     ],
+    # ── The Prometheus ────────────────────────────────────────────────────
+    # Literary rule: Schulz matter-with-agency — the object transforms
+    # itself, develops preferences, attempts forms on its own.
+    "The Prometheus": [
+        {
+            "id": "prometheus_tool",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A tool. Not a tool you recognize \u2013 a tool for something"
+                        " that has not been invented yet. It fits the hand"
+                        " uncomfortably well."
+                    ),
+                    "text_de": (
+                        "Ein Werkzeug. Kein Werkzeug, das ihr erkennt \u2013"
+                        " ein Werkzeug für etwas, das noch nicht erfunden wurde."
+                        " Es liegt unbequem gut in der Hand."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "The tool again. {agent} picks it up. It has changed \u2013"
+                        " the handle is warmer, the edge sharper."
+                        " It has been practicing."
+                    ),
+                    "text_de": (
+                        "Das Werkzeug wieder. {agent} hebt es auf."
+                        " Es hat sich verändert \u2013 der Griff ist wärmer,"
+                        " die Kante schärfer. Es hat geübt."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The tool has split into three."
+                        " Each version is optimized for a different task."
+                        " They arranged themselves on the workbench"
+                        " in order of increasing ambition."
+                    ),
+                    "text_de": (
+                        "Das Werkzeug hat sich in drei geteilt."
+                        " Jede Version ist für eine andere Aufgabe optimiert."
+                        " Sie haben sich auf der Werkbank angeordnet,"
+                        " in Reihenfolge zunehmender Ambition."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The tool is gone. In its place: a finished thing."
+                        " Not what the party built \u2013 what the tool built"
+                        " using itself as material."
+                    ),
+                    "text_de": (
+                        "Das Werkzeug ist weg. An seiner Stelle: ein fertiges Ding."
+                        " Nicht was der Trupp gebaut hat \u2013 was das Werkzeug"
+                        " gebaut hat, mit sich selbst als Material."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_blueprint",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A blueprint, pinned to the wall."
+                        " The design is for something elegant"
+                        " and impossible. The measurements are in a unit"
+                        " that does not exist."
+                    ),
+                    "text_de": (
+                        "Eine Blaupause, an die Wand geheftet."
+                        " Der Entwurf ist für etwas Elegantes"
+                        " und Unmögliches. Die Maße sind in einer Einheit,"
+                        " die es nicht gibt."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "{agent} finds the blueprint again."
+                        " The design has been annotated."
+                        " The annotations are in {agent}'s handwriting."
+                        " {agent} does not remember writing them."
+                    ),
+                    "text_de": (
+                        "{agent} findet die Blaupause wieder."
+                        " Der Entwurf wurde annotiert."
+                        " Die Anmerkungen sind in {agent}s Handschrift."
+                        " {agent} erinnert sich nicht, sie geschrieben zu haben."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The blueprint has folded itself into a three-dimensional"
+                        " model. It rotates slowly in the air,"
+                        " demonstrating its own construction sequence."
+                    ),
+                    "text_de": (
+                        "Die Blaupause hat sich zu einem dreidimensionalen"
+                        " Modell gefaltet. Es rotiert langsam in der Luft"
+                        " und demonstriert seine eigene Konstruktionssequenz."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The model is building itself."
+                        " Layer by layer, from the inside out."
+                        " It does not need the party."
+                        " It never needed the party."
+                    ),
+                    "text_de": (
+                        "Das Modell baut sich selbst."
+                        " Schicht für Schicht, von innen nach außen."
+                        " Es braucht den Trupp nicht."
+                        " Es hat den Trupp nie gebraucht."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_crucible_fragment",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A shard of a crucible. Still warm."
+                        " Inside, residue of an alloy that does not exist"
+                        " in any catalogue."
+                    ),
+                    "text_de": (
+                        "Eine Scherbe eines Tiegels. Noch warm."
+                        " Darin: Rückstände einer Legierung, die in keinem"
+                        " Katalog existiert."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "The shard is larger now. Or {agent} is remembering it"
+                        " differently. The residue inside has crystallized"
+                        " into a pattern that looks like instructions."
+                    ),
+                    "text_de": (
+                        "Die Scherbe ist jetzt größer. Oder {agent} erinnert"
+                        " sich anders an sie. Die Rückstände darin haben sich zu"
+                        " einem Muster kristallisiert, das wie Anweisungen aussieht."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The shard has reconstructed itself into a complete crucible."
+                        " It is hot. It is ready. It contains, already,"
+                        " the ghost of something that wants to be made."
+                    ),
+                    "text_de": (
+                        "Die Scherbe hat sich zu einem kompletten Tiegel"
+                        " rekonstruiert. Er ist heiß. Er ist bereit."
+                        " Er enthält bereits den Geist von etwas,"
+                        " das gemacht werden will."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The crucible overflows."
+                        " What pours out is not metal \u2013 it is light."
+                        " The light solidifies into a shape the party"
+                        " almost recognizes."
+                    ),
+                    "text_de": (
+                        "Der Tiegel läuft über."
+                        " Was herausfließt, ist kein Metall \u2013 es ist Licht."
+                        " Das Licht verfestigt sich zu einer Form, die der"
+                        " Trupp fast erkennt."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_apprentice_journal",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A journal. The entries describe experiments:"
+                        " temperatures, durations, component ratios."
+                        " The last entry reads: 'Tomorrow I try the combination"
+                        " the workshop suggested.'"
+                    ),
+                    "text_de": (
+                        "Ein Journal. Die Einträge beschreiben Experimente:"
+                        " Temperaturen, Dauer, Komponentenverhältnisse."
+                        " Der letzte Eintrag lautet: \u00bbMorgen versuche ich die"
+                        " Kombination, die die Werkstatt vorgeschlagen hat.\u00ab"
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "Another journal. Same handwriting."
+                        " But {agent} notices: the experiments are more ambitious."
+                        " The margins contain doodles of impossible machines."
+                    ),
+                    "text_de": (
+                        "Ein weiteres Journal. Dieselbe Handschrift."
+                        " Aber {agent} bemerkt: Die Experimente sind ambitionierter."
+                        " Die Ränder enthalten Skizzen unmöglicher Maschinen."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The journal writes itself now."
+                        " Pages fill as the party watches."
+                        " The experiments described are the party's own."
+                        " Documented before they happened."
+                    ),
+                    "text_de": (
+                        "Das Journal schreibt sich jetzt selbst."
+                        " Seiten füllen sich, während der Trupp zusieht."
+                        " Die beschriebenen Experimente sind die eigenen des Trupps."
+                        " Dokumentiert, bevor sie stattfanden."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The last page of the journal contains one sentence:"
+                        " 'They made the right thing.'"
+                        " It is written in the future tense."
+                    ),
+                    "text_de": (
+                        "Die letzte Seite des Journals enthält einen Satz:"
+                        " \u00bbSie haben das Richtige gemacht.\u00ab"
+                        " Er ist im Futur geschrieben."
+                    ),
+                },
+            },
+        },
+    ],
 }
 
 
@@ -2443,6 +2754,67 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
             "text_de": "Gleich.",
         },
     ],
+    # ── Prometheus: "Die Flamme" (Insight barometer) ─────────────────────
+    "The Prometheus": [
+        {
+            "tier": 0,
+            "text_en": (
+                "The forge is cold. Tools rest in their places."
+                " The workshop presents itself with clinical patience."
+                " Materials await hands. The fire has not yet been stolen."
+            ),
+            "text_de": (
+                "Die Schmiede ist kalt. Werkzeuge ruhen an ihren Plätzen."
+                " Die Werkstatt präsentiert sich mit klinischer Geduld."
+                " Materialien warten auf Hände."
+                " Das Feuer wurde noch nicht gestohlen."
+            ),
+        },
+        {
+            "tier": 1,
+            "text_en": (
+                "The forge warms. The first sparks have been struck."
+                " Components respond to proximity \u2013 not yet with intent,"
+                " but with interest. The workshop is watching what the party does."
+            ),
+            "text_de": (
+                "Die Schmiede erwärmt sich. Die ersten Funken wurden geschlagen."
+                " Komponenten reagieren auf Nähe \u2013 noch nicht mit Absicht,"
+                " aber mit Interesse."
+                " Die Werkstatt beobachtet, was der Trupp tut."
+            ),
+        },
+        {
+            "tier": 2,
+            "text_en": (
+                "The fire burns steady. The workshop has opened its deeper"
+                " chambers. Materials levitate briefly before settling."
+                " The air tastes of ambition."
+                " Every surface is warm to the touch."
+            ),
+            "text_de": (
+                "Das Feuer brennt gleichmäßig. Die Werkstatt hat ihre tieferen"
+                " Kammern geöffnet. Materialien schweben kurz, bevor sie sich"
+                " setzen. Die Luft schmeckt nach Ambition."
+                " Jede Oberfläche ist warm bei Berührung."
+            ),
+        },
+        {
+            "tier": 3,
+            "text_en": (
+                "White heat. The workshop is no longer subtle."
+                " Components arrange themselves without being touched."
+                " The forge-glow pulses in time with the party's breathing."
+                " The fire knows. The fire burns."
+            ),
+            "text_de": (
+                "Weißglut. Die Werkstatt ist nicht mehr subtil."
+                " Komponenten ordnen sich an, ohne berührt zu werden."
+                " Das Schmiedeglühen pulsiert im Takt der Atmung des Trupps."
+                " Das Feuer weiß. Das Feuer brennt."
+            ),
+        },
+    ],
 }
 
 
@@ -2479,6 +2851,15 @@ def _barometer_tier(archetype: str, archetype_state: dict) -> int:
         if decay <= 50:
             return 1
         if decay <= 80:
+            return 2
+        return 3
+    if archetype == "The Prometheus":
+        insight = archetype_state.get("insight", 0)
+        if insight < 20:
+            return 0
+        if insight < 45:
+            return 1
+        if insight < 75:
             return 2
         return 3
     return 0

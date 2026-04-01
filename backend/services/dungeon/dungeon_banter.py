@@ -1501,6 +1501,368 @@ MOTHER_BANTER: list[dict] = [
 ]
 
 
+# ── Prometheus Banter ─────────────────────────────────────────────────────
+# Innovation fever. The workshop is alive. Components have personality.
+# Humor permitted (Lem). German compound nouns. Procedural narration.
+# insight_tier: 0=cold forge, 1=warming, 2=inspired, 3=feverish/breakthrough.
+
+PROMETHEUS_BANTER: list[dict] = [
+    # ── Room Entered (10: 3×t0, 3×t1, 2×t2, 2×t3) ──────────────────────
+    {
+        "id": "pb_01",
+        "trigger": "room_entered",
+        "insight_tier": 0,
+        "personality_filter": {"openness": (0.6, 1.0)},
+        "text_en": (
+            "{agent} scans the workbench. Tools arranged by a system that is "
+            "not alphabetical, not chronological, not any system {agent} recognizes. "
+            "But organized. Precisely organized."
+        ),
+        "text_de": (
+            "{agent} scannt die Werkbank. Werkzeuge, angeordnet nach einem System, "
+            "das nicht alphabetisch ist, nicht chronologisch, kein System, das "
+            "{agent} erkennt. Aber geordnet. Präzise geordnet."
+        ),
+    },
+    {
+        "id": "pb_02",
+        "trigger": "room_entered",
+        "insight_tier": 0,
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "The instruments register heat. Not from a source \u2013 from the room itself. The walls are warm. The floor is warm. The air conducts.",
+        "text_de": "Die Instrumente registrieren Hitze. Nicht von einer Quelle \u2013 vom Raum selbst. Die Wände sind warm. Der Boden ist warm. Die Luft leitet.",
+    },
+    {
+        "id": "pb_03",
+        "trigger": "room_entered",
+        "insight_tier": 0,
+        "personality_filter": {},
+        "text_en": "A workbench. Clean. Expectant. The kind of clean that suggests recent use, not abandonment.",
+        "text_de": "Eine Werkbank. Sauber. Erwartungsvoll. Die Art von Sauberkeit, die auf kürzliche Benutzung hindeutet, nicht auf Verlassenheit.",
+    },
+    {
+        "id": "pb_04",
+        "trigger": "room_entered",
+        "insight_tier": 1,
+        "personality_filter": {"openness": (0.6, 1.0)},
+        "text_en": "{agent}: 'The reagents are sorting themselves. Did anyone else see that? The reagents are sorting themselves.'",
+        "text_de": "{agent}: \u00bbDie Reagenzien sortieren sich selbst. Hat das sonst jemand gesehen? Die Reagenzien sortieren sich selbst.\u00ab",
+    },
+    {
+        "id": "pb_05",
+        "trigger": "room_entered",
+        "insight_tier": 1,
+        "personality_filter": {"neuroticism": (0.0, 0.4)},
+        "text_en": "The workshop hums. Not electrically \u2013 deliberately. A sustained note of anticipation, as if the room knows what the party has not yet decided to build.",
+        "text_de": "Die Werkstatt summt. Nicht elektrisch \u2013 absichtlich. Ein gehaltener Ton der Erwartung, als wüsste der Raum, was der Trupp noch nicht zu bauen beschlossen hat.",
+    },
+    {
+        "id": "pb_06",
+        "trigger": "room_entered",
+        "insight_tier": 1,
+        "personality_filter": {},
+        "text_en": "On the wall: a formula. Half the variables are in a notation {agent} doesn't recognize. The other half are disturbingly familiar.",
+        "text_de": "An der Wand: eine Formel. Die Hälfte der Variablen ist in einer Notation, die {agent} nicht erkennt. Die andere Hälfte ist beunruhigend vertraut.",
+    },
+    {
+        "id": "pb_07",
+        "trigger": "room_entered",
+        "insight_tier": 2,
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": (
+            "The components in {agent}'s pack shift. Not settling \u2013 rearranging. "
+            "They have preferences about proximity. The metal does not want to be "
+            "near the powder."
+        ),
+        "text_de": (
+            "Die Komponenten in {agent}s Rucksack bewegen sich. Kein Setzen \u2013 "
+            "Umordnen. Sie haben Präferenzen bezüglich Nähe. Das Metall will nicht "
+            "neben dem Pulver sein."
+        ),
+    },
+    {
+        "id": "pb_08",
+        "trigger": "room_entered",
+        "insight_tier": 2,
+        "personality_filter": {},
+        "text_en": "\u00bbDie Werkstatt ordnet sich um.\u00ab The workshop rearranges itself. Tools migrate to different shelves. The anvil has moved three inches to the left. Nobody touched it.",
+        "text_de": "\u00bbDie Werkstatt ordnet sich um.\u00ab Werkzeuge wandern in andere Regale. Der Amboss hat sich drei Zentimeter nach links bewegt. Niemand hat ihn berührt.",
+    },
+    {
+        "id": "pb_09",
+        "trigger": "room_entered",
+        "insight_tier": 3,
+        "personality_filter": {"neuroticism": (0.5, 1.0)},
+        "text_en": (
+            "{agent}'s hands are shaking. Not from fear. From something worse: "
+            "the absolute certainty that the next combination will work. "
+            "The fire knows. {agent} knows the fire knows."
+        ),
+        "text_de": (
+            "{agent}s Hände zittern. Nicht vor Angst. Vor etwas Schlimmerem: "
+            "der absoluten Gewissheit, dass die nächste Kombination funktionieren wird. "
+            "Das Feuer weiß es. {agent} weiß, dass das Feuer es weiß."
+        ),
+    },
+    {
+        "id": "pb_10",
+        "trigger": "room_entered",
+        "insight_tier": 3,
+        "personality_filter": {},
+        "text_en": (
+            "The workshop is no longer subtle. Surfaces glow. Materials levitate "
+            "briefly before settling. The air tastes of ozone and ambition. "
+            "Something in this room is about to happen whether the party "
+            "participates or not."
+        ),
+        "text_de": (
+            "Die Werkstatt ist nicht mehr subtil. Oberflächen glühen. Materialien "
+            "schweben kurz, bevor sie sich setzen. Die Luft schmeckt nach Ozon und "
+            "Ambition. Etwas in diesem Raum wird gleich passieren, ob der Trupp "
+            "teilnimmt oder nicht."
+        ),
+    },
+    # ── Depth Change (3) ─────────────────────────────────────────────────
+    {
+        "id": "pb_11",
+        "trigger": "depth_change",
+        "insight_tier": 0,
+        "personality_filter": {},
+        "text_en": "Deeper. The workshop's complexity increases. The tools here are not for amateur hands.",
+        "text_de": "Tiefer. Die Komplexität der Werkstatt nimmt zu. Die Werkzeuge hier sind nicht für Laienhände.",
+    },
+    {
+        "id": "pb_12",
+        "trigger": "depth_change",
+        "insight_tier": 1,
+        "personality_filter": {},
+        "text_en": "The forge-heat intensifies with depth. The workshop is revealing its inner chambers \u2013 the rooms where the serious work happens.",
+        "text_de": "Die Schmiedehitze intensiviert sich mit der Tiefe. Die Werkstatt enthüllt ihre inneren Kammern \u2013 die Räume, in denen die ernsthafte Arbeit stattfindet.",
+    },
+    {
+        "id": "pb_13",
+        "trigger": "depth_change",
+        "insight_tier": 2,
+        "personality_filter": {},
+        "text_en": (
+            "This deep, the workshop stops pretending to be a place. "
+            "It is a process. The party is inside the process now."
+        ),
+        "text_de": (
+            "So tief hört die Werkstatt auf, ein Ort zu sein. "
+            "Sie ist ein Prozess. Der Trupp ist jetzt im Prozess."
+        ),
+    },
+    # ── Elite Spotted (2) ─────────────────────────────────────────────────
+    {
+        "id": "pb_14",
+        "trigger": "elite_spotted",
+        "personality_filter": {},
+        "text_en": "Ahead: something that was built with intent. Not the workshop's ambient creations \u2013 a deliberate construct. It works at something. It does not wish to be interrupted.",
+        "text_de": "Voraus: etwas, das mit Absicht gebaut wurde. Nicht die Zufallsschöpfungen der Werkstatt \u2013 ein absichtliches Konstrukt. Es arbeitet an etwas. Es wünscht nicht, unterbrochen zu werden.",
+    },
+    {
+        "id": "pb_15",
+        "trigger": "elite_spotted",
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} stops. 'That one is different. That one was MADE.'",
+        "text_de": "{agent} hält inne. \u00bbDas da ist anders. Das wurde GEMACHT.\u00ab",
+    },
+    # ── Boss Approach (2) ────────────────────────────────────────────────
+    {
+        "id": "pb_16",
+        "trigger": "boss_approach",
+        "personality_filter": {},
+        "text_en": (
+            "The workshop contracts. All corridors converge. Ahead: the central "
+            "chamber. The heat is absolute. Something inside is functioning "
+            "with the confidence of a finished thing. It is not finished."
+        ),
+        "text_de": (
+            "Die Werkstatt zieht sich zusammen. Alle Korridore konvergieren. "
+            "Voraus: die zentrale Kammer. Die Hitze ist absolut. Etwas darin "
+            "funktioniert mit der Zuversicht eines fertigen Dings. Es ist nicht fertig."
+        ),
+    },
+    {
+        "id": "pb_17",
+        "trigger": "boss_approach",
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent}: 'It knows we have been crafting. It has been watching. It wants to see what we built.'",
+        "text_de": "{agent}: \u00bbEs weiß, dass wir gecraften haben. Es hat zugesehen. Es will sehen, was wir gebaut haben.\u00ab",
+    },
+    # ── Agent Afflicted (2) ──────────────────────────────────────────────
+    {
+        "id": "pb_18",
+        "trigger": "agent_afflicted",
+        "personality_filter": {},
+        "text_en": (
+            "{agent} burns. Not physically \u2013 creatively. The fire that drove them to build "
+            "has consumed the boundary between maker and material. "
+            "{agent} is both craftsman and component now."
+        ),
+        "text_de": (
+            "{agent} brennt. Nicht physisch \u2013 kreativ. Das Feuer, das sie zum Bauen "
+            "trieb, hat die Grenze zwischen Macher und Material verzehrt. "
+            "{agent} ist jetzt beides: Handwerker und Komponente."
+        ),
+    },
+    {
+        "id": "pb_19",
+        "trigger": "agent_afflicted",
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent}'s instruments read their own vital signs now. The instruments have suggestions.",
+        "text_de": "{agent}s Instrumente lesen jetzt ihre eigenen Vitalwerte. Die Instrumente haben Vorschläge.",
+    },
+    # ── Agent Virtue (2) ─────────────────────────────────────────────────
+    {
+        "id": "pb_20",
+        "trigger": "agent_virtue",
+        "personality_filter": {},
+        "text_en": (
+            "{agent} steadies. The fire is still there \u2013 but channeled now. "
+            "Controlled. Primo Levi understood: the hand that works matter "
+            "develops a different kind of intelligence."
+        ),
+        "text_de": (
+            "{agent} stabilisiert sich. Das Feuer ist noch da \u2013 aber kanalisiert jetzt. "
+            "Kontrolliert. Primo Levi verstand: Die Hand, die Materie bearbeitet, "
+            "entwickelt eine andere Art von Intelligenz."
+        ),
+    },
+    {
+        "id": "pb_21",
+        "trigger": "agent_virtue",
+        "personality_filter": {"conscientiousness": (0.7, 1.0)},
+        "text_en": "{agent} picks up a tool. It fits. Not because it was designed for {agent}'s hand. Because {agent}'s hand has become what the tool requires.",
+        "text_de": "{agent} nimmt ein Werkzeug auf. Es passt. Nicht weil es für {agent}s Hand entworfen wurde. Weil {agent}s Hand zu dem geworden ist, was das Werkzeug verlangt.",
+    },
+    # ── Insight Thresholds (banter trigger overrides from strategy) ───────
+    {
+        "id": "pb_22",
+        "trigger": "insight_inspired",
+        "personality_filter": {},
+        "text_en": (
+            "Something shifts. {agent} sees connections that were invisible "
+            "a moment ago. The components are not separate things \u2013 they are "
+            "parts of something that wants to exist."
+        ),
+        "text_de": (
+            "Etwas verschiebt sich. {agent} sieht Verbindungen, die vor einem "
+            "Moment noch unsichtbar waren. Die Komponenten sind keine separaten "
+            "Dinge \u2013 sie sind Teile von etwas, das existieren will."
+        ),
+    },
+    {
+        "id": "pb_23",
+        "trigger": "insight_feverish",
+        "personality_filter": {},
+        "text_en": (
+            "The fire is in everything now. {agent}'s instruments are warm to the "
+            "touch. The workshop has stopped hiding its mechanisms. It is showing "
+            "them \u2013 all of them, at once. It is too much. It is exactly enough."
+        ),
+        "text_de": (
+            "Das Feuer ist jetzt in allem. {agent}s Instrumente sind warm bei "
+            "Berührung. Die Werkstatt hat aufgehört, ihre Mechanismen zu "
+            "verbergen. Sie zeigt sie \u2013 alle, auf einmal. "
+            "Es ist zu viel. Es ist genau genug."
+        ),
+    },
+    {
+        "id": "pb_24",
+        "trigger": "insight_breakthrough",
+        "personality_filter": {},
+        "text_en": (
+            "For a moment \u2013 only a moment \u2013 the workshop is transparent. "
+            "Every mechanism visible. Every connection mapped. Every possible "
+            "combination illuminated. The fire burns at its brightest. "
+            "The fire also burns."
+        ),
+        "text_de": (
+            "Für einen Moment \u2013 nur einen Moment \u2013 ist die Werkstatt transparent. "
+            "Jeder Mechanismus sichtbar. Jede Verbindung kartiert. Jede mögliche "
+            "Kombination beleuchtet. Das Feuer brennt am hellsten. "
+            "Das Feuer brennt auch."
+        ),
+    },
+    {
+        "id": "pb_25",
+        "trigger": "insight_cold",
+        "personality_filter": {},
+        "text_en": "The forge is cold. The workshop presents its materials, but they are inert. They wait for a spark that has not yet arrived.",
+        "text_de": "Die Schmiede ist kalt. Die Werkstatt präsentiert ihre Materialien, aber sie sind inert. Sie warten auf einen Funken, der noch nicht eingetroffen ist.",
+    },
+    # ── Combat Won (3) ───────────────────────────────────────────────────
+    {
+        "id": "pb_26",
+        "trigger": "combat_won",
+        "personality_filter": {},
+        "text_en": "The construct disassembles. Its components scatter. Some of them are still warm. Some of them are interesting.",
+        "text_de": "Das Konstrukt zerlegt sich. Seine Komponenten zerstreuen sich. Manche sind noch warm. Manche sind interessant.",
+    },
+    {
+        "id": "pb_27",
+        "trigger": "combat_won",
+        "personality_filter": {"openness": (0.6, 1.0)},
+        "text_en": "{agent} examines the remains. Not as a soldier examines a defeated enemy. As an engineer examines a competitor's product.",
+        "text_de": "{agent} untersucht die Überreste. Nicht wie ein Soldat einen besiegten Feind untersucht. Wie ein Ingenieur das Produkt eines Konkurrenten untersucht.",
+    },
+    {
+        "id": "pb_28",
+        "trigger": "combat_won",
+        "personality_filter": {},
+        "text_en": "The workshop absorbs the debris. Already recycling. Already planning the next iteration.",
+        "text_de": "Die Werkstatt absorbiert die Trümmer. Recycelt bereits. Plant bereits die nächste Iteration.",
+    },
+    # ── Rest Start (2) ───────────────────────────────────────────────────
+    {
+        "id": "pb_29",
+        "trigger": "rest_start",
+        "personality_filter": {},
+        "text_en": "The fire dims. Not out \u2013 it is still there, in the walls, in the floor, in the components. But it allows rest. A forge needs its cooling cycles.",
+        "text_de": "Das Feuer wird schwächer. Nicht aus \u2013 es ist noch da, in den Wänden, im Boden, in den Komponenten. Aber es erlaubt Ruhe. Eine Schmiede braucht ihre Abkühlzyklen.",
+    },
+    {
+        "id": "pb_30",
+        "trigger": "rest_start",
+        "personality_filter": {"neuroticism": (0.5, 1.0)},
+        "text_en": "{agent} sets down the components. They cool. For a moment, they are just materials again. Just matter. The workshop permits this.",
+        "text_de": "{agent} legt die Komponenten ab. Sie kühlen ab. Für einen Moment sind sie wieder nur Materialien. Nur Materie. Die Werkstatt erlaubt das.",
+    },
+    # ── Loot Found (2) ───────────────────────────────────────────────────
+    {
+        "id": "pb_31",
+        "trigger": "loot_found",
+        "personality_filter": {},
+        "text_en": "New material. The workshop offers it like a gift. Like all gifts here: also a question.",
+        "text_de": "Neues Material. Die Werkstatt bietet es an wie ein Geschenk. Wie alle Geschenke hier: auch eine Frage.",
+    },
+    {
+        "id": "pb_32",
+        "trigger": "loot_found",
+        "personality_filter": {"openness": (0.7, 1.0)},
+        "text_en": "{agent} holds the component. It is warm. It pulses once \u2013 not a heartbeat, but a frequency. It is introducing itself.",
+        "text_de": "{agent} hält die Komponente. Sie ist warm. Sie pulsiert einmal \u2013 kein Herzschlag, sondern eine Frequenz. Sie stellt sich vor.",
+    },
+    # ── Agent Stressed (2) ───────────────────────────────────────────────
+    {
+        "id": "pb_33",
+        "trigger": "agent_stressed",
+        "personality_filter": {},
+        "text_en": "The fire in {agent}'s instruments flares. Prometheus did not just bring fire to humanity. He brought the burns too.",
+        "text_de": "Das Feuer in {agent}s Instrumenten flammt auf. Prometheus brachte nicht nur Feuer zur Menschheit. Er brachte auch die Verbrennungen.",
+    },
+    {
+        "id": "pb_34",
+        "trigger": "agent_stressed",
+        "personality_filter": {"neuroticism": (0.6, 1.0)},
+        "text_en": "{agent} flinches. The workshop does not pause. Innovation does not wait for permission. Nor for comfort.",
+        "text_de": "{agent} zuckt zusammen. Die Werkstatt pausiert nicht. Innovation wartet nicht auf Erlaubnis. Auch nicht auf Komfort.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
@@ -1508,6 +1870,7 @@ _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Tower": TOWER_BANTER,
     "The Entropy": ENTROPY_BANTER,
     "The Devouring Mother": MOTHER_BANTER,
+    "The Prometheus": PROMETHEUS_BANTER,
 }
 
 
@@ -1533,6 +1896,24 @@ def _mother_attachment_tier(archetype_state: dict) -> int:
     return 0
 
 
+def _prometheus_insight_tier(archetype_state: dict) -> int:
+    """Map Prometheus insight to banter intensity tier (0-3).
+
+    0 = cold forge (insight < 20)
+    1 = warming (20-44)
+    2 = inspired (45-74)
+    3 = feverish/breakthrough (75+)
+    """
+    insight = archetype_state.get("insight", 0)
+    if insight >= 75:
+        return 3
+    if insight >= 45:
+        return 2
+    if insight >= 20:
+        return 1
+    return 0
+
+
 def select_banter(
     trigger: str,
     agents: list[dict],
@@ -1545,6 +1926,7 @@ def select_banter(
     Filters by trigger type, personality match, and ensures no repeats.
     For The Entropy, filters by decay_tier (banter degrades).
     For The Devouring Mother, filters by attachment_tier (banter warms).
+    For The Prometheus, filters by insight_tier (banter intensifies).
 
     Args:
         trigger: Event trigger (room_entered, combat_won, etc.)
@@ -1574,6 +1956,13 @@ def select_banter(
         if tier_candidates:
             max_tier = max(b.get("attachment_tier", 0) for b in tier_candidates)
             candidates = [b for b in tier_candidates if b.get("attachment_tier", 0) == max_tier]
+    # Prometheus: filter by insight tier — prefer highest available tier
+    elif archetype == "The Prometheus" and archetype_state:
+        tier = _prometheus_insight_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("insight_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("insight_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("insight_tier", 0) == max_tier]
 
     if not candidates:
         return None

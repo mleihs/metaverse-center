@@ -11,6 +11,8 @@ Entropy encounters (Phase 2):
   4 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
 Mother encounters (Phase 3):
   6 combat, 5 encounter, 1 elite, 1 boss, 1 rest, 1 treasure
+Prometheus encounters (Phase 4):
+  4 combat, 5 encounter (3 workshop + 2 invention), 1 elite, 1 boss, 1 rest, 1 treasure
 """
 
 from __future__ import annotations
@@ -3986,6 +3988,1190 @@ ALL_MOTHER_ENCOUNTERS: list[EncounterTemplate] = (
 )
 
 
+# ── THE PROMETHEUS ────────────────────────────────────────────────────────
+# Innovation fever. The ecstasy and vertigo of creation. The workshop is alive.
+# Literary DNA: Shelley (moment after creation), Lem (cosmic irony),
+# Schulz (matter-with-agency), Levi (material precision), Bachelard (fire-reverie),
+# Hoffmann (uncanny automata), Süskind (craftsmanship as obsession).
+# Tone: procedural, scientific, workshop-as-actor. Humor permitted (Lem).
+# Every crafted item: benefit + cost (pharmakon principle, Stiegler/Derrida).
+# Custom encounter effects: add_component, remove_components, add_crafted_item, insight.
+
+# ── Prometheus Combat Encounters (4) ─────────────────────────────────────
+
+PROMETHEUS_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="prometheus_spark_drift",
+        archetype="The Prometheus",
+        room_type="combat",
+        min_depth=1,
+        max_depth=2,
+        min_difficulty=1,
+        description_en=(
+            "Three points of light orbit the workbench. Spark Wisps \u2013 "
+            "the workshop's immune response. They do not attack intruders. "
+            "They test hypotheses about whether the party belongs here. "
+            "The testing involves electricity."
+        ),
+        description_de=(
+            "Drei Lichtpunkte umkreisen die Werkbank. Funkenglimmer \u2013 "
+            "die Immunantwort der Werkstatt. Sie greifen keine Eindringlinge an. "
+            "Sie testen Hypothesen darüber, ob der Trupp hierher gehört. "
+            "Das Testen involviert Elektrizität."
+        ),
+        combat_encounter_id="prometheus_sparks_spawn",
+    ),
+    EncounterTemplate(
+        id="prometheus_sentinel_watch",
+        archetype="The Prometheus",
+        room_type="combat",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "An Alloy Sentinel stands at the corridor's center. Its surface "
+            "reflects the party in distorted miniature \u2013 improved, somehow. "
+            "Beside it, a Spark Wisp orbits in a figure-eight pattern, "
+            "relaying data the sentinel does not appear to need. "
+            "The sentinel's posture is not aggressive. It is procedural."
+        ),
+        description_de=(
+            "Ein Legierungswächter steht in der Mitte des Korridors. Seine "
+            "Oberfläche spiegelt den Trupp in verzerrter Miniatur \u2013 irgendwie "
+            "verbessert. Daneben umkreist ein Funkenglimmer ihn in einer "
+            "Achterschleife, übermittelt Daten, die der Wächter nicht zu "
+            "benötigen scheint. Die Haltung des Wächters ist nicht aggressiv. "
+            "Sie ist prozedural."
+        ),
+        combat_encounter_id="prometheus_workshop_patrol_spawn",
+    ),
+    EncounterTemplate(
+        id="prometheus_construct_gallery",
+        archetype="The Prometheus",
+        room_type="combat",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "A gallery of unfinished constructs lines the walls. Most are inert. "
+            "Two are not. A Crucible Drake \u2013 molten flux in a shape that "
+            "suggests intent \u2013 circles a workbench. An Automaton Shard "
+            "clicks and rotates, as if trying to remember what it was "
+            "supposed to be. They notice the party simultaneously. "
+            "The Drake exhales fumes that smell like unfinished thoughts."
+        ),
+        description_de=(
+            "Eine Galerie unfertiger Konstrukte säumt die Wände. Die meisten sind "
+            "inert. Zwei nicht. Ein Tiegeldrache \u2013 geschmolzenes Flussmittel in "
+            "einer Form, die Absicht suggeriert \u2013 umkreist eine Werkbank. Ein "
+            "Automatensplitter klickt und dreht sich, als versuche er sich zu "
+            "erinnern, was er sein sollte. Sie bemerken den Trupp gleichzeitig. "
+            "Der Drache atmet Dämpfe aus, die nach unfertigen Gedanken riechen."
+        ),
+        combat_encounter_id="prometheus_construct_pair_spawn",
+    ),
+    EncounterTemplate(
+        id="prometheus_residue_chamber",
+        archetype="The Prometheus",
+        room_type="combat",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The floor is covered in slag \u2013 the residue of a hundred failed "
+            "experiments. The residue has opinions. A Slag Golem rises from the "
+            "detritus, not so much assembled as accreted. Two Spark Wisps orbit "
+            "it, drawn to the heat it still radiates. The golem does not "
+            "attack. It obstructs. It is, after all, the accumulated evidence "
+            "of everything the workshop has tried and failed."
+        ),
+        description_de=(
+            "Der Boden ist bedeckt mit Schlacke \u2013 dem Rückstand von hundert "
+            "gescheiterten Experimenten. Der Rückstand hat Meinungen. Ein "
+            "Schlackengolem erhebt sich aus dem Detritus, nicht so sehr "
+            "zusammengebaut als vielmehr angelagert. Zwei Funkenglimmer umkreisen "
+            "ihn, angezogen von der Hitze, die er noch abstrahlt. Der Golem "
+            "greift nicht an. Er obstruiert. Er ist, immerhin, der akkumulierte "
+            "Beweis für alles, was die Werkstatt versucht und nicht geschafft hat."
+        ),
+        combat_encounter_id="prometheus_residue_spawn",
+    ),
+]
+
+
+# ── Prometheus Narrative Encounters (5: 3 workshop + 2 invention) ────────
+
+PROMETHEUS_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    # ── Workshop Discovery: Reagent Cache ──
+    EncounterTemplate(
+        id="prometheus_reagent_cache",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A workbench, preserved in amber light. Drawers half-open. "
+            "Inside: materials sorted by a system you do not yet understand "
+            "but somehow recognize. Metal filings in one drawer. A sealed "
+            "vial of fluid in another. A crystal formation growing from the "
+            "third. The workshop is offering inventory."
+        ),
+        description_de=(
+            "Eine Werkbank, in Bernsteinlicht konserviert. Schubladen halb offen. "
+            "Darin: Materialien, sortiert nach einem System, das ihr noch nicht "
+            "versteht, aber irgendwie wiedererkennt. Metallspäne in einer Schublade. "
+            "Ein versiegeltes Fläschchen Flüssigkeit in einer anderen. Eine "
+            "Kristallformation, die aus der dritten wächst. "
+            "Die Werkstatt bietet Inventar an."
+        ),
+        choices=[
+            EncounterChoice(
+                id="reagent_take_metal",
+                label_en="Extract the metal filings (Saboteur)",
+                label_de="Die Metallspäne entnehmen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=-5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_workshop_metal",
+                        "name_en": "Workshop Metal Filings",
+                        "name_de": "Werkstatt-Metallspäne",
+                        "type": "metal",
+                    },
+                    "insight": 5,
+                },
+                partial_effects={"insight": 2, "stress": 15},
+                fail_effects={"stress": 25},
+                success_narrative_en=(
+                    "The filings separate from the drawer as if they had been waiting. "
+                    "They are heavier than they should be. Denser. "
+                    "As if the metal remembers being something more."
+                ),
+                success_narrative_de=(
+                    "Die Späne lösen sich aus der Schublade, als hätten sie gewartet. "
+                    "Sie sind schwerer, als sie sein sollten. Dichter. "
+                    "Als erinnere sich das Metall, etwas mehr gewesen zu sein."
+                ),
+                fail_narrative_en=(
+                    "The filings scatter. Not randomly \u2013 they form a pattern on the "
+                    "floor that {agent} cannot read. The workshop is disappointed."
+                ),
+                fail_narrative_de=(
+                    "Die Späne zerstreuen sich. Nicht zufällig \u2013 sie bilden ein Muster "
+                    "auf dem Boden, das {agent} nicht lesen kann. "
+                    "Die Werkstatt ist enttäuscht."
+                ),
+            ),
+            EncounterChoice(
+                id="reagent_take_fluid",
+                label_en="Secure the sealed fluid (Spy)",
+                label_de="Die versiegelte Flüssigkeit sichern (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_workshop_fluid",
+                        "name_en": "Sealed Workshop Fluid",
+                        "name_de": "Versiegelte Werkstattflüssigkeit",
+                        "type": "fluid",
+                    },
+                    "insight": 5,
+                },
+                partial_effects={"insight": 2, "stress": 15},
+                fail_effects={"stress": 25},
+                success_narrative_en=(
+                    "The vial is warm. The fluid inside shifts in response to "
+                    "{agent}'s touch \u2013 not away, but toward. It wants to merge."
+                ),
+                success_narrative_de=(
+                    "Das Fläschchen ist warm. Die Flüssigkeit darin reagiert auf "
+                    "{agent}s Berührung \u2013 nicht weg, sondern hin. Sie will verschmelzen."
+                ),
+                fail_narrative_en=(
+                    "The seal resists. Inside, the fluid settles into stillness. "
+                    "It has decided {agent} is not ready."
+                ),
+                fail_narrative_de=(
+                    "Das Siegel widersteht. Darin kommt die Flüssigkeit zur Ruhe. "
+                    "Sie hat entschieden, dass {agent} nicht bereit ist."
+                ),
+            ),
+            EncounterChoice(
+                id="reagent_take_crystal",
+                label_en="Harvest the crystal formation (Infiltrator)",
+                label_de="Die Kristallformation ernten (Infiltrator)",
+                check_aptitude="infiltrator",
+                check_difficulty=-5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_workshop_crystal",
+                        "name_en": "Workshop Crystal",
+                        "name_de": "Werkstattkristall",
+                        "type": "crystal",
+                    },
+                    "insight": 5,
+                },
+                partial_effects={"insight": 2, "stress": 15},
+                fail_effects={"stress": 25},
+                success_narrative_en=(
+                    "The crystal separates with a clean, precise fracture. "
+                    "It vibrates at a frequency {agent}'s instruments can detect "
+                    "but not identify. A tuning fork for something unnamed."
+                ),
+                success_narrative_de=(
+                    "Der Kristall löst sich mit einem sauberen, präzisen Bruch. "
+                    "Er vibriert auf einer Frequenz, die {agent}s Instrumente "
+                    "erkennen, aber nicht identifizieren können. "
+                    "Eine Stimmgabel für etwas Unbenanntes."
+                ),
+                fail_narrative_en=(
+                    "The crystal shatters precisely. Every shard is identical. "
+                    "The workshop has demonstrated the concept of replication."
+                ),
+                fail_narrative_de=(
+                    "Der Kristall zersplittert präzise. Jeder Splitter ist identisch. "
+                    "Die Werkstatt hat das Konzept der Replikation demonstriert."
+                ),
+            ),
+        ],
+    ),
+    # ── Workshop Discovery: Energy Conduit ──
+    EncounterTemplate(
+        id="prometheus_energy_conduit",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "A conduit runs through the ceiling, pulsing with contained energy. "
+            "At one point, the casing has cracked. The energy seeps through, "
+            "illuminating dust particles in geometric patterns. "
+            "The patterns are not random. They are diagrams. "
+            "The energy is explaining itself."
+        ),
+        description_de=(
+            "Eine Leitung verläuft durch die Decke, pulsierend mit eingedämmter "
+            "Energie. An einer Stelle ist die Ummantelung gerissen. Die Energie "
+            "sickert durch, beleuchtet Staubpartikel in geometrischen Mustern. "
+            "Die Muster sind nicht zufällig. Sie sind Diagramme. "
+            "Die Energie erklärt sich selbst."
+        ),
+        choices=[
+            EncounterChoice(
+                id="conduit_tap",
+                label_en="Tap the energy flow (Saboteur)",
+                label_de="Den Energiefluss anzapfen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=0,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_energy_tap",
+                        "name_en": "Contained Energy Cell",
+                        "name_de": "Eingedämmte Energiezelle",
+                        "type": "energy",
+                    },
+                    "insight": 8,
+                },
+                partial_effects={"insight": 4, "stress": 20},
+                fail_effects={"stress": 40, "insight": -5},
+                success_narrative_en=(
+                    "The energy flows into the containment. Not reluctantly \u2013 "
+                    "eagerly. It wanted to be portable. It wanted to be used."
+                ),
+                success_narrative_de=(
+                    "Die Energie fließt in die Eindämmung. Nicht widerwillig \u2013 "
+                    "eifrig. Sie wollte tragbar sein. Sie wollte benutzt werden."
+                ),
+                fail_narrative_en=(
+                    "The energy arcs. {agent}'s instruments spike. "
+                    "The conduit seals itself \u2013 offended, perhaps."
+                ),
+                fail_narrative_de=(
+                    "Die Energie entlädt sich. {agent}s Instrumente schlagen aus. "
+                    "Die Leitung versiegelt sich selbst \u2013 beleidigt, vielleicht."
+                ),
+            ),
+            EncounterChoice(
+                id="conduit_study",
+                label_en="Study the geometric patterns (Spy)",
+                label_de="Die geometrischen Muster studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 10, "reveal_rooms": 1},
+                partial_effects={"insight": 5},
+                fail_effects={"stress": 25, "insight": -3},
+                success_narrative_en=(
+                    "The diagrams resolve. They are a map \u2013 not of this place, "
+                    "but of what this place will produce. The workshop has shown "
+                    "you its blueprint."
+                ),
+                success_narrative_de=(
+                    "Die Diagramme klären sich. Sie sind eine Karte \u2013 nicht "
+                    "von diesem Ort, sondern von dem, was dieser Ort hervorbringen "
+                    "wird. Die Werkstatt hat euch ihre Blaupause gezeigt."
+                ),
+                fail_narrative_en=(
+                    "The patterns move faster than {agent} can process. "
+                    "The energy is speaking a language you almost know."
+                ),
+                fail_narrative_de=(
+                    "Die Muster bewegen sich schneller, als {agent} verarbeiten kann. "
+                    "Die Energie spricht eine Sprache, die ihr beinahe kennt."
+                ),
+            ),
+        ],
+    ),
+    # ── Crafting Workshop: The Crucible ──
+    EncounterTemplate(
+        id="prometheus_the_crucible",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A crucible stands at the room's center. It is already hot. "
+            "Around it, components from the workshop's deeper chambers have "
+            "arranged themselves in a semicircle, as if presenting options. "
+            "The crucible does not wait. It suggests."
+        ),
+        description_de=(
+            "Ein Tiegel steht in der Raummitte. Er ist bereits heiß. "
+            "Um ihn herum haben sich Komponenten aus den tieferen Kammern "
+            "der Werkstatt in einem Halbkreis angeordnet, als präsentierten "
+            "sie Optionen. Der Tiegel wartet nicht. Er schlägt vor."
+        ),
+        choices=[
+            EncounterChoice(
+                id="crucible_combine",
+                label_en="Attempt a combination in the crucible (Saboteur)",
+                label_de="Eine Kombination im Tiegel versuchen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={
+                    "remove_components": ["comp_workshop_metal", "comp_workshop_fluid"],
+                    "add_crafted_item": {
+                        "id": "craft_tempered_alloy",
+                        "name_en": "Tempered Flux Alloy",
+                        "name_de": "Gehärtete Flussmittellegierung",
+                        "benefit_en": "Reduces incoming condition damage by 1 step for 3 rounds",
+                        "benefit_de": "Reduziert eingehenden Zustandsschaden um 1 Stufe für 3 Runden",
+                        "cost_en": "The alloy resonates \u2013 +15 stress to the wielder",
+                        "cost_de": "Die Legierung resoniert \u2013 +15 Stress für den Träger",
+                        "boss_effect": {"type": "reduce_stress_attack", "value": 2},
+                    },
+                    "insight": 8,
+                },
+                partial_effects={"insight": 4, "stress": 20, "craft_failed": True},
+                fail_effects={"stress": 35, "insight": 4, "craft_failed": True},
+                success_narrative_en=(
+                    "The metal meets the fluid. For a moment, nothing. Then: heat. "
+                    "Then: light. Then: something that was not there before. "
+                    "The alloy holds. Stronger than either component alone. "
+                    "But it resonates at a frequency that sets {agent}'s "
+                    "instruments to trembling."
+                ),
+                success_narrative_de=(
+                    "Das Metall trifft die Flüssigkeit. Einen Moment lang nichts. "
+                    "Dann: Hitze. Dann: Licht. Dann: etwas, das vorher nicht da war. "
+                    "Die Legierung hält. Stärker als beide Komponenten allein. "
+                    "Aber sie resoniert auf einer Frequenz, die {agent}s "
+                    "Instrumente zum Zittern bringt."
+                ),
+                partial_narrative_en=(
+                    "The components merge \u2013 partially. The alloy is uneven, "
+                    "useful as raw material but not as a tool. "
+                    "The residue, though? The residue is interesting."
+                ),
+                partial_narrative_de=(
+                    "Die Komponenten verschmelzen \u2013 teilweise. Die Legierung ist "
+                    "ungleichmäßig, brauchbar als Rohmaterial, aber nicht als Werkzeug. "
+                    "Der Rückstand allerdings? Der Rückstand ist interessant."
+                ),
+                fail_narrative_en=(
+                    "The crucible rejects the combination. The components are consumed "
+                    "anyway \u2013 matter does not return to its previous state. "
+                    "But {agent} learned something about what doesn't work. "
+                    "This, too, is data."
+                ),
+                fail_narrative_de=(
+                    "Der Tiegel verwirft die Kombination. Die Komponenten werden "
+                    "trotzdem verbraucht \u2013 Materie kehrt nicht in ihren vorherigen "
+                    "Zustand zurück. Aber {agent} hat etwas darüber gelernt, "
+                    "was nicht funktioniert. Auch das sind Daten."
+                ),
+            ),
+            EncounterChoice(
+                id="crucible_observe",
+                label_en="Study the crucible's behavior without using it (Spy)",
+                label_de="Das Verhalten des Tiegels studieren, ohne ihn zu benutzen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 8, "discovery": True},
+                partial_effects={"insight": 4},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "You observe. The crucible runs through phantom combinations \u2013 "
+                    "heating, mixing, testing invisible reagents. It has been doing "
+                    "this for a long time. It has opinions about what works."
+                ),
+                success_narrative_de=(
+                    "Ihr beobachtet. Der Tiegel führt Phantomkombinationen durch \u2013 "
+                    "erhitzt, mischt, testet unsichtbare Reagenzien. Er tut dies seit "
+                    "langer Zeit. Er hat Meinungen darüber, was funktioniert."
+                ),
+                fail_narrative_en="The crucible goes silent. It does not perform for audiences.",
+                fail_narrative_de="Der Tiegel verstummt. Er führt nicht für Zuschauer vor.",
+            ),
+        ],
+    ),
+    # ── Invention Challenge: The Living Blueprint ──
+    EncounterTemplate(
+        id="prometheus_living_blueprint",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "On the wall: a blueprint. It is moving. Lines redraw themselves. "
+            "Annotations appear and are crossed out by other annotations. "
+            "The blueprint is arguing with itself about the best way to build "
+            "something that has never existed. It does not acknowledge the party. "
+            "It is too busy being a thought that thinks."
+        ),
+        description_de=(
+            "An der Wand: eine Blaupause. Sie bewegt sich. Linien zeichnen sich "
+            "neu. Anmerkungen erscheinen und werden von anderen Anmerkungen "
+            "durchgestrichen. Die Blaupause streitet mit sich selbst über den "
+            "besten Weg, etwas zu bauen, das nie existiert hat. Sie nimmt den "
+            "Trupp nicht zur Kenntnis. Sie ist zu beschäftigt damit, ein Gedanke "
+            "zu sein, der denkt."
+        ),
+        choices=[
+            EncounterChoice(
+                id="blueprint_contribute",
+                label_en="Add to the blueprint (Saboteur)",
+                label_de="Zur Blaupause beitragen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={"insight": 12, "stress_heal": 20},
+                partial_effects={"insight": 6},
+                fail_effects={"stress": 30, "insight": -5},
+                success_narrative_en=(
+                    "{agent} adds a line. The blueprint pauses. Considers. "
+                    "Accepts. The annotations stop arguing. For a moment, "
+                    "the blueprint achieves coherence. It is beautiful."
+                ),
+                success_narrative_de=(
+                    "{agent} fügt eine Linie hinzu. Die Blaupause hält inne. "
+                    "Erwägt. Akzeptiert. Die Anmerkungen hören auf zu streiten. "
+                    "Für einen Moment erreicht die Blaupause Kohärenz. "
+                    "Es ist schön."
+                ),
+                fail_narrative_en=(
+                    "The blueprint rejects {agent}'s contribution with a sharp "
+                    "erasure. The annotations resume with renewed intensity. "
+                    "The blueprint has added a note: 'NOT THIS.'"
+                ),
+                fail_narrative_de=(
+                    "Die Blaupause verwirft {agent}s Beitrag mit einer scharfen "
+                    "Löschung. Die Anmerkungen setzen mit erneuter Intensität ein. "
+                    "Die Blaupause hat eine Notiz hinzugefügt: »NICHT DAS.«"
+                ),
+            ),
+            EncounterChoice(
+                id="blueprint_copy",
+                label_en="Copy the blueprint's current state (Spy)",
+                label_de="Den aktuellen Zustand der Blaupause kopieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 8, "reveal_rooms": 1},
+                partial_effects={"insight": 4},
+                fail_effects={"stress": 15},
+                success_narrative_en=(
+                    "You capture a snapshot. By the time you look up, the blueprint "
+                    "has changed. But the snapshot is enough \u2013 it shows the "
+                    "workshop's intended layout. Briefly, you know where things are."
+                ),
+                success_narrative_de=(
+                    "Ihr erfasst einen Schnappschuss. Als ihr aufblickt, hat sich "
+                    "die Blaupause geändert. Aber der Schnappschuss reicht \u2013 er "
+                    "zeigt das beabsichtigte Layout der Werkstatt. Kurz wisst ihr, "
+                    "wo die Dinge sind."
+                ),
+                fail_narrative_en="The blueprint moves too fast. Every copy is already outdated.",
+                fail_narrative_de="Die Blaupause bewegt sich zu schnell. Jede Kopie ist bereits veraltet.",
+            ),
+        ],
+    ),
+    # ── Invention Challenge: The Failed Experiment ──
+    EncounterTemplate(
+        id="prometheus_failed_experiment",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "The room contains the aftermath of an experiment that did not "
+            "go as planned. Scorch marks radiate from a central point. "
+            "Components are fused into the walls. A half-formed construct "
+            "twitches on the floor, caught between activation and entropy. "
+            "The failure is recent. The workshop has not cleaned up yet. "
+            "Perhaps it is waiting for a second opinion."
+        ),
+        description_de=(
+            "Der Raum enthält das Ergebnis eines Experiments, das nicht nach "
+            "Plan verlief. Brandspuren strahlen von einem zentralen Punkt aus. "
+            "Komponenten sind in die Wände geschmolzen. Ein halbgeformtes "
+            "Konstrukt zuckt am Boden, gefangen zwischen Aktivierung und "
+            "Entropie. Das Scheitern ist frisch. Die Werkstatt hat noch nicht "
+            "aufgeräumt. Vielleicht wartet sie auf eine zweite Meinung."
+        ),
+        choices=[
+            EncounterChoice(
+                id="failed_salvage",
+                label_en="Salvage usable components from the wreckage (Saboteur)",
+                label_de="Brauchbare Komponenten aus dem Wrack bergen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_salvaged_powder",
+                        "name_en": "Catalytic Residue Powder",
+                        "name_de": "Katalytisches Rückstandspulver",
+                        "type": "powder",
+                    },
+                    "insight": 6,
+                },
+                partial_effects={"insight": 3, "stress": 20},
+                fail_effects={"stress": 40, "insight": -3},
+                success_narrative_en=(
+                    "Among the wreckage: a powder that catalyzes on contact. "
+                    "The failed experiment produced it as a byproduct. "
+                    "The workshop did not fail \u2013 it discovered something "
+                    "it wasn't looking for."
+                ),
+                success_narrative_de=(
+                    "Im Wrack: ein Pulver, das bei Kontakt katalysiert. "
+                    "Das gescheiterte Experiment hat es als Nebenprodukt erzeugt. "
+                    "Die Werkstatt hat nicht versagt \u2013 sie hat etwas entdeckt, "
+                    "wonach sie nicht gesucht hat."
+                ),
+                fail_narrative_en=(
+                    "The wreckage shifts. Components you thought were inert "
+                    "react to {agent}'s touch. Not helpfully."
+                ),
+                fail_narrative_de=(
+                    "Das Wrack verschiebt sich. Komponenten, die ihr für inert "
+                    "hieltet, reagieren auf {agent}s Berührung. Nicht hilfreich."
+                ),
+            ),
+            EncounterChoice(
+                id="failed_analyze",
+                label_en="Analyze what went wrong (Spy)",
+                label_de="Analysieren, was schiefgelaufen ist (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"insight": 10, "discovery": True},
+                partial_effects={"insight": 5},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "The failure had a cause. The cause is instructive. "
+                    "{agent} catalogs the sequence: component, catalyst, "
+                    "interaction, detonation. Understanding failure IS understanding."
+                ),
+                success_narrative_de=(
+                    "Das Scheitern hatte eine Ursache. Die Ursache ist lehrreich. "
+                    "{agent} katalogisiert die Sequenz: Komponente, Katalysator, "
+                    "Interaktion, Detonation. Scheitern zu verstehen IST Verstehen."
+                ),
+                fail_narrative_en="The sequence is too complex. Or {agent} is too simple. The experiment offers no comment.",
+                fail_narrative_de="Die Sequenz ist zu komplex. Oder {agent} ist zu einfach. Das Experiment kommentiert nicht.",
+            ),
+            EncounterChoice(
+                id="failed_retreat",
+                label_en="Leave the disaster undisturbed",
+                label_de="Die Katastrophe ungestört lassen",
+                success_effects={"insight": 2},
+                success_narrative_en="You leave. The half-formed construct twitches once more, then stills. Waiting.",
+                success_narrative_de="Ihr geht. Das halbgeformte Konstrukt zuckt noch einmal, dann erstarrt es. Wartend.",
+            ),
+        ],
+    ),
+    # ── Crafting Workshop: The Resonance Forge ──
+    EncounterTemplate(
+        id="prometheus_resonance_forge",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A device occupies the room's center \u2013 part tuning fork, part "
+            "lens array, part something that has no name in any language the "
+            "party speaks. It vibrates at a frequency just below hearing. "
+            "Crystal and energy conduits feed into it from opposite walls, "
+            "converging at a focal point that bends light into a shape "
+            "resembling intent. The device is waiting to be aimed."
+        ),
+        description_de=(
+            "Ein Gerät nimmt die Raummitte ein \u2013 teils Stimmgabel, teils "
+            "Linsenarray, teils etwas, das in keiner Sprache, die der Trupp "
+            "spricht, einen Namen hat. Es vibriert auf einer Frequenz knapp "
+            "unterhalb des Hörbaren. Kristall- und Energieleitungen speisen "
+            "es von gegenüberliegenden Wänden, konvergierend an einem "
+            "Brennpunkt, der Licht in eine Form biegt, die Absicht ähnelt. "
+            "Das Gerät wartet darauf, ausgerichtet zu werden."
+        ),
+        choices=[
+            EncounterChoice(
+                id="resonance_forge_combine",
+                label_en="Focus crystal through the energy conduit (Saboteur)",
+                label_de="Den Kristall durch die Energieleitung fokussieren (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={
+                    "remove_components": ["comp_workshop_crystal", "comp_energy_tap"],
+                    "add_crafted_item": {
+                        "id": "craft_resonance_disruptor",
+                        "name_en": "Resonance Disruptor",
+                        "name_de": "Resonanzbrecher",
+                        "benefit_en": "Emits a frequency that disrupts construct defenses",
+                        "benefit_de": "Sendet eine Frequenz, die Konstruktabwehr stört",
+                        "cost_en": "The frequency is not selective \u2013 +20 stress to all agents",
+                        "cost_de": "Die Frequenz ist nicht selektiv \u2013 +20 Stress für alle Agenten",
+                        "boss_effect": {"type": "add_vulnerability", "value": 1, "school": "saboteur"},
+                    },
+                    "insight": 10,
+                },
+                partial_effects={"insight": 5, "stress": 25, "craft_failed": True},
+                fail_effects={"stress": 40, "insight": 4, "craft_failed": True},
+                success_narrative_en=(
+                    "The crystal shatters \u2013 not into fragments, but into frequency. "
+                    "The energy conduit amplifies it, shapes it, gives it purpose. "
+                    "What remains is a device that hums with directed intent. "
+                    "Ted Chiang's principle: the right combination of signs "
+                    "equals function. {agent} has found the right signs."
+                ),
+                success_narrative_de=(
+                    "Der Kristall zerbricht \u2013 nicht in Splitter, sondern in Frequenz. "
+                    "Die Energieleitung verstärkt sie, formt sie, gibt ihr Zweck. "
+                    "Was bleibt, ist ein Gerät, das mit gerichteter Absicht summt. "
+                    "Chiangs Prinzip: die richtige Kombination von Zeichen "
+                    "gleicht Funktion. {agent} hat die richtigen Zeichen gefunden."
+                ),
+                partial_narrative_en=(
+                    "The crystal fractures asymmetrically. The frequency scatters "
+                    "instead of focusing. Components consumed, nothing gained. "
+                    "But the scatter pattern is instructive."
+                ),
+                partial_narrative_de=(
+                    "Der Kristall bricht asymmetrisch. Die Frequenz streut, statt "
+                    "sich zu fokussieren. Komponenten verbraucht, nichts gewonnen. "
+                    "Aber das Streumuster ist lehrreich."
+                ),
+                fail_narrative_en=(
+                    "The energy arcs through the crystal and into {agent}. "
+                    "The device produces sound, not function. "
+                    "The workshop hums in what might be disappointment."
+                ),
+                fail_narrative_de=(
+                    "Die Energie fährt durch den Kristall und in {agent}. "
+                    "Das Gerät erzeugt Klang, nicht Funktion. "
+                    "Die Werkstatt summt in etwas, das Enttäuschung sein könnte."
+                ),
+            ),
+            EncounterChoice(
+                id="resonance_forge_study",
+                label_en="Study the device's harmonic properties (Spy)",
+                label_de="Die harmonischen Eigenschaften des Geräts studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 8},
+                partial_effects={"insight": 4},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "The device's frequency resolves into data. Not sound \u2013 "
+                    "information. {agent} catalogs the harmonics. The workshop "
+                    "has been singing this song for a long time."
+                ),
+                success_narrative_de=(
+                    "Die Frequenz des Geräts löst sich in Daten auf. Nicht Klang \u2013 "
+                    "Information. {agent} katalogisiert die Harmonien. Die Werkstatt "
+                    "singt dieses Lied schon lange."
+                ),
+                fail_narrative_en="The harmonics are beyond {agent}'s range. Some songs are not for human ears.",
+                fail_narrative_de="Die Harmonien liegen jenseits von {agent}s Bereich. Manche Lieder sind nicht für menschliche Ohren.",
+            ),
+        ],
+    ),
+    # ── Crafting Workshop: The Dissolution Bath ──
+    EncounterTemplate(
+        id="prometheus_dissolution_bath",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "A basin of liquid occupies a stone plinth. The liquid is not "
+            "water. It moves against itself \u2013 currents without wind, waves "
+            "without shore. Beside the basin: a mortar containing powder "
+            "residue, and grooves in the stone that suggest a precise "
+            "pouring sequence. The liquid watches the party. Süskind's "
+            "Grenouille would have understood: some dissolutions reveal "
+            "what was always there."
+        ),
+        description_de=(
+            "Ein Becken mit Flüssigkeit ruht auf einem Steinsockel. Die "
+            "Flüssigkeit ist kein Wasser. Sie bewegt sich gegen sich selbst "
+            "\u2013 Strömungen ohne Wind, Wellen ohne Ufer. Neben dem Becken: "
+            "ein Mörser mit Pulverrückstand und Rillen im Stein, die eine "
+            "präzise Gießsequenz nahelegen. Die Flüssigkeit beobachtet den "
+            "Trupp. Süskinds Grenouille hätte verstanden: manche Auflösungen "
+            "enthüllen, was immer schon da war."
+        ),
+        choices=[
+            EncounterChoice(
+                id="dissolution_combine",
+                label_en="Dissolve the powder into the reactive fluid (Saboteur)",
+                label_de="Das Pulver in der reaktiven Flüssigkeit auflösen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={
+                    "remove_components": ["comp_workshop_fluid", "comp_salvaged_powder"],
+                    "add_crafted_item": {
+                        "id": "craft_catalytic_solvent",
+                        "name_en": "Catalytic Solvent",
+                        "name_de": "Katalytisches Lösungsmittel",
+                        "benefit_en": "Corrodes construct plating, reducing evasion",
+                        "benefit_de": "Korrodiert Konstruktpanzerung, reduziert Ausweichen",
+                        "cost_en": "Fumes cause disorientation \u2013 +20 stress to all agents",
+                        "cost_de": "Dämpfe verursachen Desorientierung \u2013 +20 Stress für alle Agenten",
+                        "boss_effect": {"type": "reduce_evasion", "value": 10},
+                    },
+                    "insight": 10,
+                },
+                partial_effects={"insight": 5, "stress": 25, "craft_failed": True},
+                fail_effects={"stress": 40, "insight": 4, "craft_failed": True},
+                success_narrative_en=(
+                    "The powder dissolves. Not gradually \u2013 eagerly. The fluid "
+                    "changes color twice before settling into something that "
+                    "is not a color but a property. The solvent does not destroy. "
+                    "It reveals. It strips away what is not essential until only "
+                    "the vulnerable truth remains."
+                ),
+                success_narrative_de=(
+                    "Das Pulver löst sich. Nicht allmählich \u2013 eifrig. Die Flüssigkeit "
+                    "wechselt zweimal die Farbe, bevor sie sich in etwas niederlässt, "
+                    "das keine Farbe ist, sondern eine Eigenschaft. Das Lösungsmittel "
+                    "zerstört nicht. Es enthüllt. Es streift ab, was nicht wesentlich "
+                    "ist, bis nur die verwundbare Wahrheit bleibt."
+                ),
+                partial_narrative_en=(
+                    "The dissolution is incomplete. The fluid accepts the powder "
+                    "but refuses to change. Components consumed, lesson retained."
+                ),
+                partial_narrative_de=(
+                    "Die Auflösung ist unvollständig. Die Flüssigkeit nimmt das "
+                    "Pulver an, weigert sich aber zu verändern. Komponenten "
+                    "verbraucht, Lektion behalten."
+                ),
+                fail_narrative_en=(
+                    "The fluid recoils. The powder floats, undissolved, "
+                    "mocking {agent}'s proportions. Levi would note: the reaction "
+                    "tells you as much about yourself as about the reagent."
+                ),
+                fail_narrative_de=(
+                    "Die Flüssigkeit weicht zurück. Das Pulver schwimmt, ungelöst, "
+                    "{agent}s Proportionen verspottend. Levi würde anmerken: die "
+                    "Reaktion verrät ebenso viel über einen selbst wie über das Reagenz."
+                ),
+            ),
+            EncounterChoice(
+                id="dissolution_observe",
+                label_en="Analyze the fluid's reactive properties (Spy)",
+                label_de="Die reaktiven Eigenschaften der Flüssigkeit analysieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 8},
+                partial_effects={"insight": 4},
+                fail_effects={"stress": 15},
+                success_narrative_en=(
+                    "The fluid has memory. {agent} observes it cycling through "
+                    "phantom reactions \u2013 dissolutions it has performed before, "
+                    "preserved in its molecular structure like scars."
+                ),
+                success_narrative_de=(
+                    "{agent} beobachtet die Flüssigkeit beim Durchlaufen von "
+                    "Phantomreaktionen \u2013 Auflösungen, die sie zuvor durchgeführt hat, "
+                    "konserviert in ihrer Molekularstruktur wie Narben."
+                ),
+                fail_narrative_en="The fluid goes still. It does not perform for the unprepared.",
+                fail_narrative_de="Die Flüssigkeit erstarrt. Sie führt nicht für Unvorbereitete vor.",
+            ),
+        ],
+    ),
+    # ── Crafting Workshop: The Dampening Press ──
+    EncounterTemplate(
+        id="prometheus_dampening_press",
+        archetype="The Prometheus",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=2,
+        description_en=(
+            "A press of dark metal occupies the far wall. Two intake channels "
+            "converge at its center: one accepts metal, the other conducts "
+            "energy. The press does not forge \u2013 it absorbs. Jünger's "
+            "Gläserne Bienen described machines that consumed motion itself. "
+            "This press consumes force. It takes kinetic intention and "
+            "wraps it in metal until the violence forgets what it was for."
+        ),
+        description_de=(
+            "Eine Presse aus dunklem Metall nimmt die hintere Wand ein. Zwei "
+            "Einlasskanäle konvergieren in ihrer Mitte: einer nimmt Metall auf, "
+            "der andere leitet Energie. Die Presse schmiedet nicht \u2013 sie "
+            "absorbiert. Jüngers Gläserne Bienen beschrieben Maschinen, die "
+            "Bewegung selbst konsumierten. Diese Presse konsumiert Kraft. Sie "
+            "nimmt kinetische Absicht und wickelt sie in Metall, bis die "
+            "Gewalt vergisst, wofür sie bestimmt war."
+        ),
+        choices=[
+            EncounterChoice(
+                id="dampening_combine",
+                label_en="Feed metal and energy into the press (Saboteur)",
+                label_de="Metall und Energie in die Presse einspeisen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=5,
+                success_effects={
+                    "remove_components": ["comp_workshop_metal", "comp_vault_energy"],
+                    "add_crafted_item": {
+                        "id": "craft_dampening_coil",
+                        "name_en": "Dampening Coil",
+                        "name_de": "Dämpfungsspule",
+                        "benefit_en": "Absorbs kinetic force, weakening construct attacks",
+                        "benefit_de": "Absorbiert kinetische Kraft, schwächt Konstruktangriffe",
+                        "cost_en": "The absorbed energy must go somewhere \u2013 +25 stress to wielder",
+                        "cost_de": "Die absorbierte Energie muss irgendwohin \u2013 +25 Stress für den Träger",
+                        "boss_effect": {"type": "reduce_attack_power", "value": 2},
+                    },
+                    "insight": 10,
+                },
+                partial_effects={"insight": 5, "stress": 30, "craft_failed": True},
+                fail_effects={"stress": 45, "insight": 4, "craft_failed": True},
+                success_narrative_en=(
+                    "The press accepts the offering. Metal wraps around energy "
+                    "in a spiral that tightens beyond physical possibility. "
+                    "What emerges is a coil that hums with contained violence \u2013 "
+                    "not its own, but the violence it has already absorbed in "
+                    "the act of being made. Hephaestus forging a shield: "
+                    "the defense is born from captured offense."
+                ),
+                success_narrative_de=(
+                    "Die Presse nimmt die Gabe an. Metall wickelt sich um Energie "
+                    "in einer Spirale, die sich über physische Möglichkeit hinaus "
+                    "verengt. Was hervorkommt, ist eine Spule, die mit eingedämmter "
+                    "Gewalt summt \u2013 nicht ihrer eigenen, sondern der Gewalt, die "
+                    "sie bereits im Akt ihrer Erschaffung absorbiert hat. "
+                    "Hephaistos, der einen Schild schmiedet: die Verteidigung "
+                    "entsteht aus gefangener Offensive."
+                ),
+                partial_narrative_en=(
+                    "The press compresses, but the coil is loose. It absorbs "
+                    "ambient vibration, not directed force. The components "
+                    "merge imprecisely. Daedalus built wings; this is a feather."
+                ),
+                partial_narrative_de=(
+                    "Die Presse komprimiert, aber die Spule ist locker. Sie "
+                    "absorbiert Umgebungsvibrationen, nicht gerichtete Kraft. Die "
+                    "Komponenten verschmelzen unpräzise. Daedalus baute Flügel; "
+                    "dies ist eine Feder."
+                ),
+                fail_narrative_en=(
+                    "The energy rejects the metal. The press shudders and "
+                    "releases both components in a state neither recognizes. "
+                    "{agent} backs away. The workshop has demonstrated "
+                    "the concept of incompatibility."
+                ),
+                fail_narrative_de=(
+                    "Die Energie weist das Metall zurück. Die Presse schaudert "
+                    "und gibt beide Komponenten in einem Zustand frei, den "
+                    "keiner der beiden wiedererkennt. {agent} weicht zurück. Die "
+                    "Werkstatt hat das Konzept der Inkompatibilität demonstriert."
+                ),
+            ),
+            EncounterChoice(
+                id="dampening_study",
+                label_en="Study the press's absorption mechanism (Spy)",
+                label_de="Den Absorptionsmechanismus der Presse studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"insight": 8},
+                partial_effects={"insight": 4},
+                fail_effects={"stress": 15},
+                success_narrative_en=(
+                    "The press cycles through phantom compressions \u2013 absorbing "
+                    "forces that are no longer there. {agent} catalogs the patterns. "
+                    "The press remembers every force it has ever contained."
+                ),
+                success_narrative_de=(
+                    "Die Presse durchläuft Phantomkompressionen \u2013 absorbiert "
+                    "Kräfte, die nicht mehr da sind. {agent} katalogisiert die Muster. "
+                    "Die Presse erinnert sich an jede Kraft, die sie je eingedämmt hat."
+                ),
+                fail_narrative_en="The press goes dormant. It does not demonstrate for observers.",
+                fail_narrative_de="Die Presse fällt in Ruhezustand. Sie demonstriert nicht für Beobachter.",
+            ),
+        ],
+    ),
+]
+
+
+# ── Prometheus Elite Encounters (1) ──────────────────────────────────────
+
+PROMETHEUS_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="prometheus_forge_wraith_lair",
+        archetype="The Prometheus",
+        room_type="elite",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "An anvil that exists in two states simultaneously: hot and cold, "
+            "present and absent. A Forge Wraith works at it \u2013 smoke and metal "
+            "in the shape of a craftsman who cannot stop. A Spark Wisp orbits, "
+            "fetching tools from shelves that the party cannot see. "
+            "The Wraith does not stop when it notices you. "
+            "It incorporates your presence into its workflow."
+        ),
+        description_de=(
+            "Ein Amboss, der in zwei Zuständen gleichzeitig existiert: heiß und "
+            "kalt, anwesend und abwesend. Ein Schmiedewraith arbeitet daran \u2013 "
+            "Rauch und Metall in der Form eines Handwerkers, der nicht aufhören "
+            "kann. Ein Funkenglimmer umkreist ihn, holt Werkzeuge von Regalen, "
+            "die der Trupp nicht sehen kann. Das Wraith hält nicht inne, als es "
+            "euch bemerkt. Es bezieht eure Anwesenheit in seinen Arbeitsablauf ein."
+        ),
+        combat_encounter_id="prometheus_forge_elite_spawn",
+    ),
+]
+
+
+# ── Prometheus Boss Encounter (1) ────────────────────────────────────────
+
+PROMETHEUS_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="prometheus_the_prototype_encounter",
+        archetype="The Prometheus",
+        room_type="boss",
+        min_depth=4,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The final chamber is a workshop within a workshop. At its center: "
+            "The Prototype. It was supposed to be the masterwork \u2013 the "
+            "culmination of every experiment, every failed combination, "
+            "every spark that refused to go out. It is not finished. It does "
+            "not know this. It functions with the absolute confidence of an "
+            "unfinished thing that believes it is complete. "
+            "It looks at the party. It looks at the party's crafted items. "
+            "For a moment \u2013 recognition. Not of the party. Of kinship."
+        ),
+        description_de=(
+            "Die letzte Kammer ist eine Werkstatt innerhalb einer Werkstatt. "
+            "In ihrer Mitte: Der Prototyp. Er sollte das Meisterwerk werden \u2013 "
+            "die Kulmination jedes Experiments, jeder gescheiterten Kombination, "
+            "jedes Funkens, der sich weigerte zu verlöschen. Er ist nicht fertig. "
+            "Er weiß das nicht. Er funktioniert mit der absoluten Zuversicht "
+            "eines unfertigen Dings, das glaubt, es sei vollständig. "
+            "Er betrachtet den Trupp. Er betrachtet die gecrafteten Gegenstände "
+            "des Trupps. Einen Moment lang \u2013 Wiedererkennung. "
+            "Nicht des Trupps. Der Verwandtschaft."
+        ),
+        combat_encounter_id="prometheus_prototype_boss_spawn",
+    ),
+]
+
+
+# ── Prometheus Rest Encounters (1) ───────────────────────────────────────
+
+PROMETHEUS_REST_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="prometheus_cooling_chamber",
+        archetype="The Prometheus",
+        room_type="rest",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A chamber where the temperature drops. The forge-heat that "
+            "permeates the workshop is absent here. Tools are stored neatly. "
+            "A bench of dark wood invites sitting. On a shelf: a decanter "
+            "of clear liquid that might be water. The workshop provides this "
+            "room the way a fever provides a chill \u2013 not as relief, "
+            "but as the other half of a cycle."
+        ),
+        description_de=(
+            "Eine Kammer, in der die Temperatur sinkt. Die Schmiedehitze, "
+            "die die Werkstatt durchdringt, fehlt hier. Werkzeuge sind "
+            "ordentlich verstaut. Eine Bank aus dunklem Holz lädt zum Sitzen "
+            "ein. Auf einem Regal: eine Karaffe mit klarer Flüssigkeit, die "
+            "Wasser sein könnte. Die Werkstatt stellt diesen Raum bereit, "
+            "wie ein Fieber Schüttelfrost bereitstellt \u2013 nicht als "
+            "Erleichterung, sondern als die andere Hälfte eines Zyklus."
+        ),
+        choices=[
+            EncounterChoice(
+                id="cooling_rest",
+                label_en="Rest and let the fire cool",
+                label_de="Ruhen und das Feuer abkühlen lassen",
+                success_effects={"stress_heal": 40},
+                success_narrative_en=(
+                    "The party rests. The ambient hum of the workshop fades to a "
+                    "murmur. When they rise, the fire in their instruments has "
+                    "dimmed. They are calmer. They are also less inspired. "
+                    "The forge does not judge this."
+                ),
+                success_narrative_de=(
+                    "Der Trupp ruht. Das Hintergrundsummen der Werkstatt verblasst "
+                    "zu einem Murmeln. Als sie aufstehen, ist das Feuer in ihren "
+                    "Instrumenten gedämpft. Sie sind ruhiger. Sie sind auch "
+                    "weniger inspiriert. Die Schmiede verurteilt das nicht."
+                ),
+            ),
+            EncounterChoice(
+                id="cooling_tinker",
+                label_en="Use the quiet to examine your components (Spy)",
+                label_de="Die Ruhe nutzen, um eure Komponenten zu untersuchen (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"stress_heal": 20, "insight": 5},
+                partial_effects={"stress_heal": 10},
+                fail_effects={"stress": 10},
+                success_narrative_en=(
+                    "In the quiet, {agent} examines the components more carefully. "
+                    "Patterns emerge. Connections that were invisible in the heat "
+                    "of the workshop reveal themselves in the cold."
+                ),
+                success_narrative_de=(
+                    "In der Stille untersucht {agent} die Komponenten genauer. "
+                    "Muster treten hervor. Verbindungen, die in der Hitze der "
+                    "Werkstatt unsichtbar waren, offenbaren sich in der Kühle."
+                ),
+                fail_narrative_en="The components do not cooperate in the cold. They prefer the heat.",
+                fail_narrative_de="Die Komponenten kooperieren nicht in der Kühle. Sie bevorzugen die Hitze.",
+            ),
+        ],
+    ),
+]
+
+
+# ── Prometheus Treasure Encounters (1) ───────────────────────────────────
+
+PROMETHEUS_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="prometheus_component_vault",
+        archetype="The Prometheus",
+        room_type="treasure",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A vault. Not locked \u2013 the workshop does not believe in locked "
+            "doors. Inside: materials, sorted with obsessive precision. "
+            "Each drawer is labeled in a language that predates the workshop. "
+            "The labels are not names \u2013 they are descriptions of potential. "
+            "What each material could become if handled by the right hands."
+        ),
+        description_de=(
+            "Ein Tresorraum. Nicht verschlossen \u2013 die Werkstatt glaubt nicht an "
+            "verschlossene Türen. Darin: Materialien, mit obsessiver Präzision "
+            "sortiert. Jede Schublade ist in einer Sprache beschriftet, die älter "
+            "ist als die Werkstatt. Die Beschriftungen sind keine Namen \u2013 "
+            "sie sind Beschreibungen von Potential. Was jedes Material werden "
+            "könnte, wenn es von den richtigen Händen behandelt wird."
+        ),
+        choices=[
+            EncounterChoice(
+                id="vault_powder",
+                label_en="Take the volatile powder (Saboteur)",
+                label_de="Das flüchtige Pulver nehmen (Saboteur)",
+                check_aptitude="saboteur",
+                check_difficulty=-5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_volatile_powder",
+                        "name_en": "Volatile Catalyst Powder",
+                        "name_de": "Flüchtiges Katalysatorpulver",
+                        "type": "powder",
+                    },
+                    "insight": 5,
+                },
+                partial_effects={"insight": 2, "stress": 10},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "The powder settles in its container. For now. "
+                    "It dissipates under stress \u2013 a property it shares with confidence."
+                ),
+                success_narrative_de=(
+                    "Das Pulver setzt sich in seinem Behälter ab. Vorerst. "
+                    "Es verflüchtigt sich unter Stress \u2013 eine Eigenschaft, "
+                    "die es mit Zuversicht teilt."
+                ),
+                fail_narrative_en="The powder reacts to {agent}'s uncertainty. It dissipates. Proving its point.",
+                fail_narrative_de="Das Pulver reagiert auf {agent}s Unsicherheit. Es verflüchtigt sich. Seinen Punkt beweisend.",
+            ),
+            EncounterChoice(
+                id="vault_energy",
+                label_en="Extract the energy core (Infiltrator)",
+                label_de="Den Energiekern extrahieren (Infiltrator)",
+                check_aptitude="infiltrator",
+                check_difficulty=-5,
+                success_effects={
+                    "add_component": {
+                        "id": "comp_vault_energy",
+                        "name_en": "Stabilized Energy Core",
+                        "name_de": "Stabilisierter Energiekern",
+                        "type": "energy",
+                    },
+                    "insight": 5,
+                },
+                partial_effects={"insight": 2, "stress": 10},
+                fail_effects={"stress": 20},
+                success_narrative_en=(
+                    "The core hums. A contained fire. It WANTS to be used. "
+                    "Every gift is also a weapon \u2013 but this one is honest about it."
+                ),
+                success_narrative_de=(
+                    "Der Kern summt. Ein eingedämmtes Feuer. Er WILL benutzt werden. "
+                    "Jede Gabe ist auch eine Waffe \u2013 aber diese ist ehrlich darüber."
+                ),
+                fail_narrative_en="The core pulses once. A warning. {agent} withdraws.",
+                fail_narrative_de="Der Kern pulsiert einmal. Eine Warnung. {agent} zieht sich zurück.",
+            ),
+        ],
+    ),
+]
+
+
+# ── Prometheus Master List ────────────────────────────────────────────────
+
+ALL_PROMETHEUS_ENCOUNTERS: list[EncounterTemplate] = (
+    PROMETHEUS_COMBAT_ENCOUNTERS
+    + PROMETHEUS_NARRATIVE_ENCOUNTERS
+    + PROMETHEUS_ELITE_ENCOUNTERS
+    + PROMETHEUS_BOSS_ENCOUNTERS
+    + PROMETHEUS_REST_ENCOUNTERS
+    + PROMETHEUS_TREASURE_ENCOUNTERS
+)
+
+
 # ── Archetype Encounter Registry ──────────────────────────────────────────
 
 _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
@@ -3993,6 +5179,7 @@ _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
     "The Tower": ALL_TOWER_ENCOUNTERS,
     "The Entropy": ALL_ENTROPY_ENCOUNTERS,
     "The Devouring Mother": ALL_MOTHER_ENCOUNTERS,
+    "The Prometheus": ALL_PROMETHEUS_ENCOUNTERS,
 }
 
 

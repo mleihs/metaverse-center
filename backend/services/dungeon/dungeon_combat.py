@@ -852,6 +852,350 @@ MOTHER_SPAWN_CONFIGS: dict[str, list[dict]] = {
     ],
 }
 
+# ── Prometheus Enemy Templates ────────────────────────────────────────────
+# Construct-themed enemies. The workshop's creations turned sentinels.
+# Literary DNA: Hephaestus (divine craftsman), Čapek (robots gaining will),
+# Schulz (matter with agency), Hoffmann (uncanny automata).
+# Tone: mechanical precision, NOT horror. They function. They observe.
+
+PROMETHEUS_ENEMIES: dict[str, EnemyTemplate] = {
+    "prometheus_spark_wisp": EnemyTemplate(
+        id="prometheus_spark_wisp",
+        name_en="Spark Wisp",
+        name_de="Funkenglimmer",
+        archetype="The Prometheus",
+        condition_threshold=1,
+        stress_resistance=20,
+        threat_level="minion",
+        attack_aptitude="infiltrator",
+        attack_power=2,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=45,
+        resistances=["guardian"],
+        vulnerabilities=["saboteur"],
+        action_weights={"stress_attack": 50, "evade": 40, "ambient": 10},
+        description_en=(
+            "A spark that refused to go out. It orbits the party "
+            "like a hypothesis testing itself."
+        ),
+        description_de=(
+            "Ein Funke, der sich weigerte zu verlöschen. Er umkreist "
+            "den Trupp wie eine Hypothese, die sich selbst überprüft."
+        ),
+        ambient_text_en=[
+            "The wisp accelerates, decelerates. Calculating.",
+            "It pulses once \u2013 a question in light.",
+        ],
+        ambient_text_de=[
+            "Der Glimmer beschleunigt, bremst. Kalkulierend.",
+            "Er pulsiert einmal \u2013 eine Frage aus Licht.",
+        ],
+    ),
+    "prometheus_alloy_sentinel": EnemyTemplate(
+        id="prometheus_alloy_sentinel",
+        name_en="Alloy Sentinel",
+        name_de="Legierungswächter",
+        archetype="The Prometheus",
+        condition_threshold=3,
+        stress_resistance=100,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=2,
+        telegraphed_intent=True,
+        evasion=5,
+        resistances=["assassin", "infiltrator"],
+        vulnerabilities=["saboteur"],
+        action_weights={"attack": 55, "defend": 35, "ambient": 10},
+        special_abilities=["fortify"],
+        description_en=(
+            "Forged from an alloy that does not appear in any periodic table. "
+            "It stands where the workshop needs it to stand. "
+            "It does not question this."
+        ),
+        description_de=(
+            "Geschmiedet aus einer Legierung, die in keinem Periodensystem "
+            "vorkommt. Er steht, wo die Werkstatt ihn braucht. "
+            "Er hinterfragt das nicht."
+        ),
+        ambient_text_en=[
+            "The sentinel shifts its weight. Metal grinds on metal, almost melodic.",
+            "Its surface reflects the party \u2013 distorted. Better, somehow.",
+        ],
+        ambient_text_de=[
+            "Der Wächter verlagert sein Gewicht. Metall reibt auf Metall, beinahe melodisch.",
+            "Seine Oberfläche spiegelt den Trupp \u2013 verzerrt. Irgendwie besser.",
+        ],
+    ),
+    "prometheus_slag_golem": EnemyTemplate(
+        id="prometheus_slag_golem",
+        name_en="Slag Golem",
+        name_de="Schlackengolem",
+        archetype="The Prometheus",
+        condition_threshold=3,
+        stress_resistance=200,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=6,
+        stress_attack_power=1,
+        telegraphed_intent=True,
+        evasion=0,
+        resistances=["spy", "propagandist"],
+        vulnerabilities=["saboteur", "assassin"],
+        action_weights={"attack": 60, "grapple": 30, "ambient": 10},
+        special_abilities=["grapple"],
+        description_en=(
+            "The residue of failed experiments, accumulated and compacted "
+            "until it gained mass, then purpose. It does not hate the party. "
+            "It is simply in the way."
+        ),
+        description_de=(
+            "Der Rückstand gescheiterter Versuche, angesammelt und verdichtet, "
+            "bis er Masse gewann, dann Zweck. Er hasst den Trupp nicht. "
+            "Er steht einfach im Weg."
+        ),
+        ambient_text_en=[
+            "The golem shifts. Somewhere inside, a failed alloy groans.",
+            "It leaves residue on the floor. The residue is warm.",
+        ],
+        ambient_text_de=[
+            "Der Golem verlagert sich. Irgendwo in seinem Inneren stöhnt eine gescheiterte Legierung.",
+            "Er hinterlässt Rückstände am Boden. Die Rückstände sind warm.",
+        ],
+    ),
+    "prometheus_crucible_drake": EnemyTemplate(
+        id="prometheus_crucible_drake",
+        name_en="Crucible Drake",
+        name_de="Tiegeldrache",
+        archetype="The Prometheus",
+        condition_threshold=2,
+        stress_resistance=50,
+        threat_level="standard",
+        attack_aptitude="saboteur",
+        attack_power=4,
+        stress_attack_power=5,
+        telegraphed_intent=True,
+        evasion=25,
+        resistances=["guardian"],
+        vulnerabilities=["spy", "infiltrator"],
+        action_weights={"attack": 40, "stress_attack": 40, "ambient": 20},
+        description_en=(
+            "A construct of molten flux and crystallized heat. "
+            "It was a crucible once. Now it moves. "
+            "The fire inside it has opinions."
+        ),
+        description_de=(
+            "Ein Konstrukt aus geschmolzenem Flussmittel und kristallisierter Hitze. "
+            "Es war einmal ein Tiegel. Nun bewegt er sich. "
+            "Das Feuer in ihm hat Meinungen."
+        ),
+        ambient_text_en=[
+            "The drake exhales. Not flame \u2013 fumes. The fumes smell like ideas.",
+            "Its surface ripples. A chemical reaction, or a thought.",
+        ],
+        ambient_text_de=[
+            "Der Drache atmet aus. Keine Flamme \u2013 Dämpfe. Die Dämpfe riechen nach Ideen.",
+            "Seine Oberfläche kräuselt sich. Eine chemische Reaktion, oder ein Gedanke.",
+        ],
+    ),
+    "prometheus_automaton_shard": EnemyTemplate(
+        id="prometheus_automaton_shard",
+        name_en="Automaton Shard",
+        name_de="Automatensplitter",
+        archetype="The Prometheus",
+        condition_threshold=2,
+        stress_resistance=0,
+        threat_level="standard",
+        attack_aptitude="assassin",
+        attack_power=5,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=30,
+        resistances=[],
+        vulnerabilities=["guardian"],
+        action_weights={"attack": 55, "evade": 25, "ambient": 20},
+        description_en=(
+            "A fragment of something larger that was never completed. "
+            "Or that completed itself in ways its designer did not intend. "
+            "It moves with the precision of a blueprint and the malice of a splinter."
+        ),
+        description_de=(
+            "Ein Fragment von etwas Größerem, das nie fertiggestellt wurde. "
+            "Oder das sich auf Arten vollendete, die sein Konstrukteur nicht beabsichtigt hatte. "
+            "Es bewegt sich mit der Präzision einer Blaupause und der Bosheit eines Splitters."
+        ),
+        ambient_text_en=[
+            "The shard rotates, catching light. For a moment it looks like a tool.",
+            "It clicks. Not mechanically \u2013 like a decision being made.",
+        ],
+        ambient_text_de=[
+            "Der Splitter dreht sich, fängt Licht. Einen Moment lang sieht er aus wie ein Werkzeug.",
+            "Er klickt. Nicht mechanisch \u2013 wie eine Entscheidung, die getroffen wird.",
+        ],
+    ),
+    "prometheus_forge_wraith": EnemyTemplate(
+        id="prometheus_forge_wraith",
+        name_en="Forge Wraith",
+        name_de="Schmiedewraith",
+        archetype="The Prometheus",
+        condition_threshold=4,
+        stress_resistance=120,
+        threat_level="elite",
+        attack_aptitude="saboteur",
+        attack_power=6,
+        stress_attack_power=5,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["infiltrator", "assassin"],
+        vulnerabilities=["spy", "guardian"],
+        action_weights={"attack": 40, "stress_attack": 30, "corrode": 20, "ambient": 10},
+        special_abilities=["corrode", "fortify"],
+        description_en=(
+            "Smoke and metal in the shape of a craftsman. "
+            "It works at an invisible anvil, hammering things that are not there. "
+            "When it notices the party, it does not stop working. "
+            "It incorporates them."
+        ),
+        description_de=(
+            "Rauch und Metall in der Form eines Handwerkers. "
+            "Er arbeitet an einem unsichtbaren Amboss, hämmert Dinge, die nicht da sind. "
+            "Als er den Trupp bemerkt, hört er nicht auf zu arbeiten. "
+            "Er bezieht sie ein."
+        ),
+        ambient_text_en=[
+            "The wraith hammers. Each strike reshapes the air.",
+            "It pauses. Inspects its invisible work. Nods. Continues.",
+            "Something in its forge-glow looks like recognition.",
+        ],
+        ambient_text_de=[
+            "Das Wraith hämmert. Jeder Schlag formt die Luft um.",
+            "Es hält inne. Inspiziert sein unsichtbares Werk. Nickt. Fährt fort.",
+            "Etwas in seinem Schmiedeglühen sieht aus wie Wiedererkennung.",
+        ],
+    ),
+    "prometheus_workshop_guardian": EnemyTemplate(
+        id="prometheus_workshop_guardian",
+        name_en="Workshop Guardian",
+        name_de="Werkstattwächter",
+        archetype="The Prometheus",
+        condition_threshold=5,
+        stress_resistance=150,
+        threat_level="elite",
+        attack_aptitude="guardian",
+        attack_power=7,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=5,
+        resistances=["assassin", "spy"],
+        vulnerabilities=["saboteur"],
+        action_weights={"attack": 45, "defend": 30, "grapple": 15, "ambient": 10},
+        special_abilities=["grapple", "fortify"],
+        description_en=(
+            "It was built to protect the workshop. "
+            "It has been doing this for longer than the workshop has existed. "
+            "Its loyalty is not to the current configuration \u2013 "
+            "it is to the IDEA of the workshop."
+        ),
+        description_de=(
+            "Er wurde gebaut, um die Werkstatt zu schützen. "
+            "Er tut dies seit länger als die Werkstatt existiert. "
+            "Seine Loyalität gilt nicht der aktuellen Konfiguration \u2013 "
+            "sie gilt der IDEE der Werkstatt."
+        ),
+        ambient_text_en=[
+            "The guardian's joints click in sequence. A readiness check.",
+            "It watches {agent} with something that, in a living thing, would be called interest.",
+        ],
+        ambient_text_de=[
+            "Die Gelenke des Wächters klicken in Reihenfolge. Ein Bereitschaftscheck.",
+            "Er beobachtet {agent} mit etwas, das bei einem Lebewesen Interesse hieße.",
+        ],
+    ),
+    "prometheus_the_prototype": EnemyTemplate(
+        id="prometheus_the_prototype",
+        name_en="The Prototype",
+        name_de="Der Prototyp",
+        archetype="The Prometheus",
+        condition_threshold=6,
+        stress_resistance=200,
+        threat_level="boss",
+        attack_aptitude="saboteur",
+        attack_power=7,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=["guardian", "spy", "propagandist"],
+        vulnerabilities=[],
+        action_weights={"attack": 35, "stress_attack": 30, "defend": 20, "special": 15},
+        special_abilities=["fortify", "corrode"],
+        description_en=(
+            "It was supposed to be the masterwork. The culmination. "
+            "The thing the workshop has been building toward since the first "
+            "spark was struck. It is not finished. It does not know this. "
+            "It functions with the absolute confidence of an unfinished thing "
+            "that believes it is complete."
+        ),
+        description_de=(
+            "Es sollte das Meisterwerk werden. Die Kulmination. "
+            "Das Ding, auf das die Werkstatt seit dem ersten geschlagenen "
+            "Funken hingearbeitet hat. Es ist nicht fertig. Es weiß das nicht. "
+            "Es funktioniert mit der absoluten Zuversicht eines unfertigen Dings, "
+            "das glaubt, es sei vollständig."
+        ),
+        ambient_text_en=[
+            "The Prototype adjusts. Not to the party \u2013 to itself. Self-calibrating.",
+            "Something inside it whirs. A sound like ambition.",
+            "It looks at the party's crafted items. For a moment \u2013 envy.",
+            "The Prototype's surface shifts. Adapting. Learning.",
+        ],
+        ambient_text_de=[
+            "Der Prototyp justiert sich. Nicht auf den Trupp \u2013 auf sich selbst. Selbstkalibrierend.",
+            "Etwas in seinem Inneren surrt. Ein Geräusch wie Ambition.",
+            "Er betrachtet die gecrafteten Gegenstände des Trupps. Einen Moment lang \u2013 Neid.",
+            "Die Oberfläche des Prototypen verschiebt sich. Anpassend. Lernend.",
+        ],
+    ),
+}
+
+
+# ── Prometheus Combat Spawn Configurations ────────────────────────────────
+
+PROMETHEUS_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    "prometheus_sparks_spawn": [
+        {"template_id": "prometheus_spark_wisp", "count": 3},
+    ],
+    "prometheus_workshop_patrol_spawn": [
+        {"template_id": "prometheus_alloy_sentinel", "count": 1},
+        {"template_id": "prometheus_spark_wisp", "count": 1},
+    ],
+    "prometheus_construct_pair_spawn": [
+        {"template_id": "prometheus_crucible_drake", "count": 1},
+        {"template_id": "prometheus_automaton_shard", "count": 1},
+    ],
+    "prometheus_residue_spawn": [
+        {"template_id": "prometheus_slag_golem", "count": 1},
+        {"template_id": "prometheus_spark_wisp", "count": 2},
+    ],
+    "prometheus_forge_elite_spawn": [
+        {"template_id": "prometheus_forge_wraith", "count": 1},
+        {"template_id": "prometheus_spark_wisp", "count": 1},
+    ],
+    "prometheus_guardian_elite_spawn": [
+        {"template_id": "prometheus_workshop_guardian", "count": 1},
+        {"template_id": "prometheus_alloy_sentinel", "count": 1},
+    ],
+    "prometheus_prototype_boss_spawn": [
+        {"template_id": "prometheus_the_prototype", "count": 1},
+        {"template_id": "prometheus_spark_wisp", "count": 2},
+    ],
+    # Rest site ambush (light)
+    "prometheus_rest_ambush_spawn": [
+        {"template_id": "prometheus_spark_wisp", "count": 2},
+    ],
+}
+
+
 # ── Archetype Registries ──────────────────────────────────────────────────
 # Data lookup by archetype name — zero conditionals. New archetypes add entries.
 
@@ -860,6 +1204,7 @@ _ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
     "The Tower": TOWER_ENEMIES,
     "The Entropy": ENTROPY_ENEMIES,
     "The Devouring Mother": MOTHER_ENEMIES,
+    "The Prometheus": PROMETHEUS_ENEMIES,
 }
 
 _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
@@ -867,6 +1212,7 @@ _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
     "The Tower": TOWER_SPAWN_CONFIGS,
     "The Entropy": ENTROPY_SPAWN_CONFIGS,
     "The Devouring Mother": MOTHER_SPAWN_CONFIGS,
+    "The Prometheus": PROMETHEUS_SPAWN_CONFIGS,
 }
 
 

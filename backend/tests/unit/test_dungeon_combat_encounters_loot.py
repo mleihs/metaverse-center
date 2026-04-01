@@ -23,6 +23,12 @@ from unittest.mock import patch
 import pytest
 
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
+from backend.services.dungeon.dungeon_banter import (
+    _BANTER_REGISTRIES,
+    SHADOW_BANTER,
+    TOWER_BANTER,
+    select_banter,
+)
 from backend.services.dungeon.dungeon_combat import (
     _ENEMY_REGISTRIES,
     _SPAWN_REGISTRIES,
@@ -35,14 +41,10 @@ from backend.services.dungeon.dungeon_combat import (
     spawn_enemies,
 )
 from backend.services.dungeon.dungeon_encounters import (
-    _BANTER_REGISTRIES,
     _ENCOUNTER_REGISTRIES,
     ALL_SHADOW_ENCOUNTERS,
     ALL_TOWER_ENCOUNTERS,
-    SHADOW_BANTER,
-    TOWER_BANTER,
     get_encounter_by_id,
-    select_banter,
     select_encounter,
 )
 from backend.services.dungeon.dungeon_loot import (

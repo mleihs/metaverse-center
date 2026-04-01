@@ -74,11 +74,13 @@ class TestArchetypeConfigs:
         assert "aptitude_weights" in shadow
         assert shadow["aptitude_weights"]["spy"] == "critical"
 
-    def test_shadow_has_atmosphere_text(self):
+    def test_shadow_has_atmosphere_text_keys(self):
         shadow = ARCHETYPE_CONFIGS["The Shadow"]
         assert "atmosphere_enter_en" in shadow
         assert "atmosphere_enter_de" in shadow
-        assert len(shadow["atmosphere_enter_en"]) > 50
+        # Atmosphere texts are now served from DB (entrance_texts table);
+        # config retains empty-string keys for backwards compatibility.
+        assert isinstance(shadow["atmosphere_enter_en"], str)
 
     def test_shadow_signature_is_conflict_wave(self):
         assert ARCHETYPE_CONFIGS["The Shadow"]["signature"] == "conflict_wave"
@@ -154,7 +156,7 @@ class TestDifficultyMultipliers:
 
     def test_difficulty_5_peak(self):
         d5 = DIFFICULTY_MULTIPLIERS[5]
-        assert d5["enemy_power"] == 1.75
+        assert d5["enemy_power"] == 1.6
         assert d5["depth"] == 7
 
 

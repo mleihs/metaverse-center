@@ -196,8 +196,59 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "title_de": "Die Werkstatt der Goetter",
         "tagline_en": "Fire stolen from the gods. Every gift is also a weapon.",
         "tagline_de": "Den Goettern gestohlenes Feuer. Jede Gabe ist auch eine Waffe.",
+        "prose_style": "Procedural. Scientific. The workshop described as alive, arranging itself. Components have personality. Innovation fever, not horror. Humor permitted (Lem). German compound nouns.",
         "mechanic": "crafting",
-        "mechanic_config": {},
+        "mechanic_config": {
+            "start_insight": 0,
+            "max_insight": 100,
+            # ── Accumulation rates (per room entry, by depth) ──
+            # The workshop reveals itself progressively — insight rises
+            # as the party moves deeper. Mirrors Entropy's accumulation
+            # but insight is BOTH resource and threat (pharmakon).
+            "gain_depth_1_2": 4,
+            "gain_depth_3_4": 7,
+            "gain_depth_5_plus": 10,
+            # ── Event-driven insight changes ──
+            "gain_on_combat_win": 5,       # studying defeated constructs
+            "gain_on_craft_success": 8,    # creative momentum builds
+            "gain_on_craft_fail": 4,       # Lem: "the residue is interesting"
+            "gain_on_treasure": 5,         # component discovery inspires
+            # ── Insight reduction ──
+            "reduce_on_rest": 15,          # the fire cools — deliberate respite
+            "drain_per_combat_round": 2,   # focus disrupted in combat
+            "drain_on_failed_check": 5,    # confusion breaks the flow
+            "drain_per_enemy_hit": 3,      # physical disruption
+            # ── Thresholds ──
+            "cold_forge_threshold": 20,    # below: crafting penalty
+            "inspired_threshold": 45,      # crafting bonus tier 1
+            "feverish_threshold": 75,      # crafting bonus tier 2 + stress
+            "breakthrough_threshold": 100, # legendary crafts + max stress
+            # ── Stress multipliers (the fire burns) ──
+            "stress_multiplier_75": 1.25,          # feverish: 25% more stress
+            "stress_multiplier_90": 1.50,          # white heat: 50% more stress
+            "breakthrough_stress_multiplier": 2.0, # breakthrough: double stress
+            # ── Crafting success modifiers ──
+            "craft_penalty_cold": -0.15,   # cold forge: -15% success
+            "craft_bonus_45": 0.15,        # inspired: +15% success
+            "craft_bonus_75": 0.30,        # feverish: +30% success
+            # ── High-insight ambush (volatile workshop) ──
+            "high_insight_ambush_75": 0.15,
+            "high_insight_ambush_90": 0.30,
+            # ── Inventory limits ──
+            "max_components": 8,
+            "max_crafted_items": 6,
+        },
+        "aptitude_weights": {
+            "saboteur": 30,       # critical: crafting, combination, material work
+            "spy": 20,            # high: scouting components, analysis
+            "infiltrator": 20,    # high: delicate assembly, precision
+            "guardian": 12,       # medium: protecting creations
+            "propagandist": 10,   # medium: inspiring the workshop
+            "assassin": 8,        # low: destructive, not creative
+        },
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     "The Awakening": {
         "signature": "consciousness_drift",
@@ -278,7 +329,7 @@ ARCHETYPE_ROOM_DISTRIBUTIONS: dict[str, dict[str, int]] = {
     "The Devouring Mother": {"combat": 35, "encounter": 30, "elite": 5, "rest": 10, "treasure": 10, "exit": 10},
     "The Deluge": {"combat": 30, "encounter": 35, "elite": 5, "rest": 5, "treasure": 15, "exit": 10},
     "The Overthrow": {"combat": 20, "encounter": 45, "elite": 5, "rest": 10, "treasure": 10, "exit": 10},
-    "The Prometheus": {"combat": 30, "encounter": 35, "elite": 5, "rest": 10, "treasure": 15, "exit": 5},
+    "The Prometheus": {"combat": 25, "encounter": 40, "elite": 5, "rest": 10, "treasure": 15, "exit": 5},
     "The Awakening": {"combat": 25, "encounter": 40, "elite": 5, "rest": 15, "treasure": 10, "exit": 5},
     "The Entropy": {"combat": 30, "encounter": 35, "elite": 5, "rest": 10, "treasure": 15, "exit": 5},
 }
