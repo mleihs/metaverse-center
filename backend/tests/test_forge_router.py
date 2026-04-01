@@ -9,9 +9,9 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
 from backend.models.common import CurrentUser
+from backend.tests.conftest import MOCK_ADMIN_EMAIL
 
 MOCK_USER_ID = uuid4()
-MOCK_ADMIN_EMAIL = "matthias@leihs.at"
 DRAFT_ID = uuid4()
 
 

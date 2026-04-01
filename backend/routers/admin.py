@@ -484,11 +484,15 @@ async def list_dungeon_overrides(
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
-    """List all simulations with their dungeon override configs (bulk)."""
-    # Fetch all active simulations
+    """List all template simulations with their dungeon override configs (bulk).
+
+    Excludes game_instance (epoch) and archived simulations — dungeon
+    overrides are only meaningful for template (base) simulations.
+    """
     sim_resp = (
         await admin_supabase.table("simulations")
         .select("id, name, slug")
+        .eq("simulation_type", "template")
         .is_("deleted_at", "null")
         .order("name")
         .execute()

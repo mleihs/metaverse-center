@@ -11,6 +11,13 @@ from backend.services import dungeon_content_service as _dcs
 
 MOCK_USER_ID = UUID("11111111-1111-1111-1111-111111111111")
 MOCK_USER_EMAIL = "test@velgarien.dev"
+MOCK_ADMIN_EMAIL = "admin-test@velgarien.dev"
+
+# Ensure the test admin email is always in the platform admin set,
+# regardless of env var configuration (avoids StopIteration in CI).
+from backend.dependencies import PLATFORM_ADMIN_EMAILS  # noqa: E402
+
+PLATFORM_ADMIN_EMAILS.add(MOCK_ADMIN_EMAIL)
 
 
 def _seed_content_cache() -> None:
@@ -22,7 +29,7 @@ def _seed_content_cache() -> None:
     if _dcs._content is not None:
         return  # already seeded
 
-    from backend.services.combat.ability_schools import ALL_ABILITIES, Ability
+    from backend.services.combat.ability_schools import ALL_ABILITIES
     from backend.services.dungeon.dungeon_banter import _BANTER_REGISTRIES
     from backend.services.dungeon.dungeon_combat import _ENEMY_REGISTRIES, _SPAWN_REGISTRIES
     from backend.services.dungeon.dungeon_encounters import _ENCOUNTER_REGISTRIES

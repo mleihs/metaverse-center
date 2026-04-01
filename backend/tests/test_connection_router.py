@@ -8,16 +8,15 @@ from fastapi.testclient import TestClient
 
 from backend.app import app
 from backend.dependencies import (
-    PLATFORM_ADMIN_EMAILS,
     get_admin_supabase,
     get_anon_supabase,
     get_current_user,
     get_supabase,
 )
 from backend.models.common import CurrentUser
-from backend.tests.conftest import MOCK_USER_ID
+from backend.tests.conftest import MOCK_ADMIN_EMAIL, MOCK_USER_ID
 
-ADMIN_EMAIL = next(iter(PLATFORM_ADMIN_EMAILS))
+ADMIN_EMAIL = MOCK_ADMIN_EMAIL
 
 SIM_A = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
