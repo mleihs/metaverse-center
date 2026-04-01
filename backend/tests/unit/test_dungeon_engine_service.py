@@ -41,13 +41,16 @@ from backend.models.resonance_dungeon import (
     RoomNode,
 )
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
-from backend.services.dungeon_engine_service import (
+from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
+from backend.services.dungeon_combat_service import DungeonCombatService
+from backend.services.dungeon_distribution_service import DungeonDistributionService
+from backend.services.dungeon_engine_service import DungeonEngineService
+from backend.services.dungeon_instance_store import store as _store
+from backend.services.dungeon_movement_service import DungeonMovementService
+from backend.services.dungeon_shared import (
     COMBAT_PLANNING_TIMEOUT_MS,
     INSTANCE_TTL_SECONDS,
     MAX_CONCURRENT_PER_SIM,
-    DungeonEngineService,
-    _active_instances,
-    _combat_timers,
 )
 from backend.tests.conftest import make_async_supabase_mock, make_chain_mock
 
@@ -130,12 +133,12 @@ def _make_instance(
 
 
 def _register_instance(instance: DungeonInstance) -> None:
-    """Put instance into module-level dict."""
-    _active_instances[str(instance.run_id)] = instance
+    """Put instance into the InstanceStore."""
+    _store.put(instance.run_id, instance)
 
 
 def _cleanup_instance(run_id: UUID) -> None:
-    _active_instances.pop(str(run_id), None)
+    _store.remove(run_id)
 
 
 def _make_mock_supabase():
@@ -162,19 +165,17 @@ def _make_enemy(instance_id: str = "enemy_1", steps: int = 4, max_steps: int | N
 @pytest.fixture(autouse=True)
 def _clean_instances():
     """Ensure module-level state is clean before/after every test."""
-    _active_instances.clear()
-    _combat_timers.clear()
+    _store.clear()
     yield
-    _active_instances.clear()
-    _combat_timers.clear()
+    _store.clear()
 
 
 @pytest.fixture()
 def noop_checkpoint():
-    """Patch _checkpoint and _log_event to async no-ops."""
+    """Patch checkpoint and log_event to async no-ops."""
     with (
-        patch.object(DungeonEngineService, "_checkpoint", new_callable=AsyncMock) as cp,
-        patch.object(DungeonEngineService, "_log_event", new_callable=AsyncMock) as le,
+        patch.object(DungeonCheckpointService, "checkpoint", new_callable=AsyncMock) as cp,
+        patch.object(DungeonCheckpointService, "log_event", new_callable=AsyncMock) as le,
     ):
         yield cp, le
 
@@ -182,7 +183,7 @@ def noop_checkpoint():
 @pytest.fixture()
 def noop_timer():
     """Patch _start_combat_timer to async no-op."""
-    with patch.object(DungeonEngineService, "_start_combat_timer", new_callable=AsyncMock) as t:
+    with patch.object(DungeonCombatService, "_start_combat_timer", new_callable=AsyncMock) as t:
         yield t
 
 
@@ -208,7 +209,7 @@ class TestGetInstance:
     async def test_found(self):
         instance = _make_instance()
         _register_instance(instance)
-        result = await DungeonEngineService._get_instance(instance.run_id)
+        result = await DungeonCheckpointService.get_instance(instance.run_id)
         assert result is instance
 
     @pytest.mark.asyncio
@@ -216,7 +217,7 @@ class TestGetInstance:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService._get_instance(uuid4())
+            await DungeonCheckpointService.get_instance(uuid4())
         assert exc_info.value.status_code == 404
 
 
@@ -337,7 +338,7 @@ class TestBuildClientState:
         instance = _make_instance(rooms=rooms)
         _register_instance(instance)
 
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.rooms[0].room_type == "entrance"
         assert state.rooms[1].room_type == "combat"
         assert state.rooms[2].room_type == "?"  # revealed but not scouted
@@ -348,19 +349,19 @@ class TestBuildClientState:
         rooms[3].revealed = False
         instance = _make_instance(rooms=rooms)
 
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.rooms[3].connections == []
 
     def test_current_room_marker(self):
         instance = _make_instance(current_room=2)
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.rooms[2].current is True
         assert state.rooms[0].current is False
 
     def test_party_abilities_populated(self):
         agent = _make_agent(aptitudes={"spy": 5, "guardian": 3})
         instance = _make_instance(party=[agent])
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
 
         assert len(state.party) == 1
         # spy 5 + guardian 3 should have abilities
@@ -372,7 +373,7 @@ class TestBuildClientState:
         agent_critical = _make_agent(stress=600)
         instance = _make_instance(party=[agent_normal, agent_tense, agent_critical])
 
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.party[0].stress_threshold == "normal"
         assert state.party[1].stress_threshold == "tense"
         assert state.party[2].stress_threshold == "critical"
@@ -382,7 +383,7 @@ class TestBuildClientState:
         combat = CombatState(enemies=[enemy], round_num=2, max_rounds=10, phase="planning")
         instance = _make_instance(phase="combat_planning", combat=combat)
 
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.combat is not None
         assert len(state.combat.enemies) == 1
         # steps=5 → "healthy" (not the exact number)
@@ -392,13 +393,13 @@ class TestBuildClientState:
 
     def test_no_combat_state_when_exploring(self):
         instance = _make_instance(phase="exploring", combat=None)
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.combat is None
 
     def test_archetype_state_passed_through(self):
         instance = _make_instance()
         instance.archetype_state = {"visibility": 2, "max_visibility": 3, "rooms_since_vp_loss": 1}
-        state = DungeonEngineService._build_client_state(instance)
+        state = DungeonCheckpointService.build_client_state(instance)
         assert state.archetype_state["visibility"] == 2
 
 
@@ -443,9 +444,19 @@ class TestCreateRun:
         """RPC returns fewer agents than requested → 400."""
         mock_sb = _make_mock_supabase()
         # RPC returns only 1 agent but we requested 2
-        rpc_chain = make_chain_mock(execute_data=[
-            {"id": str(uuid4()), "name": "Agent A", "aptitudes": {"spy": 5}, "personality": {}, "stress_level": 0, "mood_score": 0, "resilience": 0.5},
-        ])
+        rpc_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(uuid4()),
+                    "name": "Agent A",
+                    "aptitudes": {"spy": 5},
+                    "personality": {},
+                    "stress_level": 0,
+                    "mood_score": 0,
+                    "resilience": 0.5,
+                },
+            ]
+        )
         mock_sb.rpc.return_value = rpc_chain
 
         body = DungeonRunCreate(archetype="The Shadow", party_agent_ids=[uuid4(), uuid4()], difficulty=1)
@@ -468,49 +479,55 @@ class TestCreateRun:
         user_id = uuid4()
 
         # Mock RPC for party data
-        rpc_chain = make_chain_mock(execute_data=[
-            {
-                "id": str(agent1_id),
-                "name": "Agent Alpha",
-                "portrait_url": None,
-                "aptitudes": {"spy": 5, "guardian": 3},
-                "personality": {"openness": 0.7},
-                "stress_level": 50,
-                "mood_score": 10,
-                "resilience": 0.6,
-            },
-            {
-                "id": str(agent2_id),
-                "name": "Agent Beta",
-                "portrait_url": None,
-                "aptitudes": {"propagandist": 4},
-                "personality": {"neuroticism": 0.8},
-                "stress_level": 0,
-                "mood_score": -5,
-                "resilience": 0.4,
-            },
-        ])
+        rpc_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(agent1_id),
+                    "name": "Agent Alpha",
+                    "portrait_url": None,
+                    "aptitudes": {"spy": 5, "guardian": 3},
+                    "personality": {"openness": 0.7},
+                    "stress_level": 50,
+                    "mood_score": 10,
+                    "resilience": 0.6,
+                },
+                {
+                    "id": str(agent2_id),
+                    "name": "Agent Beta",
+                    "portrait_url": None,
+                    "aptitudes": {"propagandist": 4},
+                    "personality": {"neuroticism": 0.8},
+                    "stress_level": 0,
+                    "mood_score": -5,
+                    "resilience": 0.4,
+                },
+            ]
+        )
         admin_sb.rpc.return_value = rpc_chain
 
         # Mock table insert for run creation
         now = datetime.now(UTC).isoformat()
-        insert_chain = make_chain_mock(execute_data=[{
-            "id": str(run_id),
-            "simulation_id": str(sim_id),
-            "archetype": "The Shadow",
-            "resonance_signature": "shadow_conflict",
-            "party_agent_ids": [str(agent1_id), str(agent2_id)],
-            "party_player_ids": [str(user_id)],
-            "difficulty": 3,
-            "depth_target": 5,
-            "current_depth": 0,
-            "rooms_cleared": 0,
-            "rooms_total": 8,
-            "status": "exploring",
-            "outcome": None,
-            "completed_at": None,
-            "created_at": now,
-        }])
+        insert_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(run_id),
+                    "simulation_id": str(sim_id),
+                    "archetype": "The Shadow",
+                    "resonance_signature": "shadow_conflict",
+                    "party_agent_ids": [str(agent1_id), str(agent2_id)],
+                    "party_player_ids": [str(user_id)],
+                    "difficulty": 3,
+                    "depth_target": 5,
+                    "current_depth": 0,
+                    "rooms_cleared": 0,
+                    "rooms_total": 8,
+                    "status": "exploring",
+                    "outcome": None,
+                    "completed_at": None,
+                    "created_at": now,
+                }
+            ]
+        )
         admin_sb.table.return_value = insert_chain
 
         body = DungeonRunCreate(
@@ -527,8 +544,8 @@ class TestCreateRun:
         assert result["run"]["archetype"] == "The Shadow"
 
         # Verify instance registered in memory
-        assert str(run_id) in _active_instances
-        instance = _active_instances[str(run_id)]
+        assert _store.get(run_id) is not None
+        instance = _store.get(run_id)
         assert instance.archetype == "The Shadow"
         assert instance.difficulty == 3
         assert len(instance.party) == 2
@@ -544,26 +561,58 @@ class TestCreateRun:
         run_id = uuid4()
         sim_id = uuid4()
 
-        rpc_chain = make_chain_mock(execute_data=[
-            {"id": str(agent1_id), "name": "A", "aptitudes": {}, "personality": {}, "stress_level": 0, "mood_score": 0, "resilience": 0.5},
-            {"id": str(agent2_id), "name": "B", "aptitudes": {}, "personality": {}, "stress_level": 0, "mood_score": 0, "resilience": 0.5},
-        ])
+        rpc_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(agent1_id),
+                    "name": "A",
+                    "aptitudes": {},
+                    "personality": {},
+                    "stress_level": 0,
+                    "mood_score": 0,
+                    "resilience": 0.5,
+                },
+                {
+                    "id": str(agent2_id),
+                    "name": "B",
+                    "aptitudes": {},
+                    "personality": {},
+                    "stress_level": 0,
+                    "mood_score": 0,
+                    "resilience": 0.5,
+                },
+            ]
+        )
         admin_sb.rpc.return_value = rpc_chain
 
         now = datetime.now(UTC).isoformat()
-        insert_chain = make_chain_mock(execute_data=[{
-            "id": str(run_id), "simulation_id": str(sim_id), "archetype": "The Shadow",
-            "resonance_signature": "shadow_conflict", "party_agent_ids": [str(agent1_id), str(agent2_id)],
-            "party_player_ids": [], "difficulty": 1, "depth_target": 4, "current_depth": 0,
-            "rooms_cleared": 0, "rooms_total": 6, "status": "exploring", "outcome": None,
-            "completed_at": None, "created_at": now,
-        }])
+        insert_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(run_id),
+                    "simulation_id": str(sim_id),
+                    "archetype": "The Shadow",
+                    "resonance_signature": "shadow_conflict",
+                    "party_agent_ids": [str(agent1_id), str(agent2_id)],
+                    "party_player_ids": [],
+                    "difficulty": 1,
+                    "depth_target": 4,
+                    "current_depth": 0,
+                    "rooms_cleared": 0,
+                    "rooms_total": 6,
+                    "status": "exploring",
+                    "outcome": None,
+                    "completed_at": None,
+                    "created_at": now,
+                }
+            ]
+        )
         admin_sb.table.return_value = insert_chain
 
         body = DungeonRunCreate(archetype="The Shadow", party_agent_ids=[agent1_id, agent2_id], difficulty=1)
         await DungeonEngineService.create_run(admin_sb, sim_id, uuid4(), body)
 
-        instance = _active_instances[str(run_id)]
+        instance = _store.get(run_id)
         assert "visibility" in instance.archetype_state
         assert instance.archetype_state["visibility"] == 3
         assert instance.archetype_state["max_visibility"] == 3
@@ -614,12 +663,14 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
+            result = await DungeonEngineService.move_to_room(
+                _make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER
+            )
 
         assert instance.current_room == 1
         assert instance.turn == 1
@@ -634,10 +685,10 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
             await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
@@ -650,10 +701,10 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
             await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
@@ -667,12 +718,14 @@ class TestMoveToRoom:
 
         banter = {"id": "banter_test_01", "text_en": "Watch your step!", "text_de": "Pass auf!"}
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=banter),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=banter),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
+            result = await DungeonEngineService.move_to_room(
+                _make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER
+            )
 
         assert "banter_test_01" in instance.used_banter_ids
         assert result["banter"]["text_en"] == "Watch your step!"
@@ -684,10 +737,10 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
             await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
@@ -701,9 +754,11 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
+            result = await DungeonEngineService.move_to_room(
+                _make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER
+            )
 
         assert instance.phase == "exit"
         assert result.get("exit_available") is True
@@ -715,12 +770,14 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
-            result = await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
+            result = await DungeonEngineService.move_to_room(
+                _make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER
+            )
 
         assert instance.current_room == 1
         assert "state" in result
@@ -733,10 +790,10 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.select_banter", return_value=None),
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=False),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
             await DungeonEngineService.move_to_room(_make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER)
 
@@ -766,8 +823,8 @@ class TestEnterInteractiveRoom:
         instance = _make_instance()
         room = instance.rooms[2]  # encounter room
 
-        with patch("backend.services.dungeon_engine_service.select_encounter", return_value=enc):
-            result = DungeonEngineService._enter_interactive_room(instance, room)
+        with patch("backend.services.dungeon_movement_service.select_encounter", return_value=enc):
+            result = DungeonMovementService._enter_interactive_room(instance, room)
 
         assert result["encounter"] is True
         assert result["encounter_id"] == "enc_test"
@@ -779,8 +836,8 @@ class TestEnterInteractiveRoom:
         instance = _make_instance()
         room = instance.rooms[2]
 
-        with patch("backend.services.dungeon_engine_service.select_encounter", return_value=None):
-            result = DungeonEngineService._enter_interactive_room(instance, room)
+        with patch("backend.services.dungeon_movement_service.select_encounter", return_value=None):
+            result = DungeonMovementService._enter_interactive_room(instance, room)
 
         assert result["encounter"] is False
         assert instance.phase == "room_clear"
@@ -790,8 +847,8 @@ class TestEnterInteractiveRoom:
         instance = _make_instance()
         room = instance.rooms[3]  # rest room
 
-        with patch("backend.services.dungeon_engine_service.select_encounter", return_value=None):
-            result = DungeonEngineService._enter_interactive_room(instance, room)
+        with patch("backend.services.dungeon_movement_service.select_encounter", return_value=None):
+            result = DungeonMovementService._enter_interactive_room(instance, room)
 
         assert result["rest"] is True
         assert instance.phase == "rest"
@@ -805,10 +862,10 @@ class TestEnterInteractiveRoom:
             LootItem(id="loot_1", name_en="Minor Gem", name_de="Kleiner Edelstein", tier=1, effect_type="stress_heal"),
         ]
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot_items),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.roll_loot", return_value=loot_items),
         ):
-            result = DungeonEngineService._enter_interactive_room(instance, room)
+            result = DungeonMovementService._enter_interactive_room(instance, room)
 
         assert result["treasure"] is True
         assert result["auto_loot"] is True
@@ -823,10 +880,10 @@ class TestEnterInteractiveRoom:
         room = instance.rooms[4]
 
         with (
-            patch("backend.services.dungeon_engine_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]),
+            patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
+            patch("backend.services.dungeon_movement_service.roll_loot", return_value=[]),
         ):
-            DungeonEngineService._enter_interactive_room(instance, room)
+            DungeonMovementService._enter_interactive_room(instance, room)
 
         # Shadow treasure restores VP (restore_on_treasure from ARCHETYPE_CONFIGS)
         assert instance.archetype_state["visibility"] > 1
@@ -844,9 +901,7 @@ class TestSubmitCombatActions:
 
         with pytest.raises(HTTPException) as exc_info:
             sub = CombatSubmission(actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")])
-            await DungeonEngineService.submit_combat_actions(
-                _make_mock_supabase(), instance.run_id, _TEST_PLAYER, sub
-            )
+            await DungeonEngineService.submit_combat_actions(_make_mock_supabase(), instance.run_id, _TEST_PLAYER, sub)
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -859,9 +914,7 @@ class TestSubmitCombatActions:
         _register_instance(instance)
 
         sub = CombatSubmission(actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")])
-        result = await DungeonEngineService.submit_combat_actions(
-            _make_mock_supabase(), instance.run_id, player1, sub
-        )
+        result = await DungeonEngineService.submit_combat_actions(_make_mock_supabase(), instance.run_id, player1, sub)
 
         assert result["accepted"] is True
         assert result["waiting_for_players"] is True
@@ -885,9 +938,9 @@ class TestSubmitCombatActions:
         sub = CombatSubmission(actions=[CombatAction(agent_id=agent_id, ability_id="spy_observe", target_id="enemy_1")])
 
         with (
-            patch("backend.services.dungeon_engine_service.generate_enemy_actions", return_value=[]),
-            patch("backend.services.dungeon_engine_service.get_enemy_templates_dict", return_value={}),
-            patch("backend.services.dungeon_engine_service.resolve_combat_round") as mock_resolve,
+            patch("backend.services.dungeon_combat_service.generate_enemy_actions", return_value=[]),
+            patch("backend.services.dungeon_combat_service.get_enemy_templates_dict", return_value={}),
+            patch("backend.services.dungeon_combat_service.resolve_combat_round") as mock_resolve,
         ):
             mock_result = MagicMock()
             mock_result.round_num = 1
@@ -932,7 +985,7 @@ class TestHandleEncounterChoice:
 
         action = DungeonAction(action_type="encounter_choice", choice_id="c1")
         with (
-            patch("backend.services.dungeon_engine_service.get_encounter_by_id", return_value=None),
+            patch("backend.services.dungeon_movement_service.get_encounter_by_id", return_value=None),
             pytest.raises(HTTPException) as exc_info,
         ):
             await DungeonEngineService.handle_encounter_choice(
@@ -945,7 +998,9 @@ class TestHandleEncounterChoice:
         from backend.models.resonance_dungeon import EncounterChoice, EncounterTemplate
 
         enc = EncounterTemplate(
-            id="enc_test", archetype="The Shadow", room_type="encounter",
+            id="enc_test",
+            archetype="The Shadow",
+            room_type="encounter",
             choices=[EncounterChoice(id="c1", label_en="Go", label_de="Geh")],
         )
         instance = _make_instance(phase="encounter")
@@ -955,7 +1010,7 @@ class TestHandleEncounterChoice:
 
         action = DungeonAction(action_type="encounter_choice", choice_id="c_nonexistent")
         with (
-            patch("backend.services.dungeon_engine_service.get_encounter_by_id", return_value=enc),
+            patch("backend.services.dungeon_movement_service.get_encounter_by_id", return_value=enc),
             pytest.raises(HTTPException) as exc_info,
         ):
             await DungeonEngineService.handle_encounter_choice(
@@ -976,7 +1031,9 @@ class TestHandleEncounterChoice:
             success_narrative_de="Ihr habt etwas gefunden.",
         )
         enc = EncounterTemplate(
-            id="enc_test", archetype="The Shadow", room_type="encounter",
+            id="enc_test",
+            archetype="The Shadow",
+            room_type="encounter",
             choices=[choice],
         )
         instance = _make_instance(phase="encounter", current_room=2)
@@ -985,7 +1042,7 @@ class TestHandleEncounterChoice:
         _register_instance(instance)
 
         action = DungeonAction(action_type="encounter_choice", choice_id="c1")
-        with patch("backend.services.dungeon_engine_service.get_encounter_by_id", return_value=enc):
+        with patch("backend.services.dungeon_movement_service.get_encounter_by_id", return_value=enc):
             result = await DungeonEngineService.handle_encounter_choice(
                 _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
@@ -1013,7 +1070,9 @@ class TestHandleEncounterChoice:
             fail_narrative_de="Fehlgeschlagen.",
         )
         enc = EncounterTemplate(
-            id="enc_test", archetype="The Shadow", room_type="encounter",
+            id="enc_test",
+            archetype="The Shadow",
+            room_type="encounter",
             choices=[choice],
         )
         agent = _make_agent(aptitudes={"spy": 8})
@@ -1030,8 +1089,8 @@ class TestHandleEncounterChoice:
         mock_outcome.breakdown = {"base": 75}
 
         with (
-            patch("backend.services.dungeon_engine_service.get_encounter_by_id", return_value=enc),
-            patch("backend.services.dungeon_engine_service.resolve_skill_check", return_value=mock_outcome),
+            patch("backend.services.dungeon_movement_service.get_encounter_by_id", return_value=enc),
+            patch("backend.services.dungeon_movement_service.resolve_skill_check", return_value=mock_outcome),
         ):
             result = await DungeonEngineService.handle_encounter_choice(
                 _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
@@ -1064,7 +1123,9 @@ class TestScout:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
+            await DungeonEngineService.scout(
+                _make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER
+            )
         assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -1075,7 +1136,9 @@ class TestScout:
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
-            await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
+            await DungeonEngineService.scout(
+                _make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER
+            )
         assert exc_info.value.status_code == 400
         assert "Spy 3+" in exc_info.value.detail
 
@@ -1089,7 +1152,9 @@ class TestScout:
         instance = _make_instance(current_room=0, party=[agent], rooms=rooms)
         _register_instance(instance)
 
-        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
+        result = await DungeonEngineService.scout(
+            _make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER
+        )
 
         assert result["revealed_rooms"] > 0
         assert "state" in result
@@ -1101,7 +1166,9 @@ class TestScout:
         instance.archetype_state = {"visibility": 1, "max_visibility": 3, "rooms_since_vp_loss": 0}
         _register_instance(instance)
 
-        result = await DungeonEngineService.scout(_make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER)
+        result = await DungeonEngineService.scout(
+            _make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER
+        )
 
         assert instance.archetype_state["visibility"] > 1
         assert result["visibility"] == instance.archetype_state["visibility"]
@@ -1139,7 +1206,7 @@ class TestRest:
         # Room 3 = rest
         _register_instance(instance)
 
-        with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
+        with patch("backend.services.dungeon_movement_service.check_ambush", return_value=False):
             result = await DungeonEngineService.rest(
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
@@ -1154,7 +1221,7 @@ class TestRest:
         instance = _make_instance(phase="rest", current_room=3, party=[agent])
         _register_instance(instance)
 
-        with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
+        with patch("backend.services.dungeon_movement_service.check_ambush", return_value=False):
             await DungeonEngineService.rest(
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
@@ -1170,8 +1237,8 @@ class TestRest:
 
         enemies = [_make_enemy()]
         with (
-            patch("backend.services.dungeon_engine_service.check_ambush", return_value=True),
-            patch("backend.services.dungeon_engine_service.spawn_enemies", return_value=enemies),
+            patch("backend.services.dungeon_movement_service.check_ambush", return_value=True),
+            patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=enemies),
         ):
             result = await DungeonEngineService.rest(
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
@@ -1189,7 +1256,7 @@ class TestRest:
         initial_cleared = instance.rooms_cleared
         _register_instance(instance)
 
-        with patch("backend.services.dungeon_engine_service.check_ambush", return_value=False):
+        with patch("backend.services.dungeon_movement_service.check_ambush", return_value=False):
             await DungeonEngineService.rest(
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
@@ -1248,7 +1315,7 @@ class TestRetreat:
         mock_sb = _make_mock_supabase()
         await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
-        assert str(instance.run_id) not in _active_instances
+        assert _store.get(instance.run_id) is None
 
     @pytest.mark.asyncio
     async def test_retreat_calls_rpc(self, noop_checkpoint):
@@ -1280,20 +1347,22 @@ class TestGetAvailableDungeons:
         mock_sb = MagicMock()
 
         # available_dungeons query returns resonance data
-        dungeons_chain = make_chain_mock(execute_data=[
-            {
-                "archetype": "The Shadow",
-                "signature": "shadow_conflict",
-                "resonance_id": str(uuid4()),
-                "magnitude": 0.7,
-                "susceptibility": 0.6,
-                "effective_magnitude": 0.5,
-                "suggested_difficulty": 3,
-                "suggested_depth": 5,
-                "last_run_at": None,
-                "available": True,
-            },
-        ])
+        dungeons_chain = make_chain_mock(
+            execute_data=[
+                {
+                    "archetype": "The Shadow",
+                    "signature": "shadow_conflict",
+                    "resonance_id": str(uuid4()),
+                    "magnitude": 0.7,
+                    "susceptibility": 0.6,
+                    "effective_magnitude": 0.5,
+                    "suggested_difficulty": 3,
+                    "suggested_depth": 5,
+                    "last_run_at": None,
+                    "available": True,
+                },
+            ]
+        )
         # simulation_settings override query returns no data
         override_chain = make_chain_mock(execute_data=None)
 
@@ -1339,25 +1408,29 @@ class TestRecoverFromCheckpoint:
         chain = make_chain_mock(execute_data=None)
         mock_sb.table.return_value = chain
 
-        result = await DungeonEngineService.recover_from_checkpoint(mock_sb, uuid4())
+        result = await DungeonCheckpointService.recover_from_checkpoint(mock_sb, uuid4())
         assert result is None
 
     @pytest.mark.asyncio
     async def test_no_checkpoint_state_returns_none(self):
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data=[{
-            "id": str(uuid4()),
-            "simulation_id": str(uuid4()),
-            "archetype": "The Shadow",
-            "resonance_signature": "shadow_conflict",
-            "difficulty": 3,
-            "config": {"rooms": [{"index": 0, "depth": 0, "room_type": "entrance", "connections": [1]}]},
-            "checkpoint_state": None,
-            "party_player_ids": [],
-        }])
+        chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(uuid4()),
+                    "simulation_id": str(uuid4()),
+                    "archetype": "The Shadow",
+                    "resonance_signature": "shadow_conflict",
+                    "difficulty": 3,
+                    "config": {"rooms": [{"index": 0, "depth": 0, "room_type": "entrance", "connections": [1]}]},
+                    "checkpoint_state": None,
+                    "party_player_ids": [],
+                }
+            ]
+        )
         mock_sb.table.return_value = chain
 
-        result = await DungeonEngineService.recover_from_checkpoint(mock_sb, uuid4())
+        result = await DungeonCheckpointService.recover_from_checkpoint(mock_sb, uuid4())
         assert result is None
 
     @pytest.mark.asyncio
@@ -1380,19 +1453,23 @@ class TestRecoverFromCheckpoint:
         }
 
         mock_sb = MagicMock()
-        chain = make_chain_mock(execute_data=[{
-            "id": str(run_id),
-            "simulation_id": str(sim_id),
-            "archetype": "The Shadow",
-            "resonance_signature": "shadow_conflict",
-            "difficulty": 3,
-            "config": {"rooms": rooms_data},
-            "checkpoint_state": checkpoint,
-            "party_player_ids": [],
-        }])
+        chain = make_chain_mock(
+            execute_data=[
+                {
+                    "id": str(run_id),
+                    "simulation_id": str(sim_id),
+                    "archetype": "The Shadow",
+                    "resonance_signature": "shadow_conflict",
+                    "difficulty": 3,
+                    "config": {"rooms": rooms_data},
+                    "checkpoint_state": checkpoint,
+                    "party_player_ids": [],
+                }
+            ]
+        )
         mock_sb.table.return_value = chain
 
-        result = await DungeonEngineService.recover_from_checkpoint(mock_sb, run_id)
+        result = await DungeonCheckpointService.recover_from_checkpoint(mock_sb, run_id)
 
         assert result is not None
         assert result.run_id == run_id
@@ -1403,7 +1480,7 @@ class TestRecoverFromCheckpoint:
         assert result.archetype_state["visibility"] == 2
         assert result.used_banter_ids == ["b1"]
         # Verify it's registered
-        assert str(run_id) in _active_instances
+        assert _store.get(run_id) is not None
 
 
 # ── _build_loot_items_for_rpc ────────────────────────────────────────────
@@ -1416,8 +1493,17 @@ class TestBuildLootItemsForRpc:
         a3 = _make_agent("A3", condition="captured")
         instance = _make_instance(party=[a1, a2, a3])
 
-        loot = [LootItem(id="heal_1", name_en="Calm", name_de="Ruhe", tier=1, effect_type="stress_heal", effect_params={"amount": 50})]
-        items = DungeonEngineService._build_loot_items_for_rpc(instance, loot)
+        loot = [
+            LootItem(
+                id="heal_1",
+                name_en="Calm",
+                name_de="Ruhe",
+                tier=1,
+                effect_type="stress_heal",
+                effect_params={"amount": 50},
+            )
+        ]
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
 
         # stress_heal → one entry per operational agent (a1, a2), not a3 (captured)
         assert len(items) == 2
@@ -1432,7 +1518,7 @@ class TestBuildLootItemsForRpc:
         instance = _make_instance(party=[a1, a2])
 
         loot = [LootItem(id="mem_1", name_en="Memory", name_de="Erinnerung", tier=2, effect_type="memory")]
-        items = DungeonEngineService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
 
         assert len(items) == 1
         assert items[0]["agent_id"] == str(a1.agent_id)
@@ -1440,7 +1526,7 @@ class TestBuildLootItemsForRpc:
     def test_dungeon_buff_skipped(self):
         instance = _make_instance()
         loot = [LootItem(id="buff_1", name_en="Buff", name_de="Buff", tier=1, effect_type="dungeon_buff")]
-        items = DungeonEngineService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
         assert len(items) == 0
 
     def test_all_captured_falls_back_to_first(self):
@@ -1449,7 +1535,7 @@ class TestBuildLootItemsForRpc:
         instance = _make_instance(party=[a1, a2])
 
         loot = [LootItem(id="heal_1", name_en="Heal", name_de="Heilung", tier=1, effect_type="stress_heal")]
-        items = DungeonEngineService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
 
         # Falls back to first agent
         assert len(items) == 1
@@ -1466,7 +1552,7 @@ class TestBuildLootItemsForRpc:
             LootItem(id="buff_1", name_en="Buff", name_de="Buff", tier=1, effect_type="dungeon_buff"),
             LootItem(id="apt_1", name_en="Boost", name_de="Boost", tier=2, effect_type="aptitude_boost"),
         ]
-        items = DungeonEngineService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
 
         # stress_heal → 2 agents, memory → 1, dungeon_buff → skipped, aptitude_boost → 1
         assert len(items) == 4
@@ -1488,7 +1574,7 @@ class TestCheckpoint:
         chain = make_chain_mock()
         mock_sb.table.return_value = chain
 
-        await DungeonEngineService._checkpoint(mock_sb, instance)
+        await DungeonCheckpointService.checkpoint(mock_sb, instance)
 
         mock_sb.table.assert_called_with("resonance_dungeon_runs")
         chain.update.assert_called_once()
@@ -1514,7 +1600,7 @@ class TestCheckpoint:
             chain = make_chain_mock()
             mock_sb.table.return_value = chain
 
-            await DungeonEngineService._checkpoint(mock_sb, instance)
+            await DungeonCheckpointService.checkpoint(mock_sb, instance)
 
             update_data = chain.update.call_args[0][0]
             assert update_data["status"] == expected_status, f"Phase {phase} → expected {expected_status}"
@@ -1533,10 +1619,8 @@ class TestHandleCombatVictory:
         _register_instance(instance)
 
         loot = [LootItem(id="l1", name_en="Gem", name_de="Edelstein", tier=1, effect_type="stress_heal")]
-        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
-            result = await DungeonEngineService._handle_combat_victory(
-                _make_mock_supabase(), instance
-            )
+        with patch("backend.services.dungeon_combat_service.roll_loot", return_value=loot):
+            result = await DungeonCombatService._handle_combat_victory(_make_mock_supabase(), instance)
 
         assert result["victory"] is True
         assert len(result["loot"]) == 1
@@ -1556,8 +1640,8 @@ class TestHandleCombatVictory:
 
         loot = [LootItem(id="l1", name_en="Legend", name_de="Legende", tier=3, effect_type="memory")]
         mock_sb = _make_mock_supabase()
-        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
-            result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
+        with patch("backend.services.dungeon_combat_service.roll_loot", return_value=loot):
+            result = await DungeonCombatService._handle_combat_victory(mock_sb, instance)
 
         assert result["victory"] is True
         assert instance.phase == "distributing"
@@ -1574,14 +1658,18 @@ class TestHandleCombatVictory:
         combat = CombatState(enemies=[enemy])
         party = [_make_agent("Solo")]
         instance = _make_instance(
-            phase="combat_resolving", current_room=1, combat=combat, rooms=rooms, party=party,
+            phase="combat_resolving",
+            current_room=1,
+            combat=combat,
+            rooms=rooms,
+            party=party,
         )
         _register_instance(instance)
 
         loot = [LootItem(id="l1", name_en="Legend", name_de="Legende", tier=3, effect_type="memory")]
         mock_sb = _make_mock_supabase()
-        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
-            result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
+        with patch("backend.services.dungeon_combat_service.roll_loot", return_value=loot):
+            result = await DungeonCombatService._handle_combat_victory(mock_sb, instance)
 
         assert result["victory"] is True
         assert instance.phase == "completed"
@@ -1598,8 +1686,8 @@ class TestHandleCombatVictory:
 
         loot = [LootItem(id="heal1", name_en="Heal", name_de="Heilung", tier=1, effect_type="stress_heal")]
         mock_sb = _make_mock_supabase()
-        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
-            result = await DungeonEngineService._handle_combat_victory(mock_sb, instance)
+        with patch("backend.services.dungeon_combat_service.roll_loot", return_value=loot):
+            result = await DungeonCombatService._handle_combat_victory(mock_sb, instance)
 
         assert result["victory"] is True
         assert instance.phase == "completed"
@@ -1612,8 +1700,8 @@ class TestHandleCombatVictory:
         instance.archetype_state = {"visibility": 1, "max_visibility": 3, "rooms_since_vp_loss": 0}
         _register_instance(instance)
 
-        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]):
-            await DungeonEngineService._handle_combat_victory(_make_mock_supabase(), instance)
+        with patch("backend.services.dungeon_combat_service.roll_loot", return_value=[]):
+            await DungeonCombatService._handle_combat_victory(_make_mock_supabase(), instance)
 
         # Shadow restores VP on combat win
         assert instance.archetype_state["visibility"] > 1
@@ -1628,7 +1716,7 @@ class TestHandlePartyWipe:
         instance = _make_instance(phase="combat_resolving")
         _register_instance(instance)
 
-        result = await DungeonEngineService._handle_party_wipe(_make_mock_supabase(), instance)
+        result = await DungeonCombatService._handle_party_wipe(_make_mock_supabase(), instance)
 
         assert result["wipe"] is True
         assert instance.phase == "wiped"
@@ -1640,24 +1728,29 @@ class TestHandlePartyWipe:
         _register_instance(instance)
 
         mock_sb = _make_mock_supabase()
-        await DungeonEngineService._handle_party_wipe(mock_sb, instance)
+        await DungeonCombatService._handle_party_wipe(mock_sb, instance)
 
-        mock_sb.rpc.assert_called_once_with("fn_wipe_dungeon_run", {
-            "p_run_id": str(instance.run_id),
-            "p_simulation_id": str(instance.simulation_id),
-            "p_agent_outcomes": pytest.approx(instance.party, abs=0) if False else mock_sb.rpc.call_args[0][1]["p_agent_outcomes"],
-            "p_depth": instance.depth,
-            "p_room_index": instance.current_room,
-        })
+        mock_sb.rpc.assert_called_once_with(
+            "fn_wipe_dungeon_run",
+            {
+                "p_run_id": str(instance.run_id),
+                "p_simulation_id": str(instance.simulation_id),
+                "p_agent_outcomes": pytest.approx(instance.party, abs=0)
+                if False
+                else mock_sb.rpc.call_args[0][1]["p_agent_outcomes"],
+                "p_depth": instance.depth,
+                "p_room_index": instance.current_room,
+            },
+        )
 
     @pytest.mark.asyncio
     async def test_wipe_removes_from_active(self, noop_checkpoint):
         instance = _make_instance(phase="combat_resolving")
         _register_instance(instance)
 
-        await DungeonEngineService._handle_party_wipe(_make_mock_supabase(), instance)
+        await DungeonCombatService._handle_party_wipe(_make_mock_supabase(), instance)
 
-        assert str(instance.run_id) not in _active_instances
+        assert _store.get(instance.run_id) is None
 
     @pytest.mark.asyncio
     async def test_wipe_trauma_outcomes(self, noop_checkpoint):
@@ -1667,7 +1760,7 @@ class TestHandlePartyWipe:
         _register_instance(instance)
 
         mock_sb = _make_mock_supabase()
-        await DungeonEngineService._handle_party_wipe(mock_sb, instance)
+        await DungeonCombatService._handle_party_wipe(mock_sb, instance)
 
         rpc_args = mock_sb.rpc.call_args[0][1]
         outcomes = rpc_args["p_agent_outcomes"]

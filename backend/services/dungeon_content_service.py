@@ -174,29 +174,35 @@ async def load_all_content(supabase: Client) -> None:
         # ── Anchor Objects ────────────────────────────────────────────────
         anchors_by_arch: dict[str, list[dict]] = defaultdict(list)
         for row in anchor_res.data or []:
-            anchors_by_arch[row["archetype"]].append({
-                "id": row["id"],
-                "phases": row["phases"],
-            })
+            anchors_by_arch[row["archetype"]].append(
+                {
+                    "id": row["id"],
+                    "phases": row["phases"],
+                }
+            )
         cache.anchors = dict(anchors_by_arch)
 
         # ── Entrance Texts ────────────────────────────────────────────────
         entrance_by_arch: dict[str, list[dict]] = defaultdict(list)
         for row in entrance_res.data or []:
-            entrance_by_arch[row["archetype"]].append({
-                "text_en": row["text_en"],
-                "text_de": row["text_de"],
-            })
+            entrance_by_arch[row["archetype"]].append(
+                {
+                    "text_en": row["text_en"],
+                    "text_de": row["text_de"],
+                }
+            )
         cache.entrance_texts = dict(entrance_by_arch)
 
         # ── Barometer Texts ───────────────────────────────────────────────
         barometer_by_arch: dict[str, list[dict]] = defaultdict(list)
         for row in barometer_res.data or []:
-            barometer_by_arch[row["archetype"]].append({
-                "tier": row["tier"],
-                "text_en": row["text_en"],
-                "text_de": row["text_de"],
-            })
+            barometer_by_arch[row["archetype"]].append(
+                {
+                    "tier": row["tier"],
+                    "text_en": row["text_en"],
+                    "text_de": row["text_de"],
+                }
+            )
         cache.barometer_texts = dict(barometer_by_arch)
 
         # ── Combat Abilities ──────────────────────────────────────────────
@@ -281,10 +287,7 @@ def _ensure_loaded() -> _ContentCache:
     serving stale or missing data.
     """
     if _content is None:
-        msg = (
-            "Dungeon content cache is not loaded. "
-            "Call load_all_content() at startup or after invalidation."
-        )
+        msg = "Dungeon content cache is not loaded. Call load_all_content() at startup or after invalidation."
         logger.error(msg)
         raise RuntimeError(msg)
     return _content

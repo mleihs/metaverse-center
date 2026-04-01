@@ -35,13 +35,7 @@ class DungeonQueryService:
         run_id: UUID,
     ) -> dict:
         """Get run metadata by ID."""
-        resp = await (
-            supabase.table("resonance_dungeon_runs")
-            .select("*")
-            .eq("id", str(run_id))
-            .maybe_single()
-            .execute()
-        )
+        resp = await supabase.table("resonance_dungeon_runs").select("*").eq("id", str(run_id)).maybe_single().execute()
         if not resp.data:
             raise not_found("Dungeon run", run_id)
         return resp.data
@@ -62,7 +56,8 @@ class DungeonQueryService:
         )
         if not resp.data:
             raise not_found(
-                "Dungeon run", run_id,
+                "Dungeon run",
+                run_id,
                 detail="Dungeon run not found or still active.",
             )
         return resp.data
@@ -170,10 +165,12 @@ class DungeonQueryService:
         effects = []
         for row in resp.data or []:
             run_data = row.pop("resonance_dungeon_runs", None) or {}
-            effects.append({
-                **row,
-                "source_archetype": run_data.get("archetype"),
-                "source_difficulty": run_data.get("difficulty"),
-                "source_completed_at": run_data.get("completed_at"),
-            })
+            effects.append(
+                {
+                    **row,
+                    "source_archetype": run_data.get("archetype"),
+                    "source_difficulty": run_data.get("difficulty"),
+                    "source_completed_at": run_data.get("completed_at"),
+                }
+            )
         return effects

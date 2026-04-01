@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import (
     get_admin_supabase,
@@ -23,6 +23,7 @@ from backend.dependencies import (
     get_supabase,
     require_simulation_member,
 )
+from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
@@ -71,7 +72,9 @@ async def list_available_dungeons(
 
 
 @router.post("/runs", response_model=SuccessResponse, status_code=201)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def create_run(
+    request: Request,
     body: DungeonRunCreate,
     simulation_id: UUID = Query(...),
     user: CurrentUser = Depends(get_current_user),
@@ -128,7 +131,9 @@ async def get_run_state(
 
 
 @router.post("/runs/{run_id}/move", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def move_to_room(
+    request: Request,
     run_id: UUID,
     body: DungeonMoveRequest,
     user: CurrentUser = Depends(get_current_user),
@@ -143,7 +148,9 @@ async def move_to_room(
 
 
 @router.post("/runs/{run_id}/action", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_action(
+    request: Request,
     run_id: UUID,
     body: DungeonAction,
     user: CurrentUser = Depends(get_current_user),
@@ -158,7 +165,9 @@ async def submit_action(
 
 
 @router.post("/runs/{run_id}/combat/submit", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_combat_actions(
+    request: Request,
     run_id: UUID,
     body: CombatSubmission,
     user: CurrentUser = Depends(get_current_user),
@@ -173,7 +182,9 @@ async def submit_combat_actions(
 
 
 @router.post("/runs/{run_id}/scout", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def scout(
+    request: Request,
     run_id: UUID,
     body: ScoutRequest,
     user: CurrentUser = Depends(get_current_user),
@@ -188,7 +199,9 @@ async def scout(
 
 
 @router.post("/runs/{run_id}/rest", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def rest(
+    request: Request,
     run_id: UUID,
     body: RestRequest,
     user: CurrentUser = Depends(get_current_user),
@@ -203,7 +216,9 @@ async def rest(
 
 
 @router.post("/runs/{run_id}/retreat", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def retreat(
+    request: Request,
     run_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     admin: Client = Depends(get_admin_supabase),
@@ -226,7 +241,9 @@ async def retreat(
 
 
 @router.post("/runs/{run_id}/distribute", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def assign_loot(
+    request: Request,
     run_id: UUID,
     body: LootAssignment,
     user: CurrentUser = Depends(get_current_user),
@@ -234,11 +251,18 @@ async def assign_loot(
 ) -> dict:
     """Assign a distributable loot item to an agent during the debrief phase."""
     result = await DungeonEngineService.assign_loot(
-        admin, run_id, body.loot_id, body.agent_id, user_id=user.id,
+        admin,
+        run_id,
+        body.loot_id,
+        body.agent_id,
+        user_id=user.id,
     )
     await AuditService.safe_log(
-        admin, None, user.id,
-        "resonance_dungeon_runs", str(run_id),
+        admin,
+        None,
+        user.id,
+        "resonance_dungeon_runs",
+        str(run_id),
         "assign_loot",
         {"loot_id": body.loot_id, "agent_id": str(body.agent_id)},
     )
@@ -246,7 +270,9 @@ async def assign_loot(
 
 
 @router.post("/runs/{run_id}/distribute/confirm", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
 async def confirm_distribution(
+    request: Request,
     run_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     admin: Client = Depends(get_admin_supabase),
@@ -254,9 +280,13 @@ async def confirm_distribution(
     """Finalize loot distribution and complete the dungeon run."""
     result = await DungeonEngineService.confirm_distribution(admin, run_id, user_id=user.id)
     await AuditService.safe_log(
-        admin, None, user.id,
-        "resonance_dungeon_runs", str(run_id),
-        "finalize_distribution", {},
+        admin,
+        None,
+        user.id,
+        "resonance_dungeon_runs",
+        str(run_id),
+        "finalize_distribution",
+        {},
     )
     return {"success": True, "data": result}
 
@@ -268,13 +298,22 @@ async def confirm_distribution(
 async def list_events(
     run_id: UUID,
     user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    admin: Client = Depends(get_admin_supabase),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> dict:
-    """Get dungeon event log (paginated)."""
+    """Get dungeon event log (paginated).
+
+    Requires dungeon participant — verifies user is in run's party_player_ids.
+    """
+    run = await DungeonQueryService.get_run(admin, run_id)
+    if str(user.id) not in (run.get("party_player_ids") or []):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Not a participant in this dungeon run")
     data, meta = await DungeonQueryService.list_events(
-        supabase, run_id, limit=limit, offset=offset,
+        admin,
+        run_id,
+        limit=limit,
+        offset=offset,
     )
     return {"success": True, "data": data, "meta": meta}
 
@@ -293,7 +332,10 @@ async def list_history(
 ) -> dict:
     """List past dungeon runs for a simulation."""
     data, meta = await DungeonQueryService.list_history(
-        supabase, simulation_id, limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        limit=limit,
+        offset=offset,
     )
     return {"success": True, "data": data, "meta": meta}
 
@@ -318,6 +360,8 @@ async def get_agent_loot_effects(
     RLS enforced: user must be simulation member.
     """
     effects = await DungeonQueryService.get_agent_loot_effects(
-        supabase, agent_id, simulation_id,
+        supabase,
+        agent_id,
+        simulation_id,
     )
     return {"success": True, "data": effects}

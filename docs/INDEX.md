@@ -119,6 +119,7 @@ tags: [index, catalog, documentation]
 |----------|---------|------|------|--------|
 | [Epoch Gameplay Audit](audits/audit-epoch-gameplay-2026-03-09.md) | 1.0 | 2026-03-09 | en | active |
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
+| [Resonance Dungeons — Full-Stack Audit](audits/resonance-dungeons-audit-2026-04-01.md) | 1.0 | 2026-04-01 | de/en | 13/16 findings remediated, score 6.9→8.1 |
 
 ## Architecture Decision Records (9)
 

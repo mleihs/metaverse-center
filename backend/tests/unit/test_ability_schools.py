@@ -29,8 +29,8 @@ from backend.services.combat.ability_schools import (
 class TestAbilityDataIntegrity:
     """Verify all ability definitions are complete and consistent."""
 
-    def test_six_schools_registered(self):
-        expected = {"spy", "guardian", "assassin", "propagandist", "infiltrator", "saboteur"}
+    def test_seven_schools_registered(self):
+        expected = {"spy", "guardian", "assassin", "propagandist", "infiltrator", "saboteur", "universal"}
         assert set(ALL_ABILITIES.keys()) == expected
 
     def test_spy_has_three_abilities(self):
@@ -54,7 +54,7 @@ class TestAbilityDataIntegrity:
 
     def test_total_ability_count(self):
         total = sum(len(v) for v in ALL_ABILITIES.values())
-        assert total == 18  # 3+4+3+3+2+3 (Guardian: +Reinforce)
+        assert total == 19  # 3+4+3+3+2+3+1 (Guardian: +Reinforce, Universal: basic_attack)
 
     def test_all_abilities_are_frozen_dataclass(self):
         for abilities in ALL_ABILITIES.values():
@@ -82,10 +82,10 @@ class TestAbilityDataIntegrity:
                 assert ability.school == school, f"{ability.id} school mismatch: {ability.school} != {school}"
 
     def test_min_aptitude_within_range(self):
-        """Phase 0 abilities should require aptitude 3-6."""
+        """Phase 0 abilities should require aptitude 0-9 (universal basic_attack uses 0)."""
         for abilities in ALL_ABILITIES.values():
             for ability in abilities:
-                assert 1 <= ability.min_aptitude <= 9, f"{ability.id} min_aptitude out of range"
+                assert 0 <= ability.min_aptitude <= 9, f"{ability.id} min_aptitude out of range"
 
     def test_cooldowns_non_negative(self):
         for abilities in ALL_ABILITIES.values():
@@ -186,11 +186,11 @@ class TestGetAvailableAbilities:
         assert len(abilities) == 0
 
     @pytest.mark.parametrize("school", ALL_ABILITIES.keys())
-    def test_level_9_gets_all_abilities(self, school):
-        """At level 9, all abilities of any school are available."""
-        all_school = ALL_ABILITIES[school]
+    def test_level_9_gets_all_non_gated_abilities(self, school):
+        """At level 9, all abilities without archetype_required are available."""
+        non_gated = [a for a in ALL_ABILITIES[school] if not a.effect_params.get("archetype_required")]
         available = get_available_abilities(school, 9)
-        assert len(available) == len(all_school)
+        assert len(available) == len(non_gated)
 
     @pytest.mark.parametrize("school", ALL_ABILITIES.keys())
     def test_abilities_sorted_by_min_aptitude(self, school):
@@ -224,6 +224,7 @@ class TestGetAbilityById:
             "propagandist_inspire", "propagandist_demoralize", "propagandist_rally",
             "infiltrator_evade", "infiltrator_backstab",
             "saboteur_trap", "saboteur_disrupt", "saboteur_detonate",
+            "basic_attack",
         ],
     )
     def test_all_ability_ids_resolvable(self, ability_id):
@@ -236,26 +237,33 @@ class TestGetAbilityById:
 class TestGetAgentAllAbilities:
     def test_single_school(self):
         abilities = get_agent_all_abilities({"spy": 5})
-        assert len(abilities) == 3
-        assert all(a.school == "spy" for a in abilities)
+        # 3 spy + 1 universal (basic_attack)
+        assert len(abilities) == 4
+        spy_abilities = [a for a in abilities if a.school == "spy"]
+        assert len(spy_abilities) == 3
 
     def test_multiple_schools(self):
         abilities = get_agent_all_abilities({"spy": 5, "guardian": 3})
         spy_count = sum(1 for a in abilities if a.school == "spy")
         guardian_count = sum(1 for a in abilities if a.school == "guardian")
+        universal_count = sum(1 for a in abilities if a.school == "universal")
         assert spy_count == 3
-        assert guardian_count == 2  # shield + reinforce at level 3
+        assert guardian_count == 1  # shield only (reinforce requires The Tower archetype)
+        assert universal_count == 1  # basic_attack always included
 
     def test_level_zero_skipped(self):
-        """Schools at level 0 contribute no abilities."""
+        """Schools at level 0 contribute no abilities (except universal)."""
         abilities = get_agent_all_abilities({"spy": 5, "guardian": 0})
-        assert all(a.school == "spy" for a in abilities)
+        schools = {a.school for a in abilities}
+        assert "guardian" not in schools
+        assert "spy" in schools
+        assert "universal" in schools  # always included
 
-    def test_empty_aptitudes_safety_net(self):
-        """Empty aptitudes triggers safety net: returns spy_observe."""
+    def test_empty_aptitudes_has_universal(self):
+        """Empty aptitudes still includes universal abilities (basic_attack)."""
         abilities = get_agent_all_abilities({})
         assert len(abilities) == 1
-        assert abilities[0].id == "spy_observe"
+        assert abilities[0].id == "basic_attack"
 
     def test_all_schools_at_max(self):
         """All 6 schools at level 9."""
@@ -265,9 +273,12 @@ class TestGetAgentAllAbilities:
         assert len(abilities) == total
 
     def test_mixed_levels(self):
-        """Realistic agent: high spy, medium guardian, no others."""
+        """Realistic agent: high spy, medium guardian, no others (no archetype)."""
         abilities = get_agent_all_abilities({"spy": 8, "guardian": 4})
         spy_ids = {a.id for a in abilities if a.school == "spy"}
         guardian_ids = {a.id for a in abilities if a.school == "guardian"}
+        universal_ids = {a.id for a in abilities if a.school == "universal"}
         assert spy_ids == {"spy_observe", "spy_analyze_weakness", "spy_counter_intel"}
-        assert guardian_ids == {"guardian_shield", "guardian_reinforce", "guardian_taunt"}
+        # guardian_reinforce excluded (archetype_required="The Tower")
+        assert guardian_ids == {"guardian_shield", "guardian_taunt"}
+        assert universal_ids == {"basic_attack"}

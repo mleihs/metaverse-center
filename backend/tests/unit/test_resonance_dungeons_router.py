@@ -165,13 +165,16 @@ class TestListAvailableDungeons:
 
 class TestCreateRun:
     def test_happy_path(self, client):
-        with patch(
-            "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
-            new_callable=AsyncMock,
-            return_value={"run": _run_row(), "state": {}},
-        ), patch(
-            "backend.routers.resonance_dungeons.AuditService.safe_log",
-            new_callable=AsyncMock,
+        with (
+            patch(
+                "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
+                new_callable=AsyncMock,
+                return_value={"run": _run_row(), "state": {}},
+            ),
+            patch(
+                "backend.routers.resonance_dungeons.AuditService.safe_log",
+                new_callable=AsyncMock,
+            ),
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs?simulation_id={SIM_ID}",
@@ -282,10 +285,20 @@ class TestGetRunState:
         """Auto-recovery is now inside get_client_state → _get_instance.
         Test that the endpoint returns 200 when the service recovers successfully."""
         state = MagicMock()
-        state.model_dump.return_value = {"run_id": str(RUN_ID), "archetype": "The Shadow",
-            "signature": "s", "difficulty": 1, "depth": 0, "current_room": 0,
-            "rooms": [], "party": [], "archetype_state": {}, "combat": None,
-            "phase": "exploring", "phase_timer": None}
+        state.model_dump.return_value = {
+            "run_id": str(RUN_ID),
+            "archetype": "The Shadow",
+            "signature": "s",
+            "difficulty": 1,
+            "depth": 0,
+            "current_room": 0,
+            "rooms": [],
+            "party": [],
+            "archetype_state": {},
+            "combat": None,
+            "phase": "exploring",
+            "phase_timer": None,
+        }
 
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
@@ -460,7 +473,9 @@ class TestRetreat:
 
 
 class TestListEvents:
-    def test_happy_path(self, client):
+    @patch("backend.routers.resonance_dungeons.DungeonQueryService.get_run", new_callable=AsyncMock)
+    def test_happy_path(self, mock_get_run, client):
+        mock_get_run.return_value = _run_row()
         event = {
             "id": str(uuid4()),
             "run_id": str(RUN_ID),
@@ -472,10 +487,10 @@ class TestListEvents:
             "outcome": {},
             "created_at": NOW,
         }
-        mock_sb = MagicMock()
+        mock_admin = MagicMock()
         chain = make_chain_mock(execute_data=[event], execute_count=1)
-        mock_sb.table.return_value = chain
-        app.dependency_overrides[get_supabase] = lambda: mock_sb
+        mock_admin.table.return_value = chain
+        app.dependency_overrides[get_admin_supabase] = lambda: mock_admin
 
         resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/events")
         assert resp.status_code == 200
@@ -484,16 +499,24 @@ class TestListEvents:
         assert len(body["data"]) == 1
         assert body["meta"]["total"] == 1
 
-    def test_pagination_params(self, client):
-        mock_sb = MagicMock()
+    @patch("backend.routers.resonance_dungeons.DungeonQueryService.get_run", new_callable=AsyncMock)
+    def test_pagination_params(self, mock_get_run, client):
+        mock_get_run.return_value = _run_row()
+        mock_admin = MagicMock()
         chain = make_chain_mock(execute_data=[], execute_count=0)
-        mock_sb.table.return_value = chain
-        app.dependency_overrides[get_supabase] = lambda: mock_sb
+        mock_admin.table.return_value = chain
+        app.dependency_overrides[get_admin_supabase] = lambda: mock_admin
 
         resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/events?limit=10&offset=5")
         assert resp.status_code == 200
         assert resp.json()["meta"]["limit"] == 10
         assert resp.json()["meta"]["offset"] == 5
+
+    @patch("backend.routers.resonance_dungeons.DungeonQueryService.get_run", new_callable=AsyncMock)
+    def test_non_participant_forbidden(self, mock_get_run, client):
+        mock_get_run.return_value = {**_run_row(), "party_player_ids": [str(uuid4())]}
+        resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}/events")
+        assert resp.status_code == 403
 
 
 # ── GET /dungeons/history ────────────────────────────────────────────────
@@ -606,13 +629,16 @@ class TestValidationEdgeCases:
     def test_run_create_with_duplicate_agent_ids(self, client):
         """Pydantic allows duplicate UUIDs — validation is in engine service, not model."""
         agent = uuid4()
-        with patch(
-            "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
-            new_callable=AsyncMock,
-            return_value={"run": _run_row(), "state": {}},
-        ), patch(
-            "backend.routers.resonance_dungeons.AuditService.safe_log",
-            new_callable=AsyncMock,
+        with (
+            patch(
+                "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
+                new_callable=AsyncMock,
+                return_value={"run": _run_row(), "state": {}},
+            ),
+            patch(
+                "backend.routers.resonance_dungeons.AuditService.safe_log",
+                new_callable=AsyncMock,
+            ),
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs?simulation_id={SIM_ID}",

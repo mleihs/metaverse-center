@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from uuid import UUID
 
 import sentry_sdk
@@ -378,10 +378,20 @@ def _resolve_agent_actions(
                 # AoE: resolve damage against every alive enemy
                 for enemy in enemy_map.values():
                     if enemy.is_alive:
-                        aoe_action = AgentAction(agent_id=action.agent_id, ability_id=action.ability_id, target_id=enemy.instance_id)
-                        events.extend(_resolve_agent_damage(agent, ability, aoe_action, enemy_map, enemy_templates, visibility))
+                        aoe_action = AgentAction(
+                            agent_id=action.agent_id, ability_id=action.ability_id, target_id=enemy.instance_id
+                        )
+                        events.extend(
+                            _resolve_agent_damage(
+                                agent, ability, aoe_action, enemy_map, enemy_templates, visibility, context.round_num
+                            )
+                        )
             else:
-                events.extend(_resolve_agent_damage(agent, ability, action, enemy_map, enemy_templates, visibility))
+                events.extend(
+                    _resolve_agent_damage(
+                        agent, ability, action, enemy_map, enemy_templates, visibility, context.round_num
+                    )
+                )
         elif ability.effect_type == "heal_stress":
             events.extend(_resolve_agent_heal(agent, ability, action, context, agent_map))
         elif ability.effect_type == "stress_damage":
@@ -397,21 +407,21 @@ def _resolve_agent_damage(
     enemy_map: dict[str, EnemyInstance],
     enemy_templates: dict[str, dict],
     visibility: int,
+    round_num: int = 1,
 ) -> list[CombatEvent]:
     """Resolve a single agent damage action against an enemy."""
     target_enemy = enemy_map.get(action.target_id or "")
     if not target_enemy or not target_enemy.is_alive:
         return []
 
-    # Ambush Strike: only usable in round 1 or at visibility 0
+    # Ambush Strike: only usable in round 1 or at visibility 0.
+    # Outside these conditions the ability degrades to a weaker strike
+    # (base power without the ambush bonus).
     if ability.effect_params.get("requires_first_round_or_dark"):
-        # NOTE: We don't have round_num in this function scope, so we use
-        # a convention: the caller passes it through the ability context.
-        # For now, check visibility — ambush works in darkness.
-        if visibility > 0:
-            # Outside first round, this becomes a weaker strike
-            # (We allow it but without the power bonus — degrade gracefully)
-            pass  # TODO: enforce round_num check when context is available
+        if round_num > 1 and visibility > 0:
+            # Not round 1 and not in darkness — degrade to half power
+            degraded_power = max(3, ability.effect_params.get("power", 5) // 2)
+            ability = replace(ability, effect_params={**ability.effect_params, "power": degraded_power})
 
     template = enemy_templates.get(target_enemy.template_id, {})
     school = ability.school
@@ -580,12 +590,17 @@ def _resolve_enemy_actions(
             killed_by_trap = enemy.condition_steps_remaining <= 0
             if killed_by_trap:
                 enemy.is_alive = False
-            events.append(CombatEvent(
-                actor="Trap", action="detonate", target=enemy.name_en,
-                hit=True, damage_steps=1,
-                narrative_en=f"A trap springs on {enemy.name_en}! 1 step of damage.{' Defeated!' if killed_by_trap else ''}",
-                narrative_de=f"Eine Falle schnappt bei {enemy.name_de} zu! 1 Stufe Schaden.{' Besiegt!' if killed_by_trap else ''}",
-            ))
+            events.append(
+                CombatEvent(
+                    actor="Trap",
+                    action="detonate",
+                    target=enemy.name_en,
+                    hit=True,
+                    damage_steps=1,
+                    narrative_en=f"A trap springs on {enemy.name_en}! 1 step of damage.{' Defeated!' if killed_by_trap else ''}",
+                    narrative_de=f"Eine Falle schnappt bei {enemy.name_de} zu! 1 Stufe Schaden.{' Besiegt!' if killed_by_trap else ''}",
+                )
+            )
             if killed_by_trap:
                 continue
 
@@ -594,11 +609,15 @@ def _resolve_enemy_actions(
         elif action.action_type == "stress_attack":
             events.extend(_resolve_enemy_stress_attack(enemy, action, target_agent, round_stress))
         elif action.action_type == "defend":
-            events.append(CombatEvent(
-                actor=enemy.name_en, action="defend", target="self",
-                narrative_en=f"{enemy.name_en} braces for impact.",
-                narrative_de=f"{enemy.name_de} bereitet sich auf einen Treffer vor.",
-            ))
+            events.append(
+                CombatEvent(
+                    actor=enemy.name_en,
+                    action="defend",
+                    target="self",
+                    narrative_en=f"{enemy.name_en} braces for impact.",
+                    narrative_de=f"{enemy.name_de} bereitet sich auf einen Treffer vor.",
+                )
+            )
 
     return events
 
@@ -621,11 +640,16 @@ def _resolve_enemy_attack(
     hit = random.randint(1, 100) <= hit_chance
 
     if not hit:
-        return [CombatEvent(
-            actor=enemy.name_en, action="attack", target=target_agent.agent_name, hit=False,
-            narrative_en=f"{enemy.name_en}'s attack misses {target_agent.agent_name}.",
-            narrative_de=f"{enemy.name_de}s Angriff verfehlt {target_agent.agent_name}.",
-        )]
+        return [
+            CombatEvent(
+                actor=enemy.name_en,
+                action="attack",
+                target=target_agent.agent_name,
+                hit=False,
+                narrative_en=f"{enemy.name_en}'s attack misses {target_agent.agent_name}.",
+                narrative_de=f"{enemy.name_de}s Angriff verfehlt {target_agent.agent_name}.",
+            )
+        ]
 
     # Check for guardian shield via buff pipeline — one-shot: consume on use
     if has_buff(target_agent, "shielded"):
@@ -657,12 +681,17 @@ def _resolve_enemy_attack(
     if has_buff(target_agent, "fortified"):
         damage_steps = max(0, damage_steps - 1)
         if damage_steps == 0:
-            return [CombatEvent(
-                actor=enemy.name_en, action="attack", target=target_agent.agent_name,
-                hit=True, damage_steps=0,
-                narrative_en=f"{target_agent.agent_name}'s fortification absorbs {enemy.name_en}'s attack.",
-                narrative_de=f"{target_agent.agent_name}s Befestigung absorbiert {enemy.name_de}s Angriff.",
-            )]
+            return [
+                CombatEvent(
+                    actor=enemy.name_en,
+                    action="attack",
+                    target=target_agent.agent_name,
+                    hit=True,
+                    damage_steps=0,
+                    narrative_en=f"{target_agent.agent_name}'s fortification absorbs {enemy.name_en}'s attack.",
+                    narrative_de=f"{target_agent.agent_name}s Befestigung absorbiert {enemy.name_de}s Angriff.",
+                )
+            ]
 
     old_condition = target_agent.condition
     new_condition, side_effects = apply_condition_damage(target_agent.condition, damage_steps)

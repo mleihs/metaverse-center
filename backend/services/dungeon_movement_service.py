@@ -1,0 +1,749 @@
+"""Dungeon Movement Service -- room traversal, encounters, scouting, resting.
+
+Manages the exploration lifecycle:
+  - move_to_room()           → validate + move, process room type, banter, anchors
+  - handle_encounter_choice() → skill check resolution for encounter rooms
+  - scout()                  → reveal adjacent rooms via Spy aptitude
+  - rest()                   → heal at rest sites (with ambush risk)
+  - _enter_interactive_room() → encounter/rest/treasure room setup
+  - _enter_boss_deployment()  → Prometheus-style pre-combat deployment
+  - _handle_boss_deployment() → deploy crafted items before boss fight
+
+Extracted from DungeonEngineService (H7: god-class decomposition).
+"""
+
+from __future__ import annotations
+
+import logging
+import random
+from uuid import UUID
+
+from fastapi import HTTPException, status
+
+from backend.models.resonance_dungeon import (
+    CombatState,
+    DungeonAction,
+    DungeonInstance,
+)
+from backend.services.combat.condition_tracks import can_act
+from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
+from backend.services.combat.stress_system import REST_STRESS_HEAL, calculate_ambient_stress
+from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+from backend.services.dungeon.dungeon_banter import select_banter
+from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
+from backend.services.dungeon.dungeon_encounters import get_encounter_by_id, select_encounter
+from backend.services.dungeon.dungeon_loot import roll_loot
+from backend.services.dungeon.dungeon_objektanker import get_barometer_text, select_anchor_text
+from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
+from backend.services.dungeon_combat_service import DungeonCombatService
+from backend.services.dungeon_instance_store import store as _store
+from backend.services.dungeon_shared import FALLBACK_SPAWNS, log_extra
+from supabase import AsyncClient as Client
+
+logger = logging.getLogger(__name__)
+
+
+# ── Narrative Utility ──────────────────────────────────────────────────────
+
+
+def _narrate_effects(effects: dict) -> tuple[list[str], list[str]]:
+    """Convert raw encounter/treasure effects dict to bilingual narrative descriptions.
+
+    Backend owns all content generation (bilingual, consistent with encounter narratives).
+    Returns (narrative_en_lines, narrative_de_lines).
+    """
+    en: list[str] = []
+    de: list[str] = []
+    for key, val in effects.items():
+        match key:
+            case "reveal_rooms":
+                n = int(val)
+                if n == 1:
+                    en.append("One room ahead becomes clear.")
+                    de.append("Ein Raum voraus wird sichtbar.")
+                elif n > 1:
+                    en.append(f"{n} rooms ahead become clear.")
+                    de.append(f"{n} Räume voraus werden sichtbar.")
+            case "stress":
+                n = int(val)
+                if n > 0:
+                    en.append(f"The effort takes its toll. (+{n} stress)")
+                    de.append(f"Die Anstrengung fordert ihren Tribut. (+{n} Stress)")
+                elif n < 0:
+                    en.append(f"The tension eases. ({n} stress)")
+                    de.append(f"Die Anspannung lässt nach. ({n} Stress)")
+            case "stress_heal":
+                n = int(val)
+                if n > 0:
+                    en.append(f"A moment of calm. (-{n} stress)")
+                    de.append(f"Ein Moment der Ruhe. (-{n} Stress)")
+            case "loot":
+                if val:
+                    en.append("Something valuable emerges.")
+                    de.append("Etwas Wertvolles taucht auf.")
+            case "loot_tier_penalty":
+                en.append("The hasty attempt damages the find.")
+                de.append("Der übereilte Versuch beschädigt den Fund.")
+            case "visibility":
+                n = int(val)
+                sign = "+" if n > 0 else ""
+                en.append(f"{sign}{n} Visibility.")
+                de.append(f"{sign}{n} Sichtbarkeit.")
+            case "stability":
+                n = int(val)
+                sign = "+" if n > 0 else ""
+                en.append(f"{sign}{n} Stability.")
+                de.append(f"{sign}{n} Stabilität.")
+            case "shadow_resonance":
+                en.append("The shadows resonate with the encounter.")
+                de.append("Die Schatten resonieren mit der Begegnung.")
+            case "resilience_bonus":
+                en.append("Something hardens within. Resilience improved.")
+                de.append("Etwas härtet sich im Inneren. Widerstandskraft verbessert.")
+            case "discovery":
+                if val:
+                    en.append("A discovery worth remembering.")
+                    de.append("Eine Entdeckung, die es wert ist, erinnert zu werden.")
+            case "insight":
+                if val:
+                    en.append("Understanding deepens.")
+                    de.append("Das Verständnis vertieft sich.")
+            case "memory_created":
+                if val:
+                    en.append("This moment imprints itself.")
+                    de.append("Dieser Moment prägt sich ein.")
+            case "add_component":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "a component")
+                    name_de = val.get("name_de", "eine Komponente")
+                    en.append(f"Component acquired: {name_en}.")
+                    de.append(f"Komponente erworben: {name_de}.")
+            case "remove_components":
+                if isinstance(val, list) and val:
+                    n = len(val)
+                    if n == 1:
+                        en.append("One component consumed in the process.")
+                        de.append("Eine Komponente im Prozess verbraucht.")
+                    else:
+                        en.append(f"{n} components consumed in the process.")
+                        de.append(f"{n} Komponenten im Prozess verbraucht.")
+            case "add_crafted_item":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "something new")
+                    name_de = val.get("name_de", "etwas Neues")
+                    en.append(f"Crafted: {name_en}.")
+                    de.append(f"Geschmiedet: {name_de}.")
+            case "craft_failed":
+                if val:
+                    en.append("The combination fails. But the residue is interesting.")
+                    de.append("Die Kombination scheitert. Aber der Rückstand ist interessant.")
+            case "deploy_crafted_item":
+                if isinstance(val, dict):
+                    name_en = val.get("name_en", "an item")
+                    name_de = val.get("name_de", "ein Gegenstand")
+                    en.append(f"Deployed against The Prototype: {name_en}.")
+                    de.append(f"Gegen den Prototypen eingesetzt: {name_de}.")
+            case "ambush_trigger":
+                pass  # Game mechanic flag — no player-facing narrative
+            case _:
+                pass  # Unknown effect keys are intentionally silent
+    return en, de
+
+
+class DungeonMovementService:
+    """Room movement, encounter resolution, scouting, and resting."""
+
+    # ── Room Movement ──────────────────────────────────────────────────────
+
+    @classmethod
+    async def move_to_room(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        room_index: int,
+        *,
+        user_id: UUID,
+    ) -> dict:
+        """Move party to an adjacent room."""
+        async with _store.lock(run_id):
+            return await cls._move_to_room_locked(admin_supabase, run_id, room_index, user_id=user_id)
+
+    @classmethod
+    async def _move_to_room_locked(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        room_index: int,
+        *,
+        user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.phase not in ("exploring", "room_clear", "exit"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot move in phase: {instance.phase}")
+
+        current_room = instance.rooms[instance.current_room]
+        if room_index not in current_room.connections:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room is not adjacent to current room")
+
+        if room_index < 0 or room_index >= len(instance.rooms):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid room index")
+
+        target_room = instance.rooms[room_index]
+
+        # Move party
+        instance.current_room = room_index
+        instance.turn += 1
+        target_room.revealed = True
+        target_room.scouted = True  # Entering a room reveals its type
+
+        # Reveal connected rooms on map (but don't scout — type stays hidden)
+        for conn_idx in target_room.connections:
+            if 0 <= conn_idx < len(instance.rooms):
+                instance.rooms[conn_idx].revealed = True
+
+        # Track depth changes
+        if target_room.depth > instance.depth:
+            instance.depth = target_room.depth
+
+        # Apply archetype effects (drain on room entry)
+        banter_trigger = "room_entered"
+        strategy = get_archetype_strategy(instance.archetype)
+        drain_trigger = strategy.apply_drain(instance)
+        if drain_trigger:
+            banter_trigger = drain_trigger
+        if target_room.depth > current_room.depth:
+            banter_trigger = "depth_change"
+
+        # Apply ambient stress (archetype may multiply, e.g. Tower structural failure)
+        ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
+        ambient = int(ambient * strategy.get_ambient_stress_multiplier(instance))
+        for agent in instance.party:
+            if can_act(agent.condition):
+                agent.stress = min(1000, agent.stress + ambient)
+
+        # Override banter trigger for boss rooms
+        if target_room.room_type == "boss":
+            banter_trigger = "boss_approach"
+
+        # Generate banter
+        banter = select_banter(
+            banter_trigger,
+            [{"personality": a.personality} for a in instance.party],
+            instance.used_banter_ids,
+            instance.archetype,
+            archetype_state=instance.archetype_state,
+        )
+        banter_text = None
+        if banter:
+            instance.used_banter_ids.append(banter["id"])
+            alive = [a for a in instance.party if can_act(a.condition)]
+            if alive:
+                agent = random.choice(alive)
+                for key in ("text_en", "text_de"):
+                    if key in banter:
+                        banter[key] = banter[key].replace("{agent}", agent.agent_name)
+                if len(alive) >= 2:
+                    pair = random.sample(alive, 2)
+                    for key in ("text_en", "text_de"):
+                        if key in banter:
+                            banter[key] = (
+                                banter[key]
+                                .replace("{agent_a}", pair[0].agent_name)
+                                .replace("{agent_b}", pair[1].agent_name)
+                            )
+            banter_text = banter
+
+        # Anchor Object Text
+        anchor_texts = select_anchor_text(instance, target_room)
+        for at in anchor_texts:
+            obj_id = at["anchor_id"]
+            phase = at["phase"]
+            instance.anchor_phases_shown.setdefault(obj_id, []).append(phase)
+            if "{agent}" in at.get("text_en", ""):
+                alive = [a for a in instance.party if can_act(a.condition)]
+                if alive:
+                    agent_for_anchor = random.choice(alive)
+                    at["text_en"] = at["text_en"].replace("{agent}", agent_for_anchor.agent_name)
+                    at["text_de"] = at["text_de"].replace("{agent}", agent_for_anchor.agent_name)
+
+        # Barometer Text
+        baro_text, new_baro_tier = get_barometer_text(
+            instance.archetype,
+            instance.archetype_state,
+            instance.last_barometer_tier,
+        )
+        if baro_text:
+            instance.last_barometer_tier = new_baro_tier
+
+        # Process room by type
+        result: dict = {
+            "banter": banter_text,
+            "anchor_texts": anchor_texts if anchor_texts else None,
+            "barometer_text": baro_text,
+        }
+
+        if target_room.room_type in ("combat", "elite"):
+            result.update(await DungeonCombatService.enter_combat_room(admin_supabase, instance, target_room))
+        elif target_room.room_type in ("encounter", "rest", "treasure"):
+            result.update(cls._enter_interactive_room(instance, target_room))
+        elif target_room.room_type == "boss":
+            strategy = get_archetype_strategy(instance.archetype)
+            deployment_choices = strategy.get_boss_deployment_choices(instance)
+            if deployment_choices:
+                result.update(cls._enter_boss_deployment(instance, target_room, deployment_choices))
+            else:
+                result.update(
+                    await DungeonCombatService.enter_combat_room(admin_supabase, instance, target_room, is_boss=True)
+                )
+        elif target_room.room_type == "exit":
+            instance.phase = "exit"
+            result["exit_available"] = True
+
+        # Log event
+        await DungeonCheckpointService.log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            room_index,
+            "room_entered",
+            {"room_type": target_room.room_type, "phase": instance.phase},
+            narrative_en=banter.get("text_en", "") if banter else None,
+            narrative_de=banter.get("text_de", "") if banter else None,
+        )
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        result["state"] = DungeonCheckpointService.build_client_state(instance).model_dump()
+        return result
+
+    # ── Encounter Choice ───────────────────────────────────────────────────
+
+    @classmethod
+    async def handle_encounter_choice(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        action: DungeonAction,
+        *,
+        user_id: UUID,
+    ) -> dict:
+        """Handle an encounter choice (skill check resolution)."""
+        async with _store.lock(run_id):
+            return await cls._handle_encounter_choice_locked(admin_supabase, run_id, action, user_id=user_id)
+
+    @classmethod
+    async def _handle_encounter_choice_locked(
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        action: DungeonAction,
+        *,
+        user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.phase not in ("encounter", "rest"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
+
+        # Boss deployment intercept
+        current_room = instance.rooms[instance.current_room]
+        if current_room.room_type == "boss" and "_boss_deployment_choices" in instance.archetype_state:
+            return await cls._handle_boss_deployment(admin_supabase, instance, action)
+
+        encounter = get_encounter_by_id(current_room.encounter_template_id or "")
+        if not encounter:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No encounter in current room")
+
+        choice = next((c for c in encounter.choices if c.id == action.choice_id), None)
+        if not choice:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown choice: {action.choice_id}")
+
+        # Resolve skill check
+        result_tier = "success"
+        check_result = None
+        if choice.check_aptitude and action.agent_id:
+            agent = next((a for a in instance.party if a.agent_id == action.agent_id), None)
+            if agent:
+                ctx = SkillCheckContext(
+                    aptitude=choice.check_aptitude,
+                    aptitude_level=agent.aptitudes.get(choice.check_aptitude, 3),
+                    difficulty_modifier=choice.check_difficulty,
+                    personality=agent.personality,
+                    condition=agent.condition,
+                    visibility=instance.archetype_state.get("visibility", 3),
+                )
+                outcome = resolve_skill_check(ctx)
+                result_tier = outcome.result
+                check_result = {
+                    "aptitude": choice.check_aptitude,
+                    "level": ctx.aptitude_level,
+                    "chance": outcome.check_value,
+                    "roll": outcome.roll,
+                    "result": result_tier,
+                    "breakdown": outcome.breakdown,
+                }
+
+        # Archetype penalty on failed check
+        if result_tier == "fail":
+            get_archetype_strategy(instance.archetype).on_failed_check(instance)
+
+        # Apply effects
+        effects = getattr(choice, f"{result_tier}_effects", {})
+        narrative_en = getattr(choice, f"{result_tier}_narrative_en", "")
+        narrative_de = getattr(choice, f"{result_tier}_narrative_de", "")
+
+        # Apply stress effects
+        stress_delta = effects.get("stress", 0)
+        stress_heal = effects.get("stress_heal", 0)
+        for agent in instance.party:
+            if can_act(agent.condition):
+                if stress_delta:
+                    agent.stress = max(0, min(1000, agent.stress + stress_delta))
+                if stress_heal:
+                    agent.stress = max(0, agent.stress - stress_heal)
+
+        # Apply archetype state changes from encounter effects
+        get_archetype_strategy(instance.archetype).apply_encounter_effects(instance, effects)
+
+        # Mark room cleared, return to exploring
+        current_room.cleared = True
+        instance.rooms_cleared += 1
+        instance.phase = "room_clear"
+
+        await DungeonCheckpointService.log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            instance.current_room,
+            "encounter_choice",
+            {"choice_id": action.choice_id, "result": result_tier, "check": check_result},
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
+        )
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        narrative_effects_en, narrative_effects_de = _narrate_effects(effects)
+        return {
+            "result": result_tier,
+            "check": check_result,
+            "effects": effects,
+            "narrative_effects_en": narrative_effects_en,
+            "narrative_effects_de": narrative_effects_de,
+            "narrative_en": narrative_en,
+            "narrative_de": narrative_de,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Scout ──────────────────────────────────────────────────────────────
+
+    @classmethod
+    async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Spy: reveal adjacent rooms and restore visibility."""
+        async with _store.lock(run_id):
+            return await cls._scout_locked(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
+    async def _scout_locked(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+
+        spy_level = agent.aptitudes.get("spy", 0)
+        if spy_level < 3:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent needs Spy 3+ to scout")
+
+        current = instance.rooms[instance.current_room]
+        revealed_count = 0
+        for conn_idx in current.connections:
+            room = instance.rooms[conn_idx]
+            if not room.scouted:
+                room.revealed = True
+                room.scouted = True
+                revealed_count += 1
+            for sub_conn in room.connections:
+                if sub_conn < len(instance.rooms) and not instance.rooms[sub_conn].scouted:
+                    instance.rooms[sub_conn].revealed = True
+                    instance.rooms[sub_conn].scouted = True
+                    revealed_count += 1
+
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "scout")
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "revealed_rooms": revealed_count,
+            "visibility": instance.archetype_state.get("visibility"),
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Rest ───────────────────────────────────────────────────────────────
+
+    @classmethod
+    async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
+        """Rest at a rest site."""
+        async with _store.lock(run_id):
+            return await cls._rest_locked(admin_supabase, run_id, agent_ids, user_id=user_id)
+
+    @classmethod
+    async def _rest_locked(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.phase not in ("rest", "encounter"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not at a rest site")
+
+        current_room = instance.rooms[instance.current_room]
+        if current_room.room_type != "rest":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current room is not a rest site")
+
+        # Check for ambush
+        is_ambushed = check_ambush(instance.archetype_state, instance.archetype)
+
+        if is_ambushed:
+            fallbacks = FALLBACK_SPAWNS.get(instance.archetype, FALLBACK_SPAWNS["The Shadow"])
+            rest_spawn = fallbacks.get("rest_ambush", fallbacks["default"])
+            enemies = spawn_enemies(rest_spawn, instance.difficulty, instance.depth, instance.archetype)
+            instance.combat = CombatState(enemies=enemies, is_ambush=True)
+            instance.phase = "combat_planning"
+            await DungeonCombatService._start_combat_timer(admin_supabase, instance)
+            await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+            return {
+                "ambushed": True,
+                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+            }
+
+        # Apply rest healing
+        for agent in instance.party:
+            if agent.agent_id in agent_ids and can_act(agent.condition):
+                agent.stress = max(0, agent.stress - REST_STRESS_HEAL)
+                if agent.condition == "wounded":
+                    agent.condition = "stressed"
+
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "rest")
+
+        current_room.cleared = True
+        instance.rooms_cleared += 1
+        instance.phase = "room_clear"
+
+        await DungeonCheckpointService.log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            instance.current_room,
+            "room_entered",
+            {"room_type": "rest", "healed": True},
+            narrative_en="The party rests. Wounds heal. Stress fades.",
+            narrative_de="Die Gruppe rastet. Wunden heilen. Stress verblasst.",
+        )
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "healed": True,
+            "ambushed": False,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Room Type Handlers ─────────────────────────────────────────────────
+
+    @classmethod
+    def _enter_interactive_room(cls, instance: DungeonInstance, room) -> dict:  # noqa: ANN001
+        """Set up encounter / rest / treasure room."""
+        room_type: str = room.room_type
+        encounter = select_encounter(room_type, instance.depth, instance.difficulty, instance.archetype)
+
+        if encounter:
+            room.encounter_template_id = encounter.id
+            instance.phase = "rest" if room_type == "rest" else "encounter"
+            result: dict = {
+                room_type: True,
+                "description_en": encounter.description_en,
+                "description_de": encounter.description_de,
+                "choices": DungeonCheckpointService.format_encounter_choices(encounter.choices),
+            }
+            if room_type == "encounter":
+                result["encounter_id"] = encounter.id
+            return result
+
+        if room_type == "encounter":
+            logger.warning(
+                "No encounter template — auto-clearing room",
+                extra=log_extra(instance, room_type=room_type, depth=instance.depth),
+            )
+            instance.phase = "room_clear"
+            room.cleared = True
+            return {"encounter": False}
+
+        if room_type == "rest":
+            instance.phase = "rest"
+            return {"rest": True}
+
+        # Treasure: auto-loot
+        loot = roll_loot(
+            room.loot_tier,
+            instance.difficulty,
+            instance.depth,
+            instance.archetype_state,
+            instance.archetype,
+        )
+        room.cleared = True
+        instance.rooms_cleared += 1
+        instance.phase = "room_clear"
+
+        get_archetype_strategy(instance.archetype).apply_restore(instance, "treasure")
+
+        return {
+            "treasure": True,
+            "auto_loot": True,
+            "loot": [item.model_dump() for item in loot],
+        }
+
+    @classmethod
+    def _enter_boss_deployment(
+        cls,
+        instance: DungeonInstance,
+        room,  # noqa: ANN001
+        choices: list[dict],
+    ) -> dict:
+        """Enter pre-combat deployment phase for a boss room."""
+        encounter = select_encounter(
+            "boss",
+            instance.depth,
+            instance.difficulty,
+            instance.archetype,
+        )
+        room.encounter_template_id = encounter.id if encounter else None
+        instance.phase = "encounter"
+        instance.archetype_state["_boss_deployment_choices"] = choices
+        return {
+            "boss_deployment": True,
+            "description_en": encounter.description_en if encounter else "",
+            "description_de": encounter.description_de if encounter else "",
+            "choices": DungeonCheckpointService.format_encounter_choices(choices),
+        }
+
+    @classmethod
+    async def _handle_boss_deployment(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        action: DungeonAction,
+    ) -> dict:
+        """Handle a boss deployment choice: deploy a crafted item or begin combat."""
+        boss_choices = instance.archetype_state.get("_boss_deployment_choices", [])
+        choice = next((c for c in boss_choices if c["id"] == action.choice_id), None)
+        if not choice:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Unknown deployment choice: {action.choice_id}",
+            )
+
+        current_room = instance.rooms[instance.current_room]
+
+        # "Begin combat" — transition to combat with accumulated debuffs
+        if action.choice_id == "begin_combat":
+            instance.archetype_state.pop("_boss_deployment_choices", None)
+            combat_result = await DungeonCombatService.enter_combat_room(
+                admin_supabase,
+                instance,
+                current_room,
+                is_boss=True,
+            )
+            await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+            narrative_en = (
+                "The Prototype activates. It has cataloged your preparations. "
+                "It does not care. It is, after all, unfinished \u2013 "
+                "and unfinished things do not fear revision."
+            )
+            narrative_de = (
+                "Der Prototyp aktiviert sich. Er hat eure Vorbereitungen katalogisiert. "
+                "Es kümmert ihn nicht. Er ist, immerhin, unfertig \u2013 "
+                "und unfertige Dinge fürchten keine Überarbeitung."
+            )
+            await DungeonCheckpointService.log_event(
+                admin_supabase,
+                instance.run_id,
+                instance.simulation_id,
+                instance.depth,
+                current_room.index,
+                "encounter_choice",
+                {"choice_id": "begin_combat", "boss_deployment": True},
+                narrative_en=narrative_en,
+                narrative_de=narrative_de,
+            )
+            return {
+                "result": "success",
+                "narrative_en": narrative_en,
+                "narrative_de": narrative_de,
+                "narrative_effects_en": [],
+                "narrative_effects_de": [],
+                "effects": {},
+                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+                **combat_result,
+            }
+
+        # Deploy a crafted item
+        item_id = action.choice_id.removeprefix("deploy_")
+        crafted_items = instance.archetype_state.get("crafted_items", [])
+        item = next((i for i in crafted_items if i["id"] == item_id), None)
+        if not item or not item.get("boss_effect"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Invalid deployment item: {item_id}",
+            )
+
+        boss_effect = item["boss_effect"]
+
+        # Apply effect to archetype state (stored for combat engine to read)
+        deployed = instance.archetype_state.setdefault("deployed_boss_effects", [])
+        deployed.append(
+            {
+                "item_id": item["id"],
+                "item_name_en": item.get("name_en", item_id),
+                "item_name_de": item.get("name_de", item_id),
+                **boss_effect,
+            }
+        )
+
+        # Track deployment count for diminishing returns
+        deploy_counts = instance.archetype_state.setdefault("_deploy_counts", {})
+        deploy_counts[item["id"]] = deploy_counts.get(item["id"], 0) + 1
+
+        # Regenerate remaining choices (strategy handles diminishing returns)
+        strategy = get_archetype_strategy(instance.archetype)
+        new_choices = strategy.get_boss_deployment_choices(instance)
+        instance.archetype_state["_boss_deployment_choices"] = new_choices
+
+        effects = {"deploy_crafted_item": {"name_en": item.get("name_en"), "name_de": item.get("name_de")}}
+        narrative_effects_en, narrative_effects_de = _narrate_effects(effects)
+
+        await DungeonCheckpointService.log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            current_room.index,
+            "encounter_choice",
+            {
+                "choice_id": action.choice_id,
+                "boss_deployment": True,
+                "deployed_item": item["id"],
+                "deploy_count": deploy_counts[item["id"]],
+            },
+        )
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "result": "success",
+            "effects": effects,
+            "narrative_effects_en": narrative_effects_en,
+            "narrative_effects_de": narrative_effects_de,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }

@@ -65,6 +65,7 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "scripts/regenerate_*.py" = ["E501"]  # Image/lore prompt descriptions are naturally long
 "scripts/send_test_emails.py" = ["E501"]  # Email template strings are naturally long
 "backend/services/dungeon_engine_service.py" = ["S311"]  # Game RNG for banter placeholder resolution
+"backend/services/dungeon_movement_service.py" = ["S311"]  # Game RNG for banter placeholder resolution
 "backend/services/combat/stress_system.py" = ["S311"]  # Game RNG is intentional
 "backend/services/dungeon/dungeon_archetypes.py" = ["E501"]  # Config dict lines
 "backend/services/dungeon/dungeon_generator.py" = ["S311"]  # Game RNG is intentional

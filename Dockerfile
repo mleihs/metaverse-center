@@ -37,9 +37,13 @@ RUN python scripts/prerender.py
 # Stage 3: Python runtime with built frontend
 FROM python:3.13-slim
 
+# Non-root user for runtime (H9: container escape mitigation)
+RUN useradd --create-home --shell /bin/bash appuser
+
 WORKDIR /app
 
-# Install pinned deps first (Docker layer cache — only re-runs when requirements.txt changes)
+# Install curl for healthcheck + pinned deps (Docker layer cache)
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
@@ -50,8 +54,15 @@ COPY backend/ ./backend/
 # Copy built frontend assets + prerendered HTML
 COPY --from=prerender /app/static/dist ./static/dist
 
+# Ensure appuser owns app files
+RUN chown -R appuser:appuser /app
+
 ARG SENTRY_RELEASE
 ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 
+USER appuser
+
 EXPOSE ${PORT:-8000}
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
