@@ -300,3 +300,50 @@ bash frontend/scripts/lint-color-tokens.sh
 ```
 
 Add `// lint-color-ok` to a line to suppress false positives (use sparingly, document why).
+
+---
+
+## Icon System (Three-Tier Taxonomy)
+
+All icons live in `frontend/src/utils/icons.ts` as pure functions `(size: number) => SVGTemplateResult`. Zero npm dependencies. See `docs/concepts/icon-system-audit.md` for full research and rationale.
+
+### Tier 1 — Platform Chrome (Stroke)
+
+Generic UI icons for navigation, forms, admin controls, metadata labels.
+
+- **Style:** Tabler-derived, square linecaps, miter joins
+- **Weight:** `stroke-width="2.0"` (standard) or `stroke-width="1.5"` (decorative)
+- **Color:** `stroke="currentColor"`, `fill="none"`
+- **ViewBox:** `0 0 24 24`
+- **Principle:** Invisible and generic. A trash icon should look like every other trash icon.
+
+### Tier 2 — Lore Objects (Custom)
+
+Hand-drawn archetype and game-specific icons unique to the metaverse.center world.
+
+- **Style:** Custom-drawn, unique per archetype/concept
+- **Weight:** `stroke-width="1.5"`
+- **Color:** `stroke="currentColor"`, selective fill for emphasis
+- **ViewBox:** `0 0 24 24`
+- **Principle:** Narrative weight. Never replace with library equivalents.
+
+### Tier 3 — Game Pieces (Filled Silhouettes)
+
+Dungeon map nodes, dungeon action buttons, tactical displays. Sourced from [game-icons.net](https://game-icons.net) (CC BY 3.0, lorc/delapouite/skoll).
+
+- **Style:** Filled silhouettes, no stroke
+- **Color:** `fill="currentColor"`
+- **ViewBox:** `0 0 512 512`
+- **Principle:** Heavy, tactile, RPG manual illustrations. Must read as radar signatures at 16-20px.
+
+### Terminal Output — Unicode (Preserved)
+
+Characters like `◈ ▲ ◌ ◉ ♢ ⚔ █ ░ ═ │ ◆ ★ ✦` in terminal formatters are **intentional** — they match 1980s amber terminal authenticity. Do not replace with SVG icons.
+
+### Rules
+
+- All icons must come from `utils/icons.ts` — never inline SVG in components.
+- Never add npm icon dependencies (Phosphor, Lucide, etc.).
+- New Tier 1 icons: source from [Tabler Icons](https://tabler.io/icons), convert to square linecaps.
+- New Tier 3 icons: source from [game-icons.net](https://game-icons.net), extract path data, credit author in JSDoc.
+- Never use `stroke-linecap="round"` — brutalist aesthetic requires `"square"` / `"miter"`.

@@ -102,6 +102,7 @@
 - [MUD/Terminal Adventure Concepts](concepts/mud-terminal-adventure-concepts.md)
 - [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md)
 - [Dungeon Multiplayer Roadmap](concepts/dungeon-multiplayer-roadmap.md)
+- [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md)
 
 ## Audit Remediation
 - [CLAUDE_AUDIT.md](../CLAUDE_AUDIT.md) — Full security + architecture audit (Phase 0-6, 23.03.2026) — remediation completed 24.03.2026

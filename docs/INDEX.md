@@ -64,7 +64,7 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (8)
+## Concepts (9)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -76,6 +76,7 @@ tags: [index, catalog, documentation]
 | [MUD/Terminal Adventure Concepts (5 Designs)](concepts/mud-terminal-adventure-concepts.md) | 1.0 | 2026-03-27 | de | draft |
 | [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
 | [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.4 | 2026-04-01 | en | 5 archetypes + global admin config + clearance control |
+| [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md) | 1.0 | 2026-04-01 | en | active |
 
 ## Explanations (5)
 

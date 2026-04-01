@@ -1,14 +1,20 @@
 import { svg } from 'lit';
 
 /**
- * Centralized SVG icon library.
- * All icons follow Tabler Icons style with configurable size.
- * Default stroke-width: 2.5 (action icons), 1.5 (decorative).
+ * Centralized SVG icon library — Three-Tier Taxonomy.
+ *
+ * Tier 1 (Platform Chrome): Tabler-derived stroke, 2.0px standard / 1.5px decorative.
+ *   Square linecaps + miter joins for brutalist aesthetic.
+ * Tier 2 (Lore Objects): Custom-drawn archetype icons, 1.5px stroke.
+ * Tier 3 (Game Pieces): game-icons.net filled silhouettes, viewBox 0 0 512 512.
+ *   CC BY 3.0 — lorc, delapouite, skoll.
+ *
+ * See docs/concepts/icon-system-audit.md for full taxonomy and rationale.
  */
 export const icons = {
   edit: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
       <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
       <path d="M16 5l3 3" />
@@ -17,7 +23,7 @@ export const icons = {
 
   trash: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 7l16 0" />
       <path d="M10 11l0 6" />
       <path d="M14 11l0 6" />
@@ -28,28 +34,28 @@ export const icons = {
 
   chevronDown: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M6 9l6 6l6 -6" />
     </svg>
   `,
 
   chevronRight: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 6l6 6l-6 6" />
     </svg>
   `,
 
   plus: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 5l0 14" /><path d="M5 12l14 0" />
     </svg>
   `,
 
   close: (size = 12) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M18 6l-12 12" />
       <path d="M6 6l12 12" />
     </svg>
@@ -57,7 +63,7 @@ export const icons = {
 
   building: (size = 48) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 21l18 0" />
       <path d="M5 21v-14l8 -4v18" />
       <path d="M19 21v-10l-6 -4" />
@@ -70,7 +76,7 @@ export const icons = {
 
   calendar: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
       <path d="M16 3v4" />
       <path d="M8 3v4" />
@@ -80,7 +86,7 @@ export const icons = {
 
   location: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
       <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
     </svg>
@@ -88,7 +94,7 @@ export const icons = {
 
   brain: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M15.5 13a3.5 3.5 0 0 0 -3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8" />
       <path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1 -7 0v-1.8" />
       <path d="M17.5 16a3.5 3.5 0 0 0 0 -7h-.5" />
@@ -100,14 +106,14 @@ export const icons = {
 
   sparkle: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 6a6 6 0 0 1 6 6a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6z" />
     </svg>
   `,
 
   palette: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25" />
       <path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
       <path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
@@ -117,7 +123,7 @@ export const icons = {
 
   search: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="11" cy="11" r="8" />
       <path d="M21 21l-4.35 -4.35" />
     </svg>
@@ -125,7 +131,7 @@ export const icons = {
 
   book: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
       <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
       <path d="M3 6l0 13" />
@@ -136,7 +142,7 @@ export const icons = {
 
   users: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
       <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
@@ -146,21 +152,21 @@ export const icons = {
 
   bolt: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M13 3l0 7h6l-8 11l0 -7h-6l8 -11" />
     </svg>
   `,
 
   messageCircle: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1" />
     </svg>
   `,
 
   megaphone: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M18 8a3 3 0 0 1 0 6" />
       <path d="M10 8v6a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h1a1 1 0 0 1 1 1" />
       <path d="M12 8h0l4.524 -3.77a.9 .9 0 0 1 1.476 .692v12.156a.9 .9 0 0 1 -1.476 .692l-4.524 -3.77h0" />
@@ -170,7 +176,7 @@ export const icons = {
 
   mapPin: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
       <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
     </svg>
@@ -178,7 +184,7 @@ export const icons = {
 
   gear: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
       <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
     </svg>
@@ -186,7 +192,7 @@ export const icons = {
 
   terminal: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <polyline points="4 17 10 11 4 5" />
       <line x1="12" x2="20" y1="19" y2="19" />
     </svg>
@@ -194,7 +200,7 @@ export const icons = {
 
   heartbeat: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M19.5 13.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
       <path d="M3 12h4l2 -3l4 6l2 -3h4" />
     </svg>
@@ -202,7 +208,7 @@ export const icons = {
 
   image: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M15 8h.01" />
       <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" />
       <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
@@ -212,7 +218,7 @@ export const icons = {
 
   menu: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <line x1="3" y1="6" x2="21" y2="6" />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="18" x2="21" y2="18" />
@@ -222,7 +228,7 @@ export const icons = {
   // ── Bot personality icons ────────────────────────────
   botSentinel: (size = 24) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
       <path d="M12 8v4" />
       <path d="M12 16h.01" />
@@ -231,7 +237,7 @@ export const icons = {
 
   botWarlord: (size = 24) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 2l1.5 5h5l-4 3.5 1.5 5-4-3-4 3 1.5-5-4-3.5h5z" />
       <path d="M5 20l3-3" />
       <path d="M19 20l-3-3" />
@@ -240,7 +246,7 @@ export const icons = {
 
   botDiplomat: (size = 24) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M11 14h-4a2 2 0 00-2 2v2" />
       <path d="M13 14h4a2 2 0 012 2v2" />
       <circle cx="9" cy="8" r="3" />
@@ -251,7 +257,7 @@ export const icons = {
 
   botStrategist: (size = 24) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="2" />
       <path d="M12 2v4" />
       <path d="M12 18v4" />
@@ -266,7 +272,7 @@ export const icons = {
 
   botChaos: (size = 24) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M13 3l0 7h6l-8 11l0-7h-6l8-11" />
     </svg>
   `,
@@ -280,7 +286,7 @@ export const icons = {
 
   instagram: (size = 18) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
@@ -291,7 +297,7 @@ export const icons = {
 
   operativeSpy: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="4" />
       <path d="M12 3v2" />
@@ -303,7 +309,7 @@ export const icons = {
 
   operativeSaboteur: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="15" r="7" />
       <path d="M12 8v-5" />
       <path d="M14 3l-2 2-2-2" />
@@ -313,7 +319,7 @@ export const icons = {
 
   operativeAssassin: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 2l-1 9h2l-1 9" />
       <path d="M8 11l4-9 4 9" />
       <path d="M5 20l7-3 7 3" />
@@ -322,7 +328,7 @@ export const icons = {
 
   operativeInfiltrator: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 4c-2.5 0-4.5 1.5-5 4-.3 1.5 0 3 .8 4.2" />
       <path d="M16.2 12.2c.8-1.2 1.1-2.7.8-4.2-.5-2.5-2.5-4-5-4" />
       <path d="M9 16c0 1.7 1.3 3 3 3s3-1.3 3-3" />
@@ -333,7 +339,7 @@ export const icons = {
 
   operativeGuardian: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -343,7 +349,7 @@ export const icons = {
 
   target: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
@@ -352,7 +358,7 @@ export const icons = {
 
   checkCircle: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="10" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -360,7 +366,7 @@ export const icons = {
 
   xCircle: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="10" />
       <path d="M15 9l-6 6" />
       <path d="M9 9l6 6" />
@@ -369,7 +375,7 @@ export const icons = {
 
   alertTriangle: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 9v4" />
       <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" />
       <path d="M12 16h.01" />
@@ -378,21 +384,21 @@ export const icons = {
 
   explosion: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 2l1 5 4-3-2 5 5 1-4 3 3 4-5-2 1 5-3-4-3 4 1-5-5 2 3-4-4-3 5-1-2-5 4 3z" />
     </svg>
   `,
 
   droplet: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
     </svg>
   `,
 
   handshake: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M11 17l-1-1" />
       <path d="M14 14l-4 4-3-3 4-4" />
       <path d="M3 7l3 3 4-4 2 2 5-5 3 3" />
@@ -403,7 +409,7 @@ export const icons = {
 
   skull: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 4c4.418 0 8 3.358 8 7.5 0 1.901-.794 3.636-2.1 4.952l.1 2.548a1 1 0 01-1 1h-10a1 1 0 01-1-1l.1-2.548C4.794 15.136 4 13.401 4 11.5 4 7.358 7.582 4 12 4z" />
       <circle cx="9" cy="11" r="1" />
       <circle cx="15" cy="11" r="1" />
@@ -414,7 +420,7 @@ export const icons = {
 
   radar: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="12" cy="12" r="1" />
@@ -425,7 +431,7 @@ export const icons = {
 
   clipboard: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
       <rect x="9" y="3" width="6" height="4" rx="2" />
       <path d="M9 12h6" />
@@ -437,7 +443,7 @@ export const icons = {
 
   antenna: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 12l-2-4" />
       <path d="M12 12l2-4" />
       <path d="M12 12v9" />
@@ -449,7 +455,7 @@ export const icons = {
 
   columns: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 21h18" />
       <path d="M5 21v-14l7-4 7 4v14" />
       <path d="M9 21v-8h6v8" />
@@ -459,7 +465,7 @@ export const icons = {
 
   crossedSwords: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M5 19l14-14" />
       <path d="M15 5h4v4" />
       <path d="M19 19l-14-14" />
@@ -469,7 +475,7 @@ export const icons = {
 
   deploy: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <circle cx="12" cy="12" r="4" />
       <path d="M12 16v5" />
@@ -479,7 +485,7 @@ export const icons = {
 
   fortify: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
       <path d="M12 9v4" />
       <path d="M10 11h4" />
@@ -488,7 +494,7 @@ export const icons = {
 
   trophy: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M8 21h8" />
       <path d="M12 17v4" />
       <path d="M7 4h10v5a5 5 0 0 1-10 0V4z" />
@@ -499,7 +505,7 @@ export const icons = {
 
   timer: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="13" r="8" />
       <path d="M12 9v4l2 2" />
       <path d="M10 2h4" />
@@ -508,7 +514,7 @@ export const icons = {
 
   newspaper: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
       <path d="M18 14h-8" />
       <path d="M15 18h-5" />
@@ -520,7 +526,7 @@ export const icons = {
 
   archetypeTower: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 21l3 -18l3 18" />
       <path d="M7 6l10 0" />
       <path d="M6 12l12 0" />
@@ -532,7 +538,7 @@ export const icons = {
 
   archetypeShadow: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3a9 9 0 0 1 0 18" />
       <path d="M12 3a7 7 0 0 0 0 18" />
       <path d="M12 3v18" />
@@ -543,7 +549,7 @@ export const icons = {
 
   archetypeDevouringMother: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 21c-4.97 0 -9 -2.686 -9 -6c0 -2.21 1.79 -4.126 4.5 -5.174" />
       <path d="M12 21c4.97 0 9 -2.686 9 -6c0 -2.21 -1.79 -4.126 -4.5 -5.174" />
       <path d="M12 3c-1.933 0 -3.5 2.239 -3.5 5s1.567 5 3.5 5" />
@@ -554,7 +560,7 @@ export const icons = {
 
   archetypeDeluge: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 14c0 -3.314 3.582 -6 8 -6s8 2.686 8 6" />
       <path d="M3 18c.328 -.814 1.014 -1.553 1.952 -2.14" />
       <path d="M21 18c-.328 -.814 -1.014 -1.553 -1.952 -2.14" />
@@ -569,14 +575,14 @@ export const icons = {
 
   archetypeOverthrow: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l-8 9h5v9h6v-9h5z" />
     </svg>
   `,
 
   archetypePrometheus: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 2l1.5 5h4.5l-3.5 3l1.5 5l-4 -3l-4 3l1.5 -5l-3.5 -3h4.5z" />
       <path d="M12 15v6" />
       <path d="M9 18h6" />
@@ -585,7 +591,7 @@ export const icons = {
 
   archetypeAwakening: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="3" />
       <circle cx="12" cy="12" r="7" />
       <path d="M12 2v3" />
@@ -601,7 +607,7 @@ export const icons = {
 
   archetypeEntropy: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
       <path d="M12 3c-1.333 2.667 -2 5.333 -2 8s.667 5.333 2 8" />
       <path d="M12 3c1.333 2.667 2 5.333 2 8s-.667 5.333 -2 8" />
@@ -628,7 +634,7 @@ export const icons = {
   /** Substrate tremor icon (seismograph wave). */
   substrateTremor: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 12h3l2 -6l3 12l3 -8l2 6h5" />
     </svg>
   `,
@@ -637,7 +643,7 @@ export const icons = {
 
   eye: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
       <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
     </svg>
@@ -645,7 +651,7 @@ export const icons = {
 
   eyeOff: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M10.585 10.587a2 2 0 0 0 2.829 2.828" />
       <path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.014 9.014 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87" />
       <path d="M3 3l18 18" />
@@ -654,7 +660,7 @@ export const icons = {
 
   upload: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
       <path d="M7 9l5 -5l5 5" />
       <path d="M12 4l0 12" />
@@ -663,7 +669,7 @@ export const icons = {
 
   imageReference: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M15 8h.01" />
       <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" />
       <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
@@ -673,7 +679,7 @@ export const icons = {
 
   key: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-3.602 -3.602a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0z" />
       <path d="M14.5 7.5l-8 8" />
       <path d="M3 21l1.5 -1.5" />
@@ -696,7 +702,7 @@ export const icons = {
 
   fracture: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 3l5 7-3 4 6 7" />
       <path d="M9 10l5-2" />
       <path d="M6 14l4 1" />
@@ -706,7 +712,7 @@ export const icons = {
 
   anchor: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="5" r="2" />
       <path d="M12 7v13" />
       <path d="M5 12h2a5 5 0 0 0 10 0h2" />
@@ -717,14 +723,14 @@ export const icons = {
 
   scorchedEarth: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z" />
     </svg>
   `,
 
   emergencyDraft: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
       <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
       <path d="M19 7v6" />
@@ -734,7 +740,7 @@ export const icons = {
 
   compassRose: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 3l1 4-1 1-1-1z" fill="currentColor" />
       <path d="M12 21l-1-4 1-1 1 1z" />
@@ -746,7 +752,7 @@ export const icons = {
 
   stampClassified: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <rect x="3" y="6" width="18" height="12" rx="1" />
       <path d="M7 10h10" />
       <path d="M7 14h6" />
@@ -755,7 +761,7 @@ export const icons = {
 
   lock: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <rect x="5" y="11" width="14" height="10" rx="2" />
       <path d="M8 11v-4a4 4 0 0 1 8 0v4" />
     </svg>
@@ -763,7 +769,7 @@ export const icons = {
 
   magnifyingGlass: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="10" cy="10" r="7" />
       <path d="M21 21l-6-6" />
     </svg>
@@ -771,7 +777,7 @@ export const icons = {
 
   pencilAnnotate: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
     </svg>
@@ -779,7 +785,7 @@ export const icons = {
 
   layerInfrastructure: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 21h18" />
       <path d="M5 21v-12l7-4 7 4v12" />
       <path d="M9 21v-6h6v6" />
@@ -789,7 +795,7 @@ export const icons = {
 
   layerBleed: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
       <path d="M12 3v18" stroke-dasharray="2 2" />
     </svg>
@@ -797,7 +803,7 @@ export const icons = {
 
   layerMilitary: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l8 4.5v5c0 4.418-3.354 8.074-8 9.5-4.646-1.426-8-5.082-8-9.5v-5L12 3z" />
       <path d="M12 8l-3 5h6l-3 5" />
     </svg>
@@ -805,7 +811,7 @@ export const icons = {
 
   layerHistory: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 3" />
       <path d="M3.05 11h.01" />
@@ -815,40 +821,38 @@ export const icons = {
 
   heartline: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 12h4l2 -3l4 6l2 -3h6" />
     </svg>
   `,
 
   flatline: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M3 12h18" />
     </svg>
   `,
 
   hexagon: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M19.875 6.27a2.225 2.225 0 0 1 1.125 1.948v7.564c0 .809-.443 1.555-1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1-2.184 0l-6.75-4.27A2.225 2.225 0 0 1 3 15.782V8.218c0-.809.443-1.554 1.158-1.947l6.75-3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" />
     </svg>
   `,
 
   // ── Dungeon Icons ─────────────────────────────────────────────────────────
 
-  /** Depth gauge — staircase descending. */
+  /** Depth gauge — stairs goal (delapouite, game-icons.net, CC BY 3.0). */
   dungeonDepth: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 4h4v4h4v4h4v4h4" />
-      <path d="M4 8v-4" /><path d="M20 16v4" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M439 32v165h18V32h-18zm-18 12.99L327.6 80l93.4 35V44.99zM165.9 103c-5 0-10.2 2.3-15.3 7-6.2 5.8-11.5 15.1-13.8 26.3-2.3 11.3-1 22 2.5 29.7 3.5 7.8 8.6 12.3 14.6 13.5 6 1.3 12.4-.9 18.7-6.6 6.1-5.8 11.5-15.1 13.8-26.4 2.2-11.3.9-22-2.5-29.7-3.5-7.8-8.6-12.2-14.6-13.5-1.1-.2-2.3-.3-3.4-.3zm-38.4 78.5c-3.4 1.2-6.9 2.5-10.7 4.1-24.85 15.7-42.2 31.2-59.84 55.7-11.19 15.5-11.74 42-12.58 61.5l20.8 9.2c.87-27.8.36-39.3 13.27-55.3 9.83-12.2 19.33-25 37.55-28.9 1.6 28.9-2.6 73.7-14 119.6 20.5 2.8 37.6-.7 57-6.3 50.7-25.3 74.1-3.8 109.3 45.7l20.5-32.1c-24.6-28.9-48.5-75.1-117.2-57.3 5-27.3 5.6-45.4 8.6-72.6.6-12 .8-23.9 1.1-35.7-8.9 6.8-19.9 10.4-31 8.1-9.5-2-17.3-7.9-22.8-15.7zm144.2 7.3c-18.2 17.8-22.2 31-50.2 38.4l-22.5-24c-.4 12.8-.8 25.9-1.9 39.2 9.5 8.7 19.2 15.7 22.7 14.6 31.3-9.4 40.3-20.3 61.4-41.9l-9.5-26.3zM409 215v96h-96v96h-96v78.1c102.3.2 167.8 1.1 270 1.8V215h-78zM140.7 363.9c-13.6 2.5-27.8 3.3-43.44.9-10.89 37.5-26.76 74.3-48.51 102.5l38.63 15.3c27.02-37.9 36.82-70.6 53.32-118.7z"/>
     </svg>
   `,
 
   /** Room counter — door frame. */
   doorOpen: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 -1h-14a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1" />
       <path d="M12 4v16" /><path d="M14 12h.01" />
     </svg>
@@ -865,57 +869,43 @@ export const icons = {
   /** Visibility — diamond pip (empty). */
   diamondEmpty: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3l7 9l-7 9l-7 -9z" />
     </svg>
   `,
 
-  /** Scout action — binoculars. */
+  /** Scout action — spyglass (lorc, game-icons.net, CC BY 3.0). */
   binoculars: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M7 16a4 4 0 0 1 -4 -4v-2a2 2 0 0 1 2 -2h2" />
-      <path d="M17 16a4 4 0 0 0 4 -4v-2a2 2 0 0 0 -2 -2h-2" />
-      <path d="M7 8v-2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v2" />
-      <path d="M7 16h10" />
-      <circle cx="7" cy="16" r="2" /><circle cx="17" cy="16" r="2" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M84.438 20.78c-.414.005-.824.01-1.25.032-2.273.113-4.742.477-7.376 1.094C65.28 24.373 52.858 31.236 42.094 42 31.33 52.763 24.467 65.186 22 75.72c-2.467 10.532-.738 18.23 3.75 22.718 3.93 3.93 10.33 5.763 18.938 4.5-1.82-5.496-1.757-11.592-.407-17.282 2.182-9.194 7.5-18.247 15.314-26.062 7.814-7.816 16.836-13.13 26.03-15.313 2.3-.544 4.695-.876 7.064-.968 3.515-.135 7.022.307 10.312 1.407 1.3-8.664-.52-15.082-4.47-19.032-3.154-3.156-7.896-4.97-14.093-4.907zm9.937 41.126c-.332-.006-.694.01-1.063.032-.98.06-2.08.23-3.343.53-5.057 1.2-11.542 4.728-17.157 10.344-5.616 5.617-9.145 12.1-10.344 17.157-1.2 5.054-.25 7.718 1.03 9l.344.343.312.406 41.344 51.25c4.423-9.226 10.846-18.254 19.03-26.44 8.186-8.183 17.214-14.607 26.44-19.03L99.72 64.156l-.407-.312-.344-.344c-.84-.84-2.273-1.552-4.595-1.594zm85.22 55.344a30.675 30.675 0 0 0-2.376.03c-2.168.115-4.54.465-7.064 1.064-10.095 2.394-22.042 9.042-32.406 19.406-10.364 10.364-17.012 22.31-19.406 32.406-2.394 10.095-.727 17.367 3.5 21.594l.344.375.312.375 3.75 4.625c.046-.207.076-.418.125-.625 3.576-15.268 12.593-30.935 26.125-44.47 13.467-13.468 29.05-22.452 44.25-26.06l-4.25-3.44-.375-.343-.375-.343c-2.774-2.775-6.828-4.448-12.156-4.594zm31.186 25.656c-2.895-.01-6.086.374-9.56 1.188-11.122 2.604-24.185 9.838-35.5 21.156-11.318 11.318-18.552 24.378-21.157 35.5-2.117 9.036-1.316 16.178 1.656 21.125l.093.156 48.375 59.94c6.217-18.252 17.894-36.74 34.218-53.064 16.332-16.33 34.835-28.003 53.094-34.22L219.75 144.5c-2.557-1.017-5.562-1.583-8.97-1.594zm99.25 65.344c-.697.007-1.41.027-2.124.063-3.814.188-7.85.798-12.125 1.812-17.098 4.056-36.72 15.005-53.686 31.97-16.965 16.963-27.913 36.586-31.97 53.686-4.055 17.102-1.384 30.74 6.94 39.064l.342.344.313.406.31.406a92.7 92.7 0 0 1 1.907-11c5.25-22.406 18.652-45.87 38.907-66.125 20.255-20.255 43.718-33.658 66.125-38.906 3.702-.87 7.4-1.513 11.06-1.907l-.436-.344-.406-.314-.344-.344c-5.853-5.852-14.346-8.918-24.813-8.812zm35.22 27.97c-4.95-.034-10.325.6-16.03 1.936-18.262 4.278-39.118 15.898-57.158 33.938-18.04 18.04-29.66 38.896-33.937 57.156-3.19 13.618-2.38 25.28 1.97 34.063l55.874 69.28c.46-3.185 1.058-6.378 1.81-9.593 6.32-26.98 22.565-55.408 47.126-79.97 24.56-24.56 52.96-40.773 79.938-47.092 2.055-.482 4.108-.89 6.156-1.25l-67.53-54.5h-.033c-5.132-2.575-11.256-3.924-18.187-3.97zm103.094 75.5c-.947.005-1.907.017-2.875.06-5.166.236-10.637 1.008-16.345 2.345-22.832 5.348-48.686 19.78-71.03 42.125-22.347 22.345-36.778 48.2-42.126 71.03-5.35 22.833-1.77 41.703 9.905 53.376 7.86 7.862 18.996 12.047 32.406 12.313a46.876 46.876 0 0 1-2-1.876c-13.45-13.452-16.224-33.735-11.5-53.906 4.726-20.172 16.757-41.163 34.908-59.313 18.15-18.15 39.172-30.213 59.343-34.938 5.044-1.18 10.086-1.898 15.033-2.093 14.84-.586 28.754 3.505 38.843 13.594a43.13 43.13 0 0 1 1.938 2.062c-.245-13.438-4.44-24.595-12.313-32.47-8.207-8.207-19.98-12.4-34.186-12.31zm8.28 47.717c-.65.005-1.3.032-1.968.063-3.564.167-7.37.687-11.375 1.625-16.024 3.754-34.44 14.003-50.374 29.938-7.822 7.822-14.263 16.238-19.25 24.687a91.23 91.23 0 0 1 5.438-5.938c17.012-17.01 38.125-24.96 53.22-21.5-5.877 2.765-11.803 6.865-17.158 12.22-16.19 16.19-21.17 37.454-11.125 47.5 7.735 7.733 22.152 6.587 35.75-1.75-3.07 4.568-6.748 9.03-10.967 13.25-18.512 18.51-41.876 26.32-57.063 20.343 7.814 6.11 19.617 7.906 34.156 4.5 16.025-3.754 34.44-14.003 50.375-29.938 15.936-15.934 26.185-34.35 29.94-50.375 3.752-16.024 1.195-28.71-6.5-36.406-5.413-5.41-13.32-8.293-23.095-8.22z"/>
     </svg>
   `,
 
-  /** Retreat action — door with arrow. */
+  /** Retreat action — exit door (delapouite, game-icons.net, CC BY 3.0). */
   doorExit: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
-      <path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M217 28.098v455.804l142-42.597V70.697zm159.938 26.88.062 2.327V87h16V55zM119 55v117.27h18V73h62V55zm258 50v16h16v-16zm0 34v236h16V139zm-240 58.727V233H41v46h96v35.273L195.273 256zM244 232c6.627 0 12 10.745 12 24s-5.373 24-12 24-12-10.745-12-24 5.373-24 12-24zM137 339.73h-18V448h18zM377 393v14h16v-14zm0 32v23h16v-23zM32 471v18h167v-18zm290.652 0-60 18H480v-18z"/>
     </svg>
   `,
 
-  /** Rest action — campfire. */
+  /** Rest action — campfire (lorc, game-icons.net, CC BY 3.0). */
   campfire: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 4c1.5 2 2 4 1 6s-2 4 -1 6" />
-      <path d="M10 12c0 -2 1 -3 2 -4c1 1 2 2 2 4c0 1.5 -1 3 -2 3s-2 -1.5 -2 -3z" />
-      <path d="M4 20l4 -2l4 2l4 -2l4 2" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M281.53 23.438c48.44 71.504-18.447 145.556-63.655 58.968 27.295 144.502-65.22 166.347-74.75 74.75-73.554 65.057-59.358 147.17-20.438 210.75l45.844-26.344c-12.004-18.318-17.995-42.502-15.31-66.218 25.688 39.43 106.855 10.088 97.124-59.938 10.695 32.074 37.802 28.97 65.78-20.5C278.07 297.622 337.95 364.248 378.032 333.5c1.47 11.97-2.95 25.657-10.592 38.063l46.968 12.53c55.122-47.503 79.71-135.97-3.812-175.53 39.08 60.478-13.1 105.064-60.72 41.468-38.546-72.133 82.366-113.394-68.343-226.593zM173.876 48.124c-64.128 32.333-14.642 60.51-14.03 92.344 44.122-38.935-3.722-53.508 14.03-92.345zm74.47 269.094L75 416.874c2.71 18.39 8.98 34.417 18.813 48.5l92-44.063-78.688 59.875c3.39 3.38 7.033 6.62 10.938 9.75L192.78 448c-.023-.738-.06-1.475-.06-2.22 0-37.22 30.495-67.56 67.81-67.56a67.554 67.554 0 0 1 29.44 6.717c-2.323-13.414-7.28-27.104-14.72-39.28l-94.938 40.124 82.47-56.467c-4.34-4.55-9.166-8.64-14.438-12.094zm58.874 57.624c1.61 7.148 2.6 14.315 2.967 21.312l.22 3.938c11.13 12.042 17.937 28.09 17.937 45.687a66.814 66.814 0 0 1-3.813 22.25l91.345 24.376c4.642-6.327 8.588-12.768 11.844-19.375l-63.158-24.686 70.125 6.844c.866-2.948 1.61-5.923 2.22-8.938l-97.063-34.22L439 427.5c.156-5.772-.103-11.67-.813-17.72L307.22 374.845zm-46.69 22.062c-27.26 0-49.124 21.8-49.124 48.875 0 27.078 21.864 48.876 49.125 48.876 27.263 0 49.126-21.798 49.126-48.875 0-27.075-21.863-48.874-49.125-48.874zm-4.936 11.78c43.778.002 58.435 71.595 0 71.595 26.622-23.113 29.81-46.888 0-71.592zm.187 9.845c-21.616 17.916-19.304 35.177 0 51.94-42.375 0-31.745-51.94 0-51.94z"/>
     </svg>
   `,
 
-  /** Interact/encounter — hand raised. */
+  /** Interact/encounter — hand (lorc, game-icons.net, CC BY 3.0). */
   handClick: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5" />
-      <path d="M11 5.5a1.5 1.5 0 0 1 3 0v6.5" />
-      <path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5" />
-      <path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-1.5" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M309.752 35.514c-3.784.046-7.807.454-12.004 1.082-27.198 61.067-49.85 122.007-65.45 182.775-9.293-4.313-18.634-8.57-27.962-12.845-3.95-53.137 1.876-103.13 5.33-153.757-6.696-5.06-17.54-8.82-28.596-8.98-11.573-.166-22.304 3.33-28.537 9.513-5.44 70.22-5.258 147.354 1.133 217.475 21.926 29.733 45.877 59.903 52.305 103.64l-18.49 2.716c-4.24-28.837-17.583-51.34-33.238-73.51l-7.582-10.55c-5.01-6.862-10.134-13.79-15.185-20.945-21.397-28.51-44.094-51.49-62.155-59.22-9.81-4.196-17.273-4.385-24.632-.442-6.486 3.474-13.52 11.49-20.043 25.387 53.41 51.674 70.576 104.044 82.718 138.664 5.79 16.507 11.08 31.523 21.274 47.025 15.614 23.746 49.446 42.91 84.066 49.51 34.62 6.598 68.69.712 86.87-19.833 14.36-16.227 41.232-41.87 56.195-57.787 24.524-26.085 59.485-54.964 88.597-77.248 14.556-11.142 27.62-20.598 37.197-27.178 4.79-3.29 8.68-5.848 11.612-7.625.197-.12.34-.182.527-.294 1.31-9.873-.448-20.663-4.804-29.375-4.358-8.718-10.787-14.658-17.763-17.015-35.707 21.283-70.62 44.438-103.877 75.438-5.745-7.274-11.933-14.06-18.5-20.424 30.747-58.815 69.992-107.75 114.28-150.41-1.56-9.55-7.76-19.814-16.114-27.32-8.4-7.55-18.526-11.7-25.852-11.623-45.615 46.382-85.864 96.907-117.5 154.463-6.918-4.36-14.023-8.513-21.27-12.51 18.893-64.715 42.99-126.426 73.5-184.392-12.757-15.245-25.477-23.335-42.347-24.324a52.385 52.385 0 0 0-3.7-.08z"/>
     </svg>
   `,
 
   /** Room type: treasure — chest. */
   treasure: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <rect x="3" y="12" width="18" height="8" rx="1" />
       <path d="M3 12a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4" />
       <path d="M12 12v3" /><circle cx="12" cy="16" r="1" />
@@ -925,7 +915,7 @@ export const icons = {
   /** Room type: boss — crown. */
   crown: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" />
     </svg>
   `,
@@ -933,7 +923,7 @@ export const icons = {
   /** Room type: entrance — door enter. */
   doorEnter: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
       <path d="M20 12h-12l3 -3" /><path d="M11 15l-3 -3" />
     </svg>
@@ -942,7 +932,7 @@ export const icons = {
   /** Shield — guardian school / defense. */
   shield: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3" />
     </svg>
   `,
@@ -950,7 +940,7 @@ export const icons = {
   /** Dagger — assassin school. */
   dagger: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 2l2 10l-2 2l-2 -2z" />
       <path d="M8 14l8 0" />
       <path d="M12 16v4" />
@@ -960,7 +950,7 @@ export const icons = {
   /** Mask — infiltrator school. */
   mask: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 4c4.418 0 8 2.686 8 6s-3.582 6 -8 6s-8 -2.686 -8 -6s3.582 -6 8 -6z" />
       <circle cx="9" cy="9" r="1.5" /><circle cx="15" cy="9" r="1.5" />
     </svg>
@@ -969,36 +959,31 @@ export const icons = {
   /** Bomb — saboteur school. */
   bomb: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="11" cy="14" r="7" />
       <path d="M14 7l2 -2" /><path d="M18 3l-1.5 1.5" />
       <path d="M18 3l0 3" /><path d="M18 3l3 0" />
     </svg>
   `,
 
-  /** Footprints — move action. */
+  /** Footprints — boot prints move action (lorc, game-icons.net, CC BY 3.0). */
   footprints: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M8 3c0 1.657 -1 3 -2 4s-2 3 -2 5a4 4 0 0 0 4 4c2 0 4 -1.5 4 -4c0 -2 -1 -3 -2 -5s-2 -2.343 -2 -4" />
-      <path d="M16 9c0 1.657 -1 3 -2 4s-2 3 -2 5a4 4 0 0 0 4 4c2 0 4 -1.5 4 -4c0 -2 -1 -3 -2 -5s-2 -2.343 -2 -4" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M111.512 21.176c-6.65.088-13.7 1.088-21.162 3.088-87.625 23.48-77.956 222.752-9.297 310.984l.002-.002 99.513-26.664c-3.273-35.578.003-76.04 19.313-113.947 2.605-89.97-24.095-174.31-88.368-173.46zm294.38 0c-64.273-.852-90.972 83.488-88.37 173.46 19.31 37.905 22.587 78.368 19.314 113.946l99.514 26.664.002.002c68.658-88.232 78.327-287.505-9.297-310.984-7.463-2-14.513-3-21.162-3.088zM188.878 350.06l-101.26 27.13c5.495 191.896 200.51 104.13 101.26-27.13zm139.65 0c-99.25 131.26 95.767 219.026 101.262 27.13l-101.263-27.13z"/>
     </svg>
   `,
 
-  /** Dungeon map — folded map with route lines. */
+  /** Dungeon map — treasure map (lorc, game-icons.net, CC BY 3.0). */
   dungeonMap: (size = 16) => svg`
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 7l6 -3l6 3l6 -3v13l-6 3l-6 -3l-6 3v-13" />
-      <circle cx="12" cy="10" r="2" />
-      <path d="M12 12v2" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor">
+      <path d="M227.4 34.7c-10.1 0-20.2.2-30.2.5l6.1 65.6-61.1-62.5c-31.3 2.5-62.5 6.6-93.8 12.5l34.2 28.4-48-.6c35.1 100.2 6.9 182.6-.3 292.1L130 476.5c10-1.3 19.9-2.4 29.6-3.3l21.5-42.2 18.6 28.8 41.5-33.5.8 43c82.9-.2 157.7 9.1 235.7 7.9-28.2-73-31.2-143.6-31.9-209.2l-33.3-19.1 32.7-33.9c-.4-21.3-1.3-42-3.6-61.9l-57.4.7 50.2-41.7c-3.8-15.5-9-30.4-16.1-44.7l-29.5-23.9C335 38 281.2 34.6 227.4 34.7zm58.7 37c10.6 24.75 21.1 49.5 31.7 74.3 7.5-10.5 14.9-21 22.4-31.5 16 27.2 32 54.3 48 81.5l-16.2 9.5-33.3-56.7-42.5 59.4-15.2-10.9 24-33.5-21.9-51.5-24.6 40.1 12 22.6-16.5 8.8-18.3-34.5-24.8 58.2-17.2-7.4 32.5-76.2 7.7-18c4.8 9.2 9.6 18.3 14.5 27.4 12.5-20.6 25.1-41.11 37.7-61.6zM91.2 128c6.72 1.6 13.4 3.4 19.2 5.3-2.1 5.9-4.1 11.8-6.2 17.6-5.79-1.6-11.72-3.4-16.9-4.7 1.39-6 2.62-12.1 3.9-18.2zm37.9 13.4c6.3 3.8 12 7.2 17 12.8L132.6 167c-4-3.7-8.6-7-12.8-9.4zm28.7 32.3c2.1 7.4 2.1 15.7 1.6 22.5l-18.5-2.4c.1-5.1.3-10-1-14.5zm-21.2 35.7 17.2 7.1c-3.3 6.6-5.1 12.7-8.6 17.8l-16.3-9c2.6-5.4 5.6-10.8 7.7-15.9zm-16.5 34.1 17.7 6.1c-1.5 5.4-3 11.2-3.6 16.2l-18.6-2c1.3-7.5 2.1-14 4.5-20.3zm207.8 17.4c8.5 1 14.6 3 21.7 7.1l-9.8 16c-4.1-2.8-9.4-3.8-13.5-4.5zm-21.2 1.5c1.1 6.1 2.5 12.2 3.9 18.3-5.9 1.3-11.7 3.3-16.5 5.1l-6.8-17.4c6.7-2.4 13.5-4.7 19.4-6zm-37.9 15.9 11 15.1c-5.6 4-11.8 7.8-16.8 10.6l-8.9-16.4c5.1-2.9 10.6-6.3 14.7-9.3zM135.3 281c1.5 4.7 4.2 9.2 6.9 12.1l-13.8 12.6c-5.5-5.7-9.5-13.5-11.2-20.1zm230.3 3.3c3.5 6.4 6.8 12.7 8.7 19.1l-17.8 5.6c-2-5.4-4.3-10.8-6.8-14.8zm-127.4 10.9 6.9 17.3c-6.4 2.7-12.9 4.8-18.6 6.5l-5-18c5.9-1.6 11.3-3.8 16.7-5.8zm-83.8 6.2c5.3 1.7 10.8 3.4 15.7 4.2-1.2 6.1-2 12.3-2.8 18.5-7-1-14.5-3.3-20.5-5.7zm50 3.5 2.8 18.5c-7.2 1.3-13.4 1.6-19.8 1.9l-.4-18.7c5.9-.2 11.6-.8 17.4-1.7zm174.5 18c1 6.4 1.6 12.9 2.2 19.3l-18.7 1.5c-.4-6-.9-11.9-2-17.8zm-67.6 30.8c18.9 3.5 44.9 16.2 68.9 33.9 7.4-9.9 14.4-20.4 21.3-31.1l30.1 12.9c-4.7 12.3-15 25.6-28.6 37.2 17 16.2 30.9 34.5 37 53-13.8-18.1-31.1-31.8-50.3-42.8-23.4 15.8-52.7 25.9-79.6 20.4 22.9-4.4 40.6-16.6 55.8-32.6-16.5-7.5-33.8-13.9-51.3-20.1z"/>
     </svg>
   `,
 
   /** Room type: elite combat — skull with lightning. */
   skullBolt: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <path d="M12 4a7 7 0 0 1 7 7c0 2.5 -1.5 4.5 -3.5 5.5v1.5a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1v-1.5c-2 -1 -3.5 -3 -3.5 -5.5a7 7 0 0 1 7 -7z" />
       <path d="M10 20h4" /><path d="M12 4l-1 4h2l-1 4" />
     </svg>
@@ -1007,7 +992,7 @@ export const icons = {
   /** Room type: encounter/event — question mark in circle. */
   questionCircle: (size = 16) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
-      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 17l0 .01" />
       <path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -2.5" />
