@@ -1,7 +1,7 @@
 # metaverse.center
 
 > Multiplayer worldbuilding platform with AI-driven simulations, competitive PvP epochs, and procedural Resonance Dungeons.
-> 90+ database tables, 165+ PostgreSQL functions, 449 API endpoints, 223+ web components. 5906 i18n strings (100% EN/DE). 165 SQL migrations.
+> 100+ database tables, 165+ PostgreSQL functions, 450+ API endpoints, 223+ web components. 5906 i18n strings (100% EN/DE). 172 SQL migrations.
 > Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.
 
 ## Specifications
@@ -64,6 +64,7 @@
 - [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md)
 - [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md)
 - [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md)
+- [The Prometheus — Literary Research](research/prometheus-literary-research.md)
 
 ## Analysis
 - [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
@@ -100,6 +101,7 @@
 - [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md)
 - [MUD/Terminal Adventure Concepts](concepts/mud-terminal-adventure-concepts.md)
 - [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md)
+- [Dungeon Multiplayer Roadmap](concepts/dungeon-multiplayer-roadmap.md)
 
 ## Audit Remediation
 - [CLAUDE_AUDIT.md](../CLAUDE_AUDIT.md) — Full security + architecture audit (Phase 0-6, 23.03.2026) — remediation completed 24.03.2026

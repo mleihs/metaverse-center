@@ -221,6 +221,7 @@ For full architecture details, see [Sentry CI/CD Integration Guide](sentry-cicd-
 7. **Out-of-order migrations** — `ensure_dev_user` has early timestamp; `supabase db push` rejects it. Use `migration repair --status applied` to skip it if the user already exists on production
 8. **Zsh incompatibility** — `declare -A` (bash associative arrays) fails in zsh. Use Python for complex scripting involving maps/dicts
 9. **NEVER hardcode agent/building UUIDs in migrations** — see below
+10. **Lifespan cache loaders crash on missing tables** — `load_dungeon_content()` in `app.py` lifespan queries content tables (migration 170+) at startup. If migrations are not pushed before deploy, Railway shows `PGRST205: Could not find the table` and the deploy FAILS. Always `supabase db push` BEFORE deploying code that references new tables
 
 ## CRITICAL: Never Hardcode Entity UUIDs in Migrations
 
