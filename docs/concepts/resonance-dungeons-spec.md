@@ -39,9 +39,9 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 
 ---
 
-## IMPLEMENTATION STATUS (2026-03-27)
+## IMPLEMENTATION STATUS (2026-04-01)
 
-**Phase 0 Full Stack: COMPLETE — Backend + Frontend Phases 1-8 + 2 Playtests + 755 Tests**
+**Phase 0-2 Full Stack: COMPLETE — 5 Archetypes, Content DB (10 tables), Admin Global Config + Clearance Control, 755+ Tests**
 
 ### Implementierte Artefakte
 

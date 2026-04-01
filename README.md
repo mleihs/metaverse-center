@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 2 playable archetypes: The Shadow (visibility mechanic, 3 VP pips) and The Tower (stability countdown 100→0, Structural Failure mode at 0). 8 total designed. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 5 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting). 8 total in config. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 557 seed rows). Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
@@ -453,7 +453,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 165 SQL migrations
+  migrations/               # 172 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
 docs/                       # 73 documents (Divio structure)
