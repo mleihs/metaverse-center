@@ -316,8 +316,64 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "title_de": "Das Kollektive Unbewusste",
         "tagline_en": "The collective mind turns over in its sleep.",
         "tagline_de": "Der kollektive Geist dreht sich im Schlaf.",
+        "prose_style": (
+            "Lucid vertigo. Certainty degrades, not grammar. The dungeon-as-consciousness "
+            "is the actor: it perceives, recognizes, remembers. Memories are reconstructions, "
+            "not playback. Déjà vu described with clinical precision, never explained. "
+            "Philosophical compound nouns in German: Bewusstsein, Erinnerungsspur, Schwelle."
+        ),
         "mechanic": "memory_dungeon",
-        "mechanic_config": {},
+        "mechanic_config": {
+            "start_awareness": 0,
+            "max_awareness": 100,
+            # ── Awareness gain (per room entry, depth-scaled) ──
+            "gain_depth_1_2": 5,
+            "gain_depth_3_4": 8,
+            "gain_depth_5_plus": 12,
+            # ── Event-driven awareness changes ──
+            "gain_per_combat_round": 2,
+            "gain_on_failed_check": 5,
+            "gain_per_enemy_hit": 3,
+            # ── Awareness reduction ──
+            "reduce_on_combat_win": 0,
+            "reduce_on_rest": 5,
+            "reduce_on_treasure": 0,
+            "reduce_on_ground_action": 10,
+            # ── Thresholds (Orpheus's backward glance) ──
+            "stirring_threshold": 25,
+            "liminal_threshold": 50,
+            "lucid_threshold": 70,
+            "dissolution_threshold": 90,
+            "awakened_threshold": 100,
+            # ── Stress multipliers ──
+            "stress_multiplier_50": 1.15,
+            "stress_multiplier_70": 1.35,
+            "stress_multiplier_90": 1.75,
+            "awakened_stress_multiplier": 2.0,
+            # ── Ambush modification (consciousness intrusion) ──
+            "high_awareness_ambush_70": 0.20,
+            "high_awareness_ambush_90": 0.40,
+            # ── Loot mechanics ──
+            "lucid_loot_bonus_threshold": 70,
+            "lucid_loot_bonus_chance": 0.40,
+            "dissolution_loot_downgrade_threshold": 90,
+            "dissolution_loot_downgrade_chance": 0.30,
+            # ── Ground action (introspective grounding) ──
+            "ground_stress_cost": 15,
+            "ground_min_aptitude": 40,
+            "ground_cooldown_rooms": 3,
+        },
+        "aptitude_weights": {
+            "spy": 30,            # critical: perception, observation, inner sight
+            "propagandist": 25,   # high: shared consciousness, collective voice
+            "guardian": 15,       # medium: grounding, maintaining identity
+            "infiltrator": 12,    # medium: navigating layers of consciousness
+            "saboteur": 10,       # low: disruption of patterns
+            "assassin": 8,        # low: precision in unstable reality
+        },
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     "The Entropy": {
         "signature": "decay_bloom",

@@ -90,6 +90,7 @@ class SkillCheckContext:
     condition: str = "operational"
     check_type: str | None = None
     visibility: int = 3
+    archetype_state: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -134,6 +135,12 @@ def resolve_skill_check(ctx: SkillCheckContext) -> SkillCheckOutcome:
     breakdown["aptitude_bonus"] = aptitude_bonus
 
     check_value = base + aptitude_bonus
+
+    # Lucid Dreaming bonus (Awakening): awareness ≥ 70 → +10% aptitude bonus
+    if ctx.archetype_state.get("awareness", 0) >= 70:
+        lucid_bonus = max(1, int(aptitude_bonus * 0.10))
+        check_value += lucid_bonus
+        breakdown["lucid_bonus"] = lucid_bonus
 
     # Personality modifier
     check_type = ctx.check_type or APTITUDE_CHECK_TYPE_MAP.get(ctx.aptitude, "precision")

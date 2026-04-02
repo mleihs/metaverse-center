@@ -19,11 +19,13 @@ import { customElement } from 'lit/decorators.js';
 import { dungeonAudio } from '../../services/DungeonAudioService.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import {
+  ARCHETYPE_AWAKENING,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
   ARCHETYPE_PROMETHEUS,
   ARCHETYPE_DELUGE,
   ARCHETYPE_TOWER,
+  isAwakeningState,
   isDelugeState,
   isEntropyState,
   isMotherState,
@@ -662,6 +664,101 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         }
       }
 
+      /* ── Awareness Gauge (archetype-specific: Awakening) ── */
+      .awareness {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .awareness__icon {
+        display: inline-flex;
+        color: var(--color-info, #c084fc);
+      }
+
+      .awareness__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--color-info, #c084fc);
+        min-width: 22px;
+        text-align: right;
+      }
+
+      .awareness__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--color-info, #c084fc) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .awareness__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out, background 0.5s ease;
+      }
+
+      /* Unconscious: 0-24 — dim violet, the mind sleeps */
+      .awareness__fill--unconscious {
+        background: color-mix(in srgb, #c084fc 30%, var(--_phosphor-dim));
+      }
+
+      /* Stirring: 25-49 — violet, déjà vu begins */
+      .awareness__fill--stirring {
+        background: #c084fc;
+      }
+
+      /* Liminal: 50-69 — violet-cyan, the threshold */
+      .awareness__fill--liminal {
+        background: color-mix(in srgb, #c084fc 50%, #22d3ee);
+      }
+
+      /* Lucid: 70-89 — cyan-white, consciousness expands */
+      .awareness__fill--lucid {
+        background: color-mix(in srgb, #22d3ee 60%, #e2e8f0);
+      }
+
+      .awareness__label--lucid {
+        color: color-mix(in srgb, #22d3ee 60%, #e2e8f0);
+        font-weight: 700;
+      }
+
+      /* Dissolution: 90-100 — white pulsing, ego dissolves */
+      .awareness__fill--dissolution {
+        background: color-mix(in srgb, #e2e8f0 80%, #c084fc);
+      }
+
+      .awareness__label--dissolution {
+        color: #e2e8f0;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .awareness__fill--lucid {
+          animation: awareness-pulse 2.5s ease-in-out infinite;
+        }
+
+        .awareness__fill--dissolution {
+          animation: awareness-dissolve 1.5s ease-in-out infinite;
+        }
+
+        .awareness__label--dissolution {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes awareness-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      @keyframes awareness-dissolve {
+        0%, 100% { opacity: 1; filter: brightness(1); }
+        50% { opacity: 0.8; filter: brightness(1.4); }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -732,6 +829,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const isMother = state.archetype === ARCHETYPE_MOTHER;
     const isPrometheus = state.archetype === ARCHETYPE_PROMETHEUS;
     const isDeluge = state.archetype === ARCHETYPE_DELUGE;
+    const isAwakening = state.archetype === ARCHETYPE_AWAKENING;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
       : isEntropy
@@ -742,7 +840,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
             ? 'color-mix(in srgb, var(--color-warning, #fb923c) 60%, var(--color-danger, #f87171))'
             : isDeluge
               ? 'var(--color-info, #60a5fa)'
-              : 'var(--color-info, #a78bfa)';
+              : isAwakening
+                ? 'var(--color-info, #c084fc)'
+                : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -757,6 +857,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const motherState = isMotherState(archState) ? archState : null;
     const prometheusState = isPrometheusState(archState) ? archState : null;
     const delugeState = isDelugeState(archState) ? archState : null;
+    const awakeningState = isAwakeningState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
@@ -773,6 +874,8 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const maxWater = delugeState?.max_water_level ?? null;
     const roomsEntered = delugeState?.rooms_entered ?? 0;
     const recessionIn = roomsEntered > 0 ? 3 - (roomsEntered % 3) : 3;
+    const awareness = awakeningState?.awareness ?? null;
+    const maxAwareness = awakeningState?.max_awareness ?? null;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -1027,6 +1130,46 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
               <span class="water__tide" aria-label=${msg('Tidal recession') + ` ${recessionIn}`}>
                 ${recessionIn === 3 ? msg('Tide') : `${recessionIn}`}
               </span>
+            `
+            : nothing
+        }
+        ${
+          awareness !== null && maxAwareness !== null
+            ? html`
+              <span class="sep"></span>
+              <div class="awareness" aria-label=${msg('Awareness') + ` ${awareness}/${maxAwareness}`}>
+                <span class="awareness__icon">${icons.archetypeAwakening(12)}</span>
+                <div
+                  class="awareness__track"
+                  role="progressbar"
+                  aria-valuenow=${awareness}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxAwareness}
+                  aria-label=${msg('Awareness level')}
+                >
+                  <div
+                    class="awareness__fill ${
+                      awareness >= 90
+                        ? 'awareness__fill--dissolution'
+                        : awareness >= 70
+                          ? 'awareness__fill--lucid'
+                          : awareness >= 50
+                            ? 'awareness__fill--liminal'
+                            : awareness >= 25
+                              ? 'awareness__fill--stirring'
+                              : 'awareness__fill--unconscious'
+                    }"
+                    style="transform: scaleX(${maxAwareness > 0 ? awareness / maxAwareness : 0})"
+                  ></div>
+                </div>
+                <span class="awareness__label ${
+                  awareness >= 90
+                    ? 'awareness__label--dissolution'
+                    : awareness >= 70
+                      ? 'awareness__label--lucid'
+                      : ''
+                }">${awareness >= 100 ? msg('AWAKE') : awareness}</span>
+              </div>
             `
             : nothing
         }

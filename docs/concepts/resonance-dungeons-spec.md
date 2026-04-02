@@ -1,9 +1,9 @@
 ---
 title: "Resonance Dungeons — Full Technical Specification"
-version: "1.5"
+version: "1.6"
 date: "2026-04-02"
 type: concept
-status: 6-archetypes-live-deluge-followups-complete
+status: 7-archetypes-live-awakening-implemented
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -110,7 +110,7 @@ Platform-level settings that cascade to all simulations unless a per-simulation 
 | The Prometheus | `innovation_spark` | Implemented |
 | The Deluge | `elemental_surge` | Implemented (core + 5 follow-ups) |
 | The Overthrow | `authority_fracture` | Config only |
-| The Awakening | `consciousness_drift` | Config only |
+| The Awakening | `consciousness_drift` | Implemented |
 
 ### Review Findings — Auflösungsstatus
 

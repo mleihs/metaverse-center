@@ -200,11 +200,14 @@ class DungeonDistributionService:
         loot_id: str,
         agent_id: UUID,
         *,
+        dimension: str | None = None,
         user_id: UUID,
     ) -> dict:
         """Assign one distributable loot item to an agent."""
         async with _store.lock(run_id):
-            return await cls._assign_loot_locked(admin_supabase, run_id, loot_id, agent_id, user_id=user_id)
+            return await cls._assign_loot_locked(
+                admin_supabase, run_id, loot_id, agent_id, dimension=dimension, user_id=user_id,
+            )
 
     @classmethod
     async def _assign_loot_locked(
@@ -214,8 +217,11 @@ class DungeonDistributionService:
         loot_id: str,
         agent_id: UUID,
         *,
+        dimension: str | None = None,
         user_id: UUID,
     ) -> dict:
+        from backend.models.resonance_dungeon import BIG_FIVE_DIMENSIONS
+
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
         if instance.phase != "distributing":
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
@@ -227,6 +233,14 @@ class DungeonDistributionService:
         if loot_item.get("effect_type") in AUTO_APPLY_EFFECT_TYPES:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "This item is auto-applied")
 
+        # Personality modifier: require valid Big Five dimension
+        if loot_item.get("effect_type") == "personality_modifier":
+            if not dimension or dimension not in BIG_FIVE_DIMENSIONS:
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    f"personality_modifier requires dimension: {', '.join(sorted(BIG_FIVE_DIMENSIONS))}",
+                )
+
         # Validate agent is in party and operational
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
@@ -235,6 +249,9 @@ class DungeonDistributionService:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent is captured and cannot receive loot")
 
         instance.loot_assignments[loot_id] = str(agent_id)
+        # Store extra params for items that need player choices (personality dimension)
+        if dimension:
+            instance.loot_extra_params[loot_id] = {"dimension": dimension}
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
         return {
@@ -296,12 +313,17 @@ class DungeonDistributionService:
                 continue  # Already in auto_apply_loot
             assigned_agent = instance.loot_assignments.get(loot_id)
             if assigned_agent:
+                params = dict(loot_data.get("effect_params", {}))
+                # Merge player-chosen extra params (e.g. personality dimension)
+                extra = instance.loot_extra_params.get(loot_id)
+                if extra:
+                    params.update(extra)
                 loot_items.append(
                     {
                         "loot_id": loot_id,
                         "agent_id": assigned_agent,
                         "effect_type": effect_type,
-                        "effect_params": loot_data.get("effect_params", {}),
+                        "effect_params": params,
                     }
                 )
 

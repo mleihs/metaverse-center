@@ -158,7 +158,7 @@ class DungeonInstance(BaseModel):
     # Loot distribution (populated during 'distributing' phase after boss victory)
     pending_loot: list[dict] = Field(default_factory=list)
     loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
-    loot_extra_params: dict[str, dict] = Field(default_factory=dict)  # loot_id → extra params (e.g. personality dimension)
+    loot_extra_params: dict[str, dict] = Field(default_factory=dict)  # loot_id → extra params
     auto_apply_loot: list[dict] = Field(default_factory=list)  # pre-built auto-apply items
 
     # Objektanker (Variation C — "Wandernde Dinge")

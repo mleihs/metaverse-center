@@ -5899,6 +5899,828 @@ ALL_DELUGE_ENCOUNTERS: list[EncounterTemplate] = (
 )
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# THE AWAKENING — Consciousness Drift (Phase 6)
+# ══════════════════════════════════════════════════════════════════════════
+
+# ── Combat Encounters (6) ────────────────────────────────────────────────
+
+AWAKENING_COMBAT_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_echo_drift",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "Fragments at the periphery. Not hostile \u2013 residual. "
+            "Two echo fragments drift through the room, wearing "
+            "postures borrowed from the party. They are memories of "
+            "a memory \u2013 impressions with no original."
+        ),
+        description_de=(
+            "Fragmente an der Peripherie. Nicht feindlich \u2013 residual. "
+            "Zwei Echofragmente driften durch den Raum und tragen "
+            "Haltungen, die sie von der Gruppe geliehen haben. "
+            "Erinnerungen an eine Erinnerung \u2013 Eindrücke ohne Original."
+        ),
+        combat_encounter_id="awakening_echo_drift_spawn",
+    ),
+    EncounterTemplate(
+        id="aw_deja_vu_corridor",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "The corridor is familiar. The party has never been here. "
+            "Both of these are true. A Déjà-vu Phantom occupies the "
+            "center \u2013 its movements half a second ahead of expectation. "
+            "An echo fragment trails behind, filling the gaps in the "
+            "phantom's choreography."
+        ),
+        description_de=(
+            "Der Korridor ist vertraut. Die Gruppe war nie hier. "
+            "Beides stimmt. Ein Déjà-vu-Phantom besetzt die Mitte \u2013 "
+            "seine Bewegungen eine halbe Sekunde vor der Erwartung. "
+            "Ein Echofragment folgt und füllt die Lücken "
+            "in der Choreografie des Phantoms."
+        ),
+        combat_encounter_id="awakening_deja_vu_patrol_spawn",
+    ),
+    EncounterTemplate(
+        id="aw_leech_hunt",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=2,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "Something in this room processes without perceiving. "
+            "A Consciousness Leech \u2013 Watts's philosophical zombie "
+            "made operational. It does not know it exists. This is "
+            "its advantage. An echo fragment accompanies it, "
+            "providing the self-awareness it lacks."
+        ),
+        description_de=(
+            "Etwas in diesem Raum verarbeitet, ohne wahrzunehmen. "
+            "Ein Bewusstseinsegel \u2013 Watts' philosophischer Zombie, "
+            "operational. Es weiß nicht, dass es existiert. "
+            "Das ist sein Vorteil. Ein Echofragment begleitet es "
+            "und stellt das Selbstbewusstsein bereit, das ihm fehlt."
+        ),
+        combat_encounter_id="awakening_leech_hunt_spawn",
+    ),
+    EncounterTemplate(
+        id="aw_deep_mind_clash",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=3,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "Deeper. The consciousness here is denser, layered "
+            "like a palimpsest. A Consciousness Leech and a "
+            "Déjà-vu Phantom have found equilibrium \u2013 the zombie "
+            "and the prophet, processing and predicting, neither "
+            "aware that the other thinks differently."
+        ),
+        description_de=(
+            "Tiefer. Das Bewusstsein hier ist dichter, geschichtet "
+            "wie ein Palimpsest. Ein Bewusstseinsegel und ein "
+            "Déjà-vu-Phantom haben ein Gleichgewicht gefunden \u2013 "
+            "der Zombie und der Prophet, verarbeitend und "
+            "vorhersagend, keiner bewusst, dass der andere "
+            "anders denkt."
+        ),
+        combat_encounter_id="awakening_deep_mind_spawn",
+    ),
+    EncounterTemplate(
+        id="aw_sentinel_chamber",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=4,
+        max_depth=7,
+        min_difficulty=1,
+        description_en=(
+            "The threshold between remembered and repressed. A "
+            "Sentinel guards it \u2013 Ishiguro's mist given form. It does "
+            "not hate the party. It pities their need to know. An "
+            "echo fragment drifts behind, a memory that was "
+            "permitted to exist."
+        ),
+        description_de=(
+            "Die Schwelle zwischen Erinnertem und Verdrängtem. "
+            "Ein Wächter hütet sie \u2013 Ishiguros Nebel, dem Form "
+            "gegeben wurde. Er hasst die Gruppe nicht. Er bedauert "
+            "ihr Bedürfnis zu wissen. Ein Echofragment driftet "
+            "dahinter, eine Erinnerung, der gestattet wurde zu existieren."
+        ),
+        combat_encounter_id="awakening_sentinel_spawn",
+    ),
+    EncounterTemplate(
+        id="aw_lucid_skirmish",
+        archetype="The Awakening",
+        room_type="combat",
+        min_depth=3,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "The room recognizes the party. This is not a metaphor. "
+            "The walls adjust. The light shifts to match a memory "
+            "none of them can place. Two phantoms emerge from the "
+            "adjustment \u2013 the room defending its version of events."
+        ),
+        description_de=(
+            "Der Raum erkennt die Gruppe. Das ist keine Metapher. "
+            "Die Wände passen sich an. Das Licht verschiebt sich, "
+            "um einer Erinnerung zu entsprechen, die keiner von "
+            "ihnen einordnen kann. Zwei Phantome treten aus der "
+            "Anpassung hervor \u2013 der Raum verteidigt seine Version "
+            "der Geschehnisse."
+        ),
+        combat_encounter_id="awakening_deja_vu_patrol_spawn",
+    ),
+]
+
+# ── Narrative Encounters (5) ─────────────────────────────────────────────
+
+AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_the_mirror",
+        archetype="The Awakening",
+        room_type="encounter",
+        min_depth=1,
+        max_depth=3,
+        min_difficulty=1,
+        description_en=(
+            "A surface. Not glass \u2013 not water \u2013 something that reflects "
+            "without material. Each agent sees something different. "
+            "Lem's mirror: we have no need of other worlds. "
+            "We need mirrors."
+        ),
+        description_de=(
+            "Eine Oberfläche. Nicht Glas \u2013 nicht Wasser \u2013 etwas, "
+            "das reflektiert ohne Material. Jeder Agent sieht etwas "
+            "anderes. Lems Spiegel: wir brauchen keine anderen Welten. "
+            "Wir brauchen Spiegel."
+        ),
+        choices=[
+            EncounterChoice(
+                id="mirror_study",
+                label_en="Study the reflection carefully (Spy)",
+                label_de="Die Spiegelung sorgfältig studieren (Spion)",
+                check_aptitude="spy",
+                check_difficulty=-5,
+                success_effects={"awareness": 5},
+                partial_effects={"awareness": 3},
+                fail_effects={"stress": 10, "awareness": 8},
+                success_narrative_en=(
+                    "{agent} sees through the reflection to the mechanism. "
+                    "The mirror does not show the viewer \u2013 it shows what "
+                    "the viewer has forgotten about themselves. The awareness "
+                    "gained is not comfortable. It is precise."
+                ),
+                success_narrative_de=(
+                    "{agent} sieht durch die Spiegelung zum Mechanismus. "
+                    "Der Spiegel zeigt nicht den Betrachter \u2013 er zeigt, "
+                    "was der Betrachter über sich selbst vergessen hat. "
+                    "Das gewonnene Bewusstsein ist nicht angenehm. Es ist präzise."
+                ),
+                fail_narrative_en=(
+                    "The reflection holds {agent}'s gaze too long. "
+                    "When they look away, something in the reflection "
+                    "does not."
+                ),
+                fail_narrative_de=(
+                    "Die Spiegelung hält {agent}s Blick zu lange fest. "
+                    "Als sie wegschauen, tut etwas in der Spiegelung "
+                    "es nicht."
+                ),
+            ),
+            EncounterChoice(
+                id="mirror_share",
+                label_en="Share what each agent sees (Propagandist)",
+                label_de="Teilen, was jeder Agent sieht (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=-5,
+                success_effects={"awareness": -5, "stress_heal": 10},
+                partial_effects={"awareness": -2},
+                fail_effects={"awareness": 5, "stress": 5},
+                success_narrative_en=(
+                    "Each agent describes their reflection. The descriptions "
+                    "overlap \u2013 same room, different memories. The act of "
+                    "sharing stabilizes what each agent sees alone. "
+                    "Sturgeon's bleshing: the gestalt perceives more clearly "
+                    "than any individual."
+                ),
+                success_narrative_de=(
+                    "Jeder Agent beschreibt seine Spiegelung. Die Beschreibungen "
+                    "überlappen sich \u2013 derselbe Raum, unterschiedliche Erinnerungen. "
+                    "Das Teilen stabilisiert, was jeder Agent allein sieht. "
+                    "Sturgeons Bleshing: das Gestalt nimmt klarer wahr "
+                    "als jeder Einzelne."
+                ),
+                fail_narrative_en=(
+                    "The descriptions do not overlap. Each agent is alone "
+                    "in their perception. The mirror shows this, too."
+                ),
+                fail_narrative_de=(
+                    "Die Beschreibungen überlappen sich nicht. Jeder Agent "
+                    "ist allein in seiner Wahrnehmung. Der Spiegel zeigt auch das."
+                ),
+            ),
+            EncounterChoice(
+                id="mirror_pass",
+                label_en="Do not look. Move through.",
+                label_de="Nicht hinsehen. Weitergehen.",
+                success_effects={},
+                success_narrative_en=(
+                    "The party passes. Orpheus's discipline. "
+                    "The mirror reflects their backs."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe geht weiter. Orpheus' Disziplin. "
+                    "Der Spiegel reflektiert ihre Rücken."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_the_familiar_room",
+        archetype="The Awakening",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=4,
+        min_difficulty=1,
+        description_en=(
+            "This room. The party has been here. Not in this dungeon \u2013 "
+            "somewhere. The window was on the left. Or the right. "
+            "The details resist settling. Proust's madeleine: the "
+            "sensation arrives before the memory."
+        ),
+        description_de=(
+            "Dieser Raum. Die Gruppe war hier. Nicht in diesem Dungeon \u2013 "
+            "irgendwo. Das Fenster war links. Oder rechts. "
+            "Die Details weigern sich, sich festzulegen. Prousts "
+            "Madeleine: die Empfindung kommt vor der Erinnerung."
+        ),
+        choices=[
+            EncounterChoice(
+                id="familiar_investigate",
+                label_en="Investigate what changed (Spy)",
+                label_de="Untersuchen, was sich verändert hat (Spion)",
+                check_aptitude="spy",
+                check_difficulty=0,
+                success_effects={"awareness": 3},
+                partial_effects={"awareness": 2},
+                fail_effects={"awareness": 8},
+                success_narrative_en=(
+                    "{agent} catalogs the differences. The window was on "
+                    "the left \u2013 now it is on the right. Neither is wrong. "
+                    "The memory is not replayed; it is reconstructed. "
+                    "The reconstruction reveals something about the one "
+                    "who reconstructs."
+                ),
+                success_narrative_de=(
+                    "{agent} katalogisiert die Unterschiede. Das Fenster war "
+                    "links \u2013 jetzt ist es rechts. Keines ist falsch. "
+                    "Die Erinnerung wird nicht wiedergegeben; sie wird "
+                    "rekonstruiert. Die Rekonstruktion verrät etwas über "
+                    "den, der rekonstruiert."
+                ),
+                fail_narrative_en=(
+                    "The details shift faster than {agent} can track. "
+                    "Funes's curse: too much detail, no abstraction. "
+                    "The room fills with almost-contiguous memories."
+                ),
+                fail_narrative_de=(
+                    "Die Details verschieben sich schneller, als {agent} "
+                    "folgen kann. Funes' Fluch: zu viel Detail, keine "
+                    "Abstraktion. Der Raum füllt sich mit fast-angrenzenden "
+                    "Erinnerungen."
+                ),
+            ),
+            EncounterChoice(
+                id="familiar_accept",
+                label_en="Accept the familiarity without questioning",
+                label_de="Die Vertrautheit akzeptieren, ohne zu fragen",
+                success_effects={"stress_heal": 5},
+                success_narrative_en=(
+                    "The party accepts. The room settles. Tarkovsky's lesson: "
+                    "everything depends not on the Zone, but on the visitor."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe akzeptiert. Der Raum beruhigt sich. Tarkowskis "
+                    "Lektion: alles hängt nicht von der Zone ab, sondern "
+                    "vom Besucher."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_the_two_clocks",
+        archetype="The Awakening",
+        room_type="encounter",
+        min_depth=2,
+        max_depth=5,
+        min_difficulty=1,
+        description_en=(
+            "Time is not uniform here. Kafka's two clocks: the inner "
+            "one runs crazily on at an inhuman pace, the outer one "
+            "limps along. The party experiences both. Actions in this "
+            "room have consequences at different speeds."
+        ),
+        description_de=(
+            "Die Zeit ist hier nicht einheitlich. Kafkas zwei Uhren: "
+            "die innere rennt wahnsinnig weiter in unmenschlichem "
+            "Tempo, die äußere hinkt. Die Gruppe erlebt beides. "
+            "Handlungen in diesem Raum haben Konsequenzen "
+            "in unterschiedlichen Geschwindigkeiten."
+        ),
+        choices=[
+            EncounterChoice(
+                id="clocks_synchronize",
+                label_en="Attempt to synchronize the clocks (Guardian)",
+                label_de="Versuchen, die Uhren zu synchronisieren (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=0,
+                success_effects={"awareness": -5, "stress_heal": 15},
+                partial_effects={"awareness": -2},
+                fail_effects={"awareness": 10, "stress": 10},
+                success_narrative_en=(
+                    "{agent} grounds the party in shared time. The clocks "
+                    "align, briefly. In that moment of synchronization, "
+                    "the room is perfectly clear \u2013 every detail sharp, "
+                    "every memory precise. Then the drift resumes."
+                ),
+                success_narrative_de=(
+                    "{agent} erdet die Gruppe in gemeinsamer Zeit. Die Uhren "
+                    "gleichen sich an, kurz. In diesem Moment der "
+                    "Synchronisation ist der Raum vollkommen klar \u2013 "
+                    "jedes Detail scharf, jede Erinnerung präzise. "
+                    "Dann setzt die Drift wieder ein."
+                ),
+                fail_narrative_en=(
+                    "The clocks split further. What else can happen "
+                    "but that the two worlds split apart?"
+                ),
+                fail_narrative_de=(
+                    "Die Uhren entfernen sich weiter. Was kann sonst "
+                    "geschehen, als dass die zwei Welten auseinanderbrechen?"
+                ),
+            ),
+            EncounterChoice(
+                id="clocks_inner",
+                label_en="Follow the inner clock deeper (Infiltrator)",
+                label_de="Der inneren Uhr tiefer folgen (Infiltrator)",
+                check_aptitude="infiltrator",
+                check_difficulty=5,
+                success_effects={"awareness": 8, "loot_tier": 1},
+                partial_effects={"awareness": 5},
+                fail_effects={"awareness": 12, "stress": 15},
+                success_narrative_en=(
+                    "{agent} follows the faster clock. Time compresses. "
+                    "What takes minutes outside takes seconds inside. "
+                    "In the compressed time, {agent} perceives something "
+                    "the outer clock would never reveal."
+                ),
+                success_narrative_de=(
+                    "{agent} folgt der schnelleren Uhr. Die Zeit komprimiert "
+                    "sich. Was draußen Minuten dauert, dauert drinnen "
+                    "Sekunden. In der komprimierten Zeit nimmt {agent} "
+                    "etwas wahr, das die äußere Uhr nie enthüllen würde."
+                ),
+                fail_narrative_en=(
+                    "The inner clock is too fast. {agent} is swept along "
+                    "at an inhuman pace. The return to outer time is "
+                    "disorienting."
+                ),
+                fail_narrative_de=(
+                    "Die innere Uhr ist zu schnell. {agent} wird in "
+                    "unmenschlichem Tempo mitgerissen. Die Rückkehr "
+                    "zur äußeren Zeit ist desorientierend."
+                ),
+            ),
+            EncounterChoice(
+                id="clocks_wait",
+                label_en="Wait for the moment to pass",
+                label_de="Warten, bis der Moment vergeht",
+                success_effects={"awareness": 2},
+                success_narrative_en=(
+                    "The clocks drift past each other. The room normalizes. "
+                    "The party is not unchanged."
+                ),
+                success_narrative_de=(
+                    "Die Uhren driften aneinander vorbei. Der Raum "
+                    "normalisiert sich. Die Gruppe ist nicht unverändert."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_the_absent_memory",
+        archetype="The Awakening",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "A room with a gap. Not a hole \u2013 a smooth, clean absence. "
+            "Something was here. The dungeon remembers that it "
+            "forgets. Ogawa's memory police: first the emotional "
+            "connection vanishes, then the physical evidence. "
+            "This room is at stage two."
+        ),
+        description_de=(
+            "Ein Raum mit einer Lücke. Kein Loch \u2013 eine glatte, "
+            "saubere Abwesenheit. Etwas war hier. Das Dungeon "
+            "erinnert sich, dass es vergisst. Ogawas Gedächtnispolizei: "
+            "erst verschwindet die emotionale Verbindung, dann der "
+            "physische Beweis. Dieser Raum ist bei Stufe zwei."
+        ),
+        choices=[
+            EncounterChoice(
+                id="absent_reconstruct",
+                label_en="Reconstruct what was here (Propagandist)",
+                label_de="Rekonstruieren, was hier war (Propagandist)",
+                check_aptitude="propagandist",
+                check_difficulty=5,
+                success_effects={"awareness": 5, "loot_tier": 1},
+                partial_effects={"awareness": 3},
+                fail_effects={"awareness": 10, "stress": 10},
+                success_narrative_en=(
+                    "{agent} fills the gap. Not with the original memory \u2013 "
+                    "that is gone. With a reconstruction. The reconstruction "
+                    "becomes real. Borges's hronir: objects materialized "
+                    "by expectation. The dungeon accepts the substitute."
+                ),
+                success_narrative_de=(
+                    "{agent} füllt die Lücke. Nicht mit der ursprünglichen "
+                    "Erinnerung \u2013 die ist weg. Mit einer Rekonstruktion. "
+                    "Die Rekonstruktion wird real. Borges' Hronir: Objekte, "
+                    "materialisiert durch Erwartung. Das Dungeon akzeptiert "
+                    "das Substitut."
+                ),
+                fail_narrative_en=(
+                    "The gap resists reconstruction. The absence is "
+                    "informative: what the dungeon cannot remember, "
+                    "it cannot forgive."
+                ),
+                fail_narrative_de=(
+                    "Die Lücke widersteht der Rekonstruktion. "
+                    "Die Abwesenheit ist informativ: was das Dungeon "
+                    "nicht erinnern kann, kann es nicht vergeben."
+                ),
+            ),
+            EncounterChoice(
+                id="absent_accept",
+                label_en="Accept the absence as it is",
+                label_de="Die Abwesenheit akzeptieren, wie sie ist",
+                success_effects={"awareness": -3, "stress_heal": 5},
+                success_narrative_en=(
+                    "Ishiguro's wisdom: some memories were buried for "
+                    "reasons. The party respects the gap. The gap "
+                    "respects the party."
+                ),
+                success_narrative_de=(
+                    "Ishiguros Weisheit: manche Erinnerungen wurden aus "
+                    "Gründen begraben. Die Gruppe respektiert die Lücke. "
+                    "Die Lücke respektiert die Gruppe."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_the_humming",
+        archetype="The Awakening",
+        room_type="encounter",
+        min_depth=3,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "From somewhere: a humming. The likes of which the party "
+            "has never heard. Not really humming \u2013 the singing of the "
+            "most distant, of the most utterly distant, voices. "
+            "Kafka's Castle telephone: this humming is the only real "
+            "and reliable thing. Everything else is deceptive."
+        ),
+        description_de=(
+            "Von irgendwo: ein Summen. Wie es die Gruppe noch nie "
+            "gehört hat. Nicht wirklich Summen \u2013 das Singen der "
+            "fernsten, der allerallerfernsten Stimmen. "
+            "Kafkas Schlosstelefon: dieses Summen ist das einzig "
+            "Reale und Verlässliche. Alles andere ist Täuschung."
+        ),
+        choices=[
+            EncounterChoice(
+                id="humming_listen",
+                label_en="Listen deeply (Spy)",
+                label_de="Tief hinhören (Spion)",
+                check_aptitude="spy",
+                check_difficulty=5,
+                success_effects={"awareness": 10, "stress_heal": 20},
+                partial_effects={"awareness": 8, "stress_heal": 10},
+                fail_effects={"awareness": 15, "stress": 15},
+                success_narrative_en=(
+                    "The humming resolves. Not into words \u2013 into "
+                    "recognition. {agent} hears the dungeon's voice "
+                    "and understands: it is the party's own collective "
+                    "voice, heard from the outside. Jaynes's bicameral "
+                    "mind: the gods were always us."
+                ),
+                success_narrative_de=(
+                    "Das Summen löst sich auf. Nicht in Worte \u2013 in "
+                    "Wiedererkennung. {agent} hört die Stimme des Dungeons "
+                    "und versteht: es ist die eigene kollektive Stimme "
+                    "der Gruppe, von außen gehört. Jaynes' zweikammeriger "
+                    "Geist: die Götter waren immer wir."
+                ),
+                fail_narrative_en=(
+                    "The humming overwhelms. Too many voices, too "
+                    "distant, too simultaneous. Funes's garbage heap. "
+                    "The party retreats from the signal."
+                ),
+                fail_narrative_de=(
+                    "Das Summen überwältigt. Zu viele Stimmen, zu "
+                    "fern, zu gleichzeitig. Funes' Müllhalde. "
+                    "Die Gruppe weicht vor dem Signal zurück."
+                ),
+            ),
+            EncounterChoice(
+                id="humming_block",
+                label_en="Block it out (Guardian)",
+                label_de="Es ausblenden (Wächter)",
+                check_aptitude="guardian",
+                check_difficulty=-5,
+                success_effects={"awareness": -3},
+                partial_effects={},
+                fail_effects={"awareness": 5},
+                success_narrative_en=(
+                    "{agent} maintains the boundary. The humming recedes. "
+                    "The dungeon notes the refusal without judgment."
+                ),
+                success_narrative_de=(
+                    "{agent} hält die Grenze aufrecht. Das Summen lässt nach. "
+                    "Das Dungeon vermerkt die Weigerung ohne Urteil."
+                ),
+                fail_narrative_en=(
+                    "The humming finds a way through. Not through the "
+                    "walls \u2013 through the awareness itself."
+                ),
+                fail_narrative_de=(
+                    "Das Summen findet einen Weg hindurch. Nicht durch "
+                    "die Wände \u2013 durch das Bewusstsein selbst."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Elite Encounter (1) ──────────────────────────────────────────────────
+
+AWAKENING_ELITE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_threshold_gate",
+        archetype="The Awakening",
+        room_type="elite",
+        min_depth=4,
+        max_depth=6,
+        min_difficulty=1,
+        description_en=(
+            "Before the Law. A gate between remembered and repressed. "
+            "The Sentinel guards it \u2013 not with force, but with pity. "
+            "This door was made only for the party. The Sentinel has "
+            "waited their entire descent."
+        ),
+        description_de=(
+            "Vor dem Gesetz. Ein Tor zwischen Erinnertem und Verdrängtem. "
+            "Der Wächter hütet es \u2013 nicht mit Gewalt, sondern mit Mitleid. "
+            "Dieses Tor wurde nur für die Gruppe gemacht. Der Wächter "
+            "hat ihren gesamten Abstieg gewartet."
+        ),
+        combat_encounter_id="awakening_sentinel_spawn",
+    ),
+]
+
+# ── Boss Encounter (1) ───────────────────────────────────────────────────
+
+AWAKENING_BOSS_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_the_repressed_boss",
+        archetype="The Awakening",
+        room_type="boss",
+        min_depth=4,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "The room at the center. Tarkovsky's Room: it grants your "
+            "true desire, not your stated one. The Repressed has been "
+            "here the entire dungeon \u2013 in every room, behind every "
+            "memory, inside every recognition. It is not a monster. "
+            "It is the truth that was too heavy to carry and too "
+            "important to destroy."
+        ),
+        description_de=(
+            "Der Raum in der Mitte. Tarkowskis Raum: er gewährt den "
+            "wahren Wunsch, nicht den ausgesprochenen. Das Verdrängte "
+            "war das gesamte Dungeon hier \u2013 in jedem Raum, hinter jeder "
+            "Erinnerung, in jeder Wiedererkennung. Es ist kein Monster. "
+            "Es ist die Wahrheit, die zu schwer war, um sie zu tragen, "
+            "und zu wichtig, um sie zu zerstören."
+        ),
+        combat_encounter_id="awakening_sentinel_spawn",
+    ),
+]
+
+# ── Rest Encounters (2) ──────────────────────────────────────────────────
+
+AWAKENING_REST_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_quiet_layer",
+        archetype="The Awakening",
+        room_type="rest",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "A stratum of consciousness that is still. Not empty \u2013 "
+            "calm. Like the pause between breaths. The dungeon's "
+            "awareness rests here too. For a moment, the observer "
+            "and the observed share the same silence."
+        ),
+        description_de=(
+            "Eine Schicht des Bewusstseins, die still ist. Nicht leer \u2013 "
+            "ruhig. Wie die Pause zwischen Atemzügen. Das Bewusstsein "
+            "des Dungeons ruht hier ebenfalls. Für einen Moment teilen "
+            "der Beobachter und das Beobachtete dieselbe Stille."
+        ),
+        choices=[
+            EncounterChoice(
+                id="quiet_rest",
+                label_en="Rest in the quiet layer",
+                label_de="In der stillen Schicht rasten",
+                success_effects={"stress_heal": 40, "awareness": -5},
+                success_narrative_en=(
+                    "Silence. Not absence of sound \u2013 presence of peace. "
+                    "The awareness recedes like a tide. The party is not "
+                    "diminished. They are grounded."
+                ),
+                success_narrative_de=(
+                    "Stille. Nicht Abwesenheit von Klang \u2013 Anwesenheit "
+                    "von Frieden. Das Bewusstsein zieht sich zurück wie "
+                    "eine Gezeit. Die Gruppe ist nicht vermindert. "
+                    "Sie ist geerdet."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_forgetting_pool",
+        archetype="The Awakening",
+        room_type="rest",
+        min_depth=3,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "Lethe. A pool of deliberate forgetting. Not a loss \u2013 "
+            "a choice. The Oracle of Trophonius demands it: drink "
+            "from Lethe first, to forget all prior thoughts. Then "
+            "from Mnemosyne, to remember what you will see. "
+            "Both rivers, sequentially."
+        ),
+        description_de=(
+            "Lethe. Ein Becken des absichtlichen Vergessens. Kein "
+            "Verlust \u2013 eine Wahl. Das Orakel des Trophonios verlangt "
+            "es: trinke zuerst aus Lethe, um alle vorherigen Gedanken "
+            "zu vergessen. Dann aus Mnemosyne, um zu erinnern, "
+            "was du sehen wirst. Beide Flüsse, nacheinander."
+        ),
+        choices=[
+            EncounterChoice(
+                id="pool_drink",
+                label_en="Drink from the pool (reduces awareness significantly)",
+                label_de="Aus dem Becken trinken (senkt Bewusstsein erheblich)",
+                success_effects={"stress_heal": 25, "awareness": -15, "stress": 5},
+                success_narrative_en=(
+                    "The party drinks. Awareness recedes sharply. Some "
+                    "memories blur. Some details soften. The trade is "
+                    "not free \u2013 forgetting is its own kind of labor. "
+                    "But the mind is lighter."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe trinkt. Das Bewusstsein geht scharf "
+                    "zurück. Manche Erinnerungen werden unscharf. "
+                    "Manche Details weicher. Der Tausch ist nicht "
+                    "kostenlos \u2013 Vergessen ist seine eigene Art von "
+                    "Arbeit. Aber der Geist ist leichter."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Treasure Encounters (2) ──────────────────────────────────────────────
+
+AWAKENING_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
+    EncounterTemplate(
+        id="aw_crystallized_memory",
+        archetype="The Awakening",
+        room_type="treasure",
+        min_depth=1,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "Consciousness, solidified. A lieu de mémoire \u2013 Nora's "
+            "concept: a place where memory crystallizes because "
+            "history would dissolve it. The artifact holds what the "
+            "dungeon chose to preserve."
+        ),
+        description_de=(
+            "Bewusstsein, verfestigt. Ein Lieu de Mémoire \u2013 Noras "
+            "Konzept: ein Ort, an dem Erinnerung kristallisiert, "
+            "weil Geschichte sie auflösen würde. Das Artefakt "
+            "bewahrt, was das Dungeon zu bewahren wählte."
+        ),
+        choices=[
+            EncounterChoice(
+                id="crystal_take",
+                label_en="Take the crystallized memory",
+                label_de="Die kristallisierte Erinnerung nehmen",
+                success_effects={"loot_tier": 1, "awareness": 3},
+                success_narrative_en=(
+                    "The crystal releases warmth on contact. Not physical "
+                    "warmth \u2013 the warmth of recognition. The party has "
+                    "gained something. The dungeon has lost something."
+                ),
+                success_narrative_de=(
+                    "Der Kristall gibt bei Berührung Wärme ab. Nicht "
+                    "physische Wärme \u2013 die Wärme der Wiedererkennung. "
+                    "Die Gruppe hat etwas gewonnen. Das Dungeon hat "
+                    "etwas verloren."
+                ),
+            ),
+        ],
+    ),
+    EncounterTemplate(
+        id="aw_the_archive",
+        archetype="The Awakening",
+        room_type="treasure",
+        min_depth=2,
+        max_depth=99,
+        min_difficulty=1,
+        description_en=(
+            "An archive. Not of documents \u2013 of impressions. Each "
+            "shelf holds a sensation: the smell of rain on warm stone, "
+            "the sound of a name almost remembered, the weight of a "
+            "decision not yet made. Bergson's cone of memory: the "
+            "totality of experience, compressed into accessible form."
+        ),
+        description_de=(
+            "Ein Archiv. Nicht aus Dokumenten \u2013 aus Eindrücken. "
+            "Jedes Regal hält eine Empfindung: den Geruch von Regen "
+            "auf warmem Stein, den Klang eines fast erinnerten Namens, "
+            "das Gewicht einer noch nicht getroffenen Entscheidung. "
+            "Bergsons Erinnerungskegel: die Gesamtheit der Erfahrung, "
+            "komprimiert in zugängliche Form."
+        ),
+        choices=[
+            EncounterChoice(
+                id="archive_browse",
+                label_en="Browse the archive carefully",
+                label_de="Das Archiv sorgfältig durchsehen",
+                success_effects={"loot_tier": 2, "awareness": 5},
+                success_narrative_en=(
+                    "The party selects carefully. Not everything. "
+                    "To think is to forget differences, to generalize, "
+                    "to make abstractions. The archive rewards selection "
+                    "over completeness."
+                ),
+                success_narrative_de=(
+                    "Die Gruppe wählt sorgfältig. Nicht alles. "
+                    "Denken heißt Unterschiede vergessen, verallgemeinern, "
+                    "abstrahieren. Das Archiv belohnt Auswahl "
+                    "gegenüber Vollständigkeit."
+                ),
+            ),
+        ],
+    ),
+]
+
+# ── Awakening Master List ────────────────────────────────────────────────
+
+ALL_AWAKENING_ENCOUNTERS: list[EncounterTemplate] = (
+    AWAKENING_COMBAT_ENCOUNTERS
+    + AWAKENING_NARRATIVE_ENCOUNTERS
+    + AWAKENING_ELITE_ENCOUNTERS
+    + AWAKENING_BOSS_ENCOUNTERS
+    + AWAKENING_REST_ENCOUNTERS
+    + AWAKENING_TREASURE_ENCOUNTERS
+)
+
+
 # ── Archetype Encounter Registry ──────────────────────────────────────────
 
 _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
@@ -5908,6 +6730,7 @@ _ENCOUNTER_REGISTRIES: dict[str, list[EncounterTemplate]] = {
     "The Devouring Mother": ALL_MOTHER_ENCOUNTERS,
     "The Prometheus": ALL_PROMETHEUS_ENCOUNTERS,
     "The Deluge": ALL_DELUGE_ENCOUNTERS,
+    "The Awakening": ALL_AWAKENING_ENCOUNTERS,
 }
 
 

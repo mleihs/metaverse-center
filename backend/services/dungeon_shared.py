@@ -67,6 +67,16 @@ FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "default": "deluge_trickle_spawn",
         "rest_ambush": "deluge_rest_ambush_spawn",
     },
+    "The Entropy": {
+        "boss": "entropy_warden_spawn",
+        "default": "entropy_drift_spawn",
+        "rest_ambush": "entropy_rest_ambush_spawn",
+    },
+    "The Awakening": {
+        "boss": "awakening_sentinel_spawn",
+        "default": "awakening_echo_drift_spawn",
+        "rest_ambush": "awakening_rest_ambush_spawn",
+    },
 }
 
 

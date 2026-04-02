@@ -213,6 +213,23 @@ async def seal_breach(
     return {"success": True, "data": result}
 
 
+# ── Ground (Awakening) ─────────────────────────────────────────────────────
+
+
+@router.post("/runs/{run_id}/ground", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def ground(
+    request: Request,
+    run_id: UUID,
+    body: ScoutRequest,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
+    result = await DungeonEngineService.ground(admin, run_id, body.agent_id, user_id=user.id)
+    return {"success": True, "data": result}
+
+
 # ── Salvage (Deluge) ───────────────────────────────────────────────────────
 
 
@@ -290,6 +307,7 @@ async def assign_loot(
         run_id,
         body.loot_id,
         body.agent_id,
+        dimension=body.dimension,
         user_id=user.id,
     )
     await AuditService.safe_log(
@@ -299,7 +317,7 @@ async def assign_loot(
         "resonance_dungeon_runs",
         str(run_id),
         "assign_loot",
-        {"loot_id": body.loot_id, "agent_id": str(body.agent_id)},
+        {"loot_id": body.loot_id, "agent_id": str(body.agent_id), "dimension": body.dimension},
     )
     return {"success": True, "data": result}
 

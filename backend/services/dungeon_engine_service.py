@@ -373,6 +373,11 @@ class DungeonEngineService:
         return await DungeonMovementService.seal_breach(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
+    async def ground(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Spy: Ground — reduce awareness (Awakening only)."""
+        return await DungeonMovementService.ground(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
     async def salvage(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
     ) -> dict:
@@ -601,10 +606,13 @@ class DungeonEngineService:
         loot_id: str,
         agent_id: UUID,
         *,
+        dimension: str | None = None,
         user_id: UUID,
     ) -> dict:
         """Assign one distributable loot item to an agent."""
-        return await DungeonDistributionService.assign_loot(admin_supabase, run_id, loot_id, agent_id, user_id=user_id)
+        return await DungeonDistributionService.assign_loot(
+            admin_supabase, run_id, loot_id, agent_id, dimension=dimension, user_id=user_id,
+        )
 
     @classmethod
     async def confirm_distribution(

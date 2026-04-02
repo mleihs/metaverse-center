@@ -383,13 +383,15 @@ def _resolve_agent_actions(
                         )
                         events.extend(
                             _resolve_agent_damage(
-                                agent, ability, aoe_action, enemy_map, enemy_templates, visibility, context.round_num
+                                agent, ability, aoe_action, enemy_map, enemy_templates,
+                                visibility, context.round_num, context.archetype_state,
                             )
                         )
             else:
                 events.extend(
                     _resolve_agent_damage(
-                        agent, ability, action, enemy_map, enemy_templates, visibility, context.round_num
+                        agent, ability, action, enemy_map, enemy_templates,
+                        visibility, context.round_num, context.archetype_state,
                     )
                 )
         elif ability.effect_type == "heal_stress":
@@ -408,6 +410,7 @@ def _resolve_agent_damage(
     enemy_templates: dict[str, dict],
     visibility: int,
     round_num: int = 1,
+    archetype_state: dict | None = None,
 ) -> list[CombatEvent]:
     """Resolve a single agent damage action against an enemy."""
     target_enemy = enemy_map.get(action.target_id or "")
@@ -430,6 +433,10 @@ def _resolve_agent_damage(
 
     aptitude = agent.aptitudes.get(school, 3)
     hit_bonus = ability.effect_params.get("hit_bonus", 0)
+
+    # Lucid Dreaming bonus (Awakening): awareness ≥ 70 → +10% effective aptitude
+    if archetype_state and archetype_state.get("awareness", 0) >= 70:
+        aptitude = int(aptitude * 1.10)
 
     # Disrupted enemies have reduced evasion
     effective_evasion = target_enemy.evasion

@@ -101,6 +101,7 @@ tags: [index, catalog, documentation]
 | [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md) | 1.0 | 2026-03-31 | en | complete |
 | [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md) | 1.0 | 2026-03-31 | en | implemented |
 | [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md) | 1.0 | 2026-03-27 | en | implemented |
+| [The Awakening — Deep Literary Research](research/awakening-literary-research.md) | 2.0 | 2026-04-02 | en | implemented |
 
 ## Analysis (9)
 

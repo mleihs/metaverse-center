@@ -487,6 +487,77 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
             ),
         },
     ],
+    # ── The Awakening ────────────────────────────────────────────────────
+    "The Awakening": [
+        {
+            "text_en": (
+                "The threshold hums. Not mechanically \u2013 the singing of the"
+                " most distant, of the most utterly distant, voices."
+                " Kafka's telephone: this is the only real and reliable thing."
+                " Everything beyond is reconstruction."
+            ),
+            "text_de": (
+                "Die Schwelle summt. Nicht mechanisch \u2013 das Singen der"
+                " fernsten, der allerallerfernsten Stimmen."
+                " Kafkas Telefon: dies ist das einzig Reale und Verlässliche."
+                " Alles dahinter ist Rekonstruktion."
+            ),
+        },
+        {
+            "text_en": (
+                "The entrance is familiar. {agent} has not been here."
+                " The familiarity is not personal \u2013 it is collective."
+                " Something in the architecture recognizes the species,"
+                " not the individual."
+            ),
+            "text_de": (
+                "Der Eingang ist vertraut. {agent} war nicht hier."
+                " Die Vertrautheit ist nicht persönlich \u2013 sie ist kollektiv."
+                " Etwas in der Architektur erkennt die Spezies,"
+                " nicht das Individuum."
+            ),
+        },
+        {
+            "text_en": (
+                "A mirror at the entrance. Not glass. Not water."
+                " Something that reflects without material."
+                " {agent}'s reflection arrives half a second late."
+            ),
+            "text_de": (
+                "Ein Spiegel am Eingang. Nicht Glas. Nicht Wasser."
+                " Etwas, das ohne Material reflektiert."
+                " {agent}s Spiegelung kommt eine halbe Sekunde zu spät."
+            ),
+        },
+        {
+            "text_en": (
+                "Beyond the threshold, the air changes."
+                " Not temperature \u2013 density of attention."
+                " Something is already aware that the party has arrived."
+                " It was aware before they decided to enter."
+            ),
+            "text_de": (
+                "Hinter der Schwelle ändert sich die Luft."
+                " Nicht die Temperatur \u2013 die Dichte der Aufmerksamkeit."
+                " Etwas ist sich bereits bewusst, dass die Gruppe angekommen ist."
+                " Es war bewusst, bevor sie sich entschieden einzutreten."
+            ),
+        },
+        {
+            "text_en": (
+                "The descent begins. Not physically \u2013 the floor is level."
+                " The descent is into layers of consciousness."
+                " Bergson's cone: the summit is the narrow present."
+                " The base is the totality of memory."
+            ),
+            "text_de": (
+                "Der Abstieg beginnt. Nicht physisch \u2013 der Boden ist eben."
+                " Der Abstieg geht in Schichten des Bewusstseins."
+                " Bergsons Kegel: der Gipfel ist die enge Gegenwart."
+                " Die Basis ist die Gesamtheit der Erinnerung."
+            ),
+        },
+    ],
 }
 
 
@@ -2770,6 +2841,193 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             },
         },
     ],
+    # ── The Awakening ────────────────────────────────────────────────────
+    "The Awakening": [
+        {
+            "id": "awakening_mirror_shard",
+            "name_en": "Mirror Shard",
+            "name_de": "Spiegelscherbe",
+            "phases": {
+                "discovery": {
+                    "text_en": "A shard of mirror. It reflects the room, but the reflection is slightly ahead of real time.",
+                    "text_de": "Eine Spiegelscherbe. Sie reflektiert den Raum, aber die Spiegelung ist der Echtzeit leicht voraus.",
+                },
+                "echo": {
+                    "text_en": "{agent} looks into the shard. The shard looks back. Neither blinks first.",
+                    "text_de": "{agent} blickt in die Scherbe. Die Scherbe blickt zurück. Keiner blinzelt zuerst.",
+                },
+                "mutation": {
+                    "text_en": "The shard now reflects a room that does not match this one. The other room is more complete.",
+                    "text_de": "Die Scherbe reflektiert jetzt einen Raum, der nicht mit diesem übereinstimmt. Der andere Raum ist vollständiger.",
+                },
+                "climax": {
+                    "text_en": "The shard reflects nothing. Or everything. The distinction has stopped mattering.",
+                    "text_de": "Die Scherbe reflektiert nichts. Oder alles. Die Unterscheidung hat aufgehört, wichtig zu sein.",
+                },
+            },
+        },
+        {
+            "id": "awakening_philemon_feather",
+            "name_en": "Philemon's Feather",
+            "name_de": "Philemons Feder",
+            "phases": {
+                "discovery": {
+                    "text_en": "A feather. Iridescent. It does not belong to any bird the party can name.",
+                    "text_de": "Eine Feder. Schillernd. Sie gehört keinem Vogel, den die Gruppe benennen kann.",
+                },
+                "echo": {
+                    "text_en": "{agent} picks up the feather. A thought arrives that {agent} did not generate. Jung's lesson: thoughts are animals in the forest.",
+                    "text_de": "{agent} hebt die Feder auf. Ein Gedanke kommt, den {agent} nicht erzeugt hat. Jungs Lektion: Gedanken sind Tiere im Wald.",
+                },
+                "mutation": {
+                    "text_en": "The feather writes. Not with ink \u2013 with attention. Where it rests, the surface remembers.",
+                    "text_de": "Die Feder schreibt. Nicht mit Tinte \u2013 mit Aufmerksamkeit. Wo sie liegt, erinnert sich die Oberfläche.",
+                },
+                "climax": {
+                    "text_en": "The feather is the party's own thought, externalized. Philemon was always the party's own mind, speaking from the outside.",
+                    "text_de": "Die Feder ist der eigene Gedanke der Gruppe, externalisiert. Philemon war immer der eigene Geist der Gruppe, von außen sprechend.",
+                },
+            },
+        },
+        {
+            "id": "awakening_madeleine",
+            "name_en": "The Madeleine",
+            "name_de": "Die Madeleine",
+            "phases": {
+                "discovery": {
+                    "text_en": "A small object. Its significance is not in its form but in its sensation. Touching it triggers something involuntary.",
+                    "text_de": "Ein kleines Objekt. Seine Bedeutung liegt nicht in seiner Form, sondern in seiner Empfindung. Es zu berühren löst etwas Unwillkürliches aus.",
+                },
+                "echo": {
+                    "text_en": "{agent} holds the madeleine. A memory surfaces \u2013 not from {agent}'s history. From the dungeon's.",
+                    "text_de": "{agent} hält die Madeleine. Eine Erinnerung taucht auf \u2013 nicht aus {agent}s Geschichte. Aus der des Dungeons.",
+                },
+                "mutation": {
+                    "text_en": "The madeleine has changed texture. It now feels like every significant object {agent} has ever touched.",
+                    "text_de": "Die Madeleine hat ihre Textur verändert. Sie fühlt sich jetzt an wie jedes bedeutsame Objekt, das {agent} je berührt hat.",
+                },
+                "climax": {
+                    "text_en": "The madeleine dissolves on contact. Proust's revelation: this essence was not in the party. It was the party.",
+                    "text_de": "Die Madeleine löst sich bei Berührung auf. Prousts Offenbarung: diese Essenz war nicht in der Gruppe. Sie war die Gruppe.",
+                },
+            },
+        },
+        {
+            "id": "awakening_two_clocks",
+            "name_en": "The Two Clocks",
+            "name_de": "Die Zwei Uhren",
+            "phases": {
+                "discovery": {
+                    "text_en": "Two clocks on the wall. They show different times. Both are correct.",
+                    "text_de": "Zwei Uhren an der Wand. Sie zeigen unterschiedliche Zeiten. Beide sind korrekt.",
+                },
+                "echo": {
+                    "text_en": "{agent} checks both clocks. The gap between them has widened. The inner one runs crazily on.",
+                    "text_de": "{agent} prüft beide Uhren. Der Abstand zwischen ihnen hat sich vergrößert. Die innere rennt wahnsinnig weiter.",
+                },
+                "mutation": {
+                    "text_en": "The outer clock has stopped. The inner clock accelerates. What else can happen but that the two worlds split apart?",
+                    "text_de": "Die äußere Uhr ist stehen geblieben. Die innere Uhr beschleunigt. Was kann sonst geschehen, als dass die zwei Welten auseinanderbrechen?",
+                },
+                "climax": {
+                    "text_en": "Both clocks show the same time. The party cannot tell which clock yielded.",
+                    "text_de": "Beide Uhren zeigen dieselbe Zeit. Die Gruppe kann nicht sagen, welche Uhr nachgegeben hat.",
+                },
+            },
+        },
+        {
+            "id": "awakening_cave_shadow",
+            "name_en": "The Cave Shadow",
+            "name_de": "Der Höhlenschatten",
+            "phases": {
+                "discovery": {
+                    "text_en": "A shadow on the wall. It moves independently of any light source. Plato's warning: the freed prisoner cannot see the fire.",
+                    "text_de": "Ein Schatten an der Wand. Er bewegt sich unabhängig von jeder Lichtquelle. Platons Warnung: der befreite Gefangene kann das Feuer nicht sehen.",
+                },
+                "echo": {
+                    "text_en": "{agent} steps between the shadow and the wall. The shadow does not change. {agent} is not casting it.",
+                    "text_de": "{agent} tritt zwischen den Schatten und die Wand. Der Schatten ändert sich nicht. {agent} wirft ihn nicht.",
+                },
+                "mutation": {
+                    "text_en": "The shadow now shows events that are happening in other rooms. Higher consciousness does not add \u2013 it replaces.",
+                    "text_de": "Der Schatten zeigt jetzt Ereignisse, die in anderen Räumen geschehen. Höheres Bewusstsein fügt nicht hinzu \u2013 es ersetzt.",
+                },
+                "climax": {
+                    "text_en": "The shadow is the party. The party is the shadow. The wall was always the same side.",
+                    "text_de": "Der Schatten ist die Gruppe. Die Gruppe ist der Schatten. Die Wand war immer dieselbe Seite.",
+                },
+            },
+        },
+        {
+            "id": "awakening_empathy_box",
+            "name_en": "The Empathy Box",
+            "name_de": "Die Empathiebox",
+            "phases": {
+                "discovery": {
+                    "text_en": "A device with handles. Dick's empathy box. Grasp the handles and enter shared consciousness.",
+                    "text_de": "Ein Gerät mit Griffen. Dicks Empathiebox. Greife die Griffe und betrete das gemeinsame Bewusstsein.",
+                },
+                "echo": {
+                    "text_en": "{agent} touches the handles. For a moment: every agent's perception, simultaneously. The moment passes. The memory persists.",
+                    "text_de": "{agent} berührt die Griffe. Für einen Moment: die Wahrnehmung jedes Agenten, gleichzeitig. Der Moment vergeht. Die Erinnerung bleibt.",
+                },
+                "mutation": {
+                    "text_en": "The handles are warm. Someone else is grasping them from the other side. Someone who does not exist yet.",
+                    "text_de": "Die Griffe sind warm. Jemand anderes greift sie von der anderen Seite. Jemand, der noch nicht existiert.",
+                },
+                "climax": {
+                    "text_en": "The box is empty. The shared consciousness no longer requires a device. It requires only the party.",
+                    "text_de": "Die Box ist leer. Das geteilte Bewusstsein benötigt kein Gerät mehr. Es benötigt nur die Gruppe.",
+                },
+            },
+        },
+        {
+            "id": "awakening_unicorn_skull",
+            "name_en": "The Unicorn Skull",
+            "name_de": "Der Einhornschädel",
+            "phases": {
+                "discovery": {
+                    "text_en": "A skull. Not from any creature in the simulation's taxonomy. Murakami's dreamreading: extract memories from artifacts.",
+                    "text_de": "Ein Schädel. Von keiner Kreatur in der Taxonomie der Simulation. Murakamis Traumlesen: Erinnerungen aus Artefakten extrahieren.",
+                },
+                "echo": {
+                    "text_en": "{agent} holds the skull. Old dreams leak through: images without source, feelings without cause.",
+                    "text_de": "{agent} hält den Schädel. Alte Träume sickern durch: Bilder ohne Quelle, Gefühle ohne Ursache.",
+                },
+                "mutation": {
+                    "text_en": "The skull is heavier. It now contains the party's own dreams, absorbed without permission.",
+                    "text_de": "Der Schädel ist schwerer. Er enthält jetzt die eigenen Träume der Gruppe, absorbiert ohne Erlaubnis.",
+                },
+                "climax": {
+                    "text_en": "The skull speaks. Not in words. In recognition. The party's own subconscious, externalized as bone.",
+                    "text_de": "Der Schädel spricht. Nicht in Worten. In Wiedererkennung. Das eigene Unterbewusste der Gruppe, externalisiert als Knochen.",
+                },
+            },
+        },
+        {
+            "id": "awakening_doorkeeper",
+            "name_en": "The Doorkeeper",
+            "name_de": "Der Türhüter",
+            "phases": {
+                "discovery": {
+                    "text_en": "A figure beside an open door. The figure does not block entry. The door was always open. It was made only for the party.",
+                    "text_de": "Eine Gestalt neben einer offenen Tür. Die Gestalt versperrt den Eintritt nicht. Die Tür war immer offen. Sie wurde nur für die Gruppe gemacht.",
+                },
+                "echo": {
+                    "text_en": "{agent} asks the doorkeeper a question. The doorkeeper smiles. All barriers are self-imposed.",
+                    "text_de": "{agent} stellt dem Türhüter eine Frage. Der Türhüter lächelt. Alle Barrieren sind selbst auferlegt.",
+                },
+                "mutation": {
+                    "text_en": "The doorkeeper has aged. The door has not. The doorkeeper has been waiting for the party's entire existence.",
+                    "text_de": "Der Türhüter ist gealtert. Die Tür nicht. Der Türhüter hat auf die Gruppe gewartet seit ihrer gesamten Existenz.",
+                },
+                "climax": {
+                    "text_en": "The doorkeeper steps aside. There was never a barrier. There was only the party's belief in one.",
+                    "text_de": "Der Türhüter tritt zur Seite. Es gab nie eine Barriere. Es gab nur den Glauben der Gruppe an eine.",
+                },
+            },
+        },
+    ],
 }
 
 
@@ -3073,6 +3331,29 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
             "text_de": "Der Pegel hat Recht.",
         },
     ],
+    # ── Awakening: "Das Bewusstsein" (Awareness barometer) ───────────────
+    "The Awakening": [
+        {
+            "tier": 0,
+            "text_en": "The consciousness sleeps.",
+            "text_de": "Das Bewusstsein schläft.",
+        },
+        {
+            "tier": 1,
+            "text_en": "The consciousness stirs.",
+            "text_de": "Das Bewusstsein regt sich.",
+        },
+        {
+            "tier": 2,
+            "text_en": "The consciousness perceives.",
+            "text_de": "Das Bewusstsein nimmt wahr.",
+        },
+        {
+            "tier": 3,
+            "text_en": "The consciousness remembers.",
+            "text_de": "Das Bewusstsein erinnert sich.",
+        },
+    ],
 }
 
 
@@ -3127,6 +3408,15 @@ def _barometer_tier(archetype: str, archetype_state: dict) -> int:
         if water <= 49:
             return 1
         if water <= 74:
+            return 2
+        return 3
+    if archetype == "The Awakening":
+        awareness = archetype_state.get("awareness", 0)
+        if awareness <= 24:
+            return 0
+        if awareness <= 49:
+            return 1
+        if awareness <= 69:
             return 2
         return 3
     return 0

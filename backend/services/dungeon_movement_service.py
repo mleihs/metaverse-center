@@ -417,6 +417,7 @@ class DungeonMovementService:
                     personality=agent.personality,
                     condition=agent.condition,
                     visibility=instance.archetype_state.get("visibility", 3),
+                    archetype_state=instance.archetype_state,
                 )
                 outcome = resolve_skill_check(ctx)
                 result_tier = outcome.result
@@ -714,6 +715,7 @@ class DungeonMovementService:
             aptitude_level=aptitude_level,
             difficulty_modifier=-check_bonus - debris_bonus,
             condition=agent.condition,
+            archetype_state=instance.archetype_state,
         )
         outcome = resolve_skill_check(ctx)
 
@@ -1110,15 +1112,19 @@ class DungeonMovementService:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "No agent for deployment check")
 
             check_ctx = SkillCheckContext(
-                agent=agent,
                 aptitude=choice["check_aptitude"],
-                difficulty=choice.get("check_difficulty", 0),
+                aptitude_level=agent.aptitudes.get(choice["check_aptitude"], 3),
+                difficulty_modifier=choice.get("check_difficulty", 0),
+                personality=agent.personality,
+                condition=agent.condition,
+                visibility=instance.archetype_state.get("visibility", 3),
+                archetype_state=instance.archetype_state,
             )
             check_result = resolve_skill_check(check_ctx)
 
-            if check_result.outcome == "success":
+            if check_result.result == "success":
                 effects = choice.get("effects_success", {})
-            elif check_result.outcome == "partial":
+            elif check_result.result == "partial":
                 effects = choice.get("effects_partial", {})
             else:
                 effects = choice.get("effects_fail", {})
@@ -1129,7 +1135,7 @@ class DungeonMovementService:
             deployed = instance.archetype_state.setdefault("deployed_boss_effects", [])
             deployed.append({
                 "choice_id": choice["id"],
-                "outcome": check_result.outcome,
+                "outcome": check_result.result,
                 **effects,
             })
 
@@ -1148,13 +1154,13 @@ class DungeonMovementService:
                     "choice_id": action.choice_id,
                     "boss_deployment": True,
                     "check_aptitude": choice["check_aptitude"],
-                    "outcome": check_result.outcome,
+                    "outcome": check_result.result,
                 },
             )
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
             return {
-                "result": check_result.outcome,
+                "result": check_result.result,
                 "effects": effects,
                 "narrative_effects_en": [],
                 "narrative_effects_de": [],

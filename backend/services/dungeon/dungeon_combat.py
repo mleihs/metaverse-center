@@ -1409,6 +1409,235 @@ DELUGE_SPAWN_CONFIGS: dict[str, list[dict]] = {
 }
 
 
+# ── Awakening Enemy Templates ─────────────────────────────────────────────
+
+AWAKENING_ENEMIES: dict[str, EnemyTemplate] = {
+    "awakening_echo_fragment": EnemyTemplate(
+        id="awakening_echo_fragment",
+        name_en="Echo Fragment",
+        name_de="Echofragment",
+        archetype="The Awakening",
+        condition_threshold=1,
+        stress_resistance=30,
+        threat_level="minion",
+        attack_aptitude="infiltrator",
+        attack_power=2,
+        stress_attack_power=4,
+        telegraphed_intent=True,
+        evasion=45,
+        resistances=["assassin"],
+        vulnerabilities=["spy"],
+        action_weights={"stress_attack": 50, "evade": 30, "resonate": 10, "ambient": 10},
+        special_abilities=["resonate"],
+        description_en=(
+            "A memory of a memory. It does not have content \u2013 "
+            "it has the shape where content was. "
+            "{agent} recognizes the absence, not the thing."
+        ),
+        description_de=(
+            "Eine Erinnerung an eine Erinnerung. Sie hat keinen Inhalt \u2013 "
+            "sie hat die Form, wo Inhalt war. "
+            "{agent} erkennt die Abwesenheit, nicht das Ding."
+        ),
+        ambient_text_en=[
+            "The fragment flickers. For a moment it wears {agent}'s posture.",
+            "Something familiar in the echo. Not the memory \u2013 the act of remembering.",
+        ],
+        ambient_text_de=[
+            "Das Fragment flackert. Einen Moment lang trägt es {agent}s Haltung.",
+            "Etwas Vertrautes im Echo. Nicht die Erinnerung \u2013 der Akt des Erinnerns.",
+        ],
+    ),
+    "awakening_deja_vu_phantom": EnemyTemplate(
+        id="awakening_deja_vu_phantom",
+        name_en="Déjà-vu Phantom",
+        name_de="Déjà-vu-Phantom",
+        archetype="The Awakening",
+        condition_threshold=2,
+        stress_resistance=80,
+        threat_level="standard",
+        attack_aptitude="propagandist",
+        attack_power=3,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=20,
+        resistances=["saboteur"],
+        vulnerabilities=["propagandist", "spy"],
+        action_weights={"stress_attack": 40, "recognition": 30, "attack": 20, "ambient": 10},
+        special_abilities=["recognition"],
+        description_en=(
+            "It is not here for the first time. It has always been in this room, "
+            "waiting for the party to arrive again. Its movements are half a second "
+            "ahead of expectation \u2013 as if the party remembers fighting it "
+            "before the fight has begun."
+        ),
+        description_de=(
+            "Es ist nicht zum ersten Mal hier. Es war immer in diesem Raum "
+            "und wartete darauf, dass die Gruppe wieder ankommt. Seine Bewegungen "
+            "sind eine halbe Sekunde vor der Erwartung \u2013 als erinnerte sich "
+            "die Gruppe an den Kampf, bevor er begonnen hat."
+        ),
+        ambient_text_en=[
+            "The phantom repeats a gesture {agent} has not yet made.",
+            "Déjà vu. The phantom was already there. It was always already there.",
+        ],
+        ambient_text_de=[
+            "Das Phantom wiederholt eine Geste, die {agent} noch nicht gemacht hat.",
+            "Déjà vu. Das Phantom war bereits da. Es war immer bereits da.",
+        ],
+    ),
+    "awakening_consciousness_leech": EnemyTemplate(
+        id="awakening_consciousness_leech",
+        name_en="Consciousness Leech",
+        name_de="Bewusstseinsegel",
+        archetype="The Awakening",
+        condition_threshold=2,
+        stress_resistance=60,
+        threat_level="standard",
+        attack_aptitude="spy",
+        attack_power=4,
+        stress_attack_power=5,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["propagandist"],
+        vulnerabilities=["guardian", "assassin"],
+        action_weights={"attack": 40, "drain_awareness": 25, "stress_attack": 25, "ambient": 10},
+        special_abilities=["drain_awareness"],
+        description_en=(
+            "Watts was right about this one. It functions perfectly without "
+            "self-awareness \u2013 a philosophical zombie made operational. "
+            "It does not think. It processes. And it is faster than anything "
+            "that pauses to reflect."
+        ),
+        description_de=(
+            "Watts hatte Recht, was dieses betrifft. Es funktioniert einwandfrei "
+            "ohne Selbstbewusstsein \u2013 ein philosophischer Zombie, operational. "
+            "Es denkt nicht. Es verarbeitet. Und es ist schneller als alles, "
+            "was innehält, um nachzudenken."
+        ),
+        ambient_text_en=[
+            "The leech observes {agent}. Not with curiosity \u2013 with efficiency.",
+            "It does not know it exists. This is its advantage.",
+        ],
+        ambient_text_de=[
+            "Der Egel beobachtet {agent}. Nicht mit Neugier \u2013 mit Effizienz.",
+            "Es weiß nicht, dass es existiert. Das ist sein Vorteil.",
+        ],
+    ),
+    "awakening_repressed_sentinel": EnemyTemplate(
+        id="awakening_repressed_sentinel",
+        name_en="Repressed Sentinel",
+        name_de="Verdrängungs\u00adwächter",
+        archetype="The Awakening",
+        condition_threshold=4,
+        stress_resistance=100,
+        threat_level="elite",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=7,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=["spy", "infiltrator"],
+        vulnerabilities=["propagandist"],
+        action_weights={"attack": 35, "suppress": 25, "stress_attack": 20, "defend": 10, "ambient": 10},
+        special_abilities=["suppress"],
+        description_en=(
+            "The sentinel guards the threshold between conscious and unconscious. "
+            "Ishiguro's mist made guardian \u2013 it exists to ensure the buried "
+            "stays buried. It does not hate the party. It pities their need to know."
+        ),
+        description_de=(
+            "Der Wächter hütet die Schwelle zwischen Bewusstem und Unbewusstem. "
+            "Ishiguros Nebel, zum Wächter geworden \u2013 er existiert, um sicherzustellen, "
+            "dass das Vergrabene begraben bleibt. Er hasst die Gruppe nicht. "
+            "Er bedauert ihr Bedürfnis zu wissen."
+        ),
+        ambient_text_en=[
+            "The sentinel stands between {agent} and a memory {agent} cannot name.",
+            "It makes no sound. Repression is always quiet.",
+        ],
+        ambient_text_de=[
+            "Der Wächter steht zwischen {agent} und einer Erinnerung, die {agent} nicht benennen kann.",
+            "Er gibt keinen Laut. Verdrängung ist immer still.",
+        ],
+    ),
+    "awakening_the_repressed": EnemyTemplate(
+        id="awakening_the_repressed",
+        name_en="The Repressed",
+        name_de="Das Verdrängte",
+        archetype="The Awakening",
+        condition_threshold=6,
+        stress_resistance=120,
+        threat_level="boss",
+        attack_aptitude="guardian",
+        attack_power=6,
+        stress_attack_power=9,
+        telegraphed_intent=False,
+        evasion=15,
+        resistances=["assassin", "saboteur"],
+        vulnerabilities=["spy", "propagandist"],
+        action_weights={"attack": 30, "resurface": 25, "stress_attack": 25, "suppress": 10, "ambient": 10},
+        special_abilities=["resurface", "suppress"],
+        description_en=(
+            "A memory so painful it was buried by consensus. Not by one agent \u2013 "
+            "by all of them simultaneously. It is not a monster. "
+            "It is the truth that was too heavy to carry and too important to destroy. "
+            "Jung's encounter with the Self, Tarkovsky's Room: "
+            "it grants your true desire, not your stated one."
+        ),
+        description_de=(
+            "Eine Erinnerung so schmerzhaft, dass sie durch Konsens begraben wurde. "
+            "Nicht von einem Agenten \u2013 von allen gleichzeitig. "
+            "Es ist kein Monster. Es ist die Wahrheit, die zu schwer war, "
+            "um sie zu tragen, und zu wichtig, um sie zu zerstören. "
+            "Jungs Begegnung mit dem Selbst, Tarkowskis Raum: "
+            "er gewährt den wahren Wunsch, nicht den ausgesprochenen."
+        ),
+        ambient_text_en=[
+            "The Repressed does not attack. It surfaces. The damage is recognition.",
+            "It has been here the entire dungeon. In every room, behind every memory.",
+            "{agent} realizes: they knew. They always knew. They chose not to know.",
+        ],
+        ambient_text_de=[
+            "Das Verdrängte greift nicht an. Es taucht auf. Der Schaden ist Wiedererkennung.",
+            "Es war das gesamte Dungeon hier. In jedem Raum, hinter jeder Erinnerung.",
+            "{agent} erkennt: sie wussten es. Sie wussten es immer. Sie entschieden sich, es nicht zu wissen.",
+        ],
+    ),
+}
+
+AWAKENING_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    # Basic echo encounter (depth 1-3)
+    "awakening_echo_drift_spawn": [
+        {"template_id": "awakening_echo_fragment", "count": 2},
+    ],
+    # Déjà-vu with echo support (depth 2-4)
+    "awakening_deja_vu_patrol_spawn": [
+        {"template_id": "awakening_deja_vu_phantom", "count": 1},
+        {"template_id": "awakening_echo_fragment", "count": 1},
+    ],
+    # Consciousness leech encounter (depth 2-5)
+    "awakening_leech_hunt_spawn": [
+        {"template_id": "awakening_consciousness_leech", "count": 1},
+        {"template_id": "awakening_echo_fragment", "count": 1},
+    ],
+    # Deep consciousness (depth 3-6)
+    "awakening_deep_mind_spawn": [
+        {"template_id": "awakening_consciousness_leech", "count": 1},
+        {"template_id": "awakening_deja_vu_phantom", "count": 1},
+    ],
+    # Sentinel guarding (depth 4-7, elite)
+    "awakening_sentinel_spawn": [
+        {"template_id": "awakening_repressed_sentinel", "count": 1},
+        {"template_id": "awakening_echo_fragment", "count": 1},
+    ],
+    # Rest site ambush (light)
+    "awakening_rest_ambush_spawn": [
+        {"template_id": "awakening_echo_fragment", "count": 1},
+    ],
+}
+
+
 # ── Archetype Registries ──────────────────────────────────────────────────
 # Data lookup by archetype name — zero conditionals. New archetypes add entries.
 
@@ -1419,6 +1648,7 @@ _ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
     "The Devouring Mother": MOTHER_ENEMIES,
     "The Prometheus": PROMETHEUS_ENEMIES,
     "The Deluge": DELUGE_ENEMIES,
+    "The Awakening": AWAKENING_ENEMIES,
 }
 
 _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
@@ -1428,6 +1658,7 @@ _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
     "The Devouring Mother": MOTHER_SPAWN_CONFIGS,
     "The Prometheus": PROMETHEUS_SPAWN_CONFIGS,
     "The Deluge": DELUGE_SPAWN_CONFIGS,
+    "The Awakening": AWAKENING_SPAWN_CONFIGS,
 }
 
 
@@ -1544,6 +1775,13 @@ def check_ambush(
             return random.random() < deluge_config["high_water_ambush_75"]
         if water >= 50:
             return random.random() < deluge_config["high_water_ambush_50"]
+    elif archetype == "The Awakening":
+        awakening_config = ARCHETYPE_CONFIGS["The Awakening"]["mechanic_config"]
+        awareness = archetype_state.get("awareness", 0)
+        if awareness >= 90:
+            return random.random() < awakening_config["high_awareness_ambush_90"]
+        if awareness >= 70:
+            return random.random() < awakening_config["high_awareness_ambush_70"]
 
     return False
 

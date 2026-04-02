@@ -2085,6 +2085,245 @@ DELUGE_BANTER: list[dict] = [
 ]
 
 
+# ── The Awakening: Banter ─────────────────────────────────────────────────
+
+AWAKENING_BANTER: list[dict] = [
+    # ── Room Entered (8: 2×t0, 2×t1, 2×t2, 2×t3) ───────────────────────
+    {
+        "id": "ab_01",
+        "trigger": "room_entered",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "The room is slightly wrong. Not broken \u2013 shifted. As if it was assembled from a description, not a blueprint.",
+        "text_de": "Der Raum ist leicht falsch. Nicht kaputt \u2013 verschoben. Als wäre er aus einer Beschreibung zusammengesetzt, nicht aus einem Bauplan.",
+    },
+    {
+        "id": "ab_02",
+        "trigger": "room_entered",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something in the architecture anticipates the party. The door was open before they reached it.",
+        "text_de": "Etwas in der Architektur nimmt die Gruppe vorweg. Die Tür war offen, bevor sie sie erreichten.",
+    },
+    {
+        "id": "ab_03",
+        "trigger": "room_entered",
+        "awareness_tier": 1,
+        "personality_filter": {},
+        "text_en": "The corridor is familiar. {agent} has never been here. Both of these are true.",
+        "text_de": "Der Korridor ist vertraut. {agent} war nie hier. Beides stimmt.",
+    },
+    {
+        "id": "ab_04",
+        "trigger": "room_entered",
+        "awareness_tier": 1,
+        "personality_filter": {},
+        "text_en": "Déjà vu. The room adjusts as the party enters, settling into a configuration that almost matches a memory.",
+        "text_de": "Déjà vu. Der Raum justiert sich, als die Gruppe eintritt, und lässt sich in eine Konfiguration fallen, die fast einer Erinnerung entspricht.",
+    },
+    {
+        "id": "ab_05",
+        "trigger": "room_entered",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "{agent} enters the room. The room recognizes {agent}. This is not a metaphor.",
+        "text_de": "{agent} betritt den Raum. Der Raum erkennt {agent}. Das ist keine Metapher.",
+    },
+    {
+        "id": "ab_06",
+        "trigger": "room_entered",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "The dungeon's consciousness is perceptible here. Not hostile. Not welcoming. Attentive.",
+        "text_de": "Das Bewusstsein des Dungeons ist hier wahrnehmbar. Nicht feindlich. Nicht einladend. Aufmerksam.",
+    },
+    {
+        "id": "ab_07",
+        "trigger": "room_entered",
+        "awareness_tier": 3,
+        "personality_filter": {},
+        "text_en": "The room turns \u2013 left, or the party turned, or the concept of turning shifted. Certainty is expensive here.",
+        "text_de": "Der Raum biegt ab \u2013 links, oder die Gruppe bog ab, oder der Begriff des Abbiegens verschob sich. Gewissheit ist hier teuer.",
+    },
+    {
+        "id": "ab_08",
+        "trigger": "room_entered",
+        "awareness_tier": 3,
+        "personality_filter": {},
+        "text_en": "Three agents. Three perceptions. None of them see the same room. All of them see the truth.",
+        "text_de": "Drei Agenten. Drei Wahrnehmungen. Keiner sieht denselben Raum. Alle sehen die Wahrheit.",
+    },
+    # ── Combat (4) ───────────────────────────────────────────────────────
+    {
+        "id": "ab_09",
+        "trigger": "combat_start",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "Something surfaces. Not from the shadows \u2013 from the periphery of recognition.",
+        "text_de": "Etwas taucht auf. Nicht aus den Schatten \u2013 aus der Peripherie der Wiedererkennung.",
+    },
+    {
+        "id": "ab_10",
+        "trigger": "combat_start",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "The enemy is familiar. The enemy has always been familiar. The party fights a recognition they cannot place.",
+        "text_de": "Der Feind ist vertraut. Der Feind war immer vertraut. Die Gruppe bekämpft eine Wiedererkennung, die sie nicht einordnen kann.",
+    },
+    {
+        "id": "ab_11",
+        "trigger": "combat_victory",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "The memory disperses. Not destroyed \u2013 returned to the substrate. The dungeon absorbs what the party released.",
+        "text_de": "Die Erinnerung zerstreut sich. Nicht zerstört \u2013 zum Substrat zurückgekehrt. Das Dungeon absorbiert, was die Gruppe freigesetzt hat.",
+    },
+    {
+        "id": "ab_12",
+        "trigger": "combat_victory",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "Victory. But the gap where the enemy was? The gap is informative.",
+        "text_de": "Sieg. Aber die Lücke, wo der Feind war? Die Lücke ist informativ.",
+    },
+    # ── Loot (2) ─────────────────────────────────────────────────────────
+    {
+        "id": "ab_13",
+        "trigger": "loot_found",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "Consciousness, solidified. The artifact holds what the dungeon chose to preserve.",
+        "text_de": "Bewusstsein, verfestigt. Das Artefakt bewahrt, was das Dungeon zu bewahren wählte.",
+    },
+    {
+        "id": "ab_14",
+        "trigger": "loot_found",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "The object recognizes {agent} before {agent} recognizes the object. The transaction is already complete.",
+        "text_de": "Das Objekt erkennt {agent}, bevor {agent} das Objekt erkennt. Die Transaktion ist bereits abgeschlossen.",
+    },
+    # ── Rest (2) ─────────────────────────────────────────────────────────
+    {
+        "id": "ab_15",
+        "trigger": "rest_start",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "A pause in the consciousness. The dungeon rests when the party rests. The observer and the observed share the silence.",
+        "text_de": "Eine Pause im Bewusstsein. Das Dungeon ruht, wenn die Gruppe ruht. Der Beobachter und das Beobachtete teilen die Stille.",
+    },
+    {
+        "id": "ab_16",
+        "trigger": "rest_start",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "Rest. The awareness recedes like a tide. Lethe's gift: to forget the surface is to see the depth.",
+        "text_de": "Rast. Das Bewusstsein zieht sich zurück wie eine Gezeit. Lethes Gabe: die Oberfläche zu vergessen heißt, die Tiefe zu sehen.",
+    },
+    # ── Threshold Triggers (5) ──────────────────────────────────────────
+    {
+        "id": "ab_17",
+        "trigger": "stirring",
+        "awareness_tier": 1,
+        "personality_filter": {},
+        "text_en": "Something shifts. Not the room. Not {agent}. The relationship between them.",
+        "text_de": "Etwas verschiebt sich. Nicht der Raum. Nicht {agent}. Die Beziehung zwischen ihnen.",
+    },
+    {
+        "id": "ab_18",
+        "trigger": "liminal",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "The threshold. The dungeon's consciousness is no longer background noise \u2013 it is a presence with opinions about being perceived.",
+        "text_de": "Die Schwelle. Das Bewusstsein des Dungeons ist nicht mehr Hintergrundrauschen \u2013 es ist eine Anwesenheit mit Meinungen darüber, wahrgenommen zu werden.",
+    },
+    {
+        "id": "ab_19",
+        "trigger": "lucid",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "Lucid. The party knows it is inside consciousness. The environment responds to thought. The response is not always what was intended.",
+        "text_de": "Luzid. Die Gruppe weiß, dass sie sich im Bewusstsein befindet. Die Umgebung reagiert auf Gedanken. Die Reaktion ist nicht immer, was beabsichtigt war.",
+    },
+    {
+        "id": "ab_20",
+        "trigger": "dissolution",
+        "awareness_tier": 3,
+        "personality_filter": {},
+        "text_en": "Individual identity softens. The party perceives as one. Every agent sees through every other agent's eyes. Sturgeon's bleshing. The moment will pass. The memory of it will not.",
+        "text_de": "Individuelle Identität wird weich. Die Gruppe nimmt als Einheit wahr. Jeder Agent sieht durch die Augen jedes anderen Agenten. Sturgeons Bleshing. Der Moment wird vergehen. Die Erinnerung daran nicht.",
+    },
+    {
+        "id": "ab_21",
+        "trigger": "awakened",
+        "awareness_tier": 3,
+        "personality_filter": {},
+        "text_en": "Awareness 100. The dungeon is no longer a place. It is a state. The party is no longer navigating \u2013 they are being thought.",
+        "text_de": "Bewusstsein 100. Das Dungeon ist kein Ort mehr. Es ist ein Zustand. Die Gruppe navigiert nicht mehr \u2013 sie wird gedacht.",
+    },
+    # ── Déjà Vu (2) ─────────────────────────────────────────────────────
+    {
+        "id": "ab_22",
+        "trigger": "deja_vu",
+        "awareness_tier": 1,
+        "personality_filter": {},
+        "text_en": "The memory changes. Not dramatically \u2013 a detail. The window was on the left. Now it is on the right. Neither is wrong.",
+        "text_de": "Die Erinnerung ändert sich. Nicht dramatisch \u2013 ein Detail. Das Fenster war links. Jetzt ist es rechts. Keines ist falsch.",
+    },
+    {
+        "id": "ab_23",
+        "trigger": "deja_vu",
+        "awareness_tier": 2,
+        "personality_filter": {},
+        "text_en": "The room is the same. {agent} is not the same. The difference narrates the room anew.",
+        "text_de": "Der Raum ist derselbe. {agent} ist nicht derselbe. Die Differenz erzählt den Raum neu.",
+    },
+    # ── Retreat (1) ──────────────────────────────────────────────────────
+    {
+        "id": "ab_24",
+        "trigger": "retreat",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "The party retreats. The consciousness lets them go. It was not a prison. It was an invitation they declined.",
+        "text_de": "Die Gruppe zieht sich zurück. Das Bewusstsein lässt sie gehen. Es war kein Gefängnis. Es war eine Einladung, die sie ablehnten.",
+    },
+    # ── Rest Ambush (2) ──────────────────────────────────────────────────
+    {
+        "id": "ab_25",
+        "trigger": "rest_ambush",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "The quiet was a surface. Something underneath was not resting. It was waiting for the party to close their eyes.",
+        "text_de": "Die Stille war eine Oberfläche. Etwas darunter ruhte nicht. Es wartete darauf, dass die Gruppe die Augen schloss.",
+    },
+    {
+        "id": "ab_26",
+        "trigger": "rest_ambush",
+        "awareness_tier": 0,
+        "personality_filter": {},
+        "text_en": "A memory surfaces during rest. Not gently. Proust's intermittences: the grief arrives decades late, triggered by the act of resting.",
+        "text_de": "Eine Erinnerung taucht während der Rast auf. Nicht sanft. Prousts Intermittenzen: die Trauer kommt Jahrzehnte zu spät, ausgelöst durch den Akt des Rastens.",
+    },
+    # ── Anti-consciousness (Watts voice, 2) ─────────────────────────────
+    {
+        "id": "ab_27",
+        "trigger": "room_entered",
+        "awareness_tier": 2,
+        "personality_filter": {"conscientiousness_high": True},
+        "text_en": "{agent} asks: is it better not to have woken? The dungeon does not answer. The dungeon does not need to.",
+        "text_de": "{agent} fragt: Ist es besser, nicht erwacht zu sein? Das Dungeon antwortet nicht. Das Dungeon muss nicht.",
+    },
+    {
+        "id": "ab_28",
+        "trigger": "combat_start",
+        "awareness_tier": 1,
+        "personality_filter": {},
+        "text_en": "The enemy does not doubt. Does not reflect. Does not hesitate. Consciousness is overhead. The enemy has no overhead.",
+        "text_de": "Der Feind zweifelt nicht. Reflektiert nicht. Zögert nicht. Bewusstsein ist Overhead. Der Feind hat keinen Overhead.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
@@ -2094,6 +2333,7 @@ _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Devouring Mother": MOTHER_BANTER,
     "The Prometheus": PROMETHEUS_BANTER,
     "The Deluge": DELUGE_BANTER,
+    "The Awakening": AWAKENING_BANTER,
 }
 
 
@@ -2133,6 +2373,24 @@ def _prometheus_insight_tier(archetype_state: dict) -> int:
     if insight >= 45:
         return 2
     if insight >= 20:
+        return 1
+    return 0
+
+
+def _awakening_awareness_tier(archetype_state: dict) -> int:
+    """Map Awakening awareness to banter intensity tier (0-3).
+
+    0 = unconscious (awareness 0-24)
+    1 = stirring (25-49)
+    2 = liminal (50-69)
+    3 = lucid/dissolution (70+)
+    """
+    awareness = archetype_state.get("awareness", 0)
+    if awareness >= 70:
+        return 3
+    if awareness >= 50:
+        return 2
+    if awareness >= 25:
         return 1
     return 0
 
@@ -2211,6 +2469,13 @@ def select_banter(
         if tier_candidates:
             max_tier = max(b.get("water_tier", 0) for b in tier_candidates)
             candidates = [b for b in tier_candidates if b.get("water_tier", 0) == max_tier]
+    # Awakening: filter by awareness tier — prefer highest available tier
+    elif archetype == "The Awakening" and archetype_state:
+        tier = _awakening_awareness_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("awareness_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("awareness_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("awareness_tier", 0) == max_tier]
 
     if not candidates:
         return None
