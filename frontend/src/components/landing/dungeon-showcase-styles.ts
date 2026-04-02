@@ -40,11 +40,18 @@ export const showcaseLayoutStyles = css`
   }
   .slide.active { opacity: 1; visibility: visible; z-index: 2; }
 
-  .slide__atmosphere { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .slide__atmosphere {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    /* AI-generated background image, set via inline --_bg-image */
+    background: var(--_bg-image) center / cover no-repeat;
+  }
 
   .slide__vignette {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.7) 100%);
+    /* Heavy vignette + top/bottom darkening for text readability over images */
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 30%, transparent 60%, rgba(0, 0, 0, 0.7) 100%),
+      radial-gradient(ellipse 75% 75% at 50% 50%, transparent 20%, rgba(0, 0, 0, 0.75) 100%);
   }
 
   /* ── Content ── */

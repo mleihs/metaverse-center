@@ -644,3 +644,75 @@ async def get_ai_usage_stats(
 
     data = await AIUsageService.get_platform_stats(admin_supabase, days=days)
     return {"success": True, "data": data}
+
+
+# --- Dungeon Showcase Image Generation ---
+
+
+class ShowcaseImageRequest(BaseModel):
+    """Request to generate a showcase background image for a dungeon archetype."""
+
+    archetype_id: str = Field(
+        ...,
+        description="Archetype key: shadow, tower, mother, entropy, prometheus, deluge, awakening, overthrow",
+    )
+
+
+@router.post("/dungeon-showcase/generate-image", response_model=SuccessResponse[dict])
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def generate_showcase_image_endpoint(
+    request: Request,
+    body: ShowcaseImageRequest,
+    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Generate a showcase background image for a dungeon archetype.
+
+    Uses archetype-specific AI models and art-historically informed prompts.
+    Uploads the result to Supabase Storage as AVIF (full + thumbnail).
+    Returns the public thumbnail URL.
+    """
+    from backend.services.dungeon.showcase_image_service import (
+        ARCHETYPE_VISUALS,
+        generate_showcase_image,
+    )
+    from backend.services.external.openrouter import OpenRouterService
+    from backend.services.image_service import AVIF_QUALITY, _convert_to_avif
+
+    if body.archetype_id not in ARCHETYPE_VISUALS:
+        valid = ", ".join(sorted(ARCHETYPE_VISUALS))
+        raise HTTPException(status_code=400, detail=f"Unknown archetype. Valid: {valid}")
+
+    visual = ARCHETYPE_VISUALS[body.archetype_id]
+    openrouter = OpenRouterService()
+    raw_bytes = await generate_showcase_image(openrouter, body.archetype_id)
+
+    # Convert to AVIF (full + thumb)
+    full_avif = _convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+    thumb_avif = _convert_to_avif(raw_bytes, max_dimension=1920, quality=AVIF_QUALITY)
+
+    # Upload to simulation.assets/showcase/
+    base_path = f"showcase/dungeon-{body.archetype_id}.avif"
+    full_path = f"showcase/dungeon-{body.archetype_id}.full.avif"
+
+    await admin_supabase.storage.from_("simulation.assets").upload(
+        full_path, full_avif, {"content-type": "image/avif", "upsert": "true"},
+    )
+    await admin_supabase.storage.from_("simulation.assets").upload(
+        base_path, thumb_avif, {"content-type": "image/avif", "upsert": "true"},
+    )
+
+    public_url = admin_supabase.storage.from_("simulation.assets").get_public_url(base_path)
+
+    return {
+        "success": True,
+        "data": {
+            "archetype": body.archetype_id,
+            "model": visual.model,
+            "url": public_url,
+            "full_path": full_path,
+            "thumb_path": base_path,
+            "bytes": len(raw_bytes),
+            "usage": openrouter.last_usage,
+        },
+    }

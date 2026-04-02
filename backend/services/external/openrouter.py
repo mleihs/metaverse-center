@@ -1,7 +1,8 @@
-"""Async OpenRouter service for LLM text generation."""
+"""Async OpenRouter service for LLM text generation and image generation."""
 
 from __future__ import annotations
 
+import base64
 import logging
 import time
 from typing import Any
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Retry config
 MAX_RETRIES = 1
 TIMEOUT_SECONDS = 60
+IMAGE_TIMEOUT_SECONDS = 120  # Image generation takes longer
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
@@ -201,6 +203,109 @@ class OpenRouterService:
             model, messages, temperature=temperature, max_tokens=max_tokens,
         )
 
+    async def generate_image(
+        self,
+        model: str,
+        prompt: str,
+        *,
+        aspect_ratio: str = "16:9",
+        image_size: str = "2K",
+    ) -> bytes:
+        """Generate an image using an OpenRouter image model.
+
+        Args:
+            model: OpenRouter image model ID (e.g. "black-forest-labs/flux.2-pro",
+                   "openai/gpt-5-image", "google/gemini-3-pro-image-preview").
+            prompt: Text description of the image to generate.
+            aspect_ratio: Aspect ratio — "1:1", "2:3", "3:2", "4:3", "9:16", "16:9", "21:9".
+            image_size: Resolution tier — "0.5K", "1K", "2K", "4K".
+
+        Returns:
+            Raw image bytes (PNG or JPEG depending on model).
+
+        Raises:
+            RateLimitError: On 429 responses.
+            ModelUnavailableError: On 503 responses.
+            OpenRouterError: On other API errors or missing image data.
+        """
+        if not self.api_key:
+            raise OpenRouterError(
+                "OpenRouter API key is not configured. "
+                "Set OPENROUTER_API_KEY in .env or in simulation settings."
+            )
+
+        payload: dict[str, Any] = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "modalities": ["image"],
+            "image_config": {
+                "aspect_ratio": aspect_ratio,
+                "image_size": image_size,
+            },
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://velgarien.app",
+            "X-Title": "Velgarien Platform",
+        }
+
+        logger.info(
+            "OpenRouter image request",
+            extra={"model": model, "prompt": prompt[:80], "aspect": aspect_ratio, "size": image_size},
+        )
+        t0 = time.monotonic()
+
+        last_error: Exception | None = None
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                async with httpx.AsyncClient(timeout=IMAGE_TIMEOUT_SECONDS) as client:
+                    response = await client.post(
+                        f"{OPENROUTER_BASE_URL}/chat/completions",
+                        json=payload,
+                        headers=headers,
+                    )
+
+                if response.status_code == 429:
+                    raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
+                if response.status_code == 503:
+                    raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
+                if response.status_code != 200:
+                    error_body = response.text
+                    if attempt < MAX_RETRIES:
+                        last_error = OpenRouterError(f"API error {response.status_code}: {error_body[:200]}")
+                        continue
+                    raise OpenRouterError(f"API error {response.status_code}: {error_body[:200]}")
+
+                data = response.json()
+                duration_ms = int((time.monotonic() - t0) * 1000)
+
+                usage = data.get("usage", {})
+                self.last_usage = {
+                    "model": model,
+                    "prompt_tokens": usage.get("prompt_tokens", 0),
+                    "completion_tokens": usage.get("completion_tokens", 0),
+                    "total_tokens": usage.get("total_tokens", 0),
+                    "duration_ms": duration_ms,
+                }
+
+                logger.info(
+                    "OpenRouter image response",
+                    extra={"model": model, "status": 200, "duration_ms": duration_ms},
+                )
+                return _extract_image_bytes(data)
+
+            except (httpx.TimeoutException, httpx.ConnectError) as e:
+                if attempt < MAX_RETRIES:
+                    last_error = e
+                    continue
+                raise OpenRouterError(
+                    f"Connection failed after {MAX_RETRIES + 1} attempts"
+                ) from e
+
+        raise OpenRouterError("All retry attempts exhausted") from last_error
+
 
 def _extract_content(data: dict[str, Any]) -> str:
     """Extract the generated text from the OpenRouter response."""
@@ -214,3 +319,64 @@ def _extract_content(data: dict[str, Any]) -> str:
         raise OpenRouterError("Empty content in response")
 
     return content
+
+
+def _extract_image_bytes(data: dict[str, Any]) -> bytes:
+    """Extract image bytes from an OpenRouter image generation response.
+
+    OpenRouter returns images as base64 data URLs in the message content
+    (inline_data format) or in a top-level ``images`` array.
+    """
+    choices = data.get("choices", [])
+    if not choices:
+        raise OpenRouterError("No choices in image response")
+
+    message = choices[0].get("message", {})
+
+    # Format 1: message.content contains inline image parts
+    content = message.get("content")
+    if isinstance(content, list):
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "image_url":
+                url = part.get("image_url", {}).get("url", "")
+                if url.startswith("data:"):
+                    return _decode_data_url(url)
+            if isinstance(part, dict) and part.get("type") == "inline_data":
+                b64 = part.get("data", "")
+                if b64:
+                    return base64.b64decode(b64)
+
+    # Format 2: message.images array (FLUX models via OpenRouter)
+    # Shape: [{"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}]
+    # or:    ["data:image/png;base64,..."]
+    images = message.get("images", [])
+    if images:
+        item = images[0]
+        if isinstance(item, str):
+            url = item
+        elif isinstance(item, dict):
+            url = item.get("image_url", {}).get("url", "") or item.get("url", "")
+        else:
+            url = ""
+        if url.startswith("data:"):
+            return _decode_data_url(url)
+        if url:
+            return base64.b64decode(url)
+
+    # Format 3: top-level images array
+    top_images = data.get("images", [])
+    if top_images:
+        url = top_images[0] if isinstance(top_images[0], str) else top_images[0].get("url", "")
+        if url.startswith("data:"):
+            return _decode_data_url(url)
+        return base64.b64decode(url)
+
+    raise OpenRouterError("No image data found in response")
+
+
+def _decode_data_url(data_url: str) -> bytes:
+    """Decode a base64 data URL (e.g. 'data:image/png;base64,...') to bytes."""
+    if ";base64," in data_url:
+        _, b64 = data_url.split(";base64,", 1)
+        return base64.b64decode(b64)
+    raise OpenRouterError(f"Unsupported data URL format: {data_url[:60]}...")
