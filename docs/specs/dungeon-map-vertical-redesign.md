@@ -491,6 +491,24 @@ The map's external API (`<velg-dungeon-map persistent>`) and event contract (`te
 
 ---
 
+## Post-Implementation Updates (2026-04-02)
+
+Layout fixes applied after initial vertical redesign implementation:
+
+- **Anti-clipping:** `edgePad = max(padding, nodeRadius + 25)` ensures nodes near edges are never clipped by the SVG viewBox boundary.
+- **Sequential depth compression:** Layer indices are used instead of raw depth values for Y-axis positioning. This eliminates vertical gaps when the dungeon generator skips depth levels.
+- **Dynamic vGap:** Scales down automatically when the map exceeds a 3:1 height:width ratio, with a floor at `nodeRadius * 2 + 10`. Prevents excessively tall maps from requiring excessive scrolling.
+- **MapLayout interface extended:** Now includes `vGap` and `edgePad` fields in the returned layout object, so the orchestrator can use the computed values.
+- **Cleared badge on current room:** Previously hidden; now shown on the current room node when cleared.
+- **Final config values:** `vGap=100`, `hGap=76`, `padding=36`.
+
+### Generator Constraint Updates
+
+- **No-consecutive-rest-rooms:** Rest rooms connected to a rest-room parent are replaced with combat rooms during generation.
+- **Mid-depth rest guarantee:** Runs AFTER the no-consecutive constraint. Prefers rooms without rest-room parents when placing the guaranteed mid-depth rest room.
+
+---
+
 ## Appendix A: Animation Technology Matrix
 
 | Technique | Approach | Rationale |

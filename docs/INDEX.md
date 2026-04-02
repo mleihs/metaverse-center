@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 79 documents, 8 categories + 9 ADRs.
+> Auto-generated from frontmatter. 80 documents, 8 categories + 9 ADRs.
 
 ## Specifications (16)
 
@@ -64,7 +64,7 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (9)
+## Concepts (10)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -77,6 +77,7 @@ tags: [index, catalog, documentation]
 | [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
 | [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.5 | 2026-04-02 | en | 6 archetypes live (Deluge follow-ups complete) + global admin config + clearance control |
 | [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md) | 1.0 | 2026-04-01 | en | active |
+| [Resonance Dungeons — Audio System Concept](concepts/dungeon-audio-system.md) | 1.0 | 2026-04-02 | en | phase-1-implemented |
 
 ## Explanations (5)
 

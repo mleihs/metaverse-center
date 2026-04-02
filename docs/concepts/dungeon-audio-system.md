@@ -3,7 +3,7 @@ title: "Resonance Dungeons — Audio System Concept"
 version: "1.0"
 date: "2026-04-02"
 type: concept
-status: draft
+status: phase-1-implemented
 lang: en
 tags: [audio, web-audio-api, dungeon, sound-design, game-audio, accessibility]
 research-basis: "20 parallel research agents, 300+ web sources, peer-reviewed papers from Nature/PNAS/Royal Society/Frontiers, GDC talks, 14 open-source audio projects analyzed"
@@ -468,6 +468,22 @@ Loading strategy: SFX sprite loads on first audio enable. Archetype ambient load
 | Scope creep ("audio everywhere") | Strict scope: dungeon runs only. No lobby, no sim tabs, no epoch. |
 | Mobile CPU drain | `audioCtx.suspend()` on tab hide. Max 15 oscillators. Pre-rendered noise buffers. |
 | 500KB budget exceeded | OGG mono 22050Hz. Lazy loading per archetype. Procedural IR instead of files. |
+
+---
+
+## Phase 1 Implementation Notes (2026-04-02)
+
+Phase 1 (Foundation + SFX Integration) is complete. Key implementation details:
+
+- **Samples:** All 14 SFX sourced from Kenney.nl CC0 packs (UI Audio, Impact Sounds, RPG Audio). Replaced the originally planned synthesized sine-wave sounds with real samples for better tonal fit with the literary-gothic aesthetic.
+- **Sprite format:** OGG Opus (67KB) + MP3 fallback (80KB), 44100Hz mono. Stored in Supabase `dungeon.audio` bucket (migration 175: bucket creation + public read policy).
+- **Sprite map:** Hardcoded offset/duration pairs in `DungeonAudioService.ts` (520 lines). Howler.js sprite playback with Web Audio API mixer bus (3 channels: SFX, Ambient, UI) routed through `GainNode` + `DynamicsCompressorNode` master.
+- **State management:** Preact Signals for all audio state (`audioEnabled`, `masterVolume`, `sfxVolume`, `ambientVolume`, `sfxMuted`, `ambientMuted`, `uiMuted`). Persisted to `localStorage`.
+- **Settings UI:** `DungeonAudioSettings.ts` (420 lines) — VU meter control panel with enable toggle, 3 fader channels (master/SFX/ambient), per-channel mute buttons. Rendered as native `<dialog>` via `showModal()`.
+- **Integration:** 14 SFX triggers wired in `dungeon-commands.ts`. Header audio toggle button dispatches `toggle-audio-settings` event. `DungeonTerminalView` hosts the settings dialog.
+- **Icons:** `volume()` + `volumeOff()` added to `icons.ts`.
+- **Upload tooling:** `scripts/upload-audio-assets.mjs` for Supabase Storage uploads.
+- **Phases 2-4 pending:** Archetype ambient loops, generative synth engine, ConvolverNode reverb, state machine transitions.
 
 ---
 

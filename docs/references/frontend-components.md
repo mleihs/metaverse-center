@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.7"
-date: 2026-03-30
+version: "3.8"
+date: 2026-04-02
 lang: de
 type: reference
 status: active
@@ -623,6 +623,7 @@ frontend/src/services/
 ├── GenerationProgressService.ts    # AI generation progress tracking
 ├── i18n/
 │   └── locale-service.ts           # LocaleService: initLocale, setLocale, getInitialLocale
+├── DungeonAudioService.ts          # Singleton: Howler.js SFX sprite + Web Audio API mixer bus (3 channels) + Preact Signals state. 14 CC0 SFX, localStorage persistence, visibilitychange suspend/resume
 └── realtime/
     └── RealtimeService.ts          # Singleton: 4 Supabase Realtime channels with Preact Signals
 ```
@@ -825,7 +826,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | buildings/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EmbassyCreate/Link |
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
 | terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands, statusbar zone/dungeon-label switch via isDungeonMode), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
-| dungeon/ | 7 | 7 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock, dungeon recovery passes archetype label to terminal), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse 3s, room reveal radar-blip 300ms via state-diffing willUpdate/updated, depth-transition sonar-ping 500ms, all behind prefers-reduced-motion: no-preference, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar |
+| dungeon/ | 8 | 8 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock, dungeon recovery passes archetype label to terminal), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0, audio toggle button dispatches toggle-audio-settings), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse 3s, room reveal radar-blip 300ms via state-diffing willUpdate/updated, depth-transition sonar-ping 500ms, all behind prefers-reduced-motion: no-preference, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar, DungeonAudioSettings (VU meter control panel: enable toggle, 3 fader channels master/SFX/ambient, per-channel mute, native dialog showModal) |
 | chat/ | 7 | 7 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
@@ -838,14 +839,14 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | epoch/ | 19 | 19 | CommandCenter (orchestrator), OpsBoard, OverviewTab, IntelDossierTab, OperationsTab, AlliancesTab, LobbyActions, CreationWizard, DraftRosterPanel, Leaderboard, BattleLog, MissionCard, DeployOperativeModal, InvitePanel, InviteAcceptView, ChatPanel, PresenceIndicator, ReadyPanel, BotConfigPanel |
 | how-to-play/ | 15 | 6 | HowToPlayLanding, HowToPlayQuickstart, HowToPlayGuideHub, HowToPlayTopic, HowToPlayWarRoom, HowToPlayView (legacy) + htp-shared-styles, htp-styles, htp-search, htp-topic-data + 4 content/type files (htp-content-features, htp-content-rules, htp-content-matches, htp-content-demo, htp-types) |
 | shared/ | 33 | 22 | 22 components + 10 CSS modules + 1 base class. terminal-theme-styles.ts exports: terminalTokens, terminalComponentTokens, terminalAnimations, terminalFormStyles, terminalOAuthStyles, terminalFrameStyles, terminalWrapperStyles, terminalActionStyles |
-| **Gesamt** | **180** | **148** (in components/) | **23 Verzeichnisse** |
+| **Gesamt** | **181** | **149** (in components/) | **23 Verzeichnisse** |
 
 ### Utilities
 
 ```
 frontend/src/utils/
 ├── text.ts                         # humanizeEnum(), getInitials(), pluralCount(), agentAltText(), buildingAltText()
-├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (~95 icons). Includes dungeon set: dungeonDepth, doorOpen, diamond/diamondEmpty, binoculars, doorExit/doorEnter, campfire, handClick, treasure, crown, shield, dagger, mask, bomb, footprints, dungeonMap, skullBolt, questionCircle
+├── icons.ts                        # Centralized SVG icons with aria-hidden="true" (~97 icons). Includes dungeon set: dungeonDepth, doorOpen, diamond/diamondEmpty, binoculars, doorExit/doorEnter, campfire, handClick, treasure, crown, shield, dagger, mask, bomb, footprints, dungeonMap, skullBolt, questionCircle, volume, volumeOff
 ├── operative-icons.ts              # Centralized operative-type SVG icons (spy, guardian, saboteur, propagandist, infiltrator, assassin, zone_fortified)
 ├── terminal-commands.ts            # MUD command handlers (19 commands across 3 stages), ensureAgentConversation(), sendAgentPrompt(), synonym map, Levenshtein fuzzy match
 ├── terminal-formatters.ts          # 20+ format functions: formatLook, formatExamine, formatScan, formatInvestigate, formatReport, formatDebrief, formatAskResponse, _wordWrap, _truncate, _timeAgo

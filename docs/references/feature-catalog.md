@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.4"
-date: 2026-03-30
+version: "3.5"
+date: 2026-04-02
 lang: de
 type: reference
 status: active
@@ -434,6 +434,10 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | RD19 | **Objektanker-System** | ✅ IMPL | 32 Anchor Objects + 4 Barometers + 3-Module Architektur (`dungeon_objektanker.py`). Umgebungsnarrative pro Raum. |
 | RD20 | **Admin Dungeon Override** | ✅ IMPL | Per-Simulation Archetype Unlock via `simulation_settings` KV-Tabelle. Bulk Admin Endpoint (2 DB Queries). |
 | RD21 | **Global Dungeon Configuration** | ✅ IMPL | `PlatformSettingsService`: 4 Keys (dungeon_global_mode, dungeon_global_archetypes, dungeon_clearance_mode, dungeon_clearance_threshold). Cascade: Per-Sim Override > Global Config > Resonance. Terminal Clearance Control (off/standard/custom). |
+| RD22 | **Dungeon Audio (Phase 1)** | ✅ IMPL | `DungeonAudioService` Singleton: Howler.js SFX sprite (14 CC0 Kenney.nl samples) + Web Audio API mixer bus (3 Kanäle: SFX/Ambient/UI). OGG Opus 67KB + MP3 Fallback 80KB in Supabase `dungeon.audio` Bucket (Migration 175). `DungeonAudioSettings` VU-Meter-Panel (Enable-Toggle, 3 Fader, Mute-Buttons). Preact Signals State, localStorage Persistence. 14 SFX-Trigger in `dungeon-commands.ts`. Phase 2-4 (Archetype Ambient, Synth Engine, Reverb) ausstehend. |
+| RD23 | **Map Layout Fixes** | ✅ IMPL | Anti-Clipping (`edgePad = max(padding, nodeRadius+25)`), sequentielle Tiefenkompression (Layer-Indizes statt roher Tiefenwerte), dynamisches vGap (Skalierung bei >3:1 Höhen-Breiten-Verhältnis, Floor bei `nodeRadius*2+10`). Cleared-Badge nun auch auf aktuellem Raum sichtbar. Config: vGap=100, hGap=76, padding=36. |
+| RD24 | **Generator: No-Consecutive-Rest** | ✅ IMPL | Ruheräume mit Ruheraum-Eltern werden durch Kampfräume ersetzt. Mid-Depth-Rest-Garantie läuft NACH dem Constraint, bevorzugt Räume ohne Ruheraum-Eltern. |
+| RD25 | **Terminal UX Fixes** | ✅ IMPL | Auto-Focus bei Tab-Navigation (connectedCallback mit hasUpdated Guard). Encounter-Hint-Fix: alle Encounter-Typen zeigen einheitlich "interact <number>". |
 
 ---
 
