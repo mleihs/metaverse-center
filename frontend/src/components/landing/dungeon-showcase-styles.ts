@@ -62,12 +62,36 @@ export const showcaseLayoutStyles = css`
     display: flex; flex-direction: column; align-items: center;
   }
 
+  /* Content backdrop — soft dark cloud behind the entire text column.
+     Not a visible box; an invisible darkening that makes text pop.
+     Applied on leaf element (::after), not layout container. */
+  .slide__content::after {
+    content: '';
+    position: absolute;
+    inset: -48px -80px;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse 100% 100% at 50% 42%,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0.4) 40%,
+      rgba(0, 0, 0, 0.15) 70%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* ── Shared text-shadow stack for readability over images ──
+     Layer 1: tight dark halo (crispness)
+     Layer 2: wider dark spread (separation from background)
+     Layer 3: soft accent glow (atmosphere) */
+
   .slide__numeral {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
     font-size: clamp(0.7rem, 1vw, 0.85rem);
     font-weight: 400; letter-spacing: 0.3em;
-    text-transform: uppercase; opacity: 0.5; margin-bottom: 16px;
+    text-transform: uppercase; opacity: 0.65; margin-bottom: 16px;
     color: var(--_accent);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.5);
   }
 
   .slide__title {
@@ -76,30 +100,41 @@ export const showcaseLayoutStyles = css`
     font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.12em; line-height: 1.05; margin: 0 0 6px;
     color: var(--_accent);
+    text-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.95),
+      0 0 20px rgba(0, 0, 0, 0.7),
+      0 0 60px color-mix(in srgb, var(--_accent) 20%, transparent);
   }
   .active .slide__title { animation: title-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
   .slide__subtitle {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
     font-size: clamp(1rem, 2vw, 1.4rem);
-    font-style: italic; font-weight: 400;
-    letter-spacing: 0.08em; opacity: 0.7; margin: 0 0 24px;
+    font-style: italic; font-weight: 500;
+    letter-spacing: 0.08em; opacity: 0.85; margin: 0 0 24px;
     color: var(--_accent);
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.95),
+      0 0 12px rgba(0, 0, 0, 0.6);
   }
   .active .slide__subtitle { animation: subtitle-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
 
   .slide__divider {
-    width: 60px; height: 1px; margin: 0 0 24px; opacity: 0.4;
+    width: 60px; height: 1px; margin: 0 0 24px; opacity: 0.5;
     background: var(--_accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--_accent) 30%, transparent);
   }
   .active .slide__divider { animation: divider-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both; }
 
   .slide__tagline {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
-    font-size: clamp(0.85rem, 1.3vw, 1rem);
-    font-weight: 400; letter-spacing: 0.04em; line-height: 1.6;
-    opacity: 0.5; margin: 0 0 40px; max-width: 540px;
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    font-weight: 500; letter-spacing: 0.04em; line-height: 1.6;
+    opacity: 0.75; margin: 0 0 40px; max-width: 540px;
     color: var(--_accent);
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.95),
+      0 0 10px rgba(0, 0, 0, 0.7);
   }
   .active .slide__tagline { animation: tagline-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
 
@@ -124,9 +159,12 @@ export const showcaseLayoutStyles = css`
   .quote-block__text {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
     font-size: clamp(0.95rem, 1.5vw, 1.15rem);
-    font-style: italic; font-weight: 400;
+    font-style: italic; font-weight: 500;
     line-height: 1.75; letter-spacing: 0.02em;
     color: var(--_accent);
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.95),
+      0 0 8px rgba(0, 0, 0, 0.7);
     transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
                 filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -137,9 +175,12 @@ export const showcaseLayoutStyles = css`
   .quote-block__original {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
     font-size: clamp(0.95rem, 1.5vw, 1.15rem);
-    font-style: italic; font-weight: 400;
+    font-style: italic; font-weight: 500;
     line-height: 1.75; letter-spacing: 0.02em;
     color: var(--_accent);
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.95),
+      0 0 8px rgba(0, 0, 0, 0.7);
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     text-align: center;
@@ -156,6 +197,7 @@ export const showcaseLayoutStyles = css`
     font-size: 0.55rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.25em;
     color: var(--_accent); opacity: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
     transition: opacity 0.6s 0.3s;
   }
 
@@ -167,7 +209,7 @@ export const showcaseLayoutStyles = css`
     opacity: 1; filter: blur(0px);
   }
   .quote-block.show-original .quote-block__lang {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
   /* Swap + original phases: keep block visible while cross-fading inner layers.
@@ -182,8 +224,9 @@ export const showcaseLayoutStyles = css`
   .quote-block__author {
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-size: 0.65rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.5;
+    text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.6;
     color: var(--_accent);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.5);
   }
   .quote-block__author::before { content: '\u2014\u2009'; }
 
