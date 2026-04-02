@@ -1,9 +1,9 @@
 ---
 title: "Resonance Dungeons — Full Technical Specification"
-version: "1.4"
-date: "2026-04-01"
+version: "1.5"
+date: "2026-04-02"
 type: concept
-status: phase-0-1-complete-admin-config
+status: 6-archetypes-live-deluge-followups-complete
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -108,7 +108,7 @@ Platform-level settings that cascade to all simulations unless a per-simulation 
 | The Entropy | `decay_bloom` | Implemented |
 | The Devouring Mother | `biological_tide` | Implemented |
 | The Prometheus | `innovation_spark` | Implemented |
-| The Deluge | `elemental_surge` | Config only |
+| The Deluge | `elemental_surge` | Implemented (core + 5 follow-ups) |
 | The Overthrow | `authority_fracture` | Config only |
 | The Awakening | `consciousness_drift` | Config only |
 
@@ -1407,9 +1407,18 @@ await DungeonEngineService.cleanup_expired_runs(admin_supabase, simulation_id)
 
 ### Phase 2-3: Remaining Archetypes (4-8 weeks)
 
-- [ ] The Devouring Mother + The Deluge
-- [ ] The Overthrow + The Prometheus
-- [ ] The Awakening + The Entropy
+- [x] The Devouring Mother (4th, commit 3bc7a3e..6877013)
+- [x] The Prometheus (5th, insight crafting mechanic)
+- [x] The Deluge (6th, commit 599e6a0 + cc30c13 follow-ups)
+  - [x] Inverted loot gradient (low-water bonus + depth bonus)
+  - [x] Salvage mechanic (full-stack: POST /salvage, depth-based submersion)
+  - [x] The Current Carries (6 debris items, auto-apply every 2nd room)
+  - [x] Protocol briefing + water bar in formatRoomEntry
+  - [x] Elemental warding (simulation_modifier pipeline, migration 174)
+  - [x] Seal Breach frontend (commands + formatters)
+- [x] The Entropy (3rd, commit e6f2453)
+- [ ] The Overthrow (config only, stubbed)
+- [ ] The Awakening (config only, stubbed)
 - [ ] Advanced Ability Schools (Aptitude 7-9, Ultimate abilities)
 - [ ] Difficulty scaling (Ascension-style modifiers)
 - [ ] Weekly Resonance Dungeon leaderboard

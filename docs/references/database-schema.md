@@ -3506,13 +3506,13 @@ Vervollstaendigt das Dungeon-System mit atomaren Transaktionen (ADR-007 Pattern)
 
 | Tabelle | Zweck |
 |---------|-------|
-| `agent_dungeon_loot_effects` | Persistente Loot-Effekte: Aptitude-Boost-Cap (+2 per Agent), permanente Dungeon-Boni, Event-Modifier. RLS: Simulations-Mitglieder koennen lesen. |
+| `agent_dungeon_loot_effects` | Persistente Loot-Effekte: Aptitude-Boost-Cap (+2 per Agent), permanente Dungeon-Boni, Event-Modifier, Simulation-Modifier (Building Protection). CHECK: aptitude_boost/permanent_dungeon_bonus/next_dungeon_bonus/event_modifier/arc_modifier/simulation_modifier. RLS: Simulations-Mitglieder koennen lesen. Migration 174: simulation_modifier hinzugefuegt. |
 
 **RPCs:**
 
 | Funktion | Zweck | Pattern |
 |----------|-------|---------|
-| `fn_apply_dungeon_loot(p_run_id, p_simulation_id, p_loot_items)` | CAS mit Advisory Lock fuer Aptitude-Cap, Memory-Erzeugung, Moodlets, Event-Modifier, Arc-Pressure | ADR-007 CAS |
+| `fn_apply_dungeon_loot(p_agent_id, p_simulation_id, p_run_id, p_loot_id, p_effect_type, p_effect_params)` | 8 Branches: aptitude_boost (Cap +2), memory, moodlet, event_modifier, arc_modifier, stress_heal, permanent/next_dungeon_bonus, simulation_modifier (Migration 174). | ADR-007 CAS |
 | `fn_complete_dungeon_run(...)` | Atomisch: Status=completed + Outcome + Agent-Effekte + Loot + Event. Ruft intern `fn_apply_dungeon_outcome` + `fn_apply_dungeon_loot` auf. | ADR-007 |
 | `fn_abandon_dungeon_run(...)` | Atomisch: Status=abandoned + Partial-Outcome + Event | ADR-007 |
 | `fn_wipe_dungeon_run(...)` | Atomisch: Status=wiped + Trauma-Outcomes + Event | ADR-007 |

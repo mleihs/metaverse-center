@@ -323,14 +323,14 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Trigger functions | 27 (62 triggers total) |
 | Views (regular + materialized) | 14 + 4 |
 | RLS policies | 270+ |
-| SQL migrations | 165 |
+| SQL migrations | 174 |
 | Routers | 49 |
 | Web Components | 239 custom elements |
 | Unit tests | 2,184+ (pytest) + vitest |
 | Localized UI strings | 5,906 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
 | Documentation files | 73 (Divio structure + 9 ADRs) |
-| Dungeon archetypes | 8 designed, 2 playable (Shadow + Tower) |
+| Dungeon archetypes | 8 designed, 6 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge) |
 | Flagship simulations | 5 + 2 community presets |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 5 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting). 8 total in config. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 557 seed rows). Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 6 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding). 8 total in config. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 557+ seed rows, migration 173-174). Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
@@ -453,7 +453,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 172 SQL migrations
+  migrations/               # 174 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
 docs/                       # 73 documents (Divio structure)
