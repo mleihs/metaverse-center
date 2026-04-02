@@ -272,10 +272,7 @@ export const showcaseLayoutStyles = css`
 // ── Atmospheric Backgrounds ─────────────────────────────────────────────────
 
 export const showcaseAtmosphereStyles = css`
-  /* SHADOW — drifting cosmic fog */
-  .slide--shadow .slide__atmosphere {
-    background: radial-gradient(ellipse 120% 100% at 20% 80%, rgba(124, 92, 231, 0.12) 0%, transparent 60%), radial-gradient(ellipse 100% 120% at 80% 20%, rgba(74, 45, 138, 0.08) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(8, 4, 26, 1) 0%, rgba(4, 2, 12, 1) 100%);
-  }
+  /* SHADOW — drifting cosmic fog overlay */
   .slide--shadow .slide__atmosphere::before {
     content: ''; position: absolute; inset: 0;
     background: radial-gradient(ellipse 40% 50% at 30% 60%, rgba(124, 92, 231, 0.06) 0%, transparent 100%), radial-gradient(ellipse 50% 40% at 70% 30%, rgba(100, 60, 200, 0.04) 0%, transparent 100%);
@@ -283,10 +280,7 @@ export const showcaseAtmosphereStyles = css`
   }
   @keyframes shadow-drift { 0% { transform: translate(0, 0) scale(1); opacity: 0.6; } 50% { transform: translate(-3%, 2%) scale(1.08); opacity: 1; } 100% { transform: translate(2%, -1%) scale(0.95); opacity: 0.5; } }
 
-  /* TOWER — cascading data streams */
-  .slide--tower .slide__atmosphere {
-    background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(74, 138, 181, 0.08) 0%, transparent 70%), linear-gradient(180deg, rgba(6, 13, 24, 1) 0%, rgba(10, 18, 30, 0.98) 100%);
-  }
+  /* TOWER — cascading data streams overlay */
   .slide--tower .slide__atmosphere::before {
     content: ''; position: absolute; inset: 0;
     background: repeating-linear-gradient(90deg, transparent 0px, transparent 60px, rgba(74, 138, 181, 0.03) 60px, rgba(74, 138, 181, 0.03) 61px);
@@ -299,10 +293,7 @@ export const showcaseAtmosphereStyles = css`
   }
   @keyframes tower-fall { 0% { transform: translateY(-100%); } 100% { transform: translateY(0%); } }
 
-  /* MOTHER — bioluminescent breath */
-  .slide--mother .slide__atmosphere {
-    background: radial-gradient(ellipse 60% 60% at 50% 55%, rgba(45, 212, 160, 0.07) 0%, transparent 100%), radial-gradient(circle at 50% 50%, rgba(2, 18, 16, 1) 0%, rgba(1, 8, 6, 1) 100%);
-  }
+  /* MOTHER — bioluminescent breath overlay */
   .slide--mother .slide__atmosphere::before {
     content: ''; position: absolute; inset: -20%; border-radius: 50%;
     background: radial-gradient(circle, rgba(45, 212, 160, 0.06) 0%, transparent 70%);
@@ -315,10 +306,7 @@ export const showcaseAtmosphereStyles = css`
   }
   @keyframes mother-breathe { 0%, 100% { transform: scale(0.9); opacity: 0.4; } 50% { transform: scale(1.15); opacity: 1; } }
 
-  /* ENTROPY — dissolving grain */
-  .slide--entropy .slide__atmosphere {
-    background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(212, 146, 10, 0.06) 0%, transparent 80%), linear-gradient(180deg, rgba(20, 12, 2, 1) 0%, rgba(12, 8, 2, 1) 100%);
-  }
+  /* ENTROPY — dissolving grain overlay */
   .slide--entropy .slide__atmosphere::before {
     content: ''; position: absolute; inset: 0;
     background-image: radial-gradient(circle 1px at 20% 30%, rgba(212, 146, 10, 0.15) 0%, transparent 100%), radial-gradient(circle 1px at 60% 70%, rgba(212, 146, 10, 0.1) 0%, transparent 100%), radial-gradient(circle 1px at 80% 20%, rgba(212, 146, 10, 0.12) 0%, transparent 100%), radial-gradient(circle 1px at 40% 80%, rgba(212, 146, 10, 0.08) 0%, transparent 100%);
@@ -326,10 +314,7 @@ export const showcaseAtmosphereStyles = css`
   }
   @keyframes entropy-dissolve { 0% { opacity: 0.8; filter: blur(0px); } 50% { opacity: 0.4; filter: blur(1px); } 100% { opacity: 0.9; filter: blur(0.5px); } }
 
-  /* PROMETHEUS — rising embers */
-  .slide--prometheus .slide__atmosphere {
-    background: radial-gradient(ellipse 100% 60% at 50% 100%, rgba(232, 93, 38, 0.1) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 90%, rgba(160, 58, 16, 0.08) 0%, transparent 60%), linear-gradient(180deg, rgba(10, 4, 2, 1) 0%, rgba(20, 8, 2, 1) 100%);
-  }
+  /* PROMETHEUS — rising embers overlay */
   .slide--prometheus .slide__atmosphere::before {
     content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
     background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(232, 93, 38, 0.08) 0%, transparent 100%);
@@ -343,10 +328,7 @@ export const showcaseAtmosphereStyles = css`
   @keyframes prometheus-forge { 0%, 100% { opacity: 0.5; transform: scaleY(0.95); } 50% { opacity: 1; transform: scaleY(1.05); } }
   @keyframes prometheus-embers { 0% { transform: translateY(0); opacity: 0.7; } 50% { transform: translateY(-8%); opacity: 1; } 100% { transform: translateY(-2%); opacity: 0.6; } }
 
-  /* DELUGE — rain + wave */
-  .slide--deluge .slide__atmosphere {
-    background: radial-gradient(ellipse 100% 60% at 50% 100%, rgba(26, 181, 200, 0.06) 0%, transparent 60%), linear-gradient(180deg, rgba(2, 14, 20, 1) 0%, rgba(4, 20, 28, 1) 100%);
-  }
+  /* DELUGE — rain + wave overlay */
   .slide--deluge .slide__atmosphere::before {
     content: ''; position: absolute; inset: -50% 0 0 0;
     background: repeating-linear-gradient(165deg, transparent 0px, transparent 8px, rgba(26, 181, 200, 0.02) 8px, rgba(26, 181, 200, 0.02) 9px);
@@ -360,10 +342,7 @@ export const showcaseAtmosphereStyles = css`
   @keyframes deluge-rain { 0% { transform: translateY(-33%) translateX(5%); } 100% { transform: translateY(0%) translateX(-2%); } }
   @keyframes deluge-wave { 0%, 100% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(-15%) scaleY(1.1); } 50% { transform: translateY(-5%) scaleY(0.95); } 75% { transform: translateY(-10%) scaleY(1.05); } }
 
-  /* AWAKENING — consciousness ripples */
-  .slide--awakening .slide__atmosphere {
-    background: radial-gradient(circle at 50% 50%, rgba(180, 138, 239, 0.05) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(12, 8, 24, 1) 0%, rgba(6, 4, 14, 1) 100%);
-  }
+  /* AWAKENING — consciousness ripples overlay */
   .slide--awakening .slide__atmosphere::before {
     content: ''; position: absolute; top: 50%; left: 50%; width: 600px; height: 600px;
     margin: -300px 0 0 -300px; border-radius: 50%;
