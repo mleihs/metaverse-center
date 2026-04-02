@@ -370,9 +370,9 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
         ${iconFn(ICON_SIZE)}
       </g>
 
-      <!-- Cleared badge: checkmark at top-right -->
+      <!-- Cleared badge: checkmark at top-right (shown even on current room) -->
       ${
-        room.cleared && !current
+        room.cleared
           ? svg`
         <g transform="translate(18, -18)">
           <circle r="7" fill="var(--_screen-bg)" stroke="var(--color-success)" stroke-width="1" />

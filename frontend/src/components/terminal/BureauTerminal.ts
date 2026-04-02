@@ -515,6 +515,9 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
   override connectedCallback(): void {
     super.connectedCallback();
     this._startFeedPolling();
+    // Re-focus input when re-attached (e.g. tab navigation back to terminal/dungeon).
+    // Skip on first mount — firstUpdated() handles that after boot sequence.
+    if (this.hasUpdated) this._focusInput();
   }
 
   override disconnectedCallback(): void {

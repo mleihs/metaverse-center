@@ -78,20 +78,35 @@ def generate_dungeon_graph(
             layer.append(idx)
             idx += 1
 
+        # ── Connect layers ──────────────────────────────────────────────
+        _connect_layers(rooms, prev_layer, layer)
+
+        # ── No consecutive rest rooms ──────────────────────────────────
+        # If a rest room is directly connected to another rest room in the
+        # previous layer, replace it with combat to preserve pacing tension.
+        prev_rest_indices = {i for i in prev_layer if rooms[i].room_type == "rest"}
+        for room_idx in layer:
+            room = rooms[room_idx]
+            if room.room_type != "rest":
+                continue
+            if prev_rest_indices & set(room.connections):
+                room.room_type = "combat"
+                room.loot_tier = _assign_loot_tier("combat", d, depth, difficulty)
+
         # Review #18: Guarantee at least one rest room near mid-depth.
-        # Applied per-layer: replace exactly one random non-rest room if
-        # no rest room exists at this depth.
+        # Runs AFTER the no-consecutive-rest constraint so it picks a room
+        # that won't immediately be overwritten.
         if d == mid_depth and not rest_placed_at_mid:
             layer_rooms = [rooms[i] for i in layer]
             has_rest = any(r.room_type == "rest" for r in layer_rooms)
             if not has_rest:
-                replace_idx = random.choice(layer)
+                # Prefer a room without rest parents to avoid violating the constraint
+                safe = [i for i in layer if not (prev_rest_indices & set(rooms[i].connections))]
+                replace_idx = random.choice(safe) if safe else random.choice(layer)
                 rooms[replace_idx].room_type = "rest"
                 rooms[replace_idx].loot_tier = 0
             rest_placed_at_mid = True
 
-        # ── Connect layers ──────────────────────────────────────────────
-        _connect_layers(rooms, prev_layer, layer)
         prev_layer = layer
 
     # ── Final Layer: Boss ───────────────────────────────────────────────

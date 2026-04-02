@@ -457,7 +457,6 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
           encounterDesc,
           result.choices,
           result.state.party,
-          room?.room_type,
         ),
       );
     }
@@ -517,7 +516,7 @@ function handleDungeonLook(): TerminalLine[] {
   const choices = dungeonState.encounterChoices.value;
   if ((state.phase === 'encounter' || state.phase === 'rest') && choices.length > 0) {
     const desc = localized(state, 'encounter_description');
-    lines.push(...formatEncounterChoices(desc, choices, state.party, room.room_type));
+    lines.push(...formatEncounterChoices(desc, choices, state.party));
   }
 
   return lines;
@@ -861,7 +860,6 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
             desc,
             resp.data.state.encounter_choices,
             resp.data.state.party,
-            dungeonState.currentRoom.value?.room_type,
           ),
         );
       }

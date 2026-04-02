@@ -44,6 +44,7 @@ import './DungeonEnemyPanel.js';
 import './DungeonHeader.js';
 import './DungeonMap.js';
 import './DungeonPartyPanel.js';
+import './DungeonAudioSettings.js';
 import './DungeonQuickActions.js';
 
 @localized()
@@ -383,6 +384,49 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           border: none;
         }
       }
+
+      /* ── Audio Settings Dialog ── */
+      .audio-dialog {
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 40%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 98%, black);
+        color: var(--_phosphor);
+        padding: 0;
+        max-width: min(90vw, 360px);
+        width: 100%;
+      }
+
+      .audio-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
+      }
+
+      .audio-dialog__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-bottom: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor-dim);
+      }
+
+      .audio-dialog__close {
+        border: none;
+        background: none;
+        color: var(--_phosphor-dim);
+        cursor: pointer;
+        padding: 4px;
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .audio-dialog__close:hover {
+        color: var(--_phosphor);
+      }
     `,
   ];
 
@@ -390,6 +434,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
   @query('velg-bureau-terminal') private _terminal?: VelgBureauTerminal;
   @query('.map-dialog') private _mapDialog?: HTMLDialogElement;
+  @query('.audio-dialog') private _audioDialog?: HTMLDialogElement;
 
   @state() private _initialized = false;
   @state() private _error: string | null = null;
@@ -524,7 +569,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
     const inCombat = dungeonState.isInCombat.value;
 
     return html`
-      <div class="dungeon-hud" @terminal-command=${this._handleTerminalCommand}>
+      <div class="dungeon-hud" @terminal-command=${this._handleTerminalCommand} @toggle-audio-settings=${this._openAudioDialog}>
         <div class="dungeon-hud__header" role="banner" aria-label=${msg('Dungeon status')}>
           <velg-dungeon-header></velg-dungeon-header>
         </div>
@@ -573,6 +618,22 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         </div>
         <velg-dungeon-map persistent></velg-dungeon-map>
       </dialog>
+
+      <dialog
+        class="audio-dialog"
+        @close=${() => this.requestUpdate()}
+        @click=${this._onAudioDialogBackdropClick}
+      >
+        <div class="audio-dialog__header">
+          <span>${msg('Audio Settings')}</span>
+          <button
+            class="audio-dialog__close"
+            @click=${() => this._audioDialog?.close()}
+            aria-label=${msg('Close audio settings')}
+          >&times;</button>
+        </div>
+        <velg-dungeon-audio-settings></velg-dungeon-audio-settings>
+      </dialog>
     `;
   }
 
@@ -584,6 +645,16 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   private _onMapDialogBackdropClick(e: MouseEvent): void {
     if (e.target === this._mapDialog) {
       this._mapDialog?.close();
+    }
+  }
+
+  private _openAudioDialog(): void {
+    this._audioDialog?.showModal();
+  }
+
+  private _onAudioDialogBackdropClick(e: MouseEvent): void {
+    if (e.target === this._audioDialog) {
+      this._audioDialog?.close();
     }
   }
 

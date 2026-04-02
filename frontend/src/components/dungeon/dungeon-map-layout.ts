@@ -42,14 +42,18 @@ export interface MapLayout {
   edges: EdgeDefinition[];
   width: number;
   height: number;
+  /** Effective vertical gap (may be reduced for tall maps). */
+  vGap: number;
+  /** Effective edge padding used for node positioning. */
+  edgePad: number;
 }
 
 // ── Default Config ──────────────────────────────────────────────────────────
 
 export const DEFAULT_MAP_CONFIG: MapLayoutConfig = {
   nodeRadius: 30,
-  vGap: 90,
-  hGap: 72,
+  vGap: 100,
+  hGap: 76,
   padding: 36,
 };
 
@@ -69,10 +73,14 @@ export function layoutDungeonMap(
   config: MapLayoutConfig = DEFAULT_MAP_CONFIG,
 ): MapLayout {
   if (rooms.length === 0) {
-    return { nodes: [], edges: [], width: 0, height: 0 };
+    return { nodes: [], edges: [], width: 0, height: 0, vGap: config.vGap, edgePad: config.padding };
   }
 
-  const { vGap, hGap, padding } = config;
+  const { nodeRadius, hGap, padding } = config;
+
+  // Effective padding: ensure node rings + cleared badges never clip at edges.
+  // Cleared badge extends nodeRadius + 25px from center (translate(18,-18) + r=7).
+  const edgePad = Math.max(padding, nodeRadius + 25);
 
   // ── Group by depth ──────────────────────────────────────────────────────
   const byDepth = new Map<number, RoomNodeClient[]>();
@@ -82,23 +90,36 @@ export function layoutDungeonMap(
     byDepth.set(r.depth, arr);
   }
 
+  // Use sequential layer indices (0, 1, 2, ...) instead of raw depth values
+  // to eliminate empty gaps from sparse depths (e.g. rooms at depth 0, 1, 3).
   const depths = [...byDepth.keys()].sort((a, b) => a - b);
   const maxPerLayer = Math.max(...depths.map((d) => byDepth.get(d)!.length), 1);
 
-  // Canvas dimensions
-  const canvasW = Math.max(padding * 2 + (maxPerLayer - 1) * hGap, padding * 2 + hGap);
-  const canvasH = Math.max(padding * 2 + (depths.length - 1) * vGap, padding * 2);
+  // Dynamic vGap: scale vertical spacing so the map never exceeds ~2.5:1
+  // height:width ratio. This prevents the sidebar map from becoming a
+  // tall narrow column that pushes nodes off-screen.
+  // Floor: nodeRadius*2 + 10 so rings never touch.
+  const canvasW = Math.max(edgePad * 2 + (maxPerLayer - 1) * hGap, edgePad * 2 + hGap);
+  const numGaps = depths.length - 1;
+  const maxHeight = canvasW * 3.0;
+  const minVGap = nodeRadius * 2 + 10;
+  const vGap = numGaps > 0
+    ? Math.max(minVGap, Math.min(config.vGap, Math.floor((maxHeight - edgePad * 2) / numGaps)))
+    : config.vGap;
+  const canvasH = Math.max(edgePad * 2 + numGaps * vGap, edgePad * 2);
 
   // ── Position nodes ────────────────────────────────────────────────────
   const nodes: NodePosition[] = [];
 
-  for (const depth of depths) {
+  for (let layerIdx = 0; layerIdx < depths.length; layerIdx++) {
+    const depth = depths[layerIdx];
     const layer = byDepth.get(depth)!;
     layer.sort((a, b) => a.index - b.index);
 
     const layerW = (layer.length - 1) * hGap;
     const startX = (canvasW - layerW) / 2;
-    const y = padding + (depth - depths[0]) * vGap;
+    // Use sequential layer index, not raw depth — eliminates empty rows
+    const y = edgePad + layerIdx * vGap;
 
     for (let i = 0; i < layer.length; i++) {
       nodes.push({
@@ -133,5 +154,5 @@ export function layoutDungeonMap(
     }
   }
 
-  return { nodes, edges, width: canvasW, height: canvasH };
+  return { nodes, edges, width: canvasW, height: canvasH, vGap, edgePad };
 }

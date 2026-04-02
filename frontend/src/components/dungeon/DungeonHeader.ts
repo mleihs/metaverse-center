@@ -16,6 +16,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { dungeonAudio } from '../../services/DungeonAudioService.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import {
   ARCHETYPE_ENTROPY,
@@ -669,6 +670,34 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         flex-shrink: 0;
       }
 
+      /* ── Audio Toggle ── */
+      .audio-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+        background: none;
+        color: var(--_phosphor-dim);
+        cursor: pointer;
+        padding: 3px 6px;
+        flex-shrink: 0;
+      }
+
+      .audio-toggle:hover {
+        border-color: var(--_phosphor);
+        color: var(--_phosphor);
+      }
+
+      .audio-toggle:focus-visible {
+        outline: 1px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+
+      .audio-toggle--on {
+        color: var(--_phosphor);
+        border-color: color-mix(in srgb, var(--_phosphor) 50%, transparent);
+      }
+
       /* ── Mobile ── */
       @media (max-width: 640px) {
         .header {
@@ -1001,8 +1030,27 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
             `
             : nothing
         }
+
+        <span class="sep"></span>
+        <button
+          class="audio-toggle ${dungeonAudio.enabled.value ? 'audio-toggle--on' : ''}"
+          @click=${this._toggleAudio}
+          aria-label=${dungeonAudio.enabled.value ? msg('Audio settings (on)') : msg('Audio settings (off)')}
+          title=${msg('Audio')}
+        >
+          ${dungeonAudio.enabled.value ? icons.volume(12) : icons.volumeOff(12)}
+        </button>
       </div>
     `;
+  }
+
+  private _toggleAudio(): void {
+    this.dispatchEvent(
+      new CustomEvent('toggle-audio-settings', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 }
 

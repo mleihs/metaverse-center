@@ -373,9 +373,9 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     const posMap = new Map<number, NodePosition>();
     for (const n of layout.nodes) posMap.set(n.room.index, n);
 
-    // Unique depth values for topographic lines
+    // Unique depth values for topographic lines — use sequential layer indices
+    // to match the layout engine (which compresses sparse depths).
     const depths = [...new Set(rooms.map((r) => r.depth))].sort((a, b) => a - b);
-    const minDepth = depths[0] ?? 0;
 
     // ── Pre-compute SVG content as svg tagged templates ──────────────
     // Event bindings (@click, @keydown) on SVG elements only work inside
@@ -384,8 +384,8 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // children with expressions must therefore be built as svg`` results
     // and injected as expressions into the html template's <svg>.
 
-    const depthLines = depths.map((d) => {
-      const y = DEFAULT_MAP_CONFIG.padding + (d - minDepth) * DEFAULT_MAP_CONFIG.vGap;
+    const depthLines = depths.map((_d, layerIdx) => {
+      const y = layout.edgePad + layerIdx * layout.vGap;
       return svg`<line
         x1="0" y1=${y} x2=${layout.width} y2=${y}
         class="depth-line" aria-hidden="true"

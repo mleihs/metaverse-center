@@ -802,7 +802,6 @@ export function formatEncounterChoices(
   descriptionEn: string,
   choices: EncounterChoiceClient[],
   party: AgentCombatStateClient[],
-  roomType?: string,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -847,11 +846,7 @@ export function formatEncounterChoices(
   }
 
   lines.push(responseLine(''));
-  if (roomType === 'rest') {
-    lines.push(hintLine(msg('Type "rest" to rest.')));
-  } else {
-    lines.push(hintLine(msg('Type "interact <number>" to choose.')));
-  }
+  lines.push(hintLine(msg('Type "interact <number>" to choose.')));
 
   return lines;
 }
