@@ -59,3 +59,9 @@ frontend/test-results/
 
 # Database backups (may contain credentials/data)
 backups/
+
+# Local screenshots (large PNGs, debugging artifacts)
+screenshots/
+
+# Playwright MCP browser automation logs
+.playwright-mcp/
