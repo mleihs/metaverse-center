@@ -467,7 +467,12 @@ class DungeonCombatService:
             fallbacks = FALLBACK_SPAWNS.get(instance.archetype, FALLBACK_SPAWNS["The Shadow"])
             spawn_id = fallbacks["boss"] if is_boss else fallbacks["default"]
 
-        enemies = spawn_enemies(spawn_id, instance.difficulty, instance.depth, instance.archetype)
+        # Threshold Defiance: spawn boss at +1 effective difficulty
+        effective_difficulty = instance.difficulty
+        if is_boss and instance.archetype_state.get("_threshold_defiance"):
+            effective_difficulty = min(5, effective_difficulty + 1)
+
+        enemies = spawn_enemies(spawn_id, effective_difficulty, instance.depth, instance.archetype)
         is_ambush = check_ambush(
             instance.archetype_state,
             instance.archetype,

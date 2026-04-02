@@ -21,6 +21,7 @@ export const ROOM_COLOR: Record<string, string> = {
   boss: 'var(--color-danger)',
   entrance: 'var(--_phosphor)',
   exit: 'var(--_phosphor)',
+  threshold: 'var(--color-warning)',
 };
 
 /**
@@ -39,6 +40,7 @@ export const ROOM_ICON: Record<string, (size: number) => SVGTemplateResult> = {
   boss: icons.mapBoss,
   entrance: icons.mapEntrance,
   exit: icons.mapExit,
+  threshold: icons.mapThreshold,
 };
 
 /** Fallback icon for unrevealed / unknown room types. */

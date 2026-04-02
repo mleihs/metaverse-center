@@ -33,6 +33,7 @@ import {
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
+  formatThresholdEntry,
   formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
@@ -448,17 +449,26 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       lines.push(...formatCombatPlanning(result.state.party));
     }
 
-    // Encounter / treasure / rest choices (any room with interactive choices)
-    const encounterDesc = localized(result, 'description');
-    if (result.choices && encounterDesc) {
+    // Threshold toll room — sparse, literary rendering
+    if (result.threshold && result.choices) {
       dungeonState.encounterChoices.value = result.choices;
-      lines.push(
-        ...formatEncounterChoices(
-          encounterDesc,
-          result.choices,
-          result.state.party,
-        ),
-      );
+      const thresholdDesc = localized(result, 'description');
+      lines.push(...formatThresholdEntry(thresholdDesc, result.choices));
+    }
+
+    // Encounter / treasure / rest choices (any room with interactive choices)
+    else {
+      const encounterDesc = localized(result, 'description');
+      if (result.choices && encounterDesc) {
+        dungeonState.encounterChoices.value = result.choices;
+        lines.push(
+          ...formatEncounterChoices(
+            encounterDesc,
+            result.choices,
+            result.state.party,
+          ),
+        );
+      }
     }
 
     // Treasure (auto-loot, no choices)
@@ -512,9 +522,12 @@ function handleDungeonLook(): TerminalLine[] {
 
   const lines = formatRoomEntry(room, null, state.archetype_state);
 
-  // Re-display encounter choices when in encounter/rest phase
+  // Re-display encounter/threshold choices
   const choices = dungeonState.encounterChoices.value;
-  if ((state.phase === 'encounter' || state.phase === 'rest') && choices.length > 0) {
+  if (state.phase === 'threshold' && choices.length > 0) {
+    const desc = localized(state, 'encounter_description');
+    lines.push(...formatThresholdEntry(desc, choices));
+  } else if ((state.phase === 'encounter' || state.phase === 'rest') && choices.length > 0) {
     const desc = localized(state, 'encounter_description');
     lines.push(...formatEncounterChoices(desc, choices, state.party));
   }
@@ -786,7 +799,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
   const runId = dungeonState.runId.value;
   if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
 
-  if (state.phase !== 'encounter' && state.phase !== 'rest') {
+  if (state.phase !== 'encounter' && state.phase !== 'rest' && state.phase !== 'threshold') {
     return [errorLine(msg('No active encounter.'))];
   }
 

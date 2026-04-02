@@ -430,7 +430,7 @@ DungeonEventType = Literal[
 
 RoomType = Literal[
     "combat", "elite", "encounter", "treasure",
-    "rest", "boss", "entrance", "exit"
+    "rest", "boss", "entrance", "exit", "threshold"
 ]
 
 ArchetypeName = Literal[

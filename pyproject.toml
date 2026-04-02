@@ -67,6 +67,7 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "backend/services/dungeon_engine_service.py" = ["S311"]  # Game RNG for banter placeholder resolution
 "backend/services/dungeon_movement_service.py" = ["S311"]  # Game RNG for banter placeholder resolution
 "backend/services/combat/stress_system.py" = ["S311"]  # Game RNG is intentional
+"backend/services/dungeon/archetype_strategies.py" = ["S311"]  # Game RNG for memory toll
 "backend/services/dungeon/dungeon_archetypes.py" = ["E501"]  # Config dict lines
 "backend/services/dungeon/dungeon_generator.py" = ["S311"]  # Game RNG is intentional
 "backend/services/dungeon/dungeon_banter.py" = ["S311", "E501"]  # Game RNG + bilingual banter

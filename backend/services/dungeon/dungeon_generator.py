@@ -109,17 +109,31 @@ def generate_dungeon_graph(
 
         prev_layer = layer
 
-    # ── Final Layer: Boss ───────────────────────────────────────────────
-    boss = RoomNode(
-        index=idx,
+    # ── Threshold: chokepoint before boss ─────────────────────────────
+    # The Threshold is a liminal room that forces an irrevocable sacrifice
+    # choice. It is the sole path from the last content layer to the boss,
+    # functioning like a medieval barbican — a designed vulnerability space.
+    threshold_idx = idx
+    rooms.append(RoomNode(
+        index=threshold_idx,
         depth=depth,
+        room_type="threshold",
+        connections=[],
+    ))
+    _connect_layers(rooms, prev_layer, [threshold_idx])
+    idx += 1
+
+    # ── Final Layer: Boss ───────────────────────────────────────────────
+    boss_idx = idx
+    rooms.append(RoomNode(
+        index=boss_idx,
+        depth=depth + 1,
         room_type="boss",
         connections=[],
         loot_tier=3,
-    )
-    rooms.append(boss)
-    for p_idx in prev_layer:
-        rooms[p_idx].connections.append(idx)
+    ))
+    # Threshold → Boss: reuse _connect_layers for consistent forward-only connections
+    _connect_layers(rooms, [threshold_idx], [boss_idx])
 
     # ── Reveal first layer (player sees immediate choices) ──────────────
     for room in rooms:

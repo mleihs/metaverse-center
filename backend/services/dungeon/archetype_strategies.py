@@ -17,6 +17,7 @@ Strategies are stateless singletons. All mutable state lives in
 
 from __future__ import annotations
 
+import random
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
@@ -98,6 +99,23 @@ class ArchetypeStrategy(ABC):
         """
         return None
 
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Apply the Memory Toll — silently remove a positive archetype modifier.
+
+        Called when the player chooses the Memory Toll at the Threshold room.
+        The player is told "something was taken" but NOT what.
+
+        Default: apply +40 stress to all agents (generic cost when archetype
+        has no specific modifier to remove). Override in subclasses to remove
+        archetype-specific benefits (visibility, stability, insight, etc.).
+        """
+        from backend.services.combat.condition_tracks import can_act
+        from backend.services.combat.stress import apply_stress
+
+        for agent in instance.party:
+            if can_act(agent.condition):
+                agent.stress, _ = apply_stress(agent.stress, 40)
+
     def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
         """Generate dynamic pre-combat deployment choices for boss room.
 
@@ -120,6 +138,14 @@ class ArchetypeStrategy(ABC):
         Default: no-op (return unchanged).
         """
         return templates
+
+    def on_room_reentry(self, instance: DungeonInstance, room_index: int) -> bool:
+        """Optional hook: called when the party enters an already-cleared room.
+
+        Return ``True`` to morph the room (re-roll encounter, un-clear).
+        Default: ``False`` (cleared rooms stay cleared).
+        """
+        return False
 
 
 # ── Shadow Strategy ────────────────────────────────────────────────────────
@@ -171,6 +197,13 @@ class ShadowStrategy(ArchetypeStrategy):
                 ),
             )
 
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: reduce max visibility by 1."""
+        state = instance.archetype_state
+        state["max_visibility"] = max(1, state.get("max_visibility", 3) - 1)
+        if state.get("visibility", 0) > state["max_visibility"]:
+            state["visibility"] = state["max_visibility"]
+
 
 # ── Tower Strategy ─────────────────────────────────────────────────────────
 
@@ -214,6 +247,13 @@ class TowerStrategy(ArchetypeStrategy):
                     instance.archetype_state.get("stability", 0) + stab_delta,
                 ),
             )
+
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: reduce max stability by 15."""
+        state = instance.archetype_state
+        state["max_stability"] = max(10, state.get("max_stability", 100) - 15)
+        if state.get("stability", 0) > state["max_stability"]:
+            state["stability"] = state["max_stability"]
 
     def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
         if instance.archetype_state.get("stability", 100) <= 0:
@@ -299,6 +339,14 @@ class EntropyStrategy(ArchetypeStrategy):
                     instance.archetype_state.get("decay", 0) + decay_delta,
                 ),
             )
+
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: increase decay by 15."""
+        state = instance.archetype_state
+        state["decay"] = min(
+            state.get("max_decay", 100),
+            state.get("decay", 0) + 15,
+        )
 
     def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
         decay = instance.archetype_state.get("decay", 0)
@@ -623,6 +671,12 @@ class PrometheusStrategy(ArchetypeStrategy):
                 + self.mechanic_config.get("gain_on_craft_fail", 4),
             )
 
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: remove one random component from inventory."""
+        components = instance.archetype_state.get("components")
+        if components:
+            components.pop(random.randrange(len(components)))
+
     def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
         """The pharmakon: high insight amplifies stress (the fire burns).
 
@@ -882,6 +936,14 @@ class DelugeStrategy(ArchetypeStrategy):
                 ),
             )
 
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: increase water level by 15."""
+        state = instance.archetype_state
+        state["water_level"] = min(
+            state.get("max_water_level", 100),
+            state.get("water_level", 0) + 15,
+        )
+
     def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
         """Stress scales with water depth: 1.15x at waist, 1.40x at chest, 2.0x submerged."""
         water = instance.archetype_state.get("water_level", 0)
@@ -982,6 +1044,211 @@ class DelugeStrategy(ArchetypeStrategy):
         )
 
 
+# ── The Awakening ─────────────────────────────────────────────────────────
+
+
+class AwakeningStrategy(ArchetypeStrategy):
+    """The Awakening: Awareness gauge (0→100, lucid vertigo, consciousness drift).
+
+    Awareness rises on room entry (depth-scaled), in combat, on failed checks,
+    and on enemy hits. High awareness grants perception but destabilizes
+    identity — the Orpheus mechanic. At awareness 100: ego dissolution (wipe).
+
+    Unique hooks:
+        on_combat_round  — awareness rises in combat (consciousness expands)
+        on_failed_check  — failed introspection accelerates awakening
+        on_enemy_hit     — consciousness intrusion per hit
+        get_boss_deployment_choices — introspection before The Repressed
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "awareness": self.mechanic_config["start_awareness"],
+            "max_awareness": self.mechanic_config["max_awareness"],
+            "rooms_entered": 0,
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Awareness rises on room entry. Depth-scaled like all gauges.
+
+        Returns banter trigger on threshold crossing.
+        Awareness is Orpheus's backward glance: the more you know,
+        the more the memories distort.
+        """
+        state = instance.archetype_state
+        state["rooms_entered"] = state.get("rooms_entered", 0) + 1
+
+        # ── Room entry awareness gain (depth-scaled) ──
+        self._apply_room_entry_gain(instance)
+
+        # ── Threshold check ──
+        awareness = state.get("awareness", 0)
+        if awareness >= self.mechanic_config["awakened_threshold"]:
+            return "awakened"
+        if awareness >= self.mechanic_config["dissolution_threshold"]:
+            return "dissolution"
+        if awareness >= self.mechanic_config["lucid_threshold"]:
+            return "lucid"
+        if awareness >= self.mechanic_config["liminal_threshold"]:
+            return "liminal"
+        if awareness >= self.mechanic_config["stirring_threshold"]:
+            return "stirring"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        """Reduce awareness on rest, grounding, or other events."""
+        reduce_key = {
+            "combat_victory": "reduce_on_combat_win",
+            "rest": "reduce_on_rest",
+            "treasure": "reduce_on_treasure",
+            "ground": "reduce_on_ground_action",
+        }.get(event)
+        if reduce_key and self.mechanic_config.get(reduce_key):
+            instance.archetype_state["awareness"] = max(
+                0,
+                instance.archetype_state.get("awareness", 0)
+                - self.mechanic_config[reduce_key],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        """Apply awareness delta from encounter choices."""
+        awareness_delta = effects.get("awareness", 0)
+        if awareness_delta:
+            instance.archetype_state["awareness"] = max(
+                0,
+                min(
+                    self.mechanic_config["max_awareness"],
+                    instance.archetype_state.get("awareness", 0) + awareness_delta,
+                ),
+            )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        """Stress scales with awareness: Funes's curse — too much consciousness hurts."""
+        awareness = instance.archetype_state.get("awareness", 0)
+        if awareness >= self.mechanic_config["awakened_threshold"]:
+            return self.mechanic_config.get("awakened_stress_multiplier", 2.0)
+        if awareness >= self.mechanic_config["dissolution_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_90", 1.75)
+        if awareness >= self.mechanic_config["lucid_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_70", 1.35)
+        if awareness >= self.mechanic_config["liminal_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_50", 1.15)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        """Awareness rises each combat round — consciousness expands under duress."""
+        instance.archetype_state["awareness"] = min(
+            self.mechanic_config["max_awareness"],
+            instance.archetype_state.get("awareness", 0)
+            + self.mechanic_config["gain_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        """Failed introspection accelerates awakening — Plato's painful expansion."""
+        instance.archetype_state["awareness"] = min(
+            self.mechanic_config["max_awareness"],
+            instance.archetype_state.get("awareness", 0)
+            + self.mechanic_config["gain_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Consciousness intrusion — each hit from a memory-entity raises awareness."""
+        instance.archetype_state["awareness"] = min(
+            self.mechanic_config["max_awareness"],
+            instance.archetype_state.get("awareness", 0)
+            + self.mechanic_config["gain_per_enemy_hit"],
+        )
+
+    def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
+        """3 introspection choices before The Repressed boss fight.
+
+        Check-based pattern (like Deluge). The party prepares to confront
+        a memory so painful it was buried — Jung's encounter with the Self.
+        """
+        return [
+            {
+                "id": "confront_memory",
+                "label_en": "Confront the memory directly (Guardian)",
+                "label_de": "Der Erinnerung direkt entgegentreten (Wächter)",
+                "requires_aptitude": None,
+                "check_aptitude": "guardian",
+                "check_difficulty": 0,
+                "effects_success": {"condition_bonus": 1, "targets": "all"},
+                "effects_partial": {"condition_bonus": 1, "targets": 2},
+                "effects_fail": {"awareness": 15},
+            },
+            {
+                "id": "analyze_repression",
+                "label_en": "Analyze the structure of the repression (Spy)",
+                "label_de": "Die Struktur der Verdrängung analysieren (Spion)",
+                "requires_aptitude": None,
+                "check_aptitude": "spy",
+                "check_difficulty": 0,
+                "effects_success": {"reveal_intent": 2},
+                "effects_partial": {"reveal_intent": 1},
+                "effects_fail": {"stress": 10},
+            },
+            {
+                "id": "redirect_consciousness",
+                "label_en": "Redirect collective awareness toward the source (Propagandist)",
+                "label_de": "Das kollektive Bewusstsein zur Quelle lenken (Propagandist)",
+                "requires_aptitude": None,
+                "check_aptitude": "propagandist",
+                "check_difficulty": 0,
+                "effects_success": {"buff": "lucid_focus", "duration": 3},
+                "effects_partial": {"buff": "fragile_focus", "duration": 2},
+                "effects_fail": {"stress": 20},
+            },
+            {
+                "id": "begin_combat",
+                "label_en": "Enough preparation. Face The Repressed.",
+                "label_de": "Genug Vorbereitung. Dem Verdrängten entgegentreten.",
+                "requires_aptitude": None,
+                "check_aptitude": None,
+                "check_difficulty": 0,
+            },
+        ]
+
+    def on_room_reentry(self, instance: DungeonInstance, room_index: int) -> bool:
+        """Déjà-vu: cleared rooms morph at awareness ≥ deja_vu threshold.
+
+        The room has changed because the party has changed. The memory is
+        not replayed — it is reconstructed (Proust). Only encounter/combat
+        rooms morph. Boss, rest, exit, entrance never morph.
+        Each room can morph at most once per run.
+        """
+        awareness = instance.archetype_state.get("awareness", 0)
+        deja_vu_threshold = self.mechanic_config.get("liminal_threshold", 50)
+        if awareness < deja_vu_threshold:
+            return False
+
+        room = instance.rooms[room_index]
+        if room.room_type not in ("combat", "encounter", "treasure"):
+            return False
+
+        # Each room morphs at most once — track in archetype_state
+        morphed = instance.archetype_state.setdefault("_morphed_rooms", [])
+        if room_index in morphed:
+            return False
+
+        morphed.append(room_index)
+        return True
+
+    def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
+        """Depth-scaled awareness gain on room entry."""
+        depth = instance.depth
+        if depth <= 2:
+            gain = self.mechanic_config["gain_depth_1_2"]
+        elif depth <= 4:
+            gain = self.mechanic_config["gain_depth_3_4"]
+        else:
+            gain = self.mechanic_config["gain_depth_5_plus"]
+        instance.archetype_state["awareness"] = min(
+            self.mechanic_config["max_awareness"],
+            instance.archetype_state.get("awareness", 0) + gain,
+        )
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
@@ -992,6 +1259,7 @@ _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Devouring Mother": DevouringMotherStrategy(ARCHETYPE_CONFIGS["The Devouring Mother"]),
     "The Prometheus": PrometheusStrategy(ARCHETYPE_CONFIGS["The Prometheus"]),
     "The Deluge": DelugeStrategy(ARCHETYPE_CONFIGS["The Deluge"]),
+    "The Awakening": AwakeningStrategy(ARCHETYPE_CONFIGS["The Awakening"]),
 }
 
 

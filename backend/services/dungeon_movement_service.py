@@ -1,13 +1,15 @@
 """Dungeon Movement Service -- room traversal, encounters, scouting, resting.
 
 Manages the exploration lifecycle:
-  - move_to_room()           → validate + move, process room type, banter, anchors
-  - handle_encounter_choice() → skill check resolution for encounter rooms
-  - scout()                  → reveal adjacent rooms via Spy aptitude
-  - rest()                   → heal at rest sites (with ambush risk)
-  - _enter_interactive_room() → encounter/rest/treasure room setup
-  - _enter_boss_deployment()  → Prometheus-style pre-combat deployment
-  - _handle_boss_deployment() → deploy crafted items before boss fight
+  - move_to_room()            → validate + move, process room type, banter, anchors
+  - handle_encounter_choice()  → skill check resolution for encounter rooms
+  - scout()                   → reveal adjacent rooms via Spy aptitude
+  - rest()                    → heal at rest sites (with ambush risk)
+  - _enter_interactive_room()  → encounter/rest/treasure room setup
+  - _enter_threshold_room()    → liminal toll room setup (3 irrevocable choices)
+  - _handle_threshold_choice() → resolve blood/memory/defiance tolls
+  - _enter_boss_deployment()   → Prometheus-style pre-combat deployment
+  - _handle_boss_deployment()  → deploy crafted items before boss fight
 
 Extracted from DungeonEngineService (H7: god-class decomposition).
 """
@@ -242,6 +244,15 @@ class DungeonMovementService:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
 
+        # ── Déjà-vu room morphing (Awakening: cleared rooms reconstruct) ──
+        deja_vu = False
+        if target_room.cleared and strategy.on_room_reentry(instance, room_index):
+            target_room.cleared = False
+            target_room.encounter_template_id = None
+            target_room.loot_tier = 0
+            deja_vu = True
+            banter_trigger = "deja_vu"
+
         # Override banter trigger for boss rooms
         if target_room.room_type == "boss":
             banter_trigger = "boss_approach"
@@ -302,10 +313,13 @@ class DungeonMovementService:
             "anchor_texts": anchor_texts if anchor_texts else None,
             "barometer_text": baro_text,
             "debris": debris_item,
+            "deja_vu": deja_vu,
         }
 
         if target_room.room_type in ("combat", "elite"):
             result.update(await DungeonCombatService.enter_combat_room(admin_supabase, instance, target_room))
+        elif target_room.room_type == "threshold":
+            result.update(cls._enter_threshold_room(instance))
         elif target_room.room_type in ("encounter", "rest", "treasure"):
             result.update(cls._enter_interactive_room(instance, target_room))
         elif target_room.room_type == "boss":
@@ -365,11 +379,16 @@ class DungeonMovementService:
     ) -> dict:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
-        if instance.phase not in ("encounter", "rest"):
+        if instance.phase not in ("encounter", "rest", "threshold"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
 
-        # Boss deployment intercept
         current_room = instance.rooms[instance.current_room]
+
+        # Threshold intercept — dedicated handler, not encounter pipeline
+        if current_room.room_type == "threshold":
+            return await cls._handle_threshold_choice(admin_supabase, instance, action)
+
+        # Boss deployment intercept
         if current_room.room_type == "boss" and "_boss_deployment_choices" in instance.archetype_state:
             return await cls._handle_boss_deployment(admin_supabase, instance, action)
 
@@ -561,6 +580,65 @@ class DungeonMovementService:
 
         return {
             "water_level": instance.archetype_state.get("water_level"),
+            "stress_cost": stress_cost,
+            "agent_stress": agent.stress,
+            "cooldown_until_room": rooms_entered + cooldown,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Ground (Awakening) ─────────────────────────────────────────────────
+
+    @classmethod
+    async def ground(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
+        async with _store.lock(run_id):
+            return await cls._ground_locked(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
+    async def _ground_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.archetype != "The Awakening":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ground only available in Awakening dungeons")
+
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+
+        mc = ARCHETYPE_CONFIGS["The Awakening"]["mechanic_config"]
+        spy_level = agent.aptitudes.get("spy", 0)
+        if spy_level < mc.get("ground_min_aptitude", 40):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Agent needs Spy {mc.get('ground_min_aptitude', 40)}+ to Ground",
+            )
+
+        # Cooldown: once per N rooms
+        cooldown = mc.get("ground_cooldown_rooms", 3)
+        last_ground_room = instance.archetype_state.get("_last_ground_room", -cooldown)
+        rooms_entered = instance.archetype_state.get("rooms_entered", 0)
+        if rooms_entered - last_ground_room < cooldown:
+            rooms_remaining = cooldown - (rooms_entered - last_ground_room)
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Ground on cooldown ({rooms_remaining} rooms remaining)",
+            )
+
+        strategy = get_archetype_strategy(instance.archetype)
+        strategy.apply_restore(instance, "ground")
+        instance.archetype_state["_last_ground_room"] = rooms_entered
+
+        stress_cost = mc.get("ground_stress_cost", 15)
+        agent.stress = min(1000, agent.stress + stress_cost)
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "awareness": instance.archetype_state.get("awareness"),
             "stress_cost": stress_cost,
             "agent_stress": agent.stress,
             "cooldown_until_room": rooms_entered + cooldown,
@@ -797,6 +875,125 @@ class DungeonMovementService:
             "treasure": True,
             "auto_loot": True,
             "loot": [item.model_dump() for item in loot],
+        }
+
+    # ── Threshold Room ─────────────────────────────────────────────────────
+
+    @classmethod
+    def _enter_threshold_room(cls, instance: DungeonInstance) -> dict:
+        """Enter the Threshold — liminal toll room before the boss.
+
+        Sets phase to 'threshold' and returns the 3 irrevocable toll choices.
+        Uses the same choice format as encounters for frontend compatibility.
+        """
+        from backend.services.dungeon.dungeon_threshold import (
+            THRESHOLD_CHOICES,
+            THRESHOLD_ENTRY_TEXT,
+        )
+
+        instance.phase = "threshold"
+        entry_text = THRESHOLD_ENTRY_TEXT.get(instance.archetype, THRESHOLD_ENTRY_TEXT["The Shadow"])
+
+        return {
+            "threshold": True,
+            "description_en": entry_text["en"],
+            "description_de": entry_text["de"],
+            "choices": DungeonCheckpointService.format_encounter_choices(THRESHOLD_CHOICES),
+        }
+
+    @classmethod
+    async def _handle_threshold_choice(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        action: DungeonAction,
+    ) -> dict:
+        """Resolve a Threshold toll choice (blood / memory / defiance).
+
+        Each toll is irrevocable and affects the rest of the run differently:
+        - Blood:    one agent takes 1 condition step down (honest, calculable)
+        - Memory:   a random positive archetype modifier is silently removed (unknown)
+        - Defiance: boss encounter difficulty is silently increased (deferred)
+        """
+        from backend.services.combat.condition_tracks import apply_condition_damage
+        from backend.services.dungeon.dungeon_threshold import THRESHOLD_RESOLUTION_TEXT
+
+        choice_id = action.choice_id
+        if choice_id not in ("threshold_blood", "threshold_memory", "threshold_defiance"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown threshold choice: {choice_id}")
+
+        current_room = instance.rooms[instance.current_room]
+        narrative_data: dict = {}
+
+        if choice_id == "threshold_blood":
+            # Auto-select the healthiest agent (highest condition = most to lose)
+            from backend.services.combat.condition_tracks import CONDITION_SEVERITY
+
+            candidates = sorted(
+                [a for a in instance.party if a.condition != "captured"],
+                key=lambda a: CONDITION_SEVERITY.get(a.condition, 0),
+            )
+            if candidates:
+                agent = candidates[0]  # Healthiest agent
+                old_condition = agent.condition
+                new_condition, _ = apply_condition_damage(agent.condition, 1)
+                agent.condition = new_condition
+                narrative_data = {
+                    "agent_name": agent.agent_name,
+                    "old_condition": old_condition,
+                    "new_condition": new_condition,
+                }
+            # All agents captured — Blood Toll waived (nothing left to take)
+            # Falls through to room_clear with no penalty
+
+        elif choice_id == "threshold_memory":
+            # Silently remove a random positive modifier from archetype state.
+            # Target keys that represent accumulated benefits, not structural flags.
+            strategy = get_archetype_strategy(instance.archetype)
+            strategy.apply_threshold_memory_toll(instance)
+
+        elif choice_id == "threshold_defiance":
+            # Flag for boss difficulty increase — checked in combat setup.
+            instance.archetype_state["_threshold_defiance"] = True
+
+        # Mark room cleared
+        current_room.cleared = True
+        instance.rooms_cleared += 1
+        instance.phase = "room_clear"
+
+        # Build narrative
+        resolution = THRESHOLD_RESOLUTION_TEXT.get(choice_id, {})
+        narrative_en = resolution.get("en", {}).get("narrative", "")
+        narrative_de = resolution.get("de", {}).get("narrative", "")
+        system_en = resolution.get("en", {}).get("system", "")
+        system_de = resolution.get("de", {}).get("system", "")
+        if system_en and narrative_data:
+            narrative_en += "\n" + system_en.format(**narrative_data)
+        if system_de and narrative_data:
+            narrative_de += "\n" + system_de.format(**narrative_data)
+
+        await DungeonCheckpointService.log_event(
+            admin_supabase,
+            instance.run_id,
+            instance.simulation_id,
+            instance.depth,
+            current_room.index,
+            "threshold_choice",
+            {"choice_id": choice_id, **narrative_data},
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
+        )
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "result": "success",
+            "threshold_toll": choice_id,
+            "narrative_en": narrative_en,
+            "narrative_de": narrative_de,
+            "narrative_effects_en": [],
+            "narrative_effects_de": [],
+            "effects": {"threshold_toll": choice_id, **narrative_data},
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
         }
 
     @classmethod

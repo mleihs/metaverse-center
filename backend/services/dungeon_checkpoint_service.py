@@ -331,11 +331,23 @@ class DungeonCheckpointService:
             loot_assignments = instance.loot_assignments
             loot_suggestions = cls._compute_loot_suggestions(instance)
 
-        # Encounter fields (only during encounter/rest phase)
+        # Encounter fields (only during encounter/rest/threshold phase)
         encounter_choices = None
         encounter_desc_en = None
         encounter_desc_de = None
-        if instance.phase in ("encounter", "rest"):
+        if instance.phase == "threshold":
+            # Threshold: structural toll choices from dedicated module.
+            # Run through format_encounter_choices for consistent client shape.
+            from backend.services.dungeon.dungeon_threshold import (
+                THRESHOLD_CHOICES,
+                THRESHOLD_ENTRY_TEXT,
+            )
+
+            encounter_choices = cls.format_encounter_choices(THRESHOLD_CHOICES)
+            entry_text = THRESHOLD_ENTRY_TEXT.get(instance.archetype, THRESHOLD_ENTRY_TEXT["The Shadow"])
+            encounter_desc_en = entry_text["en"]
+            encounter_desc_de = entry_text["de"]
+        elif instance.phase in ("encounter", "rest"):
             current_room = instance.rooms[instance.current_room]
             # Boss deployment: dynamic choices from archetype_state
             boss_deploy_choices = instance.archetype_state.get("_boss_deployment_choices")

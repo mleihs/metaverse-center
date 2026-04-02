@@ -82,6 +82,7 @@ RoomType = Literal[
     "boss",
     "entrance",
     "exit",
+    "threshold",
 ]
 
 ArchetypeName = Literal[
@@ -157,6 +158,7 @@ class DungeonInstance(BaseModel):
     # Loot distribution (populated during 'distributing' phase after boss victory)
     pending_loot: list[dict] = Field(default_factory=list)
     loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
+    loot_extra_params: dict[str, dict] = Field(default_factory=dict)  # loot_id → extra params (e.g. personality dimension)
     auto_apply_loot: list[dict] = Field(default_factory=list)  # pre-built auto-apply items
 
     # Objektanker (Variation C — "Wandernde Dinge")
@@ -299,11 +301,21 @@ class RestRequest(BaseModel):
     agent_ids: list[UUID] = Field(..., min_length=1)
 
 
+BIG_FIVE_DIMENSIONS = frozenset({
+    "openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism",
+})
+
+
 class LootAssignment(BaseModel):
-    """Assign one loot item to an agent during distribution phase."""
+    """Assign one loot item to an agent during distribution phase.
+
+    For personality_modifier items (Awakening Insight), ``dimension`` specifies
+    which Big Five trait to modify. Required when assigning personality_modifier loot.
+    """
 
     loot_id: str
     agent_id: UUID
+    dimension: str | None = None
 
 
 # ── API Response Schemas ────────────────────────────────────────────────────

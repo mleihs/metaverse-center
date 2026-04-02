@@ -23,12 +23,14 @@ import type {
   SkillCheckDetail,
 } from '../types/dungeon.js';
 import {
+  ARCHETYPE_AWAKENING,
   ARCHETYPE_DELUGE,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
   ARCHETYPE_PROMETHEUS,
   ARCHETYPE_SHADOW,
   ARCHETYPE_TOWER,
+  isAwakeningState,
   isDelugeState,
   isMotherState,
   isShadowState,
@@ -61,6 +63,7 @@ const ROOM_SYMBOLS: Record<string, string> = {
   treasure: 'T',
   boss: 'B',
   exit: '\u21E4', // ⇤
+  threshold: '\u2503', // ┃ (vertical bar — passage)
 };
 
 // ── Loot Tier Markers ───────────────────────────────────────────────────────
@@ -85,6 +88,8 @@ export function getArchetypeDisplayName(archetype: string): string {
       return msg('The Prometheus');
     case ARCHETYPE_DELUGE:
       return msg('The Deluge');
+    case ARCHETYPE_AWAKENING:
+      return msg('The Awakening');
     default:
       return archetype;
   }
@@ -192,6 +197,7 @@ export function getRoomTypeLabel(type: string, fallbackIndex?: number): string {
     boss: () => msg('Boss'),
     entrance: () => msg('Entrance'),
     exit: () => msg('Exit'),
+    threshold: () => msg('Threshold'),
   };
   return (
     labels[type]?.() ?? (fallbackIndex !== undefined ? `${msg('Room')} ${fallbackIndex}` : type)
@@ -353,6 +359,33 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     lines.push(
       responseLine(msg('The waterline does not negotiate. Read it, or join it.')),
     );
+  } else if (archetype === ARCHETYPE_AWAKENING) {
+    lines.push(combatSystemLine(msg('AWAKENING PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The collective mind turns over in its sleep.')));
+    lines.push(
+      responseLine(msg('Something in the architecture recognizes you. Not personally \u2013 collectively.')),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      systemLine(`\u25C9 ${msg('Awareness rises with each room. The deeper you go, the faster.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('High awareness grants perception \u2013 but erodes certainty.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('At Awareness 70: lucid state. The dungeon responds to thought.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('Use GROUND (Spy) to reduce awareness. Grounding has a cooldown.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('At Awareness 100: dissolution. Complete ego loss.')}`),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      responseLine(msg('The dungeon does not read your thoughts. It resonates with them.')),
+    );
   } else {
     // Shadow (default)
     lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
@@ -490,6 +523,12 @@ export function formatRoomEntry(
     const empty = Math.round((max_water_level - water_level) / 5);
     const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
     lines.push(systemLine(`WATER LEVEL: ${bar} [${water_level}/${max_water_level}]`));
+  } else if (isAwakeningState(archetypeState)) {
+    const { awareness, max_awareness } = archetypeState;
+    const filled = Math.round(awareness / 5);
+    const empty = Math.round((max_awareness - awareness) / 5);
+    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
+    lines.push(systemLine(`AWARENESS: ${bar} [${awareness}/${max_awareness}]`));
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
@@ -847,6 +886,48 @@ export function formatEncounterChoices(
 
   lines.push(responseLine(''));
   lines.push(hintLine(msg('Type "interact <number>" to choose.')));
+
+  return lines;
+}
+
+// ── Threshold Room ──────────────────────────────────────────────────────────
+
+/**
+ * Format the Threshold room entry — sparse, literary, with deliberate whitespace.
+ * The Threshold is the only room type with this rendering style.
+ */
+export function formatThresholdEntry(
+  description: string,
+  choices: EncounterChoiceClient[],
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+
+  // Entry prose — sparse, indented, short lines
+  lines.push(responseLine(''));
+  lines.push(systemLine(`[${msg('THRESHOLD')}]`));
+  lines.push(responseLine(''));
+
+  // Split description into sentences for sparse rendering
+  const sentences = description.split(/(?<=[.!?])\s+/).filter(Boolean);
+  for (const sentence of sentences) {
+    lines.push(responseLine(`    ${sentence}`));
+  }
+  lines.push(responseLine(''));
+
+  // Toll choices — minimal formatting
+  lines.push(responseLine(`    ${msg('The Threshold offers three tolls.')}:`));
+  lines.push(responseLine(''));
+
+  for (let i = 0; i < choices.length; i++) {
+    const choice = choices[i];
+    lines.push(systemLine(`    [${i + 1}] ${localized(choice, 'label')}`));
+    lines.push(responseLine(`        ${localized(choice, 'description')}`));
+    if (i < choices.length - 1) lines.push(responseLine(''));
+  }
+
+  lines.push(responseLine(''));
+  lines.push(hintLine(msg('Type "interact <number>" to choose.')));
+  lines.push(errorLine(msg('This choice cannot be undone.')));
 
   return lines;
 }

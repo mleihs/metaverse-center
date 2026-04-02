@@ -21,6 +21,7 @@ export const ARCHETYPE_ENTROPY = 'The Entropy';
 export const ARCHETYPE_MOTHER = 'The Devouring Mother';
 export const ARCHETYPE_PROMETHEUS = 'The Prometheus';
 export const ARCHETYPE_DELUGE = 'The Deluge';
+export const ARCHETYPE_AWAKENING = 'The Awakening';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ export type DungeonStatus =
 export type DungeonPhase =
   | 'exploring'
   | 'encounter'
+  | 'threshold'
   | 'combat_planning'
   | 'combat_resolving'
   | 'combat_outcome'
@@ -184,7 +186,14 @@ export interface DelugeArchetypeState {
   recession_cycle: number;
 }
 
-/** Archetype-specific state. Shadow, Tower, Entropy, Mother, Prometheus, and Deluge have typed shapes; others are empty objects. */
+/** Awakening archetype: awareness gauge (0→100, lucid vertigo, consciousness drift). */
+export interface AwakeningArchetypeState {
+  awareness: number;
+  max_awareness: number;
+  rooms_entered: number;
+}
+
+/** Archetype-specific state. Shadow, Tower, Entropy, Mother, Prometheus, Deluge, and Awakening have typed shapes; others are empty objects. */
 export type ArchetypeState =
   | ShadowArchetypeState
   | TowerArchetypeState
@@ -192,6 +201,7 @@ export type ArchetypeState =
   | MotherArchetypeState
   | PrometheusArchetypeState
   | DelugeArchetypeState
+  | AwakeningArchetypeState
   | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
@@ -222,6 +232,11 @@ export function isPrometheusState(state: ArchetypeState): state is PrometheusArc
 /** Type guard: narrows ArchetypeState to DelugeArchetypeState. */
 export function isDelugeState(state: ArchetypeState): state is DelugeArchetypeState {
   return 'water_level' in state && typeof state.water_level === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to AwakeningArchetypeState. */
+export function isAwakeningState(state: ArchetypeState): state is AwakeningArchetypeState {
+  return 'awareness' in state && typeof state.awareness === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────
@@ -480,6 +495,7 @@ export interface MoveToRoomResponse {
   description_de?: string;
   choices?: EncounterChoiceClient[];
   rest?: boolean;
+  threshold?: boolean;
   treasure?: boolean;
   auto_loot?: boolean;
   loot?: LootItem[];

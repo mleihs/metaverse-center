@@ -438,6 +438,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | RD23 | **Map Layout Fixes** | ✅ IMPL | Anti-Clipping (`edgePad = max(padding, nodeRadius+25)`), sequentielle Tiefenkompression (Layer-Indizes statt roher Tiefenwerte), dynamisches vGap (Skalierung bei >3:1 Höhen-Breiten-Verhältnis, Floor bei `nodeRadius*2+10`). Cleared-Badge nun auch auf aktuellem Raum sichtbar. Config: vGap=100, hGap=76, padding=36. |
 | RD24 | **Generator: No-Consecutive-Rest** | ✅ IMPL | Ruheräume mit Ruheraum-Eltern werden durch Kampfräume ersetzt. Mid-Depth-Rest-Garantie läuft NACH dem Constraint, bevorzugt Räume ohne Ruheraum-Eltern. |
 | RD25 | **Terminal UX Fixes** | ✅ IMPL | Auto-Focus bei Tab-Navigation (connectedCallback mit hasUpdated Guard). Encounter-Hint-Fix: alle Encounter-Typen zeigen einheitlich "interact <number>". |
+| RD26 | **Threshold Room Type** | ✅ IMPL | Liminaler Toll-Raum vor jedem Boss. 3 unwiderrufliche Choices: Blood Toll (Condition-Schaden), Memory Toll (stille Modifier-Entfernung), Defiance (Boss-Schwierigkeitserhöhung). 8 archetypspezifische Entry-Texte. Dedizierter Handler (`dungeon_threshold.py`), kein Encounter-Pipeline-Durchlauf. Frontend: `mapThreshold` Icon (doorway, lorc, game-icons.net), Amber-Farbe, `formatThresholdEntry` Formatter. `DungeonPhase` um "threshold" erweitert. |
 
 ---
 

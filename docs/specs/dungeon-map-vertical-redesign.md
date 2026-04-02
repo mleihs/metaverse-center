@@ -146,6 +146,7 @@ Each node is an SVG `<g>` group containing:
 | `treasure` | Open treasure chest | `open-treasure-chest` | Unmistakable loot signal |
 | `rest` | Campfire | `campfire` | Already in icons.ts as `campfire` |
 | `boss` | Crowned skull | `overlord-helm` or `crowned-skull` | Authority + danger |
+| `threshold` | Doorway | `doorway` (lorc) | Liminal toll room before boss |
 | `entrance` | Gate/archway | `castle-gate` or `dungeon-gate` | Entry point |
 | `exit` | Open door with light | `exit-door` or `open-gate` | Escape/completion |
 
