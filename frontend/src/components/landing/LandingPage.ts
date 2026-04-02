@@ -20,6 +20,7 @@ import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
+import './DungeonShowcase.js';
 import './LandingAgentShowcase.js';
 
 interface PlatformStats {
@@ -1681,6 +1682,7 @@ export class VelgLandingPage extends LitElement {
         ${this._renderFeatures()}
         ${this._worlds.length > 0 ? this._renderWorldsPreview() : ''}
         <velg-landing-agent-showcase></velg-landing-agent-showcase>
+        <velg-dungeon-showcase></velg-dungeon-showcase>
         ${this._renderLiveData()}
         ${this._renderHowItWorks()}
         ${this._renderCtaFooter()}

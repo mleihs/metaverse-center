@@ -871,6 +871,15 @@ The deepest floors are already flooded. Each turn, water rises 1 floor. The part
 ### 3.5 THE OVERTHROW (authority_fracture) — "Der Spiegelpalast"
 
 > *"Power changes hands. The old order doesn't die — it metamorphoses."*
+> *"Macht wechselt die Hände. Die alte Ordnung stirbt nicht — sie verwandelt sich."*
+
+**Literary Research:** See `docs/research/overthrow-literary-research.md` (comprehensive, 17 authors + 6 philosophical sources + 6 mythological foundations)
+
+**Literary DNA:** George Orwell (*1984*, *Animal Farm*), Yevgeny Zamyatin (*We*), Fyodor Dostoevsky (*Demons*, *The Grand Inquisitor*), Arthur Koestler (*Darkness at Noon*), Niccolò Machiavelli (*The Prince*), Hannah Arendt (*Origins of Totalitarianism*, *On Revolution*), William Shakespeare (*Julius Caesar*, *Richard III*, *Macbeth*), Bertolt Brecht (*Arturo Ui*, *Threepenny Opera*), Albert Camus (*The Rebel*), Mikhail Bulgakov (*The Master and Margarita*), Milan Kundera (*Book of Laughter and Forgetting*). Philosophical: Foucault (Panopticon, power as network), Gramsci (cultural hegemony), La Boétie (voluntary servitude), Schmitt (friend/enemy, state of exception), Debord (the spectacle). Deep cuts: Canetti (*Crowds and Power*), Havel (*Power of the Powerless*), Kadare (*Palace of Dreams*), Kiš (*Tomb for Boris Davidovich*), Ngũgĩ wa Thiong'o (*Wizard of the Crow*), Bolaño (*By Night in Chile*). Mythological: Antigone, Tower of Babel, Prometheus-as-rebel, Milton's Satan, Spartacus, French Revolution.
+
+**Tone:** NOT horror, NOT dread, NOT resignation, NOT dependence, NOT creation-vertigo, NOT elemental urgency, NOT consciousness. **Political vertigo** — the intoxication and paranoia of power in flux. The mirror palace reflects distorted images of who you serve and why. Every NPC is a political actor. Every room is a negotiation.
+
+**Emotional gradient:** Court Order (Machiavelli/Orwell clinical compliance) → Whispers (Dostoevsky/Zamyatin diary-voice, Havel's greengrocer) → Schism (Shakespeare's rhetoric, Brecht's Verfremdung) → Revolution (Koestler's interrogation, Camus's rebel-becoming-tyrant) → New Regime (Arendt's banality, Kundera's forgetting, Orwell's "All animals are equal..."). Boss: all registers converge.
 
 #### Core Mechanic: FACTION NAVIGATION
 
@@ -878,7 +887,7 @@ Each floor has 2-3 competing factions. The party must choose which to ally with.
 
 #### Encounter Palette: 60% non-combat (social encounters, negotiations, intrigue). 20% combat (faction enforcers). 20% puzzle (political riddles, document analysis).
 
-#### Boss: "The Pretender" — A distorted version of the simulation's owner/leader. Phases: 1) Debate (Propagandist duel), 2) Exposure (Spy reveals truth), 3) Overthrow (combat or persuasion). The boss adapts to whichever approach the party uses most.
+#### Boss: "The Pretender" — A distorted version of the simulation's owner/leader. Phases: 1) Debate (Propagandist duel), 2) Exposure (Spy reveals truth), 3) Overthrow (combat or persuasion). The boss adapts to whichever approach the party uses most. Milton's Satan arc: Phase 1 = magnificent rhetoric, Phase 2 = truth exposed, Phase 3 = degraded form. Non-combat victory possible via La Boétie's Colossus: withdraw enough faction support and the Pretender collapses "of his own weight."
 
 #### Loot: **Authority Fragment** — upgrades one zone's security_level by 1 tier for 10 heartbeat ticks
 

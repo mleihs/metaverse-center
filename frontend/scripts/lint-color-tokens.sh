@@ -54,7 +54,10 @@ RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   grep -v '/MapBattleFeed\.ts:' | \
   grep -v '/SimulationSwitcher\.ts:' | \
   grep -v '/MapLayerToggle\.ts:' | \
-  grep -v '/AdminInstagramTab\.ts:' || true)
+  grep -v '/AdminInstagramTab\.ts:' | \
+  grep -v '/DungeonShowcase\.ts:' | \
+  grep -v '/dungeon-showcase-data\.ts:' | \
+  grep -v '/dungeon-showcase-styles\.ts:' || true)
 
 if [ -n "$RESULT" ]; then
   echo "ERROR: Raw hex colors found in components (use semantic tokens):"

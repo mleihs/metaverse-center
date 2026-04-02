@@ -215,6 +215,7 @@ These files are exempt from the token-only rule:
 | `map-data.ts` / `map-three-render.ts` | Three.js/WebGL API calls |
 | `HowToPlayView.ts` | ECharts config (requires raw hex) |
 | `HowToPlayWarRoom.ts` | ECharts config — simulation hex colors, radar/heatmap/bar charts |
+| `DungeonShowcase.ts` / `dungeon-showcase-data.ts` / `dungeon-showcase-styles.ts` | Per-archetype signature colors + atmospheric CSS gradients (data-driven) |
 | `CartographerMap.ts` | Always-dark `:host` theme override |
 | `DungeonTerminalView.ts` | Forces platform-dark tokens on `:host` — dungeon HUD must always be dark regardless of simulation theme (brutalist/light themes override `--color-surface` to `#fff`, breaking amber-on-dark contrast in Header, Map, Party Panel, Quick Actions) |
 | `VelgForgeTable.ts` | Card preview theme blocks |
