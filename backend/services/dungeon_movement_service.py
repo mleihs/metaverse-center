@@ -29,6 +29,7 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
 from backend.services.combat.stress_system import REST_STRESS_HEAL, calculate_ambient_stress
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 from backend.services.dungeon.dungeon_banter import select_banter
 from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id, select_encounter
@@ -215,6 +216,25 @@ class DungeonMovementService:
         if target_room.depth > current_room.depth:
             banter_trigger = "depth_change"
 
+        # Collect debris deposited by the current (Deluge: every 2nd room)
+        debris_item = instance.archetype_state.pop("_last_debris", None)
+        if debris_item:
+            effect_type = debris_item.get("effect_type")
+            params = debris_item.get("effect_params", {})
+            # Auto-apply immediate stress heal to all alive agents
+            if effect_type == "stress_heal" and params.get("when") == "immediate":
+                heal = params.get("stress_heal", 0)
+                for agent in instance.party:
+                    if can_act(agent.condition):
+                        agent.stress = max(0, agent.stress - heal)
+            # Auto-apply dungeon buff — accumulate aptitude bonuses for skill checks
+            elif effect_type == "dungeon_buff":
+                aptitude = params.get("aptitude", "")
+                bonus = params.get("check_bonus", 0)
+                if aptitude and bonus:
+                    debris_bonuses = instance.archetype_state.setdefault("_debris_check_bonuses", {})
+                    debris_bonuses[aptitude] = debris_bonuses.get(aptitude, 0) + bonus
+
         # Apply ambient stress (archetype may multiply, e.g. Tower structural failure)
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
         ambient = int(ambient * strategy.get_ambient_stress_multiplier(instance))
@@ -281,6 +301,7 @@ class DungeonMovementService:
             "banter": banter_text,
             "anchor_texts": anchor_texts if anchor_texts else None,
             "barometer_text": baro_text,
+            "debris": debris_item,
         }
 
         if target_room.room_type in ("combat", "elite"):
@@ -366,10 +387,14 @@ class DungeonMovementService:
         if choice.check_aptitude and action.agent_id:
             agent = next((a for a in instance.party if a.agent_id == action.agent_id), None)
             if agent:
+                # Apply debris check bonuses from The Current Carries
+                debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
+                    choice.check_aptitude, 0,
+                )
                 ctx = SkillCheckContext(
                     aptitude=choice.check_aptitude,
                     aptitude_level=agent.aptitudes.get(choice.check_aptitude, 3),
-                    difficulty_modifier=choice.check_difficulty,
+                    difficulty_modifier=choice.check_difficulty - debris_bonus,
                     personality=agent.personality,
                     condition=agent.condition,
                     visibility=instance.archetype_state.get("visibility", 3),
@@ -506,8 +531,6 @@ class DungeonMovementService:
         if not can_act(agent.condition):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
 
-        from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
-
         mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
         guardian_level = agent.aptitudes.get("guardian", 0)
         if guardian_level < mc.get("seal_min_aptitude", 40):
@@ -541,6 +564,117 @@ class DungeonMovementService:
             "stress_cost": stress_cost,
             "agent_stress": agent.stress,
             "cooldown_until_room": rooms_entered + cooldown,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Salvage (Deluge) ────────────────────────────────────────────────────
+
+    @classmethod
+    async def salvage(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+    ) -> dict:
+        """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
+        async with _store.lock(run_id):
+            return await cls._salvage_locked(admin_supabase, run_id, agent_id, room_index, user_id=user_id)
+
+    @classmethod
+    async def _salvage_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.archetype != "The Deluge":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Salvage only available in Deluge dungeons")
+
+        if instance.phase not in ("exploring", "room_clear", "exit"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot salvage in phase: {instance.phase}")
+
+        # Validate agent
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+
+        # Validate room
+        if room_index < 0 or room_index >= len(instance.rooms):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid room index")
+        target_room = instance.rooms[room_index]
+        if not target_room.revealed or not target_room.cleared:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room must be revealed and cleared")
+        if room_index == instance.current_room:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot salvage current room")
+
+        # Check room is submerged (depth-based flooding)
+        water_level = instance.archetype_state.get("water_level", 0)
+        room_depth = target_room.depth
+        submerged = (
+            (water_level >= 75)
+            or (water_level >= 50 and room_depth >= 2)
+            or (water_level >= 25 and room_depth >= 4)
+        )
+        if not submerged:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room is not submerged — water level too low")
+
+        # Prevent double-diving
+        salvaged = instance.archetype_state.get("_salvaged_rooms", [])
+        if room_index in salvaged:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room already salvaged")
+
+        # Run aptitude check
+        mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
+        check_aptitude = mc.get("submerged_loot_check_aptitude", "guardian")
+        check_bonus = mc.get("submerged_loot_check_bonus", 10)
+        aptitude_level = agent.aptitudes.get(check_aptitude, 0)
+
+        # Apply debris check bonuses from The Current Carries
+        debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
+            check_aptitude, 0,
+        )
+        ctx = SkillCheckContext(
+            aptitude=check_aptitude,
+            aptitude_level=aptitude_level,
+            difficulty_modifier=-check_bonus - debris_bonus,
+            condition=agent.condition,
+        )
+        outcome = resolve_skill_check(ctx)
+
+        # Mark room as salvaged (regardless of outcome — no retry)
+        salvaged.append(room_index)
+        instance.archetype_state["_salvaged_rooms"] = salvaged
+
+        if outcome.result in ("success", "partial"):
+            loot = roll_loot(
+                tier=1,
+                difficulty=instance.difficulty,
+                depth=target_room.depth,
+                archetype_state=instance.archetype_state,
+                archetype=instance.archetype,
+            )
+            # Add loot to instance pending loot
+            for item in loot:
+                instance.loot.append(item)
+
+            await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+            return {
+                "success": True,
+                "loot": [item.model_dump(mode="json") for item in loot],
+                "check_result": outcome.result,
+                "check_value": outcome.check_value,
+                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+            }
+
+        # Failure: +5 water
+        instance.archetype_state["water_level"] = min(
+            mc["max_water_level"],
+            water_level + 5,
+        )
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+        return {
+            "success": False,
+            "water_penalty": 5,
+            "check_result": outcome.result,
+            "check_value": outcome.check_value,
             "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
         }
 

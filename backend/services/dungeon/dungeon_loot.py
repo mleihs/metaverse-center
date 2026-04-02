@@ -13,6 +13,7 @@ from __future__ import annotations
 import random
 
 from backend.models.resonance_dungeon import LootItem
+from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 
 # ── Tier 1: Minor Loot ──────────────────────────────────────────────────────
 
@@ -1239,6 +1240,84 @@ DELUGE_LOOT_TIER_1: list[LootItem] = [
     ),
 ]
 
+# ── Deluge: Debris Pool (Tier 0, auto-apply, deposited by the current) ──────
+
+DELUGE_DEBRIS_POOL: list[LootItem] = [
+    LootItem(
+        id="debris_driftwood_splint",
+        name_en="Driftwood Splint",
+        name_de="Treibholzschiene",
+        tier=0,
+        effect_type="stress_heal",
+        effect_params={"stress_heal": 15, "when": "immediate"},
+        description_en="Smoothed by transit. It fits the palm like it was carved for it. The wood remembers a surface the party has not seen in hours.",
+        description_de="Glattgeschliffen durch die Strömung. Es passt in die Handfläche, als wäre es dafür geschnitzt. Das Holz erinnert sich an eine Oberfläche, die die Gruppe seit Stunden nicht gesehen hat.",
+        drop_weight=25,
+    ),
+    LootItem(
+        id="debris_waterlogged_charm",
+        name_en="Waterlogged Charm",
+        name_de="Durchnässter Talisman",
+        tier=0,
+        effect_type="dungeon_buff",
+        effect_params={"check_bonus": 3, "aptitude": "guardian", "scope": "this_dungeon"},
+        description_en="A ward against pressure, still functional. The inscription is illegible but the intent persists. Guardian checks +3%.",
+        description_de="Ein Schutz gegen Druck, noch funktionsfähig. Die Inschrift ist unleserlich, aber die Absicht besteht fort. Wächter-Proben +3%.",
+        drop_weight=20,
+    ),
+    LootItem(
+        id="debris_silt_crusted_lens",
+        name_en="Silt-Crusted Lens",
+        name_de="Schlickverkrustete Linse",
+        tier=0,
+        effect_type="dungeon_buff",
+        effect_params={"check_bonus": 3, "aptitude": "spy", "scope": "this_dungeon"},
+        description_en="Clears when wiped. Through it, the water's movements become legible \u2013 not transparent, but grammatical. Spy checks +3%.",
+        description_de="Wird klar, wenn man sie abwischt. Durch sie werden die Bewegungen des Wassers lesbar \u2013 nicht durchsichtig, aber grammatisch. Spion-Proben +3%.",
+        drop_weight=18,
+    ),
+    LootItem(
+        id="debris_brackish_tonic",
+        name_en="Brackish Tonic",
+        name_de="Brackwasser-Tonikum",
+        tier=0,
+        effect_type="stress_heal",
+        effect_params={"stress_heal": 20, "when": "immediate"},
+        description_en="Tastes of salt and iron and a depth the tongue cannot name. The calm it brings is not comfort \u2013 it is resignation's quieter cousin.",
+        description_de="Schmeckt nach Salz und Eisen und einer Tiefe, die die Zunge nicht nennen kann. Die Ruhe, die es bringt, ist kein Trost \u2013 sie ist die leisere Verwandte der Resignation.",
+        drop_weight=22,
+    ),
+    LootItem(
+        id="debris_flotsam_shard",
+        name_en="Flotsam Shard",
+        name_de="Treibgutsplitter",
+        tier=0,
+        effect_type="dungeon_buff",
+        effect_params={"check_bonus": 3, "aptitude": "saboteur", "scope": "this_dungeon"},
+        description_en="From something that was once a tool. The edge still holds. Saboteur checks +3%.",
+        description_de="Von etwas, das einmal ein Werkzeug war. Die Kante hält noch. Saboteur-Proben +3%.",
+        drop_weight=18,
+    ),
+    LootItem(
+        id="debris_current_worn_stone",
+        name_en="Current-Worn Stone",
+        name_de="Strömungsstein",
+        tier=0,
+        effect_type="stress_heal",
+        effect_params={"stress_heal": 10, "when": "immediate"},
+        description_en="Perfectly round. The water took its time. Holding it is like holding a completed argument \u2013 there is nothing left to remove.",
+        description_de="Perfekt rund. Das Wasser hat sich Zeit gelassen. Ihn zu halten ist wie ein vollendetes Argument \u2013 es gibt nichts mehr zu entfernen.",
+        drop_weight=25,
+    ),
+]
+
+
+def roll_debris() -> LootItem:
+    """Roll a random debris item from the Deluge pool (auto-apply, tier 0)."""
+    weights = [item.drop_weight for item in DELUGE_DEBRIS_POOL]
+    return random.choices(DELUGE_DEBRIS_POOL, weights=weights, k=1)[0]
+
+
 DELUGE_LOOT_TIER_2: list[LootItem] = [
     LootItem(
         id="deluge_pressure_ward",
@@ -1489,5 +1568,24 @@ def roll_loot(
             if tier1_table:
                 tier1_weights = [item.drop_weight for item in tier1_table]
                 selected = random.choices(tier1_table, weights=tier1_weights, k=1)
+    elif archetype == "The Deluge":
+        water_level = (archetype_state or {}).get("water_level", 0)
+        mc = ARCHETYPE_CONFIGS.get("The Deluge", {}).get("mechanic_config", {})
+        threshold = mc.get("low_water_loot_bonus_threshold", 25)
+        bonus_chance = mc.get("low_water_loot_bonus_chance", 0.50)
+        # Low-water bonus: water ≤ threshold → bonus_chance to upgrade T1→T2
+        # Rewards water management discipline — keep levels low, find richer salvage
+        if water_level <= threshold and tier == 1 and random.random() < bonus_chance:
+            tier2_table = loot_tables.get(2, [])
+            if tier2_table:
+                tier2_weights = [item.drop_weight for item in tier2_table]
+                selected = random.choices(tier2_table, weights=tier2_weights, k=1)
+        # Depth bonus: deep rooms (depth ≤ 2) always roll T2 (inverted dungeon —
+        # lower depth numbers are physically deeper, flood first, contain better loot)
+        elif depth <= 2 and tier == 1:
+            tier2_table = loot_tables.get(2, [])
+            if tier2_table:
+                tier2_weights = [item.drop_weight for item in tier2_table]
+                selected = random.choices(tier2_table, weights=tier2_weights, k=1)
 
     return selected

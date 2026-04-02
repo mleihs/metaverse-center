@@ -41,6 +41,7 @@ from backend.models.resonance_dungeon import (
     DungeonRunResponse,
     LootAssignment,
     RestRequest,
+    SalvageRequest,
     ScoutRequest,
 )
 from backend.services.audit_service import AuditService
@@ -209,6 +210,23 @@ async def seal_breach(
 ) -> dict:
     """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
     result = await DungeonEngineService.seal_breach(admin, run_id, body.agent_id, user_id=user.id)
+    return {"success": True, "data": result}
+
+
+# ── Salvage (Deluge) ───────────────────────────────────────────────────────
+
+
+@router.post("/runs/{run_id}/salvage", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def salvage(
+    request: Request,
+    run_id: UUID,
+    body: SalvageRequest,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
+    result = await DungeonEngineService.salvage(admin, run_id, body.agent_id, body.room_index, user_id=user.id)
     return {"success": True, "data": result}
 
 

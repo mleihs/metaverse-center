@@ -484,6 +484,8 @@ export interface MoveToRoomResponse {
   auto_loot?: boolean;
   loot?: LootItem[];
   exit_available?: boolean;
+  /** Debris item deposited by the current (Deluge, every 2nd room). */
+  debris?: LootItem;
   state: DungeonClientState;
 }
 
@@ -560,6 +562,25 @@ export interface SkillCheckDetail {
   roll: number;
   result: SkillCheckResult;
   breakdown: Record<string, number>;
+}
+
+/** POST /dungeons/runs/{id}/seal — seal breach response (Deluge only). */
+export interface SealBreachResponse {
+  water_level: number;
+  stress_cost: number;
+  agent_stress: number;
+  cooldown_until_room: number;
+  state: DungeonClientState;
+}
+
+/** POST /dungeons/runs/{id}/salvage — salvage submerged loot response (Deluge only). */
+export interface SalvageResponse {
+  success: boolean;
+  loot?: LootItem[];
+  water_penalty?: number;
+  check_result: string;
+  check_value: number;
+  state: DungeonClientState;
 }
 
 /** POST /dungeons/runs/{id}/scout — scout response. */

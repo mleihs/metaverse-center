@@ -25,7 +25,9 @@ import type {
   MoveToRoomResponse,
   RestResponse,
   RetreatResponse,
+  SalvageResponse,
   ScoutResponse,
+  SealBreachResponse,
 } from '../../types/dungeon.js';
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
@@ -77,6 +79,23 @@ export class DungeonApiService extends BaseApiService {
   /** Spy: reveal adjacent rooms and restore visibility. */
   scout(runId: string, agentId: string): Promise<ApiResponse<ScoutResponse>> {
     return this.post(`/dungeons/runs/${runId}/scout`, { agent_id: agentId });
+  }
+
+  /** Guardian: Seal Breach — reduce water level, gain stress (Deluge only). */
+  seal(runId: string, agentId: string): Promise<ApiResponse<SealBreachResponse>> {
+    return this.post(`/dungeons/runs/${runId}/seal`, { agent_id: agentId });
+  }
+
+  /** Salvage submerged loot — Guardian/Spy aptitude check (Deluge only). */
+  salvage(
+    runId: string,
+    agentId: string,
+    roomIndex: number,
+  ): Promise<ApiResponse<SalvageResponse>> {
+    return this.post(`/dungeons/runs/${runId}/salvage`, {
+      agent_id: agentId,
+      room_index: roomIndex,
+    });
   }
 
   /** Rest at a rest site. */

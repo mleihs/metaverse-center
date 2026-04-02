@@ -286,6 +286,13 @@ class ScoutRequest(BaseModel):
     agent_id: UUID
 
 
+class SalvageRequest(BaseModel):
+    """Salvage submerged loot from a cleared room (Deluge only)."""
+
+    agent_id: UUID
+    room_index: int = Field(..., ge=0)
+
+
 class RestRequest(BaseModel):
     """Rest at a rest site."""
 

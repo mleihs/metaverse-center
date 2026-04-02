@@ -12,16 +12,18 @@ import { msg } from '@lit/localize';
 
 import { appState } from '../services/AppStateManager.js';
 import { dungeonApi } from '../services/api/DungeonApiService.js';
+import { dungeonAudio } from '../services/DungeonAudioService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import type { CombatSubmission, DungeonRunCreate } from '../types/dungeon.js';
+import type { CombatEvent, CombatSubmission, DungeonRunCreate } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
   AUTO_APPLY_EFFECTS,
   formatAgentPicker,
   formatArchetypeBriefing,
   formatAvailableDungeons,
+  formatDebrisFound,
   formatCombatPlanning,
   formatCombatResolution,
   formatCombatStalemate,
@@ -38,7 +40,9 @@ import {
   formatRetreatResult,
   formatRoomEntry,
   formatRoundTransition,
+  formatSalvageResult,
   formatScoutResult,
+  formatSealResult,
   formatSkillCheckResult,
   getArchetypeDisplayName,
 } from './dungeon-formatters.js';
@@ -83,6 +87,9 @@ const DUNGEON_ONLY_VERBS = new Set([
   'assign',
   'confirm',
   'protocol',
+  'seal',
+  'salvage',
+  'dive',
 ]);
 
 /**
@@ -105,7 +112,13 @@ const DUNGEON_VERB_TIER: Record<string, number> = {
   submit: 2,
   assign: 2,
   confirm: 2,
+  seal: 2,
+  salvage: 2,
+  dive: 2,
 };
+
+/** Verbs that don't trigger their own dramatic SFX — get command-confirm instead. */
+const QUIET_VERBS = new Set(['map', 'look', 'status', 'attack', 'assign', 'protocol', 'confirm']);
 
 // ── Main Dispatcher ──────────────────────────────────────────────────────────
 
@@ -160,6 +173,25 @@ export async function dispatchDungeonCommand(
   if (!terminalState.isDungeonMode.value) return null;
   if (!DUNGEON_OVERRIDE_VERBS.has(verb) && !DUNGEON_ONLY_VERBS.has(verb)) return null;
 
+  // Dispatch command and play confirm/error SFX for "quiet" verbs.
+  // Commands with dramatic SFX (move, submit, rest, scout, etc.) play their own sounds.
+  const result = await _dispatchVerb(verb, ctx);
+  if (result !== null && result.length > 0) {
+    const hasError = result.some((l) => l.type === 'error');
+    if (hasError) {
+      dungeonAudio.play('command-error');
+    } else if (QUIET_VERBS.has(verb)) {
+      dungeonAudio.play('command-confirm');
+    }
+  }
+  return result;
+}
+
+/** Internal verb dispatch — extracted so the main dispatcher can inspect the result for SFX. */
+async function _dispatchVerb(
+  verb: string,
+  ctx: CommandContext,
+): Promise<TerminalLine[] | null> {
   switch (verb) {
     case 'move':
     case 'go':
@@ -188,6 +220,11 @@ export async function dispatchDungeonCommand(
       return handleDungeonConfirm();
     case 'protocol':
       return handleDungeonProtocol();
+    case 'seal':
+      return handleDungeonSeal(ctx);
+    case 'salvage':
+    case 'dive':
+      return handleDungeonSalvage(ctx);
     default:
       return null;
   }
@@ -316,6 +353,7 @@ export async function startDungeonRun(
     dungeonState.applyState(state);
     terminalState.clearOutput();
     terminalState.initializeDungeon(String(run.id), getArchetypeDisplayName(state.archetype));
+    dungeonAudio.play('room-enter');
 
     const atmosphereText = localized(entrance_text, 'text');
 
@@ -381,6 +419,12 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     // Room entry formatting
     const room = result.state.rooms.find((r) => r.index === result.state.current_room);
     if (room) {
+      // SFX: boss reveal vs. normal room enter
+      if (room.room_type === 'boss') {
+        dungeonAudio.play('boss-reveal');
+      } else {
+        dungeonAudio.play('room-enter');
+      }
       lines.push(
         ...formatRoomEntry(
           room,
@@ -392,8 +436,14 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       );
     }
 
+    // Debris deposited by the current (Deluge)
+    if (result.debris) {
+      lines.push(...formatDebrisFound(result.debris));
+    }
+
     // Combat start
     if (result.combat && result.state.combat) {
+      dungeonAudio.play('combat-start');
       lines.push(...formatCombatStart(result.state.combat));
       lines.push(...formatCombatPlanning(result.state.party));
     }
@@ -414,6 +464,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
     // Treasure (auto-loot, no choices)
     if (result.treasure && result.auto_loot && result.loot && result.loot.length > 0) {
+      dungeonAudio.play('loot-found');
       lines.push(...formatLootDrop(result.loot));
     }
 
@@ -424,9 +475,11 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
     // Check for completion/wipe
     if (result.state.phase === 'completed') {
+      dungeonAudio.play('victory');
       lines.push(...formatDungeonComplete(result.state, result.loot ?? []));
       _exitDungeon();
     } else if (result.state.phase === 'wiped') {
+      dungeonAudio.play('defeat');
       lines.push(...formatPartyWipe());
       _exitDungeon();
     }
@@ -522,6 +575,7 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
     }
 
     dungeonState.applyState(resp.data.state);
+    dungeonAudio.play('map-node-reveal');
     const archetype = dungeonState.clientState.value?.archetype ?? '';
     return formatScoutResult(
       agent.agent_name,
@@ -566,10 +620,12 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
     }
 
     dungeonState.applyState(resp.data.state);
+    if (resp.data.healed) dungeonAudio.play('healing');
     const lines = formatRestResult(resp.data.healed, resp.data.ambushed);
 
     // If ambushed, combat starts
     if (resp.data.ambushed && resp.data.state.combat) {
+      dungeonAudio.play('combat-start');
       lines.push(...formatCombatStart(resp.data.state.combat));
       lines.push(...formatCombatPlanning(resp.data.state.party));
     }
@@ -813,15 +869,18 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
 
     // Boss deployment → combat transition
     if (resp.data.combat && resp.data.state.phase === 'combat_planning' && resp.data.state.combat) {
+      dungeonAudio.play('combat-start');
       lines.push(...formatCombatStart(resp.data.state.combat));
       lines.push(...formatCombatPlanning(resp.data.state.party));
     }
 
     // Check for completion/wipe after encounter
     if (resp.data.state.phase === 'completed') {
+      dungeonAudio.play('victory');
       lines.push(...formatDungeonComplete(resp.data.state, []));
       _exitDungeon();
     } else if (resp.data.state.phase === 'wiped') {
+      dungeonAudio.play('defeat');
       lines.push(...formatPartyWipe());
       _exitDungeon();
     }
@@ -953,18 +1012,23 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
     // Round resolved
     if (resp.data.round_result) {
       const partyNames = dungeonState.party.value.map((a) => a.agent_name);
+      // SFX: play dominant combat sound from round events
+      _playCombatRoundSfx(resp.data.round_result.events, new Set(partyNames));
       lines.push(...formatCombatResolution(resp.data.round_result, partyNames));
 
       // Victory → show loot
       if (resp.data.round_result.victory && resp.data.state.phase === 'room_clear') {
+        dungeonAudio.play('victory');
         lines.push(combatSystemLine(msg('VICTORY \u2014 ROOM CLEARED')));
         if (resp.data.loot && resp.data.loot.length > 0) {
+          dungeonAudio.play('loot-found');
           lines.push(...formatLootDrop(resp.data.loot));
         }
       }
 
       // Wipe
       if (resp.data.round_result.wipe) {
+        dungeonAudio.play('defeat');
         lines.push(...formatPartyWipe());
         if (resp.data.rpc_failed) {
           lines.push(
@@ -992,6 +1056,7 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Check for distribution phase (boss victory with distributable loot)
     if (resp.data.state.phase === 'distributing') {
+      dungeonAudio.play('loot-found');
       lines.push(
         ...formatLootDistribution(
           resp.data.state,
@@ -1004,6 +1069,7 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Check for completion (boss victory — auto-complete path)
     if (resp.data.state.phase === 'completed') {
+      dungeonAudio.play('victory');
       lines.push(...formatDungeonComplete(resp.data.state, resp.data.loot ?? []));
       _exitDungeon();
     }
@@ -1019,6 +1085,155 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 }
 
 // ── Private: Exit Dungeon ────────────────────────────────────────────────────
+
+// ── Command: seal (Deluge only) ─────────────────────────────────────────────
+
+async function handleDungeonSeal(ctx: CommandContext): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.archetype !== 'The Deluge') {
+    return [errorLine(msg('Seal Breach is only available in Deluge dungeons.'))];
+  }
+
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
+  if (party.length === 0) return [errorLine(msg('No agents available.'))];
+
+  let agent = party[0];
+  if (ctx.args.length > 0) {
+    const agentName = ctx.args.join(' ');
+    const names = party.map((a) => a.agent_name);
+    const matched = fuzzyName(agentName, names);
+    if (matched) {
+      agent = party.find((a) => a.agent_name === matched) ?? agent;
+    } else {
+      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
+    }
+  } else {
+    agent = party.reduce((best, a) =>
+      (a.aptitudes.guardian ?? 0) > (best.aptitudes.guardian ?? 0) ? a : best,
+    );
+  }
+
+  dungeonState.loading.value = true;
+  try {
+    const resp = await dungeonApi.seal(runId, agent.agent_id);
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Seal Breach failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+    return formatSealResult(
+      agent.agent_name,
+      resp.data.water_level,
+      resp.data.stress_cost,
+      resp.data.cooldown_until_room,
+    );
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonSeal' });
+    const message = err instanceof Error ? err.message : msg('Seal Breach failed.');
+    return [errorLine(message)];
+  } finally {
+    dungeonState.loading.value = false;
+  }
+}
+
+// ── Command: salvage / dive (Deluge only) ───────────────────────────────────
+
+async function handleDungeonSalvage(ctx: CommandContext): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.archetype !== 'The Deluge') {
+    return [errorLine(msg('Salvage is only available in Deluge dungeons.'))];
+  }
+
+  if (ctx.args.length === 0) {
+    return [
+      errorLine(msg('Specify a room to salvage. Usage: salvage <room_index>')),
+      hintLine(msg('Type "map" to see room indices.')),
+    ];
+  }
+
+  const roomIndex = parseInt(ctx.args[0], 10);
+  if (isNaN(roomIndex)) {
+    return [errorLine(msg('Invalid room number. Use "salvage <number>".'))];
+  }
+
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
+  if (party.length === 0) return [errorLine(msg('No agents available.'))];
+
+  // Auto-select best guardian agent (primary salvage aptitude)
+  const agent = party.reduce((best, a) =>
+    (a.aptitudes.guardian ?? 0) > (best.aptitudes.guardian ?? 0) ? a : best,
+  );
+
+  dungeonState.loading.value = true;
+  try {
+    const resp = await dungeonApi.salvage(runId, agent.agent_id, roomIndex);
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Salvage failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+    if (resp.data.success && resp.data.loot?.length) dungeonAudio.play('loot-found');
+    return formatSalvageResult(
+      agent.agent_name,
+      roomIndex,
+      resp.data.success,
+      resp.data.check_result,
+      resp.data.check_value,
+      resp.data.loot ?? [],
+      resp.data.water_penalty,
+    );
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonSalvage' });
+    const message = err instanceof Error ? err.message : msg('Salvage failed.');
+    return [errorLine(message)];
+  } finally {
+    dungeonState.loading.value = false;
+  }
+}
+
+// ── Audio Helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Play the dominant SFX for a combat round based on its events.
+ * Priority: critical-hit > attack-hit > damage-taken > healing.
+ * Only one SFX per round to avoid cacophony.
+ */
+function _playCombatRoundSfx(events: CombatEvent[], partyNames: Set<string>): void {
+  let hasPartyHit = false;
+  let hasCritical = false;
+  let hasDamageTaken = false;
+  let hasHealing = false;
+
+  for (const e of events) {
+    const isParty = partyNames.has(e.actor);
+    if (isParty && e.hit && e.damage > 0) {
+      hasPartyHit = true;
+      if (e.damage >= 3) hasCritical = true;
+    }
+    if (!isParty && e.hit && (e.damage > 0 || e.stress > 0)) {
+      hasDamageTaken = true;
+    }
+    if (e.stress < 0) hasHealing = true;
+  }
+
+  if (hasCritical) {
+    dungeonAudio.play('critical-hit');
+  } else if (hasPartyHit) {
+    dungeonAudio.play('attack-hit');
+  } else if (hasDamageTaken) {
+    dungeonAudio.play('damage-taken');
+  } else if (hasHealing) {
+    dungeonAudio.play('healing');
+  }
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
 function _exitDungeon(): void {
   terminalState.clearDungeon();

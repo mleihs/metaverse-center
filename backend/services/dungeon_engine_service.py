@@ -373,6 +373,13 @@ class DungeonEngineService:
         return await DungeonMovementService.seal_breach(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
+    async def salvage(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+    ) -> dict:
+        """Salvage submerged loot (Deluge only)."""
+        return await DungeonMovementService.salvage(admin_supabase, run_id, agent_id, room_index, user_id=user_id)
+
+    @classmethod
     async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
         """Rest at a rest site."""
         return await DungeonMovementService.rest(admin_supabase, run_id, agent_ids, user_id=user_id)

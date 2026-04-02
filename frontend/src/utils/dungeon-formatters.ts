@@ -29,6 +29,7 @@ import {
   ARCHETYPE_PROMETHEUS,
   ARCHETYPE_SHADOW,
   ARCHETYPE_TOWER,
+  isDelugeState,
   isMotherState,
   isShadowState,
   isTowerState,
@@ -43,6 +44,7 @@ import {
   combatMissLine,
   combatPlayerLine,
   combatSystemLine,
+  errorLine,
   hintLine,
   responseLine,
   systemLine,
@@ -323,6 +325,34 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     );
     lines.push(systemLine(''));
     lines.push(responseLine(msg('The warmth is genuine. The warmth is also the trap.')));
+  } else if (archetype === ARCHETYPE_DELUGE) {
+    lines.push(combatSystemLine(msg('DELUGE PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The water rises. Not fast. It has time.')));
+    lines.push(
+      responseLine(msg('What the flood takes, it keeps. What it spares, it marks.')),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      systemLine(`\u25C9 ${msg('Lower floors flood first. They also hold better salvage.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('The tide recedes \u2013 briefly \u2013 every 3 rooms.')}`),
+    );
+    lines.push(systemLine(`\u25C9 ${msg('Each recession is smaller than the last.')}`));
+    lines.push(
+      systemLine(`\u25C9 ${msg('Use SEAL (Guardian) to close the breaches.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('Use SALVAGE to dive cleared rooms for submerged loot.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('At water level 100: submersion. Total loss.')}`),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      responseLine(msg('The waterline does not negotiate. Read it, or join it.')),
+    );
   } else {
     // Shadow (default)
     lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
@@ -454,6 +484,12 @@ export function formatRoomEntry(
     const empty = Math.round((max_attachment - attachment) / 5);
     const bar = '\u2591'.repeat(empty) + '\u2588'.repeat(filled);
     lines.push(systemLine(`PARASITIC ATTACHMENT: ${bar} [${attachment}/${max_attachment}]`));
+  } else if (isDelugeState(archetypeState)) {
+    const { water_level, max_water_level } = archetypeState;
+    const filled = Math.round(water_level / 5);
+    const empty = Math.round((max_water_level - water_level) / 5);
+    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
+    lines.push(systemLine(`WATER LEVEL: ${bar} [${water_level}/${max_water_level}]`));
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
@@ -1355,6 +1391,76 @@ export function formatAgentPicker(
   lines.push(hintLine(msg('Select 2\u20134 agents: "dungeon <archetype> 1 2 3"')));
   lines.push(hintLine(msg('Auto-pick best party: "dungeon <archetype> auto"')));
 
+  return lines;
+}
+
+// ── Seal Breach Result (Deluge) ─────────────────────────────────────────────
+
+export function formatSealResult(
+  agentName: string,
+  waterLevel: number,
+  stressCost: number,
+  cooldownUntilRoom: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(combatSystemLine(msg('SEAL BREACH')));
+  lines.push(
+    responseLine(`${agentName} ${msg('seals the breach. The water relents \u2013 briefly.')}`),
+  );
+  lines.push(
+    systemLine(
+      `  \u2192 ${msg('Water level')}: ${waterLevel} | ${msg('Stress')}: +${stressCost}`,
+    ),
+  );
+  lines.push(hintLine(`${msg('Cooldown until room')} ${cooldownUntilRoom}.`));
+  return lines;
+}
+
+// ── Salvage Result (Deluge) ─────────────────────────────────────────────────
+
+export function formatSalvageResult(
+  agentName: string,
+  roomIndex: number,
+  success: boolean,
+  checkResult: string,
+  checkValue: number,
+  loot: LootItem[],
+  waterPenalty?: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(combatSystemLine(msg('SALVAGE DIVE')));
+  lines.push(
+    systemLine(`  ${msg('Room')} [${roomIndex}] | ${msg('Check')}: ${checkResult} (${checkValue})`),
+  );
+
+  if (success) {
+    lines.push(responseLine(`${agentName} ${msg('surfaces. The water yields something.')}`));
+    for (const item of loot) {
+      const name = localized(item, 'name') || item.name_en;
+      lines.push(systemLine(`  \u25C9 ${name} [T${item.tier}]`));
+    }
+  } else {
+    lines.push(
+      responseLine(`${agentName} ${msg('surfaces empty-handed. The water keeps what it took.')}`),
+    );
+    if (waterPenalty) {
+      lines.push(errorLine(`${msg('Water level')} +${waterPenalty}`));
+    }
+  }
+  return lines;
+}
+
+// ── Debris Found (Deluge — The Current Carries) ────────────────────────────
+
+export function formatDebrisFound(debris: LootItem): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  const name = localized(debris, 'name') || debris.name_en;
+  const desc = localized(debris, 'description') || debris.description_en;
+  lines.push(systemLine(''));
+  lines.push(systemLine(`\u2248 ${msg('THE CURRENT CARRIES')}: ${name}`));
+  if (desc) {
+    lines.push(responseLine(desc));
+  }
   return lines;
 }
 

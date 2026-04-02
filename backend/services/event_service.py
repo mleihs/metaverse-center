@@ -487,6 +487,46 @@ class EventService(BaseService):
             )
             crisis_events = _resp.data or []
             if crisis_events:
+                # Check for active elemental warding (Deluge T3 / Tower T3 loot)
+                # simulation_modifier effects with building_protection protect
+                # buildings from degradation for duration_ticks heartbeat ticks
+                protected_building_ids: set[str] = set()
+                try:
+                    _ward_resp = await (
+                        supabase.table("agent_dungeon_loot_effects")
+                        .select("id, effect_params, created_at")
+                        .eq("simulation_id", str(simulation_id))
+                        .eq("effect_type", "simulation_modifier")
+                        .eq("consumed", False)
+                        .execute()
+                    )
+                    warding_effects = _ward_resp.data or []
+                    heartbeat_interval = await PlatformConfigService.get(
+                        supabase, "heartbeat_interval", 300,
+                    )
+                    now = datetime.now(UTC)
+                    for ward in warding_effects:
+                        params = ward.get("effect_params", {})
+                        if not params.get("building_protection"):
+                            continue
+                        duration_ticks = params.get("duration_ticks", 10)
+                        created = datetime.fromisoformat(ward["created_at"])
+                        expires_at = created + timedelta(seconds=duration_ticks * heartbeat_interval)
+                        if now < expires_at:
+                            # Active warding — protect ALL buildings in simulation
+                            # (T3 loot is rare enough that blanket protection is balanced)
+                            protected_building_ids.add("__all__")
+                        else:
+                            # Expired — mark as consumed
+                            await (
+                                supabase.table("agent_dungeon_loot_effects")
+                                .update({"consumed": True})
+                                .eq("id", ward["id"])
+                                .execute()
+                            )
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.debug("Warding check unavailable", exc_info=True)
+
                 degradation = await PlatformConfigService.get(
                     supabase, "heartbeat_building_crisis_degradation", 0.10,
                 )
@@ -510,6 +550,8 @@ class EventService(BaseService):
                         )
                         buildings = _resp.data or []
                         for bldg in buildings:
+                            if "__all__" in protected_building_ids or bldg["id"] in protected_building_ids:
+                                continue  # Building protected by elemental warding
                             old_cond = float(bldg.get("building_condition") or 1.0)
                             new_cond = round(max(0.0, old_cond - degradation), 4)
                             if new_cond < old_cond:

@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 
 from backend.services.combat.condition_tracks import can_act
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
+from backend.services.dungeon.dungeon_loot import roll_debris
 
 if TYPE_CHECKING:
     from backend.models.resonance_dungeon import DungeonInstance
@@ -830,6 +831,12 @@ class DelugeStrategy(ArchetypeStrategy):
 
         # ── Room entry surge (depth-scaled) ──
         self._apply_room_entry_surge(instance)
+
+        # ── The Current Carries (debris every 2nd room) ──
+        rooms = state.get("rooms_entered", 0)
+        if rooms > 0 and rooms % 2 == 0:
+            debris = roll_debris()
+            state["_last_debris"] = debris.model_dump(mode="json")
 
         # ── Threshold check ──
         water = state.get("water_level", 0)
