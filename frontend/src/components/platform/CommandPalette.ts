@@ -277,6 +277,9 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       this._focusIndex = 0;
       this.updateComplete.then(() => this._input?.focus());
     }
+    if (changed.has('_focusIndex')) {
+      this.renderRoot.querySelector('.item--focused')?.scrollIntoView({ block: 'nearest' });
+    }
   }
 
   // ── Items ──
