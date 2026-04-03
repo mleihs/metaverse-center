@@ -6894,6 +6894,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "günstig — oder scheinen es zu sein. Der Vertreter nickt. "
                     "Das Bündnis wird aktenkundig. Akten können überarbeitet werden."
                 ),
+                partial_narrative_en=(
+                    "{agent} negotiates. The terms are accepted — but the "
+                    "representative adds a clause at the end, spoken too "
+                    "quickly to parse. Machiavelli's fox: the contract "
+                    "is signed. The footnote is not."
+                ),
+                partial_narrative_de=(
+                    "{agent} verhandelt. Die Bedingungen werden akzeptiert — aber "
+                    "der Vertreter fügt am Ende eine Klausel hinzu, zu schnell "
+                    "gesprochen um sie zu erfassen. Machiavellis Fuchs: der Vertrag "
+                    "ist unterschrieben. Die Fußnote nicht."
+                ),
                 fail_narrative_en=(
                     "The negotiation collapses. The representative's smile "
                     "does not change. The smile was never contingent "
@@ -6921,6 +6933,16 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_narrative_de=(
                     "{agent} liest das Angebot unter dem Angebot. Jede Fraktion "
                     "hat eine zweite Agenda. Der Spion sieht beide."
+                ),
+                partial_narrative_en=(
+                    "{agent} sees the second agenda. But a third remains "
+                    "hidden — Kadare's Palace has sub-basements. "
+                    "Partial intelligence is the most dangerous kind."
+                ),
+                partial_narrative_de=(
+                    "{agent} sieht die zweite Agenda. Aber eine dritte bleibt "
+                    "verborgen — Kadares Palast hat Untergeschosse. "
+                    "Teilwissen ist die gefährlichste Art."
                 ),
                 fail_narrative_en=(
                     "The intelligence is incomplete. What {agent} does not "
@@ -6991,6 +7013,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Das Tribunal zögert. Der Angeklagte wird nicht befreit — "
                     "aber das Urteil wird aufgeschoben."
                 ),
+                partial_narrative_en=(
+                    "{agent} speaks. The tribunal listens — but the way "
+                    "Koestler's Gletkin listens: recording, not hearing. "
+                    "The defense enters the record. The record is "
+                    "another kind of evidence."
+                ),
+                partial_narrative_de=(
+                    "{agent} spricht. Das Tribunal hört zu — aber so wie "
+                    "Koestlers Gletkin zuhört: aufzeichnend, nicht hörend. "
+                    "Die Verteidigung geht in die Akten ein. Die Akten sind "
+                    "eine andere Art von Beweis."
+                ),
                 fail_narrative_en=(
                     "The defense fails. {agent}'s words are entered "
                     "into evidence — as proof of complicity."
@@ -7019,6 +7053,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "er handelt von Demonstration. Brechts Verfremdung: "
                     "hat man den Mechanismus einmal gesehen, kann man es "
                     "nicht rückgängig machen."
+                ),
+                partial_narrative_en=(
+                    "{agent} sees the mechanism — partially. Kiš's archive: "
+                    "some footnotes are legible, others redacted. "
+                    "The trial is a text. {agent} has read enough "
+                    "to know the ending is already written."
+                ),
+                partial_narrative_de=(
+                    "{agent} sieht den Mechanismus — teilweise. Kišs Archiv: "
+                    "manche Fußnoten sind lesbar, andere geschwärzt. "
+                    "Der Prozess ist ein Text. {agent} hat genug gelesen "
+                    "um zu wissen, dass das Ende bereits geschrieben ist."
                 ),
                 fail_narrative_en=(
                     "The mechanism is visible. But visibility "
@@ -7085,6 +7131,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "daran glaubt. Glaube war nie der Punkt. "
                     "Aufführung ist die Währung des Spiegelpalasts."
                 ),
+                partial_narrative_en=(
+                    "The sign is displayed. Someone pauses — reads it "
+                    "a moment too long. Havel's greengrocer, observed: "
+                    "the performance passes, but it has been noted. "
+                    "Not the sign. The hesitation before it."
+                ),
+                partial_narrative_de=(
+                    "Das Schild wird gezeigt. Jemand hält inne — liest es "
+                    "einen Moment zu lang. Havels Gemüsehändler, beobachtet: "
+                    "die Aufführung geht durch, aber sie wurde notiert. "
+                    "Nicht das Schild. Das Zögern davor."
+                ),
                 fail_narrative_en=(
                     "The performance is unconvincing. Not the words — "
                     "the posture. The body knows what the mouth denies."
@@ -7115,6 +7173,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "aller anderen als Wahl. Der Raum verändert sich. "
                     "Die Schilder sind noch da. Aber etwas hat sich verschoben."
                 ),
+                partial_narrative_en=(
+                    "{agent} refuses. The room notices — but the silence "
+                    "that follows is ambiguous. Arendt's distinction: "
+                    "liberation, not yet freedom. The signs remain. "
+                    "One person's refusal is not yet contagious."
+                ),
+                partial_narrative_de=(
+                    "{agent} verweigert sich. Der Raum bemerkt es — aber die "
+                    "Stille danach ist mehrdeutig. Arendts Unterscheidung: "
+                    "Befreiung, noch nicht Freiheit. Die Schilder bleiben. "
+                    "Die Verweigerung einer Person ist noch nicht ansteckend."
+                ),
                 fail_narrative_en=(
                     "The refusal costs. Living in truth is the most "
                     "expensive option in the Spiegelpalast."
@@ -7142,6 +7212,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Détournement. Debords Waffe: das Spektakel gegen sich "
                     "selbst wenden. Das Schild sagt, was es immer sagte. "
                     "Die Bedeutung wurde umgekehrt."
+                ),
+                partial_narrative_en=(
+                    "The alteration holds — for now. Debord's détournement, "
+                    "half-executed: the sign reads differently but {agent} "
+                    "cannot be sure who reads it which way. "
+                    "Ambiguity is a weapon that cuts both directions."
+                ),
+                partial_narrative_de=(
+                    "Die Veränderung hält — vorerst. Debords Détournement, "
+                    "halb ausgeführt: das Schild liest sich anders, aber {agent} "
+                    "kann nicht sicher sein, wer es wie liest. "
+                    "Mehrdeutigkeit ist eine Waffe, die in beide Richtungen schneidet."
                 ),
                 fail_narrative_en=(
                     "The subversion is detected. The sign is confiscated. "
@@ -7195,6 +7277,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "erscheinen nicht wieder — aber die Gruppe weiß, "
                     "was dort war."
                 ),
+                partial_narrative_en=(
+                    "{agent} remembers some faces. Others dissolve — "
+                    "Kundera's Clementis: the hat remains on Gottwald's head, "
+                    "but whose hat was it? Memory reconstructs. "
+                    "Reconstruction edits."
+                ),
+                partial_narrative_de=(
+                    "{agent} erinnert sich an einige Gesichter. Andere lösen sich auf — "
+                    "Kunderas Clementis: die Mütze bleibt auf Gottwalds Kopf, "
+                    "aber wessen Mütze war es? Erinnerung rekonstruiert. "
+                    "Rekonstruktion redigiert."
+                ),
                 fail_narrative_en=(
                     "Memory fails. Not naturally — actively. "
                     "Something in the Spiegelpalast assists forgetting."
@@ -7222,6 +7316,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Umkehr. {agent} kratzt die aktuellen Anführer aus. "
                     "Die Revolution, die die alte Ordnung löschte, "
                     "wird nun selbst gelöscht. Der Kreislauf geht weiter."
+                ),
+                partial_narrative_en=(
+                    "{agent} scratches. Some faces are erased. Others "
+                    "resist — the paint is newer, the varnish thicker. "
+                    "Camus: every revolutionary ends as oppressor or heretic. "
+                    "The erasure is incomplete. So is the revolution."
+                ),
+                partial_narrative_de=(
+                    "{agent} kratzt. Manche Gesichter werden gelöscht. Andere "
+                    "widerstehen — die Farbe ist neuer, der Lack dicker. "
+                    "Camus: jeder Revolutionär endet als Unterdrücker oder Ketzer. "
+                    "Die Löschung ist unvollständig. Die Revolution auch."
                 ),
                 fail_narrative_en=(
                     "The scratching is noticed. Someone is always watching "
@@ -7291,6 +7397,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Fraktion, was sie wirklich ist. Die Aufklärung ist "
                     "unbezahlbar."
                 ),
+                partial_narrative_en=(
+                    "{agent} watches. Some factions reveal themselves. "
+                    "Others perform even while scrambling — Bulgakov's "
+                    "observation: greed has its own theater. "
+                    "The picture is incomplete but telling."
+                ),
+                partial_narrative_de=(
+                    "{agent} beobachtet. Manche Fraktionen offenbaren sich. "
+                    "Andere spielen auch beim Gerangel Theater — Bulgakows "
+                    "Beobachtung: Gier hat ihr eigenes Theater. "
+                    "Das Bild ist unvollständig, aber aufschlussreich."
+                ),
                 fail_narrative_en=(
                     "{agent} watches. But watching is also a position. "
                     "The one who does not scramble is noticed."
@@ -7318,6 +7436,18 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Erst kommt das Fressen, dann kommt die Moral. "
                     "{agent} sichert Ressourcen. Das Geld mag zu Papier werden. "
                     "Aber die Bündnisse, die beim Gerangel entstehen, sind echt."
+                ),
+                partial_narrative_en=(
+                    "{agent} secures something — but the scramble is "
+                    "already sorting winners from losers. Brecht's "
+                    "observation: the Fressen was real. Whether "
+                    "the Moral follows remains to be seen."
+                ),
+                partial_narrative_de=(
+                    "{agent} sichert etwas — aber das Gerangel sortiert "
+                    "bereits Gewinner von Verlierern. Brechts Beobachtung: "
+                    "das Fressen war echt. Ob die Moral folgt, "
+                    "bleibt abzuwarten."
                 ),
                 fail_narrative_en=(
                     "The scramble turns ugly. Material interest "
@@ -7604,6 +7734,18 @@ OVERTHROW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                     "{agent} nimmt, was getragen werden kann. "
                     "Der Rest wird hier sein für den, der als Nächster kommt."
                 ),
+                partial_narrative_en=(
+                    "Names, alliances — but the debts are encoded. "
+                    "Kadare's dream interpreters: the raw material is "
+                    "here. The interpretation requires context "
+                    "{agent} does not yet possess."
+                ),
+                partial_narrative_de=(
+                    "Namen, Bündnisse — aber die Schulden sind verschlüsselt. "
+                    "Kadares Traumdeuter: das Rohmaterial ist da. "
+                    "Die Interpretation erfordert Kontext, den "
+                    "{agent} noch nicht besitzt."
+                ),
                 fail_narrative_en=(
                     "The dossiers are incomplete. Or they have been "
                     "pre-edited for whoever found them."
@@ -7667,6 +7809,18 @@ OVERTHROW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                     "{agent} findet etwas. Der vorherige Besitzer "
                     "wird es nicht mehr brauchen. Der durchgestrichene "
                     "Name auf dem Etikett erzählt seine eigene Geschichte."
+                ),
+                partial_narrative_en=(
+                    "{agent} salvages. Some labels are legible, others "
+                    "deliberately smeared. Ngũgĩ's observation: what "
+                    "the regime confiscates tells you what it fears. "
+                    "The catalogue is partial. The fear is not."
+                ),
+                partial_narrative_de=(
+                    "{agent} birgt. Manche Etiketten sind lesbar, andere "
+                    "absichtlich verwischt. Ngũgĩs Beobachtung: was "
+                    "das Regime beschlagnahmt, verrät, wovor es sich fürchtet. "
+                    "Der Katalog ist unvollständig. Die Furcht nicht."
                 ),
                 fail_narrative_en=(
                     "The assets are trapped — not physically, "
