@@ -73,6 +73,20 @@ Pro Schritt werden Router UND zugehörige Service-Methoden gemeinsam refactored.
 - ASSESS-Endpoints: AI-Output verifizieren, ggf. als `dict` belassen
 - Lint-Pipeline (`ruff` + `tsc`) + Tests nach jedem Schritt
 
+### A7: Praktische Gotchas (aus connections.py PoC)
+
+1. **Audit-Logging**: Wenn Service Model returnt, ändert sich Router von `result.get("id")` → `result.id`
+2. **Test-Mocks**: Service-Mocks müssen Model-Instanzen returnen, nicht dicts.
+   - `MOCK_DATA = SomeResponse.model_validate({...})` statt `MOCK_DATA = {...}`
+   - `{**MOCK, "field": new}` → `MOCK.model_copy(update={"field": new})`
+3. **TypeAdapter + `from __future__ import annotations`**: TypeAdapter-Expression ist KEIN Annotation → evaluiert sofort. Kein Konflikt.
+4. **BaseService-Pattern**: Viele Services erben von BaseService (CRUD). ConnectionService ist Standalone.
+   BaseService-Subclasses haben `get()`, `list()`, `create()`, `update()` — diese returnen `dict`.
+   Bei der Konvertierung prüfen ob BaseService selbst refactored werden muss oder ob override pro Service reicht.
+5. **FAST002 Auto-Fix Workflow**: `ruff --fix --unsafe-fixes --select FAST002` fixiert ~95%.
+   Verbleibende: Depends-Params die nach optionalen Query-Params stehen → manuell reordern.
+6. **Import-Sortierung**: Nach FAST002-Fix immer `ruff --fix` nochmal für isort.
+
 ---
 
 ## Legende
