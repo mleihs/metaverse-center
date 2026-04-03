@@ -23,53 +23,53 @@ router = APIRouter(
 _service = SettingsService()
 
 
-@router.get("", response_model=SuccessResponse[list[SettingResponse]])
+@router.get("")
 async def list_settings(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     category: Annotated[str | None, Query()] = None,
-) -> dict:
+) -> SuccessResponse[list[SettingResponse]]:
     """List all settings, optionally filtered by category."""
     data = await _service.list_settings(supabase, simulation_id, category=category)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/by-category/{category}", response_model=SuccessResponse[list[SettingResponse]])
+@router.get("/by-category/{category}")
 async def get_by_category(
     simulation_id: UUID,
     category: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[SettingResponse]]:
     """Get all settings in a specific category."""
     data = await _service.list_settings(supabase, simulation_id, category=category)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{setting_id}", response_model=SuccessResponse[SettingResponse])
+@router.get("/{setting_id}")
 async def get_setting(
     simulation_id: UUID,
     setting_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SettingResponse]:
     """Get a single setting by ID."""
     setting = await _service.get_setting(supabase, simulation_id, setting_id)
-    return {"success": True, "data": setting}
+    return SuccessResponse(data=setting)
 
 
-@router.post("", response_model=SuccessResponse[SettingResponse], status_code=201)
+@router.post("", status_code=201)
 async def upsert_setting(
     simulation_id: UUID,
     body: SettingCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SettingResponse]:
     """Create or update a setting. Sensitive keys are encrypted automatically."""
     setting = await _service.upsert_setting(
         supabase, simulation_id, user.id, body.model_dump(),
@@ -78,10 +78,10 @@ async def upsert_setting(
         supabase, simulation_id, user.id, "simulation_settings", setting.get("id"), "upsert",
         details={"key": body.setting_key if hasattr(body, "setting_key") else None},
     )
-    return {"success": True, "data": setting}
+    return SuccessResponse(data=setting)
 
 
-@router.put("/{setting_id}", response_model=SuccessResponse[SettingResponse])
+@router.put("/{setting_id}")
 async def update_setting(
     simulation_id: UUID,
     setting_id: UUID,
@@ -89,7 +89,7 @@ async def update_setting(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SettingResponse]:
     """Update a setting value by ID. For full upsert by key, use POST."""
     # Get existing setting to preserve category/key
     existing = await _service.get_setting(supabase, simulation_id, setting_id)
@@ -107,7 +107,7 @@ async def update_setting(
         supabase, simulation_id, user.id, "simulation_settings", setting_id, "update",
         details={"key": existing["setting_key"]},
     )
-    return {"success": True, "data": setting}
+    return SuccessResponse(data=setting)
 
 
 @router.delete("/{setting_id}")

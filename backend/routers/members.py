@@ -21,26 +21,26 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuccessResponse[list[MemberResponse]])
+@router.get("")
 async def list_members(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[MemberResponse]]:
     """List all members of a simulation."""
     data = await MemberService.list_members(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("", response_model=SuccessResponse[MemberResponse], status_code=201)
+@router.post("", status_code=201)
 async def add_member(
     simulation_id: UUID,
     body: MemberCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MemberResponse]:
     """Add a member to a simulation. Requires admin role."""
     data = await MemberService.add(
         supabase,
@@ -50,10 +50,10 @@ async def add_member(
         invited_by_id=user.id,
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", data["id"], "create")
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.put("/{member_id}", response_model=SuccessResponse[MemberResponse])
+@router.put("/{member_id}")
 async def change_role(
     simulation_id: UUID,
     member_id: UUID,
@@ -61,7 +61,7 @@ async def change_role(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MemberResponse]:
     """Change a member's role. Last-owner protection enforced by DB trigger."""
     try:
         data = await MemberService.change_role(
@@ -74,7 +74,7 @@ async def change_role(
         ) from e
 
     await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", member_id, "update")
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.delete("/{member_id}")

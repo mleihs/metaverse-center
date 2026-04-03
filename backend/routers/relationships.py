@@ -25,26 +25,20 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/agents/{agent_id}/relationships",
-    response_model=SuccessResponse[list[RelationshipResponse]],
-)
+@router.get("/agents/{agent_id}/relationships")
 async def list_agent_relationships(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[RelationshipResponse]]:
     """List all relationships for a specific agent (both directions)."""
     data = await RelationshipService.list_for_agent(supabase, simulation_id, agent_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/relationships",
-    response_model=PaginatedResponse[RelationshipResponse],
-)
+@router.get("/relationships")
 async def list_simulation_relationships(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -52,21 +46,19 @@ async def list_simulation_relationships(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[RelationshipResponse]:
     """List all relationships in a simulation (for graph views)."""
     data, total = await RelationshipService.list_for_simulation(
         supabase, simulation_id, limit=limit, offset=offset
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
 @router.post(
     "/agents/{agent_id}/relationships",
-    response_model=SuccessResponse[RelationshipResponse],
     status_code=201,
 )
 async def create_relationship(
@@ -76,7 +68,7 @@ async def create_relationship(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[RelationshipResponse]:
     """Create a relationship between two agents."""
     result = await RelationshipService.create_relationship(
         supabase, simulation_id, agent_id, body.model_dump(exclude_none=True)
@@ -84,13 +76,10 @@ async def create_relationship(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "agent_relationships", result["id"], "create"
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/relationships/{relationship_id}",
-    response_model=SuccessResponse[RelationshipResponse],
-)
+@router.patch("/relationships/{relationship_id}")
 async def update_relationship(
     simulation_id: UUID,
     relationship_id: UUID,
@@ -98,7 +87,7 @@ async def update_relationship(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[RelationshipResponse]:
     """Update a relationship."""
     result = await RelationshipService.update_relationship(
         supabase, simulation_id, relationship_id, body.model_dump(exclude_none=True)
@@ -106,7 +95,7 @@ async def update_relationship(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "agent_relationships", relationship_id, "update"
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 @router.delete(

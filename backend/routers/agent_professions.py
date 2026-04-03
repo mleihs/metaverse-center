@@ -25,22 +25,22 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuccessResponse[list[AgentProfessionResponse]])
+@router.get("")
 async def list_professions(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[AgentProfessionResponse]]:
     """List all professions for an agent."""
     data = await AgentProfessionService.list_for_agent(
         supabase, simulation_id, agent_id
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("", response_model=SuccessResponse[AgentProfessionResponse], status_code=201)
+@router.post("", status_code=201)
 async def add_profession(
     simulation_id: UUID,
     agent_id: UUID,
@@ -48,16 +48,16 @@ async def add_profession(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentProfessionResponse]:
     """Add a profession to an agent. Primary-profession uniqueness enforced by DB trigger."""
     result = await AgentProfessionService.add(
         supabase, simulation_id, agent_id, body.model_dump(exclude_none=True)
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", result["id"], "create")
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.put("/{profession_id}", response_model=SuccessResponse[AgentProfessionResponse])
+@router.put("/{profession_id}")
 async def update_profession(
     simulation_id: UUID,
     agent_id: UUID,
@@ -66,7 +66,7 @@ async def update_profession(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentProfessionResponse]:
     """Update an agent profession."""
     result = await AgentProfessionService.update(
         supabase,
@@ -76,7 +76,7 @@ async def update_profession(
         extra_filters={"agent_id": agent_id},
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", profession_id, "update")
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 @router.delete("/{profession_id}")

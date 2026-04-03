@@ -31,40 +31,31 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/health",
-    response_model=SuccessResponse[SimulationHealthDashboard],
-)
+@router.get("/health")
 async def get_health_dashboard(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SimulationHealthDashboard]:
     """Full health dashboard combining all metrics for a simulation."""
     data = await GameMechanicsService.get_health_dashboard(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/health/simulation",
-    response_model=SuccessResponse[SimulationHealthResponse],
-)
+@router.get("/health/simulation")
 async def get_simulation_health(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SimulationHealthResponse]:
     """Top-level simulation health metrics only."""
     data = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/health/buildings",
-    response_model=PaginatedResponse[BuildingReadinessResponse],
-)
+@router.get("/health/buildings")
 async def list_building_readiness(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -75,86 +66,73 @@ async def list_building_readiness(
     order_asc: Annotated[bool, Query()] = True,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[BuildingReadinessResponse]:
     """List building readiness for all buildings in a simulation."""
     data, total = await GameMechanicsService.list_building_readiness(
         supabase, simulation_id,
         zone_id=zone_id, order_by=order_by, order_asc=order_asc,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get(
-    "/health/buildings/{building_id}",
-    response_model=SuccessResponse[BuildingReadinessResponse],
-)
+@router.get("/health/buildings/{building_id}")
 async def get_building_readiness(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[BuildingReadinessResponse]:
     """Get readiness metrics for a single building."""
     data = await GameMechanicsService.get_building_readiness(
         supabase, simulation_id, building_id,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/health/zones",
-    response_model=SuccessResponse[list[ZoneStabilityResponse]],
-)
+@router.get("/health/zones")
 async def list_zone_stability(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ZoneStabilityResponse]]:
     """List zone stability for all zones in a simulation."""
     data = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/health/zones/{zone_id}",
-    response_model=SuccessResponse[ZoneStabilityResponse],
-)
+@router.get("/health/zones/{zone_id}")
 async def get_zone_stability(
     simulation_id: UUID,
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ZoneStabilityResponse]:
     """Get stability metrics for a single zone."""
     data = await GameMechanicsService.get_zone_stability(
         supabase, simulation_id, zone_id,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/health/embassies",
-    response_model=SuccessResponse[list[EmbassyEffectivenessResponse]],
-)
+@router.get("/health/embassies")
 async def list_embassy_effectiveness(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EmbassyEffectivenessResponse]]:
     """List embassy effectiveness for embassies involving this simulation."""
     data = await GameMechanicsService.list_embassy_effectiveness(
         supabase, simulation_id,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(

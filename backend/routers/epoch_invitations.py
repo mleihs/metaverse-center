@@ -31,7 +31,7 @@ async def _audit(
         logger.warning("Audit log failed for epoch_invitations %s (non-critical)", action, exc_info=True)
 
 
-@router.post("", response_model=SuccessResponse[EpochInvitationResponse], status_code=201)
+@router.post("", status_code=201)
 @limiter.limit("10/minute")
 async def create_invitation(
     request: Request,
@@ -40,7 +40,7 @@ async def create_invitation(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochInvitationResponse]:
     """Create an epoch invitation and send email."""
     base_url = str(request.base_url).rstrip("/")
 
@@ -51,38 +51,38 @@ async def create_invitation(
 
     await _audit(supabase, user.id, invitation["id"], "create", {"email": body.email, "epoch_id": str(epoch_id)})
 
-    return {"success": True, "data": invitation}
+    return SuccessResponse(data=invitation)
 
 
-@router.get("", response_model=SuccessResponse[list[EpochInvitationResponse]])
+@router.get("")
 async def list_invitations(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EpochInvitationResponse]]:
     """List all invitations for an epoch."""
     data = await EpochInvitationService.list_invitations(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/{invitation_id}", response_model=SuccessResponse)
+@router.delete("/{invitation_id}")
 async def revoke_invitation(
     epoch_id: UUID,
     invitation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochInvitationResponse]:
     """Revoke an epoch invitation."""
     data = await EpochInvitationService.revoke_invitation(supabase, invitation_id)
 
     await _audit(supabase, user.id, str(invitation_id), "update", {"status": "revoked"})
 
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/regenerate-lore", response_model=SuccessResponse)
+@router.post("/regenerate-lore")
 @limiter.limit("5/minute")
 async def regenerate_lore(
     request: Request,
@@ -90,7 +90,7 @@ async def regenerate_lore(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Regenerate the AI-generated lore for epoch invitations."""
     lore_text = await EpochInvitationService.regenerate_lore(supabase, epoch_id)
-    return {"success": True, "data": {"lore_text": lore_text}}
+    return SuccessResponse(data={"lore_text": lore_text})

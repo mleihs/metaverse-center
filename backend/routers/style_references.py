@@ -25,7 +25,7 @@ router = APIRouter(
 )
 
 
-@router.post("/upload", response_model=SuccessResponse[StyleReferenceUploadResponse])
+@router.post("/upload")
 async def upload_reference(
     simulation_id: UUID,
     entity_type: Annotated[str, Form()],
@@ -37,7 +37,7 @@ async def upload_reference(
     strength: Annotated[float, Form()] = 0.75,
     file: Annotated[UploadFile | None, File()] = None,
     image_url: Annotated[str | None, Form()] = None,
-) -> dict:
+) -> SuccessResponse[StyleReferenceUploadResponse]:
     """Upload a style reference image (file or URL).
 
     Accepts either a direct file upload or a URL to fetch.
@@ -87,27 +87,26 @@ async def upload_reference(
             details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
         )
 
-        return {
-            "success": True,
-            "data": {
-                "url": url,
-                "scope": scope,
-                "entity_type": entity_type,
-                "entity_id": str(entity_id) if entity_id else None,
-            },
-        }
+        return SuccessResponse(
+            data=StyleReferenceUploadResponse(
+                url=url,
+                scope=scope,
+                entity_type=entity_type,
+                entity_id=str(entity_id) if entity_id else None,
+            ),
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.get("/{entity_type}", response_model=SuccessResponse[list[StyleReferenceInfo]])
+@router.get("/{entity_type}")
 async def list_references(
     simulation_id: UUID,
     entity_type: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[StyleReferenceInfo]]:
     """List all configured style references for an entity type."""
     if entity_type not in ("portrait", "building"):
         raise HTTPException(
@@ -118,7 +117,7 @@ async def list_references(
     refs = await StyleReferenceService.list_references(
         supabase, simulation_id, entity_type,
     )
-    return {"success": True, "data": refs}
+    return SuccessResponse(data=refs)
 
 
 @router.delete("/{entity_type}")

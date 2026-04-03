@@ -1,7 +1,7 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
 > Stand: 2026-04-03
-> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py Proof-of-Concept (5e1557f)
+> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)**
 > Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
 
 ---
@@ -109,21 +109,21 @@ Pro Schritt werden Router UND zugehörige Service-Methoden gemeinsam refactored.
 
 ---
 
-## Schritt 1: Quick-Win-Router — Nur `response_model=` droppen + existierende Models (10 Router)
+## Schritt 1: Quick-Win-Router — Nur `response_model=` droppen + existierende Models (10 Router) ✅
 
 Diese Router haben KEINE untyped Endpoints (oder nur 1-2 triviale).
 Rein mechanische Konvertierung: `response_model=` → Return-Type.
 
-- [ ] **game_mechanics.py** (8 total) — alle TYPED
-- [ ] **relationships.py** (5 total) — alle TYPED
-- [ ] **settings.py** (6 total) — alle TYPED
-- [ ] **bot_players.py** (5 total) — alle TYPED
-- [ ] **agent_professions.py** (4 total) — alle TYPED
-- [ ] **connections.py** (4 total) — alle TYPED
-- [ ] **members.py** (4 total) — alle TYPED
-- [ ] **style_references.py** (3 total) — alle TYPED
-- [ ] **invitations.py** (4 total) — alle TYPED
-- [ ] **epoch_invitations.py** (4 total) — alle TYPED
+- [x] **game_mechanics.py** (8 total) — alle TYPED
+- [x] **relationships.py** (5 total) — alle TYPED
+- [x] **settings.py** (6 total) — alle TYPED
+- [x] **bot_players.py** (5 total) — alle TYPED
+- [x] **agent_professions.py** (4 total) — alle TYPED
+- [x] **connections.py** (4 total) — alle TYPED (PoC in 5e1557f)
+- [x] **members.py** (4 total) — alle TYPED
+- [x] **style_references.py** (3 total) — alle TYPED
+- [x] **invitations.py** (4 total) — alle TYPED
+- [x] **epoch_invitations.py** (4 total) — alle TYPED
 
 **Summe: 47 Endpoints, 0 neue Models**
 
