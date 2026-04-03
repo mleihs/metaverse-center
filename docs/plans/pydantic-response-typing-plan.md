@@ -1,6 +1,7 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
-> Stand: 2026-04-03 | Phase 1+2 erledigt (dda61c6 + bf44107)
+> Stand: 2026-04-03
+> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py Proof-of-Concept (5e1557f)
 > Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
 
 ---
@@ -86,9 +87,11 @@ Pro Schritt werden Router UND zugehörige Service-Methoden gemeinsam refactored.
 
 ---
 
-## Schritt 0: Infrastruktur
+## Schritt 0: Infrastruktur ✅ (5e1557f)
 
-- [ ] Ruff FAST-Regeln in `pyproject.toml` aktivieren
+- [x] Ruff FAST-Regeln in `pyproject.toml` aktivieren
+- [x] FAST002: 1335 Depends → Annotated across 48 Router-Dateien
+- [x] connections.py: Full-Stack Proof-of-Concept (Router + Service + Tests)
 
 ---
 
