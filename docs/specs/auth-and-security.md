@@ -215,7 +215,7 @@ async def list_agents(
         .select("*") \
         .eq("simulation_id", str(simulation_id)) \
         .execute()
-    return {"success": True, "data": result.data}
+    return SuccessResponse(data=result.data)
 ```
 
 ### Service Key: Nur für System-Operationen

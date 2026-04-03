@@ -22,7 +22,7 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=PaginatedResponse)
+@router.get("")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def list_memories(
     request: Request,
@@ -33,20 +33,19 @@ async def list_memories(
     memory_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """List agent memories (paginated, filterable by memory_type)."""
     data, total = await AgentMemoryService.list_memories(
         supabase, agent_id, simulation_id,
         memory_type=memory_type, limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.post("/reflect", response_model=SuccessResponse)
+@router.post("/reflect")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def trigger_reflection(
     request: Request,
@@ -56,7 +55,7 @@ async def trigger_reflection(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ReflectionRequest | None = None,
-) -> dict:
+) -> SuccessResponse:
     """Trigger agent reflection (requires editor+)."""
     locale = body.locale if body else "en"
     data = await AgentMemoryService.reflect(
@@ -67,4 +66,4 @@ async def trigger_reflection(
         "agent_memories", agent_id, "reflect",
         details={"locale": locale},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

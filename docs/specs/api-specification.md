@@ -33,18 +33,39 @@ Plattform-Level Endpoints:
 
 ### Standard-Response-Format
 
-**Erfolg:**
+Alle Endpoints nutzen typisierte Pydantic-Wrapper als Return-Type-Annotation (kein `response_model=`):
+
+```python
+# Single/List-Response
+@router.get("/agents/{agent_id}")
+async def get_agent(...) -> SuccessResponse[AgentResponse]:
+    return SuccessResponse(data=agent)
+
+# Paginated Response
+@router.get("/agents")
+async def list_agents(...) -> PaginatedResponse[AgentResponse]:
+    return PaginatedResponse(data=agents, meta=PaginationMeta(...))
+```
+
+**JSON-Shape (SuccessResponse):**
 ```json
 {
   "success": true,
-  "data": { ... },
+  "data": { ... }
+}
+```
+
+**JSON-Shape (PaginatedResponse):**
+```json
+{
+  "success": true,
+  "data": [ ... ],
   "meta": {
     "count": 25,
     "total": 150,
     "limit": 25,
     "offset": 0
-  },
-  "timestamp": "2026-02-15T12:00:00Z"
+  }
 }
 ```
 

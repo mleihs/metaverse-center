@@ -52,52 +52,51 @@ router = APIRouter(prefix="/api/v1/epochs", tags=["epochs"])
 # ── Epoch CRUD ──────────────────────────────────────────
 
 
-@router.get("", response_model=PaginatedResponse[EpochResponse])
+@router.get("")
 async def list_epochs(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[EpochResponse]:
     """List all epochs with optional status filter."""
     data, total = await EpochService.list_epochs(
         supabase, status_filter=status, limit=limit, offset=offset
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/active", response_model=SuccessResponse[list[EpochResponse]])
+@router.get("/active")
 async def get_active_epochs(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EpochResponse]]:
     """Get all active epochs (lobby + running)."""
     data = await EpochService.get_active_epochs(supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
+@router.get("/{epoch_id}")
 async def get_epoch(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Get a single epoch by ID."""
     data = await EpochService.get(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("", response_model=SuccessResponse[EpochResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_epoch(
     body: EpochCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Create a new epoch (lobby phase)."""
     data = await EpochService.create(
         supabase,
@@ -110,32 +109,32 @@ async def create_epoch(
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", data["id"], "create",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.patch("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
+@router.patch("/{epoch_id}")
 async def update_epoch(
     epoch_id: UUID,
     body: EpochUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Update epoch configuration (lobby phase only)."""
     updates = body.model_dump(exclude_none=True)
     if "config" in updates and updates["config"]:
         cfg = updates["config"]
         updates["config"] = cfg.model_dump() if hasattr(cfg, "model_dump") else cfg
     data = await EpochService.update(supabase, epoch_id, updates)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/quick-academy", response_model=SuccessResponse[EpochResponse], status_code=201)
+@router.post("/quick-academy", status_code=201)
 async def create_quick_academy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """One-click academy epoch creation with auto-configured bots.
 
     Creates a sprint-format academy epoch, selects platform template
@@ -145,20 +144,20 @@ async def create_quick_academy(
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch["id"], "create_academy",
     )
-    return {"success": True, "data": epoch}
+    return SuccessResponse(data=epoch)
 
 
 # ── Lifecycle ───────────────────────────────────────────
 
 
-@router.post("/{epoch_id}/start", response_model=SuccessResponse[EpochResponse])
+@router.post("/{epoch_id}/start")
 async def start_epoch(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Start an epoch (lobby -> foundation). Creator only.
 
     This clones all participating simulations into game instances
@@ -169,34 +168,34 @@ async def start_epoch(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "start", "new_status": "foundation"},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/{epoch_id}/advance", response_model=SuccessResponse[EpochResponse])
+@router.post("/{epoch_id}/advance")
 async def advance_phase(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Advance to next epoch phase. Creator only."""
     data = await EpochService.advance_phase(supabase, epoch_id, admin_supabase)
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "advance", "new_status": data["status"]},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/{epoch_id}/cancel", response_model=SuccessResponse[EpochResponse])
+@router.post("/{epoch_id}/cancel")
 async def cancel_epoch(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Cancel an epoch. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
     data = await EpochService.cancel_epoch(supabase, epoch_id, admin_supabase)
@@ -204,70 +203,70 @@ async def cancel_epoch(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "cancel", "old_status": epoch["status"]},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
+@router.delete("/{epoch_id}")
 async def delete_epoch(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Permanently delete an epoch. Creator only. Only lobby or cancelled epochs."""
     data = await EpochService.delete_epoch(admin_supabase, epoch_id)
     await AuditService.safe_log(
         supabase, None, user.id, "game_epochs", epoch_id, "delete",
         details={"name": data.get("name"), "status": data.get("status")},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{epoch_id}/instances", response_model=SuccessResponse)
+@router.get("/{epoch_id}/instances")
 async def list_instances(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """List all game instances for an epoch."""
     data = await GameInstanceService.list_instances(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{epoch_id}/battle-log/summary", response_model=SuccessResponse[BattleSummaryResponse])
+@router.get("/{epoch_id}/battle-log/summary")
 async def get_cycle_battle_summary(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     cycle: Annotated[int, Query(ge=0, description="Cycle number")],
     simulation_id: Annotated[UUID | None, Query()] = None,
-) -> dict:
+) -> SuccessResponse[BattleSummaryResponse]:
     """Get aggregated battle stats for a specific cycle (War Room)."""
     data = await SitrepService.get_cycle_summary(
         supabase, str(epoch_id), cycle,
         simulation_id=str(simulation_id) if simulation_id else None,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{epoch_id}/sitrep/{cycle_number}", response_model=SuccessResponse[SitrepResponse])
+@router.get("/{epoch_id}/sitrep/{cycle_number}")
 async def get_cycle_sitrep(
     epoch_id: UUID,
     cycle_number: int,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     simulation_id: Annotated[UUID | None, Query()] = None,
-) -> dict:
+) -> SuccessResponse[SitrepResponse]:
     """Generate AI tactical situation report for a cycle (War Room)."""
     data = await SitrepService.generate_sitrep(
         supabase, str(epoch_id), cycle_number,
         simulation_id=str(simulation_id) if simulation_id else None,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{epoch_id}/battle-log", response_model=PaginatedResponse[BattleLogEntry])
+@router.get("/{epoch_id}/battle-log")
 async def get_battle_log(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -276,7 +275,7 @@ async def get_battle_log(
     simulation_id: Annotated[UUID | None, Query(description="Your simulation ID for allied intel tagging")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[BattleLogEntry]:
     """Get battle log entries (authenticated — includes private entries).
 
     Pass simulation_id to tag entries visible only via alliance as allied_intel.
@@ -300,33 +299,32 @@ async def get_battle_log(
                     "allied_intel": True,
                 }
 
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{epoch_id}/results-summary", response_model=SuccessResponse)
+@router.get("/{epoch_id}/results-summary")
 async def get_results_summary(
     epoch_id: UUID,
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Get comprehensive results summary for a completed epoch."""
     from backend.services.scoring_service import ScoringService
 
     data = await ScoringService.get_results_summary(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/{epoch_id}/resolve-cycle", response_model=SuccessResponse[EpochResponse])
+@router.post("/{epoch_id}/resolve-cycle")
 async def resolve_cycle(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochResponse]:
     """Resolve the current cycle (allocate RP, execute bot turns, advance cycle counter). Creator only."""
     data = await EpochService.resolve_cycle_full(supabase, epoch_id, admin_supabase)
 
@@ -334,7 +332,7 @@ async def resolve_cycle(
         supabase, None, user.id, "game_epochs", epoch_id, "update",
         details={"action": "resolve_cycle", "cycle": data.get("current_cycle")},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Participants ────────────────────────────────────────
@@ -342,21 +340,19 @@ async def resolve_cycle(
 
 @router.get(
     "/{epoch_id}/participants",
-    response_model=SuccessResponse[list[ParticipantResponse]],
 )
 async def list_participants(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ParticipantResponse]]:
     """List all participants in an epoch."""
     data = await EpochService.list_participants(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(
     "/{epoch_id}/participants",
-    response_model=SuccessResponse[ParticipantResponse],
     status_code=201,
 )
 async def join_epoch(
@@ -364,7 +360,7 @@ async def join_epoch(
     body: ParticipantJoin,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ParticipantResponse]:
     """Join an epoch with any template simulation.
 
     Any authenticated user can join. One simulation per epoch, one user per epoch.
@@ -374,7 +370,7 @@ async def join_epoch(
         supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
         details={"epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.delete("/{epoch_id}/participants/{simulation_id}")
@@ -398,7 +394,6 @@ async def leave_epoch(
 
 @router.post(
     "/{epoch_id}/participants/{simulation_id}/draft",
-    response_model=SuccessResponse[ParticipantResponse],
 )
 async def draft_agents(
     epoch_id: UUID,
@@ -406,7 +401,7 @@ async def draft_agents(
     body: DraftRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ParticipantResponse]:
     """Lock in a draft roster for a participant (lobby phase only)."""
     data = await EpochService.draft_agents(
         supabase, epoch_id, simulation_id, body.agent_ids
@@ -416,7 +411,7 @@ async def draft_agents(
         "epoch_participants", data.get("id"), "update",
         details={"drafted_agent_ids": [str(a) for a in body.agent_ids]},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Bot Participants ───────────────────────────────────
@@ -424,7 +419,6 @@ async def draft_agents(
 
 @router.post(
     "/{epoch_id}/add-bot",
-    response_model=SuccessResponse[ParticipantResponse],
     status_code=201,
 )
 async def add_bot_to_epoch(
@@ -434,14 +428,14 @@ async def add_bot_to_epoch(
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     _creator: Annotated[None, Depends(require_epoch_creator())],
-) -> dict:
+) -> SuccessResponse[ParticipantResponse]:
     """Add a bot participant to an epoch lobby. Only the epoch creator."""
     data = await EpochService.add_bot(admin_supabase, epoch_id, body.simulation_id, body.bot_player_id)
     await AuditService.safe_log(
         supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
         details={"epoch_id": str(epoch_id), "bot_player_id": str(body.bot_player_id), "is_bot": True},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.delete("/{epoch_id}/remove-bot/{participant_id}")
@@ -466,21 +460,19 @@ async def remove_bot_from_epoch(
 
 @router.get(
     "/{epoch_id}/teams",
-    response_model=SuccessResponse[list[TeamResponse]],
 )
 async def list_teams(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[TeamResponse]]:
     """List all teams in an epoch."""
     data = await EpochService.list_teams(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(
     "/{epoch_id}/teams",
-    response_model=SuccessResponse[TeamResponse],
     status_code=201,
 )
 async def create_team(
@@ -490,7 +482,7 @@ async def create_team(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[TeamResponse]:
     """Create a new alliance/team. Must be a participant in the epoch."""
     data = await EpochService.create_team(supabase, epoch_id, simulation_id, body.name)
     epoch = await EpochService.get(supabase, epoch_id)
@@ -501,10 +493,10 @@ async def create_team(
         supabase, simulation_id, user.id, "epoch_teams", data.get("id"), "create",
         details={"epoch_id": str(epoch_id), "name": body.name},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/{epoch_id}/teams/{team_id}/join", response_model=SuccessResponse)
+@router.post("/{epoch_id}/teams/{team_id}/join")
 async def join_team(
     epoch_id: UUID,
     team_id: UUID,
@@ -512,31 +504,31 @@ async def join_team(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Join an existing team. Must be a participant in the epoch."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", team_id, "update",
         details={"action": "join", "epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/{epoch_id}/teams/leave", response_model=SuccessResponse)
+@router.post("/{epoch_id}/teams/leave")
 async def leave_team(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Leave your current team. Must be a participant in the epoch."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_teams", None, "update",
         details={"action": "leave", "epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Alliance Proposals ─────────────────────────────────
@@ -544,7 +536,6 @@ async def leave_team(
 
 @router.get(
     "/{epoch_id}/proposals",
-    response_model=SuccessResponse[list[AllianceProposalResponse]],
 )
 async def list_proposals(
     epoch_id: UUID,
@@ -552,17 +543,16 @@ async def list_proposals(
     supabase: Annotated[Client, Depends(get_supabase)],
     team_id: Annotated[UUID | None, Query()] = None,
     status: Annotated[str | None, Query(alias="proposal_status")] = None,
-) -> dict:
+) -> SuccessResponse[list[AllianceProposalResponse]]:
     """List alliance proposals for an epoch."""
     data = await AllianceService.list_proposals(
         supabase, epoch_id, team_id=team_id, status_filter=status,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(
     "/{epoch_id}/proposals",
-    response_model=SuccessResponse[AllianceProposalResponse],
     status_code=201,
 )
 async def create_proposal(
@@ -572,7 +562,7 @@ async def create_proposal(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AllianceProposalResponse]:
     """Request to join a team. Requires unanimous member approval."""
     data = await AllianceService.create_proposal(
         supabase, epoch_id, body.team_id, simulation_id,
@@ -582,12 +572,11 @@ async def create_proposal(
         data.get("id"), "create",
         details={"epoch_id": str(epoch_id), "team_id": str(body.team_id)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(
     "/{epoch_id}/teams/{team_id}/invite",
-    response_model=SuccessResponse[AllianceProposalResponse],
     status_code=201,
 )
 async def invite_to_team(
@@ -598,7 +587,7 @@ async def invite_to_team(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AllianceProposalResponse]:
     """Invite a player to your team. Caller must be a team member."""
     data = await AllianceService.invite_to_team(
         supabase, epoch_id, team_id, simulation_id, body.target_simulation_id,
@@ -613,12 +602,11 @@ async def invite_to_team(
             "action": "invite",
         },
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.post(
     "/{epoch_id}/proposals/{proposal_id}/vote",
-    response_model=SuccessResponse[AllianceVoteResponse],
 )
 async def vote_on_proposal(
     epoch_id: UUID,
@@ -628,7 +616,7 @@ async def vote_on_proposal(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AllianceVoteResponse]:
     """Vote accept/reject on an alliance proposal. Team members only."""
     data = await AllianceService.vote_on_proposal(
         supabase, proposal_id, simulation_id, body.vote,
@@ -638,20 +626,20 @@ async def vote_on_proposal(
         data.get("id"), "create",
         details={"proposal_id": str(proposal_id), "vote": body.vote},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Ready Signals ─────────────────────────────────────
 
 
-@router.post("/{epoch_id}/ready", response_model=SuccessResponse)
+@router.post("/{epoch_id}/ready")
 async def toggle_ready(
     epoch_id: UUID,
     body: ReadySignal,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Toggle cycle_ready for a participant. Triggers realtime broadcast.
 
     When all human participants signal ready, the cycle auto-resolves.
@@ -667,4 +655,4 @@ async def toggle_ready(
             details={"action": "auto_resolve_cycle", "cycle": data.get("new_cycle")},
         )
 
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

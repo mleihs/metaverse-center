@@ -21,73 +21,70 @@ router = APIRouter(prefix="/api/v1/epochs/{epoch_id}/scores", tags=["scores"])
 # ── Leaderboard ─────────────────────────────────────────
 
 
-@router.get("/leaderboard", response_model=SuccessResponse[list[LeaderboardEntry]])
+@router.get("/leaderboard")
 async def get_leaderboard(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     cycle: Annotated[int | None, Query(description="Specific cycle (default: latest)")] = None,
-) -> dict:
+) -> SuccessResponse[list[LeaderboardEntry]]:
     """Get the epoch leaderboard."""
     data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/standings", response_model=SuccessResponse[list[LeaderboardEntry]])
+@router.get("/standings")
 async def get_final_standings(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[LeaderboardEntry]]:
     """Get final standings for a completed epoch (includes dimension titles)."""
     data = await ScoringService.get_final_standings(supabase, epoch_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Score History ───────────────────────────────────────
 
 
-@router.get(
-    "/simulations/{simulation_id}",
-    response_model=SuccessResponse[list[ScoreResponse]],
-)
+@router.get("/simulations/{simulation_id}")
 async def get_score_history(
     epoch_id: UUID,
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ScoreResponse]]:
     """Get all cycle scores for a simulation in an epoch."""
     data = await ScoringService.get_score_history(supabase, epoch_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Intel Dossiers ─────────────────────────────────────
 
 
-@router.get("/intel-dossiers", response_model=SuccessResponse)
+@router.get("/intel-dossiers")
 async def get_intel_dossiers(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Requesting simulation's ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Get pre-aggregated intel dossiers for a simulation's spy reports."""
     data = await ScoringService.get_intel_dossiers(supabase, epoch_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Compute (Admin) ────────────────────────────────────
 
 
-@router.post("/compute", response_model=SuccessResponse[list[ScoreResponse]])
+@router.post("/compute")
 async def compute_scores(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     cycle: Annotated[int | None, Query(description="Cycle number (default: current)")] = None,
-) -> dict:
+) -> SuccessResponse[list[ScoreResponse]]:
     """Compute and store scores for the current or specified cycle. Creator only."""
     from backend.services.epoch_service import EpochService
 
@@ -101,4 +98,4 @@ async def compute_scores(
         )
     except Exception:
         logger.warning("Audit log failed for score compute", exc_info=True)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

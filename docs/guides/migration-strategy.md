@@ -844,7 +844,7 @@ async def list_agents(simulation_id: UUID):
     agents = await asyncio.to_thread(
         agents_service.get_all, simulation_id
     )
-    return {"success": True, "data": agents}
+    return SuccessResponse(data=agents)
 ```
 
 **Stufe 2: Async externe APIs (höchster Performance-Gewinn)**
@@ -918,27 +918,27 @@ from ..dependencies import get_simulation_context, get_current_user
 
 router = APIRouter(prefix="/api/v1/simulations/{simulation_id}/agents", tags=["agents"])
 
-@router.get("/", response_model=AgentListResponse)
+@router.get("/")
 async def list_agents(
     simulation_id: UUID,
     page: int = Query(1, ge=1),
     limit: int = Query(25, ge=1, le=100),
     search: str = Query(None),
     context = Depends(get_simulation_context),
-):
+) -> PaginatedResponse[AgentResponse]:
     agents = await agents_service.get_all(
         simulation_id=simulation_id, page=page, limit=limit, search=search
     )
-    return agents
+    return PaginatedResponse(data=agents, meta=PaginationMeta(...))
 
-@router.post("/", response_model=AgentResponse, status_code=201)
+@router.post("/", status_code=201)
 async def create_agent(
     simulation_id: UUID,
     body: AgentCreate,  # Pydantic validiert automatisch
     user = Depends(require_role("editor")),
-):
+) -> SuccessResponse[AgentResponse]:
     agent = await agents_service.create(simulation_id=simulation_id, data=body)
-    return agent
+    return SuccessResponse(data=agent)
 ```
 
 ### Pydantic Models (ersetzt ValidationStrategy)

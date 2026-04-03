@@ -17,23 +17,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 
-@router.get("/me/dashboard", response_model=SuccessResponse[DashboardData])
+@router.get("/me/dashboard")
 async def get_dashboard(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DashboardData]:
     """Get aggregated dashboard data for the authenticated user."""
     data = await UserDashboardService.get_dashboard(supabase, admin, user.id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/me", response_model=SuccessResponse[UserWithMemberships])
+@router.get("/me")
 async def get_me(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[UserWithMemberships]:
     """Get the current user's profile with simulation memberships."""
     rows = await MemberService.get_user_memberships(supabase, user.id)
 
@@ -60,48 +60,42 @@ async def get_me(
         is_platform_admin=user.email in PLATFORM_ADMIN_EMAILS,
     )
 
-    return {"success": True, "data": user_data}
+    return SuccessResponse(data=user_data)
 
 
-@router.get(
-    "/me/notification-preferences",
-    response_model=SuccessResponse[NotificationPreferencesResponse],
-)
+@router.get("/me/notification-preferences")
 async def get_notification_preferences(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[NotificationPreferencesResponse]:
     """Get the current user's notification preferences.
 
     Returns defaults if no preferences have been saved yet.
     """
     prefs = await UserProfileService.get_notification_preferences(supabase, user.id)
-    return {"success": True, "data": prefs}
+    return SuccessResponse(data=prefs)
 
 
-@router.post(
-    "/me/notification-preferences",
-    response_model=SuccessResponse[NotificationPreferencesResponse],
-)
+@router.post("/me/notification-preferences")
 async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[NotificationPreferencesResponse]:
     """Update the current user's notification preferences (upsert)."""
     result = await UserProfileService.upsert_notification_preferences(
         supabase,
         user.id,
         body.model_dump(),
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch("/me/onboarding", response_model=SuccessResponse)
+@router.patch("/me/onboarding")
 async def complete_onboarding(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Mark the current user's onboarding as completed."""
     await UserProfileService.complete_onboarding(admin, user.id)
-    return {"success": True, "data": {"onboarding_completed": True}}
+    return SuccessResponse(data={"onboarding_completed": True})

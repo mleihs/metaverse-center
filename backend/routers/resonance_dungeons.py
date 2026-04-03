@@ -69,22 +69,22 @@ router = APIRouter(prefix="/api/v1/dungeons", tags=["resonance-dungeons"])
 # ── Available Dungeons ──────────────────────────────────────────────────────
 
 
-@router.get("/available", response_model=SuccessResponse[list[AvailableDungeonResponse]])
+@router.get("/available")
 async def list_available_dungeons(
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("viewer"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[list[AvailableDungeonResponse]]:
     """List archetypes with active resonances above dungeon threshold."""
     available = await DungeonEngineService.get_available_dungeons(admin_supabase, simulation_id)
-    return {"success": True, "data": [a.model_dump() for a in available]}
+    return SuccessResponse(data=available)
 
 
 # ── Create Run ──────────────────────────────────────────────────────────────
 
 
-@router.post("/runs", response_model=SuccessResponse[CreateRunResponse], status_code=201)
+@router.post("/runs", status_code=201)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def create_run(
     request: Request,
@@ -94,7 +94,7 @@ async def create_run(
     _member: Annotated[str, Depends(require_simulation_member("editor"))],
     _supabase: Annotated[Client, Depends(get_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CreateRunResponse]:
     """Start a new dungeon run."""
     result = await DungeonEngineService.create_run(admin, simulation_id, user.id, body)
     await AuditService.safe_log(
@@ -106,44 +106,44 @@ async def create_run(
         "create",
         {"archetype": body.archetype, "difficulty": body.difficulty},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Get Run ─────────────────────────────────────────────────────────────────
 
 
-@router.get("/runs/{run_id}", response_model=SuccessResponse[DungeonRunResponse])
+@router.get("/runs/{run_id}")
 async def get_run(
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonRunResponse]:
     """Get run metadata."""
     data = await DungeonQueryService.get_run(supabase, run_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Get Client State ────────────────────────────────────────────────────────
 
 
-@router.get("/runs/{run_id}/state", response_model=SuccessResponse[DungeonClientState])
+@router.get("/runs/{run_id}/state")
 async def get_run_state(
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonClientState]:
     """Get full client state (fog-of-war filtered).
 
     Tries in-memory first, falls back to checkpoint recovery.
     """
     state = await DungeonEngineService.get_client_state(run_id, admin, user_id=user.id)
-    return {"success": True, "data": state.model_dump()}
+    return SuccessResponse(data=state)
 
 
 # ── Move ────────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/move", response_model=SuccessResponse[MoveResponse])
+@router.post("/runs/{run_id}/move")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def move_to_room(
     request: Request,
@@ -151,16 +151,16 @@ async def move_to_room(
     body: DungeonMoveRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[MoveResponse]:
     """Move party to an adjacent room."""
     result = await DungeonEngineService.move_to_room(admin, run_id, body.room_index, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Encounter Action ────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/action", response_model=SuccessResponse[EncounterChoiceResponse])
+@router.post("/runs/{run_id}/action")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_action(
     request: Request,
@@ -168,16 +168,16 @@ async def submit_action(
     body: DungeonAction,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EncounterChoiceResponse]:
     """Submit an encounter choice or interaction."""
     result = await DungeonEngineService.handle_encounter_choice(admin, run_id, body, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Combat Submission ───────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/combat/submit", response_model=SuccessResponse[CombatSubmitResponse])
+@router.post("/runs/{run_id}/combat/submit")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_combat_actions(
     request: Request,
@@ -185,16 +185,16 @@ async def submit_combat_actions(
     body: CombatSubmission,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CombatSubmitResponse]:
     """Submit combat actions for planning phase."""
     result = await DungeonEngineService.submit_combat_actions(admin, run_id, user.id, body)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Scout ───────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/scout", response_model=SuccessResponse[ScoutResponse])
+@router.post("/runs/{run_id}/scout")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def scout(
     request: Request,
@@ -202,16 +202,16 @@ async def scout(
     body: ScoutRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ScoutResponse]:
     """Spy: reveal adjacent rooms and restore visibility."""
     result = await DungeonEngineService.scout(admin, run_id, body.agent_id, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Seal Breach (Deluge) ────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/seal", response_model=SuccessResponse[ArchetypeActionResponse])
+@router.post("/runs/{run_id}/seal")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def seal_breach(
     request: Request,
@@ -219,16 +219,16 @@ async def seal_breach(
     body: ScoutRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ArchetypeActionResponse]:
     """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
     result = await DungeonEngineService.seal_breach(admin, run_id, body.agent_id, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Ground (Awakening) ─────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/ground", response_model=SuccessResponse[ArchetypeActionResponse])
+@router.post("/runs/{run_id}/ground")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def ground(
     request: Request,
@@ -236,16 +236,16 @@ async def ground(
     body: ScoutRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ArchetypeActionResponse]:
     """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
     result = await DungeonEngineService.ground(admin, run_id, body.agent_id, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Rally (Overthrow) ──────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/rally", response_model=SuccessResponse[ArchetypeActionResponse])
+@router.post("/runs/{run_id}/rally")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def rally(
     request: Request,
@@ -253,16 +253,16 @@ async def rally(
     body: ScoutRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ArchetypeActionResponse]:
     """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
     result = await DungeonEngineService.rally(admin, run_id, body.agent_id, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Salvage (Deluge) ───────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/salvage", response_model=SuccessResponse[SalvageResponse])
+@router.post("/runs/{run_id}/salvage")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def salvage(
     request: Request,
@@ -270,16 +270,16 @@ async def salvage(
     body: SalvageRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SalvageResponse]:
     """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
     result = await DungeonEngineService.salvage(admin, run_id, body.agent_id, body.room_index, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Rest ────────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/rest", response_model=SuccessResponse[RestResponse])
+@router.post("/runs/{run_id}/rest")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def rest(
     request: Request,
@@ -287,23 +287,23 @@ async def rest(
     body: RestRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[RestResponse]:
     """Rest at a rest site."""
     result = await DungeonEngineService.rest(admin, run_id, body.agent_ids, user_id=user.id)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Retreat ─────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/retreat", response_model=SuccessResponse[RetreatResponse])
+@router.post("/runs/{run_id}/retreat")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def retreat(
     request: Request,
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[RetreatResponse]:
     """Abandon dungeon (keep partial loot)."""
     result = await DungeonEngineService.retreat(admin, run_id, user_id=user.id)
     await AuditService.safe_log(
@@ -315,13 +315,13 @@ async def retreat(
         "abandon",
         {},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Loot Distribution ──────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/distribute", response_model=SuccessResponse[LootAssignResponse])
+@router.post("/runs/{run_id}/distribute")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def assign_loot(
     request: Request,
@@ -329,7 +329,7 @@ async def assign_loot(
     body: LootAssignment,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[LootAssignResponse]:
     """Assign a distributable loot item to an agent during the debrief phase."""
     result = await DungeonEngineService.assign_loot(
         admin,
@@ -348,17 +348,17 @@ async def assign_loot(
         "assign_loot",
         {"loot_id": body.loot_id, "agent_id": str(body.agent_id), "dimension": body.dimension},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.post("/runs/{run_id}/distribute/confirm", response_model=SuccessResponse[DistributeConfirmResponse])
+@router.post("/runs/{run_id}/distribute/confirm")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def confirm_distribution(
     request: Request,
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DistributeConfirmResponse]:
     """Finalize loot distribution and complete the dungeon run."""
     result = await DungeonEngineService.confirm_distribution(admin, run_id, user_id=user.id)
     await AuditService.safe_log(
@@ -370,20 +370,20 @@ async def confirm_distribution(
         "finalize_distribution",
         {},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Event Log ───────────────────────────────────────────────────────────────
 
 
-@router.get("/runs/{run_id}/events", response_model=PaginatedResponse[DungeonEventResponse])
+@router.get("/runs/{run_id}/events")
 async def list_events(
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[DungeonEventResponse]:
     """Get dungeon event log (paginated).
 
     Requires dungeon participant — verifies user is in run's party_player_ids.
@@ -397,13 +397,13 @@ async def list_events(
         limit=limit,
         offset=offset,
     )
-    return {"success": True, "data": data, "meta": meta}
+    return PaginatedResponse(data=data, meta=meta)
 
 
 # ── History ─────────────────────────────────────────────────────────────────
 
 
-@router.get("/history", response_model=PaginatedResponse[DungeonRunResponse])
+@router.get("/history")
 async def list_history(
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -411,7 +411,7 @@ async def list_history(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[DungeonRunResponse]:
     """List past dungeon runs for a simulation."""
     data, meta = await DungeonQueryService.list_history(
         supabase,
@@ -419,23 +419,20 @@ async def list_history(
         limit=limit,
         offset=offset,
     )
-    return {"success": True, "data": data, "meta": meta}
+    return PaginatedResponse(data=data, meta=meta)
 
 
 # ── Agent Loot Effects (Provenance) ─────────────────────────────────────────
 
 
-@router.get(
-    "/agents/{agent_id}/loot-effects",
-    response_model=SuccessResponse[list[AgentLootEffectResponse]],
-)
+@router.get("/agents/{agent_id}/loot-effects")
 async def get_agent_loot_effects(
     agent_id: UUID,
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[AgentLootEffectResponse]]:
     """Get all persistent dungeon loot effects for an agent.
 
     Joins with source run to provide provenance (archetype, difficulty, date).
@@ -446,4 +443,4 @@ async def get_agent_loot_effects(
         agent_id,
         simulation_id,
     )
-    return {"success": True, "data": effects}
+    return SuccessResponse(data=effects)

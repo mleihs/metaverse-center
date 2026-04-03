@@ -269,7 +269,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
 | FastAPI | 0.135 | Async web framework, 48 routers |
-| Pydantic v2 | 2.12 | Request/response validation, settings |
+| Pydantic v2 | 2.12 | Request/response validation, typed API responses (45 response models), settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.25 | Native AsyncClient with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
@@ -330,7 +330,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Localized UI strings | 5,906 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
 | Documentation files | 73 (Divio structure + 9 ADRs) |
-| Dungeon archetypes | 8 designed, 6 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge) |
+| Dungeon archetypes | 8 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge, Awakening, Overthrow) |
 | Flagship simulations | 5 + 2 community presets |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 7 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot). 8 total in config. Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 640+ seed rows, migration 173-177). Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 640+ seed rows, migration 173-177). Terminal-based submarine war room HUD.
 
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)

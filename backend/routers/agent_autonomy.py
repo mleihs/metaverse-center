@@ -41,80 +41,65 @@ router = APIRouter(
 # -- Mood -----------------------------------------------------------------------
 
 
-@router.get(
-    "/agents/{agent_id}/mood",
-    response_model=SuccessResponse[AgentMoodResponse | None],
-)
+@router.get("/agents/{agent_id}/mood")
 async def get_agent_mood(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentMoodResponse | None]:
     """Get the current emotional state of an agent."""
     data = await AgentMoodService.get_agent_mood(supabase, agent_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/agents/{agent_id}/moodlets",
-    response_model=SuccessResponse[list[MoodletResponse]],
-)
+@router.get("/agents/{agent_id}/moodlets")
 async def list_agent_moodlets(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[MoodletResponse]]:
     """List all active moodlets for an agent."""
     data = await AgentMoodService.list_moodlets(supabase, agent_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # -- Needs -----------------------------------------------------------------------
 
 
-@router.get(
-    "/agents/{agent_id}/needs",
-    response_model=SuccessResponse[AgentNeedsResponse | None],
-)
+@router.get("/agents/{agent_id}/needs")
 async def get_agent_needs(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentNeedsResponse | None]:
     """Get the current need levels of an agent."""
     data = await AgentNeedsService.get_agent_needs(supabase, agent_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # -- Opinions --------------------------------------------------------------------
 
 
-@router.get(
-    "/agents/{agent_id}/opinions",
-    response_model=SuccessResponse[list[AgentOpinionResponse]],
-)
+@router.get("/agents/{agent_id}/opinions")
 async def list_agent_opinions(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[AgentOpinionResponse]]:
     """List all opinions this agent holds about other agents."""
     data = await AgentOpinionService.list_opinions(supabase, agent_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/agents/{agent_id}/opinion-modifiers",
-    response_model=SuccessResponse[list[OpinionModifierResponse]],
-)
+@router.get("/agents/{agent_id}/opinion-modifiers")
 async def list_agent_opinion_modifiers(
     simulation_id: UUID,
     agent_id: UUID,
@@ -122,21 +107,18 @@ async def list_agent_opinion_modifiers(
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     target_agent_id: Annotated[UUID | None, Query()] = None,
-) -> dict:
+) -> SuccessResponse[list[OpinionModifierResponse]]:
     """List active opinion modifiers for an agent, optionally filtered by target."""
     data = await AgentOpinionService.list_modifiers(
         supabase, agent_id, simulation_id, target_agent_id,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # -- Activities ------------------------------------------------------------------
 
 
-@router.get(
-    "/activities",
-    response_model=PaginatedResponse[AgentActivityResponse],
-)
+@router.get("/activities")
 async def list_activities(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -148,7 +130,7 @@ async def list_activities(
     activity_type: Annotated[str | None, Query()] = None,
     min_significance: Annotated[int, Query(ge=1, le=10)] = 1,
     since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
-) -> dict:
+) -> PaginatedResponse[AgentActivityResponse]:
     """List autonomous activities for a simulation with filters."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     data, total = await AgentActivityService.list_activities(
@@ -157,40 +139,33 @@ async def list_activities(
         min_significance=min_significance, since=since,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
 # -- Simulation-Level Summaries --------------------------------------------------
 
 
-@router.get(
-    "/mood-summary",
-    response_model=SuccessResponse[SimulationMoodSummary],
-)
+@router.get("/mood-summary")
 async def get_simulation_mood_summary(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SimulationMoodSummary]:
     """Get aggregate mood/stress state for all agents in a simulation."""
     summary = await MorningBriefingService._compute_mood_summary(
         supabase, simulation_id,
     )
-    return {"success": True, "data": summary}
+    return SuccessResponse(data=summary)
 
 
 # -- Morning Briefing ------------------------------------------------------------
 
 
-@router.get(
-    "/briefing",
-    response_model=SuccessResponse[MorningBriefingData],
-)
+@router.get("/briefing")
 async def get_morning_briefing(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -198,10 +173,10 @@ async def get_morning_briefing(
     supabase: Annotated[Client, Depends(get_supabase)],
     since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
     mode: Annotated[str, Query(pattern=r"^(narrative|data)$")] = "narrative",
-) -> dict:
+) -> SuccessResponse[MorningBriefingData]:
     """Generate a morning briefing with prioritized activity summary."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     briefing = await MorningBriefingService.generate(
         supabase, simulation_id, since, mode=mode,
     )
-    return {"success": True, "data": briefing}
+    return SuccessResponse(data=briefing)

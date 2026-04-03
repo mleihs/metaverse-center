@@ -187,9 +187,9 @@ class AgentCreate(BaseModel):
     system: str
     gender: Optional[str] = None
 
-@router.post("/agents", response_model=AgentResponse)
-async def create_agent(agent: AgentCreate):
-    ...  # Validierung passiert automatisch
+@router.post("/agents", status_code=201)
+async def create_agent(agent: AgentCreate) -> SuccessResponse[AgentResponse]:
+    ...  # Validierung passiert automatisch via Pydantic + Return-Type
 ```
 
 **3. Dependency Injection für Simulation-Kontext**

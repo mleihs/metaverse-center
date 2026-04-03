@@ -42,29 +42,29 @@ router = APIRouter(tags=["Heartbeat"])
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat", response_model=SuccessResponse)
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat")
 async def get_heartbeat_overview(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Get latest heartbeat tick + countdown for a simulation."""
     data = await HeartbeatService.get_heartbeat_overview(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing", response_model=SuccessResponse)
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing")
 async def get_daily_briefing(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Daily briefing summary — health delta, event counts, active arcs."""
     data = await HeartbeatService.get_daily_briefing(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries")
 async def list_heartbeat_entries(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -73,21 +73,20 @@ async def list_heartbeat_entries(
     tick_number: Annotated[int | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """Paginated chronicle feed (heartbeat entries)."""
     data, total = await HeartbeatService.list_heartbeat_entries(
         supabase, simulation_id,
         entry_type=entry_type, tick_number=tick_number,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs", response_model=PaginatedResponse)
+@router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs")
 async def list_narrative_arcs(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -95,17 +94,16 @@ async def list_narrative_arcs(
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """List narrative arcs for a simulation."""
     data, total = await NarrativeArcService.list_arcs(
         supabase, simulation_id, status_filter=status_filter,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -113,25 +111,24 @@ async def list_narrative_arcs(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/public/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
+@router.get("/api/v1/public/simulations/{simulation_id}/heartbeat/entries")
 async def public_list_heartbeat_entries(
     simulation_id: UUID,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     entry_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """Public chronicle feed — no authentication required."""
     data, total = await HeartbeatService.list_heartbeat_entries(
         supabase, simulation_id,
         entry_type=entry_type,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -139,7 +136,7 @@ async def public_list_heartbeat_entries(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/events/{event_id}/responses", response_model=PaginatedResponse)
+@router.get("/api/v1/simulations/{simulation_id}/events/{event_id}/responses")
 async def list_bureau_responses(
     simulation_id: UUID,
     event_id: UUID,
@@ -148,19 +145,18 @@ async def list_bureau_responses(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """List bureau responses for an event."""
     data, total = await BureauResponseService.list_responses(
         supabase, simulation_id, event_id=event_id, limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.post("/api/v1/simulations/{simulation_id}/events/{event_id}/responses", response_model=SuccessResponse)
+@router.post("/api/v1/simulations/{simulation_id}/events/{event_id}/responses")
 async def create_bureau_response(
     simulation_id: UUID,
     event_id: UUID,
@@ -168,7 +164,7 @@ async def create_bureau_response(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Create a bureau response to an event."""
     data = await BureauResponseService.create_response(
         supabase, simulation_id, event_id,
@@ -179,12 +175,11 @@ async def create_bureau_response(
         "bureau_responses", data["id"], "create",
         details={"response_type": body.response_type, "agent_count": len(body.assigned_agent_ids)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.delete(
     "/api/v1/simulations/{simulation_id}/events/{event_id}/responses/{response_id}",
-    response_model=SuccessResponse,
 )
 async def cancel_bureau_response(
     simulation_id: UUID,
@@ -193,14 +188,14 @@ async def cancel_bureau_response(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Cancel a pending bureau response."""
     data = await BureauResponseService.cancel_response(supabase, simulation_id, response_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id,
         "bureau_responses", response_id, "cancel",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -208,26 +203,26 @@ async def cancel_bureau_response(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/simulations/{simulation_id}/attunements", response_model=SuccessResponse)
+@router.get("/api/v1/simulations/{simulation_id}/attunements")
 async def list_attunements(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """List attunements for a simulation."""
     data = await AttunementService.list_attunements(supabase, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/api/v1/simulations/{simulation_id}/attunements", response_model=SuccessResponse)
+@router.post("/api/v1/simulations/{simulation_id}/attunements")
 async def set_attunement(
     simulation_id: UUID,
     body: AttunementCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Set a resonance signature attunement."""
     data = await AttunementService.set_attunement(
         supabase, simulation_id, body.resonance_signature, user.id,
@@ -237,17 +232,17 @@ async def set_attunement(
         "substrate_attunements", data["id"], "create",
         details={"signature": body.resonance_signature},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/api/v1/simulations/{simulation_id}/attunements/{signature}", response_model=SuccessResponse)
+@router.delete("/api/v1/simulations/{simulation_id}/attunements/{signature}")
 async def remove_attunement(
     simulation_id: UUID,
     signature: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Remove an attunement."""
     data = await AttunementService.remove_attunement(supabase, simulation_id, signature)
     await AuditService.safe_log(
@@ -255,7 +250,7 @@ async def remove_attunement(
         "substrate_attunements", None, "delete",
         details={"signature": signature},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -263,7 +258,7 @@ async def remove_attunement(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/anchors", response_model=PaginatedResponse)
+@router.get("/api/v1/anchors")
 async def list_anchors(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
@@ -271,27 +266,26 @@ async def list_anchors(
     simulation_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """List all collaborative anchors."""
     data, total = await AnchorService.list_anchors(
         supabase, status_filter=status_filter, sim_id=simulation_id,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.post("/api/v1/anchors", response_model=SuccessResponse)
+@router.post("/api/v1/anchors")
 async def create_anchor(
     body: AnchorCreate,
     simulation_id: Annotated[UUID, Query(description="Simulation creating the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Create a collaborative anchor."""
     data = await AnchorService.create_anchor(
         supabase, body.resonance_id, body.resonance_signature,
@@ -302,41 +296,41 @@ async def create_anchor(
         "collaborative_anchors", data["id"], "create",
         details={"name": body.name, "resonance_signature": body.resonance_signature},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/api/v1/anchors/{anchor_id}/join", response_model=SuccessResponse)
+@router.post("/api/v1/anchors/{anchor_id}/join")
 async def join_anchor(
     anchor_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Simulation joining the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Join an existing anchor."""
     data = await AnchorService.join_anchor(supabase, anchor_id, simulation_id, user.id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id,
         "collaborative_anchors", anchor_id, "join",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/api/v1/anchors/{anchor_id}/leave", response_model=SuccessResponse)
+@router.post("/api/v1/anchors/{anchor_id}/leave")
 async def leave_anchor(
     anchor_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Simulation leaving the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Leave an anchor."""
     data = await AnchorService.leave_anchor(supabase, anchor_id, simulation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id,
         "collaborative_anchors", anchor_id, "leave",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -344,32 +338,32 @@ async def leave_anchor(
 # ═══════════════════════════════════════════════════════════════
 
 
-@router.get("/api/v1/admin/heartbeat/dashboard", response_model=SuccessResponse)
+@router.get("/api/v1/admin/heartbeat/dashboard")
 async def get_heartbeat_dashboard(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Admin heartbeat dashboard — all simulation statuses + global config."""
     data = await HeartbeatService.get_admin_dashboard(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/api/v1/admin/heartbeat/cascade-rules", response_model=SuccessResponse)
+@router.get("/api/v1/admin/heartbeat/cascade-rules")
 async def list_cascade_rules(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """List all cascade rules from the resonance_cascade_rules table."""
     data = await HeartbeatService.list_cascade_rules(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/api/v1/admin/heartbeat/force-tick/{simulation_id}", response_model=SuccessResponse)
+@router.post("/api/v1/admin/heartbeat/force-tick/{simulation_id}")
 async def force_tick(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Force a heartbeat tick for a specific simulation (admin only)."""
     data = await HeartbeatService.force_tick(admin_supabase, simulation_id)
     await AuditService.safe_log(
@@ -380,4 +374,4 @@ async def force_tick(
         "Admin forced tick for sim %s", simulation_id,
         extra={"simulation_id": str(simulation_id), "admin_id": str(user.id)},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

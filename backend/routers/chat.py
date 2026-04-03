@@ -34,26 +34,26 @@ router = APIRouter(
 _service = ChatService()
 
 
-@router.get("/conversations", response_model=SuccessResponse[list[ConversationResponse]])
+@router.get("/conversations")
 async def list_conversations(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ConversationResponse]]:
     """List all conversations for the current user."""
     conversations = await _service.list_conversations(supabase, simulation_id, user.id)
-    return {"success": True, "data": conversations}
+    return SuccessResponse(data=conversations)
 
 
-@router.post("/conversations", response_model=SuccessResponse[ConversationResponse], status_code=201)
+@router.post("/conversations", status_code=201)
 async def create_conversation(
     simulation_id: UUID,
     body: ConversationCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ConversationResponse]:
     """Start a new conversation with one or more agents."""
     conversation = await _service.create_conversation(
         supabase, simulation_id, user.id, body.agent_ids, body.title,
@@ -62,10 +62,10 @@ async def create_conversation(
         supabase, simulation_id, user.id, "chat_conversations", conversation.get("id"), "create",
         details={"title": body.title, "agent_count": len(body.agent_ids)},
     )
-    return {"success": True, "data": conversation}
+    return SuccessResponse(data=conversation)
 
 
-@router.get("/conversations/{conversation_id}/messages", response_model=SuccessResponse[list[MessageResponse]])
+@router.get("/conversations/{conversation_id}/messages")
 async def get_messages(
     simulation_id: UUID,
     conversation_id: UUID,
@@ -74,15 +74,14 @@ async def get_messages(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     before: Annotated[str | None, Query(description="Cursor: ISO timestamp for pagination")] = None,
-) -> dict:
+) -> SuccessResponse[list[MessageResponse]]:
     """Get messages for a conversation with cursor-based pagination."""
     messages = await _service.get_messages(supabase, conversation_id, limit=limit, before=before)
-    return {"success": True, "data": messages}
+    return SuccessResponse(data=messages)
 
 
 @router.post(
     "/conversations/{conversation_id}/messages",
-    response_model=SuccessResponse[MessageResponse | list[MessageResponse]],
     status_code=201,
 )
 @limiter.limit(RATE_LIMIT_AI_CHAT)
@@ -94,7 +93,7 @@ async def send_message(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MessageResponse | list[MessageResponse]]:
     """Send a message in a conversation.
 
     If generate_response=true, generates AI responses from all agents in the conversation.
@@ -109,7 +108,7 @@ async def send_message(
     )
 
     if not body.generate_response:
-        return {"success": True, "data": user_message}
+        return SuccessResponse(data=user_message)
 
     # Generate AI response(s)
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -134,12 +133,11 @@ async def send_message(
         supabase, conversation_id, limit=len(agents) + 1,
     )
 
-    return {"success": True, "data": all_messages}
+    return SuccessResponse(data=all_messages)
 
 
 @router.post(
     "/conversations/{conversation_id}/agents",
-    response_model=SuccessResponse[dict],
     status_code=201,
 )
 async def add_agent(
@@ -149,20 +147,17 @@ async def add_agent(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Add an agent to a conversation."""
     result = await _service.add_agent(supabase, conversation_id, body.agent_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversation_agents", body.agent_id, "create",
         details={"conversation_id": str(conversation_id)},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.delete(
-    "/conversations/{conversation_id}/agents/{agent_id}",
-    response_model=SuccessResponse[dict],
-)
+@router.delete("/conversations/{conversation_id}/agents/{agent_id}")
 async def remove_agent(
     simulation_id: UUID,
     conversation_id: UUID,
@@ -170,35 +165,31 @@ async def remove_agent(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Remove an agent from a conversation."""
     await _service.remove_agent(supabase, conversation_id, agent_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversation_agents", agent_id, "delete",
         details={"conversation_id": str(conversation_id)},
     )
-    return {"success": True, "data": {"removed": True}}
+    return SuccessResponse(data={"removed": True})
 
 
-@router.get(
-    "/conversations/{conversation_id}/events",
-    response_model=SuccessResponse[list[EventReferenceResponse]],
-)
+@router.get("/conversations/{conversation_id}/events")
 async def get_event_references(
     simulation_id: UUID,
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EventReferenceResponse]]:
     """List event references for a conversation."""
     refs = await _service.get_event_references(supabase, conversation_id)
-    return {"success": True, "data": refs}
+    return SuccessResponse(data=refs)
 
 
 @router.post(
     "/conversations/{conversation_id}/events",
-    response_model=SuccessResponse[EventReferenceResponse],
     status_code=201,
 )
 async def add_event_reference(
@@ -208,7 +199,7 @@ async def add_event_reference(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventReferenceResponse]:
     """Add an event reference to a conversation."""
     ref = await _service.add_event_reference(
         supabase, conversation_id, body.event_id, user.id,
@@ -217,13 +208,10 @@ async def add_event_reference(
         supabase, simulation_id, user.id, "chat_event_references", body.event_id, "create",
         details={"conversation_id": str(conversation_id)},
     )
-    return {"success": True, "data": ref}
+    return SuccessResponse(data=ref)
 
 
-@router.delete(
-    "/conversations/{conversation_id}/events/{event_id}",
-    response_model=SuccessResponse[dict],
-)
+@router.delete("/conversations/{conversation_id}/events/{event_id}")
 async def remove_event_reference(
     simulation_id: UUID,
     conversation_id: UUID,
@@ -231,43 +219,43 @@ async def remove_event_reference(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Remove an event reference from a conversation."""
     await _service.remove_event_reference(supabase, conversation_id, event_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_event_references", event_id, "delete",
         details={"conversation_id": str(conversation_id)},
     )
-    return {"success": True, "data": {"removed": True}}
+    return SuccessResponse(data={"removed": True})
 
 
-@router.patch("/conversations/{conversation_id}", response_model=SuccessResponse[ConversationResponse])
+@router.patch("/conversations/{conversation_id}")
 async def archive_conversation(
     simulation_id: UUID,
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ConversationResponse]:
     """Archive a conversation (soft-delete)."""
     conversation = await _service.archive_conversation(supabase, conversation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversations", conversation_id, "archive",
     )
-    return {"success": True, "data": conversation}
+    return SuccessResponse(data=conversation)
 
 
-@router.delete("/conversations/{conversation_id}", response_model=SuccessResponse[ConversationResponse])
+@router.delete("/conversations/{conversation_id}")
 async def delete_conversation(
     simulation_id: UUID,
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ConversationResponse]:
     """Permanently delete a conversation and all its messages."""
     conversation = await _service.delete_conversation(supabase, conversation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversations", conversation_id, "delete",
     )
-    return {"success": True, "data": conversation}
+    return SuccessResponse(data=conversation)

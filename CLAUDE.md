@@ -74,9 +74,13 @@ Write operations require:
 - No direct DB queries in routers.
 - All business logic lives in services.
 - CRUD must extend `BaseService` unless justified.
-- All responses use:
-  - `SuccessResponse`
-  - `PaginatedResponse`
+- All responses use typed Pydantic wrappers — never raw dicts:
+  - `SuccessResponse[T]` for single/list data
+  - `PaginatedResponse[T]` for paginated data
+  - Return type annotation is the single source of truth (no `response_model=` parameter)
+  - Return `SuccessResponse(data=...)` / `PaginatedResponse(data=..., meta=...)` instances, never `{"success": True, ...}` dicts
+  - ASSESS endpoints (polymorphic AI output) use `SuccessResponse[dict]` or `SuccessResponse[list[dict]]`
+  - Response models live in `backend/models/<domain>.py`, named `*Response`
 - Audit logging required for all mutations.
 - Import dependencies at module level (no late-binding imports).
 
@@ -86,6 +90,8 @@ Write operations require:
 - Never run `supabase db reset` without explicit user approval.
 - Never place business logic inside routers.
 - Never change response shape without updating spec.
+- Never use `response_model=` on FastAPI decorators. Use return type annotations instead (`-> SuccessResponse[T]`). The codebase has zero `response_model=` usage — this was removed in the Pydantic response typing refactor (468 endpoints, 46 routers, 45 models).
+- Never return raw `{"success": True, "data": ...}` dicts from endpoints. Always return `SuccessResponse(data=...)` or `PaginatedResponse(data=..., meta=...)` instances.
 - Never add columns to `agents`, `buildings`, `simulations`, or `events` without refreshing the corresponding `active_*` view (`CREATE OR REPLACE VIEW`) in the same migration. PostgreSQL `SELECT *` in views resolves columns at creation time, not query time.
 - Never grant SECURITY DEFINER functions to `anon` or `authenticated`. Admin RPCs must be callable only via backend with role validation (see ADR-006, incident migration 096→147).
 - Never use `httpx`/`requests` directly for user-provided URLs. Use `backend/utils/safe_fetch.py` for SSRF protection.

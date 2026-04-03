@@ -22,7 +22,7 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=SuccessResponse)
+@router.post("")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def generate_chronicle(
     request: Request,
@@ -31,7 +31,7 @@ async def generate_chronicle(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Generate a new chronicle edition (requires editor+)."""
     data = await ChronicleService.generate(
         admin_supabase,
@@ -51,10 +51,10 @@ async def generate_chronicle(
             "locale": body.locale,
         },
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("", response_model=PaginatedResponse)
+@router.get("")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def list_chronicles(
     request: Request,
@@ -63,17 +63,16 @@ async def list_chronicles(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse:
     """List chronicle editions (paginated)."""
     data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{chronicle_id}", response_model=SuccessResponse)
+@router.get("/{chronicle_id}")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def get_chronicle(
     request: Request,
@@ -81,7 +80,7 @@ async def get_chronicle(
     chronicle_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Get a single chronicle edition."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

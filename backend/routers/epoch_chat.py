@@ -31,7 +31,7 @@ async def _audit(
         logger.warning("Audit log failed for epoch_chat %s (non-critical)", action, exc_info=True)
 
 
-@router.post("", response_model=SuccessResponse[EpochChatMessageResponse], status_code=201)
+@router.post("", status_code=201)
 @limiter.limit("30/minute")
 async def send_message(
     request: Request,
@@ -39,7 +39,7 @@ async def send_message(
     body: EpochChatMessageCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EpochChatMessageResponse]:
     """Send a chat message to epoch-wide or team channel."""
     message = await EpochChatService.send_message(
         supabase,
@@ -54,10 +54,10 @@ async def send_message(
         "epoch_id": str(epoch_id),
         "channel_type": body.channel_type,
     })
-    return {"success": True, "data": message}
+    return SuccessResponse(data=message)
 
 
-@router.get("", response_model=PaginatedResponse[EpochChatMessageResponse])
+@router.get("")
 @limiter.limit("100/minute")
 async def list_messages(
     request: Request,
@@ -66,19 +66,18 @@ async def list_messages(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
-) -> dict:
+) -> PaginatedResponse[EpochChatMessageResponse]:
     """List epoch-wide chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(
         supabase, epoch_id, channel_type="epoch", limit=limit, before=before,
     )
-    return {
-        "success": True,
-        "data": messages,
-        "meta": PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
-    }
+    return PaginatedResponse(
+        data=messages,
+        meta=PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
+    )
 
 
-@router.get("/team/{team_id}", response_model=PaginatedResponse[EpochChatMessageResponse])
+@router.get("/team/{team_id}")
 @limiter.limit("100/minute")
 async def list_team_messages(
     request: Request,
@@ -88,13 +87,12 @@ async def list_team_messages(
     supabase: Annotated[Client, Depends(get_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
-) -> dict:
+) -> PaginatedResponse[EpochChatMessageResponse]:
     """List team-only chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(
         supabase, epoch_id, channel_type="team", team_id=team_id, limit=limit, before=before,
     )
-    return {
-        "success": True,
-        "data": messages,
-        "meta": PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
-    }
+    return PaginatedResponse(
+        data=messages,
+        meta=PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
+    )

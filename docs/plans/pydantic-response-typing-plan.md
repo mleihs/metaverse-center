@@ -1,8 +1,10 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
-> Stand: 2026-04-03
-> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)** + **Schritt 3 Forge (38 Endpoints, 10 neue Models)** + **Schritt 4 Admin (27 Endpoints, 16 neue Models)** + **Schritt 5 Social Suite (39 Endpoints, 4 Router, 8 neue Models)**
-> Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
+> **STATUS: VOLLSTÄNDIG ABGESCHLOSSEN** (2026-04-03)
+> Alle 7 Schritte erledigt: 468 Endpoints, 46 Router, 45 neue Response-Models.
+> Zero `response_model=` im gesamten Codebase. Return-Type-Annotation ist Single Source of Truth.
+>
+> Commits: dda61c6, bf44107, 5e1557f, 780a625, b98eefd, cb4cf5c, ef11de6, cd580e3, 32a725a + Schritt 6+7 (uncommitted at time of archival)
 
 ---
 
@@ -366,47 +368,54 @@ Wenige untyped Endpoints + restliche typed konvertieren.
 
 ---
 
-## Schritt 6: Chat & Generation (2 Router)
+## Schritt 6: Chat & Generation (2 Router) ✅
 
-### chat.py (11 total, 3 untyped)
+### chat.py (11 total, 3 untyped) ✅
 
-- [ ] L36 `GET /conversations` → verify ConversationResponse
-- [ ] L67 `GET /conversations/{id}/messages` → verify ChatMessageResponse
-- [ ] L82 `POST /conversations/{id}/messages` → Union type handling
-- [ ] 8 weitere TYPED → response_model= droppen
+- [x] `GET /conversations` → `SuccessResponse[list[ConversationResponse]]`
+- [x] `GET /conversations/{id}/messages` → `SuccessResponse[list[MessageResponse]]`
+- [x] `POST /conversations/{id}/messages` → `SuccessResponse[MessageResponse | list[MessageResponse]]` (Union kept)
+- [x] 8 weitere TYPED → response_model= dropped, return SuccessResponse()/dict kept for add/remove
 
-### generation.py (7 total, 7 untyped)
+### generation.py (7 total, 7 untyped) ✅
 
-- [ ] L132 `POST /agent` → ASSESS (AI output)
-- [ ] L169 `POST /building` → ASSESS (AI output)
-- [ ] L207 `POST /portrait-description` → `PortraitDescriptionResponse` — NEW
-- [ ] L243 `POST /event` → ASSESS (AI output)
-- [ ] L282 `POST /relationships` → ASSESS (AI output)
-- [ ] L330 `POST /lore-image` → `ImageGenerationResponse` — NEW
-- [ ] L368 `POST /image` → shares `ImageGenerationResponse`
+- [x] `POST /agent` → `SuccessResponse[dict]` (ASSESSED: polymorphic AI output)
+- [x] `POST /building` → `SuccessResponse[dict]` (ASSESSED: polymorphic AI output)
+- [x] `POST /portrait-description` → `SuccessResponse[PortraitDescriptionResponse]` — NEW
+- [x] `POST /event` → `SuccessResponse[dict]` (ASSESSED: polymorphic AI output)
+- [x] `POST /relationships` → `SuccessResponse[list[dict]]` (ASSESSED: bare list fixed)
+- [x] `POST /lore-image` → `SuccessResponse[ImageGenerationResponse]` — NEW
+- [x] `POST /image` → `SuccessResponse[ImageGenerationResponse]` — shares NEW
 
-**Summe: 18 Endpoints, ~2 neue Models + ASSESS**
+**Hardening (TEIL A):**
+- [x] 7 request models extracted to `backend/models/generation.py`
+- [x] Sentry push_scope + capture_exception in all 14 except blocks (7 EP × 2 handlers)
+- [x] simulation_id added to all logger.warning/exception extra= dicts
+- [x] Error detail leak fixed: portrait-description no longer exposes {e} to client
+- [x] `from pydantic import BaseModel, Field` removed from router
+
+**Summe: 18 Endpoints, 2 neue Models (PortraitDescriptionResponse, ImageGenerationResponse) + 7 Request Models extracted**
 
 ---
 
-## Schritt 7: Verbleibende mechanische Router (12 Router)
+## Schritt 7: Verbleibende mechanische Router (14 Router) ✅
 
 Keine untyped Endpoints, nur response_model= droppen.
 
-- [ ] **epochs.py** (31 total)
-- [ ] **resonance_dungeons.py** (19 total)
-- [ ] **heartbeat.py** (18 total)
-- [ ] **simulations.py** (10 total)
-- [ ] **news_scanner.py** (9 total)
-- [ ] **agent_autonomy.py** (8 total)
-- [ ] **users.py** (5 total)
-- [ ] **scores.py** (5 total)
-- [ ] **taxonomies.py** (5 total)
-- [ ] **epoch_chat.py** (3 total)
-- [ ] **zone_actions.py** (3 total)
-- [ ] **chronicles.py** (3 total)
-- [ ] **aptitudes.py** (3 total)
-- [ ] **agent_memories.py** (2 total)
+- [x] **epochs.py** (31 total) — 25 converted, 2 already done
+- [x] **resonance_dungeons.py** (21 total)
+- [x] **heartbeat.py** (19 total)
+- [x] **simulations.py** (10 total)
+- [x] **news_scanner.py** (9 total) — 1 EP kept as `-> dict` (non-standard meta with recommended_threshold)
+- [x] **agent_autonomy.py** (8 total)
+- [x] **users.py** (5 total)
+- [x] **scores.py** (5 total)
+- [x] **taxonomies.py** (6 total)
+- [x] **epoch_chat.py** (3 total)
+- [x] **zone_actions.py** (3 total)
+- [x] **chronicles.py** (3 total)
+- [x] **aptitudes.py** (3 total)
+- [x] **agent_memories.py** (2 total)
 
 **Summe: ~134 Endpoints, 0 neue Models**
 
@@ -414,14 +423,14 @@ Keine untyped Endpoints, nur response_model= droppen.
 
 ## Gesamtübersicht
 
-| Schritt | Router | Endpoints | Neue Models | Schwierigkeit |
-|---------|--------|-----------|-------------|---------------|
-| 0. Infra | — | — | — | Trivial |
-| 1. Quick-Win-Router | 10 | 47 | 0 | Mechanisch |
-| 2. Kleine Lücken | 14 | 165 | ~8 | Einfach |
-| 3. Forge | 1 | 38 | ~10 | Mittel |
-| 4. Admin | 1 | 27 | ~14 | Mittel |
-| 5. Social Suite | 4 | 39 | ~10 | Mittel |
-| 6. Chat & Generation | 2 | 18 | ~2+ASSESS | Komplex |
-| 7. Restliche Router | 14 | 134 | 0 | Mechanisch |
-| **Gesamt** | **46** | **~468** | **~44** | — |
+| Schritt | Router | Endpoints | Neue Models | Status |
+|---------|--------|-----------|-------------|--------|
+| 0. Infra | — | — | — | ✅ 5e1557f |
+| 1. Quick-Win-Router | 10 | 47 | 0 | ✅ 780a625 |
+| 2. Kleine Lücken | 14 | 165 | 9 | ✅ cb4cf5c |
+| 3. Forge | 1 | 38 | 10 | ✅ ef11de6 |
+| 4. Admin | 1 | 27 | 16 | ✅ cd580e3 |
+| 5. Social Suite | 4 | 39 | 8 | ✅ 32a725a |
+| 6. Chat & Generation | 2 | 18 | 2+7 req | ✅ |
+| 7. Restliche Router | 14 | 134 | 0 | ✅ |
+| **Gesamt** | **46** | **468** | **45** | **✅ DONE** |

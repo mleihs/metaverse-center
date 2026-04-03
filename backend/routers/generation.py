@@ -4,12 +4,23 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
 
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, limiter
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.generation import (
+    GenerateAgentRequest,
+    GenerateBuildingRequest,
+    GenerateEventRequest,
+    GenerateImageRequest,
+    GenerateLoreImageRequest,
+    GeneratePortraitRequest,
+    GenerateRelationshipsRequest,
+    ImageGenerationResponse,
+    PortraitDescriptionResponse,
+)
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.external.openrouter import OpenRouterError
@@ -25,76 +36,6 @@ router = APIRouter(
     prefix="/api/v1/simulations/{simulation_id}/generate",
     tags=["generation"],
 )
-
-# --- Request models ---
-
-
-class GenerateAgentRequest(BaseModel):
-    """Request to generate an agent description."""
-
-    name: str = Field(..., min_length=1, max_length=255, description="Display name of the agent to generate.")
-    system: str = Field("", description="Agent's system/faction affiliation within the simulation.")
-    gender: str = Field("", description="Agent's gender (used for pronoun selection in generated text).")
-    locale: str = Field("de", description="Target language for the generated description (ISO 639-1).")
-
-
-class GenerateBuildingRequest(BaseModel):
-    """Request to generate a building description."""
-
-    building_type: str = Field(
-        ..., min_length=1, description="Taxonomy building type (e.g. 'residential', 'military')."
-    )
-    name: str | None = Field(None, description="Optional building name; unnamed buildings get a generic description.")
-    style: str | None = Field(None, description="Architectural style (e.g. 'brutalist', 'gothic', 'industrial').")
-    condition: str | None = Field(None, description="Current building condition (e.g. 'good', 'damaged', 'ruins').")
-    locale: str = Field("de", description="Target language for the generated description (ISO 639-1).")
-
-
-class GeneratePortraitRequest(BaseModel):
-    """Request to generate a portrait description."""
-
-    agent_id: UUID = Field(..., description="UUID of the agent whose portrait to describe.")
-    agent_name: str = Field(..., min_length=1, description="Display name of the agent (used in the prompt).")
-    agent_data: dict | None = Field(
-        None, description="Optional agent metadata (appearance, background) for the prompt."
-    )
-
-
-class GenerateEventRequest(BaseModel):
-    """Request to generate an event."""
-
-    event_type: str = Field(
-        ..., min_length=1, description="Taxonomy event type (e.g. 'political', 'social', 'military')."
-    )
-    locale: str = Field("de", description="Target language for the generated event (ISO 639-1).")
-
-
-class GenerateRelationshipsRequest(BaseModel):
-    """Request to generate agent relationships."""
-
-    agent_id: UUID = Field(..., description="UUID of the focal agent to generate relationships for.")
-    locale: str = Field("de", description="Target language for relationship descriptions (ISO 639-1).")
-
-
-class GenerateImageRequest(BaseModel):
-    """Request to generate an image for an entity."""
-
-    entity_type: str = Field(
-        ..., pattern="^(agent|building|banner)$", description="Entity kind: 'agent', 'building', or 'banner'."
-    )
-    entity_id: UUID = Field(..., description="UUID of the entity to generate an image for.")
-    entity_name: str = Field(..., min_length=1, description="Display name of the entity (used in the image prompt).")
-    extra: dict | None = Field(None, description="Additional entity metadata passed to the image generation pipeline.")
-
-
-class GenerateLoreImageRequest(BaseModel):
-    """Request to generate a lore section image."""
-
-    section_title: str = Field(..., min_length=1, description="Title of the lore section.")
-    section_body: str = Field(..., description="Body text of the lore section (truncated for prompt).")
-    image_slug: str = Field(..., min_length=1, description="Slug for the output file path.")
-    sim_slug: str = Field(..., min_length=1, description="Simulation slug for the storage path.")
-    image_caption: str | None = Field(None, description="Visual scene description for direct use as image prompt.")
 
 
 # --- Helpers ---
@@ -130,7 +71,7 @@ async def _get_image_service(
 # --- Endpoints ---
 
 
-@router.post("/agent", response_model=SuccessResponse[dict])
+@router.post("/agent")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_agent(
     request: Request,
@@ -139,7 +80,7 @@ async def generate_agent(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Generate an agent description using AI."""
     try:
         service = await _get_generation_service(simulation_id, supabase)
@@ -154,20 +95,33 @@ async def generate_agent(
             "generation", None, "generate_agent",
             details={"agent_name": body.name, "locale": body.locale},
         )
-        return {"success": True, "data": result}
+        return SuccessResponse(data=result)
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_agent", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_agent", "error": str(e),
+            "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_agent")
+            scope.set_context("generation", {"simulation_id": str(simulation_id), "agent_name": body.name})
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Agent generation failed")
+        logger.exception("Agent generation failed", extra={
+            "endpoint": "generate_agent", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_agent")
+            scope.set_context("generation", {"simulation_id": str(simulation_id), "agent_name": body.name})
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Agent generation failed. Please try again.",
         ) from e
 
 
-@router.post("/building", response_model=SuccessResponse[dict])
+@router.post("/building")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_building(
     request: Request,
@@ -176,7 +130,7 @@ async def generate_building(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Generate a building description using AI."""
     try:
         service = await _get_generation_service(simulation_id, supabase)
@@ -192,20 +146,39 @@ async def generate_building(
             "generation", None, "generate_building",
             details={"building_type": body.building_type, "building_name": body.name, "locale": body.locale},
         )
-        return {"success": True, "data": result}
+        return SuccessResponse(data=result)
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_building", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_building", "error": str(e),
+            "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_building")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id),
+                "building_type": body.building_type, "building_name": body.name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Building generation failed")
+        logger.exception("Building generation failed", extra={
+            "endpoint": "generate_building", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_building")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id),
+                "building_type": body.building_type, "building_name": body.name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Building generation failed. Please try again.",
         ) from e
 
 
-@router.post("/portrait-description", response_model=SuccessResponse[dict])
+@router.post("/portrait-description")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_portrait_description(
     request: Request,
@@ -214,7 +187,7 @@ async def generate_portrait_description(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[PortraitDescriptionResponse]:
     """Generate a portrait description for image generation."""
     try:
         service = await _get_generation_service(simulation_id, supabase)
@@ -227,21 +200,38 @@ async def generate_portrait_description(
             "generation", body.agent_id, "generate_portrait_description",
             details={"agent_name": body.agent_name},
         )
-        return {"success": True, "data": {"description": description}}
+        return SuccessResponse(data=PortraitDescriptionResponse(description=description))
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_portrait_description", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_portrait_description", "error": str(e),
+            "simulation_id": str(simulation_id), "agent_name": body.agent_name,
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_portrait_description")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "agent_name": body.agent_name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI service temporarily unavailable: {e}",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Portrait description generation failed")
+        logger.exception("Portrait description generation failed", extra={
+            "endpoint": "generate_portrait_description", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_portrait_description")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "agent_name": body.agent_name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Portrait description generation failed. Please try again.",
         ) from e
 
 
-@router.post("/event", response_model=SuccessResponse[dict])
+@router.post("/event")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_event(
     request: Request,
@@ -250,7 +240,7 @@ async def generate_event(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Generate an event description using AI."""
     try:
         service = await _get_generation_service(simulation_id, supabase)
@@ -267,20 +257,37 @@ async def generate_event(
             "generation", None, "generate_event",
             details={"event_type": body.event_type, "locale": body.locale},
         )
-        return {"success": True, "data": result}
+        return SuccessResponse(data=result)
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_event", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_event", "error": str(e),
+            "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_event")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "event_type": body.event_type,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Event generation failed")
+        logger.exception("Event generation failed", extra={
+            "endpoint": "generate_event", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_event")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "event_type": body.event_type,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Event generation failed. Please try again.",
         ) from e
 
 
-@router.post("/relationships", response_model=SuccessResponse[list])
+@router.post("/relationships")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_relationships(
     request: Request,
@@ -289,7 +296,7 @@ async def generate_relationships(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Generate relationship suggestions for an agent using AI."""
     try:
         # Get agent data
@@ -311,24 +318,41 @@ async def generate_relationships(
             "generation", body.agent_id, "generate_relationships",
             details={"agent_id": str(body.agent_id), "locale": body.locale},
         )
-        return {"success": True, "data": result}
+        return SuccessResponse(data=result)
     except HTTPException:
         raise
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_relationships", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_relationships", "error": str(e),
+            "simulation_id": str(simulation_id), "agent_id": str(body.agent_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_relationships")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "agent_id": str(body.agent_id),
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Relationship generation failed")
+        logger.exception("Relationship generation failed", extra={
+            "endpoint": "generate_relationships", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_relationships")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "agent_id": str(body.agent_id),
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Relationship generation failed. Please try again.",
         ) from e
 
 
-@router.post("/lore-image", response_model=SuccessResponse[dict])
+@router.post("/lore-image")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_lore_image(
     request: Request,
@@ -337,7 +361,7 @@ async def generate_lore_image(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ImageGenerationResponse]:
     """Generate a lore section image (3:2 aspect ratio, simulation style)."""
     try:
         service = await _get_image_service(simulation_id, supabase)
@@ -353,20 +377,37 @@ async def generate_lore_image(
             "generation", None, "generate_lore_image",
             details={"section_title": body.section_title, "image_slug": body.image_slug},
         )
-        return {"success": True, "data": {"image_url": url}}
+        return SuccessResponse(data=ImageGenerationResponse(image_url=url))
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_lore_image", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_lore_image", "error": str(e),
+            "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_lore_image")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "section_title": body.section_title,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Lore image generation failed")
+        logger.exception("Lore image generation failed", extra={
+            "endpoint": "generate_lore_image", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_lore_image")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id), "section_title": body.section_title,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Lore image generation failed.",
         ) from e
 
 
-@router.post("/image", response_model=SuccessResponse[dict])
+@router.post("/image")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_image(
     request: Request,
@@ -375,7 +416,7 @@ async def generate_image(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ImageGenerationResponse]:
     """Generate an image for an agent portrait, building, or simulation banner."""
     try:
         service = await _get_image_service(simulation_id, supabase)
@@ -423,14 +464,33 @@ async def generate_image(
             "generation", body.entity_id, "generate_image",
             details={"entity_type": body.entity_type, "entity_name": body.entity_name},
         )
-        return {"success": True, "data": {"image_url": url}}
+        return SuccessResponse(data=ImageGenerationResponse(image_url=url))
     except OpenRouterError as e:
-        logger.warning("AI service unavailable", extra={"endpoint": "generate_image", "error": str(e)})
+        logger.warning("AI service unavailable", extra={
+            "endpoint": "generate_image", "error": str(e),
+            "simulation_id": str(simulation_id), "entity_type": body.entity_type,
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_image")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id),
+                "entity_type": body.entity_type, "entity_name": body.entity_name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable.",
         ) from None
     except Exception as e:
-        logger.exception("Image generation failed")
+        logger.exception("Image generation failed", extra={
+            "endpoint": "generate_image", "simulation_id": str(simulation_id),
+        })
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("generation_endpoint", "generate_image")
+            scope.set_context("generation", {
+                "simulation_id": str(simulation_id),
+                "entity_type": body.entity_type, "entity_name": body.entity_name,
+            })
+            sentry_sdk.capture_exception(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Image generation failed. Please try again.",
         ) from e

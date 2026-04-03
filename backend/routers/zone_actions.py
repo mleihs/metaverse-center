@@ -21,20 +21,20 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuccessResponse[list[ZoneActionResponse]])
+@router.get("")
 async def list_zone_actions(
     simulation_id: UUID,
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ZoneActionResponse]]:
     """List active and recent actions for a zone."""
     data = await ZoneActionService.list_actions(supabase, simulation_id, zone_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("", response_model=SuccessResponse[ZoneActionResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_zone_action(
     simulation_id: UUID,
     zone_id: UUID,
@@ -42,7 +42,7 @@ async def create_zone_action(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ZoneActionResponse]:
     """Create a zone fortification action."""
     action = await ZoneActionService.create_action(
         supabase, simulation_id, zone_id, body.action_type, user.id,
@@ -51,10 +51,10 @@ async def create_zone_action(
         supabase, simulation_id, user.id, "zone_actions", action["id"], "create",
         details={"action_type": body.action_type},
     )
-    return {"success": True, "data": action}
+    return SuccessResponse(data=action)
 
 
-@router.delete("/{action_id}", response_model=SuccessResponse[ZoneActionResponse])
+@router.delete("/{action_id}")
 async def cancel_zone_action(
     simulation_id: UUID,
     zone_id: UUID,
@@ -62,7 +62,7 @@ async def cancel_zone_action(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ZoneActionResponse]:
     """Cancel an active zone action."""
     action = await ZoneActionService.cancel_action(
         supabase, simulation_id, zone_id, action_id,
@@ -70,4 +70,4 @@ async def cancel_zone_action(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "zone_actions", action_id, "cancel",
     )
-    return {"success": True, "data": action}
+    return SuccessResponse(data=action)

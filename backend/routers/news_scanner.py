@@ -29,27 +29,27 @@ router = APIRouter(
 )
 
 
-@router.get("/dashboard", response_model=SuccessResponse)
+@router.get("/dashboard")
 async def get_dashboard(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Scanner dashboard: adapter status, metrics, config."""
     data = await ScannerService.get_dashboard(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/adapters", response_model=SuccessResponse)
+@router.get("/adapters")
 async def list_adapters(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """List all registered adapters with status."""
     dashboard = await ScannerService.get_dashboard(admin_supabase)
-    return {"success": True, "data": dashboard["adapters"]}
+    return SuccessResponse(data=dashboard["adapters"])
 
 
-@router.patch("/adapters/{name}", response_model=SuccessResponse)
+@router.patch("/adapters/{name}")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def toggle_adapter(
     request: Request,
@@ -57,24 +57,24 @@ async def toggle_adapter(
     enabled: Annotated[bool, Query()],
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Enable or disable an adapter in platform settings."""
     data = await ScannerService.toggle_adapter(admin_supabase, name, enabled)
     await AuditService.safe_log(
         admin_supabase, None, _user.id, "scanner_adapters", name, "toggle",
         details={"adapter": name, "enabled": enabled},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/trigger-scan", response_model=SuccessResponse)
+@router.post("/trigger-scan")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def trigger_scan(
     request: Request,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: TriggerScanRequest | None = None,
-) -> dict:
+) -> SuccessResponse:
     """Manually trigger one scan cycle."""
     adapter_names = body.adapter_names if body else None
     metrics = await ScannerService.run_scan_cycle(admin_supabase, adapter_names=adapter_names)
@@ -82,10 +82,10 @@ async def trigger_scan(
         admin_supabase, None, _user.id, "scanner", None, "scan",
         details={"adapter_names": adapter_names},
     )
-    return {"success": True, "data": metrics}
+    return SuccessResponse(data=metrics)
 
 
-@router.get("/candidates", response_model=PaginatedResponse)
+@router.get("/candidates")
 async def list_candidates(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
@@ -95,7 +95,11 @@ async def list_candidates(
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
-    """List scan candidates with filters."""
+    """List scan candidates with filters.
+
+    Returns dict (not PaginatedResponse) because meta includes extra
+    ``recommended_threshold`` field that doesn't fit PaginationMeta.
+    """
     data, total = await ScannerService.list_candidates(
         admin_supabase, status=status, category=category, source=source,
         limit=limit, offset=offset,
@@ -112,7 +116,7 @@ async def list_candidates(
     }
 
 
-@router.post("/candidates/{candidate_id}/approve", response_model=SuccessResponse)
+@router.post("/candidates/{candidate_id}/approve")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def approve_candidate(
     request: Request,
@@ -120,7 +124,7 @@ async def approve_candidate(
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ApproveCandidateRequest | None = None,
-) -> dict:
+) -> SuccessResponse:
     """Approve a candidate → create resonance."""
     delay_hours = body.delay_hours if body else 4
     resonance = await ScannerService.approve_candidate(
@@ -130,26 +134,26 @@ async def approve_candidate(
         admin_supabase, None, user.id, "scan_candidates", candidate_id, "approve",
         details={"delay_hours": delay_hours},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)
 
 
-@router.post("/candidates/{candidate_id}/reject", response_model=SuccessResponse)
+@router.post("/candidates/{candidate_id}/reject")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def reject_candidate(
     request: Request,
     candidate_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Reject a candidate."""
     await ScannerService.reject_candidate(admin_supabase, candidate_id, user.id)
     await AuditService.safe_log(
         admin_supabase, None, user.id, "scan_candidates", candidate_id, "reject",
     )
-    return {"success": True, "data": {"rejected": True}}
+    return SuccessResponse(data={"rejected": True})
 
 
-@router.patch("/candidates/{candidate_id}", response_model=SuccessResponse)
+@router.patch("/candidates/{candidate_id}")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def update_candidate(
     request: Request,
@@ -157,30 +161,29 @@ async def update_candidate(
     body: UpdateCandidateRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse:
     """Edit a candidate's fields before approving."""
     update_data = body.model_dump(exclude_none=True)
     result = await ScannerService.update_candidate(admin_supabase, candidate_id, update_data)
     await AuditService.safe_log(
         admin_supabase, None, _user.id, "scan_candidates", candidate_id, "update",
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.get("/scan-log", response_model=PaginatedResponse)
+@router.get("/scan-log")
 async def get_scan_log(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
     source: Annotated[str | None, Query()] = None,
-) -> dict:
+) -> PaginatedResponse:
     """Recent scan history."""
     data, total = await ScannerService.list_scan_log(
         admin_supabase, limit=limit, offset=offset, source=source,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
