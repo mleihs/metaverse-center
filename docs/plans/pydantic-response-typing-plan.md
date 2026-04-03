@@ -1,7 +1,7 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
 > Stand: 2026-04-03
-> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)**
+> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)** + **Schritt 3 Forge (38 Endpoints, 10 neue Models)** + **Schritt 4 Admin (27 Endpoints, 16 neue Models)**
 > Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
 
 ---
@@ -204,114 +204,124 @@ Wenige untyped Endpoints + restliche typed konvertieren.
 
 ---
 
-## Schritt 3: Forge — Größter Router (38 total, 26 untyped)
+## Schritt 3: Forge — Größter Router (38 total, 26 untyped) ✅
 
 ### Draft CRUD (3 Endpoints)
 
-- [ ] L82 `POST /drafts` → `ForgeDraft` — EXISTS
-- [ ] L99 `GET /drafts/{id}` → `ForgeDraft` — EXISTS
-- [ ] L110 `PATCH /drafts/{id}` → `ForgeDraft` — EXISTS
+- [x] `POST /drafts` → `ForgeDraft` — EXISTS
+- [x] `GET /drafts/{id}` → `ForgeDraft` — EXISTS
+- [x] `PATCH /drafts/{id}` → `ForgeDraft` — EXISTS
 
 ### Draft AI Generation (4 Endpoints)
 
-- [ ] L160 `POST /drafts/{id}/research` → ASSESS (AI research output)
-- [ ] L178 `POST /drafts/{id}/generate/{chunk}` → ASSESS (AI chunk)
-- [ ] L198 `POST /drafts/{id}/generate-entity/{type}` → ASSESS (AI entity)
-- [ ] L220 `POST /drafts/{id}/generate-theme` → `ForgeThemeOutput` — EXISTS
+- [x] `POST /drafts/{id}/research` → `dict` (ASSESS — polymorphic AI research output)
+- [x] `POST /drafts/{id}/generate/{chunk}` → `dict` (ASSESS — polymorphic AI chunk)
+- [x] `POST /drafts/{id}/generate-entity/{type}` → `dict` (ASSESS — polymorphic AI entity)
+- [x] `POST /drafts/{id}/generate-theme` → `ForgeThemeOutput` — EXISTS
 
 ### Ignition (1 Endpoint)
 
-- [ ] L238 `POST /drafts/{id}/ignite` → `IgnitionResponse` — NEW
+- [x] `POST /drafts/{id}/ignite` → `IgnitionResponse` — NEW
 
 ### Wallet & BYOK (7 Endpoints)
 
-- [ ] L284 `GET /wallet` → `UserWallet` — EXISTS
-- [ ] L329 `PUT /wallet/keys` → `BYOKUpdateResponse` — NEW (verify shape)
-- [ ] L778 `GET /admin/byok-setting` → `BYOKSystemSettings` — NEW
-- [ ] L788 `PUT /admin/byok-setting` → shares `BYOKSystemSettings`
-- [ ] L803 `PUT /admin/byok-access-policy` → shares `BYOKSystemSettings`
-- [ ] L818 `PUT /admin/user-byok-bypass/{uid}` → `BYOKUserOverride` — NEW
-- [ ] L834 `PUT /admin/user-byok-allowed/{uid}` → shares `BYOKUserOverride`
+- [x] `GET /wallet` → `WalletSummary` — NEW (UserWallet was wrong — service returns RPC shape)
+- [x] `PUT /wallet/keys` → `MessageResponse` — EXISTS (service always returns {message: str})
+- [x] `GET /admin/byok-setting` → `BYOKSystemSettings` — NEW
+- [x] `PUT /admin/byok-setting` → shares `BYOKSystemSettings`
+- [x] `PUT /admin/byok-access-policy` → shares `BYOKSystemSettings`
+- [x] `PUT /admin/user-byok-bypass/{uid}` → `BYOKUserOverride` — NEW
+- [x] `PUT /admin/user-byok-allowed/{uid}` → shares `BYOKUserOverride`
 
-### Purchases — Feature Store (4 Endpoints, 1 shared Model)
+### Purchases — Feature Store (5 Endpoints, 2 shared Models)
 
-- [ ] L478 `POST /{sim}/dossier` → `PurchaseConfirmation` — NEW
-- [ ] L557 `POST /{sim}/recruit` → shares `PurchaseConfirmation`
-- [ ] L595 `POST /{sim}/chronicle` → shares `PurchaseConfirmation`
-- [ ] L626 `POST /{sim}/chronicle/hires` → shares `PurchaseConfirmation`
+- [x] `POST /{sim}/dossier` → `PurchaseConfirmation` — NEW
+- [x] `POST /{sim}/dossier/evolve` → `DossierEvolveResponse` — NEW
+- [x] `POST /{sim}/recruit` → shares `PurchaseConfirmation`
+- [x] `POST /{sim}/chronicle` → shares `PurchaseConfirmation`
+- [x] `POST /{sim}/chronicle/hires` → shares `PurchaseConfirmation`
 
 ### Purchases — Darkroom (2 Endpoints)
 
-- [ ] L385 `POST /{sim}/darkroom` → `DarkroomPassResponse` — NEW
-- [ ] L417 `POST /{sim}/darkroom/regenerate/{t}/{id}` → `DarkroomRegenResponse` — NEW
+- [x] `POST /{sim}/darkroom` → `DarkroomPassResponse` — NEW
+- [x] `POST /{sim}/darkroom/regenerate/{t}/{id}` → `DarkroomRegenResponse` — NEW
 
-### Admin Operations (7 Endpoints)
+### Admin Operations (4 Endpoints)
 
-- [ ] L676 `GET /admin/stats` → `ForgeAdminStats` — NEW (verify shape)
-- [ ] L686 `DELETE /admin/purge` → `PurgeResult` — NEW
-- [ ] L723 `PUT /admin/bundles/{id}` → `TokenBundle` — EXISTS
-- [ ] L761 `POST /admin/grant` → `PurchaseReceipt` — EXISTS
+- [x] `GET /admin/stats` → `ForgeAdminStats` — NEW
+- [x] `DELETE /admin/purge` → `PurgeResult` — NEW
+- [x] `PUT /admin/bundles/{id}` → `TokenBundle` — EXISTS
+- [x] `POST /admin/grant` → `PurchaseReceipt` — EXISTS
 
-### Bereits TYPED (12 Endpoints)
+### Bereits TYPED (9 Endpoints + 2 already done)
 
-- [ ] 12 weitere TYPED Endpoints → response_model= droppen
+- [x] 9 weitere TYPED Endpoints → response_model= droppen + return type + SuccessResponse()
+- [x] 2 Endpoints already had return type annotations (DELETE /drafts, POST /admin/regenerate-images)
 
-**Summe: 38 Endpoints, ~10 neue Models**
+**Summe: 38 Endpoints, 10 neue Models (WalletSummary, IgnitionResponse, PurchaseConfirmation, DarkroomPassResponse, DarkroomRegenResponse, DossierEvolveResponse, ForgeAdminStats, PurgeResult, BYOKSystemSettings, BYOKUserOverride)**
+
+### ASSESS-Entscheidungen (Schritt 3)
+
+- `POST /drafts/{id}/research` → `dict` (AI research output, polymorphic shape per seed prompt)
+- `POST /drafts/{id}/generate/{chunk}` → `dict` (AI chunk, varies by geography/agents/buildings)
+- `POST /drafts/{id}/generate-entity/{type}` → `dict` (AI entity, varies by agents/buildings)
 
 ---
 
-## Schritt 4: Admin — Zweitgrößter Router (27 total, 23 untyped)
+## Schritt 4: Admin — Zweitgrößter Router (27 total, 23 untyped) ✅
 
-### Environment & Settings (3 Endpoints)
+### Environment & Settings (3 Endpoints) ✅
 
-- [ ] L107 `GET /environment` → `EnvironmentResponse` — NEW
-- [ ] L118 `GET /settings` → `list[PlatformSettingResponse]` — NEW
-- [ ] L128 `PUT /settings/{key}` → `PlatformSettingResponse` — shares NEW
+- [x] `GET /environment` → `EnvironmentResponse` — NEW
+- [x] `GET /settings` → `list[PlatformSettingResponse]` — NEW
+- [x] `PUT /settings/{key}` → `PlatformSettingResponse` — shares NEW
 
-### User Management (6 Endpoints)
+### User Management (6 Endpoints) ✅
 
-- [ ] L169 `GET /users` → `AdminUserListResponse` — NEW
-- [ ] L181 `GET /users/{uid}` → `AdminUserDetailResponse` — NEW
-- [ ] L208 `POST /users/{uid}/memberships` → `AdminMembershipResponse` — NEW
-- [ ] L226 `PUT /users/{uid}/memberships/{sim}` → shares `AdminMembershipResponse`
-- [ ] L245 `DELETE /users/{uid}/memberships/{sim}` → shares `AdminMembershipResponse`
-- [ ] L260 `PUT /users/{uid}/wallet` → `AdminWalletResponse` — NEW
+- [x] `GET /users` → `AdminUserListResponse` — NEW
+- [x] `GET /users/{uid}` → `AdminUserDetailResponse` — NEW (extra="allow" for RPC passthrough)
+- [x] `POST /users/{uid}/memberships` → `AdminMembershipResponse` — NEW
+- [x] `PUT /users/{uid}/memberships/{sim}` → shares `AdminMembershipResponse`
+- [x] `DELETE /users/{uid}/memberships/{sim}` → shares `AdminMembershipResponse`
+- [x] `PUT /users/{uid}/wallet` → `AdminWalletResponse` — NEW
 
-### Cleanup (3 Endpoints)
+### Cleanup (3 Endpoints) ✅
 
-- [ ] L283 `GET /cleanup/stats` → `CleanupStats` — EXISTS
-- [ ] L293 `POST /cleanup/preview` → `CleanupPreviewResult` — EXISTS
-- [ ] L306 `POST /cleanup/execute` → `CleanupExecuteResult` — EXISTS
+- [x] `GET /cleanup/stats` → `CleanupStats` — EXISTS (removed .model_dump())
+- [x] `POST /cleanup/preview` → `CleanupPreviewResult` — EXISTS (removed .model_dump())
+- [x] `POST /cleanup/execute` → `CleanupExecuteResult` — EXISTS (removed .model_dump())
 
-### Simulation Ops (2 Endpoints)
+### Simulation Management (4 Endpoints) ✅
 
-- [ ] L368 `POST /simulations/{sim}/restore` → ASSESS: SimulationResponse?
-- [ ] L382 `DELETE /simulations/{sim}` → SKIP (polymorphe hard/soft-delete)
+- [x] `GET /simulations` → `PaginatedResponse[AdminSimulationListItem]` — NEW (not in original plan)
+- [x] `GET /simulations/deleted` → `PaginatedResponse[AdminSimulationListItem]` — shares NEW
+- [x] `POST /simulations/{sim}/restore` → `SimulationResponse` — EXISTS (ASSESSED: full row returned)
+- [x] `DELETE /simulations/{sim}` → `dict` — SKIP (polymorphe hard/soft-delete)
 
-### Health Effects (2 Endpoints)
+### Health Effects (2 Endpoints) ✅
 
-- [ ] L407 `GET /health-effects` → `HealthEffectsDashboard` — NEW
-- [ ] L417 `PUT /health-effects/simulations/{sim}` → `HealthEffectsToggleResponse` — NEW
+- [x] `GET /health-effects` → `HealthEffectsDashboard` — NEW (nested HealthEffectsSimEntry)
+- [x] `PUT /health-effects/simulations/{sim}` → `HealthEffectsToggleResponse` — NEW
 
-### Dungeon Config (5 Endpoints)
+### Dungeon Config (5 Endpoints) ✅
 
-- [ ] L446 `GET /dungeon-config/global` → `DungeonGlobalConfig` — NEW
-- [ ] L456 `PUT /dungeon-config/global` → shares `DungeonGlobalConfig`
-- [ ] L482 `GET /dungeon-override` → `list[DungeonOverrideListEntry]` — NEW
-- [ ] L530 `GET /dungeon-override/simulations/{sim}` → `DungeonOverride` — NEW
-- [ ] L556 `PUT /dungeon-override/simulations/{sim}` → shares `DungeonOverride`
+- [x] `GET /dungeon-config/global` → `DungeonGlobalConfigResponse` — NEW (Pydantic mirror of TypedDict)
+- [x] `PUT /dungeon-config/global` → shares `DungeonGlobalConfigResponse`
+- [x] `GET /dungeon-override` → `list[DungeonOverrideListEntry]` — NEW
+- [x] `GET /dungeon-override/simulations/{sim}` → `DungeonOverrideResponse` — NEW
+- [x] `PUT /dungeon-override/simulations/{sim}` → shares `DungeonOverrideResponse`
 
-### Special Ops (2 Endpoints)
+### Special Ops (3 Endpoints) ✅
 
-- [ ] L591 `POST /impersonate` → `ImpersonateResponse` — NEW
-- [ ] L636 `GET /ai-usage/stats` → `AIUsageStatsResponse` — NEW
-- [ ] L661 `POST /dungeon-showcase/generate-image` → `ShowcaseImageResponse` — NEW
+- [x] `POST /impersonate` → `ImpersonateResponse` — NEW
+- [x] `GET /ai-usage/stats` → `AIUsageStatsResponse` — NEW (explicit fields from RPC migration 169)
+- [x] `POST /dungeon-showcase/generate-image` → `ShowcaseImageResponse` — NEW
 
-### Bereits TYPED (1 Endpoint)
+### Bereits TYPED (1 Endpoint) ✅
 
-- [ ] 1 weiterer TYPED Endpoint → response_model= droppen
+- [x] `DELETE /users/{uid}` → already had return type, no response_model= to drop
 
-**Summe: 27 Endpoints, ~14 neue Models**
+**Summe: 27 Endpoints, 16 neue Models (EnvironmentResponse, PlatformSettingResponse, AdminUserListResponse, AdminUserDetailResponse, AdminMembershipResponse, AdminWalletResponse, AdminSimulationListItem, HealthEffectsSimEntry, HealthEffectsDashboard, HealthEffectsToggleResponse, DungeonGlobalConfigResponse, DungeonOverrideListEntry, DungeonOverrideResponse, ImpersonateResponse, AIUsageStatsResponse, ShowcaseImageResponse)**
 
 ---
 

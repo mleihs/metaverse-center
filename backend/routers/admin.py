@@ -15,9 +15,33 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
 from backend.middleware.seo import _sim_meta_cache
-from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
+from backend.models.admin import (
+    AdminMembershipResponse,
+    AdminSimulationListItem,
+    AdminUserDetailResponse,
+    AdminUserListResponse,
+    AdminWalletResponse,
+    AIUsageStatsResponse,
+    DungeonGlobalConfigResponse,
+    DungeonOverrideListEntry,
+    DungeonOverrideResponse,
+    EnvironmentResponse,
+    HealthEffectsDashboard,
+    HealthEffectsToggleResponse,
+    ImpersonateResponse,
+    PlatformSettingResponse,
+    ShowcaseImageResponse,
+)
+from backend.models.cleanup import (
+    CleanupExecuteRequest,
+    CleanupExecuteResult,
+    CleanupPreviewRequest,
+    CleanupPreviewResult,
+    CleanupStats,
+)
 from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.settings import is_sensitive_key
+from backend.models.simulation import SimulationResponse
 from backend.services.admin_user_service import AdminUserService
 from backend.services.audit_service import AuditService
 from backend.services.cache_config import invalidate as invalidate_cache_config
@@ -105,34 +129,34 @@ class ImpersonateRequest(BaseModel):
 # --- Environment ---
 
 
-@router.get("/environment", response_model=SuccessResponse[dict])
+@router.get("/environment")
 async def get_environment(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
-) -> dict:
+) -> SuccessResponse[EnvironmentResponse]:
     """Return the current server environment (production/development)."""
-    return {"success": True, "data": {"environment": settings.environment}}
+    return SuccessResponse(data={"environment": settings.environment})
 
 
 # --- Platform Settings Endpoints ---
 
 
-@router.get("/settings", response_model=SuccessResponse[list])
+@router.get("/settings")
 async def list_settings(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[list[PlatformSettingResponse]]:
     """List all platform settings."""
     data = await PlatformSettingsService.list_all(admin_supabase, mask_sensitive=True)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.put("/settings/{key}", response_model=SuccessResponse[dict])
+@router.put("/settings/{key}")
 async def update_setting(
     key: str,
     body: UpdateSettingRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[PlatformSettingResponse]:
     """Update a platform setting value."""
     value = body.value
     # Encrypt non-empty sensitive values before storing
@@ -161,33 +185,33 @@ async def update_setting(
     if key.startswith("research_domains_"):
         invalidate_research_domains()
 
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # --- User Management Endpoints ---
 
 
-@router.get("/users", response_model=SuccessResponse[dict])
+@router.get("/users")
 async def list_users(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = 50,
-) -> dict:
+) -> SuccessResponse[AdminUserListResponse]:
     """List all platform users."""
     data = await AdminUserService.list_users(admin_supabase, page=page, per_page=per_page)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/users/{user_id}", response_model=SuccessResponse[dict])
+@router.get("/users/{user_id}")
 async def get_user(
     user_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[AdminUserDetailResponse]:
     """Get user detail with all simulation memberships."""
     data = await AdminUserService.get_user_with_memberships(admin_supabase, user_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 @router.delete("/users/{user_id}")
@@ -206,13 +230,13 @@ async def delete_user(
     return SuccessResponse(data=DeleteResponse())
 
 
-@router.post("/users/{user_id}/memberships", response_model=SuccessResponse[dict])
+@router.post("/users/{user_id}/memberships")
 async def add_membership(
     user_id: UUID,
     body: AddMembershipRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[AdminMembershipResponse]:
     """Add a user to a simulation with a role."""
     data = await AdminUserService.add_membership(
         admin_supabase, user_id, body.simulation_id, body.role,
@@ -221,17 +245,17 @@ async def add_membership(
         admin_supabase, body.simulation_id, _user.id, "simulation_members", user_id, "create",
         details={"role": body.role},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.put("/users/{user_id}/memberships/{simulation_id}", response_model=SuccessResponse[dict])
+@router.put("/users/{user_id}/memberships/{simulation_id}")
 async def change_membership_role(
     user_id: UUID,
     simulation_id: UUID,
     body: ChangeMembershipRoleRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[AdminMembershipResponse]:
     """Change a user's role in a simulation."""
     data = await AdminUserService.change_membership_role(
         admin_supabase, user_id, simulation_id, body.role,
@@ -240,25 +264,25 @@ async def change_membership_role(
         admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "update",
         details={"new_role": body.role},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/users/{user_id}/memberships/{simulation_id}", response_model=SuccessResponse[dict])
+@router.delete("/users/{user_id}/memberships/{simulation_id}")
 async def remove_membership(
     user_id: UUID,
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[AdminMembershipResponse]:
     """Remove a user from a simulation."""
     data = await AdminUserService.remove_membership(admin_supabase, user_id, simulation_id)
     await AuditService.safe_log(
         admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "delete",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.put("/users/{user_id}/wallet", response_model=SuccessResponse[dict])
+@router.put("/users/{user_id}/wallet")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def update_user_wallet(
     request: Request,
@@ -266,7 +290,7 @@ async def update_user_wallet(
     body: UpdateUserWalletRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[AdminWalletResponse]:
     """Update a user's forge wallet settings."""
     data = await AdminUserService.update_user_wallet(
         admin_supabase, user_id, body.forge_tokens, body.is_architect,
@@ -275,41 +299,41 @@ async def update_user_wallet(
         admin_supabase, None, _user.id, "user_wallets", user_id, "update",
         details={"forge_tokens": body.forge_tokens, "is_architect": body.is_architect},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # --- Data Cleanup Endpoints ---
 
 
-@router.get("/cleanup/stats", response_model=SuccessResponse[dict])
+@router.get("/cleanup/stats")
 async def get_cleanup_stats(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CleanupStats]:
     """Get record counts per cleanup category."""
     data = await CleanupService.get_stats(admin_supabase)
-    return {"success": True, "data": data.model_dump(mode="json")}
+    return SuccessResponse(data=data)
 
 
-@router.post("/cleanup/preview", response_model=SuccessResponse[dict])
+@router.post("/cleanup/preview")
 async def preview_cleanup(
     body: CleanupPreviewRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CleanupPreviewResult]:
     """Preview what would be deleted without actually deleting."""
     data = await CleanupService.preview(
         admin_supabase, body.cleanup_type, body.min_age_days, epoch_ids=body.epoch_ids,
     )
-    return {"success": True, "data": data.model_dump(mode="json")}
+    return SuccessResponse(data=data)
 
 
-@router.post("/cleanup/execute", response_model=SuccessResponse[dict])
+@router.post("/cleanup/execute")
 async def execute_cleanup(
     body: CleanupExecuteRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CleanupExecuteResult]:
     """Execute data cleanup. Requires prior preview for safety."""
     data = await CleanupService.execute(
         admin_supabase, body.cleanup_type, body.min_age_days, user.id,
@@ -319,7 +343,7 @@ async def execute_cleanup(
         admin_supabase, None, user.id, "cleanup", None, "execute",
         details={"cleanup_type": body.cleanup_type, "min_age_days": body.min_age_days},
     )
-    return {"success": True, "data": data.model_dump(mode="json")}
+    return SuccessResponse(data=data)
 
 
 # --- Simulation Management Endpoints ---
@@ -327,101 +351,95 @@ async def execute_cleanup(
 _sim_service = SimulationService()
 
 
-@router.get("/simulations", response_model=PaginatedResponse[dict])
+@router.get("/simulations")
 async def list_simulations(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     include_deleted: Annotated[bool, Query()] = False,
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = 50,
-) -> dict:
+) -> PaginatedResponse[AdminSimulationListItem]:
     """List all simulations (admin). Optionally include soft-deleted."""
     offset = (page - 1) * per_page
     data, total = await _sim_service.list_all_simulations(
         admin_supabase, include_deleted=include_deleted, limit=per_page, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset),
-    }
+    meta = PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset)
+    return PaginatedResponse(data=data, meta=meta)
 
 
-@router.get("/simulations/deleted", response_model=PaginatedResponse[dict])
+@router.get("/simulations/deleted")
 async def list_deleted_simulations(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     page: Annotated[int, Query(ge=1)] = 1,
     per_page: Annotated[int, Query(ge=1, le=100)] = 50,
-) -> dict:
+) -> PaginatedResponse[AdminSimulationListItem]:
     """List only soft-deleted simulations (trash view)."""
     offset = (page - 1) * per_page
     data, total = await _sim_service.list_deleted_simulations(
         admin_supabase, limit=per_page, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset),
-    }
+    meta = PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset)
+    return PaginatedResponse(data=data, meta=meta)
 
 
-@router.post("/simulations/{simulation_id}/restore", response_model=SuccessResponse[dict])
+@router.post("/simulations/{simulation_id}/restore")
 async def restore_simulation(
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SimulationResponse]:
     """Restore a soft-deleted simulation."""
     data = await _sim_service.restore_simulation(admin_supabase, simulation_id)
     await AuditService.safe_log(
         admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "restore",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+@router.delete("/simulations/{simulation_id}")
 async def admin_delete_simulation(
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     hard: Annotated[bool, Query(description="Permanently delete instead of soft-delete")] = False,
-) -> dict:
+) -> SuccessResponse[dict]:
     """Admin delete a simulation. Use hard=true for permanent deletion."""
     if hard:
         data = await _sim_service.hard_delete_simulation(admin_supabase, simulation_id)
         await AuditService.safe_log(
             admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "hard_delete",
         )
-        return {"success": True, "data": {"deleted": True, "simulation": data}}
+        return SuccessResponse(data={"deleted": True, "simulation": data})
     else:
         data = await _sim_service.delete_simulation(admin_supabase, simulation_id)
         await AuditService.safe_log(
             admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "delete",
         )
-        return {"success": True, "data": data}
+        return SuccessResponse(data=data)
 
 
 # --- Health Effects Control ---
 
 
-@router.get("/health-effects", response_model=SuccessResponse[dict])
+@router.get("/health-effects")
 async def get_health_effects(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[HealthEffectsDashboard]:
     """Return global + per-simulation health effects state for admin tab."""
     data = await GameMechanicsService.get_health_effects_dashboard(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.put("/health-effects/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+@router.put("/health-effects/simulations/{simulation_id}")
 async def update_simulation_health_effects(
     simulation_id: UUID,
     body: HealthEffectsToggle,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[HealthEffectsToggleResponse]:
     """Toggle critical health effects for a specific simulation."""
     await SettingsService.upsert_setting(
         admin_supabase,
@@ -438,28 +456,28 @@ async def update_simulation_health_effects(
         "simulation_settings", "critical_health_effects_enabled", "update",
         details={"enabled": body.enabled},
     )
-    return {"success": True, "data": {"enabled": body.enabled}}
+    return SuccessResponse(data={"enabled": body.enabled})
 
 
 # --- Dungeon Global Config ---
 
 
-@router.get("/dungeon-config/global", response_model=SuccessResponse[dict])
+@router.get("/dungeon-config/global")
 async def get_dungeon_global_config(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonGlobalConfigResponse]:
     """Return global dungeon configuration (override mode + clearance)."""
     config = await PlatformSettingsService.get_dungeon_global_config(admin_supabase)
-    return {"success": True, "data": dict(config)}
+    return SuccessResponse(data=config)
 
 
-@router.put("/dungeon-config/global", response_model=SuccessResponse[dict])
+@router.put("/dungeon-config/global")
 async def update_dungeon_global_config(
     body: DungeonGlobalConfigUpdate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonGlobalConfigResponse]:
     """Update global dungeon configuration (override mode + clearance)."""
     config = await PlatformSettingsService.update_dungeon_global_config(
         admin_supabase,
@@ -474,17 +492,17 @@ async def update_dungeon_global_config(
         "platform_settings", "dungeon_global_config", "update",
         details=dict(config),
     )
-    return {"success": True, "data": dict(config)}
+    return SuccessResponse(data=config)
 
 
 # --- Dungeon Per-Simulation Override ---
 
 
-@router.get("/dungeon-override", response_model=SuccessResponse[list[dict]])
+@router.get("/dungeon-override")
 async def list_dungeon_overrides(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[list[DungeonOverrideListEntry]]:
     """List all template simulations with their dungeon override configs (bulk).
 
     Excludes game_instance (epoch) and archived simulations — dungeon
@@ -525,15 +543,15 @@ async def list_dungeon_overrides(
             "archetypes": config.get("archetypes", []),
         })
 
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.get("/dungeon-override/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+@router.get("/dungeon-override/simulations/{simulation_id}")
 async def get_dungeon_override(
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonOverrideResponse]:
     """Get dungeon override config for a simulation."""
     resp = (
         await admin_supabase.table("simulation_settings")
@@ -545,22 +563,19 @@ async def get_dungeon_override(
         .execute()
     )
     config = resp.data.get("setting_value", {}) if resp.data else {}
-    return {
-        "success": True,
-        "data": {
-            "mode": config.get("mode", "off"),
-            "archetypes": config.get("archetypes", []),
-        },
-    }
+    return SuccessResponse(data={
+        "mode": config.get("mode", "off"),
+        "archetypes": config.get("archetypes", []),
+    })
 
 
-@router.put("/dungeon-override/simulations/{simulation_id}", response_model=SuccessResponse[dict])
+@router.put("/dungeon-override/simulations/{simulation_id}")
 async def update_dungeon_override(
     simulation_id: UUID,
     body: DungeonOverrideUpdate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[DungeonOverrideResponse]:
     """Configure dungeon override for a simulation.
 
     mode=off: resonance logic only (default).
@@ -583,20 +598,20 @@ async def update_dungeon_override(
         "simulation_settings", "dungeon_override", "update",
         details=config,
     )
-    return {"success": True, "data": config}
+    return SuccessResponse(data=config)
 
 
 # --- Impersonation ---
 
 
-@router.post("/impersonate", response_model=SuccessResponse[dict])
+@router.post("/impersonate")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def impersonate_user(
     request: Request,
     body: ImpersonateRequest,
     admin_user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ImpersonateResponse]:
     """Generate a magic link token to impersonate a user (platform admin only)."""
     user_response = await admin_supabase.auth.admin.get_user_by_id(str(body.user_id))
     user = user_response.user
@@ -614,10 +629,7 @@ async def impersonate_user(
         details={"target_email": user.email},
     )
 
-    return {
-        "success": True,
-        "data": {"hashed_token": hashed_token, "email": user.email},
-    }
+    return SuccessResponse(data={"hashed_token": hashed_token, "email": user.email})
 
 
 def _invalidate_caches(key: str) -> None:
@@ -634,17 +646,17 @@ def _invalidate_caches(key: str) -> None:
 # ── AI Usage Analytics ─────────────────────────────────────────────────
 
 
-@router.get("/ai-usage/stats", response_model=SuccessResponse[dict])
+@router.get("/ai-usage/stats")
 async def get_ai_usage_stats(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     days: Annotated[int, Query(ge=1, le=365)] = 30,
-) -> dict:
+) -> SuccessResponse[AIUsageStatsResponse]:
     """Get aggregated AI usage stats for the platform."""
     from backend.services.ai_usage_service import AIUsageService
 
     data = await AIUsageService.get_platform_stats(admin_supabase, days=days)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # --- Dungeon Showcase Image Generation ---
@@ -659,14 +671,14 @@ class ShowcaseImageRequest(BaseModel):
     )
 
 
-@router.post("/dungeon-showcase/generate-image", response_model=SuccessResponse[dict])
+@router.post("/dungeon-showcase/generate-image")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def generate_showcase_image_endpoint(
     request: Request,
     body: ShowcaseImageRequest,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[ShowcaseImageResponse]:
     """Generate a showcase background image for a dungeon archetype.
 
     Uses archetype-specific AI models and art-historically informed prompts.
@@ -705,15 +717,12 @@ async def generate_showcase_image_endpoint(
 
     public_url = admin_supabase.storage.from_("simulation.assets").get_public_url(base_path)
 
-    return {
-        "success": True,
-        "data": {
-            "archetype": body.archetype_id,
-            "model": visual.model,
-            "url": public_url,
-            "full_path": full_path,
-            "thumb_path": base_path,
-            "bytes": len(raw_bytes),
-            "usage": openrouter.last_usage,
-        },
-    }
+    return SuccessResponse(data={
+        "archetype": body.archetype_id,
+        "model": visual.model,
+        "url": public_url,
+        "full_path": full_path,
+        "thumb_path": base_path,
+        "bytes": len(raw_bytes),
+        "usage": openrouter.last_usage,
+    })
