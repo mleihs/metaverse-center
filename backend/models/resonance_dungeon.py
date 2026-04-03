@@ -40,6 +40,7 @@ DungeonStatus = Literal[
 DungeonPhase = Literal[
     "exploring",
     "encounter",
+    "threshold",
     "combat_planning",
     "combat_resolving",
     "combat_outcome",

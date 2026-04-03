@@ -186,12 +186,11 @@ class DungeonStateManager {
     }
 
     // Restore or clear encounter choices based on phase
-    if (
-      (state.phase === 'encounter' || state.phase === 'rest') &&
-      state.encounter_choices?.length
-    ) {
+    const hasChoicePhase =
+      state.phase === 'encounter' || state.phase === 'rest' || state.phase === 'threshold';
+    if (hasChoicePhase && state.encounter_choices?.length) {
       this.encounterChoices.value = state.encounter_choices;
-    } else if (state.phase !== 'encounter' && state.phase !== 'rest') {
+    } else if (!hasChoicePhase) {
       this.encounterChoices.value = [];
     }
 
