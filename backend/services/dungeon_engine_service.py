@@ -28,13 +28,24 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance_dungeon import (
     AgentCombatState,
+    ArchetypeActionResponse,
     AvailableDungeonResponse,
     CombatSubmission,
+    CombatSubmitResponse,
+    CreateRunResponse,
+    DistributeConfirmResponse,
     DungeonAction,
     DungeonClientState,
     DungeonInstance,
     DungeonRunCreate,
     DungeonRunResponse,
+    EncounterChoiceResponse,
+    LootAssignResponse,
+    MoveResponse,
+    RestResponse,
+    RetreatResponse,
+    SalvageResponse,
+    ScoutResponse,
 )
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon.dungeon_archetypes import (
@@ -137,7 +148,7 @@ class DungeonEngineService:
         simulation_id: UUID,
         user_id: UUID,
         body: DungeonRunCreate,
-    ) -> dict:
+    ) -> CreateRunResponse:
         """Create a new dungeon run.
 
         1. Validate: no active run for this sim (DB unique index enforces)
@@ -313,11 +324,11 @@ class DungeonEngineService:
         entrance_pool = get_entrance_texts().get(archetype, [])
         entrance_text = random.choice(entrance_pool) if entrance_pool else None
 
-        return {
-            "run": DungeonRunResponse(**run).model_dump(),
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-            "entrance_text": entrance_text,
-        }
+        return CreateRunResponse(
+            run=DungeonRunResponse(**run),
+            state=DungeonCheckpointService.build_client_state(instance),
+            entrance_text=entrance_text,
+        )
 
     # ── Facade delegations to DungeonMovementService ─────────────────────
 
@@ -329,7 +340,7 @@ class DungeonEngineService:
         room_index: int,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> MoveResponse:
         """Move party to an adjacent room."""
         return await DungeonMovementService.move_to_room(admin_supabase, run_id, room_index, user_id=user_id)
 
@@ -342,12 +353,12 @@ class DungeonEngineService:
         run_id: UUID,
         user_id: UUID,
         submission: CombatSubmission,
-    ) -> dict:
+    ) -> CombatSubmitResponse:
         """Submit combat actions for planning phase."""
         return await DungeonCombatService.submit_combat_actions(admin_supabase, run_id, user_id, submission)
 
     # (Combat resolution, victory, wipe, stalemate methods moved to DungeonCombatService)
-    # _resolve_combat, _build_round_result_dict, _handle_combat_victory,
+    # _resolve_combat, _build_round_result, _handle_combat_victory,
     # _handle_party_wipe, _handle_combat_stalemate — all in dungeon_combat_service.py
 
     @classmethod
@@ -358,50 +369,56 @@ class DungeonEngineService:
         action: DungeonAction,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> EncounterChoiceResponse:
         """Handle an encounter choice (skill check resolution)."""
         return await DungeonMovementService.handle_encounter_choice(admin_supabase, run_id, action, user_id=user_id)
 
     @classmethod
-    async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> ScoutResponse:
         """Spy: reveal adjacent rooms and restore visibility."""
         return await DungeonMovementService.scout(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
-    async def seal_breach(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def seal_breach(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Guardian: Seal Breach — reduce water level (Deluge only)."""
         return await DungeonMovementService.seal_breach(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
-    async def ground(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def ground(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Spy: Ground — reduce awareness (Awakening only)."""
         return await DungeonMovementService.ground(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
-    async def rally(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def rally(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Propagandist: Rally — reduce authority fracture (Overthrow only)."""
         return await DungeonMovementService.rally(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
     async def salvage(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
-    ) -> dict:
+    ) -> SalvageResponse:
         """Salvage submerged loot (Deluge only)."""
         return await DungeonMovementService.salvage(admin_supabase, run_id, agent_id, room_index, user_id=user_id)
 
     @classmethod
-    async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
+    async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> RestResponse:
         """Rest at a rest site."""
         return await DungeonMovementService.rest(admin_supabase, run_id, agent_ids, user_id=user_id)
 
     @classmethod
-    async def retreat(cls, admin_supabase: Client, run_id: UUID, *, user_id: UUID) -> dict:
+    async def retreat(cls, admin_supabase: Client, run_id: UUID, *, user_id: UUID) -> RetreatResponse:
         """Abandon dungeon run (keep partial loot). Uses atomic RPC."""
         async with _store.lock(run_id):
             return await cls._retreat_locked(admin_supabase, run_id, user_id=user_id)
 
     @classmethod
-    async def _retreat_locked(cls, admin_supabase: Client, run_id: UUID, *, user_id: UUID) -> dict:
+    async def _retreat_locked(cls, admin_supabase: Client, run_id: UUID, *, user_id: UUID) -> RetreatResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         # Cancel any active combat timer
@@ -445,12 +462,12 @@ class DungeonEngineService:
                 context="retreat",
             )
         except PostgrestAPIError:
-            return {
-                "retreated": True,
-                "rpc_failed": True,
-                "rpc_error_message": "Failed to save retreat. Your progress will be recovered on next visit.",
-                "loot": [item.model_dump() for item in loot],
-            }
+            return RetreatResponse(
+                retreated=True,
+                rpc_failed=True,
+                rpc_error_message="Failed to save retreat. Your progress will be recovered on next visit.",
+                loot=[item.model_dump() for item in loot],
+            )
 
         _store.remove(run_id)
         logger.info(
@@ -458,16 +475,17 @@ class DungeonEngineService:
             extra=_log_extra(instance, outcome="retreat", rooms_cleared=instance.rooms_cleared),
         )
 
-        result: dict = {
-            "retreated": True,
-            "loot": [item.model_dump() for item in loot],
-        }
+        banter_data = None
         if retreat_banter:
-            result["banter"] = {
+            banter_data = {
                 "text_en": retreat_banter.get("text_en", ""),
                 "text_de": retreat_banter.get("text_de", ""),
             }
-        return result
+        return RetreatResponse(
+            retreated=True,
+            loot=[item.model_dump() for item in loot],
+            banter=banter_data,
+        )
 
     # ── Available Dungeons ──────────────────────────────────────────────
 
@@ -613,7 +631,7 @@ class DungeonEngineService:
         *,
         dimension: str | None = None,
         user_id: UUID,
-    ) -> dict:
+    ) -> LootAssignResponse:
         """Assign one distributable loot item to an agent."""
         return await DungeonDistributionService.assign_loot(
             admin_supabase, run_id, loot_id, agent_id, dimension=dimension, user_id=user_id,
@@ -626,6 +644,6 @@ class DungeonEngineService:
         run_id: UUID,
         *,
         user_id: UUID | None = None,
-    ) -> dict:
+    ) -> DistributeConfirmResponse:
         """Finalize loot distribution and complete the dungeon run."""
         return await DungeonDistributionService.confirm_distribution(admin_supabase, run_id, user_id=user_id)

@@ -31,18 +31,29 @@ from backend.models.common import (
 )
 from backend.models.resonance_dungeon import (
     AgentLootEffectResponse,
+    ArchetypeActionResponse,
     AvailableDungeonResponse,
     CombatSubmission,
+    CombatSubmitResponse,
+    CreateRunResponse,
+    DistributeConfirmResponse,
     DungeonAction,
     DungeonClientState,
     DungeonEventResponse,
     DungeonMoveRequest,
     DungeonRunCreate,
     DungeonRunResponse,
+    EncounterChoiceResponse,
     LootAssignment,
+    LootAssignResponse,
+    MoveResponse,
     RestRequest,
+    RestResponse,
+    RetreatResponse,
     SalvageRequest,
+    SalvageResponse,
     ScoutRequest,
+    ScoutResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.dungeon_engine_service import DungeonEngineService
@@ -72,7 +83,7 @@ async def list_available_dungeons(
 # ── Create Run ──────────────────────────────────────────────────────────────
 
 
-@router.post("/runs", response_model=SuccessResponse, status_code=201)
+@router.post("/runs", response_model=SuccessResponse[CreateRunResponse], status_code=201)
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def create_run(
     request: Request,
@@ -90,7 +101,7 @@ async def create_run(
         simulation_id,
         user.id,
         "resonance_dungeon_runs",
-        result["run"]["id"],
+        str(result.run.id),
         "create",
         {"archetype": body.archetype, "difficulty": body.difficulty},
     )
@@ -131,7 +142,7 @@ async def get_run_state(
 # ── Move ────────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/move", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/move", response_model=SuccessResponse[MoveResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def move_to_room(
     request: Request,
@@ -148,7 +159,7 @@ async def move_to_room(
 # ── Encounter Action ────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/action", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/action", response_model=SuccessResponse[EncounterChoiceResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_action(
     request: Request,
@@ -165,7 +176,7 @@ async def submit_action(
 # ── Combat Submission ───────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/combat/submit", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/combat/submit", response_model=SuccessResponse[CombatSubmitResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def submit_combat_actions(
     request: Request,
@@ -182,7 +193,7 @@ async def submit_combat_actions(
 # ── Scout ───────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/scout", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/scout", response_model=SuccessResponse[ScoutResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def scout(
     request: Request,
@@ -199,7 +210,7 @@ async def scout(
 # ── Seal Breach (Deluge) ────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/seal", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/seal", response_model=SuccessResponse[ArchetypeActionResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def seal_breach(
     request: Request,
@@ -216,7 +227,7 @@ async def seal_breach(
 # ── Ground (Awakening) ─────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/ground", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/ground", response_model=SuccessResponse[ArchetypeActionResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def ground(
     request: Request,
@@ -233,7 +244,7 @@ async def ground(
 # ── Rally (Overthrow) ──────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/rally", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/rally", response_model=SuccessResponse[ArchetypeActionResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def rally(
     request: Request,
@@ -250,7 +261,7 @@ async def rally(
 # ── Salvage (Deluge) ───────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/salvage", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/salvage", response_model=SuccessResponse[SalvageResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def salvage(
     request: Request,
@@ -267,7 +278,7 @@ async def salvage(
 # ── Rest ────────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/rest", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/rest", response_model=SuccessResponse[RestResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def rest(
     request: Request,
@@ -284,7 +295,7 @@ async def rest(
 # ── Retreat ─────────────────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/retreat", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/retreat", response_model=SuccessResponse[RetreatResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def retreat(
     request: Request,
@@ -309,7 +320,7 @@ async def retreat(
 # ── Loot Distribution ──────────────────────────────────────────────────────
 
 
-@router.post("/runs/{run_id}/distribute", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/distribute", response_model=SuccessResponse[LootAssignResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def assign_loot(
     request: Request,
@@ -339,7 +350,7 @@ async def assign_loot(
     return {"success": True, "data": result}
 
 
-@router.post("/runs/{run_id}/distribute/confirm", response_model=SuccessResponse)
+@router.post("/runs/{run_id}/distribute/confirm", response_model=SuccessResponse[DistributeConfirmResponse])
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def confirm_distribution(
     request: Request,

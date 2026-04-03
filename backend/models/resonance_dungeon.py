@@ -538,6 +538,214 @@ class DungeonClientState(BaseModel):
     encounter_description_de: str | None = None
 
 
+# ── Combat Resolution Response Models ────────────────────────────────────
+# API-layer models for combat round results. The internal combat engine uses
+# dataclasses (CombatEvent, CombatRoundResult) which are mutable during
+# resolution. These Pydantic models define the serialized API shape with
+# client-friendly field names (damage not damage_steps, wipe not party_wipe).
+
+
+class CombatEventResponse(BaseModel):
+    """Single combat event for API response (maps from combat_engine.CombatEvent)."""
+
+    actor: str
+    action: str
+    target: str
+    hit: bool = True
+    damage: int = 0
+    stress: int = 0
+    narrative_en: str = ""
+    narrative_de: str = ""
+
+
+class CombatRoundResultResponse(BaseModel):
+    """Combat round result for API response (maps from combat_engine.CombatRoundResult)."""
+
+    round: int
+    events: list[CombatEventResponse] = Field(default_factory=list)
+    narrative_en: str = ""
+    narrative_de: str = ""
+    victory: bool = False
+    wipe: bool = False
+    stalemate: bool = False
+
+
+# ── Dungeon Action Response Models ──────────────────────────────────────
+# Response schemas for dungeon mutation endpoints. These define the exact
+# shape of the ``data`` field in ``SuccessResponse[T]`` for each endpoint,
+# enabling OpenAPI schema generation and runtime response validation.
+
+
+class CreateRunResponse(BaseModel):
+    """Response from creating a new dungeon run."""
+
+    run: DungeonRunResponse
+    state: DungeonClientState
+    entrance_text: dict | None = None
+
+
+class MoveResponse(BaseModel):
+    """Response from moving to a room.
+
+    Polymorphic — fields populated depend on target room type:
+    combat/elite → combat + is_ambush + encounter_description
+    encounter/rest → encounter/rest + description + choices
+    threshold → threshold + description + choices
+    treasure → treasure + auto_loot + loot
+    boss → boss_deployment + description + choices (or combat)
+    exit → exit_available
+    """
+
+    # Always present
+    banter: dict | None = None
+    anchor_texts: list[dict] | None = None
+    barometer_text: dict | None = None
+    debris: dict | None = None
+    deja_vu: bool = False
+    state: DungeonClientState
+
+    # Combat room entry
+    combat: bool | None = None
+    is_ambush: bool | None = None
+    encounter_description_en: str | None = None
+    encounter_description_de: str | None = None
+
+    # Interactive room (encounter / rest / threshold / boss_deployment)
+    threshold: bool | None = None
+    encounter: bool | None = None
+    rest: bool | None = None
+    treasure: bool | None = None
+    boss_deployment: bool | None = None
+    description_en: str | None = None
+    description_de: str | None = None
+    choices: list[dict] | None = None
+    encounter_id: str | None = None
+
+    # Treasure auto-loot
+    auto_loot: bool | None = None
+    loot: list[dict] | None = None
+
+    # Exit
+    exit_available: bool | None = None
+
+
+class EncounterChoiceResponse(BaseModel):
+    """Response from encounter choice, threshold toll, or boss deployment action."""
+
+    result: str  # "success", "partial", "fail"
+    check: dict | None = None
+    effects: dict = Field(default_factory=dict)
+    narrative_effects_en: list[str] = Field(default_factory=list)
+    narrative_effects_de: list[str] = Field(default_factory=list)
+    narrative_en: str = ""
+    narrative_de: str = ""
+    state: DungeonClientState
+
+    # Threshold toll (populated only for threshold choices)
+    threshold_toll: str | None = None
+
+    # Boss deployment → combat transition overlay
+    combat: bool | None = None
+    is_ambush: bool | None = None
+    encounter_description_en: str | None = None
+    encounter_description_de: str | None = None
+
+
+class CombatSubmitResponse(BaseModel):
+    """Response from submitting combat actions.
+
+    Two shapes:
+    1. Waiting: accepted=True, waiting_for_players=True
+    2. Resolved: round_result + state + optional outcome flags
+    """
+
+    # Waiting case (no other fields populated)
+    accepted: bool | None = None
+    waiting_for_players: bool | None = None
+
+    # Resolution case
+    round_result: CombatRoundResultResponse | None = None
+    state: DungeonClientState | None = None
+
+    # Outcome flags (from victory/wipe/stalemate handlers)
+    victory: bool | None = None
+    wipe: bool | None = None
+    stalemate: bool | None = None
+    loot: list[dict] | None = None
+
+    # RPC failure fallback (graceful degradation)
+    rpc_failed: bool | None = None
+    rpc_error_message: str | None = None
+
+
+class ScoutResponse(BaseModel):
+    """Response from spy scouting action."""
+
+    revealed_rooms: int
+    visibility: int | None = None
+    state: DungeonClientState
+
+
+class ArchetypeActionResponse(BaseModel):
+    """Response from archetype-specific actions: Seal Breach, Ground, Rally.
+
+    Each archetype uses one metric field; the others remain None.
+    """
+
+    water_level: int | None = None  # Deluge: Seal Breach
+    awareness: int | None = None  # Awakening: Ground
+    fracture: int | None = None  # Overthrow: Rally
+    stress_cost: int
+    agent_stress: int
+    cooldown_until_room: int
+    state: DungeonClientState
+
+
+class SalvageResponse(BaseModel):
+    """Response from salvaging submerged loot (Deluge)."""
+
+    success: bool
+    loot: list[dict] | None = None
+    water_penalty: int | None = None
+    check_result: str
+    check_value: int
+    state: DungeonClientState
+
+
+class RestResponse(BaseModel):
+    """Response from resting at a rest site."""
+
+    healed: bool = False
+    ambushed: bool = False
+    state: DungeonClientState
+
+
+class RetreatResponse(BaseModel):
+    """Response from retreating/abandoning the dungeon."""
+
+    retreated: bool = True
+    loot: list[dict] = Field(default_factory=list)
+    banter: dict | None = None
+    rpc_failed: bool | None = None
+    rpc_error_message: str | None = None
+
+
+class LootAssignResponse(BaseModel):
+    """Response from assigning a loot item to an agent."""
+
+    assignments: dict[str, str]
+    remaining: int
+    all_assigned: bool
+    state: DungeonClientState
+
+
+class DistributeConfirmResponse(BaseModel):
+    """Response from confirming loot distribution."""
+
+    loot_result: dict = Field(default_factory=dict)
+    state: DungeonClientState
+
+
 # ── Encounter/Loot Data Models ──────────────────────────────────────────────
 
 

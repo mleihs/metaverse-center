@@ -23,9 +23,15 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.models.resonance_dungeon import (
+    ArchetypeActionResponse,
     CombatState,
     DungeonAction,
     DungeonInstance,
+    EncounterChoiceResponse,
+    MoveResponse,
+    RestResponse,
+    SalvageResponse,
+    ScoutResponse,
 )
 from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
@@ -166,7 +172,7 @@ class DungeonMovementService:
         room_index: int,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> MoveResponse:
         """Move party to an adjacent room."""
         async with _store.lock(run_id):
             return await cls._move_to_room_locked(admin_supabase, run_id, room_index, user_id=user_id)
@@ -179,7 +185,7 @@ class DungeonMovementService:
         room_index: int,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> MoveResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("exploring", "room_clear", "exit"):
@@ -350,8 +356,8 @@ class DungeonMovementService:
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        result["state"] = DungeonCheckpointService.build_client_state(instance).model_dump()
-        return result
+        result["state"] = DungeonCheckpointService.build_client_state(instance)
+        return MoveResponse.model_validate(result)
 
     # ── Encounter Choice ───────────────────────────────────────────────────
 
@@ -363,7 +369,7 @@ class DungeonMovementService:
         action: DungeonAction,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> EncounterChoiceResponse:
         """Handle an encounter choice (skill check resolution)."""
         async with _store.lock(run_id):
             return await cls._handle_encounter_choice_locked(admin_supabase, run_id, action, user_id=user_id)
@@ -376,7 +382,7 @@ class DungeonMovementService:
         action: DungeonAction,
         *,
         user_id: UUID,
-    ) -> dict:
+    ) -> EncounterChoiceResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("encounter", "rest", "threshold"):
@@ -485,27 +491,29 @@ class DungeonMovementService:
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
         narrative_effects_en, narrative_effects_de = _narrate_effects(effects)
-        return {
-            "result": result_tier,
-            "check": check_result,
-            "effects": effects,
-            "narrative_effects_en": narrative_effects_en,
-            "narrative_effects_de": narrative_effects_de,
-            "narrative_en": narrative_en,
-            "narrative_de": narrative_de,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return EncounterChoiceResponse(
+            result=result_tier,
+            check=check_result,
+            effects=effects,
+            narrative_effects_en=narrative_effects_en,
+            narrative_effects_de=narrative_effects_de,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Scout ──────────────────────────────────────────────────────────────
 
     @classmethod
-    async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def scout(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> ScoutResponse:
         """Spy: reveal adjacent rooms and restore visibility."""
         async with _store.lock(run_id):
             return await cls._scout_locked(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
-    async def _scout_locked(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def _scout_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ScoutResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
@@ -535,16 +543,18 @@ class DungeonMovementService:
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "revealed_rooms": revealed_count,
-            "visibility": instance.archetype_state.get("visibility"),
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return ScoutResponse(
+            revealed_rooms=revealed_count,
+            visibility=instance.archetype_state.get("visibility"),
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Seal Breach (Deluge) ─────────────────────────────────────────────
 
     @classmethod
-    async def seal_breach(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def seal_breach(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
         async with _store.lock(run_id):
             return await cls._seal_breach_locked(admin_supabase, run_id, agent_id, user_id=user_id)
@@ -552,7 +562,7 @@ class DungeonMovementService:
     @classmethod
     async def _seal_breach_locked(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
-    ) -> dict:
+    ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Deluge":
@@ -592,18 +602,20 @@ class DungeonMovementService:
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "water_level": instance.archetype_state.get("water_level"),
-            "stress_cost": stress_cost,
-            "agent_stress": agent.stress,
-            "cooldown_until_room": rooms_entered + cooldown,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return ArchetypeActionResponse(
+            water_level=instance.archetype_state.get("water_level"),
+            stress_cost=stress_cost,
+            agent_stress=agent.stress,
+            cooldown_until_room=rooms_entered + cooldown,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Ground (Awakening) ─────────────────────────────────────────────────
 
     @classmethod
-    async def ground(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def ground(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
         async with _store.lock(run_id):
             return await cls._ground_locked(admin_supabase, run_id, agent_id, user_id=user_id)
@@ -611,7 +623,7 @@ class DungeonMovementService:
     @classmethod
     async def _ground_locked(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
-    ) -> dict:
+    ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Awakening":
@@ -651,18 +663,20 @@ class DungeonMovementService:
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "awareness": instance.archetype_state.get("awareness"),
-            "stress_cost": stress_cost,
-            "agent_stress": agent.stress,
-            "cooldown_until_room": rooms_entered + cooldown,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return ArchetypeActionResponse(
+            awareness=instance.archetype_state.get("awareness"),
+            stress_cost=stress_cost,
+            agent_stress=agent.stress,
+            cooldown_until_room=rooms_entered + cooldown,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Rally (Overthrow) ───────────────────────────────────────────────────
 
     @classmethod
-    async def rally(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+    async def rally(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> ArchetypeActionResponse:
         """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
         async with _store.lock(run_id):
             return await cls._rally_locked(admin_supabase, run_id, agent_id, user_id=user_id)
@@ -670,7 +684,7 @@ class DungeonMovementService:
     @classmethod
     async def _rally_locked(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
-    ) -> dict:
+    ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Overthrow":
@@ -710,20 +724,20 @@ class DungeonMovementService:
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "fracture": instance.archetype_state.get("fracture"),
-            "stress_cost": stress_cost,
-            "agent_stress": agent.stress,
-            "cooldown_until_room": rooms_entered + cooldown,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return ArchetypeActionResponse(
+            fracture=instance.archetype_state.get("fracture"),
+            stress_cost=stress_cost,
+            agent_stress=agent.stress,
+            cooldown_until_room=rooms_entered + cooldown,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Salvage (Deluge) ────────────────────────────────────────────────────
 
     @classmethod
     async def salvage(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
-    ) -> dict:
+    ) -> SalvageResponse:
         """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
         async with _store.lock(run_id):
             return await cls._salvage_locked(admin_supabase, run_id, agent_id, room_index, user_id=user_id)
@@ -731,7 +745,7 @@ class DungeonMovementService:
     @classmethod
     async def _salvage_locked(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
-    ) -> dict:
+    ) -> SalvageResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Deluge":
@@ -808,13 +822,13 @@ class DungeonMovementService:
                 instance.loot.append(item)
 
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
-            return {
-                "success": True,
-                "loot": [item.model_dump(mode="json") for item in loot],
-                "check_result": outcome.result,
-                "check_value": outcome.check_value,
-                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-            }
+            return SalvageResponse(
+                success=True,
+                loot=[item.model_dump(mode="json") for item in loot],
+                check_result=outcome.result,
+                check_value=outcome.check_value,
+                state=DungeonCheckpointService.build_client_state(instance),
+            )
 
         # Failure: +5 water
         instance.archetype_state["water_level"] = min(
@@ -822,24 +836,26 @@ class DungeonMovementService:
             water_level + 5,
         )
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
-        return {
-            "success": False,
-            "water_penalty": 5,
-            "check_result": outcome.result,
-            "check_value": outcome.check_value,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return SalvageResponse(
+            success=False,
+            water_penalty=5,
+            check_result=outcome.result,
+            check_value=outcome.check_value,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Rest ───────────────────────────────────────────────────────────────
 
     @classmethod
-    async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
+    async def rest(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> RestResponse:
         """Rest at a rest site."""
         async with _store.lock(run_id):
             return await cls._rest_locked(admin_supabase, run_id, agent_ids, user_id=user_id)
 
     @classmethod
-    async def _rest_locked(cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID) -> dict:
+    async def _rest_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID,
+    ) -> RestResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("rest", "encounter"):
@@ -860,10 +876,10 @@ class DungeonMovementService:
             instance.phase = "combat_planning"
             await DungeonCombatService._start_combat_timer(admin_supabase, instance)
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
-            return {
-                "ambushed": True,
-                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-            }
+            return RestResponse(
+                ambushed=True,
+                state=DungeonCheckpointService.build_client_state(instance),
+            )
 
         # Apply rest healing
         for agent in instance.party:
@@ -891,11 +907,11 @@ class DungeonMovementService:
         )
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "healed": True,
-            "ambushed": False,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return RestResponse(
+            healed=True,
+            ambushed=False,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Room Type Handlers ─────────────────────────────────────────────────
 
@@ -1059,16 +1075,14 @@ class DungeonMovementService:
         )
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "result": "success",
-            "threshold_toll": choice_id,
-            "narrative_en": narrative_en,
-            "narrative_de": narrative_de,
-            "narrative_effects_en": [],
-            "narrative_effects_de": [],
-            "effects": {"threshold_toll": choice_id, **narrative_data},
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return EncounterChoiceResponse(
+            result="success",
+            threshold_toll=choice_id,
+            narrative_en=narrative_en,
+            narrative_de=narrative_de,
+            effects={"threshold_toll": choice_id, **narrative_data},
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     @classmethod
     def _enter_boss_deployment(
@@ -1162,16 +1176,14 @@ class DungeonMovementService:
                 narrative_en=narrative_en,
                 narrative_de=narrative_de,
             )
-            return {
+            return EncounterChoiceResponse.model_validate({
                 "result": "success",
                 "narrative_en": narrative_en,
                 "narrative_de": narrative_de,
-                "narrative_effects_en": [],
-                "narrative_effects_de": [],
                 "effects": {},
-                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+                "state": DungeonCheckpointService.build_client_state(instance),
                 **combat_result,
-            }
+            })
 
         # ── Check-based deployment (Deluge pattern) ──
         if choice.get("check_aptitude"):
@@ -1231,13 +1243,11 @@ class DungeonMovementService:
             )
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-            return {
-                "result": check_result.result,
-                "effects": effects,
-                "narrative_effects_en": [],
-                "narrative_effects_de": [],
-                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-            }
+            return EncounterChoiceResponse(
+                result=check_result.result,
+                effects=effects,
+                state=DungeonCheckpointService.build_client_state(instance),
+            )
 
         # ── Item-based deployment (Prometheus pattern) ──
         item_id = action.choice_id.removeprefix("deploy_")
@@ -1289,10 +1299,10 @@ class DungeonMovementService:
         )
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "result": "success",
-            "effects": effects,
-            "narrative_effects_en": narrative_effects_en,
-            "narrative_effects_de": narrative_effects_de,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return EncounterChoiceResponse(
+            result="success",
+            effects=effects,
+            narrative_effects_en=narrative_effects_en,
+            narrative_effects_de=narrative_effects_de,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )

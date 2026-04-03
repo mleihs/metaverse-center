@@ -40,6 +40,7 @@ from backend.models.resonance_dungeon import (
     LootItem,
     RoomNode,
 )
+from backend.services.combat.combat_engine import CombatRoundResult
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
@@ -539,9 +540,9 @@ class TestCreateRun:
         result = await DungeonEngineService.create_run(admin_sb, sim_id, user_id, body)
 
         # Verify result structure
-        assert "run" in result
-        assert "state" in result
-        assert result["run"]["archetype"] == "The Shadow"
+        assert result.run is not None
+        assert result.state is not None
+        assert result.run.archetype == "The Shadow"
 
         # Verify instance registered in memory
         assert _store.get(run_id) is not None
@@ -675,7 +676,7 @@ class TestMoveToRoom:
         assert instance.current_room == 1
         assert instance.turn == 1
         assert instance.rooms[1].revealed is True
-        assert "state" in result
+        assert result.state is not None
 
     @pytest.mark.asyncio
     async def test_move_reveals_connected_rooms(self, noop_checkpoint, noop_timer):
@@ -728,7 +729,7 @@ class TestMoveToRoom:
             )
 
         assert "banter_test_01" in instance.used_banter_ids
-        assert result["banter"]["text_en"] == "Watch your step!"
+        assert result.banter["text_en"] == "Watch your step!"
 
     @pytest.mark.asyncio
     async def test_move_tracks_depth_increase(self, noop_checkpoint, noop_timer):
@@ -761,7 +762,7 @@ class TestMoveToRoom:
             )
 
         assert instance.phase == "exit"
-        assert result.get("exit_available") is True
+        assert result.exit_available is True
 
     @pytest.mark.asyncio
     async def test_move_from_room_clear_phase(self, noop_checkpoint, noop_timer):
@@ -780,7 +781,7 @@ class TestMoveToRoom:
             )
 
         assert instance.current_room == 1
-        assert "state" in result
+        assert result.state is not None
 
     @pytest.mark.asyncio
     async def test_captured_agents_skip_ambient_stress(self, noop_checkpoint, noop_timer):
@@ -916,8 +917,8 @@ class TestSubmitCombatActions:
         sub = CombatSubmission(actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")])
         result = await DungeonEngineService.submit_combat_actions(_make_mock_supabase(), instance.run_id, player1, sub)
 
-        assert result["accepted"] is True
-        assert result["waiting_for_players"] is True
+        assert result.accepted is True
+        assert result.waiting_for_players is True
         assert str(player1) in instance.combat.submitted_actions
 
     @pytest.mark.asyncio
@@ -942,12 +943,14 @@ class TestSubmitCombatActions:
             patch("backend.services.dungeon_combat_service.get_enemy_templates_dict", return_value={}),
             patch("backend.services.dungeon_combat_service.resolve_combat_round") as mock_resolve,
         ):
-            mock_result = MagicMock()
-            mock_result.round_num = 1
-            mock_result.events = []
-            mock_result.combat_over = False
-            mock_result.victory = False
-            mock_result.party_wipe = False
+            mock_result = CombatRoundResult(
+                round_num=1,
+                events=[],
+                combat_over=False,
+                victory=False,
+                party_wipe=False,
+                stalemate=False,
+            )
             mock_resolve.return_value = mock_result
 
             result = await DungeonEngineService.submit_combat_actions(
@@ -955,7 +958,7 @@ class TestSubmitCombatActions:
             )
 
         # Should have resolved (not waiting) — verifies UUID fix works
-        assert "round_result" in result
+        assert result.round_result is not None
         mock_resolve.assert_called_once()
 
 
@@ -1047,7 +1050,7 @@ class TestHandleEncounterChoice:
                 _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
 
-        assert result["result"] == "success"
+        assert result.result == "success"
         assert instance.phase == "room_clear"
         assert instance.rooms[2].cleared is True
         assert instance.rooms_cleared == initial_cleared + 1
@@ -1096,9 +1099,9 @@ class TestHandleEncounterChoice:
                 _make_mock_supabase(), instance.run_id, action, user_id=_TEST_PLAYER
             )
 
-        assert result["result"] == "success"
-        assert result["check"] is not None
-        assert result["check"]["aptitude"] == "spy"
+        assert result.result == "success"
+        assert result.check is not None
+        assert result.check["aptitude"] == "spy"
 
 
 # ── scout ────────────────────────────────────────────────────────────────
@@ -1156,8 +1159,8 @@ class TestScout:
             _make_mock_supabase(), instance.run_id, agent.agent_id, user_id=_TEST_PLAYER
         )
 
-        assert result["revealed_rooms"] > 0
-        assert "state" in result
+        assert result.revealed_rooms > 0
+        assert result.state is not None
 
     @pytest.mark.asyncio
     async def test_shadow_vp_restore_on_scout(self, noop_checkpoint):
@@ -1171,7 +1174,7 @@ class TestScout:
         )
 
         assert instance.archetype_state["visibility"] > 1
-        assert result["visibility"] == instance.archetype_state["visibility"]
+        assert result.visibility == instance.archetype_state["visibility"]
 
 
 # ── rest ─────────────────────────────────────────────────────────────────
@@ -1211,8 +1214,8 @@ class TestRest:
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
-        assert result["healed"] is True
-        assert result["ambushed"] is False
+        assert result.healed is True
+        assert result.ambushed is False
         assert agent.stress == 200  # 400 - REST_STRESS_HEAL(200) = 200
 
     @pytest.mark.asyncio
@@ -1244,7 +1247,7 @@ class TestRest:
                 _make_mock_supabase(), instance.run_id, [agent.agent_id], user_id=_TEST_PLAYER
             )
 
-        assert result["ambushed"] is True
+        assert result.ambushed is True
         assert instance.phase == "combat_planning"
         assert instance.combat is not None
         assert instance.combat.is_ambush is True
@@ -1278,7 +1281,7 @@ class TestRetreat:
         mock_sb = _make_mock_supabase()
         result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
-        assert result["retreated"] is True
+        assert result.retreated is True
         assert instance.phase == "retreated"
 
     @pytest.mark.asyncio
@@ -1292,8 +1295,8 @@ class TestRetreat:
         with patch("backend.services.dungeon_engine_service.roll_loot", return_value=loot):
             result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
-        assert result["retreated"] is True
-        assert len(result["loot"]) == 1
+        assert result.retreated is True
+        assert len(result.loot) == 1
 
     @pytest.mark.asyncio
     async def test_retreat_no_loot_if_no_rooms_cleared(self, noop_checkpoint):
@@ -1304,8 +1307,8 @@ class TestRetreat:
         mock_sb = _make_mock_supabase()
         result = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
-        assert result["retreated"] is True
-        assert len(result["loot"]) == 0
+        assert result.retreated is True
+        assert len(result.loot) == 0
 
     @pytest.mark.asyncio
     async def test_retreat_removes_from_active_instances(self, noop_checkpoint):

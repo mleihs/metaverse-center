@@ -1465,18 +1465,25 @@ router = APIRouter(prefix="/api/v1/dungeons", tags=["resonance-dungeons"])
 
 | Method | Path | Auth | Description | Request | Response |
 |---|---|---|---|---|---|
-| `GET` | `/available` | Member | List archetypes with active resonances above threshold | `?simulation_id=UUID` | `PaginatedResponse[AvailableDungeonResponse]` |
-| `POST` | `/runs` | Editor+ | Start a new dungeon run | `DungeonRunCreate` + `?simulation_id=UUID` | `SuccessResponse[DungeonRunResponse]` |
-| `GET` | `/runs/{run_id}` | Member | Get run metadata + current state snapshot | — | `SuccessResponse[DungeonRunDetailResponse]` |
+| `GET` | `/available` | Member | List archetypes with active resonances above threshold | `?simulation_id=UUID` | `SuccessResponse[list[AvailableDungeonResponse]]` |
+| `POST` | `/runs` | Editor+ | Start a new dungeon run | `DungeonRunCreate` + `?simulation_id=UUID` | `SuccessResponse[CreateRunResponse]` |
+| `GET` | `/runs/{run_id}` | Member | Get run metadata + current state snapshot | — | `SuccessResponse[DungeonRunResponse]` |
 | `GET` | `/runs/{run_id}/state` | Member | Get full client state (rooms, party, archetype state) | — | `SuccessResponse[DungeonClientState]` |
-| `POST` | `/runs/{run_id}/move` | Editor+ | Move party to adjacent room | `{ room_index: int }` | `SuccessResponse[RoomEntryResponse]` |
-| `POST` | `/runs/{run_id}/action` | Editor+ | Submit encounter choice or combat action | `DungeonAction` | `SuccessResponse[ActionResultResponse]` |
-| `POST` | `/runs/{run_id}/combat/submit` | Editor+ | Submit combat actions for planning phase | `CombatSubmission` | `SuccessResponse[{ accepted: true }]` |
-| `POST` | `/runs/{run_id}/scout` | Editor+ | Spy: reveal adjacent rooms (costs Visibility) | `{ agent_id: UUID }` | `SuccessResponse[ScoutResultResponse]` |
-| `POST` | `/runs/{run_id}/rest` | Editor+ | Rest at rest site | `{ agent_ids: list[UUID] }` | `SuccessResponse[RestResultResponse]` |
-| `POST` | `/runs/{run_id}/retreat` | Editor+ | Abandon dungeon (keep partial loot) | — | `SuccessResponse[RetreatResultResponse]` |
+| `POST` | `/runs/{run_id}/move` | Editor+ | Move party to adjacent room | `DungeonMoveRequest` | `SuccessResponse[MoveResponse]` |
+| `POST` | `/runs/{run_id}/action` | Editor+ | Submit encounter choice or combat action | `DungeonAction` | `SuccessResponse[EncounterChoiceResponse]` |
+| `POST` | `/runs/{run_id}/combat/submit` | Editor+ | Submit combat actions for planning phase | `CombatSubmission` | `SuccessResponse[CombatSubmitResponse]` |
+| `POST` | `/runs/{run_id}/scout` | Editor+ | Spy: reveal adjacent rooms (costs Visibility) | `ScoutRequest` | `SuccessResponse[ScoutResponse]` |
+| `POST` | `/runs/{run_id}/seal` | Editor+ | Guardian: Seal Breach (Deluge only) | `ScoutRequest` | `SuccessResponse[ArchetypeActionResponse]` |
+| `POST` | `/runs/{run_id}/ground` | Editor+ | Spy: Ground (Awakening only) | `ScoutRequest` | `SuccessResponse[ArchetypeActionResponse]` |
+| `POST` | `/runs/{run_id}/rally` | Editor+ | Propagandist: Rally (Overthrow only) | `ScoutRequest` | `SuccessResponse[ArchetypeActionResponse]` |
+| `POST` | `/runs/{run_id}/salvage` | Editor+ | Salvage submerged loot (Deluge only) | `SalvageRequest` | `SuccessResponse[SalvageResponse]` |
+| `POST` | `/runs/{run_id}/rest` | Editor+ | Rest at rest site | `RestRequest` | `SuccessResponse[RestResponse]` |
+| `POST` | `/runs/{run_id}/retreat` | Editor+ | Abandon dungeon (keep partial loot) | — | `SuccessResponse[RetreatResponse]` |
+| `POST` | `/runs/{run_id}/distribute` | Editor+ | Assign loot item to agent | `LootAssignment` | `SuccessResponse[LootAssignResponse]` |
+| `POST` | `/runs/{run_id}/distribute/confirm` | Editor+ | Finalize loot distribution | — | `SuccessResponse[DistributeConfirmResponse]` |
 | `GET` | `/runs/{run_id}/events` | Member | Get dungeon event log | `?limit=50&offset=0` | `PaginatedResponse[DungeonEventResponse]` |
 | `GET` | `/history` | Member | List past dungeon runs for simulation | `?simulation_id=UUID&limit=25` | `PaginatedResponse[DungeonRunResponse]` |
+| `GET` | `/agents/{agent_id}/loot-effects` | Member | Get agent's persistent loot effects | `?simulation_id=UUID` | `SuccessResponse[list[AgentLootEffectResponse]]` |
 
 > **[REVIEW #16 — MEDIUM]** Multiplayer UPDATE RLS Issue
 >
@@ -3181,7 +3188,7 @@ Uses existing Supabase Presence on `dungeon:{runId}:presence`:
 
 **Buff Lifecycle:** All agent buffs cleared at end of round (1-round duration, Phase 0 simplification). Pipeline: `has_buff()` → `_apply_buff_to_agent()` → `_consume_buff()`. One-shot shields (Fortify) applied and consumed in same round. Debuffs (Demoralize, Deploy Trap) persist across rounds.
 
-**DRY Helpers:** `_build_round_result_dict()` is a shared static helper for round_result serialization across all 4 outcomes (normal round, victory, wipe, stalemate).
+**DRY Helpers:** `_build_round_result()` converts the internal `CombatRoundResult` dataclass to a `CombatRoundResultResponse` Pydantic model, mapping domain field names to client-friendly names (damage_steps→damage, party_wipe→wipe). Used across all 4 outcomes (normal round, victory, wipe, stalemate).
 
 ### 17.2 Combat Onboarding
 

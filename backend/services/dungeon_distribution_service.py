@@ -20,7 +20,11 @@ from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
-from backend.models.resonance_dungeon import DungeonInstance
+from backend.models.resonance_dungeon import (
+    DistributeConfirmResponse,
+    DungeonInstance,
+    LootAssignResponse,
+)
 from backend.services.combat.condition_tracks import can_act
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_instance_store import store as _store
@@ -202,7 +206,7 @@ class DungeonDistributionService:
         *,
         dimension: str | None = None,
         user_id: UUID,
-    ) -> dict:
+    ) -> LootAssignResponse:
         """Assign one distributable loot item to an agent."""
         async with _store.lock(run_id):
             return await cls._assign_loot_locked(
@@ -219,7 +223,7 @@ class DungeonDistributionService:
         *,
         dimension: str | None = None,
         user_id: UUID,
-    ) -> dict:
+    ) -> LootAssignResponse:
         from backend.models.resonance_dungeon import BIG_FIVE_DIMENSIONS
 
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
@@ -254,12 +258,12 @@ class DungeonDistributionService:
             instance.loot_extra_params[loot_id] = {"dimension": dimension}
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "assignments": instance.loot_assignments,
-            "remaining": cls._count_unassigned(instance),
-            "all_assigned": cls._count_unassigned(instance) == 0,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return LootAssignResponse(
+            assignments=instance.loot_assignments,
+            remaining=cls._count_unassigned(instance),
+            all_assigned=cls._count_unassigned(instance) == 0,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Distribution Confirmation ──────────────────────────────────────────
 
@@ -270,7 +274,7 @@ class DungeonDistributionService:
         run_id: UUID,
         *,
         user_id: UUID | None = None,
-    ) -> dict:
+    ) -> DistributeConfirmResponse:
         """Finalize loot distribution and complete the dungeon run.
 
         user_id is optional to allow auto-confirm from distribution timer.
@@ -287,7 +291,7 @@ class DungeonDistributionService:
         run_id: UUID,
         *,
         user_id: UUID | None = None,
-    ) -> dict:
+    ) -> DistributeConfirmResponse:
         """Inner impl — caller must hold _store.lock(run_id)."""
         # Cancel distribution timer (player confirmed before timeout)
         timer = _store.pop_distribution_timer(run_id)
@@ -366,10 +370,10 @@ class DungeonDistributionService:
             extra=log_extra(instance, outcome="distributed", loot_items=len(loot_items)),
         )
 
-        return {
-            "loot_result": loot_result,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return DistributeConfirmResponse(
+            loot_result=loot_result,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Distribution Timer ─────────────────────────────────────────────────
 

@@ -24,8 +24,11 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance_dungeon import (
+    CombatEventResponse,
+    CombatRoundResultResponse,
     CombatState,
     CombatSubmission,
+    CombatSubmitResponse,
     DungeonInstance,
     PhaseTimer,
 )
@@ -75,7 +78,7 @@ class DungeonCombatService:
         run_id: UUID,
         user_id: UUID,
         submission: CombatSubmission,
-    ) -> dict:
+    ) -> CombatSubmitResponse:
         """Submit combat actions for planning phase.
 
         C1: Lock prevents concurrent submissions from racing on the same instance.
@@ -101,12 +104,12 @@ class DungeonCombatService:
                 result = await cls._resolve_combat(admin_supabase, instance)
                 return result
 
-            return {"accepted": True, "waiting_for_players": True}
+            return CombatSubmitResponse(accepted=True, waiting_for_players=True)
 
     # ── Combat Resolution ──────────────────────────────────────────────────
 
     @classmethod
-    async def _resolve_combat(cls, admin_supabase: Client, instance: DungeonInstance) -> dict:
+    async def _resolve_combat(cls, admin_supabase: Client, instance: DungeonInstance) -> CombatSubmitResponse:
         """Resolve one combat round using the shared combat engine."""
         if not instance.combat:
             return {"error": "No active combat"}
@@ -230,7 +233,7 @@ class DungeonCombatService:
             },
         )
 
-        round_data = cls._build_round_result_dict(round_result)
+        round_data = cls._build_round_result(round_result)
 
         # Archetype per-round effects (e.g. Tower stability drain)
         strategy = get_archetype_strategy(instance.archetype)
@@ -246,11 +249,11 @@ class DungeonCombatService:
             if round_result.victory:
                 result = await cls._handle_combat_victory(admin_supabase, instance)
                 result["round_result"] = round_data
-                return result
+                return CombatSubmitResponse.model_validate(result)
             if round_result.party_wipe:
                 result = await cls._handle_party_wipe(admin_supabase, instance)
                 result["round_result"] = round_data
-                return result
+                return CombatSubmitResponse.model_validate(result)
             if round_result.stalemate:
                 return await cls._handle_combat_stalemate(admin_supabase, instance, round_result)
 
@@ -260,35 +263,40 @@ class DungeonCombatService:
         await cls._start_combat_timer(admin_supabase, instance)
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
-        return {
-            "round_result": round_data,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return CombatSubmitResponse(
+            round_result=round_data,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     @staticmethod
-    def _build_round_result_dict(round_result: CombatRoundResult) -> dict:
-        """Serialize a CombatRoundResult into the API response dict."""
-        return {
-            "round": round_result.round_num,
-            "events": [
-                {
-                    "actor": e.actor,
-                    "action": e.action,
-                    "target": e.target,
-                    "hit": e.hit,
-                    "damage": e.damage_steps,
-                    "stress": e.stress_delta,
-                    "narrative_en": e.narrative_en,
-                    "narrative_de": e.narrative_de,
-                }
+    def _build_round_result(round_result: CombatRoundResult) -> CombatRoundResultResponse:
+        """Convert internal CombatRoundResult dataclass to API response model.
+
+        Maps domain field names to client-friendly names:
+        round_num→round, damage_steps→damage, stress_delta→stress,
+        narrative_summary_*→narrative_*, party_wipe→wipe.
+        """
+        return CombatRoundResultResponse(
+            round=round_result.round_num,
+            events=[
+                CombatEventResponse(
+                    actor=e.actor,
+                    action=e.action,
+                    target=e.target,
+                    hit=e.hit,
+                    damage=e.damage_steps,
+                    stress=e.stress_delta,
+                    narrative_en=e.narrative_en,
+                    narrative_de=e.narrative_de,
+                )
                 for e in round_result.events
             ],
-            "narrative_en": round_result.narrative_summary_en,
-            "narrative_de": round_result.narrative_summary_de,
-            "victory": round_result.victory,
-            "wipe": round_result.party_wipe,
-            "stalemate": round_result.stalemate,
-        }
+            narrative_en=round_result.narrative_summary_en,
+            narrative_de=round_result.narrative_summary_de,
+            victory=round_result.victory,
+            wipe=round_result.party_wipe,
+            stalemate=round_result.stalemate,
+        )
 
     # ── Outcome Handlers ───────────────────────────────────────────────────
 
@@ -328,7 +336,7 @@ class DungeonCombatService:
         return {
             "victory": True,
             "loot": [item.model_dump() for item in loot],
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+            "state": DungeonCheckpointService.build_client_state(instance),
         }
 
     @classmethod
@@ -385,7 +393,7 @@ class DungeonCombatService:
                 "wipe": True,
                 "rpc_failed": True,
                 "rpc_error_message": "Failed to save wipe result. Your progress will be recovered on next visit.",
-                "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+                "state": DungeonCheckpointService.build_client_state(instance),
             }
 
         _store.remove(instance.run_id)
@@ -396,7 +404,7 @@ class DungeonCombatService:
 
         return {
             "wipe": True,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+            "state": DungeonCheckpointService.build_client_state(instance),
         }
 
     @classmethod
@@ -405,7 +413,7 @@ class DungeonCombatService:
         admin_supabase: Client,
         instance: DungeonInstance,
         round_result: CombatRoundResult,
-    ) -> dict:
+    ) -> CombatSubmitResponse:
         """Handle combat stalemate: max rounds exceeded. Room cleared but no loot."""
         timer = _store.pop_combat_timer(instance.run_id)
         if timer and not timer.done():
@@ -442,11 +450,11 @@ class DungeonCombatService:
             extra=log_extra(instance, outcome="stalemate", rounds=round_result.round_num),
         )
 
-        return {
-            "round_result": cls._build_round_result_dict(round_result),
-            "stalemate": True,
-            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
-        }
+        return CombatSubmitResponse(
+            round_result=cls._build_round_result(round_result),
+            stalemate=True,
+            state=DungeonCheckpointService.build_client_state(instance),
+        )
 
     # ── Combat Room Setup ──────────────────────────────────────────────────
 

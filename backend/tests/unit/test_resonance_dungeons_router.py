@@ -34,6 +34,7 @@ from backend.dependencies import (
     get_supabase,
 )
 from backend.models.common import CurrentUser
+from backend.models.resonance_dungeon import CreateRunResponse, DungeonClientState, DungeonRunResponse
 from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID, make_async_supabase_mock, make_chain_mock
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
@@ -126,6 +127,26 @@ def _run_row(run_id=None, sim_id=None, status="exploring"):
     }
 
 
+def _mock_state():
+    """Minimal valid DungeonClientState dict for mocked service responses."""
+    return {
+        "run_id": str(RUN_ID),
+        "archetype": "The Shadow",
+        "signature": "shadow_conflict",
+        "difficulty": 3,
+        "depth": 0,
+        "current_room": 0,
+    }
+
+
+def _mock_create_run_response(run_id=None, sim_id=None):
+    """Build a CreateRunResponse model for service mock return values."""
+    return CreateRunResponse(
+        run=DungeonRunResponse(**_run_row(run_id=run_id, sim_id=sim_id)),
+        state=DungeonClientState(**_mock_state()),
+    )
+
+
 # ── GET /dungeons/available ──────────────────────────────────────────────
 
 
@@ -169,7 +190,7 @@ class TestCreateRun:
             patch(
                 "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
                 new_callable=AsyncMock,
-                return_value={"run": _run_row(), "state": {}},
+                return_value=_mock_create_run_response(),
             ),
             patch(
                 "backend.routers.resonance_dungeons.AuditService.safe_log",
@@ -328,7 +349,7 @@ class TestMoveToRoom:
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.move_to_room",
             new_callable=AsyncMock,
-            return_value={"state": {}, "banter": None},
+            return_value={"state": _mock_state(), "banter": None},
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs/{RUN_ID}/move",
@@ -357,7 +378,7 @@ class TestSubmitAction:
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.handle_encounter_choice",
             new_callable=AsyncMock,
-            return_value={"result": "success", "state": {}},
+            return_value={"result": "success", "state": _mock_state()},
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs/{RUN_ID}/action",
@@ -408,7 +429,7 @@ class TestScout:
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.scout",
             new_callable=AsyncMock,
-            return_value={"revealed_rooms": 2, "visibility": 3, "state": {}},
+            return_value={"revealed_rooms": 2, "visibility": 3, "state": _mock_state()},
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs/{RUN_ID}/scout",
@@ -432,7 +453,7 @@ class TestRest:
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.rest",
             new_callable=AsyncMock,
-            return_value={"healed": True, "ambushed": False, "state": {}},
+            return_value={"healed": True, "ambushed": False, "state": _mock_state()},
         ):
             resp = client.post(
                 f"/api/v1/dungeons/runs/{RUN_ID}/rest",
@@ -633,7 +654,7 @@ class TestValidationEdgeCases:
             patch(
                 "backend.routers.resonance_dungeons.DungeonEngineService.create_run",
                 new_callable=AsyncMock,
-                return_value={"run": _run_row(), "state": {}},
+                return_value=_mock_create_run_response(),
             ),
             patch(
                 "backend.routers.resonance_dungeons.AuditService.safe_log",
