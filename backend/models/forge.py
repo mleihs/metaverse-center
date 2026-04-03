@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class TokenBundle(BaseModel):
     """Token bundle from catalog."""
+
     id: UUID
     slug: str
     display_name: str
@@ -25,6 +26,7 @@ class TokenBundle(BaseModel):
 
 class PurchaseReceipt(BaseModel):
     """Receipt returned by fn_purchase_tokens."""
+
     purchase_id: UUID
     bundle_slug: str
     tokens_granted: int
@@ -35,11 +37,13 @@ class PurchaseReceipt(BaseModel):
 
 class PurchaseRequest(BaseModel):
     """Request body for mock purchase."""
+
     bundle_slug: str = Field(min_length=1, max_length=50)
 
 
 class TokenPurchaseHistory(BaseModel):
     """Ledger entry for purchase history."""
+
     id: UUID
     bundle_id: UUID
     tokens_granted: int
@@ -49,8 +53,10 @@ class TokenPurchaseHistory(BaseModel):
     balance_after: int
     created_at: datetime
 
+
 class AdminTokenGrant(BaseModel):
     """Admin grant request."""
+
     user_id: UUID
     tokens: int = Field(ge=1, le=1000)
     reason: str | None = Field(None, max_length=500)
@@ -58,6 +64,7 @@ class AdminTokenGrant(BaseModel):
 
 class AdminBundleUpdate(BaseModel):
     """Admin bundle edit request."""
+
     display_name: str | None = Field(None, min_length=1, max_length=100)
     tokens: int | None = Field(None, gt=0)
     price_cents: int | None = Field(None, ge=0)
@@ -68,6 +75,7 @@ class AdminBundleUpdate(BaseModel):
 
 class TokenEconomyStats(BaseModel):
     """Aggregated token economy metrics from ``token_economy_stats`` view (migration 102)."""
+
     total_purchases: int
     mock_purchases: int
     admin_grants: int
@@ -80,6 +88,7 @@ class TokenEconomyStats(BaseModel):
 
 class AdminPurchaseLedgerEntry(BaseModel):
     """Purchase ledger entry with bundle slug for admin view."""
+
     id: UUID
     user_id: UUID
     tokens_granted: int
@@ -101,6 +110,7 @@ ForgeStatus = Literal["draft", "processing", "completed", "failed"]
 
 class ForgeGenerationConfig(BaseModel):
     """User-chosen entity counts and quality settings for world generation."""
+
     agent_count: int = Field(default=6, ge=3, le=12)
     building_count: int = Field(default=7, ge=3, le=12)
     zone_count: int = Field(default=5, ge=3, le=8)
@@ -120,6 +130,7 @@ class ForgeGenerationConfig(BaseModel):
 
 class ForgeLoreSection(BaseModel):
     """A single lore section for a simulation."""
+
     chapter: str
     arcanum: str
     title: str
@@ -131,11 +142,13 @@ class ForgeLoreSection(BaseModel):
 
 class ForgeLoreOutput(BaseModel):
     """AI-generated lore for a simulation."""
+
     sections: list[ForgeLoreSection]
 
 
 class ForgeLoreTranslatedSection(BaseModel):
     """Translated fields for a single lore section."""
+
     title: str
     epigraph: str = ""
     body: str
@@ -144,6 +157,7 @@ class ForgeLoreTranslatedSection(BaseModel):
 
 class ForgeLoreTranslatedOutput(BaseModel):
     """AI-translated lore sections (DE)."""
+
     sections: list[ForgeLoreTranslatedSection]
 
 
@@ -199,18 +213,18 @@ class ForgeThemeOutput(BaseModel):
     animation_easing: str = Field(description="CSS easing function")
 
     # Card frame (4)
-    card_frame_texture: Literal[
-        "none", "filigree", "circuits", "scanlines", "rivets", "illumination"
-    ] = Field(description="Card background texture overlay")
-    card_frame_nameplate: Literal[
-        "terminal", "banner", "readout", "plate", "cartouche"
-    ] = Field(description="Card name label style")
-    card_frame_corners: Literal[
-        "none", "tentacles", "brackets", "crosshairs", "bolts", "floral"
-    ] = Field(description="Card corner decoration motif")
-    card_frame_foil: Literal[
-        "holographic", "aquatic", "phosphor", "patina", "gilded"
-    ] = Field(description="Card holographic foil style")
+    card_frame_texture: Literal["none", "filigree", "circuits", "scanlines", "rivets", "illumination"] = Field(
+        description="Card background texture overlay"
+    )
+    card_frame_nameplate: Literal["terminal", "banner", "readout", "plate", "cartouche"] = Field(
+        description="Card name label style"
+    )
+    card_frame_corners: Literal["none", "tentacles", "brackets", "crosshairs", "bolts", "floral"] = Field(
+        description="Card corner decoration motif"
+    )
+    card_frame_foil: Literal["holographic", "aquatic", "phosphor", "patina", "gilded"] = Field(
+        description="Card holographic foil style"
+    )
 
     # Image style prompts (4) — appended to Replicate prompts for world-consistent imagery
     image_style_prompt_portrait: str = Field(
@@ -244,6 +258,7 @@ class ForgeThemeOutput(BaseModel):
 
 class ForgeDraftBase(BaseModel):
     """Base fields for a Forge Draft."""
+
     seed_prompt: str | None = None
     current_phase: ForgePhase = "astrolabe"
     philosophical_anchor: dict[str, Any] = Field(default_factory=dict)
@@ -260,11 +275,13 @@ class ForgeDraftBase(BaseModel):
 
 class ForgeDraftCreate(BaseModel):
     """Schema for creating a new draft."""
+
     seed_prompt: str = Field(min_length=3, max_length=1500)
 
 
 class ForgeDraftUpdate(BaseModel):
     """Schema for updating a draft state."""
+
     current_phase: ForgePhase | None = None
     philosophical_anchor: dict[str, Any] | None = None
     research_context: dict[str, Any] | None = None
@@ -281,6 +298,7 @@ class ForgeDraftUpdate(BaseModel):
 
 class ForgeDraft(ForgeDraftBase):
     """Full draft record from database."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
@@ -292,6 +310,7 @@ class ForgeDraft(ForgeDraftBase):
 
 class UserWallet(BaseModel):
     """User wallet/quota information."""
+
     model_config = ConfigDict(from_attributes=True)
 
     user_id: UUID
@@ -305,12 +324,14 @@ class UserWallet(BaseModel):
 
 class UpdateBYOKRequest(BaseModel):
     """Schema for users to securely update their BYOK keys."""
+
     openrouter_key: str | None = None
     replicate_key: str | None = None
 
 
 class BYOKStatus(BaseModel):
     """BYOK bypass status for a user."""
+
     has_openrouter_key: bool
     has_replicate_key: bool
     byok_allowed: bool  # whether user is permitted to use BYOK at all
@@ -322,16 +343,13 @@ class BYOKStatus(BaseModel):
 
 # ── Feature Purchase Models ──────────────────────────────────────────
 
-FeatureType = Literal[
-    "darkroom_pass", "classified_dossier", "recruitment", "chronicle_export"
-]
-FeaturePurchaseStatus = Literal[
-    "pending", "processing", "completed", "failed", "refunded"
-]
+FeatureType = Literal["darkroom_pass", "classified_dossier", "recruitment", "chronicle_export"]
+FeaturePurchaseStatus = Literal["pending", "processing", "completed", "failed", "refunded"]
 
 
 class FeaturePurchase(BaseModel):
     """Feature purchase record from database."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
@@ -349,17 +367,20 @@ class FeaturePurchase(BaseModel):
 
 class RecruitmentRequest(BaseModel):
     """Request body for agent recruitment purchase."""
+
     focus: str | None = Field(None, max_length=200)
     zone_id: UUID | None = None
 
 
 class ImageRegenRequest(BaseModel):
     """Request body for Darkroom image regeneration."""
+
     prompt_override: str | None = Field(None, max_length=500)
 
 
 class PhilosophicalAnchor(BaseModel):
     """A proposed thematic anchor for a simulation."""
+
     title: str
     title_de: str = Field(
         default="",
@@ -389,6 +410,7 @@ class PhilosophicalAnchor(BaseModel):
 
 class ForgeAgentDraft(BaseModel):
     """Draft of an agent entity."""
+
     name: str = Field(max_length=100)
     gender: str = Field(max_length=30)
     system: str = Field(
@@ -430,6 +452,7 @@ class ForgeAgentDraft(BaseModel):
 
 class ForgeBuildingDraft(BaseModel):
     """Draft of a building entity."""
+
     name: str = Field(max_length=100)
     building_type: str = Field(max_length=100)
     building_type_de: str = Field(
@@ -465,6 +488,7 @@ class ForgeBuildingDraft(BaseModel):
 
 class ForgeZoneDraft(BaseModel):
     """Draft of a single zone/district."""
+
     name: str
     zone_type: str = Field(
         description="Zone classification (e.g. residential, industrial,"
@@ -487,11 +511,11 @@ class ForgeZoneDraft(BaseModel):
 
 class ForgeStreetDraft(BaseModel):
     """Draft of a single named street."""
+
     name: str
     zone_name: str = Field(description="Name of the zone this street belongs to.")
     street_type: str = Field(
-        description="Street classification"
-        " (e.g. alley, boulevard, lane, avenue, road, street, stairway).",
+        description="Street classification (e.g. alley, boulevard, lane, avenue, road, street, stairway).",
     )
     street_type_de: str = Field(
         default="",
@@ -502,6 +526,7 @@ class ForgeStreetDraft(BaseModel):
 
 class ForgeGeographyDraft(BaseModel):
     """Draft of city geography."""
+
     city_name: str
     zones: list[ForgeZoneDraft]
     streets: list[ForgeStreetDraft]
@@ -512,6 +537,7 @@ class ForgeGeographyDraft(BaseModel):
 
 class ForgeAgentTranslation(BaseModel):
     """German translations for a single agent."""
+
     name: str  # used as key to match, not translated
     character_de: str = ""
     background_de: str = ""
@@ -520,6 +546,7 @@ class ForgeAgentTranslation(BaseModel):
 
 class ForgeBuildingTranslation(BaseModel):
     """German translations for a single building."""
+
     name: str
     description_de: str = ""
     building_type_de: str = ""
@@ -528,6 +555,7 @@ class ForgeBuildingTranslation(BaseModel):
 
 class ForgeZoneTranslation(BaseModel):
     """German translations for a single zone."""
+
     name: str
     description_de: str = ""
     zone_type_de: str = ""
@@ -535,19 +563,102 @@ class ForgeZoneTranslation(BaseModel):
 
 class ForgeStreetTranslation(BaseModel):
     """German translations for a single street."""
+
     name: str
     street_type_de: str = ""
 
 
 class ForgeSimulationTranslation(BaseModel):
     """German translation for the simulation description."""
+
     description_de: str = ""
 
 
 class ForgeEntityTranslationOutput(BaseModel):
     """Complete entity translation batch for a simulation."""
+
     agents: list[ForgeAgentTranslation]
     buildings: list[ForgeBuildingTranslation]
     zones: list[ForgeZoneTranslation]
     streets: list[ForgeStreetTranslation]
     simulation: ForgeSimulationTranslation
+
+
+# ── Response Models (Schritt 3) ──────────────────────────────────────
+
+
+class WalletSummary(BaseModel):
+    """Wallet summary returned by fn_get_wallet_summary RPC."""
+
+    forge_tokens: int = 0
+    is_architect: bool = False
+    account_tier: str = "observer"
+    byok_status: BYOKStatus
+
+
+class IgnitionResponse(BaseModel):
+    """Response from shard ignition (draft → simulation materialization)."""
+
+    simulation_id: str
+    slug: str | None = None
+    name: str
+    description: str
+    anchor: dict[str, Any]
+    seed_prompt: str
+
+
+class PurchaseConfirmation(BaseModel):
+    """Shared response for feature purchases (dossier, recruit, chronicle)."""
+
+    purchase_id: str
+
+
+class DarkroomPassResponse(BaseModel):
+    """Response from darkroom pass purchase."""
+
+    purchase_id: str
+    regen_budget: int
+
+
+class DarkroomRegenResponse(BaseModel):
+    """Response from darkroom image regeneration."""
+
+    remaining_regenerations: int
+    entity_type: str
+    entity_id: str
+
+
+class DossierEvolveResponse(BaseModel):
+    """Response from dossier section evolution."""
+
+    status: str
+    arcanum: str
+
+
+class ForgeAdminStats(BaseModel):
+    """Global forge statistics for admin dashboard."""
+
+    active_drafts: int
+    total_tokens: int
+    total_materialized: int
+
+
+class PurgeResult(BaseModel):
+    """Result of stale draft purge operation."""
+
+    deleted_count: int
+
+
+class BYOKSystemSettings(BaseModel):
+    """BYOK system-level settings (admin view)."""
+
+    byok_bypass_enabled: bool | None = None
+    byok_access_policy: str | None = None
+
+
+class BYOKUserOverride(BaseModel):
+    """Per-user BYOK override settings (admin operations)."""
+
+    user_id: str
+    byok_bypass: bool | None = None
+    byok_allowed: bool | None = None

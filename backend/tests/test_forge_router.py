@@ -1,5 +1,6 @@
 """Integration tests for the Forge router endpoints."""
 
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
@@ -73,7 +74,8 @@ class TestCreateDraft:
         test_client, mock_sb = client
         # Return a draft row on insert
         insert_resp = MagicMock()
-        insert_resp.data = [{"id": str(DRAFT_ID), "user_id": str(MOCK_USER_ID), "status": "draft"}]
+        now = datetime.now(tz=UTC).isoformat()
+        insert_resp.data = [{"id": str(DRAFT_ID), "user_id": str(MOCK_USER_ID), "status": "draft", "created_at": now, "updated_at": now}]
         mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=insert_resp)
 
         resp = test_client.post("/api/v1/forge/drafts", json={"seed_prompt": "test"})

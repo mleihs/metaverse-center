@@ -21,18 +21,29 @@ from backend.models.forge import (
     AdminBundleUpdate,
     AdminPurchaseLedgerEntry,
     AdminTokenGrant,
+    BYOKSystemSettings,
+    BYOKUserOverride,
+    DarkroomPassResponse,
+    DarkroomRegenResponse,
+    DossierEvolveResponse,
     FeaturePurchase,
+    ForgeAdminStats,
     ForgeDraft,
     ForgeDraftCreate,
     ForgeDraftUpdate,
+    ForgeThemeOutput,
+    IgnitionResponse,
     ImageRegenRequest,
+    PurchaseConfirmation,
     PurchaseReceipt,
     PurchaseRequest,
+    PurgeResult,
     RecruitmentRequest,
     TokenBundle,
     TokenEconomyStats,
     TokenPurchaseHistory,
     UpdateBYOKRequest,
+    WalletSummary,
 )
 from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
@@ -63,51 +74,52 @@ _draft_service = ForgeDraftService()
 _orchestrator_service = ForgeOrchestratorService()
 
 
-@router.get("/drafts", response_model=PaginatedResponse[ForgeDraft])
+@router.get("/drafts")
 async def list_drafts(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     offset: Annotated[int, Query(ge=0)] = 0,
-):
+) -> PaginatedResponse[ForgeDraft]:
     """List simulation forge drafts for the current user."""
     data, total = await _draft_service.list_drafts(supabase, user.id, limit, offset)
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
 
 
-@router.post("/drafts", response_model=SuccessResponse[dict])
+@router.post("/drafts")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def create_draft(
     request: Request,
     body: ForgeDraftCreate,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[ForgeDraft]:
     """Initialize a new worldbuilding draft."""
     draft = await _draft_service.create_draft(supabase, user.id, body)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", draft.get("id"), "create",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        draft.get("id"),
+        "create",
         {"seed_prompt": body.seed_prompt[:100]},
     )
-    return {"success": True, "data": draft}
+    return SuccessResponse(data=draft)
 
 
-@router.get("/drafts/{draft_id}", response_model=SuccessResponse[dict])
+@router.get("/drafts/{draft_id}")
 async def get_draft(
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[ForgeDraft]:
     """Get draft details."""
     draft = await _draft_service.get_draft(supabase, user.id, draft_id)
-    return {"success": True, "data": draft}
+    return SuccessResponse(data=draft)
 
 
-@router.patch("/drafts/{draft_id}", response_model=SuccessResponse[dict])
+@router.patch("/drafts/{draft_id}")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def update_draft(
     request: Request,
@@ -115,7 +127,7 @@ async def update_draft(
     body: ForgeDraftUpdate,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[ForgeDraft]:
     """Update draft state."""
     # Validate phase transitions
     if body.current_phase is not None:
@@ -137,10 +149,15 @@ async def update_draft(
 
     draft = await _draft_service.update_draft(supabase, user.id, draft_id, body)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "update",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "update",
         {"fields": [k for k, v in body.model_dump(exclude_none=True).items()]},
     )
-    return {"success": True, "data": draft}
+    return SuccessResponse(data=draft)
 
 
 @router.delete("/drafts/{draft_id}")
@@ -152,30 +169,38 @@ async def delete_draft(
     """Delete a draft."""
     await _draft_service.delete_draft(supabase, user.id, draft_id)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "delete",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "delete",
     )
     return SuccessResponse(data=MessageResponse(message="Draft deleted."))
 
 
-@router.post("/drafts/{draft_id}/research", response_model=SuccessResponse[dict])
+@router.post("/drafts/{draft_id}/research")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def run_research(
     request: Request,
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI research output
     """Trigger the Astrolabe AI research phase."""
-    result = await _orchestrator_service.run_astrolabe_research(
-        supabase, user.id, draft_id
-    )
+    result = await _orchestrator_service.run_astrolabe_research(supabase, user.id, draft_id)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "research",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "research",
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.post("/drafts/{draft_id}/generate/{chunk_type}", response_model=SuccessResponse[dict])
+@router.post("/drafts/{draft_id}/generate/{chunk_type}")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_chunk(
     request: Request,
@@ -183,19 +208,22 @@ async def generate_chunk(
     chunk_type: Literal["geography", "agents", "buildings"],
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI chunk output
     """Trigger generation of a specific lore chunk (agents, buildings, etc)."""
-    result = await _orchestrator_service.generate_blueprint_chunk(
-        supabase, user.id, draft_id, chunk_type
-    )
+    result = await _orchestrator_service.generate_blueprint_chunk(supabase, user.id, draft_id, chunk_type)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "generate",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "generate",
         {"chunk_type": chunk_type},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.post("/drafts/{draft_id}/generate-entity/{entity_type}", response_model=SuccessResponse[dict])
+@router.post("/drafts/{draft_id}/generate-entity/{entity_type}")
 @limiter.limit(RATE_LIMIT_AI_ENTITY)
 async def generate_single_entity(
     request: Request,
@@ -205,37 +233,45 @@ async def generate_single_entity(
     entity_total: Annotated[int, Query(ge=3, le=12)],
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI entity output
     """Generate a single agent or building entity (per-entity loop)."""
     result = await _orchestrator_service.generate_single_entity(
         supabase, user.id, draft_id, entity_type, entity_index, entity_total
     )
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "generate_entity",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "generate_entity",
         {"entity_type": entity_type, "entity_index": entity_index, "entity_total": entity_total},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.post("/drafts/{draft_id}/generate-theme", response_model=SuccessResponse[dict])
+@router.post("/drafts/{draft_id}/generate-theme")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_theme(
     request: Request,
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[ForgeThemeOutput]:
     """Generate an AI theme for a draft (Darkroom phase)."""
-    theme_data = await _orchestrator_service.generate_theme_for_draft(
-        supabase, user.id, draft_id
-    )
+    theme_data = await _orchestrator_service.generate_theme_for_draft(supabase, user.id, draft_id)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_draft", str(draft_id), "generate_theme",
+        supabase,
+        None,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "generate_theme",
     )
-    return {"success": True, "data": theme_data}
+    return SuccessResponse(data=theme_data)
 
 
-@router.post("/drafts/{draft_id}/ignite", response_model=SuccessResponse[dict])
+@router.post("/drafts/{draft_id}/ignite")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def ignite_shard(
     request: Request,
@@ -244,13 +280,18 @@ async def ignite_shard(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[IgnitionResponse]:
     """Finalize the draft and materialize the simulation."""
     result = await _orchestrator_service.materialize_shard(supabase, user.id, draft_id, admin_supabase)
 
     sim_id = result.get("simulation_id")
     await AuditService.safe_log(
-        supabase, sim_id, user.id, "forge_draft", str(draft_id), "ignite",
+        supabase,
+        sim_id,
+        user.id,
+        "forge_draft",
+        str(draft_id),
+        "ignite",
         {"simulation_id": str(sim_id)} if sim_id else None,
     )
 
@@ -268,72 +309,76 @@ async def ignite_shard(
 
     # Strip internal fields from the client response
     response_data = {k: v for k, v in result.items() if k != "draft_data"}
-    return {"success": True, "data": response_data}
+    return SuccessResponse(data=response_data)
 
 
-@router.get("/bundles", response_model=SuccessResponse[list[TokenBundle]])
+@router.get("/bundles")
 async def list_token_bundles(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[list[TokenBundle]]:
     """List active token bundles (product catalog)."""
     bundles = await _draft_service.list_bundles(supabase)
-    return {"success": True, "data": bundles}
+    return SuccessResponse(data=bundles)
 
 
-@router.get("/wallet", response_model=SuccessResponse[dict])
+@router.get("/wallet")
 async def get_wallet(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[WalletSummary]:
     """Get the current user's forge wallet."""
     data = await _draft_service.get_wallet(supabase, user.id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/wallet/purchase", response_model=SuccessResponse[PurchaseReceipt])
+@router.post("/wallet/purchase")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def purchase_tokens(
     request: Request,
     body: PurchaseRequest,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[PurchaseReceipt]:
     """Mock-purchase a token bundle. Grants tokens immediately."""
     receipt = await _draft_service.purchase_tokens(supabase, body.bundle_slug)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_wallet", str(user.id), "purchase",
+        supabase,
+        None,
+        user.id,
+        "forge_wallet",
+        str(user.id),
+        "purchase",
         {"bundle": body.bundle_slug, "tokens": receipt.get("tokens_granted")},
     )
-    return {"success": True, "data": receipt}
+    return SuccessResponse(data=receipt)
 
 
-@router.get("/wallet/history", response_model=PaginatedResponse[TokenPurchaseHistory])
+@router.get("/wallet/history")
 async def get_purchase_history(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
-):
+) -> PaginatedResponse[TokenPurchaseHistory]:
     """Get the current user's token purchase history."""
     data, total = await _draft_service.get_purchase_history(
-        supabase, user.id, limit, offset,
+        supabase,
+        user.id,
+        limit,
+        offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
 
 
-@router.put("/wallet/keys", response_model=SuccessResponse[dict])
+@router.put("/wallet/keys")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def update_byok(
     request: Request,
     body: UpdateBYOKRequest,
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[MessageResponse]:
     """Update personal API keys (BYOK) for the Simulation Forge."""
     # Check if user is allowed to use BYOK
     try:
@@ -352,14 +397,17 @@ async def update_byok(
             detail="Unable to verify BYOK access. Please try again later.",
         ) from None
 
-    result = await _draft_service.update_user_keys(
-        supabase, user.id, body.openrouter_key, body.replicate_key
-    )
+    result = await _draft_service.update_user_keys(supabase, user.id, body.openrouter_key, body.replicate_key)
     await AuditService.safe_log(
-        supabase, None, user.id, "forge_wallet", str(user.id), "update_keys",
+        supabase,
+        None,
+        user.id,
+        "forge_wallet",
+        str(user.id),
+        "update_keys",
         {"openrouter": body.openrouter_key is not None, "replicate": body.replicate_key is not None},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # --- Feature Purchases ---
@@ -367,24 +415,25 @@ async def update_byok(
 
 @router.get(
     "/simulations/{simulation_id}/features",
-    response_model=SuccessResponse[list[FeaturePurchase]],
 )
 async def list_feature_purchases(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
     feature_type: Annotated[str | None, Query()] = None,
-):
+) -> SuccessResponse[list[FeaturePurchase]]:
     """List feature purchases for a simulation (own purchases only via RLS)."""
     purchases = await ForgeFeatureService.list_purchases(
-        supabase, simulation_id, user.id, feature_type,
+        supabase,
+        simulation_id,
+        user.id,
+        feature_type,
     )
-    return {"success": True, "data": purchases}
+    return SuccessResponse(data=purchases)
 
 
 @router.post(
     "/simulations/{simulation_id}/darkroom",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def purchase_darkroom_pass(
@@ -394,29 +443,38 @@ async def purchase_darkroom_pass(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[DarkroomPassResponse]:
     """Purchase Darkroom Pass: 3 theme variants + 10 image regenerations."""
     purchase_id = await ForgeFeatureService.purchase_feature(
-        supabase, user.id, simulation_id, "darkroom_pass",
+        supabase,
+        user.id,
+        simulation_id,
+        "darkroom_pass",
         config={"regen_budget": 10},
     )
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        purchase_id, "darkroom_pass",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        purchase_id,
+        "darkroom_pass",
     )
 
     # Generate 3 theme variants in background
     background_tasks.add_task(
         safe_background(ForgeThemeService.generate_variants),
-        admin_supabase, simulation_id, user.id, purchase_id,
+        admin_supabase,
+        simulation_id,
+        user.id,
+        purchase_id,
     )
 
-    return {"success": True, "data": {"purchase_id": purchase_id, "regen_budget": 10}}
+    return SuccessResponse(data=DarkroomPassResponse(purchase_id=purchase_id, regen_budget=10))
 
 
 @router.post(
     "/simulations/{simulation_id}/darkroom/regenerate/{entity_type}/{entity_id}",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def darkroom_regenerate_image(
@@ -429,11 +487,13 @@ async def darkroom_regenerate_image(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[DarkroomRegenResponse]:
     """Regenerate a single entity image using Darkroom budget."""
     # Find active darkroom pass
     darkroom = await ForgeFeatureService.get_active_darkroom(
-        supabase, simulation_id, user.id,
+        supabase,
+        simulation_id,
+        user.id,
     )
     if not darkroom:
         raise HTTPException(
@@ -449,35 +509,42 @@ async def darkroom_regenerate_image(
 
     # Decrement budget atomically
     remaining = await ForgeFeatureService.use_darkroom_regen(
-        supabase, darkroom["id"],
+        supabase,
+        darkroom["id"],
     )
 
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        darkroom["id"], "darkroom_regen",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        darkroom["id"],
+        "darkroom_regen",
         {"entity_type": entity_type, "entity_id": str(entity_id)},
     )
 
     # Queue image regeneration in background
     background_tasks.add_task(
         safe_background(_orchestrator_service.regenerate_single_image),
-        admin_supabase, simulation_id, entity_type, entity_id,
-        body.prompt_override, user.id,
+        admin_supabase,
+        simulation_id,
+        entity_type,
+        entity_id,
+        body.prompt_override,
+        user.id,
     )
 
-    return {
-        "success": True,
-        "data": {
-            "remaining_regenerations": remaining,
-            "entity_type": entity_type,
-            "entity_id": str(entity_id),
-        },
-    }
+    return SuccessResponse(
+        data=DarkroomRegenResponse(
+            remaining_regenerations=remaining,
+            entity_type=entity_type,
+            entity_id=str(entity_id),
+        )
+    )
 
 
 @router.post(
     "/simulations/{simulation_id}/dossier",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def purchase_classified_dossier(
@@ -487,14 +554,21 @@ async def purchase_classified_dossier(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Classified Dossier: 6-section deep lore expansion."""
     purchase_id = await ForgeFeatureService.purchase_feature(
-        supabase, user.id, simulation_id, "classified_dossier",
+        supabase,
+        user.id,
+        simulation_id,
+        "classified_dossier",
     )
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        purchase_id, "classified_dossier",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        purchase_id,
+        "classified_dossier",
     )
 
     # Get user's BYOK key if available
@@ -502,15 +576,18 @@ async def purchase_classified_dossier(
 
     background_tasks.add_task(
         safe_background(ForgeLoreService.generate_dossier),
-        admin_supabase, simulation_id, user.id, purchase_id, or_key,
+        admin_supabase,
+        simulation_id,
+        user.id,
+        purchase_id,
+        or_key,
     )
 
-    return {"success": True, "data": {"purchase_id": purchase_id}}
+    return SuccessResponse(data=PurchaseConfirmation(purchase_id=purchase_id))
 
 
 @router.post(
     "/simulations/{simulation_id}/dossier/evolve",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def evolve_dossier_section(
@@ -518,13 +595,14 @@ async def evolve_dossier_section(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     arcanum: Annotated[str, Query(description="Section arcanum: BETA, GAMMA, DELTA, or ZETA")],
-    trigger: Annotated[str, Query(description="Evolution trigger: agent_recruited,"
-        " building_constructed, resonance_event, periodic")],
+    trigger: Annotated[
+        str, Query(description="Evolution trigger: agent_recruited, building_constructed, resonance_event, periodic")
+    ],
     entity_name: Annotated[str, Query(description="Name of new entity/event")],
     user: Annotated[CurrentUser, Depends(require_architect())],
     admin_supabase=Depends(get_admin_supabase),
     entity_detail: Annotated[str, Query(description="Additional context")] = "",
-):
+) -> SuccessResponse[DossierEvolveResponse]:
     """Evolve a classified dossier section with new content."""
     valid_arcanums = {"BETA", "GAMMA", "DELTA", "ZETA"}
     if arcanum not in valid_arcanums:
@@ -537,23 +615,28 @@ async def evolve_dossier_section(
     or_key = None
     try:
         or_key, _ = await _orchestrator_service._get_user_keys(
-            admin_supabase, user.id,
+            admin_supabase,
+            user.id,
         )
     except Exception:
         logger.debug("Optional BYOK key retrieval failed, continuing without", exc_info=True)
 
     background_tasks.add_task(
         safe_background(DossierEvolutionService.evolve_section),
-        admin_supabase, simulation_id, arcanum, trigger,
-        entity_name, entity_detail, or_key,
+        admin_supabase,
+        simulation_id,
+        arcanum,
+        trigger,
+        entity_name,
+        entity_detail,
+        or_key,
     )
 
-    return {"success": True, "data": {"status": "evolving", "arcanum": arcanum}}
+    return SuccessResponse(data=DossierEvolveResponse(status="evolving", arcanum=arcanum))
 
 
 @router.post(
     "/simulations/{simulation_id}/recruit",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def purchase_recruitment(
@@ -564,34 +647,46 @@ async def purchase_recruitment(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Recruitment: 3 new agents with full integration."""
     purchase_id = await ForgeFeatureService.purchase_feature(
-        supabase, user.id, simulation_id, "recruitment",
+        supabase,
+        user.id,
+        simulation_id,
+        "recruitment",
         config={
             "focus": body.focus,
             "zone_id": str(body.zone_id) if body.zone_id else None,
         },
     )
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        purchase_id, "recruitment",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        purchase_id,
+        "recruitment",
     )
 
     or_key, rep_key = await _orchestrator_service._get_user_keys(supabase, user.id)
 
     background_tasks.add_task(
         safe_background(_orchestrator_service.recruit_agents),
-        admin_supabase, simulation_id, user.id, purchase_id,
-        body.focus, body.zone_id, or_key, rep_key,
+        admin_supabase,
+        simulation_id,
+        user.id,
+        purchase_id,
+        body.focus,
+        body.zone_id,
+        or_key,
+        rep_key,
     )
 
-    return {"success": True, "data": {"purchase_id": purchase_id}}
+    return SuccessResponse(data=PurchaseConfirmation(purchase_id=purchase_id))
 
 
 @router.post(
     "/simulations/{simulation_id}/chronicle",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def purchase_chronicle_export(
@@ -601,28 +696,37 @@ async def purchase_chronicle_export(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Chronicle: PDF codex export."""
     purchase_id = await ForgeFeatureService.purchase_feature(
-        supabase, user.id, simulation_id, "chronicle_export",
+        supabase,
+        user.id,
+        simulation_id,
+        "chronicle_export",
         config={"export_type": "codex"},
     )
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        purchase_id, "chronicle_export",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        purchase_id,
+        "chronicle_export",
     )
 
     background_tasks.add_task(
         safe_background(CodexExportService.generate_codex_pdf),
-        admin_supabase, simulation_id, user.id, purchase_id,
+        admin_supabase,
+        simulation_id,
+        user.id,
+        purchase_id,
     )
 
-    return {"success": True, "data": {"purchase_id": purchase_id}}
+    return SuccessResponse(data=PurchaseConfirmation(purchase_id=purchase_id))
 
 
 @router.post(
     "/simulations/{simulation_id}/chronicle/hires",
-    response_model=SuccessResponse[dict],
 )
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def purchase_hires_archive(
@@ -632,216 +736,262 @@ async def purchase_hires_archive(
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Full-Res Archive: ZIP of all simulation images at native resolution."""
     purchase_id = await ForgeFeatureService.purchase_feature(
-        supabase, user.id, simulation_id, "chronicle_export",
+        supabase,
+        user.id,
+        simulation_id,
+        "chronicle_export",
         config={"export_type": "hires"},
     )
     await AuditService.safe_log(
-        supabase, str(simulation_id), user.id, "feature_purchase",
-        purchase_id, "chronicle_export_hires",
+        supabase,
+        str(simulation_id),
+        user.id,
+        "feature_purchase",
+        purchase_id,
+        "chronicle_export_hires",
     )
 
     background_tasks.add_task(
         safe_background(CodexExportService.generate_hires_archive),
-        admin_supabase, simulation_id, user.id, purchase_id,
+        admin_supabase,
+        simulation_id,
+        user.id,
+        purchase_id,
     )
 
-    return {"success": True, "data": {"purchase_id": purchase_id}}
+    return SuccessResponse(data=PurchaseConfirmation(purchase_id=purchase_id))
 
 
 @router.get(
     "/features/{purchase_id}",
-    response_model=SuccessResponse[FeaturePurchase],
 )
 async def get_feature_purchase(
     purchase_id: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[FeaturePurchase]:
     """Get feature purchase status (for polling during generation)."""
     purchase = await ForgeFeatureService.get_purchase(supabase, purchase_id)
     if not purchase:
         raise HTTPException(status_code=404, detail="Feature purchase not found.")
-    return {"success": True, "data": purchase}
+    return SuccessResponse(data=purchase)
 
 
 # --- Admin Endpoints ---
 
 
-@router.get("/admin/stats", response_model=SuccessResponse[dict])
+@router.get("/admin/stats")
 async def get_forge_stats(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[ForgeAdminStats]:
     """Get global forge statistics (admin only)."""
     data = await _draft_service.get_admin_stats(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.delete("/admin/purge", response_model=SuccessResponse[dict])
+@router.delete("/admin/purge")
 async def purge_stale_drafts(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
     days: Annotated[int, Query(ge=1, le=365)] = 30,
-):
+) -> SuccessResponse[PurgeResult]:
     """Purge stale drafts older than N days (admin only)."""
     cutoff = (datetime.now(tz=UTC) - timedelta(days=days)).isoformat()
     deleted_count = await _draft_service.purge_stale_drafts(admin_supabase, cutoff)
     logger.info("Purged stale forge drafts", extra={"deleted_count": deleted_count, "min_age_days": days})
     await AuditService.safe_log(
-        admin_supabase, None, _admin.id, "forge_draft", None, "purge",
+        admin_supabase,
+        None,
+        _admin.id,
+        "forge_draft",
+        None,
+        "purge",
         {"days": days, "deleted_count": deleted_count},
     )
-    return {"success": True, "data": {"deleted_count": deleted_count}}
+    return SuccessResponse(data=PurgeResult(deleted_count=deleted_count))
 
 
-@router.get("/admin/economy", response_model=SuccessResponse[TokenEconomyStats])
+@router.get("/admin/economy")
 async def get_token_economy_stats(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[TokenEconomyStats]:
     """Aggregated token economy stats (admin only)."""
     data = await ForgeDraftService.get_token_economy_stats(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/admin/bundles", response_model=SuccessResponse[list[TokenBundle]])
+@router.get("/admin/bundles")
 async def admin_list_bundles(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[list[TokenBundle]]:
     """List ALL bundles including inactive (admin only)."""
     bundles = await ForgeDraftService.admin_list_all_bundles(admin_supabase)
-    return {"success": True, "data": bundles}
+    return SuccessResponse(data=bundles)
 
 
-@router.put("/admin/bundles/{bundle_id}", response_model=SuccessResponse[dict])
+@router.put("/admin/bundles/{bundle_id}")
 async def update_bundle(
     bundle_id: UUID,
     body: AdminBundleUpdate,
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[TokenBundle]:
     """Update bundle pricing/availability (admin only)."""
     updates = body.model_dump(exclude_none=True)
     if not updates:
         raise HTTPException(status_code=422, detail="No fields to update")
     data = await ForgeDraftService.admin_update_bundle(admin_supabase, bundle_id, updates)
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "token_bundles", bundle_id, "update",
+        admin_supabase,
+        None,
+        admin.id,
+        "token_bundles",
+        bundle_id,
+        "update",
         details=updates,
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/admin/purchases", response_model=PaginatedResponse[AdminPurchaseLedgerEntry])
+@router.get("/admin/purchases")
 async def admin_list_purchases(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
     payment_method: Annotated[str | None, Query()] = None,
-):
+) -> PaginatedResponse[AdminPurchaseLedgerEntry]:
     """Global purchase ledger (admin only)."""
     data, total = await ForgeDraftService.admin_list_purchases(
-        admin_supabase, limit, offset, payment_method,
+        admin_supabase,
+        limit,
+        offset,
+        payment_method,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
 
 
-@router.post("/admin/grant", response_model=SuccessResponse[dict])
+@router.post("/admin/grant")
 async def admin_grant_tokens(
     body: AdminTokenGrant,
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[PurchaseReceipt]:
     """Grant tokens to a user (admin only). Creates auditable ledger entry."""
     receipt = await ForgeDraftService.admin_grant_tokens(
-        admin_supabase, body.user_id, body.tokens, body.reason,
+        admin_supabase,
+        body.user_id,
+        body.tokens,
+        body.reason,
     )
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "forge_wallet", body.user_id, "admin_grant",
+        admin_supabase,
+        None,
+        admin.id,
+        "forge_wallet",
+        body.user_id,
+        "admin_grant",
         details={"tokens": body.tokens, "reason": body.reason},
     )
-    return {"success": True, "data": receipt}
+    return SuccessResponse(data=receipt)
 
 
-@router.get("/admin/byok-setting", response_model=SuccessResponse[dict])
+@router.get("/admin/byok-setting")
 async def get_byok_system_setting(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[BYOKSystemSettings]:
     """Get all BYOK-related platform settings (admin only)."""
     result = await ForgeDraftService.get_byok_system_settings(admin_supabase)
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.put("/admin/byok-setting", response_model=SuccessResponse[dict])
+@router.put("/admin/byok-setting")
 async def update_byok_system_setting(
     enabled: Annotated[bool, Query()],
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[BYOKSystemSettings]:
     """Toggle system-wide BYOK bypass (admin only)."""
     result = await ForgeDraftService.update_byok_bypass_setting(admin_supabase, enabled, admin.id)
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "platform_settings", None,
-        "update_byok_bypass", {"enabled": enabled},
+        admin_supabase,
+        None,
+        admin.id,
+        "platform_settings",
+        None,
+        "update_byok_bypass",
+        {"enabled": enabled},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.put("/admin/byok-access-policy", response_model=SuccessResponse[dict])
+@router.put("/admin/byok-access-policy")
 async def update_byok_access_policy(
     policy: Annotated[str, Query(pattern="^(none|all|per_user)$")],
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[BYOKSystemSettings]:
     """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
     result = await ForgeDraftService.update_byok_access_policy(admin_supabase, policy, admin.id)
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "platform_settings", None,
-        "update_byok_access_policy", {"policy": policy},
+        admin_supabase,
+        None,
+        admin.id,
+        "platform_settings",
+        None,
+        "update_byok_access_policy",
+        {"policy": policy},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.put("/admin/user-byok-bypass/{target_user_id}", response_model=SuccessResponse[dict])
+@router.put("/admin/user-byok-bypass/{target_user_id}")
 async def update_user_byok_bypass(
     target_user_id: UUID,
     enabled: Annotated[bool, Query()],
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[BYOKUserOverride]:
     """Toggle per-user BYOK bypass (admin only)."""
     result = await ForgeDraftService.update_user_byok_bypass(admin_supabase, target_user_id, enabled)
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "user_wallets", str(target_user_id),
-        "update_byok_bypass", {"enabled": enabled},
+        admin_supabase,
+        None,
+        admin.id,
+        "user_wallets",
+        str(target_user_id),
+        "update_byok_bypass",
+        {"enabled": enabled},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.put("/admin/user-byok-allowed/{target_user_id}", response_model=SuccessResponse[dict])
+@router.put("/admin/user-byok-allowed/{target_user_id}")
 async def update_user_byok_allowed(
     target_user_id: UUID,
     enabled: Annotated[bool, Query()],
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[BYOKUserOverride]:
     """Grant or revoke BYOK access for a specific user (admin only)."""
     result = await ForgeDraftService.update_user_byok_allowed(admin_supabase, target_user_id, enabled)
     await AuditService.safe_log(
-        admin_supabase, None, admin.id, "user_wallets", str(target_user_id),
-        "update_byok_allowed", {"enabled": enabled},
+        admin_supabase,
+        None,
+        admin.id,
+        "user_wallets",
+        str(target_user_id),
+        "update_byok_allowed",
+        {"enabled": enabled},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 class RegenerateImagesRequest(BaseModel):
@@ -882,8 +1032,13 @@ async def regenerate_images(
 
     types_str = ", ".join(sorted(entity_types)) if entity_types else "all"
     await AuditService.safe_log(
-        admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
-        "regenerate_images", {"simulation_name": sim["name"], "entity_types": types_str},
+        admin_supabase,
+        str(simulation_id),
+        admin.id,
+        "simulation",
+        str(simulation_id),
+        "regenerate_images",
+        {"simulation_name": sim["name"], "entity_types": types_str},
     )
 
     return SuccessResponse(data=MessageResponse(message=f"Image generation ({types_str}) started for '{sim['name']}'."))
@@ -893,7 +1048,8 @@ class RetriggerBatchRequest(BaseModel):
     """Request body for admin batch retrigger."""
 
     include_lore: bool = Field(
-        True, description="If true, re-run lore + translations before images.",
+        True,
+        description="If true, re-run lore + translations before images.",
     )
     entity_types: list[str] | None = Field(
         None,
@@ -924,11 +1080,13 @@ async def retrigger_batch(
     draft_data = None
     if include_lore:
         draft_data = await ForgeOrchestratorService.reconstruct_draft_data(
-            admin_supabase, simulation_id,
+            admin_supabase,
+            simulation_id,
         )
         # Delete existing lore to avoid duplicates on re-generation
         await ForgeOrchestratorService.delete_simulation_lore(
-            admin_supabase, simulation_id,
+            admin_supabase,
+            simulation_id,
         )
 
     background_tasks.add_task(
@@ -943,8 +1101,13 @@ async def retrigger_batch(
     mode = "lore + images" if include_lore else "images only"
     types_str = ", ".join(sorted(entity_types)) if entity_types else "all"
     await AuditService.safe_log(
-        admin_supabase, str(simulation_id), admin.id, "simulation", str(simulation_id),
-        "retrigger_batch", {"simulation_name": sim["name"], "mode": mode, "entity_types": types_str},
+        admin_supabase,
+        str(simulation_id),
+        admin.id,
+        "simulation",
+        str(simulation_id),
+        "retrigger_batch",
+        {"simulation_name": sim["name"], "mode": mode, "entity_types": types_str},
     )
 
     msg = f"Batch retrigger ({mode}, {types_str}) started for '{sim['name']}'."
