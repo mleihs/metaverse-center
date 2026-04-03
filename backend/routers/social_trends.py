@@ -10,7 +10,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
-from backend.models.social import SocialTrendResponse
+from backend.models.social import (
+    ArticleIntegrateResponse,
+    ArticleTransformResponse,
+    BatchIntegrateResponse,
+    SocialTrendResponse,
+    TrendTransformResponse,
+    TrendWorkflowResponse,
+)
 from backend.models.social_trend import (
     BatchIntegrateRequest,
     BatchTransformRequest,
@@ -68,7 +75,7 @@ async def _resolve_news_service(
     )
 
 
-@router.get("", response_model=PaginatedResponse[SocialTrendResponse])
+@router.get("")
 async def list_trends(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -79,7 +86,7 @@ async def list_trends(
     is_processed: bool | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[SocialTrendResponse]:
     """List social trends with optional filters."""
     data, total = await SocialTrendsService.list_trends(
         supabase,
@@ -90,14 +97,13 @@ async def list_trends(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.post("/fetch", response_model=SuccessResponse[list[SocialTrendResponse]])
+@router.post("/fetch")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def fetch_trends(
     request: Request,
@@ -106,7 +112,7 @@ async def fetch_trends(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[SocialTrendResponse]]:
     """Fetch trends from an external news source."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
@@ -129,10 +135,10 @@ async def fetch_trends(
         supabase, simulation_id, user.id, "social_trends", None, "fetch",
         details={"source": body.source, "query": body.query, "stored_count": len(stored)},
     )
-    return {"success": True, "data": stored}
+    return SuccessResponse(data=stored)
 
 
-@router.post("/transform", response_model=SuccessResponse[dict])
+@router.post("/transform")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def transform_trend(
     request: Request,
@@ -141,7 +147,7 @@ async def transform_trend(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[TrendTransformResponse]:
     """Transform a trend into the simulation context using AI."""
     trend = await SocialTrendsService.get_trend(
         supabase, simulation_id, UUID(body.trend_id)
@@ -175,24 +181,21 @@ async def transform_trend(
             detail="AI transformation failed. Please try again.",
         ) from exc
 
-    return {
-        "success": True,
-        "data": {
-            "trend_id": body.trend_id,
-            "original_title": trend["name"],
-            "transformation": result,
-        },
-    }
+    return SuccessResponse(data=TrendTransformResponse(
+        trend_id=body.trend_id,
+        original_title=trend["name"],
+        transformation=result,
+    ))
 
 
-@router.post("/integrate", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/integrate", status_code=201)
 async def integrate_trend(
     simulation_id: UUID,
     body: IntegrateTrendRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Integrate a transformed trend as an event."""
     event_data = serialize_for_json({
         "title": body.title,
@@ -240,10 +243,10 @@ async def integrate_trend(
     except Exception:
         logger.warning("Audit log failed for trend integration", extra={"trend_id": body.trend_id}, exc_info=True)
 
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.post("/workflow", response_model=SuccessResponse[dict])
+@router.post("/workflow")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def workflow(
     request: Request,
@@ -252,7 +255,7 @@ async def workflow(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[TrendWorkflowResponse]:
     """Full workflow: Fetch trends from external source and store them."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
@@ -276,14 +279,11 @@ async def workflow(
         details={"source": body.source, "query": body.query, "fetched": len(raw_trends), "stored": len(stored)},
     )
 
-    return {
-        "success": True,
-        "data": {
-            "fetched": len(raw_trends),
-            "stored": len(stored),
-            "trends": stored,
-        },
-    }
+    return SuccessResponse(data=TrendWorkflowResponse(
+        fetched=len(raw_trends),
+        stored=len(stored),
+        trends=stored,
+    ))
 
 
 # ---------------------------------------------------------------------------
@@ -291,7 +291,7 @@ async def workflow(
 # ---------------------------------------------------------------------------
 
 
-@router.post("/browse", response_model=SuccessResponse[list[dict]])
+@router.post("/browse")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def browse_articles(
     request: Request,
@@ -300,7 +300,7 @@ async def browse_articles(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Browse or search articles from external sources without DB storage."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
 
@@ -325,10 +325,10 @@ async def browse_articles(
             detail="External API error. Please try again.",
         ) from exc
 
-    return {"success": True, "data": articles}
+    return SuccessResponse(data=articles)
 
 
-@router.post("/transform-article", response_model=SuccessResponse[dict])
+@router.post("/transform-article")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def transform_article(
     request: Request,
@@ -337,7 +337,7 @@ async def transform_article(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ArticleTransformResponse]:
     """Transform an ephemeral article (not from DB) into the simulation context using AI."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
     ai_config = await resolver.get_ai_provider_config()
@@ -366,23 +366,20 @@ async def transform_article(
             detail="AI transformation failed. Please try again.",
         ) from exc
 
-    return {
-        "success": True,
-        "data": {
-            "original_title": body.article_name,
-            "transformation": result,
-        },
-    }
+    return SuccessResponse(data=ArticleTransformResponse(
+        original_title=body.article_name,
+        transformation=result,
+    ))
 
 
-@router.post("/integrate-article", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/integrate-article", status_code=201)
 async def integrate_article(
     simulation_id: UUID,
     body: IntegrateArticleRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ArticleIntegrateResponse]:
     """Integrate an article as an event with optional agent reaction generation."""
     tags = [*body.tags, "imported", "news"]
     event_data = serialize_for_json({
@@ -439,14 +436,11 @@ async def integrate_article(
                 exc_info=True,
             )
 
-    return {
-        "success": True,
-        "data": {
-            "event": event,
-            "reactions_count": len(reactions),
-            "reactions": reactions,
-        },
-    }
+    return SuccessResponse(data=ArticleIntegrateResponse(
+        event=event,
+        reactions_count=len(reactions),
+        reactions=reactions,
+    ))
 
 
 # ---------------------------------------------------------------------------
@@ -454,7 +448,7 @@ async def integrate_article(
 # ---------------------------------------------------------------------------
 
 
-@router.post("/batch-transform", response_model=SuccessResponse[list[dict]])
+@router.post("/batch-transform")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def batch_transform_articles(
     request: Request,
@@ -463,7 +457,7 @@ async def batch_transform_articles(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Transform multiple articles in batch. Returns a list of transformation results."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
     ai_config = await resolver.get_ai_provider_config()
@@ -509,17 +503,17 @@ async def batch_transform_articles(
                 "error": "Transformation failed",
             })
 
-    return {"success": True, "data": results}
+    return SuccessResponse(data=results)
 
 
-@router.post("/batch-integrate", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/batch-integrate", status_code=201)
 async def batch_integrate_articles(
     simulation_id: UUID,
     body: BatchIntegrateRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[BatchIntegrateResponse]:
     """Integrate multiple transformed articles as events."""
     created_events: list[dict] = []
     errors: list[dict] = []
@@ -583,12 +577,9 @@ async def batch_integrate_articles(
                 exc_info=True,
             )
 
-    return {
-        "success": True,
-        "data": {
-            "events": created_events,
-            "errors": errors,
-            "reactions_generated_for": created_events[0]["id"] if created_events and reactions_count > 0 else None,
-            "reactions_count": reactions_count,
-        },
-    }
+    return SuccessResponse(data=BatchIntegrateResponse(
+        events=created_events,
+        errors=errors,
+        reactions_generated_for=created_events[0]["id"] if created_events and reactions_count > 0 else None,
+        reactions_count=reactions_count,
+    ))

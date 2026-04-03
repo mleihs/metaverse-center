@@ -1,7 +1,7 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
 > Stand: 2026-04-03
-> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)** + **Schritt 3 Forge (38 Endpoints, 10 neue Models)** + **Schritt 4 Admin (27 Endpoints, 16 neue Models)**
+> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)** + **Schritt 3 Forge (38 Endpoints, 10 neue Models)** + **Schritt 4 Admin (27 Endpoints, 16 neue Models)** + **Schritt 5 Social Suite (39 Endpoints, 4 Router, 8 neue Models)**
 > Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
 
 ---
@@ -325,37 +325,44 @@ Wenige untyped Endpoints + restliche typed konvertieren.
 
 ---
 
-## Schritt 5: Social Suite (4 Router)
+## Schritt 5: Social Suite (4 Router) ✅
 
-### social_trends.py (10 total, 7 untyped)
+### social_trends.py (10 total, 7 untyped) ✅
 
-- [ ] L99 `POST /fetch` → verify SocialTrendResponse
-- [ ] L134 `POST /transform` → `TrendTransformResponse` — NEW
-- [ ] L187 `POST /integrate` → `TrendIntegrateResponse` — NEW
-- [ ] L245 `POST /workflow` → `TrendWorkflowResponse` — NEW
-- [ ] L330 `POST /transform-article` → `ArticleTransformResponse` — NEW
-- [ ] L377 `POST /integrate-article` → `ArticleIntegrateResponse` — NEW
-- [ ] L514 `POST /batch-integrate` → `BatchIntegrateResponse` — NEW
-- [ ] 3 weitere TYPED → response_model= droppen
+- [x] `POST /fetch` → `SuccessResponse[list[SocialTrendResponse]]` — VERIFIED, SocialTrendResponse matches DB shape
+- [x] `POST /transform` → `TrendTransformResponse` — NEW (trend_id, original_title, transformation: dict)
+- [x] `POST /integrate` → `SuccessResponse[dict]` — ASSESSED: raw event dict from EventService.create
+- [x] `POST /workflow` → `TrendWorkflowResponse` — NEW (fetched, stored, trends: list[SocialTrendResponse])
+- [x] `POST /transform-article` → `ArticleTransformResponse` — NEW (original_title, transformation: dict)
+- [x] `POST /integrate-article` → `ArticleIntegrateResponse` — NEW (event: dict, reactions_count, reactions)
+- [x] `POST /batch-integrate` → `BatchIntegrateResponse` — NEW (events, errors, reactions_generated_for, reactions_count)
+- [x] `POST /browse` + `POST /batch-transform` → `SuccessResponse[list[dict]]` — ASSESSED: ephemeral external API / AI output
+- [x] `GET ""` → `PaginatedResponse[SocialTrendResponse]` — response_model= dropped
 
-### social_stories.py (9 total, 1 untyped)
+### social_stories.py (9 total, 1 untyped) ✅
 
-- [ ] L277 `GET /settings` → `StorySettingsResponse` — NEW
-- [ ] 8 weitere TYPED → response_model= droppen
+- [x] `GET /settings` → `SuccessResponse[dict[str, str]]` — flat key→value map from get_pipeline_settings()
+- [x] 8 weitere TYPED → response_model= dropped, return SuccessResponse()/PaginatedResponse()
 
-### bluesky.py (8 total, 2 untyped)
+### bluesky.py (8 total, 2 untyped) ✅
 
-- [ ] L222 `GET /settings` → `BlueskySettingsResponse` — NEW
-- [ ] L235 `GET /status` → `BlueskyStatusResponse` — NEW
-- [ ] 6 weitere TYPED → response_model= droppen
+- [x] `GET /settings` → `SuccessResponse[dict[str, PipelineSettingValue]]` — NEW PipelineSettingValue(value, description)
+- [x] `GET /status` → `BlueskyStatusResponse` — NEW (configured, authenticated, handle, pds_url)
+- [x] 6 weitere TYPED → response_model= dropped
 
-### instagram.py (12 total, 2 untyped)
+### instagram.py (12 total, 2 untyped) ✅
 
-- [ ] L332 `GET /settings` → `InstagramSettingsResponse` — NEW
-- [ ] L369 `GET /status` → `InstagramStatusResponse` — NEW
-- [ ] 10 weitere TYPED → response_model= droppen
+- [x] `GET /settings` → `SuccessResponse[dict[str, PipelineSettingValue]]` — shares PipelineSettingValue
+- [x] `GET /status` → `InstagramStatusResponse` — NEW (configured, authenticated, ig_user_id)
+- [x] 10 weitere TYPED → response_model= dropped
 
-**Summe: 39 Endpoints, ~10 neue Models**
+### ASSESS-Entscheidungen (Schritt 5)
+
+- `POST /integrate` → `dict` (raw event from EventService.create — full table row, not yet Pydantic-validated in service layer)
+- `POST /browse` → `list[dict]` (ephemeral articles from Guardian/NewsAPI — shape varies per source)
+- `POST /batch-transform` → `list[dict]` (each item contains AI transformation output — polymorphic)
+
+**Summe: 39 Endpoints, 8 neue Models (TrendTransformResponse, TrendWorkflowResponse, ArticleTransformResponse, ArticleIntegrateResponse, BatchIntegrateResponse, PipelineSettingValue, BlueskyStatusResponse, InstagramStatusResponse)**
 
 ---
 

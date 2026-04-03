@@ -56,7 +56,7 @@ async def _get_ig_service(admin_supabase: Client) -> InstagramService:
 # ── List / Get ─────────────────────────────────────────────────────────
 
 
-@router.get("", response_model=PaginatedResponse[SocialStoryResponse])
+@router.get("")
 async def list_stories(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
@@ -64,7 +64,7 @@ async def list_stories(
     resonance_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[SocialStoryResponse]:
     """List social stories with optional filters."""
     data, total = await SocialStoryService.list_stories(
         admin_supabase,
@@ -73,19 +73,18 @@ async def list_stories(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/sequence/{resonance_id}", response_model=SuccessResponse[SocialStorySequenceResponse])
+@router.get("/sequence/{resonance_id}")
 async def get_sequence(
     resonance_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStorySequenceResponse]:
     """Get the full story sequence for a resonance."""
     stories = await SocialStoryService.get_sequence(admin_supabase, resonance_id)
     if not stories:
@@ -96,26 +95,23 @@ async def get_sequence(
 
     published = sum(1 for s in stories if s["status"] == "published")
     total = len(stories)
-    return {
-        "success": True,
-        "data": {
-            "resonance_id": str(resonance_id),
-            "archetype": stories[0].get("archetype", ""),
-            "magnitude": float(stories[0].get("magnitude") or 0),
-            "stories": stories,
-            "total_stories": total,
-            "published_count": published,
-            "status_summary": f"{published}/{total} published",
-        },
-    }
+    return SuccessResponse(data=SocialStorySequenceResponse(
+        resonance_id=resonance_id,
+        archetype=stories[0].get("archetype", ""),
+        magnitude=float(stories[0].get("magnitude") or 0),
+        stories=stories,
+        total_stories=total,
+        published_count=published,
+        status_summary=f"{published}/{total} published",
+    ))
 
 
-@router.get("/{story_id}", response_model=SuccessResponse[SocialStoryResponse])
+@router.get("/{story_id}")
 async def get_story(
     story_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Get a single social story by ID."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
     if not story:
@@ -123,20 +119,20 @@ async def get_story(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Story not found.",
         )
-    return {"success": True, "data": story}
+    return SuccessResponse(data=story)
 
 
 # ── Actions ────────────────────────────────────────────────────────────
 
 
-@router.post("/{story_id}/skip", response_model=SuccessResponse[SocialStoryResponse])
+@router.post("/{story_id}/skip")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def skip_story(
     request: Request,
     story_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Skip a pending or ready story -- prevents it from being published."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
     if not story:
@@ -155,17 +151,17 @@ async def skip_story(
         "social_stories", story_id, "update",
         {"action": "skip"},
     )
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
-@router.post("/{story_id}/unskip", response_model=SuccessResponse[SocialStoryResponse])
+@router.post("/{story_id}/unskip")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def unskip_story(
     request: Request,
     story_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Re-enable a skipped story -- sets it back to pending."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
     if not story:
@@ -180,17 +176,17 @@ async def unskip_story(
         "social_stories", story_id, "update",
         {"action": "unskip"},
     )
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
-@router.post("/{story_id}/compose", response_model=SuccessResponse[SocialStoryResponse])
+@router.post("/{story_id}/compose")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def force_compose(
     request: Request,
     story_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Force-compose a story image (bypasses scheduler)."""
     logger.info("Admin force-compose story", extra={
         "story_id": str(story_id),
@@ -208,17 +204,17 @@ async def force_compose(
     )
 
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
-    return {"success": True, "data": story}
+    return SuccessResponse(data=story)
 
 
-@router.post("/{story_id}/publish", response_model=SuccessResponse[SocialStoryResponse])
+@router.post("/{story_id}/publish")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def force_publish(
     request: Request,
     story_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Force-publish a single story immediately (bypasses scheduler + throttle)."""
     logger.info("Admin force-publish story", extra={
         "story_id": str(story_id),
@@ -233,20 +229,20 @@ async def force_publish(
         "social_stories", story_id, "update",
         {"action": "force_publish"},
     )
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
 # ── Regenerate ─────────────────────────────────────────────────────
 
 
-@router.post("/{story_id}/regenerate", response_model=SuccessResponse[SocialStoryResponse])
+@router.post("/{story_id}/regenerate")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def regenerate_story(
     request: Request,
     story_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialStoryResponse]:
     """Delete published story from Instagram, recompose image, and republish.
 
     Full pipeline: delete from IG, clear image, recompose, publish.
@@ -269,17 +265,17 @@ async def regenerate_story(
         "social_stories", story_id, "update",
         {"action": "regenerate", "old_ig_story_id": old_ig_story_id},
     )
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
 # ── Config ─────────────────────────────────────────────────────────────
 
 
-@router.get("/settings", response_model=SuccessResponse[dict])
+@router.get("/settings")
 async def get_story_settings(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[dict[str, str]]:
     """Get all resonance story pipeline settings."""
     settings_map = await SocialStoryService.get_pipeline_settings(admin_supabase)
-    return {"success": True, "data": settings_map}
+    return SuccessResponse(data=settings_map)

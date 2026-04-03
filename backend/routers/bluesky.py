@@ -24,8 +24,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, RATE_LIMIT_EXTERNAL_API, limiter
-from backend.models.bluesky import BlueskyAnalytics, BlueskyPostResponse, BlueskyQueueItem
+from backend.models.bluesky import BlueskyAnalytics, BlueskyPostResponse, BlueskyQueueItem, BlueskyStatusResponse
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.social import PipelineSettingValue
 from backend.services.audit_service import AuditService
 from backend.services.bluesky_content_service import BlueskyContentService
 from backend.services.bluesky_scheduler import BlueskyScheduler
@@ -61,14 +62,14 @@ async def _get_bluesky_service(admin_supabase: Client) -> BlueskyService:
 # ── Queue Management ────────────────────────────────────────────────────
 
 
-@router.get("/queue", response_model=PaginatedResponse[BlueskyQueueItem])
+@router.get("/queue")
 async def list_queue(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[BlueskyQueueItem]:
     """List Bluesky content queue with simulation metadata."""
     data, total = await BlueskyContentService.list_queue(
         admin_supabase,
@@ -76,35 +77,34 @@ async def list_queue(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/queue/{post_id}", response_model=SuccessResponse[BlueskyPostResponse])
+@router.get("/queue/{post_id}")
 async def get_post(
     post_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[BlueskyPostResponse]:
     """Get a single Bluesky post by ID."""
     post = await BlueskyContentService.get_post(admin_supabase, post_id)
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
 # ── Skip / Unskip ─────────────────────────────────────────────────────
 
 
-@router.post("/queue/{post_id}/skip", response_model=SuccessResponse[BlueskyPostResponse])
+@router.post("/queue/{post_id}/skip")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def skip_post(
     request: Request,
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[BlueskyPostResponse]:
     """Skip a post — don't publish to Bluesky."""
     logger.info("Bluesky admin action", extra={
         "action": "skip",
@@ -117,17 +117,17 @@ async def skip_post(
         "bluesky_posts", post_id, "update",
         {"action": "skip"},
     )
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
-@router.post("/queue/{post_id}/unskip", response_model=SuccessResponse[BlueskyPostResponse])
+@router.post("/queue/{post_id}/unskip")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def unskip_post(
     request: Request,
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[BlueskyPostResponse]:
     """Re-enable a skipped post."""
     logger.info("Bluesky admin action", extra={
         "action": "unskip",
@@ -140,20 +140,20 @@ async def unskip_post(
         "bluesky_posts", post_id, "update",
         {"action": "unskip"},
     )
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
 # ── Force Publish ──────────────────────────────────────────────────────
 
 
-@router.post("/queue/{post_id}/publish", response_model=SuccessResponse[BlueskyPostResponse])
+@router.post("/queue/{post_id}/publish")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def force_publish(
     request: Request,
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[BlueskyPostResponse]:
     """Force-publish a post immediately (bypasses scheduler)."""
     logger.info("Bluesky admin action", extra={
         "action": "force_publish",
@@ -200,57 +200,54 @@ async def force_publish(
     )
 
     updated = await BlueskyContentService.get_post(admin_supabase, post_id)
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
 # ── Analytics ──────────────────────────────────────────────────────────
 
 
-@router.get("/analytics", response_model=SuccessResponse[BlueskyAnalytics])
+@router.get("/analytics")
 async def get_analytics(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     days: Annotated[int, Query(ge=1, le=365)] = 30,
-) -> dict:
+) -> SuccessResponse[BlueskyAnalytics]:
     """Get aggregated Bluesky performance analytics."""
     analytics = await BlueskyContentService.get_analytics(admin_supabase, days=days)
-    return {"success": True, "data": analytics}
+    return SuccessResponse(data=analytics)
 
 
 # ── Pipeline Settings ─────────────────────────────────────────────────
 
 
-@router.get("/settings", response_model=SuccessResponse[dict])
+@router.get("/settings")
 async def get_bluesky_settings(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[dict[str, PipelineSettingValue]]:
     """Get all Bluesky pipeline configuration settings."""
     settings_map = await BlueskyContentService.get_pipeline_settings(admin_supabase)
-    return {"success": True, "data": settings_map}
+    return SuccessResponse(data=settings_map)
 
 
 # ── Connection Status ─────────────────────────────────────────────────
 
 
-@router.get("/status", response_model=SuccessResponse[dict])
+@router.get("/status")
 async def get_connection_status(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[BlueskyStatusResponse]:
     """Validate Bluesky credentials and return connection status."""
     config = await BlueskyContentService.load_bluesky_credentials(admin_supabase)
 
     if not config["handle"] or not config["app_password"]:
-        return {
-            "success": True,
-            "data": {
-                "configured": False,
-                "authenticated": False,
-                "handle": config["handle"] or None,
-                "pds_url": config["pds_url"],
-            },
-        }
+        return SuccessResponse(data=BlueskyStatusResponse(
+            configured=False,
+            authenticated=False,
+            handle=config["handle"] or None,
+            pds_url=config["pds_url"],
+        ))
 
     bsky = BlueskyService(
         handle=config["handle"],
@@ -259,12 +256,9 @@ async def get_connection_status(
     )
     authenticated = await bsky.validate_credentials()
 
-    return {
-        "success": True,
-        "data": {
-            "configured": True,
-            "authenticated": authenticated,
-            "handle": config["handle"],
-            "pds_url": config["pds_url"],
-        },
-    }
+    return SuccessResponse(data=BlueskyStatusResponse(
+        configured=True,
+        authenticated=authenticated,
+        handle=config["handle"],
+        pds_url=config["pds_url"],
+    ))

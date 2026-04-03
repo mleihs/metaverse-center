@@ -33,8 +33,10 @@ from backend.models.instagram import (
     InstagramPostResponse,
     InstagramQueueItem,
     InstagramRateLimit,
+    InstagramStatusResponse,
     RejectPostRequest,
 )
+from backend.models.social import PipelineSettingValue
 from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
@@ -69,14 +71,14 @@ async def _get_instagram_service(admin_supabase: Client) -> InstagramService:
 # ── Queue Management ────────────────────────────────────────────────────
 
 
-@router.get("/queue", response_model=PaginatedResponse[InstagramQueueItem])
+@router.get("/queue")
 async def list_queue(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[InstagramQueueItem]:
     """List Instagram content queue with simulation metadata."""
     data, total = await InstagramContentService.list_queue(
         admin_supabase,
@@ -84,35 +86,34 @@ async def list_queue(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/queue/{post_id}", response_model=SuccessResponse[InstagramPostResponse])
+@router.get("/queue/{post_id}")
 async def get_post(
     post_id: UUID,
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramPostResponse]:
     """Get a single Instagram post by ID."""
     post = await InstagramContentService.get_post(admin_supabase, post_id)
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
 # ── Content Generation ──────────────────────────────────────────────────
 
 
-@router.post("/generate", response_model=SuccessResponse[list[InstagramPostResponse]])
+@router.post("/generate")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def generate_content(
     request: Request,
     body: GenerateContentRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[list[InstagramPostResponse]]:
     """Generate new Instagram post drafts from available platform content.
 
     Uses fn_select_instagram_candidates() to find unposted content,
@@ -137,16 +138,16 @@ async def generate_content(
         "instagram_posts", None, "generate",
         {"count": body.count, "content_types": body.content_types, "generated": len(posts)},
     )
-    return {"success": True, "data": posts}
+    return SuccessResponse(data=posts)
 
 
-@router.get("/candidates", response_model=SuccessResponse[list[dict]])
+@router.get("/candidates")
 async def list_candidates(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     content_types: Annotated[str | None, Query(description="Comma-separated: agent,building,chronicle")] = None,
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Preview available content candidates without generating drafts."""
     types = content_types.split(",") if content_types else None
     candidates = await InstagramContentService.select_candidates(
@@ -154,20 +155,20 @@ async def list_candidates(
         content_types=types,
         limit=limit,
     )
-    return {"success": True, "data": candidates}
+    return SuccessResponse(data=candidates)
 
 
 # ── Manual Post Creation ────────────────────────────────────────────────
 
 
-@router.post("/queue", response_model=SuccessResponse[InstagramPostResponse])
+@router.post("/queue")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def create_post(
     request: Request,
     body: CreateInstagramPostRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramPostResponse]:
     """Manually create an Instagram post draft."""
     logger.info("Instagram admin action", extra={
         "action": "create_post",
@@ -193,13 +194,13 @@ async def create_post(
         "instagram_posts", post.get("id"), "create",
         {"content_source_type": body.content_source_type},
     )
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
 # ── Approval & Rejection ───────────────────────────────────────────────
 
 
-@router.post("/queue/{post_id}/approve", response_model=SuccessResponse[InstagramPostResponse])
+@router.post("/queue/{post_id}/approve")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def approve_post(
     request: Request,
@@ -207,7 +208,7 @@ async def approve_post(
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ApprovePostRequest | None = None,
-) -> dict:
+) -> SuccessResponse[InstagramPostResponse]:
     """Approve a draft post for scheduling."""
     logger.info("Instagram admin action", extra={
         "action": "approve",
@@ -223,10 +224,10 @@ async def approve_post(
         "instagram_posts", post_id, "update",
         {"action": "approve"},
     )
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
-@router.post("/queue/{post_id}/reject", response_model=SuccessResponse[InstagramPostResponse])
+@router.post("/queue/{post_id}/reject")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def reject_post(
     request: Request,
@@ -234,7 +235,7 @@ async def reject_post(
     body: RejectPostRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramPostResponse]:
     """Reject a draft post with reason."""
     logger.info("Instagram admin action", extra={
         "action": "reject",
@@ -250,20 +251,20 @@ async def reject_post(
         "instagram_posts", post_id, "update",
         {"action": "reject", "reason": body.reason[:200]},
     )
-    return {"success": True, "data": post}
+    return SuccessResponse(data=post)
 
 
 # ── Force Publish ───────────────────────────────────────────────────────
 
 
-@router.post("/queue/{post_id}/publish", response_model=SuccessResponse[InstagramPostResponse])
+@router.post("/queue/{post_id}/publish")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def force_publish(
     request: Request,
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramPostResponse]:
     """Force-publish a post immediately (bypasses scheduler)."""
     logger.info("Instagram admin action", extra={
         "action": "force_publish",
@@ -310,80 +311,73 @@ async def force_publish(
     )
 
     updated = await InstagramContentService.get_post(admin_supabase, post_id)
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
 # ── Analytics ───────────────────────────────────────────────────────────
 
 
-@router.get("/analytics", response_model=SuccessResponse[InstagramAnalytics])
+@router.get("/analytics")
 async def get_analytics(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     days: Annotated[int, Query(ge=1, le=365)] = 30,
-) -> dict:
+) -> SuccessResponse[InstagramAnalytics]:
     """Get aggregated Instagram performance analytics."""
     analytics = await InstagramContentService.get_analytics(admin_supabase, days=days)
-    return {"success": True, "data": analytics}
+    return SuccessResponse(data=analytics)
 
 
 # ── Pipeline Settings ──────────────────────────────────────────────────
 
 
-@router.get("/settings", response_model=SuccessResponse[dict])
+@router.get("/settings")
 async def get_instagram_settings(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[dict[str, PipelineSettingValue]]:
     """Get all Instagram pipeline configuration settings as a flat dict."""
     settings_map = await InstagramContentService.get_pipeline_settings(admin_supabase)
-    return {"success": True, "data": settings_map}
+    return SuccessResponse(data=settings_map)
 
 
 # ── Rate Limit ──────────────────────────────────────────────────────────
 
 
-@router.get("/rate-limit", response_model=SuccessResponse[InstagramRateLimit])
+@router.get("/rate-limit")
 async def get_rate_limit(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramRateLimit]:
     """Check current Instagram API rate limit usage."""
     config = await InstagramContentService.load_instagram_credentials(admin_supabase)
     if not config["access_token"] or not config["ig_user_id"]:
-        return {
-            "success": True,
-            "data": {"quota_usage": 0, "quota_total": 100, "remaining": 100},
-        }
+        return SuccessResponse(data=InstagramRateLimit())
 
     ig = InstagramService(
         access_token=config["access_token"],
         ig_user_id=config["ig_user_id"],
     )
     rate_data = await ig.check_rate_limit()
-    return {"success": True, "data": rate_data}
+    return SuccessResponse(data=rate_data)
 
 
 # ── Connection Status ──────────────────────────────────────────────────
 
 
-@router.get("/status", response_model=SuccessResponse[dict])
+@router.get("/status")
 async def get_connection_status(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[InstagramStatusResponse]:
     """Validate Instagram credentials and return connection status."""
     config = await InstagramContentService.load_instagram_credentials(admin_supabase)
 
     if not config["access_token"] or not config["ig_user_id"]:
-        return {
-            "success": True,
-            "data": {
-                "configured": False,
-                "authenticated": False,
-                "ig_user_id": None,
-            },
-        }
+        return SuccessResponse(data=InstagramStatusResponse(
+            configured=False,
+            authenticated=False,
+        ))
 
     ig = InstagramService(
         access_token=config["access_token"],
@@ -391,11 +385,8 @@ async def get_connection_status(
     )
     authenticated = await ig.validate_credentials()
 
-    return {
-        "success": True,
-        "data": {
-            "configured": True,
-            "authenticated": authenticated,
-            "ig_user_id": config["ig_user_id"],
-        },
-    }
+    return SuccessResponse(data=InstagramStatusResponse(
+        configured=True,
+        authenticated=authenticated,
+        ig_user_id=config["ig_user_id"],
+    ))

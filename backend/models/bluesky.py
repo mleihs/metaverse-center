@@ -62,3 +62,12 @@ class BlueskyAnalytics(BaseModel):
     total_replies: int | None = None
     total_quotes: int | None = None
     engagement_by_type: list[dict] = Field(default_factory=list)
+
+
+class BlueskyStatusResponse(BaseModel):
+    """Bluesky connection status."""
+
+    configured: bool
+    authenticated: bool
+    handle: str | None = None
+    pds_url: str = "https://bsky.social"

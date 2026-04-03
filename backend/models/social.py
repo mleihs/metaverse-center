@@ -55,3 +55,50 @@ class SocialSyncResponse(BaseModel):
 
     posts_synced: int
     comments_synced: int
+
+
+class PipelineSettingValue(BaseModel):
+    """A single pipeline setting entry with value and description."""
+
+    value: str
+    description: str
+
+
+class TrendTransformResponse(BaseModel):
+    """AI transformation result for a single trend."""
+
+    trend_id: str
+    original_title: str
+    transformation: dict
+
+
+class TrendWorkflowResponse(BaseModel):
+    """Full fetch-and-store workflow result."""
+
+    fetched: int
+    stored: int
+    trends: list[SocialTrendResponse]
+
+
+class ArticleTransformResponse(BaseModel):
+    """AI transformation result for an ephemeral article."""
+
+    original_title: str
+    transformation: dict
+
+
+class ArticleIntegrateResponse(BaseModel):
+    """Result of integrating an article as an event with reactions."""
+
+    event: dict
+    reactions_count: int = 0
+    reactions: list[dict] = Field(default_factory=list)
+
+
+class BatchIntegrateResponse(BaseModel):
+    """Result of batch article integration."""
+
+    events: list[dict] = Field(default_factory=list)
+    errors: list[dict] = Field(default_factory=list)
+    reactions_generated_for: str | None = None
+    reactions_count: int = 0

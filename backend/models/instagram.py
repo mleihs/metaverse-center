@@ -109,6 +109,14 @@ class InstagramRateLimit(BaseModel):
     remaining: int = 100
 
 
+class InstagramStatusResponse(BaseModel):
+    """Instagram connection status."""
+
+    configured: bool
+    authenticated: bool
+    ig_user_id: str | None = None
+
+
 # --- Request Models ---
 
 
