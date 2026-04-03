@@ -90,18 +90,25 @@ tags: [index, catalog, documentation]
 | [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Research (7)
+## Research (15)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
+| [AI Image Prompt Engineering Research](research/ai-image-prompt-engineering-research.md) | 1.0 | 2026-04-02 | en | complete |
+| [Resonance Dungeons — Visual Art Direction Research](research/dungeon-visual-art-direction-research.md) | 1.0 | 2026-04-02 | en | complete |
+| [The Overthrow — Deep Literary Research](research/overthrow-literary-research.md) | 1.0 | 2026-04-02 | en | implemented |
+| [The Awakening — Deep Literary Research](research/awakening-literary-research.md) | 2.0 | 2026-04-02 | en | implemented |
+| [The Deluge — Deep Literary Research](research/deluge-literary-research.md) | 1.0 | 2026-04-01 | en | implemented |
+| [The Deluge — Full Archetype Design Document](research/deluge-archetype-full-design.md) | 1.0 | 2026-04-01 | en | implemented |
+| [The Prometheus — Deep Literary Research](research/prometheus-literary-research.md) | 1.0 | 2026-03-31 | en | implemented |
+| [Psychoacoustics & Dungeon Audio Research](research/psychoacoustics-dungeon-audio-research.md) | 1.0 | 2026-04-01 | en | implemented |
 | [The Devouring Mother — Literary Research](research/devouring-mother-literary-research.md) | 1.0 | 2026-03-31 | en | complete |
 | [Parasitic, Symbiotic & Nurturing Mechanics in Games](research/devouring-mother-game-mechanics-research.md) | 1.0 | 2026-03-31 | en | complete |
-| [The Devouring Mother — Full Design Document](research/devouring-mother-full-design.md) | 1.0 | 2026-03-31 | en | ready-to-implement |
+| [The Devouring Mother — Full Design Document](research/devouring-mother-full-design.md) | 1.0 | 2026-03-31 | en | implemented |
 | [The Devouring Mother — Implementation Plan](research/devouring-mother-implementation-plan.md) | 1.0 | 2026-03-31 | en | ready |
 | [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md) | 1.0 | 2026-03-31 | en | complete |
 | [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md) | 1.0 | 2026-03-31 | en | implemented |
 | [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md) | 1.0 | 2026-03-27 | en | implemented |
-| [The Awakening — Deep Literary Research](research/awakening-literary-research.md) | 2.0 | 2026-04-02 | en | implemented |
 
 ## Analysis (9)
 

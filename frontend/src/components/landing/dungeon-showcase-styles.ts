@@ -64,19 +64,24 @@ export const showcaseLayoutStyles = css`
 
   /* Content backdrop — soft dark cloud behind the entire text column.
      Not a visible box; an invisible darkening that makes text pop.
-     Applied on leaf element (::after), not layout container. */
+     Applied on leaf element (::after), not layout container.
+
+     Base gradient is strong enough for bright images (Tower, Entropy,
+     Deluge). Dark-background slides reduce via --_content-backdrop
+     (set in showcaseAtmosphereStyles per slide class). */
   .slide__content::after {
     content: '';
     position: absolute;
-    inset: -48px -80px;
+    inset: -60px -100px;
     z-index: -1;
     background: radial-gradient(
       ellipse 100% 100% at 50% 42%,
-      rgba(0, 0, 0, 0.65) 0%,
-      rgba(0, 0, 0, 0.4) 40%,
-      rgba(0, 0, 0, 0.15) 70%,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.62) 40%,
+      rgba(0, 0, 0, 0.28) 70%,
       transparent 100%
     );
+    opacity: var(--_content-backdrop, 1);
     pointer-events: none;
   }
 
@@ -315,6 +320,19 @@ export const showcaseLayoutStyles = css`
 // ── Atmospheric Backgrounds ─────────────────────────────────────────────────
 
 export const showcaseAtmosphereStyles = css`
+  /* ── Per-slide content backdrop intensity ──
+     Controls opacity of the dark cloud behind the text column.
+     Bright images need full strength (1); dark images reduce to
+     preserve atmosphere. Calibrated from production screenshots. */
+  .slide--shadow    { --_content-backdrop: 0.6; }
+  .slide--tower     { --_content-backdrop: 1; }
+  .slide--mother    { --_content-backdrop: 0.85; }
+  .slide--entropy   { --_content-backdrop: 1; }
+  .slide--prometheus { --_content-backdrop: 0.9; }
+  .slide--deluge    { --_content-backdrop: 1; }
+  .slide--awakening { --_content-backdrop: 0.55; }
+  .slide--overthrow { --_content-backdrop: 0.8; }
+
   /* SHADOW — drifting cosmic fog overlay */
   .slide--shadow .slide__atmosphere::before {
     content: ''; position: absolute; inset: 0;
