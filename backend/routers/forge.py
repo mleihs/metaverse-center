@@ -16,7 +16,7 @@ from backend.dependencies import (
     require_platform_admin,
 )
 from backend.middleware.rate_limit import RATE_LIMIT_AI_ENTITY, RATE_LIMIT_AI_GENERATION, RATE_LIMIT_STANDARD, limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.forge import (
     AdminBundleUpdate,
     AdminPurchaseLedgerEntry,
@@ -143,18 +143,18 @@ async def update_draft(
     return {"success": True, "data": draft}
 
 
-@router.delete("/drafts/{draft_id}", response_model=SuccessResponse[dict])
+@router.delete("/drafts/{draft_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_draft(
     draft_id: UUID,
     user: CurrentUser = Depends(require_architect()),
     supabase=Depends(get_supabase),
-):
+) -> SuccessResponse[MessageResponse]:
     """Delete a draft."""
     await _draft_service.delete_draft(supabase, user.id, draft_id)
     await AuditService.safe_log(
         supabase, None, user.id, "forge_draft", str(draft_id), "delete",
     )
-    return {"success": True, "data": {"message": "Draft deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Draft deleted."))
 
 
 @router.post("/drafts/{draft_id}/research", response_model=SuccessResponse[dict])
@@ -856,7 +856,7 @@ class RegenerateImagesRequest(BaseModel):
     )
 
 
-@router.post("/admin/regenerate-images/{simulation_id}", response_model=SuccessResponse[dict])
+@router.post("/admin/regenerate-images/{simulation_id}", response_model=SuccessResponse[MessageResponse])
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def regenerate_images(
     request: Request,
@@ -865,7 +865,7 @@ async def regenerate_images(
     body: RegenerateImagesRequest | None = None,
     admin: CurrentUser = Depends(require_platform_admin()),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[MessageResponse]:
     """Trigger batch image generation for an existing simulation (admin only).
 
     Optionally filter to specific entity types (e.g. {"entity_types": ["lore"]}).
@@ -889,7 +889,7 @@ async def regenerate_images(
         "regenerate_images", {"simulation_name": sim["name"], "entity_types": types_str},
     )
 
-    return {"success": True, "data": {"message": f"Image generation ({types_str}) started for '{sim['name']}'."}}
+    return SuccessResponse(data=MessageResponse(message=f"Image generation ({types_str}) started for '{sim['name']}'."))
 
 
 class RetriggerBatchRequest(BaseModel):
@@ -904,7 +904,7 @@ class RetriggerBatchRequest(BaseModel):
     )
 
 
-@router.post("/admin/retrigger-batch/{simulation_id}", response_model=SuccessResponse[dict])
+@router.post("/admin/retrigger-batch/{simulation_id}", response_model=SuccessResponse[MessageResponse])
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def retrigger_batch(
     request: Request,
@@ -913,7 +913,7 @@ async def retrigger_batch(
     body: RetriggerBatchRequest | None = None,
     admin: CurrentUser = Depends(require_platform_admin()),
     admin_supabase=Depends(get_admin_supabase),
-):
+) -> SuccessResponse[MessageResponse]:
     """Re-run batch generation (lore + images) for an existing simulation (admin only).
 
     Unlike regenerate-images, this can also re-run the full Phase A
@@ -950,4 +950,5 @@ async def retrigger_batch(
         "retrigger_batch", {"simulation_name": sim["name"], "mode": mode, "entity_types": types_str},
     )
 
-    return {"success": True, "data": {"message": f"Batch retrigger ({mode}, {types_str}) started for '{sim['name']}'."}}
+    msg = f"Batch retrigger ({mode}, {types_str}) started for '{sim['name']}'."
+    return SuccessResponse(data=MessageResponse(message=msg))

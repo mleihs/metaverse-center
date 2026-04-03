@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.relationship import (
     RelationshipCreate,
     RelationshipResponse,
@@ -110,7 +110,7 @@ async def update_relationship(
 
 @router.delete(
     "/relationships/{relationship_id}",
-    response_model=SuccessResponse[dict],
+    response_model=SuccessResponse[MessageResponse],
 )
 async def delete_relationship(
     simulation_id: UUID,
@@ -118,10 +118,10 @@ async def delete_relationship(
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a relationship."""
     await RelationshipService.delete_relationship(supabase, simulation_id, relationship_id)
     await AuditService.log_action(
         supabase, simulation_id, user.id, "agent_relationships", relationship_id, "delete"
     )
-    return {"success": True, "data": {"message": "Relationship deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Relationship deleted."))

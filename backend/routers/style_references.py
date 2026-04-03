@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.common import CurrentUser, DeleteResponse, SuccessResponse
 from backend.models.style_reference import StyleReferenceInfo, StyleReferenceUploadResponse
 from backend.services.audit_service import AuditService
 from backend.services.style_reference_service import (
@@ -120,7 +120,7 @@ async def list_references(
     return {"success": True, "data": refs}
 
 
-@router.delete("/{entity_type}", response_model=SuccessResponse[dict])
+@router.delete("/{entity_type}", response_model=SuccessResponse[DeleteResponse])
 async def delete_reference(
     simulation_id: UUID,
     entity_type: str,
@@ -129,7 +129,7 @@ async def delete_reference(
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[DeleteResponse]:
     """Remove a style reference image."""
     if entity_type not in ("portrait", "building"):
         raise HTTPException(
@@ -152,4 +152,4 @@ async def delete_reference(
         supabase, simulation_id, user.id, "style_references", None, "delete",
         details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
     )
-    return {"success": True, "data": {"deleted": True}}
+    return SuccessResponse(data=DeleteResponse())

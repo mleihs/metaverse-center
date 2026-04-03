@@ -15,6 +15,7 @@ from backend.models.campaign import (
 )
 from backend.models.common import (
     CurrentUser,
+    MessageResponse,
     PaginatedResponse,
     PaginationMeta,
     SuccessResponse,
@@ -98,18 +99,18 @@ async def update_campaign(
     return {"success": True, "data": campaign}
 
 
-@router.delete("/{campaign_id}", response_model=SuccessResponse[dict])
+@router.delete("/{campaign_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("admin")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a campaign. Requires admin role."""
     await CampaignService.hard_delete(supabase, simulation_id, campaign_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "delete")
-    return {"success": True, "data": {"message": "Campaign deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Campaign deleted."))
 
 
 @router.get("/{campaign_id}/analytics", response_model=SuccessResponse[CampaignAnalyticsResponse])

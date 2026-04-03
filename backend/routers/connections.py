@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_platform_admin
-from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.echo import ConnectionCreate, ConnectionResponse, ConnectionUpdate
 from backend.services.audit_service import AuditService
 from backend.services.connection_service import ConnectionService
@@ -68,17 +68,17 @@ async def update_connection(
     return {"success": True, "data": result}
 
 
-@router.delete("/{connection_id}", response_model=SuccessResponse[dict])
+@router.delete("/{connection_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_connection(
     connection_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _admin_check: None = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a simulation connection (platform admin only)."""
     await ConnectionService.delete_connection(admin_supabase, connection_id)
     await AuditService.safe_log(
         admin_supabase, None, user.id, "simulation_connections", connection_id, "delete",
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": {"message": "Connection deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Connection deleted."))

@@ -14,7 +14,7 @@ from backend.dependencies import (
 )
 from backend.models.aptitude import DraftRequest
 from backend.models.bot import AddBotToEpoch
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch import (
     AllianceInviteCreate,
     AllianceProposalCreate,
@@ -376,20 +376,20 @@ async def join_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/participants/{simulation_id}", response_model=SuccessResponse)
+@router.delete("/{epoch_id}/participants/{simulation_id}", response_model=SuccessResponse[MessageResponse])
 async def leave_epoch(
     epoch_id: UUID,
     simulation_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Leave an epoch (lobby phase only)."""
     await EpochService.leave_epoch(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "epoch_participants", None, "delete",
         details={"epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": {"message": "Left epoch."}}
+    return SuccessResponse(data=MessageResponse(message="Left epoch."))
 
 
 # ── Draft ──────────────────────────────────────────────
@@ -443,21 +443,21 @@ async def add_bot_to_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/remove-bot/{participant_id}", response_model=SuccessResponse)
+@router.delete("/{epoch_id}/remove-bot/{participant_id}", response_model=SuccessResponse[MessageResponse])
 async def remove_bot_from_epoch(
     epoch_id: UUID,
     participant_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _creator_check: None = Depends(require_epoch_creator()),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Remove a bot participant from epoch lobby. Creator only."""
     await EpochService.remove_bot(supabase, epoch_id, participant_id)
     await AuditService.safe_log(
         supabase, None, user.id, "epoch_participants", participant_id, "delete",
         details={"epoch_id": str(epoch_id), "is_bot": True},
     )
-    return {"success": True, "data": {"message": "Bot removed."}}
+    return SuccessResponse(data=MessageResponse(message="Bot removed."))
 
 
 # ── Teams / Alliances ──────────────────────────────────

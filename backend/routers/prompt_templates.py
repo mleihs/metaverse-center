@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.prompt_template import (
     PromptTemplateCreate,
     PromptTemplateResponse,
@@ -101,18 +101,18 @@ async def update_prompt_template(
     return {"success": True, "data": data}
 
 
-@router.delete("/{template_id}", response_model=SuccessResponse[dict])
+@router.delete("/{template_id}", response_model=SuccessResponse[DeleteResponse])
 async def delete_prompt_template(
     simulation_id: UUID,
     template_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("admin")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[DeleteResponse]:
     """Soft-delete a prompt template (set is_active=False)."""
     await PromptTemplateService.deactivate(supabase, simulation_id, template_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", template_id, "delete")
-    return {"success": True, "data": {"id": str(template_id), "deleted": True}}
+    return SuccessResponse(data=DeleteResponse(id=str(template_id)))
 
 
 @router.post("/test", response_model=SuccessResponse[dict])

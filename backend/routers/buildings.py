@@ -9,6 +9,7 @@ from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.building import BuildingCreate, BuildingResponse, BuildingUpdate
 from backend.models.common import (
     CurrentUser,
+    MessageResponse,
     PaginatedResponse,
     PaginationMeta,
     SuccessResponse,
@@ -171,7 +172,7 @@ async def assign_agent(
     return {"success": True, "data": relation}
 
 
-@router.delete("/{building_id}/unassign-agent", response_model=SuccessResponse[dict])
+@router.delete("/{building_id}/unassign-agent", response_model=SuccessResponse[MessageResponse])
 async def unassign_agent(
     simulation_id: UUID,
     building_id: UUID,
@@ -179,10 +180,10 @@ async def unassign_agent(
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Remove an agent from a building."""
     await _service.unassign_agent(supabase, simulation_id, building_id, agent_id)
-    return {"success": True, "data": {"message": "Agent unassigned from building."}}
+    return SuccessResponse(data=MessageResponse(message="Agent unassigned from building."))
 
 
 @router.get("/{building_id}/profession-requirements", response_model=SuccessResponse[list])

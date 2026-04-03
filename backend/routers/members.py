@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.member import MemberCreate, MemberResponse, MemberUpdate
 from backend.services.audit_service import AuditService
 from backend.services.member_service import LastOwnerError, MemberService
@@ -76,14 +76,14 @@ async def change_role(
     return {"success": True, "data": data}
 
 
-@router.delete("/{member_id}", response_model=SuccessResponse[dict])
+@router.delete("/{member_id}", response_model=SuccessResponse[MessageResponse])
 async def remove_member(
     simulation_id: UUID,
     member_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("admin")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Remove a member from a simulation. Last-owner protection via DB trigger."""
     try:
         await MemberService.remove(supabase, simulation_id, member_id)
@@ -94,4 +94,4 @@ async def remove_member(
         ) from e
 
     await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", member_id, "delete")
-    return {"success": True, "data": {"message": "Member removed."}}
+    return SuccessResponse(data=MessageResponse(message="Member removed."))

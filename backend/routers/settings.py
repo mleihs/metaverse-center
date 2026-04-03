@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.settings import SettingCreate, SettingResponse, SettingUpdate
 from backend.services.audit_service import AuditService
 from backend.services.settings_service import SettingsService
@@ -109,17 +109,17 @@ async def update_setting(
     return {"success": True, "data": setting}
 
 
-@router.delete("/{setting_id}", response_model=SuccessResponse[dict])
+@router.delete("/{setting_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_setting(
     simulation_id: UUID,
     setting_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("admin")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a setting."""
     await _service.delete_setting(supabase, simulation_id, setting_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "simulation_settings", setting_id, "delete",
     )
-    return {"success": True, "data": {"message": "Setting deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Setting deleted."))

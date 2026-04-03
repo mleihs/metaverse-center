@@ -11,7 +11,7 @@ from backend.models.agent_profession import (
     AgentProfessionResponse,
     AgentProfessionUpdate,
 )
-from backend.models.common import CurrentUser, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.services.agent_profession_service import AgentProfessionService
 from backend.services.audit_service import AuditService
 from supabase import AsyncClient as Client
@@ -78,7 +78,7 @@ async def update_profession(
     return {"success": True, "data": result}
 
 
-@router.delete("/{profession_id}", response_model=SuccessResponse[dict])
+@router.delete("/{profession_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_profession(
     simulation_id: UUID,
     agent_id: UUID,
@@ -86,10 +86,10 @@ async def delete_profession(
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("editor")),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Remove a profession from an agent."""
     await AgentProfessionService.remove(
         supabase, simulation_id, agent_id, profession_id
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", profession_id, "delete")
-    return {"success": True, "data": {"message": "Profession removed."}}
+    return SuccessResponse(data=MessageResponse(message="Profession removed."))

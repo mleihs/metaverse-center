@@ -15,7 +15,7 @@ from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
 from backend.middleware.seo import _sim_meta_cache
 from backend.models.cleanup import CleanupExecuteRequest, CleanupPreviewRequest
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.settings import is_sensitive_key
 from backend.services.admin_user_service import AdminUserService
 from backend.services.audit_service import AuditService
@@ -189,20 +189,20 @@ async def get_user(
     return {"success": True, "data": data}
 
 
-@router.delete("/users/{user_id}", response_model=SuccessResponse[dict])
+@router.delete("/users/{user_id}", response_model=SuccessResponse[DeleteResponse])
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def delete_user(
     request: Request,
     user_id: UUID,
     _user: CurrentUser = Depends(require_platform_admin()),
     admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+) -> SuccessResponse[DeleteResponse]:
     """Delete a user from the platform."""
     await AdminUserService.delete_user(admin_supabase, user_id)
     await AuditService.safe_log(
         admin_supabase, None, _user.id, "users", user_id, "delete",
     )
-    return {"success": True, "data": {"deleted": True}}
+    return SuccessResponse(data=DeleteResponse())
 
 
 @router.post("/users/{user_id}/memberships", response_model=SuccessResponse[dict])

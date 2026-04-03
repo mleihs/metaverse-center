@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_role
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.game_mechanics import (
     BuildingReadinessResponse,
     EmbassyEffectivenessResponse,
@@ -158,14 +158,14 @@ async def list_embassy_effectiveness(
 
 @router.post(
     "/health/refresh",
-    response_model=SuccessResponse[dict],
+    response_model=SuccessResponse[MessageResponse],
 )
 async def refresh_metrics(
     simulation_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     _role_check: str = Depends(require_role("admin")),
     admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Trigger a full refresh of all game mechanics materialized views.
 
     Admin-only — materialized views normally refresh via triggers,
@@ -176,4 +176,4 @@ async def refresh_metrics(
         admin_supabase, simulation_id, user.id,
         "game_mechanics", None, "refresh_metrics",
     )
-    return {"success": True, "data": {"message": "Game metrics refresh triggered."}}
+    return SuccessResponse(data=MessageResponse(message="Game metrics refresh triggered."))

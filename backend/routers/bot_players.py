@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from backend.dependencies import get_current_user, get_supabase
 from backend.models.bot import BotPlayerCreate, BotPlayerResponse, BotPlayerUpdate
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.bot_player_service import BotPlayerService
 from supabase import AsyncClient as Client
@@ -77,15 +77,15 @@ async def update_bot_player(
     return {"success": True, "data": data}
 
 
-@router.delete("/{bot_id}", response_model=SuccessResponse[dict])
+@router.delete("/{bot_id}", response_model=SuccessResponse[MessageResponse])
 async def delete_bot_player(
     bot_id: UUID,
     user: CurrentUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a bot player preset (own bots only)."""
     await BotPlayerService.delete(supabase, bot_id, user.id)
     await AuditService.safe_log(
         supabase, None, user.id, "bot_players", bot_id, "delete",
     )
-    return {"success": True, "data": {"message": "Bot player deleted."}}
+    return SuccessResponse(data=MessageResponse(message="Bot player deleted."))

@@ -41,6 +41,19 @@ class SuccessResponse(BaseModel, Generic[T]):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+class MessageResponse(BaseModel):
+    """Payload for operations that return a confirmation message."""
+
+    message: str
+
+
+class DeleteResponse(BaseModel):
+    """Payload for delete operations that confirm entity removal."""
+
+    deleted: bool = True
+    id: str | None = None
+
+
 class ErrorDetail(BaseModel):
     """Error detail information."""
 
