@@ -2324,6 +2324,248 @@ AWAKENING_BANTER: list[dict] = [
 ]
 
 
+# ══════════════════════════════════════════════════════════════════════════
+#  THE OVERTHROW — Der Spiegelpalast
+#  Political vertigo. Ascending paranoia, not descending grammar.
+#  Every NPC is a political actor. Power is language.
+#  fracture_tier 0 = Court Order (Machiavelli clinical)
+#  fracture_tier 1 = Whispers/Schism (Dostoevsky/Brecht)
+#  fracture_tier 2 = Revolution (Koestler/Camus)
+#  fracture_tier 3 = New Regime/Collapse (Arendt/Kundera/Orwell)
+# ══════════════════════════════════════════════════════════════════════════
+
+OVERTHROW_BANTER: list[dict] = [
+    # ── Tier 0: Court Order (fracture 0-19) — Machiavelli/Orwell clinical ──
+    {
+        "id": "ob_01",
+        "trigger": "room_entered",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "The corridor is orderly. Signs indicate direction. The signs have been recently updated.",
+        "text_de": "Der Korridor ist ordentlich. Schilder weisen die Richtung. Die Schilder wurden kürzlich aktualisiert.",
+    },
+    {
+        "id": "ob_02",
+        "trigger": "room_entered",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "Alliance offered. Alliance accepted. The cost will be announced later.",
+        "text_de": "Bündnis angeboten. Bündnis angenommen. Die Kosten werden später bekanntgegeben.",
+    },
+    {
+        "id": "ob_03",
+        "trigger": "room_entered",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "Everyone sees what you appear to be. Few experience what you really are. The Spiegelpalast sees both.",
+        "text_de": "Jeder sieht, was ihr zu sein scheint. Wenige erfahren, was ihr wirklich seid. Der Spiegelpalast sieht beides.",
+    },
+    {
+        "id": "ob_04",
+        "trigger": "room_entered",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "A faction representative nods at {agent}. The nod is precisely calibrated: acknowledgment without commitment.",
+        "text_de": "Ein Fraktionsvertreter nickt {agent} zu. Das Nicken ist präzise kalibriert: Anerkennung ohne Verpflichtung.",
+    },
+    {
+        "id": "ob_05",
+        "trigger": "combat_won",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "The enforcers are down. The report will say they were never here. The revised report will say {agent} was never here either.",
+        "text_de": "Die Vollstrecker sind am Boden. Der Bericht wird sagen, sie waren nie hier. Der überarbeitete Bericht wird sagen, {agent} war auch nie hier.",
+    },
+    {
+        "id": "ob_06",
+        "trigger": "combat_start",
+        "fracture_tier": 0,
+        "personality_filter": {},
+        "text_en": "The faction leader smiles. The smile has been authorized.",
+        "text_de": "Der Fraktionsführer lächelt. Das Lächeln wurde genehmigt.",
+    },
+    # ── Tier 1: Whispers / Schism (fracture 20-59) — Dostoevsky/Brecht/Havel ──
+    {
+        "id": "ob_07",
+        "trigger": "room_entered",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "Three factions. Three truths. None of them are lying. This is the problem.",
+        "text_de": "Drei Fraktionen. Drei Wahrheiten. Keine davon lügt. Das ist das Problem.",
+    },
+    {
+        "id": "ob_08",
+        "trigger": "room_entered",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "{agent} is offered a seat at the table. The seat is comfortable. The table is set for fewer people than it was yesterday.",
+        "text_de": "{agent} wird ein Platz am Tisch angeboten. Der Sitz ist bequem. Der Tisch ist für weniger Personen gedeckt als gestern.",
+    },
+    {
+        "id": "ob_09",
+        "trigger": "room_entered",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "Walls have ears. These walls have faction insignia. The insignia changed since the party entered.",
+        "text_de": "Wände haben Ohren. Diese Wände haben Fraktionsabzeichen. Die Abzeichen haben sich geändert, seit die Gruppe eintrat.",
+    },
+    {
+        "id": "ob_10",
+        "trigger": "room_entered",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "»Erst kommt das Bündnis«, sagt der Fraktionsführer. »Dann kommt die Wahrheit. Falls noch jemand fragt.«",
+        "text_de": "»Erst kommt das Bündnis«, sagt der Fraktionsführer. »Dann kommt die Wahrheit. Falls noch jemand fragt.«",
+    },
+    {
+        "id": "ob_11",
+        "trigger": "combat_start",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "The enforcers make speeches while fighting. They die with quotable last words. The Overthrow is theatrical even in violence.",
+        "text_de": "Die Vollstrecker halten Reden, während sie kämpfen. Sie sterben mit zitierwürdigen letzten Worten. Der Umsturz ist selbst in der Gewalt theatralisch.",
+    },
+    {
+        "id": "ob_12",
+        "trigger": "combat_won",
+        "fracture_tier": 1,
+        "personality_filter": {},
+        "text_en": "The enforcers are down. Which faction sent them? The answer depends on which faction asks.",
+        "text_de": "Die Vollstrecker sind am Boden. Welche Fraktion hat sie geschickt? Die Antwort hängt davon ab, welche Fraktion fragt.",
+    },
+    {
+        "id": "ob_13",
+        "trigger": "room_entered",
+        "fracture_tier": 1,
+        "personality_filter": {"conscientiousness_high": True},
+        "text_en": "{agent} reads the new decree. It contradicts the previous decree. Both remain in effect. Doublethink.",
+        "text_de": "{agent} liest das neue Dekret. Es widerspricht dem vorherigen Dekret. Beide bleiben in Kraft. Doppeldenk.",
+    },
+    # ── Tier 2: Revolution (fracture 60-79) — Koestler/Camus/Canetti ──
+    {
+        "id": "ob_14",
+        "trigger": "room_entered",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "The old leader is gone. The new leader enters. Same room. Same desk. Same view from the window.",
+        "text_de": "Der alte Anführer ist weg. Der neue Anführer tritt ein. Derselbe Raum. Derselbe Schreibtisch. Dieselbe Aussicht.",
+    },
+    {
+        "id": "ob_15",
+        "trigger": "room_entered",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "Every revolutionary ends as an oppressor or a heretic. The Spiegelpalast offers both options. Choose quickly.",
+        "text_de": "Jeder Revolutionär endet als Unterdrücker oder als Ketzer. Der Spiegelpalast bietet beide Optionen. Wählt schnell.",
+    },
+    {
+        "id": "ob_16",
+        "trigger": "room_entered",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "{agent} joins the revolution. The revolution has a sign-up sheet. The sign-up sheet has a second page that is not immediately visible.",
+        "text_de": "{agent} schließt sich der Revolution an. Die Revolution hat eine Anmeldeliste. Die Anmeldeliste hat eine zweite Seite, die nicht sofort sichtbar ist.",
+    },
+    {
+        "id": "ob_17",
+        "trigger": "combat_start",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "The party can never be mistaken. {agent} can make a mistake. Not the party. Not the faction. Fight accordingly.",
+        "text_de": "Die Partei kann sich nie irren. {agent} kann sich irren. Nicht die Partei. Nicht die Fraktion. Kämpft entsprechend.",
+    },
+    {
+        "id": "ob_18",
+        "trigger": "combat_won",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "Victory. The revolution devours its children — but not today. Today, the children devour.",
+        "text_de": "Sieg. Die Revolution frisst ihre Kinder — aber nicht heute. Heute fressen die Kinder.",
+    },
+    {
+        "id": "ob_19",
+        "trigger": "room_entered",
+        "fracture_tier": 2,
+        "personality_filter": {"agreeableness_high": True},
+        "text_en": "{agent} tries to mediate between factions. Both sides thank {agent}. Both sides add {agent}'s name to a list that is not labeled 'mediators.'",
+        "text_de": "{agent} versucht, zwischen den Fraktionen zu vermitteln. Beide Seiten danken {agent}. Beide Seiten setzen {agent}s Namen auf eine Liste, die nicht 'Vermittler' heißt.",
+    },
+    # ── Tier 3: New Regime / Collapse (fracture 80+) — Arendt/Kundera/Orwell ──
+    {
+        "id": "ob_20",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "Macht. Macht des Machens. Spiegel. Spiegel des Spiegels. Wer regiert?",
+        "text_de": "Macht. Macht des Machens. Spiegel. Spiegel des Spiegels. Wer regiert?",
+    },
+    {
+        "id": "ob_21",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "The Pretender speaks. {agent} has heard these words before — in their own voice, on Floor 1.",
+        "text_de": "Der Prätendent spricht. {agent} hat diese Worte schon gehört — in der eigenen Stimme, auf Etage 1.",
+    },
+    {
+        "id": "ob_22",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "All factions are equal. But some factions are more equal than others. The sign was always there. The party is only now able to read it.",
+        "text_de": "Alle Fraktionen sind gleich. Aber manche Fraktionen sind gleicher als andere. Das Schild war immer da. Die Gruppe kann es erst jetzt lesen.",
+    },
+    {
+        "id": "ob_23",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "»Wir haben Ihre Akte gelesen. Eine bemerkenswerte Karriere. Leider müssen wir sie umschreiben.«",
+        "text_de": "»Wir haben Ihre Akte gelesen. Eine bemerkenswerte Karriere. Leider müssen wir sie umschreiben.«",
+    },
+    {
+        "id": "ob_24",
+        "trigger": "combat_start",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "The boot. The face. Forever. But whose boot? The answer changes with the faction.",
+        "text_de": "Der Stiefel. Das Gesicht. Für immer. Aber wessen Stiefel? Die Antwort wechselt mit der Fraktion.",
+    },
+    {
+        "id": "ob_25",
+        "trigger": "combat_won",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "»Ihr wolltet Freiheit. Ich wollte Freiheit. Seht, was wir daraus gemacht haben.«",
+        "text_de": "»Ihr wolltet Freiheit. Ich wollte Freiheit. Seht, was wir daraus gemacht haben.«",
+    },
+    {
+        "id": "ob_26",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {},
+        "text_en": "Loyalty costs nothing. Disloyalty costs everything. Both are true. Welcome to the Overthrow.",
+        "text_de": "Treue kostet nichts. Untreue kostet alles. Beides ist wahr. Willkommen im Umsturz.",
+    },
+    {
+        "id": "ob_27",
+        "trigger": "room_entered",
+        "fracture_tier": 3,
+        "personality_filter": {"openness_high": True},
+        "text_en": "»Der Spiegelpalast zeigt jedem, was er sehen will. Nicht was er ist. Was er will. Das ist schlimmer.«",
+        "text_de": "»Der Spiegelpalast zeigt jedem, was er sehen will. Nicht was er ist. Was er will. Das ist schlimmer.«",
+    },
+    {
+        "id": "ob_28",
+        "trigger": "combat_start",
+        "fracture_tier": 2,
+        "personality_filter": {},
+        "text_en": "Power is not a means; it is an end. One does not establish a dictatorship to safeguard a revolution. The Pretender knows this. {agent} is learning.",
+        "text_de": "Macht ist kein Mittel; sie ist ein Zweck. Man errichtet keine Diktatur, um eine Revolution zu sichern. Der Prätendent weiß das. {agent} lernt.",
+    },
+]
+
+
 # ── Archetype Banter Registry ─────────────────────────────────────────────
 
 _BANTER_REGISTRIES: dict[str, list[dict]] = {
@@ -2334,6 +2576,7 @@ _BANTER_REGISTRIES: dict[str, list[dict]] = {
     "The Prometheus": PROMETHEUS_BANTER,
     "The Deluge": DELUGE_BANTER,
     "The Awakening": AWAKENING_BANTER,
+    "The Overthrow": OVERTHROW_BANTER,
 }
 
 
@@ -2391,6 +2634,24 @@ def _awakening_awareness_tier(archetype_state: dict) -> int:
     if awareness >= 50:
         return 2
     if awareness >= 25:
+        return 1
+    return 0
+
+
+def _overthrow_fracture_tier(archetype_state: dict) -> int:
+    """Map Overthrow authority_fracture to banter paranoia tier (0-3).
+
+    0 = Court Order (fracture 0-19) — Machiavelli clinical
+    1 = Whispers/Schism (20-59) — Dostoevsky/Brecht
+    2 = Revolution (60-79) — Koestler/Camus
+    3 = New Regime/Collapse (80+) — Arendt/Kundera/Orwell
+    """
+    fracture = archetype_state.get("fracture", 0)
+    if fracture >= 80:
+        return 3
+    if fracture >= 60:
+        return 2
+    if fracture >= 20:
         return 1
     return 0
 
@@ -2476,6 +2737,13 @@ def select_banter(
         if tier_candidates:
             max_tier = max(b.get("awareness_tier", 0) for b in tier_candidates)
             candidates = [b for b in tier_candidates if b.get("awareness_tier", 0) == max_tier]
+    # Overthrow: filter by fracture tier — prefer highest available tier
+    elif archetype == "The Overthrow" and archetype_state:
+        tier = _overthrow_fracture_tier(archetype_state)
+        tier_candidates = [b for b in candidates if b.get("fracture_tier", 0) <= tier]
+        if tier_candidates:
+            max_tier = max(b.get("fracture_tier", 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get("fracture_tier", 0) == max_tier]
 
     if not candidates:
         return None

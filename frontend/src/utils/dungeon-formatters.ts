@@ -27,12 +27,14 @@ import {
   ARCHETYPE_DELUGE,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
+  ARCHETYPE_OVERTHROW,
   ARCHETYPE_PROMETHEUS,
   ARCHETYPE_SHADOW,
   ARCHETYPE_TOWER,
   isAwakeningState,
   isDelugeState,
   isMotherState,
+  isOverthrowState,
   isShadowState,
   isTowerState,
 } from '../types/dungeon.js';
@@ -90,6 +92,8 @@ export function getArchetypeDisplayName(archetype: string): string {
       return msg('The Deluge');
     case ARCHETYPE_AWAKENING:
       return msg('The Awakening');
+    case ARCHETYPE_OVERTHROW:
+      return msg('The Overthrow');
     default:
       return archetype;
   }
@@ -386,6 +390,33 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     lines.push(
       responseLine(msg('The dungeon does not read your thoughts. It resonates with them.')),
     );
+  } else if (archetype === ARCHETYPE_OVERTHROW) {
+    lines.push(combatSystemLine(msg('OVERTHROW PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('Power changes hands. The old order does not die \u2013 it metamorphoses.')));
+    lines.push(
+      responseLine(msg('Every NPC is a political actor. Every room is a negotiation.')),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      systemLine(`\u25C9 ${msg('Authority fracture rises with each room. Factions shift.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('High fracture means betrayals, ambushes, and paranoia.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('At Fracture 60: revolution. The old order cracks.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('Use RALLY (Propagandist) to reduce fracture. Rally has a cooldown.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('At Fracture 100: total collapse. Power vacuum.')}`),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      responseLine(msg('The Spiegelpalast shows everyone what they want to see. Not what they are.')),
+    );
   } else {
     // Shadow (default)
     lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
@@ -529,6 +560,12 @@ export function formatRoomEntry(
     const empty = Math.round((max_awareness - awareness) / 5);
     const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
     lines.push(systemLine(`AWARENESS: ${bar} [${awareness}/${max_awareness}]`));
+  } else if (isOverthrowState(archetypeState)) {
+    const { fracture, max_fracture } = archetypeState;
+    const filled = Math.round(fracture / 5);
+    const empty = Math.round((max_fracture - fracture) / 5);
+    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
+    lines.push(systemLine(`FRACTURE: ${bar} [${fracture}/${max_fracture}]`));
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
@@ -586,9 +623,12 @@ export function formatCombatStart(combat: CombatStateClient): TerminalLine[] {
   lines.push(systemLine(''));
 
   // Enemies
+  const aliveEnemies = combat.enemies.filter((e) => e.is_alive);
   lines.push(systemLine(msg('ENEMIES:')));
-  for (const enemy of combat.enemies) {
-    if (!enemy.is_alive) continue;
+  if (aliveEnemies.length === 0) {
+    lines.push(responseLine(`  ${msg('No enemies remaining.')}`));
+  }
+  for (const enemy of aliveEnemies) {
     const condBar = _enemyConditionBar(enemy.condition_display);
     const threatBadge = `[${enemy.threat_level.toUpperCase()}]`;
     const intentStr = enemy.telegraphed_action

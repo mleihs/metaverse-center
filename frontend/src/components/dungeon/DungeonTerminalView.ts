@@ -75,6 +75,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         --color-text-secondary: #a0a0a0; /* lint-color-ok */
         --color-text-muted: #888888; /* lint-color-ok */
         --color-border: #333333; /* lint-color-ok */
+        background: var(--color-surface);
       }
 
       /* ── HUD Grid Layout (active dungeon) ── */
@@ -110,6 +111,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         font-family: var(--_mono);
         font-size: 10px;
         color: var(--_phosphor-dim);
+        background: var(--color-surface);
       }
 
       .dungeon-hud__map {
@@ -699,7 +701,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
               <span class="lobby-dungeon__meta">
                 <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
                 <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>
-                <span>${msg('Depth')}: ${d.suggested_depth}</span>
+                <span>${msg('Depth')}: ${d.suggested_depth + 1}</span>
                 ${
                   d.last_run_at
                     ? html`<span>${msg('Last run')}: ${new Date(d.last_run_at).toLocaleDateString()}</span>`

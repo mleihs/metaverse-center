@@ -1683,6 +1683,265 @@ AWAKENING_LOOT_TABLES: dict[int, list[LootItem]] = {
 }
 
 
+# ══════════════════════════════════════════════════════════════════════════
+#  THE OVERTHROW — Der Spiegelpalast
+#  Political intelligence, faction leverage, authority fragments.
+#  Loot reflects the political nature: dossiers, decrees, seals.
+# ══════════════════════════════════════════════════════════════════════════
+
+OVERTHROW_LOOT_TIER_1: list[LootItem] = [
+    LootItem(
+        id="overthrow_faction_dossier",
+        name_en="Faction Dossier",
+        name_de="Fraktionsdossier",
+        tier=1,
+        effect_type="stress_heal",
+        effect_params={"stress_heal": 50, "when": "after_dungeon"},
+        description_en=(
+            "Names, alliances, debts. Kadare's Palace of Dreams "
+            "made portable. Knowledge is not power — "
+            "knowledge is the absence of fear."
+        ),
+        description_de=(
+            "Namen, Bündnisse, Schulden. Kadares Palast der Träume, "
+            "tragbar gemacht. Wissen ist nicht Macht — "
+            "Wissen ist die Abwesenheit von Furcht."
+        ),
+        drop_weight=30,
+    ),
+    LootItem(
+        id="overthrow_propaganda_leaflet",
+        name_en="Propaganda Leaflet",
+        name_de="Propagandaflugblatt",
+        tier=1,
+        effect_type="aptitude_boost",
+        effect_params={"aptitude": "propagandist", "boost": 5, "duration_rooms": 5},
+        description_en=(
+            "Squealer's latest revision. The words are wrong "
+            "but the technique is instructive."
+        ),
+        description_de=(
+            "Schwatzwutz' neueste Überarbeitung. Die Worte sind falsch, "
+            "aber die Technik ist lehrreich."
+        ),
+        drop_weight=30,
+    ),
+    LootItem(
+        id="overthrow_informers_list",
+        name_en="Informer's List",
+        name_de="Spitzelliste",
+        tier=1,
+        effect_type="aptitude_boost",
+        effect_params={"aptitude": "spy", "boost": 5, "duration_rooms": 5},
+        description_en=(
+            "A list of names. Some are informers. Some are targets. "
+            "The difference is a matter of perspective."
+        ),
+        description_de=(
+            "Eine Namensliste. Manche sind Spitzel. Manche sind Ziele. "
+            "Der Unterschied ist eine Frage der Perspektive."
+        ),
+        drop_weight=25,
+    ),
+    LootItem(
+        id="overthrow_safe_conduct",
+        name_en="Safe Conduct Pass",
+        name_de="Geleitbrief",
+        tier=1,
+        effect_type="dungeon_buff",
+        effect_params={"stress_resist": 0.10, "duration_rooms": 4},
+        description_en=(
+            "Signed by a faction leader. Valid until the faction "
+            "leader is replaced. Which could be any moment."
+        ),
+        description_de=(
+            "Unterschrieben von einem Fraktionsführer. Gültig, bis der "
+            "Fraktionsführer ersetzt wird. Was jederzeit sein könnte."
+        ),
+        drop_weight=15,
+    ),
+]
+
+OVERTHROW_LOOT_TIER_2: list[LootItem] = [
+    LootItem(
+        id="overthrow_decoded_cipher",
+        name_en="Decoded Cipher",
+        name_de="Entschlüsselte Chiffre",
+        tier=2,
+        effect_type="stress_heal",
+        effect_params={"stress_heal": 100, "when": "after_dungeon"},
+        description_en=(
+            "Faction communications, decoded. The content is less "
+            "important than the fact of decoding. Manuscripts "
+            "don't burn. But codes can be broken."
+        ),
+        description_de=(
+            "Fraktionskommunikation, entschlüsselt. Der Inhalt ist "
+            "weniger wichtig als die Tatsache der Entschlüsselung. "
+            "Manuskripte brennen nicht. Aber Codes können geknackt werden."
+        ),
+        drop_weight=25,
+    ),
+    LootItem(
+        id="overthrow_seal_of_office",
+        name_en="Seal of Office",
+        name_de="Amtssiegel",
+        tier=2,
+        effect_type="aptitude_boost",
+        effect_params={"aptitude": "propagandist", "boost": 10, "duration_rooms": 8},
+        description_en=(
+            "An official seal. The office no longer exists. "
+            "The seal still carries weight — authority persists "
+            "after the authority is gone."
+        ),
+        description_de=(
+            "Ein Amtssiegel. Das Amt existiert nicht mehr. "
+            "Das Siegel hat noch Gewicht — Autorität besteht fort, "
+            "nachdem die Autorität vergangen ist."
+        ),
+        drop_weight=25,
+    ),
+    LootItem(
+        id="overthrow_double_agents_testimony",
+        name_en="Double Agent's Testimony",
+        name_de="Aussage des Doppelagenten",
+        tier=2,
+        effect_type="dungeon_buff",
+        effect_params={"stress_resist": 0.15, "duration_rooms": 6},
+        description_en=(
+            "Ngũgĩ's informer-hero: the traitor whose confession "
+            "is the most heroic act. This testimony protects "
+            "because it reveals — and revelation is armor."
+        ),
+        description_de=(
+            "Ngũgĩs Spitzel-Held: der Verräter, dessen Geständnis "
+            "die heldenhafteste Tat ist. Diese Aussage schützt, "
+            "weil sie enthüllt — und Enthüllung ist Rüstung."
+        ),
+        drop_weight=25,
+    ),
+    LootItem(
+        id="overthrow_erased_photograph",
+        name_en="Erased Photograph",
+        name_de="Gelöschtes Foto",
+        tier=2,
+        effect_type="memory",
+        effect_params={
+            "memory_text_en": "A photograph with a scratched-out face. The hat remains.",
+            "memory_text_de": "Ein Foto mit ausgekratztem Gesicht. Die Mütze bleibt.",
+        },
+        description_en=(
+            "Kundera's Clementis photograph. The body erased, "
+            "the fur hat remaining on Gottwald's head. "
+            "Evidence that something was, before it was unmade."
+        ),
+        description_de=(
+            "Kunderas Clementis-Foto. Der Körper gelöscht, "
+            "die Pelzmütze noch auf Gottwalds Kopf. "
+            "Beweis, dass etwas war, bevor es ungemacht wurde."
+        ),
+        drop_weight=25,
+    ),
+]
+
+OVERTHROW_LOOT_TIER_3: list[LootItem] = [
+    LootItem(
+        id="overthrow_authority_fragment",
+        name_en="Authority Fragment",
+        name_de="Autoritätsfragment",
+        tier=3,
+        effect_type="simulation_modifier",
+        effect_params={
+            "security_boost": True,
+            "duration_ticks": 10,
+            "boost_amount": 1,
+            "description_en": (
+                "A fragment of legitimate authority, salvaged from the "
+                "Spiegelpalast. Upgrades one zone's security level "
+                "by 1 tier for 10 heartbeat ticks."
+            ),
+            "description_de": (
+                "Ein Fragment legitimer Autorität, aus dem Spiegelpalast "
+                "geborgen. Erhöht die Sicherheitsstufe einer Zone "
+                "um 1 Stufe für 10 Herzschlag-Ticks."
+            ),
+        },
+        description_en=(
+            "Spec loot: upgrades one zone's security_level by 1 tier "
+            "for 10 heartbeat ticks. Authority, portable."
+        ),
+        description_de=(
+            "Spezifikationsbeute: erhöht die Sicherheitsstufe einer Zone "
+            "um 1 Stufe für 10 Herzschlag-Ticks. Autorität, tragbar."
+        ),
+        drop_weight=40,
+    ),
+    LootItem(
+        id="overthrow_colossus_splinter",
+        name_en="Colossus Splinter",
+        name_de="Koloss-Splitter",
+        tier=3,
+        effect_type="simulation_modifier",
+        effect_params={
+            "morale_boost": True,
+            "duration_ticks": 10,
+            "boost_amount": 0.15,
+            "description_en": (
+                "La Boétie's Colossus: the tyrant whose pedestal was "
+                "pulled away. A splinter of the fallen. All agents "
+                "gain +15% morale for 10 heartbeat ticks."
+            ),
+            "description_de": (
+                "La Boéties Koloss: der Tyrann, dessen Sockel weggezogen "
+                "wurde. Ein Splitter des Gefallenen. Alle Agenten "
+                "erhalten +15% Moral für 10 Herzschlag-Ticks."
+            ),
+        },
+        description_en=(
+            "A splinter from the Colossus that fell of its own weight. "
+            "La Boétie's proof: tyranny requires consent. "
+            "All agents gain +15% morale for 10 heartbeat ticks."
+        ),
+        description_de=(
+            "Ein Splitter des Kolosses, der unter seinem eigenen Gewicht "
+            "fiel. La Boéties Beweis: Tyrannei braucht Zustimmung. "
+            "Alle Agenten erhalten +15% Moral für 10 Herzschlag-Ticks."
+        ),
+        drop_weight=35,
+    ),
+    LootItem(
+        id="overthrow_mirror_shard",
+        name_en="Mirror Shard of the Spiegelpalast",
+        name_de="Spiegelscherbe des Spiegelpalasts",
+        tier=3,
+        effect_type="personality_modifier",
+        effect_params={
+            "trait": "openness",
+            "delta": 5,
+            "description_en": "The mirror shows what the viewer wants, not what the viewer is. Openness +5.",
+            "description_de": "Der Spiegel zeigt, was der Betrachter will, nicht was er ist. Offenheit +5.",
+        },
+        description_en=(
+            "A shard of the Spiegelpalast's central mirror. "
+            "It still reflects — but what it reflects "
+            "is no longer the room."
+        ),
+        description_de=(
+            "Eine Scherbe des zentralen Spiegels im Spiegelpalast. "
+            "Sie reflektiert noch — aber was sie reflektiert, "
+            "ist nicht mehr der Raum."
+        ),
+        drop_weight=20,
+    ),
+]
+
+OVERTHROW_LOOT_TABLES: dict[int, list[LootItem]] = {
+    1: OVERTHROW_LOOT_TIER_1,
+    2: OVERTHROW_LOOT_TIER_2,
+    3: OVERTHROW_LOOT_TIER_3,
+}
+
+
 # ── Archetype Loot Registry ──────────────────────────────────────────────
 
 _LOOT_REGISTRIES: dict[str, dict[int, list[LootItem]]] = {
@@ -1693,6 +1952,7 @@ _LOOT_REGISTRIES: dict[str, dict[int, list[LootItem]]] = {
     "The Prometheus": PROMETHEUS_LOOT_TABLES,
     "The Deluge": DELUGE_LOOT_TABLES,
     "The Awakening": AWAKENING_LOOT_TABLES,
+    "The Overthrow": OVERTHROW_LOOT_TABLES,
 }
 
 
@@ -1816,6 +2076,26 @@ def roll_loot(
         downgrade_threshold = mc.get("dissolution_loot_downgrade_threshold", 90)
         downgrade_chance = mc.get("dissolution_loot_downgrade_chance", 0.30)
         if awareness >= downgrade_threshold and tier == 2 and random.random() < downgrade_chance:
+            tier1_table = loot_tables.get(1, [])
+            if tier1_table:
+                tier1_weights = [item.drop_weight for item in tier1_table]
+                selected = random.choices(tier1_table, weights=tier1_weights, k=1)
+
+    elif archetype == "The Overthrow":
+        fracture = (archetype_state or {}).get("fracture", 0)
+        mc = ARCHETYPE_CONFIGS.get("The Overthrow", {}).get("mechanic_config", {})
+        # Low fracture bonus: political stability rewards quality intelligence
+        bonus_threshold = mc.get("low_fracture_loot_bonus_threshold", 20)
+        bonus_chance = mc.get("low_fracture_loot_bonus_chance", 0.40)
+        if fracture <= bonus_threshold and tier == 1 and random.random() < bonus_chance:
+            tier2_table = loot_tables.get(2, [])
+            if tier2_table:
+                tier2_weights = [item.drop_weight for item in tier2_table]
+                selected = random.choices(tier2_table, weights=tier2_weights, k=1)
+        # High fracture penalty: chaos degrades loot quality
+        downgrade_threshold = mc.get("high_fracture_loot_downgrade_threshold", 80)
+        downgrade_chance = mc.get("high_fracture_loot_downgrade_chance", 0.30)
+        if fracture >= downgrade_threshold and tier == 2 and random.random() < downgrade_chance:
             tier1_table = loot_tables.get(1, [])
             if tier1_table:
                 tier1_weights = [item.drop_weight for item in tier1_table]

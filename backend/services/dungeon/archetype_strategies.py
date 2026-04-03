@@ -22,6 +22,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from backend.services.combat.condition_tracks import can_act
+from backend.services.combat.stress_system import apply_stress
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 from backend.services.dungeon.dungeon_loot import roll_debris
 
@@ -109,9 +110,6 @@ class ArchetypeStrategy(ABC):
         has no specific modifier to remove). Override in subclasses to remove
         archetype-specific benefits (visibility, stability, insight, etc.).
         """
-        from backend.services.combat.condition_tracks import can_act
-        from backend.services.combat.stress import apply_stress
-
         for agent in instance.party:
             if can_act(agent.condition):
                 agent.stress, _ = apply_stress(agent.stress, 40)
@@ -1249,6 +1247,236 @@ class AwakeningStrategy(ArchetypeStrategy):
         )
 
 
+# ── The Overthrow ─────────────────────────────────────────────────────────
+
+
+class OverthrowStrategy(ArchetypeStrategy):
+    """The Overthrow: Faction navigation (0→100, political vertigo, authority fracture).
+
+    Authority fracture rises on room entry (depth-scaled), in combat, on failed
+    checks, and on enemy hits. High fracture accelerates political instability —
+    factions betray, alliances shift, and the Pretender's grip weakens.
+    At fracture 100: total collapse (power vacuum, wipe equivalent).
+
+    Unique mechanics:
+        - archetype_state carries ``faction_standings`` (dict of faction_id → int)
+          alongside the primary ``fracture`` gauge
+        - ``apply_encounter_effects()`` handles ``fracture`` deltas and
+          ``faction_standing`` modifications from encounter choices
+        - Combat rounds and enemy hits accelerate fracture (violence destabilizes)
+        - Rally ability (Propagandist) reduces fracture — parallels Deluge's seal
+        - Boss deployment: check-based (Debate/Expose/Withdraw + Begin Combat)
+    """
+
+    def init_state(self) -> dict:
+        return {
+            "fracture": self.mechanic_config["start_fracture"],
+            "max_fracture": self.mechanic_config["max_fracture"],
+            "faction_standings": {},
+            "rooms_entered": 0,
+        }
+
+    def apply_drain(self, instance: DungeonInstance) -> str | None:
+        """Accumulate authority fracture on room entry. Depth-scaled.
+
+        Returns banter trigger on threshold crossing. Fracture counts UP —
+        the emotional gradient: Court Order → Whispers → Schism → Revolution
+        → New Regime → Total Fracture.
+        """
+        state = instance.archetype_state
+        state["rooms_entered"] = state.get("rooms_entered", 0) + 1
+
+        self._apply_room_entry_gain(instance)
+
+        fracture = state.get("fracture", 0)
+        if fracture >= self.mechanic_config["total_fracture_threshold"]:
+            return "total_fracture"
+        if fracture >= self.mechanic_config["new_regime_threshold"]:
+            return "new_regime"
+        if fracture >= self.mechanic_config["revolution_threshold"]:
+            return "revolution"
+        if fracture >= self.mechanic_config["schism_threshold"]:
+            return "schism"
+        if fracture >= self.mechanic_config["whispers_threshold"]:
+            return "whispers"
+        return None
+
+    def apply_restore(self, instance: DungeonInstance, event: str) -> None:
+        """Reduce fracture on rest, rally, or other events.
+
+        Combat victory does NOT reduce fracture — violence does not
+        restore order (Arendt: the end of rebellion is liberation,
+        not freedom). Only the Propagandist's rally stabilizes.
+        """
+        reduce_key = {
+            "combat_victory": "reduce_on_combat_win",
+            "rest": "reduce_on_rest",
+            "treasure": "reduce_on_treasure",
+            "rally": "reduce_on_rally_action",
+        }.get(event)
+        if reduce_key and self.mechanic_config.get(reduce_key):
+            instance.archetype_state["fracture"] = max(
+                0,
+                instance.archetype_state.get("fracture", 0)
+                - self.mechanic_config[reduce_key],
+            )
+
+    def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
+        """Apply encounter choice effects including Overthrow-specific keys.
+
+        Standard key:
+            ``fracture`` (int) — direct delta to authority fracture gauge
+
+        Faction keys (set by social encounter choices):
+            ``faction_standing`` (dict) — {faction_id: delta} to modify standings
+            ``betrayal`` (bool)         — triggers betrayal stress (Canetti's sting)
+        """
+        state = instance.archetype_state
+        max_fracture = self.mechanic_config["max_fracture"]
+
+        # ── Fracture delta ──
+        fracture_delta = effects.get("fracture", 0)
+        if fracture_delta:
+            state["fracture"] = max(
+                0, min(max_fracture, state.get("fracture", 0) + fracture_delta),
+            )
+
+        # ── Faction standing modification ──
+        standing_deltas = effects.get("faction_standing")
+        if standing_deltas and isinstance(standing_deltas, dict):
+            standings = state.get("faction_standings", {})
+            max_standing = self.mechanic_config.get("max_faction_standing", 100)
+            for faction_id, delta in standing_deltas.items():
+                current = standings.get(faction_id, self.mechanic_config.get("start_faction_standing", 50))
+                standings[faction_id] = max(0, min(max_standing, current + delta))
+            state["faction_standings"] = standings
+
+        # ── Betrayal: Canetti's sting of command ──
+        if effects.get("betrayal"):
+            cost = self.mechanic_config.get("betrayal_stress_cost", 20)
+            for agent in instance.party:
+                if can_act(agent.condition):
+                    agent.stress, _ = apply_stress(agent.stress, cost)
+
+    def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
+        """Memory Toll: increase fracture by 15."""
+        state = instance.archetype_state
+        state["fracture"] = min(
+            state.get("max_fracture", 100),
+            state.get("fracture", 0) + 15,
+        )
+
+    def get_ambient_stress_multiplier(self, instance: DungeonInstance) -> float:
+        """Ascending paranoia: stress scales with political instability.
+
+        Schism = mild tension. Revolution = significant. New Regime = severe.
+        Total fracture = power vacuum (double stress, Robespierre's paradox).
+        """
+        fracture = instance.archetype_state.get("fracture", 0)
+        if fracture >= self.mechanic_config["total_fracture_threshold"]:
+            return self.mechanic_config.get("total_fracture_stress_multiplier", 2.0)
+        if fracture >= self.mechanic_config["new_regime_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_80", 1.50)
+        if fracture >= self.mechanic_config["revolution_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_60", 1.25)
+        if fracture >= self.mechanic_config["schism_threshold"]:
+            return self.mechanic_config.get("stress_multiplier_40", 1.10)
+        return 1.0
+
+    def on_combat_round(self, instance: DungeonInstance) -> None:
+        """Violence fractures authority — each combat round widens the cracks."""
+        instance.archetype_state["fracture"] = min(
+            self.mechanic_config["max_fracture"],
+            instance.archetype_state.get("fracture", 0)
+            + self.mechanic_config["gain_per_combat_round"],
+        )
+
+    def on_failed_check(self, instance: DungeonInstance) -> None:
+        """Failed diplomacy accelerates the crisis — Koestler's logical collapse."""
+        instance.archetype_state["fracture"] = min(
+            self.mechanic_config["max_fracture"],
+            instance.archetype_state.get("fracture", 0)
+            + self.mechanic_config["gain_on_failed_check"],
+        )
+
+    def on_enemy_hit(self, instance: DungeonInstance) -> None:
+        """Each blow widens the cracks — structural violence as political accelerant."""
+        instance.archetype_state["fracture"] = min(
+            self.mechanic_config["max_fracture"],
+            instance.archetype_state.get("fracture", 0)
+            + self.mechanic_config["gain_per_enemy_hit"],
+        )
+
+    def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
+        """3 strategic approaches before The Pretender boss fight.
+
+        Check-based pattern (like Deluge/Awakening). Three paths mirror
+        the literary DNA: Shakespeare (rhetoric), Brecht (exposure),
+        La Boétie (withdrawal of consent).
+        """
+        return [
+            {
+                "id": "debate_pretender",
+                "label_en": "Challenge the Pretender's rhetoric (Propagandist)",
+                "label_de": "Die Rhetorik des Prätendenten anfechten (Propagandist)",
+                "requires_aptitude": None,
+                "check_aptitude": "propagandist",
+                "check_difficulty": 0,
+                "effects_success": {"buff": "rhetorical_advantage", "duration": 3},
+                "effects_partial": {"buff": "fragile_argument", "duration": 2},
+                "effects_fail": {"fracture": 15},
+            },
+            {
+                "id": "expose_pretender",
+                "label_en": "Expose the Pretender's true nature (Spy)",
+                "label_de": "Die wahre Natur des Prätendenten entlarven (Spion)",
+                "requires_aptitude": None,
+                "check_aptitude": "spy",
+                "check_difficulty": 0,
+                "effects_success": {"reveal_intent": 2},
+                "effects_partial": {"reveal_intent": 1},
+                "effects_fail": {"stress": 10},
+            },
+            {
+                "id": "withdraw_support",
+                "label_en": "Rally the factions to withdraw support (Guardian)",
+                "label_de": "Die Fraktionen zum Entzug der Unterstützung sammeln (Wächter)",
+                "requires_aptitude": None,
+                "check_aptitude": "guardian",
+                "check_difficulty": 0,
+                "effects_success": {"condition_bonus": 1, "targets": "all"},
+                "effects_partial": {"condition_bonus": 1, "targets": 2},
+                "effects_fail": {"stress": 20},
+            },
+            {
+                "id": "begin_combat",
+                "label_en": "Enough words. Overthrow The Pretender.",
+                "label_de": "Genug Worte. Den Prätendenten stürzen.",
+                "requires_aptitude": None,
+                "check_aptitude": None,
+                "check_difficulty": 0,
+            },
+        ]
+
+    def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
+        """Depth-scaled fracture gain on room entry.
+
+        Authority cracks with each step deeper into Der Spiegelpalast.
+        The mirror palace reflects distorted images of who you serve and why.
+        """
+        depth = instance.depth
+        if depth <= 2:
+            gain = self.mechanic_config["gain_depth_1_2"]
+        elif depth <= 4:
+            gain = self.mechanic_config["gain_depth_3_4"]
+        else:
+            gain = self.mechanic_config["gain_depth_5_plus"]
+        instance.archetype_state["fracture"] = min(
+            self.mechanic_config["max_fracture"],
+            instance.archetype_state.get("fracture", 0) + gain,
+        )
+
+
 # ── Strategy Registry ──────────────────────────────────────────────────────
 # Singleton instances, keyed by archetype name. Lookup is O(1).
 
@@ -1260,6 +1488,7 @@ _ARCHETYPE_STRATEGIES: dict[str, ArchetypeStrategy] = {
     "The Prometheus": PrometheusStrategy(ARCHETYPE_CONFIGS["The Prometheus"]),
     "The Deluge": DelugeStrategy(ARCHETYPE_CONFIGS["The Deluge"]),
     "The Awakening": AwakeningStrategy(ARCHETYPE_CONFIGS["The Awakening"]),
+    "The Overthrow": OverthrowStrategy(ARCHETYPE_CONFIGS["The Overthrow"]),
 }
 
 

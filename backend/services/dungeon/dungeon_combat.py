@@ -1638,6 +1638,251 @@ AWAKENING_SPAWN_CONFIGS: dict[str, list[dict]] = {
 }
 
 
+# ── The Overthrow: Political Operatives ──────────────────────────────────
+# Every enemy is a political actor. No monsters — faction enforcers,
+# informers, propaganda agents, inquisitors. The Pretender is Milton's
+# Satan: magnificent → exposed → degraded.
+
+OVERTHROW_ENEMIES: dict[str, EnemyTemplate] = {
+    "overthrow_faction_informer": EnemyTemplate(
+        id="overthrow_faction_informer",
+        name_en="Faction Informer",
+        name_de="Fraktionsspitzel",
+        archetype="The Overthrow",
+        condition_threshold=1,
+        stress_resistance=25,
+        threat_level="minion",
+        attack_aptitude="spy",
+        attack_power=2,
+        stress_attack_power=4,
+        telegraphed_intent=True,
+        evasion=45,
+        resistances=["infiltrator"],
+        vulnerabilities=["spy"],
+        action_weights={"stress_attack": 45, "evade": 30, "denounce": 15, "ambient": 10},
+        special_abilities=["denounce"],
+        description_en=(
+            "Havel's greengrocer made operative. The informer does not "
+            "believe — the informer performs. The sign in the window "
+            "says what the faction requires. Behind the counter, "
+            "the informer reports who does not display theirs."
+        ),
+        description_de=(
+            "Havels Gemüsehändler, zum Agenten geworden. Der Spitzel "
+            "glaubt nicht — der Spitzel führt auf. Das Schild im Fenster "
+            "sagt, was die Fraktion verlangt. Hinter der Theke "
+            "meldet der Spitzel, wer seines nicht zeigt."
+        ),
+        ambient_text_en=[
+            "The informer smiles at {agent}. The smile has been authorized.",
+            "A clipboard. Names. {agent}'s is already on the list.",
+        ],
+        ambient_text_de=[
+            "Der Spitzel lächelt {agent} an. Das Lächeln wurde genehmigt.",
+            "Eine Zwischenablage. Namen. {agent}s steht bereits auf der Liste.",
+        ],
+    ),
+    "overthrow_propaganda_agent": EnemyTemplate(
+        id="overthrow_propaganda_agent",
+        name_en="Propaganda Agent",
+        name_de="Propagandaagent",
+        archetype="The Overthrow",
+        condition_threshold=2,
+        stress_resistance=70,
+        threat_level="standard",
+        attack_aptitude="propagandist",
+        attack_power=3,
+        stress_attack_power=6,
+        telegraphed_intent=True,
+        evasion=20,
+        resistances=["guardian"],
+        vulnerabilities=["propagandist", "spy"],
+        action_weights={"stress_attack": 40, "rewrite": 25, "attack": 20, "ambient": 15},
+        special_abilities=["rewrite"],
+        description_en=(
+            "Orwell's Squealer on two legs. The agent does not lie — "
+            "the agent renders the concept of lying meaningless. "
+            "Yesterday's alliance was always today's betrayal. "
+            "The records have been updated. The records were always "
+            "thus."
+        ),
+        description_de=(
+            "Orwells Schwatzwutz auf zwei Beinen. Der Agent lügt nicht — "
+            "der Agent macht den Begriff des Lügens bedeutungslos. "
+            "Das gestrige Bündnis war schon immer der heutige Verrat. "
+            "Die Akten wurden aktualisiert. Die Akten waren immer so."
+        ),
+        ambient_text_en=[
+            "The agent reads aloud. {agent} has heard these words before — in their own voice.",
+            "History is being revised. The revision is already the third this floor.",
+        ],
+        ambient_text_de=[
+            "Der Agent liest vor. {agent} hat diese Worte schon gehört — in der eigenen Stimme.",
+            "Die Geschichte wird überarbeitet. Die Überarbeitung ist bereits die dritte auf dieser Etage.",
+        ],
+    ),
+    "overthrow_regime_enforcer": EnemyTemplate(
+        id="overthrow_regime_enforcer",
+        name_en="Regime Enforcer",
+        name_de="Regimevollstrecker",
+        archetype="The Overthrow",
+        condition_threshold=2,
+        stress_resistance=60,
+        threat_level="standard",
+        attack_aptitude="guardian",
+        attack_power=5,
+        stress_attack_power=3,
+        telegraphed_intent=True,
+        evasion=10,
+        resistances=["assassin"],
+        vulnerabilities=["saboteur", "infiltrator"],
+        action_weights={"attack": 45, "stress_attack": 20, "defend": 20, "ambient": 15},
+        special_abilities=["suppress"],
+        description_en=(
+            "The muscle behind the rhetoric. The enforcer does not care "
+            "which faction gives the order — only that the order exists. "
+            "Arendt's ideal subject: one for whom the distinction between "
+            "fact and fiction has ceased to matter."
+        ),
+        description_de=(
+            "Die Muskeln hinter der Rhetorik. Der Vollstrecker kümmert sich "
+            "nicht, welche Fraktion den Befehl gibt — nur dass der Befehl "
+            "existiert. Arendts ideales Subjekt: eines, für das der "
+            "Unterschied zwischen Tatsache und Fiktion aufgehört hat zu zählen."
+        ),
+        ambient_text_en=[
+            "The enforcer does not think. The enforcer processes. This is the advantage.",
+            "{agent} sees the enforcer's eyes. There is no ideology in them. Only compliance.",
+        ],
+        ambient_text_de=[
+            "Der Vollstrecker denkt nicht. Der Vollstrecker verarbeitet. Das ist der Vorteil.",
+            "{agent} sieht die Augen des Vollstreckers. Keine Ideologie darin. Nur Gehorsam.",
+        ],
+    ),
+    "overthrow_grand_inquisitor": EnemyTemplate(
+        id="overthrow_grand_inquisitor",
+        name_en="Grand Inquisitor",
+        name_de="Großinquisitor",
+        archetype="The Overthrow",
+        condition_threshold=4,
+        stress_resistance=100,
+        threat_level="elite",
+        attack_aptitude="propagandist",
+        attack_power=4,
+        stress_attack_power=8,
+        telegraphed_intent=True,
+        evasion=15,
+        resistances=["spy", "propagandist"],
+        vulnerabilities=["guardian"],
+        action_weights={"stress_attack": 35, "interrogate": 25, "attack": 20, "defend": 10, "ambient": 10},
+        special_abilities=["interrogate"],
+        description_en=(
+            "Dostoevsky's three powers made flesh: miracle, mystery, "
+            "authority. The Inquisitor does not punish dissent — "
+            "the Inquisitor explains why dissent was always agreement, "
+            "misunderstood. The confession is not extracted. "
+            "It is assisted."
+        ),
+        description_de=(
+            "Dostojewskis drei Mächte, Fleisch geworden: Wunder, Geheimnis, "
+            "Autorität. Der Inquisitor bestraft keinen Dissens — "
+            "der Inquisitor erklärt, warum Dissens immer Zustimmung war, "
+            "nur missverstanden. Das Geständnis wird nicht erzwungen. "
+            "Es wird begleitet."
+        ),
+        ambient_text_en=[
+            "The Inquisitor smiles. The smile contains three thousand years of practice.",
+            "'We corrected Thy work,' the Inquisitor says. 'And men rejoiced.'",
+        ],
+        ambient_text_de=[
+            "Der Inquisitor lächelt. Das Lächeln enthält dreitausend Jahre Übung.",
+            "»Wir haben Dein Werk korrigiert«, sagt der Inquisitor. »Und die Menschen freuten sich.«",
+        ],
+    ),
+    "overthrow_the_pretender": EnemyTemplate(
+        id="overthrow_the_pretender",
+        name_en="The Pretender",
+        name_de="Der Prätendent",
+        archetype="The Overthrow",
+        condition_threshold=6,
+        stress_resistance=120,
+        threat_level="boss",
+        attack_aptitude="propagandist",
+        attack_power=5,
+        stress_attack_power=9,
+        telegraphed_intent=False,
+        evasion=20,
+        resistances=["assassin", "saboteur"],
+        vulnerabilities=["spy", "propagandist"],
+        action_weights={"stress_attack": 30, "rhetoric": 25, "attack": 20, "rewrite": 15, "ambient": 10},
+        special_abilities=["rhetoric", "rewrite"],
+        description_en=(
+            "Milton's Satan made sovereign. The Pretender began as a rebel — "
+            "magnificent, defiant, charismatic. Power degraded the vision. "
+            "Phase 1: Book I archangel, addressing armies with impossible "
+            "eloquence. Phase 2: Book IV, 'squat like a toad,' truth exposed. "
+            "Phase 3: Book X, permanently serpentine. The Pretender quotes "
+            "everyone. Especially you."
+        ),
+        description_de=(
+            "Miltons Satan, zum Souverän geworden. Der Prätendent begann als "
+            "Rebell — prächtig, trotzig, charismatisch. Die Macht zersetzte "
+            "die Vision. Phase 1: Erzengel aus Buch I, Armeen ansprechend "
+            "mit unmöglicher Eloquenz. Phase 2: Buch IV, 'hockend wie "
+            "eine Kröte,' Wahrheit enthüllt. Phase 3: Buch X, dauerhaft "
+            "zur Schlange geworden. Der Prätendent zitiert alle. "
+            "Besonders euch."
+        ),
+        ambient_text_en=[
+            "The Pretender speaks. {agent} has heard these words before — in their own voice, on Floor 1.",
+            "'You said you were here for freedom. I said that too, once.'",
+            "The mirror shows {agent} and the Pretender. The reflection is the same.",
+        ],
+        ambient_text_de=[
+            "Der Prätendent spricht. {agent} hat diese Worte schon gehört — in der eigenen Stimme, auf Etage 1.",
+            "»Ihr sagtet, ihr seid für die Freiheit hier. Das sagte ich auch, einmal.«",
+            "Der Spiegel zeigt {agent} und den Prätendenten. Die Spiegelung ist dieselbe.",
+        ],
+    ),
+}
+
+OVERTHROW_SPAWN_CONFIGS: dict[str, list[dict]] = {
+    # Informer patrol (depth 1-3, light)
+    "overthrow_informer_patrol_spawn": [
+        {"template_id": "overthrow_faction_informer", "count": 2},
+    ],
+    # Propaganda escort (depth 2-4)
+    "overthrow_propaganda_patrol_spawn": [
+        {"template_id": "overthrow_propaganda_agent", "count": 1},
+        {"template_id": "overthrow_faction_informer", "count": 1},
+    ],
+    # Enforcer squad (depth 2-5)
+    "overthrow_enforcer_squad_spawn": [
+        {"template_id": "overthrow_regime_enforcer", "count": 1},
+        {"template_id": "overthrow_faction_informer", "count": 1},
+    ],
+    # Political crisis (depth 3-6)
+    "overthrow_political_crisis_spawn": [
+        {"template_id": "overthrow_propaganda_agent", "count": 1},
+        {"template_id": "overthrow_regime_enforcer", "count": 1},
+    ],
+    # Inquisition (depth 4-7, elite)
+    "overthrow_inquisition_spawn": [
+        {"template_id": "overthrow_grand_inquisitor", "count": 1},
+        {"template_id": "overthrow_faction_informer", "count": 1},
+    ],
+    # Rest site ambush (light — the informer never sleeps)
+    "overthrow_rest_ambush_spawn": [
+        {"template_id": "overthrow_faction_informer", "count": 1},
+    ],
+    # Boss: The Pretender (Milton's Satan arc) + escort
+    "overthrow_pretender_spawn": [
+        {"template_id": "overthrow_the_pretender", "count": 1},
+        {"template_id": "overthrow_propaganda_agent", "count": 1},
+    ],
+}
+
+
 # ── Archetype Registries ──────────────────────────────────────────────────
 # Data lookup by archetype name — zero conditionals. New archetypes add entries.
 
@@ -1649,6 +1894,7 @@ _ENEMY_REGISTRIES: dict[str, dict[str, EnemyTemplate]] = {
     "The Prometheus": PROMETHEUS_ENEMIES,
     "The Deluge": DELUGE_ENEMIES,
     "The Awakening": AWAKENING_ENEMIES,
+    "The Overthrow": OVERTHROW_ENEMIES,
 }
 
 _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
@@ -1659,6 +1905,7 @@ _SPAWN_REGISTRIES: dict[str, dict[str, list[dict]]] = {
     "The Prometheus": PROMETHEUS_SPAWN_CONFIGS,
     "The Deluge": DELUGE_SPAWN_CONFIGS,
     "The Awakening": AWAKENING_SPAWN_CONFIGS,
+    "The Overthrow": OVERTHROW_SPAWN_CONFIGS,
 }
 
 
@@ -1782,6 +2029,13 @@ def check_ambush(
             return random.random() < awakening_config["high_awareness_ambush_90"]
         if awareness >= 70:
             return random.random() < awakening_config["high_awareness_ambush_70"]
+    elif archetype == "The Overthrow":
+        overthrow_config = ARCHETYPE_CONFIGS["The Overthrow"]["mechanic_config"]
+        fracture = archetype_state.get("fracture", 0)
+        if fracture >= 80:
+            return random.random() < overthrow_config["high_fracture_ambush_80"]
+        if fracture >= 60:
+            return random.random() < overthrow_config["high_fracture_ambush_60"]
 
     return False
 

@@ -148,6 +148,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         width: 100%;
         height: auto;
         min-height: 80px;
+        overflow: visible;
       }
 
       /* ── Persistent mode (sidebar — no toggle, fills container) ── */

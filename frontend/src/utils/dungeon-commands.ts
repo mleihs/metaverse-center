@@ -468,6 +468,9 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
             result.state.party,
           ),
         );
+      } else if (result.encounter === false) {
+        // No matching encounter template found — room auto-cleared
+        lines.push(responseLine(msg('The room is empty. Whatever was here has moved on.')));
       }
     }
 
@@ -994,7 +997,7 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
   if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
 
   if (state.phase !== 'combat_planning') {
-    return [errorLine(msg('Not in combat planning phase.'))];
+    return [hintLine(msg('No combat in progress. Use "move" to continue exploring.'))];
   }
 
   const selected = dungeonState.selectedActions.value;

@@ -438,6 +438,10 @@ class DungeonMovementService:
         effects = getattr(choice, f"{result_tier}_effects", {})
         narrative_en = getattr(choice, f"{result_tier}_narrative_en", "")
         narrative_de = getattr(choice, f"{result_tier}_narrative_de", "")
+        # Fallback: partial success without dedicated narrative → use success narrative
+        if not narrative_en and result_tier == "partial":
+            narrative_en = getattr(choice, "success_narrative_en", "")
+            narrative_de = getattr(choice, "success_narrative_de", "")
 
         # Apply stress effects
         stress_delta = effects.get("stress", 0)
@@ -640,6 +644,65 @@ class DungeonMovementService:
 
         return {
             "awareness": instance.archetype_state.get("awareness"),
+            "stress_cost": stress_cost,
+            "agent_stress": agent.stress,
+            "cooldown_until_room": rooms_entered + cooldown,
+            "state": DungeonCheckpointService.build_client_state(instance).model_dump(),
+        }
+
+    # ── Rally (Overthrow) ───────────────────────────────────────────────────
+
+    @classmethod
+    async def rally(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
+        async with _store.lock(run_id):
+            return await cls._rally_locked(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
+    async def _rally_locked(
+        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+    ) -> dict:
+        instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
+
+        if instance.archetype != "The Overthrow":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Rally only available in Overthrow dungeons")
+
+        agent = next((a for a in instance.party if a.agent_id == agent_id), None)
+        if not agent:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+        if not can_act(agent.condition):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+
+        mc = ARCHETYPE_CONFIGS["The Overthrow"]["mechanic_config"]
+        propagandist_level = agent.aptitudes.get("propagandist", 0)
+        if propagandist_level < mc.get("rally_min_aptitude", 40):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Agent needs Propagandist {mc.get('rally_min_aptitude', 40)}+ to Rally",
+            )
+
+        # Cooldown: once per N rooms
+        cooldown = mc.get("rally_cooldown_rooms", 3)
+        last_rally_room = instance.archetype_state.get("_last_rally_room", -cooldown)
+        rooms_entered = instance.archetype_state.get("rooms_entered", 0)
+        if rooms_entered - last_rally_room < cooldown:
+            rooms_remaining = cooldown - (rooms_entered - last_rally_room)
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Rally on cooldown ({rooms_remaining} rooms remaining)",
+            )
+
+        strategy = get_archetype_strategy(instance.archetype)
+        strategy.apply_restore(instance, "rally")
+        instance.archetype_state["_last_rally_room"] = rooms_entered
+
+        stress_cost = mc.get("rally_stress_cost", 15)
+        agent.stress = min(1000, agent.stress + stress_cost)
+
+        await DungeonCheckpointService.checkpoint(admin_supabase, instance)
+
+        return {
+            "fracture": instance.archetype_state.get("fracture"),
             "stress_cost": stress_cost,
             "agent_stress": agent.stress,
             "cooldown_until_room": rooms_entered + cooldown,

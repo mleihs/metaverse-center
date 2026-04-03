@@ -54,6 +54,7 @@ const LANG_CODES: Record<string, string> = {
   Polski: 'pl',
   Italiano: 'it',
   'Espa\u00f1ol': 'es',
+  '\u0420\u0443\u0441\u0441\u043a\u0438\u0439': 'ru',
 };
 
 type QuotePhase = 'entering' | 'visible' | 'swapping' | 'original' | 'leaving';
@@ -307,7 +308,7 @@ export class VelgDungeonShowcase extends LitElement {
               <div class="slide__vignette"></div>
               <div class="slide__content">
                 <span class="slide__numeral">
-                  ${msg('Archetype')} ${a.numeral} / VII
+                  ${msg('Archetype')} ${a.numeral} / VIII
                 </span>
                 <h2 class="slide__title">${a.name}</h2>
                 <p class="slide__subtitle">${a.subtitle}</p>

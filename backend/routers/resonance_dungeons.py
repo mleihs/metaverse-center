@@ -230,6 +230,23 @@ async def ground(
     return {"success": True, "data": result}
 
 
+# ── Rally (Overthrow) ──────────────────────────────────────────────────────
+
+
+@router.post("/runs/{run_id}/rally", response_model=SuccessResponse)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def rally(
+    request: Request,
+    run_id: UUID,
+    body: ScoutRequest,
+    user: CurrentUser = Depends(get_current_user),
+    admin: Client = Depends(get_admin_supabase),
+) -> dict:
+    """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
+    result = await DungeonEngineService.rally(admin, run_id, body.agent_id, user_id=user.id)
+    return {"success": True, "data": result}
+
+
 # ── Salvage (Deluge) ───────────────────────────────────────────────────────
 
 

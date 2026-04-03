@@ -245,10 +245,72 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "signature": "authority_fracture",
         "title_en": "Der Spiegelpalast",
         "title_de": "Der Spiegelpalast",
-        "tagline_en": "Power changes hands. The old order metamorphoses.",
-        "tagline_de": "Macht wechselt die Hände. Die alte Ordnung wandelt sich.",
+        "tagline_en": "Power changes hands. The old order does not die — it metamorphoses.",
+        "tagline_de": "Macht wechselt die Hände. Die alte Ordnung stirbt nicht — sie verwandelt sich.",
+        "prose_style": (
+            "Political vertigo. Clinical precision at low fracture (Machiavelli), "
+            "ascending paranoia at high (Dostoevsky). Every NPC is a political actor. "
+            "Power is language, not violence. Certainty of allegiance degrades, not "
+            "grammar. German: Spiegelpalast-Deutsch — legalistic → Brechtian → compressed."
+        ),
         "mechanic": "faction_navigation",
-        "mechanic_config": {},
+        "mechanic_config": {
+            "start_fracture": 0,
+            "max_fracture": 100,
+            # ── Fracture gain (per room entry, depth-scaled) ──
+            # Authority cracks with each step: Court Order → Whispers → Schism
+            "gain_depth_1_2": 4,
+            "gain_depth_3_4": 7,
+            "gain_depth_5_plus": 10,
+            # ── Event-driven fracture changes ──
+            "gain_per_combat_round": 2,   # violence fractures authority
+            "gain_on_failed_check": 5,    # failed diplomacy accelerates crisis
+            "gain_per_enemy_hit": 2,      # each blow widens the cracks
+            # ── Fracture reduction ──
+            "reduce_on_combat_win": 0,    # violence does not restore order
+            "reduce_on_rest": 5,          # brief respite from the crisis
+            "reduce_on_treasure": 0,      # material gain does not heal rifts
+            "reduce_on_rally_action": 10, # Propagandist rally: restore order
+            # ── Thresholds (emotional gradient — literary research §Tone) ──
+            "whispers_threshold": 20,          # Court Order → Whispers
+            "schism_threshold": 40,            # Whispers → Schism
+            "revolution_threshold": 60,        # Schism → Revolution
+            "new_regime_threshold": 80,        # Revolution → New Regime
+            "total_fracture_threshold": 100,   # collapse: power vacuum (wipe)
+            # ── Stress multipliers (ascending paranoia, not descending grammar) ──
+            "stress_multiplier_40": 1.10,           # Schism: mild tension
+            "stress_multiplier_60": 1.25,           # Revolution: significant
+            "stress_multiplier_80": 1.50,           # New Regime: severe
+            "total_fracture_stress_multiplier": 2.0,  # collapse: double stress
+            # ── Ambush modification (political ambush = betrayal, not monsters) ──
+            "high_fracture_ambush_60": 0.20,   # Revolution: factional betrayals
+            "high_fracture_ambush_80": 0.35,   # New Regime: constant treachery
+            # ── Rally ability (Propagandist — reduces fracture) ──
+            # Pattern: POST /runs/{id}/rally → apply_restore(instance, "rally")
+            "rally_stress_cost": 15,
+            "rally_min_aptitude": 40,
+            "rally_cooldown_rooms": 3,
+            # ── Loot modifiers (political stability rewards / chaos degrades) ──
+            "low_fracture_loot_bonus_threshold": 20,  # Court Order: stable = richer
+            "low_fracture_loot_bonus_chance": 0.40,
+            "high_fracture_loot_downgrade_threshold": 80,  # New Regime: chaos = degraded
+            "high_fracture_loot_downgrade_chance": 0.30,
+            # ── Faction standings (encounter-driven, tracked in archetype_state) ──
+            "max_faction_standing": 100,
+            "start_faction_standing": 50,  # neutral: neither allied nor hostile
+            "betrayal_stress_cost": 20,    # Canetti's sting: switching costs stress
+        },
+        "aptitude_weights": {
+            "propagandist": 30,   # critical: rhetoric, debate, faction rally
+            "spy": 25,            # high: intelligence, truth-reading, exposure
+            "infiltrator": 15,    # medium: navigating faction layers
+            "saboteur": 12,       # medium: undermining rival factions
+            "guardian": 10,       # low: holding ground in political storm
+            "assassin": 8,        # low: the Overthrow is social, not violent
+        },
+        # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
+        "atmosphere_enter_en": "",
+        "atmosphere_enter_de": "",
     },
     "The Prometheus": {
         "signature": "innovation_spark",

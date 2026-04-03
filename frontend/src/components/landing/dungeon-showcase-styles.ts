@@ -400,6 +400,24 @@ export const showcaseAtmosphereStyles = css`
   }
   @keyframes awakening-ripple { 0% { transform: scale(0.8); opacity: 0.4; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.4; } }
   @keyframes awakening-aurora { 0% { transform: translateX(-5%) skewX(-2deg); opacity: 0.5; } 100% { transform: translateX(5%) skewX(2deg); opacity: 1; } }
+
+  /* OVERTHROW — mirror shimmer + reflected authority overlay */
+  .slide--overthrow .slide__atmosphere::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0px, transparent 100px, rgba(212, 54, 75, 0.025) 100px, rgba(212, 54, 75, 0.025) 101px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 160px, rgba(212, 54, 75, 0.018) 160px, rgba(212, 54, 75, 0.018) 161px);
+    animation: overthrow-shimmer 16s ease-in-out infinite alternate;
+  }
+  .slide--overthrow .slide__atmosphere::after {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 35% 55% at 25% 45%, rgba(212, 54, 75, 0.04) 0%, transparent 100%),
+      radial-gradient(ellipse 35% 55% at 75% 55%, rgba(212, 54, 75, 0.03) 0%, transparent 100%);
+    animation: overthrow-reflect 12s ease-in-out infinite;
+  }
+  @keyframes overthrow-shimmer { 0% { opacity: 0.4; transform: scaleX(1); } 50% { opacity: 0.9; transform: scaleX(1.03); } 100% { opacity: 0.5; transform: scaleX(0.97); } }
+  @keyframes overthrow-reflect { 0% { transform: translateX(-3%); opacity: 0.5; } 50% { transform: translateX(3%); opacity: 1; } 100% { transform: translateX(-3%); opacity: 0.5; } }
 `;
 
 // ── Quote Transition Effects ────────────────────────────────────────────────
@@ -466,4 +484,20 @@ export const showcaseTransitionStyles = css`
   .slide--awakening .quote-block.leaving  { animation: q-materialize-out 0.9s ease-in forwards; }
   @keyframes q-materialize-in { 0% { opacity: 0; filter: blur(14px); transform: scale(1.06); } 30% { opacity: 0.3; filter: blur(6px); } 60% { opacity: 0.6; filter: blur(2px); transform: scale(1.01); } 100% { opacity: 0.85; filter: blur(0px); transform: scale(1); } }
   @keyframes q-materialize-out { 0% { opacity: 0.85; filter: blur(0px); transform: scale(1); } 40% { opacity: 0.5; filter: blur(3px); transform: scale(1.02); } 100% { opacity: 0; filter: blur(14px); transform: scale(1.06); } }
+
+  /* OVERTHROW: political decree — skew + brightness flash (political vertigo) */
+  .slide--overthrow .quote-block.entering { animation: q-decree-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  .slide--overthrow .quote-block.visible  { opacity: 0.85; transform: none; }
+  .slide--overthrow .quote-block.leaving  { animation: q-decree-out 0.7s ease-in forwards; }
+  @keyframes q-decree-in {
+    0%   { opacity: 0; transform: scaleY(0.92) skewX(-1deg); filter: brightness(0.6); }
+    25%  { opacity: 0.5; transform: scaleY(1.01) skewX(0.5deg); filter: brightness(1.3); }
+    55%  { opacity: 0.7; transform: scaleY(0.995) skewX(-0.2deg); filter: brightness(1.08); }
+    100% { opacity: 0.85; transform: none; filter: brightness(1); }
+  }
+  @keyframes q-decree-out {
+    0%   { opacity: 0.85; transform: none; filter: brightness(1); }
+    35%  { opacity: 0.5; transform: skewX(1deg); filter: brightness(1.2); }
+    100% { opacity: 0; transform: scaleY(0.9) skewX(-2deg); filter: brightness(0.4); }
+  }
 `;

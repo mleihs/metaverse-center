@@ -22,6 +22,7 @@ export const ARCHETYPE_MOTHER = 'The Devouring Mother';
 export const ARCHETYPE_PROMETHEUS = 'The Prometheus';
 export const ARCHETYPE_DELUGE = 'The Deluge';
 export const ARCHETYPE_AWAKENING = 'The Awakening';
+export const ARCHETYPE_OVERTHROW = 'The Overthrow';
 
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
@@ -193,7 +194,15 @@ export interface AwakeningArchetypeState {
   rooms_entered: number;
 }
 
-/** Archetype-specific state. Shadow, Tower, Entropy, Mother, Prometheus, Deluge, and Awakening have typed shapes; others are empty objects. */
+/** Overthrow archetype: authority fracture gauge (0→100, political vertigo, faction navigation). */
+export interface OverthrowArchetypeState {
+  fracture: number;
+  max_fracture: number;
+  faction_standings: Record<string, number>;
+  rooms_entered: number;
+}
+
+/** Archetype-specific state. All 8 archetypes have typed shapes; catch-all for future use. */
 export type ArchetypeState =
   | ShadowArchetypeState
   | TowerArchetypeState
@@ -202,6 +211,7 @@ export type ArchetypeState =
   | PrometheusArchetypeState
   | DelugeArchetypeState
   | AwakeningArchetypeState
+  | OverthrowArchetypeState
   | Record<string, unknown>;
 
 /** Type guard: narrows ArchetypeState to ShadowArchetypeState. */
@@ -237,6 +247,11 @@ export function isDelugeState(state: ArchetypeState): state is DelugeArchetypeSt
 /** Type guard: narrows ArchetypeState to AwakeningArchetypeState. */
 export function isAwakeningState(state: ArchetypeState): state is AwakeningArchetypeState {
   return 'awareness' in state && typeof state.awareness === 'number';
+}
+
+/** Type guard: narrows ArchetypeState to OverthrowArchetypeState. */
+export function isOverthrowState(state: ArchetypeState): state is OverthrowArchetypeState {
+  return 'fracture' in state && typeof state.fracture === 'number';
 }
 
 // ── Client State (fog-of-war filtered, from backend) ────────────────────────

@@ -229,4 +229,42 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     cssClass: 'slide--awakening',
     imageUrl: `${STORAGE_BASE}/dungeon-awakening.avif`,
   },
+  {
+    id: 'overthrow',
+    name: 'The Overthrow',
+    subtitle: 'Der Spiegelpalast',
+    numeral: 'VIII',
+    accent: '#d4364b',
+    quotes: [
+      {
+        text: 'Starting from unlimited freedom, I arrive at unlimited despotism.',
+        author: 'Fyodor Dostoevsky, Demons',
+        original: '\u0412\u044b\u0445\u043e\u0434\u044f \u0438\u0437 \u0431\u0435\u0437\u0433\u0440\u0430\u043d\u0438\u0447\u043d\u043e\u0439 \u0441\u0432\u043e\u0431\u043e\u0434\u044b, \u044f \u0437\u0430\u043a\u043b\u044e\u0447\u0430\u044e \u0431\u0435\u0437\u0433\u0440\u0430\u043d\u0438\u0447\u043d\u044b\u043c \u0434\u0435\u0441\u043f\u043e\u0442\u0438\u0437\u043c\u043e\u043c.',
+        originalLang: '\u0420\u0443\u0441\u0441\u043a\u0438\u0439',
+      },
+      {
+        text: 'Everyone sees what you appear to be, few experience what you really are.',
+        author: 'Niccol\u00f2 Machiavelli, The Prince',
+        original: 'Ognuno vede quel che tu pari, pochi sentono quel che tu sei.',
+        originalLang: 'Italiano',
+      },
+      {
+        text: 'First comes a full stomach, then comes ethics.',
+        author: 'Bertolt Brecht, The Threepenny Opera',
+        original: 'Erst kommt das Fressen, dann kommt die Moral.',
+        originalLang: 'Deutsch',
+      },
+      {
+        text: 'Every revolutionary ends as an oppressor or a heretic.',
+        author: 'Albert Camus, The Rebel',
+        original: 'Tout r\u00e9volutionnaire finit en oppresseur ou en h\u00e9r\u00e9tique.',
+        originalLang: 'Fran\u00e7ais',
+      },
+      { text: 'Power is not a means; it is an end. One does not establish a dictatorship in order to safeguard a revolution; one makes the revolution in order to establish the dictatorship. The object of power is power.', author: 'George Orwell, 1984' },
+      { text: 'The old leader is gone. The new leader enters. Same room. Same desk. Same view from the window.', author: 'Regime Banter' },
+    ],
+    tagline: 'Power changes hands. The old order does not die\u2009\u2014\u2009it metamorphoses.',
+    cssClass: 'slide--overthrow',
+    imageUrl: `${STORAGE_BASE}/dungeon-overthrow.avif`,
+  },
 ];

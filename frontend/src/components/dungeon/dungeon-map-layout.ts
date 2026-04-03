@@ -54,7 +54,7 @@ export const DEFAULT_MAP_CONFIG: MapLayoutConfig = {
   nodeRadius: 30,
   vGap: 100,
   hGap: 76,
-  padding: 36,
+  padding: 44,
 };
 
 // ── Layout Function ─────────────────────────────────────────────────────────

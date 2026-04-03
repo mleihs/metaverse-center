@@ -558,6 +558,79 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
             ),
         },
     ],
+    # ── The Overthrow ────────────────────────────────────────────────────
+    "The Overthrow": [
+        {
+            "text_en": (
+                "The threshold is a mirror. Not glass — political."
+                " Every reflection shows a different allegiance."
+                " Der Spiegelpalast does not ask who you are."
+                " It asks who you are for."
+            ),
+            "text_de": (
+                "Die Schwelle ist ein Spiegel. Nicht Glas — politisch."
+                " Jede Spiegelung zeigt eine andere Treue."
+                " Der Spiegelpalast fragt nicht, wer ihr seid."
+                " Er fragt, für wen ihr seid."
+            ),
+        },
+        {
+            "text_en": (
+                "The air smells of ink and ambition."
+                " Decrees are being written somewhere deeper."
+                " The decrees will contradict each other."
+                " Both will be enforced."
+            ),
+            "text_de": (
+                "Die Luft riecht nach Tinte und Ehrgeiz."
+                " Irgendwo tiefer werden Dekrete geschrieben."
+                " Die Dekrete werden sich widersprechen."
+                " Beide werden durchgesetzt."
+            ),
+        },
+        {
+            "text_en": (
+                "Factions. The word is not adequate."
+                " These are ecosystems of belief,"
+                " each convinced of its own necessity."
+                " Machiavelli's fox and lion, multiplied."
+            ),
+            "text_de": (
+                "Fraktionen. Das Wort ist nicht adäquat."
+                " Das sind Ökosysteme des Glaubens,"
+                " jedes überzeugt von seiner eigenen Notwendigkeit."
+                " Machiavellis Fuchs und Löwe, multipliziert."
+            ),
+        },
+        {
+            "text_en": (
+                "Power changes hands here. Not violently —"
+                " procedurally. The forms are filled out."
+                " The signatures are forged."
+                " The forgeries are notarized."
+            ),
+            "text_de": (
+                "Hier wechselt die Macht die Hände. Nicht gewaltsam —"
+                " verfahrenstechnisch. Die Formulare werden ausgefüllt."
+                " Die Unterschriften werden gefälscht."
+                " Die Fälschungen werden beglaubigt."
+            ),
+        },
+        {
+            "text_en": (
+                "The descent begins. Not into darkness —"
+                " into politics. The lighting is excellent."
+                " Everything is visible. Zamyatin's glass walls."
+                " Privacy is not forbidden. It is conceptually abolished."
+            ),
+            "text_de": (
+                "Der Abstieg beginnt. Nicht in Dunkelheit —"
+                " in Politik. Die Beleuchtung ist ausgezeichnet."
+                " Alles ist sichtbar. Zamjatins gläserne Wände."
+                " Privatsphäre ist nicht verboten. Sie ist begrifflich abgeschafft."
+            ),
+        },
+    ],
 }
 
 
@@ -3028,6 +3101,193 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             },
         },
     ],
+    # ── The Overthrow ────────────────────────────────────────────────────
+    "The Overthrow": [
+        {
+            "id": "overthrow_faction_banner",
+            "name_en": "Faction Banner",
+            "name_de": "Fraktionsbanner",
+            "phases": {
+                "discovery": {
+                    "text_en": "A banner. The insignia is familiar — from two rooms ago, where it meant something different.",
+                    "text_de": "Ein Banner. Das Abzeichen ist vertraut — aus zwei Räumen zuvor, wo es etwas anderes bedeutete.",
+                },
+                "echo": {
+                    "text_en": "The banner has been turned inside out. The same insignia, reversed. A faction's mirror image.",
+                    "text_de": "Das Banner wurde umgedreht. Dasselbe Abzeichen, gespiegelt. Das Spiegelbild einer Fraktion.",
+                },
+                "mutation": {
+                    "text_en": "The banner bears no insignia now. It bears a mirror. The mirror reflects whoever looks at it in faction colors.",
+                    "text_de": "Das Banner trägt jetzt kein Abzeichen. Es trägt einen Spiegel. Der Spiegel reflektiert jeden, der hinsieht, in Fraktionsfarben.",
+                },
+                "climax": {
+                    "text_en": "The banner is blank. All factions have claimed it. All factions have abandoned it. It flies for no one.",
+                    "text_de": "Das Banner ist leer. Alle Fraktionen haben es beansprucht. Alle Fraktionen haben es aufgegeben. Es weht für niemanden.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_decree_stone",
+            "name_en": "Decree Stone",
+            "name_de": "Dekretstein",
+            "phases": {
+                "discovery": {
+                    "text_en": "A stone tablet with a decree. The ink is fresh. The decree is reasonable.",
+                    "text_de": "Eine Steintafel mit einem Dekret. Die Tinte ist frisch. Das Dekret ist vernünftig.",
+                },
+                "echo": {
+                    "text_en": "The decree has been amended. The amendment contradicts the original. Both remain binding.",
+                    "text_de": "Das Dekret wurde ergänzt. Die Ergänzung widerspricht dem Original. Beide bleiben bindend.",
+                },
+                "mutation": {
+                    "text_en": "The stone now bears three decrees. They form a triangle of mutual contradiction. Shigalyov's paradox, petrified.",
+                    "text_de": "Der Stein trägt jetzt drei Dekrete. Sie bilden ein Dreieck gegenseitigen Widerspruchs. Schigaljows Paradox, versteinert.",
+                },
+                "climax": {
+                    "text_en": "The decree stone is blank. Not erased — never inscribed. The authority to decree has been decreed nonexistent.",
+                    "text_de": "Der Dekretstein ist leer. Nicht gelöscht — nie beschrieben. Die Autorität zu dekretieren wurde für inexistent dekretiert.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_informers_clipboard",
+            "name_en": "Informer's Clipboard",
+            "name_de": "Spitzels Klemmbrett",
+            "phases": {
+                "discovery": {
+                    "text_en": "A clipboard with names. Some checked off. The party's names are listed but not yet checked.",
+                    "text_de": "Ein Klemmbrett mit Namen. Einige abgehakt. Die Namen der Gruppe sind aufgelistet, aber noch nicht abgehakt.",
+                },
+                "echo": {
+                    "text_en": "The clipboard has grown. More names. The handwriting changes — multiple informers, same list.",
+                    "text_de": "Das Klemmbrett ist gewachsen. Mehr Namen. Die Handschrift wechselt — mehrere Spitzel, dieselbe Liste.",
+                },
+                "mutation": {
+                    "text_en": "The informer's name is on the list now. The informer is being informed on. The system is recursive.",
+                    "text_de": "Der Name des Spitzels steht jetzt auf der Liste. Der Spitzel wird bespitzelt. Das System ist rekursiv.",
+                },
+                "climax": {
+                    "text_en": "Every name on the list is checked off. The list continues. There are no names left to check. The checking continues.",
+                    "text_de": "Jeder Name auf der Liste ist abgehakt. Die Liste geht weiter. Es gibt keine Namen mehr zum Abhaken. Das Abhaken geht weiter.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_trial_chair",
+            "name_en": "Trial Chair",
+            "name_de": "Prozessstuhl",
+            "phases": {
+                "discovery": {
+                    "text_en": "An empty chair in the center of a room. The room is arranged for a tribunal. The chair is for the accused.",
+                    "text_de": "Ein leerer Stuhl in der Mitte eines Raums. Der Raum ist für ein Tribunal eingerichtet. Der Stuhl ist für den Angeklagten.",
+                },
+                "echo": {
+                    "text_en": "The chair has been occupied. Recently. The warmth is still there. The verdict has already been passed.",
+                    "text_de": "Der Stuhl war besetzt. Kürzlich. Die Wärme ist noch da. Das Urteil wurde bereits gefällt.",
+                },
+                "mutation": {
+                    "text_en": "The chair faces a mirror now. The accused watches their own trial. Kiš's archival voice narrates in footnotes.",
+                    "text_de": "Der Stuhl steht jetzt vor einem Spiegel. Der Angeklagte beobachtet seinen eigenen Prozess. Kišs Archivstimme erzählt in Fußnoten.",
+                },
+                "climax": {
+                    "text_en": "The chair is for the judge now. The accused is gone. The judge sits and realizes: the next trial is their own.",
+                    "text_de": "Der Stuhl ist jetzt für den Richter. Der Angeklagte ist weg. Der Richter sitzt und erkennt: der nächste Prozess ist der eigene.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_mirror_corridor",
+            "name_en": "Mirror Corridor",
+            "name_de": "Spiegelkorridor",
+            "phases": {
+                "discovery": {
+                    "text_en": "Mirrors on both walls. The reflections are accurate. Suspiciously accurate.",
+                    "text_de": "Spiegel an beiden Wänden. Die Spiegelungen sind exakt. Verdächtig exakt.",
+                },
+                "echo": {
+                    "text_en": "The reflections are slightly ahead of the party. They know where the party is going before the party does.",
+                    "text_de": "Die Spiegelungen sind der Gruppe leicht voraus. Sie wissen, wohin die Gruppe geht, bevor die Gruppe es weiß.",
+                },
+                "mutation": {
+                    "text_en": "The reflections wear different faction insignia than the party. The mirror shows allegiance, not appearance.",
+                    "text_de": "Die Spiegelungen tragen andere Fraktionsabzeichen als die Gruppe. Der Spiegel zeigt Treue, nicht Aussehen.",
+                },
+                "climax": {
+                    "text_en": "The mirrors face each other. Infinite recursion. Infinite factions. The Pretender is in every reflection.",
+                    "text_de": "Die Spiegel stehen sich gegenüber. Unendliche Rekursion. Unendliche Fraktionen. Der Prätendent ist in jeder Spiegelung.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_propaganda_poster",
+            "name_en": "Propaganda Poster",
+            "name_de": "Propagandaplakat",
+            "phases": {
+                "discovery": {
+                    "text_en": "A poster. The message is clear, the design effective. Orwell's Squealer would approve.",
+                    "text_de": "Ein Plakat. Die Botschaft ist klar, das Design wirkungsvoll. Orwells Schwatzwutz würde zustimmen.",
+                },
+                "echo": {
+                    "text_en": "The poster has been pasted over with a new one. The new poster says the opposite. The adhesive is the same.",
+                    "text_de": "Das Plakat wurde mit einem neuen überklebt. Das neue Plakat sagt das Gegenteil. Der Klebstoff ist derselbe.",
+                },
+                "mutation": {
+                    "text_en": "Both posters are visible now, layered. The contradiction is the message. Doublethink, illustrated.",
+                    "text_de": "Beide Plakate sind jetzt sichtbar, geschichtet. Der Widerspruch ist die Botschaft. Doppeldenk, illustriert.",
+                },
+                "climax": {
+                    "text_en": "The poster is blank. Not torn down — never printed. The propaganda has moved from paper into the air itself.",
+                    "text_de": "Das Plakat ist leer. Nicht abgerissen — nie gedruckt. Die Propaganda ist vom Papier in die Luft selbst übergegangen.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_scales_of_justice",
+            "name_en": "Scales of Justice",
+            "name_de": "Waage der Gerechtigkeit",
+            "phases": {
+                "discovery": {
+                    "text_en": "Balanced scales. Both pans empty. The balance is perfect because nothing is being weighed.",
+                    "text_de": "Ausbalancierte Waage. Beide Schalen leer. Die Balance ist perfekt, weil nichts gewogen wird.",
+                },
+                "echo": {
+                    "text_en": "One pan holds a faction seal. The other holds a different faction seal. They weigh exactly the same.",
+                    "text_de": "Eine Schale hält ein Fraktionssiegel. Die andere ein anderes Fraktionssiegel. Sie wiegen genau gleich.",
+                },
+                "mutation": {
+                    "text_en": "A thumb on the scale. Whose thumb? The mirror behind the scales does not show a hand.",
+                    "text_de": "Ein Daumen auf der Waage. Wessen Daumen? Der Spiegel hinter der Waage zeigt keine Hand.",
+                },
+                "climax": {
+                    "text_en": "The scales tip. Both pans hit the ground simultaneously. Justice is not blind — justice has been dismissed.",
+                    "text_de": "Die Waage kippt. Beide Schalen treffen gleichzeitig den Boden. Gerechtigkeit ist nicht blind — Gerechtigkeit wurde entlassen.",
+                },
+            },
+        },
+        {
+            "id": "overthrow_colossus_pedestal",
+            "name_en": "Colossus Pedestal",
+            "name_de": "Kolosssockel",
+            "phases": {
+                "discovery": {
+                    "text_en": "An empty pedestal. Something large stood here. The shadow remains on the floor.",
+                    "text_de": "Ein leerer Sockel. Etwas Großes stand hier. Der Schatten bleibt auf dem Boden.",
+                },
+                "echo": {
+                    "text_en": "The pedestal bears an inscription: 'Resolve to serve no more, and you are at once freed.' La Boétie.",
+                    "text_de": "Der Sockel trägt eine Inschrift: 'Beschließe, nicht mehr zu dienen, und du bist sogleich befreit.' La Boétie.",
+                },
+                "mutation": {
+                    "text_en": "Cracks in the pedestal. The Colossus did not fall — it was pulled. From below. By those who built it.",
+                    "text_de": "Risse im Sockel. Der Koloss ist nicht gefallen — er wurde gezogen. Von unten. Von denen, die ihn gebaut haben.",
+                },
+                "climax": {
+                    "text_en": "The pedestal is being rebuilt. For a new Colossus. The builders are the same. The blueprints are the same.",
+                    "text_de": "Der Sockel wird wieder aufgebaut. Für einen neuen Koloss. Die Baumeister sind dieselben. Die Baupläne sind dieselben.",
+                },
+            },
+        },
+    ],
 }
 
 
@@ -3354,6 +3614,29 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
             "text_de": "Das Bewusstsein erinnert sich.",
         },
     ],
+    # ── Overthrow: "Die Autorität" (Authority Fracture barometer) ─────────
+    "The Overthrow": [
+        {
+            "tier": 0,
+            "text_en": "The authority holds.",
+            "text_de": "Die Autorität hält.",
+        },
+        {
+            "tier": 1,
+            "text_en": "The authority whispers.",
+            "text_de": "Die Autorität flüstert.",
+        },
+        {
+            "tier": 2,
+            "text_en": "The authority fractures.",
+            "text_de": "Die Autorität bricht.",
+        },
+        {
+            "tier": 3,
+            "text_en": "The authority is a mirror.",
+            "text_de": "Die Autorität ist ein Spiegel.",
+        },
+    ],
 }
 
 
@@ -3417,6 +3700,15 @@ def _barometer_tier(archetype: str, archetype_state: dict) -> int:
         if awareness <= 49:
             return 1
         if awareness <= 69:
+            return 2
+        return 3
+    if archetype == "The Overthrow":
+        fracture = archetype_state.get("fracture", 0)
+        if fracture <= 19:
+            return 0
+        if fracture <= 59:
+            return 1
+        if fracture <= 79:
             return 2
         return 3
     return 0

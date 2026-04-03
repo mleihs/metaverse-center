@@ -293,6 +293,12 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       margin-inline: auto;
     }
 
+    /* Immersive views (Dungeon HUD) — fill full width, no padding */
+    .shell__content--immersive {
+      max-width: 100%;
+      padding: 0;
+    }
+
     @media (max-width: 640px) {
       .breadcrumb {
         padding: var(--space-1-5) var(--space-4);
@@ -1045,7 +1051,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         }
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
-        <div class="shell__content shell__overlays">
+        <div class="shell__content shell__overlays ${this.view === 'dungeon' ? 'shell__content--immersive' : ''}">
           ${
             hasBleeds
               ? html`<velg-bleed-palimpsest-overlay

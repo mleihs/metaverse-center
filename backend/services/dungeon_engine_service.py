@@ -378,6 +378,11 @@ class DungeonEngineService:
         return await DungeonMovementService.ground(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
+    async def rally(cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID) -> dict:
+        """Propagandist: Rally — reduce authority fracture (Overthrow only)."""
+        return await DungeonMovementService.rally(admin_supabase, run_id, agent_id, user_id=user_id)
+
+    @classmethod
     async def salvage(
         cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
     ) -> dict:

@@ -396,7 +396,7 @@ class DungeonCheckpointService:
         """
 
         def _get(c, key: str, default=None):  # noqa: ANN001
-            return c[key] if isinstance(c, dict) else getattr(c, key, default)
+            return c.get(key, default) if isinstance(c, dict) else getattr(c, key, default)
 
         return [
             {

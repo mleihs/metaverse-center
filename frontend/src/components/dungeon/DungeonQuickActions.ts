@@ -156,6 +156,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         return this._renderMoveButtons();
 
       case 'encounter':
+      case 'threshold':
         return this._renderEncounterButtons();
 
       case 'rest':

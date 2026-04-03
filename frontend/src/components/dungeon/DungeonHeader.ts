@@ -22,6 +22,7 @@ import {
   ARCHETYPE_AWAKENING,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
+  ARCHETYPE_OVERTHROW,
   ARCHETYPE_PROMETHEUS,
   ARCHETYPE_DELUGE,
   ARCHETYPE_TOWER,
@@ -29,6 +30,7 @@ import {
   isDelugeState,
   isEntropyState,
   isMotherState,
+  isOverthrowState,
   isPrometheusState,
   isShadowState,
   isTowerState,
@@ -759,6 +761,101 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         50% { opacity: 0.8; filter: brightness(1.4); }
       }
 
+      /* ── Fracture Gauge (archetype-specific: Overthrow) ── */
+      .fracture {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .fracture__icon {
+        display: inline-flex;
+        color: var(--color-warning, #f59e0b);
+      }
+
+      .fracture__label {
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--color-warning, #f59e0b);
+        min-width: 22px;
+        text-align: right;
+      }
+
+      .fracture__track {
+        position: relative;
+        width: 60px;
+        height: 8px;
+        background: color-mix(in srgb, var(--color-warning, #f59e0b) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+
+      .fracture__fill {
+        height: 100%;
+        transform-origin: left;
+        transition: transform 0.3s ease-out, background 0.5s ease;
+      }
+
+      /* Court Order: 0-19 — dim amber, authority holds */
+      .fracture__fill--order {
+        background: color-mix(in srgb, #f59e0b 30%, var(--_phosphor-dim));
+      }
+
+      /* Whispers: 20-39 — amber, tensions emerge */
+      .fracture__fill--whispers {
+        background: #f59e0b;
+      }
+
+      /* Schism: 40-59 — amber-red, factions fracture */
+      .fracture__fill--schism {
+        background: color-mix(in srgb, #f59e0b 50%, #ef4444);
+      }
+
+      /* Revolution: 60-79 — red, authority crumbles */
+      .fracture__fill--revolution {
+        background: color-mix(in srgb, #ef4444 70%, #f59e0b);
+      }
+
+      .fracture__label--revolution {
+        color: color-mix(in srgb, #ef4444 70%, #f59e0b);
+        font-weight: 700;
+      }
+
+      /* Collapse: 80-100 — pulsing red-white, power vacuum */
+      .fracture__fill--collapse {
+        background: color-mix(in srgb, #ef4444 80%, #e2e8f0);
+      }
+
+      .fracture__label--collapse {
+        color: #ef4444;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .fracture__fill--revolution {
+          animation: fracture-pulse 2.5s ease-in-out infinite;
+        }
+
+        .fracture__fill--collapse {
+          animation: fracture-crack 1.5s ease-in-out infinite;
+        }
+
+        .fracture__label--collapse {
+          animation: collapse-blink 1.5s steps(2, jump-none) infinite;
+        }
+      }
+
+      @keyframes fracture-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      @keyframes fracture-crack {
+        0%, 100% { opacity: 1; filter: brightness(1); }
+        50% { opacity: 0.8; filter: brightness(1.3); }
+      }
+
       /* ── Separator — vertical divider between sections ── */
       .sep {
         width: 1px;
@@ -830,6 +927,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const isPrometheus = state.archetype === ARCHETYPE_PROMETHEUS;
     const isDeluge = state.archetype === ARCHETYPE_DELUGE;
     const isAwakening = state.archetype === ARCHETYPE_AWAKENING;
+    const isOverthrow = state.archetype === ARCHETYPE_OVERTHROW;
     const archetypeColor = isTower
       ? 'var(--color-warning, #fb923c)'
       : isEntropy
@@ -842,7 +940,9 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
               ? 'var(--color-info, #60a5fa)'
               : isAwakening
                 ? 'var(--color-info, #c084fc)'
-                : 'var(--color-info, #a78bfa)';
+                : isOverthrow
+                  ? 'var(--color-warning, #f59e0b)'
+                  : 'var(--color-info, #a78bfa)';
 
     const rooms = dungeonState.rooms.value;
     const clearedCount = rooms.filter((r) => r.cleared).length;
@@ -858,6 +958,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const prometheusState = isPrometheusState(archState) ? archState : null;
     const delugeState = isDelugeState(archState) ? archState : null;
     const awakeningState = isAwakeningState(archState) ? archState : null;
+    const overthrowState = isOverthrowState(archState) ? archState : null;
     const visibility = shadowState?.visibility ?? null;
     const maxVisibility = shadowState?.max_visibility ?? null;
     const stability = towerState?.stability ?? null;
@@ -876,6 +977,8 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const recessionIn = roomsEntered > 0 ? 3 - (roomsEntered % 3) : 3;
     const awareness = awakeningState?.awareness ?? null;
     const maxAwareness = awakeningState?.max_awareness ?? null;
+    const fracture = overthrowState?.fracture ?? null;
+    const maxFracture = overthrowState?.max_fracture ?? null;
 
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
@@ -1169,6 +1272,46 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                       ? 'awareness__label--lucid'
                       : ''
                 }">${awareness >= 100 ? msg('AWAKE') : awareness}</span>
+              </div>
+            `
+            : nothing
+        }
+        ${
+          fracture !== null && maxFracture !== null
+            ? html`
+              <span class="sep"></span>
+              <div class="fracture" aria-label=${msg('Authority Fracture') + ` ${fracture}/${maxFracture}`}>
+                <span class="fracture__icon">${icons.archetypeOverthrow(12)}</span>
+                <div
+                  class="fracture__track"
+                  role="progressbar"
+                  aria-valuenow=${fracture}
+                  aria-valuemin=${0}
+                  aria-valuemax=${maxFracture}
+                  aria-label=${msg('Authority fracture level')}
+                >
+                  <div
+                    class="fracture__fill ${
+                      fracture >= 80
+                        ? 'fracture__fill--collapse'
+                        : fracture >= 60
+                          ? 'fracture__fill--revolution'
+                          : fracture >= 40
+                            ? 'fracture__fill--schism'
+                            : fracture >= 20
+                              ? 'fracture__fill--whispers'
+                              : 'fracture__fill--order'
+                    }"
+                    style="transform: scaleX(${maxFracture > 0 ? fracture / maxFracture : 0})"
+                  ></div>
+                </div>
+                <span class="fracture__label ${
+                  fracture >= 80
+                    ? 'fracture__label--collapse'
+                    : fracture >= 60
+                      ? 'fracture__label--revolution'
+                      : ''
+                }">${fracture >= 100 ? msg('CHAOS') : fracture}</span>
               </div>
             `
             : nothing
