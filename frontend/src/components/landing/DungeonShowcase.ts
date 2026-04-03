@@ -389,7 +389,7 @@ export class VelgDungeonShowcase extends LitElement {
               id=${`showcase-panel-${i}`}
               aria-hidden=${i !== this._activeIndex}
               aria-labelledby=${`showcase-tab-${i}`}
-              style="--_accent: ${a.accent}; --_bg-image: url(${a.imageUrl});"
+              style="--_accent: ${a.accent}; --_bg-image: url(${a.imageUrl}); --_scrim-blur: ${a.scrim[0]}px; --_scrim-brightness: ${a.scrim[1]}; --_scrim-saturate: ${a.scrim[2]};"
             >
               <div class="slide__atmosphere"></div>
               <div class="slide__vignette"></div>

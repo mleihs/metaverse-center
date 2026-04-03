@@ -62,26 +62,49 @@ export const showcaseLayoutStyles = css`
     display: flex; flex-direction: column; align-items: center;
   }
 
-  /* Content backdrop — soft dark cloud behind the entire text column.
-     Not a visible box; an invisible darkening that makes text pop.
-     Applied on leaf element (::after), not layout container.
+  /* Content scrim — frosted glass behind the text column.
+     Blurs + darkens the background image so text is readable without
+     a visible dark box. Applied on leaf element (::after), not layout
+     container.
 
-     Base gradient is strong enough for bright images (Tower, Entropy,
-     Deluge). Dark-background slides reduce via --_content-backdrop
-     (set in showcaseAtmosphereStyles per slide class). */
+     Per-slide tuning via inline CSS vars --_scrim-blur, --_scrim-brightness,
+     --_scrim-saturate (set from ArchetypeSlide.scrim in the data file).
+     Single source of truth: data file owns the values, CSS owns the shape.
+
+     Mask uses white→transparent (not black→transparent) because CSS
+     gradient masks default to luminance mode where black = invisible. */
   .slide__content::after {
     content: '';
     position: absolute;
-    inset: -60px -100px;
+    inset: -120px -200px;
     z-index: -1;
-    background: radial-gradient(
-      ellipse 100% 100% at 50% 42%,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.62) 40%,
-      rgba(0, 0, 0, 0.28) 70%,
-      transparent 100%
+    background: transparent;
+    backdrop-filter:
+      blur(var(--_scrim-blur, 16px))
+      brightness(var(--_scrim-brightness, 0.35))
+      saturate(var(--_scrim-saturate, 0.5));
+    -webkit-backdrop-filter:
+      blur(var(--_scrim-blur, 16px))
+      brightness(var(--_scrim-brightness, 0.35))
+      saturate(var(--_scrim-saturate, 0.5));
+    mask-image: radial-gradient(
+      ellipse 110% 110% at 50% 45%,
+      white 0%,
+      rgba(255,255,255, 0.75) 15%,
+      rgba(255,255,255, 0.45) 30%,
+      rgba(255,255,255, 0.2) 45%,
+      rgba(255,255,255, 0.06) 60%,
+      transparent 75%
     );
-    opacity: var(--_content-backdrop, 1);
+    -webkit-mask-image: radial-gradient(
+      ellipse 110% 110% at 50% 45%,
+      white 0%,
+      rgba(255,255,255, 0.75) 15%,
+      rgba(255,255,255, 0.45) 30%,
+      rgba(255,255,255, 0.2) 45%,
+      rgba(255,255,255, 0.06) 60%,
+      transparent 75%
+    );
     pointer-events: none;
   }
 
@@ -96,7 +119,7 @@ export const showcaseLayoutStyles = css`
     font-weight: 400; letter-spacing: 0.3em;
     text-transform: uppercase; opacity: 0.65; margin-bottom: 16px;
     color: var(--_accent);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 0, 0, 0.3);
   }
 
   .slide__title {
@@ -107,7 +130,8 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow:
       0 2px 4px rgba(0, 0, 0, 0.95),
-      0 0 20px rgba(0, 0, 0, 0.7),
+      0 0 16px rgba(0, 0, 0, 0.8),
+      0 0 40px rgba(0, 0, 0, 0.4),
       0 0 60px color-mix(in srgb, var(--_accent) 20%, transparent);
   }
   .active .slide__title { animation: title-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
@@ -120,7 +144,8 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow:
       0 1px 3px rgba(0, 0, 0, 0.95),
-      0 0 12px rgba(0, 0, 0, 0.6);
+      0 0 12px rgba(0, 0, 0, 0.7),
+      0 0 32px rgba(0, 0, 0, 0.35);
   }
   .active .slide__subtitle { animation: subtitle-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
 
@@ -139,7 +164,8 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow:
       0 1px 2px rgba(0, 0, 0, 0.95),
-      0 0 10px rgba(0, 0, 0, 0.7);
+      0 0 10px rgba(0, 0, 0, 0.7),
+      0 0 28px rgba(0, 0, 0, 0.35);
   }
   .active .slide__tagline { animation: tagline-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
 
@@ -169,7 +195,8 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow:
       0 1px 2px rgba(0, 0, 0, 0.95),
-      0 0 8px rgba(0, 0, 0, 0.7);
+      0 0 8px rgba(0, 0, 0, 0.7),
+      0 0 24px rgba(0, 0, 0, 0.35);
     transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
                 filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -185,7 +212,8 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow:
       0 1px 2px rgba(0, 0, 0, 0.95),
-      0 0 8px rgba(0, 0, 0, 0.7);
+      0 0 8px rgba(0, 0, 0, 0.7),
+      0 0 24px rgba(0, 0, 0, 0.35);
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     text-align: center;
@@ -320,18 +348,9 @@ export const showcaseLayoutStyles = css`
 // ── Atmospheric Backgrounds ─────────────────────────────────────────────────
 
 export const showcaseAtmosphereStyles = css`
-  /* ── Per-slide content backdrop intensity ──
-     Controls opacity of the dark cloud behind the text column.
-     Bright images need full strength (1); dark images reduce to
-     preserve atmosphere. Calibrated from production screenshots. */
-  .slide--shadow    { --_content-backdrop: 0.6; }
-  .slide--tower     { --_content-backdrop: 1; }
-  .slide--mother    { --_content-backdrop: 0.85; }
-  .slide--entropy   { --_content-backdrop: 1; }
-  .slide--prometheus { --_content-backdrop: 0.9; }
-  .slide--deluge    { --_content-backdrop: 1; }
-  .slide--awakening { --_content-backdrop: 0.55; }
-  .slide--overthrow { --_content-backdrop: 0.8; }
+  /* Scrim tuning now lives in dungeon-showcase-data.ts (ArchetypeSlide.scrim)
+     and is applied as inline CSS vars on each slide container. No per-slide
+     CSS overrides needed — single source of truth in the data file. */
 
   /* SHADOW — drifting cosmic fog overlay */
   .slide--shadow .slide__atmosphere::before {

@@ -33,6 +33,9 @@ export interface ArchetypeSlide {
   readonly cssClass: string;
   /** Supabase Storage URL for the AI-generated background image. */
   readonly imageUrl: string;
+  /** Frosted-glass scrim tuning — calibrated per image brightness.
+   *  [blur_px, brightness_0to1, saturate_0to1] */
+  readonly scrim: readonly [number, number, number];
 }
 
 const STORAGE_BASE = 'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/showcase';
@@ -55,6 +58,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'Darkness is not absence. It is presence.',
     cssClass: 'slide--shadow',
     imageUrl: `${STORAGE_BASE}/dungeon-shadow.avif`,
+    scrim: [10, 0.55, 0.55],
   },
   {
     id: 'tower',
@@ -78,6 +82,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'The building is alive. You are its nervous system.',
     cssClass: 'slide--tower',
     imageUrl: `${STORAGE_BASE}/dungeon-tower.avif`,
+    scrim: [24, 0.22, 0.4],
   },
   {
     id: 'mother',
@@ -96,6 +101,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'That which sustains you consumes you.',
     cssClass: 'slide--mother',
     imageUrl: `${STORAGE_BASE}/dungeon-mother.avif`,
+    scrim: [16, 0.32, 0.5],
   },
   {
     id: 'entropy',
@@ -124,6 +130,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'Decay is not destruction\u2009\u2014\u2009it is equalization.',
     cssClass: 'slide--entropy',
     imageUrl: `${STORAGE_BASE}/dungeon-entropy.avif`,
+    scrim: [28, 0.18, 0.35],
   },
   {
     id: 'prometheus',
@@ -162,6 +169,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'Innovation demands perpetual suffering. The gift cannot be ungiven.',
     cssClass: 'slide--prometheus',
     imageUrl: `${STORAGE_BASE}/dungeon-prometheus.avif`,
+    scrim: [20, 0.25, 0.45],
   },
   {
     id: 'deluge',
@@ -185,6 +193,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'The world reminds its inhabitants: guests, not owners.',
     cssClass: 'slide--deluge',
     imageUrl: `${STORAGE_BASE}/dungeon-deluge.avif`,
+    scrim: [22, 0.22, 0.4],
   },
   {
     id: 'awakening',
@@ -228,6 +237,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'The dungeon is not a container for memories\u2009\u2014\u2009it IS memory.',
     cssClass: 'slide--awakening',
     imageUrl: `${STORAGE_BASE}/dungeon-awakening.avif`,
+    scrim: [10, 0.50, 0.55],
   },
   {
     id: 'overthrow',
@@ -266,5 +276,6 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     tagline: 'Power changes hands. The old order does not die\u2009\u2014\u2009it metamorphoses.',
     cssClass: 'slide--overthrow',
     imageUrl: `${STORAGE_BASE}/dungeon-overthrow.avif`,
+    scrim: [22, 0.22, 0.4],
   },
 ];
