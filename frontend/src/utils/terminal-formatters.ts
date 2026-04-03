@@ -652,8 +652,12 @@ export function formatBootSequence(
   customArt?: string,
   clearanceLevel = 1,
 ): TerminalLine[] {
-  // Prefer AI-generated art from simulation_settings, fall back to theme defaults
-  const artLines = customArt ? customArt.split('\n') : getThemeAsciiArt(theme ?? 'custom');
+  // Prefer AI-generated art from simulation_settings, fall back to theme defaults.
+  // Strip blank lines from custom art — AI generators often include leading/trailing
+  // empty lines that create ugly gaps in the terminal banner.
+  const artLines = customArt
+    ? customArt.split('\n').filter((l) => l.trimEnd().length > 0)
+    : getThemeAsciiArt(theme ?? 'custom');
   const lines: TerminalLine[] = [];
 
   // ASCII art header (AI-generated or theme fallback)
