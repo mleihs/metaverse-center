@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
-from backend.models.social import SocialMediaPostResponse
+from backend.models.social import SocialMediaPostResponse, SocialSyncResponse
 from backend.models.social_media import (
     AnalyzeSentimentRequest,
     GenerateReactionsRequest,
@@ -31,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.get("/posts", response_model=PaginatedResponse[SocialMediaPostResponse])
+@router.get("/posts")
 async def list_posts(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -41,7 +41,7 @@ async def list_posts(
     transformed: bool | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[SocialMediaPostResponse]:
     """List social media posts."""
     data, total = await SocialMediaService.list_posts(
         supabase,
@@ -51,14 +51,13 @@ async def list_posts(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.post("/sync", response_model=SuccessResponse[dict])
+@router.post("/sync")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def sync_posts(
     request: Request,
@@ -66,7 +65,7 @@ async def sync_posts(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialSyncResponse]:
     """Sync posts from configured Facebook page."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
     fb_config = await resolver.get_facebook_config()
@@ -100,19 +99,13 @@ async def sync_posts(
                         )
                         comments_count += 1
 
-    return {
-        "success": True,
-        "data": {
-            "posts_synced": len(stored),
-            "comments_synced": comments_count,
-        },
-    }
+    return SuccessResponse(data=SocialSyncResponse(
+        posts_synced=len(stored),
+        comments_synced=comments_count,
+    ))
 
 
-@router.post(
-    "/posts/{post_id}/transform",
-    response_model=SuccessResponse[SocialMediaPostResponse],
-)
+@router.post("/posts/{post_id}/transform")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def transform_post(
     request: Request,
@@ -122,7 +115,7 @@ async def transform_post(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialMediaPostResponse]:
     """Transform a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
 
@@ -146,13 +139,10 @@ async def transform_post(
         },
     )
 
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
-@router.post(
-    "/posts/{post_id}/analyze-sentiment",
-    response_model=SuccessResponse[SocialMediaPostResponse],
-)
+@router.post("/posts/{post_id}/analyze-sentiment")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def analyze_sentiment(
     request: Request,
@@ -162,7 +152,7 @@ async def analyze_sentiment(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[SocialMediaPostResponse]:
     """Analyze sentiment of a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
 
@@ -191,13 +181,10 @@ async def analyze_sentiment(
     updated = await SocialMediaService.update_post(
         supabase, simulation_id, post_id, update_data
     )
-    return {"success": True, "data": updated}
+    return SuccessResponse(data=updated)
 
 
-@router.post(
-    "/posts/{post_id}/generate-reactions",
-    response_model=SuccessResponse[list[dict]],
-)
+@router.post("/posts/{post_id}/generate-reactions")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def generate_reactions(
     request: Request,
@@ -207,7 +194,7 @@ async def generate_reactions(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Generate agent reactions to a social media post."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
 
@@ -262,17 +249,17 @@ async def generate_reactions(
                 exc_info=True,
             )
 
-    return {"success": True, "data": reactions}
+    return SuccessResponse(data=reactions)
 
 
-@router.get("/posts/{post_id}/comments", response_model=SuccessResponse[list[dict]])
+@router.get("/posts/{post_id}/comments")
 async def get_comments(
     simulation_id: UUID,
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Get all comments for a social media post."""
     comments = await SocialMediaService.get_comments(supabase, simulation_id, post_id)
-    return {"success": True, "data": comments}
+    return SuccessResponse(data=comments)

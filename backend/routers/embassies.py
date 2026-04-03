@@ -31,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.get("/embassies", response_model=PaginatedResponse[EmbassyResponse])
+@router.get("/embassies")
 async def list_embassies(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -40,56 +40,45 @@ async def list_embassies(
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[EmbassyResponse]:
     """List embassies for a simulation."""
     data, total = await EmbassyService.list_for_simulation(
         supabase, simulation_id,
         status_filter=status, limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get(
-    "/embassies/{embassy_id}",
-    response_model=SuccessResponse[EmbassyResponse],
-)
+@router.get("/embassies/{embassy_id}")
 async def get_embassy(
     simulation_id: UUID,
     embassy_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Get a single embassy."""
     data = await EmbassyService.get(supabase, embassy_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get(
-    "/buildings/{building_id}/embassy",
-    response_model=SuccessResponse[EmbassyResponse | None],
-)
+@router.get("/buildings/{building_id}/embassy")
 async def get_building_embassy(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse | None]:
     """Get the embassy linked to a specific building."""
     data = await EmbassyService.get_for_building(supabase, building_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post(
-    "/embassies",
-    response_model=SuccessResponse[EmbassyResponse],
-    status_code=201,
-)
+@router.post("/embassies", status_code=201)
 async def create_embassy(
     simulation_id: UUID,
     body: EmbassyCreate,
@@ -97,7 +86,7 @@ async def create_embassy(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Create an embassy between two buildings in different simulations."""
     result = await EmbassyService.create_embassy(
         admin_supabase,
@@ -108,13 +97,10 @@ async def create_embassy(
         supabase, simulation_id, user.id, "embassies", result["id"], "create"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/embassies/{embassy_id}",
-    response_model=SuccessResponse[EmbassyResponse],
-)
+@router.patch("/embassies/{embassy_id}")
 async def update_embassy(
     simulation_id: UUID,
     embassy_id: UUID,
@@ -123,7 +109,7 @@ async def update_embassy(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Update embassy metadata."""
     result = await EmbassyService.update_embassy(
         admin_supabase, embassy_id,
@@ -133,13 +119,10 @@ async def update_embassy(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/embassies/{embassy_id}/activate",
-    response_model=SuccessResponse[EmbassyResponse],
-)
+@router.patch("/embassies/{embassy_id}/activate")
 async def activate_embassy(
     simulation_id: UUID,
     embassy_id: UUID,
@@ -147,20 +130,17 @@ async def activate_embassy(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Activate a proposed or suspended embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "active")
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/embassies/{embassy_id}/suspend",
-    response_model=SuccessResponse[EmbassyResponse],
-)
+@router.patch("/embassies/{embassy_id}/suspend")
 async def suspend_embassy(
     simulation_id: UUID,
     embassy_id: UUID,
@@ -168,20 +148,17 @@ async def suspend_embassy(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Suspend an active embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "suspended")
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/embassies/{embassy_id}/dissolve",
-    response_model=SuccessResponse[EmbassyResponse],
-)
+@router.patch("/embassies/{embassy_id}/dissolve")
 async def dissolve_embassy(
     simulation_id: UUID,
     embassy_id: UUID,
@@ -189,11 +166,11 @@ async def dissolve_embassy(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EmbassyResponse]:
     """Dissolve an embassy (clears building special attributes)."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "dissolved")
     await AuditService.log_action(
         supabase, simulation_id, user.id, "embassies", embassy_id, "update"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)

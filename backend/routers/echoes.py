@@ -52,7 +52,7 @@ async def _get_generation_service(
 # --- Endpoints ---
 
 
-@router.get("/echoes", response_model=PaginatedResponse[EchoResponse])
+@router.get("/echoes")
 async def list_echoes(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -62,37 +62,33 @@ async def list_echoes(
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[EchoResponse]:
     """List echoes for a simulation."""
     data, total = await EchoService.list_for_simulation(
         supabase, simulation_id,
         direction=direction, status_filter=status,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get(
-    "/events/{event_id}/echoes",
-    response_model=SuccessResponse[list[EchoResponse]],
-)
+@router.get("/events/{event_id}/echoes")
 async def list_event_echoes(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EchoResponse]]:
     """List all echoes originating from a specific event."""
     data = await EchoService.list_for_event(supabase, event_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("/echoes", response_model=SuccessResponse[EchoResponse], status_code=201)
+@router.post("/echoes", status_code=201)
 async def trigger_echo(
     simulation_id: UUID,
     body: EchoCreate,
@@ -100,7 +96,7 @@ async def trigger_echo(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EchoResponse]:
     """Manually trigger an echo from an event to a target simulation.
 
     Computes echo strength from game metrics (connection strength,
@@ -134,13 +130,10 @@ async def trigger_echo(
         supabase, simulation_id, user.id, "event_echoes", result["id"], "create"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch(
-    "/echoes/{echo_id}/approve",
-    response_model=SuccessResponse[EchoResponse],
-)
+@router.patch("/echoes/{echo_id}/approve")
 async def approve_echo(
     simulation_id: UUID,
     echo_id: UUID,
@@ -148,7 +141,7 @@ async def approve_echo(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EchoResponse]:
     """Approve a pending echo — triggers AI transformation.
 
     1. Validates the echo is pending
@@ -184,7 +177,7 @@ async def approve_echo(
             supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
         )
         ConnectionService._map_data_cache.clear()
-        return {"success": True, "data": result}
+        return SuccessResponse(data=result)
 
     except OpenRouterError as e:
         raise HTTPException(
@@ -201,10 +194,7 @@ async def approve_echo(
         ) from e
 
 
-@router.patch(
-    "/echoes/{echo_id}/reject",
-    response_model=SuccessResponse[EchoResponse],
-)
+@router.patch("/echoes/{echo_id}/reject")
 async def reject_echo(
     simulation_id: UUID,
     echo_id: UUID,
@@ -212,11 +202,11 @@ async def reject_echo(
     _role_check: Annotated[str, Depends(require_role("admin"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[EchoResponse]:
     """Reject a pending echo."""
     result = await EchoService.reject_echo(admin_supabase, echo_id)
     await AuditService.log_action(
         supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)

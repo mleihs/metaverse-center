@@ -10,6 +10,7 @@ from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, stat
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.common import (
     CurrentUser,
+    MessageResponse,
     PaginatedResponse,
     PaginationMeta,
     SuccessResponse,
@@ -20,7 +21,9 @@ from backend.models.event import (
     EventCreate,
     EventResponse,
     EventUpdate,
+    EventZoneLinkResponse,
     GenerateEventReactionsRequest,
+    ReactionResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
@@ -38,7 +41,7 @@ router = APIRouter(
 _service = EventService()
 
 
-@router.get("", response_model=PaginatedResponse[EventResponse])
+@router.get("")
 async def list_events(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -52,7 +55,7 @@ async def list_events(
     date_to: Annotated[datetime | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[EventResponse]:
     """List events with optional filters."""
     data, total = await _service.list(
         supabase,
@@ -66,44 +69,43 @@ async def list_events(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{event_id}", response_model=SuccessResponse[EventResponse])
+@router.get("/{event_id}")
 async def get_event(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventResponse]:
     """Get a single event."""
     event = await _service.get(supabase, simulation_id, event_id)
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.post("", response_model=SuccessResponse[EventResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_event(
     simulation_id: UUID,
     body: EventCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventResponse]:
     """Create a new event."""
     event = await _service.create(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "events", event["id"], "create")
     await _service._post_event_mutation(supabase, simulation_id)
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.put("/{event_id}", response_model=SuccessResponse[EventResponse])
+@router.put("/{event_id}")
 async def update_event(
     simulation_id: UUID,
     event_id: UUID,
@@ -112,7 +114,7 @@ async def update_event(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
-) -> dict:
+) -> SuccessResponse[EventResponse]:
     """Update an event."""
     event = await _service.update(
         supabase, simulation_id, event_id, body.model_dump(exclude_none=True),
@@ -120,38 +122,38 @@ async def update_event(
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "events", event_id, "update")
     await _service._post_event_mutation(supabase, simulation_id)
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.delete("/{event_id}", response_model=SuccessResponse[EventResponse])
+@router.delete("/{event_id}")
 async def delete_event(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventResponse]:
     """Soft-delete an event."""
     event = await _service.soft_delete(supabase, simulation_id, event_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "events", event_id, "delete")
     await _service._post_event_mutation(supabase, simulation_id)
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.get("/{event_id}/reactions", response_model=SuccessResponse[list])
+@router.get("/{event_id}/reactions")
 async def get_event_reactions(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ReactionResponse]]:
     """Get all reactions for an event."""
     reactions = await _service.get_reactions(supabase, simulation_id, event_id)
-    return {"success": True, "data": reactions}
+    return SuccessResponse(data=reactions)
 
 
-@router.post("/{event_id}/reactions", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/{event_id}/reactions", status_code=201)
 async def add_reaction(
     simulation_id: UUID,
     event_id: UUID,
@@ -162,7 +164,7 @@ async def add_reaction(
     supabase: Annotated[Client, Depends(get_supabase)],
     emotion: Annotated[str | None, Body(embed=True)] = None,
     confidence_score: Annotated[float | None, Body(embed=True)] = None,
-) -> dict:
+) -> SuccessResponse[ReactionResponse]:
     """Add an agent reaction to an event."""
     reaction = await _service.add_reaction(
         supabase,
@@ -176,10 +178,10 @@ async def add_reaction(
         },
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction["id"], "create")
-    return {"success": True, "data": reaction}
+    return SuccessResponse(data=reaction)
 
 
-@router.delete("/{event_id}/reactions/{reaction_id}", response_model=SuccessResponse[dict])
+@router.delete("/{event_id}/reactions/{reaction_id}")
 async def delete_event_reaction(
     simulation_id: UUID,
     event_id: UUID,
@@ -187,17 +189,14 @@ async def delete_event_reaction(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a single reaction from an event."""
-    deleted = await _service.delete_reaction(supabase, simulation_id, reaction_id)
+    await _service.delete_reaction(supabase, simulation_id, reaction_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction_id, "delete")
-    return {"success": True, "data": deleted}
+    return SuccessResponse(data=MessageResponse(message="Reaction deleted."))
 
 
-@router.post(
-    "/{event_id}/generate-reactions",
-    response_model=SuccessResponse[list[dict]],
-)
+@router.post("/{event_id}/generate-reactions")
 async def generate_reactions(
     simulation_id: UUID,
     event_id: UUID,
@@ -205,7 +204,7 @@ async def generate_reactions(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[dict]]:
     """Generate AI reactions from agents for an event."""
     event = await _service.get(supabase, simulation_id, event_id)
 
@@ -227,10 +226,10 @@ async def generate_reactions(
             detail="No agents found for reaction generation.",
         )
 
-    return {"success": True, "data": reactions}
+    return SuccessResponse(data=reactions)
 
 
-@router.put("/{event_id}/status", response_model=SuccessResponse[EventResponse])
+@router.put("/{event_id}/status")
 async def update_event_status(
     simulation_id: UUID,
     event_id: UUID,
@@ -238,7 +237,7 @@ async def update_event_status(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventResponse]:
     """Transition an event to a new lifecycle status."""
     event = await _service.update_status(supabase, simulation_id, event_id, event_status)
     await AuditService.log_action(
@@ -246,23 +245,23 @@ async def update_event_status(
         details={"new_status": event_status},
     )
     await _service._post_event_mutation(supabase, simulation_id)
-    return {"success": True, "data": event}
+    return SuccessResponse(data=event)
 
 
-@router.get("/{event_id}/chains", response_model=SuccessResponse[list[EventChainResponse]])
+@router.get("/{event_id}/chains")
 async def get_event_chains(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EventChainResponse]]:
     """Get chain links for an event."""
     chains = await _service.get_chains(supabase, simulation_id, event_id)
-    return {"success": True, "data": chains}
+    return SuccessResponse(data=chains)
 
 
-@router.post("/{event_id}/chains", response_model=SuccessResponse[EventChainResponse], status_code=201)
+@router.post("/{event_id}/chains", status_code=201)
 async def create_event_chain(
     simulation_id: UUID,
     event_id: UUID,
@@ -270,7 +269,7 @@ async def create_event_chain(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventChainResponse]:
     """Link two events in a narrative chain."""
     chain = await _service.add_chain(
         supabase, simulation_id,
@@ -283,10 +282,10 @@ async def create_event_chain(
     await AuditService.log_action(
         supabase, simulation_id, user.id, "event_chains", chain["id"], "create",
     )
-    return {"success": True, "data": chain}
+    return SuccessResponse(data=chain)
 
 
-@router.delete("/{event_id}/chains/{chain_id}", response_model=SuccessResponse[EventChainResponse])
+@router.delete("/{event_id}/chains/{chain_id}")
 async def delete_event_chain(
     simulation_id: UUID,
     event_id: UUID,
@@ -294,34 +293,34 @@ async def delete_event_chain(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[EventChainResponse]:
     """Remove an event chain link."""
     deleted = await _service.delete_chain(supabase, simulation_id, chain_id)
-    return {"success": True, "data": deleted}
+    return SuccessResponse(data=deleted)
 
 
-@router.get("/{event_id}/zone-links", response_model=SuccessResponse[list])
+@router.get("/{event_id}/zone-links")
 async def get_event_zone_links(
     simulation_id: UUID,
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EventZoneLinkResponse]]:
     """Get zone links for an event (auto-assigned + manual)."""
     links = await EventService.get_zone_links(supabase, event_id)
-    return {"success": True, "data": links}
+    return SuccessResponse(data=links)
 
 
-@router.get("/by-tags/{tags}", response_model=SuccessResponse[list])
+@router.get("/by-tags/{tags}")
 async def get_events_by_tags(
     simulation_id: UUID,
     tags: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[EventResponse]]:
     """Get events by tags (comma-separated)."""
     tag_list = [t.strip() for t in tags.split(",") if t.strip()]
     events = await _service.get_by_tags(supabase, simulation_id, tag_list)
-    return {"success": True, "data": events}
+    return SuccessResponse(data=events)

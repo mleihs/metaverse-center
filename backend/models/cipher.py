@@ -59,3 +59,11 @@ class CipherStatsResponse(BaseModel):
     total_attempts: int = 0
     success_rate: float = 0.0
     recent_redemptions: list[CipherRedemptionRecord] = Field(default_factory=list)
+
+
+class CipherSetResponse(BaseModel):
+    """Confirmation of cipher code assignment to a post."""
+
+    post_id: str
+    unlock_code: str
+    difficulty: str

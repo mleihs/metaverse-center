@@ -41,7 +41,7 @@ router = APIRouter(
 # ── List ─────────────────────────────────────────────────────────────────────
 
 
-@router.get("", response_model=PaginatedResponse[ResonanceResponse])
+@router.get("")
 async def list_resonances(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
@@ -51,7 +51,7 @@ async def list_resonances(
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
     include_deleted: Annotated[bool, Query()] = False,
-) -> dict:
+) -> PaginatedResponse[ResonanceResponse]:
     """List substrate resonances."""
     data, total = await ResonanceService.list(
         supabase,
@@ -62,36 +62,35 @@ async def list_resonances(
         offset=offset,
         include_deleted=include_deleted,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
 # ── Get ──────────────────────────────────────────────────────────────────────
 
 
-@router.get("/{resonance_id}", response_model=SuccessResponse[ResonanceResponse])
+@router.get("/{resonance_id}")
 async def get_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Get a single resonance."""
     data = await ResonanceService.get(supabase, resonance_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Create (platform admin only) ────────────────────────────────────────────
 
 
-@router.post("", response_model=SuccessResponse[ResonanceResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_resonance(
     body: ResonanceCreate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Create a new substrate resonance (platform admin only)."""
     resonance = await ResonanceService.create(
         supabase, user.id, body.model_dump(exclude_none=True),
@@ -101,19 +100,19 @@ async def create_resonance(
         "substrate_resonances", resonance["id"], "create",
         {"title": resonance.get("title"), "source_category": resonance.get("source_category")},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)
 
 
 # ── Update (platform admin only) ────────────────────────────────────────────
 
 
-@router.put("/{resonance_id}", response_model=SuccessResponse[ResonanceResponse])
+@router.put("/{resonance_id}")
 async def update_resonance(
     resonance_id: UUID,
     body: ResonanceUpdate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Update a resonance (platform admin only)."""
     resonance = await ResonanceService.update(
         supabase, resonance_id, body.model_dump(exclude_none=True),
@@ -123,7 +122,7 @@ async def update_resonance(
         "substrate_resonances", resonance_id, "update",
         {"fields": list(body.model_dump(exclude_none=True).keys())},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)
 
 
 # ── Process Impact (platform admin only) ─────────────────────────────────────
@@ -131,7 +130,6 @@ async def update_resonance(
 
 @router.post(
     "/{resonance_id}/process-impact",
-    response_model=SuccessResponse[list[ResonanceImpactResponse]],
     status_code=201,
 )
 async def process_impact(
@@ -139,7 +137,7 @@ async def process_impact(
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ProcessImpactRequest = ProcessImpactRequest(),
-) -> dict:
+) -> SuccessResponse[list[ResonanceImpactResponse]]:
     """Process resonance impact across simulations (platform admin only).
 
     Spawns 2-3 events per simulation based on archetype + susceptibility.
@@ -162,36 +160,33 @@ async def process_impact(
         "substrate_resonances", resonance_id, "process_impact",
         {"total": len(impacts), "completed": completed, "failed": failed},
     )
-    return {"success": True, "data": impacts}
+    return SuccessResponse(data=impacts)
 
 
 # ── List Impacts ─────────────────────────────────────────────────────────────
 
 
-@router.get(
-    "/{resonance_id}/impacts",
-    response_model=SuccessResponse[list[ResonanceImpactResponse]],
-)
+@router.get("/{resonance_id}/impacts")
 async def list_impacts(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ResonanceImpactResponse]]:
     """List impact records for a resonance."""
     data = await ResonanceService.list_impacts(supabase, resonance_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Update Status (platform admin only) ──────────────────────────────────────
 
 
-@router.put("/{resonance_id}/status", response_model=SuccessResponse[ResonanceResponse])
+@router.put("/{resonance_id}/status")
 async def update_status(
     resonance_id: UUID,
     new_status: Annotated[str, Query()],
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Update resonance status (platform admin only)."""
     resonance = await ResonanceService.update_status(supabase, resonance_id, new_status)
     await AuditService.safe_log(
@@ -199,18 +194,18 @@ async def update_status(
         "substrate_resonances", resonance_id, "update",
         {"action": "status_transition", "new_status": new_status},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)
 
 
 # ── Restore (platform admin only) ──────────────────────────────────────────
 
 
-@router.post("/{resonance_id}/restore", response_model=SuccessResponse[ResonanceResponse])
+@router.post("/{resonance_id}/restore")
 async def restore_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Restore a soft-deleted resonance (platform admin only)."""
     resonance = await ResonanceService.restore(supabase, resonance_id)
     await AuditService.safe_log(
@@ -218,18 +213,18 @@ async def restore_resonance(
         "substrate_resonances", resonance_id, "update",
         {"action": "restore"},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)
 
 
 # ── Delete (platform admin only) ────────────────────────────────────────────
 
 
-@router.delete("/{resonance_id}", response_model=SuccessResponse[ResonanceResponse])
+@router.delete("/{resonance_id}")
 async def delete_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[ResonanceResponse]:
     """Soft-delete a resonance (platform admin only)."""
     resonance = await ResonanceService.soft_delete(supabase, resonance_id)
     await AuditService.safe_log(
@@ -237,4 +232,4 @@ async def delete_resonance(
         "substrate_resonances", resonance_id, "delete",
         {"action": "soft_delete"},
     )
-    return {"success": True, "data": resonance}
+    return SuccessResponse(data=resonance)

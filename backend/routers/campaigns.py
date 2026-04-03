@@ -10,6 +10,7 @@ from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.campaign import (
     CampaignAnalyticsResponse,
     CampaignCreate,
+    CampaignEventResponse,
     CampaignMetricResponse,
     CampaignResponse,
     CampaignUpdate,
@@ -33,7 +34,7 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=PaginatedResponse[CampaignResponse])
+@router.get("")
 async def list_campaigns(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -42,48 +43,47 @@ async def list_campaigns(
     campaign_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[CampaignResponse]:
     """List campaigns with optional type filter."""
     data, total = await CampaignService.list_campaigns(
         supabase, simulation_id, campaign_type=campaign_type, limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{campaign_id}", response_model=SuccessResponse[CampaignResponse])
+@router.get("/{campaign_id}")
 async def get_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[CampaignResponse]:
     """Get a single campaign."""
     campaign = await CampaignService.get(supabase, simulation_id, campaign_id)
-    return {"success": True, "data": campaign}
+    return SuccessResponse(data=campaign)
 
 
-@router.post("", response_model=SuccessResponse[CampaignResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_campaign(
     simulation_id: UUID,
     body: CampaignCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[CampaignResponse]:
     """Create a new campaign."""
     campaign = await CampaignService.create(
         supabase, simulation_id, user_id=user.id, data=body.model_dump(exclude_none=True),
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign["id"], "create")
-    return {"success": True, "data": campaign}
+    return SuccessResponse(data=campaign)
 
 
-@router.put("/{campaign_id}", response_model=SuccessResponse[CampaignResponse])
+@router.put("/{campaign_id}")
 async def update_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
@@ -91,13 +91,13 @@ async def update_campaign(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[CampaignResponse]:
     """Update a campaign."""
     campaign = await CampaignService.update(
         supabase, simulation_id, campaign_id, body.model_dump(exclude_none=True),
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "update")
-    return {"success": True, "data": campaign}
+    return SuccessResponse(data=campaign)
 
 
 @router.delete("/{campaign_id}")
@@ -114,33 +114,33 @@ async def delete_campaign(
     return SuccessResponse(data=MessageResponse(message="Campaign deleted."))
 
 
-@router.get("/{campaign_id}/analytics", response_model=SuccessResponse[CampaignAnalyticsResponse])
+@router.get("/{campaign_id}/analytics")
 async def get_campaign_analytics(
     simulation_id: UUID,
     campaign_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[CampaignAnalyticsResponse]:
     """Get aggregated analytics for a campaign."""
     data = await CampaignService.get_analytics(supabase, simulation_id, campaign_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/{campaign_id}/events", response_model=SuccessResponse[list])
+@router.get("/{campaign_id}/events")
 async def get_campaign_events(
     simulation_id: UUID,
     campaign_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[CampaignEventResponse]]:
     """Get all events linked to a campaign."""
     events = await CampaignService.get_campaign_events(supabase, simulation_id, campaign_id)
-    return {"success": True, "data": events}
+    return SuccessResponse(data=events)
 
 
-@router.post("/{campaign_id}/events", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/{campaign_id}/events", status_code=201)
 async def add_campaign_event(
     simulation_id: UUID,
     campaign_id: UUID,
@@ -149,22 +149,22 @@ async def add_campaign_event(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     integration_type: Annotated[str, Body(embed=True)] = "manual",
-) -> dict:
+) -> SuccessResponse[CampaignEventResponse]:
     """Link an event to a campaign."""
     result = await CampaignService.add_campaign_event(
         supabase, simulation_id, campaign_id, event_id, integration_type,
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.get("/{campaign_id}/metrics", response_model=SuccessResponse[list[CampaignMetricResponse]])
+@router.get("/{campaign_id}/metrics")
 async def get_campaign_metrics(
     simulation_id: UUID,
     campaign_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[CampaignMetricResponse]]:
     """Get metrics for a campaign."""
     metrics = await CampaignService.get_campaign_metrics(supabase, simulation_id, campaign_id)
-    return {"success": True, "data": metrics}
+    return SuccessResponse(data=metrics)

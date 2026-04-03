@@ -52,3 +52,12 @@ class ForgeAccessReviewRequest(BaseModel):
 
     action: str = Field(..., pattern=r"^(approve|reject)$")
     admin_notes: str | None = Field(None, max_length=500)
+
+
+class ForgeAccessReviewResponse(BaseModel):
+    """Result of an admin review action (RPC output)."""
+
+    request_id: str
+    action: str
+    user_email: str | None = None
+    locale: str | None = None

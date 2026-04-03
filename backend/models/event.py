@@ -95,6 +95,33 @@ class EventChainResponse(BaseModel):
     created_at: datetime
 
 
+class ReactionResponse(BaseModel):
+    """Event reaction with optional embedded agent summary."""
+
+    id: UUID
+    simulation_id: UUID
+    event_id: UUID
+    agent_id: UUID
+    reaction_text: str
+    emotion: str | None = None
+    confidence_score: float | None = None
+    created_at: datetime
+    agents: dict | None = None
+
+
+class EventZoneLinkResponse(BaseModel):
+    """Event-zone link with flattened zone metadata."""
+
+    id: UUID
+    event_id: UUID
+    zone_id: UUID
+    link_type: str | None = None
+    affinity_weight: float | None = None
+    zone_name: str | None = None
+    zone_type: str | None = None
+    created_at: datetime | None = None
+
+
 class GenerateEventReactionsRequest(BaseModel):
     """Request to generate agent reactions to an event."""
 

@@ -21,6 +21,7 @@ from backend.models.cipher import (
     CipherRedeemRequest,
     CipherRedemptionResponse,
     CipherSetRequest,
+    CipherSetResponse,
     CipherStatsResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
@@ -109,20 +110,17 @@ admin_router = APIRouter(
 )
 
 
-@admin_router.get("/ciphers", response_model=SuccessResponse[CipherStatsResponse])
+@admin_router.get("/ciphers")
 async def list_cipher_stats(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CipherStatsResponse]:
     """Get cipher redemption statistics."""
     stats = await CipherService.get_redemption_stats(admin_supabase)
-    return {"success": True, "data": stats}
+    return SuccessResponse(data=stats)
 
 
-@admin_router.post(
-    "/{post_id}/cipher",
-    response_model=SuccessResponse[dict],
-)
+@admin_router.post("/{post_id}/cipher")
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def set_cipher_for_post(
     request: Request,
@@ -130,7 +128,7 @@ async def set_cipher_for_post(
     body: CipherSetRequest,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[CipherSetResponse]:
     """Set or override the cipher code for an Instagram post."""
     logger.info("Instagram admin action", extra={
         "action": "set_cipher",
@@ -158,11 +156,8 @@ async def set_cipher_for_post(
         details={"difficulty": body.difficulty},
     )
 
-    return {
-        "success": True,
-        "data": {
-            "post_id": str(post_id),
-            "unlock_code": body.unlock_code.upper(),
-            "difficulty": body.difficulty,
-        },
-    }
+    return SuccessResponse(data=CipherSetResponse(
+        post_id=str(post_id),
+        unlock_code=body.unlock_code.upper(),
+        difficulty=body.difficulty,
+    ))

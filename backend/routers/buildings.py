@@ -7,7 +7,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, Query
 
 from backend.dependencies import get_current_user, get_supabase, require_role
-from backend.models.building import BuildingCreate, BuildingResponse, BuildingUpdate
+from backend.models.building import (
+    BuildingAgentResponse,
+    BuildingCreate,
+    BuildingResponse,
+    BuildingUpdate,
+    ProfessionRequirementResponse,
+)
 from backend.models.common import (
     CurrentUser,
     MessageResponse,
@@ -31,7 +37,7 @@ router = APIRouter(
 _service = BuildingService()
 
 
-@router.get("", response_model=PaginatedResponse[BuildingResponse])
+@router.get("")
 async def list_buildings(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -44,7 +50,7 @@ async def list_buildings(
     search: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[BuildingResponse]:
     """List buildings in a simulation with optional filters."""
     data, total = await _service.list(
         supabase,
@@ -57,34 +63,33 @@ async def list_buildings(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{building_id}", response_model=SuccessResponse[BuildingResponse])
+@router.get("/{building_id}")
 async def get_building(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[BuildingResponse]:
     """Get a single building."""
     building = await _service.get(supabase, simulation_id, building_id)
-    return {"success": True, "data": building}
+    return SuccessResponse(data=building)
 
 
-@router.post("", response_model=SuccessResponse[BuildingResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_building(
     simulation_id: UUID,
     body: BuildingCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[BuildingResponse]:
     """Create a new building."""
     building = await _service.create(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
@@ -97,10 +102,10 @@ async def create_building(
             simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
             entity_type="building",
         )
-    return {"success": True, "data": building}
+    return SuccessResponse(data=building)
 
 
-@router.put("/{building_id}", response_model=SuccessResponse[BuildingResponse])
+@router.put("/{building_id}")
 async def update_building(
     simulation_id: UUID,
     building_id: UUID,
@@ -109,7 +114,7 @@ async def update_building(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
-) -> dict:
+) -> SuccessResponse[BuildingResponse]:
     """Update a building."""
     update_data = body.model_dump(exclude_none=True)
     de_nulls = null_de_fields_for_update("buildings", update_data)
@@ -128,37 +133,37 @@ async def update_building(
                 simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
                 entity_type="building",
             )
-    return {"success": True, "data": building}
+    return SuccessResponse(data=building)
 
 
-@router.delete("/{building_id}", response_model=SuccessResponse[BuildingResponse])
+@router.delete("/{building_id}")
 async def delete_building(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[BuildingResponse]:
     """Soft-delete a building."""
     building = await _service.soft_delete(supabase, simulation_id, building_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "delete")
-    return {"success": True, "data": building}
+    return SuccessResponse(data=building)
 
 
-@router.get("/{building_id}/agents", response_model=SuccessResponse[list])
+@router.get("/{building_id}/agents")
 async def get_building_agents(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[BuildingAgentResponse]]:
     """Get all agents assigned to a building."""
     agents = await _service.get_agents(supabase, simulation_id, building_id)
-    return {"success": True, "data": agents}
+    return SuccessResponse(data=agents)
 
 
-@router.post("/{building_id}/assign-agent", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/{building_id}/assign-agent", status_code=201)
 async def assign_agent(
     simulation_id: UUID,
     building_id: UUID,
@@ -167,10 +172,10 @@ async def assign_agent(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     relation_type: Annotated[str, Query()] = "works",
-) -> dict:
+) -> SuccessResponse[BuildingAgentResponse]:
     """Assign an agent to a building."""
     relation = await _service.assign_agent(supabase, simulation_id, building_id, agent_id, relation_type)
-    return {"success": True, "data": relation}
+    return SuccessResponse(data=relation)
 
 
 @router.delete("/{building_id}/unassign-agent")
@@ -187,20 +192,20 @@ async def unassign_agent(
     return SuccessResponse(data=MessageResponse(message="Agent unassigned from building."))
 
 
-@router.get("/{building_id}/profession-requirements", response_model=SuccessResponse[list])
+@router.get("/{building_id}/profession-requirements")
 async def get_profession_requirements(
     simulation_id: UUID,
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ProfessionRequirementResponse]]:
     """Get profession requirements for a building."""
     requirements = await _service.get_profession_requirements(supabase, simulation_id, building_id)
-    return {"success": True, "data": requirements}
+    return SuccessResponse(data=requirements)
 
 
-@router.post("/{building_id}/profession-requirements", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/{building_id}/profession-requirements", status_code=201)
 async def set_profession_requirement(
     simulation_id: UUID,
     building_id: UUID,
@@ -210,7 +215,7 @@ async def set_profession_requirement(
     supabase: Annotated[Client, Depends(get_supabase)],
     min_qualification_level: Annotated[int, Query(ge=1, le=5)] = 1,
     is_mandatory: Annotated[bool, Query()] = False,
-) -> dict:
+) -> SuccessResponse[ProfessionRequirementResponse]:
     """Set or update a profession requirement for a building."""
     req = await _service.set_profession_requirement(
         supabase,
@@ -222,17 +227,17 @@ async def set_profession_requirement(
             "is_mandatory": is_mandatory,
         },
     )
-    return {"success": True, "data": req}
+    return SuccessResponse(data=req)
 
 
-@router.get("/by-zone/{zone_id}", response_model=SuccessResponse[list])
+@router.get("/by-zone/{zone_id}")
 async def get_buildings_by_zone(
     simulation_id: UUID,
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[BuildingResponse]]:
     """Get all buildings in a specific zone."""
     buildings = await _service.get_by_zone(supabase, simulation_id, zone_id)
-    return {"success": True, "data": buildings}
+    return SuccessResponse(data=buildings)

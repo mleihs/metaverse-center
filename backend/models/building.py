@@ -78,3 +78,27 @@ class BuildingResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+
+
+class BuildingAgentResponse(BaseModel):
+    """Building-agent assignment with embedded agent summary."""
+
+    id: UUID
+    simulation_id: UUID
+    building_id: UUID
+    agent_id: UUID
+    relation_type: str
+    created_at: datetime
+    agents: dict | None = None
+
+
+class ProfessionRequirementResponse(BaseModel):
+    """Building profession requirement."""
+
+    id: UUID
+    simulation_id: UUID
+    building_id: UUID
+    profession: str
+    min_qualification_level: int = 1
+    is_mandatory: bool = False
+    created_at: datetime

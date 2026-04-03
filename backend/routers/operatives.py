@@ -29,7 +29,7 @@ router = APIRouter(prefix="/api/v1/epochs/{epoch_id}/operatives", tags=["operati
 # ── Deploy ──────────────────────────────────────────────
 
 
-@router.post("", response_model=SuccessResponse[MissionResponse], status_code=201)
+@router.post("", status_code=201)
 async def deploy_operative(
     epoch_id: UUID,
     body: OperativeDeploy,
@@ -38,7 +38,7 @@ async def deploy_operative(
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[MissionResponse]:
     """Deploy an operative agent on a mission. Must be a participant in the epoch."""
     mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body, admin_supabase)
 
@@ -46,13 +46,13 @@ async def deploy_operative(
         supabase, simulation_id, user.id, "operative_missions", mission["id"], "create",
         details={"operative_type": body.operative_type, "epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": mission}
+    return SuccessResponse(data=mission)
 
 
 # ── List / Get ──────────────────────────────────────────
 
 
-@router.get("", response_model=PaginatedResponse[MissionResponse])
+@router.get("")
 async def list_missions(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -61,7 +61,7 @@ async def list_missions(
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[MissionResponse]:
     """List operative missions."""
     data, total = await OperativeService.list_missions(
         supabase, epoch_id,
@@ -69,36 +69,35 @@ async def list_missions(
         status_filter=status,
         limit=limit, offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/threats", response_model=SuccessResponse[list[MissionResponse]])
+@router.get("/threats")
 async def list_threats(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[MissionResponse]]:
     """List detected incoming operative threats for your simulation."""
     data = await OperativeService.list_threats(supabase, epoch_id, simulation_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Resolve ─────────────────────────────────────────────
 
 
-@router.post("/resolve", response_model=SuccessResponse[list[MissionResponse]])
+@router.post("/resolve")
 async def resolve_missions(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[list[MissionResponse]]:
     """Resolve all pending missions that have reached their resolve time. Creator only."""
     results = await OperativeService.resolve_pending_missions(admin_supabase, epoch_id)
 
@@ -115,13 +114,13 @@ async def resolve_missions(
         except Exception:
             logger.warning("Audit log failed for mission resolve", exc_info=True)
 
-    return {"success": True, "data": results}
+    return SuccessResponse(data=results)
 
 
 # ── Fortify Zone ────────────────────────────────────────
 
 
-@router.post("/fortify-zone", response_model=SuccessResponse[dict], status_code=201)
+@router.post("/fortify-zone", status_code=201)
 async def fortify_zone(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
@@ -130,27 +129,27 @@ async def fortify_zone(
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> dict:
+) -> SuccessResponse[dict]:
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
     result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id, admin_supabase)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "zone_fortifications", result.get("id"), "create",
         details={"zone_id": str(zone_id), "epoch_id": str(epoch_id)},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
 # ── Counter-Intelligence ────────────────────────────────
 
 
-@router.post("/counter-intel", response_model=SuccessResponse[list[MissionResponse]])
+@router.post("/counter-intel")
 async def counter_intel_sweep(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[MissionResponse]]:
     """Run a counter-intelligence sweep. Must be a participant in the epoch."""
     detected = await OperativeService.counter_intel_sweep(
         supabase, epoch_id, simulation_id
@@ -159,28 +158,28 @@ async def counter_intel_sweep(
         supabase, simulation_id, user.id, "operative_missions", None, "update",
         details={"action": "counter_intel_sweep", "detected_count": len(detected)},
     )
-    return {"success": True, "data": detected}
+    return SuccessResponse(data=detected)
 
 
 # ── Single Mission (parameterized — MUST come after static routes) ───
 
 
-@router.get("/{mission_id}", response_model=SuccessResponse[MissionResponse])
+@router.get("/{mission_id}")
 async def get_mission(
     epoch_id: UUID,
     mission_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MissionResponse]:
     """Get a single operative mission."""
     data = await OperativeService.get_mission(supabase, mission_id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
 # ── Recall ──────────────────────────────────────────────
 
 
-@router.post("/{mission_id}/recall", response_model=SuccessResponse[MissionResponse])
+@router.post("/{mission_id}/recall")
 async def recall_operative(
     epoch_id: UUID,
     mission_id: UUID,
@@ -188,11 +187,11 @@ async def recall_operative(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MissionResponse]:
     """Recall an active operative. Must be a participant in the epoch."""
     data = await OperativeService.recall(supabase, mission_id, simulation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
         details={"action": "recall"},
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)

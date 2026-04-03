@@ -66,3 +66,15 @@ class CampaignAnalyticsResponse(BaseModel):
     echo_count: int = 0
     avg_impact: float | None = None
     metrics_timeline: list[dict] = []
+
+
+class CampaignEventResponse(BaseModel):
+    """Campaign-event link with embedded event summary."""
+
+    id: UUID
+    simulation_id: UUID
+    campaign_id: UUID
+    event_id: UUID
+    integration_type: str = "manual"
+    created_at: datetime
+    events: dict | None = None

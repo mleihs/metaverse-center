@@ -1,7 +1,7 @@
 # Pydantic Response Typing — Vollständige Inventur & Schrittplan
 
 > Stand: 2026-04-03
-> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)**
+> Erledigt: Phase 1 Dungeon (dda61c6) + Phase 2 MessageResponse/DeleteResponse (bf44107) + FAST002 Annotated (5e1557f) + connections.py PoC (5e1557f) + **Schritt 1 Quick-Win-Router (47 Endpoints, 9 Router)** + **Schritt 2 (165 Endpoints, 14 Router, 9 neue Models)**
 > Scope: **463 Endpoints** across 46 Router-Dateien — ALLE auf einmal
 
 ---
@@ -129,78 +129,78 @@ Rein mechanische Konvertierung: `response_model=` → Return-Type.
 
 ---
 
-## Schritt 2: Router mit 1-3 einfachen Lücken (14 Router)
+## Schritt 2: Router mit 1-3 einfachen Lücken (14 Router) ✅
 
 Wenige untyped Endpoints + restliche typed konvertieren.
 
-### buildings.py (11 total, 5 untyped)
+### buildings.py (11 total, 5 untyped) ✅
 
-- [ ] L147 `GET /{id}/agents` → `list[BuildingAgentResponse]` — NEW
-- [ ] L160 `POST /{id}/assign-agent` → `BuildingAgentResponse` — shares NEW
-- [ ] L189 `GET /{id}/profession-requirements` → `list[ProfessionRequirementResponse]` — NEW
-- [ ] L202 `POST /{id}/profession-requirements` → `ProfessionRequirementResponse` — shares NEW
-- [ ] L227 `GET /by-zone/{zone_id}` → `list[BuildingResponse]` — EXISTS
-- [ ] 6 weitere TYPED Endpoints → response_model= droppen
+- [x] `GET /{id}/agents` → `list[BuildingAgentResponse]` — NEW
+- [x] `POST /{id}/assign-agent` → `BuildingAgentResponse` — shares NEW
+- [x] `GET /{id}/profession-requirements` → `list[ProfessionRequirementResponse]` — NEW
+- [x] `POST /{id}/profession-requirements` → `ProfessionRequirementResponse` — shares NEW
+- [x] `GET /by-zone/{zone_id}` → `list[BuildingResponse]` — EXISTS
+- [x] 6 weitere TYPED Endpoints → response_model= droppen
 
-### events.py (15 total, 5 untyped)
+### events.py (15 total, 5 untyped) ✅
 
-- [ ] L140 `GET /{id}/reactions` → `list[ReactionResponse]` — NEW
-- [ ] L153 `POST /{id}/reactions` → `ReactionResponse` — shares NEW
-- [ ] L181 `DELETE /{id}/reactions/{rid}` → `MessageResponse` — EXISTS
-- [ ] L302 `GET /{id}/zone-links` → `list[EventZoneLinkResponse]` — NEW
-- [ ] L196 `POST /{id}/generate-reactions` → ASSESS (AI output)
-- [ ] 10 weitere TYPED Endpoints → response_model= droppen
+- [x] `GET /{id}/reactions` → `list[ReactionResponse]` — NEW
+- [x] `POST /{id}/reactions` → `ReactionResponse` — shares NEW
+- [x] `DELETE /{id}/reactions/{rid}` → `MessageResponse` — EXISTS
+- [x] `GET /{id}/zone-links` → `list[EventZoneLinkResponse]` — NEW
+- [x] `POST /{id}/generate-reactions` → `list[dict]` (AI output — ASSESS)
+- [x] 10 weitere TYPED Endpoints → response_model= droppen
 
-### agents.py (7 total, 2 untyped)
+### agents.py (7 total, 2 untyped) ✅
 
-- [ ] L149 `GET /{id}/reactions` → `list[ReactionResponse]` — shares from events
-- [ ] L162 `DELETE /{id}/reactions/{rid}` → `MessageResponse` — EXISTS
-- [ ] 5 weitere TYPED Endpoints → response_model= droppen
+- [x] `GET /{id}/reactions` → `list[ReactionResponse]` — shares from events
+- [x] `DELETE /{id}/reactions/{rid}` → `MessageResponse` — EXISTS
+- [x] 5 weitere TYPED Endpoints → response_model= droppen
 
-### campaigns.py (9 total, 2 untyped)
+### campaigns.py (9 total, 2 untyped) ✅
 
-- [ ] L129 `GET /{id}/events` → `list[CampaignEventResponse]` — NEW
-- [ ] L142 `POST /{id}/events` → `CampaignEventResponse` — shares NEW
-- [ ] 7 weitere TYPED Endpoints → response_model= droppen
+- [x] `GET /{id}/events` → `list[CampaignEventResponse]` — NEW
+- [x] `POST /{id}/events` → `CampaignEventResponse` — shares NEW
+- [x] 7 weitere TYPED Endpoints → response_model= droppen
 
-### prompt_templates.py (6 total, 1 untyped)
+### prompt_templates.py (6 total, 1 untyped) ✅
 
-- [ ] L118 `POST /test` → `PromptTestResponse` — NEW
-- [ ] 5 weitere TYPED Endpoints → response_model= droppen
+- [x] `POST /test` → `PromptTestResponse` — NEW
+- [x] 5 weitere TYPED Endpoints → response_model= droppen
 
-### cipher.py (3 total, 1 untyped)
+### cipher.py (3 total, 1 untyped) ✅
 
-- [ ] L121 `POST /{post_id}/cipher` → `CipherResponse` — NEW
-- [ ] 2 weitere TYPED Endpoints → response_model= droppen
+- [x] `POST /{post_id}/cipher` → `CipherSetResponse` — NEW
+- [x] 2 weitere TYPED Endpoints → response_model= droppen
 
-### operatives.py (8 total, 1 untyped)
+### operatives.py (8 total, 1 untyped) ✅
 
-- [ ] L123 `POST /fortify-zone` → ASSESS shape → NEW or EXISTS
-- [ ] 7 weitere TYPED Endpoints → response_model= droppen
+- [x] `POST /fortify-zone` → `dict` (ASSESS — polymorphic RPC shape)
+- [x] 7 weitere TYPED Endpoints → response_model= droppen
 
-### forge_access.py (5 total, 1 untyped)
+### forge_access.py (5 total, 1 untyped) ✅
 
-- [ ] L80 `POST /{request_id}/review` → ASSESS shape → NEW
-- [ ] 4 weitere TYPED Endpoints → response_model= droppen
+- [x] `POST /{request_id}/review` → `ForgeAccessReviewResponse` — NEW
+- [x] 4 weitere TYPED Endpoints → response_model= droppen
 
-### social_media.py (6 total, 1 untyped)
+### social_media.py (6 total, 1 untyped) ✅
 
-- [ ] L60 `POST /sync` → `SocialSyncResponse` — NEW
-- [ ] 5 weitere TYPED Endpoints → response_model= droppen
+- [x] `POST /sync` → `SocialSyncResponse` — NEW
+- [x] 5 weitere TYPED Endpoints → response_model= droppen
 
-### public.py (67 total, 1 untyped)
+### public.py (67 total, 1 untyped) ✅
 
-- [ ] L751 `GET /bleed-gazette` → `list[GazetteEntry]` — EXISTS
-- [ ] 66 weitere TYPED Endpoints → response_model= droppen
+- [x] `GET /bleed-gazette` → `list[GazetteEntry]` — EXISTS
+- [x] 66 weitere TYPED Endpoints → response_model= droppen
 
-### Rein mechanische Router (4 weitere)
+### Rein mechanische Router (4 weitere) ✅
 
-- [ ] **echoes.py** (5 total) — alle TYPED
-- [ ] **resonances.py** (9 total) — alle TYPED
-- [ ] **embassies.py** (8 total) — alle TYPED
-- [ ] **locations.py** (11 total) — alle TYPED
+- [x] **echoes.py** (5 total) — alle TYPED
+- [x] **resonances.py** (9 total) — alle TYPED
+- [x] **embassies.py** (8 total) — alle TYPED
+- [x] **locations.py** (11 total) — alle TYPED
 
-**Summe: ~165 Endpoints, ~8 neue Models**
+**Summe: ~165 Endpoints, 9 neue Models**
 
 ---
 

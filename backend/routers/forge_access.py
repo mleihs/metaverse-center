@@ -18,6 +18,7 @@ from backend.models.forge_access import (
     ForgeAccessRequestResponse,
     ForgeAccessRequestWithEmail,
     ForgeAccessReviewRequest,
+    ForgeAccessReviewResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.forge_access_service import ForgeAccessService
@@ -31,12 +32,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=SuccessResponse[ForgeAccessRequestResponse])
+@router.post("")
 async def create_access_request(
     body: ForgeAccessRequestCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-):
+) -> SuccessResponse[ForgeAccessRequestResponse]:
     """Submit a clearance upgrade request."""
     data = await ForgeAccessService.create_request(
         supabase, user.id, body.message, user_email=user.email,
@@ -45,46 +46,46 @@ async def create_access_request(
         supabase, None, user.id,
         "forge_access_request", data.get("id"), "create",
     )
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/me", response_model=SuccessResponse[ForgeAccessRequestResponse | None])
+@router.get("/me")
 async def get_my_access_request(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
-):
+) -> SuccessResponse[ForgeAccessRequestResponse | None]:
     """Get the current user's latest clearance request."""
     data = await ForgeAccessService.get_user_status(supabase, user.id)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/pending", response_model=SuccessResponse[list[ForgeAccessRequestWithEmail]])
+@router.get("/pending")
 async def list_pending_requests(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-):
+) -> SuccessResponse[list[ForgeAccessRequestWithEmail]]:
     """List all pending clearance requests (admin only)."""
     data = await ForgeAccessService.list_pending(admin_supabase)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.get("/pending/count", response_model=SuccessResponse[int])
+@router.get("/pending/count")
 async def get_pending_count(
     _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-):
+) -> SuccessResponse[int]:
     """Get count of pending clearance requests (admin only)."""
     count = await ForgeAccessService.get_pending_count(admin_supabase)
-    return {"success": True, "data": count}
+    return SuccessResponse(data=count)
 
 
-@router.post("/{request_id}/review", response_model=SuccessResponse[dict])
+@router.post("/{request_id}/review")
 async def review_access_request(
     request_id: UUID,
     body: ForgeAccessReviewRequest,
     admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-):
+) -> SuccessResponse[ForgeAccessReviewResponse]:
     """Approve or reject a clearance request (admin only)."""
     result = await ForgeAccessService.review(
         admin_supabase, request_id, body.action, body.admin_notes, admin.id,
@@ -94,4 +95,4 @@ async def review_access_request(
         "forge_access_request", str(request_id), body.action,
         details={"admin_notes": body.admin_notes},
     )
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)

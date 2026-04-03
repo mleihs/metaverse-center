@@ -48,3 +48,10 @@ class SocialMediaPostResponse(BaseModel):
     last_synced_at: datetime
     created_at: datetime
     updated_at: datetime
+
+
+class SocialSyncResponse(BaseModel):
+    """Result of social media post sync operation."""
+
+    posts_synced: int
+    comments_synced: int

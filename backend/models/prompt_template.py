@@ -76,3 +76,14 @@ class PromptTemplateResponse(BaseModel):
     created_by_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class PromptTestResponse(BaseModel):
+    """Result of prompt template resolution test."""
+
+    template_type: str
+    locale: str
+    source: str
+    system_prompt: str | None = None
+    prompt_preview: str
+    model_hint: str | None = None

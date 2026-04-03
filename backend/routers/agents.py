@@ -10,10 +10,12 @@ from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.models.agent import AgentCreate, AgentResponse, AgentUpdate
 from backend.models.common import (
     CurrentUser,
+    MessageResponse,
     PaginatedResponse,
     PaginationMeta,
     SuccessResponse,
 )
+from backend.models.event import ReactionResponse
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
@@ -31,7 +33,7 @@ router = APIRouter(
 _service = AgentService()
 
 
-@router.get("", response_model=PaginatedResponse[AgentResponse])
+@router.get("")
 async def list_agents(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -43,7 +45,7 @@ async def list_agents(
     search: Annotated[str | None, Query(description="Full-text search")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> PaginatedResponse[AgentResponse]:
     """List agents in a simulation with optional filters."""
     data, total = await _service.list(
         supabase,
@@ -55,34 +57,33 @@ async def list_agents(
         limit=limit,
         offset=offset,
     )
-    return {
-        "success": True,
-        "data": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    }
+    return PaginatedResponse(
+        data=data,
+        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
+    )
 
 
-@router.get("/{agent_id}", response_model=SuccessResponse[AgentResponse])
+@router.get("/{agent_id}")
 async def get_agent(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentResponse]:
     """Get a single agent with professions, reactions, and building relations."""
     agent = await _service.get_with_details(supabase, simulation_id, agent_id)
-    return {"success": True, "data": agent}
+    return SuccessResponse(data=agent)
 
 
-@router.post("", response_model=SuccessResponse[AgentResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_agent(
     simulation_id: UUID,
     body: AgentCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentResponse]:
     """Create a new agent."""
     agent = await _service.create(
         supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
@@ -96,10 +97,10 @@ async def create_agent(
             simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
             entity_type="agent",
         )
-    return {"success": True, "data": agent}
+    return SuccessResponse(data=agent)
 
 
-@router.put("/{agent_id}", response_model=SuccessResponse[AgentResponse])
+@router.put("/{agent_id}")
 async def update_agent(
     simulation_id: UUID,
     agent_id: UUID,
@@ -108,7 +109,7 @@ async def update_agent(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
     if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
-) -> dict:
+) -> SuccessResponse[AgentResponse]:
     """Update an existing agent."""
     update_data = body.model_dump(exclude_none=True)
     # Null stale _de fields for changed EN fields
@@ -129,38 +130,38 @@ async def update_agent(
                 simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
                 entity_type="agent",
             )
-    return {"success": True, "data": agent}
+    return SuccessResponse(data=agent)
 
 
-@router.delete("/{agent_id}", response_model=SuccessResponse[AgentResponse])
+@router.delete("/{agent_id}")
 async def delete_agent(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[AgentResponse]:
     """Soft-delete an agent."""
     agent = await _service.soft_delete(supabase, simulation_id, agent_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent_id, "delete")
-    return {"success": True, "data": agent}
+    return SuccessResponse(data=agent)
 
 
 
-@router.get("/{agent_id}/reactions", response_model=SuccessResponse[list])
+@router.get("/{agent_id}/reactions")
 async def get_agent_reactions(
     simulation_id: UUID,
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[list[ReactionResponse]]:
     """Get all event reactions for an agent."""
     reactions = await _service.get_reactions(supabase, simulation_id, agent_id)
-    return {"success": True, "data": reactions}
+    return SuccessResponse(data=reactions)
 
 
-@router.delete("/{agent_id}/reactions/{reaction_id}", response_model=SuccessResponse[dict])
+@router.delete("/{agent_id}/reactions/{reaction_id}")
 async def delete_agent_reaction(
     simulation_id: UUID,
     agent_id: UUID,
@@ -168,7 +169,7 @@ async def delete_agent_reaction(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> dict:
+) -> SuccessResponse[MessageResponse]:
     """Delete a single reaction for an agent."""
-    deleted = await EventService.delete_reaction(supabase, simulation_id, reaction_id)
-    return {"success": True, "data": deleted}
+    await EventService.delete_reaction(supabase, simulation_id, reaction_id)
+    return SuccessResponse(data=MessageResponse(message="Reaction deleted."))
