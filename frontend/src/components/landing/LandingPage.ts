@@ -605,7 +605,7 @@ export class VelgLandingPage extends LitElement {
 
     .features__grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 2px;
       background: var(--color-border-light);
     }
@@ -827,7 +827,7 @@ export class VelgLandingPage extends LitElement {
 
     .steps {
       display: grid;
-      grid-template-columns: 1fr auto 1fr auto 1fr;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
       align-items: start;
       gap: 0;
     }
@@ -922,6 +922,38 @@ export class VelgLandingPage extends LitElement {
       .step-connector {
         display: none;
       }
+    }
+
+    /* ═══════════════════════════════════════════
+       DUNGEON INTRO (threshold before showcase)
+       ═══════════════════════════════════════════ */
+
+    .dungeon-intro {
+      padding: 100px 24px 48px;
+      text-align: center;
+      background: var(--color-surface, #0a0a0a);
+      border-top: 1px solid var(--border-dim);
+    }
+
+    .dungeon-intro__heading {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: 900;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-text-primary);
+      margin: 0 0 20px;
+    }
+
+    .dungeon-intro__body {
+      font-family: var(--font-bureau, 'Spectral', Georgia, serif);
+      font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+      font-weight: 500;
+      line-height: 1.7;
+      letter-spacing: 0.02em;
+      color: var(--color-text-secondary);
+      max-width: 560px;
+      margin: 0 auto;
     }
 
     /* ═══════════════════════════════════════════
@@ -1682,6 +1714,7 @@ export class VelgLandingPage extends LitElement {
         ${this._renderFeatures()}
         ${this._worlds.length > 0 ? this._renderWorldsPreview() : ''}
         <velg-landing-agent-showcase></velg-landing-agent-showcase>
+        ${this._renderDungeonIntro()}
         <velg-dungeon-showcase></velg-dungeon-showcase>
         ${this._renderLiveData()}
         ${this._renderHowItWorks()}
@@ -1901,6 +1934,28 @@ export class VelgLandingPage extends LitElement {
               <div class="feature-card__img-wrap">
                 <img
                   class="feature-card__img"
+                  src=${this._getStorageUrl('platform/landing/feature-dungeons.avif')}
+                  alt=${msg('Resonance fracture opening into layered archetype chambers')}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div class="feature-card__img-overlay"></div>
+                <span class="feature-card__tag">DEPTH-SIGNAL</span>
+                <div class="feature-card__accent"></div>
+              </div>
+              <div class="feature-card__body">
+                <h2 class="feature-card__title">${msg('Resonance Dungeons')}</h2>
+                <p class="feature-card__desc">
+                  ${msg('Send your agents where reality fractures. Eight archetypal dungeons \u2013 each shaped by its own literary DNA, from existential dread to political vertigo. Your agents face stress, fight what lives in the fracture, and return carrying aptitudes, artifacts, and scars that reshape your civilization.')}
+                </p>
+                <div class="feature-card__ref">TIER-3 // ACTIVE</div>
+              </div>
+            </div>
+
+            <div class="feature-card scroll-reveal" style="--i: 3">
+              <div class="feature-card__img-wrap">
+                <img
+                  class="feature-card__img"
                   src=${this._getStorageUrl('platform/landing/feature-substrate.avif')}
                   alt=${msg('Reality fracturing as real-world events bleed through')}
                   loading="lazy"
@@ -1915,7 +1970,7 @@ export class VelgLandingPage extends LitElement {
                 <p class="feature-card__desc">
                   ${msg('Real-world events ripple through every simulation as Resonances. An earthquake in Tokyo becomes a tremor in your fantasy kingdom. Events in one world bleed into others. The boundary between realities is thinner than you think.')}
                 </p>
-                <div class="feature-card__ref">TIER-3 // ACTIVE</div>
+                <div class="feature-card__ref">TIER-4 // ACTIVE</div>
               </div>
             </div>
           </div>
@@ -2005,6 +2060,18 @@ export class VelgLandingPage extends LitElement {
     `;
   }
 
+  private _renderDungeonIntro() {
+    return html`
+      <section class="dungeon-intro landing-section scroll-reveal" data-section="dungeon-intro" aria-label=${msg('Resonance Dungeons')}>
+        <div class="section-label">${msg('Depth Signal')}</div>
+        <h2 class="dungeon-intro__heading">${msg('Where Boundaries Thin')}</h2>
+        <p class="dungeon-intro__body">
+          ${msg('Your agents have memories, opinions, grudges. Now send them where reality fractures. Eight archetypal dungeons, each a different wound in the world \u2013 and a different test of what your civilization is made of.')}
+        </p>
+      </section>
+    `;
+  }
+
   private _renderLiveData() {
     const sims = this._stats?.simulation_count ?? null;
     const epochs = this._stats?.active_epoch_count ?? null;
@@ -2081,6 +2148,18 @@ export class VelgLandingPage extends LitElement {
 
             <div class="step scroll-reveal" style="--i: 2">
               <div class="step__badge">03</div>
+              <h3 class="step__title">${msg('Enter the Resonance')}</h3>
+              <p class="step__desc">
+                ${msg('Send agents into the fractures between worlds. Eight archetypal dungeons \u2013 procedurally generated, literarily informed \u2013 where stress is real and choices reshape who your agents become. What happens in the depths changes your world above.')}
+              </p>
+            </div>
+
+            <div class="step-connector scroll-reveal" style="--i: 2">
+              <div class="step-connector__line"></div>
+            </div>
+
+            <div class="step scroll-reveal" style="--i: 3">
+              <div class="step__badge">04</div>
               <h3 class="step__title">${msg('Shape the Metaverse')}</h3>
               <p class="step__desc">
                 ${msg('Your actions ripple across every connected world. Build embassies, trigger cross-simulation events, and watch as the stories of separate civilizations entangle.')}
