@@ -5,6 +5,7 @@ All endpoints are read-only (GET) except the admin-only refresh trigger.
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -36,9 +37,9 @@ router = APIRouter(
 )
 async def get_health_dashboard(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Full health dashboard combining all metrics for a simulation."""
     data = await GameMechanicsService.get_health_dashboard(supabase, simulation_id)
@@ -51,9 +52,9 @@ async def get_health_dashboard(
 )
 async def get_simulation_health(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Top-level simulation health metrics only."""
     data = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
@@ -66,14 +67,14 @@ async def get_simulation_health(
 )
 async def list_building_readiness(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    zone_id: UUID | None = Query(default=None),
-    order_by: str = Query(default="readiness"),
-    order_asc: bool = Query(default=True),
-    limit: int = Query(default=100, ge=1, le=500),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    zone_id: Annotated[UUID | None, Query()] = None,
+    order_by: Annotated[str, Query()] = "readiness",
+    order_asc: Annotated[bool, Query()] = True,
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List building readiness for all buildings in a simulation."""
     data, total = await GameMechanicsService.list_building_readiness(
@@ -95,9 +96,9 @@ async def list_building_readiness(
 async def get_building_readiness(
     simulation_id: UUID,
     building_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get readiness metrics for a single building."""
     data = await GameMechanicsService.get_building_readiness(
@@ -112,9 +113,9 @@ async def get_building_readiness(
 )
 async def list_zone_stability(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List zone stability for all zones in a simulation."""
     data = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
@@ -128,9 +129,9 @@ async def list_zone_stability(
 async def get_zone_stability(
     simulation_id: UUID,
     zone_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get stability metrics for a single zone."""
     data = await GameMechanicsService.get_zone_stability(
@@ -145,9 +146,9 @@ async def get_zone_stability(
 )
 async def list_embassy_effectiveness(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List embassy effectiveness for embassies involving this simulation."""
     data = await GameMechanicsService.list_embassy_effectiveness(
@@ -158,13 +159,12 @@ async def list_embassy_effectiveness(
 
 @router.post(
     "/health/refresh",
-    response_model=SuccessResponse[MessageResponse],
 )
 async def refresh_metrics(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Trigger a full refresh of all game mechanics materialized views.
 

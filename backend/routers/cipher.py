@@ -9,6 +9,7 @@ Admin endpoints:
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 import sentry_sdk
@@ -38,12 +39,12 @@ public_router = APIRouter(
 )
 
 
-@public_router.post("/dispatch", response_model=CipherRedemptionResponse)
+@public_router.post("/dispatch")
 @limiter.limit("10/minute")
 async def redeem_cipher(
     request: Request,
     body: CipherRedeemRequest,
-    admin_supabase: Client = Depends(get_admin_supabase),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> CipherRedemptionResponse:
     """Redeem a cipher code from an Instagram dispatch.
 
@@ -110,8 +111,8 @@ admin_router = APIRouter(
 
 @admin_router.get("/ciphers", response_model=SuccessResponse[CipherStatsResponse])
 async def list_cipher_stats(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get cipher redemption statistics."""
     stats = await CipherService.get_redemption_stats(admin_supabase)
@@ -127,8 +128,8 @@ async def set_cipher_for_post(
     request: Request,
     post_id: UUID,
     body: CipherSetRequest,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Set or override the cipher code for an Instagram post."""
     logger.info("Instagram admin action", extra={

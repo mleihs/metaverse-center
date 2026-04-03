@@ -5,6 +5,7 @@ Follows the standard router pattern: HTTP only, business logic in services.
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -44,8 +45,8 @@ router = APIRouter(tags=["Heartbeat"])
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat", response_model=SuccessResponse)
 async def get_heartbeat_overview(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get latest heartbeat tick + countdown for a simulation."""
     data = await HeartbeatService.get_heartbeat_overview(supabase, simulation_id)
@@ -55,8 +56,8 @@ async def get_heartbeat_overview(
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat/briefing", response_model=SuccessResponse)
 async def get_daily_briefing(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Daily briefing summary — health delta, event counts, active arcs."""
     data = await HeartbeatService.get_daily_briefing(supabase, simulation_id)
@@ -66,12 +67,12 @@ async def get_daily_briefing(
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
 async def list_heartbeat_entries(
     simulation_id: UUID,
-    entry_type: str | None = Query(default=None),
-    tick_number: int | None = Query(default=None),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    entry_type: Annotated[str | None, Query()] = None,
+    tick_number: Annotated[int | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Paginated chronicle feed (heartbeat entries)."""
     data, total = await HeartbeatService.list_heartbeat_entries(
@@ -89,11 +90,11 @@ async def list_heartbeat_entries(
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs", response_model=PaginatedResponse)
 async def list_narrative_arcs(
     simulation_id: UUID,
-    status_filter: str | None = Query(default=None, alias="status"),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List narrative arcs for a simulation."""
     data, total = await NarrativeArcService.list_arcs(
@@ -115,10 +116,10 @@ async def list_narrative_arcs(
 @router.get("/api/v1/public/simulations/{simulation_id}/heartbeat/entries", response_model=PaginatedResponse)
 async def public_list_heartbeat_entries(
     simulation_id: UUID,
-    entry_type: str | None = Query(default=None),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    entry_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Public chronicle feed — no authentication required."""
     data, total = await HeartbeatService.list_heartbeat_entries(
@@ -142,11 +143,11 @@ async def public_list_heartbeat_entries(
 async def list_bureau_responses(
     simulation_id: UUID,
     event_id: UUID,
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List bureau responses for an event."""
     data, total = await BureauResponseService.list_responses(
@@ -164,9 +165,9 @@ async def create_bureau_response(
     simulation_id: UUID,
     event_id: UUID,
     body: BureauResponseCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a bureau response to an event."""
     data = await BureauResponseService.create_response(
@@ -189,9 +190,9 @@ async def cancel_bureau_response(
     simulation_id: UUID,
     event_id: UUID,
     response_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Cancel a pending bureau response."""
     data = await BureauResponseService.cancel_response(supabase, simulation_id, response_id)
@@ -210,9 +211,9 @@ async def cancel_bureau_response(
 @router.get("/api/v1/simulations/{simulation_id}/attunements", response_model=SuccessResponse)
 async def list_attunements(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List attunements for a simulation."""
     data = await AttunementService.list_attunements(supabase, simulation_id)
@@ -223,9 +224,9 @@ async def list_attunements(
 async def set_attunement(
     simulation_id: UUID,
     body: AttunementCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Set a resonance signature attunement."""
     data = await AttunementService.set_attunement(
@@ -243,9 +244,9 @@ async def set_attunement(
 async def remove_attunement(
     simulation_id: UUID,
     signature: str,
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Remove an attunement."""
     data = await AttunementService.remove_attunement(supabase, simulation_id, signature)
@@ -264,12 +265,12 @@ async def remove_attunement(
 
 @router.get("/api/v1/anchors", response_model=PaginatedResponse)
 async def list_anchors(
-    status_filter: str | None = Query(default=None, alias="status"),
-    simulation_id: UUID | None = Query(default=None),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    simulation_id: Annotated[UUID | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all collaborative anchors."""
     data, total = await AnchorService.list_anchors(
@@ -286,10 +287,10 @@ async def list_anchors(
 @router.post("/api/v1/anchors", response_model=SuccessResponse)
 async def create_anchor(
     body: AnchorCreate,
-    simulation_id: UUID = Query(..., description="Simulation creating the anchor"),
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Simulation creating the anchor")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a collaborative anchor."""
     data = await AnchorService.create_anchor(
@@ -307,10 +308,10 @@ async def create_anchor(
 @router.post("/api/v1/anchors/{anchor_id}/join", response_model=SuccessResponse)
 async def join_anchor(
     anchor_id: UUID,
-    simulation_id: UUID = Query(..., description="Simulation joining the anchor"),
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Simulation joining the anchor")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Join an existing anchor."""
     data = await AnchorService.join_anchor(supabase, anchor_id, simulation_id, user.id)
@@ -324,10 +325,10 @@ async def join_anchor(
 @router.post("/api/v1/anchors/{anchor_id}/leave", response_model=SuccessResponse)
 async def leave_anchor(
     anchor_id: UUID,
-    simulation_id: UUID = Query(..., description="Simulation leaving the anchor"),
-    user: CurrentUser = Depends(get_current_user),
-    _role: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Simulation leaving the anchor")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Leave an anchor."""
     data = await AnchorService.leave_anchor(supabase, anchor_id, simulation_id)
@@ -345,8 +346,8 @@ async def leave_anchor(
 
 @router.get("/api/v1/admin/heartbeat/dashboard", response_model=SuccessResponse)
 async def get_heartbeat_dashboard(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Admin heartbeat dashboard — all simulation statuses + global config."""
     data = await HeartbeatService.get_admin_dashboard(admin_supabase)
@@ -355,8 +356,8 @@ async def get_heartbeat_dashboard(
 
 @router.get("/api/v1/admin/heartbeat/cascade-rules", response_model=SuccessResponse)
 async def list_cascade_rules(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """List all cascade rules from the resonance_cascade_rules table."""
     data = await HeartbeatService.list_cascade_rules(admin_supabase)
@@ -366,8 +367,8 @@ async def list_cascade_rules(
 @router.post("/api/v1/admin/heartbeat/force-tick/{simulation_id}", response_model=SuccessResponse)
 async def force_tick(
     simulation_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Force a heartbeat tick for a specific simulation (admin only)."""
     data = await HeartbeatService.force_tick(admin_supabase, simulation_id)

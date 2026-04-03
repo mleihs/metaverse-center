@@ -16,6 +16,7 @@ Endpoints:
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -57,12 +58,12 @@ async def _get_ig_service(admin_supabase: Client) -> InstagramService:
 
 @router.get("", response_model=PaginatedResponse[SocialStoryResponse])
 async def list_stories(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    status_filter: str | None = Query(None, alias="status"),
-    resonance_id: UUID | None = Query(None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    resonance_id: Annotated[UUID | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List social stories with optional filters."""
     data, total = await SocialStoryService.list_stories(
@@ -82,8 +83,8 @@ async def list_stories(
 @router.get("/sequence/{resonance_id}", response_model=SuccessResponse[SocialStorySequenceResponse])
 async def get_sequence(
     resonance_id: UUID,
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get the full story sequence for a resonance."""
     stories = await SocialStoryService.get_sequence(admin_supabase, resonance_id)
@@ -112,8 +113,8 @@ async def get_sequence(
 @router.get("/{story_id}", response_model=SuccessResponse[SocialStoryResponse])
 async def get_story(
     story_id: UUID,
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get a single social story by ID."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
@@ -133,8 +134,8 @@ async def get_story(
 async def skip_story(
     request: Request,
     story_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Skip a pending or ready story -- prevents it from being published."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
@@ -162,8 +163,8 @@ async def skip_story(
 async def unskip_story(
     request: Request,
     story_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Re-enable a skipped story -- sets it back to pending."""
     story = await SocialStoryService.get_by_id(admin_supabase, story_id)
@@ -187,8 +188,8 @@ async def unskip_story(
 async def force_compose(
     request: Request,
     story_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Force-compose a story image (bypasses scheduler)."""
     logger.info("Admin force-compose story", extra={
@@ -215,8 +216,8 @@ async def force_compose(
 async def force_publish(
     request: Request,
     story_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Force-publish a single story immediately (bypasses scheduler + throttle)."""
     logger.info("Admin force-publish story", extra={
@@ -243,8 +244,8 @@ async def force_publish(
 async def regenerate_story(
     request: Request,
     story_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Delete published story from Instagram, recompose image, and republish.
 
@@ -276,8 +277,8 @@ async def regenerate_story(
 
 @router.get("/settings", response_model=SuccessResponse[dict])
 async def get_story_settings(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get all resonance story pipeline settings."""
     settings_map = await SocialStoryService.get_pipeline_settings(admin_supabase)

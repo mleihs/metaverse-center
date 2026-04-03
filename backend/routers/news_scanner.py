@@ -4,6 +4,7 @@ All endpoints require platform admin. Uses admin (service_role) client.
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -30,8 +31,8 @@ router = APIRouter(
 
 @router.get("/dashboard", response_model=SuccessResponse)
 async def get_dashboard(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Scanner dashboard: adapter status, metrics, config."""
     data = await ScannerService.get_dashboard(admin_supabase)
@@ -40,8 +41,8 @@ async def get_dashboard(
 
 @router.get("/adapters", response_model=SuccessResponse)
 async def list_adapters(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """List all registered adapters with status."""
     dashboard = await ScannerService.get_dashboard(admin_supabase)
@@ -53,9 +54,9 @@ async def list_adapters(
 async def toggle_adapter(
     request: Request,
     name: str,
-    enabled: bool = Query(...),
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    enabled: Annotated[bool, Query()],
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Enable or disable an adapter in platform settings."""
     data = await ScannerService.toggle_adapter(admin_supabase, name, enabled)
@@ -70,9 +71,9 @@ async def toggle_adapter(
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def trigger_scan(
     request: Request,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: TriggerScanRequest | None = None,
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Manually trigger one scan cycle."""
     adapter_names = body.adapter_names if body else None
@@ -86,13 +87,13 @@ async def trigger_scan(
 
 @router.get("/candidates", response_model=PaginatedResponse)
 async def list_candidates(
-    status: str | None = Query(default=None),
-    category: str | None = Query(default=None),
-    source: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    status: Annotated[str | None, Query()] = None,
+    category: Annotated[str | None, Query()] = None,
+    source: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List scan candidates with filters."""
     data, total = await ScannerService.list_candidates(
@@ -116,9 +117,9 @@ async def list_candidates(
 async def approve_candidate(
     request: Request,
     candidate_id: UUID,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ApproveCandidateRequest | None = None,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Approve a candidate → create resonance."""
     delay_hours = body.delay_hours if body else 4
@@ -137,8 +138,8 @@ async def approve_candidate(
 async def reject_candidate(
     request: Request,
     candidate_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Reject a candidate."""
     await ScannerService.reject_candidate(admin_supabase, candidate_id, user.id)
@@ -154,8 +155,8 @@ async def update_candidate(
     request: Request,
     candidate_id: UUID,
     body: UpdateCandidateRequest,
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Edit a candidate's fields before approving."""
     update_data = body.model_dump(exclude_none=True)
@@ -168,11 +169,11 @@ async def update_candidate(
 
 @router.get("/scan-log", response_model=PaginatedResponse)
 async def get_scan_log(
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    source: str | None = Query(default=None),
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    source: Annotated[str | None, Query()] = None,
 ) -> dict:
     """Recent scan history."""
     data, total = await ScannerService.list_scan_log(

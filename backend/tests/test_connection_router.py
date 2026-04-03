@@ -14,6 +14,7 @@ from backend.dependencies import (
     get_supabase,
 )
 from backend.models.common import CurrentUser
+from backend.models.echo import ConnectionResponse
 from backend.tests.conftest import MOCK_ADMIN_EMAIL, MOCK_USER_ID
 
 ADMIN_EMAIL = MOCK_ADMIN_EMAIL
@@ -24,7 +25,7 @@ AGENT_ID = UUID("cccccccc-cccc-cccc-cccc-cccccccccccc")
 EVENT_ID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
 CONN_ID = UUID("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
 
-MOCK_CONN = {
+MOCK_CONN = ConnectionResponse.model_validate({
     "id": str(CONN_ID),
     "simulation_a_id": str(SIM_A),
     "simulation_b_id": str(SIM_B),
@@ -37,7 +38,7 @@ MOCK_CONN = {
     "updated_at": "2026-01-01T00:00:00Z",
     "simulation_a": None,
     "simulation_b": None,
-}
+})
 
 
 @pytest.fixture()
@@ -139,8 +140,7 @@ class TestCreateConnection:
 class TestUpdateConnection:
     @patch("backend.routers.connections.ConnectionService.update_connection", new_callable=AsyncMock)
     def test_updates_successfully(self, mock_update, client):
-        updated = {**MOCK_CONN, "strength": 0.9}
-        mock_update.return_value = updated
+        mock_update.return_value = MOCK_CONN.model_copy(update={"strength": 0.9})
 
         resp = client.patch(
             f"/api/v1/connections/{CONN_ID}",

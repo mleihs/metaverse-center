@@ -2,7 +2,7 @@
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
@@ -65,10 +65,10 @@ _orchestrator_service = ForgeOrchestratorService()
 
 @router.get("/drafts", response_model=PaginatedResponse[ForgeDraft])
 async def list_drafts(
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-    limit: int = Query(10, ge=1, le=50),
-    offset: int = Query(0, ge=0),
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     """List simulation forge drafts for the current user."""
     data, total = await _draft_service.list_drafts(supabase, user.id, limit, offset)
@@ -84,7 +84,7 @@ async def list_drafts(
 async def create_draft(
     request: Request,
     body: ForgeDraftCreate,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Initialize a new worldbuilding draft."""
@@ -99,7 +99,7 @@ async def create_draft(
 @router.get("/drafts/{draft_id}", response_model=SuccessResponse[dict])
 async def get_draft(
     draft_id: UUID,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Get draft details."""
@@ -113,7 +113,7 @@ async def update_draft(
     request: Request,
     draft_id: UUID,
     body: ForgeDraftUpdate,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Update draft state."""
@@ -143,10 +143,10 @@ async def update_draft(
     return {"success": True, "data": draft}
 
 
-@router.delete("/drafts/{draft_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/drafts/{draft_id}")
 async def delete_draft(
     draft_id: UUID,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Delete a draft."""
@@ -162,7 +162,7 @@ async def delete_draft(
 async def run_research(
     request: Request,
     draft_id: UUID,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Trigger the Astrolabe AI research phase."""
@@ -181,7 +181,7 @@ async def generate_chunk(
     request: Request,
     draft_id: UUID,
     chunk_type: Literal["geography", "agents", "buildings"],
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Trigger generation of a specific lore chunk (agents, buildings, etc)."""
@@ -201,9 +201,9 @@ async def generate_single_entity(
     request: Request,
     draft_id: UUID,
     entity_type: Literal["agents", "buildings"],
-    entity_index: int = Query(..., ge=0, le=11),
-    entity_total: int = Query(..., ge=3, le=12),
-    user: CurrentUser = Depends(require_architect()),
+    entity_index: Annotated[int, Query(ge=0, le=11)],
+    entity_total: Annotated[int, Query(ge=3, le=12)],
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Generate a single agent or building entity (per-entity loop)."""
@@ -222,7 +222,7 @@ async def generate_single_entity(
 async def generate_theme(
     request: Request,
     draft_id: UUID,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Generate an AI theme for a draft (Darkroom phase)."""
@@ -241,7 +241,7 @@ async def ignite_shard(
     request: Request,
     draft_id: UUID,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -273,7 +273,7 @@ async def ignite_shard(
 
 @router.get("/bundles", response_model=SuccessResponse[list[TokenBundle]])
 async def list_token_bundles(
-    user: CurrentUser = Depends(get_current_user),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
 ):
     """List active token bundles (product catalog)."""
@@ -283,7 +283,7 @@ async def list_token_bundles(
 
 @router.get("/wallet", response_model=SuccessResponse[dict])
 async def get_wallet(
-    user: CurrentUser = Depends(get_current_user),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
 ):
     """Get the current user's forge wallet."""
@@ -296,7 +296,7 @@ async def get_wallet(
 async def purchase_tokens(
     request: Request,
     body: PurchaseRequest,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Mock-purchase a token bundle. Grants tokens immediately."""
@@ -310,10 +310,10 @@ async def purchase_tokens(
 
 @router.get("/wallet/history", response_model=PaginatedResponse[TokenPurchaseHistory])
 async def get_purchase_history(
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
-    limit: int = Query(20, ge=1, le=50),
-    offset: int = Query(0, ge=0),
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     """Get the current user's token purchase history."""
     data, total = await _draft_service.get_purchase_history(
@@ -331,7 +331,7 @@ async def get_purchase_history(
 async def update_byok(
     request: Request,
     body: UpdateBYOKRequest,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
 ):
     """Update personal API keys (BYOK) for the Simulation Forge."""
@@ -371,9 +371,9 @@ async def update_byok(
 )
 async def list_feature_purchases(
     simulation_id: UUID,
-    feature_type: str | None = Query(None),
-    user: CurrentUser = Depends(get_current_user),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
+    feature_type: Annotated[str | None, Query()] = None,
 ):
     """List feature purchases for a simulation (own purchases only via RLS)."""
     purchases = await ForgeFeatureService.list_purchases(
@@ -391,7 +391,7 @@ async def purchase_darkroom_pass(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -426,7 +426,7 @@ async def darkroom_regenerate_image(
     entity_id: UUID,
     body: ImageRegenRequest,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -484,7 +484,7 @@ async def purchase_classified_dossier(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -517,16 +517,13 @@ async def evolve_dossier_section(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    arcanum: str = Query(..., description="Section arcanum: BETA, GAMMA, DELTA, or ZETA"),
-    trigger: str = Query(
-        ...,
-        description="Evolution trigger: agent_recruited,"
-        " building_constructed, resonance_event, periodic",
-    ),
-    entity_name: str = Query(..., description="Name of new entity/event"),
-    entity_detail: str = Query("", description="Additional context"),
-    user: CurrentUser = Depends(require_architect()),
+    arcanum: Annotated[str, Query(description="Section arcanum: BETA, GAMMA, DELTA, or ZETA")],
+    trigger: Annotated[str, Query(description="Evolution trigger: agent_recruited,"
+        " building_constructed, resonance_event, periodic")],
+    entity_name: Annotated[str, Query(description="Name of new entity/event")],
+    user: Annotated[CurrentUser, Depends(require_architect())],
     admin_supabase=Depends(get_admin_supabase),
+    entity_detail: Annotated[str, Query(description="Additional context")] = "",
 ):
     """Evolve a classified dossier section with new content."""
     valid_arcanums = {"BETA", "GAMMA", "DELTA", "ZETA"}
@@ -564,7 +561,7 @@ async def purchase_recruitment(
     simulation_id: UUID,
     body: RecruitmentRequest,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -601,7 +598,7 @@ async def purchase_chronicle_export(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -632,7 +629,7 @@ async def purchase_hires_archive(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    user: CurrentUser = Depends(require_architect()),
+    user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ):
@@ -660,7 +657,7 @@ async def purchase_hires_archive(
 )
 async def get_feature_purchase(
     purchase_id: str,
-    user: CurrentUser = Depends(get_current_user),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_supabase),
 ):
     """Get feature purchase status (for polling during generation)."""
@@ -675,7 +672,7 @@ async def get_feature_purchase(
 
 @router.get("/admin/stats", response_model=SuccessResponse[dict])
 async def get_forge_stats(
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Get global forge statistics (admin only)."""
@@ -685,9 +682,9 @@ async def get_forge_stats(
 
 @router.delete("/admin/purge", response_model=SuccessResponse[dict])
 async def purge_stale_drafts(
-    days: int = Query(30, ge=1, le=365),
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
+    days: Annotated[int, Query(ge=1, le=365)] = 30,
 ):
     """Purge stale drafts older than N days (admin only)."""
     cutoff = (datetime.now(tz=UTC) - timedelta(days=days)).isoformat()
@@ -702,7 +699,7 @@ async def purge_stale_drafts(
 
 @router.get("/admin/economy", response_model=SuccessResponse[TokenEconomyStats])
 async def get_token_economy_stats(
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Aggregated token economy stats (admin only)."""
@@ -712,7 +709,7 @@ async def get_token_economy_stats(
 
 @router.get("/admin/bundles", response_model=SuccessResponse[list[TokenBundle]])
 async def admin_list_bundles(
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """List ALL bundles including inactive (admin only)."""
@@ -724,7 +721,7 @@ async def admin_list_bundles(
 async def update_bundle(
     bundle_id: UUID,
     body: AdminBundleUpdate,
-    admin: CurrentUser = Depends(require_platform_admin()),
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Update bundle pricing/availability (admin only)."""
@@ -741,11 +738,11 @@ async def update_bundle(
 
 @router.get("/admin/purchases", response_model=PaginatedResponse[AdminPurchaseLedgerEntry])
 async def admin_list_purchases(
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
-    payment_method: str | None = Query(None),
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    payment_method: Annotated[str | None, Query()] = None,
 ):
     """Global purchase ledger (admin only)."""
     data, total = await ForgeDraftService.admin_list_purchases(
@@ -761,7 +758,7 @@ async def admin_list_purchases(
 @router.post("/admin/grant", response_model=SuccessResponse[dict])
 async def admin_grant_tokens(
     body: AdminTokenGrant,
-    admin: CurrentUser = Depends(require_platform_admin()),
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Grant tokens to a user (admin only). Creates auditable ledger entry."""
@@ -777,7 +774,7 @@ async def admin_grant_tokens(
 
 @router.get("/admin/byok-setting", response_model=SuccessResponse[dict])
 async def get_byok_system_setting(
-    _admin: CurrentUser = Depends(require_platform_admin()),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Get all BYOK-related platform settings (admin only)."""
@@ -787,8 +784,8 @@ async def get_byok_system_setting(
 
 @router.put("/admin/byok-setting", response_model=SuccessResponse[dict])
 async def update_byok_system_setting(
-    enabled: bool = Query(...),
-    admin: CurrentUser = Depends(require_platform_admin()),
+    enabled: Annotated[bool, Query()],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Toggle system-wide BYOK bypass (admin only)."""
@@ -802,8 +799,8 @@ async def update_byok_system_setting(
 
 @router.put("/admin/byok-access-policy", response_model=SuccessResponse[dict])
 async def update_byok_access_policy(
-    policy: str = Query(..., pattern="^(none|all|per_user)$"),
-    admin: CurrentUser = Depends(require_platform_admin()),
+    policy: Annotated[str, Query(pattern="^(none|all|per_user)$")],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
@@ -818,8 +815,8 @@ async def update_byok_access_policy(
 @router.put("/admin/user-byok-bypass/{target_user_id}", response_model=SuccessResponse[dict])
 async def update_user_byok_bypass(
     target_user_id: UUID,
-    enabled: bool = Query(...),
-    admin: CurrentUser = Depends(require_platform_admin()),
+    enabled: Annotated[bool, Query()],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Toggle per-user BYOK bypass (admin only)."""
@@ -834,8 +831,8 @@ async def update_user_byok_bypass(
 @router.put("/admin/user-byok-allowed/{target_user_id}", response_model=SuccessResponse[dict])
 async def update_user_byok_allowed(
     target_user_id: UUID,
-    enabled: bool = Query(...),
-    admin: CurrentUser = Depends(require_platform_admin()),
+    enabled: Annotated[bool, Query()],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ):
     """Grant or revoke BYOK access for a specific user (admin only)."""
@@ -856,15 +853,15 @@ class RegenerateImagesRequest(BaseModel):
     )
 
 
-@router.post("/admin/regenerate-images/{simulation_id}", response_model=SuccessResponse[MessageResponse])
+@router.post("/admin/regenerate-images/{simulation_id}")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def regenerate_images(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    body: RegenerateImagesRequest | None = None,
-    admin: CurrentUser = Depends(require_platform_admin()),
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
+    body: RegenerateImagesRequest | None = None,
 ) -> SuccessResponse[MessageResponse]:
     """Trigger batch image generation for an existing simulation (admin only).
 
@@ -904,15 +901,15 @@ class RetriggerBatchRequest(BaseModel):
     )
 
 
-@router.post("/admin/retrigger-batch/{simulation_id}", response_model=SuccessResponse[MessageResponse])
+@router.post("/admin/retrigger-batch/{simulation_id}")
 @limiter.limit(RATE_LIMIT_AI_GENERATION)
 async def retrigger_batch(
     request: Request,
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
-    body: RetriggerBatchRequest | None = None,
-    admin: CurrentUser = Depends(require_platform_admin()),
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
+    body: RetriggerBatchRequest | None = None,
 ) -> SuccessResponse[MessageResponse]:
     """Re-run batch generation (lore + images) for an existing simulation (admin only).
 

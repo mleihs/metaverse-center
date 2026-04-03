@@ -1,6 +1,7 @@
 """Router for forge access (clearance) request system."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -33,8 +34,8 @@ router = APIRouter(
 @router.post("", response_model=SuccessResponse[ForgeAccessRequestResponse])
 async def create_access_request(
     body: ForgeAccessRequestCreate,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ):
     """Submit a clearance upgrade request."""
     data = await ForgeAccessService.create_request(
@@ -49,8 +50,8 @@ async def create_access_request(
 
 @router.get("/me", response_model=SuccessResponse[ForgeAccessRequestResponse | None])
 async def get_my_access_request(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ):
     """Get the current user's latest clearance request."""
     data = await ForgeAccessService.get_user_status(supabase, user.id)
@@ -59,8 +60,8 @@ async def get_my_access_request(
 
 @router.get("/pending", response_model=SuccessResponse[list[ForgeAccessRequestWithEmail]])
 async def list_pending_requests(
-    _admin: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ):
     """List all pending clearance requests (admin only)."""
     data = await ForgeAccessService.list_pending(admin_supabase)
@@ -69,8 +70,8 @@ async def list_pending_requests(
 
 @router.get("/pending/count", response_model=SuccessResponse[int])
 async def get_pending_count(
-    _admin: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ):
     """Get count of pending clearance requests (admin only)."""
     count = await ForgeAccessService.get_pending_count(admin_supabase)
@@ -81,8 +82,8 @@ async def get_pending_count(
 async def review_access_request(
     request_id: UUID,
     body: ForgeAccessReviewRequest,
-    admin: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ):
     """Approve or reject a clearance request (admin only)."""
     result = await ForgeAccessService.review(

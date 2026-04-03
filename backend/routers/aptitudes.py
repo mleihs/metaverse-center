@@ -1,6 +1,7 @@
 """Agent aptitude CRUD endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -26,9 +27,9 @@ router = APIRouter(
 @router.get("/aptitudes", response_model=SuccessResponse[list[AptitudeResponse]])
 async def get_simulation_aptitudes(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all aptitude scores for all agents in a simulation."""
     data = await AptitudeService.get_all_for_simulation(supabase, simulation_id)
@@ -42,9 +43,9 @@ async def get_simulation_aptitudes(
 async def get_aptitudes(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all aptitude scores for an agent."""
     data = await AptitudeService.get_for_agent(supabase, simulation_id, agent_id)
@@ -56,9 +57,9 @@ async def set_aptitudes(
     simulation_id: UUID,
     agent_id: UUID,
     body: AptitudeSet,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Set all 6 aptitude scores for an agent (budget must equal 36)."""
     data = await AptitudeService.set_aptitudes(

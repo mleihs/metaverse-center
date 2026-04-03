@@ -1,6 +1,7 @@
 """Epoch scoring, leaderboard, and history endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -23,9 +24,9 @@ router = APIRouter(prefix="/api/v1/epochs/{epoch_id}/scores", tags=["scores"])
 @router.get("/leaderboard", response_model=SuccessResponse[list[LeaderboardEntry]])
 async def get_leaderboard(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    cycle: int | None = Query(default=None, description="Specific cycle (default: latest)"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    cycle: Annotated[int | None, Query(description="Specific cycle (default: latest)")] = None,
 ) -> dict:
     """Get the epoch leaderboard."""
     data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
@@ -35,8 +36,8 @@ async def get_leaderboard(
 @router.get("/standings", response_model=SuccessResponse[list[LeaderboardEntry]])
 async def get_final_standings(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get final standings for a completed epoch (includes dimension titles)."""
     data = await ScoringService.get_final_standings(supabase, epoch_id)
@@ -53,8 +54,8 @@ async def get_final_standings(
 async def get_score_history(
     epoch_id: UUID,
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all cycle scores for a simulation in an epoch."""
     data = await ScoringService.get_score_history(supabase, epoch_id, simulation_id)
@@ -67,9 +68,9 @@ async def get_score_history(
 @router.get("/intel-dossiers", response_model=SuccessResponse)
 async def get_intel_dossiers(
     epoch_id: UUID,
-    simulation_id: UUID = Query(..., description="Requesting simulation's ID"),
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Requesting simulation's ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get pre-aggregated intel dossiers for a simulation's spy reports."""
     data = await ScoringService.get_intel_dossiers(supabase, epoch_id, simulation_id)
@@ -82,10 +83,10 @@ async def get_intel_dossiers(
 @router.post("/compute", response_model=SuccessResponse[list[ScoreResponse]])
 async def compute_scores(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    cycle: int | None = Query(default=None, description="Cycle number (default: current)"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    cycle: Annotated[int | None, Query(description="Cycle number (default: current)")] = None,
 ) -> dict:
     """Compute and store scores for the current or specified cycle. Creator only."""
     from backend.services.epoch_service import EpochService

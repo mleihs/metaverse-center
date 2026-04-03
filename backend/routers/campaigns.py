@@ -1,6 +1,7 @@
 """Campaign CRUD endpoints with events and metrics."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Query
@@ -35,12 +36,12 @@ router = APIRouter(
 @router.get("", response_model=PaginatedResponse[CampaignResponse])
 async def list_campaigns(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    campaign_type: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    campaign_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List campaigns with optional type filter."""
     data, total = await CampaignService.list_campaigns(
@@ -57,9 +58,9 @@ async def list_campaigns(
 async def get_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single campaign."""
     campaign = await CampaignService.get(supabase, simulation_id, campaign_id)
@@ -70,9 +71,9 @@ async def get_campaign(
 async def create_campaign(
     simulation_id: UUID,
     body: CampaignCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new campaign."""
     campaign = await CampaignService.create(
@@ -87,9 +88,9 @@ async def update_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
     body: CampaignUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a campaign."""
     campaign = await CampaignService.update(
@@ -99,13 +100,13 @@ async def update_campaign(
     return {"success": True, "data": campaign}
 
 
-@router.delete("/{campaign_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{campaign_id}")
 async def delete_campaign(
     simulation_id: UUID,
     campaign_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Delete a campaign. Requires admin role."""
     await CampaignService.hard_delete(supabase, simulation_id, campaign_id)
@@ -117,9 +118,9 @@ async def delete_campaign(
 async def get_campaign_analytics(
     simulation_id: UUID,
     campaign_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get aggregated analytics for a campaign."""
     data = await CampaignService.get_analytics(supabase, simulation_id, campaign_id)
@@ -130,9 +131,9 @@ async def get_campaign_analytics(
 async def get_campaign_events(
     simulation_id: UUID,
     campaign_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all events linked to a campaign."""
     events = await CampaignService.get_campaign_events(supabase, simulation_id, campaign_id)
@@ -143,11 +144,11 @@ async def get_campaign_events(
 async def add_campaign_event(
     simulation_id: UUID,
     campaign_id: UUID,
-    event_id: UUID = Body(..., embed=True),
-    integration_type: str = Body(default="manual", embed=True),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    event_id: Annotated[UUID, Body(embed=True)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    integration_type: Annotated[str, Body(embed=True)] = "manual",
 ) -> dict:
     """Link an event to a campaign."""
     result = await CampaignService.add_campaign_event(
@@ -160,9 +161,9 @@ async def add_campaign_event(
 async def get_campaign_metrics(
     simulation_id: UUID,
     campaign_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get metrics for a campaign."""
     metrics = await CampaignService.get_campaign_metrics(supabase, simulation_id, campaign_id)

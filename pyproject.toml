@@ -45,7 +45,7 @@ target-version = "py313"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN"]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN", "FAST"]
 
 [tool.ruff.lint.per-file-ignores]
 "backend/tests/**/*.py" = ["S101", "S105", "S106", "E501"]

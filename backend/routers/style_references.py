@@ -1,6 +1,7 @@
 """Style reference image endpoints for img2img art direction."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -27,15 +28,15 @@ router = APIRouter(
 @router.post("/upload", response_model=SuccessResponse[StyleReferenceUploadResponse])
 async def upload_reference(
     simulation_id: UUID,
-    entity_type: str = Form(...),
-    scope: str = Form(...),
-    entity_id: UUID | None = Form(default=None),
-    strength: float = Form(default=0.75),
-    file: UploadFile | None = File(default=None),
-    image_url: str | None = Form(default=None),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    entity_type: Annotated[str, Form()],
+    scope: Annotated[str, Form()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    entity_id: Annotated[UUID | None, Form()] = None,
+    strength: Annotated[float, Form()] = 0.75,
+    file: Annotated[UploadFile | None, File()] = None,
+    image_url: Annotated[str | None, Form()] = None,
 ) -> dict:
     """Upload a style reference image (file or URL).
 
@@ -103,9 +104,9 @@ async def upload_reference(
 async def list_references(
     simulation_id: UUID,
     entity_type: str,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all configured style references for an entity type."""
     if entity_type not in ("portrait", "building"):
@@ -120,15 +121,15 @@ async def list_references(
     return {"success": True, "data": refs}
 
 
-@router.delete("/{entity_type}", response_model=SuccessResponse[DeleteResponse])
+@router.delete("/{entity_type}")
 async def delete_reference(
     simulation_id: UUID,
     entity_type: str,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
     scope: str = "global",
     entity_id: UUID | None = None,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
 ) -> SuccessResponse[DeleteResponse]:
     """Remove a style reference image."""
     if entity_type not in ("portrait", "building"):

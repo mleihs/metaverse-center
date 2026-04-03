@@ -1,6 +1,7 @@
 """Chat endpoints — with optional AI response generation and group chat support."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -36,9 +37,9 @@ _service = ChatService()
 @router.get("/conversations", response_model=SuccessResponse[list[ConversationResponse]])
 async def list_conversations(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all conversations for the current user."""
     conversations = await _service.list_conversations(supabase, simulation_id, user.id)
@@ -49,9 +50,9 @@ async def list_conversations(
 async def create_conversation(
     simulation_id: UUID,
     body: ConversationCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Start a new conversation with one or more agents."""
     conversation = await _service.create_conversation(
@@ -68,11 +69,11 @@ async def create_conversation(
 async def get_messages(
     simulation_id: UUID,
     conversation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=50, ge=1, le=200),
-    before: str | None = Query(default=None, description="Cursor: ISO timestamp for pagination"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    before: Annotated[str | None, Query(description="Cursor: ISO timestamp for pagination")] = None,
 ) -> dict:
     """Get messages for a conversation with cursor-based pagination."""
     messages = await _service.get_messages(supabase, conversation_id, limit=limit, before=before)
@@ -90,9 +91,9 @@ async def send_message(
     simulation_id: UUID,
     conversation_id: UUID,
     body: MessageCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Send a message in a conversation.
 
@@ -145,9 +146,9 @@ async def add_agent(
     simulation_id: UUID,
     conversation_id: UUID,
     body: AddAgentRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Add an agent to a conversation."""
     result = await _service.add_agent(supabase, conversation_id, body.agent_id)
@@ -166,9 +167,9 @@ async def remove_agent(
     simulation_id: UUID,
     conversation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Remove an agent from a conversation."""
     await _service.remove_agent(supabase, conversation_id, agent_id)
@@ -186,9 +187,9 @@ async def remove_agent(
 async def get_event_references(
     simulation_id: UUID,
     conversation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List event references for a conversation."""
     refs = await _service.get_event_references(supabase, conversation_id)
@@ -204,9 +205,9 @@ async def add_event_reference(
     simulation_id: UUID,
     conversation_id: UUID,
     body: EventReferenceCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Add an event reference to a conversation."""
     ref = await _service.add_event_reference(
@@ -227,9 +228,9 @@ async def remove_event_reference(
     simulation_id: UUID,
     conversation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Remove an event reference from a conversation."""
     await _service.remove_event_reference(supabase, conversation_id, event_id)
@@ -244,9 +245,9 @@ async def remove_event_reference(
 async def archive_conversation(
     simulation_id: UUID,
     conversation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Archive a conversation (soft-delete)."""
     conversation = await _service.archive_conversation(supabase, conversation_id)
@@ -260,9 +261,9 @@ async def archive_conversation(
 async def delete_conversation(
     simulation_id: UUID,
     conversation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Permanently delete a conversation and all its messages."""
     conversation = await _service.delete_conversation(supabase, conversation_id)

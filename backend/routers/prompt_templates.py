@@ -1,6 +1,7 @@
 """Prompt template management endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -28,14 +29,14 @@ router = APIRouter(
 @router.get("", response_model=PaginatedResponse[PromptTemplateResponse])
 async def list_prompt_templates(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
-    locale: str | None = Query(default=None),
-    prompt_category: str | None = Query(default=None),
-    include_platform: bool = Query(default=True),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    locale: Annotated[str | None, Query()] = None,
+    prompt_category: Annotated[str | None, Query()] = None,
+    include_platform: Annotated[bool, Query()] = True,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List prompt templates (simulation-specific + optionally platform defaults)."""
     data, total = await PromptTemplateService.list_templates(
@@ -59,9 +60,9 @@ async def list_prompt_templates(
 async def get_prompt_template(
     simulation_id: UUID,
     template_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single prompt template."""
     data = await PromptTemplateService.get(supabase, template_id)
@@ -72,9 +73,9 @@ async def get_prompt_template(
 async def create_prompt_template(
     simulation_id: UUID,
     body: PromptTemplateCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new prompt template for this simulation."""
     data = await PromptTemplateService.create(
@@ -89,9 +90,9 @@ async def update_prompt_template(
     simulation_id: UUID,
     template_id: UUID,
     body: PromptTemplateUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a prompt template."""
     data = await PromptTemplateService.update(
@@ -101,13 +102,13 @@ async def update_prompt_template(
     return {"success": True, "data": data}
 
 
-@router.delete("/{template_id}", response_model=SuccessResponse[DeleteResponse])
+@router.delete("/{template_id}")
 async def delete_prompt_template(
     simulation_id: UUID,
     template_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[DeleteResponse]:
     """Soft-delete a prompt template (set is_active=False)."""
     await PromptTemplateService.deactivate(supabase, simulation_id, template_id)
@@ -118,11 +119,11 @@ async def delete_prompt_template(
 @router.post("/test", response_model=SuccessResponse[dict])
 async def test_prompt_template(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
-    template_type: str = Query(..., description="Template type to test"),
-    locale: str = Query(default="en"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    template_type: Annotated[str, Query(description="Template type to test")],
+    locale: Annotated[str, Query()] = "en",
 ) -> dict:
     """Test prompt resolution -- shows which template would be used."""
     resolver = PromptResolver(supabase, simulation_id)

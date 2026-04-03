@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
@@ -18,9 +19,9 @@ router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 @router.get("/me/dashboard", response_model=SuccessResponse[DashboardData])
 async def get_dashboard(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get aggregated dashboard data for the authenticated user."""
     data = await UserDashboardService.get_dashboard(supabase, admin, user.id)
@@ -29,9 +30,9 @@ async def get_dashboard(
 
 @router.get("/me", response_model=SuccessResponse[UserWithMemberships])
 async def get_me(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get the current user's profile with simulation memberships."""
     rows = await MemberService.get_user_memberships(supabase, user.id)
@@ -67,8 +68,8 @@ async def get_me(
     response_model=SuccessResponse[NotificationPreferencesResponse],
 )
 async def get_notification_preferences(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get the current user's notification preferences.
 
@@ -84,8 +85,8 @@ async def get_notification_preferences(
 )
 async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update the current user's notification preferences (upsert)."""
     result = await UserProfileService.upsert_notification_preferences(
@@ -98,8 +99,8 @@ async def update_notification_preferences(
 
 @router.patch("/me/onboarding", response_model=SuccessResponse)
 async def complete_onboarding(
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Mark the current user's onboarding as completed."""
     await UserProfileService.complete_onboarding(admin, user.id)

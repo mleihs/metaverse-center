@@ -1,6 +1,7 @@
 """Agent relationship CRUD endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -31,9 +32,9 @@ router = APIRouter(
 async def list_agent_relationships(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all relationships for a specific agent (both directions)."""
     data = await RelationshipService.list_for_agent(supabase, simulation_id, agent_id)
@@ -46,11 +47,11 @@ async def list_agent_relationships(
 )
 async def list_simulation_relationships(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=100, ge=1, le=500),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all relationships in a simulation (for graph views)."""
     data, total = await RelationshipService.list_for_simulation(
@@ -72,9 +73,9 @@ async def create_relationship(
     simulation_id: UUID,
     agent_id: UUID,
     body: RelationshipCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a relationship between two agents."""
     result = await RelationshipService.create_relationship(
@@ -94,9 +95,9 @@ async def update_relationship(
     simulation_id: UUID,
     relationship_id: UUID,
     body: RelationshipUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a relationship."""
     result = await RelationshipService.update_relationship(
@@ -110,14 +111,13 @@ async def update_relationship(
 
 @router.delete(
     "/relationships/{relationship_id}",
-    response_model=SuccessResponse[MessageResponse],
 )
 async def delete_relationship(
     simulation_id: UUID,
     relationship_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Delete a relationship."""
     await RelationshipService.delete_relationship(supabase, simulation_id, relationship_id)

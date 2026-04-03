@@ -1,6 +1,7 @@
 """Simulation connection endpoints (platform-level, not simulation-scoped)."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -20,43 +21,43 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SuccessResponse[list[ConnectionResponse]])
+@router.get("")
 async def list_connections(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-) -> dict:
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[list[ConnectionResponse]]:
     """List all simulation connections."""
     data = await ConnectionService.list_all(supabase, active_only=False)
-    return {"success": True, "data": data}
+    return SuccessResponse(data=data)
 
 
-@router.post("", response_model=SuccessResponse[ConnectionResponse], status_code=201)
+@router.post("", status_code=201)
 async def create_connection(
     body: ConnectionCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _admin_check: None = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _admin_check: Annotated[None, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[ConnectionResponse]:
     """Create a simulation connection (platform admin only)."""
     result = await ConnectionService.create_connection(
         admin_supabase, body.model_dump(exclude_none=True)
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "simulation_connections", result.get("id"), "create",
+        admin_supabase, None, user.id, "simulation_connections", result.id, "create",
         details={"source_id": str(body.source_id) if hasattr(body, "source_id") else None},
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.patch("/{connection_id}", response_model=SuccessResponse[ConnectionResponse])
+@router.patch("/{connection_id}")
 async def update_connection(
     connection_id: UUID,
     body: ConnectionUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _admin_check: None = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
-) -> dict:
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _admin_check: Annotated[None, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[ConnectionResponse]:
     """Update a simulation connection (platform admin only)."""
     result = await ConnectionService.update_connection(
         admin_supabase, connection_id, body.model_dump(exclude_none=True)
@@ -65,15 +66,15 @@ async def update_connection(
         admin_supabase, None, user.id, "simulation_connections", connection_id, "update",
     )
     ConnectionService._map_data_cache.clear()
-    return {"success": True, "data": result}
+    return SuccessResponse(data=result)
 
 
-@router.delete("/{connection_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{connection_id}")
 async def delete_connection(
     connection_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _admin_check: None = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _admin_check: Annotated[None, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Delete a simulation connection (platform admin only)."""
     await ConnectionService.delete_connection(admin_supabase, connection_id)

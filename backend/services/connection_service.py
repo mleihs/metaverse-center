@@ -13,7 +13,9 @@ import httpx
 from cachetools import TTLCache
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
+from pydantic import TypeAdapter
 
+from backend.models.echo import ConnectionResponse
 from backend.services.base_service import serialize_for_json
 from backend.services.cache_config import get_ttl
 from backend.services.embassy_service import EmbassyService
@@ -26,6 +28,7 @@ class ConnectionService:
     """Simulation connection operations."""
 
     table_name = "simulation_connections"
+    _connections_adapter = TypeAdapter(list[ConnectionResponse])
 
     # In-process TTL cache for get_map_data
     _map_data_cache: TTLCache = TTLCache(maxsize=1, ttl=get_ttl("cache_map_data_ttl"))
@@ -36,7 +39,7 @@ class ConnectionService:
         supabase: Client,
         *,
         active_only: bool = True,
-    ) -> list[dict]:
+    ) -> list[ConnectionResponse]:
         """List all simulation connections."""
         query = (
             supabase.table(cls.table_name)
@@ -50,7 +53,7 @@ class ConnectionService:
             query = query.eq("is_active", True)
 
         response = await query.execute()
-        return response.data or []
+        return cls._connections_adapter.validate_python(response.data or [])
 
     @classmethod
     async def get_map_data(
@@ -343,7 +346,7 @@ class ConnectionService:
         cls,
         admin_supabase: Client,
         data: dict,
-    ) -> dict:
+    ) -> ConnectionResponse:
         """Create a simulation connection (admin only)."""
         response = await (
             admin_supabase.table(cls.table_name)
@@ -355,7 +358,7 @@ class ConnectionService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to create connection.",
             )
-        return response.data[0]
+        return ConnectionResponse.model_validate(response.data[0])
 
     @classmethod
     async def update_connection(
@@ -363,7 +366,7 @@ class ConnectionService:
         admin_supabase: Client,
         connection_id: UUID,
         data: dict,
-    ) -> dict:
+    ) -> ConnectionResponse:
         """Update a simulation connection (admin only)."""
         update_data = {**serialize_for_json(data), "updated_at": datetime.now(UTC).isoformat()}
         response = await (
@@ -377,14 +380,14 @@ class ConnectionService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Connection '{connection_id}' not found.",
             )
-        return response.data[0]
+        return ConnectionResponse.model_validate(response.data[0])
 
     @classmethod
     async def delete_connection(
         cls,
         admin_supabase: Client,
         connection_id: UUID,
-    ) -> dict:
+    ) -> None:
         """Delete a simulation connection (admin only)."""
         response = await (
             admin_supabase.table(cls.table_name)
@@ -397,4 +400,3 @@ class ConnectionService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Connection '{connection_id}' not found.",
             )
-        return response.data[0]

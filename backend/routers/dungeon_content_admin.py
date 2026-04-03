@@ -8,7 +8,7 @@ Audit-logged via AuditService.safe_log().
 from __future__ import annotations
 
 import logging
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
@@ -106,12 +106,12 @@ class ContentCreateRequest(BaseModel):
 @router.get("/{content_type}")
 async def list_content(
     content_type: ContentType,
-    archetype: str | None = Query(None, description="Filter by archetype"),
-    search: str | None = Query(None, description="Search in text fields"),
-    page: int = Query(1, ge=1),
-    per_page: int = Query(100, ge=1, le=500),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    archetype: Annotated[str | None, Query(description="Filter by archetype")] = None,
+    search: Annotated[str | None, Query(description="Search in text fields")] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    per_page: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> PaginatedResponse:
     """List content rows with optional archetype filter and search."""
     table = _get_table(content_type)
@@ -156,8 +156,8 @@ async def list_content(
 async def get_content_item(
     content_type: ContentType,
     item_id: str,
-    admin_supabase: Client = Depends(get_admin_supabase),
-    _user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
 ) -> SuccessResponse:
     """Get a single content item by ID."""
     table = _get_table(content_type)
@@ -204,8 +204,8 @@ async def update_content_item(
     content_type: ContentType,
     item_id: str,
     body: ContentUpdateRequest,
-    admin_supabase: Client = Depends(get_admin_supabase),
-    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
 ) -> SuccessResponse:
     """Update a content item. Reloads content cache after mutation."""
     table = _get_table(content_type)
@@ -259,8 +259,8 @@ async def create_content_item(
     request: Request,
     content_type: ContentType,
     body: ContentCreateRequest,
-    admin_supabase: Client = Depends(get_admin_supabase),
-    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
 ) -> SuccessResponse:
     """Create a new content item. Reloads content cache after mutation."""
     table = _get_table(content_type)
@@ -297,8 +297,8 @@ async def delete_content_item(
     request: Request,
     content_type: ContentType,
     item_id: str,
-    admin_supabase: Client = Depends(get_admin_supabase),
-    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
 ) -> SuccessResponse:
     """Delete a content item. Reloads content cache after mutation."""
     table = _get_table(content_type)
@@ -346,8 +346,8 @@ async def delete_content_item(
 @limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
 async def reload_cache(
     request: Request,
-    admin_supabase: Client = Depends(get_admin_supabase),
-    user: CurrentUser = Depends(require_platform_admin()),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
 ) -> SuccessResponse:
     """Force reload of the dungeon content cache."""
     await load_all_content(admin_supabase)

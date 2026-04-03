@@ -584,14 +584,31 @@ class TestRejectEcho:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+MOCK_CONN_ROW = {
+    "id": str(CONN_ID),
+    "simulation_a_id": str(SIM_A),
+    "simulation_b_id": str(SIM_B),
+    "connection_type": "bleed",
+    "bleed_vectors": ["resonance"],
+    "strength": 0.7,
+    "description": None,
+    "is_active": True,
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-01T00:00:00Z",
+    "simulation_a": None,
+    "simulation_b": None,
+}
+
+
 class TestConnectionListAll:
     @pytest.mark.asyncio
     async def test_returns_connections(self):
-        rows = [{"id": str(CONN_ID), "is_active": True}]
+        rows = [MOCK_CONN_ROW]
         mock, builder, _ = _mock_supabase(data=rows)
 
         result = await ConnectionService.list_all(mock, active_only=True)
-        assert result == rows
+        assert len(result) == 1
+        assert result[0].id == CONN_ID
         builder.eq.assert_any_call("is_active", True)
 
     @pytest.mark.asyncio
@@ -680,13 +697,12 @@ class TestConnectionGetMapData:
 class TestConnectionCreate:
     @pytest.mark.asyncio
     async def test_creates_connection(self):
-        created = {"id": str(CONN_ID), "is_active": True}
-        mock, builder, _ = _mock_supabase(data=[created])
+        mock, builder, _ = _mock_supabase(data=[MOCK_CONN_ROW])
 
         result = await ConnectionService.create_connection(
             mock, {"simulation_a_id": str(SIM_A), "simulation_b_id": str(SIM_B)},
         )
-        assert result["id"] == str(CONN_ID)
+        assert result.id == CONN_ID
         builder.insert.assert_called_once()
 
     @pytest.mark.asyncio
@@ -701,13 +717,13 @@ class TestConnectionCreate:
 class TestConnectionUpdate:
     @pytest.mark.asyncio
     async def test_updates_connection(self):
-        updated = {"id": str(CONN_ID), "strength": 0.8}
-        mock, builder, _ = _mock_supabase(data=[updated])
+        updated_row = {**MOCK_CONN_ROW, "strength": 0.8}
+        mock, builder, _ = _mock_supabase(data=[updated_row])
 
         result = await ConnectionService.update_connection(
             mock, CONN_ID, {"strength": 0.8},
         )
-        assert result["strength"] == 0.8
+        assert result.strength == 0.8
 
     @pytest.mark.asyncio
     async def test_raises_not_found(self):
@@ -721,11 +737,9 @@ class TestConnectionUpdate:
 class TestConnectionDelete:
     @pytest.mark.asyncio
     async def test_deletes_connection(self):
-        deleted = {"id": str(CONN_ID)}
-        mock, builder, _ = _mock_supabase(data=[deleted])
+        mock, builder, _ = _mock_supabase(data=[MOCK_CONN_ROW])
 
-        result = await ConnectionService.delete_connection(mock, CONN_ID)
-        assert result["id"] == str(CONN_ID)
+        await ConnectionService.delete_connection(mock, CONN_ID)
         builder.delete.assert_called_once()
 
     @pytest.mark.asyncio

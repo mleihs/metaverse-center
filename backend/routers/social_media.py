@@ -2,6 +2,7 @@
 
 import logging
 from datetime import UTC, datetime
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -33,13 +34,13 @@ router = APIRouter(
 @router.get("/posts", response_model=PaginatedResponse[SocialMediaPostResponse])
 async def list_posts(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
     platform: str | None = None,
     transformed: bool | None = None,
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List social media posts."""
     data, total = await SocialMediaService.list_posts(
@@ -62,9 +63,9 @@ async def list_posts(
 async def sync_posts(
     request: Request,
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Sync posts from configured Facebook page."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -118,9 +119,9 @@ async def transform_post(
     simulation_id: UUID,
     post_id: UUID,
     body: TransformPostRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Transform a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -158,9 +159,9 @@ async def analyze_sentiment(
     simulation_id: UUID,
     post_id: UUID,
     body: AnalyzeSentimentRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Analyze sentiment of a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -203,9 +204,9 @@ async def generate_reactions(
     simulation_id: UUID,
     post_id: UUID,
     body: GenerateReactionsRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate agent reactions to a social media post."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -268,9 +269,9 @@ async def generate_reactions(
 async def get_comments(
     simulation_id: UUID,
     post_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all comments for a social media post."""
     comments = await SocialMediaService.get_comments(supabase, simulation_id, post_id)

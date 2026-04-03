@@ -16,6 +16,7 @@ Endpoints:
 """
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 import sentry_sdk
@@ -62,11 +63,11 @@ async def _get_bluesky_service(admin_supabase: Client) -> BlueskyService:
 
 @router.get("/queue", response_model=PaginatedResponse[BlueskyQueueItem])
 async def list_queue(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    status_filter: str | None = Query(None, alias="status"),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List Bluesky content queue with simulation metadata."""
     data, total = await BlueskyContentService.list_queue(
@@ -85,8 +86,8 @@ async def list_queue(
 @router.get("/queue/{post_id}", response_model=SuccessResponse[BlueskyPostResponse])
 async def get_post(
     post_id: UUID,
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get a single Bluesky post by ID."""
     post = await BlueskyContentService.get_post(admin_supabase, post_id)
@@ -101,8 +102,8 @@ async def get_post(
 async def skip_post(
     request: Request,
     post_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Skip a post — don't publish to Bluesky."""
     logger.info("Bluesky admin action", extra={
@@ -124,8 +125,8 @@ async def skip_post(
 async def unskip_post(
     request: Request,
     post_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Re-enable a skipped post."""
     logger.info("Bluesky admin action", extra={
@@ -150,8 +151,8 @@ async def unskip_post(
 async def force_publish(
     request: Request,
     post_id: UUID,
-    user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Force-publish a post immediately (bypasses scheduler)."""
     logger.info("Bluesky admin action", extra={
@@ -207,9 +208,9 @@ async def force_publish(
 
 @router.get("/analytics", response_model=SuccessResponse[BlueskyAnalytics])
 async def get_analytics(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    days: int = Query(default=30, ge=1, le=365),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    days: Annotated[int, Query(ge=1, le=365)] = 30,
 ) -> dict:
     """Get aggregated Bluesky performance analytics."""
     analytics = await BlueskyContentService.get_analytics(admin_supabase, days=days)
@@ -221,8 +222,8 @@ async def get_analytics(
 
 @router.get("/settings", response_model=SuccessResponse[dict])
 async def get_bluesky_settings(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get all Bluesky pipeline configuration settings."""
     settings_map = await BlueskyContentService.get_pipeline_settings(admin_supabase)
@@ -234,8 +235,8 @@ async def get_bluesky_settings(
 
 @router.get("/status", response_model=SuccessResponse[dict])
 async def get_connection_status(
-    _user: CurrentUser = Depends(require_platform_admin()),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Validate Bluesky credentials and return connection status."""
     config = await BlueskyContentService.load_bluesky_credentials(admin_supabase)

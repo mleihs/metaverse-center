@@ -6,6 +6,7 @@ Write operations are handled by the heartbeat tick pipeline, not this router.
 
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -47,9 +48,9 @@ router = APIRouter(
 async def get_agent_mood(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get the current emotional state of an agent."""
     data = await AgentMoodService.get_agent_mood(supabase, agent_id, simulation_id)
@@ -63,9 +64,9 @@ async def get_agent_mood(
 async def list_agent_moodlets(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all active moodlets for an agent."""
     data = await AgentMoodService.list_moodlets(supabase, agent_id, simulation_id)
@@ -82,9 +83,9 @@ async def list_agent_moodlets(
 async def get_agent_needs(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get the current need levels of an agent."""
     data = await AgentNeedsService.get_agent_needs(supabase, agent_id, simulation_id)
@@ -101,9 +102,9 @@ async def get_agent_needs(
 async def list_agent_opinions(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all opinions this agent holds about other agents."""
     data = await AgentOpinionService.list_opinions(supabase, agent_id, simulation_id)
@@ -117,10 +118,10 @@ async def list_agent_opinions(
 async def list_agent_opinion_modifiers(
     simulation_id: UUID,
     agent_id: UUID,
-    target_agent_id: UUID | None = Query(default=None),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    target_agent_id: Annotated[UUID | None, Query()] = None,
 ) -> dict:
     """List active opinion modifiers for an agent, optionally filtered by target."""
     data = await AgentOpinionService.list_modifiers(
@@ -138,15 +139,15 @@ async def list_agent_opinion_modifiers(
 )
 async def list_activities(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    agent_id: UUID | None = Query(default=None),
-    activity_type: str | None = Query(default=None),
-    min_significance: int = Query(default=1, ge=1, le=10),
-    since_hours: int = Query(default=24, ge=1, le=168),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    agent_id: Annotated[UUID | None, Query()] = None,
+    activity_type: Annotated[str | None, Query()] = None,
+    min_significance: Annotated[int, Query(ge=1, le=10)] = 1,
+    since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
 ) -> dict:
     """List autonomous activities for a simulation with filters."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
@@ -172,9 +173,9 @@ async def list_activities(
 )
 async def get_simulation_mood_summary(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get aggregate mood/stress state for all agents in a simulation."""
     summary = await MorningBriefingService._compute_mood_summary(
@@ -192,11 +193,11 @@ async def get_simulation_mood_summary(
 )
 async def get_morning_briefing(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    since_hours: int = Query(default=24, ge=1, le=168),
-    mode: str = Query(default="narrative", pattern=r"^(narrative|data)$"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
+    mode: Annotated[str, Query(pattern=r"^(narrative|data)$")] = "narrative",
 ) -> dict:
     """Generate a morning briefing with prioritized activity summary."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)

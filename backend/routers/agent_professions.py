@@ -1,6 +1,7 @@
 """Agent profession CRUD endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -28,9 +29,9 @@ router = APIRouter(
 async def list_professions(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all professions for an agent."""
     data = await AgentProfessionService.list_for_agent(
@@ -44,9 +45,9 @@ async def add_profession(
     simulation_id: UUID,
     agent_id: UUID,
     body: AgentProfessionCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Add a profession to an agent. Primary-profession uniqueness enforced by DB trigger."""
     result = await AgentProfessionService.add(
@@ -62,9 +63,9 @@ async def update_profession(
     agent_id: UUID,
     profession_id: UUID,
     body: AgentProfessionUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update an agent profession."""
     result = await AgentProfessionService.update(
@@ -78,14 +79,14 @@ async def update_profession(
     return {"success": True, "data": result}
 
 
-@router.delete("/{profession_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{profession_id}")
 async def delete_profession(
     simulation_id: UUID,
     agent_id: UUID,
     profession_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a profession from an agent."""
     await AgentProfessionService.remove(

@@ -1,5 +1,6 @@
 import logging
 from datetime import UTC, datetime
+from typing import Annotated
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from fastapi import APIRouter, Depends, Response
@@ -50,7 +51,7 @@ async def robots_txt() -> PlainTextResponse:
 
 
 @router.get("/sitemap.xml")
-async def sitemap_xml(supabase: Client = Depends(get_anon_supabase)) -> Response:
+async def sitemap_xml(supabase: Annotated[Client, Depends(get_anon_supabase)]) -> Response:
     simulations = await SimulationService.list_active_slugs(supabase)
 
     urlset = Element("urlset")

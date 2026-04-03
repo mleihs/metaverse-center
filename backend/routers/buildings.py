@@ -1,6 +1,7 @@
 """Building CRUD endpoints with agent assignments and profession requirements."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query
@@ -33,16 +34,16 @@ _service = BuildingService()
 @router.get("", response_model=PaginatedResponse[BuildingResponse])
 async def list_buildings(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    building_type: str | None = Query(default=None),
-    building_condition: str | None = Query(default=None),
-    zone_id: UUID | None = Query(default=None),
-    city_id: UUID | None = Query(default=None),
-    search: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    building_type: Annotated[str | None, Query()] = None,
+    building_condition: Annotated[str | None, Query()] = None,
+    zone_id: Annotated[UUID | None, Query()] = None,
+    city_id: Annotated[UUID | None, Query()] = None,
+    search: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List buildings in a simulation with optional filters."""
     data, total = await _service.list(
@@ -67,9 +68,9 @@ async def list_buildings(
 async def get_building(
     simulation_id: UUID,
     building_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single building."""
     building = await _service.get(supabase, simulation_id, building_id)
@@ -80,9 +81,9 @@ async def get_building(
 async def create_building(
     simulation_id: UUID,
     body: BuildingCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new building."""
     building = await _service.create(
@@ -104,10 +105,10 @@ async def update_building(
     simulation_id: UUID,
     building_id: UUID,
     body: BuildingUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
-    if_updated_at: str | None = Header(default=None, alias="If-Updated-At"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
 ) -> dict:
     """Update a building."""
     update_data = body.model_dump(exclude_none=True)
@@ -134,9 +135,9 @@ async def update_building(
 async def delete_building(
     simulation_id: UUID,
     building_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Soft-delete a building."""
     building = await _service.soft_delete(supabase, simulation_id, building_id)
@@ -148,9 +149,9 @@ async def delete_building(
 async def get_building_agents(
     simulation_id: UUID,
     building_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all agents assigned to a building."""
     agents = await _service.get_agents(supabase, simulation_id, building_id)
@@ -161,25 +162,25 @@ async def get_building_agents(
 async def assign_agent(
     simulation_id: UUID,
     building_id: UUID,
-    agent_id: UUID = Query(...),
-    relation_type: str = Query(default="works"),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    agent_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    relation_type: Annotated[str, Query()] = "works",
 ) -> dict:
     """Assign an agent to a building."""
     relation = await _service.assign_agent(supabase, simulation_id, building_id, agent_id, relation_type)
     return {"success": True, "data": relation}
 
 
-@router.delete("/{building_id}/unassign-agent", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{building_id}/unassign-agent")
 async def unassign_agent(
     simulation_id: UUID,
     building_id: UUID,
-    agent_id: UUID = Query(...),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    agent_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove an agent from a building."""
     await _service.unassign_agent(supabase, simulation_id, building_id, agent_id)
@@ -190,9 +191,9 @@ async def unassign_agent(
 async def get_profession_requirements(
     simulation_id: UUID,
     building_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get profession requirements for a building."""
     requirements = await _service.get_profession_requirements(supabase, simulation_id, building_id)
@@ -203,12 +204,12 @@ async def get_profession_requirements(
 async def set_profession_requirement(
     simulation_id: UUID,
     building_id: UUID,
-    profession: str = Query(...),
-    min_qualification_level: int = Query(default=1, ge=1, le=5),
-    is_mandatory: bool = Query(default=False),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    profession: Annotated[str, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    min_qualification_level: Annotated[int, Query(ge=1, le=5)] = 1,
+    is_mandatory: Annotated[bool, Query()] = False,
 ) -> dict:
     """Set or update a profession requirement for a building."""
     req = await _service.set_profession_requirement(
@@ -228,9 +229,9 @@ async def set_profession_requirement(
 async def get_buildings_by_zone(
     simulation_id: UUID,
     zone_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all buildings in a specific zone."""
     buildings = await _service.get_by_zone(supabase, simulation_id, zone_id)

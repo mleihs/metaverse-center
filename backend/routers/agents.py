@@ -1,6 +1,7 @@
 """Agent CRUD endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query
@@ -33,15 +34,15 @@ _service = AgentService()
 @router.get("", response_model=PaginatedResponse[AgentResponse])
 async def list_agents(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    system: str | None = Query(default=None),
-    gender: str | None = Query(default=None),
-    primary_profession: str | None = Query(default=None),
-    search: str | None = Query(default=None, description="Full-text search"),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    system: Annotated[str | None, Query()] = None,
+    gender: Annotated[str | None, Query()] = None,
+    primary_profession: Annotated[str | None, Query()] = None,
+    search: Annotated[str | None, Query(description="Full-text search")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List agents in a simulation with optional filters."""
     data, total = await _service.list(
@@ -65,9 +66,9 @@ async def list_agents(
 async def get_agent(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single agent with professions, reactions, and building relations."""
     agent = await _service.get_with_details(supabase, simulation_id, agent_id)
@@ -78,9 +79,9 @@ async def get_agent(
 async def create_agent(
     simulation_id: UUID,
     body: AgentCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new agent."""
     agent = await _service.create(
@@ -103,10 +104,10 @@ async def update_agent(
     simulation_id: UUID,
     agent_id: UUID,
     body: AgentUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
-    if_updated_at: str | None = Header(default=None, alias="If-Updated-At"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
 ) -> dict:
     """Update an existing agent."""
     update_data = body.model_dump(exclude_none=True)
@@ -135,9 +136,9 @@ async def update_agent(
 async def delete_agent(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Soft-delete an agent."""
     agent = await _service.soft_delete(supabase, simulation_id, agent_id)
@@ -150,9 +151,9 @@ async def delete_agent(
 async def get_agent_reactions(
     simulation_id: UUID,
     agent_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all event reactions for an agent."""
     reactions = await _service.get_reactions(supabase, simulation_id, agent_id)
@@ -164,9 +165,9 @@ async def delete_agent_reaction(
     simulation_id: UUID,
     agent_id: UUID,
     reaction_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Delete a single reaction for an agent."""
     deleted = await EventService.delete_reaction(supabase, simulation_id, reaction_id)

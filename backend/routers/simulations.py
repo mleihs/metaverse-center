@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -39,11 +40,11 @@ _lore_service = LoreService()
 
 @router.get("", response_model=PaginatedResponse[SimulationResponse])
 async def list_simulations(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    status: str | None = Query(default=None, description="Filter by simulation status"),
-    limit: int = Query(default=25, ge=1, le=100, description="Max results per page"),
-    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    status: Annotated[str | None, Query(description="Filter by simulation status")] = None,
+    limit: Annotated[int, Query(ge=1, le=100, description="Max results per page")] = 25,
+    offset: Annotated[int, Query(ge=0, description="Pagination offset")] = 0,
 ) -> dict:
     """List all simulations the current user is a member of."""
     data, total = await _service.list_simulations(
@@ -69,8 +70,8 @@ async def list_simulations(
 @router.post("", response_model=SuccessResponse[SimulationResponse], status_code=201)
 async def create_simulation(
     body: SimulationCreate,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new simulation. Auto-generates slug if not provided. Creator becomes owner."""
     simulation = await _service.create_simulation(
@@ -89,8 +90,8 @@ async def create_simulation(
 @router.get("/{simulation_id}", response_model=SuccessResponse[SimulationDashboardResponse])
 async def get_simulation(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single simulation with aggregated counts from the dashboard view."""
     simulation = await _service.get_simulation(
@@ -105,9 +106,9 @@ async def get_simulation(
 async def update_simulation(
     simulation_id: UUID,
     body: SimulationUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a simulation. Requires admin role or higher."""
     simulation = await _service.update_simulation(
@@ -125,9 +126,9 @@ async def update_simulation(
 @router.delete("/{simulation_id}", response_model=SuccessResponse[SimulationResponse])
 async def delete_simulation(
     simulation_id: UUID,
-    auth: tuple[CurrentUser, bool] = Depends(require_owner_or_platform_admin()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    auth: Annotated[tuple[CurrentUser, bool], Depends(require_owner_or_platform_admin())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Soft-delete a simulation. Requires owner role or platform admin."""
     _user, is_admin = auth
@@ -151,11 +152,11 @@ async def delete_simulation(
 async def execute_threshold_action(
     simulation_id: UUID,
     action_type: str,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    target_building_id: UUID | None = Query(default=None),
-    target_zone_id: UUID | None = Query(default=None),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    target_building_id: Annotated[UUID | None, Query()] = None,
+    target_zone_id: Annotated[UUID | None, Query()] = None,
 ) -> dict:
     """Execute a threshold action (scorched_earth, emergency_draft, reality_anchor).
 
@@ -179,9 +180,9 @@ async def execute_threshold_action(
 async def create_lore_section(
     simulation_id: UUID,
     body: LoreSectionCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new lore section for a simulation."""
     section = await _lore_service.create_section(
@@ -199,9 +200,9 @@ async def update_lore_section(
     simulation_id: UUID,
     section_id: UUID,
     body: LoreSectionUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a lore section. Stale _de fields are auto-nulled."""
     section = await _lore_service.update_section(
@@ -217,9 +218,9 @@ async def update_lore_section(
 async def delete_lore_section(
     simulation_id: UUID,
     section_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Delete a lore section and re-sort remaining sections."""
     deleted = await _lore_service.delete_section(supabase, simulation_id, section_id)
@@ -233,9 +234,9 @@ async def delete_lore_section(
 async def reorder_lore_sections(
     simulation_id: UUID,
     body: LoreSectionReorder,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Bulk reorder lore sections by providing ordered section IDs."""
     sections = await _lore_service.reorder_sections(

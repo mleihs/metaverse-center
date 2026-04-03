@@ -83,7 +83,7 @@ def _paginated(data: list[dict], total: int, limit: int, offset: int) -> dict:
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_platform_stats(
     request: Request,
-    anon: Client = Depends(get_anon_supabase),
+    anon: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Aggregated platform statistics for landing page."""
     try:
@@ -103,9 +103,9 @@ async def get_platform_stats(
 async def list_simulations(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all active template simulations (public). Excludes game instances."""
     max_age = get_ttl("cache_http_simulations_max_age")
@@ -125,7 +125,7 @@ async def list_simulations(
 async def get_forge_progress(
     request: Request,
     slug: str,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Lightweight image-generation progress for the forge ceremony.
 
@@ -143,7 +143,7 @@ async def get_forge_progress(
 async def get_simulation(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single active simulation (public)."""
     sim = await SimulationService.get_active_by_id(supabase, simulation_id)
@@ -162,7 +162,7 @@ async def get_simulation(
 async def get_bleed_status(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get aggregated bleed status for a simulation (public).
 
@@ -181,10 +181,10 @@ async def get_bleed_status(
 async def list_agents(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    search: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    search: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List agents in a simulation (public)."""
     data, total = await AgentService.list(
@@ -199,7 +199,7 @@ async def get_agent_by_slug(
     request: Request,
     simulation_id: SimId,
     slug: str,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single agent by slug (public)."""
     data = await AgentService.get_by_slug(supabase, simulation_id, slug)
@@ -212,7 +212,7 @@ async def get_agent(
     request: Request,
     simulation_id: SimId,
     agent_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single agent (public)."""
     data = await AgentService.get(supabase, simulation_id, agent_id)
@@ -227,10 +227,10 @@ async def get_agent(
 async def list_buildings(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    search: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    search: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List buildings in a simulation (public)."""
     data, total = await BuildingService.list(
@@ -245,7 +245,7 @@ async def get_building_by_slug(
     request: Request,
     simulation_id: SimId,
     slug: str,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single building by slug (public)."""
     data = await BuildingService.get_by_slug(supabase, simulation_id, slug)
@@ -258,7 +258,7 @@ async def get_building(
     request: Request,
     simulation_id: SimId,
     building_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single building (public)."""
     data = await BuildingService.get(supabase, simulation_id, building_id)
@@ -273,10 +273,10 @@ async def get_building(
 async def list_events(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    search: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    search: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List events in a simulation (public)."""
     data, total = await EventService.list(
@@ -291,7 +291,7 @@ async def get_event(
     request: Request,
     simulation_id: SimId,
     event_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single event (public)."""
     data = await EventService.get(supabase, simulation_id, event_id)
@@ -306,7 +306,7 @@ async def get_event(
 async def get_anchor(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get philosophical anchor data (public)."""
     rows = await SettingsService.list_settings(supabase, simulation_id, category="anchor")
@@ -323,7 +323,7 @@ async def get_lore_by_slug(
     request: Request,
     simulation_id: SimId,
     slug: str,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single lore section by slug (public)."""
     data = await ForgeLoreService.get_by_slug(supabase, simulation_id, slug)
@@ -337,7 +337,7 @@ async def get_lore_by_slug(
 async def list_simulation_lore(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get lore sections for a simulation (public)."""
     data = await ForgeLoreService.list_for_simulation(supabase, simulation_id)
@@ -352,9 +352,9 @@ async def list_simulation_lore(
 async def list_chronicles_global(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=20, ge=1, le=50),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Recent chronicles across all active simulations (public feed)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
@@ -368,9 +368,9 @@ async def list_chronicles_global(
 async def list_chronicles_public(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List chronicle editions (public)."""
     data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
@@ -383,7 +383,7 @@ async def get_chronicle_public(
     request: Request,
     simulation_id: SimId,
     chronicle_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single chronicle edition (public)."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
@@ -399,10 +399,10 @@ async def list_agent_memories_public(
     request: Request,
     simulation_id: SimId,
     agent_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
-    memory_type: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    memory_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List agent memories (public)."""
     data, total = await AgentMemoryService.list_memories(
@@ -420,7 +420,7 @@ async def list_agent_memories_public(
 async def list_cities(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List cities (public)."""
     data, _ = await LocationService.list_cities(supabase, simulation_id, limit=500)
@@ -436,7 +436,7 @@ async def get_city(
     request: Request,
     simulation_id: SimId,
     city_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single city (public)."""
     data = await LocationService.get_city(supabase, simulation_id, city_id)
@@ -448,7 +448,7 @@ async def get_city(
 async def list_zones(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List zones (public)."""
     data, _ = await LocationService.list_zones(supabase, simulation_id, limit=500)
@@ -464,7 +464,7 @@ async def get_zone(
     request: Request,
     simulation_id: SimId,
     zone_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single zone (public)."""
     data = await LocationService.get_zone(supabase, simulation_id, zone_id)
@@ -476,7 +476,7 @@ async def get_zone(
 async def list_streets(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List streets (public)."""
     data, _ = await LocationService.list_streets(supabase, simulation_id, limit=500)
@@ -493,7 +493,7 @@ async def list_streets(
 async def list_conversations(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List chat conversations (public, read-only)."""
     data = await ChatService.list_conversations_public(supabase, simulation_id)
@@ -509,9 +509,9 @@ async def list_messages(
     request: Request,
     simulation_id: SimId,
     conversation_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List messages in a conversation (public, read-only)."""
     data, total = await ChatService.list_messages_public(supabase, conversation_id, limit=limit, offset=offset)
@@ -526,10 +526,10 @@ async def list_messages(
 async def list_taxonomies(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    taxonomy_type: str | None = Query(default=None),
-    limit: int = Query(default=500, ge=1, le=1000),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    taxonomy_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 500,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List taxonomies (public)."""
     data, total = await TaxonomyService.list_taxonomies_paginated(
@@ -546,7 +546,7 @@ async def list_taxonomies(
 async def list_settings(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List design settings only (public — for theming)."""
     data = await SettingsService.list_settings(supabase, simulation_id, category="design")
@@ -561,9 +561,9 @@ async def list_settings(
 async def list_social_trends(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List social trends (public)."""
     data, total = await SocialTrendsService.list_trends(
@@ -577,9 +577,9 @@ async def list_social_trends(
 async def list_social_posts(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List social media posts (public)."""
     data, total = await SocialMediaService.list_posts(
@@ -596,9 +596,9 @@ async def list_social_posts(
 async def list_campaigns(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List campaigns (public)."""
     data, total = await CampaignService.list_campaigns(
@@ -616,7 +616,7 @@ async def list_agent_relationships(
     request: Request,
     simulation_id: SimId,
     agent_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List relationships for a specific agent (public)."""
     data = await RelationshipService.list_for_agent(supabase, simulation_id, agent_id)
@@ -629,7 +629,7 @@ async def get_agent_aptitudes(
     request: Request,
     simulation_id: SimId,
     agent_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get aptitude scores for a specific agent (public)."""
     data = await AptitudeService.get_for_agent(supabase, simulation_id, agent_id)
@@ -641,7 +641,7 @@ async def get_agent_aptitudes(
 async def get_simulation_aptitudes(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get all aptitude scores for all agents in a simulation (public)."""
     data = await AptitudeService.get_all_for_simulation(supabase, simulation_id)
@@ -653,9 +653,9 @@ async def get_simulation_aptitudes(
 async def list_simulation_relationships(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=100, ge=1, le=500),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all relationships in a simulation (public)."""
     data, total = await RelationshipService.list_for_simulation(
@@ -672,9 +672,9 @@ async def list_simulation_relationships(
 async def list_echoes(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List incoming echoes for a simulation (public)."""
     data, total = await EchoService.list_for_simulation(
@@ -689,7 +689,7 @@ async def list_event_echoes(
     request: Request,
     simulation_id: SimId,
     event_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List echoes for a specific event (public)."""
     data = await EchoService.list_for_event(supabase, event_id)
@@ -704,7 +704,7 @@ async def list_event_echoes(
 async def list_connections(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List all active simulation connections (public, for map)."""
     max_age = get_ttl("cache_http_connections_max_age")
@@ -718,7 +718,7 @@ async def list_connections(
 async def get_map_data(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Aggregated endpoint for Cartographer's Map — simulations + connections + echo counts."""
     max_age = get_ttl("cache_http_map_data_max_age")
@@ -735,8 +735,8 @@ async def get_map_data(
 async def get_battle_feed(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=20, ge=1, le=50),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> dict:
     """Global public battle feed across all active epochs."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
@@ -753,8 +753,8 @@ async def get_battle_feed(
 async def get_bleed_gazette(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=20, ge=1, le=50),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> dict:
     """Bleed Gazette — multiverse news wire (public, no auth)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
@@ -770,9 +770,9 @@ async def get_bleed_gazette(
 async def list_embassies(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List active embassies for a simulation (public)."""
     data, total = await EmbassyService.list_for_simulation(
@@ -788,7 +788,7 @@ async def get_embassy(
     request: Request,
     simulation_id: SimId,
     embassy_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single embassy (public)."""
     data = await EmbassyService.get(supabase, embassy_id)
@@ -801,7 +801,7 @@ async def get_building_embassy(
     request: Request,
     simulation_id: SimId,
     building_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get the embassy linked to a building (public)."""
     data = await EmbassyService.get_for_building(supabase, building_id)
@@ -812,7 +812,7 @@ async def get_building_embassy(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_all_embassies(
     request: Request,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List all active embassies across all simulations (public, for map)."""
     data = await EmbassyService.list_all_active(supabase)
@@ -827,7 +827,7 @@ async def list_all_embassies(
 async def get_simulation_health_dashboard(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Full health dashboard for a simulation (public)."""
     data = await GameMechanicsService.get_health_dashboard(supabase, simulation_id)
@@ -839,12 +839,12 @@ async def get_simulation_health_dashboard(
 async def list_building_readiness(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    zone_id: UUID | None = Query(default=None),
-    order_by: str = Query(default="readiness"),
-    order_asc: bool = Query(default=True),
-    limit: int = Query(default=100, ge=1, le=500),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    zone_id: Annotated[UUID | None, Query()] = None,
+    order_by: Annotated[str, Query()] = "readiness",
+    order_asc: Annotated[bool, Query()] = True,
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List building readiness for a simulation (public)."""
     data, total = await GameMechanicsService.list_building_readiness(
@@ -860,7 +860,7 @@ async def list_building_readiness(
 async def list_zone_stability(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List zone stability for a simulation (public)."""
     data = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
@@ -872,7 +872,7 @@ async def list_zone_stability(
 async def list_embassy_effectiveness(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List embassy effectiveness for a simulation (public)."""
     data = await GameMechanicsService.list_embassy_effectiveness(supabase, simulation_id)
@@ -883,7 +883,7 @@ async def list_embassy_effectiveness(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_all_simulations_health(
     request: Request,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Health metrics for all simulations (public, for map/dashboard)."""
     data = await GameMechanicsService.list_simulation_health(supabase)
@@ -897,10 +897,10 @@ async def list_all_simulations_health(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_epochs_public(
     request: Request,
-    supabase: Client = Depends(get_anon_supabase),
-    status_filter: str | None = Query(default=None, alias="status"),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all epochs (public)."""
     data, total = await EpochService.list_epochs(
@@ -913,7 +913,7 @@ async def list_epochs_public(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_active_epochs_public(
     request: Request,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get all active epochs — lobby + running (public)."""
     data = await EpochService.get_active_epochs(supabase)
@@ -925,7 +925,7 @@ async def get_active_epochs_public(
 async def get_epoch_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single epoch (public)."""
     data = await EpochService.get(supabase, epoch_id)
@@ -937,7 +937,7 @@ async def get_epoch_public(
 async def list_epoch_participants_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List epoch participants (public)."""
     data = await EpochService.list_participants(supabase, epoch_id)
@@ -949,7 +949,7 @@ async def list_epoch_participants_public(
 async def list_epoch_teams_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List epoch teams (public)."""
     data = await EpochService.list_teams(supabase, epoch_id)
@@ -964,8 +964,8 @@ async def list_epoch_teams_public(
 async def get_leaderboard_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
-    cycle: int | None = Query(default=None),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    cycle: Annotated[int | None, Query()] = None,
 ) -> dict:
     """Get epoch leaderboard (public spectator view)."""
     data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
@@ -977,7 +977,7 @@ async def get_leaderboard_public(
 async def get_standings_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get final standings for a completed epoch (public)."""
     data = await ScoringService.get_final_standings(supabase, epoch_id)
@@ -992,10 +992,10 @@ async def get_standings_public(
 async def get_battle_log_public(
     request: Request,
     epoch_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
-    event_type: str | None = Query(default=None),
-    limit: int = Query(default=50, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    event_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Get public battle log entries (spectator view)."""
     data, total = await BattleLogService.get_public_feed(
@@ -1012,11 +1012,11 @@ async def get_battle_log_public(
 async def list_resonances_public(
     request: Request,
     http_response: Response,
-    supabase: Client = Depends(get_anon_supabase),
-    status_filter: str | None = Query(default=None, alias="status"),
-    signature: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+    signature: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List substrate resonances (public)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
@@ -1036,7 +1036,7 @@ async def list_resonances_public(
 async def get_resonance_public(
     request: Request,
     resonance_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Get a single resonance (public)."""
     data = await ResonanceService.get(supabase, resonance_id)
@@ -1048,7 +1048,7 @@ async def get_resonance_public(
 async def list_resonance_impacts_public(
     request: Request,
     resonance_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """List impact records for a resonance (public)."""
     data = await ResonanceService.list_impacts(supabase, resonance_id)
@@ -1083,7 +1083,7 @@ async def get_operative_types(request: Request) -> dict:
 async def validate_epoch_invitation(
     request: Request,
     token: str,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Validate an epoch invitation token and return epoch info + lore."""
     data = await EpochInvitationService.validate_token(supabase, token)
@@ -1101,9 +1101,9 @@ async def validate_epoch_invitation(
 async def public_dungeon_history(
     request: Request,
     simulation_id: SimId,
-    supabase: Client = Depends(get_anon_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Public: list completed dungeon runs for a simulation."""
     data, meta = await DungeonQueryService.list_history_public(
@@ -1117,7 +1117,7 @@ async def public_dungeon_history(
 async def public_dungeon_run(
     request: Request,
     run_id: UUID,
-    supabase: Client = Depends(get_anon_supabase),
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
 ) -> dict:
     """Public: get a completed dungeon run detail."""
     data = await DungeonQueryService.get_run_public(supabase, run_id)
@@ -1128,7 +1128,7 @@ async def public_dungeon_run(
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def public_dungeon_clearance_config(
     request: Request,
-    admin_supabase: Client = Depends(get_admin_supabase),
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Public: get global dungeon clearance configuration.
 

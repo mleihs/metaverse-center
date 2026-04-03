@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, status
@@ -40,17 +41,17 @@ _service = EventService()
 @router.get("", response_model=PaginatedResponse[EventResponse])
 async def list_events(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    event_type: str | None = Query(default=None),
-    impact_level: int | None = Query(default=None, ge=1, le=10),
-    tag: str | None = Query(default=None),
-    search: str | None = Query(default=None),
-    date_from: datetime | None = Query(default=None),
-    date_to: datetime | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    event_type: Annotated[str | None, Query()] = None,
+    impact_level: Annotated[int | None, Query(ge=1, le=10)] = None,
+    tag: Annotated[str | None, Query()] = None,
+    search: Annotated[str | None, Query()] = None,
+    date_from: Annotated[datetime | None, Query()] = None,
+    date_to: Annotated[datetime | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List events with optional filters."""
     data, total = await _service.list(
@@ -76,9 +77,9 @@ async def list_events(
 async def get_event(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single event."""
     event = await _service.get(supabase, simulation_id, event_id)
@@ -89,9 +90,9 @@ async def get_event(
 async def create_event(
     simulation_id: UUID,
     body: EventCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new event."""
     event = await _service.create(
@@ -107,10 +108,10 @@ async def update_event(
     simulation_id: UUID,
     event_id: UUID,
     body: EventUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
-    if_updated_at: str | None = Header(default=None, alias="If-Updated-At"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
 ) -> dict:
     """Update an event."""
     event = await _service.update(
@@ -126,9 +127,9 @@ async def update_event(
 async def delete_event(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Soft-delete an event."""
     event = await _service.soft_delete(supabase, simulation_id, event_id)
@@ -141,9 +142,9 @@ async def delete_event(
 async def get_event_reactions(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all reactions for an event."""
     reactions = await _service.get_reactions(supabase, simulation_id, event_id)
@@ -154,13 +155,13 @@ async def get_event_reactions(
 async def add_reaction(
     simulation_id: UUID,
     event_id: UUID,
-    agent_id: UUID = Body(..., embed=True),
-    reaction_text: str = Body(..., embed=True),
-    emotion: str | None = Body(default=None, embed=True),
-    confidence_score: float | None = Body(default=None, embed=True),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    agent_id: Annotated[UUID, Body(embed=True)],
+    reaction_text: Annotated[str, Body(embed=True)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    emotion: Annotated[str | None, Body(embed=True)] = None,
+    confidence_score: Annotated[float | None, Body(embed=True)] = None,
 ) -> dict:
     """Add an agent reaction to an event."""
     reaction = await _service.add_reaction(
@@ -183,9 +184,9 @@ async def delete_event_reaction(
     simulation_id: UUID,
     event_id: UUID,
     reaction_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Delete a single reaction from an event."""
     deleted = await _service.delete_reaction(supabase, simulation_id, reaction_id)
@@ -201,9 +202,9 @@ async def generate_reactions(
     simulation_id: UUID,
     event_id: UUID,
     body: GenerateEventReactionsRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate AI reactions from agents for an event."""
     event = await _service.get(supabase, simulation_id, event_id)
@@ -233,10 +234,10 @@ async def generate_reactions(
 async def update_event_status(
     simulation_id: UUID,
     event_id: UUID,
-    event_status: str = Body(..., embed=True),
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    event_status: Annotated[str, Body(embed=True)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Transition an event to a new lifecycle status."""
     event = await _service.update_status(supabase, simulation_id, event_id, event_status)
@@ -252,9 +253,9 @@ async def update_event_status(
 async def get_event_chains(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get chain links for an event."""
     chains = await _service.get_chains(supabase, simulation_id, event_id)
@@ -266,9 +267,9 @@ async def create_event_chain(
     simulation_id: UUID,
     event_id: UUID,
     body: EventChainCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Link two events in a narrative chain."""
     chain = await _service.add_chain(
@@ -290,9 +291,9 @@ async def delete_event_chain(
     simulation_id: UUID,
     event_id: UUID,
     chain_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Remove an event chain link."""
     deleted = await _service.delete_chain(supabase, simulation_id, chain_id)
@@ -303,9 +304,9 @@ async def delete_event_chain(
 async def get_event_zone_links(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get zone links for an event (auto-assigned + manual)."""
     links = await EventService.get_zone_links(supabase, event_id)
@@ -316,9 +317,9 @@ async def get_event_zone_links(
 async def get_events_by_tags(
     simulation_id: UUID,
     tags: str,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get events by tags (comma-separated)."""
     tag_list = [t.strip() for t in tags.split(",") if t.strip()]

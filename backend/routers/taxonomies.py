@@ -1,6 +1,7 @@
 """Taxonomy CRUD endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -25,11 +26,11 @@ _service = TaxonomyService()
 @router.get("", response_model=SuccessResponse[list[TaxonomyResponse]])
 async def list_taxonomies(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    taxonomy_type: str | None = Query(default=None),
-    include_inactive: bool = Query(default=False),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    taxonomy_type: Annotated[str | None, Query()] = None,
+    include_inactive: Annotated[bool, Query()] = False,
 ) -> dict:
     """List all taxonomy values, optionally filtered by type."""
     data = await _service.list_taxonomies(
@@ -42,9 +43,9 @@ async def list_taxonomies(
 async def get_by_type(
     simulation_id: UUID,
     taxonomy_type: str,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all taxonomy values of a specific type."""
     data = await _service.list_taxonomies(supabase, simulation_id, taxonomy_type=taxonomy_type)
@@ -55,9 +56,9 @@ async def get_by_type(
 async def create_taxonomy(
     simulation_id: UUID,
     body: TaxonomyCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new taxonomy value. Requires admin role."""
     taxonomy = await _service.create_taxonomy(supabase, simulation_id, body.model_dump(exclude_none=True))
@@ -73,9 +74,9 @@ async def update_taxonomy(
     simulation_id: UUID,
     taxonomy_id: UUID,
     body: TaxonomyUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update a taxonomy value. Requires admin role."""
     taxonomy = await _service.update_taxonomy(
@@ -91,9 +92,9 @@ async def update_taxonomy(
 async def deactivate_taxonomy(
     simulation_id: UUID,
     taxonomy_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Soft-delete (deactivate) a taxonomy value."""
     taxonomy = await _service.deactivate_taxonomy(supabase, simulation_id, taxonomy_id)

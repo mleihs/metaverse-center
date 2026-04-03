@@ -19,7 +19,9 @@ THRESHOLD_CHOICES: list[dict] = [
         "label_en": "Blood Toll",
         "label_de": "Blutzoll",
         "description_en": "A wound, freely given. One operative takes one condition step. Known cost.",
-        "description_de": "Eine Wunde, freiwillig gegeben. Ein Operativer erleidet eine Zustandsstufe. Bekannter Preis.",
+        "description_de": (
+            "Eine Wunde, freiwillig gegeben. Ein Operativer erleidet eine Zustandsstufe. Bekannter Preis."
+        ),
     },
     {
         "id": "threshold_memory",

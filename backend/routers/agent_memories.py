@@ -1,6 +1,7 @@
 """Agent Memory router — observation, retrieval, reflection endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -27,11 +28,11 @@ async def list_memories(
     request: Request,
     simulation_id: UUID,
     agent_id: UUID,
-    _user=Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    memory_type: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    _user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    memory_type: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List agent memories (paginated, filterable by memory_type)."""
     data, total = await AgentMemoryService.list_memories(
@@ -51,10 +52,10 @@ async def trigger_reflection(
     request: Request,
     simulation_id: UUID,
     agent_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     body: ReflectionRequest | None = None,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check=Depends(require_role("editor")),
-    admin_supabase: Client = Depends(get_admin_supabase),
 ) -> dict:
     """Trigger agent reflection (requires editor+)."""
     locale = body.locale if body else "en"

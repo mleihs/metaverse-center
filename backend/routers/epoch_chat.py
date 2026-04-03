@@ -1,6 +1,7 @@
 """Epoch chat endpoints — send messages, list messages (epoch-wide + team)."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -36,8 +37,8 @@ async def send_message(
     request: Request,
     epoch_id: UUID,
     body: EpochChatMessageCreate,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Send a chat message to epoch-wide or team channel."""
     message = await EpochChatService.send_message(
@@ -61,10 +62,10 @@ async def send_message(
 async def list_messages(
     request: Request,
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=50, ge=1, le=100),
-    before: str | None = Query(default=None, description="ISO timestamp cursor for pagination"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
 ) -> dict:
     """List epoch-wide chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(
@@ -83,10 +84,10 @@ async def list_team_messages(
     request: Request,
     epoch_id: UUID,
     team_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=50, ge=1, le=100),
-    before: str | None = Query(default=None, description="ISO timestamp cursor for pagination"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
 ) -> dict:
     """List team-only chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(

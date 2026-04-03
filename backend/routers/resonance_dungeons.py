@@ -13,6 +13,7 @@ All mutations use admin_supabase (Review #16).
 from __future__ import annotations
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -70,10 +71,10 @@ router = APIRouter(prefix="/api/v1/dungeons", tags=["resonance-dungeons"])
 
 @router.get("/available", response_model=SuccessResponse[list[AvailableDungeonResponse]])
 async def list_available_dungeons(
-    simulation_id: UUID = Query(...),
-    user: CurrentUser = Depends(get_current_user),
-    _member: str = Depends(require_simulation_member("viewer")),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    simulation_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _member: Annotated[str, Depends(require_simulation_member("viewer"))],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """List archetypes with active resonances above dungeon threshold."""
     available = await DungeonEngineService.get_available_dungeons(admin_supabase, simulation_id)
@@ -88,11 +89,11 @@ async def list_available_dungeons(
 async def create_run(
     request: Request,
     body: DungeonRunCreate,
-    simulation_id: UUID = Query(...),
-    user: CurrentUser = Depends(get_current_user),
-    _member: str = Depends(require_simulation_member("editor")),
-    _supabase: Client = Depends(get_supabase),
-    admin: Client = Depends(get_admin_supabase),
+    simulation_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _member: Annotated[str, Depends(require_simulation_member("editor"))],
+    _supabase: Annotated[Client, Depends(get_supabase)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Start a new dungeon run."""
     result = await DungeonEngineService.create_run(admin, simulation_id, user.id, body)
@@ -114,8 +115,8 @@ async def create_run(
 @router.get("/runs/{run_id}", response_model=SuccessResponse[DungeonRunResponse])
 async def get_run(
     run_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get run metadata."""
     data = await DungeonQueryService.get_run(supabase, run_id)
@@ -128,8 +129,8 @@ async def get_run(
 @router.get("/runs/{run_id}/state", response_model=SuccessResponse[DungeonClientState])
 async def get_run_state(
     run_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Get full client state (fog-of-war filtered).
 
@@ -148,8 +149,8 @@ async def move_to_room(
     request: Request,
     run_id: UUID,
     body: DungeonMoveRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Move party to an adjacent room."""
     result = await DungeonEngineService.move_to_room(admin, run_id, body.room_index, user_id=user.id)
@@ -165,8 +166,8 @@ async def submit_action(
     request: Request,
     run_id: UUID,
     body: DungeonAction,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Submit an encounter choice or interaction."""
     result = await DungeonEngineService.handle_encounter_choice(admin, run_id, body, user_id=user.id)
@@ -182,8 +183,8 @@ async def submit_combat_actions(
     request: Request,
     run_id: UUID,
     body: CombatSubmission,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Submit combat actions for planning phase."""
     result = await DungeonEngineService.submit_combat_actions(admin, run_id, user.id, body)
@@ -199,8 +200,8 @@ async def scout(
     request: Request,
     run_id: UUID,
     body: ScoutRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Spy: reveal adjacent rooms and restore visibility."""
     result = await DungeonEngineService.scout(admin, run_id, body.agent_id, user_id=user.id)
@@ -216,8 +217,8 @@ async def seal_breach(
     request: Request,
     run_id: UUID,
     body: ScoutRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
     result = await DungeonEngineService.seal_breach(admin, run_id, body.agent_id, user_id=user.id)
@@ -233,8 +234,8 @@ async def ground(
     request: Request,
     run_id: UUID,
     body: ScoutRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
     result = await DungeonEngineService.ground(admin, run_id, body.agent_id, user_id=user.id)
@@ -250,8 +251,8 @@ async def rally(
     request: Request,
     run_id: UUID,
     body: ScoutRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
     result = await DungeonEngineService.rally(admin, run_id, body.agent_id, user_id=user.id)
@@ -267,8 +268,8 @@ async def salvage(
     request: Request,
     run_id: UUID,
     body: SalvageRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
     result = await DungeonEngineService.salvage(admin, run_id, body.agent_id, body.room_index, user_id=user.id)
@@ -284,8 +285,8 @@ async def rest(
     request: Request,
     run_id: UUID,
     body: RestRequest,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Rest at a rest site."""
     result = await DungeonEngineService.rest(admin, run_id, body.agent_ids, user_id=user.id)
@@ -300,8 +301,8 @@ async def rest(
 async def retreat(
     request: Request,
     run_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Abandon dungeon (keep partial loot)."""
     result = await DungeonEngineService.retreat(admin, run_id, user_id=user.id)
@@ -326,8 +327,8 @@ async def assign_loot(
     request: Request,
     run_id: UUID,
     body: LootAssignment,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Assign a distributable loot item to an agent during the debrief phase."""
     result = await DungeonEngineService.assign_loot(
@@ -355,8 +356,8 @@ async def assign_loot(
 async def confirm_distribution(
     request: Request,
     run_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Finalize loot distribution and complete the dungeon run."""
     result = await DungeonEngineService.confirm_distribution(admin, run_id, user_id=user.id)
@@ -378,10 +379,10 @@ async def confirm_distribution(
 @router.get("/runs/{run_id}/events", response_model=PaginatedResponse[DungeonEventResponse])
 async def list_events(
     run_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    admin: Client = Depends(get_admin_supabase),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Get dungeon event log (paginated).
 
@@ -404,12 +405,12 @@ async def list_events(
 
 @router.get("/history", response_model=PaginatedResponse[DungeonRunResponse])
 async def list_history(
-    simulation_id: UUID = Query(...),
-    user: CurrentUser = Depends(get_current_user),
-    _member: str = Depends(require_simulation_member("viewer")),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    simulation_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _member: Annotated[str, Depends(require_simulation_member("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List past dungeon runs for a simulation."""
     data, meta = await DungeonQueryService.list_history(
@@ -430,10 +431,10 @@ async def list_history(
 )
 async def get_agent_loot_effects(
     agent_id: UUID,
-    simulation_id: UUID = Query(...),
-    user: CurrentUser = Depends(get_current_user),
-    _member: str = Depends(require_simulation_member("viewer")),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query()],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _member: Annotated[str, Depends(require_simulation_member("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all persistent dungeon loot effects for an agent.
 

@@ -1,6 +1,7 @@
 """Event echo (bleed) endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -54,13 +55,13 @@ async def _get_generation_service(
 @router.get("/echoes", response_model=PaginatedResponse[EchoResponse])
 async def list_echoes(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
-    direction: str = Query(default="incoming", pattern="^(incoming|outgoing)$"),
-    status: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    direction: Annotated[str, Query(pattern="^(incoming|outgoing)$")] = "incoming",
+    status: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List echoes for a simulation."""
     data, total = await EchoService.list_for_simulation(
@@ -82,9 +83,9 @@ async def list_echoes(
 async def list_event_echoes(
     simulation_id: UUID,
     event_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all echoes originating from a specific event."""
     data = await EchoService.list_for_event(supabase, event_id)
@@ -95,10 +96,10 @@ async def list_event_echoes(
 async def trigger_echo(
     simulation_id: UUID,
     body: EchoCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Manually trigger an echo from an event to a target simulation.
 
@@ -143,10 +144,10 @@ async def trigger_echo(
 async def approve_echo(
     simulation_id: UUID,
     echo_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Approve a pending echo — triggers AI transformation.
 
@@ -207,10 +208,10 @@ async def approve_echo(
 async def reject_echo(
     simulation_id: UUID,
     echo_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Reject a pending echo."""
     result = await EchoService.reject_echo(admin_supabase, echo_id)

@@ -1,6 +1,7 @@
 """AI generation endpoints — rate-limited."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -135,9 +136,9 @@ async def generate_agent(
     request: Request,
     simulation_id: UUID,
     body: GenerateAgentRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate an agent description using AI."""
     try:
@@ -172,9 +173,9 @@ async def generate_building(
     request: Request,
     simulation_id: UUID,
     body: GenerateBuildingRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate a building description using AI."""
     try:
@@ -210,9 +211,9 @@ async def generate_portrait_description(
     request: Request,
     simulation_id: UUID,
     body: GeneratePortraitRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate a portrait description for image generation."""
     try:
@@ -246,9 +247,9 @@ async def generate_event(
     request: Request,
     simulation_id: UUID,
     body: GenerateEventRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate an event description using AI."""
     try:
@@ -285,9 +286,9 @@ async def generate_relationships(
     request: Request,
     simulation_id: UUID,
     body: GenerateRelationshipsRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate relationship suggestions for an agent using AI."""
     try:
@@ -333,9 +334,9 @@ async def generate_lore_image(
     request: Request,
     simulation_id: UUID,
     body: GenerateLoreImageRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate a lore section image (3:2 aspect ratio, simulation style)."""
     try:
@@ -371,9 +372,9 @@ async def generate_image(
     request: Request,
     simulation_id: UUID,
     body: GenerateImageRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Generate an image for an agent portrait, building, or simulation banner."""
     try:

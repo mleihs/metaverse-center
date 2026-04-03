@@ -1,6 +1,7 @@
 """Simulation member management endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -23,9 +24,9 @@ router = APIRouter(
 @router.get("", response_model=SuccessResponse[list[MemberResponse]])
 async def list_members(
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all members of a simulation."""
     data = await MemberService.list_members(supabase, simulation_id)
@@ -36,9 +37,9 @@ async def list_members(
 async def add_member(
     simulation_id: UUID,
     body: MemberCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Add a member to a simulation. Requires admin role."""
     data = await MemberService.add(
@@ -57,9 +58,9 @@ async def change_role(
     simulation_id: UUID,
     member_id: UUID,
     body: MemberUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Change a member's role. Last-owner protection enforced by DB trigger."""
     try:
@@ -76,13 +77,13 @@ async def change_role(
     return {"success": True, "data": data}
 
 
-@router.delete("/{member_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{member_id}")
 async def remove_member(
     simulation_id: UUID,
     member_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("admin")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("admin"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a member from a simulation. Last-owner protection via DB trigger."""
     try:

@@ -1,6 +1,7 @@
 """Zone action endpoints (fortification system)."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -24,9 +25,9 @@ router = APIRouter(
 async def list_zone_actions(
     simulation_id: UUID,
     zone_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("viewer")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List active and recent actions for a zone."""
     data = await ZoneActionService.list_actions(supabase, simulation_id, zone_id)
@@ -38,9 +39,9 @@ async def create_zone_action(
     simulation_id: UUID,
     zone_id: UUID,
     body: ZoneActionCreate,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a zone fortification action."""
     action = await ZoneActionService.create_action(
@@ -58,9 +59,9 @@ async def cancel_zone_action(
     simulation_id: UUID,
     zone_id: UUID,
     action_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check: str = Depends(require_role("editor")),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Cancel an active zone action."""
     action = await ZoneActionService.cancel_action(

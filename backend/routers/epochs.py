@@ -1,6 +1,7 @@
 """Epoch CRUD, lifecycle, participation, and team management endpoints."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -53,11 +54,11 @@ router = APIRouter(prefix="/api/v1/epochs", tags=["epochs"])
 
 @router.get("", response_model=PaginatedResponse[EpochResponse])
 async def list_epochs(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    status: str | None = Query(default=None),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    status: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List all epochs with optional status filter."""
     data, total = await EpochService.list_epochs(
@@ -72,8 +73,8 @@ async def list_epochs(
 
 @router.get("/active", response_model=SuccessResponse[list[EpochResponse]])
 async def get_active_epochs(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get all active epochs (lobby + running)."""
     data = await EpochService.get_active_epochs(supabase)
@@ -83,8 +84,8 @@ async def get_active_epochs(
 @router.get("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
 async def get_epoch(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single epoch by ID."""
     data = await EpochService.get(supabase, epoch_id)
@@ -94,8 +95,8 @@ async def get_epoch(
 @router.post("", response_model=SuccessResponse[EpochResponse], status_code=201)
 async def create_epoch(
     body: EpochCreate,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new epoch (lobby phase)."""
     data = await EpochService.create(
@@ -116,9 +117,9 @@ async def create_epoch(
 async def update_epoch(
     epoch_id: UUID,
     body: EpochUpdate,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Update epoch configuration (lobby phase only)."""
     updates = body.model_dump(exclude_none=True)
@@ -131,9 +132,9 @@ async def update_epoch(
 
 @router.post("/quick-academy", response_model=SuccessResponse[EpochResponse], status_code=201)
 async def create_quick_academy(
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """One-click academy epoch creation with auto-configured bots.
 
@@ -153,10 +154,10 @@ async def create_quick_academy(
 @router.post("/{epoch_id}/start", response_model=SuccessResponse[EpochResponse])
 async def start_epoch(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Start an epoch (lobby -> foundation). Creator only.
 
@@ -174,10 +175,10 @@ async def start_epoch(
 @router.post("/{epoch_id}/advance", response_model=SuccessResponse[EpochResponse])
 async def advance_phase(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Advance to next epoch phase. Creator only."""
     data = await EpochService.advance_phase(supabase, epoch_id, admin_supabase)
@@ -191,10 +192,10 @@ async def advance_phase(
 @router.post("/{epoch_id}/cancel", response_model=SuccessResponse[EpochResponse])
 async def cancel_epoch(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Cancel an epoch. Creator only."""
     epoch = await EpochService.get(supabase, epoch_id)
@@ -209,10 +210,10 @@ async def cancel_epoch(
 @router.delete("/{epoch_id}", response_model=SuccessResponse[EpochResponse])
 async def delete_epoch(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Permanently delete an epoch. Creator only. Only lobby or cancelled epochs."""
     data = await EpochService.delete_epoch(admin_supabase, epoch_id)
@@ -226,8 +227,8 @@ async def delete_epoch(
 @router.get("/{epoch_id}/instances", response_model=SuccessResponse)
 async def list_instances(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all game instances for an epoch."""
     data = await GameInstanceService.list_instances(supabase, epoch_id)
@@ -237,10 +238,10 @@ async def list_instances(
 @router.get("/{epoch_id}/battle-log/summary", response_model=SuccessResponse[BattleSummaryResponse])
 async def get_cycle_battle_summary(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    cycle: int = Query(..., ge=0, description="Cycle number"),
-    simulation_id: UUID | None = Query(default=None),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    cycle: Annotated[int, Query(ge=0, description="Cycle number")],
+    simulation_id: Annotated[UUID | None, Query()] = None,
 ) -> dict:
     """Get aggregated battle stats for a specific cycle (War Room)."""
     data = await SitrepService.get_cycle_summary(
@@ -254,9 +255,9 @@ async def get_cycle_battle_summary(
 async def get_cycle_sitrep(
     epoch_id: UUID,
     cycle_number: int,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    simulation_id: UUID | None = Query(default=None),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    simulation_id: Annotated[UUID | None, Query()] = None,
 ) -> dict:
     """Generate AI tactical situation report for a cycle (War Room)."""
     data = await SitrepService.generate_sitrep(
@@ -269,12 +270,12 @@ async def get_cycle_sitrep(
 @router.get("/{epoch_id}/battle-log", response_model=PaginatedResponse[BattleLogEntry])
 async def get_battle_log(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    event_type: str | None = Query(default=None),
-    simulation_id: UUID | None = Query(default=None, description="Your simulation ID for allied intel tagging"),
-    limit: int = Query(default=50, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    event_type: Annotated[str | None, Query()] = None,
+    simulation_id: Annotated[UUID | None, Query(description="Your simulation ID for allied intel tagging")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """Get battle log entries (authenticated — includes private entries).
 
@@ -309,7 +310,7 @@ async def get_battle_log(
 @router.get("/{epoch_id}/results-summary", response_model=SuccessResponse)
 async def get_results_summary(
     epoch_id: UUID,
-    supabase: Client = Depends(get_supabase),
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get comprehensive results summary for a completed epoch."""
     from backend.services.scoring_service import ScoringService
@@ -321,10 +322,10 @@ async def get_results_summary(
 @router.post("/{epoch_id}/resolve-cycle", response_model=SuccessResponse[EpochResponse])
 async def resolve_cycle(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Resolve the current cycle (allocate RP, execute bot turns, advance cycle counter). Creator only."""
     data = await EpochService.resolve_cycle_full(supabase, epoch_id, admin_supabase)
@@ -345,8 +346,8 @@ async def resolve_cycle(
 )
 async def list_participants(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all participants in an epoch."""
     data = await EpochService.list_participants(supabase, epoch_id)
@@ -361,8 +362,8 @@ async def list_participants(
 async def join_epoch(
     epoch_id: UUID,
     body: ParticipantJoin,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Join an epoch with any template simulation.
 
@@ -376,12 +377,12 @@ async def join_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/participants/{simulation_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{epoch_id}/participants/{simulation_id}")
 async def leave_epoch(
     epoch_id: UUID,
     simulation_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Leave an epoch (lobby phase only)."""
     await EpochService.leave_epoch(supabase, epoch_id, simulation_id)
@@ -403,8 +404,8 @@ async def draft_agents(
     epoch_id: UUID,
     simulation_id: UUID,
     body: DraftRequest,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Lock in a draft roster for a participant (lobby phase only)."""
     data = await EpochService.draft_agents(
@@ -429,10 +430,10 @@ async def draft_agents(
 async def add_bot_to_epoch(
     epoch_id: UUID,
     body: AddBotToEpoch,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
-    _creator: None = Depends(require_epoch_creator()),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    _creator: Annotated[None, Depends(require_epoch_creator())],
 ) -> dict:
     """Add a bot participant to an epoch lobby. Only the epoch creator."""
     data = await EpochService.add_bot(admin_supabase, epoch_id, body.simulation_id, body.bot_player_id)
@@ -443,13 +444,13 @@ async def add_bot_to_epoch(
     return {"success": True, "data": data}
 
 
-@router.delete("/{epoch_id}/remove-bot/{participant_id}", response_model=SuccessResponse[MessageResponse])
+@router.delete("/{epoch_id}/remove-bot/{participant_id}")
 async def remove_bot_from_epoch(
     epoch_id: UUID,
     participant_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    _creator_check: None = Depends(require_epoch_creator()),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _creator_check: Annotated[None, Depends(require_epoch_creator())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a bot participant from epoch lobby. Creator only."""
     await EpochService.remove_bot(supabase, epoch_id, participant_id)
@@ -469,8 +470,8 @@ async def remove_bot_from_epoch(
 )
 async def list_teams(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """List all teams in an epoch."""
     data = await EpochService.list_teams(supabase, epoch_id)
@@ -485,10 +486,10 @@ async def list_teams(
 async def create_team(
     epoch_id: UUID,
     body: TeamCreate,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Create a new alliance/team. Must be a participant in the epoch."""
     data = await EpochService.create_team(supabase, epoch_id, simulation_id, body.name)
@@ -507,10 +508,10 @@ async def create_team(
 async def join_team(
     epoch_id: UUID,
     team_id: UUID,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Join an existing team. Must be a participant in the epoch."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
@@ -524,10 +525,10 @@ async def join_team(
 @router.post("/{epoch_id}/teams/leave", response_model=SuccessResponse)
 async def leave_team(
     epoch_id: UUID,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Leave your current team. Must be a participant in the epoch."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
@@ -547,10 +548,10 @@ async def leave_team(
 )
 async def list_proposals(
     epoch_id: UUID,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    team_id: UUID | None = Query(default=None),
-    status: str | None = Query(default=None, alias="proposal_status"),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    team_id: Annotated[UUID | None, Query()] = None,
+    status: Annotated[str | None, Query(alias="proposal_status")] = None,
 ) -> dict:
     """List alliance proposals for an epoch."""
     data = await AllianceService.list_proposals(
@@ -567,10 +568,10 @@ async def list_proposals(
 async def create_proposal(
     epoch_id: UUID,
     body: AllianceProposalCreate,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Request to join a team. Requires unanimous member approval."""
     data = await AllianceService.create_proposal(
@@ -593,10 +594,10 @@ async def invite_to_team(
     epoch_id: UUID,
     team_id: UUID,
     body: AllianceInviteCreate,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Invite a player to your team. Caller must be a team member."""
     data = await AllianceService.invite_to_team(
@@ -623,10 +624,10 @@ async def vote_on_proposal(
     epoch_id: UUID,
     proposal_id: UUID,
     body: AllianceVoteCreate,
-    simulation_id: UUID = Query(..., description="Your simulation ID"),
-    user: CurrentUser = Depends(get_current_user),
-    _participant: dict = Depends(require_epoch_participant()),
-    supabase: Client = Depends(get_supabase),
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Vote accept/reject on an alliance proposal. Team members only."""
     data = await AllianceService.vote_on_proposal(
@@ -647,9 +648,9 @@ async def vote_on_proposal(
 async def toggle_ready(
     epoch_id: UUID,
     body: ReadySignal,
-    user: CurrentUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Toggle cycle_ready for a participant. Triggers realtime broadcast.
 

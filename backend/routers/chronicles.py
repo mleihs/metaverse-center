@@ -1,6 +1,7 @@
 """Chronicle router — per-simulation AI-generated newspaper."""
 
 import logging
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -27,9 +28,9 @@ async def generate_chronicle(
     request: Request,
     simulation_id: UUID,
     body: ChronicleGenerateRequest,
-    user: CurrentUser = Depends(get_current_user),
-    _role_check=Depends(require_role("editor")),
-    admin_supabase: Client = Depends(get_admin_supabase),
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> dict:
     """Generate a new chronicle edition (requires editor+)."""
     data = await ChronicleService.generate(
@@ -58,10 +59,10 @@ async def generate_chronicle(
 async def list_chronicles(
     request: Request,
     simulation_id: UUID,
-    _user=Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
-    limit: int = Query(default=25, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    _user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> dict:
     """List chronicle editions (paginated)."""
     data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
@@ -78,8 +79,8 @@ async def get_chronicle(
     request: Request,
     simulation_id: UUID,
     chronicle_id: UUID,
-    _user=Depends(get_current_user),
-    supabase: Client = Depends(get_supabase),
+    _user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_supabase)],
 ) -> dict:
     """Get a single chronicle edition."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
