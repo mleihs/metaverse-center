@@ -8,9 +8,14 @@
  * auto-advances. Quotes with non-English originals show the translation
  * first, then reveal the original language with a cross-fade.
  *
+ * Animation timing: CSS animations are the single source of truth.
+ * The JS never guesses durations — it listens for `animationend` events.
+ * Display durations (how long to show text) are JS-owned constants.
+ *
  * Timer safety:
  *   - Generation counter (`_gen`) invalidates all pending callbacks on nav.
- *   - Single `_after()` manages the quote chain; no orphaned timeouts.
+ *   - `_after()` manages display-duration timers; `_awaitAnimation()` manages
+ *     CSS animation completion. Both are cancelled via `_cancelAll()`.
  *   - IntersectionObserver starts/stops timers based on viewport visibility.
  *
  * Accessibility:
@@ -36,16 +41,28 @@ import {
 } from './dungeon-showcase-styles.js';
 
 // ── Timing ──────────────────────────────────────────────────────────────────
+// Display durations are JS-owned (how long to show content).
+// Animation durations are CSS-owned (JS listens for `animationend`).
 
 const QUOTES_PER_SLIDE = 2;
+/** Time the English translation is shown before cross-fading to original. */
 const TRANSLATION_MS = 4_500;
+/** Time the original-language text is shown before leaving. */
 const ORIGINAL_MS = 5_500;
+/** Time a quote without original stays visible. */
 const SINGLE_VISIBLE_MS = 9_000;
-const TRANSITION_MS = 800;
+/** Duration of the translation↔original cross-fade (CSS transition, not animation). */
 const SWAP_MS = 900;
+/** Rest after the last quote before slide advances. */
 const REST_MS = 2_000;
-/** Must match CSS `.slide` transition duration. */
-const SLIDE_TRANSITION_MS = 900;
+/** Must match CSS `.slide` opacity transition (0.8s). */
+const SLIDE_TRANSITION_MS = 800;
+/** Delay before first quote after slide change — lets the slide
+ *  reach ~70 % opacity so the quote enters on a stable background. */
+const SLIDE_SETTLE_MS = 500;
+/** Safety cap for animationend — if the event never fires (e.g. a browser
+ *  quirk or a CSS change that removes the animation), don't hang forever. */
+const ANIM_FALLBACK_MS = 2_500;
 
 /** BCP-47 codes for the lang attribute on original text. */
 const LANG_CODES: Record<string, string> = {
@@ -83,6 +100,7 @@ export class VelgDungeonShowcase extends LitElement {
   private _visible = false;
   private _touchStartX = 0;
   private _touchStartY = 0;
+  private _animCleanup: (() => void) | null = null;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -109,9 +127,14 @@ export class VelgDungeonShowcase extends LitElement {
         const wasVisible = this._visible;
         this._visible = entry.isIntersecting;
         if (this._visible && !wasVisible) {
-          // Entered viewport — start fresh.
+          // Entered viewport — wait for fonts, then start.
+          // Prevents FOUT layout shifts during quote animations.
           this._gen++;
-          this._beginSlide();
+          const gen = this._gen;
+          document.fonts.ready.then(() => {
+            if (gen !== this._gen) return;
+            this._beginSlide();
+          });
         } else if (!this._visible && wasVisible) {
           // Left viewport — stop timers, save resources.
           this._gen++;
@@ -125,6 +148,8 @@ export class VelgDungeonShowcase extends LitElement {
 
   // ── Timer (generation-guarded) ────────────────────────────────────────────
 
+  /** Schedule a callback after `ms` milliseconds. Only one timer at a time;
+   *  calling `_after()` again cancels the previous one. Generation-guarded. */
   private _after(ms: number, fn: () => void): void {
     this._cancelTimer();
     const gen = this._gen;
@@ -138,8 +163,55 @@ export class VelgDungeonShowcase extends LitElement {
     if (this._timer !== null) { clearTimeout(this._timer); this._timer = null; }
   }
 
+  /** Wait for the CSS animation on `.quote-block` to finish, then call `fn`.
+   *  Waits for Lit render + one frame so the browser has started the animation.
+   *  Falls back to a timeout if no animation fires (reduced-motion, missing
+   *  animation, browser quirk). Generation-guarded + cleanup on cancel. */
+  private _awaitAnimation(fn: () => void): void {
+    this._cancelAnimCleanup();
+    const gen = this._gen;
+
+    this.updateComplete.then(() => {
+      if (gen !== this._gen) return;
+
+      // One frame for the browser to start the animation after DOM update.
+      requestAnimationFrame(() => {
+        if (gen !== this._gen) return;
+
+        const el = this.renderRoot.querySelector('.quote-block');
+        if (!el) { fn(); return; }
+
+        let resolved = false;
+        const resolve = () => {
+          if (resolved) return;
+          resolved = true;
+          el.removeEventListener('animationend', resolve);
+          clearTimeout(fallback);
+          this._animCleanup = null;
+          if (gen !== this._gen) return;
+          fn();
+        };
+
+        el.addEventListener('animationend', resolve, { once: true });
+        const fallback = setTimeout(resolve, ANIM_FALLBACK_MS);
+
+        this._animCleanup = () => {
+          el.removeEventListener('animationend', resolve);
+          clearTimeout(fallback);
+          resolved = true;
+        };
+      });
+    });
+  }
+
+  private _cancelAnimCleanup(): void {
+    this._animCleanup?.();
+    this._animCleanup = null;
+  }
+
   private _cancelAll(): void {
     this._cancelTimer();
+    this._cancelAnimCleanup();
     if (this._navGuardTimer !== null) {
       clearTimeout(this._navGuardTimer);
       this._navGuardTimer = null;
@@ -165,7 +237,8 @@ export class VelgDungeonShowcase extends LitElement {
 
   private _enterQuote(): void {
     this._phase = 'entering';
-    this._after(TRANSITION_MS, () => {
+    // CSS animation drives the enter. When it completes → visible phase.
+    this._awaitAnimation(() => {
       this._phase = 'visible';
       if (this._hasOriginal) {
         this._after(TRANSLATION_MS, () => this._swapToOriginal());
@@ -177,6 +250,8 @@ export class VelgDungeonShowcase extends LitElement {
 
   private _swapToOriginal(): void {
     this._phase = 'swapping';
+    // Swap is a CSS transition (opacity/filter), not a CSS animation.
+    // Timer-driven because transitions don't have distinct `animationend`.
     this._after(SWAP_MS, () => {
       this._phase = 'original';
       this._after(ORIGINAL_MS, () => this._leaveQuote());
@@ -188,11 +263,20 @@ export class VelgDungeonShowcase extends LitElement {
     this._phase = 'leaving';
 
     if (this._quotesShown >= QUOTES_PER_SLIDE) {
-      this._after(TRANSITION_MS + REST_MS, () => this._advanceSlide());
+      // CSS leave animation plays, then rest, then advance.
+      this._awaitAnimation(() => {
+        this._after(REST_MS, () => this._advanceSlide());
+      });
     } else {
-      this._after(TRANSITION_MS, () => {
+      // CSS leave animation plays, then swap in the next quote.
+      this._awaitAnimation(async () => {
+        const gen = this._gen;
         const maxQ = ARCHETYPES[this._activeIndex].quotes.length;
         this._quoteIndex = (this._quoteIndex + 1) % maxQ;
+        // Lit re-renders with new quote content at opacity 0 (base state).
+        // Wait for the DOM update before starting the enter animation.
+        await this.updateComplete;
+        if (gen !== this._gen) return;
         this._enterQuote();
       });
     }
@@ -210,7 +294,10 @@ export class VelgDungeonShowcase extends LitElement {
     this._cancelAll();
     this._navLocked = true;
     this._activeIndex = index;
-    this._beginSlide();
+    // Let the slide cross-fade settle before overlaying the first quote.
+    // Without this, the quote enter animation races the slide fade-in
+    // and the user never sees the quote arrive on a stable background.
+    this._after(SLIDE_SETTLE_MS, () => this._beginSlide());
     this._navGuardTimer = setTimeout(() => {
       this._navLocked = false;
       this._navGuardTimer = null;
