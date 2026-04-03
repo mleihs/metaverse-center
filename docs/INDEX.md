@@ -75,7 +75,7 @@ tags: [index, catalog, documentation]
 | [Game Systems Integration](concepts/game-systems-integration.md) | 3.4 | 2026-03-26 | en | active |
 | [MUD/Terminal Adventure Concepts (5 Designs)](concepts/mud-terminal-adventure-concepts.md) | 1.0 | 2026-03-27 | de | draft |
 | [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md) | 1.0 | 2026-03-27 | de | draft |
-| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.5 | 2026-04-02 | en | 6 archetypes live (Deluge follow-ups complete) + global admin config + clearance control |
+| [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md) | 1.7 | 2026-04-03 | en | All 8 archetypes live + global admin config + clearance control |
 | [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md) | 1.0 | 2026-04-01 | en | active |
 | [Resonance Dungeons — Audio System Concept](concepts/dungeon-audio-system.md) | 1.0 | 2026-04-02 | en | phase-1-implemented |
 | [Resonance Dungeons — Threshold Room Type](concepts/dungeon-threshold-room.md) | 1.0 | 2026-04-02 | en | implemented |

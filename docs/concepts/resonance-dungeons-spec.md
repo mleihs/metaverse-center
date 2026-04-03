@@ -1,9 +1,9 @@
 ---
 title: "Resonance Dungeons — Full Technical Specification"
-version: "1.6"
-date: "2026-04-02"
+version: "1.7"
+date: "2026-04-03"
 type: concept
-status: 7-archetypes-live-awakening-implemented
+status: 8-archetypes-live-all-implemented
 lang: en
 tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-generation, supabase, realtime]
 ---
@@ -39,9 +39,9 @@ tags: [game-design, mud, dungeon, resonance, architecture, combat, procedural-ge
 
 ---
 
-## IMPLEMENTATION STATUS (2026-04-01)
+## IMPLEMENTATION STATUS (2026-04-03)
 
-**Phase 0-2 Full Stack: COMPLETE — 5 Archetypes, Content DB (10 tables), Admin Global Config + Clearance Control, 755+ Tests**
+**Phase 0-2 Full Stack: COMPLETE — All 8 Archetypes, Content DB (10 tables), Admin Global Config + Clearance Control, 755+ Tests**
 
 ### Implementierte Artefakte
 
@@ -109,7 +109,7 @@ Platform-level settings that cascade to all simulations unless a per-simulation 
 | The Devouring Mother | `biological_tide` | Implemented |
 | The Prometheus | `innovation_spark` | Implemented |
 | The Deluge | `elemental_surge` | Implemented (core + 5 follow-ups) |
-| The Overthrow | `authority_fracture` | Config only |
+| The Overthrow | `authority_fracture` | Implemented (core + 13 partial narratives) |
 | The Awakening | `consciousness_drift` | Implemented |
 
 ### Review Findings — Auflösungsstatus

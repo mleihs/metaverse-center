@@ -852,7 +852,7 @@ frontend/src/utils/
 ├── terminal-formatters.ts          # 20+ format functions: formatLook, formatExamine, formatScan, formatInvestigate, formatReport, formatDebrief, formatAskResponse, _wordWrap, _truncate, _timeAgo
 ├── terminal-initialization.ts      # initializeTerminalZones() — shared zone init (TerminalView, EpochTerminalView, DungeonTerminalView)
 ├── dungeon-commands.ts             # Dungeon-mode dispatcher + 13 handlers (dungeon, move, map, look, status, scout, rest, retreat, interact, attack, submit, seal, salvage/dive), 3 verb categories with clearance tiers
-├── dungeon-formatters.ts           # 20 pure formatters: formatDungeonMap, formatRoomEntry (incl. Deluge water bar), formatArchetypeBriefing (6 archetypes), formatCombatStart, formatCombatResolution, formatRoundTransition, formatEncounterChoices, formatLootDrop, formatSkillCheckResult, formatPartyWipe, formatDungeonComplete, formatSealResult, formatSalvageResult, formatDebrisFound, etc.
+├── dungeon-formatters.ts           # 20 pure formatters: formatDungeonMap, formatRoomEntry (incl. Deluge water bar + threshold), formatArchetypeBriefing (all 8 archetypes), formatCombatStart, formatCombatResolution (bilingual narrative), formatRoundTransition, formatEncounterChoices, formatThresholdEntry, formatLootDrop, formatSkillCheckResult, formatPartyWipe, formatDungeonComplete, formatSealResult, formatSalvageResult, formatDebrisFound, etc.
 └── theme-colors.ts                 # getThemeColor(), getThemeVariant(), getGlowColor(), THEME_COLORS map
 ```
 
