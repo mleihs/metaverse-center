@@ -23607,6 +23607,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="scf2f4e09405c7edb">
   <source>The room is empty. Whatever was here has moved on.</source>
+  <target>Der Raum ist leer. Was hier war, ist weitergezogen.</target>
 </trans-unit>
 <trans-unit id="sbdf7794eb4ed18a0">
   <source>No combat in progress. Use "move" to continue exploring.</source>
@@ -23763,9 +23764,11 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s65c1f31adb2c8b9e">
   <source>The Threshold offers three tolls.</source>
+  <target>Die Schwelle fordert drei Zölle.</target>
 </trans-unit>
 <trans-unit id="s5207aee3e2267fdb">
   <source>This choice cannot be undone.</source>
+  <target>Diese Wahl ist unwiderruflich.</target>
 </trans-unit>
 <trans-unit id="s4ab62a8d16dc1cad">
   <source>SEAL BREACH</source>

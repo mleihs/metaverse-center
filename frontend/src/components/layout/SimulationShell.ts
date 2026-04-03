@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
@@ -1051,7 +1052,11 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         }
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
-        <div class="shell__content shell__overlays ${this.view === 'dungeon' ? 'shell__content--immersive' : ''}">
+        <div class=${classMap({
+          'shell__content': true,
+          'shell__overlays': true,
+          'shell__content--immersive': this.view === 'dungeon',
+        })}>
           ${
             hasBleeds
               ? html`<velg-bleed-palimpsest-overlay

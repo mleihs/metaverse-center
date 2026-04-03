@@ -403,19 +403,22 @@ class DungeonMovementService:
         # Resolve skill check
         result_tier = "success"
         check_result = None
-        if choice.check_aptitude and action.agent_id:
-            agent = next((a for a in instance.party if a.agent_id == action.agent_id), None)
-            if agent:
+        acting_agent = (
+            next((a for a in instance.party if a.agent_id == action.agent_id), None)
+            if action.agent_id
+            else None
+        )
+        if choice.check_aptitude and acting_agent:
                 # Apply debris check bonuses from The Current Carries
                 debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
                     choice.check_aptitude, 0,
                 )
                 ctx = SkillCheckContext(
                     aptitude=choice.check_aptitude,
-                    aptitude_level=agent.aptitudes.get(choice.check_aptitude, 3),
+                    aptitude_level=acting_agent.aptitudes.get(choice.check_aptitude, 3),
                     difficulty_modifier=choice.check_difficulty - debris_bonus,
-                    personality=agent.personality,
-                    condition=agent.condition,
+                    personality=acting_agent.personality,
+                    condition=acting_agent.condition,
                     visibility=instance.archetype_state.get("visibility", 3),
                     archetype_state=instance.archetype_state,
                 )
@@ -442,6 +445,12 @@ class DungeonMovementService:
         if not narrative_en and result_tier == "partial":
             narrative_en = getattr(choice, "success_narrative_en", "")
             narrative_de = getattr(choice, "success_narrative_de", "")
+
+        # Substitute {agent} placeholder with acting agent name
+        # (same pattern as banter substitution in _build_room_entry)
+        if acting_agent:
+            narrative_en = narrative_en.replace("{agent}", acting_agent.agent_name)
+            narrative_de = narrative_de.replace("{agent}", acting_agent.agent_name)
 
         # Apply stress effects
         stress_delta = effects.get("stress", 0)

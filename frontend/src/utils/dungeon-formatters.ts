@@ -602,6 +602,9 @@ export function formatRoomEntry(
       lines.push(systemLine(`[${msg('EXIT')}]`));
       lines.push(hintLine(msg('Use "retreat" to leave with partial loot.')));
       break;
+    case 'threshold':
+      lines.push(systemLine(`[${msg('THRESHOLD')}]`));
+      break;
     default:
       lines.push(systemLine(`[${roomType}]`));
   }
@@ -789,18 +792,26 @@ export function formatRoundTransition(completedRound: number): TerminalLine[] {
 /** Format a single combat event with semantic color based on context. */
 function _formatCombatEvent(event: CombatEvent, isEnemyAction: boolean): TerminalLine {
   const tag = _eventTag(event, isEnemyAction);
-  const summary = `  [${tag}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`;
 
-  // Details suffix
-  const details: string[] = [];
-  if (event.damage > 0) {
-    details.push(`${event.damage} ${event.damage === 1 ? 'step' : 'steps'}`);
+  // Prefer bilingual narrative (proper separation of concerns — backend narrates,
+  // frontend renders). Fall back to compact actor→action→target for events
+  // without narrative (shouldn't happen, but defence-in-depth).
+  const narrative = localized(event, 'narrative');
+  let text: string;
+  if (narrative) {
+    text = `  [${tag}] ${narrative}`;
+  } else {
+    const summary = `  [${tag}] ${event.actor} \u2192 ${event.action} \u2192 ${event.target}`;
+    const details: string[] = [];
+    if (event.damage > 0) {
+      details.push(`${event.damage} ${event.damage === 1 ? msg('step') : msg('steps')}`);
+    }
+    if (event.stress !== 0) {
+      details.push(`${event.stress > 0 ? '+' : ''}${event.stress} ${msg('stress')}`);
+    }
+    const detailStr = details.length > 0 ? `. ${details.join(', ')}.` : '.';
+    text = `${summary}${detailStr}`;
   }
-  if (event.stress !== 0) {
-    details.push(`${event.stress > 0 ? '+' : ''}${event.stress} stress`);
-  }
-  const detailStr = details.length > 0 ? `. ${details.join(', ')}.` : '.';
-  const text = `${summary}${detailStr}`;
 
   // Miss → always dim regardless of actor
   if (!event.hit) return combatMissLine(text);
@@ -942,9 +953,7 @@ export function formatThresholdEntry(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  // Entry prose — sparse, indented, short lines
-  lines.push(responseLine(''));
-  lines.push(systemLine(`[${msg('THRESHOLD')}]`));
+  // Entry prose — sparse, indented, short lines (header already rendered by formatRoomEntry)
   lines.push(responseLine(''));
 
   // Split description into sentences for sparse rendering

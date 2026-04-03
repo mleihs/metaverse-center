@@ -82,8 +82,8 @@ class CombatEvent:
     """Single event within a combat round (for narrative generation)."""
 
     actor: str  # agent name or enemy name
-    action: str  # ability/action name
-    target: str  # target name
+    action: str  # ability/action name (EN, used for event type detection)
+    target: str  # target name (EN)
     hit: bool = True
     damage_steps: int = 0
     stress_delta: int = 0

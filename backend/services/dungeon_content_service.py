@@ -164,6 +164,22 @@ async def load_all_content(supabase: Client) -> None:
         cache.encounters = dict(encounters_by_arch)
         cache.encounter_index = encounter_index
 
+        # ── Validate narrative coverage ──────────────────────────────────
+        # Choices with check_aptitude can resolve to partial — they MUST have
+        # partial_narrative_en. Log warnings at startup so gaps are visible.
+        for arch, enc_list in encounters_by_arch.items():
+            for enc in enc_list:
+                for choice in enc.choices:
+                    if choice.check_aptitude and not choice.partial_narrative_en:
+                        logger.warning(
+                            "Encounter choice %s (encounter %s, archetype %s) has "
+                            "check_aptitude=%s but no partial_narrative_en",
+                            choice.id,
+                            enc.id,
+                            arch,
+                            choice.check_aptitude,
+                        )
+
         # ── Loot Items ────────────────────────────────────────────────────
         loot_by_arch: dict[str, dict[int, list[LootItem]]] = defaultdict(lambda: defaultdict(list))
         for row in loot_res.data or []:
