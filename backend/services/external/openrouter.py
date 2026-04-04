@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import base64
+import json
 import logging
 import time
+from collections.abc import AsyncIterator
+from dataclasses import dataclass, field
 from typing import Any
 
 import httpx
@@ -31,6 +34,16 @@ class RateLimitError(OpenRouterError):
 
 class ModelUnavailableError(OpenRouterError):
     """Raised when the requested model is unavailable (503)."""
+
+
+@dataclass
+class StreamChunk:
+    """A single chunk from an OpenRouter SSE streaming response."""
+
+    content: str = ""
+    finish_reason: str | None = None
+    usage: dict = field(default_factory=dict)
+    error: str | None = None
 
 
 class OpenRouterService:
@@ -69,8 +82,7 @@ class OpenRouterService:
         """
         if not self.api_key:
             raise OpenRouterError(
-                "OpenRouter API key is not configured. "
-                "Set OPENROUTER_API_KEY in .env or in simulation settings."
+                "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
             )
 
         payload = {
@@ -109,18 +121,14 @@ class OpenRouterService:
                         "OpenRouter rate limited",
                         extra={"model": model, "status": 429},
                     )
-                    raise RateLimitError(
-                        f"Rate limited by OpenRouter (model: {model})"
-                    )
+                    raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
 
                 if response.status_code == 503:
                     logger.error(
                         "OpenRouter model unavailable",
                         extra={"model": model, "status": 503},
                     )
-                    raise ModelUnavailableError(
-                        f"Model '{model}' is currently unavailable"
-                    )
+                    raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
 
                 if response.status_code != 200:
                     error_body = response.text
@@ -132,17 +140,13 @@ class OpenRouterService:
                             MAX_RETRIES + 1,
                             error_body[:200],
                         )
-                        last_error = OpenRouterError(
-                            f"API error {response.status_code}: {error_body[:200]}"
-                        )
+                        last_error = OpenRouterError(f"API error {response.status_code}: {error_body[:200]}")
                         continue
                     logger.error(
                         "OpenRouter request failed",
                         extra={"model": model, "status": response.status_code, "error": error_body[:200]},
                     )
-                    raise OpenRouterError(
-                        f"API error {response.status_code}: {error_body[:200]}"
-                    )
+                    raise OpenRouterError(f"API error {response.status_code}: {error_body[:200]}")
 
                 data = response.json()
                 duration_ms = int((time.monotonic() - t0) * 1000)
@@ -160,7 +164,9 @@ class OpenRouterService:
                 logger.info(
                     "OpenRouter response",
                     extra={
-                        "model": model, "status": 200, "duration_ms": duration_ms,
+                        "model": model,
+                        "status": 200,
+                        "duration_ms": duration_ms,
                         "prompt_tokens": self.last_usage["prompt_tokens"],
                         "completion_tokens": self.last_usage["completion_tokens"],
                     },
@@ -200,8 +206,159 @@ class OpenRouterService:
             {"role": "user", "content": user_prompt},
         ]
         return await self.generate(
-            model, messages, temperature=temperature, max_tokens=max_tokens,
+            model,
+            messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
+
+    async def stream_completion(
+        self,
+        model: str,
+        messages: list[dict[str, str]],
+        *,
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> AsyncIterator[StreamChunk]:
+        """Stream text generation token-by-token via SSE.
+
+        Yields StreamChunk objects for each token. The final chunk includes
+        usage data. On OpenRouter errors, yields an error chunk.
+
+        Raises:
+            OpenRouterError: If no API key configured or connection fails.
+            RateLimitError: On 429 responses.
+            ModelUnavailableError: On 503 responses.
+        """
+        if not self.api_key:
+            raise OpenRouterError(
+                "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
+            )
+
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://velgarien.app",
+            "X-Title": "Velgarien Platform",
+        }
+
+        purpose = messages[0].get("content", "")[:60] if messages else ""
+        logger.info(
+            "OpenRouter stream request",
+            extra={"model": model, "purpose": purpose, "max_tokens": max_tokens},
+        )
+        t0 = time.monotonic()
+        last_error: Exception | None = None
+
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                async with httpx.AsyncClient(
+                    timeout=httpx.Timeout(TIMEOUT_SECONDS, read=None),
+                ) as client:
+                    async with client.stream(
+                        "POST",
+                        f"{OPENROUTER_BASE_URL}/chat/completions",
+                        json=payload,
+                        headers=headers,
+                    ) as response:
+                        if response.status_code == 429:
+                            raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
+                        if response.status_code == 503:
+                            raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
+                        if response.status_code != 200:
+                            body = await response.aread()
+                            raise OpenRouterError(f"API error {response.status_code}: {body.decode()[:200]}")
+
+                        # Parse SSE lines from the stream
+                        async for line in response.aiter_lines():
+                            line = line.strip()
+
+                            # Skip SSE comments (e.g. ": OPENROUTER PROCESSING")
+                            if not line or line.startswith(":"):
+                                continue
+
+                            if not line.startswith("data: "):
+                                continue
+
+                            data_str = line[6:]  # strip "data: " prefix
+
+                            # End-of-stream marker
+                            if data_str == "[DONE]":
+                                break
+
+                            try:
+                                data = json.loads(data_str)
+                            except json.JSONDecodeError:
+                                logger.warning("Malformed SSE chunk: %s", data_str[:100])
+                                continue
+
+                            # Extract usage from final chunk (top-level field)
+                            chunk_usage = data.get("usage")
+                            if chunk_usage:
+                                duration_ms = int((time.monotonic() - t0) * 1000)
+                                self.last_usage = {
+                                    "model": model,
+                                    "prompt_tokens": chunk_usage.get("prompt_tokens", 0),
+                                    "completion_tokens": chunk_usage.get("completion_tokens", 0),
+                                    "total_tokens": chunk_usage.get("total_tokens", 0),
+                                    "duration_ms": duration_ms,
+                                }
+
+                            choices = data.get("choices", [])
+                            if not choices:
+                                continue
+
+                            delta = choices[0].get("delta", {})
+                            finish = choices[0].get("finish_reason")
+                            token = delta.get("content", "")
+
+                            if finish == "error":
+                                err_msg = delta.get("content", "Stream error")
+                                yield StreamChunk(error=err_msg)
+                                return
+
+                            if token:
+                                yield StreamChunk(content=token, finish_reason=finish)
+                            elif finish:
+                                yield StreamChunk(
+                                    finish_reason=finish,
+                                    usage=self.last_usage or {},
+                                )
+
+                        # Log completion
+                        duration_ms = int((time.monotonic() - t0) * 1000)
+                        logger.info(
+                            "OpenRouter stream complete",
+                            extra={
+                                "model": model,
+                                "duration_ms": duration_ms,
+                                "prompt_tokens": (self.last_usage or {}).get("prompt_tokens", 0),
+                                "completion_tokens": (self.last_usage or {}).get("completion_tokens", 0),
+                            },
+                        )
+                        return  # noqa: B012 — generator exhausted normally
+
+            except (httpx.TimeoutException, httpx.ConnectError) as e:
+                if attempt < MAX_RETRIES:
+                    logger.warning(
+                        "OpenRouter stream connection error (attempt %d/%d): %s",
+                        attempt + 1,
+                        MAX_RETRIES + 1,
+                        str(e),
+                    )
+                    last_error = e
+                    continue
+                raise OpenRouterError(f"Connection failed after {MAX_RETRIES + 1} attempts") from e
+
+        raise OpenRouterError("All retry attempts exhausted") from last_error
 
     async def generate_image(
         self,
@@ -230,8 +387,7 @@ class OpenRouterService:
         """
         if not self.api_key:
             raise OpenRouterError(
-                "OpenRouter API key is not configured. "
-                "Set OPENROUTER_API_KEY in .env or in simulation settings."
+                "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
             )
 
         payload: dict[str, Any] = {
@@ -300,9 +456,7 @@ class OpenRouterService:
                 if attempt < MAX_RETRIES:
                     last_error = e
                     continue
-                raise OpenRouterError(
-                    f"Connection failed after {MAX_RETRIES + 1} attempts"
-                ) from e
+                raise OpenRouterError(f"Connection failed after {MAX_RETRIES + 1} attempts") from e
 
         raise OpenRouterError("All retry attempts exhausted") from last_error
 

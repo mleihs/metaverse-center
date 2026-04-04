@@ -1,10 +1,12 @@
 """Chat endpoints — with optional AI response generation and group chat support."""
 
+import json
 import logging
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import EventSourceResponse
 
 from backend.dependencies import get_current_user, get_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_CHAT, limiter
@@ -54,10 +56,19 @@ async def create_conversation(
 ) -> SuccessResponse[ConversationResponse]:
     """Start a new conversation with one or more agents."""
     conversation = await _service.create_conversation(
-        supabase, simulation_id, user.id, body.agent_ids, body.title,
+        supabase,
+        simulation_id,
+        user.id,
+        body.agent_ids,
+        body.title,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_conversations", conversation.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation.get("id"),
+        "create",
         details={"title": body.title, "agent_count": len(body.agent_ids)},
     )
     return SuccessResponse(data=conversation)
@@ -101,10 +112,19 @@ async def send_message(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     # Save user message
     user_message = await _service.send_message(
-        supabase, conversation_id, body.content, body.sender_role, body.metadata,
+        supabase,
+        conversation_id,
+        body.content,
+        body.sender_role,
+        body.metadata,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_messages", user_message.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_messages",
+        user_message.get("id"),
+        "create",
         details={"conversation_id": str(conversation_id)},
     )
 
@@ -113,10 +133,93 @@ async def send_message(
 
     # Delegate AI orchestration to service layer
     all_messages = await _service.generate_ai_response(
-        supabase, simulation_id, conversation_id, body.content,
+        supabase,
+        simulation_id,
+        conversation_id,
+        body.content,
     )
 
     return SuccessResponse(data=all_messages)
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages/stream",
+    status_code=200,
+)
+@limiter.limit(RATE_LIMIT_AI_CHAT)
+async def stream_message(
+    request: Request,
+    simulation_id: UUID,
+    conversation_id: UUID,
+    body: MessageCreate,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> EventSourceResponse:
+    """Stream AI response via Server-Sent Events.
+
+    Saves the user message first, then streams AI response tokens
+    as SSE events. For group conversations, agents respond sequentially
+    with interleaved agent_start/token/agent_done events.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+
+    # Save user message synchronously before starting the stream
+    user_message = await _service.send_message(
+        supabase,
+        conversation_id,
+        body.content,
+        body.sender_role,
+        body.metadata,
+    )
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_messages",
+        user_message.get("id"),
+        "create",
+        details={"conversation_id": str(conversation_id), "streaming": True},
+    )
+
+    async def event_generator():
+        """Yield SSE-formatted events for the streaming response."""
+        try:
+            # Confirm user message was saved (for optimistic reconciliation)
+            yield _format_sse("user_confirmed", {"message": user_message})
+
+            # Stream AI response tokens
+            async for sse_event in _service.stream_ai_response(
+                supabase,
+                simulation_id,
+                conversation_id,
+                body.content,
+            ):
+                # Check client disconnect between events
+                if await request.is_disconnected():
+                    logger.info("Client disconnected during stream for conversation %s", conversation_id)
+                    return
+
+                yield _format_sse(sse_event.event, sse_event.data)
+
+            yield _format_sse("done", {})
+
+        except Exception:
+            logger.exception("Error during streaming response for conversation %s", conversation_id)
+            yield _format_sse("error", {"error": "An internal error occurred during generation."})
+
+    return EventSourceResponse(
+        event_generator(),
+        headers={
+            "X-Accel-Buffering": "no",
+            "Cache-Control": "no-cache, no-store",
+        },
+    )
+
+
+def _format_sse(event: str, data: dict) -> str:
+    """Format a single SSE event string."""
+    return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 
 
 @router.post(
@@ -135,7 +238,12 @@ async def add_agent(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     result = await _service.add_agent(supabase, conversation_id, body.agent_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_conversation_agents", body.agent_id, "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversation_agents",
+        body.agent_id,
+        "create",
         details={"conversation_id": str(conversation_id)},
     )
     return SuccessResponse(data=result)
@@ -154,7 +262,12 @@ async def remove_agent(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     await _service.remove_agent(supabase, conversation_id, agent_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_conversation_agents", agent_id, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversation_agents",
+        agent_id,
+        "delete",
         details={"conversation_id": str(conversation_id)},
     )
     return SuccessResponse(data={"removed": True})
@@ -189,10 +302,18 @@ async def add_event_reference(
     """Add an event reference to a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
     ref = await _service.add_event_reference(
-        supabase, conversation_id, body.event_id, user.id,
+        supabase,
+        conversation_id,
+        body.event_id,
+        user.id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_event_references", body.event_id, "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_event_references",
+        body.event_id,
+        "create",
         details={"conversation_id": str(conversation_id)},
     )
     return SuccessResponse(data=ref)
@@ -211,7 +332,12 @@ async def remove_event_reference(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     await _service.remove_event_reference(supabase, conversation_id, event_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_event_references", event_id, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_event_references",
+        event_id,
+        "delete",
         details={"conversation_id": str(conversation_id)},
     )
     return SuccessResponse(data={"removed": True})
@@ -229,7 +355,12 @@ async def archive_conversation(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     conversation = await _service.archive_conversation(supabase, conversation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_conversations", conversation_id, "archive",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation_id,
+        "archive",
     )
     return SuccessResponse(data=conversation)
 
@@ -246,6 +377,11 @@ async def delete_conversation(
     await _service.verify_ownership(supabase, conversation_id, user.id)
     conversation = await _service.delete_conversation(supabase, conversation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "chat_conversations", conversation_id, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation_id,
+        "delete",
     )
     return SuccessResponse(data=conversation)

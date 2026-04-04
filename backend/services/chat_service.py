@@ -1,12 +1,13 @@
 """Service layer for chat operations — storage, orchestration, and validation."""
 
 import logging
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from backend.services.chat_ai_service import ChatAIService
+from backend.services.chat_ai_service import ChatAIService, SSEEvent
 from backend.services.external_service_resolver import ExternalServiceResolver
 from supabase import AsyncClient as Client
 
@@ -84,16 +85,18 @@ class ChatService:
         refs_by_conv: dict[str, list[dict]] = {}
         for row in response.data or []:
             event_data = row.get("events", {}) or {}
-            refs_by_conv.setdefault(row["conversation_id"], []).append({
-                "id": row["id"],
-                "event_id": row["event_id"],
-                "event_title": event_data.get("title", ""),
-                "event_type": event_data.get("event_type"),
-                "event_description": event_data.get("description"),
-                "occurred_at": event_data.get("occurred_at"),
-                "impact_level": event_data.get("impact_level"),
-                "referenced_at": row["referenced_at"],
-            })
+            refs_by_conv.setdefault(row["conversation_id"], []).append(
+                {
+                    "id": row["id"],
+                    "event_id": row["event_id"],
+                    "event_title": event_data.get("title", ""),
+                    "event_type": event_data.get("event_type"),
+                    "event_description": event_data.get("description"),
+                    "occurred_at": event_data.get("occurred_at"),
+                    "impact_level": event_data.get("impact_level"),
+                    "referenced_at": row["referenced_at"],
+                }
+            )
         return refs_by_conv
 
     # ── Single-load wrappers ────────────────────────────────
@@ -160,12 +163,14 @@ class ChatService:
         # Create the conversation (agent_id set to first agent for backwards compat)
         response = await (
             supabase.table("chat_conversations")
-            .insert({
-                "simulation_id": str(simulation_id),
-                "user_id": str(user_id),
-                "agent_id": str(agent_ids[0]),
-                "title": title,
-            })
+            .insert(
+                {
+                    "simulation_id": str(simulation_id),
+                    "user_id": str(user_id),
+                    "agent_id": str(agent_ids[0]),
+                    "title": title,
+                }
+            )
             .execute()
         )
 
@@ -189,7 +194,8 @@ class ChatService:
 
         # Load agents for response
         conversation["agents"] = await ChatService._load_conversation_agents(
-            supabase, conversation["id"],
+            supabase,
+            conversation["id"],
         )
         conversation["event_references"] = []
 
@@ -213,7 +219,8 @@ class ChatService:
         resolver = ExternalServiceResolver(supabase, simulation_id)
         ai_config = await resolver.get_ai_provider_config()
         chat_ai = ChatAIService(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
             openrouter_api_key=ai_config.openrouter_api_key,
         )
 
@@ -227,8 +234,39 @@ class ChatService:
 
         # Return all new messages (user + AI responses)
         return await ChatService.get_messages(
-            supabase, conversation_id, limit=len(agents) + 1,
+            supabase,
+            conversation_id,
+            limit=len(agents) + 1,
         )
+
+    @staticmethod
+    async def stream_ai_response(
+        supabase: Client,
+        simulation_id: UUID,
+        conversation_id: UUID,
+        user_message_content: str,
+    ) -> AsyncIterator[SSEEvent]:
+        """Stream AI response generation (single or group).
+
+        Resolves AI provider config, determines single vs. group, and
+        yields SSEEvent objects from the appropriate ChatAIService method.
+        """
+        resolver = ExternalServiceResolver(supabase, simulation_id)
+        ai_config = await resolver.get_ai_provider_config()
+        chat_ai = ChatAIService(
+            supabase,
+            simulation_id,
+            openrouter_api_key=ai_config.openrouter_api_key,
+        )
+
+        agents = await ChatService._load_conversation_agents(supabase, str(conversation_id))
+
+        if len(agents) > 1:
+            async for event in chat_ai.stream_group_response(conversation_id, user_message_content):
+                yield event
+        else:
+            async for event in chat_ai.stream_response(conversation_id, user_message_content):
+                yield event
 
     @staticmethod
     async def get_messages(
@@ -282,11 +320,7 @@ class ChatService:
         if agent_id:
             insert_data["agent_id"] = str(agent_id)
 
-        response = await (
-            supabase.table("chat_messages")
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table("chat_messages").insert(insert_data).execute()
 
         if not response.data:
             raise HTTPException(
@@ -294,10 +328,8 @@ class ChatService:
                 detail="Failed to send message.",
             )
 
-        # Also update last_message_at on the conversation
-        await supabase.table("chat_conversations").update({
-            "last_message_at": datetime.now(UTC).isoformat(),
-        }).eq("id", str(conversation_id)).execute()
+        # last_message_at is updated by DB trigger update_conversation_stats()
+        # (migration 009) — no manual Python update needed.
 
         return response.data[0]
 
@@ -310,10 +342,12 @@ class ChatService:
         """Add an agent to a conversation."""
         response = await (
             supabase.table("chat_conversation_agents")
-            .insert({
-                "conversation_id": str(conversation_id),
-                "agent_id": str(agent_id),
-            })
+            .insert(
+                {
+                    "conversation_id": str(conversation_id),
+                    "agent_id": str(agent_id),
+                }
+            )
             .execute()
         )
         if not response.data:
@@ -343,9 +377,16 @@ class ChatService:
                 detail="Cannot remove last agent from conversation.",
             )
 
-        await supabase.table("chat_conversation_agents").delete().eq(
-            "conversation_id", str(conversation_id),
-        ).eq("agent_id", str(agent_id)).execute()
+        await (
+            supabase.table("chat_conversation_agents")
+            .delete()
+            .eq(
+                "conversation_id",
+                str(conversation_id),
+            )
+            .eq("agent_id", str(agent_id))
+            .execute()
+        )
 
     @staticmethod
     async def add_event_reference(
@@ -357,11 +398,13 @@ class ChatService:
         """Add an event reference to a conversation."""
         response = await (
             supabase.table("chat_event_references")
-            .insert({
-                "conversation_id": str(conversation_id),
-                "event_id": str(event_id),
-                "referenced_by": str(user_id),
-            })
+            .insert(
+                {
+                    "conversation_id": str(conversation_id),
+                    "event_id": str(event_id),
+                    "referenced_by": str(user_id),
+                }
+            )
             .execute()
         )
         if not response.data:
@@ -399,9 +442,16 @@ class ChatService:
         event_id: UUID,
     ) -> None:
         """Remove an event reference from a conversation."""
-        await supabase.table("chat_event_references").delete().eq(
-            "conversation_id", str(conversation_id),
-        ).eq("event_id", str(event_id)).execute()
+        await (
+            supabase.table("chat_event_references")
+            .delete()
+            .eq(
+                "conversation_id",
+                str(conversation_id),
+            )
+            .eq("event_id", str(event_id))
+            .execute()
+        )
 
     @staticmethod
     async def get_event_references(
@@ -439,12 +489,7 @@ class ChatService:
     ) -> dict:
         """Permanently delete a conversation and all its messages (CASCADE)."""
         # Fetch conversation first to return it
-        fetch = await (
-            supabase.table("chat_conversations")
-            .select("*")
-            .eq("id", str(conversation_id))
-            .execute()
-        )
+        fetch = await supabase.table("chat_conversations").select("*").eq("id", str(conversation_id)).execute()
 
         if not fetch.data:
             raise HTTPException(
@@ -455,9 +500,15 @@ class ChatService:
         conversation = fetch.data[0]
 
         # Delete (messages cascade automatically)
-        await supabase.table("chat_conversations").delete().eq(
-            "id", str(conversation_id),
-        ).execute()
+        await (
+            supabase.table("chat_conversations")
+            .delete()
+            .eq(
+                "id",
+                str(conversation_id),
+            )
+            .execute()
+        )
 
         return conversation
 
