@@ -1,6 +1,6 @@
 # Chat System Redesign — Unified Agent Chat + Epoch Chat
 
-> **Status:** Phase 0 COMPLETE (2026-04-04, 351f779) — Phase 1 COMPLETE (2026-04-04) — Phase 2 next  
+> **Status:** Phase 0 COMPLETE (351f779) — Phase 1 COMPLETE (796f7b9) — Phase 2 COMPLETE (pending commit) — Phase 3 next  
 > **Scope:** Full redesign of Agent Chat + Epoch Chat into a unified, premium chat system  
 > **Components affected:** 7 frontend, 3 backend services, 1 router, 1 model file  
 > **New components:** ~12 frontend, ~3 backend  
@@ -690,7 +690,10 @@ export class TypingIndicator extends LitElement {
 
 ---
 
-## 6. Phase 2: Rich Message Rendering
+## 6. Phase 2: Rich Message Rendering ✅ COMPLETE
+
+> **Implemented 2026-04-04.** 2 new files, 2 modified, 2 npm deps. Self-audit: 3 issues found & fixed.
+> Key deviations from plan: (1) Separate `Marked` instances instead of global `marked.use()` to avoid polluting `renderSafeMarkdown`. (2) LIFO walkTokens ordering to preserve raw code for copy button. (3) `@layer hljs` for cascade isolation. (4) `msg('Copy')` i18n instead of hardcoded English.
 
 ### 2.1 Extend Markdown Rendering
 

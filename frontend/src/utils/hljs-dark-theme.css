@@ -1,0 +1,170 @@
+/**
+ * highlight.js dark theme — "Terminal Phosphor"
+ *
+ * Material Palenight chromatics compressed through a brutalist lens.
+ * Desaturated ~10% from Palenight originals to avoid candy-on-void contrast
+ * against the #060606 surface-sunken background.
+ *
+ * Design token references where semantically appropriate:
+ *   --color-surface-sunken  → code background
+ *   --color-text-primary    → base text
+ *   --color-text-muted      → comments, meta
+ *   --color-text-secondary  → parameters, punctuation
+ *   --color-border-light    → emphasis border
+ *
+ * @layer isolates specificity from component CSS.
+ */
+
+@layer hljs {
+  .hljs {
+    background: var(--color-surface-sunken);
+    color: var(--color-text-primary);
+    /* No padding or overflow here — layout is owned by the component's
+       .code-block pre / .bubble--assistant pre rules. Theme = colors only. */
+  }
+
+  /* ── Keywords & control flow ─────────────────────────────────── */
+  .hljs-keyword,
+  .hljs-selector-tag {
+    color: #c087d8;
+  }
+
+  /* ── Strings & regex ─────────────────────────────────────────── */
+  .hljs-string,
+  .hljs-regexp {
+    color: #b8d88a;
+  }
+
+  /* ── Numbers ─────────────────────────────────────────────────── */
+  .hljs-number {
+    color: #e8845f;
+  }
+
+  /* ── Comments ────────────────────────────────────────────────── */
+  .hljs-comment,
+  .hljs-quote {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  /* ── Functions & class names ─────────────────────────────────── */
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-title.class_ {
+    color: #7ea2e8;
+  }
+
+  /* ── Attributes & decorators ─────────────────────────────────── */
+  .hljs-attr,
+  .hljs-attribute {
+    color: #e6be63;
+  }
+
+  /* ── Built-in types & globals ────────────────────────────────── */
+  .hljs-built_in {
+    color: #7ecad4;
+  }
+
+  /* ── Literals (boolean, null, undefined) ─────────────────────── */
+  .hljs-literal {
+    color: #e8845f;
+  }
+
+  /* ── Type annotations ────────────────────────────────────────── */
+  .hljs-type {
+    color: #e6be63;
+  }
+
+  /* ── Parameters ──────────────────────────────────────────────── */
+  .hljs-params {
+    color: var(--color-text-secondary);
+  }
+
+  /* ── Meta / preprocessor ─────────────────────────────────────── */
+  .hljs-meta,
+  .hljs-meta .hljs-keyword {
+    color: var(--color-text-muted);
+    font-weight: 700;
+  }
+
+  /* ── HTML/XML tags ───────────────────────────────────────────── */
+  .hljs-tag {
+    color: var(--color-text-secondary);
+  }
+
+  .hljs-name {
+    color: #d4706a;
+  }
+
+  /* ── CSS selectors ───────────────────────────────────────────── */
+  .hljs-selector-class {
+    color: #e6be63;
+  }
+
+  .hljs-selector-id {
+    color: #7ea2e8;
+  }
+
+  /* ── Template literals ───────────────────────────────────────── */
+  .hljs-template-tag {
+    color: #c087d8;
+  }
+
+  .hljs-template-variable {
+    color: #e8845f;
+  }
+
+  /* ── Variables & symbols ─────────────────────────────────────── */
+  .hljs-variable,
+  .hljs-symbol {
+    color: #d4706a;
+  }
+
+  /* ── Diff additions / deletions ──────────────────────────────── */
+  .hljs-addition {
+    color: #b8d88a;
+    background: color-mix(in srgb, #b8d88a 8%, transparent);
+  }
+
+  .hljs-deletion {
+    color: #d4706a;
+    background: color-mix(in srgb, #d4706a 8%, transparent);
+  }
+
+  /* ── Emphasis & strong ───────────────────────────────────────── */
+  .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    font-weight: 700;
+  }
+
+  /* ── Section headers (markdown in code) ──────────────────────── */
+  .hljs-section {
+    color: #7ea2e8;
+    font-weight: 700;
+  }
+
+  /* ── Bullets & links ─────────────────────────────────────────── */
+  .hljs-bullet {
+    color: #7ecad4;
+  }
+
+  .hljs-link {
+    color: #7ea2e8;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ── Property keys (JSON, YAML) ──────────────────────────────── */
+  .hljs-property {
+    color: #d4706a;
+  }
+
+  /* ── Punctuation (braces, brackets, operators) ───────────────── */
+  .hljs-punctuation,
+  .hljs-operator {
+    color: var(--color-text-secondary);
+  }
+}
