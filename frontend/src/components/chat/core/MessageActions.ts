@@ -145,14 +145,6 @@ export class MessageActions extends LitElement {
     this._dispatch('action-copy');
   }
 
-  private _handleThumbsUp(): void {
-    this._dispatch('action-thumbs-up');
-  }
-
-  private _handleThumbsDown(): void {
-    this._dispatch('action-thumbs-down');
-  }
-
   private _handleRegenerate(): void {
     this._dispatch('action-regenerate');
   }
@@ -192,22 +184,6 @@ export class MessageActions extends LitElement {
 
         ${isAssistant
           ? html`
-              <button
-                class="strip__btn"
-                @click=${this._handleThumbsUp}
-                title=${msg('Good response')}
-                aria-label=${msg('Rate as good response')}
-              >
-                ${icons.thumbsUp(14)}
-              </button>
-              <button
-                class="strip__btn"
-                @click=${this._handleThumbsDown}
-                title=${msg('Poor response')}
-                aria-label=${msg('Rate as poor response')}
-              >
-                ${icons.thumbsDown(14)}
-              </button>
               <button
                 class="strip__btn"
                 @click=${this._handleRegenerate}

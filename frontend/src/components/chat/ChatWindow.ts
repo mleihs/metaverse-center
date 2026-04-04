@@ -69,6 +69,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .header__portraits {
       display: flex;
       flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .header__portraits:hover {
+      filter: brightness(1.1);
     }
 
     .header__portrait-overflow {
@@ -235,6 +240,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     .window__messages {
       flex: 1;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       min-height: 0;
     }
@@ -375,6 +382,19 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       .header__portrait-overflow {
         width: 28px;
         height: 28px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .window__header-actions {
+        gap: var(--space-1);
+      }
+
+      .window__action-btn {
+        padding: var(--space-1);
+        min-width: 28px;
+        min-height: 28px;
+        justify-content: center;
       }
     }
   `;
@@ -800,7 +820,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
             <div class="event-card">
               <div class="event-card__header">
                 <div class="event-card__title">${ref.event_title}</div>
-                <button class="event-card__remove" @click=${() => this._handleRemoveEventRef(ref)}>
+                <button
+                  class="event-card__remove"
+                  @click=${() => this._handleRemoveEventRef(ref)}
+                  title=${msg('Remove event reference')}
+                  aria-label=${msg('Remove event reference')}
+                >
                   &times;
                 </button>
               </div>
@@ -810,7 +835,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
             </div>
           `,
         )}
-        <button class="window__action-btn" @click=${this._handleOpenEventPicker}>+</button>
+        <button
+          class="window__action-btn"
+          @click=${this._handleOpenEventPicker}
+          title=${msg('Add event reference')}
+          aria-label=${msg('Add event reference')}
+        >+</button>
       </div>
     `;
   }
@@ -916,6 +946,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .participants=${participants}
                   .eventReferences=${this.conversation.event_references ?? []}
                   .currentUserId=${appState.user.value?.id ?? ''}
+                  .currentUserName=${appState.user.value?.user_metadata?.display_name ?? ''}
                   .streaming=${session.streaming.value}
                   .streamContent=${session.streamBuffer.value}
                   .streamingParticipantId=${this._streamingAgentId}

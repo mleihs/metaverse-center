@@ -55,6 +55,7 @@ export class ChatBubble extends LitElement {
       color: var(--color-text-inverse);
       border: var(--border-default);
       border-right: var(--_bubble-border-width) solid var(--color-primary);
+      border-radius: 2px;
       white-space: pre-wrap;
     }
 
@@ -125,6 +126,13 @@ export class ChatBubble extends LitElement {
 
     .bubble--assistant em {
       font-style: italic;
+      display: inline-block;
+      padding: var(--space-0-5) var(--space-2);
+      margin: var(--space-1) 0;
+      background: color-mix(in srgb, var(--_accent, var(--color-border)) 8%, transparent);
+      border-left: 2px solid color-mix(in srgb, var(--_accent, var(--color-border)) 40%, transparent);
+      font-size: 0.92em;
+      color: var(--color-text-secondary);
     }
 
     .bubble--assistant del {
@@ -379,11 +387,14 @@ export class ChatBubble extends LitElement {
       ? { '--_accent': this.accentColor } as Record<string, string>
       : {};
 
-    return html`
-      <div class=${classMap(classes)} style=${styleMap(styles)}>
-        ${this._renderContent()}
-      </div>
-    `;
+    // No whitespace between div tags and content — white-space: pre-wrap
+    // on .bubble--user renders template newlines as visible vertical space.
+    return html`<div class=${classMap(classes)} style=${styleMap(styles)}>${this._renderContent()}</div>`;
+  }
+
+  /** Strip leaked [AgentName]: prefixes from group chat responses. */
+  private _stripAgentTags(text: string): string {
+    return text.replace(/\[[\w\s.äöüÄÖÜß]+\]:\s*/g, '');
   }
 
   private _renderContent() {
@@ -402,8 +413,9 @@ export class ChatBubble extends LitElement {
       return this.content;
     }
 
-    // Assistant messages: full markdown rendering with syntax highlighting
-    return renderChatMarkdown(this.content);
+    // Assistant messages: strip agent name tags, then full markdown rendering
+    const cleaned = this._stripAgentTags(this.content);
+    return renderChatMarkdown(cleaned);
   }
 }
 

@@ -250,8 +250,8 @@ export class VelgConversationList extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       background: transparent;
       border: none;
@@ -260,7 +260,8 @@ export class VelgConversationList extends LitElement {
       opacity: 0;
       transition:
         opacity var(--transition-fast),
-        color var(--transition-fast);
+        color var(--transition-fast),
+        background var(--transition-fast);
       flex-shrink: 0;
     }
 
@@ -276,6 +277,12 @@ export class VelgConversationList extends LitElement {
 
     .conversation__pin:hover {
       color: var(--_pin-active-color);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    .conversation__pin:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     .conversation__badge {
@@ -552,7 +559,7 @@ export class VelgConversationList extends LitElement {
     e.stopPropagation();
     if (this.readonly) return;
     this._renamingId = conversation.id;
-    this._renameValue = conversation.title ?? this._getDisplayName(this._getAgents(conversation));
+    this._renameValue = this._getDisplayName(this._getAgents(conversation));
   }
 
   private _handleRenameInput(e: Event): void {
@@ -746,7 +753,7 @@ export class VelgConversationList extends LitElement {
               @click=${(e: Event) => this._togglePin(e, conversation.id)}
               aria-label=${isPinned ? msg('Unpin conversation') : msg('Pin conversation')}
               title=${isPinned ? msg('Unpin') : msg('Pin')}
-            >${icons.pin(12)}</button>
+            >${icons.pin(14)}</button>
           ` : null}
           ${isUnread ? html`<div class="conversation__unread-dot"></div>` : null}
           ${

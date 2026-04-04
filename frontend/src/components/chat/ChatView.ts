@@ -23,28 +23,13 @@ export class VelgChatView extends LitElement {
   static styles = css`
     :host {
       display: block;
-    }
-
-    .chat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: var(--space-4);
-    }
-
-    .chat-title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-2xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0;
+      overflow: hidden;
     }
 
     .chat-layout {
       display: grid;
       grid-template-columns: 300px 1fr;
-      height: calc(100vh - var(--header-height) - 120px);
+      height: calc(100vh - var(--header-height) - 80px);
       min-height: 500px;
       border: var(--border-default);
       box-shadow: var(--shadow-sm);
@@ -144,27 +129,67 @@ export class VelgChatView extends LitElement {
       font-weight: var(--font-bold);
     }
 
-    /* === Mobile: stack sidebar above chat === */
+    /* ── Mobile back button ─────────────────────────── */
+
+    .mobile-back {
+      display: none;
+    }
+
+    /* === Mobile: screen-swap sidebar ↔ chat === */
 
     @media (max-width: 640px) {
       .chat-layout {
         grid-template-columns: 1fr;
-        height: auto;
+        height: calc(100vh - var(--header-height) - 48px);
         min-height: 0;
       }
 
+      /* Show sidebar full-height when no conversation is selected */
       .sidebar {
         border-right: none;
-        border-bottom: var(--border-medium);
-        max-height: 200px;
+        max-height: none;
       }
 
       .sidebar__list {
-        max-height: 140px;
+        max-height: none;
+      }
+
+      /* Screen-swap: when a conversation is selected, hide sidebar, show chat */
+      .chat-layout--has-conversation .sidebar {
+        display: none;
+      }
+
+      .chat-layout:not(.chat-layout--has-conversation) .main-area {
+        display: none;
+      }
+
+      /* Back button visible on mobile in chat view */
+      .mobile-back {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-surface-header);
+        border: none;
+        border-bottom: var(--border-light);
+        color: var(--color-text-secondary);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        cursor: pointer;
+        width: 100%;
+        flex-shrink: 0;
+        transition: color var(--transition-fast);
+      }
+
+      .mobile-back:hover {
+        color: var(--color-text-primary);
       }
 
       .main-area {
-        min-height: 400px;
+        min-height: 0;
       }
     }
   `;
@@ -458,18 +483,12 @@ export class VelgChatView extends LitElement {
   protected render() {
     if (this._loading) {
       return html`
-        <div class="chat-header">
-          <h1 class="chat-title">${msg('Chat')}</h1>
-        </div>
         <velg-loading-state message=${msg('Loading conversations...')}></velg-loading-state>
       `;
     }
 
     if (this._error) {
       return html`
-        <div class="chat-header">
-          <h1 class="chat-title">${msg('Chat')}</h1>
-        </div>
         <velg-error-state
           .message=${this._error}
           show-retry
@@ -479,11 +498,7 @@ export class VelgChatView extends LitElement {
     }
 
     return html`
-      <div class="chat-header">
-        <h1 class="chat-title">${msg('Chat')}</h1>
-      </div>
-
-      <div class="chat-layout">
+      <div class="chat-layout ${this._selectedConversation ? 'chat-layout--has-conversation' : ''}">
         <div class="sidebar" role="complementary" aria-label=${msg('Conversation list')}>
           <div class="sidebar__header">
             <div class="sidebar__title">${msg('Conversations')}</div>
@@ -524,6 +539,11 @@ export class VelgChatView extends LitElement {
           @open-event-picker=${this._handleOpenEventPicker}
           @remove-event-ref=${this._handleRemoveEventRef}
         >
+          <button
+            class="mobile-back"
+            @click=${() => { this._selectedConversation = null; }}
+            aria-label=${msg('Back to conversations')}
+          >\u2190 ${msg('Conversations')}</button>
           <velg-chat-window
             .conversation=${this._selectedConversation}
             .simulationId=${this.simulationId}

@@ -174,7 +174,13 @@ export function formatRelativeTime(
     if (diffHours < 24) return `${diffHours}h`;
     if (diffDays < 7) return `${diffDays}d`;
 
-    return date.toLocaleDateString(options?.locale, { month: 'short', day: 'numeric' });
+    // Include year if the date is from a different year
+    const includeYear = date.getFullYear() !== now.getFullYear();
+    return date.toLocaleDateString(options?.locale, {
+      month: 'short',
+      day: 'numeric',
+      ...(includeYear && { year: 'numeric' }),
+    });
   } catch {
     return '';
   }
