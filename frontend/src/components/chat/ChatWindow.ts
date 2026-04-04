@@ -5,6 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
+import { streamChatResponse } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
 import type {
   AgentBrief,
@@ -320,6 +321,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     if (changedProperties.has('conversation')) {
       const newId = this.conversation?.id ?? null;
       if (newId !== this._previousConversationId) {
+        // Abort any active stream from the previous conversation
+        this._streamAbort?.abort();
+        this._streamAbort = null;
         this._previousConversationId = newId;
         this._showEventsBar = false;
         if (newId) {
@@ -354,14 +358,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
   }
 
-  private _typingTimeout: ReturnType<typeof setTimeout> | null = null;
+  private _streamAbort: AbortController | null = null;
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._typingTimeout) {
-      clearTimeout(this._typingTimeout);
-      this._typingTimeout = null;
-    }
+    this._streamAbort?.abort();
+    this._streamAbort = null;
   }
 
   private async _handleSendMessage(e: CustomEvent<{ content: string }>): Promise<void> {
@@ -373,43 +375,76 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     this._sending = true;
 
     // Optimistic: add user message immediately
-    const optimisticMessage: ChatMessage = {
-      id: `temp-${Date.now()}`,
-      conversation_id: conversationId,
-      sender_role: 'user',
-      content,
-      created_at: new Date().toISOString(),
-    };
-    this._messages = [...this._messages, optimisticMessage];
+    const tempId = chatStore.addOptimistic(conversationId, content, conversationId);
+    this._messages = [...session.messages.value];
 
-    // Show typing indicator after a short delay (will be replaced by streaming in Commit 4)
-    this._typingTimeout = setTimeout(() => {
-      session.streaming.value = true;
-    }, 300);
+    // Abort any previous stream
+    this._streamAbort?.abort();
+    this._streamAbort = new AbortController();
+
+    session.streaming.value = true;
+    session.streamBuffer.value = '';
+
+    // Track whether the server confirmed the user message (saved to DB).
+    // If yes, a non-streaming fallback must NOT re-send the message.
+    let userMessageConfirmed = false;
 
     try {
-      const response = await chatApi.sendMessage(this.simulationId, conversationId, {
-        content,
-        generate_response: true,
+      await streamChatResponse(this.simulationId, conversationId, content, {
+        onUserConfirmed: (confirmedMsg) => {
+          userMessageConfirmed = true;
+          chatStore.confirmOptimistic(conversationId, tempId, confirmedMsg);
+          this._messages = [...session.messages.value];
+        },
+        onAgentStart: () => {
+          session.streamBuffer.value = '';
+        },
+        onToken: (_agentId, token) => {
+          chatStore.appendStreamChunk(conversationId, token);
+        },
+        onAgentDone: (_agentId, savedMsg) => {
+          chatStore.finalizeStream(conversationId, savedMsg);
+          this._messages = [...session.messages.value];
+          // For group chat: keep streaming for next agent
+          session.streaming.value = true;
+          session.streamBuffer.value = '';
+        },
+        onError: (error) => {
+          VelgToast.error(error);
+        },
+        signal: this._streamAbort.signal,
       });
-
-      if (response.success) {
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // User navigated away or conversation changed — silent
+      } else if (userMessageConfirmed) {
+        // Stream broke after user message was saved — reload to show
+        // whatever was persisted, do NOT re-send
+        VelgToast.error(msg('Connection lost during response. Reloading messages.'));
         await this._loadMessages();
       } else {
-        this._messages = this._messages.filter((m) => m.id !== optimisticMessage.id);
-        VelgToast.error(response.error?.message ?? msg('Failed to send message.'));
+        // Stream endpoint not available (404 during deploy) — fall back
+        // to non-streaming. The user message was NOT saved yet.
+        chatStore.removeOptimistic(conversationId, tempId);
+        try {
+          const response = await chatApi.sendMessage(this.simulationId, conversationId, {
+            content,
+            generate_response: true,
+          });
+          if (response.success) {
+            await this._loadMessages();
+          } else {
+            VelgToast.error(response.error?.message ?? msg('Failed to send message.'));
+          }
+        } catch {
+          VelgToast.error(msg('An unexpected error occurred while sending the message.'));
+        }
       }
-    } catch {
-      this._messages = this._messages.filter((m) => m.id !== optimisticMessage.id);
-      VelgToast.error(msg('An unexpected error occurred while sending the message.'));
     } finally {
-      if (this._typingTimeout) {
-        clearTimeout(this._typingTimeout);
-        this._typingTimeout = null;
-      }
       this._sending = false;
       session.streaming.value = false;
       session.streamBuffer.value = '';
+      this._streamAbort = null;
     }
   }
 
