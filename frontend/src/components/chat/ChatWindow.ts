@@ -1,8 +1,11 @@
 import { localized, msg, str } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, svg, type TemplateResult } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
+import { chatStore } from '../../services/chat/ChatSessionStore.js';
+import type { Participant } from '../../services/chat/chat-types.js';
 import type {
   AgentBrief,
   ChatConversation,
@@ -14,12 +17,12 @@ import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/Lightbox.js';
 import '../shared/VelgAvatar.js';
-import './MessageList.js';
-import './MessageInput.js';
+import './core/ChatFeed.js';
+import './core/ChatComposer.js';
 
 @localized()
 @customElement('velg-chat-window')
-export class VelgChatWindow extends LitElement {
+export class VelgChatWindow extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -206,8 +209,8 @@ export class VelgChatWindow extends LitElement {
 
     .window__messages {
       flex: 1;
-      overflow-y: auto;
-      scroll-behavior: smooth;
+      overflow: hidden;
+      min-height: 0;
     }
 
     .window__empty {
@@ -258,58 +261,6 @@ export class VelgChatWindow extends LitElement {
       border-top: var(--border-light);
     }
 
-    .window__typing-indicator {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
-    }
-
-    .window__typing-label {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-
-    .window__typing-bubble {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: var(--space-2) var(--space-3);
-      background: var(--color-surface-sunken);
-      border: var(--border-width-thin) solid var(--color-border-light);
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      color: var(--color-text-muted);
-    }
-
-    .window__typing-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--color-text-muted);
-      border-radius: 50%;
-      animation: typing-pulse 1.4s ease-in-out infinite;
-    }
-
-    .window__typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .window__typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    @keyframes typing-pulse {
-      0%, 60%, 100% {
-        opacity: 0.3;
-        transform: scale(0.8);
-      }
-      30% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
     @media (max-width: 640px) {
       .window__header-main {
         padding: var(--space-2) var(--space-3);
@@ -346,10 +297,6 @@ export class VelgChatWindow extends LitElement {
         padding: var(--space-2) var(--space-3);
       }
 
-      .window__typing-indicator {
-        padding: var(--space-2) var(--space-3);
-      }
-
       .header__portrait-overflow {
         width: 28px;
         height: 28px;
@@ -363,12 +310,9 @@ export class VelgChatWindow extends LitElement {
   @state() private _messages: ChatMessage[] = [];
   @state() private _loading = false;
   @state() private _sending = false;
-  @state() private _aiTyping = false;
   @state() private _showEventsBar = false;
   @state() private _lightboxSrc: string | null = null;
   @state() private _lightboxAlt = '';
-
-  @query('.window__messages') private _messagesContainer!: HTMLElement;
 
   private _previousConversationId: string | null = null;
 
@@ -400,7 +344,6 @@ export class VelgChatWindow extends LitElement {
 
       if (response.success && response.data) {
         this._messages = Array.isArray(response.data) ? response.data : [];
-        this._scrollToBottom();
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load messages.'));
       }
@@ -409,14 +352,6 @@ export class VelgChatWindow extends LitElement {
     } finally {
       this._loading = false;
     }
-  }
-
-  private _scrollToBottom(): void {
-    requestAnimationFrame(() => {
-      if (this._messagesContainer) {
-        this._messagesContainer.scrollTop = this._messagesContainer.scrollHeight;
-      }
-    });
   }
 
   private _typingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -433,26 +368,27 @@ export class VelgChatWindow extends LitElement {
     if (!this.conversation || !this.simulationId || this._sending) return;
 
     const { content } = e.detail;
+    const conversationId = this.conversation.id;
+    const session = chatStore.getOrCreate(conversationId);
     this._sending = true;
 
     // Optimistic: add user message immediately
     const optimisticMessage: ChatMessage = {
       id: `temp-${Date.now()}`,
-      conversation_id: this.conversation.id,
+      conversation_id: conversationId,
       sender_role: 'user',
       content,
       created_at: new Date().toISOString(),
     };
     this._messages = [...this._messages, optimisticMessage];
-    this._scrollToBottom();
 
-    // Show typing indicator after a short delay
+    // Show typing indicator after a short delay (will be replaced by streaming in Commit 4)
     this._typingTimeout = setTimeout(() => {
-      this._aiTyping = true;
+      session.streaming.value = true;
     }, 300);
 
     try {
-      const response = await chatApi.sendMessage(this.simulationId, this.conversation.id, {
+      const response = await chatApi.sendMessage(this.simulationId, conversationId, {
         content,
         generate_response: true,
       });
@@ -472,7 +408,8 @@ export class VelgChatWindow extends LitElement {
         this._typingTimeout = null;
       }
       this._sending = false;
-      this._aiTyping = false;
+      session.streaming.value = false;
+      session.streamBuffer.value = '';
     }
   }
 
@@ -491,6 +428,16 @@ export class VelgChatWindow extends LitElement {
       ];
     }
     return [];
+  }
+
+  /** Map agent briefs to ChatFeed's Participant interface. */
+  private _buildParticipants(): Participant[] {
+    return this._getAgents().map((a) => ({
+      id: a.id,
+      name: a.name,
+      avatarUrl: a.portrait_image_url,
+      role: 'agent' as const,
+    }));
   }
 
   private _getAgentDisplayName(): string {
@@ -640,24 +587,21 @@ export class VelgChatWindow extends LitElement {
       return this._renderNoConversation();
     }
 
-    const agents = this._getAgents();
-    const agentCount = agents.length;
+    const agentCount = this._getAgents().length;
     const displayName = this._getAgentDisplayName();
     const isArchived = this.conversation.status === 'archived';
     const eventRefCount = this.conversation.event_references?.length ?? 0;
     const hasEventsBar = this._showEventsBar;
-
-    // Typing indicator text
-    const typingText =
-      agentCount > 1
-        ? msg(str`${agentCount} agents are responding...`)
-        : msg(str`${displayName} is typing...`);
 
     // Sub info
     const subInfo =
       agentCount > 1
         ? msg(str`${agentCount} agents \u00B7 ${this.conversation.message_count} messages`)
         : msg(str`${this.conversation.message_count} messages`);
+
+    // Streaming state from ChatSessionStore (reactive via SignalWatcher)
+    const session = chatStore.getOrCreate(this.conversation.id);
+    const participants = this._buildParticipants();
 
     return html`
       <div class="window">
@@ -698,41 +642,30 @@ export class VelgChatWindow extends LitElement {
             ? html`<div class="window__loading">${msg('Loading messages...')}</div>`
             : html`
               <div class="window__messages">
-                <velg-message-list
+                <velg-chat-feed
                   .messages=${this._messages}
-                  .agentName=${agents[0]?.name ?? msg('Agent')}
-                  .agentPortraitUrl=${agents[0]?.portrait_image_url ?? ''}
-                  .agents=${agents}
+                  .participants=${participants}
                   .eventReferences=${this.conversation.event_references ?? []}
-                ></velg-message-list>
+                  .currentUserId=${appState.user.value?.id ?? ''}
+                  .streaming=${session.streaming.value}
+                  .streamContent=${session.streamBuffer.value}
+                  .typingUsers=${session.typingUsers.value}
+                  .hasMore=${session.hasMore.value}
+                  .loading=${this._loading}
+                ></velg-chat-feed>
               </div>
             `
         }
 
-        ${this._sending && !this._aiTyping ? html`<div class="window__sending-indicator">${msg('Sending...')}</div>` : null}
-
-        ${
-          this._aiTyping
-            ? html`
-              <div class="window__typing-indicator">
-                <span class="window__typing-label">${typingText}</span>
-                <div class="window__typing-bubble">
-                  <span class="window__typing-dot"></span>
-                  <span class="window__typing-dot"></span>
-                  <span class="window__typing-dot"></span>
-                </div>
-              </div>
-            `
-            : null
-        }
+        ${this._sending && !session.streaming.value ? html`<div class="window__sending-indicator">${msg('Sending...')}</div>` : null}
 
         ${
           appState.isAuthenticated.value
             ? html`
-          <velg-message-input
-            ?disabled=${this._sending || this._aiTyping || isArchived}
+          <velg-chat-composer
+            ?disabled=${this._sending || session.streaming.value || isArchived}
             @send-message=${this._handleSendMessage}
-          ></velg-message-input>
+          ></velg-chat-composer>
         `
             : null
         }
