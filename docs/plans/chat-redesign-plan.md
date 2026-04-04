@@ -1,6 +1,6 @@
 # Chat System Redesign — Unified Agent Chat + Epoch Chat
 
-> **Status:** Phase 0 COMPLETE (2026-04-04) — Phase 1 next  
+> **Status:** Phase 0 COMPLETE (2026-04-04, 351f779) — Phase 1 COMPLETE (2026-04-04) — Phase 2 next  
 > **Scope:** Full redesign of Agent Chat + Epoch Chat into a unified, premium chat system  
 > **Components affected:** 7 frontend, 3 backend services, 1 router, 1 model file  
 > **New components:** ~12 frontend, ~3 backend  
@@ -245,7 +245,7 @@ This replaces:
 
 ---
 
-## 4. Phase 0: Backend Refactoring (Foundation)
+## 4. Phase 0: Backend Refactoring (Foundation) ✅ COMPLETE (2026-04-04, 351f779)
 
 > Fix architecture issues before adding features. No new features in this phase.
 
@@ -406,9 +406,18 @@ def mock_if_enabled(func):
 
 ---
 
-## 5. Phase 1: Unified Chat Core Components
+## 5. Phase 1: Unified Chat Core Components ✅ COMPLETE (2026-04-04)
 
 > Extract shared components. Both Agent Chat and Epoch Chat consume these.
+>
+> **Implementation notes (2026-04-04):**
+> - 10 new files created (4 services, 6 components), 1 existing file fixed (markdown.ts)
+> - @lit/context@^1.1.6 installed as dependency
+> - Self-audit found+fixed 8 issues (1 critical: PURIFY_CONFIG, 2 high: O(N²) + object alloc)
+> - ScrollController uses `requestAutoScroll()` pattern instead of auto-scroll on every update
+> - CSS Grid auto-resize replaces JS scrollHeight in ChatComposer
+> - Streaming message uses content-change caching (Lit === dirty check)
+> - Follow-ups: agentAltText i18n, content-visibility intrinsic sizes, streaming agent ID, chat tests
 
 ### 1.1 ChatSessionStore (State Manager)
 

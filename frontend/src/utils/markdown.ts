@@ -17,10 +17,16 @@ marked.setOptions({
   gfm: true,
 });
 
-// DOMPurify: allow only safe HTML elements
+// DOMPurify: allow safe HTML elements including GFM extensions
 const PURIFY_CONFIG = {
-  ALLOWED_TAGS: ['h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'blockquote'],
-  ALLOWED_ATTR: ['href', 'target', 'rel'],
+  ALLOWED_TAGS: [
+    'h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'del',
+    'ul', 'ol', 'li', 'a', 'blockquote',
+    'pre', 'code',                                     // Code blocks + inline code
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',      // GFM tables
+    'hr',                                              // Horizontal rules
+  ],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
   RETURN_DOM_FRAGMENT: false,
   RETURN_DOM: false,
 };
