@@ -1,7 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
-import { css, html, LitElement, svg, type TemplateResult } from 'lit';
+import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
@@ -13,6 +14,7 @@ import type {
   ChatConversation,
   ChatEventReference,
 } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 import { agentAltText } from '../../utils/text.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -149,14 +151,27 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       flex-shrink: 0;
     }
 
-    /* Event reference bar */
+    /* Event reference bar — always rendered, toggled via max-height */
     .window__events-bar {
       display: flex;
       gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
-      overflow-x: auto;
+      padding: 0 var(--space-4);
+      overflow: hidden;
       border-top: var(--border-light);
       background: var(--color-surface-sunken);
+      max-height: 0;
+      opacity: 0;
+      transition:
+        max-height var(--transition-normal, 250ms) var(--ease-out, ease-out),
+        opacity var(--transition-fast, 150ms) var(--ease-out, ease-out),
+        padding var(--transition-normal, 250ms) var(--ease-out, ease-out);
+    }
+
+    .window__events-bar--open {
+      max-height: 120px;
+      opacity: 1;
+      padding: var(--space-2) var(--space-4);
+      overflow-x: auto;
     }
 
     .event-card {
@@ -280,7 +295,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         font-size: var(--text-sm);
       }
 
-      .window__events-bar {
+      .window__events-bar--open {
         padding: var(--space-2) var(--space-3);
       }
 
@@ -547,6 +562,36 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     return `${agents[0].name}, ${agents[1].name} +${agents.length - 2}`;
   }
 
+  private async _handleReactionToggle(
+    e: CustomEvent<{ messageId: string; emoji: string }>,
+  ): Promise<void> {
+    if (!this.conversation || !this.simulationId) return;
+    const { messageId, emoji } = e.detail;
+
+    const response = await chatApi.toggleReaction(
+      this.simulationId,
+      this.conversation.id,
+      messageId,
+      emoji,
+    );
+
+    if (!response.success) {
+      VelgToast.error(response.error?.message ?? msg('Failed to toggle reaction.'));
+      return;
+    }
+
+    // Refresh reactions for this message from the server
+    const reactionsResp = await chatApi.getReactions(
+      this.simulationId,
+      this.conversation.id,
+      messageId,
+    );
+
+    if (reactionsResp.success && reactionsResp.data) {
+      chatStore.updateMessageReactions(this.conversation.id, messageId, reactionsResp.data);
+    }
+  }
+
   private _toggleEventsBar(): void {
     this._showEventsBar = !this._showEventsBar;
   }
@@ -580,26 +625,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   }
 
   private _renderPinIcon() {
-    return svg`
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
-        <path d="M9 4v6l-2 4v2h10v-2l-2-4V4" />
-        <line x1="12" y1="16" x2="12" y2="21" />
-        <line x1="8" y1="4" x2="16" y2="4" />
-      </svg>
-    `;
+    return icons.pin(14);
   }
 
   private _renderAddAgentIcon() {
-    return svg`
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
-        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0" />
-        <path d="M6 21v-2a4 4 0 0 1 4-4h3" />
-        <line x1="19" y1="14" x2="19" y2="20" />
-        <line x1="16" y1="17" x2="22" y2="17" />
-      </svg>
-    `;
+    return icons.userPlus(14);
   }
 
   private _renderPortraitStack(): TemplateResult {
@@ -634,13 +664,16 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     `;
   }
 
-  private _renderEventsBar(): TemplateResult | null {
+  private _renderEventsBar(): TemplateResult {
     const refs = this.conversation?.event_references ?? [];
-    if (!this._showEventsBar) return null;
+    const barClasses = {
+      'window__events-bar': true,
+      'window__events-bar--open': this._showEventsBar,
+    };
 
     if (refs.length === 0) {
       return html`
-        <div class="window__events-bar">
+        <div class=${classMap(barClasses)}>
           <button class="window__action-btn" @click=${this._handleOpenEventPicker}>
             + ${msg('Add Event')}
           </button>
@@ -649,7 +682,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
 
     return html`
-      <div class="window__events-bar">
+      <div class=${classMap(barClasses)}>
         ${refs.map(
           (ref) => html`
             <div class="event-card">
@@ -738,7 +771,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           this._loading
             ? html`<velg-loading-state message=${msg('Loading messages...')}></velg-loading-state>`
             : html`
-              <div class="window__messages">
+              <div class="window__messages" @reaction-toggle=${this._handleReactionToggle}>
                 <velg-chat-feed
                   .messages=${session.messages.value}
                   .participants=${participants}

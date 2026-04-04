@@ -645,6 +645,12 @@ export interface ChatConversation {
   event_references?: ChatEventReference[];
 }
 
+export interface ChatReactionSummary {
+  emoji: string;
+  count: number;
+  reacted_by_me: boolean;
+}
+
 export interface ChatMessage {
   id: UUID;
   conversation_id: UUID;
@@ -654,6 +660,7 @@ export interface ChatMessage {
   created_at: string;
   agent_id?: UUID;
   agent?: AgentBrief;
+  reactions?: ChatReactionSummary[];
 }
 
 // --- Prompt Templates ---

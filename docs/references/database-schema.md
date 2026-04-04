@@ -822,6 +822,25 @@ CREATE TABLE public.chat_event_references (
 CREATE INDEX idx_event_refs_conversation ON chat_event_references(conversation_id);
 ```
 
+### `chat_message_reactions`
+
+Emoji reactions on chat messages. Toggle-based (add/remove via atomic Postgres RPC). Aggregation via `get_message_reactions` RPC returns per-emoji counts with `reacted_by_me` flag.
+
+```sql
+CREATE TABLE public.chat_message_reactions (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    message_id uuid NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id),
+    emoji text NOT NULL CHECK (char_length(emoji) BETWEEN 1 AND 8),
+    created_at timestamptz DEFAULT now() NOT NULL,
+    UNIQUE (message_id, user_id, emoji)
+);
+
+CREATE INDEX idx_chat_reactions_message ON chat_message_reactions(message_id);
+```
+
+**RLS:** Select for all, insert/delete own only. **RPCs:** `toggle_message_reaction(UUID, TEXT)` (atomic toggle), `get_message_reactions(UUID[])` (batch aggregation). **Broadcast:** `trg_broadcast_chat_reaction` fires on INSERT/DELETE to `chat:{conversation_id}:reactions` channel.
+
 ---
 
 ## AI & Prompts

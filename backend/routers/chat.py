@@ -18,6 +18,9 @@ from backend.models.chat import (
     EventReferenceResponse,
     MessageCreate,
     MessageResponse,
+    ReactionSummary,
+    ReactionToggleRequest,
+    ReactionToggleResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.audit_service import AuditService
@@ -341,6 +344,60 @@ async def remove_event_reference(
         details={"conversation_id": str(conversation_id)},
     )
     return SuccessResponse(data={"removed": True})
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages/{message_id}/reactions",
+)
+async def toggle_reaction(
+    simulation_id: UUID,
+    conversation_id: UUID,
+    message_id: UUID,
+    body: ReactionToggleRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[ReactionToggleResponse]:
+    """Toggle a reaction on a message (add if absent, remove if present).
+
+    Delegates to atomic Postgres RPC — no race conditions on concurrent toggles.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    action = await _service.toggle_reaction(supabase, message_id, body.emoji)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_message_reactions",
+        message_id,
+        action,
+        details={"emoji": body.emoji, "conversation_id": str(conversation_id)},
+    )
+    return SuccessResponse(
+        data=ReactionToggleResponse(
+            action=action,
+            message_id=message_id,
+            emoji=body.emoji,
+        ),
+    )
+
+
+@router.get(
+    "/conversations/{conversation_id}/messages/{message_id}/reactions",
+)
+async def get_reactions(
+    simulation_id: UUID,
+    conversation_id: UUID,
+    message_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[list[ReactionSummary]]:
+    """Get aggregated reactions for a message."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    grouped = await _service.get_reactions(supabase, [message_id])
+    reactions = grouped.get(str(message_id), [])
+    return SuccessResponse(data=reactions)
 
 
 @router.patch("/conversations/{conversation_id}")

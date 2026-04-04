@@ -29,6 +29,8 @@ import { agentAltText } from '../../../utils/text.js';
 
 import '../../shared/VelgAvatar.js';
 import './ChatBubble.js';
+import './MessageActions.js';
+import './ReactionBar.js';
 
 @localized()
 @customElement('velg-chat-message')
@@ -101,6 +103,36 @@ export class ChatMessage extends LitElement {
 
     .row:hover::before {
       background: color-mix(in oklch, var(--color-text-primary) 3%, transparent);
+    }
+
+    /* --- Message actions toolbar (hover-reveal) --- */
+    velg-message-actions {
+      position: absolute;
+      top: -12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-fast);
+      z-index: 2;
+    }
+
+    .row--assistant velg-message-actions {
+      right: var(--space-2);
+    }
+
+    .row--user velg-message-actions {
+      left: var(--space-2);
+    }
+
+    .row:hover velg-message-actions,
+    .row:focus-within velg-message-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      velg-message-actions {
+        transition-duration: 0.01ms !important;
+      }
     }
 
     /* --- Avatar column --- */
@@ -209,6 +241,17 @@ export class ChatMessage extends LitElement {
   @property({ type: Boolean }) streaming = false;
 
   // ---------------------------------------------------------------------------
+  // Derived
+  // ---------------------------------------------------------------------------
+
+  /** Sender display name — single source of truth for render, aria, sender label. */
+  private get _senderName(): string {
+    return this.message.sender_role === 'user'
+      ? msg('You')
+      : (this.participant?.name ?? this.message.agent?.name ?? msg('Agent'));
+  }
+
+  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
 
@@ -234,9 +277,6 @@ export class ChatMessage extends LitElement {
       'row--optimistic': isOptimistic,
     };
 
-    const senderName = isUser
-      ? msg('You')
-      : (this.participant?.name ?? this.message.agent?.name ?? msg('Agent'));
     const timeLabel = formatRelativeTimeVerbose(m.created_at);
 
     return html`
@@ -244,7 +284,7 @@ export class ChatMessage extends LitElement {
         class=${classMap(rowClasses)}
         style=${styleMap(hostStyle)}
         role="article"
-        aria-label="${senderName}, ${timeLabel}"
+        aria-label="${this._senderName}, ${timeLabel}"
       >
         ${this._renderAvatar(isUser, showAvatar)}
         <div class="content ${isUser ? 'content--user' : 'content--assistant'}">
@@ -256,10 +296,23 @@ export class ChatMessage extends LitElement {
             ?streaming=${this.streaming}
             ?plainText=${this.participant?.role === 'player'}
           ></velg-chat-bubble>
+          ${!isOptimistic && (m.reactions?.length ?? 0) > 0
+            ? html`<velg-reaction-bar
+                .messageId=${m.id}
+                .reactions=${m.reactions ?? []}
+              ></velg-reaction-bar>`
+            : nothing}
           ${showTime
             ? html`<span class="time">${formatRelativeTimeVerbose(m.created_at)}</span>`
             : nothing}
         </div>
+        ${isOptimistic ? nothing : html`
+          <velg-message-actions
+            .messageId=${m.id}
+            .senderRole=${m.sender_role}
+            .content=${m.content}
+          ></velg-message-actions>
+        `}
       </div>
     `;
   }
@@ -277,23 +330,21 @@ export class ChatMessage extends LitElement {
       return html`
         <div class="avatar avatar--user">
           <velg-avatar
-            .name=${msg('You')}
+            .name=${this._senderName}
             size="sm"
           ></velg-avatar>
         </div>
       `;
     }
 
-    const p = this.participant;
-    const name = p?.name ?? this.message.agent?.name ?? 'Agent';
-    const src = p?.avatarUrl ?? this.message.agent?.portrait_image_url ?? '';
+    const src = this.participant?.avatarUrl ?? this.message.agent?.portrait_image_url ?? '';
 
     return html`
       <div class="avatar">
         <velg-avatar
           .src=${src}
-          .name=${name}
-          alt=${agentAltText({ name })}
+          .name=${this._senderName}
+          alt=${agentAltText({ name: this._senderName })}
           size="sm"
           clickable
           @avatar-click=${this._handleAvatarClick}
@@ -303,9 +354,6 @@ export class ChatMessage extends LitElement {
   }
 
   private _renderSender(isUser: boolean) {
-    const name = isUser
-      ? msg('You')
-      : (this.participant?.name ?? this.message.agent?.name ?? 'Agent');
     const isBot = !isUser && this.participant?.role === 'system';
 
     return html`
@@ -314,7 +362,7 @@ export class ChatMessage extends LitElement {
         'sender--user': isUser,
         'sender--assistant': !isUser,
       })}>
-        ${name}${isBot ? html`<span class="sender__badge">BOT</span>` : nothing}
+        ${this._senderName}${isBot ? html`<span class="sender__badge">BOT</span>` : nothing}
       </span>
     `;
   }

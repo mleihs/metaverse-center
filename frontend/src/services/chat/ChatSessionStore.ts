@@ -17,7 +17,7 @@
 
 import { type Signal, batch, signal } from '@preact/signals-core';
 
-import type { ChatMessage } from '../../types/index.js';
+import type { ChatMessage, ChatReactionSummary } from '../../types/index.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -251,6 +251,20 @@ export class ChatSessionStore {
     } finally {
       session.loading.value = false;
     }
+  }
+
+  // --- Reactions ---------------------------------------------------------
+
+  /** Update reactions for a specific message (after toggle or broadcast). */
+  updateMessageReactions(
+    sessionId: string,
+    messageId: string,
+    reactions: ChatReactionSummary[],
+  ): void {
+    const session = this.getOrCreate(sessionId);
+    session.messages.value = session.messages.value.map((msg) =>
+      msg.id === messageId ? { ...msg, reactions } : msg,
+    );
   }
 
   // --- Typing indicators ------------------------------------------------

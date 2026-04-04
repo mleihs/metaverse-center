@@ -3,6 +3,7 @@ import type {
   ChatConversation,
   ChatEventReference,
   ChatMessage,
+  ChatReactionSummary,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -85,6 +86,28 @@ export class ChatApiService extends BaseApiService {
     conversationId: string,
   ): Promise<ApiResponse<ChatEventReference[]>> {
     return this.get(`/simulations/${simulationId}/chat/conversations/${conversationId}/events`);
+  }
+
+  toggleReaction(
+    simulationId: string,
+    conversationId: string,
+    messageId: string,
+    emoji: string,
+  ): Promise<ApiResponse<{ action: string; message_id: string; emoji: string }>> {
+    return this.post(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/messages/${messageId}/reactions`,
+      { emoji },
+    );
+  }
+
+  getReactions(
+    simulationId: string,
+    conversationId: string,
+    messageId: string,
+  ): Promise<ApiResponse<ChatReactionSummary[]>> {
+    return this.get(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/messages/${messageId}/reactions`,
+    );
   }
 
   archiveConversation(

@@ -75,6 +75,8 @@ class MessageResponse(BaseModel):
     model_used: str | None = None
     token_count: int | None = None
     generation_ms: int | None = None
+    # Reactions (populated from batch RPC in get_messages)
+    reactions: list["ReactionSummary"] = []
 
     @model_validator(mode="before")
     @classmethod
@@ -100,3 +102,25 @@ class EventReferenceResponse(BaseModel):
     occurred_at: str | None = None
     impact_level: int | None = None
     referenced_at: datetime
+
+
+class ReactionToggleRequest(BaseModel):
+    """Schema for toggling a reaction on a message."""
+
+    emoji: str = Field(..., min_length=1, max_length=8)
+
+
+class ReactionSummary(BaseModel):
+    """Aggregated reaction for a message — emoji + count + own-vote indicator."""
+
+    emoji: str
+    count: int
+    reacted_by_me: bool = False
+
+
+class ReactionToggleResponse(BaseModel):
+    """Result of toggling a reaction — 'added' or 'removed'."""
+
+    action: str
+    message_id: UUID
+    emoji: str

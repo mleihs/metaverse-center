@@ -1,9 +1,10 @@
 # Chat System Redesign — Unified Agent Chat + Epoch Chat
 
-> **Status:** Phase 0-4 COMPLETE — Phase 5 (Message Actions + Reactions) next  
+> **Status:** Phase 0-5 COMPLETE — Phase 6 (Conversation Management + Export) next  
 > **Scope:** Full redesign of Agent Chat + Epoch Chat into a unified, premium chat system  
 > **Components affected:** 7 frontend, 3 backend services, 1 router, 1 model file  
 > **New components:** ~12 frontend, ~3 backend  
+> **Phase 5 completed:** 2026-04-04 — MessageActions, ReactionBar, Migration 180, 9 icons, reaction RPCs  
 > **Research basis:** 12 parallel research strands (300+ sources), architecture audit  
 
 ---

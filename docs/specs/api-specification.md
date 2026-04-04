@@ -579,6 +579,38 @@ Nachricht senden (mit optionaler AI-Antwort).
 ### `DELETE /api/v1/simulations/:simId/chat/conversations/:conversationId`
 Konversation archivieren.
 
+### `POST /api/v1/simulations/:simId/chat/conversations/:conversationId/messages/:messageId/reactions`
+Reaction togglen (add if absent, remove if present). Atomic via Postgres RPC.
+
+**Body:**
+```json
+{
+  "emoji": "🔥"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": { "action": "added", "message_id": "uuid", "emoji": "🔥" }
+}
+```
+
+### `GET /api/v1/simulations/:simId/chat/conversations/:conversationId/messages/:messageId/reactions`
+Aggregierte Reactions fuer eine Nachricht.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "emoji": "👍", "count": 3, "reacted_by_me": true },
+    { "emoji": "🔥", "count": 1, "reacted_by_me": false }
+  ]
+}
+```
+
 ---
 
 ## 14. Generation (AI)

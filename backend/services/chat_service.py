@@ -232,11 +232,13 @@ class ChatService:
         else:
             await chat_ai.generate_response(conversation_id, user_message_content)
 
-        # Return all new messages (user + AI responses)
+        # Return all new messages (user + AI responses) — skip reactions
+        # since brand-new messages cannot have reactions yet
         return await ChatService.get_messages(
             supabase,
             conversation_id,
             limit=len(agents) + 1,
+            include_reactions=False,
         )
 
     @staticmethod
@@ -275,8 +277,13 @@ class ChatService:
         *,
         limit: int = 50,
         before: str | None = None,
+        include_reactions: bool = True,
     ) -> list[dict]:
-        """Get messages for a conversation with cursor-based pagination."""
+        """Get messages for a conversation with cursor-based pagination.
+
+        When include_reactions=True (default), batch-loads reaction summaries
+        via the Postgres RPC get_message_reactions in a single extra query.
+        """
         query = (
             supabase.table("chat_messages")
             .select("*, agents(id, name, portrait_image_url)")
@@ -296,6 +303,13 @@ class ChatService:
             agent_data = msg.pop("agents", None)
             if agent_data:
                 msg["agent"] = agent_data
+
+        # Batch-load reactions (one RPC call for all messages)
+        if include_reactions and data:
+            msg_ids = [UUID(msg["id"]) for msg in data]
+            reactions_by_msg = await ChatService.get_reactions(supabase, msg_ids)
+            for msg in data:
+                msg["reactions"] = reactions_by_msg.get(msg["id"], [])
 
         # Return in chronological order
         data.reverse()
@@ -460,6 +474,62 @@ class ChatService:
     ) -> list[dict]:
         """Get event references for a conversation."""
         return await ChatService._load_event_references(supabase, str(conversation_id))
+
+    # ── Reactions (delegated to Postgres RPCs) ────────────────
+
+    @staticmethod
+    async def toggle_reaction(
+        supabase: Client,
+        message_id: UUID,
+        emoji: str,
+    ) -> str:
+        """Toggle a reaction on a message. Returns 'added' or 'removed'.
+
+        Delegates to the atomic Postgres RPC toggle_message_reaction which
+        handles the insert-or-delete in a single transaction. auth.uid()
+        is resolved from the user JWT passed to supabase.
+        """
+        result = await supabase.rpc(
+            "toggle_message_reaction",
+            {"p_message_id": str(message_id), "p_emoji": emoji},
+        ).execute()
+
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to toggle reaction.",
+            )
+        # RPC returns a scalar text value
+        return result.data
+
+    @staticmethod
+    async def get_reactions(
+        supabase: Client,
+        message_ids: list[UUID],
+    ) -> dict[str, list[dict]]:
+        """Get aggregated reactions for multiple messages.
+
+        Delegates to the Postgres RPC get_message_reactions which groups
+        by (message_id, emoji) and computes count + reacted_by_me.
+        Returns {message_id: [ReactionSummary-dicts]}.
+        """
+        if not message_ids:
+            return {}
+
+        result = await supabase.rpc(
+            "get_message_reactions",
+            {"p_message_ids": [str(mid) for mid in message_ids]},
+        ).execute()
+
+        grouped: dict[str, list[dict]] = {}
+        for row in result.data or []:
+            mid = row["message_id"]
+            grouped.setdefault(mid, []).append({
+                "emoji": row["emoji"],
+                "count": row["count"],
+                "reacted_by_me": row["reacted_by_me"],
+            })
+        return grouped
 
     @staticmethod
     async def archive_conversation(
