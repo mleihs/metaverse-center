@@ -38,7 +38,7 @@ export interface ArchetypeSlide {
   readonly scrim: readonly [number, number, number];
 }
 
-const STORAGE_BASE = 'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/showcase';
+const STORAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/showcase`;
 
 export const ARCHETYPES: readonly ArchetypeSlide[] = [
   {
