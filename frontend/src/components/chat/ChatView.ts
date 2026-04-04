@@ -29,7 +29,7 @@ export class VelgChatView extends LitElement {
     .chat-layout {
       display: grid;
       grid-template-columns: 300px 1fr;
-      height: calc(100vh - var(--header-height) - 80px);
+      height: calc(100vh - var(--header-height) - 180px);
       min-height: 500px;
       border: var(--border-default);
       box-shadow: var(--shadow-sm);
