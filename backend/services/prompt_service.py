@@ -79,7 +79,10 @@ HARDCODED_FALLBACKS: dict[str, str] = {
     "chat_group_instruction": (
         "You are in a group conversation. The other participants are: {other_agent_names}. "
         "Respond to the user's and other agents' statements. "
-        "Reference the mentioned events when relevant to the conversation."
+        "Reference the mentioned events when relevant to the conversation. "
+        "In the conversation history, other agents' messages are prefixed with [AgentName]: "
+        "for identification \u2013 this is context only, do NOT replicate this pattern in your response. "
+        "Respond ONLY as yourself, never speak for other agents."
     ),
     "chat_event_reaction": (
         "{agent_name} reacted to \"{event_title}\": {reaction_text} (Emotion: {emotion})"
@@ -114,7 +117,9 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "Your character: {agent_character}\n"
         "Your background: {agent_background}\n"
         "{agent_memories}\n"
-        "Stay in character. Respond in {locale_name}."
+        "Stay in character. Respond in {locale_name}. "
+        "Never prefix your response with your name in brackets. "
+        "Never include internal reasoning, chain-of-thought, or meta-commentary in your response."
     ),
     "building_image_description": (
         "Describe an architectural photograph of a building for image generation.\n\n"

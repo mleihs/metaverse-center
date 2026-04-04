@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -307,6 +308,22 @@ class ChatAIService:
         saved = save_resp.data[0] if save_resp.data else {}
         return mock_text, saved
 
+    @staticmethod
+    def _sanitize_response(text: str) -> str:
+        """Strip leaked agent tags, CoT blocks, and meta-commentary from AI output."""
+        # Strip <think>...</think> blocks (CoT reasoning leak)
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+        # Strip [AgentName]: prefixes at start of response
+        text = re.sub(r"^\[[\w\s.äöüÄÖÜß]+\]:\s*", "", text)
+        # Strip parenthetical meta-reasoning blocks at start of response
+        text = re.sub(
+            r"^\((?:Der User|Die Frage|Ich soll|The user|I should).*?\)\s*",
+            "",
+            text,
+            flags=re.DOTALL,
+        )
+        return text.strip()
+
     async def _persist_ai_response(
         self,
         *,
@@ -318,6 +335,7 @@ class ChatAIService:
         extra_metadata: dict[str, Any] | None = None,
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
+        response_text = self._sanitize_response(response_text)
         usage = self._openrouter.last_usage or {}
         token_count = usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)
 

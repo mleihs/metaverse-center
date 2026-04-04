@@ -299,6 +299,7 @@ export class ChatFeed extends LitElement {
   @property({ type: Array }) participants: Participant[] = [];
   @property({ type: Array }) eventReferences: ChatEventReference[] = [];
   @property({ type: String }) currentUserId = '';
+  @property({ type: String }) currentUserName = '';
   @property({ type: Boolean }) streaming = false;
   @property({ type: String }) streamContent = '';
   @property({ type: Array }) typingUsers: TypingUser[] = [];
@@ -591,6 +592,7 @@ export class ChatFeed extends LitElement {
           .message=${m}
           .participant=${participant}
           .currentUserId=${this.currentUserId}
+          .currentUserName=${this.currentUserName}
           ?grouped=${item.grouped}
           ?lastInGroup=${item.lastInGroup}
         ></velg-chat-message>

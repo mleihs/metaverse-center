@@ -69,6 +69,22 @@ export class ChatMessage extends LitElement {
       margin-top: var(--space-1);
     }
 
+    /* Subtle separator when the speaking agent changes */
+    .row:not(.row--grouped)::after {
+      content: '';
+      position: absolute;
+      top: calc(-1 * var(--space-2));
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--color-border-light);
+    }
+
+    /* Suppress separator on the very first message */
+    :host(:first-child) .row::after {
+      display: none;
+    }
+
     .row--user {
       align-self: flex-end;
       flex-direction: row-reverse;
@@ -110,8 +126,11 @@ export class ChatMessage extends LitElement {
       position: absolute;
       top: -12px;
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-      transition: opacity var(--transition-fast);
+      transition:
+        opacity var(--transition-fast),
+        visibility var(--transition-fast);
       z-index: 2;
     }
 
@@ -126,6 +145,7 @@ export class ChatMessage extends LitElement {
     .row:hover velg-message-actions,
     .row:focus-within velg-message-actions {
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
     }
 
@@ -236,6 +256,7 @@ export class ChatMessage extends LitElement {
   @property({ type: Object }) message!: ChatMessageData;
   @property({ type: Object }) participant?: Participant;
   @property({ type: String }) currentUserId = '';
+  @property({ type: String }) currentUserName = '';
   @property({ type: Boolean }) grouped = false;
   @property({ type: Boolean }) lastInGroup = false;
   @property({ type: Boolean }) streaming = false;
@@ -330,7 +351,7 @@ export class ChatMessage extends LitElement {
       return html`
         <div class="avatar avatar--user">
           <velg-avatar
-            .name=${this._senderName}
+            .name=${this.currentUserName || this._senderName}
             size="sm"
           ></velg-avatar>
         </div>
