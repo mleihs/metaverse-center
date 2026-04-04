@@ -19,9 +19,7 @@ from backend.models.chat import (
 )
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.audit_service import AuditService
-from backend.services.chat_ai_service import ChatAIService
 from backend.services.chat_service import ChatService
-from backend.services.external_service_resolver import ExternalServiceResolver
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -76,6 +74,7 @@ async def get_messages(
     before: Annotated[str | None, Query(description="Cursor: ISO timestamp for pagination")] = None,
 ) -> SuccessResponse[list[MessageResponse]]:
     """Get messages for a conversation with cursor-based pagination."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     messages = await _service.get_messages(supabase, conversation_id, limit=limit, before=before)
     return SuccessResponse(data=messages)
 
@@ -93,11 +92,13 @@ async def send_message(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_supabase)],
-) -> SuccessResponse[MessageResponse | list[MessageResponse]]:
+) -> SuccessResponse[list[MessageResponse]]:
     """Send a message in a conversation.
 
-    If generate_response=true, generates AI responses from all agents in the conversation.
+    Always returns a list of messages. When generate_response=true, includes
+    both the user message and all AI responses.
     """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     # Save user message
     user_message = await _service.send_message(
         supabase, conversation_id, body.content, body.sender_role, body.metadata,
@@ -108,29 +109,11 @@ async def send_message(
     )
 
     if not body.generate_response:
-        return SuccessResponse(data=user_message)
+        return SuccessResponse(data=[user_message])
 
-    # Generate AI response(s)
-    resolver = ExternalServiceResolver(supabase, simulation_id)
-    ai_config = await resolver.get_ai_provider_config()
-    chat_ai = ChatAIService(
-        supabase, simulation_id,
-        openrouter_api_key=ai_config.openrouter_api_key,
-    )
-
-    # Check how many agents are in this conversation
-    agents = await ChatService._load_conversation_agents(supabase, str(conversation_id))
-
-    if len(agents) > 1:
-        # Group chat: generate responses for all agents
-        await chat_ai.generate_group_response(conversation_id, body.content)
-    else:
-        # Single agent: use simpler path
-        await chat_ai.generate_response(conversation_id, body.content)
-
-    # Load all new messages (user + AI responses)
-    all_messages = await _service.get_messages(
-        supabase, conversation_id, limit=len(agents) + 1,
+    # Delegate AI orchestration to service layer
+    all_messages = await _service.generate_ai_response(
+        supabase, simulation_id, conversation_id, body.content,
     )
 
     return SuccessResponse(data=all_messages)
@@ -149,6 +132,7 @@ async def add_agent(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[dict]:
     """Add an agent to a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     result = await _service.add_agent(supabase, conversation_id, body.agent_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversation_agents", body.agent_id, "create",
@@ -167,6 +151,7 @@ async def remove_agent(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[dict]:
     """Remove an agent from a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     await _service.remove_agent(supabase, conversation_id, agent_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversation_agents", agent_id, "delete",
@@ -184,6 +169,7 @@ async def get_event_references(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[list[EventReferenceResponse]]:
     """List event references for a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     refs = await _service.get_event_references(supabase, conversation_id)
     return SuccessResponse(data=refs)
 
@@ -201,6 +187,7 @@ async def add_event_reference(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[EventReferenceResponse]:
     """Add an event reference to a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     ref = await _service.add_event_reference(
         supabase, conversation_id, body.event_id, user.id,
     )
@@ -221,6 +208,7 @@ async def remove_event_reference(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[dict]:
     """Remove an event reference from a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     await _service.remove_event_reference(supabase, conversation_id, event_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_event_references", event_id, "delete",
@@ -238,6 +226,7 @@ async def archive_conversation(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Archive a conversation (soft-delete)."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     conversation = await _service.archive_conversation(supabase, conversation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversations", conversation_id, "archive",
@@ -254,6 +243,7 @@ async def delete_conversation(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Permanently delete a conversation and all its messages."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
     conversation = await _service.delete_conversation(supabase, conversation_id)
     await AuditService.safe_log(
         supabase, simulation_id, user.id, "chat_conversations", conversation_id, "delete",

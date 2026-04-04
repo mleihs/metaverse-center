@@ -18,7 +18,7 @@ import {
   zoneActionsApi,
 } from '../services/api/index.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import type { Agent, BuildingReadiness, ChatMessage } from '../types/index.js';
+import type { Agent, BuildingReadiness } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';
 import { dispatchDungeonCommand } from './dungeon-commands.js';
 import {
@@ -457,8 +457,7 @@ async function handleConversationInput(input: string): Promise<TerminalLine[]> {
     return [systemLine(msg('Communication interrupted. Try again.'))];
   }
 
-  // Response may be a single message or array
-  const messages = Array.isArray(resp.data) ? resp.data : [resp.data];
+  const messages = resp.data;
   return formatTalkResponse(messages);
 }
 
@@ -839,7 +838,7 @@ async function sendAgentPrompt(
   });
   if (!resp.success || !resp.data) return null;
 
-  const messages = (Array.isArray(resp.data) ? resp.data : [resp.data]) as ChatMessage[];
+  const messages = resp.data;
   const aiResponse = messages.find((m) => m.sender_role === 'assistant');
   return aiResponse?.content ?? null;
 }

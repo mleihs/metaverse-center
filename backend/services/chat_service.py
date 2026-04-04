@@ -1,4 +1,4 @@
-"""Service layer for chat operations (no AI — direct storage only)."""
+"""Service layer for chat operations — storage, orchestration, and validation."""
 
 import logging
 from datetime import UTC, datetime
@@ -6,6 +6,8 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.services.chat_ai_service import ChatAIService
+from backend.services.external_service_resolver import ExternalServiceResolver
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -13,6 +15,108 @@ logger = logging.getLogger(__name__)
 
 class ChatService:
     """Service for chat conversations and messages."""
+
+    # ── Ownership validation ────────────────────────────────
+
+    @staticmethod
+    async def verify_ownership(
+        supabase: Client,
+        conversation_id: UUID,
+        user_id: UUID,
+    ) -> None:
+        """Verify user owns this conversation. Raises 404 if not found/owned."""
+        result = await (
+            supabase.table("chat_conversations")
+            .select("id")
+            .eq("id", str(conversation_id))
+            .eq("user_id", str(user_id))
+            .maybe_single()
+            .execute()
+        )
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Conversation not found",
+            )
+
+    # ── Batch-load helpers (shared by list + single-load) ──
+
+    @staticmethod
+    async def _batch_load_agents(
+        supabase: Client,
+        conversation_ids: list[str],
+    ) -> dict[str, list[dict]]:
+        """Batch load agents for conversations. Returns {conv_id: [agent_dict]}."""
+        if not conversation_ids:
+            return {}
+        response = await (
+            supabase.table("chat_conversation_agents")
+            .select("conversation_id, agent_id, agents(id, name, portrait_image_url)")
+            .in_("conversation_id", conversation_ids)
+            .order("added_at")
+            .execute()
+        )
+        agents_by_conv: dict[str, list[dict]] = {}
+        for row in response.data or []:
+            agent_data = row.get("agents")
+            if agent_data:
+                agents_by_conv.setdefault(row["conversation_id"], []).append(agent_data)
+        return agents_by_conv
+
+    @staticmethod
+    async def _batch_load_event_refs(
+        supabase: Client,
+        conversation_ids: list[str],
+    ) -> dict[str, list[dict]]:
+        """Batch load event references. Returns {conv_id: [ref_dict]}."""
+        if not conversation_ids:
+            return {}
+        response = await (
+            supabase.table("chat_event_references")
+            .select(
+                "id, conversation_id, event_id, referenced_at, "
+                "events(title, event_type, description, occurred_at, impact_level)",
+            )
+            .in_("conversation_id", conversation_ids)
+            .order("referenced_at")
+            .execute()
+        )
+        refs_by_conv: dict[str, list[dict]] = {}
+        for row in response.data or []:
+            event_data = row.get("events", {}) or {}
+            refs_by_conv.setdefault(row["conversation_id"], []).append({
+                "id": row["id"],
+                "event_id": row["event_id"],
+                "event_title": event_data.get("title", ""),
+                "event_type": event_data.get("event_type"),
+                "event_description": event_data.get("description"),
+                "occurred_at": event_data.get("occurred_at"),
+                "impact_level": event_data.get("impact_level"),
+                "referenced_at": row["referenced_at"],
+            })
+        return refs_by_conv
+
+    # ── Single-load wrappers ────────────────────────────────
+
+    @staticmethod
+    async def _load_conversation_agents(
+        supabase: Client,
+        conversation_id: str,
+    ) -> list[dict]:
+        """Load agents for a single conversation via junction table."""
+        agents_by_conv = await ChatService._batch_load_agents(supabase, [conversation_id])
+        return agents_by_conv.get(conversation_id, [])
+
+    @staticmethod
+    async def _load_event_references(
+        supabase: Client,
+        conversation_id: str,
+    ) -> list[dict]:
+        """Load event references for a single conversation."""
+        refs_by_conv = await ChatService._batch_load_event_refs(supabase, [conversation_id])
+        return refs_by_conv.get(conversation_id, [])
+
+    # ── Query methods ───────────────────────────────────────
 
     @staticmethod
     async def list_conversations(
@@ -33,105 +137,16 @@ class ChatService:
         if not conversations:
             return []
 
-        # Batch-load agents and event references for all conversations at once
-        # (replaces N+1 per-conversation queries with 2 batch queries)
+        # Batch-load agents and event references (2 queries instead of N+1)
         conv_ids = [c["id"] for c in conversations]
+        agents_by_conv = await ChatService._batch_load_agents(supabase, conv_ids)
+        refs_by_conv = await ChatService._batch_load_event_refs(supabase, conv_ids)
 
-        agents_resp = await (
-            supabase.table("chat_conversation_agents")
-            .select("conversation_id, agent_id, agents(id, name, portrait_image_url)")
-            .in_("conversation_id", conv_ids)
-            .order("added_at")
-            .execute()
-        )
-
-        refs_resp = await (
-            supabase.table("chat_event_references")
-            .select(
-                "id, conversation_id, event_id, referenced_at, "
-                "events(title, event_type, description, occurred_at, impact_level)",
-            )
-            .in_("conversation_id", conv_ids)
-            .order("referenced_at")
-            .execute()
-        )
-
-        # Index agents by conversation_id
-        agents_by_conv: dict[str, list[dict]] = {}
-        for row in agents_resp.data or []:
-            agent_data = row.get("agents")
-            if agent_data:
-                agents_by_conv.setdefault(row["conversation_id"], []).append(agent_data)
-
-        # Index event references by conversation_id
-        refs_by_conv: dict[str, list[dict]] = {}
-        for row in refs_resp.data or []:
-            event_data = row.get("events", {}) or {}
-            refs_by_conv.setdefault(row["conversation_id"], []).append({
-                "id": row["id"],
-                "event_id": row["event_id"],
-                "event_title": event_data.get("title", ""),
-                "event_type": event_data.get("event_type"),
-                "event_description": event_data.get("description"),
-                "occurred_at": event_data.get("occurred_at"),
-                "impact_level": event_data.get("impact_level"),
-                "referenced_at": row["referenced_at"],
-            })
-
-        # Enrich conversations from batch results
         for conv in conversations:
             conv["agents"] = agents_by_conv.get(conv["id"], [])
             conv["event_references"] = refs_by_conv.get(conv["id"], [])
 
         return conversations
-
-    @staticmethod
-    async def _load_conversation_agents(
-        supabase: Client,
-        conversation_id: str,
-    ) -> list[dict]:
-        """Load agents for a conversation via junction table."""
-        response = await (
-            supabase.table("chat_conversation_agents")
-            .select("agent_id, agents(id, name, portrait_image_url)")
-            .eq("conversation_id", conversation_id)
-            .order("added_at")
-            .execute()
-        )
-        agents = []
-        for row in response.data or []:
-            agent_data = row.get("agents")
-            if agent_data:
-                agents.append(agent_data)
-        return agents
-
-    @staticmethod
-    async def _load_event_references(
-        supabase: Client,
-        conversation_id: str,
-    ) -> list[dict]:
-        """Load event references for a conversation."""
-        response = await (
-            supabase.table("chat_event_references")
-            .select("id, event_id, referenced_at, events(title, event_type, description, occurred_at, impact_level)")
-            .eq("conversation_id", conversation_id)
-            .order("referenced_at")
-            .execute()
-        )
-        refs = []
-        for row in response.data or []:
-            event_data = row.get("events", {}) or {}
-            refs.append({
-                "id": row["id"],
-                "event_id": row["event_id"],
-                "event_title": event_data.get("title", ""),
-                "event_type": event_data.get("event_type"),
-                "event_description": event_data.get("description"),
-                "occurred_at": event_data.get("occurred_at"),
-                "impact_level": event_data.get("impact_level"),
-                "referenced_at": row["referenced_at"],
-            })
-        return refs
 
     @staticmethod
     async def create_conversation(
@@ -179,6 +194,41 @@ class ChatService:
         conversation["event_references"] = []
 
         return conversation
+
+    @staticmethod
+    async def generate_ai_response(
+        supabase: Client,
+        simulation_id: UUID,
+        conversation_id: UUID,
+        user_message_content: str,
+    ) -> list[dict]:
+        """Orchestrate AI response generation (single or group).
+
+        Resolves AI provider config, determines single vs. group based on
+        agent count, and delegates to the appropriate ChatAIService method.
+
+        Returns list of all new messages (user + assistant) in chronological order.
+        """
+        # Resolve AI configuration
+        resolver = ExternalServiceResolver(supabase, simulation_id)
+        ai_config = await resolver.get_ai_provider_config()
+        chat_ai = ChatAIService(
+            supabase, simulation_id,
+            openrouter_api_key=ai_config.openrouter_api_key,
+        )
+
+        # Dispatch based on conversation agent count
+        agents = await ChatService._load_conversation_agents(supabase, str(conversation_id))
+
+        if len(agents) > 1:
+            await chat_ai.generate_group_response(conversation_id, user_message_content)
+        else:
+            await chat_ai.generate_response(conversation_id, user_message_content)
+
+        # Return all new messages (user + AI responses)
+        return await ChatService.get_messages(
+            supabase, conversation_id, limit=len(agents) + 1,
+        )
 
     @staticmethod
     async def get_messages(

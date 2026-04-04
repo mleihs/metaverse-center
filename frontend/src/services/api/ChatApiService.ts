@@ -33,7 +33,7 @@ export class ChatApiService extends BaseApiService {
     simulationId: string,
     conversationId: string,
     data: { content: string; metadata?: Record<string, unknown>; generate_response?: boolean },
-  ): Promise<ApiResponse<ChatMessage | ChatMessage[]>> {
+  ): Promise<ApiResponse<ChatMessage[]>> {
     return this.post(
       `/simulations/${simulationId}/chat/conversations/${conversationId}/messages`,
       data,

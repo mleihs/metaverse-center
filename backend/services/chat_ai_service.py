@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
+from typing import Any
 from uuid import UUID
 
 import httpx
@@ -13,7 +15,7 @@ from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.external.openrouter import OpenRouterService
-from backend.services.model_resolver import ModelResolver
+from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from supabase import AsyncClient as Client
 
@@ -41,6 +43,122 @@ class ChatAIService:
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
 
+    # ── Core generation helper ──────────────────────────────
+
+    async def _generate_single_response(
+        self,
+        *,
+        conversation_id: UUID,
+        agent: dict,
+        simulation: dict,
+        locale: str,
+        prompt_template: str,
+        model: ResolvedModel,
+        history_messages: list[dict[str, str]],
+        extra_variables: dict[str, str] | None = None,
+        extra_context: str = "",
+        extra_metadata: dict[str, Any] | None = None,
+    ) -> tuple[str, dict]:
+        """Core generation logic for a single agent response.
+
+        Handles: system prompt assembly (template + variables + mood + language),
+        OpenRouter call, AI usage logging, message persistence.
+
+        Args:
+            conversation_id: Target conversation.
+            agent: Agent profile dict (must include 'id', 'name', etc.).
+            simulation: Simulation dict (name, description).
+            locale: Content locale code (e.g. 'de', 'en').
+            prompt_template: Pre-resolved prompt template string.
+            model: Pre-resolved model configuration.
+            history_messages: Pre-built message list [{"role": ..., "content": ...}]
+                              (excluding system prompt — that is built here).
+            extra_variables: Additional template variables (e.g. agent_memories).
+            extra_context: Text appended after the system prompt
+                           (e.g. event context, group instruction).
+            extra_metadata: Additional fields merged into saved message metadata.
+
+        Returns:
+            Tuple of (response_text, saved_message_dict).
+        """
+        # Mock mode: short-circuit before any AI call
+        if settings.forge_mock_mode:
+            agent_name = agent.get("name", "Agent")
+            mock_text = f"[MOCK] {agent_name} responds to the conversation."
+            logger.info("MOCK_MODE: returning mock chat response for %s", agent_name)
+            save_resp = await self._supabase.table("chat_messages").insert({
+                "conversation_id": str(conversation_id),
+                "content": mock_text,
+                "sender_role": "assistant",
+                "agent_id": str(agent["id"]),
+                "metadata": {"model": "mock", "source": "mock"},
+            }).execute()
+            saved = save_resp.data[0] if save_resp.data else {}
+            return mock_text, saved
+
+        # Build system prompt
+        variables = self._build_agent_variables(agent, simulation, locale)
+        if extra_variables:
+            variables.update(extra_variables)
+
+        mood_context = await self._build_mood_context(UUID(agent["id"]))
+        if mood_context:
+            variables["agent_mood"] = mood_context
+
+        system_prompt = self._prompt_resolver.fill_template(prompt_template, variables)
+        system_prompt += PromptResolver.build_language_instruction(locale)
+
+        if extra_context:
+            system_prompt += f"\n\n{extra_context}"
+
+        # Assemble final messages
+        messages = [{"role": "system", "content": system_prompt}, *history_messages]
+
+        # Generate via OpenRouter
+        t0 = time.monotonic()
+        response_text = await self._openrouter.generate(
+            model=model.model_id,
+            messages=messages,
+            temperature=model.temperature,
+            max_tokens=model.max_tokens,
+        )
+        generation_ms = int((time.monotonic() - t0) * 1000)
+
+        # Extract usage from last call
+        usage = self._openrouter.last_usage or {}
+        token_count = usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)
+
+        # Log AI usage
+        await AIUsageService.log(
+            self._supabase, simulation_id=self._simulation_id,
+            provider="openrouter", model=model.model_id,
+            purpose="chat", usage=usage,
+        )
+
+        # Save with agent attribution + AI metadata
+        metadata: dict[str, Any] = {
+            "model": model.model_id,
+            "source": model.source,
+            "model_used": model.model_id,
+            "token_count": token_count,
+            "generation_ms": generation_ms,
+        }
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        save_resp = await self._supabase.table("chat_messages").insert({
+            "conversation_id": str(conversation_id),
+            "content": response_text,
+            "sender_role": "assistant",
+            "agent_id": str(agent["id"]),
+            "metadata": metadata,
+        }).execute()
+
+        saved = save_resp.data[0] if save_resp.data else {}
+        return response_text, saved
+
+    # ── Public generation methods ───────────────────────────
+
     async def generate_response(
         self,
         conversation_id: UUID,
@@ -50,17 +168,6 @@ class ChatAIService:
 
         Returns the generated response text.
         """
-        if settings.forge_mock_mode:
-            logger.info("MOCK_MODE: returning mock chat response")
-            mock_text = "[MOCK] I acknowledge your message. This is a simulated response."
-            await self._supabase.table("chat_messages").insert({
-                "conversation_id": str(conversation_id),
-                "content": mock_text,
-                "sender_role": "assistant",
-                "metadata": {"model": "mock", "source": "mock"},
-            }).execute()
-            return mock_text
-
         conversation = await self._load_conversation(conversation_id)
         agent = await self._load_agent(conversation["agent_id"])
         simulation = await self._load_simulation()
@@ -73,51 +180,27 @@ class ChatAIService:
         )
         memory_text = AgentMemoryService.format_for_prompt(memories)
 
-        prompt = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        variables = self._build_agent_variables(agent, simulation, locale)
-        variables["agent_memories"] = memory_text
+        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
+        model = await self._model_resolver.resolve_text_model("chat_response")
 
-        # Inject mood context if autonomy data exists
-        mood_context = await self._build_mood_context(UUID(agent["id"]))
-        if mood_context:
-            variables["agent_mood"] = mood_context
-
-        system_prompt = self._prompt_resolver.fill_template(prompt, variables)
-        system_prompt += PromptResolver.build_language_instruction(locale)
-
+        # Build history messages
         history = await self._load_history(conversation_id)
-        messages = [{"role": "system", "content": system_prompt}]
+        history_messages: list[dict[str, str]] = []
         for msg in history:
             role = "assistant" if msg["sender_role"] == "assistant" else "user"
-            messages.append({"role": role, "content": msg["content"]})
-        messages.append({"role": "user", "content": user_message})
+            history_messages.append({"role": role, "content": msg["content"]})
+        history_messages.append({"role": "user", "content": user_message})
 
-        model = await self._model_resolver.resolve_text_model("chat_response")
-        response_text = await self._openrouter.generate(
-            model=model.model_id,
-            messages=messages,
-            temperature=model.temperature,
-            max_tokens=model.max_tokens,
+        response_text, _ = await self._generate_single_response(
+            conversation_id=conversation_id,
+            agent=agent,
+            simulation=simulation,
+            locale=locale,
+            prompt_template=prompt_template,
+            model=model,
+            history_messages=history_messages,
+            extra_variables={"agent_memories": memory_text},
         )
-
-        # Log AI usage
-        await AIUsageService.log(
-            self._supabase, simulation_id=self._simulation_id,
-            provider="openrouter", model=model.model_id,
-            purpose="chat", usage=self._openrouter.last_usage,
-        )
-
-        # Save with agent_id attribution
-        await self._supabase.table("chat_messages").insert({
-            "conversation_id": str(conversation_id),
-            "content": response_text,
-            "sender_role": "assistant",
-            "agent_id": conversation.get("agent_id"),
-            "metadata": {
-                "model": model.model_id,
-                "source": model.source,
-            },
-        }).execute()
 
         # Fire-and-forget: extract memorable observations from this exchange
         async def _safe_extract() -> None:
@@ -143,24 +226,7 @@ class ChatAIService:
         Each agent responds sequentially, seeing previous agents' responses.
         Returns list of saved message dicts.
         """
-        if settings.forge_mock_mode:
-            logger.info("MOCK_MODE: returning mock group chat responses")
-            agents = await self._load_conversation_agents(conversation_id)
-            saved: list[dict] = []
-            for agent in agents:
-                mock_text = f"[MOCK] {agent.get('name', 'Agent')} responds to the conversation."
-                resp = await self._supabase.table("chat_messages").insert({
-                    "conversation_id": str(conversation_id),
-                    "content": mock_text,
-                    "sender_role": "assistant",
-                    "agent_id": str(agent["id"]),
-                    "metadata": {"model": "mock", "source": "mock"},
-                }).execute()
-                if resp.data:
-                    saved.append(resp.data[0])
-            return saved
-
-        # Load context
+        # Load shared context
         agents = await self._load_conversation_agents(conversation_id)
         event_refs = await self._load_event_references(conversation_id)
         simulation = await self._load_simulation()
@@ -168,83 +234,62 @@ class ChatAIService:
         prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         model = await self._model_resolver.resolve_text_model("chat_response")
 
-        # Load event reactions for all referenced events and conversation agents
+        # Build event context block
         event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
         agent_ids = [str(a["id"]) for a in agents]
         reactions = await self._load_event_reactions(event_ids, agent_ids)
-
-        # Build event context block (template-based)
         event_context = await self._build_event_context(event_refs, reactions, locale)
 
-        # Build group instruction
         agent_names = [a.get("name", "Agent") for a in agents]
-
         saved_messages: list[dict] = []
 
         for idx, agent in enumerate(agents):
-            # Build individual system prompt
-            variables = self._build_agent_variables(agent, simulation, locale)
-            system_prompt = self._prompt_resolver.fill_template(prompt_template, variables)
-            system_prompt += PromptResolver.build_language_instruction(locale)
-
-            # Add event context
+            # Build extra context (event context + group instruction)
+            extra_parts: list[str] = []
             if event_context:
-                system_prompt += f"\n\n{event_context}"
+                extra_parts.append(event_context)
 
-            # Add group instruction (if more than 1 agent)
             if len(agents) > 1:
                 group_instr = await self._prompt_resolver.resolve("chat_group_instruction", locale)
                 other_names = [n for i, n in enumerate(agent_names) if i != idx]
                 group_text = self._prompt_resolver.fill_template(group_instr, {
                     "other_agent_names": ", ".join(other_names),
                 })
-                system_prompt += f"\n\n{group_text}"
+                extra_parts.append(group_text)
 
-            # Load full history including this turn's previous agent responses
+            # Build history messages with agent-name prefixing for group context
             history = await self._load_history(conversation_id)
-
-            messages = [{"role": "system", "content": system_prompt}]
+            history_messages: list[dict[str, str]] = []
             for msg in history:
                 role = "assistant" if msg["sender_role"] == "assistant" else "user"
-                # For group context, prefix agent name to assistant messages
                 content = msg["content"]
                 if role == "assistant" and msg.get("agent_id") and len(agents) > 1:
-                    # Find agent name for this message
                     msg_agent_name = self._find_agent_name(agents, msg["agent_id"])
                     if msg_agent_name:
                         content = f"[{msg_agent_name}]: {content}"
-                messages.append({"role": role, "content": content})
-            messages.append({"role": "user", "content": user_message})
+                history_messages.append({"role": role, "content": content})
+            history_messages.append({"role": "user", "content": user_message})
 
-            # Add any responses from agents earlier in this turn
+            # Append responses from agents earlier in this turn
             for prev_msg in saved_messages:
                 prev_agent_name = self._find_agent_name(agents, prev_msg.get("agent_id"))
                 prefix = f"[{prev_agent_name}]: " if prev_agent_name else ""
-                messages.append({"role": "assistant", "content": f"{prefix}{prev_msg['content']}"})
+                history_messages.append({"role": "assistant", "content": f"{prefix}{prev_msg['content']}"})
 
-            # Generate
-            response_text = await self._openrouter.generate(
-                model=model.model_id,
-                messages=messages,
-                temperature=model.temperature,
-                max_tokens=model.max_tokens,
+            _, saved = await self._generate_single_response(
+                conversation_id=conversation_id,
+                agent=agent,
+                simulation=simulation,
+                locale=locale,
+                prompt_template=prompt_template,
+                model=model,
+                history_messages=history_messages,
+                extra_context="\n\n".join(extra_parts),
+                extra_metadata={"group_turn_index": idx},
             )
 
-            # Save with agent attribution
-            save_resp = await self._supabase.table("chat_messages").insert({
-                "conversation_id": str(conversation_id),
-                "content": response_text,
-                "sender_role": "assistant",
-                "agent_id": str(agent["id"]),
-                "metadata": {
-                    "model": model.model_id,
-                    "source": model.source,
-                    "group_turn_index": idx,
-                },
-            }).execute()
-
-            if save_resp.data:
-                saved_messages.append(save_resp.data[0])
+            if saved:
+                saved_messages.append(saved)
 
         return saved_messages
 

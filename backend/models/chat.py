@@ -1,9 +1,10 @@
 """Pydantic models for chat conversations and messages."""
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class AgentBrief(BaseModel):
@@ -70,6 +71,22 @@ class MessageResponse(BaseModel):
     created_at: datetime
     agent_id: UUID | None = None
     agent: AgentBrief | None = None
+    # AI generation metadata (populated for assistant messages from metadata JSON)
+    model_used: str | None = None
+    token_count: int | None = None
+    generation_ms: int | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _extract_ai_metadata(cls, data: Any) -> Any:
+        """Extract AI metadata fields from the metadata JSON dict."""
+        if isinstance(data, dict):
+            meta = data.get("metadata")
+            if isinstance(meta, dict):
+                for field in ("model_used", "token_count", "generation_ms"):
+                    if field not in data or data[field] is None:
+                        data[field] = meta.get(field)
+        return data
 
 
 class EventReferenceResponse(BaseModel):
