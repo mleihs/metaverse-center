@@ -105,6 +105,24 @@ Rules:
 - Always derive from Tier 1/2 tokens via `color-mix()`
 - Never use raw hex in `--_*` definitions
 
+### Chat Component Tokens (Phase 1-6)
+
+| Component | Token | Source | Purpose |
+|-----------|-------|--------|---------|
+| ChatBubble | `--_bubble-user-bg` | `color-mix(--color-primary 12%, transparent)` | User message background |
+| ChatBubble | `--_bubble-agent-bg` | `--color-surface-raised` | Agent message background |
+| ChatComposer | `--_composer-bg` | `color-mix(--color-surface-raised 80%, transparent)` | Composer backdrop |
+| ChatComposer | `--_composer-focus-border` | `--color-primary` | Focus ring border |
+| ChatComposer | `--_composer-focus-glow` | `color-mix(--color-primary 20%, transparent)` | Focus glow shadow |
+| MessageActions | `--_action-bg` | `--color-surface-raised` | Action toolbar background |
+| MessageActions | `--_action-hover-bg` | `color-mix(--color-primary 10%, --color-surface-raised)` | Hover state |
+| ConversationList | `--_search-bg` | `--color-surface-sunken` | Search input background |
+| ConversationList | `--_search-focus-border` | `--color-primary` | Search focus ring |
+| ConversationList | `--_pin-active-color` | `--color-primary` | Active pin accent |
+| ConversationList | `--_rename-bg` | `--color-surface-sunken` | Rename input background |
+| ConversationList | `--_rename-border` | `--color-primary` | Rename input focus border |
+| ConversationList | `--_group-label-color` | `--color-text-muted` | Date group header |
+
 ---
 
 ## Focus Rings

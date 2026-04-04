@@ -14,6 +14,7 @@ from backend.models.chat import (
     AddAgentRequest,
     ConversationCreate,
     ConversationResponse,
+    ConversationUpdate,
     EventReferenceCreate,
     EventReferenceResponse,
     MessageCreate,
@@ -398,6 +399,30 @@ async def get_reactions(
     grouped = await _service.get_reactions(supabase, [message_id])
     reactions = grouped.get(str(message_id), [])
     return SuccessResponse(data=reactions)
+
+
+@router.put("/conversations/{conversation_id}/title")
+async def rename_conversation(
+    simulation_id: UUID,
+    conversation_id: UUID,
+    body: ConversationUpdate,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[ConversationResponse]:
+    """Rename a conversation."""
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    conversation = await _service.rename_conversation(supabase, conversation_id, body.title)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation_id,
+        "rename",
+        details={"title": body.title},
+    )
+    return SuccessResponse(data=conversation)
 
 
 @router.patch("/conversations/{conversation_id}")

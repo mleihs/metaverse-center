@@ -22,6 +22,12 @@ class ConversationCreate(BaseModel):
     title: str | None = None
 
 
+class ConversationUpdate(BaseModel):
+    """Schema for updating a conversation (rename)."""
+
+    title: str = Field(..., min_length=1, max_length=200)
+
+
 class AddAgentRequest(BaseModel):
     """Schema for adding an agent to a conversation."""
 

@@ -5,6 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
+import { ChatExporter } from '../../services/chat/ChatExporter.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
@@ -286,6 +287,55 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       border-top: var(--border-light);
     }
 
+    /* ── Export menu ─────────────────────────────────── */
+
+    .export-wrapper {
+      position: relative;
+    }
+
+    .export-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: var(--space-1);
+      background: var(--color-surface-raised);
+      border: var(--border-medium);
+      box-shadow: var(--shadow-md);
+      z-index: 10;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      animation: export-menu-enter 150ms var(--ease-out, ease-out) both;
+    }
+
+    @keyframes export-menu-enter {
+      from { opacity: 0; transform: translateY(-4px); }
+    }
+
+    .export-menu__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all var(--transition-fast);
+    }
+
+    .export-menu__item:hover {
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
+    }
+
     @media (max-width: 640px) {
       .window__header-main {
         padding: var(--space-2) var(--space-3);
@@ -338,6 +388,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @state() private _lightboxSrc: string | null = null;
   @state() private _lightboxAlt = '';
   @state() private _streamingAgentId = '';
+  @state() private _restoredDraft = '';
 
   private _previousConversationId: string | null = null;
 
@@ -356,6 +407,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
         this._previousConversationId = newId;
         this._showEventsBar = false;
+        this._restoredDraft = newId ? chatStore.restoreDraft(newId) : '';
         if (newId) {
           this._initConversation(newId);
         }
@@ -377,7 +429,28 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     const msgs = session.messages.value;
     const latestTs =
       msgs.length > 0 ? new Date(msgs[msgs.length - 1].created_at).getTime() : Date.now();
-    realtimeService.joinConversation(conversationId, latestTs);
+    realtimeService.joinConversation(conversationId, latestTs, (messageId) => {
+      this._handleRealtimeReactionChanged(conversationId, messageId);
+    });
+  }
+
+  /**
+   * Handle realtime reaction_changed broadcast from DB trigger 180.
+   * Fetches fresh reaction summaries and updates the store.
+   */
+  private async _handleRealtimeReactionChanged(
+    conversationId: string,
+    messageId: string,
+  ): Promise<void> {
+    if (!this.simulationId || this.conversation?.id !== conversationId) return;
+    try {
+      const response = await chatApi.getReactions(this.simulationId, conversationId, messageId);
+      if (response.success && response.data) {
+        chatStore.updateMessageReactions(conversationId, messageId, response.data);
+      }
+    } catch {
+      // Non-critical — reaction display will catch up on next interaction
+    }
   }
 
   private async _loadMessages(): Promise<void> {
@@ -407,7 +480,15 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   private _streamAbort: AbortController | null = null;
 
+  private _closeExportMenuBound = () => { this._showExportMenu = false; };
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    document.addEventListener('click', this._closeExportMenuBound);
+  }
+
   override disconnectedCallback(): void {
+    document.removeEventListener('click', this._closeExportMenuBound);
     super.disconnectedCallback();
     this._streamAbort?.abort();
     this._streamAbort = null;
@@ -427,6 +508,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     if (user) {
       realtimeService.broadcastStopTyping(user.id);
     }
+
+    // Clear draft immediately on send
+    chatStore.clearDraft(conversationId);
 
     // Optimistic: add user message immediately (SignalWatcher triggers re-render)
     const tempId = chatStore.addOptimistic(conversationId, content, conversationId);
@@ -499,6 +583,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streamBuffer.value = '';
       this._streamAbort = null;
     }
+  }
+
+  private _handleDraftChange(e: CustomEvent<{ content: string }>): void {
+    if (!this.conversation) return;
+    chatStore.saveDraft(this.conversation.id, e.detail.content);
   }
 
   private _handleComposerTyping(): void {
@@ -596,6 +685,18 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     this._showEventsBar = !this._showEventsBar;
   }
 
+  private _handleExportMarkdown(): void {
+    if (!this.conversation) return;
+    const session = chatStore.getOrCreate(this.conversation.id);
+    ChatExporter.exportMarkdown(this.conversation, session.messages.value);
+  }
+
+  private _handleExportJSON(): void {
+    if (!this.conversation) return;
+    const session = chatStore.getOrCreate(this.conversation.id);
+    ChatExporter.exportJSON(this.conversation, session.messages.value);
+  }
+
   private _handleAddAgent(): void {
     this.dispatchEvent(
       new CustomEvent('open-agent-selector', {
@@ -624,12 +725,23 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     );
   }
 
+  @state() private _showExportMenu = false;
+
+  private _toggleExportMenu(e: Event): void {
+    e.stopPropagation();
+    this._showExportMenu = !this._showExportMenu;
+  }
+
   private _renderPinIcon() {
     return icons.pin(14);
   }
 
   private _renderAddAgentIcon() {
     return icons.userPlus(14);
+  }
+
+  private _renderDownloadIcon() {
+    return icons.download(14);
   }
 
   private _renderPortraitStack(): TemplateResult {
@@ -761,6 +873,33 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               >
                 ${this._renderAddAgentIcon()}
               </button>
+              <div class="export-wrapper">
+                <button
+                  class="window__action-btn"
+                  @click=${this._toggleExportMenu}
+                  aria-label=${msg('Export conversation')}
+                  aria-haspopup="true"
+                  aria-expanded=${this._showExportMenu ? 'true' : 'false'}
+                >
+                  ${this._renderDownloadIcon()}
+                </button>
+                ${this._showExportMenu
+                  ? html`
+                    <div class="export-menu" role="menu">
+                      <button
+                        class="export-menu__item"
+                        role="menuitem"
+                        @click=${() => { this._handleExportMarkdown(); this._showExportMenu = false; }}
+                      >${msg('Markdown')}</button>
+                      <button
+                        class="export-menu__item"
+                        role="menuitem"
+                        @click=${() => { this._handleExportJSON(); this._showExportMenu = false; }}
+                      >${msg('JSON')}</button>
+                    </div>
+                  `
+                  : null}
+              </div>
             </div>
           </div>
 
@@ -796,8 +935,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
             ? html`
           <velg-chat-composer
             ?disabled=${this._sending || this._loading || session.streaming.value || isArchived}
+            .initialContent=${this._restoredDraft}
             @send-message=${this._handleSendMessage}
             @composer-typing=${this._handleComposerTyping}
+            @draft-change=${this._handleDraftChange}
           ></velg-chat-composer>
         `
             : null

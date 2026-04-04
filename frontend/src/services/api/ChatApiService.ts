@@ -110,6 +110,16 @@ export class ChatApiService extends BaseApiService {
     );
   }
 
+  renameConversation(
+    simulationId: string,
+    conversationId: string,
+    title: string,
+  ): Promise<ApiResponse<ChatConversation>> {
+    return this.put(`/simulations/${simulationId}/chat/conversations/${conversationId}/title`, {
+      title,
+    });
+  }
+
   archiveConversation(
     simulationId: string,
     conversationId: string,

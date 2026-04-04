@@ -49,9 +49,11 @@ class RealtimeServiceImpl {
   // Agent chat channels
   private _convTypingChannel: RealtimeChannel | null = null;
   private _convMessageChannel: RealtimeChannel | null = null;
+  private _convReactionChannel: RealtimeChannel | null = null;
   private _currentConversationId: string | null = null;
   private _typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private _lastTypingBroadcast = 0;
+  private _onReactionChanged: ((messageId: string) => void) | null = null;
 
   // ── Join Epoch ───────────────────────────────────────
 
@@ -238,7 +240,11 @@ class RealtimeServiceImpl {
 
   // ── Agent Chat: Join/Leave Conversation ──────────────
 
-  joinConversation(conversationId: string, lastMessageTimestamp?: number): void {
+  joinConversation(
+    conversationId: string,
+    lastMessageTimestamp?: number,
+    onReactionChanged?: (messageId: string) => void,
+  ): void {
     if (this._currentConversationId === conversationId) return;
 
     // Clean up previous conversation channels
@@ -247,6 +253,7 @@ class RealtimeServiceImpl {
     }
 
     this._currentConversationId = conversationId;
+    this._onReactionChanged = onReactionChanged ?? null;
     this.chatTypingUsers.value = [];
     this._lastTypingBroadcast = 0; // Reset debounce so first typing fires immediately
 
@@ -297,6 +304,16 @@ class RealtimeServiceImpl {
         chatStore.addMessage(conversationId, msg);
       })
       .subscribe();
+
+    // Reaction channel — receives broadcasts from DB trigger 180.
+    // Payload contains { message_id, conversation_id } — caller fetches full summaries.
+    this._convReactionChannel = supabase
+      .channel(`chat:${conversationId}:reactions`, { config: { private: true } })
+      .on('broadcast', { event: 'reaction_changed' }, (payload) => {
+        const { message_id } = payload.payload as { message_id: string; conversation_id: string };
+        this._onReactionChanged?.(message_id);
+      })
+      .subscribe();
   }
 
   leaveConversation(): void {
@@ -308,6 +325,10 @@ class RealtimeServiceImpl {
       supabase.removeChannel(this._convMessageChannel);
       this._convMessageChannel = null;
     }
+    if (this._convReactionChannel) {
+      supabase.removeChannel(this._convReactionChannel);
+      this._convReactionChannel = null;
+    }
 
     // Clear all typing timers
     for (const timer of this._typingTimers.values()) {
@@ -316,6 +337,7 @@ class RealtimeServiceImpl {
     this._typingTimers.clear();
 
     this._currentConversationId = null;
+    this._onReactionChanged = null;
     this.chatTypingUsers.value = [];
   }
 

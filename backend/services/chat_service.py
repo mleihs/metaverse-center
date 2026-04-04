@@ -553,6 +553,28 @@ class ChatService:
         return response.data[0]
 
     @staticmethod
+    async def rename_conversation(
+        supabase: Client,
+        conversation_id: UUID,
+        title: str,
+    ) -> dict:
+        """Rename a conversation."""
+        response = await (
+            supabase.table("chat_conversations")
+            .update({"title": title, "updated_at": datetime.now(UTC).isoformat()})
+            .eq("id", str(conversation_id))
+            .execute()
+        )
+
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation '{conversation_id}' not found.",
+            )
+
+        return response.data[0]
+
+    @staticmethod
     async def delete_conversation(
         supabase: Client,
         conversation_id: UUID,

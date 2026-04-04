@@ -240,6 +240,34 @@ export class VelgChatView extends LitElement {
     }
   }
 
+  private async _handleConversationRename(
+    e: CustomEvent<{ conversation: ChatConversation; title: string }>,
+  ): Promise<void> {
+    const { conversation, title } = e.detail;
+
+    try {
+      const response = await chatApi.renameConversation(
+        this.simulationId,
+        conversation.id,
+        title,
+      );
+      if (response.success) {
+        // Update the conversation in the list
+        this._conversations = this._conversations.map((c) =>
+          c.id === conversation.id ? { ...c, title } : c,
+        );
+        // Update selected if it's the same conversation
+        if (this._selectedConversation?.id === conversation.id) {
+          this._selectedConversation = { ...this._selectedConversation, title };
+        }
+      } else {
+        VelgToast.error(response.error?.message ?? msg('Failed to rename conversation.'));
+      }
+    } catch {
+      VelgToast.error(msg('An unexpected error occurred while renaming the conversation.'));
+    }
+  }
+
   private async _handleConversationDelete(e: CustomEvent<ChatConversation>): Promise<void> {
     const conversation = e.detail;
     const agentNames = conversation.agents?.map((a) => a.name) ?? [];
@@ -486,6 +514,7 @@ export class VelgChatView extends LitElement {
               @conversation-select=${this._handleConversationSelect}
               @conversation-archive=${this._handleConversationArchive}
               @conversation-delete=${this._handleConversationDelete}
+              @conversation-rename=${this._handleConversationRename}
             ></velg-conversation-list>
           </div>
         </div>

@@ -258,6 +258,21 @@ export class ChatComposer extends LitElement {
     }
   }
 
+  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
+    // Restore draft when conversation switches (initialContent changes)
+    if (changedProperties.has('initialContent') && changedProperties.get('initialContent') !== undefined) {
+      this._content = this.initialContent;
+      // Sync the CSS Grid mirror on next frame (textarea may not exist yet)
+      this.updateComplete.then(() => {
+        if (this._textarea) {
+          this._textarea.value = this.initialContent;
+          const wrapper = this._textarea.parentElement;
+          if (wrapper) wrapper.dataset.value = this.initialContent;
+        }
+      });
+    }
+  }
+
   disconnectedCallback(): void {
     clearTimeout(this._draftTimeout);
     super.disconnectedCallback();

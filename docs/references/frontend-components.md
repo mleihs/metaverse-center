@@ -123,10 +123,12 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher, always-
 │           ├── EchoCard
 │           └── EchoTriggerModal (extends BaseModal, admin+)
 ├── ChatView
-│   ├── ConversationList
-│   ├── ChatWindow
-│   │   ├── MessageList
-│   │   └── MessageInput
+│   ├── ConversationList (search, date grouping, pinned, inline rename)
+│   ├── ChatWindow (draft auto-save, export menu, reaction realtime)
+│   │   ├── ChatFeed (core/)
+│   │   ├── ChatComposer (core/, draft persistence)
+│   │   ├── ChatMessage (core/, MessageActions, ReactionBar)
+│   │   └── ChatHeader (core/)
 │   ├── AgentSelector
 │   └── EventPicker
 ├── SocialTrendsView
@@ -827,7 +829,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | events/ | 6 | 6 | View, Card, EditModal, DetailsPanel, EchoCard/TriggerModal |
 | terminal/ | 4 | 4 | BureauTerminal (CRT MUD interface, Stage 1-3 + Epoch Tier 4: 23 commands, statusbar zone/dungeon-label switch via isDungeonMode), TerminalQuickActions (uses shared terminalActionStyles), TerminalView (template wrapper), EpochTerminalView (epoch wrapper) |
 | dungeon/ | 8 | 8 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock, dungeon recovery passes archetype label to terminal), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0, audio toggle button dispatches toggle-audio-settings), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse 3s, room reveal radar-blip 300ms via state-diffing willUpdate/updated, depth-transition sonar-ping 500ms, all behind prefers-reduced-motion: no-preference, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar, DungeonAudioSettings (VU meter control panel: enable toggle, 3 fader channels master/SFX/ambient, per-channel mute, native dialog showModal) |
-| chat/ | 7 | 9 | View, Window, ConversationList, MessageList/Input, AgentSelector, EventPicker + core/: ChatFeed, ChatComposer, ChatBubble, ChatMessage, ChatHeader, TypingIndicator, MessageActions (hover toolbar: Copy/ThumbsUp/Down/Regenerate/Edit), ReactionBar (emoji pills + Popover API picker, 8 presets) |
+| chat/ | 7 | 9 | View, Window, ConversationList (search/pinned/date groups/inline rename), MessageList/Input (legacy), AgentSelector, EventPicker + core/: ChatFeed, ChatComposer (draft auto-save), ChatBubble, ChatMessage, ChatHeader, TypingIndicator, MessageActions (hover toolbar: Copy/ThumbsUp/Down/Regenerate/Edit), ReactionBar (emoji pills + Popover API picker, 8 presets) + services/: ChatSessionStore, ChatStreamConsumer, ChatExporter (Markdown+JSON export), ScrollController |
 | social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
 | lore/ | 7 | 1 | SimulationLoreView + lore-content dispatcher + 5 content files (per-simulation) |
