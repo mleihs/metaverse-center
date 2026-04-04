@@ -12,7 +12,6 @@ import type {
   AgentBrief,
   ChatConversation,
   ChatEventReference,
-  ChatMessage,
 } from '../../types/index.js';
 import { agentAltText } from '../../utils/text.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -309,7 +308,6 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @property({ type: Object }) conversation: ChatConversation | null = null;
   @property({ type: String }) simulationId = '';
 
-  @state() private _messages: ChatMessage[] = [];
   @state() private _loading = false;
   @state() private _sending = false;
   @state() private _showEventsBar = false;
@@ -335,28 +333,44 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         this._previousConversationId = newId;
         this._showEventsBar = false;
         if (newId) {
-          realtimeService.joinConversation(newId);
-          this._loadMessages();
-        } else {
-          this._messages = [];
+          this._initConversation(newId);
         }
       }
     }
   }
 
+  /**
+   * Load messages via REST first, then join realtime channel with replay.
+   * Order matters: REST load captures current state, replay catches the gap
+   * between REST response and channel subscription.
+   */
+  private async _initConversation(conversationId: string): Promise<void> {
+    await this._loadMessages();
+    // Guard: conversation may have changed during async load
+    if (this._previousConversationId !== conversationId) return;
+    // Derive replay timestamp from latest loaded message
+    const session = chatStore.getOrCreate(conversationId);
+    const msgs = session.messages.value;
+    const latestTs =
+      msgs.length > 0 ? new Date(msgs[msgs.length - 1].created_at).getTime() : Date.now();
+    realtimeService.joinConversation(conversationId, latestTs);
+  }
+
   private async _loadMessages(): Promise<void> {
     if (!this.conversation || !this.simulationId) return;
+    const conversationId = this.conversation.id;
 
     this._loading = true;
-    this._messages = [];
+    chatStore.setMessages(conversationId, []);
 
     try {
-      const response = await chatApi.getMessages(this.simulationId, this.conversation.id, {
+      const response = await chatApi.getMessages(this.simulationId, conversationId, {
         page_size: '100',
       });
 
       if (response.success && response.data) {
-        this._messages = Array.isArray(response.data) ? response.data : [];
+        const messages = Array.isArray(response.data) ? response.data : [];
+        chatStore.setMessages(conversationId, messages);
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load messages.'));
       }
@@ -377,16 +391,21 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   }
 
   private async _handleSendMessage(e: CustomEvent<{ content: string }>): Promise<void> {
-    if (!this.conversation || !this.simulationId || this._sending) return;
+    if (!this.conversation || !this.simulationId || this._sending || this._loading) return;
 
     const { content } = e.detail;
     const conversationId = this.conversation.id;
     const session = chatStore.getOrCreate(conversationId);
     this._sending = true;
 
-    // Optimistic: add user message immediately
+    // Clear typing indicator for this user immediately
+    const user = appState.user.value;
+    if (user) {
+      realtimeService.broadcastStopTyping(user.id);
+    }
+
+    // Optimistic: add user message immediately (SignalWatcher triggers re-render)
     const tempId = chatStore.addOptimistic(conversationId, content, conversationId);
-    this._messages = [...session.messages.value];
 
     // Abort any previous stream
     this._streamAbort?.abort();
@@ -404,7 +423,6 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         onUserConfirmed: (confirmedMsg) => {
           userMessageConfirmed = true;
           chatStore.confirmOptimistic(conversationId, tempId, confirmedMsg);
-          this._messages = [...session.messages.value];
         },
         onAgentStart: (agentId) => {
           this._streamingAgentId = agentId;
@@ -415,7 +433,6 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         },
         onAgentDone: (_agentId, savedMsg) => {
           chatStore.finalizeStream(conversationId, savedMsg);
-          this._messages = [...session.messages.value];
           // For group chat: keep streaming for next agent
           session.streaming.value = true;
           session.streamBuffer.value = '';
@@ -469,6 +486,21 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       user.id,
       user.user_metadata?.display_name ?? user.email ?? 'User',
     );
+  }
+
+  private async _handleLoadOlder(): Promise<void> {
+    if (!this.conversation || !this.simulationId) return;
+    const convId = this.conversation.id;
+    await chatStore.loadOlder(convId, async (before) => {
+      const response = await chatApi.getMessages(this.simulationId, convId, {
+        page_size: '50',
+        before,
+      });
+      if (response.success && Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
+    });
   }
 
   /** Get agents from conversation (prefer agents[], fallback to single agent) */
@@ -701,7 +733,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
             : html`
               <div class="window__messages">
                 <velg-chat-feed
-                  .messages=${this._messages}
+                  .messages=${session.messages.value}
                   .participants=${participants}
                   .eventReferences=${this.conversation.event_references ?? []}
                   .currentUserId=${appState.user.value?.id ?? ''}
@@ -711,6 +743,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .typingUsers=${realtimeService.chatTypingUsers.value}
                   .hasMore=${session.hasMore.value}
                   .loading=${this._loading}
+                  @load-older=${this._handleLoadOlder}
                 ></velg-chat-feed>
               </div>
             `
@@ -722,7 +755,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           appState.isAuthenticated.value
             ? html`
           <velg-chat-composer
-            ?disabled=${this._sending || session.streaming.value || isArchived}
+            ?disabled=${this._sending || this._loading || session.streaming.value || isArchived}
             @send-message=${this._handleSendMessage}
             @composer-typing=${this._handleComposerTyping}
           ></velg-chat-composer>

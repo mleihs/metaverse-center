@@ -19,8 +19,8 @@
 
 import { signal } from '@preact/signals-core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { TypingUser } from '../chat/ChatSessionStore.js';
-import type { EpochChatMessage, PresenceUser } from '../../types/index.js';
+import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
+import type { ChatMessage, EpochChatMessage, PresenceUser } from '../../types/index.js';
 import { supabase } from '../supabase/client.js';
 
 class RealtimeServiceImpl {
@@ -238,7 +238,7 @@ class RealtimeServiceImpl {
 
   // ── Agent Chat: Join/Leave Conversation ──────────────
 
-  joinConversation(conversationId: string): void {
+  joinConversation(conversationId: string, lastMessageTimestamp?: number): void {
     if (this._currentConversationId === conversationId) return;
 
     // Clean up previous conversation channels
@@ -248,6 +248,7 @@ class RealtimeServiceImpl {
 
     this._currentConversationId = conversationId;
     this.chatTypingUsers.value = [];
+    this._lastTypingBroadcast = 0; // Reset debounce so first typing fires immediately
 
     // Typing channel — transient broadcast, no DB persistence
     this._convTypingChannel = supabase
@@ -271,11 +272,30 @@ class RealtimeServiceImpl {
           }, 3000),
         );
       })
+      .on('broadcast', { event: 'stop_typing' }, (payload) => {
+        const { user_id } = payload.payload as { user_id: string };
+        const prev = this._typingTimers.get(user_id);
+        if (prev) clearTimeout(prev);
+        this._typingTimers.delete(user_id);
+        this.chatTypingUsers.value = this.chatTypingUsers.value.filter((u) => u.id !== user_id);
+      })
       .subscribe();
 
-    // Message channel — receives broadcasts from DB trigger 179
+    // Message channel — receives broadcasts from DB trigger 179.
+    // Replay catches messages inserted between REST load and channel subscribe.
+    const replaySince = lastMessageTimestamp ?? Date.now();
     this._convMessageChannel = supabase
-      .channel(`chat:${conversationId}:messages`, { config: { private: true } })
+      .channel(`chat:${conversationId}:messages`, {
+        config: {
+          private: true,
+          broadcast: { replay: { since: replaySince, limit: 50 } },
+        },
+      })
+      .on('broadcast', { event: 'new_message' }, (payload) => {
+        const msg = payload.payload as ChatMessage;
+        // addMessage deduplicates by ID — safe against REST/SSE overlap
+        chatStore.addMessage(conversationId, msg);
+      })
       .subscribe();
   }
 
@@ -313,6 +333,19 @@ class RealtimeServiceImpl {
       event: 'typing',
       payload: { user_id: userId, name: userName, at: now },
     });
+  }
+
+  /**
+   * Broadcast a "stopped typing" signal. Called when a message is sent
+   * to immediately clear the sender's typing indicator on other clients.
+   */
+  broadcastStopTyping(userId: string): void {
+    this._convTypingChannel?.send({
+      type: 'broadcast',
+      event: 'stop_typing',
+      payload: { user_id: userId },
+    });
+    this._lastTypingBroadcast = 0;
   }
 
   // ── Dispose ──────────────────────────────────────────

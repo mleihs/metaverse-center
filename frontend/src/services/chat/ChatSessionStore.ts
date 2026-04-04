@@ -133,16 +133,27 @@ export class ChatSessionStore {
     );
   }
 
-  /** Replace an optimistic message with the server-confirmed version. */
+  /**
+   * Replace an optimistic message with the server-confirmed version.
+   * Handles broadcast-first race: if a broadcast already delivered the real
+   * message (same ID), just remove the temp entry instead of duplicating.
+   */
   confirmOptimistic(
     sessionId: string,
     tempId: string,
     confirmed: ChatMessage,
   ): void {
     const session = this.getOrCreate(sessionId);
-    session.messages.value = session.messages.value.map(m =>
-      m.id === tempId ? confirmed : m,
-    );
+    const msgs = session.messages.value;
+    const hasReal = msgs.some(m => m.id === confirmed.id);
+    if (hasReal) {
+      // Broadcast arrived first — remove optimistic, real copy already present
+      session.messages.value = msgs.filter(m => m.id !== tempId);
+    } else {
+      session.messages.value = msgs.map(m =>
+        m.id === tempId ? confirmed : m,
+      );
+    }
   }
 
   // --- Streaming --------------------------------------------------------
