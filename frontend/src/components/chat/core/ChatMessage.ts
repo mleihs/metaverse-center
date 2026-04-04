@@ -137,6 +137,21 @@ export class ChatMessage extends LitElement {
       color: var(--_accent, var(--color-text-secondary));
     }
 
+    /* Bot badge for system participants (epoch bots) */
+    .sender__badge {
+      display: inline-block;
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0 4px;
+      margin-left: 4px;
+      color: var(--color-warning);
+      border: var(--border-width-thin, 1px) solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+      vertical-align: middle;
+    }
+
     /* --- Timestamp (last-in-group only) --- */
     .time {
       font-family: var(--font-mono);
@@ -208,6 +223,7 @@ export class ChatMessage extends LitElement {
             .senderRole=${m.sender_role}
             .accentColor=${accentColor}
             ?streaming=${this.streaming}
+            ?plainText=${this.participant?.role === 'player'}
           ></velg-chat-bubble>
           ${showTime
             ? html`<span class="time">${formatRelativeTimeVerbose(m.created_at)}</span>`
@@ -259,6 +275,7 @@ export class ChatMessage extends LitElement {
     const name = isUser
       ? msg('You')
       : (this.participant?.name ?? this.message.agent?.name ?? 'Agent');
+    const isBot = !isUser && this.participant?.role === 'system';
 
     return html`
       <span class=${classMap({
@@ -266,7 +283,7 @@ export class ChatMessage extends LitElement {
         'sender--user': isUser,
         'sender--assistant': !isUser,
       })}>
-        ${name}
+        ${name}${isBot ? html`<span class="sender__badge">BOT</span>` : nothing}
       </span>
     `;
   }

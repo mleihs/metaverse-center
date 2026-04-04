@@ -66,6 +66,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         --_mono: var(--font-mono, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace);
         --_danger: #ef4444; /* lint-color-ok */
         --_success: #22c55e; /* lint-color-ok */
+        --_phosphor-bright: #fbbf24; /* lint-color-ok: bright gold for player combat lines */
       }
 
       /* ── Terminal Frame ── */
@@ -259,7 +260,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
       /* Colors are SATURATED for maximum scannability on CRT dark bg. */
 
       .line--combat-player {
-        color: #fbbf24; /* bright gold — distinct from dim amber system lines */
+        color: var(--_phosphor-bright);
         font-weight: 600;
       }
 

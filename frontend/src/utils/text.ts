@@ -2,6 +2,8 @@
  * Text utilities for display formatting.
  */
 
+import { msg, str } from '@lit/localize';
+
 // ── Number Formatting ────────────────────────────────────────────
 
 /** Format a 0–1 value as a percentage string (e.g. 0.483 → "48%"). */
@@ -48,11 +50,11 @@ export function agentAltText(agent: {
   background?: string;
   primary_profession?: string;
 }): string {
-  const parts = [`Portrait of ${agent.name}`];
+  const parts = [msg(str`Portrait of ${agent.name}`)];
   if (agent.primary_profession) parts.push(agent.primary_profession);
   if (agent.character) parts.push(agent.character);
   if (agent.background) parts.push(agent.background);
-  return parts.join(' — ');
+  return parts.join(' \u2013 ');
 }
 
 /** Build descriptive alt text for a building image from available fields. */
@@ -73,5 +75,5 @@ export function buildingAltText(building: {
   if (building.zone?.name) parts.push(`in ${building.zone.name}`);
   if (building.description) parts.push(building.description);
   if (building.building_condition) parts.push(`condition: ${building.building_condition}`);
-  return parts.join(' — ');
+  return parts.join(' \u2013 ');
 }

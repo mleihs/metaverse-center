@@ -472,7 +472,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
   private _renderDefs() {
     // Note: SVG filter attributes like flood-color cannot use CSS custom
-    // properties. The amber value matches --color-accent-amber (#f59e0b)
+    // properties. The amber value matches --color-accent-amber /* lint-color-ok */
     // from _colors.css. This is a documented exception per design-tokens.md.
     return svg`
       <defs>

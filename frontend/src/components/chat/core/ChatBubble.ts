@@ -62,6 +62,11 @@ export class ChatBubble extends LitElement {
       border-left: 3px solid var(--_accent, var(--color-border));
     }
 
+    /* Plain text in assistant bubble (epoch player messages) */
+    .bubble--assistant.bubble--plain {
+      white-space: pre-wrap;
+    }
+
     /* --- System bubble (centered, muted) --- */
     .bubble--system {
       background: transparent;
@@ -311,6 +316,8 @@ export class ChatBubble extends LitElement {
   @property({ type: String }) senderRole: 'user' | 'assistant' | 'system' = 'user';
   @property({ type: String }) accentColor = '';
   @property({ type: Boolean }) streaming = false;
+  /** Render content as plain text regardless of senderRole (e.g. epoch player messages). */
+  @property({ type: Boolean }) plainText = false;
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -360,6 +367,7 @@ export class ChatBubble extends LitElement {
       bubble: true,
       [`bubble--${this.senderRole}`]: true,
       'bubble--streaming': this.streaming,
+      'bubble--plain': this.plainText,
     };
 
     const styles = this.accentColor
@@ -375,6 +383,9 @@ export class ChatBubble extends LitElement {
 
   private _renderContent() {
     if (!this.content) return '';
+
+    // Plain text override (e.g. epoch player messages mapped as 'assistant')
+    if (this.plainText) return this.content;
 
     // User messages: plain text, no markdown processing
     if (this.senderRole === 'user') {

@@ -315,6 +315,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @state() private _showEventsBar = false;
   @state() private _lightboxSrc: string | null = null;
   @state() private _lightboxAlt = '';
+  @state() private _streamingAgentId = '';
 
   private _previousConversationId: string | null = null;
 
@@ -405,7 +406,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           chatStore.confirmOptimistic(conversationId, tempId, confirmedMsg);
           this._messages = [...session.messages.value];
         },
-        onAgentStart: () => {
+        onAgentStart: (agentId) => {
+          this._streamingAgentId = agentId;
           session.streamBuffer.value = '';
         },
         onToken: (_agentId, token) => {
@@ -451,6 +453,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       }
     } finally {
       this._sending = false;
+      this._streamingAgentId = '';
       session.streaming.value = false;
       session.streamBuffer.value = '';
       this._streamAbort = null;
@@ -704,6 +707,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .currentUserId=${appState.user.value?.id ?? ''}
                   .streaming=${session.streaming.value}
                   .streamContent=${session.streamBuffer.value}
+                  .streamingParticipantId=${this._streamingAgentId}
                   .typingUsers=${realtimeService.chatTypingUsers.value}
                   .hasMore=${session.hasMore.value}
                   .loading=${this._loading}

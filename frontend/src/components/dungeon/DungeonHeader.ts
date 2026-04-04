@@ -50,6 +50,16 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         display: block;
         --_text-dim: var(--hud-text-dim);
         --_danger: var(--color-danger);
+
+        /* Tier 3: Awakening awareness gauge — violet → cyan → white */
+        --_awareness-violet: #c084fc; /* lint-color-ok: archetype accent, no Tier 1/2 equivalent */
+        --_awareness-cyan: #22d3ee; /* lint-color-ok: archetype accent */
+        --_awareness-white: #e2e8f0; /* lint-color-ok: gauge endpoint */
+
+        /* Tier 3: Overthrow fracture gauge — amber → red → white */
+        --_fracture-amber: var(--color-warning);
+        --_fracture-red: var(--color-danger);
+        --_fracture-white: #e2e8f0; /* lint-color-ok: gauge endpoint */
       }
 
       .header {
@@ -703,36 +713,36 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
       /* Unconscious: 0-24 — dim violet, the mind sleeps */
       .awareness__fill--unconscious {
-        background: color-mix(in srgb, #c084fc 30%, var(--_phosphor-dim));
+        background: color-mix(in srgb, var(--_awareness-violet) 30%, var(--_phosphor-dim));
       }
 
       /* Stirring: 25-49 — violet, déjà vu begins */
       .awareness__fill--stirring {
-        background: #c084fc;
+        background: var(--_awareness-violet);
       }
 
       /* Liminal: 50-69 — violet-cyan, the threshold */
       .awareness__fill--liminal {
-        background: color-mix(in srgb, #c084fc 50%, #22d3ee);
+        background: color-mix(in srgb, var(--_awareness-violet) 50%, var(--_awareness-cyan));
       }
 
       /* Lucid: 70-89 — cyan-white, consciousness expands */
       .awareness__fill--lucid {
-        background: color-mix(in srgb, #22d3ee 60%, #e2e8f0);
+        background: color-mix(in srgb, var(--_awareness-cyan) 60%, var(--_awareness-white));
       }
 
       .awareness__label--lucid {
-        color: color-mix(in srgb, #22d3ee 60%, #e2e8f0);
+        color: color-mix(in srgb, var(--_awareness-cyan) 60%, var(--_awareness-white));
         font-weight: 700;
       }
 
       /* Dissolution: 90-100 — white pulsing, ego dissolves */
       .awareness__fill--dissolution {
-        background: color-mix(in srgb, #e2e8f0 80%, #c084fc);
+        background: color-mix(in srgb, var(--_awareness-white) 80%, var(--_awareness-violet));
       }
 
       .awareness__label--dissolution {
-        color: #e2e8f0;
+        color: var(--_awareness-white);
         font-weight: 700;
         letter-spacing: 0.1em;
       }
@@ -771,13 +781,13 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
       .fracture__icon {
         display: inline-flex;
-        color: var(--color-warning, #f59e0b);
+        color: var(--_fracture-amber);
       }
 
       .fracture__label {
         font-size: 10px;
         letter-spacing: 0.05em;
-        color: var(--color-warning, #f59e0b);
+        color: var(--_fracture-amber);
         min-width: 22px;
         text-align: right;
       }
@@ -786,7 +796,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
         position: relative;
         width: 60px;
         height: 8px;
-        background: color-mix(in srgb, var(--color-warning, #f59e0b) 10%, transparent);
+        background: color-mix(in srgb, var(--_fracture-amber) 10%, transparent);
         border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
       }
 
@@ -798,36 +808,36 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
 
       /* Court Order: 0-19 — dim amber, authority holds */
       .fracture__fill--order {
-        background: color-mix(in srgb, #f59e0b 30%, var(--_phosphor-dim));
+        background: color-mix(in srgb, var(--_fracture-amber) 30%, var(--_phosphor-dim));
       }
 
       /* Whispers: 20-39 — amber, tensions emerge */
       .fracture__fill--whispers {
-        background: #f59e0b;
+        background: var(--_fracture-amber);
       }
 
       /* Schism: 40-59 — amber-red, factions fracture */
       .fracture__fill--schism {
-        background: color-mix(in srgb, #f59e0b 50%, #ef4444);
+        background: color-mix(in srgb, var(--_fracture-amber) 50%, var(--_fracture-red));
       }
 
       /* Revolution: 60-79 — red, authority crumbles */
       .fracture__fill--revolution {
-        background: color-mix(in srgb, #ef4444 70%, #f59e0b);
+        background: color-mix(in srgb, var(--_fracture-red) 70%, var(--_fracture-amber));
       }
 
       .fracture__label--revolution {
-        color: color-mix(in srgb, #ef4444 70%, #f59e0b);
+        color: color-mix(in srgb, var(--_fracture-red) 70%, var(--_fracture-amber));
         font-weight: 700;
       }
 
       /* Collapse: 80-100 — pulsing red-white, power vacuum */
       .fracture__fill--collapse {
-        background: color-mix(in srgb, #ef4444 80%, #e2e8f0);
+        background: color-mix(in srgb, var(--_fracture-red) 80%, var(--_fracture-white));
       }
 
       .fracture__label--collapse {
-        color: #ef4444;
+        color: var(--_fracture-red);
         font-weight: 700;
         letter-spacing: 0.1em;
       }

@@ -291,6 +291,10 @@ export class ChatFeed extends LitElement {
   @property({ type: Array }) typingUsers: TypingUser[] = [];
   @property({ type: Boolean }) hasMore = false;
   @property({ type: Boolean }) loading = false;
+  /** ID of the agent currently streaming (from agent_start event). Used for avatar lookup. */
+  @property({ type: String }) streamingParticipantId = '';
+  /** Custom empty-state message (defaults to generic prompt). */
+  @property({ type: String }) emptyMessage = '';
 
   // --- Controllers ---
 
@@ -422,7 +426,7 @@ export class ChatFeed extends LitElement {
 
   protected render() {
     if (this.messages.length === 0 && this.eventReferences.length === 0 && !this.streaming) {
-      return html`<div class="empty">${msg('No messages yet. Start the conversation.')}</div>`;
+      return html`<div class="empty">${this.emptyMessage || msg('No messages yet. Start the conversation.')}</div>`;
     }
 
     const timeline = this._buildTimeline();
@@ -460,7 +464,7 @@ export class ChatFeed extends LitElement {
           ? html`
               <velg-chat-message
                 .message=${this._getStreamMsg()}
-                .participant=${this._participantMap.values().next().value}
+                .participant=${this._getStreamingParticipant()}
                 ?streaming=${true}
                 ?lastInGroup=${true}
               ></velg-chat-message>
@@ -583,6 +587,15 @@ export class ChatFeed extends LitElement {
   // ---------------------------------------------------------------------------
   // Streaming message cache
   // ---------------------------------------------------------------------------
+
+  /** Look up the participant for the currently streaming agent. Falls back to first participant. */
+  private _getStreamingParticipant(): Participant | undefined {
+    if (this.streamingParticipantId) {
+      return this._participantMap.get(this.streamingParticipantId);
+    }
+    // Fallback: first participant (single-agent conversations)
+    return this._participantMap.values().next().value;
+  }
 
   /**
    * Return streaming message, re-creating only when content changes.

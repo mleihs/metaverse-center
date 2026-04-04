@@ -1,6 +1,6 @@
 # Chat System Redesign — Unified Agent Chat + Epoch Chat
 
-> **Status:** Phase 0 COMPLETE (351f779) — Phase 1 COMPLETE (796f7b9) — Phase 2 COMPLETE (pending commit) — Phase 3 next  
+> **Status:** Phase 0-4 COMPLETE — Phase 5 (Message Actions + Reactions) next  
 > **Scope:** Full redesign of Agent Chat + Epoch Chat into a unified, premium chat system  
 > **Components affected:** 7 frontend, 3 backend services, 1 router, 1 model file  
 > **New components:** ~12 frontend, ~3 backend  
