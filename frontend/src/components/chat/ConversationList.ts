@@ -3,6 +3,7 @@ import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import { formatRelativeTime } from '../../utils/date-format.js';
+import '../shared/EmptyState.js';
 import '../shared/VelgAvatar.js';
 
 @localized()
@@ -24,17 +25,53 @@ export class VelgConversationList extends LitElement {
       gap: var(--space-1);
       padding: var(--space-3) var(--space-4);
       border-bottom: var(--border-light);
+      border-left: var(--border-width-heavy) solid transparent;
       cursor: pointer;
-      transition: background var(--transition-fast);
+      transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+      /* Staggered entrance */
+      animation: conv-enter var(--duration-entrance, 350ms) var(--ease-dramatic) both;
+      animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
+    }
+
+    @keyframes conv-enter {
+      from { opacity: 0; transform: translateY(6px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .conversation { animation-duration: 0.01ms !important; }
     }
 
     .conversation:hover {
       background: var(--color-surface-sunken);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .conversation:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+      z-index: 1;
     }
 
     .conversation--active {
       background: var(--color-surface-sunken);
-      border-left: var(--border-width-heavy) solid var(--color-primary);
+      border-left-color: var(--color-primary);
+    }
+
+    /* Unread indicator — bold name + accent dot */
+    .conversation--unread .conversation__agent-name {
+      font-weight: var(--font-black);
+      color: var(--color-text-primary);
+    }
+
+    .conversation__unread-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--color-primary);
+      box-shadow: 0 0 6px var(--color-primary-glow, rgba(245, 158, 11, 0.4));
+      flex-shrink: 0;
     }
 
     .conversation__header {
@@ -157,18 +194,9 @@ export class VelgConversationList extends LitElement {
       background: var(--color-danger-bg);
     }
 
-    .empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-8) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
-      text-align: center;
+    .conversation__action-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     @media (max-width: 640px) {
@@ -203,6 +231,7 @@ export class VelgConversationList extends LitElement {
   @property({ type: Array }) conversations: ChatConversation[] = [];
   @property({ type: String }) selectedId = '';
   @property({ type: Boolean }) readonly = false;
+  @property({ type: Object }) unreadCounts: Record<string, number> = {};
 
   private _truncate(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
@@ -297,20 +326,33 @@ export class VelgConversationList extends LitElement {
     `;
   }
 
-  private _renderConversation(conversation: ChatConversation) {
+  private _renderConversation(conversation: ChatConversation, index: number) {
     const isActive = conversation.id === this.selectedId;
     const agents = this._getAgents(conversation);
     const displayName = this._getDisplayName(agents);
     const lastPreview = conversation.title ?? msg('No messages yet');
 
+    const isUnread = (this.unreadCounts[conversation.id] ?? 0) > 0;
+
     return html`
       <div
-        class="conversation ${isActive ? 'conversation--active' : ''}"
+        class="conversation ${isActive ? 'conversation--active' : ''} ${isUnread ? 'conversation--unread' : ''}"
+        role="option"
+        tabindex="0"
+        aria-selected=${isActive ? 'true' : 'false'}
+        style="--i: ${index}"
         @click=${() => this._handleSelect(conversation)}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this._handleSelect(conversation);
+          }
+        }}
       >
         <div class="conversation__header">
           ${this._renderPortraitStack(agents)}
           <div class="conversation__agent-name">${displayName}</div>
+          ${isUnread ? html`<div class="conversation__unread-dot"></div>` : null}
           ${
             conversation.message_count > 0
               ? html`<div class="conversation__badge">${conversation.message_count}</div>`
@@ -370,12 +412,14 @@ export class VelgConversationList extends LitElement {
 
   protected render() {
     if (this.conversations.length === 0) {
-      return html`<div class="empty">${msg('No conversations yet')}</div>`;
+      return html`<velg-empty-state
+        message=${msg('No conversations yet')}
+      ></velg-empty-state>`;
     }
 
     return html`
-      <div class="list">
-        ${this.conversations.map((conv) => this._renderConversation(conv))}
+      <div class="list" role="listbox" aria-label=${msg('Conversations')}>
+        ${this.conversations.map((conv, i) => this._renderConversation(conv, i))}
       </div>
     `;
   }

@@ -31,6 +31,10 @@ export class ChatBubble extends LitElement {
     :host {
       display: block;
       max-width: 100%;
+      --_bubble-user-bg: var(--color-primary);
+      --_bubble-agent-bg: var(--color-surface-raised);
+      --_bubble-system-bg: transparent;
+      --_bubble-border-width: 3px;
     }
 
     /* --- Base bubble surface --- */
@@ -47,19 +51,20 @@ export class ChatBubble extends LitElement {
 
     /* --- User bubble --- */
     .bubble--user {
-      background: var(--color-primary);
+      background: var(--_bubble-user-bg);
       color: var(--color-text-inverse);
       border: var(--border-default);
-      border-right: 3px solid var(--color-primary);
+      border-right: var(--_bubble-border-width) solid var(--color-primary);
       white-space: pre-wrap;
     }
 
     /* --- Assistant bubble --- */
     .bubble--assistant {
-      background: var(--color-surface-raised);
+      background: var(--_bubble-agent-bg);
       color: var(--color-text-primary);
       border: var(--border-medium);
-      border-left: 3px solid var(--_accent, var(--color-border));
+      border-left: var(--_bubble-border-width) solid var(--_accent, var(--color-border));
+      box-shadow: var(--shadow-xs);
     }
 
     /* Plain text in assistant bubble (epoch player messages) */
@@ -248,7 +253,7 @@ export class ChatBubble extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-1) var(--space-2);
-      transition: color 120ms ease;
+      transition: color var(--transition-fast);
     }
 
     .code-block__copy:hover {
@@ -256,8 +261,8 @@ export class ChatBubble extends LitElement {
     }
 
     .code-block__copy:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     .code-block pre {

@@ -30,6 +30,10 @@ export class ChatComposer extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_composer-bg: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
+      --_composer-border: var(--color-border);
+      --_composer-focus-border: var(--color-primary);
+      --_composer-focus-glow: color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
 
     /* --- Composer container --- */
@@ -39,7 +43,8 @@ export class ChatComposer extends LitElement {
       gap: var(--space-1);
       padding: var(--space-4);
       border-top: var(--border-medium);
-      background: var(--color-surface-raised);
+      background: var(--_composer-bg);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* --- Input row --- */
@@ -92,8 +97,8 @@ export class ChatComposer extends LitElement {
 
     .composer__textarea:focus {
       outline: none;
-      border-color: var(--color-border-focus);
-      box-shadow: var(--ring-focus);
+      border-color: var(--_composer-focus-border);
+      box-shadow: 0 0 0 3px var(--_composer-focus-glow);
     }
 
     .composer__textarea::placeholder {

@@ -113,6 +113,11 @@ export class ChatFeed extends LitElement {
       border-color: var(--color-border-focus);
     }
 
+    .feed__load-more-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -214,18 +219,19 @@ export class ChatFeed extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border: var(--border-default);
-      border-radius: 50%;
       background: var(--color-surface-raised);
       color: var(--color-text-secondary);
+      box-shadow: var(--shadow-sm);
       cursor: pointer;
       opacity: 0;
       pointer-events: none;
       transition:
         opacity var(--transition-fast),
-        scale var(--transition-fast);
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
     }
 
     .scroll-fab--visible {
@@ -236,11 +242,18 @@ export class ChatFeed extends LitElement {
     .scroll-fab:hover {
       background: var(--color-surface);
       color: var(--color-text-primary);
-      scale: 1.1;
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md);
     }
 
     .scroll-fab:active {
-      scale: 0.95;
+      transform: translate(0);
+      box-shadow: var(--shadow-pressed);
+    }
+
+    .scroll-fab:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     .scroll-fab svg {
@@ -436,6 +449,7 @@ export class ChatFeed extends LitElement {
         class="feed"
         role="log"
         aria-live="polite"
+        aria-label=${msg('Conversation messages')}
       >
         ${this.hasMore
           ? html`

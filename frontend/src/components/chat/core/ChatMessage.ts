@@ -45,6 +45,22 @@ export class ChatMessage extends LitElement {
       max-width: 80%;
       margin-top: var(--space-4);
       position: relative;
+      /* Entrance animation via @starting-style */
+      opacity: 1;
+      transform: translateY(0) translateX(0);
+      transition:
+        opacity var(--duration-entrance, 350ms) var(--ease-dramatic),
+        transform var(--duration-entrance, 350ms) var(--ease-dramatic);
+    }
+
+    @starting-style {
+      .row { opacity: 0; transform: translateY(8px); }
+      .row--user { transform: translateX(12px); }
+      .row--assistant { transform: translateX(-12px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .row { transition-duration: 0.01ms !important; }
     }
 
     .row--grouped {
@@ -63,7 +79,12 @@ export class ChatMessage extends LitElement {
     }
 
     .row--optimistic {
-      opacity: 0.6;
+      animation: optimistic-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes optimistic-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
     }
 
     /* Hover surface shift — subtle readiness for message actions */
@@ -213,8 +234,18 @@ export class ChatMessage extends LitElement {
       'row--optimistic': isOptimistic,
     };
 
+    const senderName = isUser
+      ? msg('You')
+      : (this.participant?.name ?? this.message.agent?.name ?? msg('Agent'));
+    const timeLabel = formatRelativeTimeVerbose(m.created_at);
+
     return html`
-      <div class=${classMap(rowClasses)} style=${styleMap(hostStyle)}>
+      <div
+        class=${classMap(rowClasses)}
+        style=${styleMap(hostStyle)}
+        role="article"
+        aria-label="${senderName}, ${timeLabel}"
+      >
         ${this._renderAvatar(isUser, showAvatar)}
         <div class="content ${isUser ? 'content--user' : 'content--assistant'}">
           ${showSender ? this._renderSender(isUser) : nothing}

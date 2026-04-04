@@ -30,7 +30,7 @@ export class TypingIndicator extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-2) 0;
-      animation: indicator-enter 200ms ease-out;
+      animation: indicator-enter var(--duration-entrance, 350ms) var(--ease-dramatic);
     }
 
     @keyframes indicator-enter {
@@ -43,7 +43,7 @@ export class TypingIndicator extends LitElement {
     /* --- Label text --- */
     .indicator__label {
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--color-text-muted);
       white-space: nowrap;
       overflow: hidden;
@@ -55,14 +55,14 @@ export class TypingIndicator extends LitElement {
     .indicator__dots {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: var(--space-0-5);
       flex-shrink: 0;
     }
 
     /* --- Individual dot --- */
     .indicator__dot {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--color-text-muted);
       animation: dot-pulse 1.4s ease-in-out infinite;

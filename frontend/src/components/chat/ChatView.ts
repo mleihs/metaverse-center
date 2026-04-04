@@ -47,6 +47,16 @@ export class VelgChatView extends LitElement {
       height: calc(100vh - var(--header-height) - 120px);
       min-height: 500px;
       border: var(--border-default);
+      box-shadow: var(--shadow-sm);
+      animation: layout-enter var(--duration-entrance, 350ms) var(--ease-dramatic) both;
+    }
+
+    @keyframes layout-enter {
+      from { opacity: 0; transform: translateY(8px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chat-layout { animation-duration: 0.01ms !important; }
     }
 
     .sidebar {
@@ -101,6 +111,11 @@ export class VelgChatView extends LitElement {
     .sidebar__new-btn:active {
       transform: translate(0);
       box-shadow: var(--shadow-pressed);
+    }
+
+    .sidebar__new-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     .sidebar__list {
@@ -441,7 +456,7 @@ export class VelgChatView extends LitElement {
       </div>
 
       <div class="chat-layout">
-        <div class="sidebar">
+        <div class="sidebar" role="complementary" aria-label=${msg('Conversation list')}>
           <div class="sidebar__header">
             <div class="sidebar__title">${msg('Conversations')}</div>
             ${
@@ -475,7 +490,7 @@ export class VelgChatView extends LitElement {
           </div>
         </div>
 
-        <div class="main-area"
+        <div class="main-area" role="main" aria-label=${msg('Chat')}
           @open-agent-selector=${this._handleOpenAgentSelector}
           @open-event-picker=${this._handleOpenEventPicker}
           @remove-event-ref=${this._handleRemoveEventRef}

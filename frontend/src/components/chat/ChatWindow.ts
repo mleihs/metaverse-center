@@ -16,7 +16,9 @@ import type {
 import { agentAltText } from '../../utils/text.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import '../shared/EmptyState.js';
 import '../shared/Lightbox.js';
+import '../shared/LoadingState.js';
 import '../shared/VelgAvatar.js';
 import './core/ChatFeed.js';
 import './core/ChatComposer.js';
@@ -41,7 +43,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       flex-direction: column;
       background: var(--color-surface-header);
       border-bottom: var(--border-medium);
+      box-shadow: var(--shadow-xs);
       flex-shrink: 0;
+      z-index: 1;
     }
 
     .window__header-main {
@@ -128,6 +132,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .window__action-btn:hover {
       background: var(--color-surface-sunken);
       color: var(--color-text-primary);
+    }
+
+    .window__action-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
     }
 
     .window__action-btn--active {
@@ -663,12 +672,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   private _renderNoConversation() {
     return html`
-      <div class="window__empty">
-        <div class="window__empty-title">${msg('Select a Conversation')}</div>
-        <div class="window__empty-text">
-          ${msg('Choose a conversation from the list or start a new one by selecting an agent.')}
-        </div>
-      </div>
+      <velg-empty-state
+        message=${msg('Choose a conversation from the list or start a new one by selecting an agent.')}
+      ></velg-empty-state>
     `;
   }
 
@@ -706,18 +712,19 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 </div>
               </div>
             </div>
-            <div class="window__header-actions">
+            <div class="window__header-actions" role="toolbar" aria-label=${msg('Chat actions')}>
               <button
                 class="window__action-btn ${hasEventsBar ? 'window__action-btn--active' : ''}"
                 @click=${this._toggleEventsBar}
-                title=${msg('Events')}
+                aria-label=${msg('Events')}
+                aria-pressed=${hasEventsBar ? 'true' : 'false'}
               >
                 ${this._renderPinIcon()} ${eventRefCount > 0 ? eventRefCount : ''}
               </button>
               <button
                 class="window__action-btn"
                 @click=${this._handleAddAgent}
-                title=${msg('Add Agent')}
+                aria-label=${msg('Add Agent')}
               >
                 ${this._renderAddAgentIcon()}
               </button>
@@ -729,7 +736,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
         ${
           this._loading
-            ? html`<div class="window__loading">${msg('Loading messages...')}</div>`
+            ? html`<velg-loading-state message=${msg('Loading messages...')}></velg-loading-state>`
             : html`
               <div class="window__messages">
                 <velg-chat-feed
