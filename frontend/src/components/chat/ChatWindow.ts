@@ -7,6 +7,7 @@ import { chatApi } from '../../services/api/index.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
+import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type {
   AgentBrief,
   ChatConversation,
@@ -324,9 +325,16 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         // Abort any active stream from the previous conversation
         this._streamAbort?.abort();
         this._streamAbort = null;
+
+        // Leave previous conversation's realtime channels
+        if (this._previousConversationId) {
+          realtimeService.leaveConversation();
+        }
+
         this._previousConversationId = newId;
         this._showEventsBar = false;
         if (newId) {
+          realtimeService.joinConversation(newId);
           this._loadMessages();
         } else {
           this._messages = [];
@@ -364,6 +372,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     super.disconnectedCallback();
     this._streamAbort?.abort();
     this._streamAbort = null;
+    realtimeService.leaveConversation();
   }
 
   private async _handleSendMessage(e: CustomEvent<{ content: string }>): Promise<void> {
@@ -446,6 +455,17 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streamBuffer.value = '';
       this._streamAbort = null;
     }
+  }
+
+  private _handleComposerTyping(): void {
+    if (!this.conversation) return;
+    const user = appState.user.value;
+    if (!user) return;
+    realtimeService.broadcastTyping(
+      this.conversation.id,
+      user.id,
+      user.user_metadata?.display_name ?? user.email ?? 'User',
+    );
   }
 
   /** Get agents from conversation (prefer agents[], fallback to single agent) */
@@ -684,7 +704,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .currentUserId=${appState.user.value?.id ?? ''}
                   .streaming=${session.streaming.value}
                   .streamContent=${session.streamBuffer.value}
-                  .typingUsers=${session.typingUsers.value}
+                  .typingUsers=${realtimeService.chatTypingUsers.value}
                   .hasMore=${session.hasMore.value}
                   .loading=${this._loading}
                 ></velg-chat-feed>
@@ -700,6 +720,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           <velg-chat-composer
             ?disabled=${this._sending || session.streaming.value || isArchived}
             @send-message=${this._handleSendMessage}
+            @composer-typing=${this._handleComposerTyping}
           ></velg-chat-composer>
         `
             : null

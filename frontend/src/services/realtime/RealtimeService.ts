@@ -1,21 +1,25 @@
 /**
- * RealtimeService — singleton managing Supabase Realtime channels for epochs.
+ * RealtimeService — singleton managing Supabase Realtime channels.
  *
  * Provides Preact Signals for reactive UI:
  * - onlineUsers: who's currently online in the epoch
  * - epochMessages / teamMessages: live chat feeds
  * - readyStates: cycle_ready per simulation_id
  * - unreadEpochCount / unreadTeamCount: unread badge counters
+ * - chatTypingUsers: who's currently typing in an agent chat conversation
  *
  * Channel naming:
- * - epoch:{id}:chat     — Broadcast (epoch-wide messages)
- * - epoch:{id}:presence  — Presence (online users)
- * - epoch:{id}:status    — Broadcast (ready signals, cycle events)
+ * - epoch:{id}:chat       — Broadcast (epoch-wide messages)
+ * - epoch:{id}:presence   — Presence (online users)
+ * - epoch:{id}:status     — Broadcast (ready signals, cycle events)
  * - epoch:{id}:team:{tid}:chat — Broadcast (team messages)
+ * - chat:{id}:typing      — Broadcast (typing indicators for agent chat)
+ * - chat:{id}:messages    — Broadcast (new messages from DB trigger 179)
  */
 
 import { signal } from '@preact/signals-core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { TypingUser } from '../chat/ChatSessionStore.js';
 import type { EpochChatMessage, PresenceUser } from '../../types/index.js';
 import { supabase } from '../supabase/client.js';
 
@@ -29,6 +33,9 @@ class RealtimeServiceImpl {
   readonly unreadTeamCount = signal(0);
   readonly cycleResolved = signal<{ cycle_number: number; epoch_id: string } | null>(null);
 
+  // ── Agent Chat Signals ───────────────────────────────
+  readonly chatTypingUsers = signal<TypingUser[]>([]);
+
   // ── Internal state ───────────────────────────────────
   private _chatChannel: RealtimeChannel | null = null;
   private _presenceChannel: RealtimeChannel | null = null;
@@ -38,6 +45,13 @@ class RealtimeServiceImpl {
   private _currentTeamId: string | null = null;
   private _epochChatFocused = true;
   private _teamChatFocused = false;
+
+  // Agent chat channels
+  private _convTypingChannel: RealtimeChannel | null = null;
+  private _convMessageChannel: RealtimeChannel | null = null;
+  private _currentConversationId: string | null = null;
+  private _typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private _lastTypingBroadcast = 0;
 
   // ── Join Epoch ───────────────────────────────────────
 
@@ -222,12 +236,92 @@ class RealtimeServiceImpl {
     this.readyStates.value = states;
   }
 
+  // ── Agent Chat: Join/Leave Conversation ──────────────
+
+  joinConversation(conversationId: string): void {
+    if (this._currentConversationId === conversationId) return;
+
+    // Clean up previous conversation channels
+    if (this._currentConversationId) {
+      this.leaveConversation();
+    }
+
+    this._currentConversationId = conversationId;
+    this.chatTypingUsers.value = [];
+
+    // Typing channel — transient broadcast, no DB persistence
+    this._convTypingChannel = supabase
+      .channel(`chat:${conversationId}:typing`, { config: { private: true } })
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        const { user_id, name } = payload.payload as { user_id: string; name: string };
+
+        // Update or add typing user
+        const existing = this.chatTypingUsers.value;
+        const filtered = existing.filter((u) => u.id !== user_id);
+        this.chatTypingUsers.value = [...filtered, { id: user_id, name }];
+
+        // Auto-clear after 3 seconds of inactivity
+        const prev = this._typingTimers.get(user_id);
+        if (prev) clearTimeout(prev);
+        this._typingTimers.set(
+          user_id,
+          setTimeout(() => {
+            this.chatTypingUsers.value = this.chatTypingUsers.value.filter((u) => u.id !== user_id);
+            this._typingTimers.delete(user_id);
+          }, 3000),
+        );
+      })
+      .subscribe();
+
+    // Message channel — receives broadcasts from DB trigger 179
+    this._convMessageChannel = supabase
+      .channel(`chat:${conversationId}:messages`, { config: { private: true } })
+      .subscribe();
+  }
+
+  leaveConversation(): void {
+    if (this._convTypingChannel) {
+      supabase.removeChannel(this._convTypingChannel);
+      this._convTypingChannel = null;
+    }
+    if (this._convMessageChannel) {
+      supabase.removeChannel(this._convMessageChannel);
+      this._convMessageChannel = null;
+    }
+
+    // Clear all typing timers
+    for (const timer of this._typingTimers.values()) {
+      clearTimeout(timer);
+    }
+    this._typingTimers.clear();
+
+    this._currentConversationId = null;
+    this.chatTypingUsers.value = [];
+  }
+
+  /**
+   * Broadcast a typing indicator to other clients in the conversation.
+   * Debounced: max 1 broadcast per 2 seconds.
+   */
+  broadcastTyping(_conversationId: string, userId: string, userName: string): void {
+    const now = Date.now();
+    if (now - this._lastTypingBroadcast < 2000) return;
+    this._lastTypingBroadcast = now;
+
+    this._convTypingChannel?.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { user_id: userId, name: userName, at: now },
+    });
+  }
+
   // ── Dispose ──────────────────────────────────────────
 
   dispose() {
     if (this._currentEpochId) {
       this.leaveEpoch(this._currentEpochId);
     }
+    this.leaveConversation();
   }
 }
 
