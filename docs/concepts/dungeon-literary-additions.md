@@ -9,7 +9,7 @@
 | 1 | Leitmotiv-System | Mittel | Hoch | Konzept |
 | 2 | Aptitude-Stimmen | Hoch | Transformativ | Konzept |
 | 3 | Narrative Breadcrumbs | Mittel-Hoch | Hoch | Konzept |
-| 4 | Objektanker-System | Mittel | Hoch | Konzept |
+| 4 | Objektanker-System | Mittel | Hoch | **Implementiert** (Migration 181) |
 | 5 | Archetype-Rhetorik | Mittel | Transformativ | Konzept |
 
 **Empfohlene Reihenfolge:** 5 → 1 → 4 → 3 → 2
