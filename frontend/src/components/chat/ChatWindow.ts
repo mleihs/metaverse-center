@@ -6,6 +6,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentAutonomyApi, chatApi } from '../../services/api/index.js';
 import { ChatExporter } from '../../services/chat/ChatExporter.js';
+import { chatAudio } from '../../services/ChatAudioService.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
@@ -594,6 +595,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     // Optimistic: add user message immediately (SignalWatcher triggers re-render)
     const tempId = chatStore.addOptimistic(conversationId, content, conversationId);
+    chatAudio.play('message-sent');
 
     // Abort any previous stream
     this._streamAbort?.abort();
@@ -648,6 +650,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streamBuffer.value = '';
       this._streamAbort = null;
 
+      // Stream complete sound — only on success, not on error/abort
+      if (!cbs.hadError && userMessageConfirmed) {
+        chatAudio.play('stream-complete');
+      }
+
       // After any stream error, reload messages from DB to reflect actual state.
       // Guard: only reload if the conversation hasn't changed during the stream.
       if (cbs.hadError && userMessageConfirmed && this._previousConversationId === conversationId) {
@@ -697,6 +704,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         if (isStale()) return;
         this._streamingAgentId = agentId;
         session.streamBuffer.value = '';
+        chatAudio.play('typing-start');
       },
       onToken: (_agentId: string, token: string) => {
         if (isStale()) return;
@@ -712,6 +720,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         chatStore.finalizeStream(conversationId, savedMsg);
         session.streaming.value = true;
         session.streamBuffer.value = '';
+        // Notification chime only when tab is not focused
+        if (document.hidden) chatAudio.play('message-received');
       },
       onError: (error: string) => {
         errorOccurred = true;
