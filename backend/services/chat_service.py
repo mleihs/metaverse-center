@@ -700,3 +700,172 @@ class ChatService:
         data = response.data or []
         total = response.count if response.count is not None else len(data)
         return data, total
+
+    # ── Conversation starters ──────────────────────────────
+
+    @staticmethod
+    async def get_conversation_starters(
+        supabase: Client,
+        simulation_id: UUID,
+        conversation_id: UUID,
+        locale: str = "de",
+    ) -> list[str]:
+        """Build contextual conversation starters for an empty conversation.
+
+        Uses agent profiles, recent simulation events, and agent mood to generate
+        template-based starter suggestions. Returns 4 starters max.
+
+        Template-based (not LLM) for instant response and zero cost. The API
+        contract (list[str]) is future-compatible with LLM-generated starters.
+        """
+        # Load agents for this conversation
+        agents_resp = await (
+            supabase.table("chat_conversation_agents")
+            .select(
+                "agents(id, name, primary_profession, character, gender)",
+            )
+            .eq("conversation_id", str(conversation_id))
+            .execute()
+        )
+        agents = [
+            row["agents"]
+            for row in (agents_resp.data or [])
+            if row.get("agents")
+        ]
+
+        # Fallback: single-agent conversation (agent_id on conversation row)
+        if not agents:
+            conv_resp = await (
+                supabase.table("chat_conversations")
+                .select("agent_id, agents(id, name, primary_profession, character, gender)")
+                .eq("id", str(conversation_id))
+                .maybe_single()
+                .execute()
+            )
+            if conv_resp.data and conv_resp.data.get("agents"):
+                agents = [conv_resp.data["agents"]]
+
+        if not agents:
+            return _build_fallback_starters(locale)
+
+        # Load 3 most recent events in this simulation
+        events_resp = await (
+            supabase.table("events")
+            .select("title, event_type")
+            .eq("simulation_id", str(simulation_id))
+            .is_("deleted_at", "null")
+            .order("occurred_at", desc=True)
+            .limit(3)
+            .execute()
+        )
+        recent_events = events_resp.data or []
+
+        # Load mood for the first agent (optional context)
+        mood_score: int | None = None
+        if agents:
+            mood_resp = await (
+                supabase.table("agent_mood")
+                .select("mood_score")
+                .eq("agent_id", str(agents[0]["id"]))
+                .maybe_single()
+                .execute()
+            )
+            if mood_resp.data:
+                mood_score = mood_resp.data["mood_score"]
+
+        is_group = len(agents) > 1
+        primary = agents[0]
+
+        return _build_starters(
+            agent=primary,
+            recent_events=recent_events,
+            mood_score=mood_score,
+            is_group=is_group,
+            locale=locale,
+        )
+
+
+# ── Starter template engine (module-level, stateless) ──────────────────
+
+_MAX_STARTERS = 4
+
+_TEMPLATES: dict[str, dict[str, str]] = {
+    "de": {
+        "profession": "Wie läuft deine Arbeit als {profession}?",
+        "event": "Ich habe von \u201e{event_title}\u201c gehört. Wie siehst du das?",
+        "mood_low": "Du wirkst angespannt. Was beschäftigt dich?",
+        "mood_high": "Du scheinst guter Dinge zu sein. Was ist passiert?",
+        "character": "Erzähl mir etwas über dich, {agent_name}.",
+        "general": "Was sollte ich über die aktuelle Lage wissen?",
+        "group_event": "Was denkt ihr über \u201e{event_title}\u201c?",
+        "group_general": "Worüber seid ihr euch uneinig?",
+    },
+    "en": {
+        "profession": "How is your work as a {profession} going?",
+        "event": "I heard about \u2018{event_title}\u2019. What is your take?",
+        "mood_low": "You seem tense. What is on your mind?",
+        "mood_high": "You seem to be in good spirits. What happened?",
+        "character": "Tell me something about yourself, {agent_name}.",
+        "general": "What should I know about the current situation?",
+        "group_event": "What do you all think about \u2018{event_title}\u2019?",
+        "group_general": "What do you disagree on?",
+    },
+}
+
+
+def _build_starters(
+    *,
+    agent: dict,
+    recent_events: list[dict],
+    mood_score: int | None,
+    is_group: bool,
+    locale: str,
+) -> list[str]:
+    """Assemble starters from templates based on available context."""
+    tpl = _TEMPLATES.get(locale, _TEMPLATES["en"])
+    starters: list[str] = []
+
+    # 1. Event-based starter (most contextual)
+    if recent_events:
+        event_title = recent_events[0].get("title", "")
+        if event_title:
+            key = "group_event" if is_group else "event"
+            starters.append(tpl[key].format(event_title=event_title))
+
+    # 2. Mood-based starter
+    if mood_score is not None:
+        if mood_score < -30:
+            starters.append(tpl["mood_low"])
+        elif mood_score > 30:
+            starters.append(tpl["mood_high"])
+
+    # 3. Profession-based starter
+    profession = agent.get("primary_profession", "")
+    if profession:
+        starters.append(tpl["profession"].format(profession=profession))
+
+    # 4. Character / group starter
+    if is_group:
+        starters.append(tpl["group_general"])
+    else:
+        agent_name = agent.get("name", "Agent")
+        starters.append(tpl["character"].format(agent_name=agent_name))
+
+    # 5. General fallback (fill remaining slots)
+    if len(starters) < _MAX_STARTERS:
+        starters.append(tpl["general"])
+
+    # 6. Second event if available and still room
+    if len(starters) < _MAX_STARTERS and len(recent_events) > 1:
+        event_title = recent_events[1].get("title", "")
+        if event_title:
+            key = "group_event" if is_group else "event"
+            starters.append(tpl[key].format(event_title=event_title))
+
+    return starters[:_MAX_STARTERS]
+
+
+def _build_fallback_starters(locale: str) -> list[str]:
+    """Fallback starters when no agent data is available."""
+    tpl = _TEMPLATES.get(locale, _TEMPLATES["en"])
+    return [tpl["general"]]

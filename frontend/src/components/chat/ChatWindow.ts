@@ -410,6 +410,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @state() private _lightboxAlt = '';
   @state() private _streamingAgentId = '';
   @state() private _restoredDraft = '';
+  @state() private _starters: string[] = [];
 
   /** Cached agent moods — fetched on conversation init, keyed by agent ID. */
   private _agentMoods = new Map<string, { score: number; emotion: string }>();
@@ -450,17 +451,38 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
    */
   private async _initConversation(conversationId: string): Promise<void> {
     // Load messages and agent moods in parallel
+    this._starters = [];
     await Promise.all([this._loadMessages(), this._fetchAgentMoods()]);
     // Guard: conversation may have changed during async load
     if (this._previousConversationId !== conversationId) return;
     // Derive replay timestamp from latest loaded message
     const session = chatStore.getOrCreate(conversationId);
     const msgs = session.messages.value;
+    // Fetch starters for empty conversations (non-blocking)
+    if (msgs.length === 0) {
+      this._fetchStarters(conversationId);
+    }
     const latestTs =
       msgs.length > 0 ? new Date(msgs[msgs.length - 1].created_at).getTime() : Date.now();
     realtimeService.joinConversation(conversationId, latestTs, (messageId) => {
       this._handleRealtimeReactionChanged(conversationId, messageId);
     });
+  }
+
+  /** Fetch contextual conversation starters for the empty state (non-blocking). */
+  private async _fetchStarters(conversationId: string): Promise<void> {
+    if (!this.simulationId) return;
+    try {
+      const locale = document.documentElement.lang || 'de';
+      const response = await chatApi.getStarters(this.simulationId, conversationId, locale);
+      // Guard: conversation may have changed during fetch
+      if (this._previousConversationId !== conversationId) return;
+      if (response.success && Array.isArray(response.data)) {
+        this._starters = response.data;
+      }
+    } catch {
+      // Non-critical — empty state still works without starters
+    }
   }
 
   /** Fetch mood data for all agents in this conversation (parallel, non-blocking). */
@@ -1103,6 +1125,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               <div class="window__messages"
                 @reaction-toggle=${this._handleReactionToggle}
                 @action-regenerate=${this._handleRegenerate}
+                @send-starter=${this._handleSendMessage}
               >
                 <velg-chat-feed
                   .messages=${session.messages.value}
@@ -1114,6 +1137,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .streamContent=${session.streamBuffer.value}
                   .streamingParticipantId=${this._streamingAgentId}
                   .typingUsers=${realtimeService.chatTypingUsers.value}
+                  .starters=${this._starters}
                   .hasMore=${session.hasMore.value}
                   .loading=${this._loading}
                   @load-older=${this._handleLoadOlder}
