@@ -686,11 +686,18 @@ export class VelgConversationList extends LitElement {
       return html`<velg-avatar .src=${primary.portrait_image_url ?? ''} .name=${primary.name} size="sm"></velg-avatar>`;
     }
 
-    // Multi-agent: primary avatar + count badge (Slack/Discord pattern)
+    // Multi-agent: show up to 3 avatars with gap, "+N" for remainder
+    const maxVisible = 3;
+    const visible = agents.slice(0, maxVisible);
+    const overflow = agents.length - maxVisible;
+
     return html`
       <div class="conversation__portraits">
-        <velg-avatar .src=${primary.portrait_image_url ?? ''} .name=${primary.name} size="sm"></velg-avatar>
-        <div class="conversation__portrait-overflow">+${agents.length - 1}</div>
+        ${visible.map(
+          (agent) =>
+            html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
+        )}
+        ${overflow > 0 ? html`<div class="conversation__portrait-overflow">+${overflow}</div>` : null}
       </div>
     `;
   }
