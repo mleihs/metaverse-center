@@ -1122,7 +1122,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       `
           : nothing
       }
-      <velg-platform-footer></velg-platform-footer>
+      ${this.view !== 'chat' ? html`<velg-platform-footer></velg-platform-footer>` : nothing}
     `;
   }
 
