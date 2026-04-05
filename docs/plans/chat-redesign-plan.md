@@ -1,11 +1,12 @@
 # Chat System Redesign — Unified Agent Chat + Epoch Chat
 
-> **Status:** Phase 0-6 COMPLETE — Phase 7 (Game-Specific Features) next  
+> **Status:** Phase 0-7B COMPLETE — Phase 8 (Performance + Polish) optional  
 > **Scope:** Full redesign of Agent Chat + Epoch Chat into a unified, premium chat system  
 > **Components affected:** 7 frontend, 3 backend services, 1 router, 1 model file  
-> **New components:** ~12 frontend, ~3 backend  
-> **Phase 6 completed:** 2026-04-04 — ConversationList (search/pinned/date groups/rename), ChatExporter, draft auto-save, reaction realtime, rename endpoint  
-> **Phase 5 completed:** 2026-04-04 — MessageActions, ReactionBar, Migration 180, 9 icons, reaction RPCs  
+> **New components:** ~15 frontend, ~4 backend  
+> **Phase 7B completed:** 2026-04-05 — Conversation Starters, ChatAudioService (4 SFX), VelgTooltip, 12 audit items resolved  
+> **Phase 7A completed:** 2026-04-05 — Agent accent colors, mood ring, typing phrases, event cards, streaming hardening  
+> **Phase 6 completed:** 2026-04-04 — ConversationList, ChatExporter, draft auto-save, reactions, rename  
 > **Research basis:** 12 parallel research strands (300+ sources), architecture audit  
 
 ---

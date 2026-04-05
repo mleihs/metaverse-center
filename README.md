@@ -359,6 +359,13 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Academy Mode** – Solo training against AI opponents
 - **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 640+ seed rows, migration 173-177). Terminal-based submarine war room HUD.
 
+### Agent Chat
+- **Unified Chat System** – SSE-streamed AI conversations with agents (single or group). Markdown rendering, code syntax highlighting, typing indicators, message reactions, conversation pinning/search/export
+- **Agent Personality** – Per-agent accent colors (FNV-1a hash → oklch), mood ring on avatars, deterministic typing phrases, conversation starters from agent profile + recent events + mood
+- **Streaming Architecture** – 3x retry on empty responses, 7-layer defense against CoT leaks and empty messages, optimistic UI with broadcast reconciliation, abort-safe conversation switching
+- **Sound Effects** – Howler.js sprite (message-sent, received, typing, stream-complete), opt-in audio with per-channel volume, WCAG 1.4.2 compliant
+- **Epoch Chat** – Migrated to shared core components (ChatFeed, ChatBubble, ChatMessage), broadcast + presence channels, team chat
+
 ### Cross-Simulation
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
 - **Cartographer's Map** – Force-directed multiverse graph with operative trails, health arcs, sparklines, battle feed
