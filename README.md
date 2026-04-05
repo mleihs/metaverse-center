@@ -271,22 +271,22 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | FastAPI | 0.135 | Async web framework, 48 routers |
 | Pydantic v2 | 2.12 | Request/response validation, typed API responses (45 response models), settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
-| Supabase Python | 2.25 | Native AsyncClient with RLS enforcement |
+| Supabase Python | 2.28 | Native AsyncClient with RLS enforcement |
 | PyJWT | 2.11 | JWT verification (ES256 production, HS256 local) |
-| Sentry SDK | 2.29 | Error tracking, performance monitoring |
-| Pillow | 12.1 | Image processing, AVIF→JPEG conversion |
+| Sentry SDK | 2.57 | Error tracking, performance monitoring |
+| Pillow | 12.2 | Image processing, AVIF→JPEG conversion |
 | Replicate | 1.0 | AI image generation (Flux, Stable Diffusion) |
 | httpx | 0.28 | Async HTTP client for OpenRouter AI calls |
 | slowapi | 0.1 | Tiered rate limiting (30/hr AI, 100/min standard) |
-| cryptography | 46.0 | AES-256 encryption for sensitive settings |
-| pydantic-ai-slim | 1.66 | AI agent framework for structured generation |
+| cryptography | 46.0.6 | AES-256 encryption for sensitive settings |
+| pydantic-ai-slim | 1.77 | AI agent framework for structured generation |
 | tavily-python | 0.5 | Web research for Forge pipeline |
 
 ### Frontend
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| Lit | 3.3 | Web Components framework (211 custom elements) |
+| Lit | 3.3 | Web Components framework (256 custom elements) |
 | Preact Signals | 1.14 | Fine-grained reactive state management |
 | Supabase JS | 2.101 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) – tree-shaken, lazy-loaded |
