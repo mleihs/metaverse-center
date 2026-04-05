@@ -704,6 +704,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       onAgentStart: (agentId: string) => {
         if (isStale()) return;
         this._streamingAgentId = agentId;
+        session.streaming.value = true;
         session.streamBuffer.value = '';
         chatAudio.play('typing-start');
       },
@@ -719,14 +720,19 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           return;
         }
         chatStore.finalizeStream(conversationId, savedMsg);
-        session.streaming.value = true;
-        session.streamBuffer.value = '';
-        // Notification chime only when tab is not focused
+        // streaming stays false after finalizeStream — onAgentStart
+        // re-enables it for the next agent in group chat.
         if (document.hidden) chatAudio.play('message-received');
       },
       onError: (error: string) => {
         errorOccurred = true;
-        if (!isStale()) VelgToast.error(error);
+        if (!isStale()) {
+          // Clear streaming state immediately to remove ghost bubble.
+          // For group chat: next agent's onAgentStart re-enables streaming.
+          session.streaming.value = false;
+          session.streamBuffer.value = '';
+          VelgToast.error(error);
+        }
       },
       get hadError() { return errorOccurred; },
     };
