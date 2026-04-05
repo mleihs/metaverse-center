@@ -73,12 +73,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .header__portraits {
       display: flex;
       flex-shrink: 0;
-      cursor: pointer;
       gap: var(--space-2);
-    }
-
-    .header__portraits:hover {
-      filter: brightness(1.1);
     }
 
     .header__portrait-overflow {
