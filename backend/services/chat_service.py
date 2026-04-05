@@ -279,12 +279,28 @@ class ChatService:
         """Re-trigger AI generation for the last user message in a conversation.
 
         Does NOT create a new user message — uses the existing history.
-        Returns the same SSEEvent stream as stream_ai_response.
+        Deletes the previous AI response(s) that followed the last user message
+        to prevent duplicate accumulation on repeated regenerates.
         """
+        # Guard: conversation must be active
+        conv = (
+            await supabase.table("chat_conversations")
+            .select("status")
+            .eq("id", str(conversation_id))
+            .maybe_single()
+            .execute()
+        )
+        if not conv.data:
+            yield SSEEvent(event="error", data={"error": "Conversation not found."})
+            return
+        if conv.data["status"] == "archived":
+            yield SSEEvent(event="error", data={"error": "Cannot regenerate in archived conversation."})
+            return
+
         # Find the last user message to use as the generation trigger
         last_user_msg = (
             await supabase.table("chat_messages")
-            .select("content")
+            .select("id, content, created_at")
             .eq("conversation_id", str(conversation_id))
             .eq("sender_role", "user")
             .order("created_at", desc=True)
@@ -292,16 +308,24 @@ class ChatService:
             .execute()
         )
         if not last_user_msg.data:
-            yield SSEEvent(
-                event="error",
-                data={"error": "No user message found to regenerate from."},
-            )
+            yield SSEEvent(event="error", data={"error": "No user message found to regenerate from."})
             return
 
-        user_message_content = last_user_msg.data[0]["content"]
+        last_user = last_user_msg.data[0]
+
+        # Delete assistant messages that came AFTER the last user message
+        # (these are the failed/empty responses we're replacing)
+        await (
+            supabase.table("chat_messages")
+            .delete()
+            .eq("conversation_id", str(conversation_id))
+            .eq("sender_role", "assistant")
+            .gt("created_at", last_user["created_at"])
+            .execute()
+        )
 
         async for event in ChatService.stream_ai_response(
-            supabase, simulation_id, conversation_id, user_message_content,
+            supabase, simulation_id, conversation_id, last_user["content"],
         ):
             yield event
 
