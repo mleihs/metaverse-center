@@ -64,7 +64,7 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (11)
+## Concepts (13)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -79,6 +79,8 @@ tags: [index, catalog, documentation]
 | [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md) | 1.0 | 2026-04-01 | en | active |
 | [Resonance Dungeons — Audio System Concept](concepts/dungeon-audio-system.md) | 1.0 | 2026-04-02 | en | phase-1-implemented |
 | [Resonance Dungeons — Threshold Room Type](concepts/dungeon-threshold-room.md) | 1.0 | 2026-04-02 | en | implemented |
+| [Dungeon Literary Additions — 5 Konzepte](concepts/dungeon-literary-additions.md) | 1.0 | 2026-03-31 | de | Objektanker implemented |
+| [Objektanker-System — Implementation Brief](concepts/dungeon-objektanker-implementation-brief.md) | 1.0 | 2026-04-05 | de | implemented (Migration 181) |
 
 ## Explanations (5)
 

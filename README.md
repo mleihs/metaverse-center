@@ -323,7 +323,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Trigger functions | 27 (62 triggers total) |
 | Views (regular + materialized) | 14 + 4 |
 | RLS policies | 270+ |
-| SQL migrations | 188 |
+| SQL migrations | 189 |
 | Routers | 49 |
 | Web Components | 256 custom elements |
 | Unit tests | 2,184+ (pytest) + vitest |
@@ -357,7 +357,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 640+ seed rows, migration 173-177). Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (45s planning → simultaneous resolution), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. **Objektanker narrative system**: 2 wandering objects per run (64 bilingual prose fragments across 4 phases: discovery → echo → mutation → climax) plus archetype-state barometer (prose translation of mechanical thresholds). Literary DNA per archetype: Lovecraft/VanderMeer (Shadow), Kafka/Ballard (Tower), VanderMeer/Butler (Mother), Beckett/Pynchon (Entropy), Schulz/Lem (Prometheus), Ballard/Woolf/Carson (Deluge), Jung/Proust/Dick (Awakening), Orwell/Dostoevsky/Brecht (Overthrow). Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 700+ seed rows, migration 173-181). Terminal-based submarine war room HUD.
 
 ### Agent Chat
 - **Unified Chat System** – SSE-streamed AI conversations with agents (single or group). Markdown rendering, code syntax highlighting, typing indicators, message reactions, conversation pinning/search/export
@@ -460,7 +460,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 174 SQL migrations
+  migrations/               # 189 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
 docs/                       # 73 documents (Divio structure)

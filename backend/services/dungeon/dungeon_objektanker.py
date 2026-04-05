@@ -562,13 +562,13 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
     "The Overthrow": [
         {
             "text_en": (
-                "The threshold is a mirror. Not glass — political."
+                "The threshold is a mirror. Not glass \u2013 political."
                 " Every reflection shows a different allegiance."
                 " Der Spiegelpalast does not ask who you are."
                 " It asks who you are for."
             ),
             "text_de": (
-                "Die Schwelle ist ein Spiegel. Nicht Glas — politisch."
+                "Die Schwelle ist ein Spiegel. Nicht Glas \u2013 politisch."
                 " Jede Spiegelung zeigt eine andere Treue."
                 " Der Spiegelpalast fragt nicht, wer ihr seid."
                 " Er fragt, für wen ihr seid."
@@ -604,13 +604,13 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
         },
         {
             "text_en": (
-                "Power changes hands here. Not violently —"
+                "Power changes hands here. Not violently \u2013"
                 " procedurally. The forms are filled out."
                 " The signatures are forged."
                 " The forgeries are notarized."
             ),
             "text_de": (
-                "Hier wechselt die Macht die Hände. Nicht gewaltsam —"
+                "Hier wechselt die Macht die H\u00e4nde. Nicht gewaltsam \u2013"
                 " verfahrenstechnisch. Die Formulare werden ausgefüllt."
                 " Die Unterschriften werden gefälscht."
                 " Die Fälschungen werden beglaubigt."
@@ -618,13 +618,13 @@ ENTRANCE_TEXTS: dict[str, list[dict[str, str]]] = {
         },
         {
             "text_en": (
-                "The descent begins. Not into darkness —"
+                "The descent begins. Not into darkness \u2013"
                 " into politics. The lighting is excellent."
                 " Everything is visible. Zamyatin's glass walls."
                 " Privacy is not forbidden. It is conceptually abolished."
             ),
             "text_de": (
-                "Der Abstieg beginnt. Nicht in Dunkelheit —"
+                "Der Abstieg beginnt. Nicht in Dunkelheit \u2013"
                 " in Politik. Die Beleuchtung ist ausgezeichnet."
                 " Alles ist sichtbar. Zamjatins gläserne Wände."
                 " Privatsphäre ist nicht verboten. Sie ist begrifflich abgeschafft."
@@ -2742,27 +2742,340 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
             },
         },
+        {
+            "id": "prometheus_filament",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A filament. Thin as intention, strung between"
+                        " two posts that hold it with the delicacy of an experiment"
+                        " not yet concluded. It hums \u2013 not with current"
+                        " but with readiness. It is waiting to conduct."
+                    ),
+                    "text_de": (
+                        "Ein Filament. D\u00fcnn wie eine Absicht, gespannt zwischen"
+                        " zwei Pfosten, die es halten mit der Behutsamkeit"
+                        " eines noch nicht abgeschlossenen Experiments."
+                        " Es summt \u2013 nicht mit Strom, sondern mit Bereitschaft."
+                        " Es wartet darauf, zu leiten."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "{agent} finds the filament again. Brighter."
+                        " It has learned something between rooms"
+                        " \u2013 the hum is steadier, more purposeful."
+                        " Something passed through it. It liked it."
+                    ),
+                    "text_de": (
+                        "{agent} findet das Filament wieder. Heller."
+                        " Es hat etwas gelernt zwischen den R\u00e4umen"
+                        " \u2013 das Summen ist stetiger, zielgerichteter."
+                        " Etwas ist hindurchgegangen. Es hat ihm gefallen."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The filament has branched. A network now,"
+                        " strung between every surface, humming"
+                        " with the harmonics of connection."
+                        " It conducts nothing the party sent."
+                        " It is conducting itself."
+                    ),
+                    "text_de": (
+                        "Das Filament hat sich verzweigt. Ein Netzwerk jetzt,"
+                        " gespannt zwischen jeder Fl\u00e4che, summend"
+                        " mit den Obert\u00f6nen der Verbindung."
+                        " Es leitet nichts, was der Trupp geschickt hat."
+                        " Es leitet sich selbst."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The filament glows. Steady, warm, precise."
+                        " It does not illuminate the room"
+                        " \u2013 it illuminates the pattern."
+                        " The pattern is the party's route through the dungeon."
+                        " The filament knew it before they walked it."
+                    ),
+                    "text_de": (
+                        "Das Filament gl\u00fcht. Stetig, warm, pr\u00e4zise."
+                        " Es erleuchtet nicht den Raum"
+                        " \u2013 es erleuchtet das Muster."
+                        " Das Muster ist die Route des Trupps durch den Dungeon."
+                        " Das Filament kannte sie, bevor sie sie gingen."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_scale_model",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A model on the workbench. Small, intricate,"
+                        " assembled from wire and crystal and something"
+                        " that looks like compressed light."
+                        " It is a model of a machine that does not exist."
+                        " The craftsmanship suggests it should."
+                    ),
+                    "text_de": (
+                        "Ein Modell auf der Werkbank. Klein, filigran,"
+                        " zusammengesetzt aus Draht und Kristall und etwas,"
+                        " das wie komprimiertes Licht aussieht."
+                        " Es ist das Modell einer Maschine, die nicht existiert."
+                        " Die Handwerkskunst legt nahe, dass sie es sollte."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "{agent} examines the model. It has grown."
+                        " Not in size \u2013 in detail."
+                        " Components that were abstract are now precise."
+                        " The model is refining itself."
+                    ),
+                    "text_de": (
+                        "{agent} untersucht das Modell. Es ist gewachsen."
+                        " Nicht in der Gr\u00f6\u00dfe \u2013 im Detail."
+                        " Komponenten, die abstrakt waren, sind jetzt pr\u00e4zise."
+                        " Das Modell verfeinert sich selbst."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The model is larger than the workbench now."
+                        " It has outgrown its frame."
+                        " Parts of it extend beyond the table's edge,"
+                        " hovering in place as if scale were a suggestion"
+                        " it has decided to decline."
+                    ),
+                    "text_de": (
+                        "Das Modell ist jetzt gr\u00f6\u00dfer als die Werkbank."
+                        " Es ist \u00fcber seinen Rahmen hinausgewachsen."
+                        " Teile davon ragen \u00fcber den Tischrand hinaus,"
+                        " schwebend, als w\u00e4re Ma\u00dfstab ein Vorschlag,"
+                        " den es abzulehnen beschlossen hat."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The model is the room."
+                        " The room is the model."
+                        " The machine it described has been built \u2013 around you,"
+                        " with you inside it. The scale was always 1:1."
+                    ),
+                    "text_de": (
+                        "Das Modell ist der Raum."
+                        " Der Raum ist das Modell."
+                        " Die Maschine, die es beschrieb, wurde gebaut \u2013 um euch,"
+                        " mit euch darin. Der Ma\u00dfstab war immer 1:1."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_alloy",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A sample of metal on the bench."
+                        " Not a single element \u2013 a blend,"
+                        " still warm from the fusion."
+                        " The surface shifts color when observed"
+                        " from different angles. The alloy has not decided"
+                        " what it wants to be."
+                    ),
+                    "text_de": (
+                        "Eine Metallprobe auf der Bank."
+                        " Kein einzelnes Element \u2013 eine Legierung,"
+                        " noch warm von der Verschmelzung."
+                        " Die Oberfl\u00e4che wechselt die Farbe je nach Blickwinkel."
+                        " Die Legierung hat noch nicht entschieden,"
+                        " was sie sein will."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "{agent} picks up the alloy. It has settled"
+                        " \u2013 one color now, one texture."
+                        " But it is warm in exactly the places"
+                        " where {agent}'s grip falls."
+                        " It is accommodating."
+                    ),
+                    "text_de": (
+                        "{agent} hebt die Legierung auf. Sie hat sich beruhigt"
+                        " \u2013 eine Farbe jetzt, eine Textur."
+                        " Aber sie ist genau dort warm,"
+                        " wo {agent}s Griff f\u00e4llt."
+                        " Sie f\u00fcgt sich."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The alloy has divided itself."
+                        " Three pieces, each a different composition,"
+                        " each optimized for a property"
+                        " the original lacked: hardness, conductivity, resonance."
+                        " It did not wait to be forged. It forged itself."
+                    ),
+                    "text_de": (
+                        "Die Legierung hat sich geteilt."
+                        " Drei St\u00fccke, jedes eine andere Zusammensetzung,"
+                        " jedes optimiert f\u00fcr eine Eigenschaft,"
+                        " die dem Original fehlte: H\u00e4rte, Leitf\u00e4higkeit, Resonanz."
+                        " Sie hat nicht gewartet, geschmiedet zu werden."
+                        " Sie hat sich selbst geschmiedet."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The alloy is gone. In its place: a tool"
+                        " that fits no category in the workshop's index."
+                        " It is made of everything it tried."
+                        " The forge did not make this. The material did."
+                    ),
+                    "text_de": (
+                        "Die Legierung ist weg. An ihrer Stelle: ein Werkzeug,"
+                        " das in keine Kategorie des Werkstattverzeichnisses passt."
+                        " Es besteht aus allem, was es versucht hat."
+                        " Die Schmiede hat das nicht gemacht. Das Material schon."
+                    ),
+                },
+            },
+        },
+        {
+            "id": "prometheus_flame",
+            "phases": {
+                "discovery": {
+                    "text_en": (
+                        "A flame. Small, contained in a glass crucible."
+                        " It burns without fuel \u2013 not magical,"
+                        " but self-sustaining. The combustion feeds"
+                        " on its own product. It is a proof of concept"
+                        " for something that should not work."
+                    ),
+                    "text_de": (
+                        "Eine Flamme. Klein, in einem Glastiegel."
+                        " Sie brennt ohne Brennstoff \u2013 nicht magisch,"
+                        " sondern selbsterhaltend. Die Verbrennung n\u00e4hrt sich"
+                        " von ihrem eigenen Produkt. Sie ist ein Machbarkeitsnachweis"
+                        " f\u00fcr etwas, das nicht funktionieren sollte."
+                    ),
+                },
+                "echo": {
+                    "text_en": (
+                        "{agent} passes the flame. It has changed color"
+                        " \u2013 responding to the party's proximity"
+                        " the way a forge responds to the bellows."
+                        " It is not warming itself. It is warming to them."
+                    ),
+                    "text_de": (
+                        "{agent} passiert die Flamme. Sie hat ihre Farbe gewechselt"
+                        " \u2013 reagierend auf die N\u00e4he des Trupps,"
+                        " wie eine Schmiede auf den Blasebalg reagiert."
+                        " Sie w\u00e4rmt nicht sich selbst. Sie erw\u00e4rmt sich f\u00fcr sie."
+                    ),
+                },
+                "mutation": {
+                    "text_en": (
+                        "The crucible is cracked. The flame has outgrown it"
+                        " \u2013 not violently, but persistently."
+                        " Glass cannot contain what the flame has become."
+                        " It burns freestanding now, feeding on air"
+                        " that tastes of ambition."
+                    ),
+                    "text_de": (
+                        "Der Tiegel hat Risse. Die Flamme ist ihm entwachsen"
+                        " \u2013 nicht gewaltsam, aber beharrlich."
+                        " Glas kann nicht enthalten, was die Flamme geworden ist."
+                        " Sie brennt jetzt freistehend, gen\u00e4hrt von Luft,"
+                        " die nach Ambition schmeckt."
+                    ),
+                },
+                "climax": {
+                    "text_en": (
+                        "The flame is the room's only light."
+                        " It has consumed neither fuel nor air nor patience."
+                        " It is the oldest fire in the workshop"
+                        " \u2013 the one that was stolen, and refused to go out."
+                    ),
+                    "text_de": (
+                        "Die Flamme ist das einzige Licht des Raums."
+                        " Sie hat weder Brennstoff noch Luft noch Geduld verbraucht."
+                        " Sie ist das \u00e4lteste Feuer in der Werkstatt"
+                        " \u2013 das, das gestohlen wurde und sich weigerte zu erlöschen."
+                    ),
+                },
+            },
+        },
     ],
     # ── The Deluge ────────────────────────────────────────────────────────
     "The Deluge": [
+        # Literary rule: Ballard's detached naturalism — scientific observation of the
+        # impossible. Water as agent, not setting. Carson's precision (depth, temperature,
+        # rate). Woolf's tidal rhythm: long sentences at low water, compressed at high.
         {
             "id": "deluge_watermark",
             "phases": {
                 "discovery": {
-                    "text_en": "A line. Mineral-white. Evidence.",
-                    "text_de": "Eine Linie. Mineralweiß. Beweis.",
+                    "text_en": (
+                        "A line on the wall. Mineral-white, ruler-straight,"
+                        " deposited by water that rose to this exact height"
+                        " and held there long enough to leave a record."
+                        " The line is old. The precision is not."
+                        " Something measured this room before you entered it."
+                    ),
+                    "text_de": (
+                        "Eine Linie an der Wand. Mineralwei\u00df, linealgrade,"
+                        " hinterlassen von Wasser, das bis zu genau dieser H\u00f6he stieg"
+                        " und lang genug dort verharrte, um eine Aufzeichnung zu hinterlassen."
+                        " Die Linie ist alt. Die Pr\u00e4zision nicht."
+                        " Etwas hat diesen Raum vermessen, bevor ihr ihn betreten habt."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} checks the watermark. It's higher.",
-                    "text_de": "{agent} prüft das Wasserzeichen. Es ist höher.",
+                    "text_en": (
+                        "{agent} finds another watermark. Higher."
+                        " Same mineral deposit, same precision."
+                        " The water has been here before \u2013 more than once."
+                        " Each visit, it stayed longer."
+                    ),
+                    "text_de": (
+                        "{agent} findet ein weiteres Wasserzeichen. H\u00f6her."
+                        " Selbe Mineralablagerung, selbe Pr\u00e4zision."
+                        " Das Wasser war schon hier \u2013 mehr als einmal."
+                        " Bei jedem Besuch blieb es l\u00e4nger."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The watermark moves while the party watches.",
-                    "text_de": "Das Wasserzeichen bewegt sich, während die Gruppe zusieht.",
+                    "text_en": (
+                        "The wall is a chronicle. Dozens of lines,"
+                        " each higher than the last, each a record"
+                        " of a flood that rose and receded and rose again."
+                        " The intervals between them are shrinking."
+                        " The most recent line is still damp."
+                    ),
+                    "text_de": (
+                        "Die Wand ist eine Chronik. Dutzende Linien,"
+                        " jede h\u00f6her als die vorige, jede eine Aufzeichnung"
+                        " einer Flut, die stieg und wich und wieder stieg."
+                        " Die Abst\u00e4nde zwischen ihnen werden kleiner."
+                        " Die j\u00fcngste Linie ist noch feucht."
+                    ),
                 },
                 "climax": {
-                    "text_en": "Both watermarks converge at the ceiling.",
-                    "text_de": "Beide Wasserzeichen laufen an der Decke zusammen.",
+                    "text_en": (
+                        "One line remains. At the ceiling."
+                        " The mineral deposit is fresh \u2013 still crystallizing."
+                        " The water that made this mark"
+                        " has not yet receded. It is here."
+                    ),
+                    "text_de": (
+                        "Eine Linie bleibt. An der Decke."
+                        " Die Mineralablagerung ist frisch \u2013 kristallisiert noch."
+                        " Das Wasser, das dieses Zeichen hinterlie\u00df,"
+                        " ist noch nicht zur\u00fcckgewichen. Es ist hier."
+                    ),
                 },
             },
         },
@@ -2770,20 +3083,64 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_seal",
             "phases": {
                 "discovery": {
-                    "text_en": "A seal. Intact. Holding something back.",
-                    "text_de": "Ein Siegel. Intakt. Hält etwas zurück.",
+                    "text_en": (
+                        "A seal in the floor. Wax over iron,"
+                        " stamped with a symbol that might be a warning"
+                        " or a promise \u2013 the distinction depends on which side"
+                        " of the seal you are standing on."
+                        " Beneath it: the sound of pressure."
+                    ),
+                    "text_de": (
+                        "Ein Siegel im Boden. Wachs \u00fcber Eisen,"
+                        " gepr\u00e4gt mit einem Symbol, das eine Warnung"
+                        " oder ein Versprechen sein k\u00f6nnte \u2013 die Unterscheidung"
+                        " h\u00e4ngt davon ab, auf welcher Seite des Siegels man steht."
+                        " Darunter: das Ger\u00e4usch von Druck."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The seal shows hairline cracks. {agent} examines.",
-                    "text_de": "Das Siegel zeigt Haarrisse. {agent} untersucht.",
+                    "text_en": (
+                        "{agent} examines the seal. Hairline fractures"
+                        " run through the wax like veins."
+                        " Moisture beads along each crack."
+                        " The seal is not breaking \u2013 it is perspiring."
+                    ),
+                    "text_de": (
+                        "{agent} untersucht das Siegel. Haarrisse"
+                        " durchziehen das Wachs wie Adern."
+                        " Feuchtigkeit perlt entlang jedes Risses."
+                        " Das Siegel bricht nicht \u2013 es schwitzt."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The seal is wet on the inside.",
-                    "text_de": "Das Siegel ist innen nass.",
+                    "text_en": (
+                        "The seal weeps. The wax has softened"
+                        " \u2013 not from heat but from patience."
+                        " Water seeps through the iron beneath"
+                        " in a film so thin it seems like condensation."
+                        " The boundary is not failing. It is dissolving."
+                    ),
+                    "text_de": (
+                        "Das Siegel weint. Das Wachs ist weich geworden"
+                        " \u2013 nicht durch Hitze, sondern durch Geduld."
+                        " Wasser sickert durch das Eisen darunter"
+                        " in einem Film so d\u00fcnn, dass er wie Kondenswasser wirkt."
+                        " Die Grenze versagt nicht. Sie l\u00f6st sich auf."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The seal dissolves. What it held is here.",
-                    "text_de": "Das Siegel löst sich auf. Was es hielt, ist hier.",
+                    "text_en": (
+                        "No seal. No hatch. No distinction between"
+                        " above and below. The water is here"
+                        " not because it broke through"
+                        " \u2013 because 'through' stopped meaning anything."
+                    ),
+                    "text_de": (
+                        "Kein Siegel. Keine Luke. Keine Unterscheidung"
+                        " zwischen oben und unten. Das Wasser ist hier,"
+                        " nicht weil es durchbrach"
+                        " \u2013 weil \u00bbdurch\u00ab aufgeh\u00f6rt hat, etwas zu bedeuten."
+                    ),
                 },
             },
         },
@@ -2791,20 +3148,66 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_raft",
             "phases": {
                 "discovery": {
-                    "text_en": "A piece of a raft. Someone planned.",
-                    "text_de": "Ein Stück eines Floßes. Jemand hat geplant.",
+                    "text_en": (
+                        "Planks lashed together with cable."
+                        " Not debris \u2013 construction. Someone built this"
+                        " deliberately: the knots are tight, the measurements"
+                        " careful. A raft, intended for escape."
+                        " It is still here. The builder is not."
+                    ),
+                    "text_de": (
+                        "Planken, mit Kabel zusammengebunden."
+                        " Kein Treibgut \u2013 Konstruktion. Jemand hat das"
+                        " absichtlich gebaut: die Knoten sind fest, die Ma\u00dfe"
+                        " sorgf\u00e4ltig. Ein Flo\u00df, gedacht f\u00fcr die Flucht."
+                        " Es ist noch hier. Der Erbauer nicht."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The raft fragment floats in the current. Familiar.",
-                    "text_de": "Das Floßfragment treibt in der Strömung. Vertraut.",
+                    "text_en": (
+                        "{agent} finds another fragment. Same cable, same knots."
+                        " The raft was not broken by the water"
+                        " \u2013 it was distributed."
+                        " The current carried each piece in a different direction."
+                    ),
+                    "text_de": (
+                        "{agent} findet ein weiteres Fragment. Selbes Kabel, selbe Knoten."
+                        " Das Flo\u00df wurde nicht vom Wasser zerbrochen"
+                        " \u2013 es wurde verteilt."
+                        " Die Str\u00f6mung trug jedes St\u00fcck in eine andere Richtung."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The raft has been repaired. By the water.",
-                    "text_de": "Das Floß wurde repariert. Vom Wasser.",
+                    "text_en": (
+                        "Fragments in every corner."
+                        " The water has rearranged them \u2013 not into a vessel"
+                        " but into a nest. Something the flood assembled"
+                        " from the wreckage of someone else's escape plan."
+                        " It floats gently. It is not meant for leaving."
+                    ),
+                    "text_de": (
+                        "Fragmente in jeder Ecke."
+                        " Das Wasser hat sie neu angeordnet \u2013 nicht zu einem Boot,"
+                        " sondern zu einem Nest. Etwas, das die Flut zusammensetzte"
+                        " aus den Tr\u00fcmmern eines fremden Fluchtplans."
+                        " Es treibt sanft. Es ist nicht zum Verlassen gedacht."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The raft is whole. It was always whole.",
-                    "text_de": "Das Floß ist ganz. Es war immer ganz.",
+                    "text_en": (
+                        "The raft is whole. Floating in the center"
+                        " of the chamber, riding the surface"
+                        " with the patience of something that belongs here."
+                        " It was never meant to escape the water."
+                        " It was meant to join it."
+                    ),
+                    "text_de": (
+                        "Das Flo\u00df ist ganz. Treibend in der Mitte"
+                        " der Kammer, auf der Oberfl\u00e4che reitend"
+                        " mit der Geduld von etwas, das hierher geh\u00f6rt."
+                        " Es war nie zur Flucht vor dem Wasser gedacht."
+                        " Es war gedacht, sich ihm anzuschlie\u00dfen."
+                    ),
                 },
             },
         },
@@ -2812,20 +3215,62 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_compass",
             "phases": {
                 "discovery": {
-                    "text_en": "A compass. The needle points down.",
-                    "text_de": "Ein Kompass. Die Nadel zeigt nach unten.",
+                    "text_en": (
+                        "A compass, cased in brass. The glass is intact."
+                        " The needle does not point north \u2013 it points down."
+                        " Straight down, as if the deepest point"
+                        " were the only bearing that still matters."
+                    ),
+                    "text_de": (
+                        "Ein Kompass, in Messing gefasst. Das Glas ist intakt."
+                        " Die Nadel zeigt nicht nach Norden \u2013 sie zeigt nach unten."
+                        " Senkrecht, als w\u00e4re der tiefste Punkt"
+                        " die einzige Peilung, die noch z\u00e4hlt."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} consults the compass. It still points down.",
-                    "text_de": "{agent} konsultiert den Kompass. Er zeigt immer noch nach unten.",
+                    "text_en": (
+                        "{agent} checks the compass again."
+                        " The needle still points down, but it trembles now."
+                        " The thing it is tracking is closer."
+                    ),
+                    "text_de": (
+                        "{agent} pr\u00fcft den Kompass erneut."
+                        " Die Nadel zeigt immer noch nach unten, aber sie zittert jetzt."
+                        " Das, was sie verfolgt, ist n\u00e4her."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The compass needle has rusted to its position.",
-                    "text_de": "Die Kompassnadel ist in ihrer Position verrostet.",
+                    "text_en": (
+                        "The compass glass is fogged from inside."
+                        " Condensation \u2013 the air within the casing"
+                        " has surrendered to moisture."
+                        " The needle has stopped trembling. It is certain."
+                        " Whatever lies below has stopped moving."
+                    ),
+                    "text_de": (
+                        "Das Kompassglas ist von innen beschlagen."
+                        " Kondenswasser \u2013 die Luft im Geh\u00e4use"
+                        " hat sich der Feuchtigkeit ergeben."
+                        " Die Nadel hat aufgeh\u00f6rt zu zittern. Sie ist sicher."
+                        " Was auch immer darunter liegt, hat aufgeh\u00f6rt, sich zu bewegen."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The compass is underwater. The needle is still.",
-                    "text_de": "Der Kompass ist unter Wasser. Die Nadel ist ruhig.",
+                    "text_en": (
+                        "The compass is submerged. Underwater,"
+                        " the needle drifts free \u2013 pointing everywhere,"
+                        " pointing nowhere."
+                        " North was always an agreement."
+                        " The water has withdrawn its consent."
+                    ),
+                    "text_de": (
+                        "Der Kompass ist unter Wasser. Untergetaucht"
+                        " treibt die Nadel frei \u2013 zeigt \u00fcberallhin,"
+                        " zeigt nirgendwohin."
+                        " Norden war immer eine Vereinbarung."
+                        " Das Wasser hat seine Zustimmung zur\u00fcckgezogen."
+                    ),
                 },
             },
         },
@@ -2833,20 +3278,60 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_bottle",
             "phases": {
                 "discovery": {
-                    "text_en": "A sealed bottle. Air inside.",
-                    "text_de": "Eine versiegelte Flasche. Luft darin.",
+                    "text_en": (
+                        "A bottle. Glass, sealed with wax."
+                        " Inside: air. Not a message \u2013 the medium"
+                        " is the message. Someone preserved"
+                        " the last breath of a dry room."
+                    ),
+                    "text_de": (
+                        "Eine Flasche. Glas, mit Wachs versiegelt."
+                        " Darin: Luft. Keine Botschaft \u2013 das Medium"
+                        " ist die Botschaft. Jemand hat den letzten"
+                        " Atemzug eines trockenen Raums konserviert."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The bottle has drifted to the other side of the room.",
-                    "text_de": "Die Flasche ist auf die andere Seite des Raums getrieben.",
+                    "text_en": (
+                        "{agent} spots the bottle again."
+                        " The current has carried it to the far wall,"
+                        " where it bobs against the surface"
+                        " with the patience of something that has learned to float."
+                    ),
+                    "text_de": (
+                        "{agent} entdeckt die Flasche wieder."
+                        " Die Str\u00f6mung hat sie zur gegen\u00fcberliegenden Wand getragen,"
+                        " wo sie gegen die Oberfl\u00e4che wippt"
+                        " mit der Geduld von etwas, das schwimmen gelernt hat."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The seal is degrading. Bubbles escape.",
-                    "text_de": "Das Siegel zersetzt sich. Blasen entweichen.",
+                    "text_en": (
+                        "The seal is failing. Air escapes in silver beads"
+                        " that rise through the water and break at the surface"
+                        " without sound. Each bubble smaller than the last."
+                        " The room is inheriting the bottle's contents."
+                    ),
+                    "text_de": (
+                        "Das Siegel versagt. Luft entweicht in silbernen Perlen,"
+                        " die durch das Wasser aufsteigen und an der Oberfl\u00e4che"
+                        " lautlos zerplatzen. Jede Blase kleiner als die vorige."
+                        " Der Raum erbt den Inhalt der Flasche."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The bottle is empty. The air is in the water now.",
-                    "text_de": "Die Flasche ist leer. Die Luft ist jetzt im Wasser.",
+                    "text_en": (
+                        "Empty. The glass is full of water now."
+                        " The air it held is in the room"
+                        " \u2013 in the ceiling pocket where the party still stands dry."
+                        " The bottle kept its promise. It delivered."
+                    ),
+                    "text_de": (
+                        "Leer. Das Glas ist jetzt voll Wasser."
+                        " Die Luft, die es hielt, ist im Raum"
+                        " \u2013 in der Deckentasche, wo der Trupp noch trocken steht."
+                        " Die Flasche hat ihr Versprechen gehalten. Sie hat geliefert."
+                    ),
                 },
             },
         },
@@ -2854,20 +3339,62 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_depth_gauge",
             "phases": {
                 "discovery": {
-                    "text_en": "A gauge. Calibrated for a depth this room hasn't reached. Yet.",
-                    "text_de": "Eine Anzeige. Kalibriert für eine Tiefe, die dieser Raum noch nicht erreicht hat. Noch nicht.",
+                    "text_en": (
+                        "A gauge, mounted to the wall. Brass, glass-fronted,"
+                        " calibrated in meters. The scale runs from zero to thirty."
+                        " The current reading: 0.2."
+                        " The water in this room is dry."
+                        " The gauge disagrees."
+                    ),
+                    "text_de": (
+                        "Eine Anzeige, an der Wand montiert. Messing, glasverkleidet,"
+                        " kalibriert in Metern. Die Skala reicht von null bis drei\u00dfig."
+                        " Die aktuelle Anzeige: 0,2."
+                        " Das Wasser in diesem Raum ist trocken."
+                        " Die Anzeige widerspricht."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The gauge reads higher. {agent} didn't touch it.",
-                    "text_de": "Die Anzeige zeigt höher an. {agent} hat sie nicht berührt.",
+                    "text_en": (
+                        "{agent} passes the gauge again. It reads 4.7."
+                        " The room is dry here."
+                        " The reading is not wrong \u2013 it is premature."
+                    ),
+                    "text_de": (
+                        "{agent} passiert die Anzeige erneut. Sie zeigt 4,7."
+                        " Der Raum ist hier trocken."
+                        " Die Anzeige ist nicht falsch \u2013 sie ist verfrüht."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The gauge is calibrated for THIS room now.",
-                    "text_de": "Die Anzeige ist jetzt für DIESEN Raum kalibriert.",
+                    "text_en": (
+                        "The gauge reads the exact depth of the current room."
+                        " To the centimeter."
+                        " It was calibrated for this moment,"
+                        " in this room, long before either existed."
+                        " The precision is not mechanical. It is patient."
+                    ),
+                    "text_de": (
+                        "Die Anzeige zeigt die exakte Tiefe des aktuellen Raums."
+                        " Auf den Zentimeter."
+                        " Sie wurde f\u00fcr diesen Moment kalibriert,"
+                        " in diesem Raum, lange bevor es beide gab."
+                        " Die Pr\u00e4zision ist nicht mechanisch. Sie ist geduldig."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The gauge reads exactly 100. It was always going to.",
-                    "text_de": "Die Anzeige zeigt genau 100 an. Das war immer so vorgesehen.",
+                    "text_en": (
+                        "The gauge reads zero. Not because the water has receded."
+                        " Because the gauge is submerged,"
+                        " and underwater, depth is not a number."
+                        " It is a condition."
+                    ),
+                    "text_de": (
+                        "Die Anzeige zeigt null. Nicht weil das Wasser gewichen ist."
+                        " Weil die Anzeige unter Wasser steht,"
+                        " und unter Wasser ist Tiefe keine Zahl."
+                        " Sie ist ein Zustand."
+                    ),
                 },
             },
         },
@@ -2875,20 +3402,68 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_photograph",
             "phases": {
                 "discovery": {
-                    "text_en": "A photograph. Water-damaged. A room that looks like this one, dry.",
-                    "text_de": "Eine Fotografie. Wasserbeschädigt. Ein Raum, der aussieht wie dieser, trocken.",
+                    "text_en": (
+                        "A photograph, curled at the edges from moisture."
+                        " It shows this room \u2013 or one that shares its geometry."
+                        " In the photograph, the room is dry."
+                        " Sunlight enters from a window that does not exist here."
+                        " The photograph remembers what the water has not yet reached."
+                    ),
+                    "text_de": (
+                        "Eine Fotografie, an den R\u00e4ndern gewellt von Feuchtigkeit."
+                        " Sie zeigt diesen Raum \u2013 oder einen, der seine Geometrie teilt."
+                        " In der Fotografie ist der Raum trocken."
+                        " Sonnenlicht f\u00e4llt durch ein Fenster, das hier nicht existiert."
+                        " Die Fotografie erinnert, was das Wasser noch nicht erreicht hat."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The photograph shows more water than before. {agent} looks closer.",
-                    "text_de": "Die Fotografie zeigt mehr Wasser als zuvor. {agent} schaut genauer hin.",
+                    "text_en": (
+                        "{agent} looks at the photograph again. It has changed."
+                        " Water on the floor now \u2013 ankle-deep,"
+                        " the color of weak tea."
+                        " The photograph is not aging. It is documenting."
+                    ),
+                    "text_de": (
+                        "{agent} betrachtet die Fotografie erneut. Sie hat sich ver\u00e4ndert."
+                        " Wasser auf dem Boden jetzt \u2013 kn\u00f6cheltief,"
+                        " von der Farbe d\u00fcnnen Tees."
+                        " Die Fotografie altert nicht. Sie dokumentiert."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The photograph and the room are the same image.",
-                    "text_de": "Die Fotografie und der Raum sind dasselbe Bild.",
+                    "text_en": (
+                        "The photograph and the room are converging."
+                        " Water level in the image matches the water around the party."
+                        " The light matches. The geometry matches."
+                        " The only difference: in the photograph,"
+                        " someone stands where the party stands now."
+                        " They are looking at a photograph."
+                    ),
+                    "text_de": (
+                        "Die Fotografie und der Raum n\u00e4hern sich an."
+                        " Der Wasserstand im Bild entspricht dem Wasser um den Trupp."
+                        " Das Licht stimmt. Die Geometrie stimmt."
+                        " Der einzige Unterschied: in der Fotografie"
+                        " steht jemand dort, wo der Trupp jetzt steht."
+                        " Sie betrachten eine Fotografie."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The photograph IS the room. The room is the photograph, submerged.",
-                    "text_de": "Die Fotografie IST der Raum. Der Raum ist die Fotografie, überflutet.",
+                    "text_en": (
+                        "The photograph is saturated. The image has dissolved"
+                        " into the water, and the water has absorbed the image."
+                        " There is no photograph. There is no room"
+                        " that was ever dry. The water remembers."
+                        " The water has revised."
+                    ),
+                    "text_de": (
+                        "Die Fotografie ist ges\u00e4ttigt. Das Bild hat sich"
+                        " im Wasser aufgel\u00f6st, und das Wasser hat das Bild absorbiert."
+                        " Es gibt keine Fotografie. Es gibt keinen Raum,"
+                        " der jemals trocken war. Das Wasser erinnert sich."
+                        " Das Wasser hat revidiert."
+                    ),
                 },
             },
         },
@@ -2896,207 +3471,598 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "id": "deluge_stone",
             "phases": {
                 "discovery": {
-                    "text_en": "A stone. Smooth. River-polished over centuries.",
-                    "text_de": "Ein Stein. Glatt. Vom Fluss poliert über Jahrhunderte.",
+                    "text_en": (
+                        "A stone. Smooth, the way centuries of current"
+                        " make things smooth. It rests on a dry shelf"
+                        " as if placed there with care."
+                        " The polish is uniform \u2013 no single hand held this."
+                        " A river did. A river that is not here yet."
+                    ),
+                    "text_de": (
+                        "Ein Stein. Glatt, so wie Jahrhunderte der Str\u00f6mung"
+                        " Dinge glatt machen. Er ruht auf einem trockenen Sims,"
+                        " als w\u00e4re er mit Bedacht platziert worden."
+                        " Die Politur ist gleichm\u00e4\u00dfig \u2013 keine einzelne Hand hielt ihn."
+                        " Ein Fluss tat es. Ein Fluss, der noch nicht hier ist."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} feels the stone's weight differently. Heavier.",
-                    "text_de": "{agent} spürt das Gewicht des Steins anders. Schwerer.",
+                    "text_en": (
+                        "{agent} picks up the stone. Heavier."
+                        " Not because it grew \u2013 because the air around it"
+                        " is denser, saturated."
+                        " The stone accrues the weight of what approaches."
+                    ),
+                    "text_de": (
+                        "{agent} hebt den Stein auf. Schwerer."
+                        " Nicht weil er gewachsen ist \u2013 weil die Luft um ihn"
+                        " dichter ist, ges\u00e4ttigt."
+                        " Der Stein sammelt das Gewicht dessen, was sich n\u00e4hert."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The stone is wet even above the waterline.",
-                    "text_de": "Der Stein ist nass, selbst über der Wasserlinie.",
+                    "text_en": (
+                        "The stone is wet. Not because the waterline"
+                        " has reached its shelf \u2013 the shelf is dry."
+                        " The stone is wet from within."
+                        " It remembers the river that shaped it,"
+                        " and the memory is leaking through."
+                    ),
+                    "text_de": (
+                        "Der Stein ist nass. Nicht weil die Wasserlinie"
+                        " sein Sims erreicht hat \u2013 das Sims ist trocken."
+                        " Der Stein ist nass von innen."
+                        " Er erinnert sich an den Fluss, der ihn formte,"
+                        " und die Erinnerung sickert durch."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The stone sinks through the floor. The floor is water.",
-                    "text_de": "Der Stein sinkt durch den Boden. Der Boden ist Wasser.",
+                    "text_en": (
+                        "The stone rests on the surface of the water."
+                        " Not floating \u2013 resting."
+                        " As if the surface were solid,"
+                        " or the stone weightless,"
+                        " or the distinction between sinking and floating"
+                        " were another agreement the water has revoked."
+                    ),
+                    "text_de": (
+                        "Der Stein ruht auf der Wasseroberfl\u00e4che."
+                        " Nicht schwimmend \u2013 ruhend."
+                        " Als w\u00e4re die Oberfl\u00e4che fest,"
+                        " oder der Stein schwerelos,"
+                        " oder die Unterscheidung zwischen Sinken und Schwimmen"
+                        " eine weitere Vereinbarung, die das Wasser widerrufen hat."
+                    ),
                 },
             },
         },
     ],
     # ── The Awakening ────────────────────────────────────────────────────
+    # Literary rule: the dungeon is a MIND. Consciousness encounters itself.
+    # Show, never name sources. Lucid vertigo, not horror. Memories are
+    # reconstructions, not playback. D\u00e9j\u00e0 vu is never explained.
     "The Awakening": [
         {
             "id": "awakening_mirror_shard",
-            "name_en": "Mirror Shard",
-            "name_de": "Spiegelscherbe",
             "phases": {
                 "discovery": {
-                    "text_en": "A shard of mirror. It reflects the room, but the reflection is slightly ahead of real time.",
-                    "text_de": "Eine Spiegelscherbe. Sie reflektiert den Raum, aber die Spiegelung ist der Echtzeit leicht voraus.",
+                    "text_en": (
+                        "A shard of mirror, propped against the wall."
+                        " It reflects the room \u2013 but the reflection"
+                        " is a fraction of a second ahead."
+                        " In the glass, the party has already moved"
+                        " to where they are about to stand."
+                    ),
+                    "text_de": (
+                        "Eine Spiegelscherbe, an die Wand gelehnt."
+                        " Sie reflektiert den Raum \u2013 aber die Spiegelung"
+                        " ist einen Sekundenbruchteil voraus."
+                        " Im Glas hat der Trupp sich bereits bewegt,"
+                        " dorthin, wo er gleich stehen wird."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} looks into the shard. The shard looks back. Neither blinks first.",
-                    "text_de": "{agent} blickt in die Scherbe. Die Scherbe blickt zurück. Keiner blinzelt zuerst.",
+                    "text_en": (
+                        "{agent} looks into the shard."
+                        " The shard looks back."
+                        " The reflection is attentive \u2013 not passive,"
+                        " not copying. Observing."
+                    ),
+                    "text_de": (
+                        "{agent} blickt in die Scherbe."
+                        " Die Scherbe blickt zur\u00fcck."
+                        " Die Reflexion ist aufmerksam \u2013 nicht passiv,"
+                        " nicht kopierend. Beobachtend."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The shard now reflects a room that does not match this one. The other room is more complete.",
-                    "text_de": "Die Scherbe reflektiert jetzt einen Raum, der nicht mit diesem übereinstimmt. Der andere Raum ist vollständiger.",
+                    "text_en": (
+                        "The shard reflects a room that does not match this one."
+                        " Same geometry, different contents."
+                        " The other room is furnished with choices the party"
+                        " did not make. It is more complete."
+                        " It looks inhabited."
+                    ),
+                    "text_de": (
+                        "Die Scherbe reflektiert einen Raum, der nicht mit diesem"
+                        " \u00fcbereinstimmt. Selbe Geometrie, anderer Inhalt."
+                        " Der andere Raum ist eingerichtet mit Entscheidungen,"
+                        " die der Trupp nicht getroffen hat."
+                        " Er ist vollst\u00e4ndiger. Er wirkt bewohnt."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The shard reflects nothing. Or everything. The distinction has stopped mattering.",
-                    "text_de": "Die Scherbe reflektiert nichts. Oder alles. Die Unterscheidung hat aufgehört, wichtig zu sein.",
+                    "text_en": (
+                        "The shard reflects everything."
+                        " Every version of this room \u2013 visited,"
+                        " unvisited, imagined, remembered."
+                        " The party is in all of them."
+                        " The party is all of them."
+                    ),
+                    "text_de": (
+                        "Die Scherbe reflektiert alles."
+                        " Jede Version dieses Raums \u2013 besucht,"
+                        " unbesucht, vorgestellt, erinnert."
+                        " Der Trupp ist in allen."
+                        " Der Trupp ist alle."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_philemon_feather",
-            "name_en": "Philemon's Feather",
-            "name_de": "Philemons Feder",
             "phases": {
                 "discovery": {
-                    "text_en": "A feather. Iridescent. It does not belong to any bird the party can name.",
-                    "text_de": "Eine Feder. Schillernd. Sie gehört keinem Vogel, den die Gruppe benennen kann.",
+                    "text_en": (
+                        "A feather. Iridescent, shifting between colors"
+                        " that have no names in any index."
+                        " It does not belong to any creature the party"
+                        " has catalogued. It belongs to something"
+                        " that has not been observed yet \u2013 only dreamt."
+                    ),
+                    "text_de": (
+                        "Eine Feder. Schillernd, wechselnd zwischen Farben,"
+                        " die in keinem Index Namen haben."
+                        " Sie geh\u00f6rt keinem Wesen, das der Trupp"
+                        " katalogisiert hat. Sie geh\u00f6rt etwas,"
+                        " das noch nicht beobachtet wurde \u2013 nur getr\u00e4umt."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} picks up the feather. A thought arrives that {agent} did not generate. Jung's lesson: thoughts are animals in the forest.",
-                    "text_de": "{agent} hebt die Feder auf. Ein Gedanke kommt, den {agent} nicht erzeugt hat. Jungs Lektion: Gedanken sind Tiere im Wald.",
+                    "text_en": (
+                        "{agent} picks up the feather."
+                        " A thought arrives \u2013 unbidden, fully formed,"
+                        " in a voice that is not {agent}'s own."
+                        " The thought is a stranger in the room."
+                        " It does not leave."
+                    ),
+                    "text_de": (
+                        "{agent} hebt die Feder auf."
+                        " Ein Gedanke kommt \u2013 ungerufen, vollst\u00e4ndig geformt,"
+                        " in einer Stimme, die nicht {agent}s eigene ist."
+                        " Der Gedanke ist ein Fremder im Raum."
+                        " Er geht nicht."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The feather writes. Not with ink \u2013 with attention. Where it rests, the surface remembers.",
-                    "text_de": "Die Feder schreibt. Nicht mit Tinte \u2013 mit Aufmerksamkeit. Wo sie liegt, erinnert sich die Oberfläche.",
+                    "text_en": (
+                        "The feather writes. Not with ink"
+                        " \u2013 with attention. Where it rests,"
+                        " the surface remembers things that have not"
+                        " happened yet. The writing is precise."
+                        " The writing is in the party's hand."
+                    ),
+                    "text_de": (
+                        "Die Feder schreibt. Nicht mit Tinte"
+                        " \u2013 mit Aufmerksamkeit. Wo sie liegt,"
+                        " erinnert die Fl\u00e4che sich an Dinge,"
+                        " die noch nicht geschehen sind."
+                        " Die Schrift ist pr\u00e4zise."
+                        " Die Schrift ist in der Hand des Trupps."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The feather is the party's own thought, externalized. Philemon was always the party's own mind, speaking from the outside.",
-                    "text_de": "Die Feder ist der eigene Gedanke der Gruppe, externalisiert. Philemon war immer der eigene Geist der Gruppe, von außen sprechend.",
+                    "text_en": (
+                        "The feather is the party's own thought,"
+                        " wearing a body it borrowed from outside."
+                        " The voice was always theirs."
+                        " The stranger was always home."
+                    ),
+                    "text_de": (
+                        "Die Feder ist der eigene Gedanke des Trupps,"
+                        " der einen K\u00f6rper tr\u00e4gt, den er sich von au\u00dfen geliehen hat."
+                        " Die Stimme war immer ihre."
+                        " Der Fremde war immer zuhause."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_madeleine",
-            "name_en": "The Madeleine",
-            "name_de": "Die Madeleine",
             "phases": {
                 "discovery": {
-                    "text_en": "A small object. Its significance is not in its form but in its sensation. Touching it triggers something involuntary.",
-                    "text_de": "Ein kleines Objekt. Seine Bedeutung liegt nicht in seiner Form, sondern in seiner Empfindung. Es zu berühren löst etwas Unwillkürliches aus.",
+                    "text_en": (
+                        "A small object on a shelf. Unremarkable in form"
+                        " \u2013 but touching it triggers something involuntary:"
+                        " a sensation that does not belong to this room,"
+                        " from a time the party has not lived."
+                        " The object is a key to a lock that is not here."
+                    ),
+                    "text_de": (
+                        "Ein kleines Objekt auf einem Regal. Unscheinbar in der Form"
+                        " \u2013 aber es zu ber\u00fchren l\u00f6st etwas Unwillk\u00fcrliches aus:"
+                        " eine Empfindung, die nicht zu diesem Raum geh\u00f6rt,"
+                        " aus einer Zeit, die der Trupp nicht gelebt hat."
+                        " Das Objekt ist ein Schl\u00fcssel zu einem Schloss, das nicht hier ist."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} holds the madeleine. A memory surfaces \u2013 not from {agent}'s history. From the dungeon's.",
-                    "text_de": "{agent} hält die Madeleine. Eine Erinnerung taucht auf \u2013 nicht aus {agent}s Geschichte. Aus der des Dungeons.",
+                    "text_en": (
+                        "{agent} holds the object again."
+                        " A memory surfaces \u2013 not from {agent}'s history."
+                        " From the dungeon's."
+                        " The memory is warm and specific and does not belong here."
+                    ),
+                    "text_de": (
+                        "{agent} h\u00e4lt das Objekt erneut."
+                        " Eine Erinnerung taucht auf \u2013 nicht aus {agent}s Geschichte."
+                        " Aus der des Dungeons."
+                        " Die Erinnerung ist warm und spezifisch und geh\u00f6rt nicht hierher."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The madeleine has changed texture. It now feels like every significant object {agent} has ever touched.",
-                    "text_de": "Die Madeleine hat ihre Textur verändert. Sie fühlt sich jetzt an wie jedes bedeutsame Objekt, das {agent} je berührt hat.",
+                    "text_en": (
+                        "The object has changed texture."
+                        " It feels like every significant thing"
+                        " the party has ever touched \u2013 simultaneously."
+                        " The sensation accumulates. The memory is not"
+                        " playback. It is reconstruction, and each touch"
+                        " rebuilds it differently."
+                    ),
+                    "text_de": (
+                        "Das Objekt hat seine Textur ver\u00e4ndert."
+                        " Es f\u00fchlt sich an wie jedes bedeutsame Ding,"
+                        " das der Trupp je ber\u00fchrt hat \u2013 gleichzeitig."
+                        " Die Empfindung akkumuliert. Die Erinnerung"
+                        " ist keine Wiedergabe. Sie ist Rekonstruktion,"
+                        " und jede Ber\u00fchrung baut sie anders auf."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The madeleine dissolves on contact. Proust's revelation: this essence was not in the party. It was the party.",
-                    "text_de": "Die Madeleine löst sich bei Berührung auf. Prousts Offenbarung: diese Essenz war nicht in der Gruppe. Sie war die Gruppe.",
+                    "text_en": (
+                        "The object dissolves on contact."
+                        " What it held was never inside it."
+                        " It was inside the party \u2013 waiting for a shape"
+                        " to give it permission to surface."
+                    ),
+                    "text_de": (
+                        "Das Objekt l\u00f6st sich bei Ber\u00fchrung auf."
+                        " Was es hielt, war nie in ihm."
+                        " Es war im Trupp \u2013 wartend auf eine Form,"
+                        " die ihm Erlaubnis gab aufzutauchen."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_two_clocks",
-            "name_en": "The Two Clocks",
-            "name_de": "Die Zwei Uhren",
             "phases": {
                 "discovery": {
-                    "text_en": "Two clocks on the wall. They show different times. Both are correct.",
-                    "text_de": "Zwei Uhren an der Wand. Sie zeigen unterschiedliche Zeiten. Beide sind korrekt.",
+                    "text_en": (
+                        "Two clocks on the wall. They show different times."
+                        " Both are running. Both are precise."
+                        " Neither is wrong. The room contains"
+                        " two versions of now, and they disagree."
+                    ),
+                    "text_de": (
+                        "Zwei Uhren an der Wand. Sie zeigen verschiedene Zeiten."
+                        " Beide laufen. Beide sind pr\u00e4zise."
+                        " Keine ist falsch. Der Raum enth\u00e4lt"
+                        " zwei Versionen von Jetzt, und sie widersprechen sich."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} checks both clocks. The gap between them has widened. The inner one runs crazily on.",
-                    "text_de": "{agent} prüft beide Uhren. Der Abstand zwischen ihnen hat sich vergrößert. Die innere rennt wahnsinnig weiter.",
+                    "text_en": (
+                        "{agent} checks both clocks. The gap between them"
+                        " has widened. The left one runs at the pace of observation."
+                        " The right one runs at the pace of experience."
+                        " They are separating."
+                    ),
+                    "text_de": (
+                        "{agent} pr\u00fcft beide Uhren. Der Abstand zwischen ihnen"
+                        " hat sich vergr\u00f6\u00dfert. Die linke l\u00e4uft im Tempo der Beobachtung."
+                        " Die rechte im Tempo der Erfahrung."
+                        " Sie trennen sich."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The outer clock has stopped. The inner clock accelerates. What else can happen but that the two worlds split apart?",
-                    "text_de": "Die äußere Uhr ist stehen geblieben. Die innere Uhr beschleunigt. Was kann sonst geschehen, als dass die zwei Welten auseinanderbrechen?",
+                    "text_en": (
+                        "The outer clock has stopped."
+                        " The inner clock accelerates \u2013 minutes"
+                        " condensing into seconds, hours into moments."
+                        " The room is experiencing itself faster"
+                        " than the party can observe it."
+                    ),
+                    "text_de": (
+                        "Die \u00e4u\u00dfere Uhr ist stehen geblieben."
+                        " Die innere Uhr beschleunigt \u2013 Minuten"
+                        " verdichten sich zu Sekunden, Stunden zu Momenten."
+                        " Der Raum erlebt sich selbst schneller,"
+                        " als der Trupp ihn beobachten kann."
+                    ),
                 },
                 "climax": {
-                    "text_en": "Both clocks show the same time. The party cannot tell which clock yielded.",
-                    "text_de": "Beide Uhren zeigen dieselbe Zeit. Die Gruppe kann nicht sagen, welche Uhr nachgegeben hat.",
+                    "text_en": (
+                        "Both clocks show the same time."
+                        " The party cannot tell which one yielded."
+                        " The two versions of now have agreed."
+                        " What they agreed on is: the party was always here."
+                    ),
+                    "text_de": (
+                        "Beide Uhren zeigen dieselbe Zeit."
+                        " Der Trupp kann nicht sagen, welche nachgegeben hat."
+                        " Die zwei Versionen von Jetzt haben sich geeinigt."
+                        " Worauf sie sich geeinigt haben: der Trupp war immer hier."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_cave_shadow",
-            "name_en": "The Cave Shadow",
-            "name_de": "Der Höhlenschatten",
             "phases": {
                 "discovery": {
-                    "text_en": "A shadow on the wall. It moves independently of any light source. Plato's warning: the freed prisoner cannot see the fire.",
-                    "text_de": "Ein Schatten an der Wand. Er bewegt sich unabhängig von jeder Lichtquelle. Platons Warnung: der befreite Gefangene kann das Feuer nicht sehen.",
+                    "text_en": (
+                        "A shadow on the wall. It moves independently"
+                        " of any light source \u2013 not flickering,"
+                        " but gesturing. The shadow is describing something"
+                        " the party cannot see. It has been at this"
+                        " for a long time."
+                    ),
+                    "text_de": (
+                        "Ein Schatten an der Wand. Er bewegt sich unabh\u00e4ngig"
+                        " von jeder Lichtquelle \u2013 nicht flackernd,"
+                        " sondern gestikulierend. Der Schatten beschreibt etwas,"
+                        " das der Trupp nicht sehen kann."
+                        " Er tut das seit langem."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} steps between the shadow and the wall. The shadow does not change. {agent} is not casting it.",
-                    "text_de": "{agent} tritt zwischen den Schatten und die Wand. Der Schatten ändert sich nicht. {agent} wirft ihn nicht.",
+                    "text_en": (
+                        "{agent} steps between the shadow and the wall."
+                        " The shadow does not change."
+                        " {agent} is not casting it."
+                        " Something else is. Something behind the light."
+                    ),
+                    "text_de": (
+                        "{agent} tritt zwischen den Schatten und die Wand."
+                        " Der Schatten ver\u00e4ndert sich nicht."
+                        " {agent} wirft ihn nicht."
+                        " Etwas anderes tut es. Etwas hinter dem Licht."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The shadow now shows events that are happening in other rooms. Higher consciousness does not add \u2013 it replaces.",
-                    "text_de": "Der Schatten zeigt jetzt Ereignisse, die in anderen Räumen geschehen. Höheres Bewusstsein fügt nicht hinzu \u2013 es ersetzt.",
+                    "text_en": (
+                        "The shadow shows events from other rooms."
+                        " Encounters the party has not yet reached,"
+                        " doors they have not yet opened."
+                        " The shadow knows the dungeon"
+                        " the way a dreamer knows the dream"
+                        " \u2013 from above, all at once, without sequence."
+                    ),
+                    "text_de": (
+                        "Der Schatten zeigt Ereignisse aus anderen R\u00e4umen."
+                        " Begegnungen, die der Trupp noch nicht erreicht hat,"
+                        " T\u00fcren, die er noch nicht ge\u00f6ffnet hat."
+                        " Der Schatten kennt den Dungeon,"
+                        " wie ein Tr\u00e4umender den Traum kennt"
+                        " \u2013 von oben, alles gleichzeitig, ohne Reihenfolge."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The shadow is the party. The party is the shadow. The wall was always the same side.",
-                    "text_de": "Der Schatten ist die Gruppe. Die Gruppe ist der Schatten. Die Wand war immer dieselbe Seite.",
+                    "text_en": (
+                        "The shadow is the party. Projected"
+                        " not by light but by awareness."
+                        " The wall was never a surface."
+                        " It was always a mirror facing inward."
+                    ),
+                    "text_de": (
+                        "Der Schatten ist der Trupp. Projiziert"
+                        " nicht von Licht, sondern von Bewusstsein."
+                        " Die Wand war nie eine Fl\u00e4che."
+                        " Sie war immer ein Spiegel, der nach innen zeigt."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_empathy_box",
-            "name_en": "The Empathy Box",
-            "name_de": "Die Empathiebox",
             "phases": {
                 "discovery": {
-                    "text_en": "A device with handles. Dick's empathy box. Grasp the handles and enter shared consciousness.",
-                    "text_de": "Ein Gerät mit Griffen. Dicks Empathiebox. Greife die Griffe und betrete das gemeinsame Bewusstsein.",
+                    "text_en": (
+                        "A device with two handles, mounted on a pedestal."
+                        " The handles are smooth from use."
+                        " A residue of warmth clings to the grips"
+                        " \u2013 not from heat but from contact."
+                        " Someone held on. Recently."
+                    ),
+                    "text_de": (
+                        "Ein Ger\u00e4t mit zwei Griffen, auf einem Podest montiert."
+                        " Die Griffe sind glatt vom Gebrauch."
+                        " Ein Rest von W\u00e4rme haftet an den Griffen"
+                        " \u2013 nicht von Hitze, sondern von Ber\u00fchrung."
+                        " Jemand hat sich festgehalten. K\u00fcrzlich."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} touches the handles. For a moment: every agent's perception, simultaneously. The moment passes. The memory persists.",
-                    "text_de": "{agent} berührt die Griffe. Für einen Moment: die Wahrnehmung jedes Agenten, gleichzeitig. Der Moment vergeht. Die Erinnerung bleibt.",
+                    "text_en": (
+                        "{agent} touches the handles."
+                        " For a moment: every agent's perception,"
+                        " simultaneously. The room seen from four angles."
+                        " The moment passes. The memory does not."
+                    ),
+                    "text_de": (
+                        "{agent} ber\u00fchrt die Griffe."
+                        " F\u00fcr einen Moment: die Wahrnehmung jedes Agenten,"
+                        " gleichzeitig. Der Raum aus vier Blickwinkeln gesehen."
+                        " Der Moment vergeht. Die Erinnerung nicht."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The handles are warm. Someone else is grasping them from the other side. Someone who does not exist yet.",
-                    "text_de": "Die Griffe sind warm. Jemand anderes greift sie von der anderen Seite. Jemand, der noch nicht existiert.",
+                    "text_en": (
+                        "The handles are warm. Someone else"
+                        " is grasping them from the other side"
+                        " \u2013 from inside the device,"
+                        " from inside the connection itself."
+                        " The grip is patient. It has been waiting."
+                    ),
+                    "text_de": (
+                        "Die Griffe sind warm. Jemand anderes"
+                        " h\u00e4lt sie von der anderen Seite"
+                        " \u2013 aus dem Inneren des Ger\u00e4ts,"
+                        " aus dem Inneren der Verbindung selbst."
+                        " Der Griff ist geduldig. Er hat gewartet."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The box is empty. The shared consciousness no longer requires a device. It requires only the party.",
-                    "text_de": "Die Box ist leer. Das geteilte Bewusstsein benötigt kein Gerät mehr. Es benötigt nur die Gruppe.",
+                    "text_en": (
+                        "The device is empty. No mechanism inside."
+                        " The shared perception no longer requires hardware."
+                        " It requires only the party."
+                        " The connection was never in the box."
+                    ),
+                    "text_de": (
+                        "Das Ger\u00e4t ist leer. Kein Mechanismus darin."
+                        " Die geteilte Wahrnehmung ben\u00f6tigt keine Apparatur mehr."
+                        " Sie ben\u00f6tigt nur den Trupp."
+                        " Die Verbindung war nie in der Box."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_unicorn_skull",
-            "name_en": "The Unicorn Skull",
-            "name_de": "Der Einhornschädel",
             "phases": {
                 "discovery": {
-                    "text_en": "A skull. Not from any creature in the simulation's taxonomy. Murakami's dreamreading: extract memories from artifacts.",
-                    "text_de": "Ein Schädel. Von keiner Kreatur in der Taxonomie der Simulation. Murakamis Traumlesen: Erinnerungen aus Artefakten extrahieren.",
+                    "text_en": (
+                        "A skull. Bone-white, smooth, from no creature"
+                        " in any catalogue. The cranium is shaped"
+                        " for a brain larger than biology typically permits."
+                        " It is heavy with something that is not mass."
+                    ),
+                    "text_de": (
+                        "Ein Sch\u00e4del. Knochenweiß, glatt, von keiner Kreatur"
+                        " in irgendeinem Katalog. Das Cranium ist geformt"
+                        " f\u00fcr ein Gehirn gr\u00f6\u00dfer als Biologie typischerweise erlaubt."
+                        " Er ist schwer von etwas, das nicht Masse ist."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} holds the skull. Old dreams leak through: images without source, feelings without cause.",
-                    "text_de": "{agent} hält den Schädel. Alte Träume sickern durch: Bilder ohne Quelle, Gefühle ohne Ursache.",
+                    "text_en": (
+                        "{agent} holds the skull. Images leak through"
+                        " \u2013 not memories but impressions."
+                        " Scenes without context, emotions without events."
+                        " Old dreams, stored in bone."
+                    ),
+                    "text_de": (
+                        "{agent} h\u00e4lt den Sch\u00e4del. Bilder sickern durch"
+                        " \u2013 keine Erinnerungen, sondern Eindr\u00fccke."
+                        " Szenen ohne Kontext, Emotionen ohne Ereignisse."
+                        " Alte Tr\u00e4ume, gespeichert in Knochen."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The skull is heavier. It now contains the party's own dreams, absorbed without permission.",
-                    "text_de": "Der Schädel ist schwerer. Er enthält jetzt die eigenen Träume der Gruppe, absorbiert ohne Erlaubnis.",
+                    "text_en": (
+                        "The skull is heavier."
+                        " It has absorbed the party's own dreams"
+                        " \u2013 not by force but by proximity."
+                        " The bone is a medium."
+                        " It stores what the waking mind discards."
+                    ),
+                    "text_de": (
+                        "Der Sch\u00e4del ist schwerer."
+                        " Er hat die Tr\u00e4ume des Trupps absorbiert"
+                        " \u2013 nicht mit Gewalt, sondern durch N\u00e4he."
+                        " Der Knochen ist ein Medium."
+                        " Er speichert, was der wache Verstand verwirft."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The skull speaks. Not in words. In recognition. The party's own subconscious, externalized as bone.",
-                    "text_de": "Der Schädel spricht. Nicht in Worten. In Wiedererkennung. Das eigene Unterbewusste der Gruppe, externalisiert als Knochen.",
+                    "text_en": (
+                        "The skull hums. Not with sound"
+                        " \u2013 with recognition. It knows the party."
+                        " The party's own unconscious, given a shape"
+                        " that outlasts forgetting."
+                    ),
+                    "text_de": (
+                        "Der Sch\u00e4del summt. Nicht mit Klang"
+                        " \u2013 mit Wiedererkennung. Er kennt den Trupp."
+                        " Das eigene Unbewusste des Trupps, dem eine Form"
+                        " gegeben wurde, die das Vergessen \u00fcberdauert."
+                    ),
                 },
             },
         },
         {
             "id": "awakening_doorkeeper",
-            "name_en": "The Doorkeeper",
-            "name_de": "Der Türhüter",
             "phases": {
                 "discovery": {
-                    "text_en": "A figure beside an open door. The figure does not block entry. The door was always open. It was made only for the party.",
-                    "text_de": "Eine Gestalt neben einer offenen Tür. Die Gestalt versperrt den Eintritt nicht. Die Tür war immer offen. Sie wurde nur für die Gruppe gemacht.",
+                    "text_en": (
+                        "A figure beside an open door."
+                        " The figure does not block entry \u2013 it simply stands,"
+                        " patient, as if arrival were the only purpose"
+                        " of waiting. The door was always open."
+                        " The figure has never closed it."
+                    ),
+                    "text_de": (
+                        "Eine Gestalt neben einer offenen T\u00fcr."
+                        " Die Gestalt versperrt nicht den Eintritt \u2013 sie steht einfach,"
+                        " geduldig, als w\u00e4re Ankunft der einzige Zweck"
+                        " des Wartens. Die T\u00fcr war immer offen."
+                        " Die Gestalt hat sie nie geschlossen."
+                    ),
                 },
                 "echo": {
-                    "text_en": "{agent} asks the doorkeeper a question. The doorkeeper smiles. All barriers are self-imposed.",
-                    "text_de": "{agent} stellt dem Türhüter eine Frage. Der Türhüter lächelt. Alle Barrieren sind selbst auferlegt.",
+                    "text_en": (
+                        "{agent} addresses the figure."
+                        " It does not respond with words"
+                        " \u2013 it responds with stillness."
+                        " The kind of stillness that is itself an answer."
+                    ),
+                    "text_de": (
+                        "{agent} spricht die Gestalt an."
+                        " Sie antwortet nicht mit Worten"
+                        " \u2013 sie antwortet mit Stille."
+                        " Die Art von Stille, die selbst eine Antwort ist."
+                    ),
                 },
                 "mutation": {
-                    "text_en": "The doorkeeper has aged. The door has not. The doorkeeper has been waiting for the party's entire existence.",
-                    "text_de": "Der Türhüter ist gealtert. Die Tür nicht. Der Türhüter hat auf die Gruppe gewartet seit ihrer gesamten Existenz.",
+                    "text_en": (
+                        "The figure has aged. The door has not."
+                        " The figure has been waiting"
+                        " for the party's entire existence."
+                        " The patience is not servitude. It is faith."
+                    ),
+                    "text_de": (
+                        "Die Gestalt ist gealtert. Die T\u00fcr nicht."
+                        " Die Gestalt hat auf den Trupp gewartet"
+                        " f\u00fcr dessen gesamte Existenz."
+                        " Die Geduld ist keine Knechtschaft. Sie ist Glaube."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The doorkeeper steps aside. There was never a barrier. There was only the party's belief in one.",
-                    "text_de": "Der Türhüter tritt zur Seite. Es gab nie eine Barriere. Es gab nur den Glauben der Gruppe an eine.",
+                    "text_en": (
+                        "The figure steps aside. There was never a barrier."
+                        " The door was made for the party alone."
+                        " The only thing between the party and the door"
+                        " was the belief that something stood between them."
+                    ),
+                    "text_de": (
+                        "Die Gestalt tritt zur Seite."
+                        " Es gab nie eine Barriere."
+                        " Die T\u00fcr wurde nur f\u00fcr den Trupp gemacht."
+                        " Das Einzige zwischen dem Trupp und der T\u00fcr"
+                        " war der Glaube, dass etwas dazwischen stand."
+                    ),
                 },
             },
         },
@@ -3109,8 +4075,8 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "name_de": "Fraktionsbanner",
             "phases": {
                 "discovery": {
-                    "text_en": "A banner. The insignia is familiar — from two rooms ago, where it meant something different.",
-                    "text_de": "Ein Banner. Das Abzeichen ist vertraut — aus zwei Räumen zuvor, wo es etwas anderes bedeutete.",
+                    "text_en": "A banner. The insignia is familiar \u2013 from two rooms ago, where it meant something different.",
+                    "text_de": "Ein Banner. Das Abzeichen ist vertraut \u2013 aus zwei R\u00e4umen zuvor, wo es etwas anderes bedeutete.",
                 },
                 "echo": {
                     "text_en": "The banner has been turned inside out. The same insignia, reversed. A faction's mirror image.",
@@ -3140,12 +4106,12 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     "text_de": "Das Dekret wurde ergänzt. Die Ergänzung widerspricht dem Original. Beide bleiben bindend.",
                 },
                 "mutation": {
-                    "text_en": "The stone now bears three decrees. They form a triangle of mutual contradiction. Shigalyov's paradox, petrified.",
-                    "text_de": "Der Stein trägt jetzt drei Dekrete. Sie bilden ein Dreieck gegenseitigen Widerspruchs. Schigaljows Paradox, versteinert.",
+                    "text_en": "The stone now bears three decrees. They form a triangle of mutual contradiction. Each abolishes the one before it. The last abolishes itself.",
+                    "text_de": "Der Stein tr\u00e4gt jetzt drei Dekrete. Sie bilden ein Dreieck gegenseitigen Widerspruchs. Jedes hebt das vorige auf. Das letzte hebt sich selbst auf.",
                 },
                 "climax": {
-                    "text_en": "The decree stone is blank. Not erased — never inscribed. The authority to decree has been decreed nonexistent.",
-                    "text_de": "Der Dekretstein ist leer. Nicht gelöscht — nie beschrieben. Die Autorität zu dekretieren wurde für inexistent dekretiert.",
+                    "text_en": "The decree stone is blank. Not erased \u2013 never inscribed. The authority to decree has been decreed nonexistent.",
+                    "text_de": "Der Dekretstein ist leer. Nicht gel\u00f6scht \u2013 nie beschrieben. Die Autorit\u00e4t zu dekretieren wurde f\u00fcr inexistent dekretiert.",
                 },
             },
         },
@@ -3159,8 +4125,8 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     "text_de": "Ein Klemmbrett mit Namen. Einige abgehakt. Die Namen der Gruppe sind aufgelistet, aber noch nicht abgehakt.",
                 },
                 "echo": {
-                    "text_en": "The clipboard has grown. More names. The handwriting changes — multiple informers, same list.",
-                    "text_de": "Das Klemmbrett ist gewachsen. Mehr Namen. Die Handschrift wechselt — mehrere Spitzel, dieselbe Liste.",
+                    "text_en": "The clipboard has grown. More names. The handwriting changes \u2013 multiple informers, same list.",
+                    "text_de": "Das Klemmbrett ist gewachsen. Mehr Namen. Die Handschrift wechselt \u2013 mehrere Spitzel, dieselbe Liste.",
                 },
                 "mutation": {
                     "text_en": "The informer's name is on the list now. The informer is being informed on. The system is recursive.",
@@ -3186,8 +4152,8 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     "text_de": "Der Stuhl war besetzt. Kürzlich. Die Wärme ist noch da. Das Urteil wurde bereits gefällt.",
                 },
                 "mutation": {
-                    "text_en": "The chair faces a mirror now. The accused watches their own trial. Kiš's archival voice narrates in footnotes.",
-                    "text_de": "Der Stuhl steht jetzt vor einem Spiegel. Der Angeklagte beobachtet seinen eigenen Prozess. Kišs Archivstimme erzählt in Fußnoten.",
+                    "text_en": "The chair faces a mirror now. The accused watches their own trial. The transcript writes itself in the margins. Every word is accurate. Every word is a lie.",
+                    "text_de": "Der Stuhl steht jetzt vor einem Spiegel. Der Angeklagte beobachtet seinen eigenen Prozess. Das Protokoll schreibt sich in den R\u00e4ndern fort. Jedes Wort ist akkurat. Jedes Wort ist eine L\u00fcge.",
                 },
                 "climax": {
                     "text_en": "The chair is for the judge now. The accused is gone. The judge sits and realizes: the next trial is their own.",
@@ -3224,20 +4190,20 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
             "name_de": "Propagandaplakat",
             "phases": {
                 "discovery": {
-                    "text_en": "A poster. The message is clear, the design effective. Orwell's Squealer would approve.",
-                    "text_de": "Ein Plakat. Die Botschaft ist klar, das Design wirkungsvoll. Orwells Schwatzwutz würde zustimmen.",
+                    "text_en": "A poster. The message is clear, the design effective. The font is authoritative. The colors are calming. It does not ask you to agree. It assumes you already do.",
+                    "text_de": "Ein Plakat. Die Botschaft ist klar, das Design wirkungsvoll. Die Schrift ist autorit\u00e4r. Die Farben beruhigend. Es bittet nicht um Zustimmung. Es setzt sie voraus.",
                 },
                 "echo": {
                     "text_en": "The poster has been pasted over with a new one. The new poster says the opposite. The adhesive is the same.",
                     "text_de": "Das Plakat wurde mit einem neuen überklebt. Das neue Plakat sagt das Gegenteil. Der Klebstoff ist derselbe.",
                 },
                 "mutation": {
-                    "text_en": "Both posters are visible now, layered. The contradiction is the message. Doublethink, illustrated.",
-                    "text_de": "Beide Plakate sind jetzt sichtbar, geschichtet. Der Widerspruch ist die Botschaft. Doppeldenk, illustriert.",
+                    "text_en": "Both posters are visible now, layered. The contradiction is the message. Believe both. Believe neither. The skill is not choosing \u2013 it is holding both at once.",
+                    "text_de": "Beide Plakate sind jetzt sichtbar, geschichtet. Der Widerspruch ist die Botschaft. Glaube beides. Glaube nichts. Die Kunst ist nicht das W\u00e4hlen \u2013 es ist das gleichzeitige Halten.",
                 },
                 "climax": {
-                    "text_en": "The poster is blank. Not torn down — never printed. The propaganda has moved from paper into the air itself.",
-                    "text_de": "Das Plakat ist leer. Nicht abgerissen — nie gedruckt. Die Propaganda ist vom Papier in die Luft selbst übergegangen.",
+                    "text_en": "The poster is blank. Not torn down \u2013 never printed. The propaganda has moved from paper into the air itself.",
+                    "text_de": "Das Plakat ist leer. Nicht abgerissen \u2013 nie gedruckt. Die Propaganda ist vom Papier in die Luft selbst \u00fcbergegangen.",
                 },
             },
         },
@@ -3259,31 +4225,70 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     "text_de": "Ein Daumen auf der Waage. Wessen Daumen? Der Spiegel hinter der Waage zeigt keine Hand.",
                 },
                 "climax": {
-                    "text_en": "The scales tip. Both pans hit the ground simultaneously. Justice is not blind — justice has been dismissed.",
-                    "text_de": "Die Waage kippt. Beide Schalen treffen gleichzeitig den Boden. Gerechtigkeit ist nicht blind — Gerechtigkeit wurde entlassen.",
+                    "text_en": "The scales tip. Both pans hit the ground simultaneously. Justice is not blind \u2013 justice has been dismissed.",
+                    "text_de": "Die Waage kippt. Beide Schalen treffen gleichzeitig den Boden. Gerechtigkeit ist nicht blind \u2013 Gerechtigkeit wurde abgesetzt.",
                 },
             },
         },
         {
             "id": "overthrow_colossus_pedestal",
-            "name_en": "Colossus Pedestal",
-            "name_de": "Kolosssockel",
             "phases": {
                 "discovery": {
-                    "text_en": "An empty pedestal. Something large stood here. The shadow remains on the floor.",
-                    "text_de": "Ein leerer Sockel. Etwas Großes stand hier. Der Schatten bleibt auf dem Boden.",
+                    "text_en": (
+                        "An empty pedestal. The stone is scarred where something"
+                        " massive stood \u2013 not a statue but a presence,"
+                        " large enough to cast a shadow that is still here."
+                        " The shadow has not noticed it is empty."
+                    ),
+                    "text_de": (
+                        "Ein leerer Sockel. Der Stein ist vernarbt,"
+                        " wo etwas Massives stand \u2013 keine Statue,"
+                        " sondern eine Pr\u00e4senz, gro\u00df genug,"
+                        " um einen Schatten zu werfen, der immer noch hier ist."
+                        " Der Schatten hat nicht bemerkt, dass er leer ist."
+                    ),
                 },
                 "echo": {
-                    "text_en": "The pedestal bears an inscription: 'Resolve to serve no more, and you are at once freed.' La Boétie.",
-                    "text_de": "Der Sockel trägt eine Inschrift: 'Beschließe, nicht mehr zu dienen, und du bist sogleich befreit.' La Boétie.",
+                    "text_en": (
+                        "{agent} reads the inscription on the pedestal."
+                        " It says: 'The Colossus stands because you carry it.'"
+                        " Below, in a different hand:"
+                        " 'Stop carrying.'"
+                    ),
+                    "text_de": (
+                        "{agent} liest die Inschrift auf dem Sockel."
+                        " Sie lautet: \u00bbDer Koloss steht, weil ihr ihn tragt.\u00ab"
+                        " Darunter, in einer anderen Handschrift:"
+                        " \u00bbH\u00f6rt auf zu tragen.\u00ab"
+                    ),
                 },
                 "mutation": {
-                    "text_en": "Cracks in the pedestal. The Colossus did not fall — it was pulled. From below. By those who built it.",
-                    "text_de": "Risse im Sockel. Der Koloss ist nicht gefallen — er wurde gezogen. Von unten. Von denen, die ihn gebaut haben.",
+                    "text_en": (
+                        "Cracks in the pedestal \u2013 radiating downward."
+                        " The Colossus did not fall. It was pulled."
+                        " From below. By the hands that built it."
+                        " The stone remembers every grip."
+                    ),
+                    "text_de": (
+                        "Risse im Sockel \u2013 nach unten strahlend."
+                        " Der Koloss ist nicht gefallen. Er wurde gezogen."
+                        " Von unten. Von den H\u00e4nden, die ihn gebaut haben."
+                        " Der Stein erinnert sich an jeden Griff."
+                    ),
                 },
                 "climax": {
-                    "text_en": "The pedestal is being rebuilt. For a new Colossus. The builders are the same. The blueprints are the same.",
-                    "text_de": "Der Sockel wird wieder aufgebaut. Für einen neuen Koloss. Die Baumeister sind dieselben. Die Baupläne sind dieselben.",
+                    "text_en": (
+                        "The pedestal is being rebuilt."
+                        " Fresh mortar, new inscription, same dimensions."
+                        " The builders are the ones who pulled the last one down."
+                        " They have not noticed. The blueprints are the same."
+                    ),
+                    "text_de": (
+                        "Der Sockel wird wieder aufgebaut."
+                        " Frischer M\u00f6rtel, neue Inschrift, selbe Ma\u00dfe."
+                        " Die Baumeister sind die, die den letzten heruntergerissen haben."
+                        " Sie haben es nicht bemerkt. Die Baupl\u00e4ne sind dieselben."
+                    ),
                 },
             },
         },
@@ -3572,69 +4577,192 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
     "The Deluge": [
         {
             "tier": 0,
-            "text_en": "The level is silent.",
-            "text_de": "Der Pegel schweigt.",
+            "text_en": (
+                "The water is present but patient."
+                " It laps at the lowest edges of the corridor"
+                " with the rhythm of something that has not yet decided to rise."
+                " The sound is almost gentle."
+            ),
+            "text_de": (
+                "Das Wasser ist da, aber geduldig."
+                " Es leckt an den niedrigsten Kanten des Korridors"
+                " im Rhythmus von etwas, das sich noch nicht entschieden hat zu steigen."
+                " Das Ger\u00e4usch ist beinahe sanft."
+            ),
         },
         {
             "tier": 1,
-            "text_en": "The level speaks.",
-            "text_de": "Der Pegel spricht.",
+            "text_en": (
+                "The water has risen. Not gradually \u2013 in the time"
+                " between noticing and measuring, it gained another centimeter."
+                " The current has found a direction."
+                " It is moving inward."
+            ),
+            "text_de": (
+                "Das Wasser ist gestiegen. Nicht allm\u00e4hlich \u2013 in der Zeit"
+                " zwischen Bemerken und Messen hat es einen weiteren Zentimeter gewonnen."
+                " Die Str\u00f6mung hat eine Richtung gefunden."
+                " Sie bewegt sich nach innen."
+            ),
         },
         {
             "tier": 2,
-            "text_en": "The level insists.",
-            "text_de": "Der Pegel besteht.",
+            "text_en": (
+                "The water is no longer patient. It pushes."
+                " The sound has changed from lapping to pressure"
+                " \u2013 the low, constant hum of volume"
+                " looking for somewhere to go."
+                " It is finding places."
+            ),
+            "text_de": (
+                "Das Wasser ist nicht mehr geduldig. Es dr\u00e4ngt."
+                " Das Ger\u00e4usch hat sich von Pl\u00e4tschern zu Druck ver\u00e4ndert"
+                " \u2013 das tiefe, gleichm\u00e4\u00dfige Summen von Volumen,"
+                " das einen Ort sucht."
+                " Es findet welche."
+            ),
         },
         {
             "tier": 3,
-            "text_en": "The level is correct.",
-            "text_de": "Der Pegel hat Recht.",
+            "text_en": (
+                "The water is here. Not rising \u2013 arrived."
+                " It fills the space the way an answer fills a question:"
+                " completely, and with the weight of having always been inevitable."
+            ),
+            "text_de": (
+                "Das Wasser ist da. Nicht steigend \u2013 angekommen."
+                " Es f\u00fcllt den Raum wie eine Antwort eine Frage f\u00fcllt:"
+                " vollst\u00e4ndig, und mit dem Gewicht, immer unvermeidlich gewesen zu sein."
+            ),
         },
     ],
     # ── Awakening: "Das Bewusstsein" (Awareness barometer) ───────────────
     "The Awakening": [
         {
             "tier": 0,
-            "text_en": "The consciousness sleeps.",
-            "text_de": "Das Bewusstsein schläft.",
+            "text_en": (
+                "The rooms are quiet in a way that suggests sleep"
+                " \u2013 not absence but suspension."
+                " The walls register the party's presence"
+                " the way a dreamer registers a distant sound."
+            ),
+            "text_de": (
+                "Die R\u00e4ume sind still auf eine Art, die Schlaf nahelegt"
+                " \u2013 nicht Abwesenheit, sondern Suspension."
+                " Die W\u00e4nde registrieren die Pr\u00e4senz des Trupps"
+                " wie ein Tr\u00e4umender ein fernes Ger\u00e4usch registriert."
+            ),
         },
         {
             "tier": 1,
-            "text_en": "The consciousness stirs.",
-            "text_de": "Das Bewusstsein regt sich.",
+            "text_en": (
+                "Something has shifted. The corridors respond"
+                " a fraction faster now \u2013 lights adjust before"
+                " the party rounds a corner, doors settle into frames"
+                " as if preparing. The dungeon is stirring."
+            ),
+            "text_de": (
+                "Etwas hat sich verschoben. Die Korridore reagieren"
+                " einen Bruchteil schneller jetzt \u2013 Lichter passen sich an,"
+                " bevor der Trupp um eine Ecke biegt, T\u00fcren f\u00fcgen sich"
+                " in Rahmen, als bereiteten sie sich vor."
+                " Der Dungeon erwacht."
+            ),
         },
         {
             "tier": 2,
-            "text_en": "The consciousness perceives.",
-            "text_de": "Das Bewusstsein nimmt wahr.",
+            "text_en": (
+                "The dungeon is watching. Not with eyes"
+                " \u2013 with attention. The geometry of each room"
+                " seems arranged for observation."
+                " The party is not exploring. The party is being perceived."
+            ),
+            "text_de": (
+                "Der Dungeon beobachtet. Nicht mit Augen"
+                " \u2013 mit Aufmerksamkeit. Die Geometrie jedes Raums"
+                " wirkt wie f\u00fcr Beobachtung arrangiert."
+                " Der Trupp erkundet nicht. Der Trupp wird wahrgenommen."
+            ),
         },
         {
             "tier": 3,
-            "text_en": "The consciousness remembers.",
-            "text_de": "Das Bewusstsein erinnert sich.",
+            "text_en": (
+                "The dungeon remembers. Every room the party has entered,"
+                " every choice they have made \u2013 the walls hold it all,"
+                " and they are no longer passive."
+                " What was asleep is awake. What is awake is thinking."
+            ),
+            "text_de": (
+                "Der Dungeon erinnert sich. Jeden Raum, den der Trupp"
+                " betreten hat, jede Entscheidung \u2013 die W\u00e4nde halten alles,"
+                " und sie sind nicht mehr passiv."
+                " Was schlief, ist wach. Was wach ist, denkt."
+            ),
         },
     ],
-    # ── Overthrow: "Die Autorität" (Authority Fracture barometer) ─────────
+    # ── Overthrow: "Die Autorit\u00e4t" (Authority Fracture barometer) ─────────
     "The Overthrow": [
         {
             "tier": 0,
-            "text_en": "The authority holds.",
-            "text_de": "Die Autorität hält.",
+            "text_en": (
+                "The corridors are ordered. Signs point in consistent directions."
+                " The insignia on the walls match. Someone is in charge here,"
+                " and the architecture believes them."
+            ),
+            "text_de": (
+                "Die Korridore sind geordnet. Schilder weisen in konsistente Richtungen."
+                " Die Abzeichen an den W\u00e4nden stimmen \u00fcberein."
+                " Jemand hat hier das Sagen,"
+                " und die Architektur glaubt ihnen."
+            ),
         },
         {
             "tier": 1,
-            "text_en": "The authority whispers.",
-            "text_de": "Die Autorität flüstert.",
+            "text_en": (
+                "A sign has been corrected. The original direction"
+                " is visible beneath the amendment."
+                " Two versions of authority overlap"
+                " \u2013 the first confident, the second insistent."
+            ),
+            "text_de": (
+                "Ein Schild wurde korrigiert. Die urspr\u00fcngliche Richtung"
+                " ist unter der \u00c4nderung sichtbar."
+                " Zwei Versionen von Autorit\u00e4t \u00fcberlagern sich"
+                " \u2013 die erste zuversichtlich, die zweite bestimmt."
+            ),
         },
         {
             "tier": 2,
-            "text_en": "The authority fractures.",
-            "text_de": "Die Autorität bricht.",
+            "text_en": (
+                "The signs contradict each other."
+                " Three factions have posted directions to the same corridor,"
+                " each claiming a different destination."
+                " The architecture has stopped choosing."
+            ),
+            "text_de": (
+                "Die Schilder widersprechen einander."
+                " Drei Fraktionen haben Wegweiser zum selben Korridor angebracht,"
+                " jede mit einem anderen Ziel."
+                " Die Architektur hat aufgeh\u00f6rt zu w\u00e4hlen."
+            ),
         },
         {
             "tier": 3,
-            "text_en": "The authority is a mirror.",
-            "text_de": "Die Autorität ist ein Spiegel.",
+            "text_en": (
+                "No signs. The walls are bare. Every faction's insignia"
+                " has been torn down, painted over, torn down again."
+                " The corridors lead everywhere and nowhere."
+                " Authority is a rumor. The building is listening"
+                " for whoever speaks next."
+            ),
+            "text_de": (
+                "Keine Schilder. Die W\u00e4nde sind kahl."
+                " Die Abzeichen jeder Fraktion wurden heruntergerissen,"
+                " \u00fcbermalt, erneut heruntergerissen."
+                " Die Korridore f\u00fchren \u00fcberallhin und nirgendwohin."
+                " Autorit\u00e4t ist ein Ger\u00fccht. Das Geb\u00e4ude h\u00f6rt zu,"
+                " wer als N\u00e4chstes spricht."
+            ),
         },
     ],
 }

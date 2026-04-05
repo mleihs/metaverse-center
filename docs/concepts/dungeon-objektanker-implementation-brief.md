@@ -640,15 +640,16 @@ den Qualitätsstandard vor. Neue Objekte müssen denselben Standard erreichen.
 
 ## 11. Implementierungsreihenfolge
 
-1. **Model-Erweiterung**: `DungeonInstance` Felder + Checkpoint
-2. **Anchor-Object-Pool**: Alle Texte als Datenstruktur in `dungeon_encounters.py`
-   (vorhandene übernehmen + neue schreiben — HIER liegt der Hauptaufwand)
-3. **Barometer-Texte**: Alle Texte als Datenstruktur in `dungeon_encounters.py`
-4. **Selection-Funktionen**: `select_anchor_text()`, `get_barometer_text()`
-5. **Engine-Integration**: `create_run()` + `move_to_room()`
-6. **Frontend-Integration**: Types erweitern + Rendering in `dungeon-commands.ts`
-7. **Lint**: `ruff` + `tsc` nach jeder Änderung
-8. **Commit**: Detaillierteste Commit-Message — erklärt Konzept, Architektur, und was sich ändert
+> **Status: VOLLSTÄNDIG IMPLEMENTIERT** (2026-04-05, Migration 181)
+
+1. **Model-Erweiterung**: `DungeonInstance` Felder + Checkpoint — ✅ DONE
+2. **Anchor-Object-Pool**: 64 Objekte in `dungeon_objektanker.py` (8 pro Archetype × 4 Phasen × 2 Sprachen) — ✅ DONE
+3. **Barometer-Texte**: 32 Tier-Texte in `dungeon_objektanker.py` (8 Archetypes × 4 Tiers × 2 Sprachen) — ✅ DONE
+4. **Selection-Funktionen**: `select_anchor_text()`, `get_barometer_text()` — ✅ DONE
+5. **Engine-Integration**: `create_run()` + `move_to_room()` via `DungeonMovementService` — ✅ DONE
+6. **Frontend-Integration**: Types (`AnchorText[]`) + Rendering in `dungeon-commands.ts` — ✅ DONE
+7. **DB-Seed**: Migration 181 — Upsert für alle Anchor Objects + Barometer Texts — ✅ DONE
+8. **Lint**: `ruff` + `tsc` clean — ✅ DONE
 
 ---
 
