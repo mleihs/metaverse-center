@@ -24,12 +24,14 @@ export class VelgChatView extends LitElement {
     :host {
       display: block;
       overflow: hidden;
+      max-width: 100vw;
     }
 
     .chat-layout {
       display: grid;
       grid-template-columns: 300px 1fr;
       height: calc(100vh - var(--header-height) - 180px);
+      height: calc(100dvh - var(--header-height) - 180px);
       min-height: 500px;
       border: var(--border-default);
       box-shadow: var(--shadow-sm);
@@ -106,6 +108,8 @@ export class VelgChatView extends LitElement {
     .sidebar__list {
       flex: 1;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .main-area {
@@ -141,6 +145,7 @@ export class VelgChatView extends LitElement {
       .chat-layout {
         grid-template-columns: 1fr;
         height: calc(100vh - var(--header-height) - 196px);
+        height: calc(100dvh - var(--header-height) - 196px);
         min-height: 0;
       }
 
@@ -347,10 +352,10 @@ export class VelgChatView extends LitElement {
     const names = agents.map((a) => a.name);
     const title =
       names.length === 1
-        ? msg(str`Chat with ${names[0]}`)
-        : msg(
-            str`Group: ${names.slice(0, 3).join(', ')}${names.length > 3 ? ` +${names.length - 3}` : ''}`,
-          );
+        ? names[0]
+        : names.length === 2
+          ? `${names[0]}, ${names[1]}`
+          : `${names[0]}, ${names[1]} +${names.length - 2}`;
 
     try {
       const response = await chatApi.createConversation(this.simulationId, {

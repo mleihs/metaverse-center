@@ -118,6 +118,12 @@ export class MessageActions extends LitElement {
 
   private _copyTimeout = 0;
 
+  protected override updated(changedProps: Map<PropertyKey, unknown>): void {
+    if (changedProps.has('_copied')) {
+      this.toggleAttribute('copied', this._copied);
+    }
+  }
+
   private async _handleCopy(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.content);

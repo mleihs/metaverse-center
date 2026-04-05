@@ -135,6 +135,11 @@ export class ChatApiService extends BaseApiService {
   ): Promise<ApiResponse<ChatConversation>> {
     return this.delete(`/simulations/${simulationId}/chat/conversations/${conversationId}`);
   }
+
+  /** URL for the regenerate SSE endpoint (used by ChatStreamConsumer). */
+  regenerateStreamUrl(simulationId: string, conversationId: string): string {
+    return `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/regenerate`;
+  }
 }
 
 export const chatApi = new ChatApiService();

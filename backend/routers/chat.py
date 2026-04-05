@@ -221,6 +221,65 @@ async def stream_message(
     )
 
 
+@router.post(
+    "/conversations/{conversation_id}/regenerate",
+    status_code=200,
+)
+@limiter.limit(RATE_LIMIT_AI_CHAT)
+async def regenerate_response(
+    request: Request,
+    simulation_id: UUID,
+    conversation_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> EventSourceResponse:
+    """Re-trigger AI response generation via SSE stream.
+
+    Uses the last user message in the conversation as context.
+    Does NOT create a new user message — only generates a new AI response.
+    Used by: Regenerate toolbar action, automatic retry on empty response.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_messages",
+        conversation_id,
+        "regenerate",
+        details={"conversation_id": str(conversation_id)},
+    )
+
+    async def event_generator():
+        try:
+            async for sse_event in _service.stream_regenerate(
+                supabase,
+                simulation_id,
+                conversation_id,
+            ):
+                if await request.is_disconnected():
+                    logger.info("Client disconnected during regenerate for conversation %s", conversation_id)
+                    return
+
+                yield _format_sse(sse_event.event, sse_event.data)
+
+            yield _format_sse("done", {})
+
+        except Exception:
+            logger.exception("Error during regenerate for conversation %s", conversation_id)
+            yield _format_sse("error", {"error": "An internal error occurred during regeneration."})
+
+    return EventSourceResponse(
+        event_generator(),
+        headers={
+            "X-Accel-Buffering": "no",
+            "Cache-Control": "no-cache, no-store",
+        },
+    )
+
+
 def _format_sse(event: str, data: dict) -> str:
     """Format a single SSE event string."""
     return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
