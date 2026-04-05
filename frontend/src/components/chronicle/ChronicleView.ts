@@ -8,6 +8,8 @@ import type { Chronicle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/Pagination.js';
 import '../shared/LoadingState.js';
@@ -182,6 +184,84 @@ export class VelgChronicleView extends LitElement {
     .editorial__btn:focus-visible {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
+    }
+
+    /* ── Press room status (during generation) ── */
+
+    .press-status {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto;
+      gap: var(--space-1) var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: var(--chron-rule-thin) solid var(--color-border);
+      animation: press-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes press-enter {
+      from { opacity: 0; transform: translateY(-4px); }
+    }
+
+    .press-status__icon {
+      grid-row: 1 / 3;
+      align-self: center;
+      color: var(--color-primary);
+      animation: press-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes press-pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .press-status__body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .press-status__headline {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-text-primary);
+    }
+
+    .press-status__phase {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .press-status__elapsed {
+      grid-row: 1 / 3;
+      align-self: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      min-width: 3ch;
+      text-align: right;
+    }
+
+    .press-status__bar {
+      grid-column: 1 / -1;
+      height: 2px;
+      background: var(--color-border-light);
+      overflow: hidden;
+    }
+
+    .press-status__bar-fill {
+      height: 100%;
+      width: 30%;
+      background: var(--color-primary);
+      animation: press-bar 2s ease-in-out infinite;
+    }
+
+    @keyframes press-bar {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
     }
 
     /* ── Front page (featured edition) ───────── */
@@ -396,8 +476,17 @@ export class VelgChronicleView extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       .broadsheet,
       .front-page,
-      .archive__item {
+      .archive__item,
+      .press-status {
         animation: none;
+      }
+      .press-status__icon {
+        animation: none;
+        opacity: 1;
+      }
+      .press-status__bar-fill {
+        animation: none;
+        width: 100%;
       }
     }
 
@@ -429,6 +518,14 @@ export class VelgChronicleView extends LitElement {
         text-align: center;
       }
 
+      .press-status {
+        grid-template-columns: 1fr auto;
+      }
+
+      .press-status__icon {
+        display: none;
+      }
+
       .archive__btn {
         flex-wrap: wrap;
       }
@@ -449,8 +546,11 @@ export class VelgChronicleView extends LitElement {
   @state() private _offset = 0;
   @state() private _expandedId: string | null = null;
   @state() private _generating = false;
+  @state() private _generatingElapsed = 0;
   @state() private _periodStart = '';
   @state() private _periodEnd = '';
+
+  private _elapsedTimer: ReturnType<typeof setInterval> | null = null;
 
   private get _canEdit(): boolean {
     return appState.canEdit.value;
@@ -479,6 +579,10 @@ export class VelgChronicleView extends LitElement {
   }
 
   disconnectedCallback(): void {
+    if (this._elapsedTimer) {
+      clearInterval(this._elapsedTimer);
+      this._elapsedTimer = null;
+    }
     seoService.removeStructuredData();
     super.disconnectedCallback();
   }
@@ -531,10 +635,37 @@ export class VelgChronicleView extends LitElement {
     }
   }
 
+  /** Check if an edition already covers the selected period (exact match). */
+  private _hasDuplicatePeriod(): boolean {
+    return this._chronicles.some(
+      (c) =>
+        c.period_start?.slice(0, 10) === this._periodStart &&
+        c.period_end?.slice(0, 10) === this._periodEnd,
+    );
+  }
+
   private async _generate(): Promise<void> {
     if (!this._periodStart || !this._periodEnd || this._generating) return;
+
+    // Warn on duplicate period — allow override via themed confirm dialog
+    if (this._hasDuplicatePeriod()) {
+      const proceed = await VelgConfirmDialog.show({
+        title: msg('Duplicate period'),
+        message: msg('An edition for this exact period already exists. Generate another?'),
+        confirmLabel: msg('Generate'),
+      });
+      if (!proceed) return;
+    }
+
     this._generating = true;
+    this._generatingElapsed = 0;
     this._error = null;
+
+    // Start elapsed timer (ticks every second)
+    this._elapsedTimer = setInterval(() => {
+      this._generatingElapsed++;
+    }, 1000);
+
     try {
       const resp = await chronicleApi.generate(this.simulationId, {
         period_start: new Date(this._periodStart).toISOString(),
@@ -544,13 +675,26 @@ export class VelgChronicleView extends LitElement {
         this._offset = 0;
         await this._load();
         this._expandedId = resp.data.id;
+        VelgToast.success(msg('Chronicle edition generated.'));
+        // Scroll to newly generated edition
+        await this.updateComplete;
+        this.renderRoot.querySelector('.front-page')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else if (!resp.success) {
-        this._error = resp.error?.message ?? msg('Failed to generate chronicle.');
+        const detail = resp.error?.message ?? msg('Failed to generate chronicle.');
+        this._error = detail;
+        VelgToast.error(detail);
       }
     } catch (err) {
-      this._error = err instanceof Error ? err.message : msg('Failed to generate chronicle.');
+      const detail = err instanceof Error ? err.message : msg('Failed to generate chronicle.');
+      this._error = detail;
+      VelgToast.error(detail);
     } finally {
       this._generating = false;
+      this._generatingElapsed = 0;
+      if (this._elapsedTimer) {
+        clearInterval(this._elapsedTimer);
+        this._elapsedTimer = null;
+      }
     }
   }
 
@@ -628,6 +772,10 @@ export class VelgChronicleView extends LitElement {
   }
 
   private _renderEditorial() {
+    if (this._generating) {
+      return this._renderPressStatus();
+    }
+
     return html`
       <div class="editorial">
         <div class="editorial__field">
@@ -654,12 +802,42 @@ export class VelgChronicleView extends LitElement {
         </div>
         <button
           class="editorial__btn"
-          ?disabled=${this._generating || !this._periodStart || !this._periodEnd}
+          ?disabled=${!this._periodStart || !this._periodEnd}
           @click=${this._generate}
         >
           ${icons.sparkle(12)}
-          ${this._generating ? msg('Generating...') : msg('Generate edition')}
+          ${msg('Generate edition')}
         </button>
+      </div>
+    `;
+  }
+
+  /** Thematic press-room status area shown during AI generation. */
+  private _renderPressStatus() {
+    const elapsed = this._generatingElapsed;
+    // Phase text progresses with time to reassure the user
+    let phase: string;
+    if (elapsed < 5) {
+      phase = msg('Gathering intelligence reports...');
+    } else if (elapsed < 12) {
+      phase = msg('Composing editorial content...');
+    } else if (elapsed < 25) {
+      phase = msg('Typesetting edition...');
+    } else {
+      phase = msg('Finalising print run...');
+    }
+
+    return html`
+      <div class="press-status" role="status">
+        <div class="press-status__icon">${icons.sparkle(16)}</div>
+        <div class="press-status__body">
+          <div class="press-status__headline">${msg('Press room active')}</div>
+          <div class="press-status__phase" aria-live="polite">${phase}</div>
+        </div>
+        <div class="press-status__elapsed" aria-hidden="true">${elapsed}s</div>
+        <div class="press-status__bar" aria-hidden="true">
+          <div class="press-status__bar-fill"></div>
+        </div>
       </div>
     `;
   }
