@@ -39,10 +39,10 @@ interface ChatAudioSettings {
 // ---------------------------------------------------------------------------
 
 const SFX_SPRITE: SpriteMap = {
-  'message-sent': [0, 200],
-  'message-received': [250, 400],
-  'typing-start': [700, 300],
-  'stream-complete': [1050, 350],
+  'message-sent': [0, 80],
+  'message-received': [130, 370],
+  'typing-start': [550, 200],
+  'stream-complete': [800, 350],
 };
 
 // ---------------------------------------------------------------------------
