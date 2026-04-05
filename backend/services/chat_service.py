@@ -384,6 +384,12 @@ class ChatService:
         agent_id: UUID | None = None,
     ) -> dict:
         """Send a message in a conversation. message_count is updated by DB trigger."""
+        if not content or not content.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Message content cannot be empty.",
+            )
+
         insert_data: dict = {
             "conversation_id": str(conversation_id),
             "sender_role": sender_role,
