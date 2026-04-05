@@ -21,6 +21,7 @@ import { signal } from '@preact/signals-core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
 import type { ChatMessage, EpochChatMessage, PresenceUser } from '../../types/index.js';
+import { agentTypingPhrase } from '../../utils/agent-colors.js';
 import { supabase } from '../supabase/client.js';
 
 class RealtimeServiceImpl {
@@ -263,10 +264,13 @@ class RealtimeServiceImpl {
       .on('broadcast', { event: 'typing' }, (payload) => {
         const { user_id, name } = payload.payload as { user_id: string; name: string };
 
-        // Update or add typing user
+        // Update or add typing user with personality-based phrase
         const existing = this.chatTypingUsers.value;
         const filtered = existing.filter((u) => u.id !== user_id);
-        this.chatTypingUsers.value = [...filtered, { id: user_id, name }];
+        this.chatTypingUsers.value = [
+          ...filtered,
+          { id: user_id, name, phrase: agentTypingPhrase(user_id) },
+        ];
 
         // Auto-clear after 3 seconds of inactivity
         const prev = this._typingTimers.get(user_id);

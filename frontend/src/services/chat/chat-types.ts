@@ -18,6 +18,10 @@ export interface Participant {
   readonly avatarUrl?: string;
   /** Accent color for message borders and name labels (CSS value). */
   readonly accentColor?: string;
+  /** Agent mood score (-100..+100). Drives the mood ring on avatar. */
+  readonly moodScore?: number;
+  /** Dominant emotion label (e.g. "hope", "anxiety"). */
+  readonly moodEmotion?: string;
   readonly role: 'agent' | 'player' | 'system';
 }
 

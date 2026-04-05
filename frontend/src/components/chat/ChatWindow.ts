@@ -4,10 +4,10 @@ import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
-import { chatApi } from '../../services/api/index.js';
+import { agentAutonomyApi, chatApi } from '../../services/api/index.js';
 import { ChatExporter } from '../../services/chat/ChatExporter.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
-import { streamChatResponse } from '../../services/chat/ChatStreamConsumer.js';
+import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type {
@@ -15,6 +15,7 @@ import type {
   ChatConversation,
   ChatEventReference,
 } from '../../types/index.js';
+import { agentAccentColor } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
 import { agentAltText } from '../../utils/text.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -65,11 +66,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       min-width: 0;
     }
 
-    /* Portrait stack */
+    /* Portrait stack — slight overlap with border separation */
     .header__portraits {
       display: flex;
       flex-shrink: 0;
       cursor: pointer;
+      gap: var(--space-1);
     }
 
     .header__portraits:hover {
@@ -86,7 +88,6 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-left: -8px;
       flex-shrink: 0;
       border: var(--border-width-default) solid var(--color-surface);
     }
@@ -410,6 +411,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @state() private _streamingAgentId = '';
   @state() private _restoredDraft = '';
 
+  /** Cached agent moods — fetched on conversation init, keyed by agent ID. */
+  private _agentMoods = new Map<string, { score: number; emotion: string }>();
   private _previousConversationId: string | null = null;
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
@@ -441,7 +444,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
    * between REST response and channel subscription.
    */
   private async _initConversation(conversationId: string): Promise<void> {
-    await this._loadMessages();
+    // Load messages and agent moods in parallel
+    await Promise.all([this._loadMessages(), this._fetchAgentMoods()]);
     // Guard: conversation may have changed during async load
     if (this._previousConversationId !== conversationId) return;
     // Derive replay timestamp from latest loaded message
@@ -452,6 +456,28 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     realtimeService.joinConversation(conversationId, latestTs, (messageId) => {
       this._handleRealtimeReactionChanged(conversationId, messageId);
     });
+  }
+
+  /** Fetch mood data for all agents in this conversation (parallel, non-blocking). */
+  private async _fetchAgentMoods(): Promise<void> {
+    if (!this.simulationId) return;
+    const agents = this._getAgents();
+    if (agents.length === 0) return;
+
+    const results = await Promise.allSettled(
+      agents.map((a) => agentAutonomyApi.getAgentMood(this.simulationId, a.id)),
+    );
+    this._agentMoods.clear();
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled' && r.value?.data) {
+        this._agentMoods.set(agents[i].id, {
+          score: r.value.data.mood_score,
+          emotion: r.value.data.dominant_emotion,
+        });
+      }
+    });
+    // Trigger re-render so participants get updated mood data
+    this.requestUpdate();
   }
 
   /**
@@ -552,6 +578,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     // Track whether the server confirmed the user message (saved to DB).
     // If yes, a non-streaming fallback must NOT re-send the message.
     let userMessageConfirmed = false;
+    // Track SSE error events (empty response, AI failure) — distinct from
+    // network errors which throw and land in the catch block.
+    let streamErrorOccurred = false;
 
     try {
       await streamChatResponse(this.simulationId, conversationId, content, {
@@ -567,12 +596,19 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           chatStore.appendStreamChunk(conversationId, token);
         },
         onAgentDone: (_agentId, savedMsg) => {
+          // Guard: backend may yield agent_done with empty/null message
+          if (!savedMsg?.id || !savedMsg.content?.trim()) {
+            session.streaming.value = false;
+            session.streamBuffer.value = '';
+            return;
+          }
           chatStore.finalizeStream(conversationId, savedMsg);
           // For group chat: keep streaming for next agent
           session.streaming.value = true;
           session.streamBuffer.value = '';
         },
         onError: (error) => {
+          streamErrorOccurred = true;
           VelgToast.error(error);
         },
         signal: this._streamAbort.signal,
@@ -583,8 +619,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       } else if (userMessageConfirmed) {
         // Stream broke after user message was saved — reload to show
         // whatever was persisted, do NOT re-send
+        streamErrorOccurred = true;
         VelgToast.error(msg('Connection lost during response. Reloading messages.'));
-        await this._loadMessages();
       } else {
         // Stream endpoint not available (404 during deploy) — fall back
         // to non-streaming. The user message was NOT saved yet.
@@ -609,6 +645,64 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streaming.value = false;
       session.streamBuffer.value = '';
       this._streamAbort = null;
+
+      // After any stream error (empty response, AI failure, disconnect),
+      // reload messages from DB so the feed reflects actual state.
+      // The user's message is visible; they can send another to retry.
+      if (streamErrorOccurred && userMessageConfirmed) {
+        await this._loadMessages();
+      }
+    }
+  }
+
+  private async _handleRegenerate(): Promise<void> {
+    if (!this.conversation || !this.simulationId || this._sending) return;
+
+    const conversationId = this.conversation.id;
+    const session = chatStore.getOrCreate(conversationId);
+
+    this._sending = true;
+    this._streamAbort?.abort();
+    this._streamAbort = new AbortController();
+    session.streaming.value = true;
+    session.streamBuffer.value = '';
+
+    try {
+      await streamRegenerate(this.simulationId, conversationId, {
+        onAgentStart: (agentId) => {
+          this._streamingAgentId = agentId;
+          session.streamBuffer.value = '';
+        },
+        onToken: (_agentId, token) => {
+          chatStore.appendStreamChunk(conversationId, token);
+        },
+        onAgentDone: (_agentId, savedMsg) => {
+          if (!savedMsg?.id || !savedMsg.content?.trim()) {
+            session.streaming.value = false;
+            session.streamBuffer.value = '';
+            return;
+          }
+          chatStore.finalizeStream(conversationId, savedMsg);
+          session.streaming.value = true;
+          session.streamBuffer.value = '';
+        },
+        onError: (error) => {
+          VelgToast.error(error);
+        },
+        signal: this._streamAbort.signal,
+      });
+    } catch (err) {
+      if (!(err instanceof Error && err.name === 'AbortError')) {
+        VelgToast.error(msg('Failed to regenerate response.'));
+      }
+    } finally {
+      this._sending = false;
+      this._streamingAgentId = '';
+      session.streaming.value = false;
+      session.streamBuffer.value = '';
+      this._streamAbort = null;
+      // Reload to reflect actual DB state
+      await this._loadMessages();
     }
   }
 
@@ -660,14 +754,20 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     return [];
   }
 
-  /** Map agent briefs to ChatFeed's Participant interface. */
+  /** Map agent briefs to ChatFeed's Participant interface with accent colors + mood. */
   private _buildParticipants(): Participant[] {
-    return this._getAgents().map((a) => ({
-      id: a.id,
-      name: a.name,
-      avatarUrl: a.portrait_image_url,
-      role: 'agent' as const,
-    }));
+    return this._getAgents().map((a) => {
+      const mood = this._agentMoods.get(a.id);
+      return {
+        id: a.id,
+        name: a.name,
+        avatarUrl: a.portrait_image_url,
+        accentColor: agentAccentColor(a.id),
+        moodScore: mood?.score,
+        moodEmotion: mood?.emotion,
+        role: 'agent' as const,
+      };
+    });
   }
 
   private _getAgentDisplayName(): string {
@@ -779,7 +879,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     return html`
       <div class="header__portraits">
-        ${visible.map((agent, i) =>
+        ${visible.map((agent) =>
           agent.portrait_image_url
             ? html`<velg-avatar
                 .src=${agent.portrait_image_url}
@@ -790,12 +890,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   this._lightboxSrc = (e.detail as { src: string }).src;
                   this._lightboxAlt = agentAltText(agent);
                 }}
-                style="margin-left: ${i > 0 ? '-8px' : '0'}"
               ></velg-avatar>`
             : html`<velg-avatar
                 .name=${agent.name}
                 size="sm"
-                style="margin-left: ${i > 0 ? '-8px' : '0'}"
               ></velg-avatar>`,
         )}
         ${overflow > 0 ? html`<div class="header__portrait-overflow">+${overflow}</div>` : null}
@@ -947,7 +1045,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           this._loading
             ? html`<velg-loading-state message=${msg('Loading messages...')}></velg-loading-state>`
             : html`
-              <div class="window__messages" @reaction-toggle=${this._handleReactionToggle}>
+              <div class="window__messages"
+                @reaction-toggle=${this._handleReactionToggle}
+                @action-regenerate=${this._handleRegenerate}
+              >
                 <velg-chat-feed
                   .messages=${session.messages.value}
                   .participants=${participants}

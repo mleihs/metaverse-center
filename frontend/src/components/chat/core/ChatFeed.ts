@@ -158,11 +158,14 @@ export class ChatFeed extends LitElement {
       flex-direction: column;
       align-items: center;
       gap: var(--space-1);
-      margin: var(--space-3) 0;
+      margin: var(--space-4) 0;
       user-select: none;
     }
 
     .event-card__label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1-5);
       font-family: var(--font-mono);
       font-size: 10px;
       color: var(--color-text-muted);
@@ -170,14 +173,23 @@ export class ChatFeed extends LitElement {
       letter-spacing: var(--tracking-brutalist);
     }
 
+    .event-card__label svg {
+      color: var(--color-info);
+    }
+
     .event-card__body {
-      padding: var(--space-2) var(--space-4);
+      padding: var(--space-3) var(--space-4);
       border: var(--border-default);
       border-left: 3px solid var(--color-info);
-      background: var(--color-surface-sunken);
+      background: color-mix(in srgb, var(--color-info) 6%, var(--color-surface-sunken));
       text-align: center;
       max-width: 480px;
       width: 100%;
+      transition: background var(--transition-fast);
+    }
+
+    .event-card__body:hover {
+      background: color-mix(in srgb, var(--color-info) 10%, var(--color-surface-sunken));
     }
 
     .event-card__title {
@@ -189,11 +201,22 @@ export class ChatFeed extends LitElement {
       color: var(--color-text-primary);
     }
 
+    .event-card__desc {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-snug);
+      margin-top: var(--space-1);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .event-card__meta {
       font-family: var(--font-mono);
       font-size: 10px;
       color: var(--color-text-muted);
-      margin-top: var(--space-0-5);
+      margin-top: var(--space-1);
     }
 
     /* --- Message items --- */
@@ -565,9 +588,15 @@ export class ChatFeed extends LitElement {
 
     return html`
       <div class="event-card" role="note">
-        <span class="event-card__label">${msg('Event Referenced')}</span>
+        <span class="event-card__label">
+          ${icons.calendar(12)}
+          ${msg('Event Referenced')}
+        </span>
         <div class="event-card__body">
           <div class="event-card__title">${evt.event_title}</div>
+          ${evt.event_description
+            ? html`<div class="event-card__desc">${evt.event_description}</div>`
+            : nothing}
           ${meta ? html`<div class="event-card__meta">${meta}</div>` : nothing}
         </div>
       </div>

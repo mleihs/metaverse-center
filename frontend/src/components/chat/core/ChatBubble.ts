@@ -398,7 +398,9 @@ export class ChatBubble extends LitElement {
   }
 
   private _renderContent() {
-    if (!this.content) return '';
+    if (!this.content?.trim()) {
+      return html`<span style="color: var(--color-text-muted); font-style: italic; font-size: var(--text-xs)">${msg('Empty response')}</span>`;
+    }
 
     // Plain text override (e.g. epoch player messages mapped as 'assistant')
     if (this.plainText) return this.content;

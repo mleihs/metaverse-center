@@ -102,6 +102,70 @@ export async function streamChatResponse(
   }
 }
 
+/**
+ * Stream a regenerate request (re-trigger AI generation without new user message).
+ * Uses the same SSE protocol as streamChatResponse but hits the regenerate endpoint.
+ */
+export async function streamRegenerate(
+  simulationId: string,
+  conversationId: string,
+  callbacks: Omit<StreamCallbacks, 'onUserConfirmed'> & { signal?: AbortSignal },
+): Promise<void> {
+  const token = appState.accessToken.value;
+  if (!token) {
+    callbacks.onError('Not authenticated');
+    return;
+  }
+
+  const url = `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/regenerate`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    signal: callbacks.signal,
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Unknown error');
+    throw new Error(`Regenerate request failed (${response.status}): ${text}`);
+  }
+
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop()!;
+
+      for (const part of parts) {
+        _dispatchSSEBlock(part, {
+          ...callbacks,
+          // Regenerate has no user_confirmed event — provide no-op
+          onUserConfirmed: () => {},
+        });
+      }
+    }
+
+    if (buffer.trim()) {
+      _dispatchSSEBlock(buffer, {
+        ...callbacks,
+        onUserConfirmed: () => {},
+      });
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 // ---------------------------------------------------------------------------
 // SSE parsing (internal)
 // ---------------------------------------------------------------------------
@@ -151,7 +215,9 @@ function _dispatchSSEBlock(block: string, callbacks: StreamCallbacks): void {
       break;
 
     case 'agent_done':
-      callbacks.onAgentDone(data.agent_id as string, data.message as ChatMessage);
+      if (data.message) {
+        callbacks.onAgentDone(data.agent_id as string, data.message as ChatMessage);
+      }
       break;
 
     case 'error':

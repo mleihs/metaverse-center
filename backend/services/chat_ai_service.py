@@ -231,37 +231,69 @@ class ChatAIService:
             },
         )
 
-        # Stream tokens from OpenRouter
-        t0 = time.monotonic()
+        # Stream tokens from OpenRouter — retry up to MAX_STREAM_RETRIES times
+        # on empty responses (CoT-only, sanitization-stripped, or zero tokens).
+        max_retries = 3
         full_text = ""
+        generation_ms = 0
 
-        async for chunk in self._openrouter.stream_completion(
-            model=model.model_id,
-            messages=messages,
-            temperature=model.temperature,
-            max_tokens=model.max_tokens,
-        ):
-            if chunk.error:
-                yield SSEEvent(
-                    event="error",
-                    data={
-                        "agent_id": agent_id,
-                        "error": chunk.error,
-                    },
+        for attempt in range(1, max_retries + 1):
+            t0 = time.monotonic()
+            full_text = ""
+            stream_error = False
+
+            async for chunk in self._openrouter.stream_completion(
+                model=model.model_id,
+                messages=messages,
+                temperature=model.temperature,
+                max_tokens=model.max_tokens,
+            ):
+                if chunk.error:
+                    stream_error = True
+                    logger.warning(
+                        "Stream error on attempt %d/%d for %s: %s",
+                        attempt, max_retries, agent_name, chunk.error,
+                    )
+                    break
+
+                if chunk.content:
+                    full_text += chunk.content
+                    yield SSEEvent(
+                        event="token",
+                        data={
+                            "agent_id": agent_id,
+                            "content": chunk.content,
+                        },
+                    )
+
+            generation_ms = int((time.monotonic() - t0) * 1000)
+
+            # Check if we got meaningful content after sanitization
+            if not stream_error and self._sanitize_response(full_text):
+                break  # Success — proceed to persist
+
+            if attempt < max_retries:
+                logger.warning(
+                    "Attempt %d/%d produced empty/error response for %s — retrying",
+                    attempt, max_retries, agent_name,
                 )
-                return
+                continue
 
-            if chunk.content:
-                full_text += chunk.content
-                yield SSEEvent(
-                    event="token",
-                    data={
-                        "agent_id": agent_id,
-                        "content": chunk.content,
-                    },
-                )
-
-        generation_ms = int((time.monotonic() - t0) * 1000)
+            # All retries exhausted
+            logger.error(
+                "All %d attempts exhausted for %s in conversation %s",
+                max_retries, agent_name, conversation_id,
+            )
+            yield SSEEvent(
+                event="error",
+                data={
+                    "agent_id": agent_id,
+                    "error": f"{agent_name} could not formulate a response after {max_retries} attempts.",
+                    "error_type": "empty_response",
+                    "retries_exhausted": max_retries,
+                },
+            )
+            return
 
         # Persist completed response + log usage
         _, saved = await self._persist_ai_response(
@@ -272,6 +304,21 @@ class ChatAIService:
             generation_ms=generation_ms,
             extra_metadata=extra_metadata,
         )
+
+        if not saved:
+            logger.error(
+                "Persist returned empty for %s in conversation %s after successful stream",
+                agent_name, conversation_id,
+            )
+            yield SSEEvent(
+                event="error",
+                data={
+                    "agent_id": agent_id,
+                    "error": f"{agent_name} could not formulate a response.",
+                    "error_type": "sanitization_empty",
+                },
+            )
+            return
 
         yield SSEEvent(
             event="agent_done",
@@ -336,6 +383,13 @@ class ChatAIService:
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
         response_text = self._sanitize_response(response_text)
+        if not response_text:
+            logger.warning(
+                "Empty response after sanitization for agent %s in conversation %s — skipping persist",
+                agent.get("name", agent["id"]),
+                conversation_id,
+            )
+            return "", {}
         usage = self._openrouter.last_usage or {}
         token_count = usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)
 
@@ -412,7 +466,7 @@ class ChatAIService:
             history_messages.append({"role": role, "content": msg["content"]})
         history_messages.append({"role": "user", "content": user_message})
 
-        response_text, _ = await self._generate_single_response(
+        response_text, saved = await self._generate_single_response(
             conversation_id=conversation_id,
             agent=agent,
             simulation=simulation,
@@ -422,6 +476,13 @@ class ChatAIService:
             history_messages=history_messages,
             extra_variables={"agent_memories": memory_text},
         )
+
+        if not saved:
+            logger.warning(
+                "Non-streaming generate_response produced empty response for agent %s",
+                agent.get("name", agent["id"]),
+            )
+            return ""
 
         # Fire-and-forget: extract memorable observations from this exchange
         async def _safe_extract() -> None:

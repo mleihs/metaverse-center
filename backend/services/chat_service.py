@@ -271,6 +271,41 @@ class ChatService:
                 yield event
 
     @staticmethod
+    async def stream_regenerate(
+        supabase: Client,
+        simulation_id: UUID,
+        conversation_id: UUID,
+    ) -> AsyncIterator[SSEEvent]:
+        """Re-trigger AI generation for the last user message in a conversation.
+
+        Does NOT create a new user message — uses the existing history.
+        Returns the same SSEEvent stream as stream_ai_response.
+        """
+        # Find the last user message to use as the generation trigger
+        last_user_msg = (
+            await supabase.table("chat_messages")
+            .select("content")
+            .eq("conversation_id", str(conversation_id))
+            .eq("sender_role", "user")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if not last_user_msg.data:
+            yield SSEEvent(
+                event="error",
+                data={"error": "No user message found to regenerate from."},
+            )
+            return
+
+        user_message_content = last_user_msg.data[0]["content"]
+
+        async for event in ChatService.stream_ai_response(
+            supabase, simulation_id, conversation_id, user_message_content,
+        ):
+            yield event
+
+    @staticmethod
     async def get_messages(
         supabase: Client,
         conversation_id: UUID,

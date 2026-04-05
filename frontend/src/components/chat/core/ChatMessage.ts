@@ -24,6 +24,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import type { ChatMessage as ChatMessageData } from '../../../types/index.js';
 import type { Participant } from '../../../services/chat/chat-types.js';
 import type { OptimisticChatMessage } from '../../../services/chat/ChatSessionStore.js';
+import { moodRingColor } from '../../../utils/agent-colors.js';
 import { formatRelativeTimeVerbose } from '../../../utils/date-format.js';
 import { agentAltText } from '../../../utils/text.js';
 
@@ -66,7 +67,7 @@ export class ChatMessage extends LitElement {
     }
 
     .row--grouped {
-      margin-top: var(--space-1);
+      margin-top: var(--space-2);
     }
 
     /* Subtle separator when the speaking agent changes */
@@ -143,7 +144,8 @@ export class ChatMessage extends LitElement {
     }
 
     .row:hover velg-message-actions,
-    .row:focus-within velg-message-actions {
+    .row:focus-within velg-message-actions,
+    velg-message-actions[copied] {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
@@ -161,6 +163,7 @@ export class ChatMessage extends LitElement {
       height: 32px;
       flex-shrink: 0;
       align-self: flex-end;
+      overflow: visible; /* Allow mood ring to extend beyond avatar bounds */
     }
 
     .avatar-spacer {
@@ -359,12 +362,16 @@ export class ChatMessage extends LitElement {
     }
 
     const src = this.participant?.avatarUrl ?? this.message.agent?.portrait_image_url ?? '';
+    const mood = this.participant?.moodScore != null
+      ? moodRingColor(this.participant.moodScore)
+      : '';
 
     return html`
       <div class="avatar">
         <velg-avatar
           .src=${src}
           .name=${this._senderName}
+          .moodColor=${mood}
           alt=${agentAltText({ name: this._senderName })}
           size="sm"
           clickable

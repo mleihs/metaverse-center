@@ -33,7 +33,10 @@ interface GroupedConversations {
 export class VelgConversationList extends LitElement {
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
       --_search-bg: var(--color-surface-sunken);
       --_search-border: var(--color-border);
       --_search-focus-border: var(--color-primary);
@@ -115,6 +118,7 @@ export class VelgConversationList extends LitElement {
     .list {
       display: flex;
       flex-direction: column;
+      flex: 1;
     }
 
     .group-label {

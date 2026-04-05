@@ -165,12 +165,15 @@ export class ChatSessionStore {
   }
 
   /** Finalize streaming: persist buffer as a real message, reset stream state. */
-  finalizeStream(sessionId: string, message: ChatMessage): void {
+  finalizeStream(sessionId: string, message: ChatMessage | null | undefined): void {
     const session = this.getOrCreate(sessionId);
     batch(() => {
       session.streaming.value = false;
       session.streamBuffer.value = '';
-      this.addMessage(sessionId, message);
+      // Guard: skip adding empty/null messages (backend sanitization edge case)
+      if (message?.id && message.content?.trim()) {
+        this.addMessage(sessionId, message);
+      }
     });
   }
 
