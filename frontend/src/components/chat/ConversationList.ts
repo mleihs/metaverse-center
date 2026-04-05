@@ -216,22 +216,24 @@ export class VelgConversationList extends LitElement {
     /* Portrait stack for multi-agent */
     .conversation__portraits {
       display: flex;
+      align-items: center;
+      gap: var(--space-1);
       flex-shrink: 0;
     }
 
     .conversation__portrait-overflow {
-      width: 24px;
-      height: 24px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 var(--space-0-5);
       background: var(--color-primary);
       color: var(--color-text-inverse);
       font-family: var(--font-mono);
       font-size: 9px;
+      font-weight: var(--font-bold);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-left: -6px;
       flex-shrink: 0;
-      border: var(--border-width-thin) solid var(--color-surface);
     }
 
     .conversation__agent-name {
@@ -678,29 +680,17 @@ export class VelgConversationList extends LitElement {
       return html`<velg-avatar .name=${msg('Agent')} size="sm"></velg-avatar>`;
     }
 
-    // Single agent: full size
+    // Single agent: standard avatar
+    const primary = agents[0];
     if (agents.length === 1) {
-      const agent = agents[0];
-      return html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="sm"></velg-avatar>`;
+      return html`<velg-avatar .src=${primary.portrait_image_url ?? ''} .name=${primary.name} size="sm"></velg-avatar>`;
     }
 
-    // Multi-agent: stacked
-    const maxVisible = 3;
-    const visible = agents.slice(0, maxVisible);
-    const overflow = agents.length - maxVisible;
-
+    // Multi-agent: primary avatar + count badge (Slack/Discord pattern)
     return html`
       <div class="conversation__portraits">
-        ${visible.map(
-          (agent, i) =>
-            html`<velg-avatar
-            .src=${agent.portrait_image_url ?? ''}
-            .name=${agent.name}
-            size="xs"
-            style="margin-left: ${i > 0 ? '-6px' : '0'}"
-          ></velg-avatar>`,
-        )}
-        ${overflow > 0 ? html`<div class="conversation__portrait-overflow">+${overflow}</div>` : null}
+        <velg-avatar .src=${primary.portrait_image_url ?? ''} .name=${primary.name} size="sm"></velg-avatar>
+        <div class="conversation__portrait-overflow">+${agents.length - 1}</div>
       </div>
     `;
   }

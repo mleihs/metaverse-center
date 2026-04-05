@@ -29,7 +29,8 @@ export class VelgChatView extends LitElement {
 
     .chat-layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      /* Sidebar scales with viewport: 280px minimum, 22vw fluid, 380px cap */
+      grid-template-columns: clamp(280px, 22vw, 380px) 1fr;
       height: calc(100vh - var(--header-height) - 180px);
       height: calc(100dvh - var(--header-height) - 180px);
       min-height: 500px;
