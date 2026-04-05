@@ -32,6 +32,10 @@ export class MessageActions extends LitElement {
   static styles = css`
     :host {
       display: inline-flex;
+      /* Hidden by default — parent ChatMessage reveals on :hover/:focus-within/[copied] */
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
       --_action-bg: color-mix(in srgb, var(--color-surface-raised) 85%, transparent);
       --_action-hover-bg: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised));
       --_action-border: var(--color-border);
