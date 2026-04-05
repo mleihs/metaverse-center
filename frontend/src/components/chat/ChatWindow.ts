@@ -4,7 +4,7 @@ import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
-import { agentAutonomyApi, chatApi } from '../../services/api/index.js';
+import { agentAutonomyApi, agentsApi, chatApi } from '../../services/api/index.js';
 import { ChatExporter } from '../../services/chat/ChatExporter.js';
 import { chatAudio } from '../../services/ChatAudioService.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
@@ -12,17 +12,17 @@ import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatSt
 import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type {
+  Agent,
   AgentBrief,
   ChatConversation,
   ChatEventReference,
 } from '../../types/index.js';
 import { agentAccentColor } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
-import { agentAltText } from '../../utils/text.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import '../agents/AgentDetailsPanel.js';
 import '../shared/EmptyState.js';
-import '../shared/Lightbox.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgAgentTip.js';
 import '../shared/VelgAvatar.js';
@@ -405,8 +405,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @state() private _loading = false;
   @state() private _sending = false;
   @state() private _showEventsBar = false;
-  @state() private _lightboxSrc: string | null = null;
-  @state() private _lightboxAlt = '';
+  @state() private _detailAgent: Agent | null = null;
   @state() private _streamingAgentId = '';
   @state() private _restoredDraft = '';
   @state() private _starters: string[] = [];
@@ -849,6 +848,18 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
   }
 
+  private async _openAgentDetails(agentId: string): Promise<void> {
+    if (!this.simulationId) return;
+    try {
+      const response = await agentsApi.getById(this.simulationId, agentId);
+      if (response.success && response.data) {
+        this._detailAgent = response.data;
+      }
+    } catch {
+      VelgToast.error(msg('Failed to load agent details.'));
+    }
+  }
+
   private _toggleEventsBar(): void {
     this._showEventsBar = !this._showEventsBar;
   }
@@ -974,14 +985,13 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 .name=${agent.name}
                 size="sm"
                 clickable
-                @avatar-click=${(e: CustomEvent) => {
-                  this._lightboxSrc = (e.detail as { src: string }).src;
-                  this._lightboxAlt = agentAltText(agent);
-                }}
+                @avatar-click=${() => this._openAgentDetails(agent.id)}
               ></velg-avatar>`
             : html`<velg-avatar
                 .name=${agent.name}
                 size="sm"
+                clickable
+                @avatar-click=${() => this._openAgentDetails(agent.id)}
               ></velg-avatar>`,
         )}
         ${overflow > 0
@@ -1182,13 +1192,13 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         }
       </div>
 
-      <velg-lightbox
-        .src=${this._lightboxSrc}
-        .alt=${this._lightboxAlt}
-        @lightbox-close=${() => {
-          this._lightboxSrc = null;
-        }}
-      ></velg-lightbox>
+      <velg-agent-details-panel
+        .agent=${this._detailAgent}
+        .simulationId=${this.simulationId}
+        ?open=${!!this._detailAgent}
+        container="lightbox"
+        @panel-close=${() => { this._detailAgent = null; }}
+      ></velg-agent-details-panel>
     `;
   }
 }

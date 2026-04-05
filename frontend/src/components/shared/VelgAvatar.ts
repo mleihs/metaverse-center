@@ -82,7 +82,8 @@ export class VelgAvatar extends LitElement {
       display: block;
     }
 
-    :host([clickable]) .avatar__img {
+    :host([clickable]) .avatar__img,
+    :host([clickable]) .avatar {
       cursor: pointer;
     }
 
@@ -116,16 +117,15 @@ export class VelgAvatar extends LitElement {
   @property({ type: String }) moodColor = '';
 
   private _handleClick(e: Event): void {
-    if (this.clickable && this.src) {
-      e.stopPropagation();
-      this.dispatchEvent(
-        new CustomEvent('avatar-click', {
-          detail: { src: this.src },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    }
+    if (!this.clickable) return;
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('avatar-click', {
+        detail: { src: this.src },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _renderMoodRing() {
@@ -158,7 +158,7 @@ export class VelgAvatar extends LitElement {
     return html`
       <div class="avatar-wrap">
         ${this._renderMoodRing()}
-        <div class="avatar">
+        <div class="avatar" @click=${this.clickable ? this._handleClick : nothing}>
           <span class="avatar__initials">${getInitials(this.name)}</span>
         </div>
       </div>
