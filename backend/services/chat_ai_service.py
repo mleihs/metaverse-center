@@ -11,9 +11,6 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-import httpx
-from postgrest.exceptions import APIError as PostgrestAPIError
-
 from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
@@ -429,6 +426,80 @@ class ChatAIService:
         saved = save_resp.data[0] if save_resp.data else {}
         return response_text, saved
 
+    # ── Shared setup helpers ─────────────────────────────────
+
+    @staticmethod
+    def _build_history_messages(
+        history: list[dict],
+        user_message: str,
+    ) -> list[dict[str, str]]:
+        """Convert raw chat_messages rows to OpenRouter message format."""
+        messages: list[dict[str, str]] = []
+        for msg in history:
+            role = "assistant" if msg["sender_role"] == "assistant" else "user"
+            messages.append({"role": role, "content": msg["content"]})
+        messages.append({"role": "user", "content": user_message})
+        return messages
+
+    async def _prepare_single_context(
+        self,
+        conversation_id: UUID,
+        user_message: str,
+    ) -> dict[str, Any]:
+        """Shared setup for single-agent generate/stream. Returns all context needed."""
+        conversation = await self._load_conversation(conversation_id)
+        agent = await self._load_agent(conversation["agent_id"])
+        simulation = await self._load_simulation()
+        locale = await self._get_locale()
+
+        memories = await AgentMemoryService.retrieve(
+            self._supabase, UUID(agent["id"]), self._simulation_id,
+            query_text=user_message, top_k=8,
+        )
+        memory_text = AgentMemoryService.format_for_prompt(memories)
+
+        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
+        model = await self._model_resolver.resolve_text_model("chat_response")
+
+        history = await self._load_history(conversation_id)
+        history_messages = self._build_history_messages(history, user_message)
+
+        return {
+            "agent": agent,
+            "simulation": simulation,
+            "locale": locale,
+            "prompt_template": prompt_template,
+            "model": model,
+            "history_messages": history_messages,
+            "memory_text": memory_text,
+        }
+
+    def _fire_and_forget_memory_extraction(
+        self,
+        agent_id: str,
+        user_message: str,
+        response_text: str,
+    ) -> None:
+        """Background memory extraction — catches all exceptions with timeout."""
+        if not response_text:
+            return
+
+        async def _safe_extract() -> None:
+            try:
+                await asyncio.wait_for(
+                    AgentMemoryService.extract_from_chat(
+                        self._supabase, self._simulation_id,
+                        UUID(agent_id), user_message, response_text,
+                    ),
+                    timeout=30.0,
+                )
+            except TimeoutError:
+                logger.warning("Memory extraction timeout for agent %s", agent_id)
+            except Exception:
+                logger.exception("Memory extraction failed for agent %s", agent_id)
+
+        asyncio.create_task(_safe_extract())
+
     # ── Public generation methods ───────────────────────────
 
     async def generate_response(
@@ -436,69 +507,30 @@ class ChatAIService:
         conversation_id: UUID,
         user_message: str,
     ) -> str:
-        """Generate an AI response for a single-agent conversation.
-
-        Returns the generated response text.
-        """
-        conversation = await self._load_conversation(conversation_id)
-        agent = await self._load_agent(conversation["agent_id"])
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
-
-        # Retrieve agent memories relevant to the user message
-        memories = await AgentMemoryService.retrieve(
-            self._supabase,
-            UUID(agent["id"]),
-            self._simulation_id,
-            query_text=user_message,
-            top_k=8,
-        )
-        memory_text = AgentMemoryService.format_for_prompt(memories)
-
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
-
-        # Build history messages
-        history = await self._load_history(conversation_id)
-        history_messages: list[dict[str, str]] = []
-        for msg in history:
-            role = "assistant" if msg["sender_role"] == "assistant" else "user"
-            history_messages.append({"role": role, "content": msg["content"]})
-        history_messages.append({"role": "user", "content": user_message})
+        """Generate an AI response for a single-agent conversation."""
+        ctx = await self._prepare_single_context(conversation_id, user_message)
 
         response_text, saved = await self._generate_single_response(
             conversation_id=conversation_id,
-            agent=agent,
-            simulation=simulation,
-            locale=locale,
-            prompt_template=prompt_template,
-            model=model,
-            history_messages=history_messages,
-            extra_variables={"agent_memories": memory_text},
+            agent=ctx["agent"],
+            simulation=ctx["simulation"],
+            locale=ctx["locale"],
+            prompt_template=ctx["prompt_template"],
+            model=ctx["model"],
+            history_messages=ctx["history_messages"],
+            extra_variables={"agent_memories": ctx["memory_text"]},
         )
 
         if not saved:
             logger.warning(
                 "Non-streaming generate_response produced empty response for agent %s",
-                agent.get("name", agent["id"]),
+                ctx["agent"].get("name", ctx["agent"]["id"]),
             )
             return ""
 
-        # Fire-and-forget: extract memorable observations from this exchange
-        async def _safe_extract() -> None:
-            try:
-                await AgentMemoryService.extract_from_chat(
-                    self._supabase,
-                    self._simulation_id,
-                    UUID(agent["id"]),
-                    user_message,
-                    response_text,
-                )
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                logger.exception("Background memory extraction failed for agent %s", agent["id"])
-
-        asyncio.create_task(_safe_extract())
-
+        self._fire_and_forget_memory_extraction(
+            ctx["agent"]["id"], user_message, response_text,
+        )
         return response_text
 
     async def generate_group_response(
@@ -564,67 +596,27 @@ class ChatAIService:
         conversation_id: UUID,
         user_message: str,
     ) -> AsyncIterator[SSEEvent]:
-        """Stream an AI response for a single-agent conversation.
-
-        Mirrors generate_response() but yields SSEEvent tokens instead of
-        returning the complete text.
-        """
-        conversation = await self._load_conversation(conversation_id)
-        agent = await self._load_agent(conversation["agent_id"])
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
-
-        memories = await AgentMemoryService.retrieve(
-            self._supabase,
-            UUID(agent["id"]),
-            self._simulation_id,
-            query_text=user_message,
-            top_k=8,
-        )
-        memory_text = AgentMemoryService.format_for_prompt(memories)
-
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
-
-        history = await self._load_history(conversation_id)
-        history_messages: list[dict[str, str]] = []
-        for msg in history:
-            role = "assistant" if msg["sender_role"] == "assistant" else "user"
-            history_messages.append({"role": role, "content": msg["content"]})
-        history_messages.append({"role": "user", "content": user_message})
+        """Stream an AI response for a single-agent conversation."""
+        ctx = await self._prepare_single_context(conversation_id, user_message)
 
         response_text = ""
         async for sse_event in self.stream_single_response(
             conversation_id=conversation_id,
-            agent=agent,
-            simulation=simulation,
-            locale=locale,
-            prompt_template=prompt_template,
-            model=model,
-            history_messages=history_messages,
-            extra_variables={"agent_memories": memory_text},
+            agent=ctx["agent"],
+            simulation=ctx["simulation"],
+            locale=ctx["locale"],
+            prompt_template=ctx["prompt_template"],
+            model=ctx["model"],
+            history_messages=ctx["history_messages"],
+            extra_variables={"agent_memories": ctx["memory_text"]},
         ):
             yield sse_event
-            # Capture full text for memory extraction
             if sse_event.event == "agent_done":
                 response_text = sse_event.data.get("message", {}).get("content", "")
 
-        # Fire-and-forget: extract memorable observations
-        if response_text:
-
-            async def _safe_extract() -> None:
-                try:
-                    await AgentMemoryService.extract_from_chat(
-                        self._supabase,
-                        self._simulation_id,
-                        UUID(agent["id"]),
-                        user_message,
-                        response_text,
-                    )
-                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                    logger.exception("Background memory extraction failed for agent %s", agent["id"])
-
-            asyncio.create_task(_safe_extract())
+        self._fire_and_forget_memory_extraction(
+            ctx["agent"]["id"], user_message, response_text,
+        )
 
     async def stream_group_response(
         self,

@@ -342,6 +342,11 @@ export class ChatFeed extends LitElement {
   private _participantMap = new Map<string, Participant>();
   private _prevParticipants: Participant[] = [];
 
+  /** Memoized timeline — rebuilt only when messages or events change. */
+  private _timelineCache: TimelineItem[] = [];
+  private _timelineCacheMessages: ChatMessage[] = [];
+  private _timelineCacheEvents: ChatEventReference[] = [];
+
   /** Cached streaming message — re-created only when content changes. */
   private _streamMsgCache: ChatMessage | null = null;
   private _streamContentCache = '';
@@ -352,8 +357,7 @@ export class ChatFeed extends LitElement {
 
   /**
    * Build a merged, sorted timeline of messages, events, and date separators.
-   * Events are interleaved at their referenced_at timestamp.
-   * Date separators inserted when the day changes between items.
+   * Memoized — returns cached result if messages and events haven't changed.
    */
   private _buildTimeline(): TimelineItem[] {
     // Rebuild participant map only when the reference changes
@@ -364,6 +368,17 @@ export class ChatFeed extends LitElement {
         this._participantMap.set(p.id, p);
       }
     }
+
+    // Memoize: skip expensive sort+grouping if inputs unchanged
+    if (
+      this.messages === this._timelineCacheMessages &&
+      this.eventReferences === this._timelineCacheEvents &&
+      this._timelineCache.length > 0
+    ) {
+      return this._timelineCache;
+    }
+    this._timelineCacheMessages = this.messages;
+    this._timelineCacheEvents = this.eventReferences;
 
     // Merge messages and events into a single sortable stream
     type Sortable =
@@ -454,6 +469,7 @@ export class ChatFeed extends LitElement {
       prevTs = item.ts;
     }
 
+    this._timelineCache = timeline;
     return timeline;
   }
 

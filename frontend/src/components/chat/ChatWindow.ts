@@ -413,6 +413,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   /** Cached agent moods — fetched on conversation init, keyed by agent ID. */
   private _agentMoods = new Map<string, { score: number; emotion: string }>();
+  /** Memoized participants — rebuilt only when conversation agents or moods change. */
+  private _cachedParticipants: Participant[] = [];
+  private _cachedParticipantKey = '';
   private _previousConversationId: string | null = null;
 
   protected updated(changedProperties: Map<PropertyKey, unknown>): void {
@@ -578,9 +581,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     // Track whether the server confirmed the user message (saved to DB).
     // If yes, a non-streaming fallback must NOT re-send the message.
     let userMessageConfirmed = false;
-    // Track SSE error events (empty response, AI failure) — distinct from
-    // network errors which throw and land in the catch block.
-    let streamErrorOccurred = false;
+    const cbs = this._streamCallbacks(conversationId, session);
 
     try {
       await streamChatResponse(this.simulationId, conversationId, content, {
@@ -588,29 +589,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           userMessageConfirmed = true;
           chatStore.confirmOptimistic(conversationId, tempId, confirmedMsg);
         },
-        onAgentStart: (agentId) => {
-          this._streamingAgentId = agentId;
-          session.streamBuffer.value = '';
-        },
-        onToken: (_agentId, token) => {
-          chatStore.appendStreamChunk(conversationId, token);
-        },
-        onAgentDone: (_agentId, savedMsg) => {
-          // Guard: backend may yield agent_done with empty/null message
-          if (!savedMsg?.id || !savedMsg.content?.trim()) {
-            session.streaming.value = false;
-            session.streamBuffer.value = '';
-            return;
-          }
-          chatStore.finalizeStream(conversationId, savedMsg);
-          // For group chat: keep streaming for next agent
-          session.streaming.value = true;
-          session.streamBuffer.value = '';
-        },
-        onError: (error) => {
-          streamErrorOccurred = true;
-          VelgToast.error(error);
-        },
+        ...cbs,
         signal: this._streamAbort.signal,
       });
     } catch (err) {
@@ -619,7 +598,6 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       } else if (userMessageConfirmed) {
         // Stream broke after user message was saved — reload to show
         // whatever was persisted, do NOT re-send
-        streamErrorOccurred = true;
         VelgToast.error(msg('Connection lost during response. Reloading messages.'));
       } else {
         // Stream endpoint not available (404 during deploy) — fall back
@@ -646,10 +624,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streamBuffer.value = '';
       this._streamAbort = null;
 
-      // After any stream error (empty response, AI failure, disconnect),
-      // reload messages from DB so the feed reflects actual state.
-      // The user's message is visible; they can send another to retry.
-      if (streamErrorOccurred && userMessageConfirmed) {
+      // After any stream error, reload messages from DB to reflect actual state.
+      if (cbs.hadError && userMessageConfirmed) {
         await this._loadMessages();
       }
     }
@@ -669,26 +645,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     try {
       await streamRegenerate(this.simulationId, conversationId, {
-        onAgentStart: (agentId) => {
-          this._streamingAgentId = agentId;
-          session.streamBuffer.value = '';
-        },
-        onToken: (_agentId, token) => {
-          chatStore.appendStreamChunk(conversationId, token);
-        },
-        onAgentDone: (_agentId, savedMsg) => {
-          if (!savedMsg?.id || !savedMsg.content?.trim()) {
-            session.streaming.value = false;
-            session.streamBuffer.value = '';
-            return;
-          }
-          chatStore.finalizeStream(conversationId, savedMsg);
-          session.streaming.value = true;
-          session.streamBuffer.value = '';
-        },
-        onError: (error) => {
-          VelgToast.error(error);
-        },
+        ...this._streamCallbacks(conversationId, session),
         signal: this._streamAbort.signal,
       });
     } catch (err) {
@@ -701,9 +658,37 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       session.streaming.value = false;
       session.streamBuffer.value = '';
       this._streamAbort = null;
-      // Reload to reflect actual DB state
       await this._loadMessages();
     }
+  }
+
+  /** Shared streaming callbacks for send + regenerate flows. */
+  private _streamCallbacks(conversationId: string, session: ReturnType<typeof chatStore.getOrCreate>) {
+    let errorOccurred = false;
+    return {
+      onAgentStart: (agentId: string) => {
+        this._streamingAgentId = agentId;
+        session.streamBuffer.value = '';
+      },
+      onToken: (_agentId: string, token: string) => {
+        chatStore.appendStreamChunk(conversationId, token);
+      },
+      onAgentDone: (_agentId: string, savedMsg: import('../../types/index.js').ChatMessage) => {
+        if (!savedMsg?.id || !savedMsg.content?.trim()) {
+          session.streaming.value = false;
+          session.streamBuffer.value = '';
+          return;
+        }
+        chatStore.finalizeStream(conversationId, savedMsg);
+        session.streaming.value = true;
+        session.streamBuffer.value = '';
+      },
+      onError: (error: string) => {
+        errorOccurred = true;
+        VelgToast.error(error);
+      },
+      get hadError() { return errorOccurred; },
+    };
   }
 
   private _handleDraftChange(e: CustomEvent<{ content: string }>): void {
@@ -754,9 +739,20 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     return [];
   }
 
-  /** Map agent briefs to ChatFeed's Participant interface with accent colors + mood. */
+  /** Map agent briefs to ChatFeed's Participant interface with accent colors + mood.
+   *  Memoized — returns same array reference if inputs haven't changed. */
   private _buildParticipants(): Participant[] {
-    return this._getAgents().map((a) => {
+    // Build a cache key from agent IDs + mood scores (cheapest change detection)
+    const agents = this._getAgents();
+    const key = agents.map((a) => {
+      const m = this._agentMoods.get(a.id);
+      return `${a.id}:${m?.score ?? ''}`;
+    }).join(',');
+
+    if (key === this._cachedParticipantKey) return this._cachedParticipants;
+
+    this._cachedParticipantKey = key;
+    this._cachedParticipants = agents.map((a) => {
       const mood = this._agentMoods.get(a.id);
       return {
         id: a.id,
@@ -768,6 +764,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         role: 'agent' as const,
       };
     });
+    return this._cachedParticipants;
   }
 
   private _getAgentDisplayName(): string {
