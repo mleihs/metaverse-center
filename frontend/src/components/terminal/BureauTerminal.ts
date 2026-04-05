@@ -515,7 +515,8 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this._startFeedPolling();
+    // Dungeon mode: no epoch feed polling — dungeon terminal shows only dungeon-relevant output.
+    if (!this.dungeonMode) this._startFeedPolling();
     // Re-focus input when re-attached (e.g. tab navigation back to terminal/dungeon).
     // Skip on first mount — firstUpdated() handles that after boot sequence.
     if (this.hasUpdated) this._focusInput();
