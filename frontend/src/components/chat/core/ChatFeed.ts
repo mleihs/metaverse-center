@@ -299,6 +299,97 @@ export class ChatFeed extends LitElement {
       color: var(--color-text-muted);
     }
 
+    /* --- Conversation starters (empty state with suggestions) --- */
+    .starters {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: var(--space-8);
+      gap: var(--space-4);
+    }
+
+    .starters__heading {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-text-muted);
+      opacity: 0.6;
+    }
+
+    .starters__list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .starters__btn {
+      display: block;
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      line-height: var(--leading-snug);
+      color: var(--color-text-secondary);
+      text-align: left;
+      background: var(--color-surface-sunken);
+      border: var(--border-width-thin) solid var(--color-border);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      /* Staggered entrance */
+      opacity: 0;
+      transform: translateY(6px);
+      animation: starter-enter 300ms var(--ease-dramatic) forwards;
+    }
+
+    .starters__btn:nth-child(1) { animation-delay: 100ms; }
+    .starters__btn:nth-child(2) { animation-delay: 180ms; }
+    .starters__btn:nth-child(3) { animation-delay: 260ms; }
+    .starters__btn:nth-child(4) { animation-delay: 340ms; }
+
+    @keyframes starter-enter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .starters__btn:hover {
+      background: var(--color-surface-raised);
+      color: var(--color-text-primary);
+      border-color: var(--color-border-focus);
+    }
+
+    .starters__btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .starters__btn:active {
+      transform: scale(0.98);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .starters__btn {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+      .starters__btn:active {
+        transform: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .starters {
+        padding: var(--space-4);
+      }
+      .starters__list {
+        max-width: 100%;
+      }
+    }
+
     /* --- Responsive --- */
     @media (max-width: 640px) {
       .feed {
@@ -332,6 +423,8 @@ export class ChatFeed extends LitElement {
   @property({ type: String }) streamingParticipantId = '';
   /** Custom empty-state message (defaults to generic prompt). */
   @property({ type: String }) emptyMessage = '';
+  /** Contextual conversation starters for empty conversations. */
+  @property({ type: Array }) starters: string[] = [];
 
   // --- Controllers ---
 
@@ -479,6 +572,24 @@ export class ChatFeed extends LitElement {
 
   protected render() {
     if (this.messages.length === 0 && this.eventReferences.length === 0 && !this.streaming) {
+      // Show contextual starters if available, otherwise generic prompt
+      if (this.starters.length > 0) {
+        return html`
+          <div class="starters">
+            <span class="starters__heading">${msg('Conversation openers')}</span>
+            <div class="starters__list">
+              ${this.starters.map(
+                (text) => html`
+                  <button
+                    class="starters__btn"
+                    @click=${() => this._handleStarterClick(text)}
+                  >${text}</button>
+                `,
+              )}
+            </div>
+          </div>
+        `;
+      }
       return html`<div class="empty">${this.emptyMessage || msg('No messages yet. Start the conversation.')}</div>`;
     }
 
@@ -695,6 +806,16 @@ export class ChatFeed extends LitElement {
   private _handleLoadMore(): void {
     this.dispatchEvent(
       new CustomEvent('load-older', { bubbles: true, composed: true }),
+    );
+  }
+
+  private _handleStarterClick(text: string): void {
+    this.dispatchEvent(
+      new CustomEvent('send-starter', {
+        detail: { content: text },
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 }

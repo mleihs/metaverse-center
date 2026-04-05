@@ -136,6 +136,18 @@ export class ChatApiService extends BaseApiService {
     return this.delete(`/simulations/${simulationId}/chat/conversations/${conversationId}`);
   }
 
+  /** Contextual conversation starters for empty conversations. */
+  getStarters(
+    simulationId: string,
+    conversationId: string,
+    locale: string = 'de',
+  ): Promise<ApiResponse<string[]>> {
+    return this.get(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/starters`,
+      { locale },
+    );
+  }
+
   /** URL for the regenerate SSE endpoint (used by ChatStreamConsumer). */
   regenerateStreamUrl(simulationId: string, conversationId: string): string {
     return `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/regenerate`;

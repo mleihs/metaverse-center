@@ -285,6 +285,28 @@ def _format_sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 
 
+@router.get("/conversations/{conversation_id}/starters")
+async def get_conversation_starters(
+    simulation_id: UUID,
+    conversation_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_supabase)],
+    locale: Annotated[str, Query(pattern="^(de|en)$")] = "de",
+) -> SuccessResponse[list[str]]:
+    """Get contextual conversation starters for an empty conversation.
+
+    Returns 3-4 template-based suggestions derived from agent profiles,
+    recent simulation events, and agent mood. Designed for the empty
+    conversation state in ChatFeed.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    starters = await _service.get_conversation_starters(
+        supabase, simulation_id, conversation_id, locale,
+    )
+    return SuccessResponse(data=starters)
+
+
 @router.post(
     "/conversations/{conversation_id}/agents",
     status_code=201,
