@@ -52,6 +52,7 @@ export class VelgAvatar extends LitElement {
       border: 2px solid var(--_mood-color, transparent);
       z-index: 0;
       animation: mood-pulse 3s ease-in-out infinite;
+      will-change: opacity;
       /* Glow effect matching ring color */
       box-shadow: 0 0 6px 0 var(--_mood-color, transparent);
     }

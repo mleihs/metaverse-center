@@ -42,13 +42,54 @@ export async function streamChatResponse(
   content: string,
   callbacks: StreamCallbacks,
 ): Promise<void> {
+  const url = `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/messages/stream`;
+
+  const response = await _authenticatedPost(url, {
+    body: JSON.stringify({
+      content,
+      sender_role: 'user',
+      generate_response: true,
+    }),
+    signal: callbacks.signal,
+    errorLabel: 'Stream',
+  });
+
+  await _consumeSSEStream(response, callbacks);
+}
+
+/**
+ * Stream a regenerate request (re-trigger AI generation without new user message).
+ * Uses the same SSE protocol as streamChatResponse but hits the regenerate endpoint.
+ */
+export async function streamRegenerate(
+  simulationId: string,
+  conversationId: string,
+  callbacks: Omit<StreamCallbacks, 'onUserConfirmed'> & { signal?: AbortSignal },
+): Promise<void> {
+  const url = `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/regenerate`;
+
+  const response = await _authenticatedPost(url, {
+    signal: callbacks.signal,
+    errorLabel: 'Regenerate',
+  });
+
+  // Regenerate has no user_confirmed event — provide no-op
+  await _consumeSSEStream(response, { ...callbacks, onUserConfirmed: () => {} });
+}
+
+// ---------------------------------------------------------------------------
+// Shared internals
+// ---------------------------------------------------------------------------
+
+/** Authenticated POST fetch with error handling. */
+async function _authenticatedPost(
+  url: string,
+  opts: { body?: string; signal?: AbortSignal; errorLabel: string },
+): Promise<Response> {
   const token = appState.accessToken.value;
   if (!token) {
-    callbacks.onError('Not authenticated');
-    return;
+    throw new Error('Not authenticated');
   }
-
-  const url = `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/messages/stream`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -56,23 +97,25 @@ export async function streamChatResponse(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      content,
-      sender_role: 'user',
-      generate_response: true,
-    }),
-    signal: callbacks.signal,
+    body: opts.body,
+    signal: opts.signal,
   });
 
   if (!response.ok) {
     const text = await response.text().catch(() => 'Unknown error');
-    throw new Error(`Stream request failed (${response.status}): ${text}`);
+    throw new Error(`${opts.errorLabel} request failed (${response.status}): ${text}`);
   }
 
+  return response;
+}
+
+/** Read an SSE response body and dispatch parsed events to callbacks. */
+async function _consumeSSEStream(
+  response: Response,
+  callbacks: StreamCallbacks,
+): Promise<void> {
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
-
-  // SSE parsing state — accumulates partial lines across chunk boundaries
   let buffer = '';
 
   try {
@@ -102,72 +145,8 @@ export async function streamChatResponse(
   }
 }
 
-/**
- * Stream a regenerate request (re-trigger AI generation without new user message).
- * Uses the same SSE protocol as streamChatResponse but hits the regenerate endpoint.
- */
-export async function streamRegenerate(
-  simulationId: string,
-  conversationId: string,
-  callbacks: Omit<StreamCallbacks, 'onUserConfirmed'> & { signal?: AbortSignal },
-): Promise<void> {
-  const token = appState.accessToken.value;
-  if (!token) {
-    callbacks.onError('Not authenticated');
-    return;
-  }
-
-  const url = `/api/v1/simulations/${simulationId}/chat/conversations/${conversationId}/regenerate`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    signal: callbacks.signal,
-  });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error');
-    throw new Error(`Regenerate request failed (${response.status}): ${text}`);
-  }
-
-  const reader = response.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const parts = buffer.split('\n\n');
-      buffer = parts.pop()!;
-
-      for (const part of parts) {
-        _dispatchSSEBlock(part, {
-          ...callbacks,
-          // Regenerate has no user_confirmed event — provide no-op
-          onUserConfirmed: () => {},
-        });
-      }
-    }
-
-    if (buffer.trim()) {
-      _dispatchSSEBlock(buffer, {
-        ...callbacks,
-        onUserConfirmed: () => {},
-      });
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
 // ---------------------------------------------------------------------------
-// SSE parsing (internal)
+// SSE parsing
 // ---------------------------------------------------------------------------
 
 /**
@@ -193,7 +172,8 @@ function _dispatchSSEBlock(block: string, callbacks: StreamCallbacks): void {
   try {
     data = JSON.parse(dataStr);
   } catch {
-    return; // Malformed JSON — skip silently
+    console.warn('[ChatStream] Malformed SSE JSON, skipping:', dataStr.slice(0, 120));
+    return;
   }
 
   switch (eventType) {

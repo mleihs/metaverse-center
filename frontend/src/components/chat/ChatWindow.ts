@@ -434,6 +434,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         this._previousConversationId = newId;
         this._showEventsBar = false;
         this._restoredDraft = newId ? chatStore.restoreDraft(newId) : '';
+        // Track active session for LRU eviction
+        chatStore.setActive(newId);
         if (newId) {
           this._initConversation(newId);
         }
@@ -625,7 +627,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       this._streamAbort = null;
 
       // After any stream error, reload messages from DB to reflect actual state.
-      if (cbs.hadError && userMessageConfirmed) {
+      // Guard: only reload if the conversation hasn't changed during the stream.
+      if (cbs.hadError && userMessageConfirmed && this._previousConversationId === conversationId) {
         await this._loadMessages();
       }
     }
@@ -662,18 +665,23 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
   }
 
-  /** Shared streaming callbacks for send + regenerate flows. */
+  /** Shared streaming callbacks for send + regenerate flows.
+   *  All callbacks are guarded against stale conversation (user switched away mid-stream). */
   private _streamCallbacks(conversationId: string, session: ReturnType<typeof chatStore.getOrCreate>) {
     let errorOccurred = false;
+    const isStale = () => this._previousConversationId !== conversationId;
     return {
       onAgentStart: (agentId: string) => {
+        if (isStale()) return;
         this._streamingAgentId = agentId;
         session.streamBuffer.value = '';
       },
       onToken: (_agentId: string, token: string) => {
+        if (isStale()) return;
         chatStore.appendStreamChunk(conversationId, token);
       },
       onAgentDone: (_agentId: string, savedMsg: import('../../types/index.js').ChatMessage) => {
+        if (isStale()) return;
         if (!savedMsg?.id || !savedMsg.content?.trim()) {
           session.streaming.value = false;
           session.streamBuffer.value = '';
@@ -685,7 +693,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       },
       onError: (error: string) => {
         errorOccurred = true;
-        VelgToast.error(error);
+        if (!isStale()) VelgToast.error(error);
       },
       get hadError() { return errorOccurred; },
     };
@@ -854,6 +862,53 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   private _toggleExportMenu(e: Event): void {
     e.stopPropagation();
     this._showExportMenu = !this._showExportMenu;
+    if (this._showExportMenu) {
+      // Focus first menu item after render
+      this.updateComplete.then(() => {
+        const first = this.shadowRoot?.querySelector<HTMLElement>('.export-menu__item');
+        first?.focus();
+      });
+    }
+  }
+
+  /** Keyboard navigation for export menu: arrow keys, Tab trap, Escape to close. */
+  private _handleExportMenuKeydown(e: KeyboardEvent): void {
+    const items = Array.from(
+      this.shadowRoot?.querySelectorAll<HTMLElement>('.export-menu__item') ?? [],
+    );
+    if (items.length === 0) return;
+    const current = items.indexOf(e.target as HTMLElement);
+
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowRight': {
+        e.preventDefault();
+        const next = (current + 1) % items.length;
+        items[next].focus();
+        break;
+      }
+      case 'ArrowUp':
+      case 'ArrowLeft': {
+        e.preventDefault();
+        const prev = (current - 1 + items.length) % items.length;
+        items[prev].focus();
+        break;
+      }
+      case 'Tab': {
+        // Trap focus within menu
+        e.preventDefault();
+        const next = e.shiftKey
+          ? (current - 1 + items.length) % items.length
+          : (current + 1) % items.length;
+        items[next].focus();
+        break;
+      }
+      case 'Escape':
+        this._showExportMenu = false;
+        // Return focus to trigger button
+        this.shadowRoot?.querySelector<HTMLElement>('.export-wrapper .window__action-btn')?.focus();
+        break;
+    }
   }
 
   private _renderPinIcon() {
@@ -1017,7 +1072,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 </button>
                 ${this._showExportMenu
                   ? html`
-                    <div class="export-menu" role="menu">
+                    <div class="export-menu" role="menu"
+                      @click=${(e: Event) => e.stopPropagation()}
+                      @keydown=${this._handleExportMenuKeydown}
+                    >
                       <button
                         class="export-menu__item"
                         role="menuitem"

@@ -658,6 +658,9 @@ export class ChatFeed extends LitElement {
     return this._participantMap.values().next().value;
   }
 
+  /** Stable timestamp for the streaming message — set once when streaming starts. */
+  private _streamStartedAt = '';
+
   /**
    * Return streaming message, re-creating only when content changes.
    * Lit uses === for .property dirty checking, so same-reference objects
@@ -667,13 +670,19 @@ export class ChatFeed extends LitElement {
    */
   private _getStreamMsg(): ChatMessage {
     if (this.streamContent !== this._streamContentCache || !this._streamMsgCache) {
+      // Detect new stream: content restarted (shorter than cache = buffer was reset)
+      const isNewStream = !this._streamStartedAt
+        || this.streamContent.length < this._streamContentCache.length;
+      if (isNewStream) {
+        this._streamStartedAt = new Date().toISOString();
+      }
       this._streamContentCache = this.streamContent;
       this._streamMsgCache = {
         id: '__stream__',
         conversation_id: '',
         sender_role: 'assistant',
         content: this.streamContent,
-        created_at: new Date().toISOString(),
+        created_at: this._streamStartedAt,
       };
     }
     return this._streamMsgCache;

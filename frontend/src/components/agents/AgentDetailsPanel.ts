@@ -254,6 +254,9 @@ export class VelgAgentDetailsPanel extends LitElement {
     }
 
     .panel__rel-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);

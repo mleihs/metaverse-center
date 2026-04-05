@@ -5,6 +5,8 @@
  * perceptually distinct values across sessions and clients.
  */
 
+import { msg } from '@lit/localize';
+
 // ---------------------------------------------------------------------------
 // Color palette — 8 oklch hues at L=0.72, C=0.14
 // Spread across the wheel: teal, blue, violet, magenta, rose, orange, amber, green
@@ -24,27 +26,33 @@ export function agentAccentColor(agentId: string): string {
 
 // ---------------------------------------------------------------------------
 // Typing phrases — personality-flavored alternatives to "is typing..."
+// Evaluated at call time via msg() for i18n support.
 // ---------------------------------------------------------------------------
 
-const TYPING_PHRASES = [
-  'considers the implications\u2026',
-  'consults the archives\u2026',
-  'weighs the options\u2026',
-  'reads the situation\u2026',
-  'formulates a response\u2026',
-  'reflects on the matter\u2026',
-  'gathers their thoughts\u2026',
-  'assesses the terrain\u2026',
-  'searches for the right words\u2026',
-  'processes the intelligence\u2026',
-];
+/** Build localized phrase list at call time so locale changes are respected. */
+function _typingPhrases(): string[] {
+  return [
+    msg('considers the implications\u2026'),
+    msg('consults the archives\u2026'),
+    msg('weighs the options\u2026'),
+    msg('reads the situation\u2026'),
+    msg('formulates a response\u2026'),
+    msg('reflects on the matter\u2026'),
+    msg('gathers their thoughts\u2026'),
+    msg('assesses the terrain\u2026'),
+    msg('searches for the right words\u2026'),
+    msg('processes the intelligence\u2026'),
+  ];
+}
 
 /**
  * Deterministic typing phrase for an agent, derived from UUID.
  * Each agent always gets the same phrase across sessions.
+ * Localized via msg() — phrase language matches the active locale.
  */
 export function agentTypingPhrase(agentId: string): string {
-  return TYPING_PHRASES[fnv1aIndex(agentId, TYPING_PHRASES.length)];
+  const phrases = _typingPhrases();
+  return phrases[fnv1aIndex(agentId, phrases.length)];
 }
 
 // ---------------------------------------------------------------------------
