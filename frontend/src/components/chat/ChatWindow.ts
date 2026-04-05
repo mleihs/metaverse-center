@@ -25,6 +25,7 @@ import '../shared/EmptyState.js';
 import '../shared/Lightbox.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgAvatar.js';
+import '../shared/VelgTooltip.js';
 import './core/ChatFeed.js';
 import './core/ChatComposer.js';
 
@@ -980,7 +981,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 size="sm"
               ></velg-avatar>`,
         )}
-        ${overflow > 0 ? html`<div class="header__portrait-overflow">+${overflow}</div>` : null}
+        ${overflow > 0
+          ? html`<velg-tooltip .content=${agents.slice(maxVisible).map(a => a.name).join(', ')}>
+              <div class="header__portrait-overflow">+${overflow}</div>
+            </velg-tooltip>`
+          : null}
       </div>
     `;
   }

@@ -6,6 +6,7 @@ import { formatRelativeTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/EmptyState.js';
 import '../shared/VelgAvatar.js';
+import '../shared/VelgTooltip.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -234,41 +235,6 @@ export class VelgConversationList extends LitElement {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      position: relative;
-      cursor: default;
-    }
-
-    /* Styled tooltip — replaces native title attribute */
-    .conversation__portrait-overflow::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      translate: -50% 0;
-      padding: var(--space-1) var(--space-2);
-      background: var(--color-surface-raised);
-      color: var(--color-text-primary);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: normal;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-      border: var(--border-width-thin) solid var(--color-border);
-      box-shadow: var(--shadow-sm);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--transition-fast);
-      z-index: 10;
-    }
-
-    .conversation__portrait-overflow:hover::after {
-      opacity: 1;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .conversation__portrait-overflow::after {
-        transition-duration: 0.01ms;
-      }
     }
 
     .conversation__agent-name {
@@ -738,7 +704,7 @@ export class VelgConversationList extends LitElement {
             html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
         )}
         ${overflow > 0
-          ? html`<div class="conversation__portrait-overflow" data-tooltip=${tooltip}>+${overflow}</div>`
+          ? html`<velg-tooltip .content=${tooltip}><div class="conversation__portrait-overflow">+${overflow}</div></velg-tooltip>`
           : null}
       </div>
     `;
