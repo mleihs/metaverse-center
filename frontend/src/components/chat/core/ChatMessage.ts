@@ -123,12 +123,12 @@ export class ChatMessage extends LitElement {
     }
 
     /* --- Message actions toolbar (hover-reveal) --- */
+    /* Default hidden state lives in MessageActions :host — parent only handles
+       positioning and reveal conditions. :host has lower specificity than
+       these selectors, so reveal overrides correctly. */
     velg-message-actions {
       position: absolute;
       top: -12px;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
       transition:
         opacity var(--transition-fast),
         visibility var(--transition-fast);
