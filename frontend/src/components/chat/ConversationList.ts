@@ -691,15 +691,20 @@ export class VelgConversationList extends LitElement {
     const visible = agents.slice(0, maxVisible);
     const overflow = agents.length - maxVisible;
 
-    const allNames = agents.map((a) => a.name).join(', ');
+    // Only show tooltip when agents are hidden behind "+N" badge
+    const tooltip = overflow > 0
+      ? agents.slice(maxVisible).map((a) => a.name).join(', ')
+      : '';
 
     return html`
-      <div class="conversation__portraits" title=${allNames}>
+      <div class="conversation__portraits">
         ${visible.map(
           (agent) =>
             html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
         )}
-        ${overflow > 0 ? html`<div class="conversation__portrait-overflow">+${overflow}</div>` : null}
+        ${overflow > 0
+          ? html`<div class="conversation__portrait-overflow" title=${tooltip}>+${overflow}</div>`
+          : null}
       </div>
     `;
   }
