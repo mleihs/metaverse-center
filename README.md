@@ -3,7 +3,7 @@
 **Worlds collide. One fracture. A multiplayer worldbuilding platform where literary simulations compete, bleed into each other, and evolve.**
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Lit 3.3](https://img.shields.io/badge/Lit-3.3-324FFF?logo=lit&logoColor=white)](https://lit.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
@@ -293,7 +293,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | 3d-force-graph | 1.79 | Cartographer's Map visualization |
 | web-vitals | 5.2 | Core Web Vitals reporting |
 | Zod | 4.3 | Runtime schema validation |
-| TypeScript | 5.9 | Type safety |
+| TypeScript | 6.0 | Type safety |
 | Vite | 8.0 | Build tool with Rolldown (Rust), HMR, route-level code splitting (21 lazy chunks) |
 | Vitest | 4.1 | Unit/component testing |
 
