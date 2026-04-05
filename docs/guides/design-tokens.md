@@ -1,6 +1,6 @@
 # Design Tokens — Three-Tier Color Architecture
 
-> Version 1.0 — 2026-03-18
+> Version 1.2 — 2026-04-05
 
 ## Overview
 
@@ -135,6 +135,31 @@ Defined in `_shadows.css`, auto-derived via `color-mix()`:
 | `--ring-danger` | 40% danger + 60% transparent |
 | `--ring-success` | 40% success + 60% transparent |
 | `--ring-warning` | 40% warning + 60% transparent |
+
+---
+
+## Border Width Tokens & Theme Overrides
+
+Border width tokens (`--border-width-thin/default/thick/heavy`) are defined in `_borders.css` and can be overridden by simulation themes via ThemeService. When themes reduce border widths (e.g. `--border-width-default: 1px` for a minimalist aesthetic), small UI elements like avatars can become invisible on dark backgrounds.
+
+**Pattern: CSS `max()` for visibility floors**
+
+Components with minimum visibility requirements should use `max()` to enforce a floor while still respecting higher theme values:
+
+```css
+/* VelgAvatar size="sm" — 2px minimum, follows theme above that */
+border: max(2px, var(--border-width-default)) solid var(--color-border);
+```
+
+This is a per-component concern, not a theme-system concern. Large elements (cards, panels) are fine at 1px because their borders span hundreds of pixels. Small elements (32px avatars) need proportionally thicker borders for equivalent visibility.
+
+**Separation ring** for dark theme contrast:
+
+```css
+box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+```
+
+Uses `color-mix()` with Tier 1 token — no raw hex values.
 
 ---
 
