@@ -501,14 +501,21 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   private _streamAbort: AbortController | null = null;
 
   private _closeExportMenuBound = () => { this._showExportMenu = false; };
+  private _closeExportMenuOnEscapeBound = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && this._showExportMenu) {
+      this._showExportMenu = false;
+    }
+  };
 
   override connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener('click', this._closeExportMenuBound);
+    document.addEventListener('keydown', this._closeExportMenuOnEscapeBound);
   }
 
   override disconnectedCallback(): void {
     document.removeEventListener('click', this._closeExportMenuBound);
+    document.removeEventListener('keydown', this._closeExportMenuOnEscapeBound);
     super.disconnectedCallback();
     this._streamAbort?.abort();
     this._streamAbort = null;
@@ -946,7 +953,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .participants=${participants}
                   .eventReferences=${this.conversation.event_references ?? []}
                   .currentUserId=${appState.user.value?.id ?? ''}
-                  .currentUserName=${appState.user.value?.user_metadata?.display_name ?? ''}
+                  .currentUserName=${appState.user.value?.user_metadata?.display_name ?? appState.user.value?.email ?? ''}
                   .streaming=${session.streaming.value}
                   .streamContent=${session.streamBuffer.value}
                   .streamingParticipantId=${this._streamingAgentId}

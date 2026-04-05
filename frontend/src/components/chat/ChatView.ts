@@ -140,7 +140,7 @@ export class VelgChatView extends LitElement {
     @media (max-width: 640px) {
       .chat-layout {
         grid-template-columns: 1fr;
-        height: calc(100vh - var(--header-height) - 48px);
+        height: calc(100vh - var(--header-height) - 196px);
         min-height: 0;
       }
 
