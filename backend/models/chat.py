@@ -1,7 +1,7 @@
 """Pydantic models for chat conversations and messages."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -44,7 +44,7 @@ class MessageCreate(BaseModel):
     """Schema for sending a chat message."""
 
     content: str = Field(..., min_length=1, max_length=10000)
-    sender_role: str = "user"
+    sender_role: Literal["user", "system"] = "user"
     metadata: dict | None = None
     generate_response: bool = False
 

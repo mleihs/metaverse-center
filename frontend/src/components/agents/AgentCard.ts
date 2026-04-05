@@ -129,12 +129,13 @@ export class VelgAgentCard extends LitElement {
         type="agent"
         .name=${agent.name}
         image-url=${agent.portrait_image_url ?? ''}
-        .primaryStat=${36}
+        .primaryStat=${null}
         .secondaryStat=${best?.level ?? null}
         .rarity=${this._computeRarity()}
         .aptitudes=${this.aptitudes}
         .badges=${this._getBadges()}
         .subtitle=${this._getSubtitle()}
+        .description=${t(agent, 'character') ?? ''}
         .connectionCount=${this.relationshipCount}
         ?generating=${this.generating}
         ?show-actions=${appState.canEdit.value}

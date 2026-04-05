@@ -314,6 +314,13 @@ export class ChatBubble extends LitElement {
       background: var(--color-surface-sunken);
     }
 
+    /* --- Empty response placeholder --- */
+    .bubble__empty {
+      color: var(--color-text-muted);
+      font-style: italic;
+      font-size: var(--text-xs);
+    }
+
     /* --- Responsive --- */
     @media (max-width: 640px) {
       .bubble {
@@ -392,14 +399,14 @@ export class ChatBubble extends LitElement {
     return html`<div class=${classMap(classes)} style=${styleMap(styles)}>${this._renderContent()}</div>`;
   }
 
-  /** Strip leaked [AgentName]: prefixes from group chat responses. */
+  /** Strip leaked [AgentName]: prefixes from start of group chat responses. */
   private _stripAgentTags(text: string): string {
-    return text.replace(/\[[\w\s.äöüÄÖÜß]+\]:\s*/g, '');
+    return text.replace(/^\[[\w\s.äöüÄÖÜß]+\]:\s*/, '');
   }
 
   private _renderContent() {
     if (!this.content?.trim()) {
-      return html`<span style="color: var(--color-text-muted); font-style: italic; font-size: var(--text-xs)">${msg('Empty response')}</span>`;
+      return html`<span class="bubble__empty">${msg('Empty response')}</span>`;
     }
 
     // Plain text override (e.g. epoch player messages mapped as 'assistant')

@@ -354,14 +354,21 @@ class ChatAIService:
 
     @staticmethod
     def _sanitize_response(text: str) -> str:
-        """Strip leaked agent tags, CoT blocks, and meta-commentary from AI output."""
+        """Strip leaked agent tags, CoT blocks, and meta-commentary from AI output.
+
+        Locale-agnostic: patterns match structural markers (brackets, parens,
+        XML tags) rather than language-specific keywords.
+        """
         # Strip <think>...</think> blocks (CoT reasoning leak)
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
         # Strip [AgentName]: prefixes at start of response
         text = re.sub(r"^\[[\w\s.äöüÄÖÜß]+\]:\s*", "", text)
-        # Strip parenthetical meta-reasoning blocks at start of response
+        # Strip parenthetical meta-reasoning blocks at start of response.
+        # Requires 40+ chars inside parens to avoid false positives on short
+        # legitimate parentheticals like "(Note: see above)". Meta-reasoning
+        # leaks are always verbose multi-clause blocks.
         text = re.sub(
-            r"^\((?:Der User|Die Frage|Ich soll|The user|I should).*?\)\s*",
+            r"^\([A-ZÀ-ÖØ-Þ][\w\s,;:'\-]{40,}?\.{0,3}\)\s*",
             "",
             text,
             flags=re.DOTALL,
@@ -448,7 +455,11 @@ class ChatAIService:
     ) -> dict[str, Any]:
         """Shared setup for single-agent generate/stream. Returns all context needed."""
         conversation = await self._load_conversation(conversation_id)
-        agent = await self._load_agent(conversation["agent_id"])
+        agent_id = conversation.get("agent_id")
+        if not agent_id:
+            msg = f"Conversation {conversation_id} has no agent_id — use group methods for multi-agent conversations"
+            raise ValueError(msg)
+        agent = await self._load_agent(agent_id)
         simulation = await self._load_simulation()
         locale = await self._get_locale()
 

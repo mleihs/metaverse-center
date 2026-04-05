@@ -56,15 +56,31 @@ export interface ChatSession {
 
 const DRAFT_KEY_PREFIX = 'velg-chat-draft-';
 
+/**
+ * Maximum retained sessions. When exceeded, the oldest non-active session
+ * is evicted (LRU). Prevents unbounded memory growth from long-lived tabs
+ * where the user opens many conversations without page reload.
+ */
+const MAX_SESSIONS = 20;
+
 export class ChatSessionStore {
   private readonly _sessions = new Map<string, ChatSession>();
 
+  /** Currently active session ID — exempt from LRU eviction. */
+  private _activeId: string | null = null;
+
   // --- Session lifecycle ------------------------------------------------
+
+  /** Mark a session as the currently active one (prevents LRU eviction). */
+  setActive(sessionId: string | null): void {
+    this._activeId = sessionId;
+  }
 
   /** Get existing session or create a fresh one with default signals. */
   getOrCreate(sessionId: string): ChatSession {
     let session = this._sessions.get(sessionId);
     if (!session) {
+      this._evictIfNeeded();
       session = this._createSession();
       this._sessions.set(sessionId, session);
     }
@@ -84,6 +100,7 @@ export class ChatSessionStore {
   /** Dispose ALL sessions (e.g. on logout). */
   disposeAll(): void {
     this._sessions.clear();
+    this._activeId = null;
   }
 
   // --- Message management -----------------------------------------------
@@ -279,6 +296,18 @@ export class ChatSessionStore {
   }
 
   // --- Internal ---------------------------------------------------------
+
+  /** Evict the oldest non-active session when at capacity. */
+  private _evictIfNeeded(): void {
+    if (this._sessions.size < MAX_SESSIONS) return;
+    // Map iterates in insertion order — first entry is the oldest
+    for (const [id] of this._sessions) {
+      if (id !== this._activeId) {
+        this._sessions.delete(id);
+        return;
+      }
+    }
+  }
 
   private _createSession(): ChatSession {
     return {
