@@ -5,6 +5,7 @@ import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import { formatRelativeTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/EmptyState.js';
+import '../shared/VelgAgentTip.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgTooltip.js';
 
@@ -236,6 +237,7 @@ export class VelgConversationList extends LitElement {
       justify-content: center;
       flex-shrink: 0;
     }
+
 
     .conversation__agent-name {
       font-family: var(--font-brutalist);
@@ -692,11 +694,6 @@ export class VelgConversationList extends LitElement {
     const visible = agents.slice(0, maxVisible);
     const overflow = agents.length - maxVisible;
 
-    // Only show tooltip when agents are hidden behind "+N" badge
-    const tooltip = overflow > 0
-      ? agents.slice(maxVisible).map((a) => a.name).join(', ')
-      : '';
-
     return html`
       <div class="conversation__portraits">
         ${visible.map(
@@ -704,7 +701,10 @@ export class VelgConversationList extends LitElement {
             html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
         )}
         ${overflow > 0
-          ? html`<velg-tooltip .content=${tooltip}><div class="conversation__portrait-overflow">+${overflow}</div></velg-tooltip>`
+          ? html`<velg-tooltip position="below">
+              <div class="conversation__portrait-overflow">+${overflow}</div>
+              <velg-agent-tip slot="tip" .agents=${agents.slice(maxVisible)}></velg-agent-tip>
+            </velg-tooltip>`
           : null}
       </div>
     `;

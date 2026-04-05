@@ -24,6 +24,7 @@ import { VelgToast } from '../shared/Toast.js';
 import '../shared/EmptyState.js';
 import '../shared/Lightbox.js';
 import '../shared/LoadingState.js';
+import '../shared/VelgAgentTip.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgTooltip.js';
 import './core/ChatFeed.js';
@@ -68,12 +69,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       min-width: 0;
     }
 
-    /* Portrait stack — slight overlap with border separation */
+    /* Portrait stack — spaced for border visibility on dark theme */
     .header__portraits {
       display: flex;
       flex-shrink: 0;
       cursor: pointer;
-      gap: var(--space-1);
+      gap: var(--space-2);
     }
 
     .header__portraits:hover {
@@ -93,6 +94,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       flex-shrink: 0;
       border: var(--border-width-default) solid var(--color-surface);
     }
+
 
     .window__header-info {
       min-width: 0;
@@ -988,8 +990,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               ></velg-avatar>`,
         )}
         ${overflow > 0
-          ? html`<velg-tooltip .content=${agents.slice(maxVisible).map(a => a.name).join(', ')}>
+          ? html`<velg-tooltip position="below">
               <div class="header__portrait-overflow">+${overflow}</div>
+              <velg-agent-tip slot="tip" .agents=${agents.slice(maxVisible)}></velg-agent-tip>
             </velg-tooltip>`
           : null}
       </div>
