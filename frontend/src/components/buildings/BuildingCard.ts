@@ -144,6 +144,7 @@ export class VelgBuildingCard extends LitElement {
         .rarity=${this._computeRarity()}
         .badges=${this._getBadges()}
         .subtitle=${this._getSubtitle()}
+        .description=${t(b, 'description') ?? ''}
         .capacityBar=${this._getCapacityBar()}
         ?generating=${this.generating}
         ?show-actions=${appState.canEdit.value}
