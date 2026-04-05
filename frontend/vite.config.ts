@@ -8,14 +8,14 @@ export default defineConfig({
     sourcemap: 'hidden',
     outDir: '../static/dist',
     chunkSizeWarningLimit: 500,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          'lit': ['lit', '@lit/reactive-element'],
-          'signals': ['@preact/signals-core', '@lit-labs/preact-signals'],
-          'router': ['@lit-labs/router'],
-          'supabase': ['@supabase/supabase-js'],
-          'markdown': ['marked', 'dompurify'],
+        manualChunks(id: string) {
+          if (id.includes('node_modules/lit/') || id.includes('@lit/reactive-element')) return 'lit';
+          if (id.includes('@preact/signals-core') || id.includes('@lit-labs/preact-signals')) return 'signals';
+          if (id.includes('@lit-labs/router')) return 'router';
+          if (id.includes('@supabase/supabase-js')) return 'supabase';
+          if (id.includes('node_modules/marked') || id.includes('node_modules/dompurify')) return 'markdown';
         },
       },
     },
