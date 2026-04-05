@@ -287,15 +287,15 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
 | Lit | 3.3 | Web Components framework (211 custom elements) |
-| Preact Signals | 1.8 | Fine-grained reactive state management |
-| Supabase JS | 2.45 | Auth, Storage, Realtime channels |
+| Preact Signals | 1.14 | Fine-grained reactive state management |
+| Supabase JS | 2.101 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) – tree-shaken, lazy-loaded |
 | 3d-force-graph | 1.79 | Cartographer's Map visualization |
-| web-vitals | 5.1 | Core Web Vitals reporting |
+| web-vitals | 5.2 | Core Web Vitals reporting |
 | Zod | 4.3 | Runtime schema validation |
 | TypeScript | 5.9 | Type safety |
-| Vite | 7.3 | Build tool with HMR, route-level code splitting (21 lazy chunks) |
-| Vitest | 4.0 | Unit/component testing |
+| Vite | 8.0 | Build tool with Rolldown (Rust), HMR, route-level code splitting (21 lazy chunks) |
+| Vitest | 4.1 | Unit/component testing |
 
 ### Infrastructure
 
@@ -310,7 +310,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Error Tracking | Sentry (backend + frontend, FastAPI integration) |
 | Analytics | GA4 (consent mode v2, 44 custom events, web vitals) |
 | Testing | pytest + vitest + Playwright |
-| Linting | Ruff (backend) + Biome 2.4 (frontend) + lit-analyzer |
+| Linting | Ruff (backend) + Biome 2.4 (frontend) + lit-analyzer + custom content lints |
 
 ---
 
@@ -325,7 +325,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | RLS policies | 270+ |
 | SQL migrations | 189 |
 | Routers | 49 |
-| Web Components | 256 custom elements |
+| Web Components | 256 (Lit custom elements) |
 | Unit tests | 2,184+ (pytest) + vitest |
 | Localized UI strings | 6,593 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
@@ -447,7 +447,7 @@ backend/
   models/                   # Pydantic models
   services/                 # Business logic (BaseService CRUD, AI, email, bots, scanning)
     combat/                 # Shared combat engine (ability schools, skill checks, conditions, stress)
-    dungeon/                # Dungeon generator, encounters, combat, loot, archetypes (75K+ LOC)
+    dungeon/                # Dungeon generator, encounters, combat, loot, archetypes, objektanker (22K+ LOC)
   middleware/               # SEO injection, security headers, logging context
   tests/                    # pytest
 frontend/
@@ -463,7 +463,7 @@ supabase/
   migrations/               # 189 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
-docs/                       # 73 documents (Divio structure)
+docs/                       # 104 documents (Divio structure)
   specs/                    # 16 hard contracts
   references/               # 5 canonical data
   guides/                   # 16 procedural guides

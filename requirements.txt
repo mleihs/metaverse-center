@@ -8,7 +8,7 @@ annotated-types==0.7.0
 anthropic==0.84.0
 anyio==4.12.1
 argcomplete==3.6.3
-attrs==25.4.0
+attrs==26.1.0
 Authlib==1.6.9
 beartype==0.22.9
 boto3==1.42.83
@@ -161,7 +161,7 @@ uncalled-for==0.2.0
 urllib3==2.6.3
 uvicorn==0.41.0
 uvloop==0.22.1
--e git+https://github.com/mleihs/metaverse-center.git@ac2eeec6fbe6be61c8ef33b85aec64e6cff0ecc5#egg=velgarien_platform
+-e git+https://github.com/mleihs/metaverse-center.git@3ed0ca43a698cdebdc2cc6eb64451339cd5a3a24#egg=velgarien_platform
 watchfiles==1.1.1
 wcwidth==0.6.0
 websockets==15.0.1
