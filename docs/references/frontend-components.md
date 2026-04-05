@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.8"
-date: 2026-04-02
+version: "3.9"
+date: 2026-04-05
 lang: de
 type: reference
 status: active
@@ -124,7 +124,7 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher, always-
 │           └── EchoTriggerModal (extends BaseModal, admin+)
 ├── ChatView
 │   ├── ConversationList (search, date grouping, pinned, inline rename)
-│   ├── ChatWindow (draft auto-save, export menu, reaction realtime)
+│   ├── ChatWindow (draft auto-save, export menu, reaction realtime, agent detail panel on portrait click, symmetric streaming lifecycle)
 │   │   ├── ChatFeed (core/)
 │   │   ├── ChatComposer (core/, draft persistence)
 │   │   ├── ChatMessage (core/, MessageActions, ReactionBar)
@@ -209,7 +209,9 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── VelgSkeleton                 Shimmer loading placeholder, Varianten: text/card/avatar/table-row, prefers-reduced-motion
 │   ├── SharedFilterBar              Ersetzt 4x duplizierten Filter
 │   ├── VelgBadge                    6 color variants (default, primary, info, warning, danger, success)
-│   ├── VelgAvatar                   Portrait + initials fallback, 3 sizes (sm/md/lg), optional alt override
+│   ├── VelgAvatar                   Portrait + initials fallback, 3 sizes (xs/sm/full). Clickable mode dispatches avatar-click (works with AND without src). Border: max(2px, --border-width-default) on sm — CSS max() ensures visibility when simulation themes override token to 1px. box-sizing: border-box + separation ring (box-shadow 1px color-mix). Mood ring via moodColor prop (pulsing animated border)
+│   ├── VelgAgentTip                 Micro-component for enriched agent tooltips. Renders compact agent card list (xs avatar + brutalist name). Slotted into VelgTooltip's named slot "tip". Eliminates duplicated tooltip markup across ChatWindow and ConversationList
+│   ├── VelgTooltip                  Positioned tooltip on hover/focus-within. Two content modes: (1) text via content property, (2) rich HTML via named slot "tip" with @slotchange detection. .tip--rich variant: white-space normal, body font, wider padding. Pure CSS show/hide, zero JS for visibility toggle
 │   ├── VelgIconButton               30px icon action button
 │   ├── VelgHoldButton               Hold-to-confirm button. CSS animation + Pointer Events + setPointerCapture. Properties: duration, label, holdingLabel, executingLabel, disabled, executing. Event: hold-confirmed. Used by: VelgForgeIgnition (forge ignition), DungeonQuickActions (dungeon retreat)
 │   ├── VelgSectionHeader            Section titles, 2 variants
@@ -219,7 +221,7 @@ Shared (wiederverwendbar ueber alle Views)
 │   ├── LoadingState                 Einheitliches Loading-Pattern
 │   ├── EmptyState                   "Keine Daten" Anzeige mit optionalem Action-Button
 │   ├── GenerationProgress           AI generation progress indicator
-│   ├── Lightbox                     Fullscreen image overlay, Escape/click-to-close, caption + alt
+│   ├── Lightbox                     Fullscreen image overlay, Escape/click-to-close, caption + alt. Note: ChatWindow no longer uses Lightbox for portrait clicks — replaced by AgentDetailsPanel (container="lightbox") for full agent profile access
 │   ├── ConfirmDialog                Destructive action confirmation
 │   ├── Toast                        Notification toast with auto-dismiss
 │   ├── Pagination                   Einheitliche Pagination
