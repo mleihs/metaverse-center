@@ -691,8 +691,10 @@ export class VelgConversationList extends LitElement {
     const visible = agents.slice(0, maxVisible);
     const overflow = agents.length - maxVisible;
 
+    const allNames = agents.map((a) => a.name).join(', ');
+
     return html`
-      <div class="conversation__portraits">
+      <div class="conversation__portraits" title=${allNames}>
         ${visible.map(
           (agent) =>
             html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
