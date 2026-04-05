@@ -5,13 +5,21 @@
  * on hover / focus-within. Pure CSS show/hide — zero JavaScript event
  * handlers for the visibility toggle.
  *
- * Usage:
- *   <velg-tooltip content="Agent X, Agent Y">
- *     <div class="badge">+2</div>
+ * Supports two content modes:
+ *   1. Text content via `content` property (simple, default)
+ *   2. Rich HTML via named slot `tip` (agent cards, formatted lists, etc.)
+ *
+ * Usage (text):
+ *   <velg-tooltip content="Explanation text">
+ *     <button>Hover me</button>
  *   </velg-tooltip>
  *
- *   <velg-tooltip content="Explanation text" position="below">
- *     <button>Hover me</button>
+ * Usage (rich):
+ *   <velg-tooltip>
+ *     <div class="badge">+2</div>
+ *     <div slot="tip">
+ *       <div class="agent-row">Avatar + Name</div>
+ *     </div>
  *   </velg-tooltip>
  *
  * Accessibility:
@@ -21,7 +29,8 @@
  */
 
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 @customElement('velg-tooltip')
 export class VelgTooltip extends LitElement {
@@ -53,6 +62,22 @@ export class VelgTooltip extends LitElement {
         visibility var(--transition-fast);
     }
 
+    /* ── Rich content variant ── */
+
+    .tip--rich {
+      white-space: normal;
+      min-width: 140px;
+      max-width: 260px;
+      padding: var(--space-2);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+    }
+
+    /* Hide when no content at all */
+    .tip[hidden] {
+      display: none !important;
+    }
+
     /* ── Position variants ── */
 
     :host([position='above']) .tip,
@@ -82,18 +107,34 @@ export class VelgTooltip extends LitElement {
     }
   `;
 
-  /** Tooltip text content. Empty string hides the tooltip entirely. */
+  /** Tooltip text content. Empty string hides the tooltip entirely (unless rich slot is used). */
   @property() content = '';
 
   /** Position relative to the trigger element. */
   @property({ reflect: true }) position: 'above' | 'below' = 'above';
 
+  /** Tracks whether the named `tip` slot has slotted content. */
+  @state() private _hasSlottedTip = false;
+
+  private _handleTipSlotChange(e: Event): void {
+    const slot = e.target as HTMLSlotElement;
+    this._hasSlottedTip = slot.assignedNodes({ flatten: true }).length > 0;
+  }
+
   protected render() {
+    const hasTip = !!this.content || this._hasSlottedTip;
+    const tipClasses = {
+      tip: true,
+      'tip--rich': this._hasSlottedTip,
+    };
+
     return html`
       <slot></slot>
-      ${this.content
-        ? html`<span class="tip" role="tooltip">${this.content}</span>`
-        : nothing}
+      <span class=${classMap(tipClasses)} role="tooltip" ?hidden=${!hasTip}>
+        <slot name="tip" @slotchange=${this._handleTipSlotChange}>
+          ${this.content || nothing}
+        </slot>
+      </span>
     `;
   }
 }

@@ -23,6 +23,7 @@ export class VelgAvatar extends LitElement {
       background: var(--color-surface-sunken);
       position: relative;
       z-index: 1;
+      box-sizing: border-box;
     }
 
     :host([size='xs']) .avatar {
@@ -34,7 +35,9 @@ export class VelgAvatar extends LitElement {
     :host([size='sm']) .avatar {
       width: 32px;
       height: 32px;
-      border: var(--border-width-thin) solid var(--color-border);
+      border: var(--border-width-default) solid var(--color-border);
+      /* Separation ring — keeps avatar edges visible on dark backgrounds */
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 8%, transparent);
     }
 
     :host([size='full']) .avatar {
