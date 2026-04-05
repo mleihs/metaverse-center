@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 81 documents, 8 categories + 9 ADRs.
+> Auto-generated from frontmatter. 104 documents, 10 categories + 10 ADRs.
 
 ## Specifications (16)
 

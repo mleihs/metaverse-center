@@ -323,13 +323,13 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Trigger functions | 27 (62 triggers total) |
 | Views (regular + materialized) | 14 + 4 |
 | RLS policies | 270+ |
-| SQL migrations | 174 |
+| SQL migrations | 188 |
 | Routers | 49 |
-| Web Components | 239 custom elements |
+| Web Components | 256 custom elements |
 | Unit tests | 2,184+ (pytest) + vitest |
-| Localized UI strings | 5,906 (EN/DE, 0 missing) |
+| Localized UI strings | 6,593 (EN/DE, 0 missing) |
 | GA4 custom events | 44 |
-| Documentation files | 73 (Divio structure + 9 ADRs) |
+| Documentation files | 104 (Divio structure + 10 ADRs) |
 | Dungeon archetypes | 8 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge, Awakening, Overthrow) |
 | Flagship simulations | 5 + 2 community presets |
 | Operative types | 6 |
@@ -380,7 +380,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 ### Platform
 - **Landing page** – Live AI characters as "Intercepted Dossiers" with holographic foil TCG cards, viewport-responsive (6–12 agents)
 - **Daily Substrate Dispatch** – Classified Bureau intelligence briefing on first daily visit
-- **Bilingual i18n** – English + German (5,319 localized strings)
+- **Bilingual i18n** – English + German (6,593 localized strings)
 - **Per-simulation theming** – CSS presets with WCAG 2.1 AA validation, light & dark modes
 - **Public-first browsing** – Full read access without authentication
 - **SEO** – Slug URLs, JSON-LD, dynamic sitemap (1500+ URLs), server-side crawler enrichment
