@@ -35,7 +35,10 @@ export class VelgAvatar extends LitElement {
     :host([size='sm']) .avatar {
       width: 32px;
       height: 32px;
-      border: var(--border-width-default) solid var(--color-border);
+      /* max() respects theme token but enforces 2px minimum —
+         simulation themes can override --border-width-default to 1px
+         which is invisible on dark backgrounds. */
+      border: max(2px, var(--border-width-default)) solid var(--color-border);
       /* Separation ring — keeps avatar edges visible on dark backgrounds */
       box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 8%, transparent);
     }
