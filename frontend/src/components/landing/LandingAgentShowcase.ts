@@ -374,8 +374,7 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       .showcase__card {
         flex: 0 0 200px;
-        min-width: 0;
-        overflow: hidden;
+        container-type: inline-size;
         scroll-snap-align: center;
       }
     }
