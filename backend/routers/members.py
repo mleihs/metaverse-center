@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.member import MemberCreate, MemberResponse, MemberUpdate
 from backend.services.audit_service import AuditService
@@ -26,7 +26,7 @@ async def list_members(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MemberResponse]]:
     """List all members of a simulation."""
     data = await MemberService.list_members(supabase, simulation_id)
@@ -39,7 +39,7 @@ async def add_member(
     body: MemberCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MemberResponse]:
     """Add a member to a simulation. Requires admin role."""
     data = await MemberService.add(
@@ -60,7 +60,7 @@ async def change_role(
     body: MemberUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MemberResponse]:
     """Change a member's role. Last-owner protection enforced by DB trigger."""
     try:
@@ -83,7 +83,7 @@ async def remove_member(
     member_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a member from a simulation. Last-owner protection via DB trigger."""
     try:

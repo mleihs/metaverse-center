@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, DeleteResponse, SuccessResponse
 from backend.models.style_reference import StyleReferenceInfo, StyleReferenceUploadResponse
 from backend.services.audit_service import AuditService
@@ -32,7 +32,7 @@ async def upload_reference(
     scope: Annotated[str, Form()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     entity_id: Annotated[UUID | None, Form()] = None,
     strength: Annotated[float, Form()] = 0.75,
     file: Annotated[UploadFile | None, File()] = None,
@@ -105,7 +105,7 @@ async def list_references(
     entity_type: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[StyleReferenceInfo]]:
     """List all configured style references for an entity type."""
     if entity_type not in ("portrait", "building"):
@@ -126,7 +126,7 @@ async def delete_reference(
     entity_type: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     scope: str = "global",
     entity_id: UUID | None = None,
 ) -> SuccessResponse[DeleteResponse]:

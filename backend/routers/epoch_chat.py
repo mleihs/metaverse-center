@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import get_current_user, get_effective_supabase
 from backend.middleware.rate_limit import limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.epoch_chat import EpochChatMessageCreate, EpochChatMessageResponse
@@ -38,7 +38,7 @@ async def send_message(
     epoch_id: UUID,
     body: EpochChatMessageCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EpochChatMessageResponse]:
     """Send a chat message to epoch-wide or team channel."""
     message = await EpochChatService.send_message(
@@ -63,7 +63,7 @@ async def list_messages(
     request: Request,
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
 ) -> PaginatedResponse[EpochChatMessageResponse]:
@@ -84,7 +84,7 @@ async def list_team_messages(
     epoch_id: UUID,
     team_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     before: Annotated[str | None, Query(description="ISO timestamp cursor for pagination")] = None,
 ) -> PaginatedResponse[EpochChatMessageResponse]:

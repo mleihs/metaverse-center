@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
 from backend.tests.conftest import MOCK_ADMIN_EMAIL
 
@@ -51,6 +51,7 @@ def client():
     admin_sb = _mock_supabase()
 
     app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
     app.dependency_overrides[get_admin_supabase] = lambda: admin_sb
 

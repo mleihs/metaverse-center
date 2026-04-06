@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase
+from backend.dependencies import get_current_user, get_effective_supabase
 from backend.models.bot import BotPlayerCreate, BotPlayerResponse, BotPlayerUpdate
 from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.services.audit_service import AuditService
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1/bot-players", tags=["bot-players"])
 @router.get("")
 async def list_bot_players(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> PaginatedResponse[BotPlayerResponse]:
     """List the current user's bot player presets."""
     data, total = await BotPlayerService.list_for_user(supabase, user.id)
@@ -35,7 +35,7 @@ async def list_bot_players(
 async def get_bot_player(
     bot_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BotPlayerResponse]:
     """Get a single bot player preset."""
     data = await BotPlayerService.get(supabase, bot_id)
@@ -46,7 +46,7 @@ async def get_bot_player(
 async def create_bot_player(
     body: BotPlayerCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BotPlayerResponse]:
     """Create a new bot player preset."""
     data = await BotPlayerService.create(supabase, user.id, {
@@ -67,7 +67,7 @@ async def update_bot_player(
     bot_id: UUID,
     body: BotPlayerUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BotPlayerResponse]:
     """Update a bot player preset (own bots only)."""
     data = await BotPlayerService.update(supabase, bot_id, user.id, body.model_dump(exclude_none=True))
@@ -81,7 +81,7 @@ async def update_bot_player(
 async def delete_bot_player(
     bot_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Delete a bot player preset (own bots only)."""
     await BotPlayerService.delete(supabase, bot_id, user.id)

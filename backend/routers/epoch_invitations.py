@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 
-from backend.dependencies import get_current_user, get_supabase, require_epoch_creator
+from backend.dependencies import get_current_user, get_effective_supabase, require_epoch_creator
 from backend.middleware.rate_limit import limiter
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch_invitation import EpochInvitationCreate, EpochInvitationResponse
@@ -39,7 +39,7 @@ async def create_invitation(
     body: EpochInvitationCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EpochInvitationResponse]:
     """Create an epoch invitation and send email."""
     base_url = str(request.base_url).rstrip("/")
@@ -59,7 +59,7 @@ async def list_invitations(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[EpochInvitationResponse]]:
     """List all invitations for an epoch."""
     data = await EpochInvitationService.list_invitations(supabase, epoch_id)
@@ -72,7 +72,7 @@ async def revoke_invitation(
     invitation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EpochInvitationResponse]:
     """Revoke an epoch invitation."""
     data = await EpochInvitationService.revoke_invitation(supabase, invitation_id)
@@ -89,7 +89,7 @@ async def regenerate_lore(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Regenerate the AI-generated lore for epoch invitations."""
     lore_text = await EpochInvitationService.regenerate_lore(supabase, epoch_id)

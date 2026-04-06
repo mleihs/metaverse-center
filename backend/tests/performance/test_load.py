@@ -14,7 +14,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from backend.app import app
-from backend.dependencies import get_current_user
+from backend.dependencies import get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
 
 # ---------------------------------------------------------------------------
@@ -192,11 +192,12 @@ class TestRateLimiting:
         Without a valid role check, the endpoint should fail at the role
         dependency level (not succeed with 200).
         """
-        from backend.dependencies import get_supabase
         from backend.tests.conftest import make_async_supabase_mock
 
-        # Mock get_supabase with async-compatible mock
-        app.dependency_overrides[get_supabase] = lambda: make_async_supabase_mock()
+        # Mock get_effective_supabase and get_supabase with async-compatible mock
+        mock_sb = make_async_supabase_mock()
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
+        app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         transport = ASGITransport(app=app)
 
@@ -230,13 +231,15 @@ class TestRateLimiting:
         In test mode, the limiter may not be active, so we accept both
         scenarios: all requests pass (limiter inactive) or some get 429.
         """
-        from backend.dependencies import get_supabase, require_role
+        from backend.dependencies import require_role
         from backend.tests.conftest import make_async_supabase_mock
 
         # Set up full auth chain for the generation endpoint
         app.dependency_overrides[get_current_user] = lambda: MOCK_USER
 
-        app.dependency_overrides[get_supabase] = lambda: make_async_supabase_mock()
+        mock_sb = make_async_supabase_mock()
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
+        app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         async def _fake_role():
             return "editor"

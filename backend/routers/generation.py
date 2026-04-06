@@ -7,7 +7,7 @@ from uuid import UUID
 import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, limiter
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.generation import (
@@ -79,7 +79,7 @@ async def generate_agent(
     body: GenerateAgentRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Generate an agent description using AI."""
     try:
@@ -129,7 +129,7 @@ async def generate_building(
     body: GenerateBuildingRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Generate a building description using AI."""
     try:
@@ -186,7 +186,7 @@ async def generate_portrait_description(
     body: GeneratePortraitRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PortraitDescriptionResponse]:
     """Generate a portrait description for image generation."""
     try:
@@ -239,7 +239,7 @@ async def generate_event(
     body: GenerateEventRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Generate an event description using AI."""
     try:
@@ -295,7 +295,7 @@ async def generate_relationships(
     body: GenerateRelationshipsRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[dict]]:
     """Generate relationship suggestions for an agent using AI."""
     try:
@@ -360,7 +360,7 @@ async def generate_lore_image(
     body: GenerateLoreImageRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ImageGenerationResponse]:
     """Generate a lore section image (3:2 aspect ratio, simulation style)."""
     try:
@@ -415,7 +415,7 @@ async def generate_image(
     body: GenerateImageRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ImageGenerationResponse]:
     """Generate an image for an agent portrait, building, or simulation banner."""
     try:

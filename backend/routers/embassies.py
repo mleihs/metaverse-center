@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_role,
 )
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
@@ -36,7 +36,7 @@ async def list_embassies(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -58,7 +58,7 @@ async def get_embassy(
     embassy_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Get a single embassy."""
     data = await EmbassyService.get(supabase, embassy_id)
@@ -71,7 +71,7 @@ async def get_building_embassy(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse | None]:
     """Get the embassy linked to a specific building."""
     data = await EmbassyService.get_for_building(supabase, building_id)
@@ -85,7 +85,7 @@ async def create_embassy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Create an embassy between two buildings in different simulations."""
     result = await EmbassyService.create_embassy(
@@ -108,7 +108,7 @@ async def update_embassy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Update embassy metadata."""
     result = await EmbassyService.update_embassy(
@@ -129,7 +129,7 @@ async def activate_embassy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Activate a proposed or suspended embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "active")
@@ -147,7 +147,7 @@ async def suspend_embassy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Suspend an active embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "suspended")
@@ -165,7 +165,7 @@ async def dissolve_embassy(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EmbassyResponse]:
     """Dissolve an embassy (clears building special attributes)."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "dissolved")

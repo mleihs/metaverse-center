@@ -21,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_simulation_member,
 )
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
@@ -92,7 +92,7 @@ async def create_run(
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("editor"))],
-    _supabase: Annotated[Client, Depends(get_supabase)],
+    _supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[CreateRunResponse]:
     """Start a new dungeon run."""
@@ -116,7 +116,7 @@ async def create_run(
 async def get_run(
     run_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[DungeonRunResponse]:
     """Get run metadata."""
     data = await DungeonQueryService.get_run(supabase, run_id)
@@ -408,7 +408,7 @@ async def list_history(
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[DungeonRunResponse]:
@@ -431,7 +431,7 @@ async def get_agent_loot_effects(
     simulation_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AgentLootEffectResponse]]:
     """Get all persistent dungeon loot effects for an agent.
 

@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
 from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID
 
@@ -69,8 +69,10 @@ def _mock_supabase_with_role(role: str = "admin") -> MagicMock:
 def client():
     """TestClient with auth, role-passing supabase, and admin supabase overrides."""
     user = CurrentUser(id=MOCK_USER_ID, email=MOCK_USER_EMAIL, access_token="mock-token")
+    mock_sb = _mock_supabase_with_role("admin")
     app.dependency_overrides[get_current_user] = lambda: user
-    app.dependency_overrides[get_supabase] = lambda: _mock_supabase_with_role("admin")
+    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
+    app.dependency_overrides[get_supabase] = lambda: mock_sb
     app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
 
     yield TestClient(app)
@@ -81,8 +83,10 @@ def client():
 def viewer_client():
     """TestClient with viewer role."""
     user = CurrentUser(id=MOCK_USER_ID, email=MOCK_USER_EMAIL, access_token="mock-token")
+    mock_sb = _mock_supabase_with_role("viewer")
     app.dependency_overrides[get_current_user] = lambda: user
-    app.dependency_overrides[get_supabase] = lambda: _mock_supabase_with_role("viewer")
+    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
+    app.dependency_overrides[get_supabase] = lambda: mock_sb
     app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
 
     yield TestClient(app)
@@ -193,6 +197,7 @@ class TestTriggerEcho:
             return b
 
         mock_supabase.table.side_effect = make_builder
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_supabase
         app.dependency_overrides[get_supabase] = lambda: mock_supabase
 
         mock_create.return_value = MOCK_ECHO
