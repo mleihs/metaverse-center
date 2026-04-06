@@ -372,7 +372,7 @@ export class VelgLandingAgentShowcase extends LitElement {
       }
 
       .showcase__card {
-        flex: 0 0 auto;
+        flex: 0 0 200px;
         scroll-snap-align: center;
       }
     }
