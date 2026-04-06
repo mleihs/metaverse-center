@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from typing import Any
 
 import replicate
+import sentry_sdk
 
 from backend.config import settings
+
+# Max time for a single image generation (model run + output download).
+# Flux-dev typically completes in 20-60s; 5 min covers cold starts + queue.
+_GENERATION_TIMEOUT_S = 300
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +79,12 @@ class ReplicateService:
                 extra={"model": model, "prompt": prompt[:80], "prompt_key": prompt_key},
             )
 
-            output = await self._client.async_run(
-                model,
-                input={prompt_key: prompt, **params},
+            output = await asyncio.wait_for(
+                self._client.async_run(
+                    model,
+                    input={prompt_key: prompt, **params},
+                ),
+                timeout=_GENERATION_TIMEOUT_S,
             )
 
             # Output is either a FileOutput or a list of FileOutput
@@ -93,12 +102,22 @@ class ReplicateService:
             )
             return image_bytes
 
+        except TimeoutError:
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            logger.error(
+                "Replicate timeout",
+                extra={"model": model, "timeout_s": _GENERATION_TIMEOUT_S, "duration_ms": duration_ms},
+            )
+            raise ReplicateError(
+                f"Replicate generation timed out after {_GENERATION_TIMEOUT_S}s"
+            ) from None
         except replicate.exceptions.ModelError as e:
             duration_ms = int((time.monotonic() - t0) * 1000)
             logger.error(
                 "Replicate model error",
                 extra={"model": model, "error": str(e), "duration_ms": duration_ms},
             )
+            sentry_sdk.capture_exception(e)
             raise ReplicateError(f"Model error: {e}") from e
         except replicate.exceptions.ReplicateError as e:
             duration_ms = int((time.monotonic() - t0) * 1000)
@@ -115,4 +134,5 @@ class ReplicateService:
                 "Replicate API error",
                 extra={"model": model, "error": str(e), "duration_ms": duration_ms},
             )
+            sentry_sdk.capture_exception(e)
             raise ReplicateError(f"Replicate API error: {e}") from e

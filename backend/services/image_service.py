@@ -366,7 +366,8 @@ class ImageService:
         await self._upload_to_storage("simulation.assets", full_path, full_avif)
         url = await self._upload_to_storage("simulation.assets", path, thumb_avif)
 
-        # Mark section as image-generated for progress tracking
+        # Mark section AFTER upload succeeds — prevents orphaned DB state
+        # where image_generated_at is set but no file exists in storage.
         if section_id:
             await self._supabase.table("simulation_lore").update(
                 {"image_generated_at": "now()"},

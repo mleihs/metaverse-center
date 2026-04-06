@@ -1154,6 +1154,11 @@ class ForgeOrchestratorService:
                 except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                     images_failed += 1
                     logger.exception("Banner generation failed")
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("forge_phase", "batch_images")
+                        scope.set_tag("entity_type", "banner")
+                        scope.set_context("image_generation", {"simulation_id": str(simulation_id)})
+                        sentry_sdk.capture_exception()
 
                 # ── Generate terminal boot art from the banner image ──
                 try:
@@ -1227,6 +1232,15 @@ class ForgeOrchestratorService:
                             "Batch image gen failed for agent",
                             extra={"entity_type": "agent", "entity_id": agent_row["id"]},
                         )
+                        with sentry_sdk.push_scope() as scope:
+                            scope.set_tag("forge_phase", "batch_images")
+                            scope.set_tag("entity_type", "agent")
+                            scope.set_context("image_generation", {
+                                "simulation_id": str(simulation_id),
+                                "entity_id": str(agent_row["id"]),
+                                "entity_name": agent_row["name"],
+                            })
+                            sentry_sdk.capture_exception()
 
             # 3. Building images
             if not _types or "building" in _types:
@@ -1274,6 +1288,15 @@ class ForgeOrchestratorService:
                             "Batch image gen failed for building",
                             extra={"entity_type": "building", "entity_id": building["id"]},
                         )
+                        with sentry_sdk.push_scope() as scope:
+                            scope.set_tag("forge_phase", "batch_images")
+                            scope.set_tag("entity_type", "building")
+                            scope.set_context("image_generation", {
+                                "simulation_id": str(simulation_id),
+                                "entity_id": str(building["id"]),
+                                "entity_name": building["name"],
+                            })
+                            sentry_sdk.capture_exception()
 
             # 4. Lore images (sections with image_slug)
             if not _types or "lore" in _types:
@@ -1313,6 +1336,15 @@ class ForgeOrchestratorService:
                             "Lore image gen failed",
                             extra={"entity_type": "lore_section", "entity_id": section["id"]},
                         )
+                        with sentry_sdk.push_scope() as scope:
+                            scope.set_tag("forge_phase", "batch_images")
+                            scope.set_tag("entity_type", "lore")
+                            scope.set_context("image_generation", {
+                                "simulation_id": str(simulation_id),
+                                "entity_id": str(section["id"]),
+                                "entity_name": section["title"],
+                            })
+                            sentry_sdk.capture_exception()
 
         except ReplicateBillingError:
             logger.error(
