@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.invitation import (
     InvitationCreate,
@@ -33,7 +33,7 @@ async def create_invitation(
     body: InvitationCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[InvitationResponse]:
     """Create an invitation to join a simulation. Requires admin role."""
     result = await InvitationService.create_invitation(
@@ -57,7 +57,7 @@ async def list_invitations(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[InvitationResponse]]:
     """List all invitations for a simulation. Requires admin role."""
     result = await InvitationService.list_invitations(supabase, simulation_id)
@@ -68,7 +68,7 @@ async def list_invitations(
 async def validate_invitation(
     token: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[InvitationPublicResponse]:
     """Validate an invitation token (platform-level, no simulation context)."""
     invitation = await InvitationService.get_by_token(supabase, token)
@@ -99,7 +99,7 @@ async def validate_invitation(
 async def accept_invitation(
     token: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MemberResponse]:
     """Accept an invitation — creates membership."""
     result = await InvitationService.accept_invitation(supabase, token, user.id)

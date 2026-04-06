@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, is_platform_admin
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, is_platform_admin
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
 from backend.models.user import DashboardData, MembershipInfo, UserWithMemberships
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/users", tags=["users"])
 @router.get("/me/dashboard")
 async def get_dashboard(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[DashboardData]:
     """Get aggregated dashboard data for the authenticated user."""
@@ -31,7 +31,7 @@ async def get_dashboard(
 @router.get("/me")
 async def get_me(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[UserWithMemberships]:
     """Get the current user's profile with simulation memberships."""
@@ -66,7 +66,7 @@ async def get_me(
 @router.get("/me/notification-preferences")
 async def get_notification_preferences(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[NotificationPreferencesResponse]:
     """Get the current user's notification preferences.
 
@@ -80,7 +80,7 @@ async def get_notification_preferences(
 async def update_notification_preferences(
     body: NotificationPreferencesUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[NotificationPreferencesResponse]:
     """Update the current user's notification preferences (upsert)."""
     result = await UserProfileService.upsert_notification_preferences(

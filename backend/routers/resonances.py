@@ -15,7 +15,7 @@ from backend.dependencies import (
     CurrentUser,
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_platform_admin,
 )
 from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
@@ -44,7 +44,7 @@ router = APIRouter(
 @router.get("")
 async def list_resonances(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     signature: Annotated[str | None, Query()] = None,
     search: Annotated[str | None, Query()] = None,
@@ -75,7 +75,7 @@ async def list_resonances(
 async def get_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Get a single resonance."""
     data = await ResonanceService.get(supabase, resonance_id)
@@ -89,7 +89,7 @@ async def get_resonance(
 async def create_resonance(
     body: ResonanceCreate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Create a new substrate resonance (platform admin only)."""
     resonance = await ResonanceService.create(
@@ -111,7 +111,7 @@ async def update_resonance(
     resonance_id: UUID,
     body: ResonanceUpdate,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Update a resonance (platform admin only)."""
     resonance = await ResonanceService.update(
@@ -170,7 +170,7 @@ async def process_impact(
 async def list_impacts(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ResonanceImpactResponse]]:
     """List impact records for a resonance."""
     data = await ResonanceService.list_impacts(supabase, resonance_id)
@@ -185,7 +185,7 @@ async def update_status(
     resonance_id: UUID,
     new_status: Annotated[str, Query()],
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Update resonance status (platform admin only)."""
     resonance = await ResonanceService.update_status(supabase, resonance_id, new_status)
@@ -204,7 +204,7 @@ async def update_status(
 async def restore_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Restore a soft-deleted resonance (platform admin only)."""
     resonance = await ResonanceService.restore(supabase, resonance_id)
@@ -223,7 +223,7 @@ async def restore_resonance(
 async def delete_resonance(
     resonance_id: UUID,
     user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ResonanceResponse]:
     """Soft-delete a resonance (platform admin only)."""
     resonance = await ResonanceService.soft_delete(supabase, resonance_id)

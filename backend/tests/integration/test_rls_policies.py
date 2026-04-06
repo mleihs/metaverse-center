@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, get_supabase, require_role
 from backend.models.common import CurrentUser
 
 # ---------------------------------------------------------------------------
@@ -226,7 +226,7 @@ class TestRoleBasedAccess:
 
     Instead of trying to override require_role (which is a factory returning
     a new function each time, so it can't be used as a dict key for
-    dependency_overrides), we mock get_supabase to return a client where
+    dependency_overrides), we mock get_effective_supabase to return a client where
     the simulation_members table returns the desired role.
     """
 
@@ -236,6 +236,7 @@ class TestRoleBasedAccess:
         """Override auth + supabase so require_role sees the given role."""
         mock_sb = _mock_supabase_with_role(role)
         app.dependency_overrides[get_current_user] = lambda: user
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
         app.dependency_overrides[get_supabase] = lambda: mock_sb
 
     # --- Viewer cannot write ---
@@ -440,7 +441,7 @@ class TestDataIsolation:
 
     def test_user_b_cannot_use_user_a_supabase_client(self, user_a, user_b):
         """Each user should get their own Supabase client scoped to their JWT."""
-        # The get_supabase dependency creates a client per-user. When we override
+        # The get_effective_supabase dependency creates a client per-user. When we override
         # get_current_user for user_a, the resulting client should carry user_a's
         # token, not user_b's.
         clients_by_user = {}
@@ -457,6 +458,7 @@ class TestDataIsolation:
 
         # First request as user A
         app.dependency_overrides[get_current_user] = lambda: user_a
+        app.dependency_overrides[get_effective_supabase] = _supabase_for_a
         app.dependency_overrides[get_supabase] = _supabase_for_a
 
         client_a = TestClient(app)
@@ -466,6 +468,7 @@ class TestDataIsolation:
 
         # Now request as user B
         app.dependency_overrides[get_current_user] = lambda: user_b
+        app.dependency_overrides[get_effective_supabase] = _supabase_for_b
         app.dependency_overrides[get_supabase] = _supabase_for_b
 
         client_b = TestClient(app)

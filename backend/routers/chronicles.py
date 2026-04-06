@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_role
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.chronicle import ChronicleGenerateRequest
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
@@ -60,7 +60,7 @@ async def list_chronicles(
     request: Request,
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse:
@@ -79,7 +79,7 @@ async def get_chronicle(
     simulation_id: UUID,
     chronicle_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Get a single chronicle edition."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)

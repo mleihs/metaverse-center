@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.settings import SettingCreate, SettingResponse, SettingUpdate
 from backend.services.audit_service import AuditService
@@ -28,7 +28,7 @@ async def list_settings(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     category: Annotated[str | None, Query()] = None,
 ) -> SuccessResponse[list[SettingResponse]]:
     """List all settings, optionally filtered by category."""
@@ -42,7 +42,7 @@ async def get_by_category(
     category: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[SettingResponse]]:
     """Get all settings in a specific category."""
     data = await _service.list_settings(supabase, simulation_id, category=category)
@@ -55,7 +55,7 @@ async def get_setting(
     setting_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SettingResponse]:
     """Get a single setting by ID."""
     setting = await _service.get_setting(supabase, simulation_id, setting_id)
@@ -68,7 +68,7 @@ async def upsert_setting(
     body: SettingCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SettingResponse]:
     """Create or update a setting. Sensitive keys are encrypted automatically."""
     setting = await _service.upsert_setting(
@@ -88,7 +88,7 @@ async def update_setting(
     body: SettingUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SettingResponse]:
     """Update a setting value by ID. For full upsert by key, use POST."""
     # Get existing setting to preserve category/key
@@ -116,7 +116,7 @@ async def delete_setting(
     setting_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Delete a setting."""
     await _service.delete_setting(supabase, simulation_id, setting_id)

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.zone_action import ZoneActionCreate, ZoneActionResponse
 from backend.services.audit_service import AuditService
@@ -27,7 +27,7 @@ async def list_zone_actions(
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ZoneActionResponse]]:
     """List active and recent actions for a zone."""
     data = await ZoneActionService.list_actions(supabase, simulation_id, zone_id)
@@ -41,7 +41,7 @@ async def create_zone_action(
     body: ZoneActionCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneActionResponse]:
     """Create a zone fortification action."""
     action = await ZoneActionService.create_action(
@@ -61,7 +61,7 @@ async def cancel_zone_action(
     action_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneActionResponse]:
     """Cancel an active zone action."""
     action = await ZoneActionService.cancel_action(

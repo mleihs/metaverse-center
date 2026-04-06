@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.social import SocialMediaPostResponse, SocialSyncResponse
@@ -36,7 +36,7 @@ async def list_posts(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     platform: str | None = None,
     transformed: bool | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
@@ -64,7 +64,7 @@ async def sync_posts(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SocialSyncResponse]:
     """Sync posts from configured Facebook page."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -114,7 +114,7 @@ async def transform_post(
     body: TransformPostRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SocialMediaPostResponse]:
     """Transform a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -151,7 +151,7 @@ async def analyze_sentiment(
     body: AnalyzeSentimentRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SocialMediaPostResponse]:
     """Analyze sentiment of a social media post using AI."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -193,7 +193,7 @@ async def generate_reactions(
     body: GenerateReactionsRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[dict]]:
     """Generate agent reactions to a social media post."""
     post = await SocialMediaService.get_post(supabase, simulation_id, post_id)
@@ -258,7 +258,7 @@ async def get_comments(
     post_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[dict]]:
     """Get all comments for a social media post."""
     comments = await SocialMediaService.get_comments(supabase, simulation_id, post_id)

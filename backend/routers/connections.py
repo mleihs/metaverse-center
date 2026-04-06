@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_platform_admin
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_platform_admin
 from backend.models.common import CurrentUser, MessageResponse, SuccessResponse
 from backend.models.echo import ConnectionCreate, ConnectionResponse, ConnectionUpdate
 from backend.services.audit_service import AuditService
@@ -24,7 +24,7 @@ router = APIRouter(
 @router.get("")
 async def list_connections(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ConnectionResponse]]:
     """List all simulation connections."""
     data = await ConnectionService.list_all(supabase, active_only=False)

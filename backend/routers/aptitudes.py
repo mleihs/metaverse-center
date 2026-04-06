@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.aptitude import AptitudeResponse, AptitudeSet
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.services.aptitude_service import AptitudeService
@@ -29,7 +29,7 @@ async def get_simulation_aptitudes(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AptitudeResponse]]:
     """Get all aptitude scores for all agents in a simulation."""
     data = await AptitudeService.get_all_for_simulation(supabase, simulation_id)
@@ -45,7 +45,7 @@ async def get_aptitudes(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AptitudeResponse]]:
     """Get all aptitude scores for an agent."""
     data = await AptitudeService.get_for_agent(supabase, simulation_id, agent_id)
@@ -59,7 +59,7 @@ async def set_aptitudes(
     body: AptitudeSet,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AptitudeResponse]]:
     """Set all 6 aptitude scores for an agent (budget must equal 36)."""
     data = await AptitudeService.set_aptitudes(

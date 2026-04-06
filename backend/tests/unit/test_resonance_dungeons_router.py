@@ -31,6 +31,7 @@ from backend.dependencies import (
     get_admin_supabase,
     get_anon_supabase,
     get_current_user,
+    get_effective_supabase,
     get_supabase,
 )
 from backend.models.common import CurrentUser
@@ -60,6 +61,7 @@ def client():
     mock_anon = make_async_supabase_mock()
 
     app.dependency_overrides[get_current_user] = lambda: mock_user
+    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
     app.dependency_overrides[get_admin_supabase] = lambda: mock_admin
     app.dependency_overrides[get_anon_supabase] = lambda: mock_anon
@@ -259,6 +261,7 @@ class TestCreateRun:
 class TestGetRun:
     def test_happy_path(self, client):
         mock_sb = _make_member_supabase(_run_row())
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
         app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         resp = client.get(f"/api/v1/dungeons/runs/{RUN_ID}")
@@ -267,6 +270,7 @@ class TestGetRun:
 
     def test_not_found(self, client):
         mock_sb = _make_member_supabase(None)
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
         app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         resp = client.get(f"/api/v1/dungeons/runs/{uuid4()}")
@@ -549,6 +553,7 @@ class TestListHistory:
         member_chain = make_chain_mock(execute_data=[{"member_role": "editor"}])
         mock_sb = MagicMock()
         mock_sb.table.side_effect = lambda name: member_chain if name == "simulation_members" else mock_sb_data_chain
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
         app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         resp = client.get(f"/api/v1/dungeons/history?simulation_id={SIM_ID}")
@@ -566,6 +571,7 @@ class TestListHistory:
         member_chain = make_chain_mock(execute_data=[{"member_role": "editor"}])
         mock_sb = MagicMock()
         mock_sb.table.side_effect = lambda name: member_chain if name == "simulation_members" else mock_sb_data_chain
+        app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
         app.dependency_overrides[get_supabase] = lambda: mock_sb
 
         resp = client.get(f"/api/v1/dungeons/history?simulation_id={SIM_ID}&limit=5&offset=10")

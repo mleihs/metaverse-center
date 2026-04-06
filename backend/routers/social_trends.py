@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.social import (
@@ -80,7 +80,7 @@ async def list_trends(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     platform: str | None = None,
     sentiment: str | None = None,
     is_processed: bool | None = None,
@@ -111,7 +111,7 @@ async def fetch_trends(
     body: FetchTrendsRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[SocialTrendResponse]]:
     """Fetch trends from an external news source."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -146,7 +146,7 @@ async def transform_trend(
     body: TransformTrendRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TrendTransformResponse]:
     """Transform a trend into the simulation context using AI."""
     trend = await SocialTrendsService.get_trend(
@@ -194,7 +194,7 @@ async def integrate_trend(
     body: IntegrateTrendRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Integrate a transformed trend as an event."""
     event_data = serialize_for_json({
@@ -254,7 +254,7 @@ async def workflow(
     body: FetchTrendsRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TrendWorkflowResponse]:
     """Full workflow: Fetch trends from external source and store them."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -299,7 +299,7 @@ async def browse_articles(
     body: BrowseArticlesRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[dict]]:
     """Browse or search articles from external sources without DB storage."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -336,7 +336,7 @@ async def transform_article(
     body: TransformArticleRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ArticleTransformResponse]:
     """Transform an ephemeral article (not from DB) into the simulation context using AI."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -378,7 +378,7 @@ async def integrate_article(
     body: IntegrateArticleRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ArticleIntegrateResponse]:
     """Integrate an article as an event with optional agent reaction generation."""
     tags = [*body.tags, "imported", "news"]
@@ -456,7 +456,7 @@ async def batch_transform_articles(
     body: BatchTransformRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[dict]]:
     """Transform multiple articles in batch. Returns a list of transformation results."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
@@ -512,7 +512,7 @@ async def batch_integrate_articles(
     body: BatchIntegrateRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BatchIntegrateResponse]:
     """Integrate multiple transformed articles as events."""
     created_events: list[dict] = []

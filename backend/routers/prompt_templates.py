@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.prompt_template import (
     PromptTemplateCreate,
@@ -32,7 +32,7 @@ async def list_prompt_templates(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     locale: Annotated[str | None, Query()] = None,
     prompt_category: Annotated[str | None, Query()] = None,
     include_platform: Annotated[bool, Query()] = True,
@@ -62,7 +62,7 @@ async def get_prompt_template(
     template_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Get a single prompt template."""
     data = await PromptTemplateService.get(supabase, template_id)
@@ -75,7 +75,7 @@ async def create_prompt_template(
     body: PromptTemplateCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Create a new prompt template for this simulation."""
     data = await PromptTemplateService.create(
@@ -92,7 +92,7 @@ async def update_prompt_template(
     body: PromptTemplateUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Update a prompt template."""
     data = await PromptTemplateService.update(
@@ -108,7 +108,7 @@ async def delete_prompt_template(
     template_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[DeleteResponse]:
     """Soft-delete a prompt template (set is_active=False)."""
     await PromptTemplateService.deactivate(supabase, simulation_id, template_id)
@@ -121,7 +121,7 @@ async def test_prompt_template(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     template_type: Annotated[str, Query(description="Template type to test")],
     locale: Annotated[str, Query()] = "en",
 ) -> SuccessResponse[PromptTestResponse]:

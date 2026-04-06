@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.building import (
     BuildingAgentResponse,
     BuildingCreate,
@@ -42,7 +42,7 @@ async def list_buildings(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     building_type: Annotated[str | None, Query()] = None,
     building_condition: Annotated[str | None, Query()] = None,
     zone_id: Annotated[UUID | None, Query()] = None,
@@ -75,7 +75,7 @@ async def get_building(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BuildingResponse]:
     """Get a single building."""
     building = await _service.get(supabase, simulation_id, building_id)
@@ -88,7 +88,7 @@ async def create_building(
     body: BuildingCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BuildingResponse]:
     """Create a new building."""
     building = await _service.create(
@@ -112,7 +112,7 @@ async def update_building(
     body: BuildingUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     if_updated_at: Annotated[str | None, Header(alias="If-Updated-At")] = None,
 ) -> SuccessResponse[BuildingResponse]:
     """Update a building."""
@@ -142,7 +142,7 @@ async def delete_building(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BuildingResponse]:
     """Soft-delete a building."""
     building = await _service.soft_delete(supabase, simulation_id, building_id)
@@ -156,7 +156,7 @@ async def get_building_agents(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[BuildingAgentResponse]]:
     """Get all agents assigned to a building."""
     agents = await _service.get_agents(supabase, simulation_id, building_id)
@@ -170,7 +170,7 @@ async def assign_agent(
     agent_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     relation_type: Annotated[str, Query()] = "works",
 ) -> SuccessResponse[BuildingAgentResponse]:
     """Assign an agent to a building."""
@@ -185,7 +185,7 @@ async def unassign_agent(
     agent_id: Annotated[UUID, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove an agent from a building."""
     await _service.unassign_agent(supabase, simulation_id, building_id, agent_id)
@@ -198,7 +198,7 @@ async def get_profession_requirements(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ProfessionRequirementResponse]]:
     """Get profession requirements for a building."""
     requirements = await _service.get_profession_requirements(supabase, simulation_id, building_id)
@@ -212,7 +212,7 @@ async def set_profession_requirement(
     profession: Annotated[str, Query()],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     min_qualification_level: Annotated[int, Query(ge=1, le=5)] = 1,
     is_mandatory: Annotated[bool, Query()] = False,
 ) -> SuccessResponse[ProfessionRequirementResponse]:
@@ -236,7 +236,7 @@ async def get_buildings_by_zone(
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[BuildingResponse]]:
     """Get all buildings in a specific zone."""
     buildings = await _service.get_by_zone(supabase, simulation_id, zone_id)

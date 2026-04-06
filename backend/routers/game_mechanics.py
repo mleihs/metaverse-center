@@ -10,7 +10,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_role
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
 from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.game_mechanics import (
     BuildingReadinessResponse,
@@ -36,7 +36,7 @@ async def get_health_dashboard(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SimulationHealthDashboard]:
     """Full health dashboard combining all metrics for a simulation."""
     data = await GameMechanicsService.get_health_dashboard(supabase, simulation_id)
@@ -48,7 +48,7 @@ async def get_simulation_health(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SimulationHealthResponse]:
     """Top-level simulation health metrics only."""
     data = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
@@ -60,7 +60,7 @@ async def list_building_readiness(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     zone_id: Annotated[UUID | None, Query()] = None,
     order_by: Annotated[str, Query()] = "readiness",
     order_asc: Annotated[bool, Query()] = True,
@@ -85,7 +85,7 @@ async def get_building_readiness(
     building_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BuildingReadinessResponse]:
     """Get readiness metrics for a single building."""
     data = await GameMechanicsService.get_building_readiness(
@@ -99,7 +99,7 @@ async def list_zone_stability(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ZoneStabilityResponse]]:
     """List zone stability for all zones in a simulation."""
     data = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
@@ -112,7 +112,7 @@ async def get_zone_stability(
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneStabilityResponse]:
     """Get stability metrics for a single zone."""
     data = await GameMechanicsService.get_zone_stability(
@@ -126,7 +126,7 @@ async def list_embassy_effectiveness(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[EmbassyEffectivenessResponse]]:
     """List embassy effectiveness for embassies involving this simulation."""
     data = await GameMechanicsService.list_embassy_effectiveness(

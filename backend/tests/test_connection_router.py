@@ -11,6 +11,7 @@ from backend.dependencies import (
     get_admin_supabase,
     get_anon_supabase,
     get_current_user,
+    get_effective_supabase,
     get_supabase,
 )
 from backend.models.common import CurrentUser
@@ -50,6 +51,7 @@ def client():
     mock_sb = make_async_supabase_mock()
 
     app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
     app.dependency_overrides[get_admin_supabase] = lambda: mock_sb
 

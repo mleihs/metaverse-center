@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.agent_profession import (
     AgentProfessionCreate,
     AgentProfessionResponse,
@@ -31,7 +31,7 @@ async def list_professions(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AgentProfessionResponse]]:
     """List all professions for an agent."""
     data = await AgentProfessionService.list_for_agent(
@@ -47,7 +47,7 @@ async def add_profession(
     body: AgentProfessionCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentProfessionResponse]:
     """Add a profession to an agent. Primary-profession uniqueness enforced by DB trigger."""
     result = await AgentProfessionService.add(
@@ -65,7 +65,7 @@ async def update_profession(
     body: AgentProfessionUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentProfessionResponse]:
     """Update an agent profession."""
     result = await AgentProfessionService.update(
@@ -86,7 +86,7 @@ async def delete_profession(
     profession_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a profession from an agent."""
     await AgentProfessionService.remove(

@@ -14,7 +14,7 @@ from backend.dependencies import (
     get_admin_supabase,
     get_anon_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_platform_admin,
     require_role,
 )
@@ -46,7 +46,7 @@ router = APIRouter(tags=["Heartbeat"])
 async def get_heartbeat_overview(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Get latest heartbeat tick + countdown for a simulation."""
     data = await HeartbeatService.get_heartbeat_overview(supabase, simulation_id)
@@ -57,7 +57,7 @@ async def get_heartbeat_overview(
 async def get_daily_briefing(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Daily briefing summary — health delta, event counts, active arcs."""
     data = await HeartbeatService.get_daily_briefing(supabase, simulation_id)
@@ -68,7 +68,7 @@ async def get_daily_briefing(
 async def list_heartbeat_entries(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     entry_type: Annotated[str | None, Query()] = None,
     tick_number: Annotated[int | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
@@ -90,7 +90,7 @@ async def list_heartbeat_entries(
 async def list_narrative_arcs(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -142,7 +142,7 @@ async def list_bureau_responses(
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse:
@@ -163,7 +163,7 @@ async def create_bureau_response(
     body: BureauResponseCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Create a bureau response to an event."""
     data = await BureauResponseService.create_response(
@@ -187,7 +187,7 @@ async def cancel_bureau_response(
     response_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Cancel a pending bureau response."""
     data = await BureauResponseService.cancel_response(supabase, simulation_id, response_id)
@@ -208,7 +208,7 @@ async def list_attunements(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """List attunements for a simulation."""
     data = await AttunementService.list_attunements(supabase, simulation_id)
@@ -221,7 +221,7 @@ async def set_attunement(
     body: AttunementCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Set a resonance signature attunement."""
     data = await AttunementService.set_attunement(
@@ -241,7 +241,7 @@ async def remove_attunement(
     signature: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Remove an attunement."""
     data = await AttunementService.remove_attunement(supabase, simulation_id, signature)
@@ -261,7 +261,7 @@ async def remove_attunement(
 @router.get("/api/v1/anchors")
 async def list_anchors(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     simulation_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
@@ -284,7 +284,7 @@ async def create_anchor(
     simulation_id: Annotated[UUID, Query(description="Simulation creating the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Create a collaborative anchor."""
     data = await AnchorService.create_anchor(
@@ -305,7 +305,7 @@ async def join_anchor(
     simulation_id: Annotated[UUID, Query(description="Simulation joining the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Join an existing anchor."""
     data = await AnchorService.join_anchor(supabase, anchor_id, simulation_id, user.id)
@@ -322,7 +322,7 @@ async def leave_anchor(
     simulation_id: Annotated[UUID, Query(description="Simulation leaving the anchor")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Leave an anchor."""
     data = await AnchorService.leave_anchor(supabase, anchor_id, simulation_id)

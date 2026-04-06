@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_architect,
     require_platform_admin,
 )
@@ -77,7 +77,7 @@ _orchestrator_service = ForgeOrchestratorService()
 @router.get("/drafts")
 async def list_drafts(
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[ForgeDraft]:
@@ -92,7 +92,7 @@ async def create_draft(
     request: Request,
     body: ForgeDraftCreate,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[ForgeDraft]:
     """Initialize a new worldbuilding draft."""
     draft = await _draft_service.create_draft(supabase, user.id, body)
@@ -112,7 +112,7 @@ async def create_draft(
 async def get_draft(
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[ForgeDraft]:
     """Get draft details."""
     draft = await _draft_service.get_draft(supabase, user.id, draft_id)
@@ -126,7 +126,7 @@ async def update_draft(
     draft_id: UUID,
     body: ForgeDraftUpdate,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[ForgeDraft]:
     """Update draft state."""
     # Validate phase transitions
@@ -164,7 +164,7 @@ async def update_draft(
 async def delete_draft(
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Delete a draft."""
     await _draft_service.delete_draft(supabase, user.id, draft_id)
@@ -185,7 +185,7 @@ async def run_research(
     request: Request,
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI research output
     """Trigger the Astrolabe AI research phase."""
     result = await _orchestrator_service.run_astrolabe_research(supabase, user.id, draft_id)
@@ -207,7 +207,7 @@ async def generate_chunk(
     draft_id: UUID,
     chunk_type: Literal["geography", "agents", "buildings"],
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI chunk output
     """Trigger generation of a specific lore chunk (agents, buildings, etc)."""
     result = await _orchestrator_service.generate_blueprint_chunk(supabase, user.id, draft_id, chunk_type)
@@ -232,7 +232,7 @@ async def generate_single_entity(
     entity_index: Annotated[int, Query(ge=0, le=11)],
     entity_total: Annotated[int, Query(ge=3, le=12)],
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[dict]:  # ASSESS: polymorphic AI entity output
     """Generate a single agent or building entity (per-entity loop)."""
     result = await _orchestrator_service.generate_single_entity(
@@ -256,7 +256,7 @@ async def generate_theme(
     request: Request,
     draft_id: UUID,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[ForgeThemeOutput]:
     """Generate an AI theme for a draft (Darkroom phase)."""
     theme_data = await _orchestrator_service.generate_theme_for_draft(supabase, user.id, draft_id)
@@ -278,7 +278,7 @@ async def ignite_shard(
     draft_id: UUID,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[IgnitionResponse]:
     """Finalize the draft and materialize the simulation."""
@@ -315,7 +315,7 @@ async def ignite_shard(
 @router.get("/bundles")
 async def list_token_bundles(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[list[TokenBundle]]:
     """List active token bundles (product catalog)."""
     bundles = await _draft_service.list_bundles(supabase)
@@ -325,7 +325,7 @@ async def list_token_bundles(
 @router.get("/wallet")
 async def get_wallet(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[WalletSummary]:
     """Get the current user's forge wallet."""
     data = await _draft_service.get_wallet(supabase, user.id)
@@ -338,7 +338,7 @@ async def purchase_tokens(
     request: Request,
     body: PurchaseRequest,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[PurchaseReceipt]:
     """Mock-purchase a token bundle. Grants tokens immediately."""
     receipt = await _draft_service.purchase_tokens(supabase, body.bundle_slug)
@@ -357,7 +357,7 @@ async def purchase_tokens(
 @router.get("/wallet/history")
 async def get_purchase_history(
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[TokenPurchaseHistory]:
@@ -377,7 +377,7 @@ async def update_byok(
     request: Request,
     body: UpdateBYOKRequest,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Update personal API keys (BYOK) for the Simulation Forge."""
     # Check if user is allowed to use BYOK
@@ -419,7 +419,7 @@ async def update_byok(
 async def list_feature_purchases(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     feature_type: Annotated[str | None, Query()] = None,
 ) -> SuccessResponse[list[FeaturePurchase]]:
     """List feature purchases for a simulation (own purchases only via RLS)."""
@@ -441,7 +441,7 @@ async def purchase_darkroom_pass(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[DarkroomPassResponse]:
     """Purchase Darkroom Pass: 3 theme variants + 10 image regenerations."""
@@ -485,7 +485,7 @@ async def darkroom_regenerate_image(
     body: ImageRegenRequest,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[DarkroomRegenResponse]:
     """Regenerate a single entity image using Darkroom budget."""
@@ -552,7 +552,7 @@ async def purchase_classified_dossier(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Classified Dossier: 6-section deep lore expansion."""
@@ -645,7 +645,7 @@ async def purchase_recruitment(
     body: RecruitmentRequest,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Recruitment: 3 new agents with full integration."""
@@ -694,7 +694,7 @@ async def purchase_chronicle_export(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Chronicle: PDF codex export."""
@@ -734,7 +734,7 @@ async def purchase_hires_archive(
     simulation_id: UUID,
     background_tasks: BackgroundTasks,
     user: Annotated[CurrentUser, Depends(require_architect())],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[PurchaseConfirmation]:
     """Purchase Full-Res Archive: ZIP of all simulation images at native resolution."""
@@ -771,7 +771,7 @@ async def purchase_hires_archive(
 async def get_feature_purchase(
     purchase_id: str,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase=Depends(get_supabase),
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[FeaturePurchase]:
     """Get feature purchase status (for polling during generation)."""
     purchase = await ForgeFeatureService.get_purchase(supabase, purchase_id)

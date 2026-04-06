@@ -11,7 +11,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.agent_autonomy import (
     AgentActivityResponse,
     AgentMoodResponse,
@@ -47,7 +47,7 @@ async def get_agent_mood(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentMoodResponse | None]:
     """Get the current emotional state of an agent."""
     data = await AgentMoodService.get_agent_mood(supabase, agent_id, simulation_id)
@@ -60,7 +60,7 @@ async def list_agent_moodlets(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MoodletResponse]]:
     """List all active moodlets for an agent."""
     data = await AgentMoodService.list_moodlets(supabase, agent_id, simulation_id)
@@ -76,7 +76,7 @@ async def get_agent_needs(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentNeedsResponse | None]:
     """Get the current need levels of an agent."""
     data = await AgentNeedsService.get_agent_needs(supabase, agent_id, simulation_id)
@@ -92,7 +92,7 @@ async def list_agent_opinions(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AgentOpinionResponse]]:
     """List all opinions this agent holds about other agents."""
     data = await AgentOpinionService.list_opinions(supabase, agent_id, simulation_id)
@@ -105,7 +105,7 @@ async def list_agent_opinion_modifiers(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     target_agent_id: Annotated[UUID | None, Query()] = None,
 ) -> SuccessResponse[list[OpinionModifierResponse]]:
     """List active opinion modifiers for an agent, optionally filtered by target."""
@@ -123,7 +123,7 @@ async def list_activities(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
     agent_id: Annotated[UUID | None, Query()] = None,
@@ -153,7 +153,7 @@ async def get_simulation_mood_summary(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SimulationMoodSummary]:
     """Get aggregate mood/stress state for all agents in a simulation."""
     summary = await MorningBriefingService._compute_mood_summary(
@@ -170,7 +170,7 @@ async def get_morning_briefing(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
     mode: Annotated[str, Query(pattern=r"^(narrative|data)$")] = "narrative",
 ) -> SuccessResponse[MorningBriefingData]:

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, require_role
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.memory import ReflectionRequest
@@ -29,7 +29,7 @@ async def list_memories(
     simulation_id: UUID,
     agent_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     memory_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,

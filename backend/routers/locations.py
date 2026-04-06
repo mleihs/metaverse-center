@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
@@ -46,7 +46,7 @@ async def list_cities(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[CityResponse]:
@@ -64,7 +64,7 @@ async def get_city(
     city_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[CityResponse]:
     """Get a single city."""
     city = await _service.get_city(supabase, simulation_id, city_id)
@@ -77,7 +77,7 @@ async def create_city(
     body: CityCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[CityResponse]:
     """Create a new city."""
     city = await _service.create_city(supabase, simulation_id, body.model_dump(exclude_none=True))
@@ -92,7 +92,7 @@ async def update_city(
     body: CityUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[CityResponse]:
     """Update a city. Requires admin role."""
     city = await _service.update_city(supabase, simulation_id, city_id, body.model_dump(exclude_none=True))
@@ -108,7 +108,7 @@ async def list_zones(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     city_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -127,7 +127,7 @@ async def get_zone(
     zone_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneResponse]:
     """Get a single zone."""
     zone = await _service.get_zone(supabase, simulation_id, zone_id)
@@ -140,7 +140,7 @@ async def create_zone(
     body: ZoneCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneResponse]:
     """Create a new zone."""
     zone = await _service.create_zone(supabase, simulation_id, body.model_dump(exclude_none=True))
@@ -155,7 +155,7 @@ async def update_zone(
     body: ZoneUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ZoneResponse]:
     """Update a zone. Requires admin role."""
     zone = await _service.update_zone(supabase, simulation_id, zone_id, body.model_dump(exclude_none=True))
@@ -171,7 +171,7 @@ async def list_streets(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     city_id: Annotated[UUID | None, Query()] = None,
     zone_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
@@ -193,7 +193,7 @@ async def create_street(
     body: StreetCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[StreetResponse]:
     """Create a new street."""
     street = await _service.create_street(supabase, simulation_id, body.model_dump(exclude_none=True))
@@ -208,7 +208,7 @@ async def update_street(
     body: StreetUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("admin"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[StreetResponse]:
     """Update a street. Requires admin role."""
     street = await _service.update_street(supabase, simulation_id, street_id, body.model_dump(exclude_none=True))

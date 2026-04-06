@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_epoch_creator,
     require_epoch_participant,
 )
@@ -36,7 +36,7 @@ async def deploy_operative(
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MissionResponse]:
     """Deploy an operative agent on a mission. Must be a participant in the epoch."""
@@ -56,7 +56,7 @@ async def deploy_operative(
 async def list_missions(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     simulation_id: Annotated[UUID | None, Query(description="Filter by source simulation")] = None,
     status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
@@ -80,7 +80,7 @@ async def list_threats(
     epoch_id: UUID,
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MissionResponse]]:
     """List detected incoming operative threats for your simulation."""
     data = await OperativeService.list_threats(supabase, epoch_id, simulation_id)
@@ -95,7 +95,7 @@ async def resolve_missions(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[list[MissionResponse]]:
     """Resolve all pending missions that have reached their resolve time. Creator only."""
@@ -127,7 +127,7 @@ async def fortify_zone(
     zone_id: Annotated[UUID, Query(description="Zone to fortify")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[dict]:
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
@@ -148,7 +148,7 @@ async def counter_intel_sweep(
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MissionResponse]]:
     """Run a counter-intelligence sweep. Must be a participant in the epoch."""
     detected = await OperativeService.counter_intel_sweep(
@@ -169,7 +169,7 @@ async def get_mission(
     epoch_id: UUID,
     mission_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MissionResponse]:
     """Get a single operative mission."""
     data = await OperativeService.get_mission(supabase, mission_id)
@@ -186,7 +186,7 @@ async def recall_operative(
     simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MissionResponse]:
     """Recall an active operative. Must be a participant in the epoch."""
     data = await OperativeService.recall(supabase, mission_id, simulation_id)

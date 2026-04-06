@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
-    get_supabase,
+    get_effective_supabase,
     require_platform_admin,
 )
 from backend.models.common import CurrentUser, SuccessResponse
@@ -36,7 +36,7 @@ router = APIRouter(
 async def create_access_request(
     body: ForgeAccessRequestCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ForgeAccessRequestResponse]:
     """Submit a clearance upgrade request."""
     data = await ForgeAccessService.create_request(
@@ -52,7 +52,7 @@ async def create_access_request(
 @router.get("/me")
 async def get_my_access_request(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ForgeAccessRequestResponse | None]:
     """Get the current user's latest clearance request."""
     data = await ForgeAccessService.get_user_status(supabase, user.id)
