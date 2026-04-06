@@ -1,8 +1,8 @@
 """Localization utilities for the _de suffix column pattern.
 
-Used by chat_ai_service to resolve locale-appropriate agent fields and
-mood descriptors. Follows the established _de suffix pattern from the
-Forge entity translation pipeline.
+Used by chat_ai_service to resolve locale-appropriate agent fields,
+mood descriptors, and moodlet/emotion labels. Follows the established
+_de suffix pattern from the Forge entity translation pipeline.
 """
 
 # Mapping of locale -> field suffix. Only 'de' has _de columns in the DB.
@@ -27,7 +27,12 @@ def get_localized_field(entity: dict, field: str, locale: str) -> str:
     return entity.get(field, "")
 
 
-# ── Localized mood descriptors ──────────────────────────────────────
+def localize_label(label: str, mapping: dict[str, dict[str, str]], locale: str) -> str:
+    """Translate a free-text label using a locale dict. Falls back to the raw label."""
+    return mapping.get(locale, {}).get(label, label)
+
+
+# ── Mood & stress descriptors ───────────────────────────────────────
 
 MOOD_DESCRIPTORS: dict[str, dict[str, str]] = {
     "en": {
@@ -61,7 +66,32 @@ STRESS_DESCRIPTORS: dict[str, dict[str, str]] = {
     },
 }
 
-# ── Moodlet type and emotion label translations ─────────────────────
+MOOD_CONTEXT_TEMPLATES: dict[str, dict[str, str]] = {
+    "en": {
+        "state": (
+            "\nCurrent emotional state: {mood_desc} (mood {score}/100). "
+            "Dominant emotion: {emotion}. {stress_desc} (stress {stress}/1000)."
+        ),
+        "influences": "\nActive influences:\n{moodlet_lines}",
+        "instruction": (
+            "\nLet this emotional state subtly influence your tone and responses. "
+            "Do not explicitly mention mood scores or stress numbers."
+        ),
+    },
+    "de": {
+        "state": (
+            "\nAktueller Gemütszustand: {mood_desc} (Stimmung {score}/100). "
+            "Vorherrschende Emotion: {emotion}. {stress_desc} (Stress {stress}/1000)."
+        ),
+        "influences": "\nAktive Einflüsse:\n{moodlet_lines}",
+        "instruction": (
+            "\nLass diesen Gemütszustand subtil deinen Tonfall und deine Antworten beeinflussen. "
+            "Erwähne keine Stimmungswerte oder Stresszahlen explizit."
+        ),
+    },
+}
+
+# ── Moodlet type & emotion label translations ───────────────────────
 # Free-text values from DB. Unknown keys gracefully degrade to English (key itself).
 
 MOODLET_TYPE_LABELS: dict[str, dict[str, str]] = {
@@ -99,36 +129,5 @@ EMOTION_LABELS: dict[str, dict[str, str]] = {
         "determination": "Entschlossenheit",
         "calm": "Gelassenheit",
         "serene": "Heiterkeit",
-    },
-}
-
-
-def localize_label(label: str, mapping: dict[str, dict[str, str]], locale: str) -> str:
-    """Translate a free-text label using a locale dict. Falls back to the raw label."""
-    return mapping.get(locale, {}).get(label, label)
-
-
-MOOD_CONTEXT_TEMPLATES: dict[str, dict[str, str]] = {
-    "en": {
-        "state": (
-            "\nCurrent emotional state: {mood_desc} (mood {score}/100). "
-            "Dominant emotion: {emotion}. {stress_desc} (stress {stress}/1000)."
-        ),
-        "influences": "\nActive influences:\n{moodlet_lines}",
-        "instruction": (
-            "\nLet this emotional state subtly influence your tone and responses. "
-            "Do not explicitly mention mood scores or stress numbers."
-        ),
-    },
-    "de": {
-        "state": (
-            "\nAktueller Gemütszustand: {mood_desc} (Stimmung {score}/100). "
-            "Vorherrschende Emotion: {emotion}. {stress_desc} (Stress {stress}/1000)."
-        ),
-        "influences": "\nAktive Einflüsse:\n{moodlet_lines}",
-        "instruction": (
-            "\nLass diesen Gemütszustand subtil deinen Tonfall und deine Antworten beeinflussen. "
-            "Erwähne keine Stimmungswerte oder Stresszahlen explizit."
-        ),
     },
 }
