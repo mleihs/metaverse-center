@@ -35,6 +35,8 @@
 
 ---
 
+---
+
 ## Hybrid Supabase Pattern (CRITICAL)
 
 Frontend:
@@ -83,6 +85,8 @@ Write operations require:
   - Response models live in `backend/models/<domain>.py`, named `*Response`
 - Audit logging required for all mutations.
 - Import dependencies at module level (no late-binding imports).
+- Platform admin bypass uses `is_platform_admin()` (3-tier: email allowlist → cached DB IDs → DB refresh). Integrated into `require_role()`, `require_simulation_member()`, `require_platform_admin()`, `require_owner_or_platform_admin()`, `require_architect()`. NOT in `require_epoch_creator()` / `require_epoch_participant()` (game-logic ownership).
+- Supabase client hierarchy: `get_supabase` (user JWT, RLS enforced) → `get_effective_supabase` (auto-elevates to service_role for platform admins) → `get_admin_supabase` (service_role, bypasses all RLS). Use `get_effective_supabase` when platform admins need data access without explicit membership.
 
 ### NEVER
 
@@ -96,6 +100,8 @@ Write operations require:
 - Never grant SECURITY DEFINER functions to `anon` or `authenticated`. Admin RPCs must be callable only via backend with role validation (see ADR-006, incident migration 096→147).
 - Never use `httpx`/`requests` directly for user-provided URLs. Use `backend/utils/safe_fetch.py` for SSRF protection.
 - Never implement fetch-compute-update patterns in Python for concurrent-access data. Use atomic Postgres RPCs with compare-and-swap logic (see ADR-007, migration 148).
+- Never write RLS policies with bare function calls. Always wrap `user_has_simulation_access()`, `user_has_simulation_role()`, `user_simulation_role()`, and `auth.uid()` in `(SELECT ...)` subqueries for initPlan optimization. Without the wrapper, Postgres evaluates per-row; with it, the result is cached per-statement (94-99% improvement). See migration 183.
+- Never use `get_supabase` (user-scoped JWT client) in routers where platform admins may lack simulation membership. Use `get_effective_supabase` instead — it returns `admin_supabase` (service_role) for platform admins, user-scoped client for others. Chat router already uses this pattern. Without it, admins pass `require_role()` but fail on RLS.
 - Never add dungeon content (enemies, encounters, banter, loot, objektanker) only to Python files without a corresponding SQL seed migration. Runtime reads from DB via `dungeon_content_service` (`get_banter_registry()`, `get_enemy_registry()`, etc.). Python dicts in `backend/services/dungeon/` are the canonical source for tests and migration generation, but the DB migration in `supabase/migrations/` is what the production system reads. Pattern: define in Python dict → seed via `INSERT ... ON CONFLICT DO UPDATE` migration → runtime reads from DB.
 
 ### Observability & Error Tracking
