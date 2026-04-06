@@ -26,9 +26,13 @@ class TestEstimateCost:
         cost = _estimate_cost("replicate", "black-forest-labs/flux-dev", 0)
         assert cost == pytest.approx(0.025, abs=0.001)
 
+    def test_replicate_flux2_pro_cost(self):
+        cost = _estimate_cost("replicate", "black-forest-labs/flux.2-pro", 0)
+        assert cost == pytest.approx(0.031, abs=0.001)
+
     def test_replicate_unknown_model_uses_default(self):
         cost = _estimate_cost("replicate", "unknown/image-model", 0)
-        assert cost == pytest.approx(0.025, abs=0.001)
+        assert cost == pytest.approx(0.031, abs=0.001)
 
     def test_zero_tokens_zero_cost(self):
         cost = _estimate_cost("openrouter", "deepseek/deepseek-chat", 0)

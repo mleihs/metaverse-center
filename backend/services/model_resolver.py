@@ -15,14 +15,15 @@ logger = logging.getLogger(__name__)
 # Re-export for backwards compatibility
 __all__ = ["PLATFORM_DEFAULT_MODELS", "ModelResolver", "ResolvedModel", "ResolvedImageModel"]
 
-# Platform default image models — Flux Dev for quality ($0.025/img)
-# Simulations can override via settings
+# Platform default image models — FLUX.2 Pro for quality + commercial license ($0.031/img)
+# Upgraded from flux-dev (non-commercial) in April 2026.
+# Simulations can override via settings.
 PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, str] = {
-    "agent_portrait": "black-forest-labs/flux-dev",
-    "building_image": "black-forest-labs/flux-dev",
-    "lore_image": "black-forest-labs/flux-dev",
-    "banner": "black-forest-labs/flux-dev",
-    "fallback": "black-forest-labs/flux-dev",
+    "agent_portrait": "black-forest-labs/flux.2-pro",
+    "building_image": "black-forest-labs/flux.2-pro",
+    "lore_image": "black-forest-labs/flux.2-pro",
+    "banner": "black-forest-labs/flux.2-pro",
+    "fallback": "black-forest-labs/flux.2-pro",
 }
 
 PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {

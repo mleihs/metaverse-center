@@ -38,6 +38,8 @@ MODEL_COST_PER_1M_TOKENS: dict[str, float] = {
 
 # Approximate cost per image generation (USD) by model.
 IMAGE_COST_PER_CALL: dict[str, float] = {
+    "black-forest-labs/flux.2-pro": 0.031,
+    "black-forest-labs/flux.2-max": 0.073,
     "black-forest-labs/flux-1.1-pro": 0.040,
     "black-forest-labs/flux-dev": 0.025,
     "black-forest-labs/flux-schnell": 0.003,
@@ -47,7 +49,7 @@ IMAGE_COST_PER_CALL: dict[str, float] = {
 def _estimate_cost(provider: str, model: str, total_tokens: int) -> float:
     """Estimate USD cost from token count and model pricing."""
     if provider == "replicate":
-        return IMAGE_COST_PER_CALL.get(model, 0.025)
+        return IMAGE_COST_PER_CALL.get(model, 0.031)
 
     # OpenRouter: find best matching model prefix
     for prefix, cost in MODEL_COST_PER_1M_TOKENS.items():
