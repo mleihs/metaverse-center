@@ -1594,6 +1594,38 @@ export class VelgLandingPage extends LitElement {
             },
           ],
         },
+        {
+          '@type': 'HowTo',
+          name: 'How to Build a World on metaverse.center',
+          description:
+            'From a single sentence to a living, competitive civilization in four steps.',
+          step: [
+            {
+              '@type': 'HowToStep',
+              position: 1,
+              name: 'Create Your World',
+              text: 'Type a premise. The Forge generates a complete civilization with dozens of characters, cities with architecture, and thousands of words of original lore. Minutes, not months.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 2,
+              name: 'Join an Epoch',
+              text: 'Pit your civilization against others in timed competitive seasons. Deploy operatives, sabotage rivals, protect your agents. Strategy meets emergent AI storytelling.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 3,
+              name: 'Enter the Resonance',
+              text: 'Send agents into the fractures between worlds. Eight archetypal dungeons, procedurally generated and literarily informed, where stress is real and choices reshape who your agents become.',
+            },
+            {
+              '@type': 'HowToStep',
+              position: 4,
+              name: 'Shape the Metaverse',
+              text: 'Your actions ripple across every connected world. Build embassies, trigger cross-simulation events, and watch as the stories of separate civilizations entangle.',
+            },
+          ],
+        },
       ],
     });
   }
