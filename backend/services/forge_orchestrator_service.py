@@ -25,7 +25,7 @@ from backend.models.forge import (
 )
 from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai, validate_bilingual_output
-from backend.services.external.replicate import ReplicateBillingError
+from backend.services.external.replicate import ReplicateBillingError, ReplicateError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
@@ -1151,7 +1151,7 @@ class ForgeOrchestratorService:
                     images_succeeded += 1
                 except ReplicateBillingError:
                     raise
-                except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                     images_failed += 1
                     logger.exception("Banner generation failed")
 
@@ -1192,7 +1192,7 @@ class ForgeOrchestratorService:
                         len(boot_art),
                         "yes" if banner_url else "figlet-only",
                     )
-                except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                     logger.warning("Terminal boot art generation failed", exc_info=True)
 
             # 2. Agent portraits
@@ -1221,7 +1221,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                    except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Batch image gen failed for agent",
@@ -1268,7 +1268,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                    except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Batch image gen failed for building",
@@ -1307,7 +1307,7 @@ class ForgeOrchestratorService:
                         images_succeeded += 1
                     except ReplicateBillingError:
                         raise
-                    except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+                    except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                         images_failed += 1
                         logger.exception(
                             "Lore image gen failed",
@@ -1483,7 +1483,7 @@ Generate exactly 3 new agents. Requirements:
                                 "background": agent_draft.background,
                             },
                         )
-            except (httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
+            except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "recruit_portraits")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
