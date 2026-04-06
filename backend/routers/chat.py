@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import EventSourceResponse
 
-from backend.dependencies import get_current_user, get_supabase, require_role
+from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_CHAT, limiter
 from backend.models.chat import (
     AddAgentRequest,
@@ -43,7 +43,7 @@ async def list_conversations(
     simulation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ConversationResponse]]:
     """List all conversations for the current user."""
     conversations = await _service.list_conversations(supabase, simulation_id, user.id)
@@ -56,7 +56,7 @@ async def create_conversation(
     body: ConversationCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Start a new conversation with one or more agents."""
     conversation = await _service.create_conversation(
@@ -84,7 +84,7 @@ async def get_messages(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     before: Annotated[str | None, Query(description="Cursor: ISO timestamp for pagination")] = None,
 ) -> SuccessResponse[list[MessageResponse]]:
@@ -106,7 +106,7 @@ async def send_message(
     body: MessageCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MessageResponse]]:
     """Send a message in a conversation.
 
@@ -158,7 +158,7 @@ async def stream_message(
     body: MessageCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> EventSourceResponse:
     """Stream AI response via Server-Sent Events.
 
@@ -232,7 +232,7 @@ async def regenerate_response(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> EventSourceResponse:
     """Re-trigger AI response generation via SSE stream.
 
@@ -291,7 +291,7 @@ async def get_conversation_starters(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
     locale: Annotated[str, Query(pattern="^(de|en)$")] = "de",
 ) -> SuccessResponse[list[str]]:
     """Get contextual conversation starters for an empty conversation.
@@ -317,7 +317,7 @@ async def add_agent(
     body: AddAgentRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Add an agent to a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -341,7 +341,7 @@ async def remove_agent(
     agent_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Remove an agent from a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -364,7 +364,7 @@ async def get_event_references(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[EventReferenceResponse]]:
     """List event references for a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -382,7 +382,7 @@ async def add_event_reference(
     body: EventReferenceCreate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EventReferenceResponse]:
     """Add an event reference to a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -411,7 +411,7 @@ async def remove_event_reference(
     event_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Remove an event reference from a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -438,7 +438,7 @@ async def toggle_reaction(
     body: ReactionToggleRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ReactionToggleResponse]:
     """Toggle a reaction on a message (add if absent, remove if present).
 
@@ -473,7 +473,7 @@ async def get_reactions(
     message_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("viewer"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[ReactionSummary]]:
     """Get aggregated reactions for a message."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -489,7 +489,7 @@ async def rename_conversation(
     body: ConversationUpdate,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Rename a conversation."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -512,7 +512,7 @@ async def archive_conversation(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Archive a conversation (soft-delete)."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
@@ -534,7 +534,7 @@ async def delete_conversation(
     conversation_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
-    supabase: Annotated[Client, Depends(get_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
     """Permanently delete a conversation and all its messages."""
     await _service.verify_ownership(supabase, conversation_id, user.id)

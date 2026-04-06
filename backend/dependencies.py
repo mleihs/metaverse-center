@@ -184,6 +184,22 @@ async def get_admin_supabase() -> Client:
     return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
+async def get_effective_supabase(
+    user: CurrentUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+    admin_supabase: Client = Depends(get_admin_supabase),
+) -> Client:
+    """Supabase client with automatic RLS bypass for platform admins.
+
+    Returns admin_supabase (service_role) when the user is a platform admin,
+    otherwise returns the user-scoped client. Use in routers where platform
+    admins may not have simulation membership but need data access.
+    """
+    if await is_platform_admin(user, admin_supabase):
+        return admin_supabase
+    return supabase
+
+
 def require_role(required_role: str):
     """Dependency factory that checks the user has the required role in a simulation.
 
