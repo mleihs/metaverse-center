@@ -755,7 +755,9 @@ export class VelgGameCard extends LitElement {
        space and give more room to card body content.
        ═══════════════════════════════════════════════════ */
     @media (max-width: 480px) {
-      :host {
+      :host,
+      :host([size="md"]),
+      :host([size="lg"]) {
         --card-w: 100%;
         --card-h: auto;
       }
