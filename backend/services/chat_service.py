@@ -160,6 +160,17 @@ class ChatService:
         title: str | None = None,
     ) -> dict:
         """Create a new conversation with one or more agents."""
+        # Resolve simulation locale for conversation tagging
+        locale_resp = await (
+            supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("setting_key", "general.content_locale")
+            .limit(1)
+            .execute()
+        )
+        locale = str(locale_resp.data[0].get("setting_value", "de")) if locale_resp.data else "de"
+
         # Create the conversation (agent_id set to first agent for backwards compat)
         response = await (
             supabase.table("chat_conversations")
@@ -169,6 +180,7 @@ class ChatService:
                     "user_id": str(user_id),
                     "agent_id": str(agent_ids[0]),
                     "title": title,
+                    "locale": locale,
                 }
             )
             .execute()

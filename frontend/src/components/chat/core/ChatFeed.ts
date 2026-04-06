@@ -416,6 +416,7 @@ export class ChatFeed extends LitElement {
   @property({ type: String }) currentUserName = '';
   @property({ type: Boolean }) streaming = false;
   @property({ type: String }) streamContent = '';
+  @property({ type: String }) conversationLocale = 'de';
   @property({ type: Array }) typingUsers: TypingUser[] = [];
   @property({ type: Boolean }) hasMore = false;
   @property({ type: Boolean }) loading = false;
@@ -794,6 +795,7 @@ export class ChatFeed extends LitElement {
         sender_role: 'assistant',
         content: this.streamContent,
         created_at: this._streamStartedAt,
+        metadata: { locale: this.conversationLocale },
       };
     }
     return this._streamMsgCache;

@@ -635,6 +635,7 @@ export interface ChatConversation {
   agent_id?: UUID;
   title?: string;
   status: 'active' | 'archived';
+  locale?: string;
   message_count: number;
   last_message_at?: string;
   created_at: string;
@@ -660,6 +661,7 @@ export interface ChatMessage {
   created_at: string;
   agent_id?: UUID;
   agent?: AgentBrief;
+  locale?: string;
   reactions?: ChatReactionSummary[];
 }
 

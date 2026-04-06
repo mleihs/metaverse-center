@@ -15,6 +15,12 @@ from backend.config import settings
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.external.openrouter import OpenRouterService
+from backend.services.i18n_utils import (
+    MOOD_CONTEXT_TEMPLATES,
+    MOOD_DESCRIPTORS,
+    STRESS_DESCRIPTORS,
+    get_localized_field,
+)
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from supabase import AsyncClient as Client
@@ -86,7 +92,7 @@ class ChatAIService:
         if extra_variables:
             variables.update(extra_variables)
 
-        mood_context = await self._build_mood_context(UUID(agent["id"]))
+        mood_context = await self._build_mood_context(UUID(agent["id"]), locale)
         if mood_context:
             variables["agent_mood"] = mood_context
 
@@ -152,6 +158,7 @@ class ChatAIService:
             model=model,
             response_text=response_text,
             generation_ms=generation_ms,
+            locale=locale,
             extra_metadata=extra_metadata,
         )
 
@@ -299,6 +306,7 @@ class ChatAIService:
             model=model,
             response_text=full_text,
             generation_ms=generation_ms,
+            locale=locale,
             extra_metadata=extra_metadata,
         )
 
@@ -383,6 +391,7 @@ class ChatAIService:
         model: ResolvedModel,
         response_text: str,
         generation_ms: int,
+        locale: str = "de",
         extra_metadata: dict[str, Any] | None = None,
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
@@ -412,6 +421,7 @@ class ChatAIService:
             "model_used": model.model_id,
             "token_count": token_count,
             "generation_ms": generation_ms,
+            "locale": locale,
         }
         if extra_metadata:
             metadata.update(extra_metadata)
@@ -741,19 +751,20 @@ class ChatAIService:
         """Build the full set of agent template variables."""
         return {
             "agent_name": agent.get("name", "Agent"),
-            "agent_character": agent.get("character", ""),
-            "agent_background": agent.get("background", ""),
+            "agent_character": get_localized_field(agent, "character", locale),
+            "agent_background": get_localized_field(agent, "background", locale),
             "agent_system": agent.get("system", ""),
             "agent_gender": agent.get("gender", ""),
-            "agent_profession": agent.get("primary_profession", ""),
+            "agent_profession": get_localized_field(agent, "primary_profession", locale),
             "simulation_name": simulation.get("name", ""),
             "locale_name": LOCALE_NAMES.get(locale, locale),
         }
 
-    async def _build_mood_context(self, agent_id: UUID) -> str:
+    async def _build_mood_context(self, agent_id: UUID, locale: str = "en") -> str:
         """Build mood context string for system prompt injection.
 
         Returns empty string if no autonomy data exists for this agent.
+        Mood and stress descriptors are localized via i18n_utils.
         """
         mood_result = await (
             self._supabase.table("agent_mood")
@@ -770,27 +781,29 @@ class ChatAIService:
         emotion = mood["dominant_emotion"]
         stress = mood["stress_level"]
 
-        # Mood descriptor
+        # Mood descriptor (localized)
+        descs = MOOD_DESCRIPTORS.get(locale, MOOD_DESCRIPTORS["en"])
         if score > 50:
-            mood_desc = "very positive, upbeat"
+            mood_desc = descs["very_positive"]
         elif score > 20:
-            mood_desc = "content, at ease"
+            mood_desc = descs["content"]
         elif score > -20:
-            mood_desc = "neutral, composed"
+            mood_desc = descs["neutral"]
         elif score > -50:
-            mood_desc = "troubled, tense"
+            mood_desc = descs["troubled"]
         else:
-            mood_desc = "deeply distressed, volatile"
+            mood_desc = descs["distressed"]
 
-        # Stress descriptor
+        # Stress descriptor (localized)
+        stress_descs = STRESS_DESCRIPTORS.get(locale, STRESS_DESCRIPTORS["en"])
         if stress > 800:
-            stress_desc = "on the verge of a breakdown"
+            stress_desc = stress_descs["breakdown"]
         elif stress > 500:
-            stress_desc = "highly stressed"
+            stress_desc = stress_descs["high"]
         elif stress > 200:
-            stress_desc = "moderately stressed"
+            stress_desc = stress_descs["moderate"]
         else:
-            stress_desc = "relatively calm"
+            stress_desc = stress_descs["calm"]
 
         # Fetch active moodlets for detail
         moodlets_result = await (
@@ -806,16 +819,15 @@ class ChatAIService:
             sign = "+" if ml["strength"] > 0 else ""
             moodlet_lines.append(f"  - {ml['moodlet_type']}: {ml['emotion']} ({sign}{ml['strength']})")
 
-        context = (
-            f"\nCurrent emotional state: {mood_desc} (mood {score}/100). "
-            f"Dominant emotion: {emotion}. {stress_desc} (stress {stress}/1000)."
+        # Assemble context with localized templates
+        templates = MOOD_CONTEXT_TEMPLATES.get(locale, MOOD_CONTEXT_TEMPLATES["en"])
+        context = templates["state"].format(
+            mood_desc=mood_desc, score=score, emotion=emotion,
+            stress_desc=stress_desc, stress=stress,
         )
         if moodlet_lines:
-            context += "\nActive influences:\n" + "\n".join(moodlet_lines)
-        context += (
-            "\nLet this emotional state subtly influence your tone and responses. "
-            "Do not explicitly mention mood scores or stress numbers."
-        )
+            context += templates["influences"].format(moodlet_lines="\n".join(moodlet_lines))
+        context += templates["instruction"]
         return context
 
     @staticmethod
@@ -915,7 +927,8 @@ class ChatAIService:
         """Load agent profile."""
         response = await (
             self._supabase.table("agents")
-            .select("id, name, character, background, system, gender, primary_profession")
+            .select("id, name, character, character_de, background, background_de, "
+                    "system, gender, primary_profession, primary_profession_de")
             .eq("id", agent_id)
             .limit(1)
             .execute()
@@ -927,8 +940,8 @@ class ChatAIService:
         response = await (
             self._supabase.table("chat_conversation_agents")
             .select(
-                "agent_id, agents(id, name, character, background, system, gender,"
-                " primary_profession, portrait_image_url)",
+                "agent_id, agents(id, name, character, character_de, background, background_de,"
+                " system, gender, primary_profession, primary_profession_de, portrait_image_url)",
             )
             .eq("conversation_id", str(conversation_id))
             .order("added_at")
@@ -976,7 +989,9 @@ class ChatAIService:
         return response.data or []
 
     async def _get_locale(self) -> str:
-        """Get the simulation's content locale."""
+        """Get the simulation's content locale (cached per instance)."""
+        if hasattr(self, "_cached_locale"):
+            return self._cached_locale
         response = await (
             self._supabase.table("simulation_settings")
             .select("setting_value")
@@ -985,6 +1000,8 @@ class ChatAIService:
             .limit(1)
             .execute()
         )
+        locale = "de"
         if response and response.data:
-            return str(response.data[0].get("setting_value", "de"))
-        return "de"
+            locale = str(response.data[0].get("setting_value", "de"))
+        self._cached_locale = locale
+        return locale

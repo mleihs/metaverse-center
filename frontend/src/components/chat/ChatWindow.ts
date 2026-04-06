@@ -1169,6 +1169,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                   .starters=${this._starters}
                   .hasMore=${session.hasMore.value}
                   .loading=${this._loading}
+                  .conversationLocale=${this.conversation.locale ?? 'de'}
                   @load-older=${this._handleLoadOlder}
                 ></velg-chat-feed>
               </div>
