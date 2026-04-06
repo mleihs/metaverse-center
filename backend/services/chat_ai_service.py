@@ -30,7 +30,40 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-MAX_MEMORY_MESSAGES = 50
+# ── Model-aware history limits ────────────────────────────
+# Instead of a static message count, compute the limit from the model's
+# context window.  No tokenizer dependency — uses a 4-chars-per-token
+# heuristic which is conservative for English prose.
+
+_CONTEXT_WINDOWS: dict[str, int] = {
+    "claude": 200_000,
+    "gemini": 1_000_000,
+    "gpt-4o": 128_000,
+    "gpt-4": 128_000,
+    "llama": 128_000,
+    "mistral": 128_000,
+    "deepseek": 128_000,
+}
+_DEFAULT_CONTEXT_WINDOW = 128_000
+_TOKENS_PER_MESSAGE_ESTIMATE = 250
+_CONTEXT_RESERVE = 5_000  # system prompt + response headroom
+_HISTORY_BUDGET_RATIO = 0.6  # use 60% of context for history
+_MAX_MESSAGES_HARD = 200  # prevent huge DB queries
+_MIN_MESSAGES = 20
+
+
+def _max_history_messages(model_id: str) -> int:
+    """Compute the maximum number of history messages for a given model."""
+    context_tokens = _DEFAULT_CONTEXT_WINDOW
+    model_lower = model_id.lower()
+    for prefix, tokens in _CONTEXT_WINDOWS.items():
+        if prefix in model_lower:
+            context_tokens = tokens
+            break
+
+    budget = int(context_tokens * _HISTORY_BUDGET_RATIO) - _CONTEXT_RESERVE
+    estimated = budget // _TOKENS_PER_MESSAGE_ESTIMATE
+    return max(_MIN_MESSAGES, min(estimated, _MAX_MESSAGES_HARD))
 
 
 @dataclass
@@ -485,7 +518,7 @@ class ChatAIService:
         prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         model = await self._model_resolver.resolve_text_model("chat_response")
 
-        history = await self._load_history(conversation_id)
+        history = await self._load_history(conversation_id, model.model_id)
         history_messages = self._build_history_messages(history, user_message)
 
         return {
@@ -594,6 +627,7 @@ class ChatAIService:
                 locale=locale,
                 user_message=user_message,
                 saved_messages=saved_messages,
+                model_id=model.model_id,
             )
 
             _, saved = await self._generate_single_response(
@@ -677,6 +711,7 @@ class ChatAIService:
                 locale=locale,
                 user_message=user_message,
                 saved_messages=saved_messages,
+                model_id=model.model_id,
             )
 
             async for sse_event in self.stream_single_response(
@@ -711,6 +746,7 @@ class ChatAIService:
         locale: str,
         user_message: str,
         saved_messages: list[dict],
+        model_id: str = "",
     ) -> tuple[list[str], list[dict[str, str]]]:
         """Build extra_parts and history_messages for a single agent's turn
         in a group conversation. Shared by streaming and non-streaming paths.
@@ -730,7 +766,7 @@ class ChatAIService:
             )
             extra_parts.append(group_text)
 
-        history = await self._load_history(conversation_id)
+        history = await self._load_history(conversation_id, model_id)
         history_messages: list[dict[str, str]] = []
         for msg in history:
             role = "assistant" if msg["sender_role"] == "assistant" else "user"
@@ -984,14 +1020,20 @@ class ChatAIService:
         )
         return response.data[0] if response and response.data else {}
 
-    async def _load_history(self, conversation_id: UUID) -> list[dict]:
-        """Load the last N messages from conversation history."""
+    async def _load_history(
+        self, conversation_id: UUID, model_id: str = ""
+    ) -> list[dict]:
+        """Load recent messages from conversation history.
+
+        The number of messages is computed from the model's context window
+        so that larger-context models benefit from longer memory.
+        """
         response = await (
             self._supabase.table("chat_messages")
             .select("content, sender_role, agent_id, created_at")
             .eq("conversation_id", str(conversation_id))
             .order("created_at", desc=False)
-            .limit(MAX_MEMORY_MESSAGES)
+            .limit(_max_history_messages(model_id))
             .execute()
         )
         return response.data or []
