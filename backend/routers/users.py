@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from backend.dependencies import PLATFORM_ADMIN_EMAILS, get_admin_supabase, get_current_user, get_supabase
+from backend.dependencies import get_admin_supabase, get_current_user, get_supabase, is_platform_admin
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
 from backend.models.user import DashboardData, MembershipInfo, UserWithMemberships
@@ -57,7 +57,7 @@ async def get_me(
         memberships=memberships,
         onboarding_completed=profile.get("onboarding_completed", True),
         academy_epochs_played=profile.get("academy_epochs_played", 0),
-        is_platform_admin=user.email in PLATFORM_ADMIN_EMAILS,
+        is_platform_admin=await is_platform_admin(user, admin),
     )
 
     return SuccessResponse(data=user_data)
