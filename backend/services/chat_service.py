@@ -9,6 +9,7 @@ from fastapi import HTTPException, status
 
 from backend.services.chat_ai_service import ChatAIService, SSEEvent
 from backend.services.external_service_resolver import ExternalServiceResolver
+from backend.services.i18n_utils import get_localized_field
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -740,7 +741,7 @@ class ChatService:
         agents_resp = await (
             supabase.table("chat_conversation_agents")
             .select(
-                "agents(id, name, primary_profession, character, gender)",
+                "agents(id, name, primary_profession, primary_profession_de, character, character_de, gender)",
             )
             .eq("conversation_id", str(conversation_id))
             .execute()
@@ -858,7 +859,7 @@ def _build_starters(
             starters.append(tpl["mood_high"])
 
     # 3. Profession-based starter
-    profession = agent.get("primary_profession", "")
+    profession = get_localized_field(agent, "primary_profession", locale)
     if profession:
         starters.append(tpl["profession"].format(profession=profession))
 
