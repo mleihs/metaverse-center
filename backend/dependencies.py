@@ -201,8 +201,12 @@ def require_role(required_role: str):
         simulation_id: Annotated[UUID, Path()],
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
+        admin_supabase: Client = Depends(get_admin_supabase),
     ) -> str:
         """Verify the user has the required role for this simulation."""
+        if await is_platform_admin(user, admin_supabase):
+            return "owner"
+
         response = await (
             supabase.table("simulation_members")
             .select("member_role")
@@ -288,32 +292,36 @@ async def _refresh_platform_admin_ids(admin_supabase: "Client") -> None:
     _platform_admin_ids_expires = time.monotonic() + 300  # 5 min TTL
 
 
+async def is_platform_admin(user: CurrentUser, admin_supabase: "Client") -> bool:
+    """Check if user is a platform admin using the 3-tier pattern.
+
+    Tier 1: Email allowlist (O(1), zero I/O)
+    Tier 2: Cached DB admin IDs (O(1), TTL 5min)
+    Tier 3: DB refresh on cache expiry (rare, populates cache)
+    """
+    if user.email in PLATFORM_ADMIN_EMAILS:
+        return True
+    if str(user.id) in _platform_admin_ids:
+        return True
+    if time.monotonic() >= _platform_admin_ids_expires:
+        await _refresh_platform_admin_ids(admin_supabase)
+        if str(user.id) in _platform_admin_ids:
+            return True
+    return False
+
+
 def require_platform_admin():
     """Dependency that checks the user is a platform admin.
 
-    Uses a 3-tier check (cheapest first):
-    1. In-memory email allowlist (O(1), zero I/O)
-    2. Cached DB admin IDs (O(1), refreshed every 5 min)
-    3. Live DB query (on cache miss, populates cache)
+    Delegates to is_platform_admin() for the 3-tier check.
     """
 
     async def _check_admin(
         user: CurrentUser = Depends(get_current_user),
         admin_supabase: Client = Depends(get_admin_supabase),
     ) -> CurrentUser:
-        # Tier 1: email allowlist (zero cost, backward-compat)
-        if user.email in PLATFORM_ADMIN_EMAILS:
+        if await is_platform_admin(user, admin_supabase):
             return user
-
-        # Tier 2: cached DB admin IDs
-        if str(user.id) in _platform_admin_ids:
-            return user
-
-        # Tier 3: refresh cache from DB (cold start or cache miss)
-        if time.monotonic() >= _platform_admin_ids_expires:
-            await _refresh_platform_admin_ids(admin_supabase)
-            if str(user.id) in _platform_admin_ids:
-                return user
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -336,13 +344,8 @@ def require_owner_or_platform_admin():
         supabase: Client = Depends(get_supabase),
         admin_supabase: Client = Depends(get_admin_supabase),
     ) -> tuple[CurrentUser, bool]:
-        # Platform admin bypasses membership check (email → cache → DB)
-        if user.email in PLATFORM_ADMIN_EMAILS or str(user.id) in _platform_admin_ids:
+        if await is_platform_admin(user, admin_supabase):
             return user, True
-        if time.monotonic() >= _platform_admin_ids_expires:
-            await _refresh_platform_admin_ids(admin_supabase)
-            if str(user.id) in _platform_admin_ids:
-                return user, True
 
         # Otherwise must be an owner member
         response = await (
@@ -390,7 +393,7 @@ def require_architect():
         user: CurrentUser = Depends(get_current_user),
         admin_supabase: Client = Depends(get_admin_supabase),
     ) -> CurrentUser:
-        if user.email in PLATFORM_ADMIN_EMAILS:
+        if await is_platform_admin(user, admin_supabase):
             return user
 
         wallet_resp = await (
@@ -454,7 +457,11 @@ def require_simulation_member(role: str = "viewer", *, param_name: str = "simula
         simulation_id: Annotated[UUID, Query(alias=param_name)],
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
+        admin_supabase: Client = Depends(get_admin_supabase),
     ) -> str:
+        if await is_platform_admin(user, admin_supabase):
+            return "owner"
+
         response = await (
             supabase.table("simulation_members")
             .select("member_role")
