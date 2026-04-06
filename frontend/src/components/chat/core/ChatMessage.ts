@@ -268,6 +268,13 @@ export class ChatMessage extends LitElement {
   // Derived
   // ---------------------------------------------------------------------------
 
+  /** Message content language for WCAG 3.1.2 (Language of Parts). */
+  private _getMessageLang(): string {
+    const meta = this.message.metadata as Record<string, unknown> | undefined;
+    if (meta?.locale && typeof meta.locale === 'string') return meta.locale;
+    return document.documentElement.lang || 'en';
+  }
+
   /** Sender display name — single source of truth for render, aria, sender label. */
   private get _senderName(): string {
     return this.message.sender_role === 'user'
@@ -303,11 +310,14 @@ export class ChatMessage extends LitElement {
 
     const timeLabel = formatRelativeTimeVerbose(m.created_at);
 
+    const messageLang = this._getMessageLang();
+
     return html`
       <div
         class=${classMap(rowClasses)}
         style=${styleMap(hostStyle)}
         role="article"
+        lang="${messageLang}"
         aria-label="${this._senderName}, ${timeLabel}"
       >
         ${this._renderAvatar(isUser, showAvatar)}

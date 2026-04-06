@@ -62,6 +62,7 @@ class ConversationResponse(BaseModel):
     last_message_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+    locale: str = "de"
     agents: list[AgentBrief] = []
     event_references: list["EventReferenceResponse"] = []
 
@@ -81,6 +82,7 @@ class MessageResponse(BaseModel):
     model_used: str | None = None
     token_count: int | None = None
     generation_ms: int | None = None
+    locale: str | None = None
     # Reactions (populated from batch RPC in get_messages)
     reactions: list["ReactionSummary"] = []
 
@@ -91,7 +93,7 @@ class MessageResponse(BaseModel):
         if isinstance(data, dict):
             meta = data.get("metadata")
             if isinstance(meta, dict):
-                for field in ("model_used", "token_count", "generation_ms"):
+                for field in ("model_used", "token_count", "generation_ms", "locale"):
                     if field not in data or data[field] is None:
                         data[field] = meta.get(field)
         return data
