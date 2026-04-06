@@ -359,7 +359,6 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       .showcase__grid {
         display: flex;
-        align-items: flex-start;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
@@ -372,10 +371,30 @@ export class VelgLandingAgentShowcase extends LitElement {
         display: none;
       }
 
-      .showcase__card {
-        flex: 0 0 200px;
-        container-type: inline-size;
+      /* Card sizing: min(260px, 72vw) fills most of the viewport while
+         leaving a peek of the next card. min-width: 0 prevents flex items
+         from expanding beyond flex-basis (shadow DOM content can force
+         min-width: auto otherwise). Scroll-reveal animation is disabled
+         because IntersectionObserver doesn't fire in overflow containers,
+         leaving cards stuck at scale(0.95).
+         .in-view variant must match desktop specificity (0,2,0) to
+         override the stagger transform without !important. */
+      .showcase__card,
+      .showcase__card.in-view {
+        flex: 0 0 min(260px, 72vw);
+        min-width: 0;
+        max-width: min(260px, 72vw);
         scroll-snap-align: center;
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      .showcase__origin,
+      .showcase__card.in-view .showcase__origin {
+        opacity: 1;
+        transform: none;
+        transition: none;
       }
     }
 
