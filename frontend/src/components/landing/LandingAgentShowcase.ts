@@ -359,6 +359,7 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       .showcase__grid {
         display: flex;
+        align-items: flex-start;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
@@ -373,6 +374,8 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       .showcase__card {
         flex: 0 0 200px;
+        min-width: 0;
+        overflow: hidden;
         scroll-snap-align: center;
       }
     }
