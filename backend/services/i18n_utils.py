@@ -61,6 +61,53 @@ STRESS_DESCRIPTORS: dict[str, dict[str, str]] = {
     },
 }
 
+# ── Moodlet type and emotion label translations ─────────────────────
+# Free-text values from DB. Unknown keys gracefully degrade to English (key itself).
+
+MOODLET_TYPE_LABELS: dict[str, dict[str, str]] = {
+    "de": {
+        "social_casual_chat": "zwangloses Gespräch",
+        "social_collaboration": "Zusammenarbeit",
+        "social_deep_conversation": "tiefgehendes Gespräch",
+        "social_casual_chat_self": "eigenes zwangloses Gespräch",
+        "social_collaboration_self": "eigene Zusammenarbeit",
+        "social_deep_conversation_self": "eigenes tiefgehendes Gespräch",
+        "witnessed_breakdown": "Zusammenbruch miterlebt",
+        "celebration": "Feier",
+        "community_spirit": "Gemeinschaftsgefühl",
+        "dungeon_trauma": "Dungeon-Trauma",
+        "dungeon_survivor": "Dungeon-Überlebender",
+        "shadow_attuned": "Schattenverbunden",
+        "structurally_attuned": "Strukturell abgestimmt",
+        "entropy_attuned": "Entropie-abgestimmt",
+        "zone_weather": "Zonenwetter",
+        "resonance_pressure": "Resonanzdruck",
+    },
+}
+
+EMOTION_LABELS: dict[str, dict[str, str]] = {
+    "de": {
+        "joy": "Freude",
+        "neutral": "neutral",
+        "anxiety": "Angst",
+        "hope": "Hoffnung",
+        "dread": "Furcht",
+        "pride": "Stolz",
+        "guilt": "Schuld",
+        "satisfaction": "Zufriedenheit",
+        "fascination": "Faszination",
+        "determination": "Entschlossenheit",
+        "calm": "Gelassenheit",
+        "serene": "Heiterkeit",
+    },
+}
+
+
+def localize_label(label: str, mapping: dict[str, dict[str, str]], locale: str) -> str:
+    """Translate a free-text label using a locale dict. Falls back to the raw label."""
+    return mapping.get(locale, {}).get(label, label)
+
+
 MOOD_CONTEXT_TEMPLATES: dict[str, dict[str, str]] = {
     "en": {
         "state": (

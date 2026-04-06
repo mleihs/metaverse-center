@@ -16,10 +16,13 @@ from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.i18n_utils import (
+    EMOTION_LABELS,
     MOOD_CONTEXT_TEMPLATES,
     MOOD_DESCRIPTORS,
+    MOODLET_TYPE_LABELS,
     STRESS_DESCRIPTORS,
     get_localized_field,
+    localize_label,
 )
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -817,12 +820,17 @@ class ChatAIService:
         moodlet_lines = []
         for ml in moodlets_result.data or []:
             sign = "+" if ml["strength"] > 0 else ""
-            moodlet_lines.append(f"  - {ml['moodlet_type']}: {ml['emotion']} ({sign}{ml['strength']})")
+            ml_type = localize_label(ml["moodlet_type"], MOODLET_TYPE_LABELS, locale)
+            ml_emotion = localize_label(ml["emotion"], EMOTION_LABELS, locale)
+            moodlet_lines.append(f"  - {ml_type}: {ml_emotion} ({sign}{ml['strength']})")
+
+        # Localize dominant emotion
+        emotion_localized = localize_label(emotion, EMOTION_LABELS, locale)
 
         # Assemble context with localized templates
         templates = MOOD_CONTEXT_TEMPLATES.get(locale, MOOD_CONTEXT_TEMPLATES["en"])
         context = templates["state"].format(
-            mood_desc=mood_desc, score=score, emotion=emotion,
+            mood_desc=mood_desc, score=score, emotion=emotion_localized,
             stress_desc=stress_desc, stress=stress,
         )
         if moodlet_lines:
