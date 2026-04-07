@@ -14,7 +14,7 @@
         "-y",
         "@playwright/mcp@latest",
         "--browser",
-        "chrome",
+        "chromium",
         "--viewport-size",
         "1920x1080"
       ]

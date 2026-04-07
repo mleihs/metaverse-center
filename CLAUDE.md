@@ -174,7 +174,7 @@ msg('...')
 
 ### Frontend
 
-- MUST invoke `frontend-design` skill before writing any component code.
+- MUST invoke `velg-frontend-design` skill before writing any component code.
 - Maximum creative effort: dramatic animations, modern UI, WCAG AA.
 - Always check shared components before creating new ones.
 

@@ -169,6 +169,90 @@ export const showcaseLayoutStyles = css`
   }
   .active .slide__tagline { animation: tagline-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both; }
 
+  /* ── CTA Button ── */
+
+  .slide__cta {
+    position: relative; z-index: 3;
+    display: inline-flex; align-items: center; gap: 10px;
+    margin: 0 0 36px; padding: 12px 32px;
+    font-family: var(--font-brutalist, 'Courier New', monospace);
+    font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+    font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.25em; line-height: 1;
+    text-decoration: none;
+    color: var(--_accent);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--_accent) 35%, transparent);
+    cursor: pointer;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.4s, transform 0.4s;
+    /* Glow layer behind the border */
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--_accent) 0%, transparent),
+      inset 0 0 0 0 color-mix(in srgb, var(--_accent) 0%, transparent);
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.9),
+      0 0 8px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* Sweep gradient overlay — moves on hover */
+  .slide__cta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      color-mix(in srgb, var(--_accent) 8%, transparent) 40%,
+      color-mix(in srgb, var(--_accent) 14%, transparent) 50%,
+      color-mix(in srgb, var(--_accent) 8%, transparent) 60%,
+      transparent 100%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: -1;
+  }
+  .slide__cta:hover::before { transform: translateX(120%); }
+
+  /* Staggered entry — 0.4s after tagline */
+  .active .slide__cta {
+    animation: cta-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  }
+  @keyframes cta-enter {
+    0%   { opacity: 0; transform: translateY(10px); }
+    60%  { opacity: 0.7; transform: translateY(-1px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide__cta:hover {
+    border-color: color-mix(in srgb, var(--_accent) 70%, transparent);
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--_accent) 15%, transparent),
+      inset 0 0 16px color-mix(in srgb, var(--_accent) 6%, transparent);
+  }
+
+  .slide__cta:active {
+    transform: scale(0.96);
+    transition: transform 0.08s;
+  }
+
+  .slide__cta:focus-visible {
+    outline: 2px solid var(--color-accent-amber, #f59e0b);
+    outline-offset: 4px;
+  }
+
+  .slide__cta-text {
+    position: relative; z-index: 1;
+  }
+
+  .slide__cta-arrow {
+    font-size: 0.6em; opacity: 0.6;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
+  }
+  .slide__cta:hover .slide__cta-arrow {
+    transform: translateX(4px); opacity: 1;
+  }
+
   /* ── Quote ── */
 
   .quote-block {
@@ -322,7 +406,9 @@ export const showcaseLayoutStyles = css`
   @media (prefers-reduced-motion: reduce) {
     .slide { transition: opacity 0.3s; }
     .slide__atmosphere::before, .slide__atmosphere::after { animation: none !important; }
-    .active .slide__title, .active .slide__subtitle, .active .slide__divider, .active .slide__tagline { animation: none !important; opacity: 1; }
+    .active .slide__title, .active .slide__subtitle, .active .slide__divider, .active .slide__tagline, .active .slide__cta { animation: none !important; opacity: 1; }
+    .slide__cta { transition: opacity 0.15s !important; }
+    .slide__cta::before { display: none; }
     .quote-block { transition: opacity 0.2s !important; animation: none !important; }
     .quote-block.entering, .quote-block.visible { opacity: 0.85; transform: none; filter: none; }
     .quote-block.leaving { opacity: 0; }
@@ -337,6 +423,7 @@ export const showcaseLayoutStyles = css`
     .nav-dots { bottom: 28px; gap: 12px; }
     .classification { font-size: 0.55rem; top: 16px; }
     .counter { bottom: 28px; right: 16px; font-size: 0.6rem; }
+    .slide__cta { padding: 11px 24px; font-size: 0.6rem; min-height: 44px; margin-bottom: 28px; }
     .quote-block { min-height: 160px; }
   }
   @media (min-width: 2000px) {
@@ -460,6 +547,165 @@ export const showcaseAtmosphereStyles = css`
 // ── Quote Transition Effects ────────────────────────────────────────────────
 
 export const showcaseTransitionStyles = css`
+  /* ── Per-archetype CTA hover / press effects ───────────────────────────── */
+
+  /* SHADOW — glitch-flicker: horizontal jitter + opacity stutter */
+  .slide--shadow .slide__cta:hover {
+    animation: cta-shadow-hover 0.4s steps(4) infinite alternate;
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.9),
+      0 0 12px color-mix(in srgb, var(--_accent) 40%, transparent),
+      2px 0 8px color-mix(in srgb, var(--_accent) 20%, transparent),
+      -2px 0 8px rgba(100, 60, 200, 0.15);
+  }
+  .slide--shadow .slide__cta:active {
+    animation: cta-shadow-press 0.25s ease-out forwards;
+  }
+  @keyframes cta-shadow-hover {
+    0%   { transform: translateX(0); opacity: 1; }
+    25%  { transform: translateX(-2px); opacity: 0.7; }
+    50%  { transform: translateX(1px); opacity: 0.9; }
+    75%  { transform: translateX(-1px); opacity: 0.75; }
+    100% { transform: translateX(2px); opacity: 1; }
+  }
+  @keyframes cta-shadow-press {
+    0%   { transform: scale(1); opacity: 1; }
+    40%  { transform: scale(0.92); opacity: 0.4; }
+    100% { transform: scale(0.96); opacity: 0.7; }
+  }
+
+  /* TOWER — cascading underline: border-bottom expands like falling debris */
+  .slide--tower .slide__cta {
+    background-image: linear-gradient(var(--_accent), var(--_accent));
+    background-size: 0% 1px;
+    background-position: center bottom 10px;
+    background-repeat: no-repeat;
+    transition: background-size 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.3s, box-shadow 0.3s, transform 0.08s;
+  }
+  .slide--tower .slide__cta:hover {
+    background-size: 80% 1px;
+  }
+  .slide--tower .slide__cta:active {
+    transform: scaleY(0.88) scaleX(1.02);
+    transition: transform 0.1s;
+  }
+
+  /* MOTHER — organic pulse: breathing scale oscillation */
+  .slide--mother .slide__cta:hover {
+    animation: cta-mother-breathe 1.8s ease-in-out infinite;
+    border-color: color-mix(in srgb, var(--_accent) 50%, transparent);
+  }
+  .slide--mother .slide__cta:active {
+    animation: cta-mother-absorb 0.3s ease-in forwards;
+  }
+  @keyframes cta-mother-breathe {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 12px color-mix(in srgb, var(--_accent) 10%, transparent); }
+    50%      { transform: scale(1.04); box-shadow: 0 0 24px color-mix(in srgb, var(--_accent) 20%, transparent); }
+  }
+  @keyframes cta-mother-absorb {
+    0%   { transform: scale(1.04); filter: blur(0px); }
+    100% { transform: scale(0.90); filter: blur(2px); opacity: 0.6; }
+  }
+
+  /* ENTROPY — text drift: letter-spacing widens, border dissolves */
+  .slide--entropy .slide__cta {
+    transition: letter-spacing 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.8s, box-shadow 0.3s, transform 0.08s, filter 0.3s;
+  }
+  .slide--entropy .slide__cta:hover {
+    letter-spacing: 0.45em;
+    border-color: color-mix(in srgb, var(--_accent) 18%, transparent);
+    border-style: dashed;
+    filter: blur(0.3px);
+  }
+  .slide--entropy .slide__cta:active {
+    animation: cta-entropy-dissolve 0.35s ease-in forwards;
+  }
+  @keyframes cta-entropy-dissolve {
+    0%   { filter: blur(0.3px); opacity: 1; letter-spacing: 0.45em; }
+    50%  { filter: blur(2px); opacity: 0.5; letter-spacing: 0.6em; }
+    100% { filter: blur(1px); opacity: 0.7; letter-spacing: 0.35em; transform: scale(0.97); }
+  }
+
+  /* PROMETHEUS — ember ignition: brightness spike + warm glow */
+  .slide--prometheus .slide__cta:hover {
+    animation: cta-prometheus-ignite 1.2s ease-in-out infinite alternate;
+    border-color: color-mix(in srgb, var(--_accent) 80%, transparent);
+  }
+  .slide--prometheus .slide__cta:active {
+    animation: cta-prometheus-flash 0.2s ease-out forwards;
+  }
+  @keyframes cta-prometheus-ignite {
+    0%   { filter: brightness(1);   box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 15%, transparent); }
+    50%  { filter: brightness(1.25); box-shadow: 0 0 28px color-mix(in srgb, var(--_accent) 30%, transparent), 0 0 4px color-mix(in srgb, var(--_accent) 50%, transparent); }
+    100% { filter: brightness(1.1);  box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 20%, transparent); }
+  }
+  @keyframes cta-prometheus-flash {
+    0%   { filter: brightness(1.25); }
+    30%  { filter: brightness(2); transform: scale(1.03); box-shadow: 0 0 40px color-mix(in srgb, var(--_accent) 50%, transparent); }
+    100% { filter: brightness(1.1); transform: scale(0.97); }
+  }
+
+  /* DELUGE — wave ripple: horizontal oscillation like water current */
+  .slide--deluge .slide__cta:hover {
+    animation: cta-deluge-ripple 2s ease-in-out infinite;
+    border-color: color-mix(in srgb, var(--_accent) 55%, transparent);
+  }
+  .slide--deluge .slide__cta:active {
+    animation: cta-deluge-submerge 0.3s ease-in forwards;
+  }
+  @keyframes cta-deluge-ripple {
+    0%, 100% { transform: translateX(0) skewX(0deg); }
+    25%      { transform: translateX(3px) skewX(-0.8deg); }
+    50%      { transform: translateX(-2px) skewX(0.5deg); }
+    75%      { transform: translateX(2px) skewX(-0.3deg); }
+  }
+  @keyframes cta-deluge-submerge {
+    0%   { transform: translateY(0); filter: blur(0px); opacity: 1; }
+    100% { transform: translateY(6px); filter: blur(2px); opacity: 0.5; }
+  }
+
+  /* AWAKENING — focus-pull: blur-to-sharp materialization cycle */
+  .slide--awakening .slide__cta:hover {
+    animation: cta-awakening-focus 2.4s ease-in-out infinite alternate;
+  }
+  .slide--awakening .slide__cta:active {
+    animation: cta-awakening-defocus 0.3s ease-in forwards;
+  }
+  @keyframes cta-awakening-focus {
+    0%   { filter: blur(1.5px); opacity: 0.7; box-shadow: 0 0 20px color-mix(in srgb, var(--_accent) 10%, transparent); }
+    50%  { filter: blur(0px); opacity: 1; box-shadow: 0 0 32px color-mix(in srgb, var(--_accent) 25%, transparent), 0 0 8px color-mix(in srgb, var(--_accent) 40%, transparent); }
+    100% { filter: blur(0.5px); opacity: 0.85; box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 15%, transparent); }
+  }
+  @keyframes cta-awakening-defocus {
+    0%   { filter: blur(0px); opacity: 1; }
+    100% { filter: blur(4px); opacity: 0.5; transform: scale(1.04); }
+  }
+
+  /* OVERTHROW — mirror shatter: skew oscillation + accent glow pulses.
+     No filter:brightness — it darkens the text to invisibility on dark bg. */
+  .slide--overthrow .slide__cta:hover {
+    animation: cta-overthrow-shatter 0.6s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    border-color: color-mix(in srgb, var(--_accent) 75%, transparent);
+  }
+  .slide--overthrow .slide__cta:active {
+    animation: cta-overthrow-stamp 0.2s ease-out forwards;
+  }
+  @keyframes cta-overthrow-shatter {
+    0%   { transform: skewX(0deg);     box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 15%, transparent); }
+    30%  { transform: skewX(-1.5deg);  box-shadow: 0 0 22px color-mix(in srgb, var(--_accent) 35%, transparent); }
+    60%  { transform: skewX(0.8deg);   box-shadow: 0 0 6px color-mix(in srgb, var(--_accent) 10%, transparent); }
+    100% { transform: skewX(-0.3deg);  box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 25%, transparent); }
+  }
+  @keyframes cta-overthrow-stamp {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.08) skewX(-2deg); box-shadow: 0 0 36px color-mix(in srgb, var(--_accent) 50%, transparent); }
+    100% { transform: scale(0.96) skewX(0deg); }
+  }
+
+  /* ── Per-archetype quote transitions ──────────────────────────────────── */
+
   /* SHADOW: interference glitch */
   .slide--shadow .quote-block.entering { animation: q-glitch-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
   .slide--shadow .quote-block.visible  { opacity: 0.85; transform: none; }
