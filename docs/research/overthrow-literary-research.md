@@ -172,7 +172,7 @@ The revolutionary cell as pathology. Based on the real Nechaev affair (1869). Th
 ### Key Passages (Verified)
 
 **Shigalyov's paradox** (Part II, Ch. 7):
-> "Starting from unlimited freedom, I arrive at unlimited despotism."
+> "Starting from unlimited freedom, I conclude with unlimited despotism." (Pevear/Volokhonsky)
 
 **Kirilov's logic:** *"If there is no God, then I am God."*
 
@@ -324,7 +324,7 @@ Power as **PERFORMANCE.** Every political act is theatrical. The conspiracy bind
 
 ### Key Passages (Verified)
 
-**The Threepenny Opera** (Act II Finale): *"Erst kommt das Fressen, dann kommt die Moral."* — "First comes a full stomach, then comes ethics."
+**The Threepenny Opera** (Act II Finale): *"Erst kommt das Fressen, dann kommt die Moral."* — "Food is the first thing, morals follow on." (Manheim/Willett translation)
 
 **The banker and the robber** (Act III): *"Was ist ein Einbruch in eine Bank gegen die Gründung einer Bank?"* — "What is the robbing of a bank compared to the founding of a bank?"
 

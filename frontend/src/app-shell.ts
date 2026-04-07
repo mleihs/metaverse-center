@@ -337,6 +337,21 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/archetypes/:archetypeId',
+        render: ({ archetypeId }) =>
+          html`<velg-archetype-detail .archetypeId=${archetypeId ?? ''}></velg-archetype-detail>`,
+        enter: async () => {
+          await this._authReady;
+          if (
+            !(await this._lazy(
+              () => import('./components/archetypes/ArchetypeDetailView.js'),
+            ))
+          )
+            return false;
+          return true;
+        },
+      },
+      {
         path: '/bureau/dispatch',
         render: () => html`<velg-bureau-dispatch-terminal></velg-bureau-dispatch-terminal>`,
         enter: async () => {

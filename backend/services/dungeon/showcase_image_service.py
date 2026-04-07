@@ -200,6 +200,84 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "gold, deep shadow black. Aggressive thick brushwork. Political vertigo."
         ),
     ),
+    # ── Detail page variants ────────────────────────────────────────────────
+    #
+    # Additional images for archetype detail pages (/archetypes/:id).
+    # Named {archetype}-{variant} to distinguish from the hero image.
+    "overthrow-depth": ArchetypeVisual(
+        archetype_id="overthrow-depth",
+        model="openai/gpt-5-image",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A narrow corridor deep inside a mirror palace, reminiscent of "
+            "El Lissitzky's 'Beat the Whites with the Red Wedge' but rendered "
+            "as claustrophobic architecture. Opposing mirrors create infinite "
+            "recursion — each reflection wearing different political insignia. "
+            "Torn propaganda posters layer upon each other on stone walls, "
+            "contradictory decrees in Gothic and Cyrillic script, partially "
+            "redacted. A single chair sits beneath a bare bulb — Koestler's "
+            "interrogation chamber. Cracked marble floor reflects crimson "
+            "overhead light. Paranoid atmosphere. Color #d4364b for all red "
+            "elements, deep charcoal blacks. Thick expressionist impasto, "
+            "visible brushstrokes. Diagonal shadows at 45 degrees."
+        ),
+    ),
+    "overthrow-whispers": ArchetypeVisual(
+        archetype_id="overthrow-whispers",
+        model="openai/gpt-5-image",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A long marble corridor in a mirror palace, painted in the style "
+            "of Vilhelm Hammershøi — muted, desaturated, profoundly still. "
+            "Identical doors on both sides, each slightly ajar. Official notices "
+            "pinned to walls in neat rows, the text too small to read. A single "
+            "figure at the far end, back turned, walking away. The mirrors reflect "
+            "the corridor faithfully but one reflection shows a door that is "
+            "closed in reality. Subdued color #d4364b only in the wax seal on "
+            "one notice. Grey stone, cold daylight from unseen windows, dust "
+            "in the air. Oil painting, restrained palette, quiet menace."
+        ),
+    ),
+    "overthrow-revolution": ArchetypeVisual(
+        archetype_id="overthrow-revolution",
+        model="openai/gpt-5-image",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A grand assembly hall in ruins, painted in the violent style of "
+            "Anselm Kiefer — scorched surfaces, layered materials, monumental "
+            "scale. Faction banners torn and overlapping on the walls, three "
+            "different insignia competing for the same space. An overturned "
+            "podium. Scattered documents form a carpet on the floor. In the "
+            "center, an empty chair — the seat of power, vacated mid-sentence. "
+            "Smoke and red light #d4364b pouring through shattered windows. "
+            "Charcoal and ash mixed into thick paint. The architecture crumbles "
+            "but the propaganda remains intact. Heavy impasto, burnt umber, "
+            "blood red, lead white. Political vertigo made landscape."
+        ),
+    ),
+    "overthrow-boss": ArchetypeVisual(
+        archetype_id="overthrow-boss",
+        model="openai/gpt-5-image",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A throne room at the heart of a shattered mirror palace, "
+            "inspired by Francis Bacon's 'Study after Velázquez's Portrait "
+            "of Pope Innocent X' — a figure on a throne, distorted, screaming "
+            "or smiling (impossible to tell), viewed through fractured glass. "
+            "The throne is surrounded by broken mirrors that each reflect the "
+            "same figure in a different state: one regal, one bestial, one "
+            "serpentine. Milton's Satan in three phases. The floor is covered "
+            "in scattered official seals and torn documents. Crimson light "
+            "descends from a single point above — authoritarian spotlight. "
+            "The mirrors multiply the figure into infinite pretenders. "
+            "Blood red #d4364b, papal purple, bone white, void black. "
+            "Expressionist oil paint, violent brushwork, Bacon's smeared flesh."
+        ),
+    ),
 }
 
 
