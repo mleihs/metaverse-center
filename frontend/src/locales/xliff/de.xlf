@@ -626,10 +626,6 @@
   <source>An unexpected error occurred while archiving the conversation.</source>
   <target>Ein unerwarteter Fehler beim Archivieren der Konversation.</target>
 </trans-unit>
-<trans-unit id="s0a552e96950fee13">
-  <source>Chat with <x id="0" equiv-text="${names[0]}"/></source>
-  <target>Chat mit <x id="0" equiv-text="${agent.name}"/></target>
-</trans-unit>
 <trans-unit id="s8d746648f3712457">
   <source>Conversation started with <x id="0" equiv-text="${names[0]}"/>.</source>
   <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}"/>.</target>
@@ -669,10 +665,6 @@
 <trans-unit id="sb091c8f4498734a1">
   <source>An unexpected error occurred while sending the message.</source>
   <target>Ein unerwarteter Fehler beim Senden der Nachricht.</target>
-</trans-unit>
-<trans-unit id="s13551a01b5b4f74d">
-  <source>Select a Conversation</source>
-  <target>Konversation auswählen</target>
 </trans-unit>
 <trans-unit id="s43d30b4bb9b89b62">
   <source>Choose a conversation from the list or start a new one by selecting an agent.</source>
@@ -2542,10 +2534,6 @@
   <source>Failed to delete reaction</source>
   <target>Reaktion konnte nicht gelöscht werden</target>
 </trans-unit>
-<trans-unit id="sef72ba000d7f7124">
-  <source><x id="0" equiv-text="${displayName}"/> is typing...</source>
-  <target>schreibt…<x id="0" equiv-text="${displayName}"/> tippt...</target>
-</trans-unit>
 <trans-unit id="s10361832e7a4e3e2">
   <source>Shift+Enter for line break</source>
   <target>Shift+Enter für Zeilenumbruch</target>
@@ -2598,10 +2586,6 @@
   <source>Start Conversation (<x id="0" equiv-text="${this._selectedIds.size}"/> Agents)</source>
   <target>Gespräch starten (<x id="0" equiv-text="${this._selectedIds.size}"/> Agenten)</target>
 </trans-unit>
-<trans-unit id="s2e1246a8a0f9f582">
-  <source>Group: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></source>
-  <target>Gruppe: <x id="0" equiv-text="${names.slice(0, 3).join(', ')}${names.length &gt; 3 ? ` +${names.length - 3}` : ''}"/></target>
-</trans-unit>
 <trans-unit id="sce4b0b13cd896498">
   <source>Group conversation started with <x id="0" equiv-text="${names.length}"/> agents.</source>
   <target>Gruppengespräch mit <x id="0" equiv-text="${names.length}"/> Agenten gestartet.</target>
@@ -2629,10 +2613,6 @@
 <trans-unit id="s1a445bc371e19b14">
   <source>Add Event</source>
   <target>Event hinzufügen</target>
-</trans-unit>
-<trans-unit id="sabc6f5601ffed38c">
-  <source><x id="0" equiv-text="${agentCount}"/> agents are responding...</source>
-  <target>Agenten antworten…<x id="0" equiv-text="${agentCount}"/> Agenten antworten...</target>
 </trans-unit>
 <trans-unit id="s61b59619104804be">
   <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</source>
@@ -6998,12 +6978,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die in Regalen er
 <trans-unit id="s5c2cf3480b45d780">
   <source>Alliance team name</source>
 <target>Name des Allianzteams</target></trans-unit>
-<trans-unit id="sf45f5d4f04ef6b54">
-  <source>Team channel message</source>
-<target>Teamkanal-Nachricht</target></trans-unit>
-<trans-unit id="sfffebd09c49607db">
-  <source>Broadcast message</source>
-<target>Rundfunknachricht</target></trans-unit>
 <trans-unit id="s613a4907f686c82a">
   <source>Betrayal requires a team size of at least 3.</source>
 <target>Verrat erfordert eine Teamgröße von mindestens 3.</target></trans-unit>
@@ -23796,6 +23770,362 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="sfb8860c23d206566">
   <source>THE CURRENT CARRIES</source>
+</trans-unit>
+<trans-unit id="s038de73fcc9bd5e4">
+  <source>Resonance Archetype</source>
+</trans-unit>
+<trans-unit id="s867e7362423b1b79">
+  <source>Key Art</source>
+</trans-unit>
+<trans-unit id="sd29dc07235eea0f5">
+  <source>Quotation</source>
+</trans-unit>
+<trans-unit id="se5649e4b205412b9">
+  <source>Introduction</source>
+</trans-unit>
+<trans-unit id="s442fd53dd95d039b">
+  <source>Literary Voice</source>
+</trans-unit>
+<trans-unit id="s555bd6364349fada">
+  <source>Fracture Gain</source>
+</trans-unit>
+<trans-unit id="s5885d04c1c1c92e6">
+  <source>Fracture Reduction</source>
+</trans-unit>
+<trans-unit id="sfd49d0c2d6078fb0">
+  <source>Violence does not restore order.</source>
+</trans-unit>
+<trans-unit id="s8bdd7e1ca2e777d3">
+  <source>Critical Aptitudes</source>
+</trans-unit>
+<trans-unit id="sd1611731af646640">
+  <source>Bestiary</source>
+</trans-unit>
+<trans-unit id="s2bd91059bb848fd9">
+  <source>The denizens of Der Spiegelpalast. Not monsters – operatives.</source>
+</trans-unit>
+<trans-unit id="s0af3d5bbe14c32da">
+  <source>Whispers</source>
+</trans-unit>
+<trans-unit id="sfea9063bb3a0cab7">
+  <source>Overheard in the Spiegelpalast</source>
+</trans-unit>
+<trans-unit id="sc8e5289c487f151f">
+  <source>Literary Influences</source>
+</trans-unit>
+<trans-unit id="s55ace8462942ddf4">
+  <source>The Authors Who Forged This Place</source>
+</trans-unit>
+<trans-unit id="s44ff99903b9f4bcb">
+  <source>Encounters</source>
+</trans-unit>
+<trans-unit id="s85c76942de677a66">
+  <source>Navigate political crises. Every choice shifts the balance of power.</source>
+</trans-unit>
+<trans-unit id="s428331f8dda54910">
+  <source>Artifacts &amp; Loot</source>
+</trans-unit>
+<trans-unit id="s12481244527dab3a">
+  <source>Artifacts of the Spiegelpalast</source>
+</trans-unit>
+<trans-unit id="s83949edb8214be21">
+  <source>Objects that mutate as the dungeon descends. Each tells the story of power corrupted.</source>
+</trans-unit>
+<trans-unit id="sd61eecd27fbc41e7">
+  <source>Spoils</source>
+</trans-unit>
+<trans-unit id="s670a1868dd55bde2">
+  <source>Tier I – Minor</source>
+</trans-unit>
+<trans-unit id="sb837397c74c34691">
+  <source>Tier II – Major</source>
+</trans-unit>
+<trans-unit id="sa520511bbe20d4fc">
+  <source>Tier III – Legendary</source>
+</trans-unit>
+<trans-unit id="sc7b736bb94cf040e">
+  <source>Conclusion</source>
+</trans-unit>
+<trans-unit id="sf0173267320d3716">
+  <source>The old leader is gone. The new leader enters. Same room. Same desk. Same view from the window.</source>
+</trans-unit>
+<trans-unit id="s1f7db5a2d609f203">
+  <source>You survived the exhibition. Now survive the dungeon.</source>
+</trans-unit>
+<trans-unit id="sfec729632812de96">
+  <source>Enter the Spiegelpalast</source>
+</trans-unit>
+<trans-unit id="sda7a71fe52a2aab6">
+  <source>Archetype Navigation</source>
+</trans-unit>
+<trans-unit id="s2aa116a6c80889b8">
+  <source>All Archetypes</source>
+</trans-unit>
+<trans-unit id="sc1c9e63a138df331">
+  <source>Archetype Not Found</source>
+</trans-unit>
+<trans-unit id="s7252b0d2c66ee738">
+  <source>This archetype detail page is not available yet.</source>
+</trans-unit>
+<trans-unit id="s63456333bc576372">
+  <source>Available archetypes:</source>
+</trans-unit>
+<trans-unit id="sabbdf14c3892a11e">
+  <source>Return to Landing Page</source>
+</trans-unit>
+<trans-unit id="sf5f1e047d68a6dda">
+  <source>Failed to rename conversation.</source>
+</trans-unit>
+<trans-unit id="s22b13dc11655a4bc">
+  <source>An unexpected error occurred while renaming the conversation.</source>
+</trans-unit>
+<trans-unit id="sfa1192cd794c69ce">
+  <source>Conversation list</source>
+</trans-unit>
+<trans-unit id="s3a413287b7f03f7b">
+  <source>Back to conversations</source>
+</trans-unit>
+<trans-unit id="s65b5f643632c814c">
+  <source>Connection lost during response. Reloading messages.</source>
+</trans-unit>
+<trans-unit id="s3596f8ae67e767d2">
+  <source>Failed to regenerate response.</source>
+</trans-unit>
+<trans-unit id="s972538adba582b60">
+  <source>Failed to toggle reaction.</source>
+</trans-unit>
+<trans-unit id="s2572dee920b2c2fa">
+  <source>Failed to load agent details.</source>
+</trans-unit>
+<trans-unit id="s9724e05678a2f78c">
+  <source>Remove event reference</source>
+</trans-unit>
+<trans-unit id="s386dc3d325b29191">
+  <source>Add event reference</source>
+</trans-unit>
+<trans-unit id="s8841bc3130f77a90">
+  <source>Chat actions</source>
+</trans-unit>
+<trans-unit id="s4f6b313d99e0c922">
+  <source>Export conversation</source>
+</trans-unit>
+<trans-unit id="seb779a76fa43446c">
+  <source>Markdown</source>
+</trans-unit>
+<trans-unit id="s34d46fe97a690403">
+  <source>JSON</source>
+</trans-unit>
+<trans-unit id="sb9ccdd886e9b1a02">
+  <source>Rename conversation</source>
+</trans-unit>
+<trans-unit id="s6964252e6c3a9344">
+  <source>Double-click to rename</source>
+</trans-unit>
+<trans-unit id="sf57fe269b923fa4c">
+  <source>Unpin conversation</source>
+</trans-unit>
+<trans-unit id="s4c996b13abe515fb">
+  <source>Pin conversation</source>
+</trans-unit>
+<trans-unit id="sbc0cd0b4dfb7dde1">
+  <source>Unpin</source>
+</trans-unit>
+<trans-unit id="s8db89619f41917b4">
+  <source>Pin</source>
+</trans-unit>
+<trans-unit id="sdf079a261ec7b7d9">
+  <source>Search conversations...</source>
+</trans-unit>
+<trans-unit id="s24e277f5215d1465">
+  <source>Search conversations</source>
+</trans-unit>
+<trans-unit id="s5f4586bc1e2740e6">
+  <source>Clear search</source>
+</trans-unit>
+<trans-unit id="s3d4ea23ea514cbfd">
+  <source>No matching conversations</source>
+</trans-unit>
+<trans-unit id="s44851a8adf059eef">
+  <source>Pinned</source>
+</trans-unit>
+<trans-unit id="s9b901b990d92f573">
+  <source>This Week</source>
+</trans-unit>
+<trans-unit id="sc032b109be3096a1">
+  <source>Older</source>
+</trans-unit>
+<trans-unit id="sdfb2b12b255de30c">
+  <source>Copied!</source>
+</trans-unit>
+<trans-unit id="s0d808bffdc04f31d">
+  <source>Empty response</source>
+</trans-unit>
+<trans-unit id="sb9e306d8fcfb3c1c">
+  <source>Send message</source>
+</trans-unit>
+<trans-unit id="s965008aece331e3a">
+  <source>Conversation openers</source>
+</trans-unit>
+<trans-unit id="s45475740e01cb9be">
+  <source>Conversation messages</source>
+</trans-unit>
+<trans-unit id="se7a9aafed2d1ce88">
+  <source>Scroll to bottom</source>
+</trans-unit>
+<trans-unit id="s66e5aa85cc1a9917">
+  <source>Message actions</source>
+</trans-unit>
+<trans-unit id="sf4de3bfbfaca12e5">
+  <source>Copied</source>
+</trans-unit>
+<trans-unit id="s67b8d96c4d75442b">
+  <source>Copy message</source>
+</trans-unit>
+<trans-unit id="s31fc888f0e0e7736">
+  <source>Regenerate response</source>
+</trans-unit>
+<trans-unit id="s9c0c75f50f5af857">
+  <source>Edit and resend</source>
+</trans-unit>
+<trans-unit id="s46727de6a2d42214">
+  <source>Remove reaction</source>
+</trans-unit>
+<trans-unit id="s5769170fd14b80a7">
+  <source>Add reaction</source>
+</trans-unit>
+<trans-unit id="sebb66330cf77674b">
+  <source>Choose reaction</source>
+</trans-unit>
+<trans-unit id="s9494f6622e7ce5c6">
+  <source><x id="0" equiv-text="${users[0].name}"/> is typing</source>
+</trans-unit>
+<trans-unit id="s6a00f57bdd0d242a">
+  <source><x id="0" equiv-text="${names}"/> are typing</source>
+</trans-unit>
+<trans-unit id="s064405b5cc3e2a33">
+  <source><x id="0" equiv-text="${names}"/> +<x id="1" equiv-text="${extra}"/> are typing</source>
+</trans-unit>
+<trans-unit id="s4e4dab26a42eee03">
+  <source>Duplicate period</source>
+</trans-unit>
+<trans-unit id="s0fde7e1a7f705b80">
+  <source>An edition for this exact period already exists. Generate another?</source>
+</trans-unit>
+<trans-unit id="s45cb501abd43ba52">
+  <source>Generate</source>
+</trans-unit>
+<trans-unit id="sdcaa2f7f418c4629">
+  <source>Chronicle edition generated.</source>
+</trans-unit>
+<trans-unit id="se5d7e61442f3e9b8">
+  <source>Gathering intelligence reports...</source>
+</trans-unit>
+<trans-unit id="sdc4ec0f50bd1dcf2">
+  <source>Composing editorial content...</source>
+</trans-unit>
+<trans-unit id="s4274cc4663d67779">
+  <source>Typesetting edition...</source>
+</trans-unit>
+<trans-unit id="sdbce0cc725fbf497">
+  <source>Finalising print run...</source>
+</trans-unit>
+<trans-unit id="sd80301ec3fb7334f">
+  <source>Press room active</source>
+</trans-unit>
+<trans-unit id="sed3f30c31474ca65">
+  <source>Descend</source>
+  <target>Tiefer</target>
+</trans-unit>
+<trans-unit id="s03962d2c84ae3db3">
+  <source>Face the Trial</source>
+  <target>Tritt vor</target>
+</trans-unit>
+<trans-unit id="s9b2e4d0cf394abe0">
+  <source>Accept the Gift</source>
+  <target>Bleib</target>
+</trans-unit>
+<trans-unit id="sa363a35845026059">
+  <source>Carry On</source>
+  <target>Weiter</target>
+</trans-unit>
+<trans-unit id="s5551307171b33044">
+  <source>Steal the Flame</source>
+  <target>Greif ins Feuer</target>
+</trans-unit>
+<trans-unit id="sa87eee69eb3f2411">
+  <source>Go Under</source>
+  <target>Versinke</target>
+</trans-unit>
+<trans-unit id="s9c33761de33d7ada">
+  <source>Open Your Eyes</source>
+  <target>Erkenne</target>
+</trans-unit>
+<trans-unit id="s7311a9ea48c51528">
+  <source>Seize Power</source>
+  <target>Stürze</target>
+</trans-unit>
+<trans-unit id="s74894e0808c06307">
+  <source>Resonance fracture opening into layered archetype chambers</source>
+</trans-unit>
+<trans-unit id="sb6452b46af47b84d">
+  <source>Send your agents where reality fractures. Eight archetypal dungeons – each shaped by its own literary DNA, from existential dread to political vertigo. Your agents face stress, fight what lives in the fracture, and return carrying aptitudes, artifacts, and scars that reshape your civilization.</source>
+</trans-unit>
+<trans-unit id="s43bcf624e709bfb6">
+  <source>Depth Signal</source>
+</trans-unit>
+<trans-unit id="s26bdf4e34a955991">
+  <source>Where Boundaries Thin</source>
+</trans-unit>
+<trans-unit id="sde3dfc5405223203">
+  <source>Your agents have memories, opinions, grudges. Now send them where reality fractures. Eight archetypal dungeons, each a different wound in the world – and a different test of what your civilization is made of.</source>
+</trans-unit>
+<trans-unit id="s072f40ef578026ba">
+  <source>Enter the Resonance</source>
+</trans-unit>
+<trans-unit id="s852264f2869523ef">
+  <source>Send agents into the fractures between worlds. Eight archetypal dungeons – procedurally generated, literarily informed – where stress is real and choices reshape who your agents become. What happens in the depths changes your world above.</source>
+</trans-unit>
+<trans-unit id="s60a653d23e0b6086">
+  <source>considers the implications…</source>
+</trans-unit>
+<trans-unit id="sa15eb2c43669d824">
+  <source>consults the archives…</source>
+</trans-unit>
+<trans-unit id="s89b67b1b053697a9">
+  <source>weighs the options…</source>
+</trans-unit>
+<trans-unit id="s8335b53d624a8aed">
+  <source>reads the situation…</source>
+</trans-unit>
+<trans-unit id="sb95431ac3e0f087b">
+  <source>formulates a response…</source>
+</trans-unit>
+<trans-unit id="s60b47ed4d731541a">
+  <source>reflects on the matter…</source>
+</trans-unit>
+<trans-unit id="s2a54633eea958263">
+  <source>gathers their thoughts…</source>
+</trans-unit>
+<trans-unit id="s8159d306b73f8295">
+  <source>assesses the terrain…</source>
+</trans-unit>
+<trans-unit id="s456e2d517d890e90">
+  <source>searches for the right words…</source>
+</trans-unit>
+<trans-unit id="s597b9337d2fe3fd6">
+  <source>processes the intelligence…</source>
+</trans-unit>
+<trans-unit id="saf0b4e191da20cef">
+  <source>step</source>
+</trans-unit>
+<trans-unit id="s124250ad5a5b6d14">
+  <source>steps</source>
+</trans-unit>
+<trans-unit id="s4f9940d8e8b7fb45">
+  <source>stress</source>
+</trans-unit>
+<trans-unit id="sd53d7ddb42112319">
+  <source>Portrait of <x id="0" equiv-text="${agent.name}"/></source>
 </trans-unit>
 
 </body>

@@ -321,6 +321,34 @@ export class VelgDungeonShowcase extends LitElement {
 
   private _onDotClick(index: number): void { this._navigateTo(index); }
 
+  /** SPA navigation — crawlable `<a href>` with client-side routing. */
+  private _onCtaNavigate(e: Event, id: string): void {
+    e.preventDefault();
+    this.dispatchEvent(
+      new CustomEvent('navigate', {
+        bubbles: true,
+        composed: true,
+        detail: `/archetypes/${id}`,
+      }),
+    );
+  }
+
+  /** Localized CTA labels. Each call to msg() is a distinct extraction point.
+   *  Voice matches the literary tradition of each archetype. */
+  private _ctaLabel(id: string): string {
+    switch (id) {
+      case 'shadow':     return msg('Descend');
+      case 'tower':      return msg('Face the Trial');
+      case 'mother':     return msg('Accept the Gift');
+      case 'entropy':    return msg('Carry On');
+      case 'prometheus': return msg('Steal the Flame');
+      case 'deluge':     return msg('Go Under');
+      case 'awakening':  return msg('Open Your Eyes');
+      case 'overthrow':  return msg('Seize Power');
+      default:           return msg('Explore');
+    }
+  }
+
   private _onTouchStart = (e: TouchEvent): void => {
     this._touchStartX = e.touches[0].clientX;
     this._touchStartY = e.touches[0].clientY;
@@ -401,6 +429,11 @@ export class VelgDungeonShowcase extends LitElement {
                 <p class="slide__subtitle">${a.subtitle}</p>
                 <div class="slide__divider"></div>
                 <p class="slide__tagline">${a.tagline}</p>
+                <a
+                  class="slide__cta"
+                  href=${`/archetypes/${a.id}`}
+                  @click=${(e: Event) => this._onCtaNavigate(e, a.id)}
+                ><span class="slide__cta-text">${this._ctaLabel(a.id)}</span><span class="slide__cta-arrow" aria-hidden="true">\u25B8</span></a>
                 ${i === this._activeIndex
                   ? this._renderQuote(this._quote, this._phase)
                   : nothing}
