@@ -1339,14 +1339,26 @@ export class VelgArchetypeDetail extends LitElement {
 
               <dl class="threshold-list">
                 ${gauge.thresholds.map(
-                  (t) => html`
+                  (t, i, arr) => {
+                    let range: string;
+                    if (gauge.direction === 'drain') {
+                      range = String(t.value);
+                    } else if (t.value === gauge.max) {
+                      range = String(gauge.max);
+                    } else {
+                      const next = arr[i + 1];
+                      const upper = next ? next.value - 1 : gauge.max;
+                      range = `${t.value}\u2013${upper}`;
+                    }
+                    return html`
                     <div class="threshold">
                       <dt class="threshold__label">${t.label}
-                        <span class="threshold__range">${gauge.direction === 'drain' ? String(t.value) : t.value === gauge.max ? String(gauge.max) : `${t.value}\u2013${t.value + 19}`}</span>
+                        <span class="threshold__range">${range}</span>
                       </dt>
                       <dd>${t.description}</dd>
                     </div>
-                  `,
+                  `;
+                  },
                 )}
               </dl>
             </div>
@@ -1594,7 +1606,7 @@ export class VelgArchetypeDetail extends LitElement {
             ${d.prose.exitCtaText}
           </p>
 
-          <a class="exit__cta" href="/">${d.prose.exitCta}</a>
+          <a class="exit__cta" href="/#dungeons">${d.prose.exitCta}</a>
 
           <nav class="exit__nav" aria-label=${msg('Archetype Navigation')}>
             <a class="exit__nav-link" href="/archetypes/${d.prevArchetype.id}">
