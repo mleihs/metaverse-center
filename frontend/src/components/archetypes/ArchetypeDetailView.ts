@@ -22,12 +22,14 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import { getArchetypeDetail } from './dungeon-detail-data.js';
 import {
-  type ArchetypeDetail,
-  type BanterLine,
-  getArchetypeDetail,
+  type LocalizedArchetypeDetail,
+  type LocalizedBanterLine,
+  type LocalizedLootPreview,
+  getLocalizedArchetypeDetail,
   ARCHETYPES,
-} from './dungeon-detail-data.js';
+} from './dungeon-detail-localized.js';
 import {
   detailCardStyles,
   detailRoomStyles,
@@ -676,7 +678,7 @@ export class VelgArchetypeDetail extends LitElement {
         inset: -10% 0;
         z-index: 0;
         background: var(--_banter-bg) center / cover no-repeat;
-        opacity: 0.25;
+        opacity: 0.40;
         pointer-events: none;
       }
 
@@ -978,24 +980,26 @@ export class VelgArchetypeDetail extends LitElement {
   ];
 
   @property() archetypeId = '';
-  @state() private _data: ArchetypeDetail | null = null;
+  /** Whether an archetype with this id exists (for not-found detection). */
+  @state() private _hasData = false;
   @state() private _gaugeAnimated = false;
 
   connectedCallback() {
     super.connectedCallback();
-    this._loadData();
+    this._initArchetype();
   }
 
   updated(changed: Map<string, unknown>) {
     if (changed.has('archetypeId')) {
-      this._loadData();
+      this._initArchetype();
     }
   }
 
-  private _loadData() {
+  /** One-time setup: SEO, analytics, gauge animation. Uses raw EN data for SEO. */
+  private _initArchetype() {
     if (!this.archetypeId) return;
     const data = getArchetypeDetail(this.archetypeId);
-    this._data = data ?? null;
+    this._hasData = !!data;
 
     if (data) {
       seoService.setTitle([data.name, data.subtitle]);
@@ -1016,11 +1020,13 @@ export class VelgArchetypeDetail extends LitElement {
   }
 
   protected render() {
-    if (!this._data) {
+    if (!this._hasData) {
       return this.archetypeId ? this._renderNotFound() : nothing;
     }
 
-    const d = this._data;
+    // Compute localized data fresh on each render — @localized() triggers
+    // re-renders on locale change, so this always reflects the current locale.
+    const d = getLocalizedArchetypeDetail(this.archetypeId)!;
     const imageUrl = `${STORAGE_BASE}/dungeon-${d.id}.avif`;
     const depthUrl = `${STORAGE_BASE}/dungeon-${d.id}-depth.avif`;
     const whispersUrl = `${STORAGE_BASE}/dungeon-${d.id}-whispers.avif`;
@@ -1065,7 +1071,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Gauge ──────────────────────────────────────────────────────────────────
 
-  private _renderGauge(d: ArchetypeDetail): TemplateResult {
+  private _renderGauge(d: LocalizedArchetypeDetail): TemplateResult {
     const gauge = d.mechanicGauge;
     return html`
       <div class="gauge" role="progressbar" aria-label=${gauge.name}
@@ -1079,7 +1085,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 2: Atmosphere ─────────────────────────────────────────────────────
 
-  private _renderAtmosphereRoom(d: ArchetypeDetail, imageUrl: string): TemplateResult {
+  private _renderAtmosphereRoom(d: LocalizedArchetypeDetail, imageUrl: string): TemplateResult {
     return html`
       <section class="room room--atmosphere" role="region" aria-label=${msg('Key Art')}>
         <div class="room__bg room__bg--parallax"
@@ -1098,7 +1104,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Quote Break (reusable) ───────────────────────────────────────────────
 
-  private _renderQuoteBreak(d: ArchetypeDetail, index: number): TemplateResult {
+  private _renderQuoteBreak(d: LocalizedArchetypeDetail, index: number): TemplateResult {
     // Quote 0 = Voice Room (rendered separately), 1 = after Bestiary, 2 = final warning
     const quoteIdx = index === 1 ? 1 : 2; // Machiavelli (1), Brecht (2)
     const quote = d.quotes[quoteIdx];
@@ -1122,7 +1128,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 2.5: Lore Intro ────────────────────────────────────────────────
 
-  private _renderLoreIntroRoom(d: ArchetypeDetail): TemplateResult {
+  private _renderLoreIntroRoom(d: LocalizedArchetypeDetail): TemplateResult {
     // Pick a random entrance text (deterministic: based on archetype id length)
     const entranceIdx = d.id.length % d.entranceTexts.length;
     const entrance = d.entranceTexts[entranceIdx];
@@ -1145,7 +1151,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 3: Voice (Quote) ──────────────────────────────────────────────────
 
-  private _renderVoiceRoom(d: ArchetypeDetail): TemplateResult {
+  private _renderVoiceRoom(d: LocalizedArchetypeDetail): TemplateResult {
     // Pick the most dramatic quote (prefer non-banter, with original language)
     const quote = d.quotes.find((q) => q.original) ?? d.quotes[0];
     if (!quote) return html``;
@@ -1167,7 +1173,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 4: Mechanic ───────────────────────────────────────────────────────
 
-  private _renderMechanicRoom(d: ArchetypeDetail): TemplateResult {
+  private _renderMechanicRoom(d: LocalizedArchetypeDetail): TemplateResult {
     const gauge = d.mechanicGauge;
     const maxWeight = Math.max(...Object.values(d.aptitudeWeights));
 
@@ -1241,11 +1247,11 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 5: Bestiary ───────────────────────────────────────────────────────
 
-  private _renderBestiaryRoom(d: ArchetypeDetail, depthUrl: string): TemplateResult {
+  private _renderBestiaryRoom(d: LocalizedArchetypeDetail, depthUrl: string): TemplateResult {
     return html`
       <section class="room room--bestiary room--grow" role="region" aria-label=${msg('Bestiary')}>
         <div class="room__bg room__bg--parallax"
-             style="--_bg-url:url('${depthUrl}');--_bg-opacity:0.22">
+             style="--_bg-url:url('${depthUrl}');--_bg-opacity:0.40">
         </div>
         <div class="room__content room__reveal">
           <h2 class="section-header">${msg('Bestiary')}</h2>
@@ -1257,7 +1263,7 @@ export class VelgArchetypeDetail extends LitElement {
               (e) => html`
                 <velg-enemy-card
                   .name=${e.name}
-                  .nameDe=${e.nameDe}
+                  .nameAlt=${e.nameAlt}
                   tier=${e.tier}
                   .power=${e.power}
                   .stress=${e.stress}
@@ -1277,7 +1283,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Banter Interlude ───────────────────────────────────────────────────────
 
-  private _renderBanterInterlude(lines: readonly BanterLine[], bgUrl: string): TemplateResult {
+  private _renderBanterInterlude(lines: readonly LocalizedBanterLine[], bgUrl: string): TemplateResult {
     if (!lines.length) return html``;
     const selected = lines.slice(0, 3);
     return html`
@@ -1293,7 +1299,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 6: Literary Wall ──────────────────────────────────────────────────
 
-  private _renderLiteraryRoom(d: ArchetypeDetail, imageUrl: string): TemplateResult {
+  private _renderLiteraryRoom(d: LocalizedArchetypeDetail, imageUrl: string): TemplateResult {
     // Find a Brecht or other German quote for the header
     const headerQuote = d.authors.find((a) => a.quote && a.language === 'Deutsch')?.quote
       ?? d.authors.find((a) => a.quote)?.quote ?? '';
@@ -1302,7 +1308,7 @@ export class VelgArchetypeDetail extends LitElement {
       <section class="room room--literary room--grow" role="region"
                aria-label=${msg('Literary Influences')}>
         <div class="room__bg room__bg--parallax"
-             style="--_bg-url:url('${imageUrl}');--_bg-opacity:0.15">
+             style="--_bg-url:url('${imageUrl}');--_bg-opacity:0.30">
         </div>
         <div class="room__content room__reveal">
           <div class="literary-header">
@@ -1333,7 +1339,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 7: Encounters ─────────────────────────────────────────────────────
 
-  private _renderEncounterRoom(d: ArchetypeDetail): TemplateResult {
+  private _renderEncounterRoom(d: LocalizedArchetypeDetail): TemplateResult {
     return html`
       <section class="room room--encounters room--grow" role="region"
                aria-label=${msg('Encounters')}>
@@ -1363,7 +1369,7 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 8: Vault ──────────────────────────────────────────────────────────
 
-  private _renderVaultRoom(d: ArchetypeDetail): TemplateResult {
+  private _renderVaultRoom(d: LocalizedArchetypeDetail): TemplateResult {
     const tier1 = d.lootShowcase.filter((l) => l.tier === 1);
     const tier2 = d.lootShowcase.filter((l) => l.tier === 2);
     const tier3 = d.lootShowcase.filter((l) => l.tier === 3);
@@ -1405,7 +1411,7 @@ export class VelgArchetypeDetail extends LitElement {
     `;
   }
 
-  private _renderLootTier(label: string, items: typeof this._data extends null ? never : NonNullable<typeof this._data>['lootShowcase'], accent: string): TemplateResult {
+  private _renderLootTier(label: string, items: readonly LocalizedLootPreview[], accent: string): TemplateResult {
     if (!items.length) return html``;
     return html`
       <div class="loot-tier-header">${label}</div>
@@ -1425,11 +1431,11 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Room 9: Exit ───────────────────────────────────────────────────────────
 
-  private _renderExitRoom(d: ArchetypeDetail, bossUrl: string): TemplateResult {
+  private _renderExitRoom(d: LocalizedArchetypeDetail, bossUrl: string): TemplateResult {
     return html`
       <section class="room room--exit" role="region" aria-label=${msg('Conclusion')}>
         <div class="room__bg room__bg--parallax"
-             style="--_bg-url:url('${bossUrl}');--_bg-opacity:0.25">
+             style="--_bg-url:url('${bossUrl}');--_bg-opacity:0.45">
         </div>
         <div class="room__content room__reveal" style="display:flex;flex-direction:column;align-items:center;">
           <div class="exit__gauge-full">${d.mechanicName}: ${d.mechanicGauge.max} / ${d.mechanicGauge.max}</div>

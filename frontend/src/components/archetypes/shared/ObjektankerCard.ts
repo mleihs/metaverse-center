@@ -8,7 +8,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
-import type { ObjektankerPhase } from '../dungeon-detail-data.js';
+import type { LocalizedObjektankerPhase as ObjektankerPhase } from '../dungeon-detail-localized.js';
 
 @customElement('velg-objektanker-card')
 export class VelgObjektankerCard extends LitElement {
