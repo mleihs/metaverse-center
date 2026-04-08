@@ -2,11 +2,13 @@
  * Encounter preview card — shows narrative encounter with choices.
  */
 
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 import type { LocalizedEncounterChoice as EncounterChoice } from '../dungeon-detail-localized.js';
 
+@localized()
 @customElement('velg-encounter-card')
 export class VelgEncounterCard extends LitElement {
   static styles = [
@@ -24,8 +26,10 @@ export class VelgEncounterCard extends LitElement {
         transition: transform 0.3s var(--_ease-dramatic);
       }
 
-      .card:hover {
-        transform: translateY(-1px);
+      @media (prefers-reduced-motion: no-preference) {
+        .card:hover {
+          transform: translateY(-1px);
+        }
       }
 
       .meta {
@@ -112,13 +116,13 @@ export class VelgEncounterCard extends LitElement {
       <div class="card">
         <div class="meta">
           <span class="tier-badge tier-badge--${this.type === 'elite' ? 'elite' : 'standard'}">${this.type}</span>
-          <span class="depth">Depth ${this.depth}</span>
+          <span class="depth">${msg('Depth')} ${this.depth}</span>
         </div>
         <div class="name">${this.name}</div>
         <p class="description">${this.description}</p>
         ${this.choices.length
           ? html`
-              <div class="choices-header">Choices</div>
+              <div class="choices-header">${msg('Choices')}</div>
               ${this.choices.map(
                 (c) => html`
                   <div class="choice">
