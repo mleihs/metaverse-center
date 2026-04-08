@@ -123,6 +123,38 @@ export interface ArchetypeDetail extends ArchetypeSlide {
   readonly objektanker: readonly ObjektankerPreview[];
   readonly lootShowcase: readonly LootPreview[];
 
+  /** Gauge display value for the animated mechanic room preview (e.g. 42 for Overthrow, 1 for Shadow). */
+  readonly mechanicGaugePreviewValue: number;
+
+  readonly prose: {
+    readonly mechanicGainTitle: string;
+    readonly mechanicGainTitleDe: string;
+    readonly mechanicGainText: string;
+    readonly mechanicGainTextDe: string;
+    readonly mechanicReduceTitle: string;
+    readonly mechanicReduceTitleDe: string;
+    readonly mechanicReduceText: string;
+    readonly mechanicReduceTextDe: string;
+    readonly mechanicReduceEmphasis: string;
+    readonly mechanicReduceEmphasisDe: string;
+    readonly encounterIntro: string;
+    readonly encounterIntroDe: string;
+    readonly bestiaryIntro: string;
+    readonly bestiaryIntroDe: string;
+    readonly banterHeader: string;
+    readonly banterHeaderDe: string;
+    readonly objektankerHeader: string;
+    readonly objektankerHeaderDe: string;
+    readonly objektankerIntro: string;
+    readonly objektankerIntroDe: string;
+    readonly exitQuote: string;
+    readonly exitQuoteDe: string;
+    readonly exitCta: string;
+    readonly exitCtaDe: string;
+    readonly exitCtaText: string;
+    readonly exitCtaTextDe: string;
+  };
+
   readonly prevArchetype: { readonly id: string; readonly name: string; readonly numeral: string };
   readonly nextArchetype: { readonly id: string; readonly name: string; readonly numeral: string };
 }
@@ -217,6 +249,8 @@ const OVERTHROW_DETAIL: ArchetypeDetail = {
     Treasure: 10,
     Exit: 10,
   },
+
+  mechanicGaugePreviewValue: 42,
 
   // ── Bestiary ──
 
@@ -493,16 +527,374 @@ const OVERTHROW_DETAIL: ArchetypeDetail = {
     { name: 'Mirror Shard', nameDe: 'Spiegelscherbe des Spiegelpalasts', tier: 3, effect: 'Openness +5', description: 'It still reflects \u2013 but what it reflects is no longer the room.', descriptionDe: 'Sie reflektiert noch \u2013 aber was sie reflektiert, ist nicht mehr der Raum.' },
   ],
 
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Fracture Gain',
+    mechanicGainTitleDe: 'Frakturzuwachs',
+    mechanicGainText: '+4 per room (shallow) \u2192 +10 per room (deep)\n+2 per combat round\n+5 on failed diplomacy',
+    mechanicGainTextDe: '+4 pro Raum (flach) \u2192 +10 pro Raum (tief)\n+2 pro Kampfrunde\n+5 bei gescheiterter Diplomatie',
+    mechanicReduceTitle: 'Fracture Reduction',
+    mechanicReduceTitleDe: 'Frakturminderung',
+    mechanicReduceText: '\u22125 on rest (brief respite)\n\u221210 on rally (Propagandist ability)',
+    mechanicReduceTextDe: '\u22125 bei Rast (kurze Atempause)\n\u221210 bei Rallye (Propagandisten-F\u00e4higkeit)',
+    mechanicReduceEmphasis: 'Violence does not restore order.',
+    mechanicReduceEmphasisDe: 'Gewalt stellt keine Ordnung wieder her.',
+    encounterIntro: 'Navigate political crises. Every choice shifts the balance of power.',
+    encounterIntroDe: 'Navigiert politische Krisen. Jede Entscheidung verschiebt das Machtgleichgewicht.',
+    bestiaryIntro: 'The denizens of Der Spiegelpalast. Not monsters \u2013 operatives.',
+    bestiaryIntroDe: 'Die Bewohner des Spiegelpalasts. Keine Monster \u2013 Funktion\u00e4re.',
+    banterHeader: 'Overheard in the Spiegelpalast',
+    banterHeaderDe: 'Belauscht im Spiegelpalast',
+    objektankerHeader: 'Artifacts of the Spiegelpalast',
+    objektankerHeaderDe: 'Artefakte des Spiegelpalasts',
+    objektankerIntro: 'Objects that mutate as the dungeon descends. Each tells the story of power corrupted.',
+    objektankerIntroDe: 'Objekte, die sich ver\u00e4ndern, je tiefer der Dungeon f\u00fchrt. Jedes erz\u00e4hlt die Geschichte korrumpierter Macht.',
+    exitQuote: 'The old leader is gone. The new leader enters. Same room. Same desk. Same view from the window.',
+    exitQuoteDe: 'Der alte Anf\u00fchrer ist weg. Der neue Anf\u00fchrer tritt ein. Derselbe Raum. Derselbe Schreibtisch. Dieselbe Aussicht.',
+    exitCta: 'Enter the Spiegelpalast',
+    exitCtaDe: 'Den Spiegelpalast betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the dungeon.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt den Dungeon.',
+  },
+
   // ── Navigation ──
 
   prevArchetype: getNav('awakening'),
   nextArchetype: getNav('shadow'),
 };
 
+// ── The Shadow — Full Bilingual Content ───────────────────────────────────
+
+const SHADOW_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('shadow'),
+
+  loreIntro: [
+    'The Shadow is the first archetype of the Resonance Dungeons. Where other archetypes have form \u2013 political, mechanical, elemental \u2013 this one has only absence. Die Tiefe Nacht is not a place of darkness. It is a place where darkness has intent.',
+    'Visibility is the currency here, and it drains. Every corridor crossed costs sight. Every room entered costs certainty. The instruments that once measured threat now measure nothing \u2013 not zero, but nothing, as if measurement itself has been consumed.',
+    'At the surface, Lovecraft\u2019s suggestive terror governs: what lurks beyond the threshold of perception. By the middle depths, VanderMeer\u2019s Southern Reach has taken hold \u2013 the environment itself is the antagonist. At the bottom, only Ligotti\u2019s philosophical darkness remains: the suspicion that the darkness was always there, and it was the light that was the anomaly.',
+  ],
+
+  loreIntroDe: [
+    'Der Schatten ist der erste Archetyp der Resonanz-Dungeons. Wo andere Archetypen Form besitzen \u2013 politische, mechanische, elementare \u2013 hat dieser nur Abwesenheit. Die Tiefe Nacht ist kein Ort der Dunkelheit. Sie ist ein Ort, an dem Dunkelheit Absicht hat.',
+    'Sichtbarkeit ist die W\u00e4hrung hier, und sie schwindet. Jeder durchquerte Korridor kostet Sicht. Jeder betretene Raum kostet Gewissheit. Die Instrumente, die einst Bedrohung ma\u00dfen, messen jetzt nichts \u2013 nicht null, sondern nichts, als sei das Messen selbst verzehrt worden.',
+    'An der Oberfl\u00e4che herrscht Lovecrafts suggestiver Schrecken: was jenseits der Wahrnehmungsschwelle lauert. In mittlerer Tiefe hat VanderMeers Southern Reach die Kontrolle \u00fcbernommen \u2013 die Umgebung selbst ist der Antagonist. Am Grund bleibt nur Ligottis philosophische Finsternis: der Verdacht, dass die Dunkelheit immer da war und das Licht die Anomalie.',
+  ],
+
+  entranceTexts: [
+    'The threshold yields without resistance. Beyond it, the darkness is not empty \u2013 it is attentive. The amber glow of terminal light follows you in, then stops, as if it has reached the border of a country that does not recognize its authority.',
+    'The air changes at the threshold. Not colder \u2013 denser. Sound travels differently here. Your footsteps return to you a half-second late, as if the corridors are repeating what you said to see if they agree.',
+    'The descent begins. The last light does not fade \u2013 it is consumed, methodically, frequency by frequency. Red goes first. Then yellow. Blue persists longest, a thin vein of visibility that the darkness has not yet bothered to close.',
+    'Silence. Not the silence of emptiness \u2013 the silence of something listening. The simulation\u2019s ambient hum, present everywhere else, stops at this threshold as if it has been told to wait outside.',
+    'A gap in the architecture. The corridor opens into a space that your instruments insist is small but your senses know is vast. The darkness here has weight. It presses against the skin like water at depth.',
+  ],
+
+  entranceTextsDe: [
+    'Die Schwelle gibt ohne Widerstand nach. Dahinter ist die Dunkelheit nicht leer \u2013 sie ist aufmerksam. Das Bernsteingl\u00fchen des Terminallichts folgt euch hinein, dann stoppt es, als h\u00e4tte es die Grenze eines Landes erreicht, das seine Autorit\u00e4t nicht anerkennt.',
+    'Die Luft ver\u00e4ndert sich an der Schwelle. Nicht k\u00e4lter \u2013 dichter. Schall bewegt sich hier anders. Eure Schritte kehren eine halbe Sekunde versp\u00e4tet zur\u00fcck, als wiederholten die Korridore, was ihr gesagt habt, um zu pr\u00fcfen, ob sie zustimmen.',
+    'Der Abstieg beginnt. Das letzte Licht verblasst nicht \u2013 es wird verzehrt, methodisch, Frequenz f\u00fcr Frequenz. Rot geht zuerst. Dann Gelb. Blau h\u00e4lt am l\u00e4ngsten, eine d\u00fcnne Ader der Sichtbarkeit, die die Dunkelheit noch nicht zu schlie\u00dfen sich bem\u00fcht hat.',
+    'Stille. Nicht die Stille der Leere \u2013 die Stille von etwas, das lauscht. Das Grundrauschen der Simulation, \u00fcberall sonst pr\u00e4sent, endet an dieser Schwelle, als sei ihm gesagt worden, drau\u00dfen zu warten.',
+    'Eine L\u00fccke in der Architektur. Der Korridor \u00f6ffnet sich in einen Raum, den eure Instrumente als klein bezeichnen, den eure Sinne aber als gewaltig erkennen. Die Dunkelheit hier hat Gewicht. Sie dr\u00fcckt gegen die Haut wie Wasser in der Tiefe.',
+  ],
+
+  mechanicName: 'Dissolution',
+  mechanicNameDe: 'Aufl\u00f6sung',
+  mechanicDescription:
+    'Die Tiefe Nacht\u2019s unique resonance mechanic. Visibility drains as you descend \u2013 every two rooms consume one point of sight. At zero, blind mode: 40% ambush chance, +25% stress damage, but +50% loot as reward for courage in the dark.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik der Tiefen Nacht. Sichtbarkeit schwindet beim Abstieg \u2013 alle zwei R\u00e4ume wird ein Punkt Sicht verzehrt. Bei null: Blindmodus \u2013 40% Hinterhaltchance, +25% Stressschaden, aber +50% Beute als Belohnung f\u00fcr Mut im Dunkeln.',
+
+  mechanicGauge: {
+    name: 'Visibility',
+    nameDe: 'Sichtbarkeit',
+    start: 3,
+    max: 3,
+    direction: 'drain',
+    thresholds: [
+      { value: 3, label: 'Clear Sight', labelDe: 'Klare Sicht', description: 'Full visibility. The instruments still work.', descriptionDe: 'Volle Sichtbarkeit. Die Instrumente funktionieren noch.' },
+      { value: 2, label: 'Dimming', labelDe: 'Verdunkelung', description: 'Edges blur. Ambient sounds lose direction.', descriptionDe: 'R\u00e4nder verschwimmen. Umgebungsger\u00e4usche verlieren ihre Richtung.' },
+      { value: 1, label: 'Flickering', labelDe: 'Flackern', description: 'Critical. Instruments unreliable. Trust nothing.', descriptionDe: 'Kritisch. Instrumente unzuverl\u00e4ssig. Nichts vertrauen.' },
+      { value: 0, label: 'Blind', labelDe: 'Blind', description: '40% ambush. +25% stress. +50% loot. The darkness consumes.', descriptionDe: '40% Hinterhalt. +25% Stress. +50% Beute. Die Dunkelheit verzehrt.' },
+    ],
+  },
+
+  aptitudeWeights: {
+    Spy: 30,
+    Guardian: 20,
+    Assassin: 20,
+    Infiltrator: 15,
+    Saboteur: 10,
+    Propagandist: 5,
+  },
+
+  roomDistribution: {
+    Combat: 40,
+    Encounter: 30,
+    Treasure: 15,
+    Rest: 5,
+    Elite: 5,
+    Exit: 5,
+  },
+
+  mechanicGaugePreviewValue: 1,
+
+  // ── Bestiary ──
+
+  enemies: [
+    {
+      name: 'Shadow Wisp',
+      nameDe: 'Schattenglimmer',
+      tier: 'minion',
+      power: 2,
+      stress: 4,
+      evasion: 40,
+      ability: 'Erode',
+      abilityDe: 'Zersetzen',
+      aptitude: 'Infiltrator',
+      description: 'A flickering presence at the edge of perception. It doesn\u2019t attack the body \u2013 it erodes certainty. You feel it before you see it: a chill that starts behind the eyes.',
+      descriptionDe: 'Eine flackernde Pr\u00e4senz am Rand der Wahrnehmung. Sie greift nicht den K\u00f6rper an \u2013 sie zersetzt Gewissheit. Ihr sp\u00fcrt es, bevor ihr es seht: eine K\u00e4lte, die hinter den Augen beginnt.',
+    },
+    {
+      name: 'Shadow Tendril',
+      nameDe: 'Schattenfaden',
+      tier: 'minion',
+      power: 4,
+      stress: 1,
+      evasion: 10,
+      ability: 'Grapple',
+      abilityDe: 'Greifen',
+      aptitude: 'Guardian',
+      description: 'A black appendage reaching from the walls. Patient. Methodical. It extends, probing. It knows you\u2019re there.',
+      descriptionDe: 'Ein schwarzer Fortsatz, der aus den W\u00e4nden greift. Geduldig. Methodisch. Er streckt sich, tastet. Er wei\u00df, dass ihr da seid.',
+    },
+    {
+      name: 'Echo of Violence',
+      nameDe: 'Gewaltecho',
+      tier: 'standard',
+      power: 6,
+      stress: 3,
+      evasion: 20,
+      ability: 'Ambush',
+      abilityDe: 'Hinterhalt',
+      aptitude: 'Assassin',
+      description: 'A replay of violence that once scarred this place. It moves with the precision of memory \u2013 every strike has happened before.',
+      descriptionDe: 'Eine Wiederholung von Gewalt, die diesen Ort einst gezeichnet hat. Sie bewegt sich mit der Pr\u00e4zision der Erinnerung \u2013 jeder Schlag ist schon geschehen.',
+    },
+    {
+      name: 'Paranoia Shade',
+      nameDe: 'Paranoiaschatten',
+      tier: 'standard',
+      power: 2,
+      stress: 6,
+      evasion: 30,
+      ability: 'Disinformation',
+      abilityDe: 'Desinformation',
+      aptitude: 'Propagandist',
+      description: 'It whispers. Not lies, exactly \u2013 plausible fears. Things your agents already suspect about each other.',
+      descriptionDe: 'Es fl\u00fcstert. Nicht L\u00fcgen, genau genommen \u2013 plausible \u00c4ngste. Dinge, die eure Agenten bereits voneinander vermuten.',
+    },
+    {
+      name: 'The Remnant',
+      nameDe: 'Der \u00dcberrest',
+      tier: 'boss',
+      power: 8,
+      stress: 7,
+      evasion: 25,
+      ability: 'Summon \u00b7 Fear',
+      abilityDe: 'Beschw\u00f6ren \u00b7 Furcht',
+      aptitude: 'Assassin',
+      description: 'Formed from the simulation\u2019s strongest unresolved conflict. It remembers what your agents have tried to forget. Wisps orbit it like satellites, pulsing in unison.',
+      descriptionDe: 'Geformt aus dem st\u00e4rksten ungel\u00f6sten Konflikt der Simulation. Er erinnert sich an das, was eure Agenten zu vergessen versucht haben. Glimmer umkreisen ihn wie Satelliten, pulsierend im Gleichklang.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Threshold',
+      nameDe: 'Die Schwelle',
+      depth: '1\u20132',
+      type: 'narrative',
+      description: 'A line of absolute dark cuts the floor like a border crossing. Everything on this side is dim; everything beyond is blind. The scratches on the walls are not random.',
+      descriptionDe: 'Eine Linie absoluter Dunkelheit schneidet den Boden wie ein Grenz\u00fcbergang. Diesseits ist es d\u00e4mmerig; jenseits ist es blind. Die Kratzer an den W\u00e4nden sind nicht zuf\u00e4llig.',
+      choices: [
+        { text: 'Investigate the scratches', textDe: 'Die Kratzer untersuchen', aptitude: 'Spy', difficulty: '\u22125' },
+        { text: 'Secure the perimeter', textDe: 'Den Perimeter sichern', aptitude: 'Guardian', difficulty: '0' },
+        { text: 'Cross cautiously', textDe: 'Vorsichtig \u00fcberqueren' },
+      ],
+    },
+    {
+      name: 'The Prisoner',
+      nameDe: 'Der Gefangene',
+      depth: '2\u20133',
+      type: 'narrative',
+      description: 'A cage of solidified shadow. Inside, something that was once human curls in on itself. \u201cPlease,\u201d it says. \u201cI\u2019ve been here since the last resonance. I remember sunlight.\u201d',
+      descriptionDe: 'Ein K\u00e4fig aus verfestigtem Schatten. Darin kauert etwas, das einmal menschlich war. \u00bbBitte\u00ab, sagt es. \u00bbIch bin hier seit der letzten Resonanz. Ich erinnere mich an Sonnenlicht.\u00ab',
+      choices: [
+        { text: 'Free the prisoner', textDe: 'Den Gefangenen befreien', aptitude: 'Guardian', difficulty: '0' },
+        { text: 'Interrogate for information', textDe: 'Nach Informationen befragen', aptitude: 'Spy', difficulty: '\u22125' },
+        { text: 'Leave them', textDe: 'Weitergehen' },
+      ],
+    },
+    {
+      name: 'The Mirror Room',
+      nameDe: 'Der Spiegelraum',
+      depth: '2\u20134',
+      type: 'narrative',
+      description: 'The walls are mirrors \u2013 but wrong. Each agent sees themselves distorted, features exaggerated into something they fear they truly are. The reflections move independently.',
+      descriptionDe: 'Die W\u00e4nde sind Spiegel \u2013 aber falsch. Jeder Agent sieht sich selbst verzerrt, Z\u00fcge \u00fcbertrieben zu etwas, von dem sie f\u00fcrchten, es wirklich zu sein. Die Spiegelbilder bewegen sich unabh\u00e4ngig.',
+      choices: [
+        { text: 'Confront the reflection', textDe: 'Das Spiegelbild konfrontieren', aptitude: 'Propagandist', difficulty: '+5' },
+        { text: 'Analyze the mirrors', textDe: 'Die Spiegel analysieren', aptitude: 'Spy', difficulty: '0' },
+        { text: 'Smash the mirrors', textDe: 'Die Spiegel zerschlagen' },
+      ],
+    },
+    {
+      name: 'The Convergence',
+      nameDe: 'Die Konvergenz',
+      depth: '4\u20135',
+      type: 'narrative',
+      description: 'The corridors converge here \u2013 not architecturally, but ontologically. Shadows from earlier rooms pool on the floor like spilled ink, forming a map of everywhere you have been.',
+      descriptionDe: 'Die Korridore konvergieren hier \u2013 nicht architektonisch, sondern ontologisch. Schatten fr\u00fcherer R\u00e4ume sammeln sich auf dem Boden wie versch\u00fcttete Tinte und bilden eine Karte \u00fcberall, wo ihr gewesen seid.',
+      choices: [
+        { text: 'Read the shadow map', textDe: 'Die Schattenkarte lesen', aptitude: 'Spy', difficulty: '+10' },
+        { text: 'Strike the convergence node', textDe: 'Den Konvergenzknoten angreifen', aptitude: 'Assassin', difficulty: '+10' },
+        { text: 'Navigate without engaging', textDe: 'Hindurchgehen ohne Interaktion' },
+      ],
+    },
+    {
+      name: 'The Haunting',
+      nameDe: 'Die Heimsuchung',
+      depth: '3\u20134',
+      type: 'combat',
+      description: 'The whispers become specific \u2013 names, fears, secrets your agents thought were private. A paranoia shade drifts at the center, flanked by wisps whose movements no longer match their telegraphed intents.',
+      descriptionDe: 'Das Fl\u00fcstern wird spezifisch \u2013 Namen, \u00c4ngste, Geheimnisse, die eure Agenten f\u00fcr privat hielten. Ein Paranoiaschatten treibt im Zentrum, flankiert von Glimmern, deren Bewegungen nicht mehr zu ihren angezeigten Absichten passen.',
+    },
+  ],
+
+  // ── Banter Samples ──
+
+  banterSamples: [
+    { text: 'The darkness is thicker here. Absolute. Intentional.', textDe: 'Die Dunkelheit ist dichter hier. Absolut. Absichtlich.', tier: 0 },
+    { text: 'Something moved. Not in the corridor \u2013 in the space between seeing and understanding.', textDe: 'Etwas hat sich bewegt. Nicht im Korridor \u2013 im Raum zwischen Sehen und Verstehen.', tier: 0 },
+    { text: 'The instruments read nothing. Not zero \u2013 nothing. As if measurement itself has been consumed.', textDe: 'Die Instrumente zeigen nichts an. Nicht null \u2013 nichts. Als sei das Messen selbst verzehrt worden.', tier: 1 },
+    { text: 'The corridors converge here \u2013 not architecturally, but ontologically.', textDe: 'Die Korridore konvergieren hier \u2013 nicht architektonisch, sondern ontologisch.', tier: 1 },
+    { text: 'The shadows move. Not with you. Not against you. Around you. Testing.', textDe: 'Die Schatten bewegen sich. Nicht mit euch. Nicht gegen euch. Um euch herum. Testend.', tier: 1 },
+    { text: 'The air changes. The whispers stop. In the silence that follows, something enormous draws breath.', textDe: 'Die Luft ver\u00e4ndert sich. Das Fl\u00fcstern h\u00f6rt auf. In der Stille, die folgt, holt etwas Gewaltiges Atem.', tier: 2 },
+    { text: 'The darkness lets you leave. That\u2019s the most unsettling part.', textDe: 'Die Dunkelheit l\u00e4sst euch gehen. Das ist der verst\u00f6rendste Teil.', tier: 2 },
+    { text: 'Light returns. The memory of dark does not diminish. Something fundamental has shifted in how they perceive the simulation.', textDe: 'Licht kehrt zur\u00fcck. Die Erinnerung an die Dunkelheit verblasst nicht. Etwas Grundlegendes hat sich verschoben in der Art, wie sie die Simulation wahrnehmen.', tier: 3 },
+  ],
+
+  // ── Literary DNA ──
+
+  authors: [
+    { name: 'H.P. Lovecraft', works: 'The Colour Out of Space \u00b7 The Shadow over Innsmouth', concept: 'Cosmic horror as suggestion. The threat is never fully revealed \u2013 what the mind supplies is worse than any description.', conceptDe: 'Kosmischer Horror als Andeutung. Die Bedrohung wird nie vollst\u00e4ndig enth\u00fcllt \u2013 was der Verstand erg\u00e4nzt, ist schlimmer als jede Beschreibung.', language: 'English', quote: 'The oldest and strongest emotion of mankind is fear, and the oldest and strongest kind of fear is fear of the unknown.', primary: true },
+    { name: 'Jeff VanderMeer', works: 'Annihilation \u00b7 Authority', concept: 'Environment as antagonist. Area X does not attack \u2013 it transforms. The landscape rewrites those who enter it.', conceptDe: 'Umgebung als Antagonist. Area X greift nicht an \u2013 sie transformiert. Die Landschaft \u00fcberschreibt jene, die sie betreten.', language: 'English', quote: 'The beauty of it cannot be understood, either, and when you see beauty in desolation it changes something inside you.', primary: true },
+    { name: 'Shirley Jackson', works: 'The Haunting of Hill House', concept: 'Architecture of dread. The house is not haunted \u2013 the house is wrong. Angles that should not exist. Doors that close by themselves.', conceptDe: 'Architektur des Grauens. Das Haus ist nicht heimgesucht \u2013 das Haus ist falsch. Winkel, die nicht existieren sollten. T\u00fcren, die sich von selbst schlie\u00dfen.', language: 'English', quote: 'No live organism can continue for long to exist sanely under conditions of absolute reality.', primary: true },
+    { name: 'Thomas Ligotti', works: 'Songs of a Dead Dreamer \u00b7 The Conspiracy Against the Human Race', concept: 'Philosophical pessimism. Horror is not what happens to you \u2013 horror is the nature of consciousness itself.', conceptDe: 'Philosophischer Pessimismus. Horror ist nicht, was einem widerf\u00e4hrt \u2013 Horror ist das Wesen des Bewusstseins selbst.', language: 'English', primary: false },
+    { name: 'Edgar Allan Poe', works: 'The Fall of the House of Usher \u00b7 The Pit and the Pendulum', concept: 'Descent and confinement. Short sentences that compress dread. Rhythm as weapon \u2013 the heartbeat beneath the floorboards.', conceptDe: 'Abstieg und Eingesperrtsein. Kurze S\u00e4tze, die Grauen verdichten. Rhythmus als Waffe \u2013 der Herzschlag unter den Dielen.', language: 'English', primary: false },
+    { name: 'Algernon Blackwood', works: 'The Willows \u00b7 The Wendigo', concept: 'Nature as alien intelligence. The wilderness is not indifferent \u2013 it is aware, and its awareness is incompatible with human sanity.', conceptDe: 'Natur als fremde Intelligenz. Die Wildnis ist nicht gleichg\u00fcltig \u2013 sie ist bewusst, und ihr Bewusstsein ist unvereinbar mit menschlicher Vernunft.', language: 'English', primary: false },
+  ],
+
+  // ── Objektanker (Migration 181 canonical text) ──
+
+  objektanker: [
+    {
+      name: 'The Note',
+      nameDe: 'Die Notiz',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A note, folded once, pressed into a crack in the wall. \u201cVisibility is not sight. It is permission.\u201d', textDe: 'Eine Notiz, einmal gefaltet, in einen Riss in der Wand gedr\u00fcckt. \u00bbSichtbarkeit ist nicht Sehen. Es ist Erlaubnis.\u00ab' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Another note. Same handwriting, deteriorated. \u201cThe instruments lied. Not about the readings \u2013 about the existence of things to read.\u201d', textDe: 'Eine weitere Notiz. Dieselbe Handschrift, verschlechtert. \u00bbDie Instrumente haben gelogen. Nicht \u00fcber die Messwerte \u2013 \u00fcber die Existenz messbarer Dinge.\u00ab' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Notes everywhere. The handwriting is barely legible. \u201cIt does not consume light. It consumes the concept of illumination.\u201d', textDe: '\u00dcberall Notizen. Die Handschrift ist kaum lesbar. \u00bbEs verzehrt nicht das Licht. Es verzehrt den Begriff der Beleuchtung.\u00ab' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'On the floor: a pen. Still warm. The ink is the same as the notes. Whoever wrote them did not leave this room.', textDe: 'Auf dem Boden: ein Stift. Noch warm. Die Tinte ist dieselbe wie bei den Notizen. Wer sie geschrieben hat, hat diesen Raum nicht verlassen.' },
+      ],
+    },
+    {
+      name: 'The Mirror',
+      nameDe: 'Der Spiegel',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A mirror, face-down on the floor. The frame is ornate. Something about the angle suggests it was placed, not dropped.', textDe: 'Ein Spiegel, mit der Fl\u00e4che nach unten auf dem Boden. Der Rahmen ist verziert. Etwas am Winkel suggeriert, dass er gelegt, nicht fallen gelassen wurde.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'More mirrors. All face-down. All facing away from the corridor\u2019s center. They are avoiding something.', textDe: 'Mehr Spiegel. Alle mit der Fl\u00e4che nach unten. Alle vom Zentrum des Korridors abgewandt. Sie meiden etwas.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'One mirror, facing outward. It does not show the room. It shows an empty corridor, watched by someone standing where you are.', textDe: 'Ein Spiegel, nach au\u00dfen gerichtet. Er zeigt nicht den Raum. Er zeigt einen leeren Korridor, beobachtet von jemandem, der dort steht, wo ihr steht.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'The mirror shows the first room. Your party entering. Seen from behind something that has been watching since the beginning.', textDe: 'Der Spiegel zeigt den ersten Raum. Eure Gruppe beim Eintreten. Gesehen von hinter etwas, das seit dem Anfang zuschaut.' },
+      ],
+    },
+    {
+      name: 'The Candle',
+      nameDe: 'Die Kerze',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A candle. Lit. The flame points inward \u2013 toward the dungeon\u2019s core, not upward. It illuminates nothing.', textDe: 'Eine Kerze. Brennend. Die Flamme zeigt nach innen \u2013 zum Kern des Dungeons, nicht nach oben. Sie beleuchtet nichts.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Seven candles. Each flame points in a different direction. None upward. The light they cast has no source point.', textDe: 'Sieben Kerzen. Jede Flamme zeigt in eine andere Richtung. Keine nach oben. Das Licht, das sie werfen, hat keinen Quellpunkt.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The candles burn black. Not dark \u2013 black fire, emitting the opposite of light. Areas near the flames are darker than areas far away.', textDe: 'Die Kerzen brennen schwarz. Nicht dunkel \u2013 schwarzes Feuer, das das Gegenteil von Licht ausstrahlt. Bereiche nahe der Flammen sind dunkler als Bereiche weit entfernt.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'One candle. Its flame is your silhouette. It has been burning you this entire time \u2013 not consuming, memorizing.', textDe: 'Eine Kerze. Ihre Flamme ist eure Silhouette. Sie hat euch die ganze Zeit verbrannt \u2013 nicht verzehrend, memorierend.' },
+      ],
+    },
+    {
+      name: 'The Door',
+      nameDe: 'Die T\u00fcr',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A door. Locked. It leads to a solid wall \u2013 the door has no function. There is no keyhole.', textDe: 'Eine T\u00fcr. Verschlossen. Sie f\u00fchrt zu einer massiven Wand \u2013 die T\u00fcr hat keine Funktion. Es gibt kein Schl\u00fcsselloch.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'A door. Identical. Knocking comes from the other side. The knocking matches your party\u2019s heartbeat.', textDe: 'Eine T\u00fcr. Identisch. Klopfen kommt von der anderen Seite. Das Klopfen passt zum Herzschlag eurer Gruppe.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Doors everywhere. All identical. All knocking. The rhythm is synchronized \u2013 one beat, everywhere, at once.', textDe: '\u00dcberall T\u00fcren. Alle identisch. Alle klopfend. Der Rhythmus ist synchronisiert \u2013 ein Schlag, \u00fcberall, gleichzeitig.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'One door. Open. Beyond it: this room. Your party. Seen from behind. The door was never locked from this side.', textDe: 'Eine T\u00fcr. Offen. Dahinter: dieser Raum. Eure Gruppe. Von hinten gesehen. Die T\u00fcr war nie von dieser Seite verschlossen.' },
+      ],
+    },
+  ],
+
+  // ── Loot ──
+
+  lootShowcase: [
+    { name: 'Shadow Residue', nameDe: 'Schattenr\u00fcckstand', tier: 1, effect: 'Stress heal 50', description: 'Crystallized shadow. Absorbs stress when handled carefully. The darkness gave this willingly \u2013 which is the concerning part.', descriptionDe: 'Kristallisierter Schatten. Absorbiert Stress bei vorsichtiger Handhabung. Die Dunkelheit gab dies bereitwillig \u2013 was der beunruhigende Teil ist.' },
+    { name: 'Dark Insight', nameDe: 'Dunkle Einsicht', tier: 1, effect: 'Memory (importance 4)', description: 'A fragment of understanding gained in the dark. Not knowledge \u2013 recognition. The difference matters here.', descriptionDe: 'Ein Fragment von Verst\u00e4ndnis, gewonnen im Dunkeln. Nicht Wissen \u2013 Erkennen. Der Unterschied z\u00e4hlt hier.' },
+    { name: 'Shadow Attunement Shard', nameDe: 'Schattenabstimmungssplitter', tier: 2, effect: 'Permanent moodlet: shadow_attuned', description: 'Drawn to darkness. Stimulation need decays faster. The agent no longer fears the dark \u2013 they find it comfortable. This should worry you.', descriptionDe: 'Zur Dunkelheit hingezogen. Stimulationsbed\u00fcrfnis sinkt schneller. Der Agent f\u00fcrchtet die Dunkelheit nicht mehr \u2013 er findet sie behaglich. Das sollte euch beunruhigen.' },
+    { name: 'Darkened Lens', nameDe: 'Verdunkelte Linse', tier: 2, effect: 'Permanent +1 Spy in Shadow dungeons', description: 'Permanent: +1 Spy aptitude in ALL future Shadow dungeons. The lens does not improve sight. It teaches a different kind of seeing.', descriptionDe: 'Permanent: +1 Spion-Eignung in ALLEN zuk\u00fcnftigen Schatten-Dungeons. Die Linse verbessert nicht das Sehen. Sie lehrt eine andere Art zu schauen.' },
+    { name: 'Shadow Attunement', nameDe: 'Schattenabstimmung', tier: 3, effect: '+1 Spy or Assassin (permanent, cap +2)', description: 'Permanent: one agent gains +1 Spy OR Assassin aptitude. The shadow does not give \u2013 it reveals what was already there.', descriptionDe: 'Permanent: ein Agent erh\u00e4lt +1 Spion ODER Assassinen-Eignung. Der Schatten gibt nicht \u2013 er enth\u00fcllt, was bereits da war.' },
+    { name: 'Shadow Memory', nameDe: 'Schattenerinnerung', tier: 3, effect: 'High-importance memory + behavior', description: 'Confronted the darkness and prevailed. The experience fundamentally altered how they perceive threat and fear.', descriptionDe: 'Der Dunkelheit gegen\u00fcbergetreten und bestanden. Die Erfahrung hat grunds\u00e4tzlich ver\u00e4ndert, wie sie Bedrohung und Furcht wahrnehmen.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Visibility Drain',
+    mechanicGainTitleDe: 'Sichtbarkeitsverlust',
+    mechanicGainText: '\u22121 every 2 rooms\n\u22121 on ambush\nBlind at 0: +40% ambush, +25% stress, +50% loot',
+    mechanicGainTextDe: '\u22121 alle 2 R\u00e4ume\n\u22121 bei Hinterhalt\nBlind bei 0: +40% Hinterhalt, +25% Stress, +50% Beute',
+    mechanicReduceTitle: 'Visibility Restore',
+    mechanicReduceTitleDe: 'Sichtbarkeitswiederherstellung',
+    mechanicReduceText: '+1 on rest (if not blind)\n+1 on Spy check (DC 10)',
+    mechanicReduceTextDe: '+1 bei Rast (wenn nicht blind)\n+1 bei Spion-Probe (SG 10)',
+    mechanicReduceEmphasis: 'The darkness does not negotiate.',
+    mechanicReduceEmphasisDe: 'Die Dunkelheit verhandelt nicht.',
+    encounterIntro: 'Navigate the darkness. Every choice costs visibility.',
+    encounterIntroDe: 'Navigiert die Dunkelheit. Jede Entscheidung kostet Sichtbarkeit.',
+    bestiaryIntro: 'The denizens of Die Tiefe Nacht. Not creatures \u2013 manifestations.',
+    bestiaryIntroDe: 'Die Bewohner der Tiefen Nacht. Keine Kreaturen \u2013 Manifestationen.',
+    banterHeader: 'Overheard in the Darkness',
+    banterHeaderDe: 'Belauscht in der Dunkelheit',
+    objektankerHeader: 'Artifacts of Die Tiefe Nacht',
+    objektankerHeaderDe: 'Artefakte der Tiefen Nacht',
+    objektankerIntro: 'Objects that dissolve as visibility drains. Each remembers what you have forgotten.',
+    objektankerIntroDe: 'Objekte, die sich aufl\u00f6sen, w\u00e4hrend die Sichtbarkeit schwindet. Jedes erinnert, was ihr vergessen habt.',
+    exitQuote: 'The darkness lets you leave. That\u2019s the most unsettling part.',
+    exitQuoteDe: 'Die Dunkelheit l\u00e4sst euch gehen. Das ist der verst\u00f6rendste Teil.',
+    exitCta: 'Enter Die Tiefe Nacht',
+    exitCtaDe: 'Die Tiefe Nacht betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the dungeon.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt den Dungeon.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('overthrow'),
+  nextArchetype: getNav('tower'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['overthrow', OVERTHROW_DETAIL],
+  ['shadow', SHADOW_DETAIL],
 ]);
 
 /**

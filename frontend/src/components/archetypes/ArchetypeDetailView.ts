@@ -22,6 +22,7 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import { icons } from '../../utils/icons.js';
 import { getArchetypeDetail } from './dungeon-detail-data.js';
 import {
   type LocalizedArchetypeDetail,
@@ -182,6 +183,35 @@ export class VelgArchetypeDetail extends LitElement {
         opacity: 0.04;
         z-index: 100;
         pointer-events: none;
+      }
+
+      /* ── Ink-mist overlay — Shadow-specific atmosphere ── */
+      .mist-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background: radial-gradient(
+          ellipse at 30% 70%,
+          color-mix(in oklch, var(--_accent) 6%, transparent),
+          transparent 60%
+        );
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .mist-overlay {
+          animation: _mist-drift 20s ease-in-out infinite alternate;
+        }
+      }
+
+      @keyframes _mist-drift {
+        0%   { background-position: 30% 70%; opacity: 0.4; }
+        50%  { background-position: 70% 30%; opacity: 0.6; }
+        100% { background-position: 40% 60%; opacity: 0.4; }
       }
 
       /* ═══════════════════════════════════════════════════════════
@@ -1002,13 +1032,24 @@ export class VelgArchetypeDetail extends LitElement {
     this._hasData = !!data;
 
     if (data) {
+      const baseUrl = 'https://metaverse.center';
+      const pageUrl = `${baseUrl}/archetypes/${data.id}`;
+      const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/showcase/dungeon-${data.id}.avif`;
+
       seoService.setTitle([data.name, data.subtitle]);
       seoService.setDescription(data.tagline);
       seoService.setCanonical(`/archetypes/${data.id}`);
+      seoService.setOgImage(imageUrl);
+      seoService.setCreativeWork({
+        name: `${data.name} \u2013 ${data.subtitle}`,
+        description: data.loreIntro[0] ?? data.tagline,
+        url: pageUrl,
+        image: imageUrl,
+      });
       seoService.setBreadcrumbs([
-        { name: 'Home', url: 'https://metaverse.center/' },
-        { name: 'Archetypes', url: 'https://metaverse.center/' },
-        { name: data.name, url: `https://metaverse.center/archetypes/${data.id}` },
+        { name: 'Home', url: baseUrl + '/' },
+        { name: 'Archetypes', url: baseUrl + '/' },
+        { name: data.name, url: pageUrl },
       ]);
       analyticsService.trackPageView(`/archetypes/${data.id}`, document.title);
 
@@ -1035,8 +1076,7 @@ export class VelgArchetypeDetail extends LitElement {
 
     return html`
       <div class="vignette-overlay" aria-hidden="true"></div>
-      <div class="grain-overlay" aria-hidden="true"></div>
-      <div class="mirror-line" aria-hidden="true"></div>
+      ${this._renderAtmosphereOverlay(d)}
 
       ${this._renderGauge(d)}
 
@@ -1060,13 +1100,45 @@ export class VelgArchetypeDetail extends LitElement {
       ${this._renderBestiaryRoom(d, depthUrl)}
       ${this._renderQuoteBreak(d, 1)}
       ${this._renderEncounterRoom(d)}
-      ${this._renderBanterInterlude(d.banterSamples.filter((b) => b.tier <= 1), whispersUrl)}
+      ${this._renderBanterInterlude(d, d.banterSamples.filter((b) => b.tier <= 1), whispersUrl)}
       ${this._renderLiteraryRoom(d, depthUrl)}
-      ${this._renderBanterInterlude(d.banterSamples.filter((b) => b.tier >= 2), revolutionUrl)}
+      ${this._renderBanterInterlude(d, d.banterSamples.filter((b) => b.tier >= 2), revolutionUrl)}
       ${this._renderVaultRoom(d)}
       ${this._renderQuoteBreak(d, 2)}
       ${this._renderExitRoom(d, bossUrl)}
     `;
+  }
+
+  // ── Atmosphere Overlay (archetype-specific) ────────────────────────────────
+
+  private _renderAtmosphereOverlay(d: LocalizedArchetypeDetail): TemplateResult {
+    switch (d.id) {
+      case 'overthrow':
+        return html`
+          <div class="grain-overlay" aria-hidden="true"></div>
+          <div class="mirror-line" aria-hidden="true"></div>
+        `;
+      case 'shadow':
+        return html`<div class="mist-overlay" aria-hidden="true"></div>`;
+      default:
+        return html``;
+    }
+  }
+
+  // ── Archetype Icon (maps id → dedicated icon from icons.ts) ─────────────
+
+  private _archetypeIcon(id: string, size = 16) {
+    const map: Record<string, (s: number) => unknown> = {
+      shadow: icons.archetypeShadow,
+      tower: icons.archetypeTower,
+      'devouring-mother': icons.archetypeDevouringMother,
+      deluge: icons.archetypeDeluge,
+      overthrow: icons.archetypeOverthrow,
+      prometheus: icons.archetypePrometheus,
+      awakening: icons.archetypeAwakening,
+      entropy: icons.archetypeEntropy,
+    };
+    return map[id]?.(size) ?? icons.alertTriangle(size);
   }
 
   // ── Gauge ──────────────────────────────────────────────────────────────────
@@ -1185,39 +1257,40 @@ export class VelgArchetypeDetail extends LitElement {
 
           <div class="mechanic-layout">
             <div class="mechanic__gauge-display">
-              <div class="gauge-visual">
-                <div class="gauge-visual__fill" style="width:${this._gaugeAnimated ? 42 : 0}%"></div>
+              <div class="gauge-visual" role="progressbar"
+                   aria-label="${gauge.name} (${msg('Preview')})"
+                   aria-valuenow=${d.mechanicGaugePreviewValue}
+                   aria-valuemin="0" aria-valuemax=${gauge.max}>
+                <div class="gauge-visual__fill" style="width:${this._gaugeAnimated ? (d.mechanicGaugePreviewValue / gauge.max) * 100 : 0}%"></div>
               </div>
-              <div class="gauge-visual__value">42 / ${gauge.max}</div>
+              <div class="gauge-visual__value">${d.mechanicGaugePreviewValue} / ${gauge.max}</div>
 
-              <div class="threshold-list">
+              <dl class="threshold-list">
                 ${gauge.thresholds.map(
                   (t) => html`
                     <div class="threshold">
-                      <span class="threshold__label">${t.label}</span>
-                      <span class="threshold__range">${t.value === 100 ? '100' : `${t.value}\u2013${t.value + 19}`}</span>
-                      <span>${t.description}</span>
+                      <dt class="threshold__label">${t.label}
+                        <span class="threshold__range">${gauge.direction === 'drain' ? String(t.value) : t.value === gauge.max ? String(gauge.max) : `${t.value}\u2013${t.value + 19}`}</span>
+                      </dt>
+                      <dd>${t.description}</dd>
                     </div>
                   `,
                 )}
-              </div>
+              </dl>
             </div>
 
             <div class="mechanic__text">
               <div class="mechanic__block">
-                <div class="mechanic__block-title">${msg('Fracture Gain')}</div>
+                <div class="mechanic__block-title">${d.prose.mechanicGainTitle}</div>
                 <div class="mechanic__block-text">
-                  +4 per room (shallow) \u2192 +10 per room (deep)<br>
-                  +2 per combat round<br>
-                  +5 on failed diplomacy
+                  ${d.prose.mechanicGainText.split('\n').map((line, i, arr) => html`${line}${i < arr.length - 1 ? html`<br>` : nothing}`)}
                 </div>
               </div>
               <div class="mechanic__block">
-                <div class="mechanic__block-title">${msg('Fracture Reduction')}</div>
+                <div class="mechanic__block-title">${d.prose.mechanicReduceTitle}</div>
                 <div class="mechanic__block-text">
-                  \u22125 on rest (brief respite)<br>
-                  \u221210 on rally (Propagandist ability)<br>
-                  <em style="color:var(--_accent);opacity:0.7">${msg('Violence does not restore order.')}</em>
+                  ${d.prose.mechanicReduceText.split('\n').map((line, i, arr) => html`${line}${i < arr.length - 1 ? html`<br>` : nothing}`)}
+                  <br><em style="color:var(--_accent);opacity:0.7">${d.prose.mechanicReduceEmphasis}</em>
                 </div>
               </div>
               <div class="mechanic__block">
@@ -1227,7 +1300,7 @@ export class VelgArchetypeDetail extends LitElement {
                     ([name, weight]) => html`
                       <div class="aptitude-row">
                         <span class="aptitude-row__label">${name}</span>
-                        <div class="aptitude-row__bar">
+                        <div class="aptitude-row__bar" role="img" aria-label="${name}: ${weight}%">
                           <div class="aptitude-row__fill"
                                style="width:${this._gaugeAnimated ? (weight / maxWeight) * 100 : 0}%">
                           </div>
@@ -1256,7 +1329,7 @@ export class VelgArchetypeDetail extends LitElement {
         <div class="room__content room__reveal">
           <h2 class="section-header">${msg('Bestiary')}</h2>
           <p class="prose" style="margin-bottom:var(--space-6,24px)">
-            ${msg('The denizens of Der Spiegelpalast. Not monsters \u2013 operatives.')}
+            ${d.prose.bestiaryIntro}
           </p>
           <div class="bestiary-grid">
             ${d.enemies.map(
@@ -1283,13 +1356,13 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Banter Interlude ───────────────────────────────────────────────────────
 
-  private _renderBanterInterlude(lines: readonly LocalizedBanterLine[], bgUrl: string): TemplateResult {
+  private _renderBanterInterlude(d: LocalizedArchetypeDetail, lines: readonly LocalizedBanterLine[], bgUrl: string): TemplateResult {
     if (!lines.length) return html``;
     const selected = lines.slice(0, 3);
     return html`
       <div class="banter-section" aria-label=${msg('Whispers')}>
         <div class="banter-section__bg" style="--_banter-bg:url('${bgUrl}')" aria-hidden="true"></div>
-        <p class="banter-section__header">${msg('Overheard in the Spiegelpalast')}</p>
+        <p class="banter-section__header">${d.prose.banterHeader}</p>
         ${selected.map(
           (b) => html`<p class="banter-whisper">${b.text}</p>`,
         )}
@@ -1346,7 +1419,7 @@ export class VelgArchetypeDetail extends LitElement {
         <div class="room__content room__reveal">
           <h2 class="section-header">${msg('Encounters')}</h2>
           <p class="prose" style="margin-bottom:var(--space-6,24px)">
-            ${msg('Navigate political crises. Every choice shifts the balance of power.')}
+            ${d.prose.encounterIntro}
           </p>
           <div class="encounters-layout">
             ${d.encounterPreviews.map(
@@ -1380,9 +1453,9 @@ export class VelgArchetypeDetail extends LitElement {
         <div class="room__content room__reveal">
           <!-- Objektanker -->
           <div class="vault-section">
-            <h2 class="section-header">${msg('Artifacts of the Spiegelpalast')}</h2>
+            <h2 class="section-header">${d.prose.objektankerHeader}</h2>
             <p class="prose" style="margin-bottom:var(--space-5,20px)">
-              ${msg('Objects that mutate as the dungeon descends. Each tells the story of power corrupted.')}
+              ${d.prose.objektankerIntro}
             </p>
             <div class="objektanker-grid">
               ${d.objektanker.map(
@@ -1439,17 +1512,17 @@ export class VelgArchetypeDetail extends LitElement {
         </div>
         <div class="room__content room__reveal" style="display:flex;flex-direction:column;align-items:center;">
           <div class="exit__gauge-full">${d.mechanicName}: ${d.mechanicGauge.max} / ${d.mechanicGauge.max}</div>
-          <div class="exit__collapse">\u2620 ${d.mechanicGauge.thresholds.at(-1)?.label ?? 'COLLAPSE'} \u2620</div>
+          <div class="exit__collapse">${this._archetypeIcon(d.id, 18)} ${d.mechanicGauge.thresholds.at(-1)?.label ?? 'COLLAPSE'} ${this._archetypeIcon(d.id, 18)}</div>
 
           <blockquote class="exit__quote">
-            ${msg('The old leader is gone. The new leader enters. Same room. Same desk. Same view from the window.')}
+            ${d.prose.exitQuote}
           </blockquote>
 
           <p class="exit__cta-text">
-            ${msg('You survived the exhibition. Now survive the dungeon.')}
+            ${d.prose.exitCtaText}
           </p>
 
-          <a class="exit__cta" href="/">${msg('Enter the Spiegelpalast')}</a>
+          <a class="exit__cta" href="/">${d.prose.exitCta}</a>
 
           <nav class="exit__nav" aria-label=${msg('Archetype Navigation')}>
             <a class="exit__nav-link" href="/archetypes/${d.prevArchetype.id}">

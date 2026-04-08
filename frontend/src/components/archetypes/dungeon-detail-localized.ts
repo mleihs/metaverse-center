@@ -100,6 +100,22 @@ export interface LocalizedLootPreview {
   readonly description: string;
 }
 
+export interface LocalizedProse {
+  readonly mechanicGainTitle: string;
+  readonly mechanicGainText: string;
+  readonly mechanicReduceTitle: string;
+  readonly mechanicReduceText: string;
+  readonly mechanicReduceEmphasis: string;
+  readonly encounterIntro: string;
+  readonly bestiaryIntro: string;
+  readonly banterHeader: string;
+  readonly objektankerHeader: string;
+  readonly objektankerIntro: string;
+  readonly exitQuote: string;
+  readonly exitCta: string;
+  readonly exitCtaText: string;
+}
+
 export interface LocalizedArchetypeDetail {
   // Inherited from ArchetypeSlide
   readonly id: string;
@@ -117,6 +133,7 @@ export interface LocalizedArchetypeDetail {
   readonly mechanicName: string;
   readonly mechanicDescription: string;
   readonly mechanicGauge: LocalizedGaugeConfig;
+  readonly mechanicGaugePreviewValue: number;
   readonly aptitudeWeights: Record<string, number>;
   readonly roomDistribution: Record<string, number>;
 
@@ -127,6 +144,7 @@ export interface LocalizedArchetypeDetail {
   readonly authors: readonly LocalizedAuthorCard[];
   readonly objektanker: readonly LocalizedObjektankerPreview[];
   readonly lootShowcase: readonly LocalizedLootPreview[];
+  readonly prose: LocalizedProse;
 
   readonly prevArchetype: { readonly id: string; readonly name: string; readonly numeral: string };
   readonly nextArchetype: { readonly id: string; readonly name: string; readonly numeral: string };
@@ -213,6 +231,24 @@ function localizeObjektanker(o: ObjektankerPreview, de: boolean): LocalizedObjek
   };
 }
 
+function localizeProse(p: ArchetypeDetail['prose'], de: boolean): LocalizedProse {
+  return {
+    mechanicGainTitle: de ? p.mechanicGainTitleDe : p.mechanicGainTitle,
+    mechanicGainText: de ? p.mechanicGainTextDe : p.mechanicGainText,
+    mechanicReduceTitle: de ? p.mechanicReduceTitleDe : p.mechanicReduceTitle,
+    mechanicReduceText: de ? p.mechanicReduceTextDe : p.mechanicReduceText,
+    mechanicReduceEmphasis: de ? p.mechanicReduceEmphasisDe : p.mechanicReduceEmphasis,
+    encounterIntro: de ? p.encounterIntroDe : p.encounterIntro,
+    bestiaryIntro: de ? p.bestiaryIntroDe : p.bestiaryIntro,
+    banterHeader: de ? p.banterHeaderDe : p.banterHeader,
+    objektankerHeader: de ? p.objektankerHeaderDe : p.objektankerHeader,
+    objektankerIntro: de ? p.objektankerIntroDe : p.objektankerIntro,
+    exitQuote: de ? p.exitQuoteDe : p.exitQuote,
+    exitCta: de ? p.exitCtaDe : p.exitCta,
+    exitCtaText: de ? p.exitCtaTextDe : p.exitCtaText,
+  };
+}
+
 function localizeLoot(l: LootPreview, de: boolean): LocalizedLootPreview {
   return {
     name: de ? l.nameDe : l.name,
@@ -238,6 +274,7 @@ function localizeDetail(d: ArchetypeDetail, de: boolean): LocalizedArchetypeDeta
     mechanicName: de ? d.mechanicNameDe : d.mechanicName,
     mechanicDescription: de ? d.mechanicDescriptionDe : d.mechanicDescription,
     mechanicGauge: localizeGauge(d.mechanicGauge, de),
+    mechanicGaugePreviewValue: d.mechanicGaugePreviewValue,
     aptitudeWeights: d.aptitudeWeights,
     roomDistribution: d.roomDistribution,
 
@@ -247,6 +284,7 @@ function localizeDetail(d: ArchetypeDetail, de: boolean): LocalizedArchetypeDeta
     authors: d.authors.map((a) => localizeAuthor(a, de)),
     objektanker: d.objektanker.map((o) => localizeObjektanker(o, de)),
     lootShowcase: d.lootShowcase.map((l) => localizeLoot(l, de)),
+    prose: localizeProse(d.prose, de),
 
     prevArchetype: d.prevArchetype,
     nextArchetype: d.nextArchetype,

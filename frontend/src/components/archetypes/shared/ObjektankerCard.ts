@@ -5,11 +5,13 @@
  * with connecting vertical line between them.
  */
 
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 import type { LocalizedObjektankerPhase as ObjektankerPhase } from '../dungeon-detail-localized.js';
 
+@localized()
 @customElement('velg-objektanker-card')
 export class VelgObjektankerCard extends LitElement {
   static styles = [
@@ -33,8 +35,10 @@ export class VelgObjektankerCard extends LitElement {
         .vitrine { background: rgba(18, 18, 22, 0.95); }
       }
 
-      .vitrine:hover {
-        border-color: var(--_accent-border);
+      @media (prefers-reduced-motion: no-preference) {
+        .vitrine:hover {
+          border-color: var(--_accent-border);
+        }
       }
 
       .header {
@@ -171,7 +175,7 @@ export class VelgObjektankerCard extends LitElement {
             )}
           </div>
         </div>
-        <div class="expand-hint">\u25b8 ${rest.length} more phases</div>
+        <div class="expand-hint">\u25b8 ${rest.length} ${msg('more phases')}</div>
       </div>
     `;
   }

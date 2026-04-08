@@ -2,10 +2,12 @@
  * Enemy display card — "framed portrait" style for the Bestiary room.
  */
 
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 
+@localized()
 @customElement('velg-enemy-card')
 export class VelgEnemyCard extends LitElement {
   static styles = [
@@ -24,9 +26,11 @@ export class VelgEnemyCard extends LitElement {
         transition: transform 0.3s var(--_ease-dramatic), box-shadow 0.3s var(--_ease-dramatic);
       }
 
-      .frame:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      @media (prefers-reduced-motion: no-preference) {
+        .frame:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
       }
 
       :host([tier="boss"]) .frame {
@@ -128,7 +132,7 @@ export class VelgEnemyCard extends LitElement {
           <span class="stat-chip">EVA ${this.evasion}%</span>
           <span class="stat-chip stat-chip--accent">${this.aptitude}</span>
         </div>
-        <div class="ability">Ability: ${this.ability}</div>
+        <div class="ability">${msg('Ability')}: ${this.ability}</div>
         <p class="description">${this.description}</p>
       </div>
     `;
