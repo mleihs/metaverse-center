@@ -214,6 +214,35 @@ export class VelgArchetypeDetail extends LitElement {
         100% { background-position: 40% 60%; opacity: 0.4; }
       }
 
+      /* ── Tower: structural fracture grid ── */
+
+      .fracture-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background:
+          linear-gradient(90deg, transparent 49.8%, color-mix(in oklch, var(--_accent) 4%, transparent) 50%, transparent 50.2%),
+          linear-gradient(0deg, transparent 49.5%, color-mix(in oklch, var(--_accent) 3%, transparent) 50%, transparent 50.5%);
+        background-size: 200px 100%, 100% 300px;
+        opacity: 0.4;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .fracture-overlay {
+          animation: _fracture-shift 30s ease-in-out infinite alternate;
+        }
+      }
+
+      @keyframes _fracture-shift {
+        0%   { background-size: 200px 100%, 100% 300px; opacity: 0.3; }
+        50%  { background-size: 180px 100%, 100% 260px; opacity: 0.5; }
+        100% { background-size: 220px 100%, 100% 340px; opacity: 0.35; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1045,6 +1074,15 @@ export class VelgArchetypeDetail extends LitElement {
         description: data.loreIntro[0] ?? data.tagline,
         url: pageUrl,
         image: imageUrl,
+        genre: 'Interactive Fiction',
+        keywords: [
+          'Resonance Dungeon',
+          data.name,
+          data.mechanicName,
+          ...Object.keys(data.aptitudeWeights).slice(0, 3),
+        ],
+        inLanguage: 'en',
+        author: 'metaverse.center',
       });
       seoService.setBreadcrumbs([
         { name: 'Home', url: baseUrl + '/' },
@@ -1088,7 +1126,7 @@ export class VelgArchetypeDetail extends LitElement {
           <div class="title__divider" aria-hidden="true"></div>
           <div class="title__signature">${msg('Resonance Archetype')} ${d.numeral} \u00b7 ${d.mechanicName}</div>
           <p class="title__tagline">${d.tagline}</p>
-          <div class="title__gauge-hint">${d.mechanicName}: 0 / ${d.mechanicGauge.max}</div>
+          <div class="title__gauge-hint">${d.mechanicName}: ${d.mechanicGauge.start} / ${d.mechanicGauge.max}</div>
           <div class="title__scroll-hint" aria-hidden="true">\u2193 ${msg('Descend')}</div>
         </div>
       </section>
@@ -1120,6 +1158,8 @@ export class VelgArchetypeDetail extends LitElement {
         `;
       case 'shadow':
         return html`<div class="mist-overlay" aria-hidden="true"></div>`;
+      case 'tower':
+        return html`<div class="fracture-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }
@@ -1131,7 +1171,7 @@ export class VelgArchetypeDetail extends LitElement {
     const map: Record<string, (s: number) => unknown> = {
       shadow: icons.archetypeShadow,
       tower: icons.archetypeTower,
-      'devouring-mother': icons.archetypeDevouringMother,
+      mother: icons.archetypeDevouringMother,
       deluge: icons.archetypeDeluge,
       overthrow: icons.archetypeOverthrow,
       prometheus: icons.archetypePrometheus,

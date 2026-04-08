@@ -8,7 +8,7 @@
  * - DB seed migrations (enemies, encounters, banter, loot, objektanker, entrance texts)
  * - Fresh literary translation (loreIntro, mechanic, gauge thresholds, author concepts)
  *
- * Only The Overthrow is fully populated for the initial implementation.
+ * Overthrow, Shadow, and Tower are fully populated.
  */
 
 import { type ArchetypeQuote, type ArchetypeSlide, ARCHETYPES } from '../landing/dungeon-showcase-data.js';
@@ -890,11 +890,346 @@ const SHADOW_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('tower'),
 };
 
+// ── The Tower — Full Bilingual Content ────────────────────────────────────────
+
+const TOWER_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('tower'),
+
+  loreIntro: [
+    'The Tower is the second archetype of the Resonance Dungeons. Where the Shadow threatens perception, Der Fallende Turm threatens structure itself. Not a ruin \u2013 a building in the act of discovering it was always temporary. The architecture is reasonable at the entrance. It will not stay reasonable.',
+    'Stability is the currency here, and it drains. Every floor climbed costs structural integrity. Every room entered tests the load-bearing consensus between gravity and ambition. The instruments that once measured safety now measure proximity to collapse \u2013 not failure, but the precise mathematics of structures that were never designed to hold this much weight.',
+    'At the surface, Kafka\u2019s bureaucratic uncanny governs: the building processes you while you process it. By the middle floors, Danielewski\u2019s House of Leaves has taken hold \u2013 more space inside than physics allows, corridors that loop back to rooms that weren\u2019t there before. At the summit, only Ballard\u2019s vision remains: the high-rise as vertical society, collapsing not from external force but from the weight of its own aspirations.',
+  ],
+
+  loreIntroDe: [
+    'Der Turm ist der zweite Archetyp der Resonanz-Dungeons. Wo der Schatten die Wahrnehmung bedroht, bedroht Der Fallende Turm die Struktur selbst. Keine Ruine \u2013 ein Geb\u00e4ude im Moment der Erkenntnis, dass es immer tempor\u00e4r war. Die Architektur ist am Eingang vern\u00fcnftig. Sie wird nicht vern\u00fcnftig bleiben.',
+    'Stabilit\u00e4t ist die W\u00e4hrung hier, und sie schwindet. Jedes erklommene Stockwerk kostet strukturelle Integrit\u00e4t. Jeder betretene Raum testet den tragenden Konsens zwischen Schwerkraft und Ehrgeiz. Die Instrumente, die einst Sicherheit ma\u00dfen, messen jetzt die N\u00e4he zum Einsturz \u2013 nicht Versagen, sondern die pr\u00e4zise Mathematik von Strukturen, die nie daf\u00fcr gebaut waren, so viel Gewicht zu tragen.',
+    'An der Oberfl\u00e4che herrscht Kafkas b\u00fcrokratisches Unheimliches: das Geb\u00e4ude verarbeitet euch, w\u00e4hrend ihr es verarbeitet. In den mittleren Stockwerken hat Danielewskis House of Leaves die Kontrolle \u00fcbernommen \u2013 mehr Raum innen als die Physik erlaubt, Korridore, die zu R\u00e4umen zur\u00fcckf\u00fchren, die vorher nicht da waren. Am Gipfel bleibt nur Ballards Vision: das Hochhaus als vertikale Gesellschaft, die nicht durch \u00e4u\u00dfere Kraft einst\u00fcrzt, sondern unter dem Gewicht ihrer eigenen Ambitionen.',
+  ],
+
+  entranceTexts: [
+    'The lobby is pristine. Too pristine. The reception desk is unmanned, the ledger open to today\u2019s date. Someone has been expected. The elevator indicators read floors that should not exist.',
+    'The revolving door deposits you into a foyer that smells of floor wax and compounding interest. A clock on the wall runs backward. The building does not acknowledge this as unusual.',
+    'Ground floor. The architecture is reasonable here \u2013 load-bearing walls where they should be, exits where regulation demands them. This will not last. The building is only polite on the ground floor.',
+    'A placard by the entrance reads: \u2018This building has been inspected and found structurally sound.\u2019 The date has been scratched out. The inspector\u2019s name has been replaced with a floor number.',
+    'The foundation hums. A low, structural vibration that travels upward through the soles. Not mechanical. Organic. The building is aware that you have entered. It adjusts.',
+  ],
+
+  entranceTextsDe: [
+    'Die Lobby ist makellos. Zu makellos. Der Empfangstresen ist unbesetzt, das Hauptbuch auf dem heutigen Datum aufgeschlagen. Jemand wurde erwartet. Die Fahrstuhlanzeigen zeigen Stockwerke, die nicht existieren sollten.',
+    'Die Dreht\u00fcr setzt euch in einem Foyer ab, das nach Bodenwachs und Zinseszins riecht. Eine Uhr an der Wand l\u00e4uft r\u00fcckw\u00e4rts. Das Geb\u00e4ude erkennt daran nichts Ungew\u00f6hnliches.',
+    'Erdgeschoss. Die Architektur ist hier vern\u00fcnftig \u2013 Tragw\u00e4nde, wo sie sein sollten, Ausg\u00e4nge, wo die Vorschrift sie verlangt. Das wird nicht anhalten. Das Geb\u00e4ude ist nur im Erdgeschoss h\u00f6flich.',
+    'Ein Schild am Eingang lautet: \u00bbDieses Geb\u00e4ude wurde gepr\u00fcft und f\u00fcr strukturell einwandfrei befunden.\u00ab Das Datum wurde ausgekratzt. Der Name des Pr\u00fcfers durch eine Stockwerknummer ersetzt.',
+    'Das Fundament brummt. Eine tiefe, strukturelle Vibration, die durch die Sohlen nach oben wandert. Nicht mechanisch. Organisch. Das Geb\u00e4ude wei\u00df, dass ihr eingetreten seid. Es passt sich an.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Stability Countdown',
+  mechanicNameDe: 'Stabilit\u00e4ts-Countdown',
+  mechanicDescription:
+    'Der Fallende Turm\u2019s unique resonance mechanic. Structural integrity drains as you ascend \u2013 faster on higher floors, compounded by combat and failed checks. At zero, structural collapse: 50% ambush chance, \u00d72.0 stress, and the building stops pretending it was built to last.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik des Fallenden Turms. Strukturelle Integrit\u00e4t schwindet beim Aufstieg \u2013 schneller in h\u00f6heren Stockwerken, verst\u00e4rkt durch Kampf und fehlgeschlagene Proben. Bei null: Strukturkollaps \u2013 50% Hinterhaltchance, \u00d72,0 Stress, und das Geb\u00e4ude h\u00f6rt auf, so zu tun, als w\u00e4re es auf Dauer gebaut.',
+
+  mechanicGauge: {
+    name: 'Stability',
+    nameDe: 'Stabilit\u00e4t',
+    start: 100,
+    max: 100,
+    direction: 'drain',
+    thresholds: [
+      { value: 100, label: 'Structurally Sound', labelDe: 'Strukturell einwandfrei', description: 'Full stability. The building cooperates.', descriptionDe: 'Volle Stabilit\u00e4t. Das Geb\u00e4ude kooperiert.' },
+      { value: 70, label: 'Hairline Cracks', labelDe: 'Haarrisse', description: 'Cosmetic damage. The building compensates.', descriptionDe: 'Kosmetische Sch\u00e4den. Das Geb\u00e4ude kompensiert.' },
+      { value: 40, label: 'Structural Stress', labelDe: 'Struktureller Stress', description: 'Stress \u00d71.20. 25% ambush. The building negotiates.', descriptionDe: 'Stress \u00d71,20. 25% Hinterhalt. Das Geb\u00e4ude verhandelt.' },
+      { value: 20, label: 'Critical', labelDe: 'Kritisch', description: 'Stress \u00d71.50. 50% ambush. Load-bearing walls failing.', descriptionDe: 'Stress \u00d71,50. 50% Hinterhalt. Tragw\u00e4nde versagen.' },
+      { value: 0, label: 'Collapse', labelDe: 'Einsturz', description: 'Stress \u00d72.0. Total structural failure. The building stops pretending.', descriptionDe: 'Stress \u00d72,0. Totales Strukturversagen. Das Geb\u00e4ude h\u00f6rt auf, so zu tun als ob.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 35,
+
+  aptitudeWeights: {
+    Guardian: 30,
+    Spy: 20,
+    Saboteur: 20,
+    Propagandist: 12,
+    Infiltrator: 10,
+    Assassin: 8,
+  },
+
+  roomDistribution: {
+    Combat: 40,
+    Encounter: 25,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 10,
+    Exit: 10,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Tremor Broker',
+      nameDe: 'Bebenmakler',
+      tier: 'minion',
+      power: 1,
+      stress: 5,
+      evasion: 30,
+      ability: 'Recite',
+      abilityDe: 'Rezitieren',
+      aptitude: 'Propagandist',
+      description: 'A nervous figure wreathed in scrolling numbers. It doesn\u2019t fight \u2013 it recites. Market figures, compound rates, the precise mathematics of structures that can\u2019t hold.',
+      descriptionDe: 'Eine nerv\u00f6se Gestalt, umweht von laufenden Zahlen. Sie k\u00e4mpft nicht \u2013 sie rezitiert. Marktkurse, Zinseszinsen, die pr\u00e4zise Mathematik von Strukturen, die nicht halten k\u00f6nnen.',
+    },
+    {
+      name: 'Foundation Worm',
+      nameDe: 'Grundwurm',
+      tier: 'minion',
+      power: 4,
+      stress: 1,
+      evasion: 10,
+      ability: 'Burrow',
+      abilityDe: 'Graben',
+      aptitude: 'Guardian',
+      description: 'Patient. Eyeless. It navigates by stress fractures in the load-bearing walls, widening them with each pass. The building groans where it has been.',
+      descriptionDe: 'Geduldig. Augenlos. Er orientiert sich an Spannungsrissen in den tragenden W\u00e4nden und weitet sie bei jedem Durchgang. Das Geb\u00e4ude st\u00f6hnt, wo er gewesen ist.',
+    },
+    {
+      name: 'Debt Shade',
+      nameDe: 'Schuldgespenst',
+      tier: 'standard',
+      power: 2,
+      stress: 4,
+      evasion: 25,
+      ability: 'Compound',
+      abilityDe: 'Aufzinsen',
+      aptitude: 'Propagandist',
+      description: 'It speaks in promises that were never kept. Each round it grows, fed by the compound interest of unresolved obligations. It lies about its intentions \u2013 not from malice, but because the ledger demands it.',
+      descriptionDe: 'Es spricht in Versprechen, die nie gehalten wurden. Jede Runde w\u00e4chst es, gen\u00e4hrt vom Zinseszins ungel\u00f6ster Verpflichtungen. Es l\u00fcgt \u00fcber seine Absichten \u2013 nicht aus Bosheit, sondern weil das Hauptbuch es verlangt.',
+    },
+    {
+      name: 'Remnant of Commerce',
+      nameDe: 'Relikt des Handels',
+      tier: 'elite',
+      power: 7,
+      stress: 8,
+      evasion: 20,
+      ability: 'Market Crash',
+      abilityDe: 'Marktcrash',
+      aptitude: 'Propagandist',
+      description: 'What remains when a trading floor collapses. It moves through the ruin with proprietary efficiency, summoning lesser brokers from the rubble. Its market crash ability strips all pretense of stability.',
+      descriptionDe: 'Was bleibt, wenn ein Handelsparkett einbricht. Es bewegt sich durch die Ruine mit der Effizienz eines Insolvenzverwalters, ruft geringere Makler aus dem Schutt. Seine Marktcrash-F\u00e4higkeit reisst jedes Stabilit\u00e4tsversprechen ein.',
+    },
+    {
+      name: 'The Crowned',
+      nameDe: 'Der Gekr\u00f6nte',
+      tier: 'boss',
+      power: 5,
+      stress: 2,
+      evasion: 15,
+      ability: 'Stability Drain',
+      abilityDe: 'Stabilit\u00e4tsentzug',
+      aptitude: 'Guardian',
+      description: 'It wears the crown of a structure that believed it would last forever. The crown is cracked. The keeper does not acknowledge this.',
+      descriptionDe: 'Er tr\u00e4gt die Krone eines Bauwerks, das glaubte, ewig zu bestehen. Die Krone ist geborsten. Der Tr\u00e4ger nimmt dies nicht zur Kenntnis.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Lobby',
+      nameDe: 'Die Lobby',
+      depth: '1\u20132',
+      type: 'narrative',
+      description: 'The lobby is cavernous and wrong. Reception desks curve into themselves. Departure boards list floors that do not exist \u2013 negative numbers, imaginary levels, a floor called \u2018solvency\u2019 with no arrival time.',
+      descriptionDe: 'Die Lobby ist riesig und falsch. Empfangsschalter kr\u00fcmmen sich in sich selbst. Abfahrtstafeln listen Stockwerke, die nicht existieren \u2013 negative Zahlen, imagin\u00e4re Ebenen, ein Stockwerk namens \u2018Solvenz\u2019 ohne Ankunftszeit.',
+      choices: [
+        { text: 'Check the departure boards', textDe: 'Die Abfahrtstafeln pr\u00fcfen', aptitude: 'Spy', difficulty: '\u22125' },
+        { text: 'Reinforce the cracked marble', textDe: 'Den gerissenen Marmor verst\u00e4rken', aptitude: 'Guardian', difficulty: '0' },
+        { text: 'Move through quickly', textDe: 'Schnell hindurchgehen' },
+      ],
+    },
+    {
+      name: 'The Confidence Game',
+      nameDe: 'Das Vertrauensspiel',
+      depth: '2\u20133',
+      type: 'narrative',
+      description: 'A room of impossible architecture: staircases that climb into themselves, columns supporting nothing. In the center, a mechanism produces certificates of structural integrity \u2013 for a building that is visibly crumbling.',
+      descriptionDe: 'Ein Raum unm\u00f6glicher Architektur: Treppen, die in sich selbst hinaufsteigen, S\u00e4ulen, die nichts tragen. In der Mitte produziert ein Mechanismus Bescheinigungen der Geb\u00e4udeintegrit\u00e4t \u2013 f\u00fcr ein Bauwerk, das sichtbar zerf\u00e4llt.',
+      choices: [
+        { text: 'Expose the fraud', textDe: 'Den Betrug aufdecken', aptitude: 'Propagandist', difficulty: '+5' },
+        { text: 'Analyze the architecture', textDe: 'Die Architektur analysieren', aptitude: 'Spy', difficulty: '0' },
+        { text: 'Walk away', textDe: 'Weitergehen' },
+      ],
+    },
+    {
+      name: 'The Ledger',
+      nameDe: 'Das Hauptbuch',
+      depth: '2\u20134',
+      type: 'narrative',
+      description: 'A ledger the size of a desk, open to a page of debts so vast they curve the air around them. The columns do not balance. They have not balanced in a long time.',
+      descriptionDe: 'Ein Hauptbuch, so gro\u00df wie ein Schreibtisch, aufgeschlagen auf einer Seite von Schulden so gewaltig, dass sie die Luft um sich kr\u00fcmmen. Die Spalten gleichen sich nicht aus. Das tun sie schon lange nicht mehr.',
+      choices: [
+        { text: 'Balance the books', textDe: 'Die B\u00fccher ausgleichen', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Tear the pages', textDe: 'Die Seiten herausrei\u00dfen', aptitude: 'Saboteur', difficulty: '0' },
+        { text: 'Close the book', textDe: 'Das Buch schlie\u00dfen' },
+      ],
+    },
+    {
+      name: 'Fallen Assets',
+      nameDe: 'Gefallene Werte',
+      depth: '3\u20134',
+      type: 'narrative',
+      description: 'A gallery of broken authority. Statues of former owners, their faces ground smooth by vibration. Each one held this tower when it was still ascending. Something in their arrangement is load-bearing.',
+      descriptionDe: 'Eine Galerie gebrochener Autorit\u00e4t. Statuen ehemaliger Eigent\u00fcmer, ihre Gesichter glattgeschliffen durch Vibration. Jeder von ihnen hielt diesen Turm, als er noch aufstieg. Etwas in ihrer Anordnung ist tragend.',
+      choices: [
+        { text: 'Reinforce the arrangement', textDe: 'Die Anordnung verst\u00e4rken', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Topple the arrangement', textDe: 'Die Anordnung umst\u00fcrzen', aptitude: 'Saboteur', difficulty: '0' },
+        { text: 'Pass through carefully', textDe: 'Vorsichtig hindurchgehen' },
+      ],
+    },
+    {
+      name: 'The Final Audit',
+      nameDe: 'Die letzte Pr\u00fcfung',
+      depth: '4\u20135',
+      type: 'elite',
+      description: 'The penultimate floor. Every structural failure in the building below resonates here. In the center of the room, a single desk holds a final audit report. The pages are blank. The pen is waiting.',
+      descriptionDe: 'Das vorletzte Stockwerk. Jedes Strukturversagen im Geb\u00e4ude darunter resoniert hier. In der Mitte des Raums h\u00e4lt ein einzelner Schreibtisch einen letzten Pr\u00fcfbericht. Die Seiten sind leer. Der Stift wartet.',
+      choices: [
+        { text: 'Write the true audit', textDe: 'Den wahren Bericht schreiben', aptitude: 'Spy', difficulty: '+10' },
+        { text: 'Sabotage the last column', textDe: 'Die letzte tragende S\u00e4ule sabotieren', aptitude: 'Saboteur', difficulty: '+10' },
+        { text: 'Leave the desk untouched', textDe: 'Den Schreibtisch unber\u00fchrt lassen' },
+      ],
+    },
+  ],
+
+  // ── Banter ──
+
+  banterSamples: [
+    { text: 'The lobby is pristine. The departure boards list floors that cannot exist.', textDe: 'Die Lobby ist makellos. Die Abfahrtstafeln listen Stockwerke, die nicht existieren k\u00f6nnen.', tier: 0 },
+    { text: 'Somewhere above, concrete dust sifts down like snow. The tower is shedding its skin.', textDe: 'Irgendwo oben rieselt Betonstaub herab wie Schnee. Der Turm h\u00e4utet sich.', tier: 0 },
+    { text: 'The stairwell narrows. Not the walls \u2013 the sense that return is possible.', textDe: 'Das Treppenhaus verengt sich. Nicht die W\u00e4nde \u2013 das Gef\u00fchl, dass R\u00fcckkehr m\u00f6glich ist.', tier: 1 },
+    { text: 'The floor tilts by two degrees. The instruments confirm what the building has already announced.', textDe: 'Der Boden neigt sich um zwei Grad. Die Instrumente best\u00e4tigen, was das Geb\u00e4ude l\u00e4ngst angek\u00fcndigt hat.', tier: 1 },
+    { text: 'The geometry here is wrong. Not broken \u2013 bankrupt.', textDe: 'Die Geometrie hier ist falsch. Nicht gebrochen \u2013 bankrott.', tier: 1 },
+    { text: 'STRUCTURAL INTEGRITY: CRITICAL. The instruments show readings they were not calibrated for.', textDe: 'STRUKTURELLE INTEGRIT\u00c4T: KRITISCH. Die Instrumente zeigen Werte an, f\u00fcr die sie nicht kalibriert wurden.', tier: 2 },
+    { text: 'The load-bearing walls have given up the pretence. The building no longer pretends it was designed to be lived in.', textDe: 'Die Tragw\u00e4nde haben die Fassade aufgegeben. Das Geb\u00e4ude tut nicht l\u00e4nger so, als w\u00e4re es zum Bewohnen gebaut.', tier: 2 },
+    { text: 'Only momentum and gravity, negotiating terms.', textDe: 'Nur Schwungkraft und Schwerkraft, die Konditionen verhandeln.', tier: 3 },
+  ],
+
+  // ── Authors ──
+
+  authors: [
+    { name: 'Franz Kafka', works: 'The Trial \u00b7 The Castle', concept: 'Bureaucratic uncanny. The building processes you while you process it. Perfectly grammatical sentences whose content contradicts their form.', conceptDe: 'B\u00fcrokratisches Unheimliches. Das Geb\u00e4ude verarbeitet euch, w\u00e4hrend ihr es verarbeitet. Grammatisch perfekte S\u00e4tze, deren Inhalt ihrer Form widerspricht.', language: 'Deutsch', quote: 'Jemand mu\u00dfte Josef K. verleumdet haben, denn ohne da\u00df er etwas B\u00f6ses getan h\u00e4tte, wurde er eines Morgens verhaftet.', primary: true },
+    { name: 'Mark Z. Danielewski', works: 'House of Leaves', concept: 'Non-Euclidean architecture. More space inside than physics allows. The building contradicts its own measurements.', conceptDe: 'Nicht-euklidische Architektur. Mehr Raum innen als die Physik erlaubt. Das Geb\u00e4ude widerspricht seinen eigenen Ma\u00dfen.', language: 'English', quote: 'The hallway was measured again. It had grown by 5/16 of an inch.', primary: true },
+    { name: 'J.G. Ballard', works: 'High-Rise \u00b7 Concrete Island', concept: 'Vertical society. The high-rise as social experiment. Collapse from within \u2013 not structural failure but social disintegration along class lines.', conceptDe: 'Vertikale Gesellschaft. Das Hochhaus als Sozialexperiment. Einsturz von innen \u2013 nicht Strukturversagen, sondern soziale Desintegration entlang von Klassengrenzen.', language: 'English', quote: 'Later, as he sat on his balcony eating the dog, Dr Robert Laing reflected on the unusual events that had taken place.', primary: true },
+    { name: 'Italo Calvino', works: 'Invisible Cities \u00b7 If on a winter\u2019s night a traveller', concept: 'Cities that exist only in description. Architecture as narrative \u2013 the building is what you say it is, until it isn\u2019t.', conceptDe: 'St\u00e4dte, die nur in der Beschreibung existieren. Architektur als Narration \u2013 das Geb\u00e4ude ist, was man sagt, bis es das nicht mehr ist.', language: 'Italiano', primary: false },
+    { name: 'Thomas Bernhard', works: 'Correction \u00b7 The Loser', concept: 'Obsessive construction. Roithamer\u2019s cone \u2013 the perfect structure that kills its creator. Architecture as pathological precision.', conceptDe: 'Obsessives Bauen. Roithamers Kegel \u2013 die perfekte Struktur, die ihren Sch\u00f6pfer t\u00f6tet. Architektur als pathologische Pr\u00e4zision.', language: 'Deutsch', primary: false },
+    { name: 'Georges Perec', works: 'Life: A User\u2019s Manual', concept: 'The building as complete system. Every apartment a universe. The structure contains its own cataloguing.', conceptDe: 'Das Geb\u00e4ude als vollst\u00e4ndiges System. Jede Wohnung ein Universum. Die Struktur enth\u00e4lt ihre eigene Katalogisierung.', language: 'Fran\u00e7ais', primary: false },
+  ],
+
+  // ── Objektanker ──
+
+  objektanker: [
+    {
+      name: 'The Blueprint',
+      nameDe: 'Der Bauplan',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A blueprint pinned to the reception desk. Floor plans for a building that does not match this one \u2013 or rather, matches it as it was designed, before the floors began to disagree with each other.', textDe: 'Ein Bauplan, auf den Empfangstresen geheftet. Grundrisse eines Geb\u00e4udes, das nicht zu diesem passt \u2013 oder vielmehr: das zu diesem passt, wie es entworfen war, bevor die Stockwerke anfingen, einander zu widersprechen.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The same blueprint, updated. New floors have been added in a different hand. The new floors have no exits.', textDe: 'Derselbe Bauplan, aktualisiert. Neue Stockwerke wurden von einer anderen Hand erg\u00e4nzt. Die neuen Stockwerke haben keine Ausg\u00e4nge.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The blueprint is here again. It has been corrected \u2013 every room you have entered is now marked. Your route is drawn in red. The red line continues beyond your current position. It ends in the room above this one.', textDe: 'Der Bauplan ist wieder hier. Er wurde korrigiert \u2013 jeder Raum, den ihr betreten habt, ist jetzt markiert. Eure Route ist rot eingezeichnet. Die rote Linie geht \u00fcber eure aktuelle Position hinaus. Sie endet im Raum \u00fcber diesem.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'The Crown Keeper\u2019s desk: the original blueprint. Architect\u2019s signature at the bottom. The name is yours.', textDe: 'Das Pult des Crown Keepers: der Original-Bauplan. Architektenunterschrift am unteren Rand. Der Name ist eurer.' },
+      ],
+    },
+    {
+      name: 'The Receipt',
+      nameDe: 'Die Quittung',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A receipt, pressed under a paperweight. The transaction: one structural guarantee, purchased at a price that has been redacted. The guarantee expired three floors ago.', textDe: 'Eine Quittung, unter einem Briefbeschwerer. Die Transaktion: eine Strukturgarantie, erworben zu einem Preis, der geschw\u00e4rzt wurde. Die Garantie ist drei Stockwerke zuvor abgelaufen.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Another receipt. Same format, different transaction. This one purchases time. The amount: \u2018remaining.\u2019', textDe: 'Eine weitere Quittung. Dasselbe Format, andere Transaktion. Diese kauft Zeit. Der Betrag: \u00bbverbleibend\u00ab.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Receipts cover the floor like snow. Each one a guarantee \u2013 structural, temporal, existential. All expired. The dates are sequential. The last date is today.', textDe: 'Quittungen bedecken den Boden wie Schnee. Jede eine Garantie \u2013 strukturell, temporal, existenziell. Alle abgelaufen. Die Daten sind fortlaufend. Das letzte Datum ist heute.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'The Crown Keeper extends a blank receipt. \u2018The final transaction\u2019, they say. \u2018Sign here. The building accepts all forms of collateral.\u2019', textDe: 'Der Crown Keeper reicht eine leere Quittung. \u00bbDie letzte Transaktion\u00ab, sagt er. \u00bbHier unterschreiben. Das Geb\u00e4ude akzeptiert alle Formen von Sicherheit.\u00ab' },
+      ],
+    },
+    {
+      name: 'The Elevator Button',
+      nameDe: 'Der Fahrstuhlknopf',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'An elevator button. Floor \u22121. Pressed so many times the brass is worn concave. The elevator never came.', textDe: 'Ein Fahrstuhlknopf. Stockwerk \u22121. So oft gedr\u00fcckt, dass das Messing konkav geschliffen ist. Der Fahrstuhl kam nie.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The same button, three floors higher. The brass is pristine now \u2013 unworn, as if this version has never been pressed. It is warm to the touch. Expectant.', textDe: 'Derselbe Knopf, drei Stockwerke h\u00f6her. Das Messing ist jetzt makellos \u2013 unbenutzt, als w\u00e4re diese Version nie gedr\u00fcckt worden. Er ist warm. Erwartungsvoll.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Floor \u22121 again. The button is pressed in. Permanently. It will not release. The floor indicator above it reads your current floor. It has been following you.', textDe: 'Stockwerk \u22121, wieder. Der Knopf ist eingedr\u00fcckt. Permanent. Er l\u00e4sst sich nicht l\u00f6sen. Die Stockwerksanzeige dar\u00fcber zeigt euer aktuelles Stockwerk. Er ist euch gefolgt.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'The Crown Keeper\u2019s room has no elevator. The button is here anyway. Floor 0. The brass is worn by a hand that is not human. The elevator arrived. It is empty.', textDe: 'Der Raum des Crown Keepers hat keinen Fahrstuhl. Der Knopf ist trotzdem hier. Stockwerk 0. Das Messing ist abgegriffen von einer Hand, die nicht menschlich ist. Der Fahrstuhl ist angekommen. Er ist leer.' },
+      ],
+    },
+    {
+      name: 'The Spirit Level',
+      nameDe: 'Die Wasserwaage',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A spirit level mounted on the reception desk. The bubble sits dead center. The building tells itself it is straight. The building is lying.', textDe: 'Eine Wasserwaage, auf dem Empfangstresen montiert. Die Blase sitzt exakt in der Mitte. Das Geb\u00e4ude sagt sich, es sei gerade. Das Geb\u00e4ude l\u00fcgt.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The spirit level again. The bubble has moved \u2013 not to one side but to both. Two bubbles now. The building is negotiating with gravity.', textDe: 'Die Wasserwaage, wieder. Die Blase hat sich bewegt \u2013 nicht zu einer Seite, sondern zu beiden. Zwei Blasen jetzt. Das Geb\u00e4ude verhandelt mit der Schwerkraft.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Three spirit levels, mounted at contradicting angles. All three read level. The building has redefined what straight means.', textDe: 'Drei Wasserwaagen, in widerspr\u00fcchlichen Winkeln montiert. Alle drei zeigen waagerecht an. Das Geb\u00e4ude hat neu definiert, was gerade bedeutet.' },
+        { label: 'Climax', labelDe: 'Klimax', text: 'The spirit level is shattered. The liquid inside has evaporated. The building no longer measures itself. It has accepted.', textDe: 'Die Wasserwaage ist zerbrochen. Die Fl\u00fcssigkeit darin ist verdunstet. Das Geb\u00e4ude misst sich nicht mehr. Es hat akzeptiert.' },
+      ],
+    },
+  ],
+
+  // ── Loot ──
+
+  lootShowcase: [
+    { name: 'Structural Dust', nameDe: 'Strukturstaub', tier: 1, effect: 'Stress heal 50', description: 'Pulverized certainty. When handled, it absorbs the stress of structural ambiguity. The building shed this willingly.', descriptionDe: 'Pulverisierte Gewissheit. Bei Handhabung absorbiert er den Stress struktureller Mehrdeutigkeit. Das Geb\u00e4ude hat dies bereitwillig abgesto\u00dfen.' },
+    { name: 'Market Insight', nameDe: 'Markterkenntnis', tier: 1, effect: 'Memory (importance 4)', description: 'A fragment of understanding gained from the mathematics of failure. Not knowledge \u2013 literacy. The agent can now read the language of collapsing systems.', descriptionDe: 'Ein Fragment von Verst\u00e4ndnis, gewonnen aus der Mathematik des Versagens. Nicht Wissen \u2013 Lesekompetenz. Der Agent kann jetzt die Sprache kollabierender Systeme lesen.' },
+    { name: 'Load-Bearing Fragment', nameDe: 'Tragwerkfragment', tier: 2, effect: 'Guardian +5% (5 rooms)', description: 'A section of reinforced concrete that still remembers what it was asked to hold. It confers a structural intuition \u2013 where to stand, what will give.', descriptionDe: 'Ein St\u00fcck Stahlbeton, das sich noch erinnert, was es tragen sollte. Es verleiht eine strukturelle Intuition \u2013 wo man stehen soll, was nachgeben wird.' },
+    { name: 'Leverage Extract', nameDe: 'Hebelextrakt', tier: 2, effect: 'Saboteur stress damage +15%', description: 'Concentrated structural vulnerability. Apply to any load-bearing assumption and watch it buckle.', descriptionDe: 'Konzentrierte strukturelle Verwundbarkeit. Auf jede tragende Annahme anwenden und zusehen, wie sie knickt.' },
+    { name: 'Stability Catalyst', nameDe: 'Stabilit\u00e4tskatalysator', tier: 3, effect: 'Permanent +0.05 simulation health', description: 'A crystallized principle of structural integrity, salvaged from the Tower before its final settling. The simulation metabolizes it \u2013 not much, but permanently.', descriptionDe: 'Ein kristallisiertes Prinzip struktureller Integrit\u00e4t, aus dem Turm geborgen vor seinem endg\u00fcltigen Absacken. Die Simulation metabolisiert es \u2013 nicht viel, aber permanent.' },
+    { name: 'Tower Memory', nameDe: 'Turmerinnerung', tier: 3, effect: 'High-importance memory + behavior', description: 'Witnessed structural collapse and survived. The experience permanently alters how they assess risk \u2013 more pragmatic, less rigid, never again trusting a load-bearing wall at face value.', descriptionDe: 'Strukturellen Einsturz bezeugt und \u00fcberlebt. Die Erfahrung ver\u00e4ndert permanent, wie sie Risiko bewerten \u2013 pragmatischer, weniger starr, nie wieder einer tragenden Wand auf ihr Wort vertrauend.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Stability Drain',
+    mechanicGainTitleDe: 'Stabilit\u00e4tsverlust',
+    mechanicGainText: '\u22125 per room (floors 1\u20132)\n\u221210 per room (floors 3\u20134)\n\u221215 per room (floor 5+)\n\u22123 per combat round',
+    mechanicGainTextDe: '\u22125 pro Raum (Stockwerk 1\u20132)\n\u221210 pro Raum (Stockwerk 3\u20134)\n\u221215 pro Raum (Stockwerk 5+)\n\u22123 pro Kampfrunde',
+    mechanicReduceTitle: 'Stability Restore',
+    mechanicReduceTitleDe: 'Stabilit\u00e4tswiederherstellung',
+    mechanicReduceText: '+5 on combat victory\n+5 on treasure find\n+10 on Guardian rest\n+10 on reinforce action',
+    mechanicReduceTextDe: '+5 bei Kampfsieg\n+5 bei Schatzfund\n+10 bei W\u00e4chter-Rast\n+10 bei Verst\u00e4rkungsaktion',
+    mechanicReduceEmphasis: 'The building does not forgive. It accounts.',
+    mechanicReduceEmphasisDe: 'Das Geb\u00e4ude vergibt nicht. Es verbucht.',
+    encounterIntro: 'Navigate structural crises. Every choice tests the load-bearing consensus.',
+    encounterIntroDe: 'Navigiert strukturelle Krisen. Jede Entscheidung testet den tragenden Konsens.',
+    bestiaryIntro: 'The denizens of Der Fallende Turm. Not monsters \u2013 structural failures given form.',
+    bestiaryIntroDe: 'Die Bewohner des Fallenden Turms. Keine Monster \u2013 Strukturversagen in Gestalt.',
+    banterHeader: 'Structural Reports',
+    banterHeaderDe: 'Strukturberichte',
+    objektankerHeader: 'Artifacts of Der Fallende Turm',
+    objektankerHeaderDe: 'Artefakte des Fallenden Turms',
+    objektankerIntro: 'Objects that crack as stability drains. Each measures what the building refuses to acknowledge.',
+    objektankerIntroDe: 'Objekte, die rei\u00dfen, w\u00e4hrend die Stabilit\u00e4t schwindet. Jedes misst, was das Geb\u00e4ude sich weigert anzuerkennen.',
+    exitQuote: 'Only momentum and gravity, negotiating terms.',
+    exitQuoteDe: 'Nur Schwungkraft und Schwerkraft, die Konditionen verhandeln.',
+    exitCta: 'Enter Der Fallende Turm',
+    exitCtaDe: 'Den Fallenden Turm betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the ascent.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt den Aufstieg.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('shadow'),
+  nextArchetype: getNav('mother'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['overthrow', OVERTHROW_DETAIL],
   ['shadow', SHADOW_DETAIL],
+  ['tower', TOWER_DETAIL],
 ]);
 
 /**
