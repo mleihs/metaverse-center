@@ -97,8 +97,17 @@ class SeoService {
     });
   }
 
-  /** Set CreativeWork structured data (lore, simulation profiles). */
-  setCreativeWork(data: { name: string; description: string; url: string; image?: string }): void {
+  /** Set CreativeWork structured data (lore, simulation profiles, archetype detail pages). */
+  setCreativeWork(data: {
+    name: string;
+    description: string;
+    url: string;
+    image?: string;
+    genre?: string;
+    keywords?: string[];
+    inLanguage?: string;
+    author?: string;
+  }): void {
     this.setStructuredData({
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',
@@ -106,6 +115,10 @@ class SeoService {
       description: data.description,
       url: data.url,
       ...(data.image ? { image: data.image } : {}),
+      ...(data.genre ? { genre: data.genre } : {}),
+      ...(data.keywords?.length ? { keywords: data.keywords.join(', ') } : {}),
+      ...(data.inLanguage ? { inLanguage: data.inLanguage } : {}),
+      ...(data.author ? { author: { '@type': 'Organization', name: data.author } } : {}),
     });
   }
 
