@@ -362,6 +362,56 @@ export class VelgArchetypeDetail extends LitElement {
         100% { opacity: 0.45; }
       }
 
+      /* ── Deluge: rising tide — patient cyan displacement from below ── */
+
+      .tide-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background: linear-gradient(
+          0deg,
+          color-mix(in oklch, var(--_accent) 10%, transparent),
+          color-mix(in oklch, var(--_accent) 5%, transparent) 35%,
+          color-mix(in oklch, var(--_accent) 2%, transparent) 60%,
+          transparent 80%
+        );
+        opacity: 0.6;
+      }
+
+      .tide-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 200% 30% at 50% 100%,
+            color-mix(in oklch, var(--_accent) 6%, transparent),
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 150% 20% at 30% 95%,
+            color-mix(in oklch, var(--_accent) 4%, transparent),
+            transparent 50%
+          );
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .tide-overlay {
+          animation: _tide-rise 12s ease-in-out infinite alternate;
+        }
+      }
+
+      @keyframes _tide-rise {
+        0%   { opacity: 0.45; background-position: 0 0; }
+        50%  { opacity: 0.7; background-position: 0 -2%; }
+        100% { opacity: 0.5; background-position: 0 -1%; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1285,6 +1335,8 @@ export class VelgArchetypeDetail extends LitElement {
         return html`<div class="dissolution-overlay" aria-hidden="true"></div>`;
       case 'prometheus':
         return html`<div class="forge-overlay" aria-hidden="true"></div>`;
+      case 'deluge':
+        return html`<div class="tide-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }
