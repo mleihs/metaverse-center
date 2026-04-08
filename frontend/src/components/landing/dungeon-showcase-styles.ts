@@ -225,7 +225,9 @@ export const showcaseLayoutStyles = css`
   }
 
   .slide__cta:hover {
+    color: var(--color-text-primary, #e5e5e5);
     border-color: color-mix(in srgb, var(--_accent) 70%, transparent);
+    background: color-mix(in srgb, var(--_accent) 14%, transparent);
     box-shadow:
       0 0 20px color-mix(in srgb, var(--_accent) 15%, transparent),
       inset 0 0 16px color-mix(in srgb, var(--_accent) 6%, transparent);
@@ -604,8 +606,8 @@ export const showcaseTransitionStyles = css`
     50%      { transform: scale(1.04); box-shadow: 0 0 24px color-mix(in srgb, var(--_accent) 20%, transparent); }
   }
   @keyframes cta-mother-absorb {
-    0%   { transform: scale(1.04); filter: blur(0px); }
-    100% { transform: scale(0.90); filter: blur(2px); opacity: 0.6; }
+    0%   { transform: scale(1.04); }
+    100% { transform: scale(0.92); opacity: 0.75; }
   }
 
   /* ENTROPY — text drift: letter-spacing widens, border dissolves */
@@ -617,15 +619,14 @@ export const showcaseTransitionStyles = css`
     letter-spacing: 0.45em;
     border-color: color-mix(in srgb, var(--_accent) 18%, transparent);
     border-style: dashed;
-    filter: blur(0.3px);
   }
   .slide--entropy .slide__cta:active {
     animation: cta-entropy-dissolve 0.35s ease-in forwards;
   }
   @keyframes cta-entropy-dissolve {
-    0%   { filter: blur(0.3px); opacity: 1; letter-spacing: 0.45em; }
-    50%  { filter: blur(2px); opacity: 0.5; letter-spacing: 0.6em; }
-    100% { filter: blur(1px); opacity: 0.7; letter-spacing: 0.35em; transform: scale(0.97); }
+    0%   { opacity: 1; letter-spacing: 0.45em; }
+    50%  { opacity: 0.7; letter-spacing: 0.6em; }
+    100% { opacity: 0.8; letter-spacing: 0.35em; transform: scale(0.97); }
   }
 
   /* PROMETHEUS — ember ignition: brightness spike + warm glow */
@@ -637,14 +638,14 @@ export const showcaseTransitionStyles = css`
     animation: cta-prometheus-flash 0.2s ease-out forwards;
   }
   @keyframes cta-prometheus-ignite {
-    0%   { filter: brightness(1);   box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 15%, transparent); }
-    50%  { filter: brightness(1.25); box-shadow: 0 0 28px color-mix(in srgb, var(--_accent) 30%, transparent), 0 0 4px color-mix(in srgb, var(--_accent) 50%, transparent); }
-    100% { filter: brightness(1.1);  box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 20%, transparent); }
+    0%   { box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 15%, transparent); }
+    50%  { box-shadow: 0 0 28px color-mix(in srgb, var(--_accent) 35%, transparent), 0 0 4px color-mix(in srgb, var(--_accent) 50%, transparent); }
+    100% { box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 20%, transparent); }
   }
   @keyframes cta-prometheus-flash {
-    0%   { filter: brightness(1.25); }
-    30%  { filter: brightness(2); transform: scale(1.03); box-shadow: 0 0 40px color-mix(in srgb, var(--_accent) 50%, transparent); }
-    100% { filter: brightness(1.1); transform: scale(0.97); }
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.03); box-shadow: 0 0 40px color-mix(in srgb, var(--_accent) 50%, transparent); }
+    100% { transform: scale(0.97); }
   }
 
   /* DELUGE — wave ripple: horizontal oscillation like water current */
@@ -662,8 +663,8 @@ export const showcaseTransitionStyles = css`
     75%      { transform: translateX(2px) skewX(-0.3deg); }
   }
   @keyframes cta-deluge-submerge {
-    0%   { transform: translateY(0); filter: blur(0px); opacity: 1; }
-    100% { transform: translateY(6px); filter: blur(2px); opacity: 0.5; }
+    0%   { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0.75; }
   }
 
   /* AWAKENING — focus-pull: blur-to-sharp materialization cycle */
@@ -674,13 +675,13 @@ export const showcaseTransitionStyles = css`
     animation: cta-awakening-defocus 0.3s ease-in forwards;
   }
   @keyframes cta-awakening-focus {
-    0%   { filter: blur(1.5px); opacity: 0.7; box-shadow: 0 0 20px color-mix(in srgb, var(--_accent) 10%, transparent); }
-    50%  { filter: blur(0px); opacity: 1; box-shadow: 0 0 32px color-mix(in srgb, var(--_accent) 25%, transparent), 0 0 8px color-mix(in srgb, var(--_accent) 40%, transparent); }
-    100% { filter: blur(0.5px); opacity: 0.85; box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 15%, transparent); }
+    0%   { opacity: 0.85; box-shadow: 0 0 20px color-mix(in srgb, var(--_accent) 10%, transparent); }
+    50%  { opacity: 1; box-shadow: 0 0 32px color-mix(in srgb, var(--_accent) 25%, transparent), 0 0 8px color-mix(in srgb, var(--_accent) 40%, transparent); }
+    100% { opacity: 0.9; box-shadow: 0 0 16px color-mix(in srgb, var(--_accent) 15%, transparent); }
   }
   @keyframes cta-awakening-defocus {
-    0%   { filter: blur(0px); opacity: 1; }
-    100% { filter: blur(4px); opacity: 0.5; transform: scale(1.04); }
+    0%   { opacity: 1; }
+    100% { opacity: 0.7; transform: scale(1.04); }
   }
 
   /* OVERTHROW — mirror shatter: skew oscillation + accent glow pulses.
