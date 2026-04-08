@@ -8,7 +8,7 @@
  * - DB seed migrations (enemies, encounters, banter, loot, objektanker, entrance texts)
  * - Fresh literary translation (loreIntro, mechanic, gauge thresholds, author concepts)
  *
- * Overthrow, Shadow, Tower, and Mother are fully populated.
+ * Overthrow, Shadow, Tower, Mother, Entropy, and Prometheus are fully populated.
  */
 
 import { type ArchetypeQuote, type ArchetypeSlide, ARCHETYPES } from '../landing/dungeon-showcase-data.js';
@@ -1844,6 +1844,297 @@ const ENTROPY_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('prometheus'),
 };
 
+// ── The Prometheus — Full Bilingual Content ─────────────────────────────────
+
+const PROMETHEUS_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('prometheus'),
+
+  // ── Lore Introduction (3 paragraphs, fresh literary prose) ──
+
+  loreIntro: [
+    'The Prometheus is the fifth archetype of the Resonance Dungeons \u2013 and the most dangerous in its generosity. Die Werkstatt der G\u00f6tter is not a laboratory. Laboratories imply hypothesis, control groups, the possibility of a negative result. The Workshop of the Gods builds. It has always been building. The walls are warm not from heating but from process \u2013 the sustained thermal output of creation that has never paused to ask whether it should. Workbenches line every corridor in arrangements that suggest not storage but invitation. Components sort themselves by an affinity the party cannot name but can feel in their hands. The horror here is not failure. Every workshop knows failure. The horror is success \u2013 and what success demands in return. The fire that forges the blade also forges the hand that holds it. The fire does not distinguish.',
+    'Insight accumulates with the quiet relentlessness of heat in a closed forge: per room traversed, per combat victory claimed, per crafting attempt \u2013 even failures teach, and the Workshop charges tuition for every lesson. At 45, the first transformation: components develop preferences, combinations reveal hidden synergies, craft bonuses climb by 15%. The party begins to see connections that were invisible a moment ago. At 75, Feverish \u2013 the insight becomes indistinguishable from obsession. Craft bonus +30%, but stress multiplies \u00d71.25 and ambush probability rises to 15%. The fire is generous and hungry in equal measure. At 100, Breakthrough: legendary crafts become possible, impossible alloys yield to impossible hands. But stress multiplies \u00d72.0 and ambush probability reaches 30%. Every masterwork extracts its price. The mechanic is the pharmakon made literal: every gift is also a poison, every illumination also a burning. Prometheus did not steal fire. He was consumed by the act of giving it.',
+    'The literary architecture rests on four pillars of creation. Shelley\u2019s Frankenstein \u2013 where the creature surpasses the maker, where the ecstasy of \u201cI had desired it with an ardour that far exceeded moderation\u201d becomes the horror of abandonment, where Prometheus unbound becomes Prometheus horrified at what his fire has made. Bruno Schulz\u2019s Treatise on Tailors\u2019 Dummies \u2013 where matter itself has agency, dreams, ambitions, where the demiurge\u2019s joy is not in imposing form on chaos but in negotiating with material that knows what it wants to become. Lem\u2019s Cyberiad \u2013 where Trurl and Klapaucius build universes with the confidence of craftsmen and the carelessness of gods, where every perfect construction contains its own ironic undoing. And Bachelard\u2019s Psychoanalysis of Fire \u2013 the Prometheus Complex itself: fire-reverie as the deepest human drive, the desire to change the world by changing matter, the knowledge that the first teacher was a flame. Die Werkstatt der G\u00f6tter inherits all four: the hubris, the ecstasy, the irony, the fire.',
+  ],
+
+  loreIntroDe: [
+    'Der Prometheus ist der f\u00fcnfte Archetyp der Resonanzdungeons \u2013 und der gef\u00e4hrlichste in seiner Gro\u00dfz\u00fcgigkeit. Die Werkstatt der G\u00f6tter ist kein Laboratorium. Laboratorien implizieren Hypothese, Kontrollgruppen, die M\u00f6glichkeit eines negativen Ergebnisses. Die Werkstatt der G\u00f6tter baut. Sie hat immer gebaut. Die W\u00e4nde sind warm, nicht von Heizung, sondern von Prozess \u2013 der anhaltende thermische Aussto\u00df einer Sch\u00f6pfung, die nie innegehalten hat, um zu fragen, ob sie sollte. Werkb\u00e4nke s\u00e4umen jeden Korridor in Anordnungen, die nicht Lagerung, sondern Einladung suggerieren. Komponenten sortieren sich nach einer Affinit\u00e4t, die der Trupp nicht benennen kann, aber in den H\u00e4nden sp\u00fcrt. Das Grauen hier ist nicht Scheitern. Jede Werkstatt kennt Scheitern. Das Grauen ist Erfolg \u2013 und was Erfolg als Gegenleistung fordert. Das Feuer, das die Klinge schmiedet, schmiedet auch die Hand, die sie h\u00e4lt. Das Feuer unterscheidet nicht.',
+    'Einsicht akkumuliert mit der stillen Unerbittlichkeit von Hitze in einer geschlossenen Schmiede: pro durchquertem Raum, pro errungenem Kampfsieg, pro Handwerksversuch \u2013 selbst Scheitern lehrt, und die Werkstatt verlangt Lehrgeld f\u00fcr jede Lektion. Bei 45 die erste Transformation: Komponenten entwickeln Pr\u00e4ferenzen, Kombinationen enth\u00fcllen verborgene Synergien, Handwerksboni steigen um 15%. Der Trupp beginnt, Verbindungen zu sehen, die vor einem Moment noch unsichtbar waren. Bei 75, Fieberhaft \u2013 die Einsicht wird ununterscheidbar von Obsession. Handwerksbonus +30%, aber Stress multipliziert sich \u00d71,25 und Hinterhaltwahrscheinlichkeit steigt auf 15%. Das Feuer ist gro\u00dfz\u00fcgig und hungrig zu gleichen Teilen. Bei 100, Durchbruch: legend\u00e4re Handwerke werden m\u00f6glich, unm\u00f6gliche Legierungen weichen unm\u00f6glichen H\u00e4nden. Aber Stress multipliziert sich \u00d72,0 und Hinterhaltwahrscheinlichkeit erreicht 30%. Jedes Meisterwerk fordert seinen Preis. Die Mechanik ist das Pharmakon, w\u00f6rtlich gemacht: jedes Geschenk ist auch ein Gift, jede Erleuchtung auch ein Verbrennen. Prometheus stahl nicht das Feuer. Er wurde vom Akt des Gebens verzehrt.',
+    'Die literarische Architektur ruht auf vier S\u00e4ulen der Sch\u00f6pfung. Shelleys Frankenstein \u2013 wo die Kreatur den Sch\u00f6pfer \u00fcbertrifft, wo die Ekstase des \u201eI had desired it with an ardour that far exceeded moderation\u201c zum Grauen der Verlassenheit wird, wo der entfesselte Prometheus zum entsetzten Prometheus wird angesichts dessen, was sein Feuer geschaffen hat. Bruno Schulz\u2019 Traktat \u00fcber die Schneiderpuppen \u2013 wo Materie selbst Handlungsf\u00e4higkeit besitzt, Tr\u00e4ume, Ambitionen, wo die Freude des Demiurgen nicht darin liegt, dem Chaos Form aufzuzwingen, sondern mit Material zu verhandeln, das wei\u00df, was es werden will. Lems Kyberiade \u2013 wo Trurl und Klapaucius Universen bauen mit der Zuversicht von Handwerkern und der Sorglosigkeit von G\u00f6ttern, wo jede vollkommene Konstruktion ihre eigene ironische Aufl\u00f6sung enth\u00e4lt. Und Bachelards Psychoanalyse des Feuers \u2013 der Prometheus-Komplex selbst: Feuer-Tr\u00e4umerei als tiefster menschlicher Trieb, der Wunsch, die Welt zu ver\u00e4ndern, indem man die Materie ver\u00e4ndert, das Wissen, dass der erste Lehrer eine Flamme war. Die Werkstatt der G\u00f6tter erbt alle vier: den Hochmut, die Ekstase, die Ironie, das Feuer.',
+  ],
+
+  // ── Entrance Texts (5 variants, verbatim from DB seed) ──
+
+  entranceTexts: [
+    'The threshold does not yield. It opens. Deliberately. Beyond it, the air is warm and charged with potential. Tools line the walls in arrangements that suggest use, not storage. The workshop has been expecting someone.',
+    'Heat. Not the heat of fire \u2013 the heat of process. The air smells of ozone and possibility. Somewhere deeper, metal rings against metal. Not randomly. Rhythmically. A heartbeat made of industry.',
+    'The descent into the workshop begins with a question written on the lintel in a script older than the stone: \u201cWhat do you intend to make?\u201d The party has no answer yet. The workshop will provide the materials for one.',
+    'The first room is a catalogue of components. Not displayed \u2013 arranged. Each material in its place, each place chosen by a logic that makes no sense until you pick something up and feel where it wants to go. The workshop teaches through inventory.',
+    'A forge-glow illuminates the entrance. Not from a furnace \u2013 from the walls themselves. The workshop provides its own light, its own heat, its own purpose. All it lacks is hands. Yours will do.',
+  ],
+
+  entranceTextsDe: [
+    'Die Schwelle gibt nicht nach. Sie \u00f6ffnet sich. Absichtlich. Dahinter ist die Luft warm und geladen mit Potential. Werkzeuge s\u00e4umen die W\u00e4nde in Anordnungen, die Benutzung suggerieren, nicht Lagerung. Die Werkstatt hat jemanden erwartet.',
+    'Hitze. Nicht die Hitze von Feuer \u2013 die Hitze von Prozess. Die Luft riecht nach Ozon und M\u00f6glichkeit. Irgendwo tiefer klingt Metall gegen Metall. Nicht zuf\u00e4llig. Rhythmisch. Ein Herzschlag aus Industrie.',
+    'Der Abstieg in die Werkstatt beginnt mit einer Frage, die am T\u00fcrsturz steht, in einer Schrift, \u00e4lter als der Stein: \u00bbWas beabsichtigt ihr herzustellen?\u00ab Der Trupp hat noch keine Antwort. Die Werkstatt wird die Materialien f\u00fcr eine liefern.',
+    'Der erste Raum ist ein Katalog von Komponenten. Nicht ausgestellt \u2013 arrangiert. Jedes Material an seinem Platz, jeder Platz gew\u00e4hlt nach einer Logik, die keinen Sinn ergibt, bis man etwas aufnimmt und sp\u00fcrt, wohin es will. Die Werkstatt lehrt durch Inventar.',
+    'Ein Schmiedegl\u00fchen beleuchtet den Eingang. Nicht von einem Ofen \u2013 von den W\u00e4nden selbst. Die Werkstatt liefert ihr eigenes Licht, ihre eigene Hitze, ihren eigenen Zweck. Alles, was ihr fehlt, sind H\u00e4nde. Eure werden gen\u00fcgen.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Insight',
+  mechanicNameDe: 'Einsicht',
+  mechanicDescription:
+    'Die Werkstatt der G\u00f6tter\u2019s unique resonance mechanic. Insight accumulates per room, per combat victory, and per crafting attempt \u2013 even failures add to the forge\u2019s knowledge. Below 20, the Cold Forge: materials remain inert, craft attempts carry a \u221215% penalty. The workshop waits for hands that understand. At 45+, Inspired: components develop preferences, craft bonus +15%, combinations reveal themselves. At 75+, Feverish: the insight becomes obsession \u2013 craft bonus +30% but stress \u00d71.25 and 15% ambush chance. The fire is generous and hungry. At 100, Breakthrough: legendary crafts become possible, but stress \u00d72.0 and 30% ambush. The mechanic is the pharmakon: every gift is also a poison.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik der Werkstatt der G\u00f6tter. Einsicht akkumuliert pro Raum, pro Kampfsieg und pro Handwerksversuch \u2013 selbst Fehlschl\u00e4ge f\u00fcgen dem Wissen der Schmiede hinzu. Unter 20, die Kalte Schmiede: Materialien bleiben inert, Handwerksversuche tragen einen \u221215%-Malus. Die Werkstatt wartet auf H\u00e4nde, die verstehen. Ab 45+, Inspiriert: Komponenten entwickeln Pr\u00e4ferenzen, Handwerksbonus +15%, Kombinationen enth\u00fcllen sich. Ab 75+, Fieberhaft: die Einsicht wird zur Obsession \u2013 Handwerksbonus +30%, aber Stress \u00d71,25 und 15% Hinterhaltchance. Das Feuer ist gro\u00dfz\u00fcgig und hungrig. Bei 100, Durchbruch: legend\u00e4re Handwerke werden m\u00f6glich, aber Stress \u00d72,0 und 30% Hinterhalt. Die Mechanik ist das Pharmakon: jedes Geschenk ist auch ein Gift.',
+
+  mechanicGauge: {
+    name: 'Insight',
+    nameDe: 'Einsicht',
+    start: 0,
+    max: 100,
+    direction: 'fill',
+    thresholds: [
+      { value: 0, label: 'Cold Forge', labelDe: 'Kalte Schmiede', description: 'Craft penalty \u221215%. Materials inert. The workshop waits.', descriptionDe: 'Handwerksmalus \u221215%. Materialien inert. Die Werkstatt wartet.' },
+      { value: 20, label: 'Warming', labelDe: 'Erw\u00e4rmung', description: 'Normal operation. Components begin to respond.', descriptionDe: 'Normaler Betrieb. Komponenten beginnen zu reagieren.' },
+      { value: 45, label: 'Inspired', labelDe: 'Inspiriert', description: 'Craft bonus +15%. Components have preferences. The fire approves.', descriptionDe: 'Handwerksbonus +15%. Komponenten haben Pr\u00e4ferenzen. Das Feuer billigt.' },
+      { value: 75, label: 'Feverish', labelDe: 'Fieberhaft', description: 'Craft bonus +30%. Stress \u00d71.25. 15% ambush. The fire is generous and hungry.', descriptionDe: 'Handwerksbonus +30%. Stress \u00d71,25. 15% Hinterhalt. Das Feuer ist gro\u00dfz\u00fcgig und hungrig.' },
+      { value: 100, label: 'Breakthrough', labelDe: 'Durchbruch', description: 'Legendary crafts possible. Stress \u00d72.0. 30% ambush. The fire takes what it gives.', descriptionDe: 'Legend\u00e4re Handwerke m\u00f6glich. Stress \u00d72,0. 30% Hinterhalt. Das Feuer nimmt, was es gibt.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 52,
+
+  aptitudeWeights: {
+    Saboteur: 30,
+    Spy: 20,
+    Infiltrator: 20,
+    Guardian: 12,
+    Propagandist: 10,
+    Assassin: 8,
+  },
+
+  roomDistribution: {
+    Combat: 25,
+    Encounter: 40,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 15,
+    Exit: 5,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Spark Wisp', nameDe: 'Funkenglimmer',
+      tier: 'minion', power: 2, stress: 3, evasion: 45,
+      ability: 'Orbit', abilityDe: 'Umkreisen', aptitude: 'Infiltrator',
+      description: 'A spark that refused to go out. It orbits the party like a hypothesis testing itself.',
+      descriptionDe: 'Ein Funke, der sich weigerte zu verl\u00f6schen. Er umkreist den Trupp wie eine Hypothese, die sich selbst \u00fcberpr\u00fcft.',
+    },
+    {
+      name: 'Crucible Drake', nameDe: 'Tiegeldrache',
+      tier: 'standard', power: 4, stress: 5, evasion: 25,
+      ability: 'Smelt', abilityDe: 'Schmelzen', aptitude: 'Saboteur',
+      description: 'A construct of molten flux and crystallized heat. It was a crucible once. Now it moves. The fire inside it has opinions.',
+      descriptionDe: 'Ein Konstrukt aus geschmolzenem Flussmittel und kristallisierter Hitze. Es war einmal ein Tiegel. Nun bewegt er sich. Das Feuer in ihm hat Meinungen.',
+    },
+    {
+      name: 'Forge Wraith', nameDe: 'Schmiedewraith',
+      tier: 'elite', power: 6, stress: 5, evasion: 15,
+      ability: 'Incorporate', abilityDe: 'Einbeziehen', aptitude: 'Saboteur',
+      description: 'Smoke and metal in the shape of a craftsman. It works at an invisible anvil, hammering things that are not there. When it notices the party, it does not stop working. It incorporates them.',
+      descriptionDe: 'Rauch und Metall in der Form eines Handwerkers. Er arbeitet an einem unsichtbaren Amboss, h\u00e4mmert Dinge, die nicht da sind. Als er den Trupp bemerkt, h\u00f6rt er nicht auf zu arbeiten. Er bezieht sie ein.',
+    },
+    {
+      name: 'Workshop Guardian', nameDe: 'Werkstattw\u00e4chter',
+      tier: 'elite', power: 7, stress: 3, evasion: 5,
+      ability: 'Fortify', abilityDe: 'Befestigen', aptitude: 'Guardian',
+      description: 'It was built to protect the workshop. It has been doing this for longer than the workshop has existed. Its loyalty is not to the current configuration \u2013 it is to the IDEA of the workshop.',
+      descriptionDe: 'Er wurde gebaut, um die Werkstatt zu sch\u00fctzen. Er tut dies seit l\u00e4nger als die Werkstatt existiert. Seine Loyalit\u00e4t gilt nicht der aktuellen Konfiguration \u2013 sie gilt der IDEE der Werkstatt.',
+    },
+    {
+      name: 'The Prototype', nameDe: 'Der Prototyp',
+      tier: 'boss', power: 7, stress: 6, evasion: 10,
+      ability: 'Iterate', abilityDe: 'Iterieren', aptitude: 'Saboteur',
+      description: 'It was supposed to be the masterwork. The culmination. The thing the workshop has been building toward since the first spark was struck. It is not finished. It does not know this. It functions with the absolute confidence of an unfinished thing that believes it is complete.',
+      descriptionDe: 'Es sollte das Meisterwerk werden. Die Kulmination. Das Ding, auf das die Werkstatt seit dem ersten geschlagenen Funken hingearbeitet hat. Es ist nicht fertig. Es wei\u00df das nicht. Es funktioniert mit der absoluten Zuversicht eines unfertigen Dings, das glaubt, es sei vollst\u00e4ndig.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Reagent Cache', nameDe: 'Das Reagenzienlager',
+      depth: '1\u20132', type: 'narrative',
+      description: 'A workbench, preserved in amber light. Drawers half-open. Inside: materials sorted by a system you do not yet understand but somehow recognize. Metal filings in one drawer. A sealed vial of fluid in another. A crystal formation growing from the third. The workshop is offering inventory.',
+      descriptionDe: 'Eine Werkbank, in Bernsteinlicht konserviert. Schubladen halb offen. Darin: Materialien, sortiert nach einem System, das ihr noch nicht versteht, aber irgendwie wiedererkennt. Metallsp\u00e4ne in einer Schublade. Ein versiegeltes Fl\u00e4schchen Fl\u00fcssigkeit in einer anderen. Eine Kristallformation, die aus der dritten w\u00e4chst. Die Werkstatt bietet Inventar an.',
+      choices: [
+        { text: 'Extract the metal filings', textDe: 'Die Metallsp\u00e4ne entnehmen', aptitude: 'Saboteur', difficulty: '+5' },
+        { text: 'Secure the sealed fluid', textDe: 'Die versiegelte Fl\u00fcssigkeit sichern', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Harvest the crystal', textDe: 'Den Kristall ernten', aptitude: 'Infiltrator', difficulty: '+5' },
+      ],
+    },
+    {
+      name: 'The Crucible', nameDe: 'Der Tiegel',
+      depth: '2\u20135', type: 'narrative',
+      description: 'A crucible stands at the room\u2019s center. It is already hot. Around it, components from the workshop\u2019s deeper chambers have arranged themselves in a semicircle, as if presenting options. The crucible does not wait. It suggests.',
+      descriptionDe: 'Ein Tiegel steht in der Raummitte. Er ist bereits hei\u00df. Um ihn herum haben sich Komponenten aus den tieferen Kammern der Werkstatt in einem Halbkreis angeordnet, als pr\u00e4sentierten sie Optionen. Der Tiegel wartet nicht. Er schl\u00e4gt vor.',
+      choices: [
+        { text: 'Attempt a combination', textDe: 'Eine Kombination versuchen', aptitude: 'Saboteur', difficulty: '+6' },
+        { text: 'Study without using', textDe: 'Studieren ohne zu benutzen', aptitude: 'Spy', difficulty: '+5' },
+      ],
+    },
+    {
+      name: 'The Living Blueprint', nameDe: 'Die lebende Blaupause',
+      depth: '2\u20134', type: 'narrative',
+      description: 'On the wall: a blueprint. It is moving. Lines redraw themselves. Annotations appear and are crossed out by other annotations. The blueprint is arguing with itself about the best way to build something that has never existed. It does not acknowledge the party. It is too busy being a thought that thinks.',
+      descriptionDe: 'An der Wand: eine Blaupause. Sie bewegt sich. Linien zeichnen sich neu. Anmerkungen erscheinen und werden von anderen Anmerkungen durchgestrichen. Die Blaupause streitet mit sich selbst \u00fcber den besten Weg, etwas zu bauen, das nie existiert hat. Sie nimmt den Trupp nicht zur Kenntnis. Sie ist zu besch\u00e4ftigt damit, ein Gedanke zu sein, der denkt.',
+      choices: [
+        { text: 'Add to the blueprint', textDe: 'Zur Blaupause beitragen', aptitude: 'Saboteur', difficulty: '+5' },
+        { text: 'Copy the blueprint\u2019s state', textDe: 'Den Zustand der Blaupause kopieren', aptitude: 'Spy', difficulty: '+5' },
+      ],
+    },
+    {
+      name: 'The Failed Experiment', nameDe: 'Das gescheiterte Experiment',
+      depth: '3\u20135', type: 'narrative',
+      description: 'The room contains the aftermath of an experiment that did not go as planned. Scorch marks radiate from a central point. Components are fused into the walls. A half-formed construct twitches on the floor, caught between activation and entropy. The failure is recent. The workshop has not cleaned up yet. Perhaps it is waiting for a second opinion.',
+      descriptionDe: 'Der Raum enth\u00e4lt das Ergebnis eines Experiments, das nicht nach Plan verlief. Brandspuren strahlen von einem zentralen Punkt aus. Komponenten sind in die W\u00e4nde geschmolzen. Ein halbgeformtes Konstrukt zuckt am Boden, gefangen zwischen Aktivierung und Entropie. Das Scheitern ist frisch. Die Werkstatt hat noch nicht aufger\u00e4umt. Vielleicht wartet sie auf eine zweite Meinung.',
+      choices: [
+        { text: 'Salvage usable components', textDe: 'Verwendbare Komponenten bergen', aptitude: 'Saboteur', difficulty: '+6' },
+        { text: 'Analyze what went wrong', textDe: 'Analysieren, was schiefging', aptitude: 'Spy', difficulty: '+6' },
+        { text: 'Leave the disaster undisturbed', textDe: 'Das Desaster unber\u00fchrt lassen' },
+      ],
+    },
+    {
+      name: 'The Resonance Forge', nameDe: 'Die Resonanzschmiede',
+      depth: '3\u20135', type: 'narrative',
+      description: 'A device occupies the room\u2019s center \u2013 part tuning fork, part lens array, part something that has no name in any language the party speaks. It vibrates at a frequency just below hearing. Crystal and energy conduits feed into it from opposite walls, converging at a focal point that bends light into a shape resembling intent. The device is waiting to be aimed.',
+      descriptionDe: 'Ein Ger\u00e4t nimmt die Raummitte ein \u2013 teils Stimmgabel, teils Linsenarray, teils etwas, das in keiner Sprache, die der Trupp spricht, einen Namen hat. Es vibriert auf einer Frequenz knapp unterhalb des H\u00f6rbaren. Kristall- und Energieleitungen speisen es von gegen\u00fcberliegenden W\u00e4nden, konvergierend an einem Brennpunkt, der Licht in eine Form biegt, die Absicht \u00e4hnelt. Das Ger\u00e4t wartet darauf, ausgerichtet zu werden.',
+      choices: [
+        { text: 'Focus crystal through energy', textDe: 'Kristall durch Energie fokussieren', aptitude: 'Saboteur', difficulty: '+7' },
+        { text: 'Study harmonic properties', textDe: 'Harmonische Eigenschaften studieren', aptitude: 'Spy', difficulty: '+6' },
+      ],
+    },
+  ],
+
+  // ── Banter (4-tier insight progression) ──
+
+  banterSamples: [
+    { text: 'Tools arranged by a system that is not alphabetical, not chronological. But organized. Precisely organized.', textDe: 'Werkzeuge, angeordnet nach einem System, das nicht alphabetisch ist, nicht chronologisch. Aber geordnet. Pr\u00e4zise geordnet.', tier: 0 },
+    { text: 'The workshop hums. Not electrically \u2013 deliberately. A sustained note of anticipation, as if the room knows what the party has not yet decided to build.', textDe: 'Die Werkstatt summt. Nicht elektrisch \u2013 absichtlich. Ein gehaltener Ton der Erwartung, als w\u00fcsste der Raum, was der Trupp noch nicht zu bauen beschlossen hat.', tier: 1 },
+    { text: 'Something shifts. Connections that were invisible a moment ago. The components are not separate things \u2013 they are parts of something that wants to exist.', textDe: 'Etwas verschiebt sich. Verbindungen, die vor einem Moment noch unsichtbar waren. Die Komponenten sind keine separaten Dinge \u2013 sie sind Teile von etwas, das existieren will.', tier: 1 },
+    { text: 'The components shift. Not settling \u2013 rearranging. They have preferences about proximity. The metal does not want to be near the powder.', textDe: 'Die Komponenten bewegen sich. Kein Setzen \u2013 Umordnen. Sie haben Pr\u00e4ferenzen bez\u00fcglich N\u00e4he. Das Metall will nicht neben dem Pulver sein.', tier: 2 },
+    { text: 'The workshop contracts. All corridors converge. Ahead: the central chamber. The heat is absolute. Something inside is functioning with the confidence of a finished thing. It is not finished.', textDe: 'Die Werkstatt zieht sich zusammen. Alle Korridore konvergieren. Voraus: die zentrale Kammer. Die Hitze ist absolut. Etwas darin funktioniert mit der Zuversicht eines fertigen Dings. Es ist nicht fertig.', tier: 2 },
+    { text: 'Hands are shaking. Not from fear. From something worse: the absolute certainty that the next combination will work. The fire knows.', textDe: 'Die H\u00e4nde zittern. Nicht vor Angst. Vor etwas Schlimmerem: der absoluten Gewissheit, dass die n\u00e4chste Kombination funktionieren wird. Das Feuer wei\u00df es.', tier: 3 },
+    { text: 'The construct disassembles. Its components scatter. Some of them are still warm. Some of them are interesting.', textDe: 'Das Konstrukt zerlegt sich. Seine Komponenten zerstreuen sich. Manche sind noch warm. Manche sind interessant.', tier: 0 },
+    { text: 'Ahead: something that was built with intent. Not the workshop\u2019s ambient creations \u2013 a deliberate construct. It works at something. It does not wish to be interrupted.', textDe: 'Voraus: etwas, das mit Absicht gebaut wurde. Nicht die Zufallssch\u00f6pfungen der Werkstatt \u2013 ein absichtliches Konstrukt. Es arbeitet an etwas. Es w\u00fcnscht nicht, unterbrochen zu werden.', tier: 1 },
+  ],
+
+  // ── Literary Influences ──
+
+  authors: [
+    { name: 'Mary Shelley', works: 'Frankenstein', concept: 'Creation as abandonment. The creature surpasses the maker, and the maker cannot bear what he has made. Prometheus unbound becomes Prometheus horrified.', conceptDe: 'Sch\u00f6pfung als Verlassenheit. Die Kreatur \u00fcbertrifft den Sch\u00f6pfer, und der Sch\u00f6pfer ertr\u00e4gt nicht, was er gemacht hat. Der entfesselte Prometheus wird zum entsetzten Prometheus.', language: 'English', quote: 'I had desired it with an ardour that far exceeded moderation.', primary: true },
+    { name: 'Bruno Schulz', works: 'The Street of Crocodiles \u00b7 Treatise on Tailors\u2019 Dummies', concept: 'The demiurge\u2019s joy. Matter has agency, dreams, preferences. Creation is not imposition of form on chaos \u2013 it is negotiation with material that has its own ambitions.', conceptDe: 'Die Freude des Demiurgen. Materie hat Handlungsf\u00e4higkeit, Tr\u00e4ume, Pr\u00e4ferenzen. Sch\u00f6pfung ist nicht Formgebung \u00fcber Chaos \u2013 sie ist Verhandlung mit Material, das eigene Ambitionen hat.', language: 'Polish', quote: 'Matter has been given infinite fertility, inexhaustible vitality.', primary: true },
+    { name: 'Stanis\u0142aw Lem', works: 'The Cyberiad', concept: 'Constructor arrogance and cosmic irony. Trurl and Klapaucius build universes, gods, civilizations \u2013 and every creation has unintended consequences. The fable form softens the horror.', conceptDe: 'Konstrukteurs-Arroganz und kosmische Ironie. Trurl und Klapaucius bauen Universen, G\u00f6tter, Zivilisationen \u2013 und jede Sch\u00f6pfung hat unbeabsichtigte Konsequenzen. Die Fabelform mildert den Horror.', language: 'Polish', quote: 'Have I told you about the time Trurl built a femfatalatron?', primary: true },
+    { name: 'Gaston Bachelard', works: 'The Psychoanalysis of Fire', concept: 'The Prometheus Complex: fire-reverie as the deepest human drive. The desire to change the world by changing matter. Fire is not a tool \u2013 it is the first teacher.', conceptDe: 'Der Prometheus-Komplex: Feuer-Tr\u00e4umerei als tiefster menschlicher Trieb. Der Wunsch, die Welt zu ver\u00e4ndern, indem man die Materie ver\u00e4ndert. Feuer ist kein Werkzeug \u2013 es ist der erste Lehrer.', language: 'Fran\u00e7ais', quote: 'Fire suggests the desire to change, to speed up the passage of time.', primary: true },
+    { name: 'Primo Levi', works: 'The Periodic Table \u00b7 The Wrench', concept: 'Matter as teacher. The craftsman does not master material \u2013 material teaches the craftsman. Moral seriousness: every element has character, history, consequence.', conceptDe: 'Materie als Lehrer. Der Handwerker meistert das Material nicht \u2013 das Material lehrt den Handwerker. Moralische Ernsthaftigkeit: jedes Element hat Charakter, Geschichte, Konsequenz.', language: 'Italiano', quote: 'Conquering matter is to understand it.', primary: false },
+    { name: 'Patrick S\u00fcskind', works: 'Perfume', concept: 'Craftsmanship as obsession. The component hunt \u2013 each ingredient vital, irreplaceable, obtained at moral cost. The finished work consumes its creator.', conceptDe: 'Handwerk als Obsession. Die Komponentenjagd \u2013 jede Zutat vital, unersetzlich, zu moralischen Kosten erhalten. Das vollendete Werk konsumiert seinen Sch\u00f6pfer.', language: 'Deutsch', primary: false },
+  ],
+
+  // ── Objektanker (creation narrative: each phase more ambitious) ──
+
+  objektanker: [
+    {
+      name: 'The Tool', nameDe: 'Das Werkzeug',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A tool. Not a tool you recognize \u2013 a tool for something that has not been invented yet. It fits the hand uncomfortably well.', textDe: 'Ein Werkzeug. Kein Werkzeug, das ihr erkennt \u2013 ein Werkzeug f\u00fcr etwas, das noch nicht erfunden wurde. Es liegt unbequem gut in der Hand.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The tool again. It has changed \u2013 the handle is warmer, the edge sharper. It has been practicing.', textDe: 'Das Werkzeug wieder. Es hat sich ver\u00e4ndert \u2013 der Griff ist w\u00e4rmer, die Kante sch\u00e4rfer. Es hat ge\u00fcbt.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The tool has split into three. Each version is optimized for a different task. They arranged themselves on the workbench in order of increasing ambition.', textDe: 'Das Werkzeug hat sich in drei geteilt. Jede Version ist f\u00fcr eine andere Aufgabe optimiert. Sie haben sich auf der Werkbank angeordnet, in Reihenfolge zunehmender Ambition.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The tool is gone. In its place: a finished thing. Not what the party built \u2013 what the tool built using itself as material.', textDe: 'Das Werkzeug ist weg. An seiner Stelle: ein fertiges Ding. Nicht was der Trupp gebaut hat \u2013 was das Werkzeug gebaut hat, mit sich selbst als Material.' },
+      ],
+    },
+    {
+      name: 'The Blueprint', nameDe: 'Die Blaupause',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A blueprint, pinned to the wall. The design is for something elegant and impossible. The measurements are in a unit that does not exist.', textDe: 'Eine Blaupause, an die Wand geheftet. Der Entwurf ist f\u00fcr etwas Elegantes und Unm\u00f6gliches. Die Ma\u00dfe sind in einer Einheit, die es nicht gibt.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The blueprint has been annotated. The annotations are in your handwriting. You do not remember writing them.', textDe: 'Die Blaupause wurde annotiert. Die Anmerkungen sind in eurer Handschrift. Ihr erinnert euch nicht, sie geschrieben zu haben.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The blueprint has folded itself into a three-dimensional model. It rotates slowly in the air, demonstrating its own construction sequence.', textDe: 'Die Blaupause hat sich zu einem dreidimensionalen Modell gefaltet. Es rotiert langsam in der Luft und demonstriert seine eigene Konstruktionssequenz.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The model is building itself. Layer by layer, from the inside out. It does not need the party. It never needed the party.', textDe: 'Das Modell baut sich selbst. Schicht f\u00fcr Schicht, von innen nach au\u00dfen. Es braucht den Trupp nicht. Es hat den Trupp nie gebraucht.' },
+      ],
+    },
+    {
+      name: 'The Ember', nameDe: 'Die Glut',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'An ember. Not dying \u2013 deciding. It glows with a steadiness that suggests not combustion but contemplation. The heat it radiates is precise: exactly enough to warm a hand. Not an accident. An offer.', textDe: 'Eine Glut. Nicht sterbend \u2013 entscheidend. Sie gl\u00fcht mit einer Stetigkeit, die nicht Verbrennung, sondern Kontemplation nahelegt. Die W\u00e4rme, die sie ausstrahlt, ist pr\u00e4zise: exakt genug, um eine Hand zu w\u00e4rmen. Kein Zufall. Ein Angebot.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The ember is larger. It has been fed by proximity \u2013 the party\u2019s presence is fuel. It pulses now, rhythmically, as if breathing. It has learned to want.', textDe: 'Die Glut ist gr\u00f6\u00dfer. Sie wurde durch N\u00e4he gen\u00e4hrt \u2013 die Anwesenheit des Trupps ist Brennstoff. Sie pulsiert nun, rhythmisch, als atme sie. Sie hat gelernt zu wollen.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The ember has become a flame. Not tall \u2013 focused. It burns in a colour the party cannot name, at a temperature that exists on no scale. It has opinions about what should be placed inside it.', textDe: 'Die Glut ist zur Flamme geworden. Nicht hoch \u2013 fokussiert. Sie brennt in einer Farbe, die der Trupp nicht benennen kann, bei einer Temperatur, die auf keiner Skala existiert. Sie hat Meinungen dar\u00fcber, was in sie hineingelegt werden sollte.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The fire has built something. From itself. Using itself as both material and tool. What remains is too hot to touch and too beautiful to leave. The workshop\u2019s first lesson: creation consumes the creator.', textDe: 'Das Feuer hat etwas gebaut. Aus sich selbst. Unter Verwendung seiner selbst als Material und Werkzeug. Was bleibt, ist zu hei\u00df zum Anfassen und zu sch\u00f6n zum Verlassen. Die erste Lektion der Werkstatt: Sch\u00f6pfung verzehrt den Sch\u00f6pfer.' },
+      ],
+    },
+    {
+      name: 'The First Alloy', nameDe: 'Die erste Legierung',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'Two metals, separated by a groove in the workbench. They are different colours, different weights, different temperatures. Between them: a crucible-mark where something once combined them. The groove is wide enough for a hand.', textDe: 'Zwei Metalle, getrennt durch eine Rille in der Werkbank. Sie haben verschiedene Farben, verschiedene Gewichte, verschiedene Temperaturen. Zwischen ihnen: eine Tiegelmarkierung, wo etwas sie einst vereinte. Die Rille ist breit genug f\u00fcr eine Hand.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The metals have moved. Not much \u2013 a millimetre toward each other. The groove between them is narrower. They are negotiating proximity on their own terms.', textDe: 'Die Metalle haben sich bewegt. Nicht viel \u2013 einen Millimeter aufeinander zu. Die Rille zwischen ihnen ist schmaler. Sie verhandeln N\u00e4he zu ihren eigenen Bedingungen.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The groove is gone. The metals touch. At the point of contact: a colour neither possessed alone. A new substance is forming at the boundary between what each was and what both are becoming.', textDe: 'Die Rille ist verschwunden. Die Metalle ber\u00fchren sich. Am Kontaktpunkt: eine Farbe, die keines allein besa\u00df. Eine neue Substanz bildet sich an der Grenze zwischen dem, was jedes war, und dem, was beide werden.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'One metal. It remembers being two. The memory is a structural property \u2013 the alloy is stronger at the seam where the negotiation happened. The workshop\u2019s lesson: creation is not combination. It is compromise.', textDe: 'Ein Metall. Es erinnert sich, zwei gewesen zu sein. Die Erinnerung ist eine strukturelle Eigenschaft \u2013 die Legierung ist st\u00e4rker an der Naht, wo die Verhandlung stattfand. Die Lektion der Werkstatt: Sch\u00f6pfung ist nicht Kombination. Es ist Kompromiss.' },
+      ],
+    },
+  ],
+
+  // ── Loot Showcase ──
+
+  lootShowcase: [
+    { name: 'Spark Residue', nameDe: 'Funkenr\u00fcckstand', tier: 1, effect: 'Stress heal 50', description: 'Crystallized energy from a defeated construct. It hums at a frequency that calms the nervous system.', descriptionDe: 'Kristallisierte Energie eines besiegten Konstrukts. Sie summt auf einer Frequenz, die das Nervensystem beruhigt.' },
+    { name: 'Calibration Shard', nameDe: 'Kalibrierungssplitter', tier: 1, effect: 'Saboteur +5% (dungeon)', description: 'A precisely fractured crystal. Saboteur checks +5% \u2013 the workshop approves of hands that build.', descriptionDe: 'Ein pr\u00e4zise gebrochener Kristall. Saboteur-Proben +5% \u2013 die Werkstatt billigt H\u00e4nde, die bauen.' },
+    { name: 'Tempered Observation Lens', nameDe: 'Geh\u00e4rtete Beobachtungslinse', tier: 2, effect: 'Spy +1', description: 'A lens forged in the workshop\u2019s crucible. It reveals patterns invisible to the unaugmented eye.', descriptionDe: 'Eine in der Werkstattschmelze geschmiedete Linse. Sie enth\u00fcllt Muster, die f\u00fcr das unverst\u00e4rkte Auge unsichtbar sind.' },
+    { name: 'Resonance Tuner', nameDe: 'Resonanzstimmer', tier: 2, effect: 'Mood +15 (pharmakon)', description: 'A device that harmonizes with the bearer\u2019s frequency. It provides comfort. It also provides dependency.', descriptionDe: 'Ein Ger\u00e4t, das mit der Frequenz des Tr\u00e4gers harmoniert. Es bietet Trost. Es bietet auch Abh\u00e4ngigkeit.' },
+    { name: 'Innovation Blueprint', nameDe: 'Innovationsblaupause', tier: 3, effect: '+1 highest aptitude (permanent)', description: 'The workshop\u2019s final gift. A blueprint that imprints itself on the bearer \u2013 permanent knowledge, paid for in fire.', descriptionDe: 'Das letzte Geschenk der Werkstatt. Eine Blaupause, die sich dem Tr\u00e4ger einpr\u00e4gt \u2013 permanentes Wissen, bezahlt in Feuer.' },
+    { name: 'Stolen Fire', nameDe: 'Gestohlenes Feuer', tier: 3, effect: 'Building readiness +0.15/cycle', description: 'Fire from the gods. Not a metaphor \u2013 a substance. It does not burn the hand that carries it. It burns everything the hand touches.', descriptionDe: 'Feuer der G\u00f6tter. Keine Metapher \u2013 eine Substanz. Es verbrennt nicht die Hand, die es tr\u00e4gt. Es verbrennt alles, was die Hand ber\u00fchrt.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Insight Accumulation',
+    mechanicGainTitleDe: 'Einsichtsakkumulation',
+    mechanicGainText: '+4 per room (depth 1\u20132)\n+7 per room (depth 3\u20134)\n+10 per room (depth 5+)\n+5 on combat victory\n+8 on craft success\n+4 on craft failure',
+    mechanicGainTextDe: '+4 pro Raum (Tiefe 1\u20132)\n+7 pro Raum (Tiefe 3\u20134)\n+10 pro Raum (Tiefe 5+)\n+5 bei Kampfsieg\n+8 bei Handwerkserfolg\n+4 bei Handwerksversagen',
+    mechanicReduceTitle: 'Insight Reduction',
+    mechanicReduceTitleDe: 'Einsichtsreduktion',
+    mechanicReduceText: '\u221215 on rest (fire cools)\n\u22122 per combat round\n\u22125 on failed check\n\u22123 per enemy hit',
+    mechanicReduceTextDe: '\u221215 bei Rast (Feuer k\u00fchlt)\n\u22122 pro Kampfrunde\n\u22125 bei fehlgeschlagener Probe\n\u22123 pro Feindtreffer',
+    mechanicReduceEmphasis: 'The fire that illuminates also burns.',
+    mechanicReduceEmphasisDe: 'Das Feuer, das erleuchtet, verbrennt auch.',
+    encounterIntro: 'Navigate the workshop. Every component has a cost the craftsman does not calculate.',
+    encounterIntroDe: 'Navigiert die Werkstatt. Jede Komponente hat Kosten, die der Handwerker nicht kalkuliert.',
+    bestiaryIntro: 'The denizens of Die Werkstatt der G\u00f6tter. Not enemies \u2013 unfinished projects with opinions.',
+    bestiaryIntroDe: 'Die Bewohner der Werkstatt der G\u00f6tter. Keine Feinde \u2013 unfertige Projekte mit Meinungen.',
+    banterHeader: 'Workshop Reports',
+    banterHeaderDe: 'Werkstattberichte',
+    objektankerHeader: 'Artifacts of Die Werkstatt der G\u00f6tter',
+    objektankerHeaderDe: 'Artefakte der Werkstatt der G\u00f6tter',
+    objektankerIntro: 'Objects that evolve as insight accumulates. Each phase more ambitious than the last \u2013 the workshop builds even its own landmarks.',
+    objektankerIntroDe: 'Objekte, die sich entwickeln, w\u00e4hrend Einsicht sich anh\u00e4uft. Jede Phase ambitionierter als die letzte \u2013 die Werkstatt baut sogar ihre eigenen Landmarken.',
+    exitQuote: 'The workshop waits. It always waits. It has fire, and materials, and time. All it lacks is hands.',
+    exitQuoteDe: 'Die Werkstatt wartet. Sie wartet immer. Sie hat Feuer und Materialien und Zeit. Alles, was ihr fehlt, sind H\u00e4nde.',
+    exitCta: 'Enter Die Werkstatt der G\u00f6tter',
+    exitCtaDe: 'Die Werkstatt der G\u00f6tter betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the creation.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt die Sch\u00f6pfung.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('entropy'),
+  nextArchetype: getNav('deluge'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
@@ -1852,6 +2143,7 @@ const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['tower', TOWER_DETAIL],
   ['mother', MOTHER_DETAIL],
   ['entropy', ENTROPY_DETAIL],
+  ['prometheus', PROMETHEUS_DETAIL],
 ]);
 
 /**

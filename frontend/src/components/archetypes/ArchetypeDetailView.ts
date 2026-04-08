@@ -314,6 +314,54 @@ export class VelgArchetypeDetail extends LitElement {
         100% { opacity: 0.03; background-position: 1px -1px; }
       }
 
+      /* ── Prometheus: forge heat — warm radiance rising from below ── */
+
+      .forge-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background: radial-gradient(
+          ellipse 120% 60% at 50% 100%,
+          color-mix(in oklch, var(--_accent) 8%, transparent),
+          color-mix(in oklch, var(--_accent) 3%, transparent) 50%,
+          transparent 80%
+        );
+        opacity: 0.6;
+      }
+
+      .forge-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 30% 90%,
+          color-mix(in oklch, var(--_accent) 4%, transparent),
+          transparent 40%
+        ),
+        radial-gradient(
+          circle at 70% 85%,
+          color-mix(in oklch, var(--_accent) 3%, transparent),
+          transparent 35%
+        );
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .forge-overlay {
+          animation: _forge-breathe 6s ease-in-out infinite;
+        }
+      }
+
+      @keyframes _forge-breathe {
+        0%   { opacity: 0.45; }
+        50%  { opacity: 0.7; }
+        100% { opacity: 0.45; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1235,6 +1283,8 @@ export class VelgArchetypeDetail extends LitElement {
         return html`<div class="pulse-overlay" aria-hidden="true"></div>`;
       case 'entropy':
         return html`<div class="dissolution-overlay" aria-hidden="true"></div>`;
+      case 'prometheus':
+        return html`<div class="forge-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }
