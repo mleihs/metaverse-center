@@ -127,7 +127,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       { text: 'The instruments read accurately. The accuracy no longer means anything.', author: 'Entropy Banter' },
       { text: '.', author: 'Final Transmission' },
     ],
-    tagline: 'Decay is not destruction\u2009\u2014\u2009it is equalization.',
+    tagline: 'Decay is not destruction \u2013 it is equalization.',
     cssClass: 'slide--entropy',
     imageUrl: `${STORAGE_BASE}/dungeon-entropy.avif`,
     scrim: [28, 0.18, 0.35],

@@ -278,6 +278,75 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "Expressionist oil paint, violent brushwork, Bacon's smeared flesh."
         ),
     ),
+    # ── Entropy detail variants ────────────────────────────────────────────
+    "entropy-depth": ArchetypeVisual(
+        archetype_id="entropy-depth",
+        model="black-forest-labs/flux.2-max",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "Interior of a vast antiquarian library, shelves stretching into "
+            "grey distance, painted in thick impasto oil with palette knife marks. "
+            "Every object on every shelf approaches the same muted tone — books, "
+            "instruments, globes, all weathered to uniform patina. Amber light "
+            "from a cracked skylight casts a single warm shaft through suspended "
+            "dust particles. Color #CC7722 for the last ochre warmth in the light "
+            "beam, color #8B8B8B for the equalized surfaces surrounding it. "
+            "Cracked lacquer, geological pigment texture, visible canvas weave. "
+            "Profound stillness. Museum of forgotten distinctions."
+        ),
+    ),
+    "entropy-whispers": ArchetypeVisual(
+        archetype_id="entropy-whispers",
+        model="black-forest-labs/flux.2-max",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "Interior of a grand hall where all surfaces converge toward the "
+            "same muted tone, painted in muted Hammershøi palette with heavy "
+            "impasto texture. Identical archways recede into grey distance, each "
+            "progressively less defined than the last. A single instrument panel "
+            "on the wall, dials pointing to identical readings. Dust hangs "
+            "motionless in shafts of amber light from unseen source. The floor "
+            "is the same material as the walls. Color #8B7355 for weathered "
+            "surfaces, color #4A3728 for remaining shadow. Everything approaches "
+            "room temperature. Stillness as subject. Equalization as atmosphere."
+        ),
+    ),
+    "entropy-revolution": ArchetypeVisual(
+        archetype_id="entropy-revolution",
+        model="black-forest-labs/flux.2-max",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A deep chamber where dissolution is advanced, thick mixed-media "
+            "surface with embedded geological texture and cracked varnish. "
+            "Shapes barely distinguishable from background — columns, arches, "
+            "furniture all averaging into the same grey mass. A mirror on the "
+            "wall reflects nothing distinct, its surface the same shade as the "
+            "room. One last patch of color — amber ochre #CC7722 — clinging to "
+            "a corner where a chandelier once hung. The rest is equalized: "
+            "color #6B6B6B uniform, color #4A4A4A for what remains of shadow. "
+            "Beckett's Lessness made architecture. Serene, terminal, beautiful."
+        ),
+    ),
+    "entropy-boss": ArchetypeVisual(
+        archetype_id="entropy-boss",
+        model="black-forest-labs/flux.2-max",
+        aspect_ratio="16:9",
+        image_size="2K",
+        prompt=(
+            "A guardian figure whose armor has merged with the walls of a vast "
+            "decaying hall, thick impasto oil painting with palette knife marks "
+            "and embedded mineral pigment. The figure stands sentinel, arms "
+            "raised in protection of an absence. Armor plates dissolve into "
+            "stone, stone dissolves into floor, floor dissolves into shadow. "
+            "The figure is indistinguishable from its post. Overhead, a crack "
+            "admits a single shaft of dying amber light — color #CC7722. "
+            "Everything else is the color of equalization: lead grey #7A7A7A, "
+            "rust #4A3728, void #1A1A1A. Monumental. Empty. The last distinction."
+        ),
+    ),
 }
 
 
