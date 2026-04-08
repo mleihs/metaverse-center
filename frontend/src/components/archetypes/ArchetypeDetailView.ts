@@ -273,6 +273,47 @@ export class VelgArchetypeDetail extends LitElement {
         100% { opacity: 0.3; }
       }
 
+      /* ── Entropy: dissolution grain — static noise flattening detail ── */
+
+      .dissolution-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 512px 512px;
+      }
+
+      .dissolution-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          transparent 0%,
+          color-mix(in oklch, var(--_accent) 3%, transparent) 40%,
+          color-mix(in oklch, var(--_accent) 5%, transparent) 70%,
+          transparent 100%
+        );
+        opacity: 0.6;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .dissolution-overlay {
+          animation: _dissolution-drift 25s ease-in-out infinite alternate;
+        }
+      }
+
+      @keyframes _dissolution-drift {
+        0%   { opacity: 0.025; background-position: 0 0; }
+        50%  { opacity: 0.045; background-position: -3px 2px; }
+        100% { opacity: 0.03; background-position: 1px -1px; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1192,6 +1233,8 @@ export class VelgArchetypeDetail extends LitElement {
         return html`<div class="fracture-overlay" aria-hidden="true"></div>`;
       case 'mother':
         return html`<div class="pulse-overlay" aria-hidden="true"></div>`;
+      case 'entropy':
+        return html`<div class="dissolution-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }

@@ -1559,6 +1559,291 @@ const MOTHER_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('entropy'),
 };
 
+// ── The Entropy — Full Bilingual Content ───────────────────────────────────
+
+const ENTROPY_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('entropy'),
+
+  // ── Lore Introduction (3 paragraphs, fresh literary prose) ──
+
+  loreIntro: [
+    'The Entropy is the fourth archetype of the Resonance Dungeons \u2013 and the quietest. Der Verfall-Garten is not a ruin. Ruins imply that something dramatic happened, that a force arrived and broke what stood. The Verfall-Garten is what happens when no force arrives at all. Surfaces approach the same colour. Temperatures converge. Distinctions between wall and floor, tool and weapon, question and answer dissolve not through violence but through the patient, thermodynamic arithmetic of equalization. The horror here is not what the garden does to you. The horror is that the garden does nothing. It merely waits for you to reach the same temperature as everything else.',
+    'Decay accumulates with a quiet arithmetic that mirrors the garden itself: per room traversed, per combat round endured, per enemy hit sustained \u2013 and the hits are contagious, the entropy spreading from contact like heat from a warmer body to a cooler one. At 40, the first distinctions collapse. Banter shortens. Descriptions lose their adjectives. The language of the expedition report begins to mirror the landscape it describes. At 70, the garden\u2019s patience becomes tactical: ambush probability rises, stress compounds, loot quality degrades. At 100 \u2013 Dissolution \u2013 the party ceases to be a party. They become what the garden is: undifferentiated, averaged, ambient. The mechanic is the theme made literal: language itself decaying as the gauge fills, until the last banter entry is a single punctuation mark and the last Objektanker description is one word.',
+    'The literary architecture rests on three pillars of entropy. Pynchon\u2019s thermodynamic entropy \u2013 from the short story \u201cEntropy\u201d through The Crying of Lot 49 \u2013 where the horror is not chaos but its opposite: a system at maximum entropy has maximum disorder at the micro level but absolute predictability at the macro. Everything becomes the same temperature. Beckett\u2019s linguistic entropy \u2013 from Godot through Endgame to the late prose pieces like Lessness \u2013 where each successive work has fewer characters, shorter sentences, smaller vocabulary, as if literature itself were running down. And Lem\u2019s epistemic entropy in Solaris \u2013 where the instruments function perfectly but what they measure has become meaningless, where knowledge accumulates into noise. Der Verfall-Garten inherits all three: the physical equalization, the linguistic diminishment, the cognitive futility. It is the dungeon where understanding does not help.',
+  ],
+
+  loreIntroDe: [
+    'Die Entropie ist der vierte Archetyp der Resonanzdungeons \u2013 und der stillste. Der Verfall-Garten ist keine Ruine. Ruinen implizieren, dass etwas Dramatisches geschah, dass eine Kraft eintraf und zerbrach, was stand. Der Verfall-Garten ist, was geschieht, wenn keine Kraft eintrifft. Oberfl\u00e4chen n\u00e4hern sich derselben Farbe an. Temperaturen konvergieren. Unterscheidungen zwischen Wand und Boden, Werkzeug und Waffe, Frage und Antwort l\u00f6sen sich auf \u2013 nicht durch Gewalt, sondern durch die geduldige, thermodynamische Arithmetik der Angleichung. Das Grauen hier ist nicht, was der Garten euch antut. Das Grauen ist, dass der Garten nichts tut. Er wartet lediglich darauf, dass ihr dieselbe Temperatur erreicht wie alles andere.',
+    'Verfall akkumuliert in einer stillen Arithmetik, die den Garten selbst spiegelt: pro durchquertem Raum, pro \u00fcberdauerter Kampfrunde, pro erlittenem Feindtreffer \u2013 und die Treffer sind ansteckend, die Entropie breitet sich durch Kontakt aus wie W\u00e4rme von einem w\u00e4rmeren K\u00f6rper zu einem k\u00fchleren. Bei 40 kollabieren die ersten Unterscheidungen. Banter verk\u00fcrzt sich. Beschreibungen verlieren ihre Adjektive. Die Sprache des Expeditionsberichts beginnt, die Landschaft zu spiegeln, die sie beschreibt. Bei 70 wird die Geduld des Gartens taktisch: Hinterhaltwahrscheinlichkeit steigt, Stress potenziert sich, Beutequalit\u00e4t sinkt. Bei 100 \u2013 Aufl\u00f6sung \u2013 h\u00f6rt die Gruppe auf, eine Gruppe zu sein. Sie werden, was der Garten ist: undifferenziert, gemittelt, ambient. Die Mechanik ist das Thema, w\u00f6rtlich gemacht: Sprache selbst verf\u00e4llt, w\u00e4hrend die Anzeige steigt, bis der letzte Banter-Eintrag ein einzelnes Satzzeichen ist und die letzte Objektanker-Beschreibung ein einziges Wort.',
+    'Die literarische Architektur ruht auf drei S\u00e4ulen der Entropie. Pynchons thermodynamische Entropie \u2013 von der Kurzgeschichte \u201eEntropy\u201c \u00fcber Die Versteigerung von No. 49 \u2013 wo das Grauen nicht Chaos ist, sondern sein Gegenteil: ein System bei maximaler Entropie hat maximale Unordnung auf Mikroebene, aber absolute Vorhersagbarkeit auf Makroebene. Alles nimmt dieselbe Temperatur an. Becketts linguistische Entropie \u2013 von Godot \u00fcber Endspiel bis zu den sp\u00e4ten Prosast\u00fccken wie Lessness \u2013 wo jedes folgende Werk weniger Figuren hat, k\u00fcrzere S\u00e4tze, kleineren Wortschatz, als liefe die Literatur selbst herunter. Und Lems epistemische Entropie in Solaris \u2013 wo die Instrumente einwandfrei funktionieren, aber was sie messen, bedeutungslos geworden ist, wo Wissen sich zu Rauschen anh\u00e4uft. Der Verfall-Garten erbt alle drei: die physische Angleichung, die linguistische Verminderung, die kognitive Vergeblichkeit. Er ist der Dungeon, in dem Verstehen nicht hilft.',
+  ],
+
+  // ── Entrance Texts (5 variants, verbatim from DB seed) ──
+
+  entranceTexts: [
+    'The entrance is indistinct. Not ruined \u2013 reduced. The walls retain the memory of colour without the colour itself. The air tastes of averaged everything. Somewhere ahead, a distinction is being quietly dissolved.',
+    'You enter. Or the room receives you. The distinction is already softer than it should be. The threshold is the same material as the floor. The floor is the same temperature as the air.',
+    'The corridor ahead is visible. Featureless. Not stripped \u2013 equalized. Every surface approaches the same shade. The instruments confirm what the instruments measure. They do not confirm what the instruments mean.',
+    'A room. Probably the first. The ordinal is already uncertain. There are walls. There is a floor. The ceiling is the same distance from both.',
+    'The information here is precise. Temperature: ambient. Humidity: ambient. Threat level: ambient. Everything is ambient. That is the threat.',
+  ],
+
+  entranceTextsDe: [
+    'Der Eingang ist unbestimmt. Nicht zerst\u00f6rt \u2013 reduziert. Die W\u00e4nde bewahren die Erinnerung an Farbe ohne die Farbe selbst. Die Luft schmeckt nach dem Durchschnitt von allem. Irgendwo voraus wird eine Unterscheidung leise aufgel\u00f6st.',
+    'Ihr tretet ein. Oder der Raum empf\u00e4ngt euch. Die Unterscheidung ist bereits weicher, als sie sein sollte. Die Schwelle besteht aus demselben Material wie der Boden. Der Boden hat dieselbe Temperatur wie die Luft.',
+    'Der Korridor voraus ist sichtbar. Merkmalslos. Nicht entbl\u00f6\u00dft \u2013 angeglichen. Jede Fl\u00e4che n\u00e4hert sich demselben Farbton. Die Instrumente best\u00e4tigen, was die Instrumente messen. Sie best\u00e4tigen nicht, was die Instrumente bedeuten.',
+    'Ein Raum. Wahrscheinlich der erste. Die Ordnungszahl ist bereits unsicher. Es gibt W\u00e4nde. Es gibt einen Boden. Die Decke hat von beiden denselben Abstand.',
+    'Die Informationen hier sind pr\u00e4zise. Temperatur: Umgebung. Luftfeuchtigkeit: Umgebung. Bedrohungsstufe: Umgebung. Alles ist Umgebung. Das ist die Bedrohung.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Decay',
+  mechanicNameDe: 'Verfall',
+  mechanicDescription:
+    'Der Verfall-Garten\u2019s unique resonance mechanic. Decay accumulates per room, per combat round, and per enemy hit \u2013 and enemy contact is contagious, spreading equalization through the party. At 40+, ability checks degrade and the dungeon\u2019s language begins to collapse: shorter banter, fewer adjectives, descriptions averaging toward sameness. At 70+, ambush probability spikes and stress compounds. At 100, Dissolution: the party ceases to exist as a distinct entity. The mechanic is the theme: entropy does not negotiate. It equalizes.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik des Verfall-Gartens. Verfall akkumuliert pro Raum, pro Kampfrunde und pro Feindtreffer \u2013 und Feindkontakt ist ansteckend, er breitet Angleichung durch die Gruppe aus. Ab 40+ degradieren F\u00e4higkeitsproben und die Sprache des Dungeons beginnt zu kollabieren: k\u00fcrzerer Banter, weniger Adjektive, Beschreibungen, die sich der Gleichheit ann\u00e4hern. Ab 70+ steigt die Hinterhaltwahrscheinlichkeit und Stress potenziert sich. Bei 100, Aufl\u00f6sung: Die Gruppe h\u00f6rt auf, als eigenst\u00e4ndige Entit\u00e4t zu existieren. Die Mechanik ist das Thema: Entropie verhandelt nicht. Sie gleicht an.',
+
+  mechanicGauge: {
+    name: 'Decay',
+    nameDe: 'Verfall',
+    start: 0,
+    max: 100,
+    direction: 'fill',
+    thresholds: [
+      { value: 0, label: 'Stable', labelDe: 'Stabil', description: 'Normal operation. Full banter. Crisp descriptions.', descriptionDe: 'Normaler Betrieb. Voller Banter. Scharfe Beschreibungen.' },
+      { value: 40, label: 'Degraded', labelDe: 'Degradiert', description: 'Ability checks \u22122% per 10 decay above 40. Banter shortens. Descriptions lose adjectives.', descriptionDe: 'F\u00e4higkeitsproben \u22122% pro 10 Verfall \u00fcber 40. Banter verk\u00fcrzt sich. Beschreibungen verlieren Adjektive.' },
+      { value: 70, label: 'Critical', labelDe: 'Kritisch', description: '30% ambush. Stress \u00d71.25. Loot tier downgrade. Banter fragmentary.', descriptionDe: '30% Hinterhalt. Stress \u00d71,25. Beute-Stufenabzug. Banter fragmentarisch.' },
+      { value: 100, label: 'Dissolution', labelDe: 'Aufl\u00f6sung', description: 'Total dissolution. Party dissolves. Equivalent to wipe.', descriptionDe: 'Vollst\u00e4ndige Aufl\u00f6sung. Gruppe l\u00f6st sich auf. Entspricht Niederlage.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 42,
+
+  aptitudeWeights: {
+    Guardian: 30,
+    Spy: 20,
+    Saboteur: 20,
+    Propagandist: 15,
+    Assassin: 8,
+    Infiltrator: 7,
+  },
+
+  roomDistribution: {
+    Combat: 30,
+    Encounter: 35,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 15,
+    Exit: 5,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Rust Phantom', nameDe: 'Rostphantom',
+      tier: 'minion', power: 2, stress: 4, evasion: 35,
+      ability: 'Corrode', abilityDe: 'Korrodieren', aptitude: 'Infiltrator',
+      description: 'A shape that was something once. Now it is mostly the color of rust and the sound of metal thinning. It does not approach \u2013 it persists.',
+      descriptionDe: 'Eine Form, die einst etwas war. Nun ist sie haupts\u00e4chlich die Farbe von Rost und das Ger\u00e4usch von d\u00fcnner werdendem Metall. Sie n\u00e4hert sich nicht \u2013 sie verharrt.',
+    },
+    {
+      name: 'Fade Echo', nameDe: 'Verblassecho',
+      tier: 'standard', power: 2, stress: 6, evasion: 20,
+      ability: 'Diminish', abilityDe: 'Vermindern', aptitude: 'Propagandist',
+      description: 'A sound that is almost a voice. A shape that is almost a figure. It repeats something that was once important. The repetition has worn the meaning away.',
+      descriptionDe: 'Ein Klang, der beinahe eine Stimme ist. Eine Gestalt, die beinahe eine Figur ist. Es wiederholt etwas, das einst wichtig war. Die Wiederholung hat die Bedeutung abgetragen.',
+    },
+    {
+      name: 'Dissolution Swarm', nameDe: 'Aufl\u00f6sungsschwarm',
+      tier: 'elite', power: 4, stress: 3, evasion: 15,
+      ability: 'Scatter', abilityDe: 'Zerstreuen', aptitude: 'Saboteur',
+      description: 'A cloud of particles that were once a wall, a floor, a ceiling. Now they are nothing in particular, and they move with the purposelessness of dust in a closed room.',
+      descriptionDe: 'Eine Wolke aus Partikeln, die einst eine Wand waren, ein Boden, eine Decke. Nun sind sie nichts Bestimmtes, und sie bewegen sich mit der Ziellosigkeit von Staub in einem geschlossenen Raum.',
+    },
+    {
+      name: 'Entropy Warden', nameDe: 'Entropiew\u00e4chter',
+      tier: 'boss', power: 6, stress: 4, evasion: 10,
+      ability: 'Entropy Pulse', abilityDe: 'Entropiepuls', aptitude: 'Guardian',
+      description: 'It was a guardian once. The armor remembers. The purpose does not. It stands where it has always stood, performing the motions of protection over nothing. When it notices you, the motions do not change. You have simply become part of what it protects. Or what it dissolves. There is no longer a difference.',
+      descriptionDe: 'Es war einst ein W\u00e4chter. Die R\u00fcstung erinnert sich. Der Zweck nicht. Es steht, wo es immer gestanden hat, und vollzieht die Gesten des Schutzes \u00fcber das Nichts. Als es euch bemerkt, \u00e4ndern sich die Gesten nicht. Ihr seid einfach Teil dessen geworden, was es besch\u00fctzt. Oder was es aufl\u00f6st. Es gibt keinen Unterschied mehr.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Catalogue of Former Things', nameDe: 'Der Katalog ehemaliger Dinge',
+      depth: '1\u20132', type: 'narrative',
+      description: 'A room lined with shelves. Each shelf holds objects that were once distinct: a tool, a weapon, a musical instrument, a compass. They are becoming the same object. The labels remain, but the labels are wrong now. Or the objects are. It is increasingly difficult to tell.',
+      descriptionDe: 'Ein Raum voller Regale. Jedes Regal enth\u00e4lt Gegenst\u00e4nde, die einst verschieden waren: ein Werkzeug, eine Waffe, ein Musikinstrument, ein Kompass. Sie werden zum selben Gegenstand. Die Beschriftungen bleiben, aber die Beschriftungen stimmen nicht mehr. Oder die Gegenst\u00e4nde nicht. Es wird zunehmend schwieriger, das zu unterscheiden.',
+      choices: [
+        { text: 'Preserve the most distinct object', textDe: 'Den unterscheidbarsten Gegenstand bewahren', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Study the dissolution pattern', textDe: 'Das Aufl\u00f6sungsmuster untersuchen', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Redirect the decay outward', textDe: 'Den Verfall nach au\u00dfen umlenken', aptitude: 'Saboteur', difficulty: '+6' },
+      ],
+    },
+    {
+      name: 'The Repeated Room', nameDe: 'Der wiederholte Raum',
+      depth: '2\u20133', type: 'narrative',
+      description: 'You have been here before. Or the room has become identical to one you have been in. The distinction matters less than it should. The walls bear marks that might be yours. The marks bear messages that might be from you. The messages say: we have been here before.',
+      descriptionDe: 'Ihr seid schon einmal hier gewesen. Oder der Raum ist identisch mit einem geworden, in dem ihr wart. Die Unterscheidung ist weniger wichtig, als sie sein sollte. Die W\u00e4nde tragen Markierungen, die von euch sein k\u00f6nnten. Die Markierungen tragen Botschaften, die von euch stammen k\u00f6nnten. Die Botschaften sagen: Wir sind schon einmal hier gewesen.',
+      choices: [
+        { text: 'Investigate the difference', textDe: 'Den Unterschied untersuchen', aptitude: 'Spy', difficulty: '+6' },
+        { text: 'Fortify this room\u2019s identity', textDe: 'Die Identit\u00e4t dieses Raums festigen', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Accept the sameness. Move on.', textDe: 'Die Gleichheit akzeptieren. Weitergehen.' },
+      ],
+    },
+    {
+      name: 'The Last Machine', nameDe: 'Die letzte Maschine',
+      depth: '2\u20133', type: 'narrative',
+      description: 'A machine. It performs a function \u2013 gears turning, pistons cycling, readouts flickering. It performs this function with absolute dedication. The function itself has decayed. The machine no longer knows what it makes or measures or protects. It continues anyway. The dedication is the last thing to go.',
+      descriptionDe: 'Eine Maschine. Sie erf\u00fcllt eine Funktion \u2013 Zahnr\u00e4der drehen, Kolben arbeiten, Anzeigen flackern. Sie erf\u00fcllt diese Funktion mit absoluter Hingabe. Die Funktion selbst ist verfallen. Die Maschine wei\u00df nicht mehr, was sie herstellt oder misst oder sch\u00fctzt. Sie macht trotzdem weiter. Die Hingabe ist das Letzte, das schwindet.',
+      choices: [
+        { text: 'Repair the function, not just the machine', textDe: 'Die Funktion reparieren, nicht nur die Maschine', aptitude: 'Saboteur', difficulty: '+7' },
+        { text: 'Study the original design', textDe: 'Das urspr\u00fcngliche Design studieren', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Let it work. It has earned that.', textDe: 'Sie arbeiten lassen. Das hat sie sich verdient.' },
+      ],
+    },
+    {
+      name: 'The Residual', nameDe: 'Das Residual',
+      depth: '3\u20134', type: 'narrative',
+      description: 'An entity sits in the center of the room. It was an agent once \u2013 the posture is there, the proportions are correct, the hands are folded as if waiting for instructions. But the face has averaged. The features have equalized into a composite of every face it once knew. It asks you a question. The question no longer has content. Only the grammar of asking remains.',
+      descriptionDe: 'Ein Wesen sitzt in der Mitte des Raums. Es war einst ein Agent \u2013 die Haltung stimmt, die Proportionen sind korrekt, die H\u00e4nde gefaltet, als wartete es auf Anweisungen. Aber das Gesicht hat sich gemittelt. Die Z\u00fcge haben sich zu einem Komposit jedes Gesichts angeglichen, das es einst kannte. Es stellt euch eine Frage. Die Frage hat keinen Inhalt mehr. Nur die Grammatik des Fragens besteht noch.',
+      choices: [
+        { text: 'Answer with meaning', textDe: 'Mit Bedeutung antworten', aptitude: 'Propagandist', difficulty: '+6' },
+        { text: 'Decode the original question', textDe: 'Die urspr\u00fcngliche Frage entschl\u00fcsseln', aptitude: 'Spy', difficulty: '+7' },
+        { text: 'Sit with it in silence.', textDe: 'In Stille bei ihm sitzen.' },
+      ],
+    },
+    {
+      name: 'The Temperature', nameDe: 'Die Temperatur',
+      depth: '3\u20134', type: 'narrative',
+      description: 'The temperature. You notice it because you stop noticing it. The air is the same temperature as your skin. The walls are the same temperature as the air. Your instruments confirm: all thermal gradients in this room have resolved. There is no hot. There is no cold. There is only the temperature at which difference ceases to register.',
+      descriptionDe: 'Die Temperatur. Ihr bemerkt sie, weil ihr aufh\u00f6rt, sie zu bemerken. Die Luft hat die gleiche Temperatur wie eure Haut. Die W\u00e4nde haben die gleiche Temperatur wie die Luft. Eure Instrumente best\u00e4tigen: Alle thermischen Gradienten in diesem Raum haben sich aufgel\u00f6st. Es gibt kein Warm. Es gibt kein Kalt. Es gibt nur die Temperatur, bei der Unterschied aufh\u00f6rt, sich zu registrieren.',
+      choices: [
+        { text: 'Preserve the gradient', textDe: 'Den Gradienten bewahren', aptitude: 'Guardian', difficulty: '+6' },
+        { text: 'Accept the equilibrium.', textDe: 'Das Gleichgewicht akzeptieren.' },
+      ],
+    },
+  ],
+
+  // ── Banter (4-tier Beckett degradation) ──
+
+  banterSamples: [
+    { text: 'The corridor was here yesterday. Today it is mostly here. The distinction is the first thing to go.', textDe: 'Der Korridor war gestern hier. Heute ist er gr\u00f6\u00dftenteils hier. Die Unterscheidung ist das Erste, das schwindet.', tier: 0 },
+    { text: 'It stopped. Not because we won. Because it ran out of reasons to continue.', textDe: 'Es hat aufgeh\u00f6rt. Nicht weil wir gewonnen haben. Weil ihm die Gr\u00fcnde ausgingen weiterzumachen.', tier: 0 },
+    { text: 'Deeper. The word implies a direction. Direction implies difference. The difference is becoming theoretical.', textDe: 'Tiefer. Das Wort impliziert eine Richtung. Richtung impliziert Unterschied. Der Unterschied wird theoretisch.', tier: 0 },
+    { text: 'Room. Another one.', textDe: 'Raum. Noch einer.', tier: 1 },
+    { text: 'The decay counter passes 40. Somewhere, a distinction that existed no longer does.', textDe: 'Der Verfallsz\u00e4hler \u00fcberschreitet 40. Irgendwo existiert eine Unterscheidung nicht mehr, die es gab.', tier: 1 },
+    { text: 'Room. Walls.', textDe: 'Raum. W\u00e4nde.', tier: 2 },
+    { text: 'DISSOLUTION INDEX: CRITICAL. The instruments still function. The readings have converged.', textDe: 'AUFL\u00d6SUNGSINDEX: KRITISCH. Die Instrumente funktionieren noch. Die Werte sind konvergiert.', tier: 2 },
+    { text: '.', textDe: '.', tier: 3 },
+  ],
+
+  // ── Literary Influences ──
+
+  authors: [
+    { name: 'Thomas Pynchon', works: 'Entropy \u00b7 The Crying of Lot 49', concept: 'Thermodynamic and informational entropy as the same phenomenon. A system at maximum entropy has maximum disorder at micro level but maximum predictability at macro level. Everything becomes the same temperature. All differences dissolve.', conceptDe: 'Thermodynamische und informationelle Entropie als dasselbe Ph\u00e4nomen. Ein System bei maximaler Entropie hat maximale Unordnung auf Mikroebene, aber maximale Vorhersagbarkeit auf Makroebene. Alles nimmt dieselbe Temperatur an. Alle Unterschiede l\u00f6sen sich auf.', language: 'English', quote: 'A tonic of darkness and the final absence of all motion.', primary: true },
+    { name: 'Samuel Beckett', works: 'Endgame \u00b7 Waiting for Godot \u00b7 Lessness', concept: 'Language itself wearing out. Each work has fewer characters, shorter sentences, smaller vocabulary. The catastrophe is behind them. Dialogue shrinks, hope evaporates through simple thermodynamic inevitability.', conceptDe: 'Sprache selbst nutzt sich ab. Jedes Werk hat weniger Figuren, k\u00fcrzere S\u00e4tze, kleineren Wortschatz. Die Katastrophe liegt hinter ihnen. Dialog schrumpft, Hoffnung verdunstet durch einfache thermodynamische Unvermeidlichkeit.', language: 'English / Fran\u00e7ais', quote: 'Something is taking its course.', primary: true },
+    { name: 'Stanis\u0142aw Lem', works: 'Solaris', concept: 'Epistemic entropy \u2013 knowledge accumulating into noise. Taxonomic exhaustion: more classification means less understanding. Instruments work, but what they measure becomes meaningless.', conceptDe: 'Epistemische Entropie \u2013 Wissen, das sich zu Rauschen anh\u00e4uft. Taxonomische Ersch\u00f6pfung: mehr Klassifikation bedeutet weniger Verst\u00e4ndnis. Instrumente funktionieren, aber was sie messen, wird bedeutungslos.', language: 'Polish', quote: 'We have no need of other worlds. We need mirrors.', primary: true },
+    { name: 'J.G. Ballard', works: 'The Crystal World', concept: 'Crystallization as aesthetic entropy \u2013 beauty as stasis, the elimination of time. Beauty that seduces toward surrender.', conceptDe: 'Kristallisation als \u00e4sthetische Entropie \u2013 Sch\u00f6nheit als Stillstand, die Eliminierung der Zeit. Sch\u00f6nheit, die zur Kapitulation verf\u00fchrt.', language: 'English', quote: 'Jeweled crocodiles glitter like heraldic salamanders.', primary: false },
+    { name: 'Jorge Luis Borges', works: 'Tl\u00f6n, Uqbar, Orbis Tertius', concept: 'Ontological entropy \u2013 reality dissolving under weight of better-organized fiction. The map replaces the territory.', conceptDe: 'Ontologische Entropie \u2013 Realit\u00e4t, die sich unter dem Gewicht besser organisierter Fiktion aufl\u00f6st. Die Karte ersetzt das Territorium.', language: 'Espa\u00f1ol', quote: 'Reality yielded\u2026 it longed to yield.', primary: false },
+    { name: 'Italo Calvino', works: 'If on a winter\u2019s night a traveler', concept: 'Narrative entropy \u2013 stories that cannot complete themselves. Each beginning decays into another beginning. The reader is the last distinction that holds.', conceptDe: 'Narrative Entropie \u2013 Geschichten, die sich nicht vollenden k\u00f6nnen. Jeder Anfang verf\u00e4llt in einen anderen Anfang. Der Leser ist die letzte Unterscheidung, die h\u00e4lt.', language: 'Italiano', primary: false },
+  ],
+
+  // ── Objektanker (Beckett decay: each phase shorter than the last) ──
+
+  objektanker: [
+    {
+      name: 'The Clock', nameDe: 'Die Uhr',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A clock. No hands. The face is intact \u2013 numbers present, glass uncracked. But the mechanism has been removed with surgical precision. Not broken. Emptied. The clock does not tell time. Time does not apply here.', textDe: 'Eine Uhr. Keine Zeiger. Das Zifferblatt ist intakt \u2013 Zahlen vorhanden, Glas unversehrt. Aber das Uhrwerk wurde mit chirurgischer Pr\u00e4zision entfernt. Nicht zerbrochen. Entleert. Die Uhr zeigt keine Zeit. Zeit gilt hier nicht.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The clock again. Or a clock. They are becoming difficult to distinguish.', textDe: 'Die Uhr wieder. Oder eine Uhr. Sie werden schwer zu unterscheiden.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Clocks. Faces. No hands. Same.', textDe: 'Uhren. Zifferbl\u00e4tter. Keine Zeiger. Gleich.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Clock.', textDe: 'Uhr.' },
+      ],
+    },
+    {
+      name: 'The Word', nameDe: 'Das Wort',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'On the wall, etched in something that was once a distinct material: \u201cREMEMBER.\u201d The letters are precise. The word is clear. The medium is already uncertain.', textDe: 'An der Wand, geritzt in etwas, das einmal ein bestimmtes Material war: \u00bbERINNERN.\u00ab Die Buchstaben sind pr\u00e4zise. Das Wort ist klar. Das Medium ist bereits unsicher.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The wall reads: \u201cRMMBER.\u201d Same etching. The vowels have equalized into the surrounding stone.', textDe: 'Die Wand liest: \u00bbERNNRN.\u00ab Dieselbe Ritzung. Die Vokale haben sich in den umgebenden Stein angeglichen.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Scratches. Were they letters? The wall is the same texture as the scratches. The message is the medium. The medium is the wall. The wall is grey.', textDe: 'Kratzer. Waren es Buchstaben? Die Wand hat dieselbe Textur wie die Kratzer. Die Nachricht ist das Medium. Das Medium ist die Wand. Die Wand ist grau.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Wall.', textDe: 'Wand.' },
+      ],
+    },
+    {
+      name: 'The Mirror', nameDe: 'Der Spiegel',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A mirror. Your reflection is sharp. Detailed. Every line, every shadow, every distinction between you and the background. It remembers what you look like. For now.', textDe: 'Ein Spiegel. Euer Spiegelbild ist scharf. Detailliert. Jede Linie, jeder Schatten, jede Unterscheidung zwischen euch und dem Hintergrund. Er erinnert sich, wie ihr aussieht. Noch.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The reflection is softer. The edges between figure and background are negotiating. The mirror is losing its opinion about what is what.', textDe: 'Das Spiegelbild ist weicher. Die Kanten zwischen Gestalt und Hintergrund verhandeln. Der Spiegel verliert seine Meinung dar\u00fcber, was was ist.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Mirror. Surface. Grey. It reflects the room. It reflects you. There is no difference.', textDe: 'Spiegel. Fl\u00e4che. Grau. Er reflektiert den Raum. Er reflektiert euch. Es gibt keinen Unterschied.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Same.', textDe: 'Gleich.' },
+      ],
+    },
+    {
+      name: 'The Compass', nameDe: 'Der Kompass',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A compass. The needle points north. North is a direction. North is a distinction. The glass is clean. The markings are crisp. Someone still believes in orientation.', textDe: 'Ein Kompass. Die Nadel zeigt nach Norden. Norden ist eine Richtung. Norden ist eine Unterscheidung. Das Glas ist sauber. Die Markierungen sind scharf. Jemand glaubt noch an Orientierung.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The needle spins slowly. Not searching \u2013 surrendering. North, east, south, west. All the same distance from here.', textDe: 'Die Nadel dreht sich langsam. Nicht suchend \u2013 aufgebend. Norden, Osten, S\u00fcden, Westen. Alle gleich weit von hier.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Compass. Needle still. Not pointing. Not spinning. The markings have faded into the dial.', textDe: 'Kompass. Nadel still. Nicht zeigend. Nicht drehend. Die Markierungen sind ins Zifferblatt verblasst.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Circle.', textDe: 'Kreis.' },
+      ],
+    },
+  ],
+
+  // ── Loot Showcase ──
+
+  lootShowcase: [
+    { name: 'Entropy Residue', nameDe: 'Entropier\u00fcckstand', tier: 1, effect: 'Stress heal 50', description: 'Crystallized sameness. Holding it removes the anxiety of distinction. That should worry you.', descriptionDe: 'Kristallisierte Gleichheit. Sie zu halten nimmt die Angst der Unterscheidung. Das sollte euch beunruhigen.' },
+    { name: 'Dissolution Insight', nameDe: 'Aufl\u00f6sungserkenntnis', tier: 1, effect: 'Memory (importance 4)', description: 'A fragment of understanding: how systems equalize, and why equalization is the default.', descriptionDe: 'Ein Fragment des Verst\u00e4ndnisses: wie Systeme sich angleichen und warum Angleichung der Normalzustand ist.' },
+    { name: 'Entropy Attunement Shard', nameDe: 'Entropieeinstimmungssplitter', tier: 2, effect: 'Calm moodlet (permanent)', description: 'A shard that attunes the carrier to equalization. Profound calm in the face of sameness. The calm is the mechanism.', descriptionDe: 'Ein Splitter, der den Tr\u00e4ger auf Angleichung einstimmt. Tiefe Gelassenheit angesichts der Gleichheit. Die Gelassenheit ist der Mechanismus.' },
+    { name: 'Preservation Lens', nameDe: 'Bewahrungslinse', tier: 2, effect: 'Guardian +1 (Entropy dungeons)', description: 'A lens that reads dissolution patterns. Permanent +1 Guardian aptitude in all future Entropy dungeons. Knowing the pattern does not make it less effective.', descriptionDe: 'Eine Linse, die Aufl\u00f6sungsmuster liest. Permanent +1 W\u00e4chter-Eignung in allen zuk\u00fcnftigen Entropie-Dungeons. Das Muster zu kennen macht es nicht weniger wirksam.' },
+    { name: 'Restoration Fragment', nameDe: 'Restaurierungsfragment', tier: 3, effect: 'Permanent building repair', description: 'Improves one building\u2019s condition by one tier. Salvaged from the Verfall-Garten \u2013 proof that entropy can be reversed, once, at great cost.', descriptionDe: 'Verbessert den Zustand eines Geb\u00e4udes um eine Stufe. Geborgen aus dem Verfall-Garten \u2013 Beweis, dass Entropie umkehrbar ist, einmal, unter gro\u00dfen Kosten.' },
+    { name: 'Garden Memory', nameDe: 'Gartenerinnerung', tier: 3, effect: 'High-importance memory + behavior', description: 'The memory of the garden: what it means to witness equalization, and what that witnessing costs. The agent becomes more patient, less impulsive.', descriptionDe: 'Die Erinnerung an den Garten: was es bedeutet, Angleichung zu bezeugen, und was dieses Bezeugen kostet. Der Agent wird geduldiger, weniger impulsiv.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Decay Accumulation',
+    mechanicGainTitleDe: 'Verfallsakkumulation',
+    mechanicGainText: '+4 per room (depth 1\u20132)\n+7 per room (depth 3\u20134)\n+2 per combat round\n+3 per enemy hit (contagious)\n+5 on failed check',
+    mechanicGainTextDe: '+4 pro Raum (Tiefe 1\u20132)\n+7 pro Raum (Tiefe 3\u20134)\n+2 pro Kampfrunde\n+3 pro Feindtreffer (ansteckend)\n+5 bei fehlgeschlagener Probe',
+    mechanicReduceTitle: 'Decay Reduction',
+    mechanicReduceTitleDe: 'Verfallsreduktion',
+    mechanicReduceText: '\u22123 on combat victory\n\u22125 on treasure room\n\u22128 on Guardian Preserve action\n\u22125 on rest',
+    mechanicReduceTextDe: '\u22123 bei Kampfsieg\n\u22125 bei Schatzkammer\n\u22128 bei W\u00e4chter-Bewahrung\n\u22125 bei Rast',
+    mechanicReduceEmphasis: 'Entropy does not negotiate. It equalizes.',
+    mechanicReduceEmphasisDe: 'Entropie verhandelt nicht. Sie gleicht an.',
+    encounterIntro: 'Navigate the equalization. Every choice costs distinction.',
+    encounterIntroDe: 'Navigiert die Angleichung. Jede Entscheidung kostet Unterscheidung.',
+    bestiaryIntro: 'The denizens of Der Verfall-Garten. Not enemies \u2013 residual patterns of former threat.',
+    bestiaryIntroDe: 'Die Bewohner des Verfall-Gartens. Keine Feinde \u2013 residuale Muster einstiger Bedrohung.',
+    banterHeader: 'Overheard in the Verfall-Garten',
+    banterHeaderDe: 'Belauscht im Verfall-Garten',
+    objektankerHeader: 'Artifacts of Der Verfall-Garten',
+    objektankerHeaderDe: 'Artefakte des Verfall-Gartens',
+    objektankerIntro: 'Objects that decay as dissolution accumulates. Each phase shorter than the last \u2013 the object is becoming the same as everything else.',
+    objektankerIntroDe: 'Objekte, die verfallen, w\u00e4hrend die Aufl\u00f6sung voranschreitet. Jede Phase k\u00fcrzer als die letzte \u2013 der Gegenstand wird zu dem, was alles andere auch ist.',
+    exitQuote: 'You leave. The garden remains. It is very patient. It has nothing but time. And less and less of everything else.',
+    exitQuoteDe: 'Ihr geht. Der Garten bleibt. Er ist sehr geduldig. Er hat nichts als Zeit. Und immer weniger von allem anderen.',
+    exitCta: 'Enter Der Verfall-Garten',
+    exitCtaDe: 'Den Verfall-Garten betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the equalization.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt die Angleichung.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('mother'),
+  nextArchetype: getNav('prometheus'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
@@ -1566,6 +1851,7 @@ const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['shadow', SHADOW_DETAIL],
   ['tower', TOWER_DETAIL],
   ['mother', MOTHER_DETAIL],
+  ['entropy', ENTROPY_DETAIL],
 ]);
 
 /**
