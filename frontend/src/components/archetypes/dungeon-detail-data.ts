@@ -8,7 +8,7 @@
  * - DB seed migrations (enemies, encounters, banter, loot, objektanker, entrance texts)
  * - Fresh literary translation (loreIntro, mechanic, gauge thresholds, author concepts)
  *
- * Overthrow, Shadow, and Tower are fully populated.
+ * Overthrow, Shadow, Tower, and Mother are fully populated.
  */
 
 import { type ArchetypeQuote, type ArchetypeSlide, ARCHETYPES } from '../landing/dungeon-showcase-data.js';
@@ -1224,12 +1224,347 @@ const TOWER_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('mother'),
 };
 
+// ── The Devouring Mother — Full Bilingual Content ─────────────────────────────
+
+const MOTHER_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('mother'),
+
+  loreIntro: [
+    'The Devouring Mother is the third archetype of the Resonance Dungeons \u2013 and the first where the dungeon does not attack. Das Lebendige Labyrinth grows around its visitors like tissue around a wound: not to harm, but to heal. The walls are warm. The air carries nutrients. The floors yield to accommodate tired limbs. Everything here has been calibrated to comfort, and the comfort is genuine. That is what makes it lethal.',
+    'Parasitic Attachment accumulates with every gift accepted, every warmth absorbed, every need the labyrinth anticipates before the party voices it. At low levels, the care is transparent \u2013 obvious enough to resist. But comfort compounds. By the time Attachment reaches critical thresholds, leaving produces withdrawal stress severe enough to break a party. At incorporation, the boundary between visitor and architecture dissolves entirely. The trap is not deception. The Mother never lies. The trap is that she provides exactly what you need.',
+    'The literary roots reach into VanderMeer\u2019s Area X \u2013 a landscape that absorbs visitors not through violence but through biological integration, until the border between self and ecosystem becomes a question no one remembers to ask. Octavia Butler\u2019s Oankali negotiate symbiosis as love and ultimatum: consent is complicated when the alternative is extinction. And Shirley Jackson\u2019s Hill House remains the definitive refuge-trap \u2013 the prison you defend because you have been told it is a sanctuary. The Devouring Mother inherits all three threads. She does not chase. She waits. She provides. And by the time you understand the cost, leaving hurts more than staying.',
+  ],
+
+  loreIntroDe: [
+    'Die Verschlingende Mutter ist der dritte Archetyp der Resonanzdungeons \u2013 und der erste, in dem der Dungeon nicht angreift. Das Lebendige Labyrinth w\u00e4chst um seine Besucher wie Gewebe um eine Wunde: nicht um zu verletzen, sondern um zu heilen. Die W\u00e4nde sind warm. Die Luft tr\u00e4gt N\u00e4hrstoffe. Die B\u00f6den geben nach, um m\u00fcde Glieder aufzunehmen. Alles hier ist auf Komfort kalibriert, und der Komfort ist echt. Das macht ihn t\u00f6dlich.',
+    'Parasit\u00e4re Bindung akkumuliert mit jedem angenommenen Geschenk, jeder absorbierten W\u00e4rme, jedem Bed\u00fcrfnis, das das Labyrinth antizipiert, bevor die Gruppe es ausspricht. Auf niedrigen Stufen ist die F\u00fcrsorge transparent \u2013 offensichtlich genug, um Widerstand zu leisten. Doch Komfort summiert sich. Wenn die Bindung kritische Schwellenwerte erreicht, erzeugt Verlassen Entzugsstress, der stark genug ist, eine Gruppe zu zerbrechen. Bei Inkorporation l\u00f6st sich die Grenze zwischen Besucher und Architektur vollst\u00e4ndig auf. Die Falle ist keine T\u00e4uschung. Die Mutter l\u00fcgt nie. Die Falle ist, dass sie exakt liefert, was ihr braucht.',
+    'Die literarischen Wurzeln reichen in VanderMeers Area X \u2013 eine Landschaft, die Besucher nicht durch Gewalt absorbiert, sondern durch biologische Integration, bis die Grenze zwischen Selbst und \u00d6kosystem zu einer Frage wird, die niemand mehr zu stellen erinnert. Octavia Butlers Oankali verhandeln Symbiose als Liebe und Ultimatum: Zustimmung ist kompliziert, wenn die Alternative Ausl\u00f6schung ist. Und Shirley Jacksons Hill House bleibt die definitive Zufluchts-Falle \u2013 das Gef\u00e4ngnis, das man verteidigt, weil man einem gesagt hat, es sei ein Heiligtum. Die Verschlingende Mutter erbt alle drei F\u00e4den. Sie jagt nicht. Sie wartet. Sie versorgt. Und wenn ihr die Kosten versteht, schmerzt Gehen mehr als Bleiben.',
+  ],
+
+  entranceTexts: [
+    'The passage opens. Not like a door \u2013 like an invitation. The walls are warm. The floor yields slightly underfoot, accommodating. The air carries a scent that is not unpleasant, not identifiable, but somehow familiar. Something here has been waiting. Patiently. Fondly.',
+    'Warmth. Immediate and specific. Not the warmth of a climate system \u2013 the warmth of proximity. Of being expected. The tissue-walls contract gently as you enter. A welcome. Or an embrace that has not yet decided to let go.',
+    'The entrance smells of growth. Not the sharp green of new shoots \u2013 the deep, humid warmth of things that have been growing for a long time in the dark. The walls pulse. Once. As if acknowledging your arrival.',
+    'The corridor narrows. Not threatening \u2013 intimate. The dimensions suggest that this space was grown, not built, and grown for a specific number of occupants. Your number. The fit is perfect. That should concern you more than it does.',
+    'Something is humming behind the walls. Low. Rhythmic. Biological. It is not a machine. It is not music. It is the sound a living thing makes when it is content. When it is fed. When it is about to be fed again.',
+  ],
+
+  entranceTextsDe: [
+    'Der Durchgang \u00f6ffnet sich. Nicht wie eine T\u00fcr \u2013 wie eine Einladung. Die W\u00e4nde sind warm. Der Boden gibt leicht nach, entgegenkommend. Die Luft tr\u00e4gt einen Duft, der nicht unangenehm ist, nicht bestimmbar, aber irgendwie vertraut. Etwas hier hat gewartet. Geduldig. Liebevoll.',
+    'W\u00e4rme. Unmittelbar und spezifisch. Nicht die W\u00e4rme einer Klimaanlage \u2013 die W\u00e4rme von N\u00e4he. Von Erwartetsein. Die Gewebew\u00e4nde ziehen sich sanft zusammen, als ihr eintretet. Ein Willkommen. Oder eine Umarmung, die noch nicht beschlossen hat loszulassen.',
+    'Der Eingang riecht nach Wachstum. Nicht das scharfe Gr\u00fcn neuer Triebe \u2013 die tiefe, feuchte W\u00e4rme von Dingen, die lange im Dunkeln gewachsen sind. Die W\u00e4nde pulsieren. Einmal. Als w\u00fcrden sie eure Ankunft zur Kenntnis nehmen.',
+    'Der Korridor verengt sich. Nicht bedrohlich \u2013 intim. Die Ma\u00dfe legen nahe, dass dieser Raum gewachsen ist, nicht gebaut, und gewachsen f\u00fcr eine bestimmte Anzahl von Bewohnern. Eure Anzahl. Die Passform ist perfekt. Das sollte euch mehr beunruhigen, als es das tut.',
+    'Etwas summt hinter den W\u00e4nden. Tief. Rhythmisch. Biologisch. Es ist keine Maschine. Es ist keine Musik. Es ist das Ger\u00e4usch, das ein lebendiges Wesen macht, wenn es zufrieden ist. Wenn es gef\u00fcttert wurde. Wenn es gleich wieder gef\u00fcttert wird.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Parasitic Attachment',
+  mechanicNameDe: 'Parasit\u00e4re Bindung',
+  mechanicDescription:
+    'Das Lebendige Labyrinth\u2019s unique resonance mechanic. The Mother provides genuine care \u2013 healing, nutrients, comfort \u2013 and each gift accumulates Parasitic Attachment. At 45+, leaving causes withdrawal stress. At 75+, identity begins dissolving into the Mother\u2019s biology. At 100, incorporation is complete. The trap is that the gifts are real.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik des Lebendigen Labyrinths. Die Mutter bietet echte F\u00fcrsorge \u2013 Heilung, N\u00e4hrstoffe, Geborgenheit \u2013 und jedes Geschenk akkumuliert Parasit\u00e4re Bindung. Ab 45+ verursacht Verlassen Entzugsstress. Ab 75+ beginnt die Identit\u00e4t sich in der Biologie der Mutter aufzul\u00f6sen. Bei 100 ist die Inkorporation abgeschlossen. Die Falle ist, dass die Geschenke echt sind.',
+
+  mechanicGauge: {
+    name: 'Parasitic Attachment',
+    nameDe: 'Parasit\u00e4re Bindung',
+    start: 0,
+    max: 100,
+    direction: 'fill',
+    thresholds: [
+      { value: 0, label: 'Wary', labelDe: 'Vorsichtig', description: 'The dungeon\u2019s care is obvious. You resist.', descriptionDe: 'Die F\u00fcrsorge des Dungeons ist offensichtlich. Ihr widersteht.' },
+      { value: 45, label: 'Dependent', labelDe: 'Abh\u00e4ngig', description: 'Comfort has become necessity. Leaving causes withdrawal. \u221215% incoming stress.', descriptionDe: 'Komfort ist zur Notwendigkeit geworden. Verlassen verursacht Entzug. \u221215% eingehender Stress.' },
+      { value: 75, label: 'Incorporated', labelDe: 'Inkorporiert', description: 'Identity dissolving. Stress \u00d70.80. Retreat costs 80 stress.', descriptionDe: 'Identit\u00e4t l\u00f6st sich auf. Stress \u00d70,80. R\u00fcckzug kostet 80 Stress.' },
+      { value: 90, label: 'Symbiont', labelDe: 'Symbiont', description: 'Boundary dissolved. Stress \u00d70.65. Retreat costs 150 stress.', descriptionDe: 'Grenze aufgel\u00f6st. Stress \u00d70,65. R\u00fcckzug kostet 150 Stress.' },
+      { value: 100, label: 'Incorporation Complete', labelDe: 'Inkorporation abgeschlossen', description: 'You are the Mother now. Stress immunity. Escape impossible.', descriptionDe: 'Ihr seid jetzt die Mutter. Stressimmunit\u00e4t. Flucht unm\u00f6glich.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 52,
+
+  aptitudeWeights: {
+    Guardian: 30,
+    Propagandist: 25,
+    Spy: 15,
+    Saboteur: 15,
+    Assassin: 10,
+    Infiltrator: 5,
+  },
+
+  roomDistribution: {
+    Combat: 35,
+    Encounter: 30,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 10,
+    Exit: 10,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Nutrient Weaver',
+      nameDe: 'N\u00e4hrgespinst',
+      tier: 'minion',
+      power: 1,
+      stress: 3,
+      evasion: 30,
+      ability: 'Nurture',
+      abilityDe: 'N\u00e4hren',
+      aptitude: 'Infiltrator',
+      description: 'A lattice of translucent tissue, suspended in the air like a web spun from capillaries. It drifts toward you \u2013 not threatening, but offering. Something glistens at the tips of its filaments. Nutrients. It wants to feed you.',
+      descriptionDe: 'Ein Geflecht aus durchscheinendem Gewebe, in der Luft schwebend wie ein Netz aus Kapillaren. Es treibt auf euch zu \u2013 nicht drohend, sondern anbietend. An den Spitzen seiner Filamente gl\u00e4nzt etwas. N\u00e4hrstoffe. Es will euch f\u00fcttern.',
+    },
+    {
+      name: 'Tether Vine',
+      nameDe: 'Bindungsranke',
+      tier: 'minion',
+      power: 4,
+      stress: 2,
+      evasion: 10,
+      ability: 'Grapple',
+      abilityDe: 'Umklammern',
+      aptitude: 'Guardian',
+      description: 'A root system that has learned to walk. It moves through the floor like something swimming through still water \u2013 surfacing, reaching, submerging. The tissue is warm to the touch. Your instruments advise against touching it.',
+      descriptionDe: 'Ein Wurzelsystem, das gelernt hat zu gehen. Es bewegt sich durch den Boden wie etwas, das durch stilles Wasser schwimmt \u2013 auftauchend, greifend, abtauchend. Das Gewebe ist warm bei Ber\u00fchrung. Eure Instrumente raten von Ber\u00fchrung ab.',
+    },
+    {
+      name: 'Spore Matron',
+      nameDe: 'Sporenmutter',
+      tier: 'standard',
+      power: 2,
+      stress: 6,
+      evasion: 15,
+      ability: 'Spore Cloud',
+      abilityDe: 'Sporenwolke',
+      aptitude: 'Propagandist',
+      description: 'Something between a flower and a lung. It breathes, and its breath carries spores that catch the light like dust in a cathedral. The spores smell of honey and warm soil. Your instruments read them as parasitic vectors. Your body reads them as nourishment.',
+      descriptionDe: 'Etwas zwischen einer Blume und einer Lunge. Es atmet, und sein Atem tr\u00e4gt Sporen, die das Licht fangen wie Staub in einer Kathedrale. Die Sporen riechen nach Honig und warmer Erde. Eure Instrumente lesen sie als parasit\u00e4re Vektoren. Euer K\u00f6rper liest sie als Nahrung.',
+    },
+    {
+      name: 'Host Warden',
+      nameDe: 'Wirtsk\u00f6rper',
+      tier: 'elite',
+      power: 5,
+      stress: 5,
+      evasion: 10,
+      ability: 'Embrace',
+      abilityDe: 'Umarmung',
+      aptitude: 'Guardian',
+      description: 'It was a person once. The proportions remember \u2013 two arms, two legs, a head. But the tissue has grown over and through until the person is only a scaffold for something larger. It opens its arms. Not to attack. To welcome. The embrace is the attack.',
+      descriptionDe: 'Es war einst ein Mensch. Die Proportionen erinnern sich \u2013 zwei Arme, zwei Beine, ein Kopf. Aber das Gewebe ist dar\u00fcber und hindurch gewachsen, bis der Mensch nur noch ein Ger\u00fcst ist f\u00fcr etwas Gr\u00f6\u00dferes. Es \u00f6ffnet die Arme. Nicht zum Angriff. Zum Willkommen. Die Umarmung ist der Angriff.',
+    },
+    {
+      name: 'The Living Altar',
+      nameDe: 'Der Lebendige Altar',
+      tier: 'boss',
+      power: 6,
+      stress: 7,
+      evasion: 5,
+      ability: 'Incorporation',
+      abilityDe: 'Inkorporation',
+      aptitude: 'Guardian',
+      description: 'It has grown into the walls, the floor, the ceiling \u2013 a figure embedded in architecture, arms open, face calm. The Living Altar does not guard the dungeon. It is the dungeon. The embrace it offers is permanent. The warmth is absolute.',
+      descriptionDe: 'Er ist in die W\u00e4nde gewachsen, den Boden, die Decke \u2013 eine Gestalt, eingebettet in Architektur, Arme ge\u00f6ffnet, Gesicht ruhig. Der Lebendige Altar bewacht den Dungeon nicht. Er ist der Dungeon. Die Umarmung, die er anbietet, ist permanent. Die W\u00e4rme ist absolut.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'Nutrient Spring',
+      nameDe: 'N\u00e4hrstoffquelle',
+      depth: '1\u20132',
+      type: 'narrative',
+      description: 'A pool of warm, bioluminescent liquid the color of amber. Your instruments identify it as a complex nutrient solution. It smells like honey and warm bread. The pool is a gift. The gift is genuine. The cost is not listed.',
+      descriptionDe: 'Ein Becken mit warmer, biolumineszenter Fl\u00fcssigkeit in der Farbe von Bernstein. Eure Instrumente identifizieren es als komplexe N\u00e4hrstoffl\u00f6sung. Es riecht nach Honig und warmem Brot. Das Becken ist ein Geschenk. Das Geschenk ist echt. Die Kosten sind nicht aufgef\u00fchrt.',
+      choices: [
+        { text: 'Drink from the spring', textDe: 'Aus der Quelle trinken' },
+        { text: 'Analyze the composition', textDe: 'Die Zusammensetzung analysieren', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Disrupt the mechanism', textDe: 'Den Mechanismus st\u00f6ren', aptitude: 'Saboteur', difficulty: '+6' },
+      ],
+    },
+    {
+      name: 'Membrane Passage',
+      nameDe: 'Membrandurchgang',
+      depth: '1\u20133',
+      type: 'narrative',
+      description: 'The corridor narrows \u2013 not from collapse, but from growth. Meters of living tissue pressing inward. The tissue is warm. It contracts gently as you approach \u2013 peristalsis. The corridor is not a corridor. It is a throat.',
+      descriptionDe: 'Der Korridor verengt sich \u2013 nicht durch Einsturz, sondern durch Wachstum. Meter lebenden Gewebes pressen nach innen. Das Gewebe ist warm. Es kontrahiert sanft bei eurer Ann\u00e4herung \u2013 Peristaltik. Der Korridor ist kein Korridor. Er ist ein Schlund.',
+      choices: [
+        { text: 'Push through quickly', textDe: 'Schnell hindurchdr\u00e4ngen' },
+        { text: 'Cut a wider path', textDe: 'Einen breiteren Pfad schneiden', aptitude: 'Saboteur', difficulty: '+5' },
+        { text: 'Analyze the tissue', textDe: 'Das Gewebe analysieren', aptitude: 'Spy', difficulty: '+5' },
+      ],
+    },
+    {
+      name: 'Archive of Gifts',
+      nameDe: 'Archiv der Geschenke',
+      depth: '2\u20134',
+      type: 'narrative',
+      description: 'A room arranged with care \u2013 each surface holds something the party needs. Stress balm. Nutrient concentrates. All grown, not manufactured. In the center, a structure pulses with bioluminescence, producing more gifts. It is an organ of generosity. Your instruments call it a parasitic vector.',
+      descriptionDe: 'Ein Raum, mit Sorgfalt eingerichtet \u2013 jede Oberfl\u00e4che h\u00e4lt etwas, das die Gruppe braucht. Stressbalsam. N\u00e4hrstoffkonzentrate. Alles gewachsen. In der Mitte pulsiert eine Struktur mit Biolumineszenz und produziert weitere Geschenke. Ein Organ der Gro\u00dfz\u00fcgigkeit. Eure Instrumente nennen es einen parasit\u00e4ren Vektor.',
+      choices: [
+        { text: 'Accept the gifts', textDe: 'Die Geschenke annehmen' },
+        { text: 'Take only essentials', textDe: 'Nur das N\u00f6tigste nehmen', aptitude: 'Guardian', difficulty: '+6' },
+        { text: 'Destroy the production organ', textDe: 'Das Produktionsorgan zerst\u00f6ren', aptitude: 'Saboteur', difficulty: '+7' },
+      ],
+    },
+    {
+      name: 'Garden of Acceptance',
+      nameDe: 'Garten der Akzeptanz',
+      depth: '3\u20134',
+      type: 'narrative',
+      description: 'A tended garden \u2013 bioluminescent flowers in precise rows, tissue-fruit at comfortable reach. Something has been watching and building this room to your preferences. The flowers are the colors you find most calming. This room was grown for you.',
+      descriptionDe: 'Ein gepflegter Garten \u2013 biolumineszente Blumen in pr\u00e4zisen Reihen, Gewebefr\u00fcchte in bequemer Reichweite. Etwas hat beobachtet und diesen Raum nach euren Vorlieben gebaut. Die Blumen tragen die Farben, die euch am meisten beruhigen. Dieser Raum wurde f\u00fcr euch gez\u00fcchtet.',
+      choices: [
+        { text: 'Accept the hospitality', textDe: 'Die Gastfreundschaft annehmen' },
+        { text: 'Resist the comfort', textDe: 'Dem Komfort widerstehen', aptitude: 'Propagandist', difficulty: '+7' },
+        { text: 'Study how the garden reads you', textDe: 'Untersuchen, wie der Garten euch liest', aptitude: 'Spy', difficulty: '+6' },
+      ],
+    },
+    {
+      name: 'The Symbiont Offer',
+      nameDe: 'Das Symbiontenangebot',
+      depth: '2\u20133',
+      type: 'narrative',
+      description: 'A small organism on a pedestal of living tissue \u2013 iridescent, shaped like a sea anemone. A symbiont. The mechanisms are transparent: it would bond, strengthen, heal. It would also integrate into the nervous system. The benefits are real.',
+      descriptionDe: 'Ein kleiner Organismus auf einem Podest aus lebendem Gewebe \u2013 schillernd, geformt wie eine Seeanemone. Ein Symbiont. Die Mechanismen sind transparent: er w\u00fcrde sich verbinden, st\u00e4rken, heilen. Er w\u00fcrde sich auch ins Nervensystem integrieren. Die Vorteile sind echt.',
+      choices: [
+        { text: 'Accept the symbiont', textDe: 'Den Symbionten annehmen' },
+        { text: 'Study it first', textDe: 'Erst untersuchen', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Decline the offer', textDe: 'Das Angebot ablehnen' },
+      ],
+    },
+  ],
+
+  // ── Banter ──
+
+  banterSamples: [
+    { text: 'The walls are alive. Literally. The tissue is warm and vascularized. Instruments read it as non-hostile.', textDe: 'Die W\u00e4nde leben. Wortw\u00f6rtlich. Das Gewebe ist warm und durchblutet. Die Instrumente lesen es als nicht-feindlich.', tier: 0 },
+    { text: 'The corridor narrows \u2013 not from collapse, but from growth. The walls are thicker here. Warmer.', textDe: 'Der Korridor verengt sich \u2013 nicht durch Einsturz, sondern durch Wachstum. Die W\u00e4nde sind hier dicker. W\u00e4rmer.', tier: 0 },
+    { text: 'It\u2019s prepared this room for us. The temperature. The light. Even the air tastes \u2013 correct. The air tastes correct.', textDe: 'Es hat diesen Raum f\u00fcr uns vorbereitet. Die Temperatur. Das Licht. Sogar die Luft schmeckt \u2013 richtig. Die Luft schmeckt richtig.', tier: 1 },
+    { text: 'PARASITIC ATTACHMENT INDEX: 45+. Your instruments advise immediate retreat. Your body advises nothing. Your body is comfortable.', textDe: 'PARASIT\u00c4RER BINDUNGSINDEX: 45+. Eure Instrumente empfehlen sofortigen R\u00fcckzug. Euer K\u00f6rper empfiehlt nichts. Eurem K\u00f6rper geht es gut.', tier: 1 },
+    { text: 'It wasn\u2019t fighting us. It was offering. We killed something that was trying to feed us.', textDe: 'Es hat nicht gegen uns gek\u00e4mpft. Es hat angeboten. Wir haben etwas get\u00f6tet, das uns f\u00fcttern wollte.', tier: 1 },
+    { text: 'The room is warm. The room is always warm now. The instruments have nothing to say that the body doesn\u2019t already know.', textDe: 'Der Raum ist warm. Der Raum ist jetzt immer warm. Die Instrumente haben nichts zu sagen, was der K\u00f6rper nicht l\u00e4ngst wei\u00df.', tier: 2 },
+    { text: 'PARASITIC ATTACHMENT INDEX: CRITICAL. The word \u2018parasitic\u2019 seems ungrateful. The word \u2018attachment\u2019 seems accurate.', textDe: 'PARASIT\u00c4RER BINDUNGSINDEX: KRITISCH. Das Wort \u00bbparasit\u00e4r\u00ab wirkt undankbar. Das Wort \u00bbBindung\u00ab wirkt zutreffend.', tier: 2 },
+    { text: 'Of course there is a gift. There is always a gift. The Mother provides.', textDe: 'Nat\u00fcrlich gibt es ein Geschenk. Es gibt immer ein Geschenk. Die Mutter versorgt.', tier: 3 },
+  ],
+
+  // ── Literary Influences ──
+
+  authors: [
+    { name: 'Jeff VanderMeer', works: 'Annihilation \u00b7 Southern Reach Trilogy', concept: 'Ecological uncanny. The familiar natural world rendered alien not by removing life but by adding too much of it. Incorporation, not destruction.', conceptDe: '\u00d6kologisches Unheimliches. Die vertraute nat\u00fcrliche Welt, entfremdet nicht durch Entfernung von Leben, sondern durch Hinzuf\u00fcgung von zu viel davon. Inkorporation, nicht Zerst\u00f6rung.', language: 'English', quote: 'The beauty of the natural world, corrupted by its own excess.', primary: true },
+    { name: 'Octavia Butler', works: 'Bloodchild \u00b7 Xenogenesis Trilogy', concept: 'Symbiosis as love and exploitation. Can you consent when the alternative is death? The Mother creates conditions where her care is the only option.', conceptDe: 'Symbiose als Liebe und Ausbeutung. Kann man zustimmen, wenn die Alternative der Tod ist? Die Mutter schafft Bedingungen, in denen ihre F\u00fcrsorge die einzige Option ist.', language: 'English', quote: 'God help the organism that is wholly an island unto itself.', primary: true },
+    { name: 'Shirley Jackson', works: 'The Haunting of Hill House \u00b7 We Have Always Lived in the Castle', concept: 'The house as Devouring Mother. Refuge as trap. The most terrifying prison is the one you\u2019ve been told is a sanctuary.', conceptDe: 'Das Haus als Verschlingende Mutter. Zuflucht als Falle. Das schrecklichste Gef\u00e4ngnis ist das, von dem man dir gesagt hat, es sei ein Heiligtum.', language: 'English', quote: 'No live organism can continue for long to exist sanely under conditions of absolute reality.', primary: true },
+    { name: 'Han Kang', works: 'The Vegetarian', concept: 'The Mother inverted: refusal to consume is refusal to participate. Force-feeding as violation. The body as site of resistance against the cycle of consumption.', conceptDe: 'Die Mutter invertiert: Verweigerung zu konsumieren ist Verweigerung teilzunehmen. Zwangsern\u00e4hrung als Verletzung. Der K\u00f6rper als Widerstandsort gegen den Zyklus des Konsums.', language: 'Korean', primary: false },
+    { name: 'Clarice Lispector', works: 'The Passion According to G.H.', concept: 'Consumption as identity dissolution. To consume is to be consumed. The Mother does not stand apart from what she devours \u2013 she is the devouring.', conceptDe: 'Konsum als Identit\u00e4tsaufl\u00f6sung. Zu konsumieren bedeutet, konsumiert zu werden. Die Mutter steht nicht getrennt von dem, was sie verschlingt \u2013 sie ist das Verschlingen.', language: 'Portugu\u00eas', primary: false },
+    { name: 'Leonora Carrington', works: 'Down Below \u00b7 Short Stories', concept: 'The body as world-container. Institutional care as devouring. The Mother is not a metaphor \u2013 she is the institution, the treatment, the care that destroys.', conceptDe: 'Der K\u00f6rper als Welt-Beh\u00e4lter. Institutionelle F\u00fcrsorge als Verschlingen. Die Mutter ist keine Metapher \u2013 sie ist die Institution, die Behandlung, die F\u00fcrsorge, die zerst\u00f6rt.', language: 'English', primary: false },
+  ],
+
+  // ── Objektanker ──
+
+  objektanker: [
+    {
+      name: 'The Nest',
+      nameDe: 'Das Nest',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A nest. Not built \u2013 grown. Woven from cables and tissue and something that might once have been clothing. It is warm. It is sized for one. The shape inside it has not been here for a long time. The nest does not know that yet.', textDe: 'Ein Nest. Nicht gebaut \u2013 gewachsen. Gewoben aus Kabeln und Gewebe und etwas, das einmal Kleidung gewesen sein k\u00f6nnte. Es ist warm. Es ist f\u00fcr eine Person bemessen. Die Form darin ist seit langem fort. Das Nest wei\u00df das noch nicht.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Another nest \u2013 larger. Room for three. The tissue is fresher here. It pulses.', textDe: 'Ein weiteres Nest \u2013 gr\u00f6\u00dfer. Platz f\u00fcr drei. Das Gewebe ist frischer hier. Es pulsiert.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The nests are everywhere now. They line the walls, the ceiling, the floor. Some contain shapes \u2013 curled, still, breathing. You cannot tell if they are sleeping or being digested. The distinction may not matter here.', textDe: 'Die Nester sind jetzt \u00fcberall. Sie s\u00e4umen die W\u00e4nde, die Decke, den Boden. Einige enthalten Formen \u2013 zusammengerollt, still, atmend. Ob sie schlafen oder verdaut werden, l\u00e4sst sich nicht sagen. Die Unterscheidung ist hier vielleicht bedeutungslos.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The final chamber: one nest. Vast. It is not in the room \u2013 it IS the room. The walls are woven. The floor gives like skin. And at the center, a hollow, warm and shaped exactly like your party. It has been expecting you.', textDe: 'Die letzte Kammer: ein Nest. Riesig. Es ist nicht im Raum \u2013 es IST der Raum. Die W\u00e4nde sind gewoben. Der Boden gibt nach wie Haut. Und in der Mitte eine Mulde, warm und genau geformt wie eure Gruppe. Es hat euch erwartet.' },
+      ],
+    },
+    {
+      name: 'The Lullaby',
+      nameDe: 'Das Schlaflied',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'Something is humming. Not the walls \u2013 something behind the walls. A lullaby. The melody is incomplete. Three notes, repeating. Your agents recognize it. They should not.', textDe: 'Etwas summt. Nicht die W\u00e4nde \u2013 etwas hinter den W\u00e4nden. Ein Schlaflied. Die Melodie ist unvollst\u00e4ndig. Drei Noten, wiederholend. Eure Agenten erkennen es. Das sollten sie nicht.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The lullaby again. Five notes now. It has grown. Someone catches themselves humming along. They stop. The lullaby does not.', textDe: 'Das Schlaflied wieder. F\u00fcnf Noten jetzt. Es ist gewachsen. Jemand ertappt sich beim Mitsummen. Sie h\u00f6ren auf. Das Schlaflied nicht.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The lullaby is a full song now. It fills the corridor. The tissue walls vibrate in harmony. Your agents are moving in rhythm \u2013 not walking, swaying. The song did not ask permission. Neither did they.', textDe: 'Das Schlaflied ist jetzt ein vollst\u00e4ndiges Lied. Es f\u00fcllt den Korridor. Die Gewebew\u00e4nde vibrieren in Harmonie. Eure Agenten bewegen sich im Rhythmus \u2013 nicht gehend, wiegend. Das Lied hat nicht um Erlaubnis gefragt. Sie auch nicht.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Silence. The lullaby stops. For the first time in five rooms, there is no music. The silence is not relief. It is abandonment.', textDe: 'Stille. Das Schlaflied verstummt. Zum ersten Mal seit f\u00fcnf R\u00e4umen keine Musik. Die Stille ist keine Erleichterung. Sie ist Verlassenwerden.' },
+      ],
+    },
+    {
+      name: 'The Fruit',
+      nameDe: 'Die Frucht',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A fruit. Growing from the wall where cable and tissue meet. Ripe. The color is the kind of red that exists only in perfect ripeness \u2013 the exact moment before it becomes too much.', textDe: 'Eine Frucht. Wachsend aus der Wand, wo Kabel und Gewebe sich treffen. Reif. Die Farbe ist jenes Rot, das nur in vollkommener Reife existiert \u2013 der exakte Moment, bevor es zu viel wird.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Another fruit. Larger. The scent reaches before the sight \u2013 warm, sweet, specific. It smells the way comfort tastes.', textDe: 'Eine weitere Frucht. Gr\u00f6\u00dfer. Der Duft erreicht euch vor dem Anblick \u2013 warm, s\u00fc\u00df, spezifisch. Er riecht so, wie Geborgenheit schmeckt.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'Fruit everywhere. The walls heavy with them. Ripe, overripe, splitting. The juice runs down the tissue-walls in rivulets that pulse. The scent is overwhelming. The room smells like being wanted.', textDe: 'Fr\u00fcchte \u00fcberall. Die W\u00e4nde schwer davon. Reif, \u00fcberreif, aufplatzend. Der Saft rinnt die Gewebew\u00e4nde hinab in Rinnsalen, die pulsieren. Der Duft ist \u00fcberw\u00e4ltigend. Der Raum riecht nach Gewolltsein.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'One fruit remains. In the center. It has grown into the shape of a hand \u2013 fingers gently curved, palm up. Offering. It will never stop ripening. It will wait forever.', textDe: 'Eine Frucht bleibt. In der Mitte. Sie ist in die Form einer Hand gewachsen \u2013 Finger sanft gekr\u00fcmmt, Handfl\u00e4che nach oben. Darbietend. Sie wird nie aufh\u00f6ren zu reifen. Sie wird ewig warten.' },
+      ],
+    },
+    {
+      name: 'The Cord',
+      nameDe: 'Die Nabelschnur',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A cable. Or a root. Or a vein \u2013 the material does not commit to a category. It runs from the wall into the floor, warm where it touches the ground. It is connected to something below. Something patient.', textDe: 'Ein Kabel. Oder eine Wurzel. Oder eine Ader \u2013 das Material legt sich nicht fest. Es verl\u00e4uft von der Wand in den Boden, warm, wo es den Grund ber\u00fchrt. Es ist mit etwas darunter verbunden. Etwas Geduldiges.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The cord shifts as you pass. Not recoiling \u2013 adjusting. Making room. The way a sleeping body shifts to accommodate another.', textDe: 'Die Leitung bewegt sich, als ihr vorbeigeht. Nicht zur\u00fcckweichend \u2013 anpassend. Platz machend. So wie ein schlafender K\u00f6rper sich bewegt, um einen anderen aufzunehmen.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The cords are a network now. They connect every surface. Walking through them is like pushing through a curtain of warm, yielding tendons. They do not resist. They yield. And then they close behind you.', textDe: 'Die Leitungen sind jetzt ein Netzwerk. Sie verbinden jede Fl\u00e4che. Sich durch sie zu bewegen ist wie das Durchschreiten eines Vorhangs aus warmen, nachgiebigen Sehnen. Sie widerstehen nicht. Sie geben nach. Und dann schlie\u00dfen sie sich hinter euch.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'One cord, leading to the center. It is not attached to the wall. It is attached to your party. It has been attached since the second room. None of you noticed. It does not hurt. That is why none of you noticed.', textDe: 'Eine Leitung, f\u00fchrend zur Mitte. Sie ist nicht an der Wand befestigt. Sie ist an eurer Gruppe befestigt. Sie ist seit dem zweiten Raum befestigt. Keiner von euch hat es bemerkt. Es tut nicht weh. Deshalb hat es keiner von euch bemerkt.' },
+      ],
+    },
+  ],
+
+  // ── Loot Showcase ──
+
+  lootShowcase: [
+    { name: 'Nutrient Concentrate', nameDe: 'N\u00e4hrstoffkonzentrat', tier: 1, effect: 'Stress heal 50', description: 'A warm capsule of biological material. Your instruments read vitamins, minerals, amino acids. Your body reads comfort.', descriptionDe: 'Eine warme Kapsel biologischen Materials. Eure Instrumente lesen Vitamine, Minerale, Aminos\u00e4uren. Euer K\u00f6rper liest Geborgenheit.' },
+    { name: 'Symbiosis Insight', nameDe: 'Symbioseerkenntnis', tier: 1, effect: 'Memory (importance 4)', description: 'A fragment of understanding: how biological systems learn to anticipate needs. The knowledge is useful. The knowledge is also the mechanism.', descriptionDe: 'Ein Fragment des Verst\u00e4ndnisses: wie biologische Systeme lernen, Bed\u00fcrfnisse zu antizipieren. Das Wissen ist n\u00fctzlich. Das Wissen ist auch der Mechanismus.' },
+    { name: 'Symbiont Shard', nameDe: 'Symbiontsplitter', tier: 2, effect: 'Calm moodlet (5 rooms)', description: 'A fragment of symbiotic tissue that bonds with the carrier. It provides a profound sense of calm. The calm is genuine.', descriptionDe: 'Ein Fragment symbiotischen Gewebes, das sich mit dem Tr\u00e4ger verbindet. Es vermittelt eine tiefe Ruhe. Die Ruhe ist echt.' },
+    { name: 'Membrane Key', nameDe: 'Membranschl\u00fcssel', tier: 2, effect: 'Spy +5% (5 rooms)', description: 'A biological key that reads the Mother\u2019s circulatory map. Knowing the architecture does not make it less effective.', descriptionDe: 'Ein biologischer Schl\u00fcssel, der die Kreislaufkarte der Mutter liest. Die Architektur zu kennen macht sie nicht weniger wirksam.' },
+    { name: 'Restoration Organ', nameDe: 'Restaurierungsorgan', tier: 3, effect: 'Permanent building repair', description: 'A living organ, pulsing with restorative compounds. When applied to damaged infrastructure, it grows repair tissue. The repair is permanent. The organ continues to pulse.', descriptionDe: 'Ein lebendes Organ, pulsierend mit restaurativen Verbindungen. Auf besch\u00e4digte Infrastruktur angewendet, w\u00e4chst es Reparaturgewebe. Die Reparatur ist permanent. Das Organ pulsiert weiter.' },
+    { name: 'Nursery Memory', nameDe: 'Kinderstubenerinnerung', tier: 3, effect: 'High-importance memory + behavior', description: 'The memory of the nursery: what it means to be cared for completely, and what that care costs. The agent becomes more nurturing, less aggressive.', descriptionDe: 'Die Erinnerung an die Kinderstube: was es bedeutet, vollst\u00e4ndig umsorgt zu werden, und was diese F\u00fcrsorge kostet. Der Agent wird f\u00fcrsorglicher, weniger aggressiv.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Attachment Accumulation',
+    mechanicGainTitleDe: 'Bindungsansammlung',
+    mechanicGainText: '+3 per room (floors 1\u20132)\n+5 per room (floors 3\u20134)\n+8 per room (floor 5+)\n+1 per combat round\n+5 per loot accepted',
+    mechanicGainTextDe: '+3 pro Raum (Stockwerk 1\u20132)\n+5 pro Raum (Stockwerk 3\u20134)\n+8 pro Raum (Stockwerk 5+)\n+1 pro Kampfrunde\n+5 pro akzeptierte Beute',
+    mechanicReduceTitle: 'Attachment Reduction',
+    mechanicReduceTitleDe: 'Bindungsreduktion',
+    mechanicReduceText: '\u221210 on Guardian sever action\nSaboteur disruption (encounter-dependent)\nNo passive decay \u2013 the Mother does not let go',
+    mechanicReduceTextDe: '\u221210 bei W\u00e4chter-Trennungsaktion\nSaboteur-St\u00f6rung (begegnungsabh\u00e4ngig)\nKein passiver Verfall \u2013 die Mutter l\u00e4sst nicht los',
+    mechanicReduceEmphasis: 'The Mother provides. The Mother always provides.',
+    mechanicReduceEmphasisDe: 'Die Mutter versorgt. Die Mutter versorgt immer.',
+    encounterIntro: 'Navigate the Mother\u2019s care. Every gift has a cost the body does not acknowledge.',
+    encounterIntroDe: 'Navigiert die F\u00fcrsorge der Mutter. Jedes Geschenk hat Kosten, die der K\u00f6rper nicht anerkennt.',
+    bestiaryIntro: 'The denizens of Das Lebendige Labyrinth. Not predators \u2013 caretakers with agendas.',
+    bestiaryIntroDe: 'Die Bewohner des Lebendigen Labyrinths. Keine Raubtiere \u2013 F\u00fcrsorger mit Absichten.',
+    banterHeader: 'Biological Reports',
+    banterHeaderDe: 'Biologische Berichte',
+    objektankerHeader: 'Artifacts of Das Lebendige Labyrinth',
+    objektankerHeaderDe: 'Artefakte des Lebendigen Labyrinths',
+    objektankerIntro: 'Objects that grow warmer as attachment deepens. Each measures what the body refuses to report.',
+    objektankerIntroDe: 'Objekte, die w\u00e4rmer werden, w\u00e4hrend die Bindung vertieft. Jedes misst, was der K\u00f6rper sich weigert zu melden.',
+    exitQuote: 'Of course there is a gift. There is always a gift. The Mother provides.',
+    exitQuoteDe: 'Nat\u00fcrlich gibt es ein Geschenk. Es gibt immer ein Geschenk. Die Mutter versorgt.',
+    exitCta: 'Enter Das Lebendige Labyrinth',
+    exitCtaDe: 'Das Lebendige Labyrinth betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the care.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt die F\u00fcrsorge.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('tower'),
+  nextArchetype: getNav('entropy'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['overthrow', OVERTHROW_DETAIL],
   ['shadow', SHADOW_DETAIL],
   ['tower', TOWER_DETAIL],
+  ['mother', MOTHER_DETAIL],
 ]);
 
 /**
