@@ -1274,6 +1274,7 @@ const MOTHER_DETAIL: ArchetypeDetail = {
     direction: 'fill',
     thresholds: [
       { value: 0, label: 'Wary', labelDe: 'Vorsichtig', description: 'The dungeon\u2019s care is obvious. You resist.', descriptionDe: 'Die F\u00fcrsorge des Dungeons ist offensichtlich. Ihr widersteht.' },
+      { value: 20, label: 'Acclimating', labelDe: 'Sich einleben', description: 'The warmth feels natural now. Resistance requires effort.', descriptionDe: 'Die W\u00e4rme f\u00fchlt sich jetzt nat\u00fcrlich an. Widerstand erfordert Anstrengung.' },
       { value: 45, label: 'Dependent', labelDe: 'Abh\u00e4ngig', description: 'Comfort has become necessity. Leaving causes withdrawal. \u221215% incoming stress.', descriptionDe: 'Komfort ist zur Notwendigkeit geworden. Verlassen verursacht Entzug. \u221215% eingehender Stress.' },
       { value: 75, label: 'Incorporated', labelDe: 'Inkorporiert', description: 'Identity dissolving. Stress \u00d70.80. Retreat costs 80 stress.', descriptionDe: 'Identit\u00e4t l\u00f6st sich auf. Stress \u00d70,80. R\u00fcckzug kostet 80 Stress.' },
       { value: 90, label: 'Symbiont', labelDe: 'Symbiont', description: 'Boundary dissolved. Stress \u00d70.65. Retreat costs 150 stress.', descriptionDe: 'Grenze aufgel\u00f6st. Stress \u00d70,65. R\u00fcckzug kostet 150 Stress.' },
