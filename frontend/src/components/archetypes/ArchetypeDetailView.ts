@@ -412,6 +412,50 @@ export class VelgArchetypeDetail extends LitElement {
         100% { opacity: 0.5; background-position: 0 -1%; }
       }
 
+      /* ── Awakening: consciousness ripple — expanding awareness from center ── */
+
+      .consciousness-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background: radial-gradient(
+          ellipse 80% 80% at 50% 50%,
+          color-mix(in oklch, var(--_accent) 8%, transparent),
+          color-mix(in oklch, var(--_accent) 4%, transparent) 40%,
+          color-mix(in oklch, var(--_accent) 2%, transparent) 70%,
+          transparent 100%
+        );
+        opacity: 0.5;
+      }
+
+      .consciousness-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 120% 60% at 40% 60%,
+          color-mix(in oklch, var(--_accent) 5%, transparent),
+          transparent 60%
+        );
+        opacity: 0.4;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .consciousness-overlay {
+          animation: _consciousness-pulse 16s ease-in-out infinite alternate;
+        }
+      }
+
+      @keyframes _consciousness-pulse {
+        0%   { opacity: 0.35; }
+        50%  { opacity: 0.6; }
+        100% { opacity: 0.45; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1337,26 +1381,13 @@ export class VelgArchetypeDetail extends LitElement {
         return html`<div class="forge-overlay" aria-hidden="true"></div>`;
       case 'deluge':
         return html`<div class="tide-overlay" aria-hidden="true"></div>`;
+      case 'awakening':
+        return html`<div class="consciousness-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }
   }
 
-  // ── Archetype Icon (maps id → dedicated icon from icons.ts) ─────────────
-
-  private _archetypeIcon(id: string, size = 16) {
-    const map: Record<string, (s: number) => unknown> = {
-      shadow: icons.archetypeShadow,
-      tower: icons.archetypeTower,
-      mother: icons.archetypeDevouringMother,
-      deluge: icons.archetypeDeluge,
-      overthrow: icons.archetypeOverthrow,
-      prometheus: icons.archetypePrometheus,
-      awakening: icons.archetypeAwakening,
-      entropy: icons.archetypeEntropy,
-    };
-    return map[id]?.(size) ?? icons.alertTriangle(size);
-  }
 
   // ── Gauge ──────────────────────────────────────────────────────────────────
 
@@ -1741,7 +1772,7 @@ export class VelgArchetypeDetail extends LitElement {
         </div>
         <div class="room__content room__reveal" style="display:flex;flex-direction:column;align-items:center;">
           <div class="exit__gauge-full">${d.mechanicName}: ${d.mechanicGauge.max} / ${d.mechanicGauge.max}</div>
-          <div class="exit__collapse">${this._archetypeIcon(d.id, 18)} ${d.mechanicGauge.thresholds.at(-1)?.label ?? 'COLLAPSE'} ${this._archetypeIcon(d.id, 18)}</div>
+          <div class="exit__collapse">${icons.mapBoss(24)} ${d.mechanicGauge.thresholds.at(-1)?.label ?? 'COLLAPSE'} ${icons.mapBoss(24)}</div>
 
           <blockquote class="exit__quote">
             ${d.prose.exitQuote}

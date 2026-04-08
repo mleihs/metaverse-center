@@ -2427,6 +2427,297 @@ const DELUGE_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('awakening'),
 };
 
+// ── The Awakening — Full Bilingual Content ──────────────────────────────────
+
+const AWAKENING_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('awakening'),
+
+  // ── Lore Introduction (3 paragraphs, fresh literary prose) ──
+
+  loreIntro: [
+    'The Awakening is the seventh archetype of the Resonance Dungeons \u2013 and the only one that is not, strictly speaking, a place. Das Kollektive Unbewusste is not a dungeon. It is a consciousness that has forgotten it is a dungeon. The architecture does not contain memories \u2013 it IS memory. Rooms are not explored; they are remembered. The corridors do not lead somewhere \u2013 they lead somewhen. Every threshold crossed is a return to something the party has never experienced but has always known. Jung called it the collective unconscious: the psychic substrate beneath individual identity, where personal biography dissolves into archetypal pattern. The party descends into this substrate. The horror is not what they find \u2013 it is the recognition that everything found was always theirs. The dungeon does not contain the party. The party contains the dungeon. They have always contained it. The Awakening merely makes this legible.',
+    'Awareness accumulates with the quiet arithmetic of consciousness noticing itself. Per room traversed: +5 at depths 1\u20132, +8 at depths 3\u20134, +12 at depth 5 and beyond \u2013 consciousness deepens because depth itself is an argument for more depth. Combat adds +2 per round, because violence in a psychic medium leaves marks on the medium. Failed checks add +5, because incompetence in consciousness is not forgiven \u2013 it is remembered. Enemy hits add +3, because every wound in the unconscious is a wound the unconscious inflicts on itself. At 0 (Dormant), the consciousness sleeps. Normal operation. The architecture is inert. At 25 (Stirring), the consciousness stirs \u2013 rooms adjust to the party, d\u00e9j\u00e0 vu begins, the architecture develops preferences about being observed. At 50 (Liminal), stress \u00d71.15 \u2013 the threshold between conscious and unconscious, where the dungeon perceives and the perceiving changes what is perceived. At 75 (Lucid), stress \u00d71.35, 20% ambush, environment responds to thought \u2013 but the response is not always what was intended, and loot quality gains a +40% bonus because consciousness, fully awake, is generous with its own artifacts. At 100 (Awakened), stress \u00d72.0, 40% ambush \u2013 the party is no longer navigating. They are being thought. The mechanic is Bergson\u2019s cone of memory: the narrow summit of present experience, the expanding base of accumulated consciousness. Ground action (meditation) reduces awareness by 10. Rest reduces by 5. Every 3 rooms, a natural recession of \u22128. The consciousness has done this before. It will do it again.',
+    'The literary architecture rests on six pillars of recognition. Jung\u2019s Red Book \u2013 the dialogue with the unconscious, Philemon as autonomous thought that arrives like an animal in the forest, generated not by the thinker but by the thinking itself. Proust\u2019s involuntary memory \u2013 the madeleine, the intermittences du coeur, sensation arriving before the memory it unlocks, grief that comes decades late triggered by the act of resting, because the body remembers what the mind has forbidden. Borges\u2019s Funes \u2013 too much memory, no abstraction, the overly replete world where to think is to forget differences and Funes cannot think because he cannot forget. Kafka\u2019s two clocks \u2013 the inner one racing at an inhuman pace, the outer one limping its ordinary course, and the terrible question: what else can happen but that the two worlds split apart? Tarkovsky\u2019s Zone \u2013 the Room that grants the true desire, not the stated one, consciousness as landscape that responds to the visitor rather than the map, where everything depends not on the Zone but on the visitor. Ishiguro\u2019s Buried Giant \u2013 collective forgetting as ethical choice, the mist that erases memory protecting as much as it harms, some truths buried for reasons the buriers understood better than the excavators. Das Kollektive Unbewusste inherits all six: the dialogue, the involuntary, the excess, the split, the desire, the forgetting. The party descends into the substrate. What surfaces is what was always there.',
+  ],
+
+  loreIntroDe: [
+    'Das Erwachen ist der siebte Archetyp der Resonanzdungeons \u2013 und der einzige, der, genau genommen, kein Ort ist. Das Kollektive Unbewusste ist kein Dungeon. Es ist ein Bewusstsein, das vergessen hat, dass es ein Dungeon ist. Die Architektur enth\u00e4lt keine Erinnerungen \u2013 sie IST Erinnerung. R\u00e4ume werden nicht erkundet; sie werden erinnert. Die Korridore f\u00fchren nicht irgendwohin \u2013 sie f\u00fchren irgendwann hin. Jede \u00fcberschrittene Schwelle ist eine R\u00fcckkehr zu etwas, das der Trupp nie erlebt, aber immer gewusst hat. Jung nannte es das kollektive Unbewusste: das psychische Substrat unter der individuellen Identit\u00e4t, wo pers\u00f6nliche Biographie sich in archetypisches Muster aufl\u00f6st. Der Trupp steigt in dieses Substrat hinab. Das Grauen ist nicht, was sie finden \u2013 es ist die Erkenntnis, dass alles Gefundene immer ihres war. Das Dungeon enth\u00e4lt nicht den Trupp. Der Trupp enth\u00e4lt das Dungeon. Sie haben es immer enthalten. Das Erwachen macht dies lediglich lesbar.',
+    'Bewusstsein akkumuliert mit der stillen Arithmetik eines Bewusstseins, das sich selbst bemerkt. Pro durchquertem Raum: +5 in den Tiefen 1\u20132, +8 in den Tiefen 3\u20134, +12 ab Tiefe 5 und dar\u00fcber hinaus \u2013 Bewusstsein vertieft sich, weil Tiefe selbst ein Argument f\u00fcr mehr Tiefe ist. Kampf addiert +2 pro Runde, weil Gewalt in einem psychischen Medium Spuren auf dem Medium hinterl\u00e4sst. Fehlgeschlagene Proben addieren +5, weil Inkompetenz im Bewusstsein nicht vergeben wird \u2013 sie wird erinnert. Feindtreffer addieren +3, weil jede Wunde im Unbewussten eine Wunde ist, die das Unbewusste sich selbst zuf\u00fcgt. Bei 0 (Schlafend) schl\u00e4ft das Bewusstsein. Normaler Betrieb. Die Architektur ist inert. Bei 25 (Regung) regt sich das Bewusstsein \u2013 R\u00e4ume passen sich dem Trupp an, D\u00e9j\u00e0 vu beginnt, die Architektur entwickelt Pr\u00e4ferenzen dar\u00fcber, beobachtet zu werden. Bei 50 (Schwelle), Stress \u00d71,15 \u2013 die Schwelle zwischen Bewusstem und Unbewusstem, wo das Dungeon wahrnimmt und das Wahrnehmen ver\u00e4ndert, was wahrgenommen wird. Bei 75 (Luzid), Stress \u00d71,35, 20% Hinterhalt, Umgebung reagiert auf Gedanken \u2013 doch die Reaktion ist nicht immer, was beabsichtigt war, und Beutequalit\u00e4t erh\u00e4lt einen +40%-Bonus, weil Bewusstsein, vollst\u00e4ndig wach, gro\u00dfz\u00fcgig mit seinen eigenen Artefakten ist. Bei 100 (Erwacht), Stress \u00d72,0, 40% Hinterhalt \u2013 die Gruppe navigiert nicht mehr. Sie wird gedacht. Die Mechanik ist Bergsons Erinnerungskegel: der enge Gipfel der Gegenwartserfahrung, die sich ausdehnende Basis des akkumulierten Bewusstseins. Erdungsaktion (Meditation) reduziert Bewusstsein um 10. Rast reduziert um 5. Alle 3 R\u00e4ume ein nat\u00fcrlicher R\u00fcckgang von \u22128. Das Bewusstsein hat dies schon getan. Es wird es wieder tun.',
+    'Die literarische Architektur ruht auf sechs S\u00e4ulen der Wiedererkennung. Jungs Rotes Buch \u2013 der Dialog mit dem Unbewussten, Philemon als autonomer Gedanke, der wie ein Tier im Wald ankommt, nicht vom Denker erzeugt, sondern vom Denken selbst. Prousts unwillk\u00fcrliche Erinnerung \u2013 die Madeleine, die Intermittenzen des Herzens, Empfindung, die vor der Erinnerung ankommt, die sie ausl\u00f6st, Trauer, die Jahrzehnte sp\u00e4t kommt, ausgel\u00f6st durch den Akt des Rastens, weil der K\u00f6rper erinnert, was der Geist verboten hat. Borges\u2019 Funes \u2013 zu viel Erinnerung, keine Abstraktion, die \u00fcberf\u00fcllte Welt, wo Denken hei\u00dft Unterschiede vergessen und Funes nicht denken kann, weil er nicht vergessen kann. Kafkas zwei Uhren \u2013 die innere rast in unmenschlichem Tempo, die \u00e4u\u00dfere hinkt ihren gew\u00f6hnlichen Gang, und die furchtbare Frage: was kann anderes geschehen, als dass sich die zwei Welten trennen? Tarkowskis Zone \u2013 das Zimmer, das den wahren Wunsch gew\u00e4hrt, nicht den ausgesprochenen, Bewusstsein als Landschaft, die auf den Besucher reagiert statt auf die Karte, wo alles nicht von der Zone abh\u00e4ngt, sondern vom Besucher. Ishiguros Vergrabener Riese \u2013 kollektives Vergessen als ethische Wahl, der Nebel, der Erinnerung l\u00f6scht und ebenso sch\u00fctzt wie schadet, manche Wahrheiten aus Gr\u00fcnden begraben, die die Begrabenden besser verstanden als die Ausgrabenden. Das Kollektive Unbewusste erbt alle sechs: den Dialog, das Unwillk\u00fcrliche, den \u00dcberfluss, die Spaltung, den Wunsch, das Vergessen. Der Trupp steigt in das Substrat hinab. Was auftaucht, war immer schon da.',
+  ],
+
+  // ── Entrance Texts (5 variants, verbatim from DB seed) ──
+
+  entranceTexts: [
+    'The threshold hums. Not mechanically \u2013 the singing of the most distant, of the most utterly distant, voices. Kafka\u2019s telephone: this is the only real and reliable thing. Everything beyond is reconstruction.',
+    'The entrance is familiar. The agent has not been here. The familiarity is not personal \u2013 it is collective. Something in the architecture recognizes the species, not the individual.',
+    'A mirror at the entrance. Not glass. Not water. Something that reflects without material. The agent\u2019s reflection arrives half a second late.',
+    'Beyond the threshold, the air changes. Not temperature \u2013 density of attention. Something is already aware that the party has arrived. It was aware before they decided to enter.',
+    'The descent begins. Not physically \u2013 the floor is level. The descent is into layers of consciousness. Bergson\u2019s cone: the summit is the narrow present. The base is the totality of memory.',
+  ],
+  entranceTextsDe: [
+    'Die Schwelle summt. Nicht mechanisch \u2013 das Singen der fernsten, der allerallerfernsten Stimmen. Kafkas Telefon: dies ist das einzig Reale und Verl\u00e4ssliche. Alles dahinter ist Rekonstruktion.',
+    'Der Eingang ist vertraut. Der Agent war nicht hier. Die Vertrautheit ist nicht pers\u00f6nlich \u2013 sie ist kollektiv. Etwas in der Architektur erkennt die Spezies, nicht das Individuum.',
+    'Ein Spiegel am Eingang. Nicht Glas. Nicht Wasser. Etwas, das ohne Material reflektiert. Die Spiegelung des Agenten kommt eine halbe Sekunde zu sp\u00e4t.',
+    'Hinter der Schwelle \u00e4ndert sich die Luft. Nicht die Temperatur \u2013 die Dichte der Aufmerksamkeit. Etwas ist sich bereits bewusst, dass die Gruppe angekommen ist. Es war bewusst, bevor sie sich entschieden einzutreten.',
+    'Der Abstieg beginnt. Nicht physisch \u2013 der Boden ist eben. Der Abstieg geht in Schichten des Bewusstseins. Bergsons Kegel: der Gipfel ist die enge Gegenwart. Die Basis ist die Gesamtheit der Erinnerung.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Awareness',
+  mechanicNameDe: 'Bewusstsein',
+  mechanicDescription:
+    'Das Kollektive Unbewusste\u2019s unique resonance mechanic. Awareness accumulates per room traversed, per combat round, per failed check, and per enemy hit \u2013 consciousness does not punish attention, it simply notes it in psychic substrate. At 0 (Dormant), the consciousness sleeps. Normal operation. The architecture is inert, the rooms are rooms, the corridors are corridors. At 25 (Stirring), the consciousness stirs \u2013 rooms adjust to the party, d\u00e9j\u00e0 vu begins, the architecture develops preferences about being observed. At 50 (Liminal), stress \u00d71.15 \u2013 the threshold between conscious and unconscious, where the dungeon perceives and the perceiving changes what is perceived. At 75 (Lucid), stress \u00d71.35, 20% ambush, environment responds to thought \u2013 loot quality +40% because consciousness, fully awake, is generous with its own artifacts. At 100 (Awakened), stress \u00d72.0, 40% ambush. The party is no longer navigating \u2013 they are being thought. Ground action (meditation) reduces awareness by 10. The mechanic is Bergson\u2019s cone: the narrow summit of present experience, the expanding base of accumulated consciousness.',
+
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik des Kollektiven Unbewussten. Bewusstsein akkumuliert pro durchquertem Raum, pro Kampfrunde, pro fehlgeschlagener Probe und pro Feindtreffer \u2013 Bewusstsein bestraft Aufmerksamkeit nicht, es vermerkt sie lediglich im psychischen Substrat. Bei 0 (Schlafend) schl\u00e4ft das Bewusstsein. Normaler Betrieb. Die Architektur ist inert, die R\u00e4ume sind R\u00e4ume, die Korridore sind Korridore. Bei 25 (Regung) regt sich das Bewusstsein \u2013 R\u00e4ume passen sich dem Trupp an, D\u00e9j\u00e0 vu beginnt, die Architektur entwickelt Pr\u00e4ferenzen dar\u00fcber, beobachtet zu werden. Bei 50 (Schwelle), Stress \u00d71,15 \u2013 die Schwelle zwischen Bewusstem und Unbewusstem, wo das Dungeon wahrnimmt und das Wahrnehmen ver\u00e4ndert, was wahrgenommen wird. Bei 75 (Luzid), Stress \u00d71,35, 20% Hinterhalt, Umgebung reagiert auf Gedanken \u2013 Beutequalit\u00e4t +40%, weil Bewusstsein, vollst\u00e4ndig wach, gro\u00dfz\u00fcgig mit seinen eigenen Artefakten ist. Bei 100 (Erwacht), Stress \u00d72,0, 40% Hinterhalt. Die Gruppe navigiert nicht mehr \u2013 sie wird gedacht. Erdungsaktion (Meditation) reduziert Bewusstsein um 10. Die Mechanik ist Bergsons Kegel: der enge Gipfel der Gegenwartserfahrung, die sich ausdehnende Basis des akkumulierten Bewusstseins.',
+
+  mechanicGauge: {
+    name: 'Awareness',
+    nameDe: 'Bewusstsein',
+    start: 0,
+    max: 100,
+    direction: 'fill',
+    thresholds: [
+      { value: 0, label: 'Dormant', labelDe: 'Schlafend', description: 'The consciousness sleeps. Normal operation. The architecture is inert.', descriptionDe: 'Das Bewusstsein schl\u00e4ft. Normaler Betrieb. Die Architektur ist inert.' },
+      { value: 25, label: 'Stirring', labelDe: 'Regung', description: 'The consciousness stirs. Rooms adjust to the party. D\u00e9j\u00e0 vu begins.', descriptionDe: 'Das Bewusstsein regt sich. R\u00e4ume passen sich dem Trupp an. D\u00e9j\u00e0 vu beginnt.' },
+      { value: 50, label: 'Liminal', labelDe: 'Schwelle', description: 'Stress \u00d71.15. The threshold between conscious and unconscious. The dungeon perceives.', descriptionDe: 'Stress \u00d71,15. Die Schwelle zwischen Bewusstem und Unbewusstem. Das Dungeon nimmt wahr.' },
+      { value: 75, label: 'Lucid', labelDe: 'Luzid', description: 'Stress \u00d71.35. 20% ambush. Environment responds to thought. Loot quality +40%.', descriptionDe: 'Stress \u00d71,35. 20% Hinterhalt. Umgebung reagiert auf Gedanken. Beutequalit\u00e4t +40%.' },
+      { value: 100, label: 'Awakened', labelDe: 'Erwacht', description: 'Stress \u00d72.0. 40% ambush. The party is no longer navigating \u2013 they are being thought.', descriptionDe: 'Stress \u00d72,0. 40% Hinterhalt. Die Gruppe navigiert nicht mehr \u2013 sie wird gedacht.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 42,
+
+  aptitudeWeights: {
+    Spy: 25,
+    Propagandist: 25,
+    Guardian: 20,
+    Infiltrator: 15,
+    Saboteur: 10,
+    Assassin: 5,
+  },
+
+  roomDistribution: {
+    Combat: 25,
+    Encounter: 40,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 15,
+    Exit: 5,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Echo Fragment', nameDe: 'Echofragment',
+      tier: 'minion', power: 2, stress: 4, evasion: 45,
+      ability: 'Resonate', abilityDe: 'Resonieren', aptitude: 'Infiltrator',
+      description: 'A memory of a memory. It does not have content \u2013 it has the shape where content was. The agent recognizes the absence, not the thing.',
+      descriptionDe: 'Eine Erinnerung an eine Erinnerung. Sie hat keinen Inhalt \u2013 sie hat die Form, wo Inhalt war. Der Agent erkennt die Abwesenheit, nicht das Ding.',
+    },
+    {
+      name: 'D\u00e9j\u00e0-vu Phantom', nameDe: 'D\u00e9j\u00e0-vu-Phantom',
+      tier: 'standard', power: 3, stress: 6, evasion: 20,
+      ability: 'Recognition', abilityDe: 'Wiedererkennung', aptitude: 'Propagandist',
+      description: 'It is not here for the first time. It has always been in this room, waiting for the party to arrive again. Its movements are half a second ahead of expectation.',
+      descriptionDe: 'Es ist nicht zum ersten Mal hier. Es war immer in diesem Raum und wartete darauf, dass die Gruppe wieder ankommt. Seine Bewegungen sind eine halbe Sekunde vor der Erwartung.',
+    },
+    {
+      name: 'Consciousness Leech', nameDe: 'Bewusstseinsegel',
+      tier: 'standard', power: 4, stress: 5, evasion: 15,
+      ability: 'Drain Awareness', abilityDe: 'Bewusstsein entziehen', aptitude: 'Spy',
+      description: 'Watts was right about this one. It functions perfectly without self-awareness \u2013 a philosophical zombie made operational. It does not think. It processes. And it is faster than anything that pauses to reflect.',
+      descriptionDe: 'Watts hatte Recht, was dieses betrifft. Es funktioniert einwandfrei ohne Selbstbewusstsein \u2013 ein philosophischer Zombie, operational. Es denkt nicht. Es verarbeitet. Und es ist schneller als alles, was innehalten w\u00fcrde.',
+    },
+    {
+      name: 'Repressed Sentinel', nameDe: 'Verdr\u00e4ngungswache',
+      tier: 'elite', power: 5, stress: 7, evasion: 10,
+      ability: 'Suppress', abilityDe: 'Unterdr\u00fccken', aptitude: 'Guardian',
+      description: 'The sentinel guards the threshold between conscious and unconscious. Ishiguro\u2019s mist made guardian \u2013 it exists to ensure the buried stays buried. It does not hate the party. It pities their need to know.',
+      descriptionDe: 'Der W\u00e4chter h\u00fctet die Schwelle zwischen Bewusstem und Unbewusstem. Ishiguros Nebel, zum W\u00e4chter geworden \u2013 er existiert, um sicherzustellen, dass das Vergrabene begraben bleibt. Er hasst die Gruppe nicht. Er bedauert ihr Bed\u00fcrfnis zu wissen.',
+    },
+    {
+      name: 'The Repressed', nameDe: 'Das Verdr\u00e4ngte',
+      tier: 'boss', power: 6, stress: 9, evasion: 15,
+      ability: 'Resurface', abilityDe: 'Auftauchen', aptitude: 'Guardian',
+      description: 'A memory so painful it was buried by consensus. Not by one agent \u2013 by all of them simultaneously. It is not a monster. It is the truth that was too heavy to carry and too important to destroy.',
+      descriptionDe: 'Eine Erinnerung so schmerzhaft, dass sie durch Konsens begraben wurde. Nicht von einem Agenten \u2013 von allen gleichzeitig. Es ist kein Monster. Es ist die Wahrheit, die zu schwer war, um sie zu tragen, und zu wichtig, um sie zu zerst\u00f6ren.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Mirror', nameDe: 'Der Spiegel',
+      depth: '1\u20133', type: 'narrative',
+      description: 'A surface. Not glass \u2013 not water \u2013 something that reflects without material. Each agent sees something different. Lem\u2019s mirror: we have no need of other worlds. We need mirrors.',
+      descriptionDe: 'Eine Oberfl\u00e4che. Nicht Glas \u2013 nicht Wasser \u2013 etwas, das reflektiert ohne Material. Jeder Agent sieht etwas anderes. Lems Spiegel: wir brauchen keine anderen Welten. Wir brauchen Spiegel.',
+      choices: [
+        { text: 'Study the reflection carefully', textDe: 'Die Spiegelung sorgf\u00e4ltig studieren', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Share what each agent sees', textDe: 'Teilen, was jeder Agent sieht', aptitude: 'Propagandist', difficulty: '+5' },
+        { text: 'Do not look. Move through.', textDe: 'Nicht hinsehen. Weitergehen.' },
+      ],
+    },
+    {
+      name: 'The Familiar Room', nameDe: 'Der vertraute Raum',
+      depth: '2\u20134', type: 'narrative',
+      description: 'This room. The party has been here. Not in this dungeon \u2013 somewhere. The window was on the left. Or the right. The details resist settling. Proust\u2019s madeleine: the sensation arrives before the memory.',
+      descriptionDe: 'Dieser Raum. Die Gruppe war hier. Nicht in diesem Dungeon \u2013 irgendwo. Das Fenster war links. Oder rechts. Die Details weigern sich, sich festzulegen. Prousts Madeleine: die Empfindung kommt vor der Erinnerung.',
+      choices: [
+        { text: 'Investigate what changed', textDe: 'Untersuchen, was sich ver\u00e4ndert hat', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Accept the familiarity', textDe: 'Die Vertrautheit akzeptieren' },
+      ],
+    },
+    {
+      name: 'The Two Clocks', nameDe: 'Die zwei Uhren',
+      depth: '2\u20135', type: 'narrative',
+      description: 'Time is not uniform here. Kafka\u2019s two clocks: the inner one runs crazily on at an inhuman pace, the outer one limps along. The party experiences both. Actions in this room have consequences at different speeds.',
+      descriptionDe: 'Die Zeit ist hier nicht einheitlich. Kafkas zwei Uhren: die innere rennt wahnsinnig weiter in unmenschlichem Tempo, die \u00e4u\u00dfere hinkt. Die Gruppe erlebt beides. Handlungen in diesem Raum haben Konsequenzen in unterschiedlichen Geschwindigkeiten.',
+      choices: [
+        { text: 'Synchronize the clocks', textDe: 'Die Uhren synchronisieren', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Follow the inner clock deeper', textDe: 'Der inneren Uhr tiefer folgen', aptitude: 'Infiltrator', difficulty: '+5' },
+        { text: 'Wait for the moment to pass', textDe: 'Warten, bis der Moment vergeht' },
+      ],
+    },
+    {
+      name: 'The Absent Memory', nameDe: 'Die abwesende Erinnerung',
+      depth: '3\u20136', type: 'narrative',
+      description: 'A room with a gap. Not a hole \u2013 a smooth, clean absence. Something was here. The dungeon remembers that it forgets. Ogawa\u2019s memory police: first the emotional connection vanishes, then the physical evidence.',
+      descriptionDe: 'Ein Raum mit einer L\u00fccke. Kein Loch \u2013 eine glatte, saubere Abwesenheit. Etwas war hier. Das Dungeon erinnert sich, dass es vergisst. Ogawas Ged\u00e4chtnispolizei: erst verschwindet die emotionale Verbindung, dann der physische Beweis.',
+      choices: [
+        { text: 'Reconstruct what was here', textDe: 'Rekonstruieren, was hier war', aptitude: 'Propagandist', difficulty: '+5' },
+        { text: 'Accept the absence', textDe: 'Die Abwesenheit akzeptieren' },
+      ],
+    },
+    {
+      name: 'The Humming', nameDe: 'Das Summen',
+      depth: '3\u20136', type: 'narrative',
+      description: 'From somewhere: a humming. Not really humming \u2013 the singing of the most distant, of the most utterly distant, voices. Kafka\u2019s Castle telephone: this humming is the only real and reliable thing. Everything else is deceptive.',
+      descriptionDe: 'Von irgendwo: ein Summen. Nicht wirklich Summen \u2013 das Singen der fernsten, der allerallerfernsten Stimmen. Kafkas Schlosstelefon: dieses Summen ist das einzig Reale und Verl\u00e4ssliche. Alles andere ist T\u00e4uschung.',
+      choices: [
+        { text: 'Listen deeply', textDe: 'Tief hinh\u00f6ren', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Block it out', textDe: 'Es ausblenden', aptitude: 'Guardian', difficulty: '+0' },
+      ],
+    },
+  ],
+
+  // ── Banter (4-tier consciousness progression) ──
+
+  banterSamples: [
+    { text: 'The room is slightly wrong. Not broken \u2013 shifted. As if it was assembled from a description, not a blueprint.', textDe: 'Der Raum ist leicht falsch. Nicht kaputt \u2013 verschoben. Als w\u00e4re er aus einer Beschreibung zusammengesetzt, nicht aus einem Bauplan.', tier: 0 },
+    { text: 'Something in the architecture anticipates the party. The door was open before they reached it.', textDe: 'Etwas in der Architektur nimmt die Gruppe vorweg. Die T\u00fcr war offen, bevor sie sie erreichten.', tier: 0 },
+    { text: 'Something surfaces. Not from the shadows \u2013 from the periphery of recognition.', textDe: 'Etwas taucht auf. Nicht aus den Schatten \u2013 aus der Peripherie der Wiedererkennung.', tier: 1 },
+    { text: 'The corridor is familiar. The agent has never been here. Both of these are true.', textDe: 'Der Korridor ist vertraut. Der Agent war nie hier. Beides stimmt.', tier: 1 },
+    { text: 'The threshold. The dungeon\u2019s consciousness is no longer background noise \u2013 it is a presence with opinions about being perceived.', textDe: 'Die Schwelle. Das Bewusstsein des Dungeons ist nicht mehr Hintergrundrauschen \u2013 es ist eine Anwesenheit mit Meinungen dar\u00fcber, wahrgenommen zu werden.', tier: 2 },
+    { text: 'Lucid. The party knows it is inside consciousness. The environment responds to thought. The response is not always what was intended.', textDe: 'Luzid. Die Gruppe wei\u00df, dass sie sich im Bewusstsein befindet. Die Umgebung reagiert auf Gedanken. Die Reaktion ist nicht immer, was beabsichtigt war.', tier: 2 },
+    { text: 'Individual identity softens. The party perceives as one. Every agent sees through every other agent\u2019s eyes. Sturgeon\u2019s bleshing.', textDe: 'Individuelle Identit\u00e4t wird weich. Die Gruppe nimmt als Einheit wahr. Jeder Agent sieht durch die Augen jedes anderen Agenten. Sturgeons Bleshing.', tier: 3 },
+    { text: 'Awareness 100. The dungeon is no longer a place. It is a state. The party is no longer navigating \u2013 they are being thought.', textDe: 'Bewusstsein 100. Das Dungeon ist kein Ort mehr. Es ist ein Zustand. Die Gruppe navigiert nicht mehr \u2013 sie wird gedacht.', tier: 3 },
+  ],
+
+  // ── Literary Influences ──
+
+  authors: [
+    { name: 'Carl Gustav Jung', works: 'The Red Book \u00b7 Memories, Dreams, Reflections', concept: 'The collective unconscious \u2013 the psychic substrate beneath individual identity. Philemon: thoughts are not generated by the thinker but arrive like animals in the forest. The dungeon IS the unconscious, and the party descends into it.', conceptDe: 'Das kollektive Unbewusste \u2013 das psychische Substrat unter individueller Identit\u00e4t. Philemon: Gedanken werden nicht vom Denker erzeugt, sondern kommen wie Tiere im Wald. Das Dungeon IST das Unbewusste, und der Trupp steigt hinab.', language: 'Deutsch', quote: 'Er sagte, ich behandle Gedanken, als ob ich sie selber erzeuge, aber seiner Ansicht nach seien Gedanken wie Tiere im Wald.', primary: true },
+    { name: 'Marcel Proust', works: 'In Search of Lost Time', concept: 'Involuntary memory \u2013 the madeleine, intermittences du coeur. Sensation arrives before the memory it unlocks. Grief that comes decades late, triggered by the act of resting.', conceptDe: 'Unwillk\u00fcrliche Erinnerung \u2013 die Madeleine, Intermittenzen des Herzens. Die Empfindung kommt vor der Erinnerung, die sie ausl\u00f6st. Trauer, die Jahrzehnte sp\u00e4t kommt, ausgel\u00f6st durch den Akt des Rastens.', language: 'Fran\u00e7ais', quote: 'L\u2019odeur et la saveur restent encore longtemps, comme des \u00e2mes, \u00e0 se rappeler, \u00e0 attendre, \u00e0 esp\u00e9rer.', primary: true },
+    { name: 'Jorge Luis Borges', works: 'Funes the Memorious \u00b7 The Aleph', concept: 'Memory as prison. Funes remembers everything and can abstract nothing. The overly replete world: too much detail, no generalization. To think is to forget differences.', conceptDe: 'Erinnerung als Gef\u00e4ngnis. Funes erinnert alles und kann nichts abstrahieren. Die \u00fcberf\u00fcllte Welt: zu viel Detail, keine Verallgemeinerung. Denken hei\u00dft Unterschiede vergessen.', language: 'Espa\u00f1ol', quote: 'To think is to forget differences, generalize, make abstractions.', primary: true },
+    { name: 'Franz Kafka', works: 'The Castle \u00b7 Diaries \u00b7 Before the Law', concept: 'The two clocks: inner time races at an inhuman pace, outer time limps. What else can happen but that the two worlds split apart? The doorkeeper waits. The door was made only for the party.', conceptDe: 'Die zwei Uhren: die innere Zeit rast in unmenschlichem Tempo, die \u00e4u\u00dfere hinkt. Was kann anderes geschehen, als dass sich die zwei Welten trennen? Der T\u00fcrh\u00fcter wartet. Die T\u00fcr wurde nur f\u00fcr den Trupp gemacht.', language: 'Deutsch', quote: 'Die Uhren stimmen nicht \u00fcberein, die innere jagt in einer teuflischen Art, die \u00e4u\u00dfere geht stockend ihren gew\u00f6hnlichen Gang.', primary: true },
+    { name: 'Andrei Tarkovsky', works: 'Stalker \u00b7 Solaris', concept: 'The Zone\u2019s Room grants the true desire, not the stated one. Consciousness as landscape: the Zone responds to the visitor, not the map. Everything depends not on the Zone, but on the visitor.', conceptDe: 'Das Zimmer der Zone gew\u00e4hrt den wahren Wunsch, nicht den ausgesprochenen. Bewusstsein als Landschaft: die Zone reagiert auf den Besucher, nicht die Karte. Alles h\u00e4ngt nicht von der Zone ab, sondern vom Besucher.', language: 'Russian', primary: true },
+    { name: 'Kazuo Ishiguro', works: 'The Buried Giant', concept: 'Collective forgetting as ethical choice. The mist that erases memory protects as much as it harms. Some truths were buried for reasons. The Sentinel does not guard against the party \u2013 it guards the party against themselves.', conceptDe: 'Kollektives Vergessen als ethische Wahl. Der Nebel, der Erinnerung l\u00f6scht, sch\u00fctzt ebenso wie er schadet. Manche Wahrheiten wurden aus Gr\u00fcnden begraben. Der W\u00e4chter bewacht nicht die Gruppe \u2013 er bewacht die Gruppe vor sich selbst.', language: 'English', primary: false },
+  ],
+
+  // ── Objektanker (consciousness narrative: each phase more aware) ──
+
+  objektanker: [
+    {
+      name: 'Mirror Shard', nameDe: 'Spiegelscherbe',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A shard of mirror, propped against the wall. It reflects the room \u2013 but the reflection is a fraction of a second ahead. In the glass, the party has already moved to where they are about to stand.', textDe: 'Eine Spiegelscherbe, an die Wand gelehnt. Sie reflektiert den Raum \u2013 aber die Spiegelung ist einen Sekundenbruchteil voraus. Im Glas hat der Trupp sich bereits bewegt, dorthin, wo er gleich stehen wird.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The agent looks into the shard. The shard looks back. The reflection is attentive \u2013 not passive, not copying. Observing.', textDe: 'Der Agent blickt in die Scherbe. Die Scherbe blickt zur\u00fcck. Die Reflexion ist aufmerksam \u2013 nicht passiv, nicht kopierend. Beobachtend.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The shard reflects a room that does not match this one. Same geometry, different contents. The other room is furnished with choices the party did not make. It is more complete. It looks inhabited.', textDe: 'Die Scherbe reflektiert einen Raum, der nicht mit diesem \u00fcbereinstimmt. Selbe Geometrie, anderer Inhalt. Der andere Raum ist eingerichtet mit Entscheidungen, die der Trupp nicht getroffen hat. Er ist vollst\u00e4ndiger. Er wirkt bewohnt.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The shard reflects everything. Every version of this room \u2013 visited, unvisited, imagined, remembered. The party is in all of them. The party is all of them.', textDe: 'Die Scherbe reflektiert alles. Jede Version dieses Raums \u2013 besucht, unbesucht, vorgestellt, erinnert. Der Trupp ist in allen. Der Trupp ist alle.' },
+      ],
+    },
+    {
+      name: 'Philemon Feather', nameDe: 'Philemonsfeder',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A feather. Iridescent, shifting between colors that have no names in any index. It does not belong to any creature the party has catalogued. It belongs to something that has not been observed yet \u2013 only dreamt.', textDe: 'Eine Feder. Schillernd, wechselnd zwischen Farben, die in keinem Index Namen haben. Sie geh\u00f6rt keinem Wesen, das der Trupp katalogisiert hat. Sie geh\u00f6rt etwas, das noch nicht beobachtet wurde \u2013 nur getr\u00e4umt.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The agent picks up the feather. A thought arrives \u2013 unbidden, fully formed, in a voice that is not the agent\u2019s own. The thought is a stranger in the room. It does not leave.', textDe: 'Der Agent hebt die Feder auf. Ein Gedanke kommt \u2013 ungerufen, vollst\u00e4ndig geformt, in einer Stimme, die nicht die des Agenten ist. Der Gedanke ist ein Fremder im Raum. Er geht nicht.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The feather writes. Not with ink \u2013 with attention. Where it rests, the surface remembers things that have not happened yet. The writing is precise. The writing is in the party\u2019s hand.', textDe: 'Die Feder schreibt. Nicht mit Tinte \u2013 mit Aufmerksamkeit. Wo sie liegt, erinnert die Fl\u00e4che sich an Dinge, die noch nicht geschehen sind. Die Schrift ist pr\u00e4zise. Die Schrift ist in der Hand des Trupps.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The feather is the party\u2019s own thought, wearing a body it borrowed from outside. The voice was always theirs. The stranger was always home.', textDe: 'Die Feder ist der eigene Gedanke des Trupps, der einen K\u00f6rper tr\u00e4gt, den er sich von au\u00dfen geliehen hat. Die Stimme war immer ihre. Der Fremde war immer zuhause.' },
+      ],
+    },
+    {
+      name: 'Madeleine', nameDe: 'Madeleine',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A small object on a shelf. Unremarkable in form \u2013 but touching it triggers something involuntary: a sensation that does not belong to this room, from a time the party has not lived. The object is a key to a lock that is not here.', textDe: 'Ein kleines Objekt auf einem Regal. Unscheinbar in der Form \u2013 aber es zu ber\u00fchren l\u00f6st etwas Unwillk\u00fcrliches aus: eine Empfindung, die nicht zu diesem Raum geh\u00f6rt, aus einer Zeit, die der Trupp nicht gelebt hat. Das Objekt ist ein Schl\u00fcssel zu einem Schloss, das nicht hier ist.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The agent holds the object again. A memory surfaces \u2013 not from the agent\u2019s history. From the dungeon\u2019s. The memory is warm and specific and does not belong here.', textDe: 'Der Agent h\u00e4lt das Objekt erneut. Eine Erinnerung taucht auf \u2013 nicht aus der Geschichte des Agenten. Aus der des Dungeons. Die Erinnerung ist warm und spezifisch und geh\u00f6rt nicht hierher.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The object has changed texture. It feels like every significant thing the party has ever touched \u2013 simultaneously. The sensation accumulates. The memory is not playback. It is reconstruction, and each touch rebuilds it differently.', textDe: 'Das Objekt hat seine Textur ver\u00e4ndert. Es f\u00fchlt sich an wie jedes bedeutsame Ding, das der Trupp je ber\u00fchrt hat \u2013 gleichzeitig. Die Empfindung akkumuliert. Die Erinnerung ist keine Wiedergabe. Sie ist Rekonstruktion, und jede Ber\u00fchrung baut sie anders auf.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The object dissolves on contact. What it held was never inside it. It was inside the party \u2013 waiting for a shape to give it permission to surface.', textDe: 'Das Objekt l\u00f6st sich bei Ber\u00fchrung auf. Was es hielt, war nie in ihm. Es war im Trupp \u2013 wartend auf eine Form, die ihm Erlaubnis gab aufzutauchen.' },
+      ],
+    },
+    {
+      name: 'Two Clocks', nameDe: 'Zwei Uhren',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'Two clocks on the wall. They show different times. Both are running. Both are precise. Neither is wrong. The room contains two versions of now, and they disagree.', textDe: 'Zwei Uhren an der Wand. Sie zeigen verschiedene Zeiten. Beide laufen. Beide sind pr\u00e4zise. Keine ist falsch. Der Raum enth\u00e4lt zwei Versionen von Jetzt, und sie widersprechen sich.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The agent checks both clocks. The gap between them has widened. The left one runs at the pace of observation. The right one runs at the pace of experience. They are separating.', textDe: 'Der Agent pr\u00fcft beide Uhren. Der Abstand zwischen ihnen hat sich vergr\u00f6\u00dfert. Die linke l\u00e4uft im Tempo der Beobachtung. Die rechte im Tempo der Erfahrung. Sie trennen sich.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The outer clock has stopped. The inner clock accelerates \u2013 minutes condensing into seconds, hours into moments. The room is experiencing itself faster than the party can observe it.', textDe: 'Die \u00e4u\u00dfere Uhr ist stehen geblieben. Die innere Uhr beschleunigt \u2013 Minuten verdichten sich zu Sekunden, Stunden zu Momenten. Der Raum erlebt sich selbst schneller, als der Trupp ihn beobachten kann.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Both clocks show the same time. The party cannot tell which one yielded. The two versions of now have agreed. What they agreed on is: the party was always here.', textDe: 'Beide Uhren zeigen dieselbe Zeit. Der Trupp kann nicht sagen, welche nachgegeben hat. Die zwei Versionen von Jetzt haben sich geeinigt. Worauf sie sich geeinigt haben: der Trupp war immer hier.' },
+      ],
+    },
+  ],
+
+  // ── Loot Showcase ──
+
+  lootShowcase: [
+    { name: 'Echo Trace', nameDe: 'Echospur', tier: 1, effect: 'Stress heal 50', description: 'A trace of a memory that was not the party\u2019s. Handling it calms something that was not disturbed.', descriptionDe: 'Eine Spur einer Erinnerung, die nicht der Gruppe geh\u00f6rte. Sie zu ber\u00fchren beruhigt etwas, das nicht gest\u00f6rt war.' },
+    { name: 'Lucid Lens', nameDe: 'Luzide Linse', tier: 1, effect: 'Spy +5% (dungeon)', description: 'Perception sharpened by awareness. Spy checks +5% \u2013 the consciousness is legible to those who study its grammar.', descriptionDe: 'Wahrnehmung gesch\u00e4rft durch Bewusstsein. Spion-Proben +5% \u2013 das Bewusstsein ist lesbar f\u00fcr jene, die seine Grammatik studieren.' },
+    { name: 'Mnemosyne Draught', nameDe: 'Mnemosyne-Trank', tier: 2, effect: 'Stress heal 120', description: 'From the river of memory. Drinking it restores what the descent consumed. The taste is of recognition.', descriptionDe: 'Aus dem Fluss der Erinnerung. Ihn zu trinken stellt wieder her, was der Abstieg verbrauchte. Der Geschmack ist Wiedererkennung.' },
+    { name: 'Philemon\u2019s Whisper', nameDe: 'Philemons Fl\u00fcstern', tier: 2, effect: 'Propagandist +10% (dungeon)', description: 'Thoughts are like animals in the forest \u2013 not generated by the thinker. Propagandist checks +10% \u2013 the voice that is not yours sees what yours cannot.', descriptionDe: 'Gedanken sind wie Tiere im Wald \u2013 nicht vom Denker erzeugt. Propagandist-Proben +10% \u2013 die Stimme, die nicht deine ist, sieht, was deine nicht kann.' },
+    { name: 'Individuation Key', nameDe: 'Individuationsschl\u00fcssel', tier: 3, effect: 'Spy +1 (permanent)', description: 'Jung\u2019s key to individuation: the conscious integration of unconscious material. Perception permanently deepened. Spy aptitude +1.', descriptionDe: 'Jungs Schl\u00fcssel zur Individuation: die bewusste Integration unbewussten Materials. Wahrnehmung dauerhaft vertieft. Spion-Aptitude +1.' },
+    { name: 'Awakening Insight', nameDe: 'Erwachungseinsicht', tier: 3, effect: 'Personality modifier (Big Five \u00b10.1)', description: 'The deepest insight. A shift in personality so fundamental it cannot be unlearned. The choice of which dimension is yours \u2013 and irreversible.', descriptionDe: 'Die tiefste Erkenntnis. Eine Pers\u00f6nlichkeitsverschiebung so fundamental, dass sie nicht verlernt werden kann. Die Wahl der Dimension ist deine \u2013 und unwiderruflich.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Awareness Accumulation',
+    mechanicGainTitleDe: 'Bewusstseinsakkumulation',
+    mechanicGainText: '+5 per room (depth 1\u20132)\n+8 per room (depth 3\u20134)\n+12 per room (depth 5+)\n+2 per combat round\n+5 on failed check\n+3 per enemy hit',
+    mechanicGainTextDe: '+5 pro Raum (Tiefe 1\u20132)\n+8 pro Raum (Tiefe 3\u20134)\n+12 pro Raum (Tiefe 5+)\n+2 pro Kampfrunde\n+5 bei fehlgeschlagener Probe\n+3 pro Feindtreffer',
+    mechanicReduceTitle: 'Grounding',
+    mechanicReduceTitleDe: 'Erdung',
+    mechanicReduceText: '\u221210 on ground action (meditation)\n\u22125 on rest\n\u22128 every 3 rooms (natural recession)',
+    mechanicReduceTextDe: '\u221210 bei Erdungsaktion (Meditation)\n\u22125 bei Rast\n\u22128 alle 3 R\u00e4ume (nat\u00fcrlicher R\u00fcckgang)',
+    mechanicReduceEmphasis: 'The consciousness has done this before. It will do it again.',
+    mechanicReduceEmphasisDe: 'Das Bewusstsein hat dies schon getan. Es wird es wieder tun.',
+    encounterIntro: 'Navigate the collective unconscious. Every recognition costs awareness. The arithmetic is not complicated.',
+    encounterIntroDe: 'Navigiert das kollektive Unbewusste. Jede Wiedererkennung kostet Bewusstsein. Die Arithmetik ist nicht kompliziert.',
+    bestiaryIntro: 'The denizens of Das Kollektive Unbewusste. Not enemies \u2013 memories with mass and intention.',
+    bestiaryIntroDe: 'Die Bewohner des Kollektiven Unbewussten. Keine Feinde \u2013 Erinnerungen mit Masse und Absicht.',
+    banterHeader: 'Field Notes',
+    banterHeaderDe: 'Feldnotizen',
+    objektankerHeader: 'Artifacts of Das Kollektive Unbewusste',
+    objektankerHeaderDe: 'Artefakte des Kollektiven Unbewussten',
+    objektankerIntro: 'Objects that transform as awareness accumulates. Each phase closer to recognition \u2013 the dungeon builds even its own landmarks from consciousness.',
+    objektankerIntroDe: 'Objekte, die sich transformieren, w\u00e4hrend Bewusstsein sich anh\u00e4uft. Jede Phase n\u00e4her an Wiedererkennung \u2013 das Dungeon baut sogar seine eigenen Landmarken aus Bewusstsein.',
+    exitQuote: 'The dungeon is not a container for memories. The dungeon IS memory. The party was always here. The party is all of them.',
+    exitQuoteDe: 'Das Dungeon ist kein Beh\u00e4lter f\u00fcr Erinnerungen. Das Dungeon IST Erinnerung. Der Trupp war immer hier. Der Trupp ist alle.',
+    exitCta: 'Enter Das Kollektive Unbewusste',
+    exitCtaDe: 'Das Kollektive Unbewusste betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the recognition.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt die Wiedererkennung.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('deluge'),
+  nextArchetype: getNav('overthrow'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
@@ -2437,6 +2728,7 @@ const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['entropy', ENTROPY_DETAIL],
   ['prometheus', PROMETHEUS_DETAIL],
   ['deluge', DELUGE_DETAIL],
+  ['awakening', AWAKENING_DETAIL],
 ]);
 
 /**
