@@ -1226,9 +1226,9 @@ export class VelgArchetypeDetail extends LitElement {
         align-items: center;
         justify-content: center;
         min-height: var(--_viewport);
-        gap: var(--space-4, 16px);
+        gap: var(--space-6, 24px);
         text-align: center;
-        padding: var(--space-8, 32px);
+        padding: var(--space-8, 32px) var(--space-4, 16px);
       }
 
       .not-found__title {
@@ -1241,12 +1241,82 @@ export class VelgArchetypeDetail extends LitElement {
 
       .not-found__text {
         color: var(--color-text-secondary, #a0a0a0);
-        max-width: 45ch;
+        max-width: 50ch;
+        line-height: var(--leading-relaxed, 1.625);
+      }
+
+      .not-found__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: var(--space-3, 12px);
+        width: 100%;
+        max-width: 960px;
+        margin: var(--space-4, 16px) 0;
+      }
+
+      .not-found__card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1, 4px);
+        padding: var(--space-4, 16px) var(--space-3, 12px);
+        border: 1px solid var(--color-border, #333);
+        background: var(--color-surface-raised, #111);
+        text-decoration: none;
+        transition: border-color 200ms ease, background 200ms ease;
+      }
+
+      .not-found__card:hover {
+        border-color: var(--_card-accent);
+        background: color-mix(in srgb, var(--_card-accent) 6%, var(--color-surface-raised, #111));
+      }
+
+      .not-found__card:focus-visible {
+        outline: 2px solid var(--_card-accent);
+        outline-offset: 2px;
+      }
+
+      .not-found__numeral {
+        font-family: var(--_font-display);
+        font-size: var(--text-xs, 10px);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--_card-accent);
+      }
+
+      .not-found__name {
+        font-family: var(--_font-display);
+        font-size: var(--text-base, 16px);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-primary, #e5e5e5);
+      }
+
+      .not-found__subtitle {
+        font-family: var(--font-prose, var(--font-body, system-ui));
+        font-size: var(--text-sm, 13px);
+        font-style: italic;
+        color: var(--color-text-muted, #888);
+      }
+
+      .not-found__back {
+        margin-top: var(--space-4, 16px);
       }
 
       .not-found__link {
-        color: var(--_accent);
+        color: var(--color-primary, #f59e0b);
         text-decoration: none;
+      }
+
+      .not-found__link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 640px) {
+        .not-found__grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
     `,
   ];
@@ -1806,15 +1876,20 @@ export class VelgArchetypeDetail extends LitElement {
       <div class="not-found">
         <h1 class="not-found__title">${msg('Archetype Not Found')}</h1>
         <p class="not-found__text">
-          ${msg('This archetype detail page is not available yet.')}
+          ${msg('This archetype detail page is not available yet. Explore the available archetypes below.')}
         </p>
-        <p>
-          ${msg('Available archetypes:')}
+        <div class="not-found__grid">
           ${ARCHETYPES.map(
-            (a) => html`<a class="not-found__link" href="/archetypes/${a.id}">${a.name}</a> `,
+            (a) => html`
+              <a class="not-found__card" href="/archetypes/${a.id}" style="--_card-accent: ${a.accent}">
+                <span class="not-found__numeral">${a.numeral}</span>
+                <span class="not-found__name">${a.name}</span>
+                <span class="not-found__subtitle">${a.subtitle}</span>
+              </a>
+            `,
           )}
-        </p>
-        <a class="not-found__link" href="/">${msg('Return to Landing Page')}</a>
+        </div>
+        <a class="not-found__link not-found__back" href="/">${msg('Return to Landing Page')}</a>
       </div>
     `;
   }
