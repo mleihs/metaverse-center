@@ -243,6 +243,36 @@ export class VelgArchetypeDetail extends LitElement {
         100% { background-size: 220px 100%, 100% 340px; opacity: 0.35; }
       }
 
+      /* ── Mother: organic pulse — bioluminescent glow ── */
+
+      .pulse-overlay {
+        position: fixed;
+        top: var(--header-height, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 51;
+        background: radial-gradient(
+          ellipse at 50% 60%,
+          color-mix(in oklch, var(--_accent) 5%, transparent),
+          transparent 70%
+        );
+        opacity: 0.5;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .pulse-overlay {
+          animation: _organic-pulse 4s ease-in-out infinite;
+        }
+      }
+
+      @keyframes _organic-pulse {
+        0%   { opacity: 0.3; }
+        50%  { opacity: 0.6; }
+        100% { opacity: 0.3; }
+      }
+
       /* ═══════════════════════════════════════════════════════════
          GAUGE — sticky right sidebar, scroll-driven fill
          ═══════════════════════════════════════════════════════════ */
@@ -1160,6 +1190,8 @@ export class VelgArchetypeDetail extends LitElement {
         return html`<div class="mist-overlay" aria-hidden="true"></div>`;
       case 'tower':
         return html`<div class="fracture-overlay" aria-hidden="true"></div>`;
+      case 'mother':
+        return html`<div class="pulse-overlay" aria-hidden="true"></div>`;
       default:
         return html``;
     }
