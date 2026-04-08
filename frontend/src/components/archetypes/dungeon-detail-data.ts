@@ -8,7 +8,7 @@
  * - DB seed migrations (enemies, encounters, banter, loot, objektanker, entrance texts)
  * - Fresh literary translation (loreIntro, mechanic, gauge thresholds, author concepts)
  *
- * Overthrow, Shadow, Tower, Mother, Entropy, and Prometheus are fully populated.
+ * Overthrow, Shadow, Tower, Mother, Entropy, Prometheus, and Deluge are fully populated.
  */
 
 import { type ArchetypeQuote, type ArchetypeSlide, ARCHETYPES } from '../landing/dungeon-showcase-data.js';
@@ -2135,6 +2135,298 @@ const PROMETHEUS_DETAIL: ArchetypeDetail = {
   nextArchetype: getNav('deluge'),
 };
 
+// ── VI · The Deluge ─────────────────────────────────────────────────────────
+
+const DELUGE_DETAIL: ArchetypeDetail = {
+  ...getBaseSlide('deluge'),
+
+  // ── Lore Introduction (3 paragraphs, fresh literary prose) ──
+
+  loreIntro: [
+    'The Deluge is the sixth archetype of the Resonance Dungeons \u2013 and the most patient in its violence. Die Steigende Flut is not a flood. Floods imply a discrete event \u2013 arrival, crest, recession, the reassuring grammar of catastrophe with a beginning and an end. The Deluge is a condition. The water was always here; the architecture has simply stopped pretending otherwise. Rooms do not flood \u2013 they remember they are underwater. The corridors slope downward with an intentionality that cannot be accidental: someone designed this space to be claimed. The horror is not drowning. Drowning is too sudden, too dramatic, too willing to announce itself. The horror is the patient, geological arithmetic of displacement: the water rises 5cm per room, and the math does not negotiate. Each step deeper is a concession the party cannot retract. Each room entered is a room the surface forgets. Die Steigende Flut does not attack. It accrues.',
+    'Water level increases with the quiet inevitability of tide tables: +5 per room traversed at depths 1\u20132, +8 at depths 3\u20134, +12 at depth 5 and beyond \u2013 the flood accelerates because depth itself is an argument for more depth. Combat adds +3 per round, because violence in water displaces. Failed checks add +5, because incompetence in a rising medium is not forgiven. Every three rooms, a tidal recession: \u22128, diminishing, because the flood gives back just enough to make the party believe in retreat. At 25 (ankle), movement costs increase. Every step announces itself. The water listens. At 50 (waist), stress multiplies \u00d71.15 and 15% ambush probability emerges \u2013 combat in water costs twice, once for the act, once for the medium. At 75 (chest), stress \u00d71.40, 35% ambush, vision radius shrinks to 2 rooms. The operational vocabulary contracts to three verbs: salvage, seal, ascend. At 100, submerged \u2013 stress \u00d72.0, the water claims what it keeps. Guardian seal actions reduce water by 10, because containment is the only counterargument the flood accepts. The mechanic is geological time compressed into a dungeon run: the water has done this before and will do it again.',
+    'The literary architecture rests on five pillars of displacement. Ballard\u2019s Drowned World \u2013 biological regression as surrender to deep time, the Triassic pull that drags civilization not into catastrophe but into a return to the primordial, where drowning is transcendence because consciousness was always borrowed from the ocean. Bachelard\u2019s Water and Dreams \u2013 narcissistic dissolution, still water and death, the reverie of drowning as intimate death, the maternal embrace that does not let go because it never intended to hold. Coleridge\u2019s Ancient Mariner \u2013 water everywhere, potability as metaphor, the albatross of ecological guilt, abundance without access, punishment through the very element that should sustain. Tarkovsky\u2019s liquid cinema \u2013 Stalker\u2019s Zone seeps, rain falls through roofs, rivers flow through living rooms, water as time made visible, the medium through which meaning travels because meaning has always been wet. Von Trier\u2019s Melancholia \u2013 the dignity of surrender before the inevitable, when the wave comes, the question is not how to stop it but how to stand. Die Steigende Flut inherits all five: the regression, the reverie, the guilt, the patience, the surrender.',
+  ],
+
+  loreIntroDe: [
+    'Die Sintflut ist der sechste Archetyp der Resonanzdungeons \u2013 und der geduldigste in seiner Gewalt. Die Steigende Flut ist keine \u00dcberschwemmung. \u00dcberschwemmungen implizieren ein diskretes Ereignis \u2013 Ankunft, Scheitel, R\u00fcckgang, die beruhigende Grammatik der Katastrophe mit Anfang und Ende. Die Steigende Flut ist ein Zustand. Das Wasser war immer hier; die Architektur hat lediglich aufgeh\u00f6rt, so zu tun, als w\u00e4re es anders. R\u00e4ume werden nicht \u00fcberflutet \u2013 sie erinnern sich, dass sie unter Wasser sind. Die Korridore fallen mit einer Absichtlichkeit ab, die kein Zufall sein kann: jemand hat diesen Raum entworfen, um beansprucht zu werden. Das Grauen ist nicht Ertrinken. Ertrinken ist zu pl\u00f6tzlich, zu dramatisch, zu bereit, sich anzuk\u00fcndigen. Das Grauen ist die geduldige, geologische Arithmetik der Verdr\u00e4ngung: das Wasser steigt 5cm pro Raum, und die Mathematik verhandelt nicht. Jeder Schritt tiefer ist ein Zugest\u00e4ndnis, das der Trupp nicht zur\u00fccknehmen kann. Jeder betretene Raum ist ein Raum, den die Oberfl\u00e4che vergisst. Die Steigende Flut greift nicht an. Sie akkumuliert.',
+    'Der Pegel steigt mit der stillen Unausweichlichkeit von Gezeitentafeln: +5 pro durchquertem Raum in den Tiefen 1\u20132, +8 in den Tiefen 3\u20134, +12 ab Tiefe 5 und dar\u00fcber hinaus \u2013 die Flut beschleunigt, weil Tiefe selbst ein Argument f\u00fcr mehr Tiefe ist. Kampf addiert +3 pro Runde, weil Gewalt im Wasser verdr\u00e4ngt. Fehlgeschlagene Proben addieren +5, weil Inkompetenz in einem steigenden Medium nicht vergeben wird. Alle drei R\u00e4ume ein Gezeitenr\u00fcckgang: \u22128, abnehmend, weil die Flut gerade genug zur\u00fcckgibt, damit der Trupp an R\u00fcckzug glaubt. Bei 25 (Kn\u00f6chel) steigen die Bewegungskosten. Jeder Schritt k\u00fcndigt sich an. Das Wasser h\u00f6rt zu. Bei 50 (H\u00fcfte) multipliziert sich Stress \u00d71,15 und 15% Hinterhaltwahrscheinlichkeit taucht auf \u2013 Kampf im Wasser kostet doppelt, einmal f\u00fcr die Tat, einmal f\u00fcr das Medium. Bei 75 (Brust), Stress \u00d71,40, 35% Hinterhalt, Sichtradius schrumpft auf 2 R\u00e4ume. Das operative Vokabular schrumpft auf drei Verben: bergen, abdichten, aufsteigen. Bei 100, \u00fcberflutet \u2013 Stress \u00d72,0, das Wasser beansprucht, was es beh\u00e4lt. W\u00e4chter-Abdichtungen reduzieren das Wasser um 10, weil Eindringen das einzige Gegenargument ist, das die Flut akzeptiert. Die Mechanik ist geologische Zeit, komprimiert in einen Dungeonlauf: das Wasser hat dies schon getan und wird es wieder tun.',
+    'Die literarische Architektur ruht auf f\u00fcnf S\u00e4ulen der Verdr\u00e4ngung. Ballards Drowned World \u2013 biologische Regression als Hingabe an die Tiefenzeit, der triassische Sog, der Zivilisation nicht in die Katastrophe zieht, sondern in eine R\u00fcckkehr zum Urspr\u00fcnglichen, wo Ertrinken Transzendenz ist, weil Bewusstsein immer nur vom Ozean geliehen war. Bachelards Wasser und Tr\u00e4ume \u2013 narzisstische Aufl\u00f6sung, stilles Wasser und Tod, die Tr\u00e4umerei des Ertrinkens als intimer Tod, die m\u00fctterliche Umarmung, die nicht losl\u00e4sst, weil sie nie vorhatte zu halten. Coleridges Alter Mariner \u2013 Wasser \u00fcberall, Trinkbarkeit als Metapher, der Albatros der \u00f6kologischen Schuld, \u00dcberfluss ohne Zugang, Bestrafung durch genau das Element, das erhalten sollte. Tarkowskis fl\u00fcssiges Kino \u2013 Stalkers Zone sickert, Regen f\u00e4llt durch D\u00e4cher, Fl\u00fcsse flie\u00dfen durch Wohnzimmer, Wasser als sichtbar gemachte Zeit, das Medium, durch das Bedeutung reist, weil Bedeutung immer feucht war. Von Triers Melancholia \u2013 die W\u00fcrde der Hingabe vor dem Unvermeidlichen, wenn die Welle kommt, ist die Frage nicht, wie man sie aufh\u00e4lt, sondern wie man steht. Die Steigende Flut erbt alle f\u00fcnf: die Regression, die Tr\u00e4umerei, die Schuld, die Geduld, die Hingabe.',
+  ],
+
+  // ── Entrance Texts (5 variants, verbatim from DB seed) ──
+
+  entranceTexts: [
+    'The stairs descend. The last three steps are wet. Not splashed \u2013 saturated. The water has been here before and left a mineral signature. It will return.',
+    'Dripping. Rhythmic. The sound precedes the dungeon \u2013 a metronome set by geology. The party counts the interval. 3.2 seconds. The interval will shorten.',
+    'The air is different here. Humid. Heavy. The kind of air that has passed through water recently and carries its memory. Salt. Mineral. Patience.',
+    'A watermark on the entrance arch. Faint. Mineral-white. Evidence of a previous visit by something that does not knock.',
+    'The threshold is damp. Beyond it, the floor slopes downward \u2013 gently, deliberately. The architecture was designed for drainage. The drainage has failed.',
+  ],
+  entranceTextsDe: [
+    'Die Treppe f\u00fchrt hinab. Die letzten drei Stufen sind nass. Nicht bespritzt \u2013 durcht\u00e4nkt. Das Wasser war schon hier und hinterlie\u00df eine mineralische Signatur. Es wird zur\u00fcckkehren.',
+    'Tropfen. Rhythmisch. Das Ger\u00e4usch geht dem Dungeon voraus \u2013 ein von der Geologie eingestelltes Metronom. Der Trupp z\u00e4hlt das Intervall. 3,2 Sekunden. Das Intervall wird sich verk\u00fcrzen.',
+    'Die Luft ist hier anders. Feucht. Schwer. Die Art Luft, die k\u00fcrzlich durch Wasser ging und seine Erinnerung tr\u00e4gt. Salz. Mineral. Geduld.',
+    'Ein Wasserzeichen am Eingangsbogen. Schwach. Mineralwei\u00df. Beweis f\u00fcr einen fr\u00fcheren Besuch durch etwas, das nicht anklopft.',
+    'Die Schwelle ist feucht. Dahinter f\u00e4llt der Boden ab \u2013 sanft, absichtlich. Die Architektur wurde f\u00fcr Entw\u00e4sserung entworfen. Die Entw\u00e4sserung hat versagt.',
+  ],
+
+  // ── Mechanic ──
+
+  mechanicName: 'Rising Tide',
+  mechanicNameDe: 'Steigende Flut',
+  mechanicDescription:
+    'Die Steigende Flut\u2019s unique resonance mechanic. Water level rises per room traversed, per combat round, and per failed check \u2013 the flood does not punish incompetence, it simply notes it in fluid. At 0 (dry), normal operation: the architecture holds, the seals contain, the math is theoretical. At 25 (ankle), movement costs increase \u2013 every step announces itself, and the water listens. At 50 (waist), stress \u00d71.15, 15% ambush \u2013 combat in water costs twice, once for the act, once for the medium. At 75 (chest), stress \u00d71.40, 35% ambush, vision 2 rooms \u2013 the operational vocabulary contracts to salvage, seal, ascend. At 100 (submerged), stress \u00d72.0. The water claims what it keeps. Guardian seal actions reduce water by 10. The mechanic is geological patience: the water has done this before and will do it again.',
+  mechanicDescriptionDe:
+    'Die einzigartige Resonanzmechanik der Steigenden Flut. Der Pegel steigt pro durchquertem Raum, pro Kampfrunde und pro fehlgeschlagener Probe \u2013 die Flut bestraft Inkompetenz nicht, sie vermerkt sie lediglich in Fl\u00fcssigkeit. Bei 0 (trocken), Normalbetrieb: die Architektur h\u00e4lt, die Siegel fassen, die Mathematik ist theoretisch. Bei 25 (Kn\u00f6chel) steigen die Bewegungskosten \u2013 jeder Schritt k\u00fcndigt sich an, und das Wasser h\u00f6rt zu. Bei 50 (H\u00fcfte), Stress \u00d71,15, 15% Hinterhalt \u2013 Kampf im Wasser kostet doppelt, einmal f\u00fcr die Tat, einmal f\u00fcr das Medium. Bei 75 (Brust), Stress \u00d71,40, 35% Hinterhalt, Sicht 2 R\u00e4ume \u2013 das operative Vokabular schrumpft auf bergen, abdichten, aufsteigen. Bei 100 (\u00fcberflutet), Stress \u00d72,0. Das Wasser beansprucht, was es beh\u00e4lt. W\u00e4chter-Abdichtungen reduzieren das Wasser um 10. Die Mechanik ist geologische Geduld: das Wasser hat dies schon getan und wird es wieder tun.',
+
+  mechanicGauge: {
+    name: 'Water Level',
+    nameDe: 'Pegel',
+    start: 0,
+    max: 100,
+    direction: 'fill',
+    thresholds: [
+      { value: 0, label: 'Dry', labelDe: 'Trocken', description: 'Normal operation. The architecture holds. For now.', descriptionDe: 'Normaler Betrieb. Die Architektur h\u00e4lt. Noch.' },
+      { value: 25, label: 'Ankle', labelDe: 'Kn\u00f6chel', description: 'Movement costs increase. Every step announces itself. The water listens.', descriptionDe: 'Bewegungskosten steigen. Jeder Schritt k\u00fcndigt sich an. Das Wasser h\u00f6rt zu.' },
+      { value: 50, label: 'Waist', labelDe: 'H\u00fcfte', description: 'Stress \u00d71.15. 15% ambush. Combat in water costs twice \u2013 once for the act, once for the medium.', descriptionDe: 'Stress \u00d71,15. 15% Hinterhalt. Kampf im Wasser kostet doppelt \u2013 einmal f\u00fcr die Tat, einmal f\u00fcr das Medium.' },
+      { value: 75, label: 'Chest', labelDe: 'Brust', description: 'Stress \u00d71.40. 35% ambush. Vision 2 rooms. The operational vocabulary contracts: salvage, seal, ascend.', descriptionDe: 'Stress \u00d71,40. 35% Hinterhalt. Sicht 2 R\u00e4ume. Das operative Vokabular schrumpft: bergen, abdichten, aufsteigen.' },
+      { value: 100, label: 'Submerged', labelDe: '\u00dcberflutet', description: 'Stress \u00d72.0. The water claims what it keeps. Equivalent to wipe.', descriptionDe: 'Stress \u00d72,0. Das Wasser beansprucht, was es beh\u00e4lt. Entspricht Niederlage.' },
+    ],
+  },
+
+  mechanicGaugePreviewValue: 38,
+
+  aptitudeWeights: {
+    Guardian: 30,
+    Spy: 25,
+    Saboteur: 20,
+    Propagandist: 10,
+    Infiltrator: 10,
+    Assassin: 5,
+  },
+
+  roomDistribution: {
+    Combat: 25,
+    Encounter: 35,
+    Elite: 5,
+    Rest: 10,
+    Treasure: 15,
+    Exit: 10,
+  },
+
+  // ── Enemies ──
+
+  enemies: [
+    {
+      name: 'Riptide Tendril', nameDe: 'Sogranke',
+      tier: 'minion', power: 2, stress: 3, evasion: 40,
+      ability: 'Drag', abilityDe: 'Ziehen', aptitude: 'Infiltrator',
+      description: 'A current given form. It does not strike \u2013 it pulls. The direction is always down, always toward deeper water.',
+      descriptionDe: 'Eine Str\u00f6mung, die Form angenommen hat. Sie schl\u00e4gt nicht zu \u2013 sie zieht. Die Richtung ist immer abw\u00e4rts, immer in tieferes Wasser.',
+    },
+    {
+      name: 'Pressure Surge', nameDe: 'Druckwelle',
+      tier: 'standard', power: 4, stress: 5, evasion: 10,
+      ability: 'Flood Pulse', abilityDe: 'Flutpuls', aptitude: 'Saboteur',
+      description: 'The water\u2019s memory of what it once displaced. It arrives as a wall \u2013 not tall, not dramatic, but dense. The kind of force that moves furniture and doesn\u2019t notice.',
+      descriptionDe: 'Die Erinnerung des Wassers an das, was es einst verdr\u00e4ngte. Es kommt als Wand \u2013 nicht hoch, nicht dramatisch, aber dicht. Die Art Kraft, die M\u00f6bel verschiebt und es nicht bemerkt.',
+    },
+    {
+      name: 'Silt Revenant', nameDe: 'Schlickwiederg\u00e4nger',
+      tier: 'elite', power: 3, stress: 6, evasion: 15,
+      ability: 'Obscure', abilityDe: 'Verdunkeln', aptitude: 'Propagandist',
+      description: 'It emerged from the sediment when the water reached this level. A shape made of what the flood deposited \u2013 silt, mineral, the residue of dissolved rooms. It does not speak. It broadcasts the sound of water in enclosed spaces.',
+      descriptionDe: 'Es stieg aus dem Sediment, als das Wasser diesen Pegel erreichte. Eine Gestalt aus dem, was die Flut ablagerte \u2013 Schlick, Mineral, der R\u00fcckstand aufgel\u00f6ster R\u00e4ume. Es spricht nicht. Es sendet das Ger\u00e4usch von Wasser in geschlossenen R\u00e4umen.',
+    },
+    {
+      name: 'Undertow Warden', nameDe: 'Sogw\u00e4chter',
+      tier: 'elite', power: 5, stress: 6, evasion: 5,
+      ability: 'Drag', abilityDe: 'Ziehen', aptitude: 'Saboteur',
+      description: 'The water\u2019s enforcer. Not an entity that lives in water \u2013 an entity that IS water, given mass and purpose. It does not guard a door. It guards a depth.',
+      descriptionDe: 'Der Vollstrecker des Wassers. Keine Entit\u00e4t, die im Wasser lebt \u2013 eine Entit\u00e4t, die Wasser IST, mit Masse und Absicht versehen. Es bewacht keine T\u00fcr. Es bewacht eine Tiefe.',
+    },
+    {
+      name: 'The Current', nameDe: 'Die Str\u00f6mung',
+      tier: 'boss', power: 6, stress: 8, evasion: 0,
+      ability: 'Tidal Wave', abilityDe: 'Flutwelle', aptitude: 'Guardian',
+      description: 'Not an enemy. A direction. The Current is the flood\u2019s final argument: that everything flows downward, that every barrier is temporary, that what the water claims, the water keeps. It does not attack. It arrives.',
+      descriptionDe: 'Kein Feind. Eine Richtung. Die Str\u00f6mung ist das letzte Argument der Flut: dass alles abw\u00e4rts flie\u00dft, dass jede Barriere vor\u00fcbergehend ist, dass was das Wasser beansprucht, das Wasser beh\u00e4lt. Sie greift nicht an. Sie kommt.',
+    },
+  ],
+
+  // ── Encounters ──
+
+  encounterPreviews: [
+    {
+      name: 'The Watermark', nameDe: 'Das Wasserzeichen',
+      depth: '1\u20133', type: 'narrative',
+      description: 'A line on the wall. Faint. Mineral-white. The watermark shows how high the water reached last time.',
+      descriptionDe: 'Eine Linie an der Wand. Schwach. Mineralwei\u00df. Das Wasserzeichen zeigt, wie hoch das Wasser beim letzten Mal stand.',
+      choices: [
+        { text: 'Study the watermark', textDe: 'Das Wasserzeichen studieren', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Seal below the mark', textDe: 'Unterhalb der Markierung abdichten', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Ignore it and move', textDe: 'Ignorieren und weitergehen' },
+      ],
+    },
+    {
+      name: 'The Submerged Cache', nameDe: 'Das versunkene Depot',
+      depth: '2\u20134', type: 'narrative',
+      description: 'Through the water below \u2013 shapes. Containers. Something the flood deposited here from a room that no longer exists.',
+      descriptionDe: 'Durch das Wasser darunter \u2013 Formen. Beh\u00e4lter. Etwas, das die Flut aus einem Raum hierhin ablagerte, der nicht mehr existiert.',
+      choices: [
+        { text: 'Dive for it', textDe: 'Danach tauchen', aptitude: 'Guardian', difficulty: '+5' },
+        { text: 'Send the sharpest eyes', textDe: 'Die sch\u00e4rfsten Augen schicken', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Leave it. The water owns it now.', textDe: 'Lassen. Das Wasser besitzt es jetzt.' },
+      ],
+    },
+    {
+      name: 'The Breach', nameDe: 'Der Riss',
+      depth: '2\u20135', type: 'narrative',
+      description: 'A crack in the wall. Water doesn\u2019t pour through it \u2013 it persuades. A thin, persistent line of moisture that widens as you watch.',
+      descriptionDe: 'Ein Riss in der Wand. Wasser str\u00f6mt nicht hindurch \u2013 es \u00fcberzeugt. Eine d\u00fcnne, beharrliche Feuchtigkeitslinie, die sich erweitert, w\u00e4hrend man zusieht.',
+      choices: [
+        { text: 'Seal it', textDe: 'Abdichten', aptitude: 'Saboteur', difficulty: '+5' },
+        { text: 'Redirect it', textDe: 'Umleiten', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Weaponize the breach', textDe: 'Den Riss als Waffe nutzen', aptitude: 'Assassin', difficulty: '+0' },
+      ],
+    },
+    {
+      name: 'The Survivor\u2019s Message', nameDe: 'Die Nachricht des \u00dcberlebenden',
+      depth: '3\u20135', type: 'narrative',
+      description: 'Carved into the wall above the current waterline. Recent. Someone else tried this. The message is incomplete \u2013 the water reached it before they finished.',
+      descriptionDe: 'In die Wand geritzt \u00fcber der aktuellen Wasserlinie. K\u00fcrzlich. Jemand anderes hat dies versucht. Die Nachricht ist unvollst\u00e4ndig \u2013 das Wasser erreichte sie, bevor sie fertig waren.',
+      choices: [
+        { text: 'Read what remains', textDe: 'Lesen, was \u00fcbrig ist', aptitude: 'Propagandist', difficulty: '+5' },
+        { text: 'Add to it', textDe: 'Erg\u00e4nzen', aptitude: 'Spy', difficulty: '+0' },
+      ],
+    },
+    {
+      name: 'The Sound of Depth', nameDe: 'Das Ger\u00e4usch der Tiefe',
+      depth: '3\u20136', type: 'narrative',
+      description: 'The water below has reached a resonance. A low hum. Not mechanical \u2013 geological. The sound the planet makes when it remembers it is mostly ocean.',
+      descriptionDe: 'Das Wasser darunter hat eine Resonanz erreicht. Ein tiefes Summen. Nicht mechanisch \u2013 geologisch. Das Ger\u00e4usch, das der Planet macht, wenn er sich erinnert, dass er gr\u00f6\u00dftenteils Ozean ist.',
+      choices: [
+        { text: 'Listen', textDe: 'Lauschen', aptitude: 'Propagandist', difficulty: '+0' },
+        { text: 'Measure it', textDe: 'Messen', aptitude: 'Spy', difficulty: '+5' },
+        { text: 'Block it out', textDe: 'Ausblenden' },
+      ],
+    },
+  ],
+
+  // ── Banter (4-tier water progression) ──
+
+  banterSamples: [
+    { text: 'The floor is damp. Not wet \u2013 damp. The kind of moisture that precedes a statement.', textDe: 'Der Boden ist feucht. Nicht nass \u2013 feucht. Die Art Feuchtigkeit, die einer Aussage vorausgeht.', tier: 0 },
+    { text: 'Water at 12cm. Clear. The room is legible through it. That will change.', textDe: 'Wasser bei 12cm. Klar. Der Raum ist hindurch lesbar. Das wird sich \u00e4ndern.', tier: 0 },
+    { text: 'The waterline on the wall is 7cm higher than when the party entered this floor. The arithmetic is not complicated.', textDe: 'Die Wasserlinie an der Wand ist 7cm h\u00f6her als beim Betreten dieser Etage. Die Arithmetik ist nicht kompliziert.', tier: 1 },
+    { text: 'Combat in water. Every action costs twice \u2013 once for the act, once for the medium.', textDe: 'Kampf im Wasser. Jede Aktion kostet doppelt \u2013 einmal f\u00fcr die Tat, einmal f\u00fcr das Medium.', tier: 1 },
+    { text: 'Half-submerged. The water is cold and has opinions about which direction the party should move.', textDe: 'Halb \u00fcberflutet. Das Wasser ist kalt und hat Meinungen dar\u00fcber, in welche Richtung sich die Gruppe bewegen sollte.', tier: 2 },
+    { text: 'The current carries debris from rooms below. Fragments of encounters that are now depths.', textDe: 'Die Str\u00f6mung tr\u00e4gt Tr\u00fcmmer aus R\u00e4umen darunter. Fragmente von Begegnungen, die jetzt Tiefen sind.', tier: 2 },
+    { text: 'The tide returns. Higher. It always returns higher.', textDe: 'Die Flut kehrt zur\u00fcck. H\u00f6her. Sie kehrt immer h\u00f6her zur\u00fcck.', tier: 2 },
+    { text: 'Three rooms above the waterline. Two hours ago there were five. The mathematics has not changed, only the denominator.', textDe: 'Drei R\u00e4ume \u00fcber der Wasserlinie. Vor zwei Stunden waren es f\u00fcnf. Die Mathematik hat sich nicht ge\u00e4ndert, nur der Nenner.', tier: 3 },
+  ],
+
+  // ── Literary Influences ──
+
+  authors: [
+    { name: 'J.G. Ballard', works: 'The Drowned World', concept: 'Biological regression as surrender to deep time. The Triassic pull \u2013 civilization dissolving not through catastrophe but through a return to the primordial. Drowning as transcendence, not tragedy.', conceptDe: 'Biologische Regression als Hingabe an die Tiefenzeit. Der triassische Sog \u2013 Zivilisation, die sich nicht durch Katastrophe aufl\u00f6st, sondern durch R\u00fcckkehr zum Urspr\u00fcnglichen. Ertrinken als Transzendenz, nicht Trag\u00f6die.', language: 'English', quote: 'The further south they moved, the more the biological clock within them reverted to a more primitive time.', primary: true },
+    { name: 'Gaston Bachelard', works: 'Water and Dreams', concept: 'Narcissistic dissolution \u2013 still water and death. The reverie of drowning: water as the element of intimate death, the maternal embrace that does not let go.', conceptDe: 'Narzistische Aufl\u00f6sung \u2013 stilles Wasser und Tod. Die Tr\u00e4umerei des Ertrinkens: Wasser als Element des intimen Todes, die m\u00fctterliche Umarmung, die nicht lossl\u00e4sst.', language: 'Fran\u00e7ais', quote: 'Still water brings us back to our dead.', primary: true },
+    { name: 'Samuel Taylor Coleridge', works: 'The Rime of the Ancient Mariner', concept: 'Water everywhere, potability as metaphor. The albatross of ecological guilt \u2013 abundance without access, punishment through the very element that should sustain.', conceptDe: 'Wasser \u00fcberall, Trinkbarkeit als Metapher. Der Albatros der \u00f6kologischen Schuld \u2013 \u00dcberfluss ohne Zugang, Bestrafung durch genau das Element, das erhalten sollte.', language: 'English', quote: 'Water, water, every where, nor any drop to drink.', primary: true },
+    { name: 'Andrei Tarkovsky', works: 'Stalker \u00b7 Solaris \u00b7 Nostalghia', concept: 'Liquid cinema \u2013 water as time made visible. Every Tarkovsky film is a flood film: the Zone seeps, rain falls through roofs, rivers flow through living rooms. Water is not a metaphor. Water is the medium through which meaning travels.', conceptDe: 'Fl\u00fcssiges Kino \u2013 Wasser als sichtbar gemachte Zeit. Jeder Tarkovsky-Film ist ein Flutfilm: die Zone sickert, Regen f\u00e4llt durch D\u00e4cher, Fl\u00fcsse flie\u00dfen durch Wohnzimmer. Wasser ist keine Metapher. Wasser ist das Medium, durch das Bedeutung reist.', language: 'Russian', primary: false },
+    { name: 'Lars von Trier', works: 'Melancholia', concept: 'The dignity of surrender before the inevitable. When the wave comes, the question is not how to stop it but how to stand.', conceptDe: 'Die W\u00fcrde der Hingabe vor dem Unvermeidlichen. Wenn die Welle kommt, ist die Frage nicht, wie man sie aufh\u00e4lt, sondern wie man steht.', language: 'Dansk', primary: false },
+    { name: 'Rachel Carson', works: 'The Sea Around Us \u00b7 Silent Spring', concept: 'The ocean remembers everything. Geological patience as moral authority \u2013 the water was here first, will be here last, and its claim on every surface is not aggression but correction.', conceptDe: 'Der Ozean erinnert sich an alles. Geologische Geduld als moralische Autorit\u00e4t \u2013 das Wasser war zuerst hier, wird zuletzt hier sein, und sein Anspruch auf jede Oberfl\u00e4che ist nicht Aggression, sondern Korrektur.', language: 'English', primary: false },
+  ],
+
+  // ── Objektanker (displacement narrative: each phase wetter) ──
+
+  objektanker: [
+    {
+      name: 'The Watermark', nameDe: 'Das Wasserzeichen',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A line on the wall. Mineral-white, ruler-straight, deposited by water that rose to this exact height and held there long enough to leave a record. The line is old. The precision is not. Something measured this room before you entered it.', textDe: 'Eine Linie an der Wand. Mineralwei\u00df, linealgrade, hinterlassen von Wasser, das bis zu genau dieser H\u00f6he stieg und lang genug dort verharrte, um eine Aufzeichnung zu hinterlassen. Die Linie ist alt. Die Pr\u00e4zision nicht. Etwas hat diesen Raum vermessen, bevor ihr ihn betreten habt.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'Another watermark. Higher. Same mineral deposit, same precision. The water has been here before \u2013 more than once. Each visit, it stayed longer.', textDe: 'Ein weiteres Wasserzeichen. H\u00f6her. Selbe Mineralablagerung, selbe Pr\u00e4zision. Das Wasser war schon hier \u2013 mehr als einmal. Bei jedem Besuch blieb es l\u00e4nger.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The wall is a chronicle. Dozens of lines, each higher than the last, each a record of a flood that rose and receded and rose again. The intervals between them are shrinking. The most recent line is still damp.', textDe: 'Die Wand ist eine Chronik. Dutzende Linien, jede h\u00f6her als die vorige, jede eine Aufzeichnung einer Flut, die stieg und wich und wieder stieg. Die Abst\u00e4nde zwischen ihnen werden kleiner. Die j\u00fcngste Linie ist noch feucht.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'One line remains. At the ceiling. The mineral deposit is fresh \u2013 still crystallizing. The water that made this mark has not yet receded. It is here.', textDe: 'Eine Linie bleibt. An der Decke. Die Mineralablagerung ist frisch \u2013 kristallisiert noch. Das Wasser, das dieses Zeichen hinterlie\u00df, ist noch nicht zur\u00fcckgewichen. Es ist hier.' },
+      ],
+    },
+    {
+      name: 'The Seal', nameDe: 'Das Siegel',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A seal in the floor. Wax over iron, stamped with a symbol that might be a warning or a promise \u2013 the distinction depends on which side of the seal you are standing on. Beneath it: the sound of pressure.', textDe: 'Ein Siegel im Boden. Wachs \u00fcber Eisen, gepr\u00e4gt mit einem Symbol, das eine Warnung oder ein Versprechen sein k\u00f6nnte \u2013 die Unterscheidung h\u00e4ngt davon ab, auf welcher Seite des Siegels man steht. Darunter: das Ger\u00e4usch von Druck.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The seal again. Hairline fractures run through the wax like veins. Moisture beads along each crack. The seal is not breaking \u2013 it is perspiring.', textDe: 'Das Siegel erneut. Haarrisse durchziehen das Wachs wie Adern. Feuchtigkeit perlt entlang jedes Risses. Das Siegel bricht nicht \u2013 es schwitzt.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The seal weeps. The wax has softened \u2013 not from heat but from patience. Water seeps through the iron beneath in a film so thin it seems like condensation. The boundary is not failing. It is dissolving.', textDe: 'Das Siegel weint. Das Wachs ist weich geworden \u2013 nicht durch Hitze, sondern durch Geduld. Wasser sickert durch das Eisen darunter in einem Film so d\u00fcnn, dass er wie Kondenswasser wirkt. Die Grenze versagt nicht. Sie l\u00f6st sich auf.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'No seal. No hatch. No distinction between above and below. The water is here not because it broke through \u2013 because \u2018through\u2019 stopped meaning anything.', textDe: 'Kein Siegel. Keine Luke. Keine Unterscheidung zwischen oben und unten. Das Wasser ist hier, nicht weil es durchbrach \u2013 weil \u00bbdurch\u00ab aufgeh\u00f6rt hat, etwas zu bedeuten.' },
+      ],
+    },
+    {
+      name: 'The Bottle', nameDe: 'Die Flasche',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A bottle. Glass, sealed with wax. Inside: air. Not a message \u2013 the medium is the message. Someone preserved the last breath of a dry room.', textDe: 'Eine Flasche. Glas, mit Wachs versiegelt. Darin: Luft. Keine Botschaft \u2013 das Medium ist die Botschaft. Jemand hat den letzten Atemzug eines trockenen Raums konserviert.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The bottle again. The current has carried it to the far wall, where it bobs against the surface with the patience of something that has learned to float.', textDe: 'Die Flasche wieder. Die Str\u00f6mung hat sie zur gegen\u00fcberliegenden Wand getragen, wo sie gegen die Oberfl\u00e4che wippt mit der Geduld von etwas, das schwimmen gelernt hat.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The seal is failing. Air escapes in silver beads that rise through the water and break at the surface without sound. Each bubble smaller than the last. The room is inheriting the bottle\u2019s contents.', textDe: 'Das Siegel versagt. Luft entweicht in silbernen Perlen, die durch das Wasser aufsteigen und an der Oberfl\u00e4che lautlos zerplatzen. Jede Blase kleiner als die vorige. Der Raum erbt den Inhalt der Flasche.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'Empty. The glass is full of water now. The air it held is in the room \u2013 in the ceiling pocket where the party still stands dry. The bottle kept its promise. It delivered.', textDe: 'Leer. Das Glas ist jetzt voll Wasser. Die Luft, die es hielt, ist im Raum \u2013 in der Deckentasche, wo der Trupp noch trocken steht. Die Flasche hat ihr Versprechen gehalten. Sie hat geliefert.' },
+      ],
+    },
+    {
+      name: 'The Depth Gauge', nameDe: 'Das Tiefenmessger\u00e4t',
+      phases: [
+        { label: 'Discovery', labelDe: 'Entdeckung', text: 'A gauge, mounted to the wall. Brass, glass-fronted, calibrated in meters. The scale runs from zero to thirty. The current reading: 0.2. The water in this room is dry. The gauge disagrees.', textDe: 'Eine Anzeige, an der Wand montiert. Messing, glasverkleidet, kalibriert in Metern. Die Skala reicht von null bis drei\u00dfig. Die aktuelle Anzeige: 0,2. Das Wasser in diesem Raum ist trocken. Die Anzeige widerspricht.' },
+        { label: 'Echo', labelDe: 'Echo', text: 'The gauge again. It reads 4.7. The room is dry here. The reading is not wrong \u2013 it is premature.', textDe: 'Die Anzeige erneut. Sie zeigt 4,7. Der Raum ist hier trocken. Die Anzeige ist nicht falsch \u2013 sie ist verfr\u00fcht.' },
+        { label: 'Mutation', labelDe: 'Mutation', text: 'The gauge reads the exact depth of the current room. To the centimeter. It was calibrated for this moment, in this room, long before either existed. The precision is not mechanical. It is patient.', textDe: 'Die Anzeige zeigt die exakte Tiefe des aktuellen Raums. Auf den Zentimeter. Sie wurde f\u00fcr diesen Moment kalibriert, in diesem Raum, lange bevor es beide gab. Die Pr\u00e4zision ist nicht mechanisch. Sie ist geduldig.' },
+        { label: 'Climax', labelDe: 'H\u00f6hepunkt', text: 'The gauge reads zero. Not because the water has receded. Because the gauge is submerged, and underwater, depth is not a number. It is a condition.', textDe: 'Die Anzeige zeigt null. Nicht weil das Wasser gewichen ist. Weil die Anzeige unter Wasser steht, und unter Wasser ist Tiefe keine Zahl. Sie ist ein Zustand.' },
+      ],
+    },
+  ],
+
+  // ── Loot Showcase ──
+
+  lootShowcase: [
+    { name: 'Brine Residue', nameDe: 'Salzr\u00fcckstand', tier: 1, effect: 'Stress heal 50', description: 'Crystallized from evaporated floodwater. Holding it steadies the pulse. A mineral memory of when the water was calm.', descriptionDe: 'Kristallisiert aus verdunstetem Flutwasser. Es in der Hand zu halten beruhigt den Puls. Eine mineralische Erinnerung an die Zeit, als das Wasser ruhig war.' },
+    { name: 'Current Map', nameDe: 'Str\u00f6mungskarte', tier: 1, effect: 'Spy +5% (dungeon)', description: 'A trace of the water\u2019s preferred paths through the architecture. Spy checks +5% \u2013 the flood is legible to those who study its grammar.', descriptionDe: 'Eine Spur der bevorzugten Wege des Wassers durch die Architektur. Spion-Proben +5% \u2013 die Flut ist lesbar f\u00fcr jene, die ihre Grammatik studieren.' },
+    { name: 'Pressure Ward', nameDe: 'Druckschutz', tier: 2, effect: 'Stress heal 120', description: 'Equalized pressure from a sealed chamber. The relief is physical \u2013 the tension in the chest that was always there, gone.', descriptionDe: 'Ausgeglichener Druck aus einer versiegelten Kammer. Die Erleichterung ist k\u00f6rperlich \u2013 die Spannung in der Brust, die immer da war, verschwunden.' },
+    { name: 'Tidal Insight', nameDe: 'Gezeiteneinsicht', tier: 2, effect: 'Spy +10% (dungeon)', description: 'The tide\u2019s pattern, internalized. Spy checks +10% \u2013 the flood\u2019s arithmetic, once opaque, now transparent.', descriptionDe: 'Das Muster der Gezeiten, verinnerlicht. Spion-Proben +10% \u2013 die Arithmetik der Flut, einst undurchsichtig, nun transparent.' },
+    { name: 'Covenant Fragment', nameDe: 'Bundesfragment', tier: 3, effect: 'Guardian +1 (permanent)', description: 'A fragment of the promise the water made: to recede, eventually. Carrying it changes how the bearer relates to protection. Guardian aptitude +1.', descriptionDe: 'Ein Fragment des Versprechens, das das Wasser gab: zur\u00fcckzuweichen, irgendwann. Es zu tragen ver\u00e4ndert, wie der Tr\u00e4ger sich zu Schutz verh\u00e4lt. W\u00e4chter-Eignung +1.' },
+    { name: 'Deep-Time Core', nameDe: 'Tiefzeitkern', tier: 3, effect: 'Spy +1 (permanent)', description: 'Compressed sediment from the lowest floor. It contains the memory of every room the water passed through. Perception sharpened permanently. Spy aptitude +1.', descriptionDe: 'Komprimiertes Sediment vom tiefsten Stockwerk. Es enth\u00e4lt die Erinnerung an jeden Raum, den das Wasser durchquerte. Wahrnehmung dauerhaft gesch\u00e4rft. Spion-Eignung +1.' },
+  ],
+
+  // ── Prose ──
+
+  prose: {
+    mechanicGainTitle: 'Tide Surge',
+    mechanicGainTitleDe: 'Flutzunahme',
+    mechanicGainText: '+5 per room (depth 1\u20132)\n+8 per room (depth 3\u20134)\n+12 per room (depth 5+)\n+3 per combat round\n+5 on failed check\n+2 per enemy hit',
+    mechanicGainTextDe: '+5 pro Raum (Tiefe 1\u20132)\n+8 pro Raum (Tiefe 3\u20134)\n+12 pro Raum (Tiefe 5+)\n+3 pro Kampfrunde\n+5 bei fehlgeschlagener Probe\n+2 pro Feindtreffer',
+    mechanicReduceTitle: 'Tidal Recession',
+    mechanicReduceTitleDe: 'Gezeitenr\u00fcckgang',
+    mechanicReduceText: '\u22128 every 3 rooms (diminishing)\n\u221210 on Guardian seal action\n\u22125 on rest',
+    mechanicReduceTextDe: '\u22128 alle 3 R\u00e4ume (abnehmend)\n\u221210 bei W\u00e4chter-Abdichtung\n\u22125 bei Rast',
+    mechanicReduceEmphasis: 'The water has done this before. It will do it again.',
+    mechanicReduceEmphasisDe: 'Das Wasser hat dies schon getan. Es wird es wieder tun.',
+    encounterIntro: 'Navigate the rising water. Every room costs displacement. The arithmetic does not negotiate.',
+    encounterIntroDe: 'Navigiert das steigende Wasser. Jeder Raum kostet Verdr\u00e4ngung. Die Arithmetik verhandelt nicht.',
+    bestiaryIntro: 'The denizens of Die Steigende Flut. Not enemies \u2013 currents with mass and memory.',
+    bestiaryIntroDe: 'Die Bewohner der Steigenden Flut. Keine Feinde \u2013 Str\u00f6mungen mit Masse und Erinnerung.',
+    banterHeader: 'Field Reports from Die Steigende Flut',
+    banterHeaderDe: 'Feldberichte aus der Steigenden Flut',
+    objektankerHeader: 'Artifacts of Die Steigende Flut',
+    objektankerHeaderDe: 'Artefakte der Steigenden Flut',
+    objektankerIntro: 'Objects that transform as the water rises. Each phase wetter than the last \u2013 the flood claims even its own landmarks.',
+    objektankerIntroDe: 'Objekte, die sich transformieren, w\u00e4hrend das Wasser steigt. Jede Phase feuchter als die letzte \u2013 die Flut beansprucht sogar ihre eigenen Landmarken.',
+    exitQuote: 'The world reminds its inhabitants: guests, not owners. The water was here first. The water will be here last.',
+    exitQuoteDe: 'Die Welt erinnert ihre Bewohner: G\u00e4ste, nicht Eigent\u00fcmer. Das Wasser war zuerst hier. Das Wasser wird zuletzt hier sein.',
+    exitCta: 'Enter Die Steigende Flut',
+    exitCtaDe: 'Die Steigende Flut betreten',
+    exitCtaText: 'You survived the exhibition. Now survive the displacement.',
+    exitCtaTextDe: 'Ihr habt die Ausstellung \u00fcberlebt. Jetzt \u00fcberlebt die Verdr\u00e4ngung.',
+  },
+
+  // ── Navigation ──
+
+  prevArchetype: getNav('prometheus'),
+  nextArchetype: getNav('awakening'),
+};
+
 // ── Registry ─────────────────────────────────────────────────────────────────
 
 const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
@@ -2144,6 +2436,7 @@ const ARCHETYPE_DETAILS: ReadonlyMap<string, ArchetypeDetail> = new Map([
   ['mother', MOTHER_DETAIL],
   ['entropy', ENTROPY_DETAIL],
   ['prometheus', PROMETHEUS_DETAIL],
+  ['deluge', DELUGE_DETAIL],
 ]);
 
 /**
