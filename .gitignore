@@ -17,6 +17,7 @@ static/dist/
 .env.local
 .env.*.local
 .env.mcp
+.mcp.json
 
 # IDE
 .idea/

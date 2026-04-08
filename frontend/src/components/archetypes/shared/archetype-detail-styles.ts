@@ -111,7 +111,7 @@ export const detailRoomStyles = css`
     height: auto;
   }
 
-  /* Gallery spotlight overlay */
+  /* Gallery spotlight overlay — soft vignette, lets bg images breathe */
   .room::before {
     content: '';
     position: absolute;
@@ -119,9 +119,9 @@ export const detailRoomStyles = css`
     background: radial-gradient(
       ellipse at var(--_light-x, 50%) var(--_light-y, 30%),
       transparent 0%,
-      rgba(0, 0, 0, 0.25) 40%,
-      rgba(0, 0, 0, 0.6) 70%,
-      rgba(0, 0, 0, 0.85) 100%
+      rgba(0, 0, 0, 0.15) 40%,
+      rgba(0, 0, 0, 0.35) 70%,
+      rgba(0, 0, 0, 0.55) 100%
     );
     pointer-events: none;
     z-index: 1;
@@ -155,7 +155,7 @@ export const detailRoomStyles = css`
     inset: -15% 0;
     z-index: 0;
     background: var(--_bg-url) center / cover no-repeat;
-    opacity: var(--_bg-opacity, 0.4);
+    opacity: var(--_bg-opacity, 0.5);
     pointer-events: none;
   }
 

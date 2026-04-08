@@ -5,7 +5,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
-import type { EncounterChoice } from '../dungeon-detail-data.js';
+import type { LocalizedEncounterChoice as EncounterChoice } from '../dungeon-detail-localized.js';
 
 @customElement('velg-encounter-card')
 export class VelgEncounterCard extends LitElement {

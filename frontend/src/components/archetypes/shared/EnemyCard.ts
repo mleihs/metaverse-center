@@ -103,7 +103,8 @@ export class VelgEnemyCard extends LitElement {
   ];
 
   @property() name = '';
-  @property() nameDe = '';
+  /** Alternate-language name shown as subtitle (DE name in EN mode, EN name in DE mode). */
+  @property() nameAlt = '';
   @property({ reflect: true }) tier: 'minion' | 'standard' | 'elite' | 'boss' = 'standard';
   @property({ type: Number }) power = 0;
   @property({ type: Number }) stress = 0;
@@ -119,7 +120,7 @@ export class VelgEnemyCard extends LitElement {
           <span class="name">${this.name}</span>
           <span class="tier-badge tier-badge--${this.tier}">${this.tier}</span>
         </div>
-        <div class="name-de">${this.nameDe}</div>
+        <div class="name-de">${this.nameAlt}</div>
         <div class="divider"></div>
         <div class="stats">
           <span class="stat-chip">PWR ${this.power}</span>
