@@ -11,7 +11,6 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
-from backend.services.constants import SECURITY_TIER_ORDER
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found
@@ -109,38 +108,17 @@ class CycleResolutionService:
         config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
         rp_cap = config["rp_cap"]
 
-        use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
-        if use_rpc:
-            # Atomic RP grant with cap enforcement (migration 148)
-            rpc_resp = await supabase.rpc(
-                "fn_grant_rp_single",
-                {
-                    "p_epoch_id": str(epoch_id),
-                    "p_simulation_id": str(simulation_id),
-                    "p_amount": amount,
-                    "p_rp_cap": rp_cap,
-                },
-            ).execute()
-            return rpc_resp.data
-
-        # Legacy: fetch-compute-update with no locking
-        resp = await (
-            supabase.table("epoch_participants")
-            .select("id, current_rp")
-            .eq("epoch_id", str(epoch_id))
-            .eq("simulation_id", str(simulation_id))
-            .single()
-            .execute()
-        )
-        if not resp.data:
-            raise not_found(detail="Not a participant.")
-
-        current = resp.data["current_rp"]
-        new_rp = min(current + amount, rp_cap)
-
-        await supabase.table("epoch_participants").update({"current_rp": new_rp}).eq("id", resp.data["id"]).execute()
-
-        return new_rp
+        # Atomic RP grant with cap enforcement (migration 148)
+        rpc_resp = await supabase.rpc(
+            "fn_grant_rp_single",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_amount": amount,
+                "p_rp_cap": rp_cap,
+            },
+        ).execute()
+        return rpc_resp.data
 
     # ── Cycle Resolution ─────────────────────────────────────
 
@@ -207,6 +185,8 @@ class CycleResolutionService:
 
         # Resolve missions that have passed their resolves_at time
         # (after timer advancement in resolve_cycle, before bots act)
+        # CRITICAL: tension computation (below) depends on resolved missions.
+        resolved = None
         try:
             resolved = await OperativeService.resolve_pending_missions(db, epoch_id)
             # Log mission results to battle log
@@ -215,51 +195,25 @@ class CycleResolutionService:
                     await BattleLogService.log_mission_result(db, epoch_id, cycle_number, mission)
                 except (PostgrestAPIError, httpx.HTTPError):
                     logger.debug("Battle log write failed for mission result", exc_info=True)
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Mission resolution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
+        except (KeyError, ValueError) as exc:
+            logger.error("Mission resolution logic error: %s", exc, extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
+            raise
 
         # Expire zone fortifications that have passed their expiry cycle
         try:
-            use_rpc = await PlatformConfigService.get(db, "use_atomic_game_rpcs", False)
-            if use_rpc:
-                # Atomic fortification expiry (migration 148): downgrades zones
-                # and deletes forts in a single transaction.
-                await db.rpc(
-                    "fn_expire_fortifications",
-                    {
-                        "p_epoch_id": str(epoch_id),
-                        "p_cycle_number": cycle_number,
-                    },
-                ).execute()
-            else:
-                expired_forts = await (
-                    db.table("zone_fortifications")
-                    .select("id, zone_id, security_bonus")
-                    .eq("epoch_id", str(epoch_id))
-                    .lte("expires_at_cycle", cycle_number)
-                    .execute()
-                )
-                for fort in extract_list(expired_forts):
-                    zone_resp = await (
-                        db.table("zones").select("id, security_level").eq("id", fort["zone_id"]).single().execute()
-                    )
-                    if zone_resp.data:
-                        current_level = zone_resp.data["security_level"]
-                        try:
-                            idx = SECURITY_TIER_ORDER.index(current_level)
-                            new_idx = max(0, idx - fort["security_bonus"])
-                            new_level = SECURITY_TIER_ORDER[new_idx]
-                        except ValueError:
-                            new_level = current_level
-                        if new_level != current_level:
-                            await (
-                                db.table("zones")
-                                .update({"security_level": new_level})
-                                .eq("id", fort["zone_id"])
-                                .execute()
-                            )
-                    await db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
+            # Atomic fortification expiry (migration 148): downgrades zones
+            # and deletes forts in a single transaction.
+            await db.rpc(
+                "fn_expire_fortifications",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_cycle_number": cycle_number,
+                },
+            ).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
@@ -287,21 +241,33 @@ class CycleResolutionService:
             sentry_sdk.capture_exception()
 
         # Compute alliance tension (after missions — counts same-target attacks)
-        try:
-            tension_results = await AllianceService.compute_tension(db, epoch_id, cycle_number)
-            dissolved = [r for r in tension_results if r.get("dissolved")]
-            if dissolved:
-                logger.info(
-                    "Alliance tension dissolved teams",
-                    extra={
-                        "epoch_id": str(epoch_id),
-                        "dissolved_count": len(dissolved),
-                        "teams": [r.get("team_name") for r in dissolved],
-                    },
-                )
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
-            logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
-            sentry_sdk.capture_exception()
+        # DEPENDENCY: requires mission resolution to have completed successfully
+        tension_results = None
+        if resolved is not None:
+            try:
+                tension_results = await AllianceService.compute_tension(db, epoch_id, cycle_number)
+                dissolved = [r for r in tension_results if r.get("dissolved")]
+                if dissolved:
+                    logger.info(
+                        "Alliance tension dissolved teams",
+                        extra={
+                            "epoch_id": str(epoch_id),
+                            "dissolved_count": len(dissolved),
+                            "teams": [r.get("team_name") for r in dissolved],
+                        },
+                    )
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+                sentry_sdk.capture_exception()
+            except (KeyError, ValueError) as exc:
+                logger.error("Tension logic error: %s", exc, extra={"epoch_id": str(epoch_id)}, exc_info=True)
+                sentry_sdk.capture_exception()
+                raise
+        else:
+            logger.warning(
+                "Skipping tension computation -- mission resolution failed",
+                extra={"epoch_id": str(epoch_id)},
+            )
 
         # Send cycle notification emails (best-effort, non-blocking)
         try:
@@ -315,11 +281,13 @@ class CycleResolutionService:
             sentry_sdk.capture_exception()
 
         # Clear team_ids for dissolved alliances (AFTER notifications have read them)
-        try:
-            await AllianceService.clear_dissolved_team_ids(db, epoch_id)
-        except (PostgrestAPIError, httpx.HTTPError):
-            logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
-            sentry_sdk.capture_exception()
+        # DEPENDENCY: requires tension computation to have run
+        if tension_results is not None:
+            try:
+                await AllianceService.clear_dissolved_team_ids(db, epoch_id)
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+                sentry_sdk.capture_exception()
 
         return data
 
