@@ -98,14 +98,14 @@ CREATE OR REPLACE FUNCTION fn_award_achievement(
 ) RETURNS BOOLEAN
 LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-    v_inserted BOOLEAN := FALSE;
+    v_row_count INTEGER := 0;
 BEGIN
     INSERT INTO user_achievements (user_id, achievement_id, context)
     VALUES (p_user_id, p_achievement_id, p_context)
     ON CONFLICT (user_id, achievement_id) DO NOTHING;
 
-    GET DIAGNOSTICS v_inserted = ROW_COUNT;
-    RETURN v_inserted > 0;
+    GET DIAGNOSTICS v_row_count = ROW_COUNT;
+    RETURN v_row_count > 0;
 END;
 $$;
 
