@@ -1,5 +1,5 @@
 /**
- * Landing Page — Full-screen immersive introduction for unauthenticated visitors.
+ * Landing Page — Full-screen immersive introduction for all visitors.
  *
  * Aesthetic: Military surveillance terminal / interdimensional observation post.
  * Each section is a "panel" on a massive command console monitoring the multiverse.
@@ -15,6 +15,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
@@ -1793,19 +1794,38 @@ export class VelgLandingPage extends LitElement {
             ${msg('Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.')}
           </p>
           <div class="hero__cta-area">
-            <a
-              class="hero__cta"
-              href="/register"
-              @click=${(e: Event) => {
-                e.preventDefault();
-                this._trackCta('hero');
-                this._navigate('/register');
-              }}
-              aria-label=${msg('Build Your World – Create your account')}
-            >
-              ${msg('Build Your World')}
-              <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
-            </a>
+            ${appState.isAuthenticated.value
+              ? html`
+                <a
+                  class="hero__cta"
+                  href="/dashboard"
+                  @click=${(e: Event) => {
+                    e.preventDefault();
+                    this._trackCta('hero-dashboard');
+                    this._navigate('/dashboard');
+                  }}
+                  aria-label=${msg('Go to Dashboard')}
+                >
+                  ${msg('Go to Dashboard')}
+                  <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
+                </a>
+              `
+              : html`
+                <a
+                  class="hero__cta"
+                  href="/register"
+                  @click=${(e: Event) => {
+                    e.preventDefault();
+                    this._trackCta('hero');
+                    this._navigate('/register');
+                  }}
+                  aria-label=${msg('Build Your World \u2013 Create your account')}
+                >
+                  ${msg('Build Your World')}
+                  <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
+                </a>
+              `
+            }
             <a
               class="hero__cta hero__cta--secondary"
               href="/worlds"
@@ -1814,7 +1834,7 @@ export class VelgLandingPage extends LitElement {
                 this._trackCta('hero-explore');
                 this._navigate('/worlds');
               }}
-              aria-label=${msg('Explore Worlds – Browse player-created civilizations')}
+              aria-label=${msg('Explore Worlds \u2013 Browse player-created civilizations')}
             >
               ${msg('Explore Worlds')}
             </a>
@@ -2217,18 +2237,36 @@ export class VelgLandingPage extends LitElement {
             </p>
 
             <div class="cta-frame__actions">
-              <a
-                class="cta-frame__btn"
-                href="/register"
-                @click=${(e: Event) => {
-                  e.preventDefault();
-                  this._trackCta('footer-create');
-                  this._navigate('/register');
-                }}
-                aria-label=${msg('Create your world – Sign up')}
-              >
-                ${msg('Create Your World')}
-              </a>
+              ${appState.isAuthenticated.value
+                ? html`
+                  <a
+                    class="cta-frame__btn"
+                    href="/dashboard"
+                    @click=${(e: Event) => {
+                      e.preventDefault();
+                      this._trackCta('footer-dashboard');
+                      this._navigate('/dashboard');
+                    }}
+                    aria-label=${msg('Go to Dashboard')}
+                  >
+                    ${msg('Go to Dashboard')}
+                  </a>
+                `
+                : html`
+                  <a
+                    class="cta-frame__btn"
+                    href="/register"
+                    @click=${(e: Event) => {
+                      e.preventDefault();
+                      this._trackCta('footer-create');
+                      this._navigate('/register');
+                    }}
+                    aria-label=${msg('Create your world \u2013 Sign up')}
+                  >
+                    ${msg('Create Your World')}
+                  </a>
+                `
+              }
               <a
                 class="cta-frame__btn cta-frame__btn--secondary"
                 href="/worlds"

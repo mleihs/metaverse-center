@@ -652,6 +652,24 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/welcome',
+        render: () => html`<velg-landing-page></velg-landing-page>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Build a World. Watch It Live.']);
+          seoService.setDescription(
+            'Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves. Build your own world or explore others.',
+          );
+          seoService.setCanonical('/');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'About', url: 'https://metaverse.center/welcome' },
+          ]);
+          analyticsService.trackPageView('/welcome', document.title);
+          return true;
+        },
+      },
+      {
         path: '/',
         render: () => html`<velg-landing-page></velg-landing-page>`,
         enter: async () => {
@@ -1124,7 +1142,7 @@ export class VelgApp extends LitElement {
     }
 
     const isGuest = !appState.isAuthenticated.value;
-    const isLanding = window.location.pathname === '/';
+    const isLanding = window.location.pathname === '/' || window.location.pathname === '/welcome';
 
     return html`
       <a class="skip-nav" href="#main-content">${msg('Skip to main content')}</a>

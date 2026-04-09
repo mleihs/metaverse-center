@@ -90,6 +90,8 @@ export class VelgPlatformFooter extends LitElement {
         <hr class="footer__rule" />
         <nav class="footer__links" aria-label=${msg('Discover')}>
           <span class="footer__links-label">${msg('Discover')}</span>
+          <a href="/welcome">${msg('About')}</a>
+          <span aria-hidden="true">\u00B7</span>
           <a href="/worldbuilding">${msg('Worldbuilding')}</a>
           <span aria-hidden="true">\u00B7</span>
           <a href="/ai-characters">${msg('AI Characters')}</a>
