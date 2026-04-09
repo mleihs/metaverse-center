@@ -6,7 +6,7 @@ import type { PlatformSetting } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminButtonStyles, adminLoadingStyles } from './admin-shared-styles.js';
+import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 interface ApiKeyMeta {
   label: string;

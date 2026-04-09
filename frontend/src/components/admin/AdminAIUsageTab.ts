@@ -6,7 +6,7 @@ import {
   adminAnimationStyles,
   adminForgeSectionStyles,
   adminLoadingStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 import '../shared/VelgMetricCard.js';
 
 /**

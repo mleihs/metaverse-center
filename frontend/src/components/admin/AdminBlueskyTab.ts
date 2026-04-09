@@ -20,7 +20,7 @@ import {
   adminDispatchStyles,
   adminStatusFilterStyles,
   adminTabNavStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 import '../shared/VelgMetricCard.js';

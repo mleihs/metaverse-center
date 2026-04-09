@@ -12,7 +12,7 @@ import type { TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { formatDate } from '../../utils/date-format.js';
-import { forgeButtonStyles } from './forge-console-styles.js';
+import { forgeButtonStyles } from '../shared/forge-console-styles.js';
 
 @localized()
 @customElement('velg-forge-mint')

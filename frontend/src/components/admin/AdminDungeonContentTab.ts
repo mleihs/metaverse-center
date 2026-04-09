@@ -16,7 +16,7 @@ import {
   adminLoadingStyles,
   adminSectionHeaderStyles,
   adminSubNavStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 
 import './DungeonContentTable.js';
 import './DungeonContentEditor.js';

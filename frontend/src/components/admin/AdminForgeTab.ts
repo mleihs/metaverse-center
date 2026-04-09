@@ -16,7 +16,7 @@ import {
   adminAnimationStyles,
   adminForgeSectionStyles,
   adminLoadingStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 import '../forge/ClearanceQueue.js';
 import '../shared/VelgMetricCard.js';
 

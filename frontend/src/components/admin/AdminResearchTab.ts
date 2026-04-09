@@ -11,7 +11,7 @@ import {
   adminButtonStyles,
   adminForgeSectionStyles,
   adminLoadingStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 
 interface DomainAxisMeta {
   label: string;

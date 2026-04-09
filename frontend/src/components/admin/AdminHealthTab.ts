@@ -11,7 +11,7 @@ import {
   adminGlobalCardStyles,
   adminLoadingStyles,
   adminSectionHeaderStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 
 @localized()
 @customElement('velg-admin-health-tab')
