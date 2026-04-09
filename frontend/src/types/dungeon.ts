@@ -24,6 +24,18 @@ export const ARCHETYPE_DELUGE = 'The Deluge';
 export const ARCHETYPE_AWAKENING = 'The Awakening';
 export const ARCHETYPE_OVERTHROW = 'The Overthrow';
 
+/** Map detail-page slug → canonical archetype name (backend key). */
+export const ARCHETYPE_BY_SLUG: Record<string, string> = {
+  shadow: ARCHETYPE_SHADOW,
+  tower: ARCHETYPE_TOWER,
+  entropy: ARCHETYPE_ENTROPY,
+  mother: ARCHETYPE_MOTHER,
+  prometheus: ARCHETYPE_PROMETHEUS,
+  deluge: ARCHETYPE_DELUGE,
+  awakening: ARCHETYPE_AWAKENING,
+  overthrow: ARCHETYPE_OVERTHROW,
+};
+
 // ── Enums / Union Types ─────────────────────────────────────────────────────
 
 /** Database-level run status. */

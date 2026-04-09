@@ -44,6 +44,7 @@ import './shared/AuthorCard.js';
 import './shared/ObjektankerCard.js';
 import './shared/LootCard.js';
 import './shared/EncounterCard.js';
+import '../dungeon/DungeonEntryCta.js';
 
 const STORAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/showcase`;
 
@@ -1852,7 +1853,11 @@ export class VelgArchetypeDetail extends LitElement {
             ${d.prose.exitCtaText}
           </p>
 
-          <a class="exit__cta" href="/#dungeons">${d.prose.exitCta}</a>
+          <velg-dungeon-entry-cta
+            archetype=${this.archetypeId}
+            label=${d.prose.exitCta}
+            variant="hero"
+          ></velg-dungeon-entry-cta>
 
           <nav class="exit__nav" aria-label=${msg('Archetype Navigation')}>
             <a class="exit__nav-link" href="/archetypes/${d.prevArchetype.id}">

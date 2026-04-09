@@ -32,6 +32,7 @@ tags: [index, catalog, documentation]
 | [Theming System](specs/theming-system.md) | 1.3 | 2026-03-09 | de | active |
 | [TikTok Integration](specs/tiktok-integration.md) | 1.0 | 2026-03-22 | en | active |
 | [Dungeon Map — Vertical Sidebar Redesign](specs/dungeon-map-vertical-redesign.md) | 1.0 | 2026-03-31 | en | ready-to-implement |
+| [Dungeon Navigation Bridge — Detail Pages to Gameplay](specs/dungeon-navigation-bridge.md) | 1.0 | 2026-04-09 | en | approved |
 
 ## References (5)
 
