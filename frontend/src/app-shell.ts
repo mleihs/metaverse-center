@@ -1030,14 +1030,20 @@ export class VelgApp extends LitElement {
 
   private _renderSimulationView(idOrSlug: string, view: string, entitySlug?: string) {
     // Slug resolution already completed in enter() callback.
-    // Fire context loading (taxonomies, role, settings) as background task.
-    // No requestUpdate() needed — child components read signals directly.
-    this._loadSimulationContext(idOrSlug);
-
-    // Use resolved UUID for child components (API calls need UUIDs)
+    // Use resolved UUID for child components (API calls need UUIDs).
     const resolvedId = appState.currentSimulation.value?.id ?? idOrSlug;
 
-    // SEO + analytics (safe even if resolvedId is still a slug)
+    // Safety: if slug resolution hasn't propagated yet, show spinner and
+    // don't fire any background tasks (prevents 422s from non-UUID API calls).
+    if (!VelgApp._UUID_RE.test(resolvedId)) {
+      return html`<div class="loading-container">${msg('Loading...')}</div>`;
+    }
+
+    // Fire context loading (taxonomies, settings) as background task with resolved UUID.
+    // No requestUpdate() needed — child components read signals directly.
+    this._loadSimulationContext(resolvedId);
+
+    // SEO + analytics
     const sim = appState.currentSimulation.value;
     const simName = sim?.name ?? '';
     const slug = sim?.slug ?? idOrSlug;
@@ -1067,12 +1073,6 @@ export class VelgApp extends LitElement {
     });
     seoService.setBreadcrumbs(breadcrumbs);
     analyticsService.trackPageView(canonicalPath, document.title);
-
-    // Safety fallback: if slug resolution somehow failed, show bare loading spinner
-    // (without SimulationShell, to prevent ThemeService 422s on non-UUID)
-    if (!VelgApp._UUID_RE.test(resolvedId)) {
-      return html`<div class="loading-container">${msg('Loading...')}</div>`;
-    }
 
     let content: TemplateResult;
     switch (view) {
