@@ -732,6 +732,8 @@ class ForgeOrchestratorService:
         else:
             anchor = draft_data.get("philosophical_anchor", {}).get("selected", {})
             geography = draft_data.get("geography", {})
+            agents = draft_data.get("agents", [])
+            buildings = draft_data.get("buildings", [])
             or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
             try:
@@ -739,6 +741,8 @@ class ForgeOrchestratorService:
                     seed=seed,
                     anchor=anchor,
                     geography=geography,
+                    agents=agents,
+                    buildings=buildings,
                     openrouter_key=or_key,
                 )
             except ModelHTTPError as exc:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import logging
 import time
@@ -102,6 +103,9 @@ def get_openrouter_model(
     )
 
 
+_RATE_LIMIT_BACKOFFS = (5, 10)  # seconds to wait on 429 before retry
+
+
 async def run_ai(
     agent: Agent,
     prompt: str,
@@ -113,8 +117,15 @@ async def run_ai(
     """Central wrapper for every agent.run() call.
 
     Injects timeout + max_tokens from centralized configs, logs before/after
-    every call with purpose and elapsed time.  On failure, logs with
-    exc_info and re-raises so existing error-handling continues to work.
+    every call with purpose and elapsed time.
+
+    **Rate-limit hardening** (3 layers):
+    1. On upstream 429, backoff-retry on the *same* model (5s, 10s).
+    2. If retries exhausted, fall back to the platform fallback model.
+    3. Sentry breadcrumbs on every retry/fallback for observability.
+
+    On any other failure, logs with exc_info and re-raises so existing
+    error-handling continues to work.
     """
     ms = dict(model_settings) if model_settings else {}
     ms.setdefault("timeout", PYDANTIC_AI_TIMEOUTS.get(purpose))
@@ -123,20 +134,88 @@ async def run_ai(
     timeout_s = ms.get("timeout")
     max_tokens = ms.get("max_tokens")
 
+    kwargs: dict[str, Any] = {"model_settings": ms}
+    if output_type is not None:
+        kwargs["output_type"] = output_type
+
     logger.info("AI call started", extra={"purpose": purpose, "timeout_s": timeout_s, "max_tokens": max_tokens})
     t0 = time.monotonic()
+
+    # ── Layer 1: backoff-retry on same model ────────────────────────
+    last_exc: ModelHTTPError | None = None
+    for attempt, backoff in enumerate((0, *_RATE_LIMIT_BACKOFFS)):
+        if backoff:
+            logger.warning(
+                "AI rate-limited (429), retrying in %ds (attempt %d/%d)",
+                backoff,
+                attempt + 1,
+                len(_RATE_LIMIT_BACKOFFS) + 1,
+                extra={"purpose": purpose},
+            )
+            sentry_sdk.add_breadcrumb(
+                category="ai",
+                message=f"429 retry #{attempt} for {purpose}, waiting {backoff}s",
+                level="warning",
+            )
+            await asyncio.sleep(backoff)
+
+        try:
+            result = await agent.run(prompt, **kwargs)
+            elapsed = time.monotonic() - t0
+            logger.info("AI call completed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)})
+            return result
+        except ModelHTTPError as exc:
+            if exc.status_code != 429:
+                elapsed = time.monotonic() - t0
+                logger.error(
+                    "AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True
+                )
+                raise
+            last_exc = exc
+        except Exception:
+            elapsed = time.monotonic() - t0
+            logger.error("AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True)
+            raise
+
+    # ── Layer 2: automatic model fallback ───────────────────────────
+    fallback_model_id = get_platform_model("fallback")
+    logger.warning(
+        "AI rate-limited after %d retries, falling back to %s",
+        len(_RATE_LIMIT_BACKOFFS) + 1,
+        fallback_model_id,
+        extra={"purpose": purpose, "fallback_model": fallback_model_id},
+    )
+    sentry_sdk.add_breadcrumb(
+        category="ai",
+        message=f"429 fallback for {purpose} → {fallback_model_id}",
+        level="warning",
+    )
+
     try:
-        kwargs: dict[str, Any] = {"model_settings": ms}
-        if output_type is not None:
-            kwargs["output_type"] = output_type
-        result = await agent.run(prompt, **kwargs)
+        fallback_model = get_openrouter_model(model_id=fallback_model_id)
+        fallback_agent = Agent(
+            fallback_model,
+            system_prompt=agent._system_prompts,  # noqa: SLF001
+            retries=agent._max_result_retries,  # noqa: SLF001
+        )
+        result = await fallback_agent.run(prompt, **kwargs)
         elapsed = time.monotonic() - t0
-        logger.info("AI call completed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)})
+        logger.info(
+            "AI call completed (fallback model)",
+            extra={"purpose": purpose, "elapsed_s": round(elapsed, 1), "fallback_model": fallback_model_id},
+        )
         return result
     except Exception:
         elapsed = time.monotonic() - t0
-        logger.error("AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True)
-        raise
+        logger.error(
+            "AI fallback also failed",
+            extra={"purpose": purpose, "elapsed_s": round(elapsed, 1), "fallback_model": fallback_model_id},
+            exc_info=True,
+        )
+        sentry_sdk.capture_exception()
+        # Re-raise the original 429 error — the caller's ai_error_to_http
+        # will convert it to a user-facing 429 response.
+        raise last_exc from None  # type: ignore[misc]
 
 
 def safe_background(func):
