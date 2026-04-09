@@ -12,6 +12,7 @@ import './BleedSettingsPanel.js';
 import './AISettingsPanel.js';
 import './IntegrationSettingsPanel.js';
 import './DesignSettingsPanel.js';
+import './FeaturesSettingsPanel.js';
 import './AccessSettingsPanel.js';
 import './PromptsSettingsPanel.js';
 import './AutonomySettingsPanel.js';
@@ -33,6 +34,7 @@ function getTabs(): SettingsTabDef[] {
     { key: 'prompts', label: msg('Prompts') },
     { key: 'integration', label: msg('Integration') },
     { key: 'design', label: msg('Design') },
+    { key: 'features', label: msg('Features') },
     { key: 'access', label: msg('Access'), ownerOnly: true },
     { key: 'notifications', label: msg('Notifications') },
   ];
@@ -243,6 +245,14 @@ export class VelgSettingsView extends LitElement {
             @unsaved-change=${this._handleUnsavedChange}
             @settings-saved=${this._handleSettingsSaved}
           ></velg-design-settings-panel>
+        `;
+      case 'features':
+        return html`
+          <velg-features-settings-panel
+            .simulationId=${this.simulationId}
+            @unsaved-change=${this._handleUnsavedChange}
+            @settings-saved=${this._handleSettingsSaved}
+          ></velg-features-settings-panel>
         `;
       case 'access':
         return html`

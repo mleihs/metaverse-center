@@ -969,18 +969,22 @@ export class VelgApp extends LitElement {
 
     // Membership already determined in _enterSimulationRoute().
     // Load taxonomies + design settings (both use public endpoints for non-members).
-    const [taxResponse, settingsResponse] = await Promise.all([
+    const [taxResponse, designResponse, featuresResponse] = await Promise.all([
       taxonomiesApi.list(simulationId, { limit: '500' }),
       settingsApi.list(simulationId, 'design'),
+      settingsApi.list(simulationId, 'features'),
     ]);
 
     if (taxResponse.success && taxResponse.data) {
       appState.setTaxonomies(Array.isArray(taxResponse.data) ? taxResponse.data : []);
     }
 
-    if (settingsResponse.success && settingsResponse.data) {
-      appState.setSettings(Array.isArray(settingsResponse.data) ? settingsResponse.data : []);
-    }
+    // Merge design + features settings into a single array
+    const allSettings = [
+      ...(designResponse.success && Array.isArray(designResponse.data) ? designResponse.data : []),
+      ...(featuresResponse.success && Array.isArray(featuresResponse.data) ? featuresResponse.data : []),
+    ];
+    appState.setSettings(allSettings);
   }
 
   private _renderSimulationView(idOrSlug: string, view: string, entitySlug?: string) {

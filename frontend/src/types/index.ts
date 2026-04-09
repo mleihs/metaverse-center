@@ -31,7 +31,8 @@ export type SettingCategory =
   | 'notifications'
   | 'anchor'
   | 'heartbeat'
-  | 'weather';
+  | 'weather'
+  | 'features';
 
 export type TaxonomyType =
   | 'gender'
