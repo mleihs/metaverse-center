@@ -30,6 +30,10 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
       display: block;
     }
 
+    .entity-grid {
+      --grid-min-width: 320px;
+    }
+
     .events__bleed-filter {
       display: flex;
       align-items: center;
