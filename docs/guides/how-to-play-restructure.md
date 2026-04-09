@@ -154,6 +154,7 @@ Restructuring the monolithic HowToPlayView (8,239 LOC, 33 sections, 1,237 i18n s
 | 11 | `advanced` | Advanced Mechanics | bleed, resonance-guide, results-screen, epoch-comms | rules + features |
 | 12 | `terminal` | Bureau Terminal | bureau-terminal | features |
 | 13 | `dungeons` | Resonance Dungeons | resonance-dungeons, 8-archetypes, shadow, tower | features + rules |
+| 14 | `commendations` | Commendations & Badges | achievement system (35 badges, 7 categories, 5 rarity tiers) | features (new) |
 
 **Each topic page consistent template:**
 ```
@@ -178,6 +179,8 @@ Breadcrumb → TL;DR box (3-4 bullets) → "How it works" → "Tips" → "Relate
 5. Updates — existing changelog with expandable entries
 
 **Implementation:** Mostly cut-and-paste from existing `HowToPlayView.ts` render methods. Data files (`htp-content-matches.ts`, tactics from `htp-content-rules.ts`) stay as-is, used directly.
+
+**Pending topic addition:** Topic 14 (`commendations`) for the Achievement & Badge System. Content: 35 badges across 7 categories (Initiation, Dungeon Mastery, Epoch Warfare, Collection, Social & Bleed, Challenge, Secret), 5 rarity tiers (Common → Legendary), how badges are earned (automatic via triggers/hooks), `/commendations` grid, dashboard summary card, Realtime toast notifications. Source: Migration 190–195, `DungeonAchievementService`, frontend `VelgAchievementGrid`/`VelgAchievementBadge`.
 
 ### Phase 5: Cleanup + HelpTip + Deprecate Monolith
 

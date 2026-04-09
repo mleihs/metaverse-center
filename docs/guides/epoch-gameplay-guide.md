@@ -255,6 +255,8 @@ Five commendation awards recognize dimension leaders:
 
 Awards are presented as trophy cards with gold accents and hover effects. A single simulation can earn multiple commendations.
 
+> **Note:** Epoch commendations are part of the broader **Commendation & Badge System** (35 badges across 7 categories). Epoch-specific badges include Iron Guardian (deploy 10 guardians), Shadow Operative (5 spy missions), The Diplomat (join 3 alliances), Master Strategist (win 3 epochs), and Undefeated (win without a single detected mission). These badges persist across all epochs and are visible on the `/commendations` page, with Realtime toast notifications on unlock.
+
 ### Dimension Analysis
 
 A 5-panel comparison grid shows how all participants scored in each dimension:

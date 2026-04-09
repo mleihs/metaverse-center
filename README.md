@@ -123,6 +123,19 @@ When an epoch completes, the fog of war lifts and a **DECLASSIFIED** results vie
 
 All animations respect `prefers-reduced-motion`.
 
+### Commendation & Badge System
+
+35 badges across 7 categories (**Initiation**, **Dungeon Mastery**, **Epoch Warfare**, **Collection**, **Social & Bleed**, **Challenge**, **Secret**) with 5 rarity tiers (Common → Legendary). Badges are system-awarded via 13 PostgreSQL triggers and backend hooks – never user-claimed.
+
+- **Dungeon badges** – 8 per-archetype completion badges + cross-archetype milestones (Explorer at 4, Master at 8) + difficulty mastery (Depth Master at D5)
+- **Epoch badges** – Guardian/spy deployment milestones, alliance diplomacy, strategic wins, operational security
+- **Challenge badges** – Flawless Run (no agent >200 stress), Speed Runner (≤8 rooms), Pacifist (encounters only)
+- **Secret badges** – Hidden conditions revealed on unlock (Shadow boss at VP=0, Mother attachment 100, Overthrow total fracture)
+- **Collection badges** – Loot milestones, Objektanker discovery (16 objects), Banter Connoisseur (50 unique exchanges)
+- **Social badges** – Embassy building, echo transmission, cipher decoding, ward defense
+
+Frontend: hexagonal badge grid on `/commendations`, dashboard summary card with recent unlocks, Realtime toast notifications on badge earn. All definitions bilingual (EN/DE).
+
 ### Alliance System
 
 Alliances are proposal-based: any participant can propose, but all existing members must unanimously approve. Allies share intelligence – battle log entries from allied operations are visible to all members.
@@ -323,8 +336,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Trigger functions | 27 (62 triggers total) |
 | Views (regular + materialized) | 14 + 4 |
 | RLS policies | 270+ |
-| SQL migrations | 189 |
+| SQL migrations | 195 |
 | Routers | 49 |
+| Achievement badges | 35 (7 categories, 5 rarity tiers, 13 DB triggers) |
 | Web Components | 256 (Lit custom elements) |
 | Unit tests | 2,184+ (pytest) + vitest |
 | Localized UI strings | 6,593 (EN/DE, 0 missing) |
@@ -380,6 +394,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 ### Platform
 - **Landing page** – Live AI characters as "Intercepted Dossiers" with holographic foil TCG cards, viewport-responsive (6–12 agents)
 - **Daily Substrate Dispatch** – Classified Bureau intelligence briefing on first daily visit
+- **Commendations** – 35 badges across 7 categories, 5 rarity tiers, hexagonal badge grid, Realtime unlock toasts, dashboard summary card, 13 PostgreSQL triggers + backend hooks
 - **Bilingual i18n** – English + German (6,593 localized strings)
 - **Per-simulation theming** – CSS presets with WCAG 2.1 AA validation, light & dark modes
 - **Public-first browsing** – Full read access without authentication
@@ -460,7 +475,7 @@ frontend/
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 189 SQL migrations
+  migrations/               # 195 SQL migrations
   seed/                     # Seed data (21 files)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
 docs/                       # 104 documents (Divio structure)

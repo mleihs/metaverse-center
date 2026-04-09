@@ -38,11 +38,11 @@ tags: [index, catalog, documentation]
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 3.8 | 2026-03-17 | de | active |
+| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 4.0 | 2026-04-09 | de | active |
 | [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
 | [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 3.4 | 2026-03-30 | de | active |
-| [Frontend Components](references/frontend-components.md) | 3.9 | 2026-04-05 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 3.6 | 2026-04-09 | de | active |
+| [Frontend Components](references/frontend-components.md) | 4.0 | 2026-04-09 | de | active |
 
 ## Guides (16)
 
