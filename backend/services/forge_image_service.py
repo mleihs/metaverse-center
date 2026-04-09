@@ -168,7 +168,7 @@ class ForgeImageService:
             .execute()
         )
 
-        await self._log_image_usage(image_model.model_id, "portrait")
+        await self._log_image_usage(image_model.model, "portrait")
         logger.info("Portrait uploaded", extra={"entity_type": "agent", "entity_id": str(agent_id), "path": url})
         return url
 
@@ -266,7 +266,7 @@ class ForgeImageService:
             .execute()
         )
 
-        await self._log_image_usage(image_model.model_id, "building")
+        await self._log_image_usage(image_model.model, "building")
         logger.info("Image uploaded", extra={"entity_type": "building", "entity_id": str(building_id), "path": url})
         return url
 
@@ -399,7 +399,7 @@ class ForgeImageService:
                 .execute()
             )
 
-        await self._log_image_usage(image_model.model_id, "lore_image")
+        await self._log_image_usage(image_model.model, "lore_image")
         logger.info("Lore image uploaded", extra={"entity_type": "lore", "path": url})
         return url
 
