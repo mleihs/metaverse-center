@@ -260,7 +260,10 @@ export class ChatComposer extends LitElement {
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     // Restore draft when conversation switches (initialContent changes)
-    if (changedProperties.has('initialContent') && changedProperties.get('initialContent') !== undefined) {
+    if (
+      changedProperties.has('initialContent') &&
+      changedProperties.get('initialContent') !== undefined
+    ) {
       this._content = this.initialContent;
       // Sync the CSS Grid mirror on next frame (textarea may not exist yet)
       this.updateComplete.then(() => {
@@ -293,9 +296,7 @@ export class ChatComposer extends LitElement {
     }
 
     // Emit typing signal (parent debounces for realtime broadcast)
-    this.dispatchEvent(
-      new CustomEvent('composer-typing', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('composer-typing', { bubbles: true, composed: true }));
 
     // Emit draft change (parent persists via chatStore.saveDraft)
     clearTimeout(this._draftTimeout);
@@ -369,7 +370,7 @@ export class ChatComposer extends LitElement {
     const canSend = !isDisabled && this._content.trim().length > 0 && !isAtLimit;
 
     const counterClasses = {
-      'composer__counter': true,
+      composer__counter: true,
       'composer__counter--warn': charCount >= this.charWarn && !isAtLimit,
       'composer__counter--limit': isAtLimit,
     };
@@ -393,23 +394,23 @@ export class ChatComposer extends LitElement {
           </div>
           <button
             class=${classMap({
-              'composer__send': true,
+              composer__send: true,
               'composer__send--sending': this.sending,
             })}
             ?disabled=${!canSend}
             @click=${this._send}
             aria-label=${msg('Send message')}
           >
-            ${this.sending
-              ? html`<div class="composer__spinner"></div>`
-              : ChatComposer._sendIcon}
+            ${this.sending ? html`<div class="composer__spinner"></div>` : ChatComposer._sendIcon}
           </button>
         </div>
         <div class="composer__footer">
           <span class="composer__hint">${msg('Shift+Enter for line break')}</span>
-          ${showCounter
-            ? html`<span class=${classMap(counterClasses)}>${charCount}/${this.charLimit}</span>`
-            : nothing}
+          ${
+            showCounter
+              ? html`<span class=${classMap(counterClasses)}>${charCount}/${this.charLimit}</span>`
+              : nothing
+          }
         </div>
       </div>
     `;

@@ -1419,11 +1419,21 @@ export interface ApiError {
 }
 
 export type ApiResponse<T> =
-  | { success: true; data: T; meta?: { count?: number; total?: number; limit?: number; offset?: number }; error?: undefined }
+  | {
+      success: true;
+      data: T;
+      meta?: { count?: number; total?: number; limit?: number; offset?: number };
+      error?: undefined;
+    }
   | { success: false; data?: undefined; meta?: undefined; error: ApiError };
 
 export type PaginatedResponse<T> =
-  | { success: true; data: T[]; meta: { count: number; total: number; limit: number; offset: number }; error?: undefined }
+  | {
+      success: true;
+      data: T[];
+      meta: { count: number; total: number; limit: number; offset: number };
+      error?: undefined;
+    }
   | { success: false; data?: undefined; meta?: undefined; error: ApiError };
 
 // --- Style References ---

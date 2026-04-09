@@ -820,7 +820,7 @@ export class VelgAdminDungeonsTab extends LitElement {
                     .value=${String(gc.clearance_threshold)}
                     @input=${(e: InputEvent) => {
                       const val = parseInt((e.target as HTMLInputElement).value, 10);
-                      if (!isNaN(val)) this._setGlobalClearanceThreshold(val);
+                      if (!Number.isNaN(val)) this._setGlobalClearanceThreshold(val);
                     }}
                   />
                   <span class="threshold-unit">${msg('commands')}</span>
@@ -925,7 +925,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         </div>
 
         <!-- Mode selector -->
-        <div class="seg" role="group" aria-label=${msg('Override mode for') + ' ' + sim.name}>
+        <div class="seg" role="group" aria-label=${`${msg('Override mode for')} ${sim.name}`}>
           ${this._renderSegBtn('off', sim.mode, () => this._setMode(sim.id, 'off'), msg('Off'))}
           ${this._renderSegBtn('supplement', sim.mode, () => this._setMode(sim.id, 'supplement'), msg('Supplement'))}
           ${this._renderSegBtn('override', sim.mode, () => this._setMode(sim.id, 'override'), msg('Override'))}

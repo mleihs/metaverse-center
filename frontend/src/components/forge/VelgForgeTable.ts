@@ -9,7 +9,6 @@ import type {
 } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
@@ -18,6 +17,7 @@ import {
   forgeSectionStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
@@ -1237,21 +1237,30 @@ export class VelgForgeTable extends LitElement {
 
     // Detect partial generation failure per section
     const hasFailed = !!this._error && !this._isGenerating;
-    const agentsFailed = hasFailed && agents.length < genConfig.agent_count
-      && this._error!.toLowerCase().includes('entities');
-    const buildingsFailed = hasFailed && buildings.length < genConfig.building_count
-      && buildings.length > 0 && !agentsFailed;
+    const agentsFailed =
+      hasFailed &&
+      agents.length < genConfig.agent_count &&
+      this._error?.toLowerCase().includes('entities');
+    const buildingsFailed =
+      hasFailed &&
+      buildings.length < genConfig.building_count &&
+      buildings.length > 0 &&
+      !agentsFailed;
     // Show generic banner for geography/other failures not handled by section overlays
     const showGenericError = hasFailed && !agentsFailed && !buildingsFailed;
 
     return html`
-      ${showGenericError ? html`
+      ${
+        showGenericError
+          ? html`
         <div class="generation-failed" role="alert" style="margin-bottom: var(--space-6)">
           <div class="generation-failed__icon">\u26A0</div>
           <div class="generation-failed__title">${msg('Generation Error')}</div>
           <div class="generation-failed__detail">${this._error}</div>
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
 
       <div class="table-nav">
         <button class="btn btn--back" @click=${this._handleBack}>

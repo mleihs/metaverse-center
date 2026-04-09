@@ -454,7 +454,7 @@ export class VelgHowToPlayQuickstart extends LitElement {
           <a
             class="step__action"
             href=${step.action.href}
-            @click=${(e: Event) => this._handleLinkClick(e, step.action!.href)}
+            @click=${(e: Event) => this._handleLinkClick(e, step.action?.href ?? '')}
           >
             ${step.action.label}
             <span aria-hidden="true">\u25B8</span>

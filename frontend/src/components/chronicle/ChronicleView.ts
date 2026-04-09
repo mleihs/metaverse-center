@@ -669,7 +669,9 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
         VelgToast.success(msg('Chronicle edition generated.'));
         // Scroll to newly generated edition
         await this.updateComplete;
-        this.renderRoot.querySelector('.front-page')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.renderRoot
+          .querySelector('.front-page')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else if (!resp.success) {
         const detail = resp.error?.message ?? msg('Failed to generate chronicle.');
         this._error = detail;

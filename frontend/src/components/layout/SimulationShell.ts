@@ -1053,8 +1053,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         ${this._renderBreadcrumb()}
         <velg-simulation-nav .simulationId=${this.simulationId}></velg-simulation-nav>
         <div class=${classMap({
-          'shell__content': true,
-          'shell__overlays': true,
+          shell__content: true,
+          shell__overlays: true,
           'shell__content--immersive': this.view === 'dungeon',
         })}>
           ${

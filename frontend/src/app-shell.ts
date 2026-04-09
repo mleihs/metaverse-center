@@ -354,11 +354,7 @@ export class VelgApp extends LitElement {
           html`<velg-archetype-detail .archetypeId=${archetypeId ?? ''}></velg-archetype-detail>`,
         enter: async () => {
           await this._authReady;
-          if (
-            !(await this._lazy(
-              () => import('./components/archetypes/ArchetypeDetailView.js'),
-            ))
-          )
+          if (!(await this._lazy(() => import('./components/archetypes/ArchetypeDetailView.js'))))
             return false;
           return true;
         },
@@ -1023,7 +1019,9 @@ export class VelgApp extends LitElement {
     // Merge design + features settings into a single array
     const allSettings = [
       ...(designResponse.success && Array.isArray(designResponse.data) ? designResponse.data : []),
-      ...(featuresResponse.success && Array.isArray(featuresResponse.data) ? featuresResponse.data : []),
+      ...(featuresResponse.success && Array.isArray(featuresResponse.data)
+        ? featuresResponse.data
+        : []),
     ];
     appState.setSettings(allSettings);
   }

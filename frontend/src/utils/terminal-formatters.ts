@@ -457,7 +457,7 @@ export function formatMap(
     const lbl = zs?.stability_label?.toUpperCase() ?? stabilityLabel(pct);
     lines.push(
       responseLine(
-        `${marker}${pad(zone.name.toUpperCase(), 24)} ${pad(String(pct) + '%', 5)} [${lbl}]`,
+        `${marker}${pad(zone.name.toUpperCase(), 24)} ${pad(`${String(pct)}%`, 5)} [${lbl}]`,
       ),
     );
   }
@@ -1033,7 +1033,7 @@ function _wordWrap(text: string, width: number): string[] {
 /** Truncate text with ellipsis. */
 function _truncate(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen - 1) + '…';
+  return `${text.slice(0, maxLen - 1)}…`;
 }
 
 /** Format a date as relative time ago. */
@@ -1196,14 +1196,14 @@ export function formatInsufficientRP(have: number, need: number): TerminalLine[]
 }
 
 export {
-  commandLine,
-  systemLine,
-  errorLine,
-  responseLine,
-  hintLine,
-  combatPlayerLine,
-  combatMissLine,
   combatDamageLine,
   combatHealLine,
+  combatMissLine,
+  combatPlayerLine,
   combatSystemLine,
+  commandLine,
+  errorLine,
+  hintLine,
+  responseLine,
+  systemLine,
 };

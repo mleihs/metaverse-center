@@ -124,9 +124,7 @@ export class VelgDungeonEntryCta extends SignalWatcher(LitElement) {
   private async _handleClick(): Promise<void> {
     // 1. Auth check
     if (!appState.isAuthenticated.value) {
-      this.dispatchEvent(
-        new CustomEvent('login-panel-open', { bubbles: true, composed: true }),
-      );
+      this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
       return;
     }
 
@@ -190,8 +188,9 @@ export class VelgDungeonEntryCta extends SignalWatcher(LitElement) {
 
     return html`
       ${this._renderButton(label)}
-      ${this._pickerOpen
-        ? html`
+      ${
+        this._pickerOpen
+          ? html`
             <velg-dungeon-sim-picker
               ?open=${this._pickerOpen}
               archetype=${this.archetype}
@@ -199,7 +198,8 @@ export class VelgDungeonEntryCta extends SignalWatcher(LitElement) {
               @modal-close=${this._handlePickerClose}
             ></velg-dungeon-sim-picker>
           `
-        : nothing}
+          : nothing
+      }
     `;
   }
 

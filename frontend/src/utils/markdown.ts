@@ -72,15 +72,17 @@ chatMarked.use({
       // Sanitize lang for safe HTML attribute embedding
       const safeLang = lang.replace(/[<>"&]/g, '');
 
-      return `<div class="code-block">`
-        + `<div class="code-block__header">`
-        + `<span class="code-block__lang">${safeLang}</span>`
-        + `<button class="code-block__copy" data-code="${encodeURIComponent(rawCode)}" type="button">`
-        + `${msg('Copy')}`
-        + `</button>`
-        + `</div>`
-        + `<pre><code class="hljs">${token.text}</code></pre>`
-        + `</div>`;
+      return (
+        `<div class="code-block">` +
+        `<div class="code-block__header">` +
+        `<span class="code-block__lang">${safeLang}</span>` +
+        `<button class="code-block__copy" data-code="${encodeURIComponent(rawCode)}" type="button">` +
+        `${msg('Copy')}` +
+        `</button>` +
+        `</div>` +
+        `<pre><code class="hljs">${token.text}</code></pre>` +
+        `</div>`
+      );
     },
   },
 });
@@ -90,10 +92,27 @@ chatMarked.use({
 // Basic: no span tags needed (no hljs output)
 const PURIFY_CONFIG = {
   ALLOWED_TAGS: [
-    'h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'del',
-    'ul', 'ol', 'li', 'a', 'blockquote',
-    'pre', 'code',
-    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'h2',
+    'h3',
+    'h4',
+    'p',
+    'br',
+    'strong',
+    'em',
+    'del',
+    'ul',
+    'ol',
+    'li',
+    'a',
+    'blockquote',
+    'pre',
+    'code',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
     'hr',
   ],
   ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
@@ -104,11 +123,30 @@ const PURIFY_CONFIG = {
 // Chat: adds span (hljs tokens), div/button (code block wrapper), data-code attr
 const CHAT_PURIFY_CONFIG = {
   ALLOWED_TAGS: [
-    'h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'del',
-    'ul', 'ol', 'li', 'a', 'blockquote',
-    'pre', 'code', 'span',
-    'table', 'thead', 'tbody', 'tr', 'th', 'td',
-    'div', 'button',
+    'h2',
+    'h3',
+    'h4',
+    'p',
+    'br',
+    'strong',
+    'em',
+    'del',
+    'ul',
+    'ol',
+    'li',
+    'a',
+    'blockquote',
+    'pre',
+    'code',
+    'span',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+    'div',
+    'button',
     'hr',
   ],
   ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-code', 'type'],

@@ -8,9 +8,9 @@ import type {
   CleanupStats,
   CleanupType,
 } from '../../types/index.js';
+import { adminLoadingStyles } from '../shared/admin-shared-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 import '../shared/VelgMetricCard.js';

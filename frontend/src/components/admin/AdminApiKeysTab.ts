@@ -4,9 +4,9 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 interface ApiKeyMeta {
   label: string;

@@ -73,7 +73,14 @@ export function layoutDungeonMap(
   config: MapLayoutConfig = DEFAULT_MAP_CONFIG,
 ): MapLayout {
   if (rooms.length === 0) {
-    return { nodes: [], edges: [], width: 0, height: 0, vGap: config.vGap, edgePad: config.padding };
+    return {
+      nodes: [],
+      edges: [],
+      width: 0,
+      height: 0,
+      vGap: config.vGap,
+      edgePad: config.padding,
+    };
   }
 
   const { nodeRadius, hGap, padding } = config;
@@ -93,7 +100,7 @@ export function layoutDungeonMap(
   // Use sequential layer indices (0, 1, 2, ...) instead of raw depth values
   // to eliminate empty gaps from sparse depths (e.g. rooms at depth 0, 1, 3).
   const depths = [...byDepth.keys()].sort((a, b) => a - b);
-  const maxPerLayer = Math.max(...depths.map((d) => byDepth.get(d)!.length), 1);
+  const maxPerLayer = Math.max(...depths.map((d) => byDepth.get(d)?.length ?? 0), 1);
 
   // Dynamic vGap: scale vertical spacing so the map never exceeds ~2.5:1
   // height:width ratio. This prevents the sidebar map from becoming a
@@ -103,9 +110,10 @@ export function layoutDungeonMap(
   const numGaps = depths.length - 1;
   const maxHeight = canvasW * 3.0;
   const minVGap = nodeRadius * 2 + 10;
-  const vGap = numGaps > 0
-    ? Math.max(minVGap, Math.min(config.vGap, Math.floor((maxHeight - edgePad * 2) / numGaps)))
-    : config.vGap;
+  const vGap =
+    numGaps > 0
+      ? Math.max(minVGap, Math.min(config.vGap, Math.floor((maxHeight - edgePad * 2) / numGaps)))
+      : config.vGap;
   const canvasH = Math.max(edgePad * 2 + numGaps * vGap, edgePad * 2);
 
   // ── Position nodes ────────────────────────────────────────────────────

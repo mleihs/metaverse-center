@@ -5,7 +5,6 @@ import { customElement, state } from 'lit/decorators.js';
 import type { PhilosophicalAnchor } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   forgeButtonStyles,
   forgeFieldStyles,
@@ -14,6 +13,7 @@ import {
   forgeResearchHintStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
 import './VelgForgeScanOverlay.js';

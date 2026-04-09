@@ -135,9 +135,10 @@ export class VelgBroadsheetGazetteWire extends LitElement {
     return html`
       <div class="wire">
         <h3 class="wire__heading">${msg('Gazette Wire')}</h3>
-        ${this.entries.length > 0
-          ? this.entries.map(
-              (entry, i) => html`
+        ${
+          this.entries.length > 0
+            ? this.entries.map(
+                (entry, i) => html`
                 <div class="wire__entry" style="--i: ${i}">
                   <span class="wire__type wire__type--${this._getTypeClass(entry.entry_type)}">
                     ${this._getTypeLabel(entry.entry_type)}
@@ -153,8 +154,9 @@ export class VelgBroadsheetGazetteWire extends LitElement {
                   </span>
                 </div>
               `,
-            )
-          : html`<span class="wire__empty">${msg('No cross-simulation activity.')}</span>`}
+              )
+            : html`<span class="wire__empty">${msg('No cross-simulation activity.')}</span>`
+        }
       </div>
     `;
   }

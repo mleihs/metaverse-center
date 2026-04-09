@@ -14,12 +14,11 @@
  *   legendary  → animated conic-gradient sheen + layered glow
  */
 
-import { LitElement, css, html, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
-
-import { icons } from '../../utils/icons.js';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import type { AchievementDefinition } from '../../services/api/AchievementsApiService.js';
+import { icons } from '../../utils/icons.js';
 
 const RARITY_ICON_SIZE = 32;
 
@@ -249,9 +248,7 @@ export class VelgAchievementBadge extends LitElement {
         </div>
       </div>
       <div class="label">${displayName}</div>
-      ${showProgress
-        ? html`<div class="progress">${this.progress}/${this.target}</div>`
-        : nothing}
+      ${showProgress ? html`<div class="progress">${this.progress}/${this.target}</div>` : nothing}
     `;
   }
 }

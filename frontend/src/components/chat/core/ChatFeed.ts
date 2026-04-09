@@ -21,13 +21,12 @@ import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
-
+import type { TypingUser } from '../../../services/chat/ChatSessionStore.js';
+import type { Participant, TimelineItem } from '../../../services/chat/chat-types.js';
+import { ScrollController } from '../../../services/chat/ScrollController.js';
 import type { ChatEventReference, ChatMessage } from '../../../types/index.js';
 import { formatDate, formatDateLabel } from '../../../utils/date-format.js';
 import { icons } from '../../../utils/icons.js';
-import type { Participant, TimelineItem } from '../../../services/chat/chat-types.js';
-import { ScrollController } from '../../../services/chat/ScrollController.js';
-import type { TypingUser } from '../../../services/chat/ChatSessionStore.js';
 
 import '../../shared/VelgAvatar.js';
 import './ChatMessage.js';
@@ -526,9 +525,8 @@ export class ChatFeed extends LitElement {
         prevSenderRole = null;
       } else {
         const m = item.message;
-        const senderId = m.sender_role === 'user'
-          ? '__user__'
-          : (m.agent_id ?? m.agent?.id ?? '__unknown__');
+        const senderId =
+          m.sender_role === 'user' ? '__user__' : (m.agent_id ?? m.agent?.id ?? '__unknown__');
         const sameGroup =
           prevSenderId === senderId &&
           prevSenderRole === m.sender_role &&
@@ -540,9 +538,8 @@ export class ChatFeed extends LitElement {
         let nextIsSameSender = false;
         if (nextItem?.kind === 'message') {
           const nm = nextItem.message;
-          const nextSenderId = nm.sender_role === 'user'
-            ? '__user__'
-            : (nm.agent_id ?? nm.agent?.id ?? '__unknown__');
+          const nextSenderId =
+            nm.sender_role === 'user' ? '__user__' : (nm.agent_id ?? nm.agent?.id ?? '__unknown__');
           nextIsSameSender =
             nextSenderId === senderId &&
             nm.sender_role === m.sender_role &&
@@ -603,31 +600,36 @@ export class ChatFeed extends LitElement {
         aria-live="polite"
         aria-label=${msg('Conversation messages')}
       >
-        ${this.hasMore
-          ? html`
+        ${
+          this.hasMore
+            ? html`
               <div class="feed__load-more">
-                ${this.loading
-                  ? html`<div class="feed__load-more-spinner"></div>`
-                  : html`
+                ${
+                  this.loading
+                    ? html`<div class="feed__load-more-spinner"></div>`
+                    : html`
                       <button
                         class="feed__load-more-btn"
                         @click=${this._handleLoadMore}
                       >
                         ${msg('Load older messages')}
                       </button>
-                    `}
+                    `
+                }
               </div>
             `
-          : nothing}
+            : nothing
+        }
 
         ${repeat(
           timeline,
-          item => this._timelineKey(item),
-          item => this._renderTimelineItem(item),
+          (item) => this._timelineKey(item),
+          (item) => this._renderTimelineItem(item),
         )}
 
-        ${this.streaming && this.streamContent
-          ? html`
+        ${
+          this.streaming && this.streamContent
+            ? html`
               <velg-chat-message
                 .message=${this._getStreamMsg()}
                 .participant=${this._getStreamingParticipant()}
@@ -635,11 +637,14 @@ export class ChatFeed extends LitElement {
                 ?lastInGroup=${true}
               ></velg-chat-message>
             `
-          : nothing}
+            : nothing
+        }
 
-        ${this.typingUsers.length > 0
-          ? html`<velg-typing-indicator .users=${this.typingUsers}></velg-typing-indicator>`
-          : nothing}
+        ${
+          this.typingUsers.length > 0
+            ? html`<velg-typing-indicator .users=${this.typingUsers}></velg-typing-indicator>`
+            : nothing
+        }
 
         <div class="scroll-anchor"></div>
       </div>
@@ -681,17 +686,23 @@ export class ChatFeed extends LitElement {
 
   private _timelineKey(item: TimelineItem): string {
     switch (item.kind) {
-      case 'message': return item.message.id;
-      case 'event': return `evt-${item.event.id}`;
-      case 'date': return `date-${item.date}`;
+      case 'message':
+        return item.message.id;
+      case 'event':
+        return `evt-${item.event.id}`;
+      case 'date':
+        return `date-${item.date}`;
     }
   }
 
   private _renderTimelineItem(item: TimelineItem): TemplateResult {
     switch (item.kind) {
-      case 'date': return this._renderDateSeparator(item.label);
-      case 'event': return this._renderEventCard(item.event);
-      case 'message': return this._renderMessage(item);
+      case 'date':
+        return this._renderDateSeparator(item.label);
+      case 'event':
+        return this._renderEventCard(item.event);
+      case 'message':
+        return this._renderMessage(item);
     }
   }
 
@@ -722,9 +733,11 @@ export class ChatFeed extends LitElement {
         </span>
         <div class="event-card__body">
           <div class="event-card__title">${evt.event_title}</div>
-          ${evt.event_description
-            ? html`<div class="event-card__desc">${evt.event_description}</div>`
-            : nothing}
+          ${
+            evt.event_description
+              ? html`<div class="event-card__desc">${evt.event_description}</div>`
+              : nothing
+          }
           ${meta ? html`<div class="event-card__meta">${meta}</div>` : nothing}
         </div>
       </div>
@@ -733,9 +746,8 @@ export class ChatFeed extends LitElement {
 
   private _renderMessage(item: TimelineItem & { kind: 'message' }): TemplateResult {
     const m = item.message;
-    const senderId = m.sender_role === 'user'
-      ? this.currentUserId
-      : (m.agent_id ?? m.agent?.id ?? '');
+    const senderId =
+      m.sender_role === 'user' ? this.currentUserId : (m.agent_id ?? m.agent?.id ?? '');
     const participant = this._participantMap.get(senderId);
 
     return html`
@@ -783,8 +795,8 @@ export class ChatFeed extends LitElement {
   private _getStreamMsg(): ChatMessage {
     if (this.streamContent !== this._streamContentCache || !this._streamMsgCache) {
       // Detect new stream: content restarted (shorter than cache = buffer was reset)
-      const isNewStream = !this._streamStartedAt
-        || this.streamContent.length < this._streamContentCache.length;
+      const isNewStream =
+        !this._streamStartedAt || this.streamContent.length < this._streamContentCache.length;
       if (isNewStream) {
         this._streamStartedAt = new Date().toISOString();
       }
@@ -806,9 +818,7 @@ export class ChatFeed extends LitElement {
   // ---------------------------------------------------------------------------
 
   private _handleLoadMore(): void {
-    this.dispatchEvent(
-      new CustomEvent('load-older', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('load-older', { bubbles: true, composed: true }));
   }
 
   private _handleStarterClick(text: string): void {

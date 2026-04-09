@@ -15,15 +15,18 @@
  * Mount once in the app shell: <velg-achievement-toast></velg-achievement-toast>
  */
 
-import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { msg } from '@lit/localize';
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
-import { supabase } from '../../services/supabase/client.js';
+import type {
+  AchievementDefinition,
+  UserAchievement,
+} from '../../services/api/AchievementsApiService.js';
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
-import type { AchievementDefinition, UserAchievement } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { supabase } from '../../services/supabase/client.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @customElement('velg-achievement-toast')
@@ -49,7 +52,11 @@ export class VelgAchievementToast extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._unsubscribe();
-    try { this._disposeAuthWatch?.(); } catch { /* best-effort cleanup */ }
+    try {
+      this._disposeAuthWatch?.();
+    } catch {
+      /* best-effort cleanup */
+    }
     this._disposeAuthWatch = null;
   }
 

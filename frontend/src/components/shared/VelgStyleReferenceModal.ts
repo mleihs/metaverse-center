@@ -2,11 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi, buildingsApi, styleReferenceApi } from '../../services/api/index.js';
-import {
-  forgeButtonStyles,
-  forgeFieldStyles,
-  forgeRangeStyles,
-} from './forge-console-styles.js';
+import { forgeButtonStyles, forgeFieldStyles, forgeRangeStyles } from './forge-console-styles.js';
 import { VelgToast } from './Toast.js';
 
 import './BaseModal.js';

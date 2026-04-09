@@ -20,10 +20,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
-
-import type { ChatMessage as ChatMessageData } from '../../../types/index.js';
-import type { Participant } from '../../../services/chat/chat-types.js';
 import type { OptimisticChatMessage } from '../../../services/chat/ChatSessionStore.js';
+import type { Participant } from '../../../services/chat/chat-types.js';
+import type { ChatMessage as ChatMessageData } from '../../../types/index.js';
 import { moodRingColor } from '../../../utils/agent-colors.js';
 import { formatRelativeTimeVerbose } from '../../../utils/date-format.js';
 import { agentAltText } from '../../../utils/text.js';
@@ -296,9 +295,7 @@ export class ChatMessage extends LitElement {
 
     // Agent accent color via participant or fallback
     const accentColor = this.participant?.accentColor ?? '';
-    const hostStyle = accentColor
-      ? { '--_accent': accentColor } as Record<string, string>
-      : {};
+    const hostStyle = accentColor ? ({ '--_accent': accentColor } as Record<string, string>) : {};
 
     const rowClasses = {
       row: true,
@@ -330,23 +327,31 @@ export class ChatMessage extends LitElement {
             ?streaming=${this.streaming}
             ?plainText=${this.participant?.role === 'player'}
           ></velg-chat-bubble>
-          ${!isOptimistic && (m.reactions?.length ?? 0) > 0
-            ? html`<velg-reaction-bar
+          ${
+            !isOptimistic && (m.reactions?.length ?? 0) > 0
+              ? html`<velg-reaction-bar
                 .messageId=${m.id}
                 .reactions=${m.reactions ?? []}
               ></velg-reaction-bar>`
-            : nothing}
-          ${showTime
-            ? html`<span class="time">${formatRelativeTimeVerbose(m.created_at)}</span>`
-            : nothing}
+              : nothing
+          }
+          ${
+            showTime
+              ? html`<span class="time">${formatRelativeTimeVerbose(m.created_at)}</span>`
+              : nothing
+          }
         </div>
-        ${isOptimistic ? nothing : html`
+        ${
+          isOptimistic
+            ? nothing
+            : html`
           <velg-message-actions
             .messageId=${m.id}
             .senderRole=${m.sender_role}
             .content=${m.content}
           ></velg-message-actions>
-        `}
+        `
+        }
       </div>
     `;
   }
@@ -372,9 +377,8 @@ export class ChatMessage extends LitElement {
     }
 
     const src = this.participant?.avatarUrl ?? this.message.agent?.portrait_image_url ?? '';
-    const mood = this.participant?.moodScore != null
-      ? moodRingColor(this.participant.moodScore)
-      : '';
+    const mood =
+      this.participant?.moodScore != null ? moodRingColor(this.participant.moodScore) : '';
 
     return html`
       <div class="avatar">

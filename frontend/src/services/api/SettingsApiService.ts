@@ -9,7 +9,10 @@ export class SettingsApiService extends BaseApiService {
     // Design, anchor, and features are publicly readable (anon RLS, migrations 020+187).
     // Always use public endpoint for these to avoid 403 for authenticated non-members.
     if (category === 'design' || category === 'features') {
-      return this.getPublic(`/simulations/${simulationId}/settings`, category ? { category } : undefined);
+      return this.getPublic(
+        `/simulations/${simulationId}/settings`,
+        category ? { category } : undefined,
+      );
     }
     return this.getSimulationData(
       `/simulations/${simulationId}/settings`,

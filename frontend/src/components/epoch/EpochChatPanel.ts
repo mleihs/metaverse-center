@@ -18,10 +18,9 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochChatApi } from '../../services/api/EpochChatApiService.js';
-import { realtimeService } from '../../services/realtime/RealtimeService.js';
-import type { ChatMessage } from '../../types/index.js';
-import type { EpochChatMessage } from '../../types/index.js';
 import type { Participant } from '../../services/chat/chat-types.js';
+import { realtimeService } from '../../services/realtime/RealtimeService.js';
+import type { ChatMessage, EpochChatMessage } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../chat/core/ChatFeed.js';
@@ -152,14 +151,19 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
 
   /** Map EpochChatMessage[] to ChatMessage[] for ChatFeed consumption. */
   private _mapMessages(msgs: EpochChatMessage[]): ChatMessage[] {
-    return msgs.map((m): ChatMessage => ({
-      id: m.id,
-      conversation_id: m.epoch_id,
-      sender_role: m.sender_simulation_id === this.mySimulationId ? 'user' as const : 'assistant' as const,
-      content: m.content,
-      created_at: m.created_at,
-      agent_id: m.sender_simulation_id,
-    }));
+    return msgs.map(
+      (m): ChatMessage => ({
+        id: m.id,
+        conversation_id: m.epoch_id,
+        sender_role:
+          m.sender_simulation_id === this.mySimulationId
+            ? ('user' as const)
+            : ('assistant' as const),
+        content: m.content,
+        created_at: m.created_at,
+        agent_id: m.sender_simulation_id,
+      }),
+    );
   }
 
   /** Extract unique Participant[] from message senders for ChatFeed lookup. */
@@ -308,23 +312,29 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
           @click=${() => this._switchChannel('epoch')}
         >
           ${msg('All Channels')}
-          ${unreadEpoch > 0 && this._activeChannel !== 'epoch'
-            ? html`<span class="unread-pip">${unreadEpoch}</span>`
-            : nothing}
+          ${
+            unreadEpoch > 0 && this._activeChannel !== 'epoch'
+              ? html`<span class="unread-pip">${unreadEpoch}</span>`
+              : nothing
+          }
         </button>
-        ${this.myTeamId
-          ? html`
+        ${
+          this.myTeamId
+            ? html`
               <button
                 class="channel-tab ${this._activeChannel === 'team' ? 'channel-tab--active' : ''}"
                 @click=${() => this._switchChannel('team')}
               >
                 ${msg('Team Freq')}
-                ${unreadTeam > 0 && this._activeChannel !== 'team'
-                  ? html`<span class="unread-pip">${unreadTeam}</span>`
-                  : nothing}
+                ${
+                  unreadTeam > 0 && this._activeChannel !== 'team'
+                    ? html`<span class="unread-pip">${unreadTeam}</span>`
+                    : nothing
+                }
               </button>
             `
-          : nothing}
+            : nothing
+        }
       </div>
 
       <!-- Message feed (shared core component) -->
@@ -341,8 +351,9 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
       </div>
 
       <!-- Input or disabled notice -->
-      ${canSend
-        ? html`
+      ${
+        canSend
+          ? html`
             <velg-chat-composer
               .charLimit=${EPOCH_CHAR_LIMIT}
               .charWarn=${EPOCH_CHAR_WARN}
@@ -352,13 +363,16 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
               @send-message=${this._handleSend}
             ></velg-chat-composer>
           `
-        : html`
+          : html`
             <div class="disabled-notice">
-              ${!this.mySimulationId
-                ? msg('Join the epoch to send messages')
-                : msg('Channel closed \u2013 epoch ended')}
+              ${
+                !this.mySimulationId
+                  ? msg('Join the epoch to send messages')
+                  : msg('Channel closed \u2013 epoch ended')
+              }
             </div>
-          `}
+          `
+      }
     `;
   }
 }

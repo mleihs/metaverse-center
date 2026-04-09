@@ -14,17 +14,13 @@
  * WCAG 1.4.2: audio is off by default, opt-in only.
  */
 
-import { type Signal, computed, signal } from '@preact/signals-core';
+import { computed, type Signal, signal } from '@preact/signals-core';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type ChatSfxName =
-  | 'message-sent'
-  | 'message-received'
-  | 'typing-start'
-  | 'stream-complete';
+export type ChatSfxName = 'message-sent' | 'message-received' | 'typing-start' | 'stream-complete';
 
 type SpriteMap = Record<string, [number, number]>;
 
@@ -108,7 +104,10 @@ class ChatAudioService {
     if (!this.enabled.value || this.muted.value) return;
 
     // Respect prefers-reduced-motion
-    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
       return;
     }
 
@@ -193,10 +192,7 @@ class ChatAudioService {
     const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
     if (!base) return [];
     const prefix = `${base}/storage/v1/object/public/chat.audio/sfx`;
-    return [
-      `${prefix}/chat-sfx-sprite.ogg`,
-      `${prefix}/chat-sfx-sprite.mp3`,
-    ];
+    return [`${prefix}/chat-sfx-sprite.ogg`, `${prefix}/chat-sfx-sprite.mp3`];
   }
 
   // ── Settings persistence ────────────────────────────────

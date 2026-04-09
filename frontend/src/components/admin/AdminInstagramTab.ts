@@ -1933,7 +1933,7 @@ export class VelgAdminInstagramTab extends LitElement {
     for (const s of this._filteredStories) {
       const key = s.resonance_id ?? 'unknown';
       if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(s);
+      map.get(key)?.push(s);
     }
     return Array.from(map.entries()).map(([resonanceId, stories]) => {
       stories.sort((a, b) => a.sequence_index - b.sequence_index);
@@ -2548,7 +2548,7 @@ export class VelgAdminInstagramTab extends LitElement {
                     <span>${formatDateTimeShort(r.redeemed_at, { fallback: '\u2014' })}</span>
                     <span class="dispatch__type-tag">${r.reward_type}</span>
                     <span style="color: var(--color-text-muted)">
-                      ${r.user_id ? r.user_id.slice(0, 8) + '\u2026' : msg('Anonymous')}
+                      ${r.user_id ? `${r.user_id.slice(0, 8)}\u2026` : msg('Anonymous')}
                     </span>
                   </div>
                 `,

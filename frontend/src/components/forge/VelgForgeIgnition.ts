@@ -3,13 +3,13 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
   forgeSectionStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';

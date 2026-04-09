@@ -81,11 +81,7 @@ type QuotePhase = 'entering' | 'visible' | 'swapping' | 'original' | 'leaving';
 @localized()
 @customElement('velg-dungeon-showcase')
 export class VelgDungeonShowcase extends LitElement {
-  static styles = [
-    showcaseLayoutStyles,
-    showcaseAtmosphereStyles,
-    showcaseTransitionStyles,
-  ];
+  static styles = [showcaseLayoutStyles, showcaseAtmosphereStyles, showcaseTransitionStyles];
 
   @state() private _activeIndex = 0;
   @state() private _quoteIndex = 0;
@@ -160,7 +156,10 @@ export class VelgDungeonShowcase extends LitElement {
   }
 
   private _cancelTimer(): void {
-    if (this._timer !== null) { clearTimeout(this._timer); this._timer = null; }
+    if (this._timer !== null) {
+      clearTimeout(this._timer);
+      this._timer = null;
+    }
   }
 
   /** Wait for the CSS animation on `.quote-block` to finish, then call `fn`.
@@ -179,7 +178,10 @@ export class VelgDungeonShowcase extends LitElement {
         if (gen !== this._gen) return;
 
         const el = this.renderRoot.querySelector('.quote-block');
-        if (!el) { fn(); return; }
+        if (!el) {
+          fn();
+          return;
+        }
 
         let resolved = false;
         const resolve = () => {
@@ -315,11 +317,18 @@ export class VelgDungeonShowcase extends LitElement {
   // ── Event handlers ────────────────────────────────────────────────────────
 
   private _onKeydown = (e: KeyboardEvent): void => {
-    if (e.key === 'ArrowRight') { e.preventDefault(); this._goNext(); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); this._goPrev(); }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      this._goNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      this._goPrev();
+    }
   };
 
-  private _onDotClick(index: number): void { this._navigateTo(index); }
+  private _onDotClick(index: number): void {
+    this._navigateTo(index);
+  }
 
   /** SPA navigation — crawlable `<a href>` with client-side routing. */
   private _onCtaNavigate(e: Event, id: string): void {
@@ -337,15 +346,24 @@ export class VelgDungeonShowcase extends LitElement {
    *  Voice matches the literary tradition of each archetype. */
   private _ctaLabel(id: string): string {
     switch (id) {
-      case 'shadow':     return msg('Descend');
-      case 'tower':      return msg('Face the Trial');
-      case 'mother':     return msg('Accept the Gift');
-      case 'entropy':    return msg('Carry On');
-      case 'prometheus': return msg('Steal the Flame');
-      case 'deluge':     return msg('Go Under');
-      case 'awakening':  return msg('Open Your Eyes');
-      case 'overthrow':  return msg('Seize Power');
-      default:           return msg('Explore');
+      case 'shadow':
+        return msg('Descend');
+      case 'tower':
+        return msg('Face the Trial');
+      case 'mother':
+        return msg('Accept the Gift');
+      case 'entropy':
+        return msg('Carry On');
+      case 'prometheus':
+        return msg('Steal the Flame');
+      case 'deluge':
+        return msg('Go Under');
+      case 'awakening':
+        return msg('Open Your Eyes');
+      case 'overthrow':
+        return msg('Seize Power');
+      default:
+        return msg('Explore');
     }
   }
 
@@ -358,7 +376,8 @@ export class VelgDungeonShowcase extends LitElement {
     const dx = e.changedTouches[0].clientX - this._touchStartX;
     const dy = e.changedTouches[0].clientY - this._touchStartY;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) this._goNext(); else this._goPrev();
+      if (dx < 0) this._goNext();
+      else this._goPrev();
     }
   };
 
@@ -380,13 +399,17 @@ export class VelgDungeonShowcase extends LitElement {
       >
         <div class="quote-block__text-wrap">
           <p class="quote-block__text">${quote.text}</p>
-          ${quote.original
-            ? html`<p class="quote-block__original" lang=${langCode ?? nothing}>${quote.original}</p>`
-            : nothing}
+          ${
+            quote.original
+              ? html`<p class="quote-block__original" lang=${langCode ?? nothing}>${quote.original}</p>`
+              : nothing
+          }
         </div>
-        ${quote.originalLang
-          ? html`<span class="quote-block__lang" aria-hidden="true">${quote.originalLang}</span>`
-          : nothing}
+        ${
+          quote.originalLang
+            ? html`<span class="quote-block__lang" aria-hidden="true">${quote.originalLang}</span>`
+            : nothing
+        }
         <cite class="quote-block__author">${quote.author}</cite>
       </div>
     `;
@@ -434,9 +457,7 @@ export class VelgDungeonShowcase extends LitElement {
                   href=${`/archetypes/${a.id}`}
                   @click=${(e: Event) => this._onCtaNavigate(e, a.id)}
                 ><span class="slide__cta-text">${this._ctaLabel(a.id)}</span><span class="slide__cta-arrow" aria-hidden="true">\u25B8</span></a>
-                ${i === this._activeIndex
-                  ? this._renderQuote(this._quote, this._phase)
-                  : nothing}
+                ${i === this._activeIndex ? this._renderQuote(this._quote, this._phase) : nothing}
               </div>
             </div>
           `,

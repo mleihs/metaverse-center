@@ -10,13 +10,16 @@
  * same hexagonal clip-path as VelgAchievementBadge but at 36px scale.
  */
 
-import { LitElement, css, html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
+import type {
+  AchievementSummary,
+  UserAchievement,
+} from '../../services/api/AchievementsApiService.js';
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
-import type { AchievementSummary, UserAchievement } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { icons } from '../../utils/icons.js';
 
@@ -237,7 +240,11 @@ export class VelgAchievementSummaryCard extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    try { this._disposeUnlockWatch?.(); } catch { /* best-effort cleanup */ }
+    try {
+      this._disposeUnlockWatch?.();
+    } catch {
+      /* best-effort cleanup */
+    }
     this._disposeUnlockWatch = null;
   }
 
@@ -337,14 +344,15 @@ export class VelgAchievementSummaryCard extends LitElement {
           <span class="count__total">${total_available} ${msg('earned')}</span>
         </div>
 
-        ${recent.length > 0
-          ? html`
+        ${
+          recent.length > 0
+            ? html`
             <div class="recent">
               <span class="recent__label">${msg('Recent')}</span>
               ${recent.map((a) => this._renderMiniHex(a))}
             </div>
           `
-          : html`<div class="empty">${msg('No badges earned yet')}</div>`
+            : html`<div class="empty">${msg('No badges earned yet')}</div>`
         }
 
         <div class="cta">

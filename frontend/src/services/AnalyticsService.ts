@@ -319,6 +319,6 @@ class AnalyticsService {
   }
 }
 
-export { EVENT_MAP };
 export type { EventMapping };
+export { EVENT_MAP };
 export const analyticsService = new AnalyticsService();

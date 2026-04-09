@@ -700,12 +700,14 @@ export class VelgConversationList extends LitElement {
           (agent) =>
             html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
         )}
-        ${overflow > 0
-          ? html`<velg-tooltip position="below">
+        ${
+          overflow > 0
+            ? html`<velg-tooltip position="below">
               <div class="conversation__portrait-overflow">+${overflow}</div>
               <velg-agent-tip slot="tip" .agents=${agents.slice(maxVisible)}></velg-agent-tip>
             </velg-tooltip>`
-          : null}
+            : null
+        }
       </div>
     `;
   }
@@ -740,8 +742,9 @@ export class VelgConversationList extends LitElement {
       >
         <div class="conversation__header">
           ${this._renderPortraitStack(agents)}
-          ${isRenaming
-            ? html`<input
+          ${
+            isRenaming
+              ? html`<input
                 class="rename-input"
                 .value=${this._renameValue}
                 @input=${this._handleRenameInput}
@@ -751,19 +754,24 @@ export class VelgConversationList extends LitElement {
                 ${/* Auto-focus on next microtask */ ''}
               aria-label=${msg('Rename conversation')}
               />`
-            : html`<div
+              : html`<div
                 class="conversation__agent-name"
                 @dblclick=${(e: Event) => this._startRename(e, conversation)}
                 title=${this.readonly ? displayName : msg('Double-click to rename')}
-              >${displayName}</div>`}
-          ${!this.readonly ? html`
+              >${displayName}</div>`
+          }
+          ${
+            !this.readonly
+              ? html`
             <button
               class="conversation__pin ${isPinned ? 'conversation__pin--active' : ''}"
               @click=${(e: Event) => this._togglePin(e, conversation.id)}
               aria-label=${isPinned ? msg('Unpin conversation') : msg('Pin conversation')}
               title=${isPinned ? msg('Unpin') : msg('Pin')}
             >${icons.pin(14)}</button>
-          ` : null}
+          `
+              : null
+          }
           ${isUnread ? html`<div class="conversation__unread-dot"></div>` : null}
           ${
             conversation.message_count > 0
@@ -859,9 +867,11 @@ export class VelgConversationList extends LitElement {
           @input=${this._handleSearchInput}
           aria-label=${msg('Search conversations')}
         />
-        ${this._searchTerm
-          ? html`<button class="search__clear" @click=${this._clearSearch} aria-label=${msg('Clear search')}>X</button>`
-          : nothing}
+        ${
+          this._searchTerm
+            ? html`<button class="search__clear" @click=${this._clearSearch} aria-label=${msg('Clear search')}>X</button>`
+            : nothing
+        }
       </div>
     `;
   }
@@ -908,9 +918,10 @@ export class VelgConversationList extends LitElement {
 
     return html`
       ${this._renderSearch()}
-      ${totalFiltered === 0
-        ? html`<div class="no-results">${msg('No matching conversations')}</div>`
-        : html`
+      ${
+        totalFiltered === 0
+          ? html`<div class="no-results">${msg('No matching conversations')}</div>`
+          : html`
           <div class="list" role="listbox" aria-label=${msg('Conversations')}>
             ${this._renderGroup(msg('Pinned'), groups.pinned, startPinned, true)}
             ${this._renderGroup(msg('Today'), groups.today, startToday)}
@@ -918,7 +929,8 @@ export class VelgConversationList extends LitElement {
             ${this._renderGroup(msg('This Week'), groups.this_week, startWeek)}
             ${this._renderGroup(msg('Older'), groups.older, startOlder)}
           </div>
-        `}
+        `
+      }
     `;
   }
 }

@@ -4,6 +4,6 @@
  * Returns null if the URL is missing or not an AVIF file.
  */
 export function getFullResUrl(thumbUrl: string | null | undefined): string | null {
-  if (!thumbUrl || !thumbUrl.endsWith('.avif')) return null;
+  if (!thumbUrl?.endsWith('.avif')) return null;
   return thumbUrl.replace(/\.avif$/, '.full.avif');
 }

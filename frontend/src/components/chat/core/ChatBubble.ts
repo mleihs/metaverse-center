@@ -357,7 +357,7 @@ export class ChatBubble extends LitElement {
     // Delegated click handler for code block copy-to-clipboard buttons.
     // A single listener on the shadow root handles all copy buttons — no
     // per-button binding needed, works with dynamically rendered content.
-    this.shadowRoot!.addEventListener('click', (e: Event) => {
+    this.shadowRoot?.addEventListener('click', (e: Event) => {
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.code-block__copy');
       if (!btn) return;
       const code = decodeURIComponent(btn.getAttribute('data-code') ?? '');
@@ -391,7 +391,7 @@ export class ChatBubble extends LitElement {
     };
 
     const styles = this.accentColor
-      ? { '--_accent': this.accentColor } as Record<string, string>
+      ? ({ '--_accent': this.accentColor } as Record<string, string>)
       : {};
 
     // No whitespace between div tags and content — white-space: pre-wrap

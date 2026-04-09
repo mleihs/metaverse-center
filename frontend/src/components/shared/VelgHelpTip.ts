@@ -12,9 +12,9 @@
  * 20x20 touch target on mobile (nested in parent's 44px zone).
  */
 
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { localized, msg } from '@lit/localize';
 import { icons } from '../../utils/icons.js';
 
 @localized()

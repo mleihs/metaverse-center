@@ -21,15 +21,11 @@
  *     }
  *   }
  */
-import { state } from 'lit/decorators.js';
 
 import type { ReactiveElement } from 'lit';
+import { state } from 'lit/decorators.js';
+import { DataLoaderMixin, type DataLoaderMixinInterface } from './DataLoaderMixin.js';
 import type { FilterChangeDetail } from './SharedFilterBar.js';
-
-import {
-  DataLoaderMixin,
-  type DataLoaderMixinInterface,
-} from './DataLoaderMixin.js';
 
 type ReactiveElementCtor = abstract new (...args: any[]) => ReactiveElement;
 
@@ -58,10 +54,7 @@ export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
     /* ── Lifecycle: reset pagination on simulationId change ── */
 
     protected willUpdate(changed: Map<PropertyKey, unknown>): void {
-      if (
-        changed.has('simulationId') &&
-        !!(this as Record<string, unknown>).simulationId
-      ) {
+      if (changed.has('simulationId') && !!(this as Record<string, unknown>).simulationId) {
         this._offset = 0;
         this._search = '';
         this._filters = {};
@@ -95,9 +88,7 @@ export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
     }
 
     /** Standard handler for <velg-pagination @page-change>. */
-    protected _handlePageChange(
-      e: CustomEvent<{ limit: number; offset: number }>,
-    ): void {
+    protected _handlePageChange(e: CustomEvent<{ limit: number; offset: number }>): void {
       this._limit = e.detail.limit;
       this._offset = e.detail.offset;
       this._load();
@@ -105,5 +96,7 @@ export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
   }
 
   return PaginatedHost as unknown as TBase &
-    (abstract new (...args: any[]) => PaginatedLoaderMixinInterface);
+    (abstract new (
+      ...args: any[]
+    ) => PaginatedLoaderMixinInterface);
 }

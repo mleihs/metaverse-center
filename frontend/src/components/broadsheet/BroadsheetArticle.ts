@@ -11,9 +11,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { dispatchStyles } from '../shared/dispatch-styles.js';
 import type { BroadsheetArticle } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
 
 @localized()
 @customElement('velg-broadsheet-article')
@@ -109,12 +109,8 @@ export class VelgBroadsheetArticleEl extends LitElement {
           ${sourceLabel}
         </div>
         <h3 class="article__headline">${headline}</h3>
-        ${content
-          ? html`<p class="article__excerpt">${content}</p>`
-          : nothing}
-        ${a.agent_name
-          ? html`<span class="article__agent">${a.agent_name}</span>`
-          : nothing}
+        ${content ? html`<p class="article__excerpt">${content}</p>` : nothing}
+        ${a.agent_name ? html`<span class="article__agent">${a.agent_name}</span>` : nothing}
       </article>
     `;
   }

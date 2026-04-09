@@ -18,10 +18,9 @@
  *   class MyView extends SignalWatcher(DataLoaderMixin(LitElement)) { ... }
  */
 import { msg } from '@lit/localize';
-import { html, nothing, type TemplateResult } from 'lit';
-import { state } from 'lit/decorators.js';
-
 import type { ReactiveElement } from 'lit';
+import { html, type nothing, type TemplateResult } from 'lit';
+import { state } from 'lit/decorators.js';
 import type { ApiResponse } from '../../types/index.js';
 
 /** Return type for render callbacks — TemplateResult or Lit's `nothing` symbol. */
@@ -122,8 +121,7 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
         if (response.success && response.data !== undefined) {
           this._data = response.data;
           this._total =
-            response.meta?.total ??
-            (Array.isArray(response.data) ? response.data.length : 1);
+            response.meta?.total ?? (Array.isArray(response.data) ? response.data.length : 1);
           await this._onDataLoaded();
         } else if (!response.success) {
           this._error = response.error?.message ?? this._getErrorFallback();
@@ -194,5 +192,7 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
   }
 
   return DataLoaderHost as unknown as TBase &
-    (abstract new (...args: any[]) => DataLoaderMixinInterface);
+    (abstract new (
+      ...args: any[]
+    ) => DataLoaderMixinInterface);
 }

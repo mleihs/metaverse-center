@@ -2042,7 +2042,7 @@ export class VelgForgeCeremony extends LitElement {
                 ? html`
               <div class="ceremony__lore-dots" aria-hidden="true">
                 ${Array.from({ length: this._progress.lore_progress.total! }, (_, i) => {
-                  const current = this._progress!.lore_progress!.current ?? 0;
+                  const current = this._progress?.lore_progress?.current ?? 0;
                   const isDone = i + 1 < current;
                   const isActive = i + 1 === current;
                   return html`<div class="ceremony__lore-dot ${isDone ? 'ceremony__lore-dot--done' : ''} ${isActive ? 'ceremony__lore-dot--active' : ''}"></div>`;

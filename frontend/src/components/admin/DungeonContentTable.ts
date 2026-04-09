@@ -551,7 +551,7 @@ export class DungeonContentTable extends LitElement {
 
     if (key === 'text_en' || key === 'description_en' || key === 'name_en') {
       const text = String(value ?? '');
-      const snippet = text.length > 80 ? text.substring(0, 80) + '\u2026' : text;
+      const snippet = text.length > 80 ? `${text.substring(0, 80)}\u2026` : text;
       return html`<span class="cell-preview" title=${text}>${snippet}</span>`;
     }
 

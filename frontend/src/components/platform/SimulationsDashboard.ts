@@ -1851,9 +1851,10 @@ export class VelgSimulationsDashboard extends LitElement {
           ${!isGuest ? this._renderAgentSpotlight() : nothing}
           ${this._renderResonanceTicker()}
           ${this._renderAcademyCta(userState)}
-          ${!isGuest
-            ? html`<velg-achievement-summary-card style="--i: 3"></velg-achievement-summary-card>`
-            : nothing
+          ${
+            !isGuest
+              ? html`<velg-achievement-summary-card style="--i: 3"></velg-achievement-summary-card>`
+              : nothing
           }
           ${
             !isGuest && this._simulations.length > 0

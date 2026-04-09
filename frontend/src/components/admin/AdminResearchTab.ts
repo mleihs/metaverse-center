@@ -4,14 +4,14 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   adminAnimationStyles,
   adminButtonStyles,
   adminForgeSectionStyles,
   adminLoadingStyles,
 } from '../shared/admin-shared-styles.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 interface DomainAxisMeta {
   label: string;

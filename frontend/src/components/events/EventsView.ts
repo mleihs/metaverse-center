@@ -292,7 +292,8 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
           </label>
         </div>
 
-        ${this._renderDataGuard(() => html`
+        ${this._renderDataGuard(
+          () => html`
           <div class="entity-grid">
             ${this._events.map(
               (evt, i) => html`
@@ -306,7 +307,8 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
               `,
             )}
           </div>
-        `)}
+        `,
+        )}
 
         <velg-pagination
           .total=${this._total}

@@ -4,7 +4,6 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
@@ -13,6 +12,7 @@ import {
   forgeRangeStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import { renderInfoBubble } from './forge-utils.js';
 
 import '../shared/VelgFontPicker.js';

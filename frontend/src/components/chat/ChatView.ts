@@ -277,11 +277,7 @@ export class VelgChatView extends LitElement {
     const { conversation, title } = e.detail;
 
     try {
-      const response = await chatApi.renameConversation(
-        this.simulationId,
-        conversation.id,
-        title,
-      );
+      const response = await chatApi.renameConversation(this.simulationId, conversation.id, title);
       if (response.success) {
         // Update the conversation in the list
         this._conversations = this._conversations.map((c) =>
@@ -547,7 +543,9 @@ export class VelgChatView extends LitElement {
         >
           <button
             class="mobile-back"
-            @click=${() => { this._selectedConversation = null; }}
+            @click=${() => {
+              this._selectedConversation = null;
+            }}
             aria-label=${msg('Back to conversations')}
           >\u2190 ${msg('Conversations')}</button>
           <velg-chat-window

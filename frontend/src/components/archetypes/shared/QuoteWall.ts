@@ -93,12 +93,14 @@ export class VelgQuoteWall extends LitElement {
     return html`
       <div class="quote-mark" aria-hidden="true">\u201c</div>
       <blockquote>${this.text}</blockquote>
-      ${this.original
-        ? html`
+      ${
+        this.original
+          ? html`
             <p class="original">${this.original}</p>
             ${this.originalLang ? html`<p class="original-lang">${this.originalLang}</p>` : nothing}
           `
-        : nothing}
+          : nothing
+      }
       <cite>\u2014 ${this.author}</cite>
     `;
   }

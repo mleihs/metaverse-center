@@ -7,22 +7,29 @@
  * you focus on what you've earned or what remains.
  */
 
-import { LitElement, css, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
-
-import { achievementsApi } from '../../services/api/AchievementsApiService.js';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import type {
   AchievementDefinition,
   AchievementProgress,
   UserAchievement,
 } from '../../services/api/AchievementsApiService.js';
+import { achievementsApi } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import './VelgAchievementBadge.js';
 
 type FilterMode = 'all' | 'earned' | 'locked';
 
-const CATEGORY_ORDER = ['initiation', 'dungeon', 'epoch', 'collection', 'social', 'challenge', 'secret'];
+const CATEGORY_ORDER = [
+  'initiation',
+  'dungeon',
+  'epoch',
+  'collection',
+  'social',
+  'challenge',
+  'secret',
+];
 const CATEGORY_LABELS: Record<string, { en: string; de: string }> = {
   initiation: { en: 'Initiation', de: 'Initiation' },
   dungeon: { en: 'Dungeon Mastery', de: 'Dungeon-Meisterschaft' },
@@ -208,17 +215,24 @@ export class VelgAchievementGrid extends LitElement {
     });
   }
 
-  private _getLocaleField(def: AchievementDefinition, field: 'name' | 'description' | 'hint'): string {
+  private _getLocaleField(
+    def: AchievementDefinition,
+    field: 'name' | 'description' | 'hint',
+  ): string {
     const locale = localeService.currentLocale;
     const key = `${field}_${locale === 'de' ? 'de' : 'en'}` as keyof AchievementDefinition;
-    return (def[key] as string) || (def[`${field}_en` as keyof AchievementDefinition] as string) || '';
+    return (
+      (def[key] as string) || (def[`${field}_en` as keyof AchievementDefinition] as string) || ''
+    );
   }
 
   protected render() {
-    if (this._loading) return html`<velg-loading-state message=${msg('Loading achievements')}></velg-loading-state>`;
+    if (this._loading)
+      return html`<velg-loading-state message=${msg('Loading achievements')}></velg-loading-state>`;
     if (this._error)
       return html`<velg-error-state message=${this._error} show-retry @retry=${this._load}></velg-error-state>`;
-    if (!this._definitions.length) return html`<velg-empty-state message=${msg('No achievements available')}></velg-empty-state>`;
+    if (!this._definitions.length)
+      return html`<velg-empty-state message=${msg('No achievements available')}></velg-empty-state>`;
 
     const earnedCount = this._earnedIds.size;
     const totalCount = this._definitions.length;
@@ -247,7 +261,9 @@ export class VelgAchievementGrid extends LitElement {
         class="filter-btn"
         role="tab"
         aria-selected=${this._filter === mode}
-        @click=${() => { this._filter = mode; }}
+        @click=${() => {
+          this._filter = mode;
+        }}
       >${label}</button>
     `;
   }
@@ -295,11 +311,14 @@ export class VelgAchievementGrid extends LitElement {
                   iconKey=${def.icon_key}
                   progress=${prog ? prog.current_count : -1}
                   target=${prog ? prog.target_count : 1}
-                  title=${earned
-                    ? this._getLocaleField(def, 'description')
-                    : def.is_secret
-                      ? msg('Secret achievement')
-                      : this._getLocaleField(def, 'hint') || this._getLocaleField(def, 'description')}
+                  title=${
+                    earned
+                      ? this._getLocaleField(def, 'description')
+                      : def.is_secret
+                        ? msg('Secret achievement')
+                        : this._getLocaleField(def, 'hint') ||
+                          this._getLocaleField(def, 'description')
+                  }
                 ></velg-achievement-badge>
               `;
             })}

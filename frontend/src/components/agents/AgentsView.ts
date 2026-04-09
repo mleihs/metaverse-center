@@ -7,7 +7,13 @@ import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
-import type { Agent, AgentAptitude, ApiResponse, AptitudeSet, OperativeType } from '../../types/index.js';
+import type {
+  Agent,
+  AgentAptitude,
+  ApiResponse,
+  AptitudeSet,
+  OperativeType,
+} from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';

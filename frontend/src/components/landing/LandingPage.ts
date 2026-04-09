@@ -1798,8 +1798,9 @@ export class VelgLandingPage extends LitElement {
             ${msg('Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.')}
           </p>
           <div class="hero__cta-area">
-            ${appState.isAuthenticated.value
-              ? html`
+            ${
+              appState.isAuthenticated.value
+                ? html`
                 <a
                   class="hero__cta"
                   href="/dashboard"
@@ -1814,7 +1815,7 @@ export class VelgLandingPage extends LitElement {
                   <span class="hero__cta-arrow" aria-hidden="true">\u2192</span>
                 </a>
               `
-              : html`
+                : html`
                 <a
                   class="hero__cta"
                   href="/register"
@@ -2242,8 +2243,9 @@ export class VelgLandingPage extends LitElement {
             </p>
 
             <div class="cta-frame__actions">
-              ${appState.isAuthenticated.value
-                ? html`
+              ${
+                appState.isAuthenticated.value
+                  ? html`
                   <a
                     class="cta-frame__btn"
                     href="/dashboard"
@@ -2257,7 +2259,7 @@ export class VelgLandingPage extends LitElement {
                     ${msg('Go to Dashboard')}
                   </a>
                 `
-                : html`
+                  : html`
                   <a
                     class="cta-frame__btn"
                     href="/register"

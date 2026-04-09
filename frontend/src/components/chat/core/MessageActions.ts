@@ -192,8 +192,9 @@ export class MessageActions extends LitElement {
           ${this._copied ? icons.checkCircle(14) : icons.copy(14)}
         </button>
 
-        ${isAssistant
-          ? html`
+        ${
+          isAssistant
+            ? html`
               <button
                 class="strip__btn"
                 @click=${this._handleRegenerate}
@@ -203,7 +204,7 @@ export class MessageActions extends LitElement {
                 ${icons.refresh(14)}
               </button>
             `
-          : html`
+            : html`
               <button
                 class="strip__btn"
                 @click=${this._handleEdit}
@@ -212,7 +213,8 @@ export class MessageActions extends LitElement {
               >
                 ${icons.edit(14)}
               </button>
-            `}
+            `
+        }
       </div>
     `;
   }

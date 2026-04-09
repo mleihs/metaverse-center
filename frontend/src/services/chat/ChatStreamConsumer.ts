@@ -6,8 +6,8 @@
  * ReadableStream and parses SSE event/data lines incrementally.
  */
 
-import { appState } from '../AppStateManager.js';
 import type { ChatMessage } from '../../types/index.js';
+import { appState } from '../AppStateManager.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,11 +110,9 @@ async function _authenticatedPost(
 }
 
 /** Read an SSE response body and dispatch parsed events to callbacks. */
-async function _consumeSSEStream(
-  response: Response,
-  callbacks: StreamCallbacks,
-): Promise<void> {
-  const reader = response.body!.getReader();
+async function _consumeSSEStream(response: Response, callbacks: StreamCallbacks): Promise<void> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('Response body is not readable');
   const decoder = new TextDecoder();
   let buffer = '';
 
