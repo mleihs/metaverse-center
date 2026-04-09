@@ -41,12 +41,13 @@ export class VelgHoldButton extends LitElement {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 100%;
+        width: var(--hold-btn-width, 100%);
+        height: var(--hold-btn-height, auto);
         padding: var(--space-2, 8px) var(--space-4, 16px);
-        border: 2px solid currentColor;
-        background: transparent;
+        border: var(--hold-btn-border, 2px solid currentColor);
+        background: var(--hold-btn-bg, transparent);
         font: inherit;
-        color: inherit;
+        color: var(--hold-btn-color, inherit);
         text-transform: uppercase;
         letter-spacing: inherit;
         cursor: pointer;
