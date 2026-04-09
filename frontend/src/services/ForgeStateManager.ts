@@ -182,11 +182,11 @@ class ForgeStateManager {
             ...resp.data.generation_config,
           };
         }
-        // Restore theme entity hash so themeStale is accurate on reload
-        const tc = resp.data.theme_config as Record<string, unknown> | undefined;
-        if (tc && Object.keys(tc).length > 0) {
-          this._themeEntityHash = this._entityFingerprint(resp.data);
-        }
+        // _themeEntityHash stays '' after load — we can't know which entities
+        // the stored theme was generated from. This means themeStale=true on
+        // first Darkroom entry after a page refresh, triggering a regeneration
+        // with the current entity roster. This is intentional: ensures the
+        // Darkroom always reflects the latest agents/buildings.
       } else {
         this.error.value = resp.error?.message ?? 'Failed to load draft';
       }
