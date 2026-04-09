@@ -63,6 +63,19 @@ backups/
 
 # Local screenshots (large PNGs, debugging artifacts)
 screenshots/
+*.png
+*.jpeg
+!docs/screenshots/*.png
+
+# Temporary snapshot files
+*-snapshot.md
+*-snapshot.yml
+
+# Database dumps
+db-dump-*.sql
+
+# One-off screenshot scripts
+scripts/screenshot-*.mjs
 
 # Playwright MCP browser automation logs
 .playwright-mcp/
