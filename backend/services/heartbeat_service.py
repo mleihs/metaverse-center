@@ -47,6 +47,66 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
+
+# ── Phase Runner ──────────────────────────────────────────────────────────
+
+
+async def _run_phase(
+    phase_name: str,
+    coro,
+    *,
+    sim_id: UUID,
+    tick_number: int,
+    sim_name: str,
+):
+    """Execute a tick phase with error isolation, timing, and Sentry tagging.
+
+    If the phase raises, the exception is captured (Sentry + logger) but the
+    tick continues — partial results are better than a permanently stuck sim.
+
+    Returns the coroutine's result on success, or None on failure.
+    The caller must handle None gracefully (``if result is not None:``).
+    """
+    t0 = datetime.now(UTC)
+    try:
+        result = await coro
+        elapsed = (datetime.now(UTC) - t0).total_seconds()
+        logger.debug(
+            "Heartbeat phase %s completed in %.2fs for %s",
+            phase_name, elapsed, sim_name,
+            extra={
+                "simulation_id": str(sim_id),
+                "tick_number": tick_number,
+                "phase": phase_name,
+                "elapsed_s": elapsed,
+            },
+        )
+        return result
+    except Exception:
+        elapsed = (datetime.now(UTC) - t0).total_seconds()
+        logger.exception(
+            "Heartbeat phase %s failed after %.2fs for %s (tick #%d) — continuing",
+            phase_name, elapsed, sim_name, tick_number,
+            extra={
+                "simulation_id": str(sim_id),
+                "tick_number": tick_number,
+                "phase": phase_name,
+                "elapsed_s": elapsed,
+            },
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("heartbeat.phase", phase_name)
+            scope.set_tag("simulation_id", str(sim_id))
+            scope.set_context("heartbeat", {
+                "tick_number": tick_number,
+                "simulation_name": sim_name,
+                "phase": phase_name,
+                "elapsed_s": elapsed,
+            })
+            sentry_sdk.capture_exception()
+        return None
+
+
 # Defaults (overridable via platform_settings)
 _DEFAULT_ENABLED = True
 _DEFAULT_INTERVAL = 14400  # 4 hours (was 8h, reduced for engagement)
@@ -370,130 +430,128 @@ class HeartbeatService:
             "cascade_events_spawned": 0,
             "convergence_detected": False,
         }
+        _ctx = {"sim_id": sim_id, "tick_number": tick_number, "sim_name": sim_name}
 
         try:
             # Phase 1: Expire zone actions
-            expired = await cls._phase_expire_zone_actions(admin, sim_id)
-            tick_stats["zone_actions_expired"] = expired
-            if expired > 0:
-                entries.append(
-                    make_heartbeat_entry(
-                        heartbeat_id,
-                        sim_id,
-                        tick_number,
-                        "zone_shift",
-                        f"{expired} zone action(s) expired.",
-                        f"{expired} Zonenaktion(en) abgelaufen.",
-                        severity="info",
-                        metadata={"expired_count": expired},
+            expired = await _run_phase(
+                "zone_expiry",
+                cls._phase_expire_zone_actions(admin, sim_id),
+                **_ctx,
+            )
+            if expired is not None:
+                tick_stats["zone_actions_expired"] = expired
+                if expired > 0:
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number,
+                            "zone_shift",
+                            f"{expired} zone action(s) expired.",
+                            f"{expired} Zonenaktion(en) abgelaufen.",
+                            severity="info",
+                            metadata={"expired_count": expired},
+                        )
                     )
-                )
 
             # Phase 2: Age events
             aging_rules = overrides.get("event_aging_rules", config["event_aging_rules"])
             if isinstance(aging_rules, str):
                 aging_rules = json.loads(aging_rules)
-            aged, escalated, resolved, aging_entries = await cls._phase_age_events(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                aging_rules,
+            aging_result = await _run_phase(
+                "event_aging",
+                cls._phase_age_events(admin, sim_id, tick_number, heartbeat_id, aging_rules),
+                **_ctx,
             )
-            tick_stats["events_aged"] = aged
-            tick_stats["events_escalated"] = escalated
-            tick_stats["events_resolved"] = resolved
-            entries.extend(aging_entries)
+            if aging_result is not None:
+                aged, escalated, resolved, aging_entries = aging_result
+                tick_stats["events_aged"] = aged
+                tick_stats["events_escalated"] = escalated
+                tick_stats["events_resolved"] = resolved
+                entries.extend(aging_entries)
 
             # Phase 3: Compute resonance pressure
-            pressure_delta, pressure_entries = await cls._phase_compute_pressure(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config,
+            pressure_result = await _run_phase(
+                "resonance_pressure",
+                cls._phase_compute_pressure(admin, sim_id, tick_number, heartbeat_id, config),
+                **_ctx,
             )
-            tick_stats["resonance_pressure_delta"] = pressure_delta
-            entries.extend(pressure_entries)
+            pressure_delta = 0.0
+            if pressure_result is not None:
+                pressure_delta, pressure_entries = pressure_result
+                tick_stats["resonance_pressure_delta"] = pressure_delta
+                entries.extend(pressure_entries)
 
             # Phase 3b: Resonance → Agent Mood (A3)
-            # Active platform resonances generate low-strength moodlets (−2 to +2)
-            # for agents in susceptible simulations. Background pressure, not dominant.
-            resonance_moodlets = await AgentMoodService.apply_resonance_moodlets(
-                admin,
-                sim_id,
+            resonance_moodlets = await _run_phase(
+                "resonance_mood",
+                AgentMoodService.apply_resonance_moodlets(admin, sim_id),
+                **_ctx,
             )
-            tick_stats["resonance_moodlets_applied"] = resonance_moodlets
-            if resonance_moodlets > 0:
-                entries.append(
-                    make_heartbeat_entry(
-                        heartbeat_id,
-                        sim_id,
-                        tick_number,
-                        "resonance_mood",
-                        f"Substrate resonance affecting {resonance_moodlets} agents.",
-                        f"Substratresonanz beeinflusst {resonance_moodlets} Agenten.",
-                        severity="info",
-                        metadata={
-                            "moodlets_applied": resonance_moodlets,
-                            "pressure_delta": pressure_delta,
-                        },
+            if resonance_moodlets is not None:
+                tick_stats["resonance_moodlets_applied"] = resonance_moodlets
+                if resonance_moodlets > 0:
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number,
+                            "resonance_mood",
+                            f"Substrate resonance affecting {resonance_moodlets} agents.",
+                            f"Substratresonanz beeinflusst {resonance_moodlets} Agenten.",
+                            severity="info",
+                            metadata={"moodlets_applied": resonance_moodlets, "pressure_delta": pressure_delta},
+                        )
                     )
-                )
 
             # Phase 4: Detect narrative arcs (escalation, cascade, convergence)
-            arc_entries, cascade_spawned, convergence = await NarrativeArcService.detect_and_advance(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config,
+            arc_result = await _run_phase(
+                "narrative_arcs",
+                NarrativeArcService.detect_and_advance(admin, sim_id, tick_number, heartbeat_id, config),
+                **_ctx,
             )
-            tick_stats["cascade_events_spawned"] = cascade_spawned
-            tick_stats["convergence_detected"] = convergence
-            entries.extend(arc_entries)
+            if arc_result is not None:
+                arc_entries, cascade_spawned, convergence = arc_result
+                tick_stats["cascade_events_spawned"] = cascade_spawned
+                tick_stats["convergence_detected"] = convergence
+                entries.extend(arc_entries)
 
             # Phase 5: Resolve bureau responses
-            resolved_count, bureau_entries = await BureauResponseService.resolve_at_tick(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config=config,
+            bureau_result = await _run_phase(
+                "bureau_responses",
+                BureauResponseService.resolve_at_tick(admin, sim_id, tick_number, heartbeat_id, config=config),
+                **_ctx,
             )
-            tick_stats["bureau_responses_resolved"] = resolved_count
-            entries.extend(bureau_entries)
+            if bureau_result is not None:
+                resolved_count, bureau_entries = bureau_result
+                tick_stats["bureau_responses_resolved"] = resolved_count
+                entries.extend(bureau_entries)
 
             # Phase 6: Deepen attunements
-            attunement_entries = await AttunementService.deepen_at_tick(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config,
+            attunement_entries = await _run_phase(
+                "attunement",
+                AttunementService.deepen_at_tick(admin, sim_id, tick_number, heartbeat_id, config),
+                **_ctx,
             )
-            entries.extend(attunement_entries)
+            if attunement_entries is not None:
+                entries.extend(attunement_entries)
 
             # Phase 7: Strengthen anchors
-            anchor_entries = await AnchorService.strengthen_at_tick(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config,
+            anchor_entries = await _run_phase(
+                "anchors",
+                AnchorService.strengthen_at_tick(admin, sim_id, tick_number, heartbeat_id, config),
+                **_ctx,
             )
-            entries.extend(anchor_entries)
+            if anchor_entries is not None:
+                entries.extend(anchor_entries)
 
             # Phase 8: Drift scar tissue
-            scar_delta, scar_entries = await cls._phase_drift_scar_tissue(
-                admin,
-                sim_id,
-                tick_number,
-                heartbeat_id,
-                config,
+            scar_result = await _run_phase(
+                "scar_tissue",
+                cls._phase_drift_scar_tissue(admin, sim_id, tick_number, heartbeat_id, config),
+                **_ctx,
             )
-            tick_stats["scar_tissue_delta"] = scar_delta
-            entries.extend(scar_entries)
+            if scar_result is not None:
+                scar_delta, scar_entries = scar_result
+                tick_stats["scar_tissue_delta"] = scar_delta
+                entries.extend(scar_entries)
 
             # Phase 9: Agent Autonomy — 3-tier gating:
             #   1. Global: platform_settings.autonomy_feature_enabled
@@ -505,183 +563,51 @@ class HeartbeatService:
             autonomy_stats: dict = {}
 
             if autonomy_sim_enabled and autonomy_global:
-                try:
-                    structlog.contextvars.bind_contextvars(autonomy_phase="active")
-
-                    # Gate 3: Resolve API key for LLM calls
-                    byok_key, owner_has_key = await cls._resolve_autonomy_key(
-                        admin,
-                        sim_id,
-                        autonomy_admin_override,
-                    )
-
-                    # 9a: Decay agent needs
-                    rate_mult = float(overrides.get("autonomy_needs_decay_rate", 1.0))
-                    needs_updated = await AgentNeedsService.decay_all(admin, sim_id, rate_mult)
-
-                    # 9b: Mood housekeeping (expire moodlets, decay strengths, recalculate)
-                    mood_summary = await AgentMoodService.process_tick(admin, sim_id)
-
-                    # 9c: Opinion recalculation + relationship threshold checks
-                    opinion_summary = await AgentOpinionService.process_tick(admin, sim_id)
-
-                    autonomy_stats = {
-                        "needs_decayed": needs_updated,
-                        "mood": mood_summary,
-                        "opinions": opinion_summary,
-                    }
-
-                    # Generate entries for breakdowns
-                    breakdowns = mood_summary.get("breakdowns", [])
-                    for agent_id in breakdowns:
-                        entries.append(
-                            make_heartbeat_entry(
-                                heartbeat_id,
-                                sim_id,
-                                tick_number,
-                                "agent_crisis",
-                                f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
-                                f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
-                                severity="critical",
-                                metadata={"agent_id": agent_id, "type": "stress_breakdown"},
-                            )
-                        )
-
-                    # Generate entries for relationship threshold events
-                    for rel_event in opinion_summary.get("relationship_events", []):
-                        evt_type = rel_event["type"]
-                        sev = "warning" if "breakdown" in evt_type else "info"
-                        a_id = rel_event["agent_id"][:8]
-                        t_id = rel_event["target_agent_id"][:8]
-                        entries.append(
-                            make_heartbeat_entry(
-                                heartbeat_id,
-                                sim_id,
-                                tick_number,
-                                "relationship_shift",
-                                f"Relationship {evt_type}: {a_id}... / {t_id}...",
-                                f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
-                                severity=sev,
-                                metadata=rel_event,
-                            )
-                        )
-
-                    # 9d: Activity selection + execution (Utility AI + Boltzmann)
-                    activity_results = await AgentActivityService.select_and_execute(
-                        admin,
-                        sim_id,
-                        tick_id=heartbeat_id,
-                    )
-                    autonomy_stats["activities"] = len(activity_results)
-
-                    # 9e: Social interactions (co-located agents)
-                    interaction_rate = float(overrides.get("autonomy_social_interaction_rate", 1.0))
-                    social_results = await AgentActivityService.generate_social_interactions(
-                        admin,
-                        sim_id,
-                        interaction_rate,
-                        tick_id=heartbeat_id,
-                        sim_name=sim_name,
-                        sim_theme=sim.get("theme", ""),
-                    )
-                    autonomy_stats["social_interactions"] = len(social_results)
-
-                    # Generate entries for significant social interactions
-                    for si in social_results:
-                        if si.get("significance", 0) >= 5:
-                            entries.append(
-                                make_heartbeat_entry(
-                                    heartbeat_id,
-                                    sim_id,
-                                    tick_number,
-                                    "social_event",
-                                    f"Social interaction: {si['type']}",
-                                    f"Soziale Interaktion: {si['type']}",
-                                    severity="info",
-                                    metadata=si,
-                                )
-                            )
-
-                    # 9f: Autonomous event generation (Tier 3 LLM)
-                    # Requires BYOK key — rule-based phases above run without it
-                    auto_events: list[dict] = []
-                    if owner_has_key:
-                        llm_budget = int(overrides.get("autonomy_llm_budget_per_tick", 5))
-                        tick_ctx = {
-                            "breakdowns": mood_summary.get("breakdowns", []),
-                            "relationship_events": opinion_summary.get(
-                                "relationship_events",
-                                [],
-                            ),
-                            "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
-                        }
-                        auto_events = await AutonomousEventService.check_and_generate(
-                            admin,
-                            sim_id,
-                            tick_ctx,
-                            llm_budget=llm_budget,
-                            openrouter_api_key=byok_key,
-                        )
-                    autonomy_stats["autonomous_events"] = len(auto_events)
-                    autonomy_stats["byok_available"] = owner_has_key
-
-                    for ae in auto_events:
-                        entries.append(
-                            make_heartbeat_entry(
-                                heartbeat_id,
-                                sim_id,
-                                tick_number,
-                                "autonomous_event",
-                                ae.get("title", "Autonomous event"),
-                                ae.get("title_de", "Autonomes Ereignis"),
-                                severity="warning" if ae.get("impact_level", 0) >= 4 else "info",
-                                metadata={
-                                    "event_id": ae.get("id"),
-                                    "trigger": ae.get("metadata", {}).get(
-                                        "trigger",
-                                    ),
-                                },
-                            )
-                        )
-
-                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                    logger.exception("Agent autonomy phase failed")
-                    sentry_sdk.capture_exception()
+                autonomy_result = await _run_phase(
+                    "autonomy",
+                    cls._phase_autonomy(
+                        admin, sim_id, sim_name, sim, tick_number, heartbeat_id,
+                        overrides, autonomy_admin_override, entries,
+                    ),
+                    **_ctx,
+                )
+                if autonomy_result is not None:
+                    autonomy_stats = autonomy_result
 
             tick_stats["autonomy"] = autonomy_stats
 
             # Phase 9.5: Ambient weather events (real-world weather → zone narratives + moodlets)
             weather_enabled = str(overrides.get("weather_enabled", "false")).lower() in ("true", "1")
             if weather_enabled:
-                try:
-                    weather_entries, weather_summary = await AmbientWeatherService.process_tick(
-                        admin,
-                        sim_id,
-                        sim,
-                        heartbeat_id,
-                        tick_number,
-                        overrides=overrides,
-                    )
+                weather_result = await _run_phase(
+                    "weather",
+                    AmbientWeatherService.process_tick(
+                        admin, sim_id, sim, heartbeat_id, tick_number, overrides=overrides,
+                    ),
+                    **_ctx,
+                )
+                if weather_result is not None:
+                    weather_entries, weather_summary = weather_result
                     entries.extend(weather_entries)
                     tick_stats["weather_events"] = len(weather_entries)
                     tick_stats["weather"] = weather_summary
-                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                    logger.exception("Ambient weather phase failed")
-                    sentry_sdk.capture_exception()
 
             # Phase 10: Refresh materialized views
-            await GameMechanicsService.refresh_metrics(admin)
+            await _run_phase(
+                "mv_refresh",
+                GameMechanicsService.refresh_metrics(admin),
+                **_ctx,
+            )
 
             # Phase 11: Produce chronicle entries (peacetime content if quiet)
             if not entries:
-                entries.extend(
-                    await cls._generate_peacetime_entries(
-                        admin,
-                        sim_id,
-                        tick_number,
-                        heartbeat_id,
-                    )
+                peacetime = await _run_phase(
+                    "peacetime",
+                    cls._generate_peacetime_entries(admin, sim_id, tick_number, heartbeat_id),
+                    **_ctx,
                 )
+                if peacetime is not None:
+                    entries.extend(peacetime)
 
             # Tag entries with epoch context if active
             if active_epoch_id:
@@ -755,6 +681,15 @@ class HeartbeatService:
                 sim_name,
                 extra={"simulation_id": str(sim_id), "tick_number": tick_number},
             )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("heartbeat.phase", "finalize")
+                scope.set_tag("simulation_id", str(sim_id))
+                scope.set_context("heartbeat", {
+                    "tick_number": tick_number,
+                    "simulation_name": sim_name,
+                    "entries_before_failure": len(entries),
+                })
+                sentry_sdk.capture_exception()
 
             # Mark heartbeat as failed — nested try to prevent double-fault
             try:
@@ -1087,6 +1022,129 @@ class HeartbeatService:
             )
 
         return scar_delta, entries
+
+    # ── Phase 9: Agent Autonomy ───────────────────────────────
+
+    @classmethod
+    async def _phase_autonomy(
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        sim_name: str,
+        sim: dict,
+        tick_number: int,
+        heartbeat_id: UUID,
+        overrides: dict,
+        admin_override: bool,
+        entries: list[dict],
+    ) -> dict:
+        """Run all autonomy sub-phases (needs, mood, opinions, activity, social, LLM events).
+
+        Appends heartbeat entries directly to *entries* (shared mutable list).
+        Returns autonomy_stats dict for tick summary.
+        """
+        structlog.contextvars.bind_contextvars(autonomy_phase="active")
+
+        byok_key, owner_has_key = await cls._resolve_autonomy_key(admin, sim_id, admin_override)
+
+        # 9a: Decay agent needs
+        rate_mult = float(overrides.get("autonomy_needs_decay_rate", 1.0))
+        needs_updated = await AgentNeedsService.decay_all(admin, sim_id, rate_mult)
+
+        # 9b: Mood housekeeping
+        mood_summary = await AgentMoodService.process_tick(admin, sim_id)
+
+        # 9c: Opinion recalculation + relationship threshold checks
+        opinion_summary = await AgentOpinionService.process_tick(admin, sim_id)
+
+        stats: dict = {
+            "needs_decayed": needs_updated,
+            "mood": mood_summary,
+            "opinions": opinion_summary,
+        }
+
+        for agent_id in mood_summary.get("breakdowns", []):
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id, sim_id, tick_number,
+                    "agent_crisis",
+                    f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
+                    f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
+                    severity="critical",
+                    metadata={"agent_id": agent_id, "type": "stress_breakdown"},
+                )
+            )
+
+        for rel_event in opinion_summary.get("relationship_events", []):
+            evt_type = rel_event["type"]
+            sev = "warning" if "breakdown" in evt_type else "info"
+            a_id = rel_event["agent_id"][:8]
+            t_id = rel_event["target_agent_id"][:8]
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id, sim_id, tick_number,
+                    "relationship_shift",
+                    f"Relationship {evt_type}: {a_id}... / {t_id}...",
+                    f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
+                    severity=sev, metadata=rel_event,
+                )
+            )
+
+        # 9d: Activity selection + execution
+        activity_results = await AgentActivityService.select_and_execute(
+            admin, sim_id, tick_id=heartbeat_id,
+        )
+        stats["activities"] = len(activity_results)
+
+        # 9e: Social interactions
+        interaction_rate = float(overrides.get("autonomy_social_interaction_rate", 1.0))
+        social_results = await AgentActivityService.generate_social_interactions(
+            admin, sim_id, interaction_rate,
+            tick_id=heartbeat_id, sim_name=sim_name, sim_theme=sim.get("theme", ""),
+        )
+        stats["social_interactions"] = len(social_results)
+
+        for si in social_results:
+            if si.get("significance", 0) >= 5:
+                entries.append(
+                    make_heartbeat_entry(
+                        heartbeat_id, sim_id, tick_number,
+                        "social_event",
+                        f"Social interaction: {si['type']}",
+                        f"Soziale Interaktion: {si['type']}",
+                        severity="info", metadata=si,
+                    )
+                )
+
+        # 9f: Autonomous event generation (Tier 3 LLM, requires BYOK key)
+        auto_events: list[dict] = []
+        if owner_has_key:
+            llm_budget = int(overrides.get("autonomy_llm_budget_per_tick", 5))
+            tick_ctx = {
+                "breakdowns": mood_summary.get("breakdowns", []),
+                "relationship_events": opinion_summary.get("relationship_events", []),
+                "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
+            }
+            auto_events = await AutonomousEventService.check_and_generate(
+                admin, sim_id, tick_ctx,
+                llm_budget=llm_budget, openrouter_api_key=byok_key,
+            )
+        stats["autonomous_events"] = len(auto_events)
+        stats["byok_available"] = owner_has_key
+
+        for ae in auto_events:
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id, sim_id, tick_number,
+                    "autonomous_event",
+                    ae.get("title", "Autonomous event"),
+                    ae.get("title_de", "Autonomes Ereignis"),
+                    severity="warning" if ae.get("impact_level", 0) >= 4 else "info",
+                    metadata={"event_id": ae.get("id"), "trigger": ae.get("metadata", {}).get("trigger")},
+                )
+            )
+
+        return stats
 
     # ── Router-Facing Queries ─────────────────────────────────
 
