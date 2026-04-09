@@ -32,10 +32,13 @@ export class VelgAchievementToast extends LitElement {
   private _definitionCache = new Map<string, AchievementDefinition>();
   private _disposeAuthWatch: (() => void) | null = null;
 
+  /** Guard against concurrent _subscribe() calls (async + immediate signal fire). */
+  private _subscribeGeneration = 0;
+
   connectedCallback() {
     super.connectedCallback();
-    this._subscribe();
-    // Resubscribe on auth changes (login/logout)
+    // Preact Signals .subscribe() fires immediately with the current value,
+    // so this single watcher handles both initial subscribe AND auth changes.
     this._disposeAuthWatch = appState.user.subscribe(() => {
       this._unsubscribe();
       this._definitionCache.clear();
@@ -54,10 +57,16 @@ export class VelgAchievementToast extends LitElement {
     const userId = appState.user.value?.id;
     if (!userId) return;
 
+    // Stamp a generation so stale async resumes are discarded.
+    const gen = ++this._subscribeGeneration;
+
     // Pre-warm the definition cache (static catalog, fetched once)
     if (this._definitionCache.size === 0) {
       await this._loadDefinitions();
     }
+
+    // Another subscribe/unsubscribe happened during the await — abort.
+    if (gen !== this._subscribeGeneration) return;
 
     this._channel = supabase
       .channel('achievement-toast')
@@ -77,6 +86,7 @@ export class VelgAchievementToast extends LitElement {
   }
 
   private _unsubscribe() {
+    this._subscribeGeneration++;
     if (this._channel) {
       supabase.removeChannel(this._channel);
       this._channel = null;
