@@ -106,6 +106,7 @@ class EchoService:
         echo_depth: int = 1,
         strength_decay: float = 0.6,
         source_instability: float = 0.0,
+        ward_reduction: float = 0.0,
     ) -> float:
         """Compute echo strength from game metrics.
 
@@ -115,6 +116,7 @@ class EchoService:
             × (1 + tag_resonance × 0.2)      — vector alignment (+20%/tag, max 3)
             × decay^depth                     — cascade weakening
             × (1 + instability × 0.2)         — unstable zones bleed louder
+            × (1 - ward_reduction)            — ward defense (migration 191)
 
         Returns a float clamped to [0.0, 1.0].
         """
@@ -123,6 +125,7 @@ class EchoService:
         base *= 1 + min(tag_resonance_count, 3) * 0.2
         base *= strength_decay**echo_depth
         base *= 1 + source_instability * 0.2
+        base *= 1 - max(0.0, min(1.0, ward_reduction))
         return max(0.0, min(1.0, base))
 
     @staticmethod
@@ -265,6 +268,18 @@ class EchoService:
                     best_resonance = r
                     best_vector = vector
 
+            # Ward defense: query target embassy ward for this vector (migration 191)
+            ward_reduction = 0.0
+            try:
+                ward_resp = await supabase.rpc(
+                    "fn_get_ward_strength",
+                    {"p_target_simulation_id": target_sim, "p_echo_vector": best_vector},
+                ).execute()
+                if ward_resp.data is not None:
+                    ward_reduction = float(ward_resp.data)
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.debug("Ward strength query failed for %s", target_sim, exc_info=True)
+
             echo_strength = cls.compute_echo_strength(
                 connection_strength=connection_strength,
                 embassy_effectiveness=emb_eff,
@@ -272,6 +287,7 @@ class EchoService:
                 echo_depth=current_depth + 1,
                 strength_decay=strength_decay,
                 source_instability=source_instability,
+                ward_reduction=ward_reduction,
             )
 
             # Deterministic: impact meets modified threshold
