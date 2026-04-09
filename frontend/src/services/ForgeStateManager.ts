@@ -80,6 +80,22 @@ class ForgeStateManager {
   // --- Theme State ---
   readonly isGeneratingTheme = signal(false);
 
+  /**
+   * Fingerprint of agents+buildings at last theme generation.
+   * Compared against current entities to detect staleness.
+   */
+  private _themeEntityHash = '';
+
+  /** True when entities changed since the last theme generation. */
+  readonly themeStale = computed(() => {
+    const d = this.draft.value;
+    if (!d) return false;
+    // No theme yet → stale (needs initial generation)
+    const tc = d.theme_config as Record<string, unknown> | undefined;
+    if (!tc || Object.keys(tc).length === 0) return true;
+    return this._entityFingerprint(d) !== this._themeEntityHash;
+  });
+
   // --- Wallet / Mint State ---
   readonly walletBalance = signal<number>(0);
   readonly walletTier = signal<string>('observer');
@@ -165,6 +181,11 @@ class ForgeStateManager {
             ...DEFAULT_GENERATION_CONFIG,
             ...resp.data.generation_config,
           };
+        }
+        // Restore theme entity hash so themeStale is accurate on reload
+        const tc = resp.data.theme_config as Record<string, unknown> | undefined;
+        if (tc && Object.keys(tc).length > 0) {
+          this._themeEntityHash = this._entityFingerprint(resp.data);
         }
       } else {
         this.error.value = resp.error?.message ?? 'Failed to load draft';
@@ -478,6 +499,13 @@ class ForgeStateManager {
   /**
    * Generate an AI theme for the current draft (Darkroom phase).
    */
+  /** Stable fingerprint of agent/building roster for theme staleness detection. */
+  private _entityFingerprint(draft: ForgeDraft): string {
+    const agents = draft.agents ?? [];
+    const buildings = draft.buildings ?? [];
+    return `${agents.length}:${agents.map((a) => a.name ?? '').join(',')}|${buildings.length}:${buildings.map((b) => b.name ?? '').join(',')}`;
+  }
+
   async generateTheme(): Promise<Record<string, string> | null> {
     const draftId = this.draft.value?.id;
     if (!draftId) return null;
@@ -488,6 +516,10 @@ class ForgeStateManager {
       const resp = await forgeApi.generateTheme(draftId);
       if (resp.success && resp.data) {
         this.updateDraft({ theme_config: resp.data } as Partial<ForgeDraft>);
+        // Snapshot entity fingerprint so themeStale becomes false
+        if (this.draft.value) {
+          this._themeEntityHash = this._entityFingerprint(this.draft.value);
+        }
         return resp.data;
       }
       this.error.value = resp.error?.message ?? 'Theme generation failed';
