@@ -42,6 +42,7 @@ from backend.middleware.seo import (
     is_crawler,
 )
 from backend.routers import (
+    achievements,
     admin,
     agent_autonomy,
     agent_memories,
@@ -194,6 +195,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 # --- Routers ---
 app.include_router(health.router)
+app.include_router(achievements.router)
 app.include_router(admin.router)
 app.include_router(dungeon_content_admin.router)
 app.include_router(users.router)
