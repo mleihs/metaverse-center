@@ -56,6 +56,8 @@ export class AppStateManager {
   readonly pendingOpenAgentName = signal<string | null>(null);
   /** Building ID to auto-open on next BuildingsView load, then cleared. */
   readonly pendingOpenBuildingId = signal<string | null>(null);
+  /** Archetype slug to auto-select on next DungeonTerminalView load, then cleared. */
+  readonly pendingDungeonArchetype = signal<string | null>(null);
 
   // --- Computed ---
   readonly isAuthenticated = computed(() => this.user.value !== null);

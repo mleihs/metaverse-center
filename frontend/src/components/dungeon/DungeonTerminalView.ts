@@ -485,6 +485,16 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       }
 
       this._initialized = true;
+
+      // Deep-link: auto-select archetype from detail page bridge
+      const pendingArchetype = appState.pendingDungeonArchetype.value;
+      if (pendingArchetype && !dungeonState.isInDungeon.value) {
+        appState.pendingDungeonArchetype.value = null;
+        await this.updateComplete;
+        await this._handleTerminalCommand(
+          new CustomEvent('terminal-command', { detail: `dungeon ${pendingArchetype}` }),
+        );
+      }
     } catch (err) {
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');
     }
