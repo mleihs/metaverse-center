@@ -269,30 +269,69 @@ class HeartbeatService:
             )
             return
 
-        # Create heartbeat record (idempotent via UNIQUE(simulation_id, tick_number))
+        # Claim this tick via UNIQUE(simulation_id, tick_number).
+        #
+        # Three scenarios:
+        #   1. No row exists → INSERT succeeds, we own the tick
+        #   2. Row exists with status='processing' → concurrent worker, skip
+        #   3. Row exists with status='failed' → previous attempt crashed, reclaim it
+        #
+        # Scenario 3 is critical: without reclaiming failed ticks,
+        # last_heartbeat_tick never advances and the sim is permanently stuck.
         heartbeat_id = uuid4()
-        try:
-            await (
+
+        # First try: insert new tick
+        resp = await (
+            admin.table("simulation_heartbeats")
+            .upsert(
+                {
+                    "id": str(heartbeat_id),
+                    "simulation_id": str(sim_id),
+                    "tick_number": tick_number,
+                    "status": "processing",
+                },
+                on_conflict="simulation_id,tick_number",
+                ignore_duplicates=True,
+            )
+            .execute()
+        )
+
+        if not resp.data:
+            # Row already exists — check if it's a failed tick we can reclaim
+            existing = await (
                 admin.table("simulation_heartbeats")
-                .insert(
-                    {
-                        "id": str(heartbeat_id),
-                        "simulation_id": str(sim_id),
-                        "tick_number": tick_number,
-                        "status": "processing",
-                    }
-                )
+                .select("id, status")
+                .eq("simulation_id", str(sim_id))
+                .eq("tick_number", tick_number)
+                .limit(1)
                 .execute()
             )
-        except (PostgrestAPIError, httpx.HTTPError):
-            # UNIQUE constraint violation → tick already processed (concurrent tick or retry)
-            logger.warning(
-                "Heartbeat: tick %d already exists for %s, skipping",
-                tick_number,
-                sim_name,
-                extra={"simulation_id": str(sim_id), "tick_number": tick_number},
-            )
-            return
+            row = existing.data[0] if existing.data else None
+
+            if row and row["status"] == "failed":
+                # Reclaim: reset the failed tick to processing with a new ID
+                heartbeat_id = UUID(row["id"])
+                await (
+                    admin.table("simulation_heartbeats")
+                    .update({"status": "processing", "summary": None})
+                    .eq("id", str(heartbeat_id))
+                    .execute()
+                )
+                logger.info(
+                    "Heartbeat: reclaiming failed tick %d for %s",
+                    tick_number,
+                    sim_name,
+                    extra={"simulation_id": str(sim_id), "tick_number": tick_number},
+                )
+            else:
+                # Tick is currently processing by another worker — skip
+                logger.debug(
+                    "Heartbeat: tick %d in progress for %s, skipping",
+                    tick_number,
+                    sim_name,
+                    extra={"simulation_id": str(sim_id), "tick_number": tick_number},
+                )
+                return
 
         logger.info(
             "Heartbeat: ticking %s (tick #%d)",
