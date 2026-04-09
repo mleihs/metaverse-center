@@ -40,11 +40,18 @@ async def create_access_request(
 ) -> SuccessResponse[ForgeAccessRequestResponse]:
     """Submit a clearance upgrade request."""
     data = await ForgeAccessService.create_request(
-        supabase, user.id, body.message, user_email=user.email,
+        supabase,
+        user.id,
+        body.message,
+        user_email=user.email,
     )
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "forge_access_request", data.get("id"), "create",
+        supabase,
+        None,
+        user.id,
+        "forge_access_request",
+        data.get("id"),
+        "create",
     )
     return SuccessResponse(data=data)
 
@@ -88,11 +95,19 @@ async def review_access_request(
 ) -> SuccessResponse[ForgeAccessReviewResponse]:
     """Approve or reject a clearance request (admin only)."""
     result = await ForgeAccessService.review(
-        admin_supabase, request_id, body.action, body.admin_notes, admin.id,
+        admin_supabase,
+        request_id,
+        body.action,
+        body.admin_notes,
+        admin.id,
     )
     await AuditService.safe_log(
-        admin_supabase, None, admin.id,
-        "forge_access_request", str(request_id), body.action,
+        admin_supabase,
+        None,
+        admin.id,
+        "forge_access_request",
+        str(request_id),
+        body.action,
         details={"admin_notes": body.admin_notes},
     )
     return SuccessResponse(data=result)

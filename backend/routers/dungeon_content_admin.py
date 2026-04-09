@@ -15,10 +15,11 @@ from pydantic import BaseModel, Field
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.dungeon_content_admin_service import DungeonContentAdminService
 from backend.services.dungeon_content_service import load_all_content
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -74,14 +75,15 @@ async def list_content(
 ) -> PaginatedResponse:
     """List content rows with optional archetype filter and search."""
     data, total = await _service.list_content(
-        admin_supabase, content_type,
-        archetype=archetype, search=search, page=page, per_page=per_page,
+        admin_supabase,
+        content_type,
+        archetype=archetype,
+        search=search,
+        page=page,
+        per_page=per_page,
     )
     offset = (page - 1) * per_page
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset),
-    )
+    return paginated(data, total, per_page, offset)
 
 
 @router.get("/{content_type}/{item_id}")
@@ -109,11 +111,36 @@ async def update_content_item(
     """Update a content item. Reloads content cache after mutation."""
     data = await _service.update_item(admin_supabase, content_type, item_id, body.data)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "dungeon_content", item_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "dungeon_content",
+        item_id,
+        "update",
         details={"content_type": content_type, "fields": list(body.data.keys())},
     )
     await load_all_content(admin_supabase)
     return SuccessResponse(data=data)
+
+
+@router.post("/reload-cache")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def reload_cache(
+    request: Request,
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+) -> SuccessResponse[MessageResponse]:
+    """Force reload of the dungeon content cache."""
+    await load_all_content(admin_supabase)
+    await AuditService.safe_log(
+        admin_supabase,
+        None,
+        user.id,
+        "dungeon_content",
+        "cache",
+        "reload",
+    )
+    return SuccessResponse(data=MessageResponse(message="Cache reloaded."))
 
 
 @router.post("/{content_type}")
@@ -128,7 +155,12 @@ async def create_content_item(
     """Create a new content item. Reloads content cache after mutation."""
     data = await _service.create_item(admin_supabase, content_type, body.data)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "dungeon_content", str(data.get("id", "?")), "create",
+        admin_supabase,
+        None,
+        user.id,
+        "dungeon_content",
+        str(data.get("id", "?")),
+        "create",
         details={"content_type": content_type},
     )
     await load_all_content(admin_supabase)
@@ -147,23 +179,13 @@ async def delete_content_item(
     """Delete a content item. Reloads content cache after mutation."""
     data = await _service.delete_item(admin_supabase, content_type, item_id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "dungeon_content", item_id, "delete",
+        admin_supabase,
+        None,
+        user.id,
+        "dungeon_content",
+        item_id,
+        "delete",
         details={"content_type": content_type},
     )
     await load_all_content(admin_supabase)
     return SuccessResponse(data=data)
-
-
-@router.post("/reload-cache")
-@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
-async def reload_cache(
-    request: Request,
-    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-    user: Annotated[CurrentUser, Depends(require_platform_admin())],
-) -> SuccessResponse[MessageResponse]:
-    """Force reload of the dungeon content cache."""
-    await load_all_content(admin_supabase)
-    await AuditService.safe_log(
-        admin_supabase, None, user.id, "dungeon_content", "cache", "reload",
-    )
-    return SuccessResponse(data=MessageResponse(message="Cache reloaded."))

@@ -39,11 +39,14 @@ async def create_connection(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[ConnectionResponse]:
     """Create a simulation connection (platform admin only)."""
-    result = await ConnectionService.create_connection(
-        admin_supabase, body.model_dump(exclude_none=True)
-    )
+    result = await ConnectionService.create_connection(admin_supabase, body.model_dump(exclude_none=True))
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "simulation_connections", result.id, "create",
+        admin_supabase,
+        None,
+        user.id,
+        "simulation_connections",
+        result.id,
+        "create",
         details={"source_id": str(body.source_id) if hasattr(body, "source_id") else None},
     )
     ConnectionService._map_data_cache.clear()
@@ -63,7 +66,12 @@ async def update_connection(
         admin_supabase, connection_id, body.model_dump(exclude_none=True)
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "simulation_connections", connection_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "simulation_connections",
+        connection_id,
+        "update",
     )
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
@@ -79,7 +87,12 @@ async def delete_connection(
     """Delete a simulation connection (platform admin only)."""
     await ConnectionService.delete_connection(admin_supabase, connection_id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "simulation_connections", connection_id, "delete",
+        admin_supabase,
+        None,
+        user.id,
+        "simulation_connections",
+        connection_id,
+        "delete",
     )
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=MessageResponse(message="Connection deleted."))

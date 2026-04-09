@@ -10,7 +10,6 @@ from backend.dependencies import get_current_user, get_effective_supabase, requi
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.models.location import (
@@ -26,6 +25,7 @@ from backend.models.location import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.location_service import LocationService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -52,10 +52,7 @@ async def list_cities(
 ) -> PaginatedResponse[CityResponse]:
     """List all cities in a simulation."""
     data, total = await _service.list_cities(supabase, simulation_id, limit=limit, offset=offset)
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/cities/{city_id}")
@@ -115,10 +112,7 @@ async def list_zones(
 ) -> PaginatedResponse[ZoneResponse]:
     """List zones, optionally filtered by city."""
     data, total = await _service.list_zones(supabase, simulation_id, city_id=city_id, limit=limit, offset=offset)
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/zones/{zone_id}")
@@ -179,12 +173,14 @@ async def list_streets(
 ) -> PaginatedResponse[StreetResponse]:
     """List streets, optionally filtered by city or zone."""
     data, total = await _service.list_streets(
-        supabase, simulation_id, city_id=city_id, zone_id=zone_id, limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        city_id=city_id,
+        zone_id=zone_id,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/streets", status_code=201)

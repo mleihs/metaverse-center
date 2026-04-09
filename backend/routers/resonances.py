@@ -18,7 +18,7 @@ from backend.dependencies import (
     get_effective_supabase,
     require_platform_admin,
 )
-from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import PaginatedResponse, SuccessResponse
 from backend.models.resonance import (
     ProcessImpactRequest,
     ResonanceCreate,
@@ -28,6 +28,7 @@ from backend.models.resonance import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.resonance_service import ResonanceService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -62,10 +63,7 @@ async def list_resonances(
         offset=offset,
         include_deleted=include_deleted,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 # ── Get ──────────────────────────────────────────────────────────────────────
@@ -93,11 +91,17 @@ async def create_resonance(
 ) -> SuccessResponse[ResonanceResponse]:
     """Create a new substrate resonance (platform admin only)."""
     resonance = await ResonanceService.create(
-        supabase, user.id, body.model_dump(exclude_none=True),
+        supabase,
+        user.id,
+        body.model_dump(exclude_none=True),
     )
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "substrate_resonances", resonance["id"], "create",
+        supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance["id"],
+        "create",
         {"title": resonance.get("title"), "source_category": resonance.get("source_category")},
     )
     return SuccessResponse(data=resonance)
@@ -115,11 +119,17 @@ async def update_resonance(
 ) -> SuccessResponse[ResonanceResponse]:
     """Update a resonance (platform admin only)."""
     resonance = await ResonanceService.update(
-        supabase, resonance_id, body.model_dump(exclude_none=True),
+        supabase,
+        resonance_id,
+        body.model_dump(exclude_none=True),
     )
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "substrate_resonances", resonance_id, "update",
+        supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance_id,
+        "update",
         {"fields": list(body.model_dump(exclude_none=True).keys())},
     )
     return SuccessResponse(data=resonance)
@@ -156,8 +166,12 @@ async def process_impact(
     completed = sum(1 for i in impacts if i.get("status") == "completed")
     failed = sum(1 for i in impacts if i.get("status") == "failed")
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "substrate_resonances", resonance_id, "process_impact",
+        admin_supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance_id,
+        "process_impact",
         {"total": len(impacts), "completed": completed, "failed": failed},
     )
     return SuccessResponse(data=impacts)
@@ -190,8 +204,12 @@ async def update_status(
     """Update resonance status (platform admin only)."""
     resonance = await ResonanceService.update_status(supabase, resonance_id, new_status)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "substrate_resonances", resonance_id, "update",
+        supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance_id,
+        "update",
         {"action": "status_transition", "new_status": new_status},
     )
     return SuccessResponse(data=resonance)
@@ -209,8 +227,12 @@ async def restore_resonance(
     """Restore a soft-deleted resonance (platform admin only)."""
     resonance = await ResonanceService.restore(supabase, resonance_id)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "substrate_resonances", resonance_id, "update",
+        supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance_id,
+        "update",
         {"action": "restore"},
     )
     return SuccessResponse(data=resonance)
@@ -228,8 +250,12 @@ async def delete_resonance(
     """Soft-delete a resonance (platform admin only)."""
     resonance = await ResonanceService.soft_delete(supabase, resonance_id)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "substrate_resonances", resonance_id, "delete",
+        supabase,
+        None,
+        user.id,
+        "substrate_resonances",
+        resonance_id,
+        "delete",
         {"action": "soft_delete"},
     )
     return SuccessResponse(data=resonance)

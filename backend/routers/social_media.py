@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.social import SocialMediaPostResponse, SocialSyncResponse
 from backend.models.social_media import (
     AnalyzeSentimentRequest,
@@ -21,6 +21,7 @@ from backend.services.external.facebook import FacebookService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_media_service import SocialMediaService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -51,10 +52,7 @@ async def list_posts(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/sync")
@@ -94,15 +92,15 @@ async def sync_posts(
                         None,
                     )
                     if stored_post:
-                        await SocialMediaService.store_comment(
-                            supabase, simulation_id, stored_post["id"], c
-                        )
+                        await SocialMediaService.store_comment(supabase, simulation_id, stored_post["id"], c)
                         comments_count += 1
 
-    return SuccessResponse(data=SocialSyncResponse(
-        posts_synced=len(stored),
-        comments_synced=comments_count,
-    ))
+    return SuccessResponse(
+        data=SocialSyncResponse(
+            posts_synced=len(stored),
+            comments_synced=comments_count,
+        )
+    )
 
 
 @router.post("/posts/{post_id}/transform")
@@ -178,9 +176,7 @@ async def analyze_sentiment(
     else:
         update_data["original_sentiment"] = sentiment_data
 
-    updated = await SocialMediaService.update_post(
-        supabase, simulation_id, post_id, update_data
-    )
+    updated = await SocialMediaService.update_post(supabase, simulation_id, post_id, update_data)
     return SuccessResponse(data=updated)
 
 

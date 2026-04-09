@@ -23,12 +23,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, RATE_LIMIT_EXTERNAL_API, limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.social_story import SocialStoryResponse, SocialStorySequenceResponse
 from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.social_story_service import SocialStoryService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -73,10 +74,7 @@ async def list_stories(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/sequence/{resonance_id}")
@@ -95,15 +93,17 @@ async def get_sequence(
 
     published = sum(1 for s in stories if s["status"] == "published")
     total = len(stories)
-    return SuccessResponse(data=SocialStorySequenceResponse(
-        resonance_id=resonance_id,
-        archetype=stories[0].get("archetype", ""),
-        magnitude=float(stories[0].get("magnitude") or 0),
-        stories=stories,
-        total_stories=total,
-        published_count=published,
-        status_summary=f"{published}/{total} published",
-    ))
+    return SuccessResponse(
+        data=SocialStorySequenceResponse(
+            resonance_id=resonance_id,
+            archetype=stories[0].get("archetype", ""),
+            magnitude=float(stories[0].get("magnitude") or 0),
+            stories=stories,
+            total_stories=total,
+            published_count=published,
+            status_summary=f"{published}/{total} published",
+        )
+    )
 
 
 @router.get("/{story_id}")
@@ -147,8 +147,12 @@ async def skip_story(
 
     updated = await SocialStoryService.update_status(admin_supabase, story_id, "skipped")
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "social_stories", story_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "social_stories",
+        story_id,
+        "update",
         {"action": "skip"},
     )
     return SuccessResponse(data=updated)
@@ -172,8 +176,12 @@ async def unskip_story(
 
     updated = await SocialStoryService.update_status(admin_supabase, story_id, "pending")
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "social_stories", story_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "social_stories",
+        story_id,
+        "update",
         {"action": "unskip"},
     )
     return SuccessResponse(data=updated)
@@ -188,18 +196,25 @@ async def force_compose(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[SocialStoryResponse]:
     """Force-compose a story image (bypasses scheduler)."""
-    logger.info("Admin force-compose story", extra={
-        "story_id": str(story_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Admin force-compose story",
+        extra={
+            "story_id": str(story_id),
+            "user_id": str(user.id),
+        },
+    )
 
     url = await SocialStoryService.compose_story_image(admin_supabase, story_id)
     if not url:
         raise HTTPException(status_code=500, detail="Image composition failed.")
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "social_stories", story_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "social_stories",
+        story_id,
+        "update",
         {"action": "force_compose"},
     )
 
@@ -216,17 +231,24 @@ async def force_publish(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[SocialStoryResponse]:
     """Force-publish a single story immediately (bypasses scheduler + throttle)."""
-    logger.info("Admin force-publish story", extra={
-        "story_id": str(story_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Admin force-publish story",
+        extra={
+            "story_id": str(story_id),
+            "user_id": str(user.id),
+        },
+    )
 
     ig = await _get_ig_service(admin_supabase)
     updated = await SocialStoryService.publish_story(admin_supabase, story_id, ig)
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "social_stories", story_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "social_stories",
+        story_id,
+        "update",
         {"action": "force_publish"},
     )
     return SuccessResponse(data=updated)
@@ -248,10 +270,13 @@ async def regenerate_story(
     Full pipeline: delete from IG, clear image, recompose, publish.
     Works on any status -- if the story has an ig_story_id, deletes it first.
     """
-    logger.info("Admin regenerate story", extra={
-        "story_id": str(story_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Admin regenerate story",
+        extra={
+            "story_id": str(story_id),
+            "user_id": str(user.id),
+        },
+    )
 
     # Capture old IG ID for audit before regeneration clears it
     old_story = await SocialStoryService.get_by_id(admin_supabase, story_id)
@@ -261,8 +286,12 @@ async def regenerate_story(
     updated = await SocialStoryService.regenerate_story(admin_supabase, story_id, ig)
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "social_stories", story_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "social_stories",
+        story_id,
+        "update",
         {"action": "regenerate", "old_ig_story_id": old_ig_story_id},
     )
     return SuccessResponse(data=updated)

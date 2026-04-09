@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends
 
 from backend.dependencies import get_current_user, get_effective_supabase
 from backend.models.bot import BotPlayerCreate, BotPlayerResponse, BotPlayerUpdate
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.bot_player_service import BotPlayerService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -25,10 +26,7 @@ async def list_bot_players(
 ) -> PaginatedResponse[BotPlayerResponse]:
     """List the current user's bot player presets."""
     data, total = await BotPlayerService.list_for_user(supabase, user.id)
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=100, offset=0),
-    )
+    return paginated(data, total, 100, 0)
 
 
 @router.get("/{bot_id}")
@@ -49,14 +47,23 @@ async def create_bot_player(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BotPlayerResponse]:
     """Create a new bot player preset."""
-    data = await BotPlayerService.create(supabase, user.id, {
-        "name": body.name,
-        "personality": body.personality,
-        "difficulty": body.difficulty,
-        "config": body.config,
-    })
+    data = await BotPlayerService.create(
+        supabase,
+        user.id,
+        {
+            "name": body.name,
+            "personality": body.personality,
+            "difficulty": body.difficulty,
+            "config": body.config,
+        },
+    )
     await AuditService.safe_log(
-        supabase, None, user.id, "bot_players", data.get("id"), "create",
+        supabase,
+        None,
+        user.id,
+        "bot_players",
+        data.get("id"),
+        "create",
         details={"name": body.name},
     )
     return SuccessResponse(data=data)
@@ -72,7 +79,12 @@ async def update_bot_player(
     """Update a bot player preset (own bots only)."""
     data = await BotPlayerService.update(supabase, bot_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(
-        supabase, None, user.id, "bot_players", bot_id, "update",
+        supabase,
+        None,
+        user.id,
+        "bot_players",
+        bot_id,
+        "update",
     )
     return SuccessResponse(data=data)
 
@@ -86,6 +98,11 @@ async def delete_bot_player(
     """Delete a bot player preset (own bots only)."""
     await BotPlayerService.delete(supabase, bot_id, user.id)
     await AuditService.safe_log(
-        supabase, None, user.id, "bot_players", bot_id, "delete",
+        supabase,
+        None,
+        user.id,
+        "bot_players",
+        bot_id,
+        "delete",
     )
     return SuccessResponse(data=MessageResponse(message="Bot player deleted."))

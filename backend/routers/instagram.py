@@ -24,7 +24,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, RATE_LIMIT_EXTERNAL_API, limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.instagram import (
     ApprovePostRequest,
     CreateInstagramPostRequest,
@@ -41,6 +41,7 @@ from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.instagram_scheduler import InstagramScheduler
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -86,10 +87,7 @@ async def list_queue(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/queue/{post_id}")
@@ -120,12 +118,15 @@ async def generate_content(
     generates Bureau-voice captions, composes themed images, and
     creates draft records ready for admin approval.
     """
-    logger.info("Instagram admin action", extra={
-        "action": "generate",
-        "user_id": str(user.id),
-        "count": body.count,
-        "content_types": body.content_types,
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "generate",
+            "user_id": str(user.id),
+            "count": body.count,
+            "content_types": body.content_types,
+        },
+    )
     posts = await InstagramContentService.generate_batch(
         admin_supabase,
         content_types=body.content_types,
@@ -134,8 +135,12 @@ async def generate_content(
         user_id=user.id,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "instagram_posts", None, "generate",
+        admin_supabase,
+        None,
+        user.id,
+        "instagram_posts",
+        None,
+        "generate",
         {"count": body.count, "content_types": body.content_types, "generated": len(posts)},
     )
     return SuccessResponse(data=posts)
@@ -170,11 +175,14 @@ async def create_post(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[InstagramPostResponse]:
     """Manually create an Instagram post draft."""
-    logger.info("Instagram admin action", extra={
-        "action": "create_post",
-        "user_id": str(user.id),
-        "content_source_type": body.content_source_type,
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "create_post",
+            "user_id": str(user.id),
+            "content_source_type": body.content_source_type,
+        },
+    )
     data = {
         "simulation_id": str(body.simulation_id),
         "content_source_type": body.content_source_type,
@@ -190,8 +198,12 @@ async def create_post(
     }
     post = await InstagramContentService.create_post(admin_supabase, data, str(user.id))
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "instagram_posts", post.get("id"), "create",
+        admin_supabase,
+        None,
+        user.id,
+        "instagram_posts",
+        post.get("id"),
+        "create",
         {"content_source_type": body.content_source_type},
     )
     return SuccessResponse(data=post)
@@ -210,18 +222,27 @@ async def approve_post(
     body: ApprovePostRequest | None = None,
 ) -> SuccessResponse[InstagramPostResponse]:
     """Approve a draft post for scheduling."""
-    logger.info("Instagram admin action", extra={
-        "action": "approve",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "approve",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        },
+    )
     scheduled_at = body.scheduled_at if body else None
     post = await InstagramContentService.approve_post(
-        admin_supabase, post_id, scheduled_at=scheduled_at,
+        admin_supabase,
+        post_id,
+        scheduled_at=scheduled_at,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "instagram_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "instagram_posts",
+        post_id,
+        "update",
         {"action": "approve"},
     )
     return SuccessResponse(data=post)
@@ -237,18 +258,27 @@ async def reject_post(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[InstagramPostResponse]:
     """Reject a draft post with reason."""
-    logger.info("Instagram admin action", extra={
-        "action": "reject",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-        "reason": body.reason[:100],
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "reject",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+            "reason": body.reason[:100],
+        },
+    )
     post = await InstagramContentService.reject_post(
-        admin_supabase, post_id, reason=body.reason,
+        admin_supabase,
+        post_id,
+        reason=body.reason,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "instagram_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "instagram_posts",
+        post_id,
+        "update",
         {"action": "reject", "reason": body.reason[:200]},
     )
     return SuccessResponse(data=post)
@@ -266,11 +296,14 @@ async def force_publish(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[InstagramPostResponse]:
     """Force-publish a post immediately (bypasses scheduler)."""
-    logger.info("Instagram admin action", extra={
-        "action": "force_publish",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "force_publish",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        },
+    )
 
     post = await InstagramContentService.get_post(admin_supabase, post_id)
 
@@ -285,19 +318,27 @@ async def force_publish(
     try:
         await InstagramScheduler.publish_post(admin_supabase, ig, post)
     except Exception as exc:
-        logger.exception("Force-publish failed", extra={
-            "post_id": str(post_id),
-            "user_id": str(user.id),
-        })
-        with sentry_sdk.push_scope() as scope:
-            scope.set_tag("instagram_phase", "force_publish")
-            scope.set_context("instagram", {
+        logger.exception(
+            "Force-publish failed",
+            extra={
                 "post_id": str(post_id),
                 "user_id": str(user.id),
-            })
+            },
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("instagram_phase", "force_publish")
+            scope.set_context(
+                "instagram",
+                {
+                    "post_id": str(post_id),
+                    "user_id": str(user.id),
+                },
+            )
             sentry_sdk.capture_exception(exc)
         await InstagramContentService.reset_post_status(
-            admin_supabase, str(post_id), f"Force-publish failed: {str(exc)[:300]}",
+            admin_supabase,
+            str(post_id),
+            f"Force-publish failed: {str(exc)[:300]}",
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -305,8 +346,12 @@ async def force_publish(
         ) from exc
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "instagram_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "instagram_posts",
+        post_id,
+        "update",
         {"action": "force_publish"},
     )
 
@@ -374,10 +419,12 @@ async def get_connection_status(
     config = await InstagramContentService.load_instagram_credentials(admin_supabase)
 
     if not config["access_token"] or not config["ig_user_id"]:
-        return SuccessResponse(data=InstagramStatusResponse(
-            configured=False,
-            authenticated=False,
-        ))
+        return SuccessResponse(
+            data=InstagramStatusResponse(
+                configured=False,
+                authenticated=False,
+            )
+        )
 
     ig = InstagramService(
         access_token=config["access_token"],
@@ -385,8 +432,10 @@ async def get_connection_status(
     )
     authenticated = await ig.validate_credentials()
 
-    return SuccessResponse(data=InstagramStatusResponse(
-        configured=True,
-        authenticated=authenticated,
-        ig_user_id=config["ig_user_id"],
-    ))
+    return SuccessResponse(
+        data=InstagramStatusResponse(
+            configured=True,
+            authenticated=authenticated,
+            ig_user_id=config["ig_user_id"],
+        )
+    )

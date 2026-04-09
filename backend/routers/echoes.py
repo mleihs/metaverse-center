@@ -13,7 +13,7 @@ from backend.dependencies import (
     get_effective_supabase,
     require_role,
 )
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.echo import EchoCreate, EchoResponse
 from backend.services.audit_service import AuditService
 from backend.services.connection_service import ConnectionService
@@ -23,6 +23,7 @@ from backend.services.external.openrouter import OpenRouterError
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.generation_service import GenerationService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,8 @@ async def _get_generation_service(
     resolver = ExternalServiceResolver(supabase, simulation_id)
     ai_config = await resolver.get_ai_provider_config()
     return GenerationService(
-        supabase, simulation_id,
+        supabase,
+        simulation_id,
         openrouter_api_key=ai_config.openrouter_api_key,
     )
 
@@ -65,14 +67,14 @@ async def list_echoes(
 ) -> PaginatedResponse[EchoResponse]:
     """List echoes for a simulation."""
     data, total = await EchoService.list_for_simulation(
-        supabase, simulation_id,
-        direction=direction, status_filter=status,
-        limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        direction=direction,
+        status_filter=status,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/events/{event_id}/echoes")
@@ -126,9 +128,7 @@ async def trigger_echo(
         echo_strength=computed_strength,
         echo_depth=1,
     )
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "event_echoes", result["id"], "create"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", result["id"], "create")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -165,17 +165,19 @@ async def approve_echo(
 
         # Build game context for narrative shaping
         game_context = await GameMechanicsService.build_generation_context(
-            supabase, source_sim_id,
+            supabase,
+            source_sim_id,
         )
 
         result = await EchoService.transform_and_complete_echo(
-            admin_supabase, supabase, echo, gen_service,
+            admin_supabase,
+            supabase,
+            echo,
+            gen_service,
             game_context=game_context,
         )
 
-        await AuditService.log_action(
-            supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
-        )
+        await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
         ConnectionService._map_data_cache.clear()
         return SuccessResponse(data=result)
 
@@ -205,8 +207,6 @@ async def reject_echo(
 ) -> SuccessResponse[EchoResponse]:
     """Reject a pending echo."""
     result = await EchoService.reject_echo(admin_supabase, echo_id)
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "event_echoes", echo_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)

@@ -20,12 +20,22 @@ router = APIRouter(prefix="/api/v1/epochs/{epoch_id}/invitations", tags=["Epoch 
 
 
 async def _audit(
-    supabase: Client, user_id: UUID, entity_id: str | None, action: str, details: dict | None = None,
+    supabase: Client,
+    user_id: UUID,
+    entity_id: str | None,
+    action: str,
+    details: dict | None = None,
 ) -> None:
     """Best-effort audit logging for epoch invitations (platform-level, no simulation_id)."""
     try:
         await AuditService.log_action(
-            supabase, None, user_id, "epoch_invitations", entity_id, action, details=details,
+            supabase,
+            None,
+            user_id,
+            "epoch_invitations",
+            entity_id,
+            action,
+            details=details,
         )
     except Exception:
         logger.warning("Audit log failed for epoch_invitations %s (non-critical)", action, exc_info=True)
@@ -45,7 +55,12 @@ async def create_invitation(
     base_url = str(request.base_url).rstrip("/")
 
     invitation = await EpochInvitationService.create_and_send(
-        supabase, epoch_id, user.id, body.email, body.expires_in_hours, base_url,
+        supabase,
+        epoch_id,
+        user.id,
+        body.email,
+        body.expires_in_hours,
+        base_url,
         locale=body.locale,
     )
 

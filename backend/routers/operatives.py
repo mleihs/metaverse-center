@@ -13,12 +13,13 @@ from backend.dependencies import (
     require_epoch_creator,
     require_epoch_participant,
 )
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.epoch import MissionResponse, OperativeDeploy
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,12 @@ async def deploy_operative(
     mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body, admin_supabase)
 
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "operative_missions", mission["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "operative_missions",
+        mission["id"],
+        "create",
         details={"operative_type": body.operative_type, "epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=mission)
@@ -64,15 +70,14 @@ async def list_missions(
 ) -> PaginatedResponse[MissionResponse]:
     """List operative missions."""
     data, total = await OperativeService.list_missions(
-        supabase, epoch_id,
+        supabase,
+        epoch_id,
         simulation_id=simulation_id,
         status_filter=status,
-        limit=limit, offset=offset,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/threats")
@@ -108,7 +113,12 @@ async def resolve_missions(
         await BattleLogService.log_mission_result(supabase, epoch_id, cycle, mission)
         try:
             await AuditService.log_action(
-                supabase, None, user.id, "operative_missions", mission.get("id"), "update",
+                supabase,
+                None,
+                user.id,
+                "operative_missions",
+                mission.get("id"),
+                "update",
                 details={"action": "resolve", "outcome": mission.get("mission_result", {}).get("outcome")},
             )
         except Exception:
@@ -133,7 +143,12 @@ async def fortify_zone(
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
     result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id, admin_supabase)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "zone_fortifications", result.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "zone_fortifications",
+        result.get("id"),
+        "create",
         details={"zone_id": str(zone_id), "epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=result)
@@ -151,11 +166,14 @@ async def counter_intel_sweep(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[MissionResponse]]:
     """Run a counter-intelligence sweep. Must be a participant in the epoch."""
-    detected = await OperativeService.counter_intel_sweep(
-        supabase, epoch_id, simulation_id
-    )
+    detected = await OperativeService.counter_intel_sweep(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "operative_missions", None, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "operative_missions",
+        None,
+        "update",
         details={"action": "counter_intel_sweep", "detected_count": len(detected)},
     )
     return SuccessResponse(data=detected)
@@ -191,7 +209,12 @@ async def recall_operative(
     """Recall an active operative. Must be a participant in the epoch."""
     data = await OperativeService.recall(supabase, mission_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "operative_missions", mission_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "operative_missions",
+        mission_id,
+        "update",
         details={"action": "recall"},
     )
     return SuccessResponse(data=data)

@@ -64,9 +64,7 @@ async def change_role(
 ) -> SuccessResponse[MemberResponse]:
     """Change a member's role. Last-owner protection enforced by DB trigger."""
     try:
-        data = await MemberService.change_role(
-            supabase, simulation_id, member_id, body.member_role
-        )
+        data = await MemberService.change_role(supabase, simulation_id, member_id, body.member_role)
     except LastOwnerError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

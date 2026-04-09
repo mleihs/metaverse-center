@@ -16,7 +16,7 @@ from backend.dependencies import (
     require_platform_admin,
 )
 from backend.middleware.rate_limit import RATE_LIMIT_AI_ENTITY, RATE_LIMIT_AI_GENERATION, RATE_LIMIT_STANDARD, limiter
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.models.forge import (
     AdminBundleUpdate,
     AdminPurchaseLedgerEntry,
@@ -55,6 +55,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.simulation_service import SimulationService
+from backend.utils.responses import paginated
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ async def list_drafts(
 ) -> PaginatedResponse[ForgeDraft]:
     """List simulation forge drafts for the current user."""
     data, total = await _draft_service.list_drafts(supabase, user.id, limit, offset)
-    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/drafts")
@@ -368,7 +369,7 @@ async def get_purchase_history(
         limit,
         offset,
     )
-    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
+    return paginated(data, total, limit, offset)
 
 
 @router.put("/wallet/keys")
@@ -874,7 +875,7 @@ async def admin_list_purchases(
         offset,
         payment_method,
     )
-    return PaginatedResponse(data=data, meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/admin/grant")

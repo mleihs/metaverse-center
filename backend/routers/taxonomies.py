@@ -34,7 +34,10 @@ async def list_taxonomies(
 ) -> SuccessResponse[list[TaxonomyResponse]]:
     """List all taxonomy values, optionally filtered by type."""
     data = await _service.list_taxonomies(
-        supabase, simulation_id, taxonomy_type=taxonomy_type, active_only=not include_inactive,
+        supabase,
+        simulation_id,
+        taxonomy_type=taxonomy_type,
+        active_only=not include_inactive,
     )
     return SuccessResponse(data=data)
 
@@ -63,7 +66,12 @@ async def create_taxonomy(
     """Create a new taxonomy value. Requires admin role."""
     taxonomy = await _service.create_taxonomy(supabase, simulation_id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "taxonomies", taxonomy.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "taxonomies",
+        taxonomy.get("id"),
+        "create",
         details={"taxonomy_type": body.taxonomy_type if hasattr(body, "taxonomy_type") else None},
     )
     return SuccessResponse(data=taxonomy)
@@ -80,10 +88,18 @@ async def update_taxonomy(
 ) -> SuccessResponse[TaxonomyResponse]:
     """Update a taxonomy value. Requires admin role."""
     taxonomy = await _service.update_taxonomy(
-        supabase, simulation_id, taxonomy_id, body.model_dump(exclude_none=True),
+        supabase,
+        simulation_id,
+        taxonomy_id,
+        body.model_dump(exclude_none=True),
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "taxonomies", taxonomy_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "taxonomies",
+        taxonomy_id,
+        "update",
     )
     return SuccessResponse(data=taxonomy)
 
@@ -99,6 +115,11 @@ async def deactivate_taxonomy(
     """Soft-delete (deactivate) a taxonomy value."""
     taxonomy = await _service.deactivate_taxonomy(supabase, simulation_id, taxonomy_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "taxonomies", taxonomy_id, "deactivate",
+        supabase,
+        simulation_id,
+        user.id,
+        "taxonomies",
+        taxonomy_id,
+        "deactivate",
     )
     return SuccessResponse(data=taxonomy)

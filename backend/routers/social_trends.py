@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.social import (
     ArticleIntegrateResponse,
     ArticleTransformResponse,
@@ -36,6 +36,7 @@ from backend.services.external.newsapi import NewsAPIService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_trends_service import SocialTrendsService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -97,10 +98,7 @@ async def list_trends(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/fetch")
@@ -128,11 +126,14 @@ async def fetch_trends(
             detail="External API error. Please try again.",
         ) from exc
 
-    stored = await SocialTrendsService.store_fetched_trends(
-        supabase, simulation_id, raw_trends
-    )
+    stored = await SocialTrendsService.store_fetched_trends(supabase, simulation_id, raw_trends)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "social_trends", None, "fetch",
+        supabase,
+        simulation_id,
+        user.id,
+        "social_trends",
+        None,
+        "fetch",
         details={"source": body.source, "query": body.query, "stored_count": len(stored)},
     )
     return SuccessResponse(data=stored)
@@ -149,9 +150,7 @@ async def transform_trend(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TrendTransformResponse]:
     """Transform a trend into the simulation context using AI."""
-    trend = await SocialTrendsService.get_trend(
-        supabase, simulation_id, UUID(body.trend_id)
-    )
+    trend = await SocialTrendsService.get_trend(supabase, simulation_id, UUID(body.trend_id))
 
     resolver = ExternalServiceResolver(supabase, simulation_id)
     ai_config = await resolver.get_ai_provider_config()
@@ -181,11 +180,13 @@ async def transform_trend(
             detail="AI transformation failed. Please try again.",
         ) from exc
 
-    return SuccessResponse(data=TrendTransformResponse(
-        trend_id=body.trend_id,
-        original_title=trend["name"],
-        transformation=result,
-    ))
+    return SuccessResponse(
+        data=TrendTransformResponse(
+            trend_id=body.trend_id,
+            original_title=trend["name"],
+            transformation=result,
+        )
+    )
 
 
 @router.post("/integrate", status_code=201)
@@ -197,15 +198,17 @@ async def integrate_trend(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[dict]:
     """Integrate a transformed trend as an event."""
-    event_data = serialize_for_json({
-        "title": body.title,
-        "description": body.description,
-        "event_type": body.event_type or "news",
-        "impact_level": body.impact_level,
-        "tags": [*body.tags, "imported", "news"],
-        "data_source": "imported",
-        "occurred_at": datetime.now(UTC).isoformat(),
-    })
+    event_data = serialize_for_json(
+        {
+            "title": body.title,
+            "description": body.description,
+            "event_type": body.event_type or "news",
+            "impact_level": body.impact_level,
+            "tags": [*body.tags, "imported", "news"],
+            "data_source": "imported",
+            "occurred_at": datetime.now(UTC).isoformat(),
+        }
+    )
 
     try:
         event = await EventService.create(
@@ -224,9 +227,7 @@ async def integrate_trend(
         ) from exc
 
     try:
-        await SocialTrendsService.mark_processed(
-            supabase, simulation_id, UUID(body.trend_id)
-        )
+        await SocialTrendsService.mark_processed(supabase, simulation_id, UUID(body.trend_id))
     except Exception:
         logger.warning("Failed to mark trend as processed", extra={"trend_id": body.trend_id}, exc_info=True)
 
@@ -271,19 +272,24 @@ async def workflow(
             detail="External API error. Please try again.",
         ) from exc
 
-    stored = await SocialTrendsService.store_fetched_trends(
-        supabase, simulation_id, raw_trends
-    )
+    stored = await SocialTrendsService.store_fetched_trends(supabase, simulation_id, raw_trends)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "social_trends", None, "workflow",
+        supabase,
+        simulation_id,
+        user.id,
+        "social_trends",
+        None,
+        "workflow",
         details={"source": body.source, "query": body.query, "fetched": len(raw_trends), "stored": len(stored)},
     )
 
-    return SuccessResponse(data=TrendWorkflowResponse(
-        fetched=len(raw_trends),
-        stored=len(stored),
-        trends=stored,
-    ))
+    return SuccessResponse(
+        data=TrendWorkflowResponse(
+            fetched=len(raw_trends),
+            stored=len(stored),
+            trends=stored,
+        )
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -366,10 +372,12 @@ async def transform_article(
             detail="AI transformation failed. Please try again.",
         ) from exc
 
-    return SuccessResponse(data=ArticleTransformResponse(
-        original_title=body.article_name,
-        transformation=result,
-    ))
+    return SuccessResponse(
+        data=ArticleTransformResponse(
+            original_title=body.article_name,
+            transformation=result,
+        )
+    )
 
 
 @router.post("/integrate-article", status_code=201)
@@ -382,15 +390,17 @@ async def integrate_article(
 ) -> SuccessResponse[ArticleIntegrateResponse]:
     """Integrate an article as an event with optional agent reaction generation."""
     tags = [*body.tags, "imported", "news"]
-    event_data = serialize_for_json({
-        "title": body.title,
-        "description": body.description,
-        "event_type": body.event_type or "news",
-        "impact_level": body.impact_level,
-        "tags": tags,
-        "data_source": "imported",
-        "occurred_at": datetime.now(UTC).isoformat(),
-    })
+    event_data = serialize_for_json(
+        {
+            "title": body.title,
+            "description": body.description,
+            "event_type": body.event_type or "news",
+            "impact_level": body.impact_level,
+            "tags": tags,
+            "data_source": "imported",
+            "occurred_at": datetime.now(UTC).isoformat(),
+        }
+    )
     if body.source_article:
         event_data["original_trend_data"] = body.source_article
 
@@ -426,7 +436,10 @@ async def integrate_article(
             gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
             reactions = await EventService.generate_reactions(
-                supabase, simulation_id, event, gen,
+                supabase,
+                simulation_id,
+                event,
+                gen,
                 max_agents=body.max_reaction_agents,
             )
         except Exception:
@@ -436,11 +449,13 @@ async def integrate_article(
                 exc_info=True,
             )
 
-    return SuccessResponse(data=ArticleIntegrateResponse(
-        event=event,
-        reactions_count=len(reactions),
-        reactions=reactions,
-    ))
+    return SuccessResponse(
+        data=ArticleIntegrateResponse(
+            event=event,
+            reactions_count=len(reactions),
+            reactions=reactions,
+        )
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -480,28 +495,32 @@ async def batch_transform_articles(
                 news_title=article.article_name,
                 news_content="\n".join(news_content_parts),
             )
-            results.append({
-                "article_name": article.article_name,
-                "article_platform": article.article_platform,
-                "article_url": article.article_url,
-                "article_raw_data": article.article_raw_data,
-                "transformation": result,
-                "error": None,
-            })
+            results.append(
+                {
+                    "article_name": article.article_name,
+                    "article_platform": article.article_platform,
+                    "article_url": article.article_url,
+                    "article_raw_data": article.article_raw_data,
+                    "transformation": result,
+                    "error": None,
+                }
+            )
         except Exception:
             logger.warning(
                 "Batch transform failed for article",
                 extra={"article_name": article.article_name},
                 exc_info=True,
             )
-            results.append({
-                "article_name": article.article_name,
-                "article_platform": article.article_platform,
-                "article_url": article.article_url,
-                "article_raw_data": article.article_raw_data,
-                "transformation": None,
-                "error": "Transformation failed",
-            })
+            results.append(
+                {
+                    "article_name": article.article_name,
+                    "article_platform": article.article_platform,
+                    "article_url": article.article_url,
+                    "article_raw_data": article.article_raw_data,
+                    "transformation": None,
+                    "error": "Transformation failed",
+                }
+            )
 
     return SuccessResponse(data=results)
 
@@ -523,15 +542,17 @@ async def batch_integrate_articles(
 
     for _idx, item in enumerate(sorted_items):
         tags = [*item.tags, "imported", "news", "batch"]
-        event_data = serialize_for_json({
-            "title": item.title,
-            "description": item.description,
-            "event_type": item.event_type or "news",
-            "impact_level": item.impact_level,
-            "tags": tags,
-            "data_source": "imported",
-            "occurred_at": datetime.now(UTC).isoformat(),
-        })
+        event_data = serialize_for_json(
+            {
+                "title": item.title,
+                "description": item.description,
+                "event_type": item.event_type or "news",
+                "impact_level": item.impact_level,
+                "tags": tags,
+                "data_source": "imported",
+                "occurred_at": datetime.now(UTC).isoformat(),
+            }
+        )
         if item.source_article:
             event_data["original_trend_data"] = item.source_article
 
@@ -566,7 +587,10 @@ async def batch_integrate_articles(
             gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
             reactions = await EventService.generate_reactions(
-                supabase, simulation_id, top_event, gen,
+                supabase,
+                simulation_id,
+                top_event,
+                gen,
                 max_agents=body.max_reaction_agents,
             )
             reactions_count = len(reactions)
@@ -577,9 +601,11 @@ async def batch_integrate_articles(
                 exc_info=True,
             )
 
-    return SuccessResponse(data=BatchIntegrateResponse(
-        events=created_events,
-        errors=errors,
-        reactions_generated_for=created_events[0]["id"] if created_events and reactions_count > 0 else None,
-        reactions_count=reactions_count,
-    ))
+    return SuccessResponse(
+        data=BatchIntegrateResponse(
+            events=created_events,
+            errors=errors,
+            reactions_generated_for=created_events[0]["id"] if created_events and reactions_count > 0 else None,
+            reactions_count=reactions_count,
+        )
+    )

@@ -12,7 +12,7 @@ from backend.dependencies import (
     get_effective_supabase,
     require_role,
 )
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.embassy import (
     EmbassyCreate,
     EmbassyResponse,
@@ -21,6 +21,7 @@ from backend.models.embassy import (
 from backend.services.audit_service import AuditService
 from backend.services.connection_service import ConnectionService
 from backend.services.embassy_service import EmbassyService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -43,13 +44,13 @@ async def list_embassies(
 ) -> PaginatedResponse[EmbassyResponse]:
     """List embassies for a simulation."""
     data, total = await EmbassyService.list_for_simulation(
-        supabase, simulation_id,
-        status_filter=status, limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        status_filter=status,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/embassies/{embassy_id}")
@@ -93,9 +94,7 @@ async def create_embassy(
         body.model_dump(exclude_none=True),
         created_by_id=user.id,
     )
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "embassies", result["id"], "create"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", result["id"], "create")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -112,12 +111,11 @@ async def update_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Update embassy metadata."""
     result = await EmbassyService.update_embassy(
-        admin_supabase, embassy_id,
+        admin_supabase,
+        embassy_id,
         body.model_dump(exclude_none=True),
     )
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "embassies", embassy_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -133,9 +131,7 @@ async def activate_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Activate a proposed or suspended embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "active")
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "embassies", embassy_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -151,9 +147,7 @@ async def suspend_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Suspend an active embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "suspended")
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "embassies", embassy_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -169,8 +163,6 @@ async def dissolve_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Dissolve an embassy (clears building special attributes)."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "dissolved")
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "embassies", embassy_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)

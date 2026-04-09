@@ -8,10 +8,11 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from backend.dependencies import get_current_user, get_effective_supabase
 from backend.middleware.rate_limit import limiter
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.epoch_chat import EpochChatMessageCreate, EpochChatMessageResponse
 from backend.services.audit_service import AuditService
 from backend.services.epoch_chat_service import EpochChatService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -20,12 +21,22 @@ router = APIRouter(prefix="/api/v1/epochs/{epoch_id}/chat", tags=["Epoch Chat"])
 
 
 async def _audit(
-    supabase: Client, user_id: UUID, entity_id: str | None, action: str, details: dict | None = None,
+    supabase: Client,
+    user_id: UUID,
+    entity_id: str | None,
+    action: str,
+    details: dict | None = None,
 ) -> None:
     """Best-effort audit logging for epoch chat (platform-level, no simulation_id)."""
     try:
         await AuditService.log_action(
-            supabase, None, user_id, "epoch_chat_messages", entity_id, action, details=details,
+            supabase,
+            None,
+            user_id,
+            "epoch_chat_messages",
+            entity_id,
+            action,
+            details=details,
         )
     except Exception:
         logger.warning("Audit log failed for epoch_chat %s (non-critical)", action, exc_info=True)
@@ -50,10 +61,16 @@ async def send_message(
         channel_type=body.channel_type,
         team_id=body.team_id,
     )
-    await _audit(supabase, user.id, message["id"], "create", {
-        "epoch_id": str(epoch_id),
-        "channel_type": body.channel_type,
-    })
+    await _audit(
+        supabase,
+        user.id,
+        message["id"],
+        "create",
+        {
+            "epoch_id": str(epoch_id),
+            "channel_type": body.channel_type,
+        },
+    )
     return SuccessResponse(data=message)
 
 
@@ -69,12 +86,13 @@ async def list_messages(
 ) -> PaginatedResponse[EpochChatMessageResponse]:
     """List epoch-wide chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(
-        supabase, epoch_id, channel_type="epoch", limit=limit, before=before,
+        supabase,
+        epoch_id,
+        channel_type="epoch",
+        limit=limit,
+        before=before,
     )
-    return PaginatedResponse(
-        data=messages,
-        meta=PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
-    )
+    return paginated(messages, total, limit, 0)
 
 
 @router.get("/team/{team_id}")
@@ -90,9 +108,11 @@ async def list_team_messages(
 ) -> PaginatedResponse[EpochChatMessageResponse]:
     """List team-only chat messages with cursor-based pagination."""
     messages, total = await EpochChatService.list_messages(
-        supabase, epoch_id, channel_type="team", team_id=team_id, limit=limit, before=before,
+        supabase,
+        epoch_id,
+        channel_type="team",
+        team_id=team_id,
+        limit=limit,
+        before=before,
     )
-    return PaginatedResponse(
-        data=messages,
-        meta=PaginationMeta(count=len(messages), total=total, limit=limit, offset=0),
-    )
+    return paginated(messages, total, limit, 0)

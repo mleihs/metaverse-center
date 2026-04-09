@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_current_user, get_effective_supabase, require_role
-from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, SuccessResponse
 from backend.models.prompt_template import (
     PromptTemplateCreate,
     PromptTemplateResponse,
@@ -17,6 +17,7 @@ from backend.models.prompt_template import (
 from backend.services.audit_service import AuditService
 from backend.services.prompt_service import PromptResolver
 from backend.services.prompt_template_service import PromptTemplateService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -50,10 +51,7 @@ async def list_prompt_templates(
         offset=offset,
     )
 
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{template_id}")
@@ -78,9 +76,7 @@ async def create_prompt_template(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Create a new prompt template for this simulation."""
-    data = await PromptTemplateService.create(
-        supabase, simulation_id, user.id, body.model_dump()
-    )
+    data = await PromptTemplateService.create(supabase, simulation_id, user.id, body.model_dump())
     await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", data["id"], "create")
     return SuccessResponse(data=data)
 
@@ -95,9 +91,7 @@ async def update_prompt_template(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Update a prompt template."""
-    data = await PromptTemplateService.update(
-        supabase, simulation_id, template_id, body.model_dump(exclude_none=True)
-    )
+    data = await PromptTemplateService.update(supabase, simulation_id, template_id, body.model_dump(exclude_none=True))
     await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", template_id, "update")
     return SuccessResponse(data=data)
 
@@ -143,11 +137,13 @@ async def test_prompt_template(
     }
     filled = resolver.fill_template(resolved, example_vars)
 
-    return SuccessResponse(data=PromptTestResponse(
-        template_type=resolved.template_type,
-        locale=resolved.locale,
-        source=resolved.source,
-        system_prompt=resolved.system_prompt,
-        prompt_preview=filled[:500],
-        model_hint=resolved.default_model,
-    ))
+    return SuccessResponse(
+        data=PromptTestResponse(
+            template_type=resolved.template_type,
+            locale=resolved.locale,
+            source=resolved.source,
+            system_prompt=resolved.system_prompt,
+            prompt_preview=filled[:500],
+            model_hint=resolved.default_model,
+        )
+    )

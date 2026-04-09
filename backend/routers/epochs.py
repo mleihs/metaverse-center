@@ -15,7 +15,7 @@ from backend.dependencies import (
 )
 from backend.models.aptitude import DraftRequest
 from backend.models.bot import AddBotToEpoch
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.models.epoch import (
     AllianceInviteCreate,
     AllianceProposalCreate,
@@ -42,6 +42,7 @@ from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.sitrep_service import SitrepService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -61,13 +62,8 @@ async def list_epochs(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[EpochResponse]:
     """List all epochs with optional status filter."""
-    data, total = await EpochService.list_epochs(
-        supabase, status_filter=status, limit=limit, offset=offset
-    )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    data, total = await EpochService.list_epochs(supabase, status_filter=status, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/active")
@@ -107,7 +103,12 @@ async def create_epoch(
         epoch_type=body.epoch_type,
     )
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", data["id"], "create",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        data["id"],
+        "create",
     )
     return SuccessResponse(data=data)
 
@@ -142,7 +143,12 @@ async def create_quick_academy(
     """
     epoch = await AcademyService.create_academy_epoch(supabase, admin_supabase, user.id)
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch["id"], "create_academy",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch["id"],
+        "create_academy",
     )
     return SuccessResponse(data=epoch)
 
@@ -165,7 +171,12 @@ async def start_epoch(
     """
     data = await EpochService.start_epoch(supabase, epoch_id, user.id, admin_supabase)
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch_id,
+        "update",
         details={"action": "start", "new_status": "foundation"},
     )
     return SuccessResponse(data=data)
@@ -182,7 +193,12 @@ async def advance_phase(
     """Advance to next epoch phase. Creator only."""
     data = await EpochService.advance_phase(supabase, epoch_id, admin_supabase)
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch_id,
+        "update",
         details={"action": "advance", "new_status": data["status"]},
     )
     return SuccessResponse(data=data)
@@ -200,7 +216,12 @@ async def cancel_epoch(
     epoch = await EpochService.get(supabase, epoch_id)
     data = await EpochService.cancel_epoch(supabase, epoch_id, admin_supabase)
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch_id,
+        "update",
         details={"action": "cancel", "old_status": epoch["status"]},
     )
     return SuccessResponse(data=data)
@@ -217,7 +238,12 @@ async def delete_epoch(
     """Permanently delete an epoch. Creator only. Only lobby or cancelled epochs."""
     data = await EpochService.delete_epoch(admin_supabase, epoch_id)
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch_id, "delete",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch_id,
+        "delete",
         details={"name": data.get("name"), "status": data.get("status")},
     )
     return SuccessResponse(data=data)
@@ -244,7 +270,9 @@ async def get_cycle_battle_summary(
 ) -> SuccessResponse[BattleSummaryResponse]:
     """Get aggregated battle stats for a specific cycle (War Room)."""
     data = await SitrepService.get_cycle_summary(
-        supabase, str(epoch_id), cycle,
+        supabase,
+        str(epoch_id),
+        cycle,
         simulation_id=str(simulation_id) if simulation_id else None,
     )
     return SuccessResponse(data=data)
@@ -260,7 +288,9 @@ async def get_cycle_sitrep(
 ) -> SuccessResponse[SitrepResponse]:
     """Generate AI tactical situation report for a cycle (War Room)."""
     data = await SitrepService.generate_sitrep(
-        supabase, str(epoch_id), cycle_number,
+        supabase,
+        str(epoch_id),
+        cycle_number,
         simulation_id=str(simulation_id) if simulation_id else None,
     )
     return SuccessResponse(data=data)
@@ -281,9 +311,11 @@ async def get_battle_log(
     Pass simulation_id to tag entries visible only via alliance as allied_intel.
     """
     data, total = await BattleLogService.list_entries(
-        supabase, epoch_id,
+        supabase,
+        epoch_id,
         event_type=event_type,
-        limit=limit, offset=offset,
+        limit=limit,
+        offset=offset,
     )
 
     # Tag allied intel entries (computed at read time, not stored)
@@ -299,10 +331,7 @@ async def get_battle_log(
                     "allied_intel": True,
                 }
 
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{epoch_id}/results-summary")
@@ -329,7 +358,12 @@ async def resolve_cycle(
     data = await EpochService.resolve_cycle_full(supabase, epoch_id, admin_supabase)
 
     await AuditService.safe_log(
-        supabase, None, user.id, "game_epochs", epoch_id, "update",
+        supabase,
+        None,
+        user.id,
+        "game_epochs",
+        epoch_id,
+        "update",
         details={"action": "resolve_cycle", "cycle": data.get("current_cycle")},
     )
     return SuccessResponse(data=data)
@@ -367,7 +401,12 @@ async def join_epoch(
     """
     data = await EpochService.join_epoch(supabase, epoch_id, body.simulation_id, user.id)
     await AuditService.safe_log(
-        supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
+        supabase,
+        body.simulation_id,
+        user.id,
+        "epoch_participants",
+        data.get("id"),
+        "create",
         details={"epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=data)
@@ -383,7 +422,12 @@ async def leave_epoch(
     """Leave an epoch (lobby phase only)."""
     await EpochService.leave_epoch(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_participants", None, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_participants",
+        None,
+        "delete",
         details={"epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=MessageResponse(message="Left epoch."))
@@ -403,12 +447,14 @@ async def draft_agents(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ParticipantResponse]:
     """Lock in a draft roster for a participant (lobby phase only)."""
-    data = await EpochService.draft_agents(
-        supabase, epoch_id, simulation_id, body.agent_ids
-    )
+    data = await EpochService.draft_agents(supabase, epoch_id, simulation_id, body.agent_ids)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "epoch_participants", data.get("id"), "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_participants",
+        data.get("id"),
+        "update",
         details={"drafted_agent_ids": [str(a) for a in body.agent_ids]},
     )
     return SuccessResponse(data=data)
@@ -432,7 +478,12 @@ async def add_bot_to_epoch(
     """Add a bot participant to an epoch lobby. Only the epoch creator."""
     data = await EpochService.add_bot(admin_supabase, epoch_id, body.simulation_id, body.bot_player_id)
     await AuditService.safe_log(
-        supabase, body.simulation_id, user.id, "epoch_participants", data.get("id"), "create",
+        supabase,
+        body.simulation_id,
+        user.id,
+        "epoch_participants",
+        data.get("id"),
+        "create",
         details={"epoch_id": str(epoch_id), "bot_player_id": str(body.bot_player_id), "is_bot": True},
     )
     return SuccessResponse(data=data)
@@ -449,7 +500,12 @@ async def remove_bot_from_epoch(
     """Remove a bot participant from epoch lobby. Creator only."""
     await EpochService.remove_bot(supabase, epoch_id, participant_id)
     await AuditService.safe_log(
-        supabase, None, user.id, "epoch_participants", participant_id, "delete",
+        supabase,
+        None,
+        user.id,
+        "epoch_participants",
+        participant_id,
+        "delete",
         details={"epoch_id": str(epoch_id), "is_bot": True},
     )
     return SuccessResponse(data=MessageResponse(message="Bot removed."))
@@ -490,7 +546,12 @@ async def create_team(
         supabase, epoch_id, epoch.get("current_cycle", 0), body.name, [simulation_id]
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_teams", data.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_teams",
+        data.get("id"),
+        "create",
         details={"epoch_id": str(epoch_id), "name": body.name},
     )
     return SuccessResponse(data=data)
@@ -508,7 +569,12 @@ async def join_team(
     """Join an existing team. Must be a participant in the epoch."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_teams", team_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_teams",
+        team_id,
+        "update",
         details={"action": "join", "epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=data)
@@ -525,7 +591,12 @@ async def leave_team(
     """Leave your current team. Must be a participant in the epoch."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_teams", None, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_teams",
+        None,
+        "update",
         details={"action": "leave", "epoch_id": str(epoch_id)},
     )
     return SuccessResponse(data=data)
@@ -546,7 +617,10 @@ async def list_proposals(
 ) -> SuccessResponse[list[AllianceProposalResponse]]:
     """List alliance proposals for an epoch."""
     data = await AllianceService.list_proposals(
-        supabase, epoch_id, team_id=team_id, status_filter=status,
+        supabase,
+        epoch_id,
+        team_id=team_id,
+        status_filter=status,
     )
     return SuccessResponse(data=data)
 
@@ -565,11 +639,18 @@ async def create_proposal(
 ) -> SuccessResponse[AllianceProposalResponse]:
     """Request to join a team. Requires unanimous member approval."""
     data = await AllianceService.create_proposal(
-        supabase, epoch_id, body.team_id, simulation_id,
+        supabase,
+        epoch_id,
+        body.team_id,
+        simulation_id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_alliance_proposals",
-        data.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_alliance_proposals",
+        data.get("id"),
+        "create",
         details={"epoch_id": str(epoch_id), "team_id": str(body.team_id)},
     )
     return SuccessResponse(data=data)
@@ -590,11 +671,19 @@ async def invite_to_team(
 ) -> SuccessResponse[AllianceProposalResponse]:
     """Invite a player to your team. Caller must be a team member."""
     data = await AllianceService.invite_to_team(
-        supabase, epoch_id, team_id, simulation_id, body.target_simulation_id,
+        supabase,
+        epoch_id,
+        team_id,
+        simulation_id,
+        body.target_simulation_id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_alliance_proposals",
-        data.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_alliance_proposals",
+        data.get("id"),
+        "create",
         details={
             "epoch_id": str(epoch_id),
             "team_id": str(team_id),
@@ -619,11 +708,18 @@ async def vote_on_proposal(
 ) -> SuccessResponse[AllianceVoteResponse]:
     """Vote accept/reject on an alliance proposal. Team members only."""
     data = await AllianceService.vote_on_proposal(
-        supabase, proposal_id, simulation_id, body.vote,
+        supabase,
+        proposal_id,
+        simulation_id,
+        body.vote,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "epoch_alliance_votes",
-        data.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "epoch_alliance_votes",
+        data.get("id"),
+        "create",
         details={"proposal_id": str(proposal_id), "vote": body.vote},
     )
     return SuccessResponse(data=data)
@@ -645,13 +741,21 @@ async def toggle_ready(
     When all human participants signal ready, the cycle auto-resolves.
     """
     data = await EpochChatService.toggle_ready(
-        supabase, epoch_id, body.simulation_id, body.ready,
+        supabase,
+        epoch_id,
+        body.simulation_id,
+        body.ready,
         admin_supabase=admin_supabase,
     )
 
     if data.get("auto_resolved"):
         await AuditService.safe_log(
-            supabase, None, user.id, "game_epochs", epoch_id, "update",
+            supabase,
+            None,
+            user.id,
+            "game_epochs",
+            epoch_id,
+            "update",
             details={"action": "auto_resolve_cycle", "cycle": data.get("new_cycle")},
         )
 

@@ -57,8 +57,7 @@ async def upload_reference(
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        f"Unsupported file type: {content_type}."
-                        f" Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
+                        f"Unsupported file type: {content_type}. Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
                     ),
                 )
             image_data = await file.read()
@@ -83,7 +82,12 @@ async def upload_reference(
         )
 
         await AuditService.safe_log(
-            supabase, simulation_id, user.id, "style_references", None, "upload",
+            supabase,
+            simulation_id,
+            user.id,
+            "style_references",
+            None,
+            "upload",
             details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
         )
 
@@ -115,7 +119,9 @@ async def list_references(
         )
 
     refs = await StyleReferenceService.list_references(
-        supabase, simulation_id, entity_type,
+        supabase,
+        simulation_id,
+        entity_type,
     )
     return SuccessResponse(data=refs)
 
@@ -149,7 +155,12 @@ async def delete_reference(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "style_references", None, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "style_references",
+        None,
+        "delete",
         details={"entity_type": entity_type, "scope": scope, "entity_id": str(entity_id) if entity_id else None},
     )
     return SuccessResponse(data=DeleteResponse())
