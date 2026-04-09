@@ -59,16 +59,6 @@ from backend.utils.responses import paginated
 
 logger = logging.getLogger(__name__)
 
-# Valid phase transitions: current_phase -> allowed next phases
-_VALID_PHASE_TRANSITIONS: dict[str, set[str]] = {
-    "astrolabe": {"drafting"},
-    "drafting": {"darkroom", "astrolabe"},
-    "darkroom": {"ignition", "drafting"},
-    "ignition": {"completed", "failed", "darkroom"},
-    "completed": set(),
-    "failed": {"astrolabe"},
-}
-
 router = APIRouter(prefix="/api/v1/forge", tags=["forge"])
 
 _draft_service = ForgeDraftService()
@@ -130,23 +120,13 @@ async def update_draft(
     supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[ForgeDraft]:
     """Update draft state."""
-    # Validate phase transitions
+    # Validate business rules (phase transitions + status guards)
     if body.current_phase is not None:
         current = await _draft_service.get_draft(supabase, user.id, draft_id)
         current_phase = current.get("current_phase", "astrolabe")
-        allowed = _VALID_PHASE_TRANSITIONS.get(current_phase, set())
-        if body.current_phase not in allowed:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Cannot transition from '{current_phase}' to '{body.current_phase}'.",
-            )
-
-    # Prevent clients from setting status to "completed" directly
-    if body.status == "completed":
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Status 'completed' can only be set by the ignition process.",
-        )
+    else:
+        current_phase = "astrolabe"
+    _draft_service.validate_draft_update(body, current_phase=current_phase)
 
     draft = await _draft_service.update_draft(supabase, user.id, draft_id, body)
     await AuditService.safe_log(

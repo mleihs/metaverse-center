@@ -37,6 +37,14 @@ jobs:
       - name: Lit template check
         run: npm run lint:lit
 
+      - name: Color token lint
+        run: bash scripts/lint-color-tokens.sh
+        working-directory: .
+
+      - name: Content quality lint
+        run: bash scripts/lint-llm-content.sh
+        working-directory: .
+
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
@@ -84,8 +92,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run tests
-        run: python -m pytest
+      - name: Run tests with coverage
+        run: python -m pytest --cov
 
   sentry-release:
     name: Sentry Release
