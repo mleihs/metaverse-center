@@ -41,12 +41,21 @@ export class VelgBaseModal extends LitElement {
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-xl);
-      transform: translateY(20px);
-      transition: transform var(--transition-normal);
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+      /* No persistent transform — translateY(0) creates a containing block
+         that breaks position:fixed tooltips inside the modal (info bubbles). */
     }
 
     .backdrop--open .modal {
-      transform: translateY(0);
+      opacity: 1;
+      animation: modal-enter var(--duration-normal, 200ms) var(--ease-out, ease-out);
+      /* No fill-mode: after animation ends, transform reverts to none (base style).
+         translateY(0) → none is visually seamless. */
+    }
+
+    @keyframes modal-enter {
+      from { transform: translateY(20px); }
     }
 
     .modal__header {
