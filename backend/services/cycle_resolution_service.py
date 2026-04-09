@@ -100,8 +100,7 @@ class CycleResolutionService:
     ) -> int:
         """Grant RP to a single participant, respecting the cap. Returns new balance.
 
-        Uses ``fn_grant_rp_single`` RPC (migration 148) when ``use_atomic_game_rpcs``
-        platform setting is enabled. Falls back to Python fetch-compute-update otherwise.
+        Uses ``fn_grant_rp_single`` atomic RPC (migration 148).
         """
         # Read epoch config for rp_cap (needed by both paths)
         epoch_resp = await supabase.table("game_epochs").select("config").eq("id", str(epoch_id)).single().execute()

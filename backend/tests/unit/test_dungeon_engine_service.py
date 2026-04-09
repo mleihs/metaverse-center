@@ -1649,8 +1649,9 @@ class TestHandleCombatVictory:
         assert result["victory"] is True
         assert instance.phase == "distributing"
         assert len(instance.pending_loot) == 1
-        # fn_begin_distribution RPC should have been called
-        mock_sb.rpc.assert_called_once()
+        # fn_begin_distribution RPC should have been called (alongside achievement RPCs)
+        rpc_calls = [c.args[0] for c in mock_sb.rpc.call_args_list]
+        assert "fn_begin_distribution" in rpc_calls
 
     @pytest.mark.asyncio
     async def test_boss_victory_auto_completes_single_agent(self, noop_checkpoint):

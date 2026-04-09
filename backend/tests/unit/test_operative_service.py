@@ -678,52 +678,7 @@ class TestSpyEffect:
 
 class TestSaboteurEffect:
     @pytest.mark.asyncio
-    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
-    async def test_saboteur_degrades_building_condition(self, _mock_config):
-        sb = MagicMock()
-
-        building_chain = MagicMock()
-        building_chain.select.return_value = building_chain
-        building_chain.eq.return_value = building_chain
-        building_chain.single.return_value = building_chain
-        building_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(TARGET_ENTITY_ID), "building_condition": "good"}
-        ))
-        building_chain.update.return_value = building_chain
-
-        zones_chain = MagicMock()
-        zones_chain.select.return_value = zones_chain
-        zones_chain.eq.return_value = zones_chain
-        zones_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
-
-        def table_router(name):
-            if name == "buildings":
-                return building_chain
-            if name == "zones":
-                return zones_chain
-            return MagicMock()
-
-        sb.table.side_effect = table_router
-
-        mission = {
-            "id": str(uuid4()),
-            "epoch_id": str(EPOCH_ID),
-            "operative_type": "saboteur",
-            "source_simulation_id": str(SIM_ID),
-            "target_simulation_id": str(TARGET_SIM_ID),
-            "target_entity_id": str(TARGET_ENTITY_ID),
-        }
-
-        result = await OperativeService._apply_saboteur_effect(sb, mission)
-
-        assert result["outcome"] == "success"
-        assert "damage_dealt" in result
-        assert result["damage_dealt"]["old_condition"] == "good"
-        assert result["damage_dealt"]["new_condition"] == "moderate"
-
-    @pytest.mark.asyncio
-    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=True)
-    async def test_saboteur_degrades_building_via_rpc(self, _mock_config):
+    async def test_saboteur_degrades_building_via_rpc(self):
         sb = MagicMock()
 
         # Mock RPC: fn_degrade_building returns JSONB
@@ -757,32 +712,41 @@ class TestSaboteurEffect:
         sb.rpc.assert_called_with("fn_degrade_building", {"p_building_id": str(TARGET_ENTITY_ID)})
 
     @pytest.mark.asyncio
-    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
-    async def test_saboteur_downgrades_zone_security(self, _mock_config):
+    async def test_saboteur_downgrades_zone_via_rpc(self):
+        """Zone security downgrade uses fn_downgrade_zone_security RPC."""
         sb = MagicMock()
 
-        building_chain = MagicMock()
-        building_chain.select.return_value = building_chain
-        building_chain.eq.return_value = building_chain
-        building_chain.single.return_value = building_chain
-        building_chain.execute = AsyncMock(return_value=MagicMock(data=None))
+        # Building RPC (no target_entity_id → no building call needed, but
+        # target_entity_id=None means building block is skipped)
+        rpc_zone_chain = MagicMock()
+        rpc_zone_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"old_level": "high", "new_level": "guarded"}
+        ))
 
+        # Zones table (for zone selection)
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
-        zones_chain.update.return_value = zones_chain
         zones_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": "z1", "security_level": "high"}]
+            data=[{"id": "z1", "name": "Zone 1", "security_level": "high"}]
         ))
 
+        # Events table (for crisis event creation)
+        events_chain = MagicMock()
+        events_chain.select.return_value = events_chain
+        events_chain.eq.return_value = events_chain
+        events_chain.insert.return_value = events_chain
+        events_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
+
         def table_router(name):
-            if name == "buildings":
-                return building_chain
             if name == "zones":
                 return zones_chain
+            if name == "events":
+                return events_chain
             return MagicMock()
 
         sb.table.side_effect = table_router
+        sb.rpc.return_value = rpc_zone_chain
 
         mission = {
             "id": str(uuid4()),
@@ -797,8 +761,7 @@ class TestSaboteurEffect:
 
         assert result["outcome"] == "success"
         assert "zone_downgraded" in result
-        assert result["zone_downgraded"]["old_level"] == "high"
-        assert result["zone_downgraded"]["new_level"] == "guarded"
+        sb.rpc.assert_any_call("fn_downgrade_zone_security", {"p_zone_id": "z1", "p_tiers_down": 1})
 
 
 # ── Propagandist Effect ────────────────────────────────────────
@@ -837,21 +800,14 @@ class TestPropagandistEffect:
 
 class TestAssassinEffect:
     @pytest.mark.asyncio
-    @patch("backend.services.operative_mission_service.PlatformConfigService.get", return_value=False)
-    async def test_assassin_weakens_relationships(self, _mock_config):
+    async def test_assassin_weakens_relationships_via_rpc(self):
+        """Assassin uses fn_weaken_relationships RPC for atomic batch weakening."""
         sb = MagicMock()
 
-        rel_chain = MagicMock()
-        rel_chain.select.return_value = rel_chain
-        rel_chain.or_.return_value = rel_chain
-        rel_chain.eq.return_value = rel_chain
-        rel_chain.update.return_value = rel_chain
-        rel_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[
-                {"id": "r1", "intensity": 5},
-                {"id": "r2", "intensity": 3},
-            ]
-        ))
+        # RPC: fn_weaken_relationships returns affected count
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=2))
+        sb.rpc.return_value = rpc_chain
 
         epoch_chain = MagicMock()
         epoch_chain.select.return_value = epoch_chain
@@ -867,8 +823,6 @@ class TestAssassinEffect:
         agents_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         def table_router(name):
-            if name == "agent_relationships":
-                return rel_chain
             if name == "game_epochs":
                 return epoch_chain
             if name == "agents":
@@ -891,6 +845,7 @@ class TestAssassinEffect:
         assert result["outcome"] == "success"
         assert result["relationships_weakened"] == 2
         assert "ambassador_blocked_until" in result
+        sb.rpc.assert_any_call("fn_weaken_relationships", {"p_agent_id": str(TARGET_ENTITY_ID), "p_delta": 2})
 
     @pytest.mark.asyncio
     async def test_assassin_without_target_returns_generic_success(self):
