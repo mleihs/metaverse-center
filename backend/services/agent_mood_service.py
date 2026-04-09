@@ -29,6 +29,7 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -233,7 +234,7 @@ class AgentMoodService:
             .order("created_at", desc=True)
             .execute()
         )
-        return result.data or []
+        return extract_list(result)
 
     @classmethod
     async def get_agent_mood(
@@ -269,7 +270,7 @@ class AgentMoodService:
             .order("created_at", desc=True)
             .execute()
         )
-        return result.data or []
+        return extract_list(result)
 
     @classmethod
     async def apply_resonance_moodlets(
@@ -338,7 +339,7 @@ class AgentMoodService:
             .gte("stress_level", STRESS_BREAKDOWN_THRESHOLD)
             .execute()
         )
-        breakdown_agents = [r["agent_id"] for r in (result.data or [])]
+        breakdown_agents = [r["agent_id"] for r in (extract_list(result))]
 
         if breakdown_agents:
             logger.warning(

@@ -22,6 +22,7 @@ from uuid import UUID
 
 import structlog
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -338,7 +339,7 @@ class AgentOpinionService:
             .execute()
         )
         data = []
-        for row in result.data or []:
+        for row in extract_list(result):
             agent_data = row.pop("agents", {}) or {}
             row["target_agent_name"] = agent_data.get("name")
             row["target_agent_portrait"] = agent_data.get("portrait_image_url")
@@ -363,7 +364,7 @@ class AgentOpinionService:
         if target_agent_id:
             query = query.eq("target_agent_id", str(target_agent_id))
         result = await query.order("created_at", desc=True).execute()
-        return result.data or []
+        return extract_list(result)
 
     @classmethod
     async def _ensure_opinion_record(
@@ -407,7 +408,7 @@ class AgentOpinionService:
             .execute()
         )
 
-        for opinion in high_result.data or []:
+        for opinion in extract_list(high_result):
             # Check if relationship already exists
             existing = await (
                 supabase.table("agent_relationships")
@@ -436,7 +437,7 @@ class AgentOpinionService:
             .execute()
         )
 
-        for opinion in low_result.data or []:
+        for opinion in extract_list(low_result):
             events.append(
                 {
                     "type": "relationship_breakdown",

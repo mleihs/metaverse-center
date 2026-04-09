@@ -10,6 +10,7 @@ from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
 from backend.utils.errors import bad_request
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class ScoringService:
             },
         ).execute()
 
-        scores = resp.data or []
+        scores = extract_list(resp)
         if not scores:
             # Retry once with forced MV refresh — stale materialized views
             # are the primary cause of empty scoring results (6% rate in v2.1).
@@ -80,7 +81,7 @@ class ScoringService:
                     "p_score_weights": score_weights,
                 },
             ).execute()
-            scores = resp.data or []
+            scores = extract_list(resp)
             if not scores:
                 logger.error(
                     "Scoring empty after MV refresh retry",
@@ -148,8 +149,8 @@ class ScoringService:
             .in_("operative_type", ["saboteur", "assassin"])
             .execute()
         )
-        saboteur_count = sum(1 for m in (inbound_resp.data or []) if m["operative_type"] == "saboteur")
-        assassin_count = sum(1 for m in (inbound_resp.data or []) if m["operative_type"] == "assassin")
+        saboteur_count = sum(1 for m in (extract_list(inbound_resp)) if m["operative_type"] == "saboteur")
+        assassin_count = sum(1 for m in (extract_list(inbound_resp)) if m["operative_type"] == "assassin")
 
         return max(0.0, base_stability - (propaganda_count * 3) - (saboteur_count * 6) - (assassin_count * 5))
 
@@ -169,9 +170,9 @@ class ScoringService:
             .in_("operative_type", ["propagandist", "spy", "infiltrator"])
             .execute()
         )
-        propagandist_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "propagandist")
-        spy_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "spy")
-        infiltrator_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "infiltrator")
+        propagandist_wins = sum(1 for m in (extract_list(missions_resp)) if m["operative_type"] == "propagandist")
+        spy_wins = sum(1 for m in (extract_list(missions_resp)) if m["operative_type"] == "spy")
+        infiltrator_wins = sum(1 for m in (extract_list(missions_resp)) if m["operative_type"] == "infiltrator")
 
         # Echo strength (bleed system — may be 0 in competitive play)
         echo_resp = await (
@@ -181,7 +182,7 @@ class ScoringService:
             .eq("status", "completed")
             .execute()
         )
-        echo_sum = sum(e.get("echo_strength", 0) for e in echo_resp.data or [])
+        echo_sum = sum(e.get("echo_strength", 0) for e in extract_list(echo_resp))
 
         return (propagandist_wins * 5) + (spy_wins * 2) + (infiltrator_wins * 3) + echo_sum
 
@@ -218,7 +219,7 @@ class ScoringService:
 
         penalty_total = 0.0
         detected_count = 0
-        for m in inbound_resp.data or []:
+        for m in extract_list(inbound_resp):
             if m["status"] == "success":
                 penalty_total += type_penalties.get(m["operative_type"], 5)
             elif m["status"] in ("detected", "captured"):
@@ -234,7 +235,7 @@ class ScoringService:
             .eq("status", "active")
             .execute()
         )
-        guardian_count = len(guardian_resp.data or [])
+        guardian_count = len(extract_list(guardian_resp))
 
         return max(0.0, min(100.0, 100.0 - penalty_total + (detected_count * 3) + (guardian_count * 4)))
 
@@ -254,7 +255,7 @@ class ScoringService:
             .or_(f"simulation_a_id.eq.{simulation_id},simulation_b_id.eq.{simulation_id}")
             .execute()
         )
-        total_effectiveness = sum(float(e.get("effectiveness", 0)) for e in resp.data or [])
+        total_effectiveness = sum(float(e.get("effectiveness", 0)) for e in extract_list(resp))
 
         # Count active embassies as base diplomatic score
         embassy_resp = await (
@@ -264,7 +265,7 @@ class ScoringService:
             .or_(f"simulation_a_id.eq.{simulation_id},simulation_b_id.eq.{simulation_id}")
             .execute()
         )
-        embassy_count = len(embassy_resp.data or [])
+        embassy_count = len(extract_list(embassy_resp))
 
         # Fallback: if no materialized view data, use embassy count
         if total_effectiveness == 0:
@@ -288,7 +289,7 @@ class ScoringService:
             betrayal_penalty = float(participant_resp.data.get("betrayal_penalty") or 0)
             if team_id:
                 allies_resp = await supabase.table("epoch_participants").select("id").eq("team_id", team_id).execute()
-                active_alliance_count = max(0, len(allies_resp.data or []) - 1)
+                active_alliance_count = max(0, len(extract_list(allies_resp)) - 1)
 
         alliance_multiplier = 1.0 + (0.15 * active_alliance_count)
 
@@ -325,7 +326,7 @@ class ScoringService:
         )
 
         score = 0.0
-        for mission in resp.data or []:
+        for mission in extract_list(resp):
             if mission["status"] == "success":
                 score += MISSION_SCORE_VALUES.get(mission["operative_type"], 2)
             elif mission["status"] in ("detected", "captured"):
@@ -383,7 +384,7 @@ class ScoringService:
             .eq("cycle_number", cycle_number)
             .execute()
         )
-        scores = resp.data or []
+        scores = extract_list(resp)
         if not scores:
             return []
 
@@ -484,7 +485,7 @@ class ScoringService:
             .execute()
         )
 
-        scores = resp.data or []
+        scores = extract_list(resp)
         if not scores:
             return []
 
@@ -492,7 +493,7 @@ class ScoringService:
         # join coercion failures when FK cardinality is ambiguous)
         score_sim_ids = [s["simulation_id"] for s in scores]
         sims_resp = await supabase.table("simulations").select("id, name, slug").in_("id", score_sim_ids).execute()
-        sim_map: dict[str, dict] = {s["id"]: s for s in sims_resp.data or []}
+        sim_map: dict[str, dict] = {s["id"]: s for s in extract_list(sims_resp)}
 
         # Batch-fetch all participant team assignments + betrayal data for this epoch
         participants_resp = await (
@@ -504,7 +505,7 @@ class ScoringService:
         team_by_sim: dict[str, str | None] = {}
         betrayal_by_sim: dict[str, float] = {}
         team_id_by_sim: dict[str, str | None] = {}
-        for p in participants_resp.data or []:
+        for p in extract_list(participants_resp):
             team = p.get("epoch_teams")
             sim_id = p["simulation_id"]
             team_by_sim[sim_id] = team.get("name") if team else None
@@ -573,7 +574,7 @@ class ScoringService:
             .order("cycle_number", desc=True)
             .execute()
         )
-        reports = intel_resp.data or []
+        reports = extract_list(intel_resp)
 
         # Group by target, use latest report per target
         by_target: dict[str, list[dict]] = {}
@@ -624,7 +625,7 @@ class ScoringService:
             .order("cycle_number")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def get_results_summary(
@@ -658,7 +659,7 @@ class ScoringService:
         )
         # Group by source_simulation_id in Python
         missions_by_sim: dict[str, list[dict]] = {sid: [] for sid in sim_ids}
-        for m in all_missions_resp.data or []:
+        for m in extract_list(all_missions_resp):
             sid = m["source_simulation_id"]
             if sid in missions_by_sim:
                 missions_by_sim[sid].append(m)
@@ -698,7 +699,7 @@ class ScoringService:
             .execute()
         )
         score_history: dict[str, list[dict]] = {sid: [] for sid in sim_ids}
-        for s in all_scores_resp.data or []:
+        for s in extract_list(all_scores_resp):
             sid = s["simulation_id"]
             if sid in score_history:
                 score_history[sid].append(s)

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -126,7 +127,7 @@ class LoreService:
 
         # Re-sort remaining sections
         remaining = await supabase.table(TABLE).select("id").eq("simulation_id", sim_id).order("sort_order").execute()
-        for i, row in enumerate(remaining.data or []):
+        for i, row in enumerate(extract_list(remaining)):
             await supabase.table(TABLE).update({"sort_order": i}).eq("id", row["id"]).execute()
 
         return response.data[0]
@@ -147,4 +148,4 @@ class LoreService:
 
         # Return updated list
         response = await supabase.table(TABLE).select("*").eq("simulation_id", sim_id).order("sort_order").execute()
-        return response.data or []
+        return extract_list(response)

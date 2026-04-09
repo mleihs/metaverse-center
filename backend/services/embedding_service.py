@@ -9,6 +9,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
+from backend.utils.responses import extract_list
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ async def _load_embedding_config() -> tuple[str, int]:
             .in_("setting_key", ["embedding_model", "embedding_dims"])
             .execute()
         )
-        for row in resp.data or []:
+        for row in extract_list(resp):
             key, val = row["setting_key"], row["setting_value"]
             if key == "embedding_model":
                 model = str(val).strip('"')

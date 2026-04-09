@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import time
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ async def _load_all(admin_supabase: Client) -> None:
             .execute()
         )
         new_cache: dict[str, str] = {}
-        for row in response.data or []:
+        for row in extract_list(response):
             key = row["setting_key"]
             if key not in _MODEL_KEYS:
                 continue

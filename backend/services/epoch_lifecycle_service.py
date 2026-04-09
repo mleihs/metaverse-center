@@ -8,6 +8,7 @@ from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from backend.utils.errors import bad_request, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class EpochLifecycleService:
             member_resp = await (
                 supabase.table("simulation_members").select("simulation_id").eq("user_id", creator_id).execute()
             )
-            creator_sim_ids = {m["simulation_id"] for m in (member_resp.data or [])}
+            creator_sim_ids = {m["simulation_id"] for m in (extract_list(member_resp))}
             human_participant_sims = {str(p["simulation_id"]) for p in participants if not p.get("is_bot")}
             if not creator_sim_ids & human_participant_sims:
                 raise bad_request("Epoch creator must join with a simulation before starting.")

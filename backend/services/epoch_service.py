@@ -11,6 +11,7 @@ from uuid import UUID
 from backend.models.epoch import EpochConfig
 from backend.services.constants import OPERATIVE_RP_COSTS
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class EpochService:
             query = query.eq("status", status_filter)
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
         resp = await query.execute()
-        return resp.data or [], resp.count or 0
+        return extract_list(resp), resp.count or 0
 
     @classmethod
     async def get(cls, supabase: Client, epoch_id: UUID) -> dict:
@@ -67,7 +68,7 @@ class EpochService:
             .order("created_at", desc=True)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     # ── Create / Update ──────────────────────────────────────
 

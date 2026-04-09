@@ -7,6 +7,7 @@ from uuid import UUID
 from backend.models.epoch import EpochConfig
 from backend.services.bot_personality import auto_draft
 from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class EpochParticipationService:
             .order("joined_at")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def join_epoch(
@@ -187,7 +188,7 @@ class EpochParticipationService:
         resp = await (
             supabase.table("epoch_teams").select("*").eq("epoch_id", str(epoch_id)).order("created_at").execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def create_team(
@@ -258,7 +259,7 @@ class EpochParticipationService:
             .eq("team_id", str(team_id))
             .execute()
         )
-        if len(members.data or []) >= config["max_team_size"]:
+        if len(extract_list(members)) >= config["max_team_size"]:
             raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
         resp = await (
@@ -341,7 +342,7 @@ class EpochParticipationService:
             .order("created_at")
             .execute()
         )
-        agents = agents_resp.data or []
+        agents = extract_list(agents_resp)
 
         # Load aptitudes for all agents in this sim
         aptitudes_resp = await (
@@ -351,7 +352,7 @@ class EpochParticipationService:
             .execute()
         )
         apt_map: dict[str, dict[str, int]] = {}
-        for row in aptitudes_resp.data or []:
+        for row in extract_list(aptitudes_resp):
             aid = row["agent_id"]
             if aid not in apt_map:
                 apt_map[aid] = {}

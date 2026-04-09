@@ -13,6 +13,7 @@ from uuid import UUID
 
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -203,7 +204,7 @@ class AnchorService:
         if sim_id:
             query = query.contains("anchor_simulation_ids", [str(sim_id)])
         response = await query.execute()
-        return response.data or [], response.count or 0
+        return extract_list(response), response.count or 0
 
     # ── Tick Resolution (Phase 7) ───────────────────────────────
 
@@ -229,7 +230,7 @@ class AnchorService:
             },
         ).execute()
 
-        changes = result.data or []
+        changes = extract_list(result)
         if isinstance(changes, str):
             changes = json.loads(changes)
 
@@ -288,7 +289,7 @@ class AnchorService:
             .contains("anchor_simulation_ids", [str(sim_id)])
             .execute()
         )
-        anchors = _resp.data or []
+        anchors = extract_list(_resp)
 
         total_protection = 0.0
         for anchor in anchors:

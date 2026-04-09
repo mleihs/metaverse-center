@@ -15,6 +15,7 @@ from backend.services.audit_service import AuditService
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.utils.errors import bad_request, conflict, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -185,7 +186,7 @@ class ThresholdService:
             .limit(50)
             .execute()
         )
-        agents = agents_resp.data or []
+        agents = extract_list(agents_resp)
 
         profession = "laborer"
         system = "civilian"

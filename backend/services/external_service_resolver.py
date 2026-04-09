@@ -12,6 +12,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings as platform_settings
 from backend.services.platform_api_keys import get_platform_api_key
 from backend.utils.encryption import decrypt
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ class ExternalServiceResolver:
         )
 
         self._cache = {}
-        for row in response.data or []:
+        for row in extract_list(response):
             self._cache[row["setting_key"]] = row["setting_value"]
 
         return self._cache

@@ -17,6 +17,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -63,8 +64,8 @@ class EchoService:
 
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def list_for_event(
@@ -80,7 +81,7 @@ class EchoService:
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get(
@@ -176,7 +177,7 @@ class EchoService:
             )
             .execute()
         )
-        settings = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
+        settings = {s["setting_key"]: s["setting_value"] for s in (extract_list(settings_resp))}
 
         if not settings.get("bleed_enabled", True):
             return []

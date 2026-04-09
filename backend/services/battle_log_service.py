@@ -6,6 +6,7 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -427,7 +428,7 @@ class BattleLogService:
             .limit(limit)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def list_entries(
@@ -456,7 +457,7 @@ class BattleLogService:
 
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
         resp = await query.execute()
-        return resp.data or [], resp.count or 0
+        return extract_list(resp), resp.count or 0
 
     @classmethod
     async def get_public_feed(

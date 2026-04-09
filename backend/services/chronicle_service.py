@@ -11,6 +11,7 @@ from backend.config import settings
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -194,7 +195,7 @@ class ChronicleService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = response.data or []
+        data = extract_list(response)
         # Flatten simulation join into a nested dict for cleaner API response
         for row in data:
             sim = row.pop("simulations", None)
@@ -220,7 +221,7 @@ class ChronicleService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 

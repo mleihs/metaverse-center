@@ -22,6 +22,7 @@ from backend.services.email_templates import (
     render_phase_change,
 )
 from backend.services.scoring_service import ScoringService
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class CycleNotificationService:
             .eq("is_bot", False)
             .execute()
         )
-        participants = participants_resp.data or []
+        participants = extract_list(participants_resp)
         if not participants:
             return []
 
@@ -83,14 +84,14 @@ class CycleNotificationService:
             .in_("member_role", ["editor", "admin", "owner"])
             .execute()
         )
-        members = members_resp.data or []
+        members = extract_list(members_resp)
         if not members:
             return []
 
         # 3. Get email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
         user_ids = list({m["user_id"] for m in members})
         email_resp = await admin_supabase.rpc("get_user_emails_batch", {"user_ids": user_ids}).execute()
-        email_map: dict[str, str] = {row["id"]: row["email"] for row in (email_resp.data or [])}
+        email_map: dict[str, str] = {row["id"]: row["email"] for row in (extract_list(email_resp))}
 
         # 4. Get notification preferences (batch)
         prefs_resp = await (
@@ -99,14 +100,14 @@ class CycleNotificationService:
             .in_("user_id", user_ids)
             .execute()
         )
-        prefs_map: dict[str, dict] = {row["user_id"]: row for row in (prefs_resp.data or [])}
+        prefs_map: dict[str, dict] = {row["user_id"]: row for row in (extract_list(prefs_resp))}
 
         # 5. Resolve template simulation slugs for accent colors
         # The game instance slug may not be the right one — get the template slug
         template_slugs: dict[str, str] = {}
         if template_ids:
             slug_resp = await admin_supabase.table("simulations").select("id, slug").in_("id", template_ids).execute()
-            template_slugs = {s["id"]: s.get("slug", "") for s in (slug_resp.data or [])}
+            template_slugs = {s["id"]: s.get("slug", "") for s in (extract_list(slug_resp))}
 
         # 6. Build recipient list with preference filtering
         recipients = []
@@ -172,7 +173,7 @@ class CycleNotificationService:
             .order("composite_score", desc=True)
             .execute()
         )
-        current_scores = current_resp.data or []
+        current_scores = extract_list(current_resp)
 
         # Previous cycle scores (for deltas)
         prev_cycle = cycle_number - 1
@@ -189,7 +190,7 @@ class CycleNotificationService:
                 .eq("cycle_number", prev_cycle)
                 .execute()
             )
-            prev_scores_map = {s["simulation_id"]: s for s in (prev_resp.data or [])}
+            prev_scores_map = {s["simulation_id"]: s for s in (extract_list(prev_resp))}
 
         # Find this player's score and rank
         player_score = None
@@ -241,7 +242,7 @@ class CycleNotificationService:
             .eq("source_simulation_id", simulation_id)
             .execute()
         )
-        ops = ops_resp.data or []
+        ops = extract_list(ops_resp)
         active_ops = sum(1 for o in ops if o["status"] == "active")
         resolved_ops = [o for o in ops if o["status"] in ("success", "failed", "detected", "captured")]
         success_ops = sum(1 for o in resolved_ops if o["status"] == "success")
@@ -256,7 +257,7 @@ class CycleNotificationService:
             names_resp = await (
                 admin_supabase.table("simulations").select("id, name").in_("id", target_sim_ids).execute()
             )
-            sim_name_map = {s["id"]: s["name"] for s in (names_resp.data or [])}
+            sim_name_map = {s["id"]: s["name"] for s in (extract_list(names_resp))}
 
         # Per-mission detail list
         mission_details = []
@@ -293,14 +294,14 @@ class CycleNotificationService:
             .in_("status", ["detected", "captured"])
             .execute()
         )
-        threats_raw = threat_resp.data or []
+        threats_raw = extract_list(threat_resp)
         # Resolve source names
         threat_source_ids = list({t["source_simulation_id"] for t in threats_raw})
         if threat_source_ids:
             threat_names_resp = await (
                 admin_supabase.table("simulations").select("id, name").in_("id", threat_source_ids).execute()
             )
-            threat_name_map = {s["id"]: s["name"] for s in (threat_names_resp.data or [])}
+            threat_name_map = {s["id"]: s["name"] for s in (extract_list(threat_names_resp))}
         else:
             threat_name_map = {}
 
@@ -327,13 +328,13 @@ class CycleNotificationService:
         )
         # Resolve target sim names for intel reports
         intel_target_ids = list(
-            {e["target_simulation_id"] for e in (intel_resp.data or []) if e.get("target_simulation_id")}
+            {e["target_simulation_id"] for e in (extract_list(intel_resp)) if e.get("target_simulation_id")}
         )
         if intel_target_ids:
             intel_names_resp = await (
                 admin_supabase.table("simulations").select("id, name").in_("id", intel_target_ids).execute()
             )
-            intel_name_map = {s["id"]: s["name"] for s in (intel_names_resp.data or [])}
+            intel_name_map = {s["id"]: s["name"] for s in (extract_list(intel_names_resp))}
         else:
             intel_name_map = {}
         spy_intel = [
@@ -342,7 +343,7 @@ class CycleNotificationService:
                 "metadata": e.get("metadata") or {},
                 "target_name": intel_name_map.get(e.get("target_simulation_id", ""), ""),
             }
-            for e in (intel_resp.data or [])
+            for e in (extract_list(intel_resp))
         ]
 
         # ── Alliance status (B6) ──
@@ -376,7 +377,7 @@ class CycleNotificationService:
                     )
                     ally_names = [
                         (p.get("simulations") or {}).get("name", "?")
-                        for p in (ally_resp.data or [])
+                        for p in (extract_list(ally_resp))
                         if p["simulation_id"] != simulation_id
                     ]
 
@@ -440,7 +441,7 @@ class CycleNotificationService:
             .limit(5)
             .execute()
         )
-        public_events = [{"narrative": e["narrative"], "event_type": e["event_type"]} for e in (log_resp.data or [])]
+        public_events = [{"narrative": e["narrative"], "event_type": e["event_type"]} for e in (extract_list(log_resp))]
 
         return {
             "epoch_name": epoch_name,
@@ -499,7 +500,7 @@ class CycleNotificationService:
             .limit(50)
             .execute()
         )
-        scores = scores_resp.data or []
+        scores = extract_list(scores_resp)
         if not scores:
             return None
 
@@ -538,7 +539,7 @@ class CycleNotificationService:
             .eq("source_simulation_id", simulation_id)
             .execute()
         )
-        ops = ops_resp.data or []
+        ops = extract_list(ops_resp)
 
         total = len(ops)
         resolved = [o for o in ops if o["status"] in ("success", "failed", "detected", "captured")]

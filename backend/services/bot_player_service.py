@@ -4,6 +4,7 @@ import logging
 from uuid import UUID
 
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class BotPlayerService:
             .order("created_at", desc=True)
             .execute()
         )
-        data = resp.data or []
+        data = extract_list(resp)
         return data, resp.count or 0
 
     @classmethod

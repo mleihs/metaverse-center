@@ -37,6 +37,7 @@ from backend.services.echo_service import EchoService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -410,7 +411,7 @@ class AutonomousEventService:
                 .is_("deleted_at", "null")
                 .execute()
             )
-            agent_ids = [a["id"] for a in (agents_result.data or [])]
+            agent_ids = [a["id"] for a in (extract_list(agents_result))]
             if not agent_ids:
                 continue
 
@@ -424,7 +425,7 @@ class AutonomousEventService:
             )
             if needs_result.data:
                 affected = [
-                    a for a in (agents_result.data or []) if a["id"] in [n["agent_id"] for n in needs_result.data]
+                    a for a in (extract_list(agents_result)) if a["id"] in [n["agent_id"] for n in needs_result.data]
                 ]
                 if affected:
                     events.append(
@@ -643,7 +644,7 @@ class AutonomousEventService:
                 .execute()
             )
             triggering_ids = {a.get("id") for a in agents}
-            for witness in zone_agents.data or []:
+            for witness in extract_list(zone_agents):
                 if witness["id"] not in triggering_ids:
                     await AgentMoodService.add_moodlet(
                         supabase,

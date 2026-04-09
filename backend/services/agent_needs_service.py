@@ -25,6 +25,7 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -170,7 +171,7 @@ class AgentNeedsService:
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
-        return result.data or []
+        return extract_list(result)
 
     @classmethod
     async def get_agent_needs(

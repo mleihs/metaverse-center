@@ -12,6 +12,7 @@ from uuid import UUID
 
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -207,7 +208,7 @@ class BureauResponseService:
         if event_id:
             query = query.eq("event_id", str(event_id))
         response = await query.execute()
-        return response.data or [], response.count or 0
+        return extract_list(response), response.count or 0
 
     # ── Tick Resolution (Phase 5) ───────────────────────────────
 
@@ -235,7 +236,7 @@ class BureauResponseService:
             .lte("submitted_before_tick", tick_number)
             .execute()
         )
-        pending = _resp.data or []
+        pending = extract_list(_resp)
 
         if not pending:
             return resolved_count, entries

@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime
 from uuid import UUID
 
 from backend.utils.errors import bad_request, conflict, forbidden, not_found
-from backend.utils.responses import extract_one
+from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -93,8 +93,8 @@ class BaseService:
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def get(

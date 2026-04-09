@@ -23,6 +23,7 @@ from backend.services.email_templates import (
     render_clearance_request_admin_notification,
 )
 from backend.utils.errors import conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,7 @@ class ForgeAccessService:
         (migration 134) — service_role only, no PostgREST exposure.
         """
         response = await admin_supabase.rpc("fn_list_pending_forge_requests").execute()
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get_pending_count(

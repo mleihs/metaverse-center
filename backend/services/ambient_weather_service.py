@@ -51,6 +51,7 @@ from backend.services.ambient_weather_templates import (
     OPENERS,
 )
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -466,7 +467,7 @@ class AmbientWeatherService:
         theme = sim.get("theme", "custom")
 
         zone_resp = await supabase.table("zones").select("id, name").eq("simulation_id", str(sim_id)).execute()
-        zones = zone_resp.data or []
+        zones = extract_list(zone_resp)
         if not zones:
             return [], {}
 
@@ -546,7 +547,7 @@ class AmbientWeatherService:
                 .not_.is_("current_zone_id", "null")
                 .execute()
             )
-            for agent in agents_resp.data or []:
+            for agent in extract_list(agents_resp):
                 try:
                     await AgentMoodService.add_moodlet(
                         supabase,
@@ -724,7 +725,7 @@ class AmbientWeatherService:
                 .execute()
             )
             zone_scores: dict[str, list[float]] = {}
-            for agent in mood_resp.data or []:
+            for agent in extract_list(mood_resp):
                 zid = agent.get("current_zone_id")
                 mood_data = agent.get("agent_mood")
                 if zid and mood_data:

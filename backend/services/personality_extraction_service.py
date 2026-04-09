@@ -24,6 +24,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -233,7 +234,7 @@ class PersonalityExtractionService:
             .is_("deleted_at", "null")
             .execute()
         )
-        agents = result.data or []
+        agents = extract_list(result)
         processed = 0
 
         for agent_row in agents:
@@ -299,7 +300,7 @@ class PersonalityExtractionService:
             .is_("deleted_at", "null")
             .execute()
         )
-        agents = result.data or []
+        agents = extract_list(result)
         if len(agents) < 2:
             return 0
 

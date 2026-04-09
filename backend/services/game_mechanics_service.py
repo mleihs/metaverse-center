@@ -17,6 +17,7 @@ from uuid import UUID
 from fastapi import HTTPException
 
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class GameMechanicsService:
     ) -> list[dict]:
         """Get health metrics for all simulations (for map/dashboard)."""
         response = await supabase.table("mv_simulation_health").select("*").order("overall_health", desc=True).execute()
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def get_building_readiness(
@@ -91,8 +92,8 @@ class GameMechanicsService:
 
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @staticmethod
     async def get_zone_stability(
@@ -126,7 +127,7 @@ class GameMechanicsService:
             .order("stability", desc=False)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def list_embassy_effectiveness(
@@ -141,7 +142,7 @@ class GameMechanicsService:
             .order("effectiveness", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def get_health_dashboard(
@@ -171,7 +172,7 @@ class GameMechanicsService:
             .limit(10)
             .execute()
         )
-        recent_events = events_response.data or []
+        recent_events = extract_list(events_response)
 
         return {
             "health": health,

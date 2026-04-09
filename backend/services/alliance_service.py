@@ -11,6 +11,7 @@ from uuid import UUID
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
 from backend.utils.errors import bad_request, conflict, forbidden, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -85,7 +86,7 @@ class AllianceService:
             .eq("team_id", str(team_id))
             .execute()
         )
-        member_count = len(members.data or [])
+        member_count = len(extract_list(members))
         if member_count >= config["max_team_size"]:
             raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
@@ -315,7 +316,7 @@ class AllianceService:
             query = query.eq("status", status_filter)
 
         resp = await query.execute()
-        proposals = resp.data or []
+        proposals = extract_list(resp)
 
         # Enrich with proposer_name from joined simulations
         for p in proposals:
@@ -460,7 +461,7 @@ class AllianceService:
                     .eq("team_id", team_id)
                     .execute()
                 )
-                affected_sims = [m["simulation_id"] for m in (members_resp.data or [])]
+                affected_sims = [m["simulation_id"] for m in (extract_list(members_resp))]
 
                 await BattleLogService.log_tension_dissolution(
                     admin_supabase,
@@ -490,7 +491,7 @@ class AllianceService:
             .not_.is_("dissolved_at", "null")
             .execute()
         )
-        dissolved_teams = dissolved_resp.data or []
+        dissolved_teams = extract_list(dissolved_resp)
         if dissolved_teams:
             logger.info(
                 "Clearing dissolved team memberships",

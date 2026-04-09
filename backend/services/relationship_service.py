@@ -8,6 +8,7 @@ from uuid import UUID
 
 from backend.services.base_service import BaseService
 from backend.utils.errors import bad_request, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ class RelationshipService(BaseService):
             .execute()
         )
 
-        return (r1.data or []) + (r2.data or [])
+        return (extract_list(r1)) + (extract_list(r2))
 
     @classmethod
     async def list_for_simulation(
@@ -76,8 +77,8 @@ class RelationshipService(BaseService):
             .range(offset, offset + limit - 1)
             .execute()
         )
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def create_relationship(

@@ -31,6 +31,7 @@ from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
 from backend.services.translation_service import schedule_auto_translation
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -245,7 +246,7 @@ class AgentActivityService:
         result = await query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
 
         data = []
-        for row in result.data or []:
+        for row in extract_list(result):
             agent_data = row.pop("agents", {}) or {}
             row["agent_name"] = agent_data.get("name")
             row["agent_portrait"] = agent_data.get("portrait_image_url")
@@ -795,7 +796,7 @@ class AgentActivityService:
             .eq("autonomy_active", True)
             .execute()
         )
-        agents = agents_result.data or []
+        agents = extract_list(agents_result)
         if not agents:
             return []
 
@@ -806,7 +807,7 @@ class AgentActivityService:
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
-        needs_map = {n["agent_id"]: n for n in (needs_result.data or [])}
+        needs_map = {n["agent_id"]: n for n in (extract_list(needs_result))}
 
         # Batch fetch moods
         mood_result = await (
@@ -815,7 +816,7 @@ class AgentActivityService:
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
-        mood_map = {m["agent_id"]: m for m in (mood_result.data or [])}
+        mood_map = {m["agent_id"]: m for m in (extract_list(mood_result))}
 
         # Batch fetch opinions (all pairs)
         opinion_result = await (
@@ -826,7 +827,7 @@ class AgentActivityService:
         )
         # Build nested map: {agent_id: {target_id: {opinion_score: X}}}
         opinion_map: dict[str, dict] = {}
-        for op in opinion_result.data or []:
+        for op in extract_list(opinion_result):
             aid = op["agent_id"]
             if aid not in opinion_map:
                 opinion_map[aid] = {}
@@ -839,14 +840,14 @@ class AgentActivityService:
         zone_name_map: dict[str, str] = {}
         if zone_ids:
             zone_result = await supabase.table("zones").select("id, name").in_("id", zone_ids).execute()
-            zone_name_map = {z["id"]: z["name"] for z in (zone_result.data or [])}
+            zone_name_map = {z["id"]: z["name"] for z in (extract_list(zone_result))}
 
         # Batch fetch building names for narrative templates
         building_ids = list({a["current_building_id"] for a in agents if a.get("current_building_id")})
         building_name_map: dict[str, str] = {}
         if building_ids:
             building_result = await supabase.table("buildings").select("id, name").in_("id", building_ids).execute()
-            building_name_map = {b["id"]: b["name"] for b in (building_result.data or [])}
+            building_name_map = {b["id"]: b["name"] for b in (extract_list(building_result))}
 
         # Enrich agents
         for agent in agents:

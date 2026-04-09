@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ class MemberService:
             .eq("user_id", str(user_id))
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def list_members(
@@ -57,7 +58,7 @@ class MemberService:
             .order("member_role", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def add(

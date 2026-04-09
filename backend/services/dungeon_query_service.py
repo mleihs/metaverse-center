@@ -11,6 +11,7 @@ from uuid import UUID
 
 from backend.models.common import PaginationMeta
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ class DungeonQueryService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = resp.data or []
+        data = extract_list(resp)
         meta = PaginationMeta(
             count=len(data),
             total=resp.count or 0,
@@ -105,7 +106,7 @@ class DungeonQueryService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = resp.data or []
+        data = extract_list(resp)
         meta = PaginationMeta(
             count=len(data),
             total=resp.count or 0,
@@ -132,7 +133,7 @@ class DungeonQueryService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = resp.data or []
+        data = extract_list(resp)
         meta = PaginationMeta(
             count=len(data),
             total=resp.count or 0,
@@ -163,7 +164,7 @@ class DungeonQueryService:
 
         # Flatten the joined run data into the response shape
         effects = []
-        for row in resp.data or []:
+        for row in extract_list(resp):
             run_data = row.pop("resonance_dungeon_runs", None) or {}
             effects.append(
                 {

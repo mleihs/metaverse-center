@@ -7,6 +7,7 @@ from uuid import UUID
 
 from backend.services.base_service import BaseService
 from backend.utils.errors import server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class CampaignService(BaseService):
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def add_campaign_event(
@@ -131,4 +132,4 @@ class CampaignService(BaseService):
             .order("measured_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)

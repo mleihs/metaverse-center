@@ -20,6 +20,7 @@ from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_story_service import SocialStoryService
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -60,8 +61,8 @@ class ResonanceService(BaseService):
         query = query.order("detected_at", desc=True)
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        total = response.count if response.count is not None else len(response.data or [])
-        results = response.data or []
+        total = response.count if response.count is not None else len(extract_list(response))
+        results = extract_list(response)
         for r in results:
             r["magnitude_class"] = cls._classify_magnitude(float(r.get("magnitude") or 0))
         return results, total
@@ -188,14 +189,14 @@ class ResonanceService(BaseService):
             .execute()
         )
         # Flatten simulation name/slug into each impact record
-        for impact in response.data or []:
+        for impact in extract_list(response):
             sim = impact.pop("simulations", None)
             impact["simulation_name"] = sim["name"] if sim else None
             impact["simulation_slug"] = sim.get("slug") if sim else None
             impact["magnitude_class"] = cls._classify_magnitude(
                 float(impact.get("effective_magnitude") or impact.get("magnitude") or 0)
             )
-        return response.data or []
+        return extract_list(response)
 
     # Valid status transitions for resonances
     _VALID_IMPACT_TRANSITIONS = {"detected", "impacting"}
@@ -260,7 +261,7 @@ class ResonanceService(BaseService):
                 .eq("simulation_type", "template")
                 .execute()
             )
-        simulations = sim_query.data or []
+        simulations = extract_list(sim_query)
 
         if not simulations:
             logger.warning(

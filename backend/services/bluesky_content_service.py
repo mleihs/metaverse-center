@@ -19,6 +19,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.bluesky import BlueskyService
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -251,7 +252,7 @@ class BlueskyContentService:
 
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 
@@ -377,7 +378,7 @@ class BlueskyContentService:
             .execute()
         )
         settings_map = {}
-        for row in resp.data or []:
+        for row in extract_list(resp):
             raw = row["setting_value"]
             if isinstance(raw, dict | list):
                 value = json.dumps(raw)
@@ -412,7 +413,7 @@ class BlueskyContentService:
             )
             .execute()
         )
-        rows = _resp.data or []
+        rows = extract_list(_resp)
 
         result: dict[str, str] = {
             "handle": "",

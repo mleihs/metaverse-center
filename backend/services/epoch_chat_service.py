@@ -7,6 +7,7 @@ import sentry_sdk
 
 from backend.services.epoch_service import EpochService
 from backend.utils.errors import bad_request, forbidden, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -105,14 +106,14 @@ class EpochChatService:
         query = query.order("created_at", desc=True).limit(limit)
         response = await query.execute()
 
-        messages = response.data or []
+        messages = extract_list(response)
         total = response.count or 0
 
         # Enrich with sender names (batch)
         if messages:
             sim_ids = list({m["sender_simulation_id"] for m in messages})
             sim_resp = await supabase.table("simulations").select("id, name").in_("id", sim_ids).execute()
-            name_map = {s["id"]: s["name"] for s in (sim_resp.data or [])}
+            name_map = {s["id"]: s["name"] for s in (extract_list(sim_resp))}
             for m in messages:
                 m["sender_name"] = name_map.get(m["sender_simulation_id"])
 
@@ -162,14 +163,14 @@ class EpochChatService:
                 .eq("epoch_id", str(epoch_id))
                 .execute()
             )
-            humans = [p for p in (all_participants.data or []) if not p.get("is_bot")]
+            humans = [p for p in (extract_list(all_participants)) if not p.get("is_bot")]
             all_humans_ready = len(humans) > 0 and all(p["cycle_ready"] for p in humans)
 
             logger.info(
                 "Ready check",
                 extra={
                     "epoch_id": str(epoch_id),
-                    "total_participants": len(all_participants.data or []),
+                    "total_participants": len(extract_list(all_participants)),
                     "human_count": len(humans),
                     "all_ready": all_humans_ready,
                 },

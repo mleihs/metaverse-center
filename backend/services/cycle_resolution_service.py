@@ -15,6 +15,7 @@ from backend.services.constants import SECURITY_TIER_ORDER
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -239,7 +240,7 @@ class CycleResolutionService:
                     .lte("expires_at_cycle", cycle_number)
                     .execute()
                 )
-                for fort in expired_forts.data or []:
+                for fort in extract_list(expired_forts):
                     zone_resp = await (
                         db.table("zones").select("id, security_level").eq("id", fort["zone_id"]).single().execute()
                     )
@@ -376,7 +377,7 @@ class CycleResolutionService:
         )
         # Batch: group by resolves_at, compute new value, update per-group
         by_new_resolve: defaultdict[str, list[str]] = defaultdict(list)
-        for m in active_missions.data or []:
+        for m in extract_list(active_missions):
             old_resolves = datetime.fromisoformat(m["resolves_at"])
             new_resolves = old_resolves - timedelta(hours=cycle_hours)
             by_new_resolve[new_resolves.isoformat()].append(m["id"])

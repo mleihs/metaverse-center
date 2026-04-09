@@ -15,6 +15,7 @@ import httpx
 import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -119,12 +120,12 @@ class CipherService:
 
         # Unique users
         users_resp = await admin.table("cipher_redemptions").select("user_id").not_.is_("user_id", "null").execute()
-        unique_users = len({r["user_id"] for r in (users_resp.data or [])})
+        unique_users = len({r["user_id"] for r in (extract_list(users_resp))})
 
         # Total attempts (last 24h)
         attempts_resp = await admin.table("cipher_attempts").select("id, success", count="exact").execute()
         total_attempts = attempts_resp.count or 0
-        successful = sum(1 for r in (attempts_resp.data or []) if r.get("success"))
+        successful = sum(1 for r in (extract_list(attempts_resp)) if r.get("success"))
         success_rate = round(successful / total_attempts, 4) if total_attempts > 0 else 0.0
 
         # Recent redemptions
@@ -137,7 +138,7 @@ class CipherService:
             "unique_users": unique_users,
             "total_attempts": total_attempts,
             "success_rate": success_rate,
-            "recent_redemptions": recent_resp.data or [],
+            "recent_redemptions": extract_list(recent_resp),
         }
 
     @classmethod

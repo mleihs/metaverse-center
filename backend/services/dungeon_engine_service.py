@@ -71,6 +71,7 @@ from backend.services.dungeon_shared import (
 )
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.utils.errors import bad_request, conflict, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -544,7 +545,7 @@ class DungeonEngineService:
                 last_run_at=row.get("last_run_at"),
                 available=row.get("available", True),
             )
-            for row in (resp.data or [])
+            for row in (extract_list(resp))
         ]
 
         # ── Admin override: per-sim config takes precedence, then global ──

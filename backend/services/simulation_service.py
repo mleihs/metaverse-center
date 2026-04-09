@@ -4,6 +4,7 @@ from uuid import UUID
 
 from backend.models.simulation import SimulationCreate, SimulationUpdate
 from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from backend.utils.slug import slugify
 from supabase import AsyncClient as Client
 
@@ -56,7 +57,7 @@ class SimulationService:
             .execute()
         )
 
-        sim_ids = [m["simulation_id"] for m in (membership_response.data or [])]
+        sim_ids = [m["simulation_id"] for m in (extract_list(membership_response))]
 
         if not sim_ids:
             return [], 0
@@ -78,8 +79,8 @@ class SimulationService:
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        data = response.data or []
+        total = response.count if response.count is not None else len(extract_list(response))
+        data = extract_list(response)
 
         # Normalize simulation_id → id for API contract compatibility
         for sim in data:
@@ -322,8 +323,8 @@ class SimulationService:
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @staticmethod
     async def list_deleted_simulations(
@@ -342,8 +343,8 @@ class SimulationService:
         )
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def get_simulation_context(
@@ -381,7 +382,7 @@ class SimulationService:
     ) -> list[dict]:
         """List slugs, IDs, and updated_at for all active simulations (sitemap)."""
         response = await supabase.table("simulations").select("id, slug, updated_at").eq("status", "active").execute()
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def restore_simulation(
@@ -447,7 +448,7 @@ class SimulationService:
             .in_("simulation_id", ids)
             .execute()
         )
-        counts_map = {row["simulation_id"]: row for row in (count_response.data or [])}
+        counts_map = {row["simulation_id"]: row for row in (extract_list(count_response))}
         for sim in simulations:
             counts = counts_map.get(sim["id"], {})
             sim["agent_count"] = counts.get("agent_count", 0)
@@ -473,7 +474,7 @@ class SimulationService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 

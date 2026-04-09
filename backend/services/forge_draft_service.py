@@ -13,6 +13,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
 from backend.utils.encryption import decrypt, encrypt
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class ForgeDraftService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        return response.data or [], response.count or 0
+        return extract_list(response), response.count or 0
 
     @staticmethod
     async def get_draft(
@@ -261,7 +262,7 @@ class ForgeDraftService:
             .order("sort_order")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @staticmethod
     async def purchase_tokens(supabase: Client, bundle_slug: str) -> dict:
@@ -285,7 +286,7 @@ class ForgeDraftService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        return resp.data or [], resp.count or 0
+        return extract_list(resp), resp.count or 0
 
     @staticmethod
     async def get_token_economy_stats(admin_supabase: Client) -> dict:
@@ -328,7 +329,7 @@ class ForgeDraftService:
         if payment_method:
             query = query.eq("payment_method", payment_method)
         resp = await query.execute()
-        return resp.data or [], resp.count or 0
+        return extract_list(resp), resp.count or 0
 
     @staticmethod
     async def admin_update_bundle(
@@ -344,7 +345,7 @@ class ForgeDraftService:
     async def admin_list_all_bundles(admin_supabase: Client) -> list[dict]:
         """Admin: fetch ALL bundles including inactive. Uses admin client to bypass RLS."""
         resp = await admin_supabase.table("token_bundles").select("*").order("sort_order").execute()
-        return resp.data or []
+        return extract_list(resp)
 
     @staticmethod
     async def get_admin_stats(admin_supabase: Client) -> dict:
@@ -390,7 +391,7 @@ class ForgeDraftService:
             .execute()
         )
         result: dict = {"byok_bypass_enabled": False, "byok_access_policy": "per_user"}
-        for row in resp.data or []:
+        for row in extract_list(resp):
             if row["setting_key"] == "byok_bypass_enabled":
                 val = row.get("setting_value")
                 result["byok_bypass_enabled"] = val is True or val == "true"

@@ -15,6 +15,7 @@ from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ class AttunementService:
             .eq("simulation_id", str(sim_id))
             .execute()
         )
-        existing = _resp.data or []
+        existing = extract_list(_resp)
 
         if len(existing) >= max_attunements:
             raise bad_request(f"Maximum {max_attunements} attunements per simulation. Remove one first.")
@@ -170,7 +171,7 @@ class AttunementService:
             .order("created_at")
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     # ── Tick Resolution (Phase 6) ───────────────────────────────
 
@@ -198,7 +199,7 @@ class AttunementService:
             },
         ).execute()
 
-        changes = result.data or []
+        changes = extract_list(result)
         if isinstance(changes, str):
             changes = json.loads(changes)
 
@@ -280,7 +281,7 @@ class AttunementService:
 
         # Get a random zone name
         _resp = await admin.table("zones").select("name").eq("simulation_id", str(sim_id)).limit(10).execute()
-        zones = _resp.data or []
+        zones = extract_list(_resp)
         zone_name = random.choice(zones)["name"] if zones else "the districts"  # noqa: S311
 
         title_template, desc_template = random.choice(templates)  # noqa: S311

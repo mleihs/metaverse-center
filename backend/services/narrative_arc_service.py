@@ -15,6 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -95,7 +96,7 @@ class NarrativeArcService:
             .in_("event_status", ["active", "escalating"])
             .execute()
         )
-        events = response.data or []
+        events = extract_list(response)
         if not events:
             return entries
 
@@ -211,14 +212,14 @@ class NarrativeArcService:
             .gte("pressure", trigger)
             .execute()
         )
-        arcs = _resp.data or []
+        arcs = extract_list(_resp)
 
         if not arcs:
             return entries, spawned
 
         # Load cascade rules
         _resp = await admin.table("resonance_cascade_rules").select("*").eq("is_active", True).execute()
-        rules = _resp.data or []
+        rules = extract_list(_resp)
 
         if not rules:
             return entries, spawned
@@ -390,7 +391,7 @@ class NarrativeArcService:
             .in_("status", ["active", "climax"])
             .execute()
         )
-        active_arcs = _resp.data or []
+        active_arcs = extract_list(_resp)
 
         if len(active_arcs) < 2:
             return entries, detected
@@ -573,7 +574,7 @@ class NarrativeArcService:
             .in_("status", ["building", "active", "climax", "resolving"])
             .execute()
         )
-        active_arcs = _resp.data or []
+        active_arcs = extract_list(_resp)
 
         for arc in active_arcs:
             arc_id = arc["id"]
@@ -786,7 +787,7 @@ class NarrativeArcService:
         if status_filter:
             query = query.eq("status", status_filter)
         response = await query.execute()
-        return response.data or [], response.count or 0
+        return extract_list(response), response.count or 0
 
     @classmethod
     async def get_arc(cls, supabase: Client, sim_id: UUID, arc_id: UUID) -> dict | None:

@@ -8,6 +8,7 @@ from uuid import UUID
 
 from backend.services.base_service import BaseService
 from backend.utils.errors import bad_request, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class AgentProfessionService(BaseService):
             .order("qualification_level", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def add(

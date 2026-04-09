@@ -15,6 +15,7 @@ from backend.config import settings
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -189,7 +190,7 @@ class ForgeThemeService:
             .limit(5)
             .execute()
         )
-        lore_sections = lore_resp.data or []
+        lore_sections = extract_list(lore_resp)
         if not lore_sections:
             logger.debug("No lore found for style refinement, skipping")
             return
@@ -202,7 +203,7 @@ class ForgeThemeService:
             .eq("category", "ai")
             .execute()
         )
-        current_styles = {r["setting_key"]: r["setting_value"] for r in style_resp.data or []}
+        current_styles = {r["setting_key"]: r["setting_value"] for r in extract_list(style_resp)}
         if not current_styles.get("image_style_prompt_portrait"):
             return
 
@@ -315,7 +316,7 @@ class ForgeThemeService:
             .limit(5)
             .execute()
         )
-        lore_sections = lore_resp.data or []
+        lore_sections = extract_list(lore_resp)
         if not lore_sections:
             logger.debug("No lore for template generation, skipping")
             return
@@ -328,7 +329,7 @@ class ForgeThemeService:
             .eq("category", "ai")
             .execute()
         )
-        styles = {r["setting_key"]: r["setting_value"] for r in style_resp.data or []}
+        styles = {r["setting_key"]: r["setting_value"] for r in extract_list(style_resp)}
 
         lore_digest = "\n".join(
             f"- {s['title']}: {(s.get('epigraph') or '')[:80]} {(s.get('body') or '')[:150]}" for s in lore_sections
@@ -519,7 +520,7 @@ class ForgeThemeService:
                 .eq("category", "design")
                 .execute()
             )
-            current_theme = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
+            current_theme = {s["setting_key"]: s["setting_value"] for s in (extract_list(settings_resp))}
 
             # Get user BYOK key
             from backend.utils.encryption import decrypt

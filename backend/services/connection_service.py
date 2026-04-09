@@ -19,6 +19,7 @@ from backend.services.base_service import serialize_for_json
 from backend.services.cache_config import get_ttl
 from backend.services.embassy_service import EmbassyService
 from backend.utils.errors import bad_request, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class ConnectionService:
             query = query.eq("is_active", True)
 
         response = await query.execute()
-        return cls._connections_adapter.validate_python(response.data or [])
+        return cls._connections_adapter.validate_python(extract_list(response))
 
     @classmethod
     async def get_map_data(
@@ -95,7 +96,7 @@ class ConnectionService:
             .order("created_at", desc=False)
             .execute()
         )
-        connections = conn_resp.data or []
+        connections = extract_list(conn_resp)
 
         all_embassies = await EmbassyService.list_all_active(supabase)
         # Filter embassies: only show template-template embassy edges on the map.
@@ -132,7 +133,7 @@ class ConnectionService:
                 .in_("status", ["forming", "active", "reinforcing"])
                 .execute()
             )
-            anchors = anchor_resp.data or []
+            anchors = extract_list(anchor_resp)
 
             # Per-simulation heartbeat summary for map overlay
             hb_resp = await (
@@ -141,7 +142,7 @@ class ConnectionService:
                 .in_("id", sim_id_list)
                 .execute()
             )
-            for sim in hb_resp.data or []:
+            for sim in extract_list(hb_resp):
                 sid = sim["id"]
                 # Get active arc count + total scar tissue
                 _resp = await (
@@ -151,7 +152,7 @@ class ConnectionService:
                     .in_("status", ["building", "active", "climax"])
                     .execute()
                 )
-                arc_data = _resp.data or []
+                arc_data = extract_list(_resp)
                 scar = sum(float(a.get("scar_tissue_deposited", 0)) for a in arc_data)
                 heartbeat_status[sid] = {
                     "last_tick": sim.get("last_heartbeat_tick", 0),
@@ -192,7 +193,7 @@ class ConnectionService:
         - Excludes game instances from completed/cancelled epochs
         """
         resp = await supabase.table("map_simulations").select("*").execute()
-        return resp.data or []
+        return extract_list(resp)
 
     @staticmethod
     def _compute_active_instance_counts(simulations: list[dict]) -> dict[str, int]:
@@ -218,7 +219,7 @@ class ConnectionService:
             .execute()
         )
         counts: dict[str, int] = {}
-        for row in echo_resp.data or []:
+        for row in extract_list(echo_resp):
             sid = row["target_simulation_id"]
             counts[sid] = counts.get(sid, 0) + 1
         return counts
@@ -234,7 +235,7 @@ class ConnectionService:
                 .in_("status", ["deployed", "active", "en_route"])
                 .execute()
             )
-            for op in op_resp.data or []:
+            for op in extract_list(op_resp):
                 src = op.get("source_simulation_id")
                 tgt = op.get("target_simulation_id")
                 if src and tgt:
@@ -268,7 +269,7 @@ class ConnectionService:
                 .execute()
             )
             seen: set[str] = set()
-            for row in score_resp.data or []:
+            for row in extract_list(score_resp):
                 sid = row["simulation_id"]
                 if sid in seen:
                     continue
@@ -301,7 +302,7 @@ class ConnectionService:
                 .execute()
             )
             template_scores: dict[str, list[float]] = {}
-            for row in spark_resp.data or []:
+            for row in extract_list(spark_resp):
                 sim_data = row.get("simulations")
                 if not sim_data:
                     continue
