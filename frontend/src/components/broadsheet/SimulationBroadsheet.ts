@@ -76,6 +76,14 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         padding-bottom: var(--space-2);
       }
 
+      /* Empty/loading/error states — span full grid width + center */
+      velg-empty-state,
+      velg-loading-state,
+      velg-error-state,
+      velg-pagination {
+        grid-column: 1 / -1;
+      }
+
       /* ── Editorial Controls ──────────────────── */
 
       .editorial {
