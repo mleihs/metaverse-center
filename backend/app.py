@@ -50,6 +50,7 @@ from backend.routers import (
     aptitudes,
     bluesky,
     bot_players,
+    broadsheets,
     buildings,
     campaigns,
     chat,
@@ -219,6 +220,7 @@ app.include_router(embassies.router)
 app.include_router(connections.router)
 app.include_router(forge.router)
 app.include_router(forge_access.router)
+app.include_router(broadsheets.router)
 app.include_router(chronicles.router)
 app.include_router(agent_autonomy.router)
 app.include_router(agent_memories.router)

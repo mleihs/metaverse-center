@@ -504,6 +504,45 @@ export interface Chronicle {
   updated_at: string;
 }
 
+// --- Broadsheet ---
+
+export interface BroadsheetArticle {
+  source_type: string;
+  source_id?: string;
+  priority: number;
+  layout_hint: 'hero' | 'column' | 'sidebar' | 'ticker';
+  headline: string;
+  headline_de?: string;
+  content: string;
+  content_de?: string;
+  image_url?: string;
+  agent_name?: string;
+  impact_level?: number;
+  tags?: string[];
+}
+
+export interface Broadsheet {
+  id: UUID;
+  simulation_id: UUID;
+  edition_number: number;
+  period_start: string;
+  period_end: string;
+  title: string;
+  title_de?: string;
+  subtitle?: string;
+  subtitle_de?: string;
+  articles: BroadsheetArticle[];
+  health_snapshot?: Record<string, unknown>;
+  mood_snapshot?: Record<string, unknown>;
+  statistics?: Record<string, unknown>;
+  gazette_wire?: Record<string, unknown>[];
+  editorial_voice: string;
+  model_used?: string;
+  published_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Agent Memory ---
 
 export type MemoryType = 'observation' | 'reflection';
