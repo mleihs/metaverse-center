@@ -12,6 +12,7 @@ from backend.models.epoch import AcademyConfig
 from backend.services.bot_personality import auto_draft
 from backend.services.epoch_service import EpochService
 from backend.utils.errors import conflict
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -135,7 +136,7 @@ class AcademyService:
         if not templates.data or len(templates.data) < needed:
             logger.warning(
                 "Not enough template simulations for academy",
-                extra={"needed": needed, "found": len(templates.data or [])},
+                extra={"needed": needed, "found": len(extract_list(templates))},
             )
             return
 
@@ -196,7 +197,7 @@ class AcademyService:
                     .is_("deleted_at", "null")
                     .execute()
                 )
-                agents = agents_resp.data or []
+                agents = extract_list(agents_resp)
 
                 aptitudes_resp = await (
                     admin_supabase.table("agent_aptitudes")
@@ -205,7 +206,7 @@ class AcademyService:
                     .execute()
                 )
                 apt_map: dict[str, dict[str, int]] = {}
-                for row in aptitudes_resp.data or []:
+                for row in extract_list(aptitudes_resp):
                     aid = row["agent_id"]
                     if aid not in apt_map:
                         apt_map[aid] = {}

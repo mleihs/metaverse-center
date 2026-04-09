@@ -10,6 +10,7 @@ from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.errors import bad_request, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -142,7 +143,7 @@ class ForgeFeatureService:
         if feature_type:
             query = query.eq("feature_type", feature_type)
         resp = await query.execute()
-        return resp.data or []
+        return extract_list(resp)
 
     @staticmethod
     async def get_active_darkroom(

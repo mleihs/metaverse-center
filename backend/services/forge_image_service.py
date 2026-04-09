@@ -12,6 +12,7 @@ from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
 from backend.services.style_reference_service import StyleReferenceService
 from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -289,7 +290,7 @@ class ForgeImageService:
             .limit(10)
             .execute()
         )
-        zone_summaries = [f"{z['name']}: {z['description']}" for z in (zones_resp.data or []) if z.get("description")]
+        zone_summaries = [f"{z['name']}: {z['description']}" for z in extract_list(zones_resp) if z.get("description")]
 
         description = await self._generation.generate_banner_description(
             sim_name=sim_name,

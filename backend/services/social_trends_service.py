@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -42,8 +43,8 @@ class SocialTrendsService:
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @staticmethod
     async def get_trend(supabase: Client, simulation_id: UUID, trend_id: UUID) -> dict:
@@ -89,7 +90,7 @@ class SocialTrendsService:
             )
 
         response = await supabase.table("social_trends").insert(rows).execute()
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def mark_processed(

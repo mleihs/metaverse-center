@@ -27,6 +27,7 @@ from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_AL
 from backend.services.base_service import serialize_for_json
 from backend.services.instagram_image_service import InstagramImageService
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -74,7 +75,7 @@ class SocialStoryService:
             query = query.eq("resonance_id", str(resonance_id))
         query = query.order("scheduled_at", desc=True).range(offset, offset + limit - 1)
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 
@@ -94,7 +95,7 @@ class SocialStoryService:
             .order("sequence_index")
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def update_status(
@@ -136,7 +137,7 @@ class SocialStoryService:
             .like("setting_key", "resonance_stories_%")
             .execute()
         )
-        rows = _resp.data or []
+        rows = extract_list(_resp)
         return {row["setting_key"]: row["setting_value"] for row in rows}
 
     # ── Publish / Regenerate ───────────────────────────────────────────────
@@ -521,7 +522,7 @@ class SocialStoryService:
                 evt_resp = await (
                     admin.table("events").select("title").in_("id", [str(eid) for eid in spawned_ids[:5]]).execute()
                 )
-                event_titles = [e["title"] for e in (evt_resp.data or [])]
+                event_titles = [e["title"] for e in (extract_list(evt_resp))]
 
             # Generate AI poetic closing line
             closing_line = await cls._generate_closing_line(
@@ -629,7 +630,7 @@ class SocialStoryService:
             .eq("status", "completed")
             .execute()
         )
-        impacts = impacts_resp.data or []
+        impacts = extract_list(impacts_resp)
         total_events = sum(len(imp.get("spawned_event_ids") or []) for imp in impacts)
         shards_affected = len(impacts)
 
@@ -857,7 +858,7 @@ class SocialStoryService:
             .order("susceptibility", desc=True)
             .execute()
         )
-        impacts = impacts_resp.data or []
+        impacts = extract_list(impacts_resp)
         highest = impacts[0] if impacts else {}
         sim_data = highest.get("simulations") or {}
 
@@ -927,7 +928,7 @@ class SocialStoryService:
             evt_resp = await (
                 admin.table("events").select("title").in_("id", [str(eid) for eid in spawned_ids[:5]]).execute()
             )
-            event_titles = [e["title"] for e in (evt_resp.data or [])]
+            event_titles = [e["title"] for e in (extract_list(evt_resp))]
 
         # Fetch agent reactions + portrait URLs for spawned events
         portrait_candidates: list[dict] = []
@@ -945,7 +946,7 @@ class SocialStoryService:
             )
             # Deduplicate by agent — keep highest confidence per agent
             seen_agents: set[str] = set()
-            for rxn in rxn_resp.data or []:
+            for rxn in extract_list(rxn_resp):
                 agent_id = rxn.get("agent_id", "")
                 if agent_id in seen_agents:
                     continue
@@ -1047,7 +1048,7 @@ class SocialStoryService:
                 .eq("status", "completed")
                 .execute()
             )
-            impacts = impacts_resp.data or []
+            impacts = extract_list(impacts_resp)
             shards_affected = len(impacts)
             events_total = sum(len(imp.get("spawned_event_ids") or []) for imp in impacts)
 
@@ -1197,7 +1198,7 @@ class SocialStoryService:
                 )
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
 
             m: dict[str, str] = {r["setting_key"]: r["setting_value"] for r in rows}
 

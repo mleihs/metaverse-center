@@ -23,6 +23,7 @@ from backend.models.resonance_dungeon import (
     LootItem,
 )
 from backend.services.combat.ability_schools import Ability
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -93,32 +94,32 @@ async def load_all_content(supabase: Client) -> None:
 
         # ── Banter ────────────────────────────────────────────────────────
         banter_by_arch: dict[str, list[dict]] = defaultdict(list)
-        for row in banter_res.data or []:
+        for row in extract_list(banter_res):
             banter_by_arch[row["archetype"]].append(row)
         cache.banter = dict(banter_by_arch)
 
         # ── Enemy Templates ───────────────────────────────────────────────
         enemies_by_arch: dict[str, dict[str, EnemyTemplate]] = defaultdict(dict)
-        for row in enemy_res.data or []:
+        for row in extract_list(enemy_res):
             tmpl = EnemyTemplate(**row)
             enemies_by_arch[row["archetype"]][row["id"]] = tmpl
         cache.enemies = dict(enemies_by_arch)
 
         # ── Spawn Configs ─────────────────────────────────────────────────
         spawns_by_arch: dict[str, dict[str, list[dict]]] = defaultdict(dict)
-        for row in spawn_res.data or []:
+        for row in extract_list(spawn_res):
             spawns_by_arch[row["archetype"]][row["id"]] = row["entries"]
         cache.spawns = dict(spawns_by_arch)
 
         # ── Encounter Templates + Choices ─────────────────────────────────
         # First, group choices by encounter_id
         choices_by_enc: dict[str, list[dict]] = defaultdict(list)
-        for row in choice_res.data or []:
+        for row in extract_list(choice_res):
             choices_by_enc[row["encounter_id"]].append(row)
 
         encounters_by_arch: dict[str, list[EncounterTemplate]] = defaultdict(list)
         encounter_index: dict[str, EncounterTemplate] = {}
-        for row in encounter_res.data or []:
+        for row in extract_list(encounter_res):
             # Build EncounterChoice objects from joined rows
             choice_rows = choices_by_enc.get(row["id"], [])
             choices = [
@@ -182,14 +183,14 @@ async def load_all_content(supabase: Client) -> None:
 
         # ── Loot Items ────────────────────────────────────────────────────
         loot_by_arch: dict[str, dict[int, list[LootItem]]] = defaultdict(lambda: defaultdict(list))
-        for row in loot_res.data or []:
+        for row in extract_list(loot_res):
             item = LootItem(**row)
             loot_by_arch[row["archetype"]][row["tier"]].append(item)
         cache.loot = {arch: dict(tiers) for arch, tiers in loot_by_arch.items()}
 
         # ── Anchor Objects ────────────────────────────────────────────────
         anchors_by_arch: dict[str, list[dict]] = defaultdict(list)
-        for row in anchor_res.data or []:
+        for row in extract_list(anchor_res):
             anchors_by_arch[row["archetype"]].append(
                 {
                     "id": row["id"],
@@ -200,7 +201,7 @@ async def load_all_content(supabase: Client) -> None:
 
         # ── Entrance Texts ────────────────────────────────────────────────
         entrance_by_arch: dict[str, list[dict]] = defaultdict(list)
-        for row in entrance_res.data or []:
+        for row in extract_list(entrance_res):
             entrance_by_arch[row["archetype"]].append(
                 {
                     "text_en": row["text_en"],
@@ -211,7 +212,7 @@ async def load_all_content(supabase: Client) -> None:
 
         # ── Barometer Texts ───────────────────────────────────────────────
         barometer_by_arch: dict[str, list[dict]] = defaultdict(list)
-        for row in barometer_res.data or []:
+        for row in extract_list(barometer_res):
             barometer_by_arch[row["archetype"]].append(
                 {
                     "tier": row["tier"],
@@ -223,7 +224,7 @@ async def load_all_content(supabase: Client) -> None:
 
         # ── Combat Abilities ──────────────────────────────────────────────
         abilities_by_school: dict[str, list[Ability]] = defaultdict(list)
-        for row in ability_res.data or []:
+        for row in extract_list(ability_res):
             ability = Ability(
                 id=row["id"],
                 name_en=row["name_en"],

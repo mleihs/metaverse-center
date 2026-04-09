@@ -36,6 +36,7 @@ from backend.services.external.bluesky import (
     BlueskyService,
 )
 from backend.services.social.types import AdaptedContent
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class BlueskyScheduler:
                 )
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
 
             settings_map: dict[str, str] = {}
             for row in rows:
@@ -208,7 +209,7 @@ class BlueskyScheduler:
             .execute()
         )
 
-        due = response.data or []
+        due = extract_list(response)
         if not due:
             return
 
@@ -521,7 +522,7 @@ class BlueskyScheduler:
             .execute()
         )
 
-        posts = response.data or []
+        posts = extract_list(response)
         if not posts:
             return
 

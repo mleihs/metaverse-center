@@ -9,6 +9,7 @@ from backend.services.chat_ai_service import ChatAIService, SSEEvent
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.i18n_utils import get_localized_field
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class ChatService:
             .execute()
         )
         agents_by_conv: dict[str, list[dict]] = {}
-        for row in response.data or []:
+        for row in extract_list(response):
             agent_data = row.get("agents")
             if agent_data:
                 agents_by_conv.setdefault(row["conversation_id"], []).append(agent_data)
@@ -80,7 +81,7 @@ class ChatService:
             .execute()
         )
         refs_by_conv: dict[str, list[dict]] = {}
-        for row in response.data or []:
+        for row in extract_list(response):
             event_data = row.get("events", {}) or {}
             refs_by_conv.setdefault(row["conversation_id"], []).append(
                 {
@@ -133,7 +134,7 @@ class ChatService:
             .order("last_message_at", desc=True)
             .execute()
         )
-        conversations = response.data or []
+        conversations = extract_list(response)
         if not conversations:
             return []
 
@@ -364,7 +365,7 @@ class ChatService:
             query = query.lt("created_at", before)
 
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
 
         # Flatten agent join into agent field
         for msg in data:
@@ -578,7 +579,7 @@ class ChatService:
         ).execute()
 
         grouped: dict[str, list[dict]] = {}
-        for row in result.data or []:
+        for row in extract_list(result):
             mid = row["message_id"]
             grouped.setdefault(mid, []).append(
                 {
@@ -668,7 +669,7 @@ class ChatService:
             .order("last_message_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def list_messages_public(
@@ -687,7 +688,7 @@ class ChatService:
             .range(offset, offset + limit - 1)
             .execute()
         )
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 
@@ -717,7 +718,7 @@ class ChatService:
             .eq("conversation_id", str(conversation_id))
             .execute()
         )
-        agents = [row["agents"] for row in (agents_resp.data or []) if row.get("agents")]
+        agents = [row["agents"] for row in (extract_list(agents_resp)) if row.get("agents")]
 
         # Fallback: single-agent conversation (agent_id on conversation row)
         if not agents:
@@ -744,7 +745,7 @@ class ChatService:
             .limit(3)
             .execute()
         )
-        recent_events = events_resp.data or []
+        recent_events = extract_list(events_resp)
 
         # Load mood for the first agent (optional context)
         mood_score: int | None = None

@@ -16,6 +16,7 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ class AdminUserService:
             .eq("user_id", str(user_id))
             .execute()
         )
-        user_data["memberships"] = memberships_resp.data or []
+        user_data["memberships"] = extract_list(memberships_resp)
 
         # Construct nested wallet object from RPC flat fields (frontend expects AdminUserDetail.wallet)
         ft = user_data.get("forge_tokens")

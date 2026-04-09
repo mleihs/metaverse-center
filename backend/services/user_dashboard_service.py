@@ -6,6 +6,7 @@ import logging
 from uuid import UUID
 
 from backend.models.user import ActiveEpochParticipation, DashboardData, MembershipInfo
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class UserDashboardService:
             .execute()
         )
         memberships = []
-        for row in mem_resp.data or []:
+        for row in extract_list(mem_resp):
             sim = row.get("simulations") or {}
             memberships.append(
                 MembershipInfo(
@@ -63,7 +64,7 @@ class UserDashboardService:
             .execute()
         )
         participations: list[ActiveEpochParticipation] = []
-        for row in ep_resp.data or []:
+        for row in extract_list(ep_resp):
             epoch = row.get("game_epochs")
             if not epoch or epoch.get("status") not in active_statuses:
                 continue

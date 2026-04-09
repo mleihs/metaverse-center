@@ -18,6 +18,7 @@ from backend.services.constants import (
     _upgrade_security,
 )
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ class OperativeService:
             query = query.eq("status", status_filter)
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
         resp = await query.execute()
-        return resp.data or [], resp.count or 0
+        return extract_list(resp), resp.count or 0
 
     @classmethod
     async def get_mission(cls, supabase: Client, mission_id: UUID) -> dict:
@@ -95,7 +96,7 @@ class OperativeService:
             .order("created_at", desc=True)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
 
 # ── Delegate to mission sub-service ────────────────────────────────

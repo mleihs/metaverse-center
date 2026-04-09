@@ -23,6 +23,7 @@ from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ class ScannerService:
                 )
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
 
             for row in rows:
                 key = row["setting_key"]
@@ -145,7 +146,7 @@ class ScannerService:
                 )
                 .execute()
             )
-            api_key_rows = _resp.data or []
+            api_key_rows = extract_list(_resp)
             config["api_keys"] = {r["setting_key"]: r["setting_value"] for r in api_key_rows}
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
@@ -488,7 +489,7 @@ class ScannerService:
         query = query.range(offset, offset + limit - 1)
 
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 
@@ -525,7 +526,7 @@ class ScannerService:
         query = query.range(offset, offset + limit - 1)
 
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 

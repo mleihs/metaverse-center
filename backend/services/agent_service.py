@@ -11,6 +11,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import BaseService
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -53,8 +54,8 @@ class AgentService(BaseService):
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        agents = response.data or []
+        total = response.count if response.count is not None else len(extract_list(response))
+        agents = extract_list(response)
         await cls._enrich_ambassador_flag(supabase, simulation_id, agents)
         return agents, total
 
@@ -95,7 +96,7 @@ class AgentService(BaseService):
             .limit(limit)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get_reactions(
@@ -113,7 +114,7 @@ class AgentService(BaseService):
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get_professions(
@@ -131,7 +132,7 @@ class AgentService(BaseService):
             .order("is_primary", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get_building_relations(
@@ -148,7 +149,7 @@ class AgentService(BaseService):
             .eq("agent_id", str(agent_id))
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get_by_slug(
@@ -232,7 +233,7 @@ class AgentService(BaseService):
             return
 
         ambassador_names: set[str] = set()
-        for embassy in response.data or []:
+        for embassy in extract_list(response):
             meta = embassy.get("embassy_metadata") or {}
             # ambassador_a belongs to simulation_a, ambassador_b to simulation_b
             if embassy.get("simulation_a_id") == sim_str:

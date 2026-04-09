@@ -6,6 +6,7 @@ import logging
 from uuid import UUID
 
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class PromptTemplateService:
         query = query.range(offset, offset + limit - 1)
         sim_response = await query.execute()
 
-        templates = sim_response.data or []
+        templates = extract_list(sim_response)
         total = sim_response.count or len(templates)
 
         if include_platform:
@@ -65,7 +66,7 @@ class PromptTemplateService:
                 platform_query = platform_query.eq("prompt_category", prompt_category)
 
             platform_response = await platform_query.execute()
-            platform_templates = platform_response.data or []
+            platform_templates = extract_list(platform_response)
 
             # Only include platform templates not overridden by simulation
             sim_types = {(t["template_type"], t["locale"]) for t in templates}

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from backend.services.base_service import BaseService
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -53,8 +54,8 @@ class BuildingService(BaseService):
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def get_agents(
@@ -71,7 +72,7 @@ class BuildingService(BaseService):
             .eq("building_id", str(building_id))
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def assign_agent(
@@ -138,7 +139,7 @@ class BuildingService(BaseService):
             .order("is_mandatory", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def set_profession_requirement(
@@ -182,4 +183,4 @@ class BuildingService(BaseService):
             .order("name")
             .execute()
         )
-        return response.data or []
+        return extract_list(response)

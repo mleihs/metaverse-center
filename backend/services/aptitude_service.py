@@ -7,6 +7,7 @@ from uuid import UUID
 
 from backend.models.aptitude import OPERATIVE_TYPES, AptitudeSet
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ class AptitudeService:
             .order("operative_type")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def get_all_for_simulation(cls, supabase: Client, simulation_id: UUID) -> list[dict]:
@@ -38,7 +39,7 @@ class AptitudeService:
             .order("agent_id")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def set_aptitudes(

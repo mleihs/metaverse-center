@@ -27,6 +27,7 @@ from backend.models.agent_autonomy import (
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -192,7 +193,7 @@ class MorningBriefingService:
 
         # Flatten joined data
         activities = []
-        for row in result.data or []:
+        for row in extract_list(result):
             agent_info = row.pop("agents", {}) or {}
             row["agent_name"] = agent_info.get("name")
             row["agent_portrait"] = agent_info.get("portrait_image_url")
@@ -212,7 +213,7 @@ class MorningBriefingService:
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
-        moods = result.data or []
+        moods = extract_list(result)
 
         if not moods:
             return SimulationMoodSummary(
@@ -258,7 +259,7 @@ class MorningBriefingService:
             .limit(20)
             .execute()
         )
-        return result.data or []
+        return extract_list(result)
 
     # ── Routine Aggregation ──────────────────────────────────────
 

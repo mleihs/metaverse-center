@@ -17,6 +17,7 @@ from backend.services.constants import EVENT_STATUSES
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -71,8 +72,8 @@ class EventService(BaseService):
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
 
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def get_reactions(
@@ -90,7 +91,7 @@ class EventService(BaseService):
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def add_reaction(
@@ -166,7 +167,7 @@ class EventService(BaseService):
             .order("occurred_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def update_status(
@@ -205,7 +206,7 @@ class EventService(BaseService):
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def add_chain(
@@ -397,7 +398,7 @@ class EventService(BaseService):
             .execute()
         )
         links = []
-        for row in response.data or []:
+        for row in extract_list(response):
             zone_data = row.pop("zones", None) or {}
             row["zone_name"] = zone_data.get("name")
             row["zone_type"] = zone_data.get("zone_type")
@@ -426,7 +427,7 @@ class EventService(BaseService):
                 .in_("status", ["building", "active", "climax"])
                 .execute()
             )
-            arcs = _resp.data or []
+            arcs = extract_list(_resp)
             if arcs:
                 # Get recently created events (last 60s) with resonance tags
                 cutoff = (datetime.now(UTC) - timedelta(seconds=60)).isoformat()
@@ -438,7 +439,7 @@ class EventService(BaseService):
                     .gte("created_at", cutoff)
                     .execute()
                 )
-                recent = _resp.data or []
+                recent = extract_list(_resp)
                 for event in recent:
                     tags = event.get("tags") or []
                     for arc in arcs:
@@ -472,7 +473,7 @@ class EventService(BaseService):
                 .overlaps("tags", ["sabotage", "crisis"])
                 .execute()
             )
-            crisis_events = _resp.data or []
+            crisis_events = extract_list(_resp)
             if crisis_events:
                 # Check for active elemental warding (Deluge T3 / Tower T3 loot)
                 # simulation_modifier effects with building_protection protect
@@ -487,7 +488,7 @@ class EventService(BaseService):
                         .eq("consumed", False)
                         .execute()
                     )
-                    warding_effects = _ward_resp.data or []
+                    warding_effects = extract_list(_ward_resp)
                     heartbeat_interval = await PlatformConfigService.get(
                         supabase,
                         "heartbeat_interval",
@@ -525,7 +526,7 @@ class EventService(BaseService):
                     _resp = await (
                         supabase.table("event_zone_links").select("zone_id").eq("event_id", ev["id"]).execute()
                     )
-                    zone_links = _resp.data or []
+                    zone_links = extract_list(_resp)
                     zone_ids = [zl["zone_id"] for zl in zone_links]
                     if zone_ids:
                         _resp = await (
@@ -536,7 +537,7 @@ class EventService(BaseService):
                             .is_("deleted_at", "null")
                             .execute()
                         )
-                        buildings = _resp.data or []
+                        buildings = extract_list(_resp)
                         for bldg in buildings:
                             if "__all__" in protected_building_ids or bldg["id"] in protected_building_ids:
                                 continue  # Building protected by elemental warding
@@ -571,7 +572,7 @@ class EventService(BaseService):
             {"p_simulation_id": str(simulation_id)},
         ).execute()
 
-        cascades = result.data or []
+        cascades = extract_list(result)
         if cascades:
             # Re-refresh so cascade events are reflected in MVs
             await GameMechanicsService.refresh_metrics(supabase)

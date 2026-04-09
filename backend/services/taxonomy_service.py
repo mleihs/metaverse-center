@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class TaxonomyService:
             query = query.eq("is_active", True)
 
         response = await query.execute()
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def list_taxonomies_paginated(
@@ -57,7 +58,7 @@ class TaxonomyService:
         if taxonomy_type:
             query = query.eq("taxonomy_type", taxonomy_type)
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 

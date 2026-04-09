@@ -34,6 +34,7 @@ from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
 from backend.utils.errors import bad_request, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -829,28 +830,28 @@ class ForgeOrchestratorService:
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_agents = mat_agents_resp.data or []
+                mat_agents = extract_list(mat_agents_resp)
                 mat_buildings_resp = await (
                     supabase.table("buildings")
                     .select("name, description, building_type, building_condition")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_buildings = mat_buildings_resp.data or []
+                mat_buildings = extract_list(mat_buildings_resp)
                 mat_zones_resp = await (
                     supabase.table("zones")
                     .select("name, description, zone_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_zones = mat_zones_resp.data or []
+                mat_zones = extract_list(mat_zones_resp)
                 mat_streets_resp = await (
                     supabase.table("city_streets")
                     .select("name, street_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_streets = mat_streets_resp.data or []
+                mat_streets = extract_list(mat_streets_resp)
                 sim_desc = geography.get("description", "") or seed
                 mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
                 await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
@@ -976,7 +977,7 @@ class ForgeOrchestratorService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            mat_agents = mat_agents_resp.data or []
+            mat_agents = extract_list(mat_agents_resp)
 
             agents_have_de = all(a.get("character_de") for a in mat_agents)
             if agents_have_de:
@@ -991,21 +992,21 @@ class ForgeOrchestratorService:
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_buildings = mat_buildings_resp.data or []
+                mat_buildings = extract_list(mat_buildings_resp)
                 mat_zones_resp = await (
                     supabase.table("zones")
                     .select("name, description, zone_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_zones = mat_zones_resp.data or []
+                mat_zones = extract_list(mat_zones_resp)
                 mat_streets_resp = await (
                     supabase.table("city_streets")
                     .select("name, street_type")
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                mat_streets = mat_streets_resp.data or []
+                mat_streets = extract_list(mat_streets_resp)
                 sim_desc = geography.get("description", "") or seed
 
                 entity_translations = await ForgeEntityTranslationService.translate_entities(
@@ -1264,7 +1265,7 @@ class ForgeOrchestratorService:
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                for agent_row in agents.data or []:
+                for agent_row in extract_list(agents):
                     img_counter += 1
                     logger.info(
                         "Generating image",
@@ -1314,7 +1315,7 @@ class ForgeOrchestratorService:
                     .eq("simulation_id", str(simulation_id))
                     .execute()
                 )
-                for building in buildings.data or []:
+                for building in extract_list(buildings):
                     img_counter += 1
                     logger.info(
                         "Generating image",
@@ -1373,7 +1374,7 @@ class ForgeOrchestratorService:
                     .order("sort_order")
                     .execute()
                 )
-                for section in lore_sections.data or []:
+                for section in extract_list(lore_sections):
                     img_counter += 1
                     logger.info(
                         "Generating image",
@@ -1503,7 +1504,7 @@ class ForgeOrchestratorService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            existing_agents = agents_resp.data or []
+            existing_agents = extract_list(agents_resp)
 
             zones_resp = (
                 await admin_supabase.table("zones")
@@ -1511,7 +1512,7 @@ class ForgeOrchestratorService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            zones = zones_resp.data or []
+            zones = extract_list(zones_resp)
 
             # 2. Build recruitment prompt
             agent_list = "\n".join(
@@ -1829,8 +1830,8 @@ Generate exactly 3 new agents. Requirements:
         geography = {
             "city_name": sim.get("name", "Unknown"),
             "description": sim.get("description", ""),
-            "zones": zones_resp.data or [],
-            "streets": streets_resp.data or [],
+            "zones": extract_list(zones_resp),
+            "streets": extract_list(streets_resp),
         }
 
         # Try to fetch the original anchor from simulation_settings
@@ -1863,8 +1864,8 @@ Generate exactly 3 new agents. Requirements:
             "seed_prompt": sim.get("description", ""),
             "philosophical_anchor": {"selected": anchor},
             "geography": geography,
-            "agents": agents_resp.data or [],
-            "buildings": buildings_resp.data or [],
+            "agents": extract_list(agents_resp),
+            "buildings": extract_list(buildings_resp),
             "generation_config": {"deep_research": True},
         }
 
@@ -1909,7 +1910,7 @@ Generate exactly 3 new agents. Requirements:
             .limit(2)
             .execute()
         )
-        lore_sections = lore_resp.data or []
+        lore_sections = extract_list(lore_resp)
 
         # Compose the world brief
         parts = [f"WORLD: {sim_name}"]

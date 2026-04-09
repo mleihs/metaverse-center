@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -190,7 +191,7 @@ class StyleReferenceService:
         )
 
         settings_map: dict[str, str] = {}
-        for row in resp.data or []:
+        for row in extract_list(resp):
             val = row["setting_value"]
             if isinstance(val, str) and val.startswith('"') and val.endswith('"'):
                 settings_map[row["setting_key"]] = val[1:-1]
@@ -329,7 +330,7 @@ class StyleReferenceService:
             .not_.is_("style_reference_url", "null")
             .execute()
         )
-        for row in resp.data or []:
+        for row in extract_list(resp):
             if row.get("style_reference_url"):
                 results.append(
                     {

@@ -14,6 +14,7 @@ from fastapi import HTTPException
 
 from backend.services.base_service import serialize_for_json
 from backend.utils.errors import bad_request, not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -58,8 +59,8 @@ class EmbassyService:
 
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        total = response.count if response.count is not None else len(response.data or [])
-        return response.data or [], total
+        total = response.count if response.count is not None else len(extract_list(response))
+        return extract_list(response), total
 
     @classmethod
     async def list_for_building(
@@ -76,7 +77,7 @@ class EmbassyService:
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def get(
@@ -255,7 +256,7 @@ class EmbassyService:
             .order("created_at", desc=False)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @classmethod
     async def _update_building_special_attrs(

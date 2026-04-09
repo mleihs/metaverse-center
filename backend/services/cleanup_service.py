@@ -19,6 +19,7 @@ from backend.models.cleanup import (
     CleanupStats,
     CleanupType,
 )
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -202,7 +203,7 @@ class CleanupService:
                 name=row["name"],
                 updated_at=row.get("updated_at"),
             )
-            for row in (resp.data or [])
+            for row in (extract_list(resp))
         ]
 
     @classmethod
@@ -345,7 +346,7 @@ class CleanupService:
                 name=row["name"],
                 updated_at=row.get("updated_at"),
             )
-            for row in (resp.data or [])
+            for row in (extract_list(resp))
         ]
 
     @classmethod
@@ -438,7 +439,7 @@ class CleanupService:
         resp = await (
             admin_supabase.table(table).select("id", count="exact").lt(date_column, cutoff.isoformat()).execute()
         )
-        count = len(resp.data or [])
+        count = len(extract_list(resp))
 
         if count > 0:
             await (

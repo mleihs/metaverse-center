@@ -5,6 +5,7 @@ import logging
 import httpx
 
 from backend.config import settings
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class SeoService:
             .limit(20)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def get_agents_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
@@ -42,7 +43,7 @@ class SeoService:
             .limit(50)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def get_buildings_for_sitemap(cls, supabase: Client, simulation_id: str) -> list[dict]:
@@ -55,7 +56,7 @@ class SeoService:
             .limit(50)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
 
 async def notify_search_engines(slug: str) -> None:

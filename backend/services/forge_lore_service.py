@@ -15,6 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -291,7 +292,7 @@ class ForgeLoreService:
             .order("sort_order")
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @staticmethod
     async def get_by_slug(
@@ -395,7 +396,7 @@ class ForgeLoreService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            agents = agents_resp.data or []
+            agents = extract_list(agents_resp)
 
             buildings_resp = (
                 await admin_supabase.table("buildings")
@@ -403,7 +404,7 @@ class ForgeLoreService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            buildings = buildings_resp.data or []
+            buildings = extract_list(buildings_resp)
 
             zones_resp = (
                 await admin_supabase.table("zones")
@@ -411,7 +412,7 @@ class ForgeLoreService:
                 .eq("simulation_id", str(simulation_id))
                 .execute()
             )
-            zones = zones_resp.data or []
+            zones = extract_list(zones_resp)
 
             lore_resp = (
                 await admin_supabase.table("simulation_lore")
@@ -420,7 +421,7 @@ class ForgeLoreService:
                 .order("sort_order")
                 .execute()
             )
-            existing_lore = lore_resp.data or []
+            existing_lore = extract_list(lore_resp)
 
             # 2. Build dossier prompt
             agent_block = "\n".join(
@@ -448,7 +449,7 @@ class ForgeLoreService:
                 .limit(5)
                 .execute()
             )
-            other_sims = other_sims_resp.data or []
+            other_sims = extract_list(other_sims_resp)
             cross_shard_block = ""
             if other_sims:
                 shard_names = ", ".join(s["name"] for s in other_sims)

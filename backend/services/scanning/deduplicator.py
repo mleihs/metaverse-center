@@ -10,6 +10,7 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.scanning.base_adapter import ScanResult
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -159,7 +160,7 @@ async def deduplicate(
                 .in_("source_id", ids)
                 .execute()
             )
-            for row in resp.data or []:
+            for row in extract_list(resp):
                 existing.add((row["source_name"], row["source_id"]))
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to check scan log for %s", source_name)
@@ -200,7 +201,7 @@ async def deduplicate_against_resonances(
                 .is_("deleted_at", "null")
                 .execute()
             )
-            recent_titles[cat] = [r["title"] for r in resp.data or []]
+            recent_titles[cat] = [r["title"] for r in extract_list(resp)]
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load recent resonances for %s", cat)
 
@@ -254,7 +255,7 @@ async def cleanup_old_logs(admin: Client, days: int = 30) -> int:
     cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat()
     try:
         resp = await admin.table("news_scan_log").delete().lt("scanned_at", cutoff).execute()
-        count = len(resp.data or [])
+        count = len(extract_list(resp))
         if count:
             logger.info("Cleaned up %d old scan log entries", count)
         return count

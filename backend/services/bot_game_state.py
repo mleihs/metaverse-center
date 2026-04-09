@@ -13,6 +13,7 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.constants import SECURITY_LEVEL_MAP
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -154,7 +155,7 @@ class BotGameState:
             .eq("source_simulation_id", sim_id)
             .execute()
         )
-        self.own_missions = missions_resp.data or []
+        self.own_missions = extract_list(missions_resp)
         self.own_guardians = sum(
             1 for m in self.own_missions if m["operative_type"] == "guardian" and m["status"] == "active"
         )
@@ -163,7 +164,7 @@ class BotGameState:
         zones_resp = await (
             supabase.table("zones").select("id, name, security_level").eq("simulation_id", sim_id).execute()
         )
-        self.own_zones = zones_resp.data or []
+        self.own_zones = extract_list(zones_resp)
 
         # Own agents (available for deployment) with aptitudes
         agents_resp = await (
@@ -173,7 +174,7 @@ class BotGameState:
             .is_("deleted_at", "null")
             .execute()
         )
-        self.own_agents = agents_resp.data or []
+        self.own_agents = extract_list(agents_resp)
 
         # Load aptitudes for own agents (keyed by agent_id)
         if self.own_agents:
@@ -184,7 +185,7 @@ class BotGameState:
                 .execute()
             )
             apt_map: dict[str, dict[str, int]] = {}
-            for row in aptitudes_resp.data or []:
+            for row in extract_list(aptitudes_resp):
                 aid = row["agent_id"]
                 if aid not in apt_map:
                     apt_map[aid] = {}
@@ -204,7 +205,7 @@ class BotGameState:
             .or_(f"simulation_a_id.eq.{sim_id},simulation_b_id.eq.{sim_id}")
             .execute()
         )
-        self.own_embassies = embassies_resp.data or []
+        self.own_embassies = extract_list(embassies_resp)
 
     async def _load_detected_intel(self, supabase: Client, epoch_id: str, sim_id: str) -> None:
         """Load intel from detection mechanics (detected inbound ops + spy reports).
@@ -221,7 +222,7 @@ class BotGameState:
             .in_("status", ["detected", "captured"])
             .execute()
         )
-        self.detected_enemy_ops = detected_resp.data or []
+        self.detected_enemy_ops = extract_list(detected_resp)
 
         # Spy intel: own + allied reports (alliance = shared fog-of-war)
         intel_sources = [sim_id] + self.allies
@@ -239,7 +240,7 @@ class BotGameState:
         # (own intel naturally ranks first since it's interleaved by created_at)
         seen_targets: set[str] = set()
         reports: list[dict] = []
-        for report in intel_resp.data or []:
+        for report in extract_list(intel_resp):
             target = report.get("target_simulation_id")
             if target not in seen_targets:
                 reports.append(report)
@@ -258,7 +259,7 @@ class BotGameState:
             .limit(50)
             .execute()
         )
-        self.battle_log = blog_resp.data or []
+        self.battle_log = extract_list(blog_resp)
 
         # Current scores/standings
         scores_resp = await (
@@ -268,13 +269,13 @@ class BotGameState:
             .order("composite_score", desc=True)
             .execute()
         )
-        self.scores = scores_resp.data or []
+        self.scores = extract_list(scores_resp)
 
         # Teams/alliances
         teams_resp = await (
             supabase.table("epoch_teams").select("*").eq("epoch_id", epoch_id).is_("dissolved_at", "null").execute()
         )
-        self.teams = teams_resp.data or []
+        self.teams = extract_list(teams_resp)
 
         # Participants (sim names, not strategies)
         parts_resp = await (
@@ -283,7 +284,7 @@ class BotGameState:
             .eq("epoch_id", epoch_id)
             .execute()
         )
-        self.participants = parts_resp.data or []
+        self.participants = extract_list(parts_resp)
 
     async def _load_alliance_data(self, supabase: Client, epoch_id: str) -> None:
         """Load pending alliance proposals and own team tension."""
@@ -295,7 +296,7 @@ class BotGameState:
                 .eq("status", "pending")
                 .execute()
             )
-            self.pending_proposals = proposals_resp.data or []
+            self.pending_proposals = extract_list(proposals_resp)
         except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Alliance proposals load failed", exc_info=True)
 
@@ -333,7 +334,7 @@ class BotGameState:
                 .eq("simulation_id", sim_id)
                 .execute()
             )
-            self.own_zone_stability = stability_resp.data or []
+            self.own_zone_stability = extract_list(stability_resp)
             if self.own_zone_stability:
                 self.own_avg_pressure = sum(float(z.get("total_pressure", 0)) for z in self.own_zone_stability) / len(
                     self.own_zone_stability
@@ -351,7 +352,7 @@ class BotGameState:
                 .limit(5)
                 .execute()
             )
-            self.active_resonances = resonance_resp.data or []
+            self.active_resonances = extract_list(resonance_resp)
             self.resonance_aligned_types, self.resonance_opposed_types = _derive_resonance_affinities(
                 self.active_resonances
             )
@@ -367,7 +368,7 @@ class BotGameState:
                 .in_("status", ["building", "active", "climax"])
                 .execute()
             )
-            self.active_narrative_arcs = arcs_resp.data or []
+            self.active_narrative_arcs = extract_list(arcs_resp)
             self.active_convergences = [a for a in self.active_narrative_arcs if a.get("arc_type") == "convergence"]
 
             # Scar tissue
@@ -378,7 +379,7 @@ class BotGameState:
                 .gt("scar_tissue_deposited", 0)
                 .execute()
             )
-            self.own_scar_tissue = sum(float(a.get("scar_tissue_deposited", 0)) for a in (scar_resp.data or []))
+            self.own_scar_tissue = sum(float(a.get("scar_tissue_deposited", 0)) for a in (extract_list(scar_resp)))
 
             # Pending bureau responses
             pending_resp = await (
@@ -397,7 +398,7 @@ class BotGameState:
                 .eq("simulation_id", sim_id)
                 .execute()
             )
-            self.own_attunements = att_resp.data or []
+            self.own_attunements = extract_list(att_resp)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Heartbeat state load failed (tables may not exist yet)")
 

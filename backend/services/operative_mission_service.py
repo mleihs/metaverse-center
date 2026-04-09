@@ -25,6 +25,7 @@ from backend.services.constants import (
 from backend.services.epoch_service import EpochService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -279,7 +280,7 @@ class OperativeMissionService:
                 .in_("status", ["active"])
                 .execute()
             )
-            guardian_count = len(guardians_resp.data or [])
+            guardian_count = len(extract_list(guardians_resp))
 
         # Embassy effectiveness -- check for active infiltration penalty
         embassy_eff = 0.5
@@ -342,7 +343,7 @@ class OperativeMissionService:
                     .in_("status", ["active", "climax"])
                     .execute()
                 )
-                convergences = _resp.data or []
+                convergences = extract_list(_resp)
 
                 if convergences:
                     # Load convergence pairs config
@@ -488,7 +489,7 @@ class OperativeMissionService:
         )
 
         results = []
-        for mission in resp.data or []:
+        for mission in extract_list(resp):
             # Skip guardians (permanent)
             if mission["operative_type"] == "guardian":
                 continue
@@ -681,12 +682,12 @@ class OperativeMissionService:
                 .execute()
             )
             agents_resp = await supabase.table("agents").select("id, name").eq("simulation_id", target_sim_id).execute()
-            zones_data = zones_resp.data or []
+            zones_data = extract_list(zones_resp)
             zone_levels = [z["security_level"] for z in zones_data]
             zone_details = [{"name": z["name"], "security_level": z["security_level"]} for z in zones_data]
             guardian_count = guardian_resp.count or 0
-            buildings_data = buildings_resp.data or []
-            agents_data = agents_resp.data or []
+            buildings_data = extract_list(buildings_resp)
+            agents_data = extract_list(agents_resp)
             intel: dict = {
                 "zone_security": zone_levels,
                 "zone_details": zone_details,
@@ -712,7 +713,7 @@ class OperativeMissionService:
                 # Enrich with zone names
                 fort_zone_ids = [f["zone_id"] for f in fort_resp.data]
                 zone_names_resp = await supabase.table("zones").select("id, name").in_("id", fort_zone_ids).execute()
-                zone_name_map = {z["id"]: z["name"] for z in (zone_names_resp.data or [])}
+                zone_name_map = {z["id"]: z["name"] for z in (extract_list(zone_names_resp))}
                 intel["fortifications"] = [
                     {
                         "zone_id": f["zone_id"],
@@ -959,8 +960,8 @@ class OperativeMissionService:
                 )
                 .execute()
             )
-            relationships_affected = len(rel_resp.data or [])
-            for rel in rel_resp.data or []:
+            relationships_affected = len(extract_list(rel_resp))
+            for rel in extract_list(rel_resp):
                 new_intensity = max(1, rel["intensity"] - 2)
                 await (
                     supabase.table("agent_relationships")
@@ -1104,7 +1105,7 @@ class OperativeMissionService:
         )
 
         detected = []
-        for mission in resp.data or []:
+        for mission in extract_list(resp):
             # Each detected mission updates to 'detected' status
             await supabase.table("operative_missions").update({"status": "detected"}).eq("id", mission["id"]).execute()
             detected.append(mission)

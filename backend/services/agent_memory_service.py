@@ -9,6 +9,7 @@ from backend.config import settings
 from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 from supabase import create_async_client
 
@@ -182,7 +183,7 @@ class AgentMemoryService:
             params["p_query_embedding"] = str(embedding)
 
         response = await supabase.rpc("retrieve_agent_memories", params).execute()
-        memories = response.data or []
+        memories = extract_list(response)
 
         # Update last_accessed_at for retrieved memories
         if memories:
@@ -214,7 +215,7 @@ class AgentMemoryService:
             .limit(20)
             .execute()
         )
-        observations = obs_resp.data or []
+        observations = extract_list(obs_resp)
 
         if len(observations) < 5:
             return []
@@ -308,7 +309,7 @@ class AgentMemoryService:
             query = query.eq("memory_type", memory_type)
 
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 

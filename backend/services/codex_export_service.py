@@ -14,6 +14,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ class CodexExportService:
                 .order("name")
                 .execute()
             )
-            agents = agents_resp.data or []
+            agents = extract_list(agents_resp)
 
             buildings_resp = (
                 await admin_supabase.table("buildings")
@@ -65,7 +66,7 @@ class CodexExportService:
                 .order("name")
                 .execute()
             )
-            buildings = buildings_resp.data or []
+            buildings = extract_list(buildings_resp)
 
             zones_resp = (
                 await admin_supabase.table("zones")
@@ -74,7 +75,7 @@ class CodexExportService:
                 .order("name")
                 .execute()
             )
-            zones = zones_resp.data or []
+            zones = extract_list(zones_resp)
 
             lore_resp = (
                 await admin_supabase.table("simulation_lore")
@@ -83,7 +84,7 @@ class CodexExportService:
                 .order("sort_order")
                 .execute()
             )
-            lore = lore_resp.data or []
+            lore = extract_list(lore_resp)
 
             # Fetch theme settings
             settings_resp = (
@@ -93,7 +94,7 @@ class CodexExportService:
                 .eq("category", "design")
                 .execute()
             )
-            theme = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
+            theme = {s["setting_key"]: s["setting_value"] for s in (extract_list(settings_resp))}
 
             # 2. Render HTML
             html_content = CodexExportService._render_codex_html(
@@ -200,7 +201,7 @@ class CodexExportService:
                 .order("name")
                 .execute()
             )
-            agents = agents_resp.data or []
+            agents = extract_list(agents_resp)
 
             buildings_resp = (
                 await admin_supabase.table("buildings")
@@ -209,7 +210,7 @@ class CodexExportService:
                 .order("name")
                 .execute()
             )
-            buildings = buildings_resp.data or []
+            buildings = extract_list(buildings_resp)
 
             lore_resp = (
                 await admin_supabase.table("simulation_lore")
@@ -218,7 +219,7 @@ class CodexExportService:
                 .order("sort_order")
                 .execute()
             )
-            lore = [s for s in (lore_resp.data or []) if s.get("image_slug")]
+            lore = [s for s in (extract_list(lore_resp)) if s.get("image_slug")]
 
             # 3. Build download manifest: (full_url, fallback_url, zip_path)
             manifest: list[tuple[str, str | None, str]] = []

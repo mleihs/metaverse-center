@@ -18,6 +18,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, mask
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class PlatformSettingsService:
         When mask_sensitive=True, sensitive keys show masked values (for admin UI).
         """
         response = await admin_supabase.table(cls.table_name).select("*").order("setting_key").execute()
-        rows = response.data or []
+        rows = extract_list(response)
         if not mask_sensitive:
             return rows
 
@@ -184,7 +185,7 @@ class PlatformSettingsService:
             )
             .execute()
         )
-        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        by_key = {r["setting_key"]: r["setting_value"] for r in (extract_list(response))}
         return cls._parse_dungeon_global(by_key)
 
     @classmethod
@@ -199,7 +200,7 @@ class PlatformSettingsService:
             .in_("setting_key", [cls._DG_CLEARANCE_MODE, cls._DG_CLEARANCE_THRESHOLD])
             .execute()
         )
-        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        by_key = {r["setting_key"]: r["setting_value"] for r in (extract_list(response))}
         parsed = cls._parse_dungeon_global(by_key)
         return DungeonClearanceConfig(
             clearance_mode=parsed["clearance_mode"],
@@ -218,7 +219,7 @@ class PlatformSettingsService:
             .in_("setting_key", [cls._DG_MODE, cls._DG_ARCHETYPES])
             .execute()
         )
-        by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
+        by_key = {r["setting_key"]: r["setting_value"] for r in (extract_list(response))}
         parsed = cls._parse_dungeon_global(by_key)
         return (parsed["override_mode"], set(parsed["override_archetypes"]))
 

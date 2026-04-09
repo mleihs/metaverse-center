@@ -26,6 +26,7 @@ from backend.services.bot_game_state import BotGameState
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -237,7 +238,7 @@ class BotService:
             .eq("is_bot", True)
             .execute()
         )
-        return resp.data or []
+        return extract_list(resp)
 
     @classmethod
     async def _execute_alliances(

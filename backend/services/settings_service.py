@@ -7,6 +7,7 @@ from uuid import UUID
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, encrypt, mask
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class SettingsService:
             query = query.eq("category", category)
 
         response = await query.execute()
-        return [_mask_if_encrypted(s) for s in (response.data or [])]
+        return [_mask_if_encrypted(s) for s in (extract_list(response))]
 
     @staticmethod
     async def get_setting(
@@ -108,7 +109,7 @@ class SettingsService:
             .in_("simulation_id", simulation_ids)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def delete_setting(
@@ -145,7 +146,7 @@ class SettingsService:
             .order("name")
             .execute()
         )
-        simulations = sim_resp.data or []
+        simulations = extract_list(sim_resp)
 
         override_resp = await (
             admin_supabase.table("simulation_settings")
@@ -156,7 +157,7 @@ class SettingsService:
         )
         overrides_by_sim: dict[str, dict] = {
             row["simulation_id"]: row["setting_value"]
-            for row in (override_resp.data or [])
+            for row in (extract_list(override_resp))
             if isinstance(row.get("setting_value"), dict)
         }
 

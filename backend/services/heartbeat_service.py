@@ -42,6 +42,7 @@ from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -117,7 +118,7 @@ class HeartbeatService:
                 )
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
             for row in rows:
                 key = row["setting_key"]
                 val = row["setting_value"]
@@ -178,7 +179,7 @@ class HeartbeatService:
                 .eq("category", "heartbeat")
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
             for row in rows:
                 overrides[row["setting_key"]] = row["setting_value"]
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
@@ -205,7 +206,7 @@ class HeartbeatService:
             .is_("deleted_at", "null")
             .execute()
         )
-        all_sims = response.data or []
+        all_sims = extract_list(response)
 
         # Filter to those that are due
         due_sims = []
@@ -854,7 +855,7 @@ class HeartbeatService:
             },
         ).execute()
 
-        changes = result.data or []
+        changes = extract_list(result)
         if isinstance(changes, str):
             changes = json.loads(changes)
 
@@ -975,7 +976,7 @@ class HeartbeatService:
                     .gt("scar_tissue_deposited", 0)
                     .execute()
                 )
-                scar_arcs = _resp.data or []
+                scar_arcs = extract_list(_resp)
                 scar_total = sum(float(a.get("scar_tissue_deposited", 0)) for a in scar_arcs)
                 if scar_total > 0:
                     scar_mult = round(scar_total * scar_susceptibility, 4)
@@ -1142,13 +1143,13 @@ class HeartbeatService:
             query = query.eq("tick_number", tick_number)
 
         response = await query.execute()
-        return response.data or [], response.count or 0
+        return extract_list(response), response.count or 0
 
     @classmethod
     async def list_cascade_rules(cls, admin: Client) -> list[dict]:
         """List all cascade rules from the resonance_cascade_rules table."""
         response = await admin.table("resonance_cascade_rules").select("*").order("source_signature").execute()
-        return response.data or []
+        return extract_list(response)
 
     # ── Admin Dashboard ────────────────────────────────────────
 
@@ -1181,7 +1182,7 @@ class HeartbeatService:
             .order("name")
             .execute()
         )
-        sims = _resp.data or []
+        sims = extract_list(_resp)
 
         # Batch-fetch arc counts, scar tissue, and pending responses for ALL sims at once
         # (replaces N*3 queries with 2 queries)
@@ -1197,7 +1198,7 @@ class HeartbeatService:
         # Build per-sim arc counts + scar totals
         arc_counts: dict[str, int] = {}
         scar_totals: dict[str, float] = {}
-        for arc in all_arcs_resp.data or []:
+        for arc in extract_list(all_arcs_resp):
             sid = arc["simulation_id"]
             arc_counts[sid] = arc_counts.get(sid, 0) + 1
             scar = float(arc.get("scar_tissue_deposited", 0))
@@ -1212,7 +1213,7 @@ class HeartbeatService:
             .execute()
         )
         pending_counts: dict[str, int] = {}
-        for resp_row in all_pending_resp.data or []:
+        for resp_row in extract_list(all_pending_resp):
             sid = resp_row["simulation_id"]
             pending_counts[sid] = pending_counts.get(sid, 0) + 1
 
@@ -1272,7 +1273,7 @@ class HeartbeatService:
             .gte("created_at", last_day)
             .execute()
         )
-        entries = _resp.data or []
+        entries = extract_list(_resp)
 
         type_counts: dict[str, int] = {}
         critical_count = 0
@@ -1301,7 +1302,7 @@ class HeartbeatService:
             "critical_events": critical_count,
             "positive_events": positive_count,
             "active_arcs": arcs.count or 0,
-            "arc_details": arcs.data or [],
+            "arc_details": extract_list(arcs),
         }
 
     # ── Force Tick (Admin) ──────────────────────────────────────

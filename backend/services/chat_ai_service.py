@@ -26,6 +26,7 @@ from backend.services.i18n_utils import (
 )
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -872,7 +873,7 @@ class ChatAIService:
             .execute()
         )
         moodlet_lines = []
-        for ml in moodlets_result.data or []:
+        for ml in extract_list(moodlets_result):
             sign = "+" if ml["strength"] > 0 else ""
             ml_type = localize_label(ml["moodlet_type"], MOODLET_TYPE_LABELS, locale)
             ml_emotion = localize_label(ml["emotion"], EMOTION_LABELS, locale)
@@ -976,7 +977,7 @@ class ChatAIService:
             .in_("agent_id", agent_ids)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     async def _load_conversation(self, conversation_id: UUID) -> dict:
         """Load conversation details."""
@@ -1015,7 +1016,7 @@ class ChatAIService:
             .execute()
         )
         agents = []
-        for row in response.data or []:
+        for row in extract_list(response):
             agent_data = row.get("agents")
             if agent_data:
                 agents.append(agent_data)
@@ -1030,7 +1031,7 @@ class ChatAIService:
             .order("referenced_at")
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     async def _load_simulation(self) -> dict:
         """Load simulation details."""
@@ -1057,7 +1058,7 @@ class ChatAIService:
             .limit(_max_history_messages(model_id))
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     async def _get_locale(self) -> str:
         """Get the simulation's content locale (cached per instance)."""

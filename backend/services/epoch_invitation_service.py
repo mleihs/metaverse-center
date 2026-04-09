@@ -13,6 +13,7 @@ from backend.services.email_templates import epoch_invitation_subject, render_ep
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.prompt_service import PromptResolver
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -99,7 +100,7 @@ class EpochInvitationService:
             .order("created_at", desc=True)
             .execute()
         )
-        return response.data or []
+        return extract_list(response)
 
     @staticmethod
     async def get_by_token(supabase: Client, token: str) -> dict:
@@ -247,7 +248,7 @@ class EpochInvitationService:
             .execute()
         )
         participant_names = (
-            ", ".join(p.get("simulations", {}).get("name", "Unknown") for p in (participants_response.data or []))
+            ", ".join(p.get("simulations", {}).get("name", "Unknown") for p in (extract_list(participants_response)))
             or "None yet"
         )
 

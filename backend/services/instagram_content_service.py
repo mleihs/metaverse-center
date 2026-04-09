@@ -24,6 +24,7 @@ from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_service import InstagramImageService
 from backend.utils.errors import not_found, server_error
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -211,7 +212,7 @@ class InstagramContentService:
             .execute()
         )
         settings_map = {}
-        for row in resp.data or []:
+        for row in extract_list(resp):
             raw = row["setting_value"]
             if isinstance(raw, dict | list):
                 value = json.dumps(raw)
@@ -369,7 +370,7 @@ class InstagramContentService:
                 .execute()
             )
             cipher_settings: dict[str, str] = {}
-            for row in cipher_resp.data or []:
+            for row in extract_list(cipher_resp):
                 cipher_settings[row["setting_key"]] = row["setting_value"]
 
             raw_enabled = str(cipher_settings.get("instagram_cipher_enabled", "false")).lower()
@@ -677,7 +678,7 @@ class InstagramContentService:
 
         query = query.range(offset, offset + limit - 1)
         response = await query.execute()
-        data = response.data or []
+        data = extract_list(response)
         total = response.count if response.count is not None else len(data)
         return data, total
 
@@ -1086,7 +1087,7 @@ class InstagramContentService:
         )
 
         colors = {"color_primary": "#e2e8f0", "color_background": "#0f172a"}
-        for row in resp.data or []:
+        for row in extract_list(resp):
             key = row["setting_key"]
             if key == "design.color_primary":
                 colors["color_primary"] = row["setting_value"]
@@ -1172,7 +1173,7 @@ class InstagramContentService:
             .in_("setting_key", ["instagram_access_token", "instagram_ig_user_id"])
             .execute()
         )
-        rows = _resp.data or []
+        rows = extract_list(_resp)
 
         result: dict[str, str] = {"access_token": "", "ig_user_id": ""}
         for row in rows:

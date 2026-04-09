@@ -17,6 +17,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -77,7 +78,7 @@ class ResonanceScheduler:
                 )
                 .execute()
             )
-            rows = _resp.data or []
+            rows = extract_list(_resp)
             for row in rows:
                 key = row["setting_key"]
                 val = row["setting_value"]
@@ -104,7 +105,7 @@ class ResonanceScheduler:
             .is_("deleted_at", "null")
             .execute()
         )
-        due = response.data or []
+        due = extract_list(response)
         if not due:
             return
 
