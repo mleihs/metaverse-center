@@ -415,9 +415,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     try {
       const response = await healthApi.listBuildingReadiness(this.simulationId);
       if (response.success && response.data) {
-        const buildings = Array.isArray(response.data)
-          ? response.data
-          : ((response.data as { data?: BuildingReadiness[] }).data ?? []);
+        const buildings = response.data as BuildingReadiness[];
         this._readiness =
           buildings.find((b: BuildingReadiness) => b.building_id === this.building?.id) ?? null;
       }

@@ -283,10 +283,9 @@ export class VelgEmbassyCreateModal extends LitElement {
     try {
       const resp = await simulationsApi.listPublic();
       if (resp.success && resp.data) {
-        const items = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as { data?: Simulation[] }).data ?? []);
-        this._simulations = items.filter((s: Simulation) => s.id !== appState.simulationId.value);
+        this._simulations = (resp.data as Simulation[]).filter(
+          (s) => s.id !== appState.simulationId.value,
+        );
       }
     } catch {
       // fail silently
@@ -299,9 +298,7 @@ export class VelgEmbassyCreateModal extends LitElement {
     try {
       const resp = await agentsApi.list(simId, { limit: '100' });
       if (resp.success && resp.data) {
-        this._localAgents = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as { data?: Agent[] }).data ?? []);
+        this._localAgents = resp.data as Agent[];
       }
     } catch {
       this._localAgents = [];
@@ -313,11 +310,10 @@ export class VelgEmbassyCreateModal extends LitElement {
     try {
       const resp = await buildingsApi.listPublic(this._targetSimId, { limit: '100' });
       if (resp.success && resp.data) {
-        const items = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as { data?: Building[] }).data ?? []);
         // Filter out buildings already used as embassies
-        this._targetBuildings = items.filter((b) => b.special_type !== 'embassy');
+        this._targetBuildings = (resp.data as Building[]).filter(
+          (b) => b.special_type !== 'embassy',
+        );
       }
     } catch {
       this._targetBuildings = [];
@@ -329,9 +325,7 @@ export class VelgEmbassyCreateModal extends LitElement {
     try {
       const resp = await agentsApi.listPublic(this._targetSimId, { limit: '100' });
       if (resp.success && resp.data) {
-        this._partnerAgents = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as { data?: Agent[] }).data ?? []);
+        this._partnerAgents = resp.data as Agent[];
       }
     } catch {
       this._partnerAgents = [];

@@ -217,10 +217,7 @@ export class VelgDeployOperativeModal extends LitElement {
       ]);
 
       if (agentResp.success && agentResp.data) {
-        const items = Array.isArray(agentResp.data)
-          ? agentResp.data
-          : ((agentResp.data as { data?: Agent[] }).data ?? []);
-        this._agents = items;
+        this._agents = agentResp.data as Agent[];
       }
 
       if (aptResp.success && aptResp.data) {
@@ -251,10 +248,7 @@ export class VelgDeployOperativeModal extends LitElement {
     try {
       const resp = await embassiesApi.listForSimulation(this.simulationId);
       if (resp.success && resp.data) {
-        const items = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as { data?: Embassy[] }).data ?? []);
-        this._embassies = items.filter((e) => e.status === 'active');
+        this._embassies = (resp.data as Embassy[]).filter((e) => e.status === 'active');
       }
     } catch {
       this._embassies = [];
@@ -270,19 +264,13 @@ export class VelgDeployOperativeModal extends LitElement {
       ]);
 
       if (zonesResp.success && zonesResp.data) {
-        this._targetZones = Array.isArray(zonesResp.data)
-          ? zonesResp.data
-          : ((zonesResp.data as { data?: Zone[] }).data ?? []);
+        this._targetZones = zonesResp.data as Zone[];
       }
       if (buildingsResp.success && buildingsResp.data) {
-        this._targetBuildings = Array.isArray(buildingsResp.data)
-          ? buildingsResp.data
-          : ((buildingsResp.data as { data?: Building[] }).data ?? []);
+        this._targetBuildings = buildingsResp.data as Building[];
       }
       if (agentsResp.success && agentsResp.data) {
-        this._targetAgents = Array.isArray(agentsResp.data)
-          ? agentsResp.data
-          : ((agentsResp.data as { data?: Agent[] }).data ?? []);
+        this._targetAgents = agentsResp.data as Agent[];
       }
     } catch {
       // fail silently
