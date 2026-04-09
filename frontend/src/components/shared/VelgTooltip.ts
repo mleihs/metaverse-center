@@ -65,10 +65,35 @@ export class VelgTooltip extends LitElement {
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
+      transform-origin: var(--_arrow-side, bottom) center;
       transition:
-        opacity var(--transition-fast),
-        visibility var(--transition-fast);
+        opacity 150ms ease,
+        visibility 150ms ease,
+        transform 150ms var(--ease-out, ease-out);
+      transform: translateX(-50%) scale(0.97);
       max-width: min(320px, 90vw);
+    }
+
+    /* ── Arrow ── */
+
+    .tip::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+    }
+
+    /* Arrow pointing down (tooltip above trigger) */
+    .tip--above::after {
+      top: 100%;
+      border-top-color: var(--color-border);
+    }
+
+    /* Arrow pointing up (tooltip below trigger) */
+    .tip--below::after {
+      bottom: 100%;
+      border-bottom-color: var(--color-border);
     }
 
     /* ── Rich content variant ── */
@@ -102,6 +127,7 @@ export class VelgTooltip extends LitElement {
     .tip--visible {
       opacity: 1;
       visibility: visible;
+      transform: translateX(-50%) scale(1);
     }
 
     /* ── Reduced motion ── */
@@ -134,27 +160,48 @@ export class VelgTooltip extends LitElement {
   /** Unique ID for aria-describedby linkage. */
   private _tipId = `velg-tip-${++_tipIdCounter}`;
 
+  /** Hover delay timer — prevents flicker when cursor crosses multiple triggers. */
+  private _showTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Resolved position direction (after flip). */
+  @state() private _resolvedPos: 'above' | 'below' = 'above';
+
   connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener('mouseenter', this._show);
+    this.addEventListener('mouseenter', this._scheduleShow);
     this.addEventListener('mouseleave', this._hide);
-    this.addEventListener('focusin', this._show);
+    this.addEventListener('focusin', this._showImmediate);
     this.addEventListener('focusout', this._hide);
+    this.addEventListener('keydown', this._handleKeydown);
     window.addEventListener('scroll', this._hide, { capture: true, passive: true });
   }
 
   disconnectedCallback(): void {
-    this.removeEventListener('mouseenter', this._show);
+    this.removeEventListener('mouseenter', this._scheduleShow);
     this.removeEventListener('mouseleave', this._hide);
-    this.removeEventListener('focusin', this._show);
+    this.removeEventListener('focusin', this._showImmediate);
     this.removeEventListener('focusout', this._hide);
+    this.removeEventListener('keydown', this._handleKeydown);
     window.removeEventListener('scroll', this._hide, { capture: true });
+    if (this._showTimer) clearTimeout(this._showTimer);
     super.disconnectedCallback();
   }
 
-  private _show = (): void => {
+  /** Hover: 150ms delay to prevent flicker across adjacent triggers. */
+  private _scheduleShow = (): void => {
+    if (this._showTimer) clearTimeout(this._showTimer);
+    this._showTimer = setTimeout(() => this._computeAndShow(), 150);
+  };
+
+  /** Focus: immediate show (keyboard users shouldn't wait). */
+  private _showImmediate = (): void => {
+    if (this._showTimer) clearTimeout(this._showTimer);
+    this._computeAndShow();
+  };
+
+  private _computeAndShow(): void {
     const rect = this.getBoundingClientRect();
-    const gap = 6;
+    const gap = 8;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
@@ -163,31 +210,40 @@ export class VelgTooltip extends LitElement {
     const margin = 16;
     const left = Math.max(margin, Math.min(centerX, vw - margin));
 
-    // Determine if we need to flip: if 'above' but too close to top, go below (and vice versa)
+    // Auto-flip: if preferred position has no room, flip
     let pos = this.position;
     if (pos === 'above' && rect.top < 80) pos = 'below';
     if (pos === 'below' && vh - rect.bottom < 80) pos = 'above';
+    this._resolvedPos = pos;
 
     if (pos === 'below') {
       this._tipPos = {
         top: `${rect.bottom + gap}px`,
         left: `${left}px`,
-        transform: 'translateX(-50%)',
         bottom: 'auto',
+        '--_arrow-side': 'top',
       };
     } else {
       this._tipPos = {
         bottom: `${vh - rect.top + gap}px`,
         left: `${left}px`,
-        transform: 'translateX(-50%)',
         top: 'auto',
+        '--_arrow-side': 'bottom',
       };
     }
     this._visible = true;
-  };
+  }
 
   private _hide = (): void => {
+    if (this._showTimer) clearTimeout(this._showTimer);
     this._visible = false;
+  };
+
+  /** Escape dismisses tooltip (WCAG requirement). */
+  private _handleKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && this._visible) {
+      this._hide();
+    }
   };
 
   private _handleTipSlotChange(e: Event): void {
@@ -202,6 +258,8 @@ export class VelgTooltip extends LitElement {
       'tip--rich': this._hasSlottedTip,
       'tip--info': this.variant === 'info',
       'tip--visible': this._visible,
+      'tip--above': this._resolvedPos === 'above',
+      'tip--below': this._resolvedPos === 'below',
     };
 
     return html`
