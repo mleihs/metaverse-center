@@ -509,15 +509,72 @@ export class VelgForgeTable extends LitElement {
         animation: pip-flip 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
+      .counter-pips__pip--warning {
+        background: var(--color-warning-bg);
+        border-color: var(--color-warning);
+        animation: pip-pulse-warning 1.5s ease-in-out infinite;
+      }
+
       @keyframes pip-flip {
         0% { transform: rotateY(90deg); }
         100% { transform: rotateY(0deg); }
       }
 
+      @keyframes pip-pulse-warning {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+      }
+
       @media (prefers-reduced-motion: reduce) {
-        .counter-pips__pip--filled {
+        .counter-pips__pip--filled,
+        .counter-pips__pip--warning {
           animation: none;
         }
+      }
+
+      /* ── Generation Failure Overlay ────────── */
+
+      .generation-failed {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4);
+        padding: var(--space-8) var(--space-6);
+        margin: var(--space-6) 0;
+        border: 1px dashed var(--color-warning);
+        background: var(--color-warning-bg);
+        text-align: center;
+        animation: failed-fade-in var(--duration-entrance) var(--ease-dramatic);
+      }
+
+      .generation-failed__icon {
+        font-size: var(--text-3xl);
+        color: var(--color-warning);
+        line-height: 1;
+      }
+
+      .generation-failed__title {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold);
+        font-size: var(--text-base);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        color: var(--color-warning);
+      }
+
+      .generation-failed__detail {
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        max-width: 400px;
+      }
+
+      @keyframes failed-fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .generation-failed { animation: none; }
       }
 
       .counter-pips__label {
@@ -1178,8 +1235,23 @@ export class VelgForgeTable extends LitElement {
     const hasBuildings = buildings.length > 0;
     const allComplete = hasGeo && hasAgents && hasBuildings;
 
+    // Detect partial generation failure per section
+    const hasFailed = !!this._error && !this._isGenerating;
+    const agentsFailed = hasFailed && agents.length < genConfig.agent_count
+      && this._error!.toLowerCase().includes('entities');
+    const buildingsFailed = hasFailed && buildings.length < genConfig.building_count
+      && buildings.length > 0 && !agentsFailed;
+    // Show generic banner for geography/other failures not handled by section overlays
+    const showGenericError = hasFailed && !agentsFailed && !buildingsFailed;
+
     return html`
-      ${this._error ? html`<div class="error-banner" role="alert">${this._error}</div>` : nothing}
+      ${showGenericError ? html`
+        <div class="generation-failed" role="alert" style="margin-bottom: var(--space-6)">
+          <div class="generation-failed__icon">\u26A0</div>
+          <div class="generation-failed__title">${msg('Generation Error')}</div>
+          <div class="generation-failed__detail">${this._error}</div>
+        </div>
+      ` : nothing}
 
       <div class="table-nav">
         <button class="btn btn--back" @click=${this._handleBack}>
@@ -1358,7 +1430,9 @@ export class VelgForgeTable extends LitElement {
           })}
         </div>
 
-        ${this._renderCounterPips(agents.length, genConfig.agent_count, msg('Agents Drafted'))}
+        ${this._renderCounterPips(agents.length, genConfig.agent_count, msg('Agents Drafted'), agentsFailed)}
+
+        ${agentsFailed ? this._renderGenerationFailed('agents') : nothing}
 
         ${
           this._stagedAgents.length > 0
@@ -1456,7 +1530,9 @@ export class VelgForgeTable extends LitElement {
           })}
         </div>
 
-        ${this._renderCounterPips(buildings.length, genConfig.building_count, msg('Buildings Drafted'))}
+        ${this._renderCounterPips(buildings.length, genConfig.building_count, msg('Buildings Drafted'), buildingsFailed)}
+
+        ${buildingsFailed ? this._renderGenerationFailed('buildings') : nothing}
 
         ${
           this._stagedBuildings.length > 0
@@ -1666,13 +1742,37 @@ export class VelgForgeTable extends LitElement {
     `;
   }
 
-  private _renderCounterPips(filled: number, total: number, label: string) {
+  private _renderGenerationFailed(section: 'agents' | 'buildings') {
+    const label = section === 'agents' ? msg('Operative Roster') : msg('Architectural Footprint');
+    return html`
+      <div class="generation-failed" role="alert">
+        <div class="generation-failed__icon">\u26A0</div>
+        <div class="generation-failed__title">${msg('Signal Lost')} – ${label}</div>
+        <div class="generation-failed__detail">
+          ${msg('The upstream AI provider was temporarily overloaded. Your existing operatives are safe.')}
+        </div>
+        <button
+          class="btn btn--primary"
+          @click=${() => this._retryGeneration(section)}
+        >
+          ${msg('Retry Generation')}
+        </button>
+      </div>
+    `;
+  }
+
+  private _retryGeneration(section: 'agents' | 'buildings') {
+    forgeStateManager.error.value = null;
+    this._generateChunk(section);
+  }
+
+  private _renderCounterPips(filled: number, total: number, label: string, failed = false) {
     return html`
       <div class="counter-pips">
         ${Array.from(
           { length: total },
           (_, i) => html`
-          <div class="counter-pips__pip ${i < filled ? 'counter-pips__pip--filled' : ''}"></div>
+          <div class="counter-pips__pip ${i < filled ? 'counter-pips__pip--filled' : ''} ${i >= filled && failed ? 'counter-pips__pip--warning' : ''}"></div>
         `,
         )}
         <span class="counter-pips__label">${filled}/${total} ${label}</span>

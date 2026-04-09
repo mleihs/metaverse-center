@@ -72,6 +72,8 @@ class ForgeThemeService:
         seed: str,
         anchor: dict[str, Any],
         geography: dict[str, Any],
+        agents: list[dict[str, Any]] | None = None,
+        buildings: list[dict[str, Any]] | None = None,
         openrouter_key: str | None = None,
     ) -> dict[str, Any]:
         """Generate a complete theme via AI based on the simulation's identity.
@@ -79,6 +81,28 @@ class ForgeThemeService:
         Returns the theme as a dict matching ForgeThemeOutput fields.
         """
         logger.info("Generating theme for seed: %s", seed[:60])
+
+        # Build agent roster summary (names, professions, brief character)
+        agent_lines = ""
+        if agents:
+            summaries = []
+            for a in agents[:8]:
+                name = a.get("name", "?")
+                prof = a.get("primary_profession", "")
+                char = a.get("character", "")[:80]
+                summaries.append(f"  - {name} ({prof}): {char}")
+            agent_lines = f"OPERATIVE ROSTER ({len(agents)} agents):\n" + "\n".join(summaries) + "\n\n"
+
+        # Build building summary (names, types, brief descriptions)
+        building_lines = ""
+        if buildings:
+            summaries = []
+            for b in buildings[:8]:
+                name = b.get("name", "?")
+                btype = b.get("building_type", "")
+                desc = b.get("description", "")[:80]
+                summaries.append(f"  - {name} ({btype}): {desc}")
+            building_lines = f"ARCHITECTURAL REGISTRY ({len(buildings)} buildings):\n" + "\n".join(summaries) + "\n\n"
 
         prompt = (
             f"Design a unique visual theme for this simulation world:\n\n"
@@ -91,9 +115,13 @@ class ForgeThemeService:
             f"GEOGRAPHY:\n"
             f"  City: {geography.get('city_name', 'Unnamed')}\n"
             f"  Zones: {', '.join(z.get('name', '') for z in geography.get('zones', []))}\n\n"
-            f"Create a visual identity that captures this world's essence. "
-            f"Consider: Is this world dark or light? Industrial or organic? "
-            f"Ancient or futuristic? Warm or cold? Chaotic or ordered?"
+            f"{agent_lines}"
+            f"{building_lines}"
+            f"Create a visual identity that captures this SPECIFIC world's essence. "
+            f"The image style prompts MUST reference the actual characters, locations, "
+            f"and atmosphere of THIS world \u2013 not generic art styles. "
+            f"Consider: What do these specific characters look like? What architectural "
+            f"style do these buildings have? What is the dominant mood of this world?"
         )
 
         agent = Agent(
