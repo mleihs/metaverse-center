@@ -44,7 +44,7 @@ from backend.services.dungeon.dungeon_objektanker import get_barometer_text, sel
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_instance_store import store as _store
-from backend.services.dungeon_shared import FALLBACK_SPAWNS, log_extra
+from backend.services.dungeon_shared import FALLBACK_SPAWNS, award_secret_badge, log_extra
 from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
@@ -220,6 +220,12 @@ class DungeonMovementService:
         drain_trigger = strategy.apply_drain(instance)
         if drain_trigger:
             banter_trigger = drain_trigger
+            # Secret badge: total fracture in an Overthrow dungeon
+            if drain_trigger == "total_fracture":
+                await award_secret_badge(
+                    admin_supabase, instance, "political_vertigo",
+                    {"fracture": instance.archetype_state.get("fracture", 0)},
+                )
         if target_room.depth > current_room.depth:
             banter_trigger = "depth_change"
 

@@ -8,6 +8,11 @@ import type {
   SimulationSetting,
   SimulationTaxonomy,
 } from '../types/index.js';
+import type {
+  AchievementDefinition,
+  AchievementSummary,
+  UserAchievement,
+} from './api/AchievementsApiService.js';
 
 export class AppStateManager {
   // --- Auth ---
@@ -39,6 +44,12 @@ export class AppStateManager {
   // --- UI ---
   readonly loading = signal<boolean>(false);
   readonly mockMode = signal<boolean>(false);
+
+  // --- Achievements ---
+  readonly achievementDefinitions = signal<AchievementDefinition[]>([]);
+  readonly achievementSummary = signal<AchievementSummary | null>(null);
+  /** Set briefly on Realtime INSERT, consumed by toast/dashboard. Cleared after display. */
+  readonly recentUnlock = signal<UserAchievement | null>(null);
 
   // --- Navigation deep-link signals ---
   /** Agent name to auto-open on next AgentsView load, then cleared. */
@@ -151,6 +162,18 @@ export class AppStateManager {
           ? 'normal'
           : status.threshold_state;
     }
+  }
+
+  setAchievementDefinitions(defs: AchievementDefinition[]): void {
+    this.achievementDefinitions.value = defs;
+  }
+
+  setAchievementSummary(summary: AchievementSummary | null): void {
+    this.achievementSummary.value = summary;
+  }
+
+  setRecentUnlock(achievement: UserAchievement | null): void {
+    this.recentUnlock.value = achievement;
   }
 
   /** Get taxonomy values for a specific type. */

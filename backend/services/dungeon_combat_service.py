@@ -57,6 +57,7 @@ from backend.services.dungeon_shared import (
     CLIENT_TIMER_BUFFER_MS,
     COMBAT_PLANNING_TIMEOUT_MS,
     FALLBACK_SPAWNS,
+    award_secret_badge,
     log_extra,
     rpc_with_retry,
 )
@@ -321,6 +322,17 @@ class DungeonCombatService:
         )
 
         if current_room.room_type == "boss":
+            # Secret badges — boss victory with specific mechanic conditions
+            if instance.archetype == "The Shadow":
+                if instance.archetype_state.get("visibility", 1) == 0:
+                    await award_secret_badge(admin_supabase, instance, "the_remnant", {"visibility": 0})
+            elif instance.archetype == "The Devouring Mother":
+                attachment = instance.archetype_state.get("attachment", 0)
+                if attachment >= 100:
+                    await award_secret_badge(
+                        admin_supabase, instance, "mothers_embrace", {"attachment": attachment},
+                    )
+
             distributable = [item for item in loot if item.effect_type not in AUTO_APPLY_EFFECT_TYPES]
             operational_count = sum(1 for a in instance.party if can_act(a.condition))
 
