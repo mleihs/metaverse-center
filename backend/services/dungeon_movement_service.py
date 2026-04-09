@@ -35,6 +35,7 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
 from backend.services.combat.stress_system import REST_STRESS_HEAL, calculate_ambient_stress
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+from backend.services.dungeon.dungeon_achievements import DungeonAchievementService
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 from backend.services.dungeon.dungeon_banter import select_banter
 from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
@@ -44,7 +45,7 @@ from backend.services.dungeon.dungeon_objektanker import get_barometer_text, sel
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_instance_store import store as _store
-from backend.services.dungeon_shared import FALLBACK_SPAWNS, award_secret_badge, log_extra
+from backend.services.dungeon_shared import FALLBACK_SPAWNS, log_extra
 from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
@@ -220,12 +221,7 @@ class DungeonMovementService:
         drain_trigger = strategy.apply_drain(instance)
         if drain_trigger:
             banter_trigger = drain_trigger
-            # Secret badge: total fracture in an Overthrow dungeon
-            if drain_trigger == "total_fracture":
-                await award_secret_badge(
-                    admin_supabase, instance, "political_vertigo",
-                    {"fracture": instance.archetype_state.get("fracture", 0)},
-                )
+            await DungeonAchievementService.on_drain_trigger(admin_supabase, instance, drain_trigger)
         if target_room.depth > current_room.depth:
             banter_trigger = "depth_change"
 
@@ -279,6 +275,7 @@ class DungeonMovementService:
         banter_text = None
         if banter:
             instance.used_banter_ids.append(banter["id"])
+            await DungeonAchievementService.on_banter_witnessed(admin_supabase, instance, banter["id"])
             alive = [a for a in instance.party if can_act(a.condition)]
             if alive:
                 agent = random.choice(alive)
@@ -302,6 +299,7 @@ class DungeonMovementService:
             obj_id = at["anchor_id"]
             phase = at["phase"]
             instance.anchor_phases_shown.setdefault(obj_id, []).append(phase)
+            await DungeonAchievementService.on_anchor_encountered(admin_supabase, instance, obj_id)
             if "{agent}" in at.get("text_en", ""):
                 alive = [a for a in instance.party if can_act(a.condition)]
                 if alive:
@@ -358,6 +356,9 @@ class DungeonMovementService:
             narrative_en=banter.get("text_en", "") if banter else None,
             narrative_de=banter.get("text_de", "") if banter else None,
         )
+
+        # Track peak stress after all room-entry mutations (for flawless_run badge)
+        DungeonAchievementService.track_peak_stress(instance)
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
@@ -471,6 +472,8 @@ class DungeonMovementService:
                     agent.stress = max(0, min(1000, agent.stress + stress_delta))
                 if stress_heal:
                     agent.stress = max(0, agent.stress - stress_heal)
+
+        DungeonAchievementService.track_peak_stress(instance)
 
         # Apply archetype state changes from encounter effects
         get_archetype_strategy(instance.archetype).apply_encounter_effects(instance, effects)
@@ -612,6 +615,7 @@ class DungeonMovementService:
 
         stress_cost = mc.get("seal_stress_cost", 15)
         agent.stress = min(1000, agent.stress + stress_cost)
+        DungeonAchievementService.track_peak_stress(instance)
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
@@ -677,6 +681,7 @@ class DungeonMovementService:
 
         stress_cost = mc.get("ground_stress_cost", 15)
         agent.stress = min(1000, agent.stress + stress_cost)
+        DungeonAchievementService.track_peak_stress(instance)
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
@@ -742,6 +747,7 @@ class DungeonMovementService:
 
         stress_cost = mc.get("rally_stress_cost", 15)
         agent.stress = min(1000, agent.stress + stress_cost)
+        DungeonAchievementService.track_peak_stress(instance)
 
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
