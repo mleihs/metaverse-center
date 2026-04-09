@@ -46,7 +46,7 @@ export class VelgAchievementToast extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._unsubscribe();
-    this._disposeAuthWatch?.();
+    try { this._disposeAuthWatch?.(); } catch { /* best-effort cleanup */ }
     this._disposeAuthWatch = null;
   }
 

@@ -84,7 +84,8 @@ export class VelgAchievementGrid extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      padding: var(--space-1-5) var(--space-3);
+      padding: var(--space-2-5) var(--space-4);
+      min-height: 44px;
       background: none;
       border: 1px solid transparent;
       color: var(--color-text-muted);

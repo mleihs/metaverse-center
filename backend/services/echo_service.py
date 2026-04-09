@@ -114,7 +114,7 @@ class EchoService:
             await supabase.rpc(
                 "fn_increment_progress",
                 {
-                    "p_user_id": user_id,
+                    "p_user_id": str(user_id),
                     "p_achievement_id": "ward_master",
                     "p_target": 3,
                     "p_context": {"ward_vector": ward_vector, "target_simulation_id": target_sim_id},

@@ -160,7 +160,9 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge award failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id},
+                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
+                           "player_id": str(player_id)},
+                    exc_info=True,
                 )
 
     # ── Private: Progress Increment Helper ────────────────────────────────
@@ -193,7 +195,9 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge progress increment failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id},
+                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
+                           "player_id": str(player_id)},
+                    exc_info=True,
                 )
 
     # ── Private: Deduplicated Progress Increment ─────────────────────────
@@ -227,5 +231,7 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge unique progress failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id},
+                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
+                           "player_id": str(player_id)},
+                    exc_info=True,
                 )
