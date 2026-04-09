@@ -84,9 +84,9 @@ export class VelgAchievementBadge extends LitElement {
     /* Glow halo (behind hex, unclipped) */
     .hex-glow {
       position: absolute;
-      inset: -4px;
+      inset: -6px;
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-      background: color-mix(in srgb, var(--_glow-color) 12%, transparent);
+      background: color-mix(in srgb, var(--_glow-color) 18%, transparent);
       opacity: 0;
       transition: opacity var(--transition-normal);
     }
@@ -106,10 +106,10 @@ export class VelgAchievementBadge extends LitElement {
     /* ── Locked state ── */
     :host(:not([earned])) .hex-bg {
       background: var(--color-surface-sunken);
-      border-color: var(--color-border-light);
+      border-color: var(--color-border);
     }
     :host(:not([earned])) .icon {
-      opacity: 0.3;
+      opacity: 0.45;
       filter: grayscale(1);
     }
 
@@ -123,10 +123,11 @@ export class VelgAchievementBadge extends LitElement {
       text-align: center;
       margin-top: var(--space-1);
       line-height: var(--leading-tight);
-      max-width: var(--_size);
+      max-width: calc(var(--_size) + var(--space-4));
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     :host([earned]) .label {
       color: var(--color-text-primary);
