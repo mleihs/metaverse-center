@@ -587,6 +587,14 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
           `
         : nothing}
 
+      <div class="broadsheet__columns">
+        ${columnArticles.map(
+          (article) => html`
+            <velg-broadsheet-article .article=${article}></velg-broadsheet-article>
+          `,
+        )}
+      </div>
+
       <div class="broadsheet__health">
         <velg-broadsheet-health-hero
           .health=${featured.health_snapshot}
@@ -594,14 +602,6 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
           .statistics=${featured.statistics}
           voice=${voice}
         ></velg-broadsheet-health-hero>
-      </div>
-
-      <div class="broadsheet__columns">
-        ${columnArticles.map(
-          (article) => html`
-            <velg-broadsheet-article .article=${article}></velg-broadsheet-article>
-          `,
-        )}
       </div>
 
       <div class="broadsheet__wire">

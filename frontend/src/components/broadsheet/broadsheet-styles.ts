@@ -15,7 +15,7 @@ export const broadsheetStyles = css`
   .broadsheet {
     display: grid;
     grid-template-columns: 1fr 280px;
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-auto-rows: auto;
     gap: var(--space-6);
     max-width: var(--container-xl);
     margin: 0 auto;
@@ -28,22 +28,22 @@ export const broadsheetStyles = css`
     from { opacity: 0; }
   }
 
+  /* ── Full-width Sections ─────────────────────────── */
+
+  .broadsheet__masthead {
+    grid-column: 1 / -1;
+  }
+
+  .broadsheet__ticker {
+    grid-column: 1 / -1;
+  }
+
   /* ── Hero Section (full-width) ───────────────────── */
 
   .broadsheet__hero {
     grid-column: 1 / -1;
     border-bottom: 3px double var(--color-border);
     padding-bottom: var(--space-8);
-  }
-
-  /* ── Health Sidebar (sticky) ─────────────────────── */
-
-  .broadsheet__health {
-    grid-column: 2;
-    grid-row: 2;
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-4));
-    height: fit-content;
   }
 
   /* ── Multi-Column Articles ───────────────────────── */
@@ -56,11 +56,19 @@ export const broadsheetStyles = css`
     column-fill: balance;
   }
 
+  /* ── Health Sidebar (sticky) ─────────────────────── */
+
+  .broadsheet__health {
+    grid-column: 2;
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+    height: fit-content;
+  }
+
   /* ── Gazette Wire Sidebar ────────────────────────── */
 
   .broadsheet__wire {
     grid-column: 2;
-    grid-row: 3;
   }
 
   /* ── Fold Line (broadsheet crease) ───────────────── */
@@ -325,7 +333,6 @@ export const broadsheetStyles = css`
     }
     .broadsheet__health {
       grid-column: 1;
-      grid-row: auto;
       position: static;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -333,7 +340,6 @@ export const broadsheetStyles = css`
     }
     .broadsheet__wire {
       grid-column: 1;
-      grid-row: auto;
     }
     .broadsheet__columns {
       column-width: 24ch;
