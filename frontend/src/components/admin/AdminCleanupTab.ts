@@ -10,7 +10,7 @@ import type {
 } from '../../types/index.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminLoadingStyles } from './admin-shared-styles.js';
+import { adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 import '../shared/ConfirmDialog.js';
 import '../shared/VelgMetricCard.js';

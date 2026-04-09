@@ -17,7 +17,7 @@ import {
   forgeInfoBubbleStyles,
   forgeSectionStyles,
   forgeStatusStyles,
-} from './forge-console-styles.js';
+} from '../shared/forge-console-styles.js';
 import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 

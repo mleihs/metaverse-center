@@ -18,7 +18,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
-import { adminAnimationStyles } from './admin-shared-styles.js';
+import { adminAnimationStyles } from '../shared/admin-shared-styles.js';
 import './DungeonTerminalPreview.js';
 
 @localized()

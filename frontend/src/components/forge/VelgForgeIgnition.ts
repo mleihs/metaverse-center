@@ -9,7 +9,7 @@ import {
   forgeButtonStyles,
   forgeSectionStyles,
   forgeStatusStyles,
-} from './forge-console-styles.js';
+} from '../shared/forge-console-styles.js';
 
 import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';

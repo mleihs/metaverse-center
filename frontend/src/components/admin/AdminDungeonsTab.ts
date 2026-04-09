@@ -10,7 +10,7 @@ import {
   adminGlobalCardStyles,
   adminLoadingStyles,
   adminSectionHeaderStyles,
-} from './admin-shared-styles.js';
+} from '../shared/admin-shared-styles.js';
 
 /** All dungeon archetypes — must match backend ARCHETYPE_CONFIGS keys + signatures. */
 const ARCHETYPES = [

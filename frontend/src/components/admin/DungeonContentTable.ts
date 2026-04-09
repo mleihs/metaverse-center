@@ -12,7 +12,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
-import { adminAnimationStyles, adminBadgeStyles } from './admin-shared-styles.js';
+import { adminAnimationStyles, adminBadgeStyles } from '../shared/admin-shared-styles.js';
 
 /** Archetype → visual config */
 const ARCHETYPE_COLORS: Record<string, { token: string; label: string; icon: string }> = {

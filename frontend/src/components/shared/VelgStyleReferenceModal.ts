@@ -6,7 +6,7 @@ import {
   forgeButtonStyles,
   forgeFieldStyles,
   forgeRangeStyles,
-} from '../forge/forge-console-styles.js';
+} from './forge-console-styles.js';
 import { VelgToast } from './Toast.js';
 
 import './BaseModal.js';

@@ -2,7 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
-import { adminSubNavStyles } from './admin-shared-styles.js';
+import { adminSubNavStyles } from '../shared/admin-shared-styles.js';
 
 import './AdminInstagramTab.js';
 import './AdminBlueskyTab.js';

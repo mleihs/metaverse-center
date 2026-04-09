@@ -13,7 +13,7 @@ import {
   forgeRangeStyles,
   forgeResearchHintStyles,
   forgeStatusStyles,
-} from './forge-console-styles.js';
+} from '../shared/forge-console-styles.js';
 import { fanRotation, renderInfoBubble } from './forge-utils.js';
 
 import './VelgForgeScanOverlay.js';

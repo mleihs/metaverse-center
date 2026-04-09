@@ -5,7 +5,7 @@ import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminButtonStyles, adminLoadingStyles } from './admin-shared-styles.js';
+import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 /** Operational tips for each cache setting (shown as info bubbles). */
 function getCacheTip(): Record<string, string> {
