@@ -60,7 +60,7 @@ class ArchetypeVisual:
 ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     "shadow": ArchetypeVisual(
         archetype_id="shadow",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -76,7 +76,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "tower": ArchetypeVisual(
         archetype_id="tower",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -93,7 +93,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "mother": ArchetypeVisual(
         archetype_id="mother",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -110,7 +110,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "entropy": ArchetypeVisual(
         archetype_id="entropy",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -128,7 +128,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "prometheus": ArchetypeVisual(
         archetype_id="prometheus",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -283,7 +283,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     # ── Entropy detail variants ────────────────────────────────────────────
     "entropy-depth": ArchetypeVisual(
         archetype_id="entropy-depth",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -300,7 +300,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "entropy-whispers": ArchetypeVisual(
         archetype_id="entropy-whispers",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -317,7 +317,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "entropy-revolution": ArchetypeVisual(
         archetype_id="entropy-revolution",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
@@ -334,7 +334,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
     ),
     "entropy-boss": ArchetypeVisual(
         archetype_id="entropy-boss",
-        model="black-forest-labs/flux.2-max",
+        model="black-forest-labs/flux-2-max",
         aspect_ratio="16:9",
         image_size="2K",
         prompt=(
