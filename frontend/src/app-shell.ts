@@ -12,7 +12,7 @@ import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { seoService } from './services/SeoService.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
-import type { Simulation, SimulationSetting } from './types/index.js';
+import type { Simulation } from './types/index.js';
 
 import { lazyRoute } from './utils/lazy-route.js';
 import { getSimViewImport } from './utils/sim-view-imports.js';
@@ -991,15 +991,11 @@ export class VelgApp extends LitElement {
     this._lastLoadedSimulationId = simulationId;
 
     // Membership already determined in _enterSimulationRoute().
-    // Load taxonomies + design settings (both use public endpoints for non-members).
-    // Features settings require membership — skip for non-members to avoid 403.
-    const featuresCall = appState.currentRole.value
-      ? settingsApi.list(simulationId, 'features')
-      : Promise.resolve({ success: true, data: [] as SimulationSetting[] });
+    // Load taxonomies + public settings (design + features use public endpoints via anon RLS).
     const [taxResponse, designResponse, featuresResponse] = await Promise.all([
       taxonomiesApi.list(simulationId, { limit: '500' }),
       settingsApi.list(simulationId, 'design'),
-      featuresCall,
+      settingsApi.list(simulationId, 'features'),
     ]);
 
     if (taxResponse.success && taxResponse.data) {

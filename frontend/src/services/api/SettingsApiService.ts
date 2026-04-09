@@ -6,10 +6,10 @@ export class SettingsApiService extends BaseApiService {
     simulationId: string,
     category?: SettingCategory,
   ): Promise<ApiResponse<SimulationSetting[]>> {
-    // Design settings are publicly readable (anon RLS policy, migration 020).
-    // Always use public endpoint for design to avoid 403 for authenticated non-members.
-    if (category === 'design') {
-      return this.getPublic(`/simulations/${simulationId}/settings`);
+    // Design, anchor, and features are publicly readable (anon RLS, migrations 020+187).
+    // Always use public endpoint for these to avoid 403 for authenticated non-members.
+    if (category === 'design' || category === 'features') {
+      return this.getPublic(`/simulations/${simulationId}/settings`, category ? { category } : undefined);
     }
     return this.getSimulationData(
       `/simulations/${simulationId}/settings`,
