@@ -48,6 +48,13 @@ MISSION_SCORE_VALUES: dict[str, int] = {
 # Detection penalty for failed missions
 DETECTION_PENALTY = 3
 
+# Guardian overcome bonus: +2 military per guardian when attacker succeeds
+# against a guardian-protected target (capped at +4). Actual logic in SQL
+# fn_compute_cycle_scores (migration 187). Python constants for documentation
+# and test assertions only.
+GUARDIAN_OVERCOME_BONUS = 2
+GUARDIAN_OVERCOME_CAP = 4
+
 # ── Epoch constants (from epoch_service.py) ──────────────────────────────
 
 # RP costs for each operative type

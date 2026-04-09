@@ -3,9 +3,6 @@
 import logging
 from uuid import UUID
 
-import httpx
-from postgrest.exceptions import APIError as PostgrestAPIError
-
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
@@ -30,16 +27,18 @@ class ScoringService:
     ) -> list[dict]:
         """Compute and store scores for all participants in the current cycle.
 
-        Uses ``fn_compute_cycle_scores`` RPC (migration 127) which pushes all
-        12 per-simulation queries into a single SQL call with CTEs for raw
-        scoring, normalization, and weighted composite computation.
+        Uses ``fn_compute_cycle_scores`` RPC (migration 127, updated 187) which:
+        1. Atomically refreshes all materialized views within the function
+           (CONCURRENTLY with non-concurrent fallback — eliminates the 6%
+           staleness failure rate from the previous two-call pattern)
+        2. Computes raw scores across 5 dimensions via CTEs
+        3. Normalises per-dimension (max-scaling to 0-100)
+        4. Applies weighted composite and upserts into epoch_scores
+
+        Guardian overcome bonus (migration 187): attackers earn +2 military
+        per active guardian at the target (capped at +4).
         """
         logger.info("Computing cycle scores", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number})
-        # Refresh materialized views (migration 031) so freshly cloned game instances have data
-        try:
-            await supabase.rpc("refresh_all_game_metrics").execute()
-        except (PostgrestAPIError, httpx.HTTPError):
-            logger.warning("Failed to refresh materialized views before scoring")
 
         epoch = await EpochService.get(supabase, epoch_id)
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
@@ -63,30 +62,10 @@ class ScoringService:
 
         scores = extract_list(resp)
         if not scores:
-            # Retry once with forced MV refresh — stale materialized views
-            # are the primary cause of empty scoring results (6% rate in v2.1).
-            logger.warning(
-                "Scoring RPC returned no data — retrying after MV refresh",
+            logger.error(
+                "Scoring RPC returned no data — no participants in epoch?",
                 extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
             )
-            try:
-                await supabase.rpc("refresh_all_game_metrics").execute()
-            except (PostgrestAPIError, httpx.HTTPError):
-                logger.warning("MV refresh retry also failed")
-            resp = await supabase.rpc(
-                "fn_compute_cycle_scores",
-                {
-                    "p_epoch_id": str(epoch_id),
-                    "p_cycle_number": cycle_number,
-                    "p_score_weights": score_weights,
-                },
-            ).execute()
-            scores = extract_list(resp)
-            if not scores:
-                logger.error(
-                    "Scoring empty after MV refresh retry",
-                    extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
-                )
 
         return scores
 
