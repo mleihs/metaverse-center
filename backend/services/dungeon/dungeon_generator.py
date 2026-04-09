@@ -10,10 +10,13 @@ Review #8: Exit rooms defined — early escape at depth >= 3, Tier 1 loot only.
 
 from __future__ import annotations
 
+import logging
 import random
 
 from backend.models.resonance_dungeon import RoomNode, RoomType
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_ROOM_DISTRIBUTIONS
+
+logger = logging.getLogger(__name__)
 
 
 def generate_dungeon_graph(

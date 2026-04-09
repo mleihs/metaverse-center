@@ -65,6 +65,17 @@ export interface ScanLogEntry {
   magnitude: number | null;
 }
 
+export interface ScanCandidateList {
+  items: ScanCandidate[];
+  meta: {
+    count: number;
+    total: number;
+    limit: number;
+    offset: number;
+  };
+  recommended_threshold: number;
+}
+
 export interface ScanCycleMetrics {
   adapters: Record<string, { status: string; fetched: number }>;
   total_fetched: number;
@@ -97,7 +108,7 @@ export class ScannerApiService extends BaseApiService {
     );
   }
 
-  async listCandidates(params?: Record<string, string>): Promise<ApiResponse<ScanCandidate[]>> {
+  async listCandidates(params?: Record<string, string>): Promise<ApiResponse<ScanCandidateList>> {
     return this.get('/admin/news-scanner/candidates', params);
   }
 

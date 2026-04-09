@@ -28,12 +28,11 @@ from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_
 from backend.services.external.replicate import ReplicateBillingError, ReplicateError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
+from backend.services.forge_image_service import ForgeImageService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_theme_service import ForgeThemeService
-from backend.services.image_service import ImageService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
-from backend.utils.encryption import decrypt
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -309,44 +308,18 @@ class ForgeOrchestratorService:
         anchor_data: dict | None = None,
         replicate_api_key: str | None = None,
         openrouter_api_key: str | None = None,
-    ) -> ImageService:
-        """Build an ``ImageService`` with world context from the simulation."""
+    ) -> ForgeImageService:
+        """Build a ``ForgeImageService`` with world context from the simulation."""
         world_context = await ForgeOrchestratorService._build_world_context(
             supabase, simulation_id, sim_data, anchor_data,
         )
-        return ImageService(
+        return ForgeImageService(
             supabase,
             simulation_id,
             replicate_api_key=replicate_api_key,
             openrouter_api_key=openrouter_api_key,
             world_context=world_context,
         )
-
-    @staticmethod
-    async def _get_user_keys(supabase: Client, user_id: UUID) -> tuple[str | None, str | None]:
-        """Fetch and decrypt a user's BYOK API keys."""
-        logger.debug("Fetching BYOK keys for user %s", user_id)
-        resp = await (
-            supabase.table("user_wallets")
-            .select("encrypted_openrouter_key, encrypted_replicate_key")
-            .eq("user_id", str(user_id))
-            .maybe_single()
-            .execute()
-        )
-        data = resp.data or {}
-
-        or_key = data.get("encrypted_openrouter_key")
-        rep_key = data.get("encrypted_replicate_key")
-
-        decrypted_or = decrypt(or_key) if or_key else None
-        decrypted_rep = decrypt(rep_key) if rep_key else None
-
-        if decrypted_or:
-            logger.debug("Using personal OpenRouter key for user %s", user_id)
-        if decrypted_rep:
-            logger.debug("Using personal Replicate key for user %s", user_id)
-
-        return decrypted_or, decrypted_rep
 
     @staticmethod
     async def get_forge_progress(supabase: Client, slug: str) -> dict | None:
@@ -377,7 +350,7 @@ class ForgeOrchestratorService:
             context = mock.mock_research_context(seed)
             anchors = [PhilosophicalAnchor(**a) for a in mock.mock_anchors(seed)]
         else:
-            or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
             try:
                 # 1. Scrape web context
@@ -457,7 +430,7 @@ class ForgeOrchestratorService:
             else:
                 raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
 
-        or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+        or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
         # Build geography context for agent/building chunks
         geography = draft_data.get("geography") or None
@@ -575,7 +548,7 @@ class ForgeOrchestratorService:
             else:
                 entity = mock.mock_single_building(seed, entity_index, entity_total)
         else:
-            or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
             prompt = _build_entity_prompt(
                 entity_type, anchor, seed, entity_index, entity_total,
@@ -755,7 +728,7 @@ class ForgeOrchestratorService:
         else:
             anchor = draft_data.get("philosophical_anchor", {}).get("selected", {})
             geography = draft_data.get("geography", {})
-            or_key, _ = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
             try:
                 theme_data = await ForgeThemeService.generate_theme(
@@ -1048,7 +1021,7 @@ class ForgeOrchestratorService:
         t_batch = time.monotonic()
 
         try:
-            or_key, rep_key = await ForgeOrchestratorService._get_user_keys(supabase, user_id)
+            or_key, rep_key = await ForgeDraftService.get_user_keys(supabase, user_id)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.exception("Failed to fetch BYOK keys — using platform keys")
             or_key, rep_key = None, None
@@ -1608,7 +1581,7 @@ Generate exactly 3 new agents. Requirements:
             or_key = None
             rep_key = None
             if user_id:
-                or_key, rep_key = await ForgeOrchestratorService._get_user_keys(
+                or_key, rep_key = await ForgeDraftService.get_user_keys(
                     admin_supabase, user_id,
                 )
 

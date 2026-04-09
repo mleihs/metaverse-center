@@ -40,7 +40,7 @@ export class VelgChatView extends LitElement {
     }
 
     @keyframes layout-enter {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {

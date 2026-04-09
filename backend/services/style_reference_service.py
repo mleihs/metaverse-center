@@ -376,23 +376,11 @@ async def _try_delete_storage_file(supabase: Client, url: str) -> None:
 
 
 def _convert_to_avif(image_bytes: bytes, quality: int = 85) -> bytes:
-    """Convert image bytes to AVIF format for storage efficiency."""
-    try:
-        import io
+    """Convert image bytes to AVIF format for storage efficiency.
 
-        from PIL import Image
+    Delegates to the canonical implementation in utils.image.
+    Reference images are capped at 2048px (manageable for style transfer).
+    """
+    from backend.utils.image import convert_to_avif
 
-        img = Image.open(io.BytesIO(image_bytes))
-        # Resize if very large (keep reference images manageable)
-        max_dim = 2048
-        if max(img.size) > max_dim:
-            img.thumbnail((max_dim, max_dim))
-        if img.mode not in ("RGB", "L"):
-            img = img.convert("RGB")
-
-        output = io.BytesIO()
-        img.save(output, format="AVIF", quality=quality)
-        return output.getvalue()
-    except ImportError:
-        logger.warning("Pillow not installed — returning raw image bytes")
-        return image_bytes
+    return convert_to_avif(image_bytes, max_dimension=2048, quality=quality)

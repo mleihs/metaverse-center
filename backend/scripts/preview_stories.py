@@ -16,10 +16,10 @@ from pathlib import Path
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from backend.services.instagram_image_composer import InstagramImageComposer  # noqa: E402
+from backend.services.instagram_image_service import InstagramImageService  # noqa: E402
 
 # Dummy supabase client — story templates don't need DB access
-composer = InstagramImageComposer(supabase=None)  # type: ignore[arg-type]
+composer = InstagramImageService(supabase=None)  # type: ignore[arg-type]
 
 # ── Test Data ──────────────────────────────────────────────────────────
 

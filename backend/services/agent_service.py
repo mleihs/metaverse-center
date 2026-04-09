@@ -165,23 +165,11 @@ class AgentService(BaseService):
         supabase: Client,
         simulation_id: UUID,
         slug: str,
+        *,
+        select: str = "*",
     ) -> dict:
-        """Get an agent by simulation-scoped slug."""
-        response = await (
-            supabase.table(cls._read_table())
-            .select("*")
-            .eq("simulation_id", str(simulation_id))
-            .eq("slug", slug)
-            .is_("deleted_at", "null")
-            .limit(1)
-            .execute()
-        )
-        if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Agent with slug '{slug}' not found in simulation '{simulation_id}'.",
-            )
-        agent = response.data[0]
+        """Get an agent by slug with ambassador enrichment."""
+        agent = await super().get_by_slug(supabase, simulation_id, slug, select=select)
         await cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
         return agent
 

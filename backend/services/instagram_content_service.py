@@ -2,7 +2,7 @@
 
 This is a platform-level orchestration service (not simulation-scoped CRUD).
 Pattern follows ChronicleService: classmethod-based, stateless, uses GenerationService
-for AI caption generation and InstagramImageComposer for visual preparation.
+for AI caption generation and InstagramImageService for visual preparation.
 
 Content flow:
   fn_select_instagram_candidates() → generate caption → compose image → stage as draft
@@ -23,7 +23,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
-from backend.services.instagram_image_composer import InstagramImageComposer
+from backend.services.instagram_image_service import InstagramImageService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -358,7 +358,7 @@ class InstagramContentService:
         # 7. Compose image (after cipher so steganographic hint is available)
         image_urls = []
         if image_url:
-            composer = InstagramImageComposer(admin_supabase)
+            composer = InstagramImageService(admin_supabase)
             sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
 
             if content_type == "agent":
@@ -396,7 +396,7 @@ class InstagramContentService:
             image_urls.append(staging_url)
         else:
             # Text-only dispatches (chronicles) — generate background
-            composer = InstagramImageComposer(admin_supabase)
+            composer = InstagramImageService(admin_supabase)
             sim_colors = await cls._get_simulation_colors(admin_supabase, simulation_id)
             jpeg_bytes = await composer.compose_bureau_dispatch(
                 source_image_url=None,

@@ -128,6 +128,39 @@ class BaseService:
         return data
 
     @classmethod
+    async def get_by_slug(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        slug: str,
+        *,
+        select: str = "*",
+    ) -> dict:
+        """Get a single entity by slug within a simulation.
+
+        Queries the active (non-deleted) view. Subclasses may override to
+        add post-processing (e.g. ambassador enrichment for agents).
+        """
+        table = cls._read_table()
+        response = await (
+            supabase.table(table)
+            .select(select)
+            .eq("simulation_id", str(simulation_id))
+            .eq("slug", slug)
+            .limit(1)
+            .execute()
+        )
+
+        data = extract_one(response)
+        if not data:
+            raise not_found(
+                cls.table_name, slug,
+                context=f"in simulation '{simulation_id}'",
+            )
+
+        return data
+
+    @classmethod
     async def create(
         cls,
         supabase: Client,

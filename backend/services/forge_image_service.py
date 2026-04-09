@@ -11,16 +11,13 @@ from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
 from backend.services.style_reference_service import StyleReferenceService
+from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-MAX_IMAGE_DIMENSION = 1024
-AVIF_QUALITY = 85  # Full-resolution originals
-AVIF_QUALITY_THUMB = 80  # Display-optimized thumbnails
 
-
-class ImageService:
+class ForgeImageService:
     """Orchestrates image generation: description -> Replicate -> AVIF -> Storage."""
 
     def __init__(
@@ -359,8 +356,8 @@ class ImageService:
 
         # Upload path matches LoreScroll convention: /{sim_slug}/lore/{image_slug}.avif
         path = f"{sim_slug}/lore/{image_slug}.avif"
-        full_avif = _convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
-        thumb_avif = _convert_to_avif(raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB)
+        full_avif = convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+        thumb_avif = convert_to_avif(raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB)
 
         full_path = path.replace(".avif", ".full.avif")
         await self._upload_to_storage("simulation.assets", full_path, full_avif)
@@ -578,10 +575,10 @@ class ImageService:
         Full-res file: {uuid}.full.avif (native resolution, quality 85)
         Thumbnail file: {uuid}.avif (max 1024px, quality 80)
         """
-        full_avif = _convert_to_avif(
+        full_avif = convert_to_avif(
             raw_bytes, max_dimension=None, quality=AVIF_QUALITY,
         )
-        thumb_avif = _convert_to_avif(
+        thumb_avif = convert_to_avif(
             raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB,
         )
 
@@ -610,37 +607,3 @@ class ImageService:
 
         result = await self._supabase.storage.from_(bucket).get_public_url(path)
         return result
-
-
-def _convert_to_avif(
-    image_bytes: bytes,
-    max_dimension: int | None = MAX_IMAGE_DIMENSION,
-    quality: int = AVIF_QUALITY,
-) -> bytes:
-    """Convert image bytes to AVIF format.
-
-    Args:
-        image_bytes: Raw image data.
-        max_dimension: If set, resize so the longest edge fits this limit.
-            Pass None to preserve native resolution (full-res mode).
-        quality: AVIF quality (0-100).
-    """
-    try:
-        from PIL import Image
-    except ImportError:
-        logger.warning("Pillow not installed — returning raw image bytes")
-        return image_bytes
-
-    img = Image.open(io.BytesIO(image_bytes))
-
-    # Resize if max_dimension is set and image exceeds it
-    if max_dimension is not None and max(img.size) > max_dimension:
-        img.thumbnail((max_dimension, max_dimension))
-
-    # Convert to RGB if necessary (e.g. RGBA, palette)
-    if img.mode not in ("RGB", "L"):
-        img = img.convert("RGB")
-
-    output = io.BytesIO()
-    img.save(output, format="AVIF", quality=quality)
-    return output.getvalue()
