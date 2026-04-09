@@ -497,16 +497,24 @@ async def list_taxonomies(
     return paginated(data, total, limit, offset)
 
 
-# ── Settings (design category only) ─────────────────────────────────────
+# ── Settings (public categories: design, features) ─────────────────────
+
+# Categories safe for public/anon access (RLS enforced via settings_anon_select policy)
+_PUBLIC_SETTING_CATEGORIES = frozenset({"design", "features"})
 
 
 @router.get("/simulations/{simulation_id}/settings")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_settings(
-    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+    request: Request,
+    simulation_id: SimId,
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    category: Annotated[str | None, Query()] = "design",
 ) -> SuccessResponse:
-    """List design settings only (public — for theming)."""
-    data = await SettingsService.list_settings(supabase, simulation_id, category="design")
+    """List public settings (design or features). Rejects non-public categories."""
+    if category and category not in _PUBLIC_SETTING_CATEGORIES:
+        category = "design"  # Fallback to safe default
+    data = await SettingsService.list_settings(supabase, simulation_id, category=category)
     return SuccessResponse(data=data)
 
 
