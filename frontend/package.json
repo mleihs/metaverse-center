@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
+    "@iconify-json/game-icons": "^1.2.3",
     "@lit/localize-tools": "^0.8.1",
     "@playwright/test": "^1.59.1",
     "@sentry/vite-plugin": "^5.1.1",
