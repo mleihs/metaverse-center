@@ -627,11 +627,17 @@ class HeartbeatService:
             effective_interval = int(overrides.get("interval_override_seconds", interval))
             next_at = datetime.now(UTC) + timedelta(seconds=effective_interval)
 
-            # Move non-column keys into the summary JSONB field
+            # Move non-column keys into the summary JSONB field.
+            # Only keys that match actual DB columns should remain in tick_stats;
+            # everything else goes into the summary JSONB to avoid
+            # "could not find column X in schema cache" errors.
             summary_data = {
                 "phases_completed": 12,
                 "entry_count": len(entries),
                 "autonomy": tick_stats.pop("autonomy", {}),
+                "resonance_moodlets_applied": tick_stats.pop("resonance_moodlets_applied", 0),
+                "weather_events": tick_stats.pop("weather_events", 0),
+                "weather": tick_stats.pop("weather", {}),
             }
             await (
                 admin.table("simulation_heartbeats")
