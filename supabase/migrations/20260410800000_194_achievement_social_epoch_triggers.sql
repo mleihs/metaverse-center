@@ -36,6 +36,9 @@ DECLARE
     v_seen JSONB;
     v_new_count INT;
 BEGIN
+    -- Guard: NULL item_id cannot be tracked
+    IF p_item_id IS NULL THEN RETURN 0; END IF;
+
     -- Ensure progress row exists
     INSERT INTO achievement_progress (user_id, achievement_id, current_count, target_count)
     VALUES (p_user_id, p_achievement_id, 0, p_target)
