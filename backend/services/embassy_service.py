@@ -90,7 +90,7 @@ class EmbassyService:
             supabase.table(cls.table_name).select(_EMBASSY_SELECT).eq("id", str(embassy_id)).single().execute()
         )
         if not response.data:
-            raise not_found(detail=f"Embassy '{embassy_id}' not found.")
+            raise not_found("embassy", embassy_id)
         return response.data
 
     @classmethod
@@ -197,7 +197,7 @@ class EmbassyService:
 
         response = await admin_supabase.table(cls.table_name).update(update_data).eq("id", str(embassy_id)).execute()
         if not response.data:
-            raise not_found(detail=f"Embassy '{embassy_id}' not found.")
+            raise not_found("embassy", embassy_id)
 
         logger.info(
             "Embassy updated",
@@ -273,7 +273,7 @@ class EmbassyService:
             .execute()
         )
         if not resp.data:
-            raise not_found(detail=f"Embassy '{embassy_id}' not found or not active.")
+            raise not_found("embassy", embassy_id, detail="Embassy not found or not active.")
         return resp.data[0]
 
     @classmethod
@@ -291,7 +291,7 @@ class EmbassyService:
             .execute()
         )
         if not resp.data:
-            raise not_found(detail=f"Embassy '{embassy_id}' not found.")
+            raise not_found("embassy", embassy_id)
         return resp.data[0]
 
     @classmethod

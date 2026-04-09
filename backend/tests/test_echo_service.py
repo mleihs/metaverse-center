@@ -183,6 +183,14 @@ class TestEvaluateEchoCandidates:
             return b
 
         mock.table.side_effect = make_table
+
+        # RPC mock: fn_get_ward_strength returns 0.0 (no ward) by default
+        rpc_chain = MagicMock()
+        rpc_resp = MagicMock()
+        rpc_resp.data = 0.0
+        rpc_chain.execute = AsyncMock(return_value=rpc_resp)
+        mock.rpc.return_value = rpc_chain
+
         return mock
 
     @pytest.mark.asyncio

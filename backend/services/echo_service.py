@@ -92,7 +92,7 @@ class EchoService:
         """Get a single echo by ID."""
         response = await supabase.table(cls.table_name).select("*").eq("id", str(echo_id)).single().execute()
         if not response.data:
-            raise not_found(detail=f"Echo '{echo_id}' not found.")
+            raise not_found("echo", echo_id)
         return response.data
 
     # --- Echo strength computation ---
@@ -377,7 +377,7 @@ class EchoService:
 
         response = await admin_supabase.table(cls.table_name).update(update_data).eq("id", str(echo_id)).execute()
         if not response.data:
-            raise not_found(detail=f"Echo '{echo_id}' not found.")
+            raise not_found("echo", echo_id)
         return response.data[0]
 
     @classmethod
@@ -449,7 +449,7 @@ class EchoService:
             # 2. Fetch source event
             source_event_resp = await supabase.table("events").select("*").eq("id", source_event_id).single().execute()
             if not source_event_resp.data:
-                raise not_found(detail="Source event no longer exists.")
+                raise not_found("event", detail="Source event no longer exists.")
             source_event = source_event_resp.data
 
             # Fetch target simulation info
