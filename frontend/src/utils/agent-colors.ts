@@ -95,5 +95,5 @@ function fnv1aIndex(input: string, modulo: number): number {
     hash ^= input.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  return ((hash >>> 0) % modulo);
+  return (hash >>> 0) % modulo;
 }

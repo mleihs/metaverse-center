@@ -10,6 +10,7 @@
 
 import { localeService } from '../../services/i18n/locale-service.js';
 import {
+  ARCHETYPES,
   type ArchetypeDetail,
   type AuthorCard,
   type BanterLine,
@@ -18,12 +19,11 @@ import {
   type EnemyPreview,
   type GaugeConfig,
   type GaugeThreshold,
+  getArchetypeDetail,
+  getAvailableArchetypeIds,
   type LootPreview,
   type ObjektankerPhase,
   type ObjektankerPreview,
-  getArchetypeDetail,
-  getAvailableArchetypeIds,
-  ARCHETYPES,
 } from './dungeon-detail-data.js';
 
 // ── Localized types (single-language, no De fields) ─────────────────────────
@@ -125,7 +125,12 @@ export interface LocalizedArchetypeDetail {
   readonly tagline: string;
   readonly accent: string;
   readonly imageUrl: string;
-  readonly quotes: readonly { readonly text: string; readonly author: string; readonly original?: string; readonly originalLang?: string }[];
+  readonly quotes: readonly {
+    readonly text: string;
+    readonly author: string;
+    readonly original?: string;
+    readonly originalLang?: string;
+  }[];
 
   // Localized prose
   readonly loreIntro: readonly string[];
@@ -306,4 +311,4 @@ export function getLocalizedArchetypeDetail(id: string): LocalizedArchetypeDetai
 }
 
 /** Re-exports for consumer convenience. */
-export { getAvailableArchetypeIds, ARCHETYPES };
+export { ARCHETYPES, getAvailableArchetypeIds };

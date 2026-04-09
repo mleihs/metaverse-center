@@ -5,8 +5,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 import type { LocalizedEncounterChoice as EncounterChoice } from '../dungeon-detail-localized.js';
+import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 
 @localized()
 @customElement('velg-encounter-card')
@@ -120,8 +120,9 @@ export class VelgEncounterCard extends LitElement {
         </div>
         <div class="name">${this.name}</div>
         <p class="description">${this.description}</p>
-        ${this.choices.length
-          ? html`
+        ${
+          this.choices.length
+            ? html`
               <div class="choices-header">${msg('Choices')}</div>
               ${this.choices.map(
                 (c) => html`
@@ -136,7 +137,8 @@ export class VelgEncounterCard extends LitElement {
                 `,
               )}
             `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }

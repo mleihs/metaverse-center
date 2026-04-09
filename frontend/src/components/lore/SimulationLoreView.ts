@@ -153,7 +153,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       const el =
         this.shadowRoot?.querySelector(`[data-lore-slug="${slug}"]`) ??
         this.shadowRoot?.querySelector(
-          `[data-section-index="${this._rawSections!.indexOf(section)}"]`,
+          `[data-section-index="${this._rawSections?.indexOf(section)}"]`,
         );
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });

@@ -24,10 +24,10 @@ import { formatDateRange, formatShortDateRange, getDateLocale } from '../../util
 import { icons } from '../../utils/icons.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { VelgToast } from '../shared/Toast.js';
 import { broadsheetStyles } from './broadsheet-styles.js';
-import { dispatchStyles } from '../shared/dispatch-styles.js';
 
 import '../shared/Pagination.js';
 import '../shared/VelgDispatchMasthead.js';
@@ -468,9 +468,11 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
           <velg-dispatch-masthead
             classification=${msg('Bureau Gazette')}
             title="${msg('The')} ${simName} ${msg('Broadsheet')}"
-            subtitle=${this._featured
-              ? `${msg('Edition')} #${this._featured.edition_number}`
-              : msg('Awaiting first edition')}
+            subtitle=${
+              this._featured
+                ? `${msg('Edition')} #${this._featured.edition_number}`
+                : msg('Awaiting first edition')
+            }
             themeColor=${this._themeColor}
           ></velg-dispatch-masthead>
         </div>
@@ -564,20 +566,25 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
     const voice = featured.editorial_voice ?? 'neutral';
 
     return html`
-      ${voice === 'alarmed'
-        ? html`<div class="broadsheet__breaking">${msg('Breaking News')} \u2013 ${msg('Situation Critical')}</div>`
-        : nothing}
+      ${
+        voice === 'alarmed'
+          ? html`<div class="broadsheet__breaking">${msg('Breaking News')} \u2013 ${msg('Situation Critical')}</div>`
+          : nothing
+      }
 
-      ${tickerItems.length > 0
-        ? html`
+      ${
+        tickerItems.length > 0
+          ? html`
             <div class="broadsheet__ticker">
               <velg-dispatch-ticker .items=${tickerItems}></velg-dispatch-ticker>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${heroArticle
-        ? html`
+      ${
+        heroArticle
+          ? html`
             <div class="broadsheet__hero">
               <velg-broadsheet-hero-article
                 .article=${heroArticle}
@@ -585,7 +592,8 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
               ></velg-broadsheet-hero-article>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <div class="broadsheet__columns">
         ${columnArticles.map(

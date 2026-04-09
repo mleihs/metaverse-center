@@ -8,8 +8,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 import type { LocalizedObjektankerPhase as ObjektankerPhase } from '../dungeon-detail-localized.js';
+import { detailCardStyles, detailTokenStyles } from './archetype-detail-styles.js';
 
 @localized()
 @customElement('velg-objektanker-card')

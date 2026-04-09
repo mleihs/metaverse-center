@@ -343,7 +343,7 @@ export class VelgChronicleFeed extends LitElement {
     // Take first paragraph
     const firstPara = text.split(/\n\n+/)[0]?.trim() ?? text;
     if (firstPara.length <= maxLen) return firstPara;
-    return firstPara.slice(0, maxLen).replace(/\s+\S*$/, '') + '...';
+    return `${firstPara.slice(0, maxLen).replace(/\s+\S*$/, '')}...`;
   }
 
   private _buildTickerItems(): TickerItem[] {
@@ -428,9 +428,11 @@ export class VelgChronicleFeed extends LitElement {
         subtitle=${msg('Every world writes its own newspaper. This is the wire service \u2013 AI-generated broadsheets from every active simulation, decoded and delivered in real time.')}
       ></velg-dispatch-masthead>
 
-      ${tickerItems.length > 0
-        ? html`<velg-dispatch-ticker .items=${tickerItems}></velg-dispatch-ticker>`
-        : nothing}
+      ${
+        tickerItems.length > 0
+          ? html`<velg-dispatch-ticker .items=${tickerItems}></velg-dispatch-ticker>`
+          : nothing
+      }
 
       ${
         this._loading

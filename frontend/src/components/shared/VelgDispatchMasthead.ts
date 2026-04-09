@@ -94,19 +94,17 @@ export class VelgDispatchMasthead extends LitElement {
 
   protected render() {
     return html`
-      ${this.themeColor
-        ? html`<style>:host { --_glow-color: ${this.themeColor}; }</style>`
-        : nothing}
+      ${
+        this.themeColor
+          ? html`<style>:host { --_glow-color: ${this.themeColor}; }</style>`
+          : nothing
+      }
 
-      ${this.classification
-        ? html`<p class="classification">${this.classification}</p>`
-        : nothing}
+      ${this.classification ? html`<p class="classification">${this.classification}</p>` : nothing}
 
       <h1 class="title">${this.title || msg('Dispatch Feed')}</h1>
 
-      ${this.subtitle
-        ? html`<p class="subtitle">${this.subtitle}</p>`
-        : nothing}
+      ${this.subtitle ? html`<p class="subtitle">${this.subtitle}</p>` : nothing}
     `;
   }
 }

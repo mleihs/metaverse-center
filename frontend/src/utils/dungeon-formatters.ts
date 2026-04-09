@@ -339,9 +339,7 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     lines.push(combatSystemLine(msg('DELUGE PROTOCOL')));
     lines.push(systemLine(''));
     lines.push(responseLine(msg('The water rises. Not fast. It has time.')));
-    lines.push(
-      responseLine(msg('What the flood takes, it keeps. What it spares, it marks.')),
-    );
+    lines.push(responseLine(msg('What the flood takes, it keeps. What it spares, it marks.')));
     lines.push(systemLine(''));
     lines.push(
       systemLine(`\u25C9 ${msg('Lower floors flood first. They also hold better salvage.')}`),
@@ -350,25 +348,21 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
       systemLine(`\u25C9 ${msg('The tide recedes \u2013 briefly \u2013 every 3 rooms.')}`),
     );
     lines.push(systemLine(`\u25C9 ${msg('Each recession is smaller than the last.')}`));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Use SEAL (Guardian) to close the breaches.')}`),
-    );
+    lines.push(systemLine(`\u25C9 ${msg('Use SEAL (Guardian) to close the breaches.')}`));
     lines.push(
       systemLine(`\u25C9 ${msg('Use SALVAGE to dive cleared rooms for submerged loot.')}`),
     );
-    lines.push(
-      systemLine(`\u25C9 ${msg('At water level 100: submersion. Total loss.')}`),
-    );
+    lines.push(systemLine(`\u25C9 ${msg('At water level 100: submersion. Total loss.')}`));
     lines.push(systemLine(''));
-    lines.push(
-      responseLine(msg('The waterline does not negotiate. Read it, or join it.')),
-    );
+    lines.push(responseLine(msg('The waterline does not negotiate. Read it, or join it.')));
   } else if (archetype === ARCHETYPE_AWAKENING) {
     lines.push(combatSystemLine(msg('AWAKENING PROTOCOL')));
     lines.push(systemLine(''));
     lines.push(responseLine(msg('The collective mind turns over in its sleep.')));
     lines.push(
-      responseLine(msg('Something in the architecture recognizes you. Not personally \u2013 collectively.')),
+      responseLine(
+        msg('Something in the architecture recognizes you. Not personally \u2013 collectively.'),
+      ),
     );
     lines.push(systemLine(''));
     lines.push(
@@ -381,11 +375,11 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
       systemLine(`\u25C9 ${msg('At Awareness 70: lucid state. The dungeon responds to thought.')}`),
     );
     lines.push(
-      systemLine(`\u25C9 ${msg('Use GROUND (Spy) to reduce awareness. Grounding has a cooldown.')}`),
+      systemLine(
+        `\u25C9 ${msg('Use GROUND (Spy) to reduce awareness. Grounding has a cooldown.')}`,
+      ),
     );
-    lines.push(
-      systemLine(`\u25C9 ${msg('At Awareness 100: dissolution. Complete ego loss.')}`),
-    );
+    lines.push(systemLine(`\u25C9 ${msg('At Awareness 100: dissolution. Complete ego loss.')}`));
     lines.push(systemLine(''));
     lines.push(
       responseLine(msg('The dungeon does not read your thoughts. It resonates with them.')),
@@ -393,10 +387,10 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
   } else if (archetype === ARCHETYPE_OVERTHROW) {
     lines.push(combatSystemLine(msg('OVERTHROW PROTOCOL')));
     lines.push(systemLine(''));
-    lines.push(responseLine(msg('Power changes hands. The old order does not die \u2013 it metamorphoses.')));
     lines.push(
-      responseLine(msg('Every NPC is a political actor. Every room is a negotiation.')),
+      responseLine(msg('Power changes hands. The old order does not die \u2013 it metamorphoses.')),
     );
+    lines.push(responseLine(msg('Every NPC is a political actor. Every room is a negotiation.')));
     lines.push(systemLine(''));
     lines.push(
       systemLine(`\u25C9 ${msg('Authority fracture rises with each room. Factions shift.')}`),
@@ -404,18 +398,18 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
     lines.push(
       systemLine(`\u25C9 ${msg('High fracture means betrayals, ambushes, and paranoia.')}`),
     );
+    lines.push(systemLine(`\u25C9 ${msg('At Fracture 60: revolution. The old order cracks.')}`));
     lines.push(
-      systemLine(`\u25C9 ${msg('At Fracture 60: revolution. The old order cracks.')}`),
+      systemLine(
+        `\u25C9 ${msg('Use RALLY (Propagandist) to reduce fracture. Rally has a cooldown.')}`,
+      ),
     );
-    lines.push(
-      systemLine(`\u25C9 ${msg('Use RALLY (Propagandist) to reduce fracture. Rally has a cooldown.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('At Fracture 100: total collapse. Power vacuum.')}`),
-    );
+    lines.push(systemLine(`\u25C9 ${msg('At Fracture 100: total collapse. Power vacuum.')}`));
     lines.push(systemLine(''));
     lines.push(
-      responseLine(msg('The Spiegelpalast shows everyone what they want to see. Not what they are.')),
+      responseLine(
+        msg('The Spiegelpalast shows everyone what they want to see. Not what they are.'),
+      ),
     );
   } else {
     // Shadow (default)
@@ -1153,7 +1147,7 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
 
   // ── Banner ──
   lines.push(combatSystemLine('\u2550'.repeat(W)));
-  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(`\u2551${' '.repeat(W - 2)}\u2551`));
   lines.push(
     combatSystemLine(
       '\u2551' +
@@ -1161,7 +1155,7 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
         '\u2551',
     ),
   );
-  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(`\u2551${' '.repeat(W - 2)}\u2551`));
   lines.push(
     combatSystemLine(
       '\u2551' +
@@ -1171,7 +1165,7 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
         '\u2551',
     ),
   );
-  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(`\u2551${' '.repeat(W - 2)}\u2551`));
   lines.push(combatSystemLine('\u2550'.repeat(W)));
   lines.push(systemLine(''));
 
@@ -1293,7 +1287,7 @@ export function formatLootDistribution(
 
   // ── Banner ──
   lines.push(combatSystemLine('\u2550'.repeat(W)));
-  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(`\u2551${' '.repeat(W - 2)}\u2551`));
   lines.push(
     combatSystemLine(
       '\u2551' +
@@ -1301,7 +1295,7 @@ export function formatLootDistribution(
         '\u2551',
     ),
   );
-  lines.push(combatSystemLine('\u2551' + ' '.repeat(W - 2) + '\u2551'));
+  lines.push(combatSystemLine(`\u2551${' '.repeat(W - 2)}\u2551`));
   lines.push(combatSystemLine('\u2550'.repeat(W)));
   lines.push(systemLine(''));
 
@@ -1533,9 +1527,7 @@ export function formatSealResult(
     responseLine(`${agentName} ${msg('seals the breach. The water relents \u2013 briefly.')}`),
   );
   lines.push(
-    systemLine(
-      `  \u2192 ${msg('Water level')}: ${waterLevel} | ${msg('Stress')}: +${stressCost}`,
-    ),
+    systemLine(`  \u2192 ${msg('Water level')}: ${waterLevel} | ${msg('Stress')}: +${stressCost}`),
   );
   lines.push(hintLine(`${msg('Cooldown until room')} ${cooldownUntilRoom}.`));
   return lines;

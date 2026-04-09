@@ -77,18 +77,18 @@ const DEFAULT_SETTINGS: AudioSettings = {
  * Format: [start_ms, duration_ms]
  */
 const SFX_SPRITE: SpriteMap = {
-  'keypress': [0, 83],
+  keypress: [0, 83],
   'command-confirm': [133, 213],
   'command-error': [396, 512],
   'room-enter': [958, 919],
   'combat-start': [1927, 400],
   'attack-hit': [2377, 536],
   'critical-hit': [2963, 356],
-  'healing': [3369, 1741],
+  healing: [3369, 1741],
   'damage-taken': [5160, 569],
   'loot-found': [5779, 846],
-  'victory': [6675, 1480],
-  'defeat': [8205, 559],
+  victory: [6675, 1480],
+  defeat: [8205, 559],
   'boss-reveal': [8814, 992],
   'map-node-reveal': [9856, 224],
 };
@@ -114,10 +114,7 @@ function buildSfxSpritePaths(): string[] {
   const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   if (!base) return []; // No Supabase URL — sprite load will silently fail
   const prefix = `${base}/storage/v1/object/public/dungeon.audio/sfx`;
-  return [
-    `${prefix}/sfx-sprite.ogg`,
-    `${prefix}/sfx-sprite.mp3`,
-  ];
+  return [`${prefix}/sfx-sprite.ogg`, `${prefix}/sfx-sprite.mp3`];
 }
 
 // ── Service ─────────────────────────────────────────────────────────────────
@@ -210,7 +207,12 @@ class DungeonAudioService {
     if (!this._sfxSprite) return;
 
     // Reduced motion: only play UI sounds (keypress, confirm, error), skip dramatic SFX
-    if (this._reducedMotion && name !== 'keypress' && name !== 'command-confirm' && name !== 'command-error') {
+    if (
+      this._reducedMotion &&
+      name !== 'keypress' &&
+      name !== 'command-confirm' &&
+      name !== 'command-error'
+    ) {
       return;
     }
 
@@ -491,7 +493,8 @@ class DungeonAudioService {
       if (saved.enabled !== undefined) this.enabled.value = saved.enabled;
       if (saved.masterVolume !== undefined) this.masterVolume.value = clamp01(saved.masterVolume);
       if (saved.sfxVolume !== undefined) this.sfxVolume.value = clamp01(saved.sfxVolume);
-      if (saved.ambientVolume !== undefined) this.ambientVolume.value = clamp01(saved.ambientVolume);
+      if (saved.ambientVolume !== undefined)
+        this.ambientVolume.value = clamp01(saved.ambientVolume);
       if (saved.sfxMuted !== undefined) this.sfxMuted.value = saved.sfxMuted;
       if (saved.ambientMuted !== undefined) this.ambientMuted.value = saved.ambientMuted;
     } catch {

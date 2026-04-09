@@ -20,11 +20,11 @@ import { dungeonAudio } from '../../services/DungeonAudioService.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import {
   ARCHETYPE_AWAKENING,
+  ARCHETYPE_DELUGE,
   ARCHETYPE_ENTROPY,
   ARCHETYPE_MOTHER,
   ARCHETYPE_OVERTHROW,
   ARCHETYPE_PROMETHEUS,
-  ARCHETYPE_DELUGE,
   ARCHETYPE_TOWER,
   isAwakeningState,
   isDelugeState,
@@ -1026,7 +1026,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
               <span class="sep"></span>
               <div
                 class="visibility"
-                aria-label=${msg('Visibility') + ` ${visibility}/${maxVisibility}`}
+                aria-label=${`${msg('Visibility')} ${visibility}/${maxVisibility}`}
               >
                 <span class="visibility__icon">${icons.eye(12)}</span>
                 ${Array.from(
@@ -1047,7 +1047,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           stability !== null && maxStability !== null
             ? html`
               <span class="sep"></span>
-              <div class="stability" aria-label=${msg('Stability') + ` ${stability}/${maxStability}`}>
+              <div class="stability" aria-label=${`${msg('Stability')} ${stability}/${maxStability}`}>
                 <span class="stability__icon">${icons.shield(12)}</span>
                 <div
                   class="stability__track"
@@ -1077,7 +1077,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           decay !== null && maxDecay !== null
             ? html`
               <span class="sep"></span>
-              <div class="decay" aria-label=${msg('Decay') + ` ${decay}/${maxDecay}`}>
+              <div class="decay" aria-label=${`${msg('Decay')} ${decay}/${maxDecay}`}>
                 <span class="decay__icon">${icons.alertTriangle(12)}</span>
                 <div
                   class="decay__track"
@@ -1109,7 +1109,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           attachment !== null && maxAttachment !== null
             ? html`
               <span class="sep"></span>
-              <div class="attachment" aria-label=${msg('Attachment') + ` ${attachment}/${maxAttachment}`}>
+              <div class="attachment" aria-label=${`${msg('Attachment')} ${attachment}/${maxAttachment}`}>
                 <span class="attachment__icon">${icons.heartbeat(12)}</span>
                 <div
                   class="attachment__track"
@@ -1149,7 +1149,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           insight !== null && maxInsight !== null
             ? html`
               <span class="sep"></span>
-              <div class="insight" aria-label=${msg('Insight') + ` ${insight}/${maxInsight}`}>
+              <div class="insight" aria-label=${`${msg('Insight')} ${insight}/${maxInsight}`}>
                 <span class="insight__icon">${icons.bolt(12)}</span>
                 <div
                   class="insight__track"
@@ -1185,7 +1185,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
               ${
                 componentCount > 0
                   ? html`
-                    <span class="insight__badge" aria-label=${msg('Components') + ` ${componentCount}`}>
+                    <span class="insight__badge" aria-label=${`${msg('Components')} ${componentCount}`}>
                       ${icons.sparkle(10)}${componentCount}
                     </span>
                   `
@@ -1194,7 +1194,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
               ${
                 craftedCount > 0
                   ? html`
-                    <span class="insight__badge insight__badge--crafted" aria-label=${msg('Crafted items') + ` ${craftedCount}`}>
+                    <span class="insight__badge insight__badge--crafted" aria-label=${`${msg('Crafted items')} ${craftedCount}`}>
                       ${icons.archetypePrometheus(10)}${craftedCount}
                     </span>
                   `
@@ -1207,7 +1207,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           waterLevel !== null && maxWater !== null
             ? html`
               <span class="sep"></span>
-              <div class="water" aria-label=${msg('Water level') + ` ${waterLevel}/${maxWater}`}>
+              <div class="water" aria-label=${`${msg('Water level')} ${waterLevel}/${maxWater}`}>
                 <span class="water__icon">${icons.droplet(12)}</span>
                 <div
                   class="water__track"
@@ -1240,7 +1240,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
                       : ''
                 }">${waterLevel >= 100 ? msg('FLOOD') : waterLevel}</span>
               </div>
-              <span class="water__tide" aria-label=${msg('Tidal recession') + ` ${recessionIn}`}>
+              <span class="water__tide" aria-label=${`${msg('Tidal recession')} ${recessionIn}`}>
                 ${recessionIn === 3 ? msg('Tide') : `${recessionIn}`}
               </span>
             `
@@ -1250,7 +1250,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           awareness !== null && maxAwareness !== null
             ? html`
               <span class="sep"></span>
-              <div class="awareness" aria-label=${msg('Awareness') + ` ${awareness}/${maxAwareness}`}>
+              <div class="awareness" aria-label=${`${msg('Awareness')} ${awareness}/${maxAwareness}`}>
                 <span class="awareness__icon">${icons.archetypeAwakening(12)}</span>
                 <div
                   class="awareness__track"
@@ -1290,7 +1290,7 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           fracture !== null && maxFracture !== null
             ? html`
               <span class="sep"></span>
-              <div class="fracture" aria-label=${msg('Authority Fracture') + ` ${fracture}/${maxFracture}`}>
+              <div class="fracture" aria-label=${`${msg('Authority Fracture')} ${fracture}/${maxFracture}`}>
                 <span class="fracture__icon">${icons.archetypeOverthrow(12)}</span>
                 <div
                   class="fracture__track"

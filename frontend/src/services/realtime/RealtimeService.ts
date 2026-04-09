@@ -19,9 +19,9 @@
 
 import { signal } from '@preact/signals-core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
 import type { ChatMessage, EpochChatMessage, PresenceUser } from '../../types/index.js';
 import { agentTypingPhrase } from '../../utils/agent-colors.js';
+import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
 import { supabase } from '../supabase/client.js';
 
 class RealtimeServiceImpl {

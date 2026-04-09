@@ -86,9 +86,11 @@ export class VelgDispatchTicker extends LitElement {
         ${doubled.map(
           (item) => html`
             <span class="item">
-              ${item.color
-                ? html`<span class="dot" style="background: ${item.color}"></span>`
-                : nothing}
+              ${
+                item.color
+                  ? html`<span class="dot" style="background: ${item.color}"></span>`
+                  : nothing
+              }
               ${item.text}
             </span>
           `,

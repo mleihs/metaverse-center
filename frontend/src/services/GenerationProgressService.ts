@@ -81,7 +81,7 @@ class GenerationProgressService {
   private _element: VelgGenerationProgress | null = null;
 
   private async _ensureElement(): Promise<VelgGenerationProgress> {
-    if (!this._element || !this._element.isConnected) {
+    if (!this._element?.isConnected) {
       // Await the import to ensure the custom element is registered
       await import('../components/shared/GenerationProgress.js');
       this._element = document.createElement('velg-generation-progress');

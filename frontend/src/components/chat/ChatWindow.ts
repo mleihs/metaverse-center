@@ -5,18 +5,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentAutonomyApi, agentsApi, chatApi } from '../../services/api/index.js';
-import { ChatExporter } from '../../services/chat/ChatExporter.js';
 import { chatAudio } from '../../services/ChatAudioService.js';
+import { ChatExporter } from '../../services/chat/ChatExporter.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
-import type {
-  Agent,
-  AgentBrief,
-  ChatConversation,
-  ChatEventReference,
-} from '../../types/index.js';
+import type { Agent, AgentBrief, ChatConversation, ChatEventReference } from '../../types/index.js';
 import { agentAccentColor } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -551,7 +546,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   private _streamAbort: AbortController | null = null;
 
-  private _closeExportMenuBound = () => { this._showExportMenu = false; };
+  private _closeExportMenuBound = () => {
+    this._showExportMenu = false;
+  };
   private _closeExportMenuOnEscapeBound = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && this._showExportMenu) {
       this._showExportMenu = false;
@@ -693,7 +690,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   /** Shared streaming callbacks for send + regenerate flows.
    *  All callbacks are guarded against stale conversation (user switched away mid-stream). */
-  private _streamCallbacks(conversationId: string, session: ReturnType<typeof chatStore.getOrCreate>) {
+  private _streamCallbacks(
+    conversationId: string,
+    session: ReturnType<typeof chatStore.getOrCreate>,
+  ) {
     let errorOccurred = false;
     const isStale = () => this._previousConversationId !== conversationId;
     return {
@@ -730,7 +730,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           VelgToast.error(error);
         }
       },
-      get hadError() { return errorOccurred; },
+      get hadError() {
+        return errorOccurred;
+      },
     };
   }
 
@@ -787,10 +789,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   private _buildParticipants(): Participant[] {
     // Build a cache key from agent IDs + mood scores (cheapest change detection)
     const agents = this._getAgents();
-    const key = agents.map((a) => {
-      const m = this._agentMoods.get(a.id);
-      return `${a.id}:${m?.score ?? ''}`;
-    }).join(',');
+    const key = agents
+      .map((a) => {
+        const m = this._agentMoods.get(a.id);
+        return `${a.id}:${m?.score ?? ''}`;
+      })
+      .join(',');
 
     if (key === this._cachedParticipantKey) return this._cachedParticipants;
 
@@ -994,12 +998,14 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 @avatar-click=${() => this._openAgentDetails(agent.id)}
               ></velg-avatar>`,
         )}
-        ${overflow > 0
-          ? html`<velg-tooltip position="below">
+        ${
+          overflow > 0
+            ? html`<velg-tooltip position="below">
               <div class="header__portrait-overflow">+${overflow}</div>
               <velg-agent-tip slot="tip" .agents=${agents.slice(maxVisible)}></velg-agent-tip>
             </velg-tooltip>`
-          : null}
+            : null
+        }
       </div>
     `;
   }
@@ -1121,8 +1127,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 >
                   ${this._renderDownloadIcon()}
                 </button>
-                ${this._showExportMenu
-                  ? html`
+                ${
+                  this._showExportMenu
+                    ? html`
                     <div class="export-menu" role="menu"
                       @click=${(e: Event) => e.stopPropagation()}
                       @keydown=${this._handleExportMenuKeydown}
@@ -1130,16 +1137,23 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                       <button
                         class="export-menu__item"
                         role="menuitem"
-                        @click=${() => { this._handleExportMarkdown(); this._showExportMenu = false; }}
+                        @click=${() => {
+                          this._handleExportMarkdown();
+                          this._showExportMenu = false;
+                        }}
                       >${msg('Markdown')}</button>
                       <button
                         class="export-menu__item"
                         role="menuitem"
-                        @click=${() => { this._handleExportJSON(); this._showExportMenu = false; }}
+                        @click=${() => {
+                          this._handleExportJSON();
+                          this._showExportMenu = false;
+                        }}
                       >${msg('JSON')}</button>
                     </div>
                   `
-                  : null}
+                    : null
+                }
               </div>
             </div>
           </div>
@@ -1198,7 +1212,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         .simulationId=${this.simulationId}
         ?open=${!!this._detailAgent}
         container="lightbox"
-        @panel-close=${() => { this._detailAgent = null; }}
+        @panel-close=${() => {
+          this._detailAgent = null;
+        }}
       ></velg-agent-details-panel>
     `;
   }

@@ -15,7 +15,7 @@
  *   // In SignalWatcher component: session.messages.value → auto-rerender
  */
 
-import { type Signal, batch, signal } from '@preact/signals-core';
+import { batch, type Signal, signal } from '@preact/signals-core';
 
 import type { ChatMessage, ChatReactionSummary } from '../../types/index.js';
 
@@ -109,7 +109,7 @@ export class ChatSessionStore {
   addMessage(sessionId: string, message: OptimisticChatMessage): void {
     const session = this.getOrCreate(sessionId);
     const existing = session.messages.value;
-    if (!existing.some(m => m.id === message.id)) {
+    if (!existing.some((m) => m.id === message.id)) {
       session.messages.value = [...existing, message];
     }
   }
@@ -124,11 +124,7 @@ export class ChatSessionStore {
    * Insert an optimistic user message before the server confirms.
    * Returns the temporary ID for later reconciliation via confirmOptimistic().
    */
-  addOptimistic(
-    sessionId: string,
-    content: string,
-    conversationId: string,
-  ): string {
+  addOptimistic(sessionId: string, content: string, conversationId: string): string {
     const tempId = `temp-${Date.now()}`;
     const optimistic: OptimisticChatMessage = {
       id: tempId,
@@ -145,9 +141,7 @@ export class ChatSessionStore {
   /** Remove an optimistic message (e.g. on send error — rollback). */
   removeOptimistic(sessionId: string, tempId: string): void {
     const session = this.getOrCreate(sessionId);
-    session.messages.value = session.messages.value.filter(
-      m => m.id !== tempId,
-    );
+    session.messages.value = session.messages.value.filter((m) => m.id !== tempId);
   }
 
   /**
@@ -155,21 +149,15 @@ export class ChatSessionStore {
    * Handles broadcast-first race: if a broadcast already delivered the real
    * message (same ID), just remove the temp entry instead of duplicating.
    */
-  confirmOptimistic(
-    sessionId: string,
-    tempId: string,
-    confirmed: ChatMessage,
-  ): void {
+  confirmOptimistic(sessionId: string, tempId: string, confirmed: ChatMessage): void {
     const session = this.getOrCreate(sessionId);
     const msgs = session.messages.value;
-    const hasReal = msgs.some(m => m.id === confirmed.id);
+    const hasReal = msgs.some((m) => m.id === confirmed.id);
     if (hasReal) {
       // Broadcast arrived first — remove optimistic, real copy already present
-      session.messages.value = msgs.filter(m => m.id !== tempId);
+      session.messages.value = msgs.filter((m) => m.id !== tempId);
     } else {
-      session.messages.value = msgs.map(m =>
-        m.id === tempId ? confirmed : m,
-      );
+      session.messages.value = msgs.map((m) => (m.id === tempId ? confirmed : m));
     }
   }
 
@@ -266,8 +254,7 @@ export class ChatSessionStore {
         }
       });
     } catch (err) {
-      session.error.value =
-        err instanceof Error ? err.message : 'Failed to load messages';
+      session.error.value = err instanceof Error ? err.message : 'Failed to load messages';
     } finally {
       session.loading.value = false;
     }

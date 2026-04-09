@@ -135,7 +135,7 @@ export class ScrollController implements ReactiveController {
     if (!this._anchor || !this._container) return;
 
     this._observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         const wasAtBottom = this.isAtBottom;
         this.isAtBottom = entries[0]?.isIntersecting ?? false;
 

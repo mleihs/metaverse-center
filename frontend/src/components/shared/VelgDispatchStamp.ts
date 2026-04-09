@@ -104,7 +104,8 @@ export class VelgDispatchStamp extends LitElement {
 
   @property({ type: String }) text = '';
   @property({ type: String, reflect: true }) variant: 'inline' | 'badge' | 'watermark' = 'inline';
-  @property({ type: String }) tone: 'default' | 'success' | 'danger' | 'warning' | 'muted' = 'default';
+  @property({ type: String }) tone: 'default' | 'success' | 'danger' | 'warning' | 'muted' =
+    'default';
 
   protected render() {
     const cls = `stamp--${this.variant} tone--${this.tone}`;

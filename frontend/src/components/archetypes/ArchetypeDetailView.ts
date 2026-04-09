@@ -25,11 +25,11 @@ import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { getArchetypeDetail } from './dungeon-detail-data.js';
 import {
+  ARCHETYPES,
+  getLocalizedArchetypeDetail,
   type LocalizedArchetypeDetail,
   type LocalizedBanterLine,
   type LocalizedLootPreview,
-  getLocalizedArchetypeDetail,
-  ARCHETYPES,
 } from './dungeon-detail-localized.js';
 import {
   detailCardStyles,
@@ -1369,8 +1369,8 @@ export class VelgArchetypeDetail extends LitElement {
         author: 'metaverse.center',
       });
       seoService.setBreadcrumbs([
-        { name: 'Home', url: baseUrl + '/' },
-        { name: 'Archetypes', url: baseUrl + '/' },
+        { name: 'Home', url: `${baseUrl}/` },
+        { name: 'Archetypes', url: `${baseUrl}/` },
         { name: data.name, url: pageUrl },
       ]);
       analyticsService.trackPageView(`/archetypes/${data.id}`, document.title);
@@ -1422,9 +1422,17 @@ export class VelgArchetypeDetail extends LitElement {
       ${this._renderBestiaryRoom(d, depthUrl)}
       ${this._renderQuoteBreak(d, 1)}
       ${this._renderEncounterRoom(d)}
-      ${this._renderBanterInterlude(d, d.banterSamples.filter((b) => b.tier <= 1), whispersUrl)}
+      ${this._renderBanterInterlude(
+        d,
+        d.banterSamples.filter((b) => b.tier <= 1),
+        whispersUrl,
+      )}
       ${this._renderLiteraryRoom(d, depthUrl)}
-      ${this._renderBanterInterlude(d, d.banterSamples.filter((b) => b.tier >= 2), revolutionUrl)}
+      ${this._renderBanterInterlude(
+        d,
+        d.banterSamples.filter((b) => b.tier >= 2),
+        revolutionUrl,
+      )}
       ${this._renderVaultRoom(d)}
       ${this._renderQuoteBreak(d, 2)}
       ${this._renderExitRoom(d, bossUrl)}
@@ -1458,7 +1466,6 @@ export class VelgArchetypeDetail extends LitElement {
         return html``;
     }
   }
-
 
   // ── Gauge ──────────────────────────────────────────────────────────────────
 
@@ -1531,9 +1538,7 @@ export class VelgArchetypeDetail extends LitElement {
           <h2 class="section-header">${d.subtitle}</h2>
           <blockquote class="lore-intro__entrance">${entrance}</blockquote>
           <div class="lore-intro__body">
-            ${d.loreIntro.map(
-              (p) => html`<p class="lore-intro__paragraph">${p}</p>`,
-            )}
+            ${d.loreIntro.map((p) => html`<p class="lore-intro__paragraph">${p}</p>`)}
           </div>
         </div>
       </section>
@@ -1585,19 +1590,18 @@ export class VelgArchetypeDetail extends LitElement {
               <div class="gauge-visual__value">${d.mechanicGaugePreviewValue} / ${gauge.max}</div>
 
               <dl class="threshold-list">
-                ${gauge.thresholds.map(
-                  (t, i, arr) => {
-                    let range: string;
-                    if (gauge.direction === 'drain') {
-                      range = String(t.value);
-                    } else if (t.value === gauge.max) {
-                      range = String(gauge.max);
-                    } else {
-                      const next = arr[i + 1];
-                      const upper = next ? next.value - 1 : gauge.max;
-                      range = `${t.value}\u2013${upper}`;
-                    }
-                    return html`
+                ${gauge.thresholds.map((t, i, arr) => {
+                  let range: string;
+                  if (gauge.direction === 'drain') {
+                    range = String(t.value);
+                  } else if (t.value === gauge.max) {
+                    range = String(gauge.max);
+                  } else {
+                    const next = arr[i + 1];
+                    const upper = next ? next.value - 1 : gauge.max;
+                    range = `${t.value}\u2013${upper}`;
+                  }
+                  return html`
                     <div class="threshold">
                       <dt class="threshold__label">${t.label}
                         <span class="threshold__range">${range}</span>
@@ -1605,8 +1609,7 @@ export class VelgArchetypeDetail extends LitElement {
                       <dd>${t.description}</dd>
                     </div>
                   `;
-                  },
-                )}
+                })}
               </dl>
             </div>
 
@@ -1687,16 +1690,18 @@ export class VelgArchetypeDetail extends LitElement {
 
   // ── Banter Interlude ───────────────────────────────────────────────────────
 
-  private _renderBanterInterlude(d: LocalizedArchetypeDetail, lines: readonly LocalizedBanterLine[], bgUrl: string): TemplateResult {
+  private _renderBanterInterlude(
+    d: LocalizedArchetypeDetail,
+    lines: readonly LocalizedBanterLine[],
+    bgUrl: string,
+  ): TemplateResult {
     if (!lines.length) return html``;
     const selected = lines.slice(0, 3);
     return html`
       <div class="banter-section" aria-label=${msg('Whispers')}>
         <div class="banter-section__bg" style="--_banter-bg:url('${bgUrl}')" aria-hidden="true"></div>
         <p class="banter-section__header">${d.prose.banterHeader}</p>
-        ${selected.map(
-          (b) => html`<p class="banter-whisper">${b.text}</p>`,
-        )}
+        ${selected.map((b) => html`<p class="banter-whisper">${b.text}</p>`)}
       </div>
     `;
   }
@@ -1705,8 +1710,10 @@ export class VelgArchetypeDetail extends LitElement {
 
   private _renderLiteraryRoom(d: LocalizedArchetypeDetail, imageUrl: string): TemplateResult {
     // Find a Brecht or other German quote for the header
-    const headerQuote = d.authors.find((a) => a.quote && a.language === 'Deutsch')?.quote
-      ?? d.authors.find((a) => a.quote)?.quote ?? '';
+    const headerQuote =
+      d.authors.find((a) => a.quote && a.language === 'Deutsch')?.quote ??
+      d.authors.find((a) => a.quote)?.quote ??
+      '';
 
     return html`
       <section class="room room--literary room--grow" role="region"
@@ -1717,9 +1724,11 @@ export class VelgArchetypeDetail extends LitElement {
         <div class="room__content room__reveal">
           <div class="literary-header">
             <h2 class="section-header">${msg('The Authors Who Forged This Place')}</h2>
-            ${headerQuote
-              ? html`<p class="literary-header__quote">\u201c${headerQuote}\u201d</p>`
-              : nothing}
+            ${
+              headerQuote
+                ? html`<p class="literary-header__quote">\u201c${headerQuote}\u201d</p>`
+                : nothing
+            }
           </div>
           <div class="authors-grid">
             ${d.authors.map(
@@ -1815,7 +1824,11 @@ export class VelgArchetypeDetail extends LitElement {
     `;
   }
 
-  private _renderLootTier(label: string, items: readonly LocalizedLootPreview[], accent: string): TemplateResult {
+  private _renderLootTier(
+    label: string,
+    items: readonly LocalizedLootPreview[],
+    accent: string,
+  ): TemplateResult {
     if (!items.length) return html``;
     return html`
       <div class="loot-tier-header">${label}</div>

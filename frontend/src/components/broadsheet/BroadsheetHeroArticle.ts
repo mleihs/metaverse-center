@@ -11,9 +11,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { dispatchStyles } from '../shared/dispatch-styles.js';
 import type { BroadsheetArticle } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
 
 import '../shared/VelgDispatchStamp.js';
 
@@ -150,15 +150,17 @@ export class VelgBroadsheetHeroArticle extends LitElement {
 
     return html`
       <article class="hero">
-        ${showDangerStamp
-          ? html`<div class="hero__stamp">
+        ${
+          showDangerStamp
+            ? html`<div class="hero__stamp">
               <velg-dispatch-stamp
                 text=${msg('Breaking')}
                 variant="badge"
                 tone="danger"
               ></velg-dispatch-stamp>
             </div>`
-          : nothing}
+            : nothing
+        }
 
         <div class="hero__source">${sourceLabel}</div>
         <h2 class="hero__headline">${headline}</h2>
@@ -167,9 +169,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
 
         <div class="hero__meta">
           ${a.agent_name ? html`<span>${a.agent_name}</span>` : nothing}
-          ${a.tags?.length
-            ? html`<span>${a.tags.join(' / ')}</span>`
-            : nothing}
+          ${a.tags?.length ? html`<span>${a.tags.join(' / ')}</span>` : nothing}
         </div>
       </article>
     `;

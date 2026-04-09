@@ -3,9 +3,9 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
+import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
 
 /** Operational tips for each cache setting (shown as info bubbles). */
 function getCacheTip(): Record<string, string> {

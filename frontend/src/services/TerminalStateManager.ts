@@ -146,7 +146,7 @@ class TerminalStateManager {
       }
       if (
         typeof stored.clearanceLevel !== 'number' ||
-        isNaN(stored.clearanceLevel) ||
+        Number.isNaN(stored.clearanceLevel) ||
         stored.clearanceLevel < 1 ||
         stored.clearanceLevel > 5
       ) {
@@ -154,19 +154,19 @@ class TerminalStateManager {
       }
       if (
         typeof stored.commandCount !== 'number' ||
-        isNaN(stored.commandCount) ||
+        Number.isNaN(stored.commandCount) ||
         stored.commandCount < 0
       ) {
         stored.commandCount = 0;
       }
-      if (typeof stored.operationsPoints !== 'number' || isNaN(stored.operationsPoints)) {
+      if (typeof stored.operationsPoints !== 'number' || Number.isNaN(stored.operationsPoints)) {
         stored.operationsPoints = DEFAULT_OPS_POINTS;
       }
-      if (typeof stored.intelPoints !== 'number' || isNaN(stored.intelPoints)) {
+      if (typeof stored.intelPoints !== 'number' || Number.isNaN(stored.intelPoints)) {
         stored.intelPoints = DEFAULT_INTEL_POINTS;
       }
       if (typeof stored.onboarded !== 'boolean') stored.onboarded = false;
-      if (typeof stored.onboardingStep !== 'number' || isNaN(stored.onboardingStep))
+      if (typeof stored.onboardingStep !== 'number' || Number.isNaN(stored.onboardingStep))
         stored.onboardingStep = 0;
 
       this.currentZoneId.value = stored.currentZoneId;

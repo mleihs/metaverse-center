@@ -23,17 +23,16 @@ import {
   formatAgentPicker,
   formatArchetypeBriefing,
   formatAvailableDungeons,
-  formatDebrisFound,
   formatCombatPlanning,
   formatCombatResolution,
   formatCombatStalemate,
   formatCombatStart,
+  formatDebrisFound,
   formatDungeonComplete,
   formatDungeonEntry,
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
-  formatThresholdEntry,
   formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
@@ -45,6 +44,7 @@ import {
   formatScoutResult,
   formatSealResult,
   formatSkillCheckResult,
+  formatThresholdEntry,
   getArchetypeDisplayName,
 } from './dungeon-formatters.js';
 import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
@@ -189,10 +189,7 @@ export async function dispatchDungeonCommand(
 }
 
 /** Internal verb dispatch — extracted so the main dispatcher can inspect the result for SFX. */
-async function _dispatchVerb(
-  verb: string,
-  ctx: CommandContext,
-): Promise<TerminalLine[] | null> {
+async function _dispatchVerb(verb: string, ctx: CommandContext): Promise<TerminalLine[] | null> {
   switch (verb) {
     case 'move':
     case 'go':
@@ -266,7 +263,7 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   const selectedDungeon = available.find(
     (d) => d.archetype.toLowerCase() === matched.toLowerCase(),
   );
-  if (!selectedDungeon || !selectedDungeon.available) {
+  if (!selectedDungeon?.available) {
     return [errorLine(msg('That dungeon is not available (cooldown active or no resonance).'))];
   }
 
@@ -311,7 +308,7 @@ async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> 
   // Numeric args → indices into the agent list (1-based)
   const indices = selectionArgs
     .map(Number)
-    .filter((n) => !isNaN(n) && n >= 1 && n <= agents.length);
+    .filter((n) => !Number.isNaN(n) && n >= 1 && n <= agents.length);
   if (indices.length < 2) {
     return [
       errorLine(msg('Select 2\u20134 agents by number.')),
@@ -395,7 +392,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
   // Parse room index
   const roomIndex = parseInt(ctx.args[0], 10);
-  if (isNaN(roomIndex)) {
+  if (Number.isNaN(roomIndex)) {
     return [errorLine(msg('Invalid room number. Use "move <number>".'))];
   }
 
@@ -461,13 +458,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       const encounterDesc = localized(result, 'description');
       if (result.choices && encounterDesc) {
         dungeonState.encounterChoices.value = result.choices;
-        lines.push(
-          ...formatEncounterChoices(
-            encounterDesc,
-            result.choices,
-            result.state.party,
-          ),
-        );
+        lines.push(...formatEncounterChoices(encounterDesc, result.choices, result.state.party));
       } else if (result.encounter === false) {
         // No matching encounter template found — room auto-cleared
         lines.push(responseLine(msg('The room is empty. Whatever was here has moved on.')));
@@ -710,7 +701,7 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
   const autoEffects = AUTO_APPLY_EFFECTS;
   const distributable = (state.pending_loot ?? []).filter((i) => !autoEffects.has(i.effect_type));
 
-  if (isNaN(itemNum) || itemNum < 1 || itemNum > distributable.length) {
+  if (Number.isNaN(itemNum) || itemNum < 1 || itemNum > distributable.length) {
     return [errorLine(msg('Invalid item number.'))];
   }
 
@@ -816,7 +807,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
   if (choices.length === 0) {
     return [errorLine(msg('No encounter choices available. Try "look" first.'))];
   }
-  if (isNaN(choiceIndex) || choiceIndex < 1 || choiceIndex > choices.length) {
+  if (Number.isNaN(choiceIndex) || choiceIndex < 1 || choiceIndex > choices.length) {
     return [errorLine(`${msg('Invalid choice')}. ${msg('Choose')} 1-${choices.length}.`)];
   }
   const choice = choices[choiceIndex - 1];
@@ -872,11 +863,7 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
       const desc = localized(resp.data.state, 'encounter_description');
       if (desc) {
         lines.push(
-          ...formatEncounterChoices(
-            desc,
-            resp.data.state.encounter_choices,
-            resp.data.state.party,
-          ),
+          ...formatEncounterChoices(desc, resp.data.state.encounter_choices, resp.data.state.party),
         );
       }
     }
@@ -1172,7 +1159,7 @@ async function handleDungeonSalvage(ctx: CommandContext): Promise<TerminalLine[]
   }
 
   const roomIndex = parseInt(ctx.args[0], 10);
-  if (isNaN(roomIndex)) {
+  if (Number.isNaN(roomIndex)) {
     return [errorLine(msg('Invalid room number. Use "salvage <number>".'))];
   }
 

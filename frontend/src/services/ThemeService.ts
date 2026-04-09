@@ -478,8 +478,8 @@ class ThemeService {
 }
 
 export const themeService = new ThemeService();
-export { computeShadows, computeAnimationDurations, THEME_TOKEN_MAP };
 export type { ShadowStyle };
+export { computeAnimationDurations, computeShadows, THEME_TOKEN_MAP };
 
 // ---------------------------------------------------------------------------
 // Dynamic Google Font loader — used by ThemeService and VelgFontPicker

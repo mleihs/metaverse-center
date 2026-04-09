@@ -889,7 +889,7 @@ export class AgentMoodPanel extends LitElement {
           aria-valuenow=${score}
           aria-valuemin="-100"
           aria-valuemax="100"
-          aria-label=${msg('Mood score') + `: ${score}`}
+          aria-label=${`${msg('Mood score')}: ${score}`}
           style="--_gauge-color: ${gaugeColor}"
         >
           <!-- Track arc -->
@@ -940,7 +940,7 @@ export class AgentMoodPanel extends LitElement {
           aria-valuenow=${stress}
           aria-valuemin="0"
           aria-valuemax="1000"
-          aria-label=${msg('Stress level') + `: ${stress}`}
+          aria-label=${`${msg('Stress level')}: ${stress}`}
         >
           <div
             class="stress__fill ${this._animated ? 'stress__fill--animated' : ''}"
@@ -967,7 +967,7 @@ export class AgentMoodPanel extends LitElement {
       return polarToCartesian(RADAR_CENTER, RADAR_CENTER, r, angle);
     });
 
-    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
+    const pathD = `${points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`;
 
     // Grid rings (25%, 50%, 75%, 100%)
     const gridRings = [0.25, 0.5, 0.75, 1].map((pct) => {
@@ -975,7 +975,7 @@ export class AgentMoodPanel extends LitElement {
         const angle = (i * 360) / 5 - 90;
         return polarToCartesian(RADAR_CENTER, RADAR_CENTER, pct * RADAR_RADIUS, angle);
       });
-      return ringPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
+      return `${ringPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`;
     });
 
     // Axis lines
@@ -1005,7 +1005,7 @@ export class AgentMoodPanel extends LitElement {
             class="needs__svg"
             viewBox="0 0 ${RADAR_SIZE} ${RADAR_SIZE}"
             role="img"
-            aria-label=${msg('Needs radar') + ` - ${ariaLabel}`}
+            aria-label=${`${msg('Needs radar')} - ${ariaLabel}`}
           >
             <!-- Grid rings -->
             ${gridRings.map((d) => html`<path class="needs__grid-line" d=${d} />`)}

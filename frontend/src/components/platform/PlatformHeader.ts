@@ -763,11 +763,15 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       <div class="cluster-divider"></div>
       <div class="sys-label">${msg('System')}</div>
 
-      ${import.meta.env.DEV ? html`
+      ${
+        import.meta.env.DEV
+          ? html`
         <div style="padding: 0 12px 4px;">
           <velg-dev-account-switcher></velg-dev-account-switcher>
         </div>
-      ` : nothing}
+      `
+          : nothing
+      }
 
       ${
         appState.mockMode.value
@@ -873,11 +877,15 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
             : msg('Language: DE \u2192 EN')
         }</button>
 
-        ${import.meta.env.DEV ? html`
+        ${
+          import.meta.env.DEV
+            ? html`
           <div style="padding: 0 var(--space-3); --i:${navIdx++}">
             <velg-dev-account-switcher></velg-dev-account-switcher>
           </div>
-        ` : nothing}
+        `
+            : nothing
+        }
 
         <a class="header__menu-github"
           href="https://www.instagram.com/bureau.of.impossible.geography/"

@@ -10,9 +10,6 @@ import {
 } from '../../services/api/AdminApiService.js';
 import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
-import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
-import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   adminActionStyles,
   adminBadgeStyles,
@@ -21,6 +18,9 @@ import {
   adminStatusFilterStyles,
   adminTabNavStyles,
 } from '../shared/admin-shared-styles.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
 import '../shared/VelgMetricCard.js';

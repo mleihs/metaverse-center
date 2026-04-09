@@ -309,7 +309,7 @@ async function handleGo(ctx: CommandContext): Promise<TerminalLine[]> {
 
   // Numeric shortcut: "go 1" → first exit zone (zones excluding current, same order as look)
   const num = parseInt(target, 10);
-  if (!isNaN(num) && num >= 1) {
+  if (!Number.isNaN(num) && num >= 1) {
     const exitZones = zones.filter((z) => z.id !== currentZoneId);
     if (num > exitZones.length) {
       return [systemLine(`${msg('Invalid exit number')}. ${msg('Valid')}: 1-${exitZones.length}`)];
@@ -1049,7 +1049,11 @@ async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Failed to generate situation report.'))];
   }
 
-  return formatSitrep(resp.data.sitrep, currentCycle, terminalState.epochStatus.value ?? 'competition');
+  return formatSitrep(
+    resp.data.sitrep,
+    currentCycle,
+    terminalState.epochStatus.value ?? 'competition',
+  );
 }
 
 /** Dossier — formatted intelligence file on an opponent. */
@@ -1100,7 +1104,7 @@ async function handleDossier(ctx: CommandContext): Promise<TerminalLine[]> {
 
   if (!dossier) {
     return [
-      systemLine(msg('No intelligence gathered on ') + targetPlayer.name + '.'),
+      systemLine(`${msg('No intelligence gathered on ') + targetPlayer.name}.`),
       systemLine(msg('Recommend spy deployment via Operations Console.')),
     ];
   }

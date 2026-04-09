@@ -142,10 +142,9 @@ export class ChatApiService extends BaseApiService {
     conversationId: string,
     locale: string = 'de',
   ): Promise<ApiResponse<string[]>> {
-    return this.get(
-      `/simulations/${simulationId}/chat/conversations/${conversationId}/starters`,
-      { locale },
-    );
+    return this.get(`/simulations/${simulationId}/chat/conversations/${conversationId}/starters`, {
+      locale,
+    });
   }
 
   /** URL for the regenerate SSE endpoint (used by ChatStreamConsumer). */

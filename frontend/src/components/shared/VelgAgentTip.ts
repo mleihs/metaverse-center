@@ -49,12 +49,14 @@ export class VelgAgentTip extends LitElement {
 
   protected render() {
     return html`
-      ${this.agents.map(a => html`
+      ${this.agents.map(
+        (a) => html`
         <div class="agent">
           <velg-avatar .src=${a.portrait_image_url ?? ''} .name=${a.name} size="xs"></velg-avatar>
           <span class="agent__name">${a.name}</span>
         </div>
-      `)}
+      `,
+      )}
     `;
   }
 }

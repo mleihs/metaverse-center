@@ -246,20 +246,19 @@ export class ReactionBar extends LitElement {
 
     return html`
       <div class="bar" role="group" aria-label=${msg('Reactions')}>
-        ${hasReactions
-          ? repeat(
-              this.reactions,
-              (r) => r.emoji,
-              (r) => html`
+        ${
+          hasReactions
+            ? repeat(
+                this.reactions,
+                (r) => r.emoji,
+                (r) => html`
                 <button
                   class=${classMap({
                     pill: true,
                     'pill--active': r.reacted_by_me,
                   })}
                   @click=${() => this._handleToggleReaction(r.emoji)}
-                  title=${r.reacted_by_me
-                    ? msg('Remove reaction')
-                    : msg('Add reaction')}
+                  title=${r.reacted_by_me ? msg('Remove reaction') : msg('Add reaction')}
                   aria-pressed=${r.reacted_by_me ? 'true' : 'false'}
                   aria-label="${r.emoji} ${r.count}"
                 >
@@ -267,8 +266,9 @@ export class ReactionBar extends LitElement {
                   <span class="pill__count">${r.count}</span>
                 </button>
               `,
-            )
-          : nothing}
+              )
+            : nothing
+        }
 
         <button
           class="add-btn"

@@ -303,7 +303,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // Deselect room if it's no longer in the room list (moved to willUpdate
     // to avoid state mutation during render — which causes re-render loops)
     if (this._selectedRoom) {
-      const freshRoom = rooms.find((r) => r.index === this._selectedRoom!.index);
+      const freshRoom = rooms.find((r) => r.index === this._selectedRoom?.index);
       if (!freshRoom) {
         this._selectedRoom = null;
       }
@@ -422,9 +422,10 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // Deluge water overlay: rooms are submerged when water_level >= 50
     const clientState = dungeonState.clientState.value;
     const isDelugeRun = clientState?.archetype === ARCHETYPE_DELUGE;
-    const waterLevel = isDelugeRun && isDelugeState(dungeonState.archetypeState.value)
-      ? dungeonState.archetypeState.value.water_level
-      : 0;
+    const waterLevel =
+      isDelugeRun && isDelugeState(dungeonState.archetypeState.value)
+        ? dungeonState.archetypeState.value.water_level
+        : 0;
     const showWaterOverlay = isDelugeRun && waterLevel >= 50;
 
     const nodesGroup = svg`<g>
@@ -510,8 +511,8 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     if (!this._selectedRoom) return nothing;
 
     // Get fresh room data from state (selected room may have changed state)
-    const freshRoom = dungeonState.rooms.value.find((r) => r.index === this._selectedRoom!.index);
-    if (!freshRoom || !freshRoom.revealed) {
+    const freshRoom = dungeonState.rooms.value.find((r) => r.index === this._selectedRoom?.index);
+    if (!freshRoom?.revealed) {
       // Don't mutate state during render — willUpdate handles cleanup.
       // Return nothing for this render cycle; next willUpdate will clear.
       return nothing;

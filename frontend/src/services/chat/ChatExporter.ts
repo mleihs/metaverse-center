@@ -35,9 +35,7 @@ export class ChatExporter {
 
       // Reactions summary
       if (msg.reactions && msg.reactions.length > 0) {
-        const reactionStr = msg.reactions
-          .map((r) => `${r.emoji} ${r.count}`)
-          .join('  ');
+        const reactionStr = msg.reactions.map((r) => `${r.emoji} ${r.count}`).join('  ');
         lines.push(`> ${reactionStr}`);
         lines.push('');
       }
@@ -97,7 +95,7 @@ export class ChatExporter {
    */
   static exportMarkdown(conversation: ChatConversation, messages: ChatMessage[]): void {
     const content = ChatExporter.toMarkdown(conversation, messages);
-    const filename = ChatExporter._sanitizeFilename(conversation.title ?? 'conversation') + '.md';
+    const filename = `${ChatExporter._sanitizeFilename(conversation.title ?? 'conversation')}.md`;
     ChatExporter.download(content, filename, 'text/markdown;charset=utf-8');
   }
 
@@ -106,7 +104,7 @@ export class ChatExporter {
    */
   static exportJSON(conversation: ChatConversation, messages: ChatMessage[]): void {
     const content = ChatExporter.toJSON(conversation, messages);
-    const filename = ChatExporter._sanitizeFilename(conversation.title ?? 'conversation') + '.json';
+    const filename = `${ChatExporter._sanitizeFilename(conversation.title ?? 'conversation')}.json`;
     ChatExporter.download(content, filename, 'application/json;charset=utf-8');
   }
 
@@ -117,11 +115,13 @@ export class ChatExporter {
   private static _getAgents(conversation: ChatConversation): AgentBrief[] {
     if (conversation.agents && conversation.agents.length > 0) return conversation.agents;
     if (conversation.agent) {
-      return [{
-        id: conversation.agent.id,
-        name: conversation.agent.name,
-        portrait_image_url: conversation.agent.portrait_image_url,
-      }];
+      return [
+        {
+          id: conversation.agent.id,
+          name: conversation.agent.name,
+          portrait_image_url: conversation.agent.portrait_image_url,
+        },
+      ];
     }
     return [];
   }

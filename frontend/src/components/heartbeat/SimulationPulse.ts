@@ -1043,7 +1043,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         <span
           class="pulse-header__status pulse-header__status--${statusClass}"
           role="status"
-          aria-label=${msg('Heartbeat status') + ': ' + statusClass}
+          aria-label=${`${msg('Heartbeat status')}: ${statusClass}`}
         ></span>
         <h2 class="pulse-header__title">
           ${msg('Substrate Pulse')}
@@ -1181,29 +1181,25 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     }
 
     const parts: string[] = [];
-    if (counts['events'])
+    if (counts.events)
       parts.push(
-        `${counts['events']} ${counts['events'] === 1 ? msg('event update') : msg('event updates')}`,
+        `${counts.events} ${counts.events === 1 ? msg('event update') : msg('event updates')}`,
       );
-    if (counts['arcs'])
+    if (counts.arcs)
+      parts.push(`${counts.arcs} ${counts.arcs === 1 ? msg('arc shift') : msg('arc shifts')}`);
+    if (counts.bureau)
       parts.push(
-        `${counts['arcs']} ${counts['arcs'] === 1 ? msg('arc shift') : msg('arc shifts')}`,
+        `${counts.bureau} ${counts.bureau === 1 ? msg('bureau action') : msg('bureau actions')}`,
       );
-    if (counts['bureau'])
+    if (counts.diplomatic)
       parts.push(
-        `${counts['bureau']} ${counts['bureau'] === 1 ? msg('bureau action') : msg('bureau actions')}`,
+        `${counts.diplomatic} ${counts.diplomatic === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`,
       );
-    if (counts['diplomatic'])
+    if (counts.zone)
+      parts.push(`${counts.zone} ${counts.zone === 1 ? msg('zone change') : msg('zone changes')}`);
+    if (counts.system)
       parts.push(
-        `${counts['diplomatic']} ${counts['diplomatic'] === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`,
-      );
-    if (counts['zone'])
-      parts.push(
-        `${counts['zone']} ${counts['zone'] === 1 ? msg('zone change') : msg('zone changes')}`,
-      );
-    if (counts['system'])
-      parts.push(
-        `${counts['system']} ${counts['system'] === 1 ? msg('system note') : msg('system notes')}`,
+        `${counts.system} ${counts.system === 1 ? msg('system note') : msg('system notes')}`,
       );
 
     const severityClass =

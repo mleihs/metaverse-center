@@ -30,10 +30,7 @@ export interface Participant {
 // ---------------------------------------------------------------------------
 
 /** Discriminated union for timeline items: messages, events, date separators. */
-export type TimelineItem =
-  | TimelineMessage
-  | TimelineEvent
-  | TimelineDateSeparator;
+export type TimelineItem = TimelineMessage | TimelineEvent | TimelineDateSeparator;
 
 export interface TimelineMessage {
   readonly kind: 'message';

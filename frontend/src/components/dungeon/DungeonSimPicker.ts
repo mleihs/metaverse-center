@@ -15,8 +15,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
 import { dungeonApi } from '../../services/api/index.js';
-import type { Simulation } from '../../types/index.js';
 import { ARCHETYPE_BY_SLUG, type AvailableDungeonResponse } from '../../types/dungeon.js';
+import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import '../shared/BaseModal.js';
@@ -271,11 +271,13 @@ export class VelgDungeonSimPicker extends LitElement {
         <span slot="header">${msg('Select Simulation')}</span>
 
         <div class="sim-list" role="listbox" aria-label=${msg('Available simulations')}>
-          ${this._sims.length > 0
-            ? this._sims.map((sim) => this._renderSimCard(sim))
-            : html`<p style="color:var(--color-text-muted);font-family:var(--font-mono);font-size:var(--text-sm)">
+          ${
+            this._sims.length > 0
+              ? this._sims.map((sim) => this._renderSimCard(sim))
+              : html`<p style="color:var(--color-text-muted);font-family:var(--font-mono);font-size:var(--text-sm)">
                 ${msg('No simulations found.')}
-              </p>`}
+              </p>`
+          }
         </div>
       </velg-base-modal>
     `;
@@ -313,8 +315,8 @@ export class VelgDungeonSimPicker extends LitElement {
         return html`<div class="sim-card__meta">${msg('Checking availability...')}</div>`;
       case 'available':
         return html`<div class="sim-card__meta">
-          ${msg('Magnitude')}: ${sim.dungeonData!.effective_magnitude.toFixed(1)} \u00b7
-          ${msg('Difficulty')}: ${sim.dungeonData!.suggested_difficulty}
+          ${msg('Magnitude')}: ${sim.dungeonData?.effective_magnitude.toFixed(1)} \u00b7
+          ${msg('Difficulty')}: ${sim.dungeonData?.suggested_difficulty}
         </div>`;
       case 'unavailable':
         return html`<div class="sim-card__meta">${sim.reason}</div>`;

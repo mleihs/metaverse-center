@@ -10,13 +10,13 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
 import { dungeonContentApi } from '../../services/api/DungeonContentAdminApi.js';
-import { VelgToast } from '../shared/Toast.js';
 import {
   adminAnimationStyles,
   adminLoadingStyles,
   adminSectionHeaderStyles,
   adminSubNavStyles,
 } from '../shared/admin-shared-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 
 import './DungeonContentTable.js';
 import './DungeonContentEditor.js';
