@@ -4,31 +4,20 @@ import type {
   BuildingAgentRelation,
   BuildingProfessionRequirement,
 } from '../../types/index.js';
-import { BaseApiService } from './BaseApiService.js';
+import { CrudApiService } from './CrudApiService.js';
 
-export class BuildingsApiService extends BaseApiService {
-  list(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<Building[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/buildings`, params);
-  }
+export class BuildingsApiService extends CrudApiService<Building> {
+  protected readonly resource = 'buildings';
 
-  getById(simulationId: string, buildingId: string): Promise<ApiResponse<Building>> {
-    return this.getSimulationData(`/simulations/${simulationId}/buildings/${buildingId}`);
-  }
-
-  create(simulationId: string, data: Partial<Building>): Promise<ApiResponse<Building>> {
-    return this.post(`/simulations/${simulationId}/buildings`, data);
-  }
-
-  update(
+  override listPublic(
     simulationId: string,
-    buildingId: string,
-    data: Partial<Building>,
-  ): Promise<ApiResponse<Building>> {
-    return this.put(`/simulations/${simulationId}/buildings/${buildingId}`, data);
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<Building[]>> {
+    return super.listPublic(simulationId, params);
   }
 
-  remove(simulationId: string, buildingId: string): Promise<ApiResponse<Building>> {
-    return this.delete(`/simulations/${simulationId}/buildings/${buildingId}`);
+  override getBySlug(simulationId: string, slug: string): Promise<ApiResponse<Building>> {
+    return super.getBySlug(simulationId, slug);
   }
 
   getAgents(
@@ -79,17 +68,6 @@ export class BuildingsApiService extends BaseApiService {
     return this.post(
       `/simulations/${simulationId}/buildings/${buildingId}/profession-requirements?${params}`,
     );
-  }
-
-  getBySlug(simulationId: string, slug: string): Promise<ApiResponse<Building>> {
-    return this.getPublic(`/simulations/${simulationId}/buildings/by-slug/${slug}`);
-  }
-
-  listPublic(
-    simulationId: string,
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<Building[]>> {
-    return this.getPublic(`/simulations/${simulationId}/buildings`, params);
   }
 }
 

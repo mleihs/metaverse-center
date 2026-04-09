@@ -5,32 +5,10 @@ import type {
   CampaignEvent,
   CampaignMetric,
 } from '../../types/index.js';
-import { BaseApiService } from './BaseApiService.js';
+import { CrudApiService } from './CrudApiService.js';
 
-export class CampaignsApiService extends BaseApiService {
-  list(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<Campaign[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/campaigns`, params);
-  }
-
-  getById(simulationId: string, campaignId: string): Promise<ApiResponse<Campaign>> {
-    return this.get(`/simulations/${simulationId}/campaigns/${campaignId}`);
-  }
-
-  create(simulationId: string, data: Partial<Campaign>): Promise<ApiResponse<Campaign>> {
-    return this.post(`/simulations/${simulationId}/campaigns`, data);
-  }
-
-  update(
-    simulationId: string,
-    campaignId: string,
-    data: Partial<Campaign>,
-  ): Promise<ApiResponse<Campaign>> {
-    return this.put(`/simulations/${simulationId}/campaigns/${campaignId}`, data);
-  }
-
-  remove(simulationId: string, campaignId: string): Promise<ApiResponse<Campaign>> {
-    return this.delete(`/simulations/${simulationId}/campaigns/${campaignId}`);
-  }
+export class CampaignsApiService extends CrudApiService<Campaign> {
+  protected readonly resource = 'campaigns';
 
   getEvents(simulationId: string, campaignId: string): Promise<ApiResponse<CampaignEvent[]>> {
     return this.get(`/simulations/${simulationId}/campaigns/${campaignId}/events`);
