@@ -212,9 +212,7 @@ export class VelgLocationsView extends LitElement {
     try {
       const response = await healthApi.listZoneStability(this.simulationId);
       if (response.success && response.data) {
-        const zones = Array.isArray(response.data)
-          ? response.data
-          : ((response.data as { data?: ZoneStability[] }).data ?? []);
+        const zones = response.data as ZoneStability[];
         const map = new Map<string, ZoneStability>();
         for (const z of zones) {
           map.set(z.zone_id, z);
