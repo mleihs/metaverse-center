@@ -35,7 +35,12 @@ from backend.dependencies import (
     get_supabase,
 )
 from backend.models.common import CurrentUser
-from backend.models.resonance_dungeon import CreateRunResponse, DungeonClientState, DungeonRunResponse
+from backend.models.resonance_dungeon import (
+    AvailableDungeonResponse,
+    CreateRunResponse,
+    DungeonClientState,
+    DungeonRunResponse,
+)
 from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID, make_async_supabase_mock, make_chain_mock
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
@@ -154,19 +159,20 @@ def _mock_create_run_response(run_id=None, sim_id=None):
 
 class TestListAvailableDungeons:
     def test_happy_path(self, client):
-        available = [MagicMock()]
-        available[0].model_dump.return_value = {
-            "archetype": "The Shadow",
-            "signature": "shadow_conflict",
-            "resonance_id": str(uuid4()),
-            "magnitude": 0.7,
-            "susceptibility": 0.6,
-            "effective_magnitude": 0.5,
-            "suggested_difficulty": 3,
-            "suggested_depth": 5,
-            "last_run_at": None,
-            "available": True,
-        }
+        available = [
+            AvailableDungeonResponse(
+                archetype="The Shadow",
+                signature="shadow_conflict",
+                resonance_id=uuid4(),
+                magnitude=0.7,
+                susceptibility=0.6,
+                effective_magnitude=0.5,
+                suggested_difficulty=3,
+                suggested_depth=5,
+                last_run_at=None,
+                available=True,
+            )
+        ]
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.get_available_dungeons",
             new_callable=AsyncMock,
@@ -282,21 +288,20 @@ class TestGetRun:
 
 class TestGetRunState:
     def test_happy_path(self, client):
-        state = MagicMock()
-        state.model_dump.return_value = {
-            "run_id": str(RUN_ID),
-            "archetype": "The Shadow",
-            "signature": "shadow_conflict",
-            "difficulty": 3,
-            "depth": 1,
-            "current_room": 1,
-            "rooms": [],
-            "party": [],
-            "archetype_state": {},
-            "combat": None,
-            "phase": "exploring",
-            "phase_timer": None,
-        }
+        state = DungeonClientState(
+            run_id=RUN_ID,
+            archetype="The Shadow",
+            signature="shadow_conflict",
+            difficulty=3,
+            depth=1,
+            current_room=1,
+            rooms=[],
+            party=[],
+            archetype_state={},
+            combat=None,
+            phase="exploring",
+            phase_timer=None,
+        )
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
             new_callable=AsyncMock,
@@ -309,21 +314,20 @@ class TestGetRunState:
     def test_fallback_to_checkpoint_recovery(self, client):
         """Auto-recovery is now inside get_client_state → _get_instance.
         Test that the endpoint returns 200 when the service recovers successfully."""
-        state = MagicMock()
-        state.model_dump.return_value = {
-            "run_id": str(RUN_ID),
-            "archetype": "The Shadow",
-            "signature": "s",
-            "difficulty": 1,
-            "depth": 0,
-            "current_room": 0,
-            "rooms": [],
-            "party": [],
-            "archetype_state": {},
-            "combat": None,
-            "phase": "exploring",
-            "phase_timer": None,
-        }
+        state = DungeonClientState(
+            run_id=RUN_ID,
+            archetype="The Shadow",
+            signature="s",
+            difficulty=1,
+            depth=0,
+            current_room=0,
+            rooms=[],
+            party=[],
+            archetype_state={},
+            combat=None,
+            phase="exploring",
+            phase_timer=None,
+        )
 
         with patch(
             "backend.routers.resonance_dungeons.DungeonEngineService.get_client_state",
