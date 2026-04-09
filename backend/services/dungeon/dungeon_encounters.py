@@ -6070,6 +6070,20 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "was der Betrachter über sich selbst vergessen hat. "
                     "Das gewonnene Bewusstsein ist nicht angenehm. Es ist präzise."
                 ),
+                partial_narrative_en=(
+                    "{agent} sees something in the reflection \u2013 not the "
+                    "mechanism, but the edge of it. Like reading a word "
+                    "in peripheral vision: the meaning arrives, incomplete. "
+                    "The mirror shows a fragment of what was forgotten. "
+                    "Enough to unsettle. Not enough to understand."
+                ),
+                partial_narrative_de=(
+                    "{agent} sieht etwas in der Spiegelung \u2013 nicht den "
+                    "Mechanismus, aber seinen Rand. Wie ein Wort am Rand "
+                    "des Blickfelds: die Bedeutung trifft ein, unvollständig. "
+                    "Der Spiegel zeigt ein Fragment des Vergessenen. "
+                    "Genug, um zu beunruhigen. Nicht genug, um zu verstehen."
+                ),
                 fail_narrative_en=(
                     "The reflection holds {agent}'s gaze too long. "
                     "When they look away, something in the reflection "
@@ -6103,6 +6117,21 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Das Teilen stabilisiert, was jeder Agent allein sieht. "
                     "Sturgeons Bleshing: das Gestalt nimmt klarer wahr "
                     "als jeder Einzelne."
+                ),
+                partial_narrative_en=(
+                    "The descriptions almost overlap. Edges touch \u2013 the same "
+                    "corner of a room, the same quality of light \u2013 then diverge. "
+                    "Sturgeon's bleshing, interrupted: the gestalt forms for "
+                    "a moment, then each agent returns to their own perception. "
+                    "Something was glimpsed. Something shared. Not held."
+                ),
+                partial_narrative_de=(
+                    "Die Beschreibungen überlappen sich fast. Ränder berühren "
+                    "sich \u2013 dieselbe Ecke eines Raumes, dieselbe Qualität des "
+                    "Lichts \u2013 dann gehen sie auseinander. Sturgeons Bleshing, "
+                    "unterbrochen: die Gestalt bildet sich für einen Moment, "
+                    "dann kehrt jeder Agent zu seiner eigenen Wahrnehmung zurück. "
+                    "Etwas wurde erhascht. Etwas geteilt. Nicht gehalten."
                 ),
                 fail_narrative_en=(
                     "The descriptions do not overlap. Each agent is alone "
@@ -6167,6 +6196,21 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Die Erinnerung wird nicht wiedergegeben; sie wird "
                     "rekonstruiert. Die Rekonstruktion verrät etwas über "
                     "den, der rekonstruiert."
+                ),
+                partial_narrative_en=(
+                    "{agent} catalogs some differences. The window \u2013 yes, "
+                    "it moved. But why it moved, what the reconstruction "
+                    "reveals about the reconstructor, remains out of focus. "
+                    "Proust's madeleine, half-dissolved: the sensation "
+                    "arrives, but the memory it summons stays submerged."
+                ),
+                partial_narrative_de=(
+                    "{agent} katalogisiert einige Unterschiede. Das Fenster \u2013 "
+                    "ja, es hat sich bewegt. Aber warum es sich bewegt hat, "
+                    "was die Rekonstruktion über den, der rekonstruiert, verrät, "
+                    "bleibt unscharf. Prousts Madeleine, halb aufgelöst: "
+                    "die Empfindung kommt an, aber die Erinnerung, die sie "
+                    "heraufbeschwört, bleibt untergetaucht."
                 ),
                 fail_narrative_en=(
                     "The details shift faster than {agent} can track. "
@@ -6240,6 +6284,20 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "jedes Detail scharf, jede Erinnerung präzise. "
                     "Dann setzt die Drift wieder ein."
                 ),
+                partial_narrative_en=(
+                    "{agent} brings the clocks closer. Not aligned \u2013 "
+                    "adjacent. For a half-second the room flickers into "
+                    "clarity, then the drift resumes. But {agent} saw it: "
+                    "the room between the clocks. It was empty. "
+                    "Deliberately empty."
+                ),
+                partial_narrative_de=(
+                    "{agent} bringt die Uhren näher. Nicht synchron \u2013 "
+                    "benachbart. Für eine halbe Sekunde flackert der Raum "
+                    "in Klarheit, dann setzt das Driften wieder ein. Aber "
+                    "{agent} hat es gesehen: den Raum zwischen den Uhren. "
+                    "Er war leer. Absichtlich leer."
+                ),
                 fail_narrative_en=(
                     "The clocks split further. What else can happen but that the two worlds split apart?"
                 ),
@@ -6268,6 +6326,22 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "sich. Was draußen Minuten dauert, dauert drinnen "
                     "Sekunden. In der komprimierten Zeit nimmt {agent} "
                     "etwas wahr, das die äußere Uhr nie enthüllen würde."
+                ),
+                partial_narrative_en=(
+                    "{agent} follows the inner clock \u2013 briefly. Time "
+                    "compresses, then stutters. A glimpse of the accelerated "
+                    "perception: shapes in the compressed seconds, moving "
+                    "too fast to identify. The outer clock pulls {agent} back. "
+                    "Something was perceived. The vocabulary for it has not "
+                    "yet arrived."
+                ),
+                partial_narrative_de=(
+                    "{agent} folgt der inneren Uhr \u2013 kurz. Die Zeit "
+                    "komprimiert sich, dann stockt sie. Ein Blick in die "
+                    "beschleunigte Wahrnehmung: Formen in den komprimierten "
+                    "Sekunden, zu schnell, um sie zu identifizieren. Die "
+                    "äußere Uhr zieht {agent} zurück. Etwas wurde wahrgenommen. "
+                    "Das Vokabular dafür ist noch nicht eingetroffen."
                 ),
                 fail_narrative_en=(
                     "The inner clock is too fast. {agent} is swept along "
@@ -6337,6 +6411,22 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Die Rekonstruktion wird real. Borges' Hronir: Objekte, "
                     "materialisiert durch Erwartung. Das Dungeon akzeptiert "
                     "das Substitut."
+                ),
+                partial_narrative_en=(
+                    "{agent} fills the gap \u2013 partially. The reconstruction "
+                    "takes shape, but the edges remain translucent. "
+                    "Borges's hronir, half-materialized: the object exists "
+                    "by expectation, but expectation wavers. The dungeon "
+                    "accepts the substitute provisionally. As one accepts "
+                    "a word one cannot quite recall."
+                ),
+                partial_narrative_de=(
+                    "{agent} füllt die Lücke \u2013 teilweise. Die Rekonstruktion "
+                    "nimmt Gestalt an, aber die Ränder bleiben durchscheinend. "
+                    "Borges' Hronir, halb materialisiert: das Objekt existiert "
+                    "durch Erwartung, aber die Erwartung schwankt. Das Dungeon "
+                    "akzeptiert das Substitut vorläufig. Wie man ein Wort "
+                    "akzeptiert, an das man sich nicht ganz erinnern kann."
                 ),
                 fail_narrative_en=(
                     "The gap resists reconstruction. The absence is "
@@ -6412,6 +6502,21 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "der Gruppe, von außen gehört. Jaynes' zweikammeriger "
                     "Geist: die Götter waren immer wir."
                 ),
+                partial_narrative_en=(
+                    "The humming almost resolves. {agent} hears the "
+                    "boundary between noise and signal \u2013 the threshold "
+                    "where the voices nearly coalesce into recognition. "
+                    "Jaynes's bicameral membrane, thinning but not torn. "
+                    "The gods are audible. Not yet intelligible."
+                ),
+                partial_narrative_de=(
+                    "Das Summen löst sich fast auf. {agent} hört die "
+                    "Grenze zwischen Rauschen und Signal \u2013 die Schwelle, "
+                    "an der die Stimmen beinahe zu Wiedererkennung "
+                    "verschmelzen. Jaynes' zweikammerige Membran, dünner "
+                    "werdend, aber nicht gerissen. Die Götter sind hörbar. "
+                    "Noch nicht verständlich."
+                ),
                 fail_narrative_en=(
                     "The humming overwhelms. Too many voices, too "
                     "distant, too simultaneous. Funes's garbage heap. "
@@ -6439,6 +6544,18 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 success_narrative_de=(
                     "{agent} hält die Grenze aufrecht. Das Summen lässt nach. "
                     "Das Dungeon vermerkt die Weigerung ohne Urteil."
+                ),
+                partial_narrative_en=(
+                    "{agent} holds the boundary \u2013 mostly. The humming "
+                    "dims but does not disappear. A residual frequency "
+                    "persists, like a thought one has decided not to think "
+                    "but which continues thinking itself."
+                ),
+                partial_narrative_de=(
+                    "{agent} hält die Grenze \u2013 größtenteils. Das Summen "
+                    "wird leiser, verschwindet aber nicht. Eine Restfrequenz "
+                    "bleibt bestehen, wie ein Gedanke, den man beschlossen "
+                    "hat nicht zu denken, der aber weiterhin sich selbst denkt."
                 ),
                 fail_narrative_en=(
                     "The humming finds a way through. Not through the walls \u2013 through the awareness itself."
