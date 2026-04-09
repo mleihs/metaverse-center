@@ -5,6 +5,7 @@ import { connectionsApi } from '../../services/api/index.js';
 import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/LoadingState.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
 
 const VECTOR_COLORS: Record<string, string> = {
   // lint-color-ok
@@ -20,325 +21,272 @@ const VECTOR_COLORS: Record<string, string> = {
 @localized()
 @customElement('velg-bleed-gazette-sidebar')
 export class VelgBleedGazetteSidebar extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      width: 320px;
-      max-height: 100%;
-      overflow-y: auto;
-      background: var(--color-surface-sunken);
-      color: var(--color-text-secondary);
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-border-light) transparent;
-      border-left: 1px solid var(--color-border-light);
-    }
-
-    /* ── Header ────────────────────────── */
-
-    .gazette-header {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: var(--color-surface-sunken);
-      border-bottom: 1px solid var(--color-border-light);
-      padding: var(--space-4);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-    }
-
-    .gazette-header__top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .gazette-header__bureau {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--color-text-muted);
-      margin: 0;
-    }
-
-    .gazette-header__controls {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .pulse-indicator {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--color-success);
-      animation: livePulse 2s ease-in-out infinite;
-    }
-
-    @keyframes livePulse {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    .collapse-btn {
-      background: none;
-      border: 1px solid var(--color-border);
-      color: var(--color-icon);
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 10px;
-      border-radius: 2px;
-      transition: color 0.15s;
-    }
-
-    .collapse-btn:hover { color: var(--color-text-secondary); }
-    .collapse-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
-
-    .gazette-header__title {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-weight: 700;
-      font-size: var(--text-base);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--color-text-secondary);
-      margin: 0;
-    }
-
-    .gazette-header__rule {
-      width: 40px;
-      height: 1px;
-      background: var(--color-border);
-      margin-top: var(--space-1);
-    }
-
-    /* ── Dispatch List ─────────────────── */
-
-    .dispatches {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      padding: var(--space-2);
-    }
-
-    .dispatches--collapsed {
-      display: none;
-    }
-
-    /* ── Dispatch Card (base) ──────────── */
-
-    .dispatch {
-      background: var(--color-surface);
-      background-image: linear-gradient(135deg, rgba(255, 248, 230, 0.02), transparent);
-      border: 1px solid var(--color-border-light);
-      padding: var(--space-3);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      position: relative;
-      animation: dispatchEnter 0.35s ease-out both;
-    }
-
-    .dispatch::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: var(--dispatch-accent, var(--color-border));
-    }
-
-    /* ── Echo Completed ────────────────── */
-
-    .dispatch--echo::before {
-      animation: echoRipple 2.5s ease-in-out infinite;
-    }
-
-    @keyframes echoRipple {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
-
-    .dispatch__route {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-size: var(--text-xs);
-      color: var(--color-text-tertiary);
-    }
-
-    .dispatch__sim-name {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-weight: 600;
-      font-size: var(--text-xs);
-      max-width: 100px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .dispatch__arrow {
-      color: var(--color-separator);
-      font-size: 10px;
-      flex-shrink: 0;
-    }
-
-    .dispatch__vector-tag {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 1px 5px;
-      border-radius: 1px;
-      border: 1px solid currentColor;
-      opacity: 0.85;
-      flex-shrink: 0;
-    }
-
-    .dispatch__strength {
-      display: flex;
-      gap: 2px;
-      align-items: center;
-    }
-
-    .strength-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      border: 1px solid var(--color-separator);
-    }
-
-    .strength-dot--filled {
-      background: var(--dispatch-accent, var(--color-icon));
-      border-color: var(--dispatch-accent, var(--color-icon));
-    }
-
-    /* ── Embassy Change ────────────────── */
-
-    .dispatch--embassy {
-      text-align: center;
-    }
-
-    .dispatch__seal {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid var(--color-separator);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto;
-      color: var(--color-text-muted);
-    }
-
-    .dispatch__seal-text {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: 7px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--color-text-muted);
-      margin-top: var(--space-1);
-    }
-
-    .dispatch__embassy-names {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: var(--text-xs);
-      color: var(--color-text-tertiary);
-    }
-
-    /* ── Phase Change ──────────────────── */
-
-    .dispatch--phase {
-      text-align: center;
-      border: 1px solid var(--color-warning);
-      animation: dispatchEnter 0.35s ease-out both, phasePulse 3s ease-in-out infinite;
-    }
-
-    .dispatch--phase::before {
-      display: none;
-    }
-
-    @keyframes phasePulse {
-      0%, 100% { border-color: var(--color-border-light); }
-      50% { border-color: var(--color-warning); }
-    }
-
-    .dispatch__phase-rules {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .dispatch__phase-rule {
-      flex: 1;
-      height: 1px;
-      background: var(--color-border);
-    }
-
-    .dispatch__phase-label {
-      font-family: var(--font-brutalist, Georgia, serif);
-      font-weight: 700;
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--color-warning);
-      white-space: nowrap;
-    }
-
-    /* ── Shared card elements ──────────── */
-
-    .dispatch__narrative {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 11px;
-      line-height: 1.6;
-      color: var(--color-text-muted);
-    }
-
-    .dispatch__filed {
-      font-size: 9px;
-      color: var(--color-separator);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .dispatch__icon {
-      color: var(--dispatch-accent, var(--color-text-muted));
-      opacity: 0.6;
-    }
-
-    /* ── Empty ─────────────────────────── */
-
-    .empty {
-      text-align: center;
-      padding: var(--space-6);
-      color: var(--color-separator);
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: var(--text-sm);
-      font-style: italic;
-    }
-
-    @keyframes dispatchEnter {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .dispatch,
-      .dispatch--phase {
-        animation: none;
+  static styles = [
+    dispatchStyles,
+    css`
+      :host {
+        display: block;
+        width: 320px;
+        max-height: 100%;
+        overflow-y: auto;
+        background: var(--color-surface-sunken);
+        color: var(--color-text-secondary);
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border-light) transparent;
+        border-left: 1px solid var(--color-border-light);
       }
-      .dispatch--echo::before,
+
+      /* ── Header ────────────────────────── */
+
+      .gazette-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: var(--color-surface-sunken);
+        border-bottom: 1px solid var(--color-border-light);
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .gazette-header__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .gazette-header__controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
       .pulse-indicator {
-        animation: none;
-        opacity: 1;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-success);
+        animation: livePulse 2s ease-in-out infinite;
       }
-    }
-  `;
+
+      @keyframes livePulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      .collapse-btn {
+        background: none;
+        border: 1px solid var(--color-border);
+        color: var(--color-icon);
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 10px;
+        border-radius: 2px;
+        transition: color 0.15s;
+      }
+
+      .collapse-btn:hover { color: var(--color-text-secondary); }
+      .collapse-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+      .gazette-header__title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+        font-size: var(--text-base);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--color-text-secondary);
+        margin: 0;
+      }
+
+      .gazette-header__rule {
+        width: 40px;
+        height: 1px;
+        background: var(--color-border);
+        margin-top: var(--space-1);
+      }
+
+      /* ── Dispatch List ─────────────────── */
+
+      .dispatches {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: var(--space-2);
+      }
+
+      .dispatches--collapsed {
+        display: none;
+      }
+
+      /* ── Sidebar dispatch overrides ────── */
+
+      .dispatch {
+        background-image: linear-gradient(135deg, rgba(255, 248, 230, 0.02), transparent);
+      }
+
+      .dispatch::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: var(--dispatch-accent, var(--color-border));
+      }
+
+      /* ── Echo Completed ────────────────── */
+
+      .dispatch--echo::before {
+        animation: echoRipple 2.5s ease-in-out infinite;
+      }
+
+      @keyframes echoRipple {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+      }
+
+      .dispatch__route {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--text-xs);
+        color: var(--color-text-tertiary);
+      }
+
+      .dispatch__sim-name {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 600;
+        font-size: var(--text-xs);
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dispatch__arrow {
+        color: var(--color-separator);
+        font-size: 10px;
+        flex-shrink: 0;
+      }
+
+      .dispatch__vector-tag {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 1px 5px;
+        border-radius: 1px;
+        border: 1px solid currentColor;
+        opacity: 0.85;
+        flex-shrink: 0;
+      }
+
+      /* ── Embassy Change ────────────────── */
+
+      .dispatch--embassy {
+        text-align: center;
+      }
+
+      .dispatch__seal {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid var(--color-separator);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: var(--color-text-muted);
+      }
+
+      .dispatch__seal-text {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--color-text-muted);
+        margin-top: var(--space-1);
+      }
+
+      .dispatch__embassy-names {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: var(--text-xs);
+        color: var(--color-text-tertiary);
+      }
+
+      /* ── Phase Change ──────────────────── */
+
+      .dispatch--phase {
+        text-align: center;
+        border: 1px solid var(--color-warning);
+        animation:
+          dispatch-enter 0.35s ease-out both,
+          phasePulse 3s ease-in-out infinite;
+      }
+
+      .dispatch--phase::before {
+        display: none;
+      }
+
+      @keyframes phasePulse {
+        0%, 100% { border-color: var(--color-border-light); }
+        50% { border-color: var(--color-warning); }
+      }
+
+      .dispatch__phase-rules {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .dispatch__phase-rule {
+        flex: 1;
+        height: 1px;
+        background: var(--color-border);
+      }
+
+      .dispatch__phase-label {
+        font-family: var(--font-brutalist, Georgia, serif);
+        font-weight: 700;
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-warning);
+        white-space: nowrap;
+      }
+
+      /* ── Sidebar-specific elements ─────── */
+
+      .dispatch__icon {
+        color: var(--dispatch-accent, var(--color-text-muted));
+        opacity: 0.6;
+      }
+
+      .empty {
+        text-align: center;
+        padding: var(--space-6);
+        color: var(--color-separator);
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: var(--text-sm);
+        font-style: italic;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .dispatch--phase {
+          animation: none;
+        }
+        .dispatch--echo::before,
+        .pulse-indicator {
+          animation: none;
+          opacity: 1;
+        }
+      }
+    `,
+  ];
 
   @state() private _entries: GazetteEntry[] = [];
   @state() private _loading = false;
@@ -384,7 +332,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     const dots = [];
     for (let i = 0; i < 5; i++) {
       dots.push(
-        html`<span class="strength-dot ${i < filled ? 'strength-dot--filled' : ''}" aria-hidden="true"></span>`,
+        html`<span class="dispatch__strength-dot ${i < filled ? 'dispatch__strength-dot--filled' : ''}" aria-hidden="true"></span>`,
       );
     }
     return html`<span class="dispatch__strength" aria-label="${msg('Strength')}: ${filled}/5">${dots}</span>`;
@@ -394,7 +342,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     const vecColor = VECTOR_COLORS[entry.echo_vector || ''] || 'var(--color-text-muted)';
     return html`
       <div
-        class="dispatch dispatch--echo"
+        class="dispatch dispatch--compact dispatch--echo"
         style="--dispatch-accent: ${vecColor}; animation-delay: ${idx * 60}ms"
       >
         <div class="dispatch__route">
@@ -428,7 +376,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
   private _renderEmbassy(entry: GazetteEntry, idx: number) {
     return html`
       <div
-        class="dispatch dispatch--embassy"
+        class="dispatch dispatch--compact dispatch--embassy"
         style="--dispatch-accent: var(--color-info); animation-delay: ${idx * 60}ms"
       >
         <div class="dispatch__seal" aria-hidden="true">${icons.handshake(20)}</div>
@@ -446,7 +394,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
 
   private _renderPhase(entry: GazetteEntry, idx: number) {
     return html`
-      <div class="dispatch dispatch--phase" style="animation-delay: ${idx * 60}ms">
+      <div class="dispatch dispatch--compact dispatch--phase" style="animation-delay: ${idx * 60}ms">
         <div class="dispatch__phase-rules">
           <span class="dispatch__phase-rule" aria-hidden="true"></span>
           <span class="dispatch__phase-label">${icons.megaphone(12)} ${msg('Phase Transition')}</span>
@@ -475,7 +423,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
     return html`
       <div class="gazette-header">
         <div class="gazette-header__top">
-          <p class="gazette-header__bureau">${msg('Bureau of Impossible Geography')}</p>
+          <p class="dispatch-bureau">${msg('Bureau of Impossible Geography')}</p>
           <div class="gazette-header__controls">
             <span class="pulse-indicator" aria-hidden="true"></span>
             <button
