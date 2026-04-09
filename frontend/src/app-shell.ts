@@ -303,19 +303,8 @@ export class VelgApp extends LitElement {
           return true;
         },
       },
-      {
-        path: '/how-to-play/legacy',
-        render: () => html`<velg-how-to-play></velg-how-to-play>`,
-        enter: async () => {
-          await this._authReady;
-          if (!(await this._lazy(() => import('./components/how-to-play/HowToPlayView.js'))))
-            return false;
-          seoService.setTitle(['How to Play (Legacy)']);
-          seoService.setCanonical('/how-to-play');
-          analyticsService.trackPageView('/how-to-play/legacy', document.title);
-          return true;
-        },
-      },
+      // Legacy /how-to-play/legacy route removed — monolith HowToPlayView.ts deleted.
+      // All content migrated to Landing + Quickstart + GuideHub + Topic + WarRoom.
       {
         path: '/archives',
         render: () => html`<velg-bureau-archives></velg-bureau-archives>`,
