@@ -1,13 +1,16 @@
 /**
- * VelgTooltip — Shared tooltip wrapper for the brutalist design system.
+ * VelgTooltip — Shared tooltip for the brutalist design system.
  *
- * Wraps any trigger element via <slot> and renders a positioned tooltip
- * on hover / focus-within. Pure CSS show/hide — zero JavaScript event
- * handlers for the visibility toggle.
+ * Uses position:fixed + viewport-relative coordinates to escape ALL
+ * overflow:hidden ancestors (modals, panels, cards). Hides on scroll
+ * and clamps to viewport edges.
  *
  * Supports two content modes:
  *   1. Text content via `content` property (simple, default)
  *   2. Rich HTML via named slot `tip` (agent cards, formatted lists, etc.)
+ *
+ * Also used internally by `renderInfoBubble()` from info-bubble-styles.ts,
+ * which serves 34+ components across the codebase.
  *
  * Usage (text):
  *   <velg-tooltip content="Explanation text">
@@ -23,15 +26,20 @@
  *   </velg-tooltip>
  *
  * Accessibility:
- *   - role="tooltip" on the tip element
- *   - :host(:focus-within) reveals tooltip for keyboard users
+ *   - role="tooltip" + unique id on the tip element
+ *   - aria-describedby on the trigger slot links to the tooltip
+ *   - focus-within reveals tooltip for keyboard users
  *   - prefers-reduced-motion: instant transition
+ *
+ * @element velg-tooltip
  */
 
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+let _tipIdCounter = 0;
 
 @customElement('velg-tooltip')
 export class VelgTooltip extends LitElement {
@@ -60,6 +68,7 @@ export class VelgTooltip extends LitElement {
       transition:
         opacity var(--transition-fast),
         visibility var(--transition-fast);
+      max-width: min(320px, 90vw);
     }
 
     /* ── Rich content variant ── */
@@ -71,6 +80,16 @@ export class VelgTooltip extends LitElement {
       padding: var(--space-2);
       font-family: var(--font-body);
       font-size: var(--text-xs);
+    }
+
+    /* Info-bubble content (from renderInfoBubble) — wider, wrapping */
+    .tip--info {
+      white-space: normal;
+      width: min(240px, 80vw);
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      line-height: 1.5;
     }
 
     /* Hide when no content at all */
@@ -100,6 +119,9 @@ export class VelgTooltip extends LitElement {
   /** Position relative to the trigger element. */
   @property({ reflect: true }) position: 'above' | 'below' = 'above';
 
+  /** Variant: 'default' for compact mono, 'info' for wider info-bubble style. */
+  @property() variant: 'default' | 'info' = 'default';
+
   /** Tracks whether the named `tip` slot has slotted content. */
   @state() private _hasSlottedTip = false;
 
@@ -109,12 +131,16 @@ export class VelgTooltip extends LitElement {
   /** Computed fixed position for the tooltip. */
   @state() private _tipPos: Record<string, string> = {};
 
+  /** Unique ID for aria-describedby linkage. */
+  private _tipId = `velg-tip-${++_tipIdCounter}`;
+
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener('mouseenter', this._show);
     this.addEventListener('mouseleave', this._hide);
     this.addEventListener('focusin', this._show);
     this.addEventListener('focusout', this._hide);
+    window.addEventListener('scroll', this._hide, { capture: true, passive: true });
   }
 
   disconnectedCallback(): void {
@@ -122,29 +148,39 @@ export class VelgTooltip extends LitElement {
     this.removeEventListener('mouseleave', this._hide);
     this.removeEventListener('focusin', this._show);
     this.removeEventListener('focusout', this._hide);
+    window.removeEventListener('scroll', this._hide, { capture: true });
     super.disconnectedCallback();
   }
 
   private _show = (): void => {
     const rect = this.getBoundingClientRect();
     const gap = 6;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // Horizontal: center on trigger, clamp to viewport
-    let left = rect.left + rect.width / 2;
-    // Will be adjusted after render via translate(-50%), so clamp after
+    // Horizontal: center on trigger, clamp to viewport (16px margin)
+    const centerX = rect.left + rect.width / 2;
+    const margin = 16;
+    const left = Math.max(margin, Math.min(centerX, vw - margin));
 
-    if (this.position === 'below') {
+    // Determine if we need to flip: if 'above' but too close to top, go below (and vice versa)
+    let pos = this.position;
+    if (pos === 'above' && rect.top < 80) pos = 'below';
+    if (pos === 'below' && vh - rect.bottom < 80) pos = 'above';
+
+    if (pos === 'below') {
       this._tipPos = {
         top: `${rect.bottom + gap}px`,
         left: `${left}px`,
         transform: 'translateX(-50%)',
+        bottom: 'auto',
       };
     } else {
-      // above (default)
       this._tipPos = {
-        bottom: `${window.innerHeight - rect.top + gap}px`,
+        bottom: `${vh - rect.top + gap}px`,
         left: `${left}px`,
         transform: 'translateX(-50%)',
+        top: 'auto',
       };
     }
     this._visible = true;
@@ -164,6 +200,7 @@ export class VelgTooltip extends LitElement {
     const tipClasses = {
       tip: true,
       'tip--rich': this._hasSlottedTip,
+      'tip--info': this.variant === 'info',
       'tip--visible': this._visible,
     };
 
@@ -173,6 +210,7 @@ export class VelgTooltip extends LitElement {
         class=${classMap(tipClasses)}
         style=${styleMap(this._tipPos)}
         role="tooltip"
+        id=${this._tipId}
         ?hidden=${!hasTip}
       >
         <slot name="tip" @slotchange=${this._handleTipSlotChange}>
