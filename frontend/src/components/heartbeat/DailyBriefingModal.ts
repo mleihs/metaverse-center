@@ -16,6 +16,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { t } from '../../utils/locale-fields.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
+import '../shared/VelgDispatchStamp.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
 import './AutonomyBriefingSection.js';
 
 const AUTO_DISMISS_MS = 120_000;
@@ -53,7 +55,9 @@ interface BriefingData {
 @localized()
 @customElement('velg-daily-briefing')
 export class VelgDailyBriefing extends LitElement {
-  static styles = css`
+  static styles = [
+    dispatchStyles,
+    css`
     /* ─────────────────────────────────────────────────────
      * PIN TO PLATFORM-DARK TOKENS
      * Simulation themes override color tokens on the shell.
@@ -105,6 +109,7 @@ export class VelgDailyBriefing extends LitElement {
     }
 
     /* ── Dispatch container ─────────────────────────────── */
+    /* Override shared .dispatch: modal uses transition-based entrance, not animation */
 
     .dispatch {
       position: relative;
@@ -114,12 +119,15 @@ export class VelgDailyBriefing extends LitElement {
       max-height: 85dvh;
       display: flex;
       flex-direction: column;
+      gap: 0;
+      padding: 0;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.04),
         0 24px 64px rgba(0, 0, 0, 0.7);
       overflow: hidden;
+      animation: none;
       transform: translateY(20px) scale(0.97);
       opacity: 0;
       transition:
@@ -206,23 +214,9 @@ export class VelgDailyBriefing extends LitElement {
       z-index: 1;
     }
 
-    /* Diagonal "CLASSIFIED" watermark */
-    .dispatch__watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-25deg);
-      font-family: var(--font-brutalist);
-      font-size: 42px;
-      font-weight: var(--font-black);
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--color-text-primary);
-      opacity: 0.04;
-      pointer-events: none;
+    /* Watermark positioning */
+    .dispatch__watermark-wrap {
       z-index: 0;
-      white-space: nowrap;
-      user-select: none;
     }
 
     /* ── Header ─────────────────────────────────────────── */
@@ -252,19 +246,11 @@ export class VelgDailyBriefing extends LitElement {
       margin-top: var(--space-1);
     }
 
-    /* Classification stamp */
-    .dispatch__stamp {
+    /* Classification stamp positioning */
+    .dispatch__stamp-wrap {
       position: absolute;
       top: var(--space-3);
       right: var(--space-4);
-      font-family: var(--font-brutalist);
-      font-size: 8px;
-      font-weight: var(--font-black);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--color-danger);
-      border: 1px solid var(--color-danger-border);
-      padding: 2px 6px;
       z-index: 3;
     }
 
@@ -372,20 +358,6 @@ export class VelgDailyBriefing extends LitElement {
       border-color: var(--color-primary-bg);
     }
 
-    /* ── Section label ──────────────────────────────────── */
-
-    .section-label {
-      font-family: var(--font-brutalist);
-      font-size: 9px;
-      font-weight: var(--font-bold);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-3);
-      padding-bottom: var(--space-1);
-      border-bottom: 1px dashed var(--color-border-light);
-    }
-
     /* ── Stat Grid ──────────────────────────────────────── */
 
     .stats {
@@ -393,44 +365,6 @@ export class VelgDailyBriefing extends LitElement {
       grid-template-columns: 1fr 1fr;
       gap: var(--space-2);
       margin-bottom: var(--space-5);
-    }
-
-    .stat {
-      padding: var(--space-2-5) var(--space-3);
-      background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border-light);
-    }
-
-    .stat__value {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xl, 20px);
-      font-weight: var(--font-black);
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-
-    .stat__value--critical {
-      color: var(--color-danger);
-    }
-
-    .stat__value--positive {
-      color: var(--color-success);
-    }
-
-    .stat__value--neutral {
-      color: var(--color-text-primary);
-    }
-
-    .stat__value--accent {
-      color: var(--color-text-secondary);
-    }
-
-    .stat__label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.06em;
-      color: var(--color-text-muted);
-      text-transform: uppercase;
     }
 
     /* ── Weather Section ─────────────────────────────────── */
@@ -683,7 +617,7 @@ export class VelgDailyBriefing extends LitElement {
         gap: var(--space-1-5, 6px);
       }
 
-      .stat {
+      .dispatch-stat {
         padding: var(--space-2);
       }
 
@@ -691,7 +625,8 @@ export class VelgDailyBriefing extends LitElement {
         font-size: var(--text-base);
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
   @property({ type: String }) simulationSlug = '';
@@ -857,7 +792,7 @@ export class VelgDailyBriefing extends LitElement {
           @mouseleave=${this._handleMouseLeave}
         >
           <div class="dispatch__scanlines" aria-hidden="true"></div>
-          <span class="dispatch__watermark" aria-hidden="true">CLASSIFIED</span>
+          <velg-dispatch-stamp class="dispatch__watermark-wrap" variant="watermark" text="CLASSIFIED"></velg-dispatch-stamp>
           <span class="dispatch__corner-tr" aria-hidden="true"></span>
           <span class="dispatch__corner-bl" aria-hidden="true"></span>
 
@@ -867,7 +802,7 @@ export class VelgDailyBriefing extends LitElement {
               ${msg('Daily Substrate Dispatch')}
             </h2>
             <div class="dispatch__subtitle">${this._timestamp()} // BUREAU SIGNALS DIVISION</div>
-            <span class="dispatch__stamp">${msg('Classified')}</span>
+            <velg-dispatch-stamp class="dispatch__stamp-wrap" variant="badge" tone="danger" text=${msg('Classified')}></velg-dispatch-stamp>
           </div>
 
           <!-- Body -->
@@ -930,23 +865,23 @@ export class VelgDailyBriefing extends LitElement {
 
   private _renderStats(data: BriefingData) {
     return html`
-      <div class="section-label">${msg('24h Activity')}</div>
+      <div class="dispatch-section-label">${msg('24h Activity')}</div>
       <div class="stats">
-        <div class="stat">
-          <div class="stat__value stat__value--critical">${data.critical_events}</div>
-          <div class="stat__label">${msg('critical')}</div>
+        <div class="dispatch-stat">
+          <div class="dispatch-stat__value dispatch-stat__value--critical">${data.critical_events}</div>
+          <div class="dispatch-stat__label">${msg('critical')}</div>
         </div>
-        <div class="stat">
-          <div class="stat__value stat__value--positive">${data.positive_events}</div>
-          <div class="stat__label">${msg('positive')}</div>
+        <div class="dispatch-stat">
+          <div class="dispatch-stat__value dispatch-stat__value--positive">${data.positive_events}</div>
+          <div class="dispatch-stat__label">${msg('positive')}</div>
         </div>
-        <div class="stat">
-          <div class="stat__value stat__value--neutral">${data.entries_24h}</div>
-          <div class="stat__label">${msg('total entries')}</div>
+        <div class="dispatch-stat">
+          <div class="dispatch-stat__value dispatch-stat__value--neutral">${data.entries_24h}</div>
+          <div class="dispatch-stat__label">${msg('total entries')}</div>
         </div>
-        <div class="stat">
-          <div class="stat__value stat__value--accent">${data.active_arcs}</div>
-          <div class="stat__label">${msg('active arcs')}</div>
+        <div class="dispatch-stat">
+          <div class="dispatch-stat__value dispatch-stat__value--accent">${data.active_arcs}</div>
+          <div class="dispatch-stat__label">${msg('active arcs')}</div>
         </div>
       </div>
     `;
@@ -955,7 +890,7 @@ export class VelgDailyBriefing extends LitElement {
   private _renderWeather(zones: BriefingWeatherZone[]) {
     return html`
       <div class="weather-section">
-        <div class="section-label">${msg('Ambient Conditions')}</div>
+        <div class="dispatch-section-label">${msg('Ambient Conditions')}</div>
         ${zones.map((zone) => {
           const narrative = t(
             { narrative: zone.narrative_en, narrative_de: zone.narrative_de },
@@ -976,7 +911,7 @@ export class VelgDailyBriefing extends LitElement {
   private _renderArcs(arcs: BriefingData['arc_details']) {
     return html`
       <div class="arcs">
-        <div class="section-label">${msg('Active Narrative Arcs')}</div>
+        <div class="dispatch-section-label">${msg('Active Narrative Arcs')}</div>
         ${arcs.map((arc) => {
           const pressure = arc.pressure ?? 0;
           const pct = Math.round(pressure * 100);

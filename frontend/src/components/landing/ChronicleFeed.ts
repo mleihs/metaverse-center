@@ -19,6 +19,11 @@ import type { Chronicle } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
+import '../shared/VelgDispatchMasthead.js';
+import '../shared/VelgDispatchStamp.js';
+import '../shared/VelgDispatchTicker.js';
+import { dispatchStyles } from '../shared/dispatch-styles.js';
+import type { TickerItem } from '../shared/VelgDispatchTicker.js';
 
 /** Extended chronicle with simulation metadata from the cross-sim endpoint. */
 interface FeedChronicle extends Chronicle {
@@ -34,401 +39,182 @@ interface FeedChronicle extends Chronicle {
 @localized()
 @customElement('velg-chronicle-feed')
 export class VelgChronicleFeed extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      min-height: 100vh;
-    }
-
-    /* ── Wire Header ───────────────────────── */
-
-    .wire-header {
-      padding: var(--space-16, 64px) var(--space-6, 24px) var(--space-6, 24px);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wire-header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 4%, transparent) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    .wire-header__classification {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 10px;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      color: var(--color-accent-amber);
-      margin: 0 0 var(--space-4, 16px);
-    }
-
-    .wire-header__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist, 0.15em);
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-3, 12px);
-      line-height: 1.1;
-    }
-
-    .wire-header__subtitle {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: clamp(0.75rem, 1.2vw, 0.875rem);
-      color: var(--color-text-secondary);
-      max-width: 640px;
-      margin: 0 auto;
-      line-height: 1.6;
-      letter-spacing: 0.5px;
-    }
-
-    /* ── Ticker ─────────────────────────────── */
-
-    .wire-ticker {
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
-      padding: 10px 0;
-      overflow: hidden;
-      position: relative;
-      margin-bottom: var(--space-10, 40px);
-    }
-
-    .wire-ticker__track {
-      display: flex;
-      gap: 48px;
-      animation: ticker-scroll 40s linear infinite;
-      width: max-content;
-    }
-
-    .wire-ticker__item {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: var(--color-text-muted);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .wire-ticker__dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes ticker-scroll {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .wire-ticker__track {
-        animation: none;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-    }
-
-    /* ── Feed Container ─────────────────────── */
-
-    .feed {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 var(--space-6, 24px) var(--space-12, 48px);
-    }
-
-    /* ── Dispatch Entry ─────────────────────── */
-
-    .dispatch {
-      position: relative;
-      padding: var(--space-6, 24px) 0 var(--space-8, 32px);
-      border-bottom: 1px solid var(--color-separator);
-    }
-
-    .dispatch:last-child {
-      border-bottom: none;
-    }
-
-    /* Color accent bar */
-    .dispatch__accent {
-      position: absolute;
-      left: -20px;
-      top: var(--space-6, 24px);
-      bottom: var(--space-8, 32px);
-      width: 3px;
-    }
-
-    /* Simulation attribution */
-    .dispatch__source {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: var(--space-3, 12px);
-    }
-
-    .dispatch__source-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .dispatch__source-name {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .dispatch__source-link {
-      color: inherit;
-      text-decoration: none;
-      transition: color 200ms;
-    }
-
-    .dispatch__source-link:hover {
-      color: var(--color-accent-amber);
-    }
-
-    .dispatch__meta {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 10px;
-      color: var(--color-text-muted);
-      letter-spacing: 1px;
-    }
-
-    /* Masthead */
-    .dispatch__masthead {
-      font-family: var(--font-bureau, 'Spectral', Georgia, serif);
-      font-size: 13px;
-      color: var(--color-text-muted);
-      font-style: italic;
-      margin-bottom: var(--space-2, 8px);
-    }
-
-    /* Headline */
-    .dispatch__headline {
-      font-family: var(--font-bureau, 'Spectral', Georgia, serif);
-      font-size: clamp(1.1rem, 2vw, 1.4rem);
-      font-weight: 700;
-      line-height: 1.35;
-      color: var(--color-text-primary);
-      margin: 0 0 var(--space-3, 12px);
-    }
-
-    /* Content preview */
-    .dispatch__excerpt {
-      font-family: var(--font-bureau, 'Spectral', Georgia, serif);
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--color-text-secondary);
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin: 0 0 var(--space-4, 16px);
-    }
-
-    /* Read more link */
-    .dispatch__read-more {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-decoration: none;
-      transition: color 200ms;
-    }
-
-    .dispatch__read-more:hover {
-      color: var(--color-accent-amber);
-    }
-
-    .dispatch__read-more-arrow {
-      transition: transform 200ms;
-    }
-
-    .dispatch__read-more:hover .dispatch__read-more-arrow {
-      transform: translateX(4px);
-    }
-
-    /* Decoded stamp */
-    .dispatch__stamp {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 9px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--color-success-glow);
-      margin-top: var(--space-3, 12px);
-    }
-
-    /* ── Scroll Reveal ─────────────────────── */
-
-    .scroll-reveal {
-      opacity: 0;
-      transform: translateY(16px);
-      transition:
-        opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
-        transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
-      transition-delay: calc(var(--i, 0) * 80ms);
-    }
-
-    .scroll-reveal.in-view {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── Loading / Empty ───────────────────── */
-
-    .feed-loading {
-      display: flex;
-      justify-content: center;
-      padding: var(--space-16, 64px);
-    }
-
-    .feed-loading__text {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      animation: pulse-text 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse-text {
-      0%, 100% { opacity: 0.4; }
-      50%      { opacity: 1; }
-    }
-
-    .feed-empty {
-      text-align: center;
-      padding: var(--space-16, 64px) var(--space-6, 24px);
-    }
-
-    .feed-empty__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 14px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--color-text-secondary);
-      margin: 0 0 var(--space-2, 8px);
-    }
-
-    .feed-empty__text {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 13px;
-      color: var(--color-text-muted);
-    }
-
-    /* ── Pagination ─────────────────────────── */
-
-    .feed-pagination {
-      display: flex;
-      justify-content: center;
-      gap: var(--space-3, 12px);
-      padding: var(--space-6, 24px) 0 var(--space-12, 48px);
-    }
-
-    .feed-pagination__btn {
-      padding: 10px 20px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--color-text-secondary);
-      background: transparent;
-      border: 1px solid var(--color-border);
-      cursor: pointer;
-      transition: all 200ms;
-    }
-
-    .feed-pagination__btn:hover:not(:disabled) {
-      border-color: var(--color-accent-amber);
-      color: var(--color-accent-amber);
-    }
-
-    .feed-pagination__btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-
-    /* ── CTA ─────────────────────────────────── */
-
-    .feed-cta {
-      max-width: 600px;
-      margin: 0 auto var(--space-12, 48px);
-      padding: var(--space-6, 24px);
-      text-align: center;
-      border: 1px dashed var(--color-primary-glow);
-    }
-
-    .feed-cta__text {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 13px;
-      color: var(--color-text-secondary);
-      margin: 0 0 var(--space-3, 12px);
-      line-height: 1.6;
-    }
-
-    .feed-cta__btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      color: var(--color-surface);
-      background: var(--color-accent-amber);
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 200ms;
-    }
-
-    .feed-cta__btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px var(--color-primary-glow);
-    }
-
-    /* ── Responsive ─────────────────────────── */
-
-    @media (max-width: 640px) {
-      .wire-header {
-        padding: var(--space-10, 40px) var(--space-4, 16px) var(--space-4, 16px);
+  static styles = [
+    dispatchStyles,
+    css`
+      :host {
+        display: block;
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        min-height: 100vh;
       }
 
-      .dispatch__accent {
-        left: -12px;
+      /* ── Ticker spacing ──────────────────── */
+
+      velg-dispatch-ticker {
+        margin-bottom: var(--space-10, 40px);
       }
+
+      /* ── Feed Container ──────────────────── */
 
       .feed {
-        padding-left: var(--space-4, 16px);
-        padding-right: var(--space-4, 16px);
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 var(--space-6, 24px) var(--space-12, 48px);
       }
-    }
-  `;
+
+      /* ── Article dispatch: source row ────── */
+
+      .dispatch__source {
+        margin-bottom: var(--space-3, 12px);
+      }
+
+      /* ── Headline spacing ────────────────── */
+
+      .dispatch__headline {
+        margin-bottom: var(--space-3, 12px);
+      }
+
+      /* ── Excerpt spacing ─────────────────── */
+
+      .dispatch__excerpt {
+        margin-bottom: var(--space-4, 16px);
+      }
+
+      /* ── Decoded stamp ───────────────────── */
+
+      .dispatch__decoded {
+        margin-top: var(--space-3, 12px);
+      }
+
+      /* ── Loading / Empty ─────────────────── */
+
+      .feed-loading {
+        display: flex;
+        justify-content: center;
+        padding: var(--space-16, 64px);
+      }
+
+      .feed-loading__text {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        animation: pulse-text 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse-text {
+        0%, 100% { opacity: 0.4; }
+        50%      { opacity: 1; }
+      }
+
+      .feed-empty {
+        text-align: center;
+        padding: var(--space-16, 64px) var(--space-6, 24px);
+      }
+
+      .feed-empty__title {
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--color-text-secondary);
+        margin: 0 0 var(--space-2, 8px);
+      }
+
+      .feed-empty__text {
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      /* ── Pagination ──────────────────────── */
+
+      .feed-pagination {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-3, 12px);
+        padding: var(--space-6, 24px) 0 var(--space-12, 48px);
+      }
+
+      .feed-pagination__btn {
+        padding: 10px 20px;
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--color-text-secondary);
+        background: transparent;
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+        transition: all 200ms;
+      }
+
+      .feed-pagination__btn:hover:not(:disabled) {
+        border-color: var(--color-accent-amber);
+        color: var(--color-accent-amber);
+      }
+
+      .feed-pagination__btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      /* ── CTA ─────────────────────────────── */
+
+      .feed-cta {
+        max-width: 600px;
+        margin: 0 auto var(--space-12, 48px);
+        padding: var(--space-6, 24px);
+        text-align: center;
+        border: 1px dashed var(--color-primary-glow);
+      }
+
+      .feed-cta__text {
+        font-family: var(--font-mono, 'SF Mono', monospace);
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        margin: 0 0 var(--space-3, 12px);
+        line-height: 1.6;
+      }
+
+      .feed-cta__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        font-family: var(--font-brutalist, 'Courier New', monospace);
+        font-weight: 900;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--color-surface);
+        background: var(--color-accent-amber);
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 200ms;
+      }
+
+      .feed-cta__btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 20px var(--color-primary-glow);
+      }
+
+      /* ── Responsive ──────────────────────── */
+
+      @media (max-width: 640px) {
+        .feed {
+          padding-left: var(--space-4, 16px);
+          padding-right: var(--space-4, 16px);
+        }
+      }
+    `,
+  ];
 
   @state() private _chronicles: FeedChronicle[] = [];
   @state() private _loading = true;
@@ -529,7 +315,7 @@ export class VelgChronicleFeed extends LitElement {
       },
       { threshold: 0.1 },
     );
-    const els = this.renderRoot.querySelectorAll('.scroll-reveal:not(.in-view)');
+    const els = this.renderRoot.querySelectorAll('.dispatch-scroll-reveal:not(.in-view)');
     for (const el of els) this._observer.observe(el);
   }
 
@@ -560,28 +346,14 @@ export class VelgChronicleFeed extends LitElement {
     return firstPara.slice(0, maxLen).replace(/\s+\S*$/, '') + '...';
   }
 
-  private _renderTicker() {
-    // Build ticker items from loaded chronicles (duplicate for seamless scroll)
-    const items = this._chronicles.slice(0, 8);
-    if (items.length === 0) return nothing;
-
-    const tickerItems = [...items, ...items].map((c) => {
+  private _buildTickerItems(): TickerItem[] {
+    return this._chronicles.slice(0, 8).map((c) => {
       const sim = (c as FeedChronicle).simulation;
-      const color = sim ? getThemeColor(sim.theme) : 'var(--color-text-muted)';
-      const headline = c.headline || c.title;
-      return html`
-        <span class="wire-ticker__item">
-          <span class="wire-ticker__dot" style="background: ${color}"></span>
-          ${headline}
-        </span>
-      `;
+      return {
+        text: c.headline || c.title || `Edition #${c.edition_number}`,
+        color: sim ? getThemeColor(sim.theme) : undefined,
+      };
     });
-
-    return html`
-      <div class="wire-ticker">
-        <div class="wire-ticker__track">${tickerItems}</div>
-      </div>
-    `;
   }
 
   private _renderDispatch(chronicle: FeedChronicle, index: number) {
@@ -592,11 +364,11 @@ export class VelgChronicleFeed extends LitElement {
     const readMoreHref = sim ? `/simulations/${simSlug}/chronicle` : '#';
 
     return html`
-      <article class="dispatch scroll-reveal" style="--i: ${index}">
-        <div class="dispatch__accent" style="background: ${themeColor}"></div>
+      <article class="dispatch dispatch--article dispatch-scroll-reveal" style="--i: ${index}; --dispatch-accent: ${themeColor}">
+        <div class="dispatch__accent"></div>
 
         <div class="dispatch__source">
-          <span class="dispatch__source-dot" style="background: ${themeColor}"></span>
+          <span class="dispatch__source-dot"></span>
           <a
             class="dispatch__source-link"
             href="/simulations/${simSlug}/lore"
@@ -627,7 +399,6 @@ export class VelgChronicleFeed extends LitElement {
         <a
           class="dispatch__read-more"
           href=${readMoreHref}
-          style="color: ${themeColor}"
           @click=${(e: Event) => {
             e.preventDefault();
             if (simSlug) this._navigate(`/simulations/${simSlug}/chronicle`);
@@ -637,24 +408,29 @@ export class VelgChronicleFeed extends LitElement {
           <span class="dispatch__read-more-arrow">\u2192</span>
         </a>
 
-        <div class="dispatch__stamp">${msg('Decoded')} // ${formatDate(chronicle.created_at, { locale: 'en-US' })}</div>
+        <velg-dispatch-stamp
+          class="dispatch__decoded"
+          text="${msg('Decoded')} // ${formatDate(chronicle.created_at, { locale: 'en-US' })}"
+          tone="success"
+        ></velg-dispatch-stamp>
       </article>
     `;
   }
 
   protected render() {
     const isGuest = !appState.isAuthenticated.value;
+    const tickerItems = this._buildTickerItems();
 
     return html`
-      <div class="wire-header">
-        <p class="wire-header__classification">${msg('Multiverse Intelligence Wire')}</p>
-        <h1 class="wire-header__title">${msg('The Chronicle Feed')}</h1>
-        <p class="wire-header__subtitle">
-          ${msg('Every world writes its own newspaper. This is the wire service – AI-generated broadsheets from every active simulation, decoded and delivered in real time.')}
-        </p>
-      </div>
+      <velg-dispatch-masthead
+        classification=${msg('Multiverse Intelligence Wire')}
+        title=${msg('The Chronicle Feed')}
+        subtitle=${msg('Every world writes its own newspaper. This is the wire service \u2013 AI-generated broadsheets from every active simulation, decoded and delivered in real time.')}
+      ></velg-dispatch-masthead>
 
-      ${this._renderTicker()}
+      ${tickerItems.length > 0
+        ? html`<velg-dispatch-ticker .items=${tickerItems}></velg-dispatch-ticker>`
+        : nothing}
 
       ${
         this._loading
