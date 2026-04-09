@@ -32,6 +32,7 @@ import './components/shared/GuestBanner.js';
 import './components/landing/LandingPage.js';
 import './components/onboarding/OnboardingWizard.js';
 import './components/content/ContentPageView.js';
+import './components/platform/VelgAchievementToast.js';
 
 @localized()
 @customElement('velg-app')
@@ -322,6 +323,28 @@ export class VelgApp extends LitElement {
             { name: 'Archives', url: 'https://metaverse.center/archives' },
           ]);
           analyticsService.trackPageView('/archives', document.title);
+          return true;
+        },
+      },
+      {
+        path: '/commendations',
+        render: () => html`<velg-achievement-grid></velg-achievement-grid>`,
+        enter: async () => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          if (!(await this._lazy(() => import('./components/platform/VelgAchievementGrid.js'))))
+            return false;
+          seoService.setTitle(['Commendations']);
+          seoService.setDescription(
+            'Your operative commendations and earned badges across dungeons, epochs, and challenges.',
+          );
+          seoService.setCanonical('/commendations');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Dashboard', url: 'https://metaverse.center/dashboard' },
+            { name: 'Commendations', url: 'https://metaverse.center/commendations' },
+          ]);
+          analyticsService.trackPageView('/commendations', document.title);
           return true;
         },
       },
@@ -1126,6 +1149,7 @@ export class VelgApp extends LitElement {
           : nothing
       }
       <velg-cookie-consent></velg-cookie-consent>
+      <velg-achievement-toast></velg-achievement-toast>
     `;
   }
 

@@ -29,6 +29,7 @@ import '../forge/ClearanceQueue.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgGameCard.js';
 import '../shared/PlatformFooter.js';
+import './VelgAchievementSummaryCard.js';
 
 type DashboardState = 'guest' | 'new_member' | 'active_player' | 'power_user';
 
@@ -1850,9 +1851,13 @@ export class VelgSimulationsDashboard extends LitElement {
           ${!isGuest ? this._renderAgentSpotlight() : nothing}
           ${this._renderResonanceTicker()}
           ${this._renderAcademyCta(userState)}
+          ${!isGuest
+            ? html`<velg-achievement-summary-card style="--i: 3"></velg-achievement-summary-card>`
+            : nothing
+          }
           ${
             !isGuest && this._simulations.length > 0
-              ? html`<velg-clearance-card style="--i: 3"></velg-clearance-card>`
+              ? html`<velg-clearance-card style="--i: 4"></velg-clearance-card>`
               : nothing
           }
         </div>
