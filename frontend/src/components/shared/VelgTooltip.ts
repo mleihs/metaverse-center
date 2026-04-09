@@ -31,6 +31,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 @customElement('velg-tooltip')
 export class VelgTooltip extends LitElement {
@@ -41,9 +42,8 @@ export class VelgTooltip extends LitElement {
     }
 
     .tip {
-      position: absolute;
-      left: 50%;
-      translate: -50% 0;
+      /* Fixed positioning escapes all overflow:hidden ancestors */
+      position: fixed;
       padding: var(--space-1) var(--space-2);
       background: var(--color-surface-raised);
       color: var(--color-text-primary);
@@ -53,7 +53,7 @@ export class VelgTooltip extends LitElement {
       white-space: nowrap;
       border: var(--border-width-thin) solid var(--color-border);
       box-shadow: var(--shadow-sm);
-      z-index: var(--z-tooltip, 50);
+      z-index: var(--z-tooltip, 700);
       pointer-events: none;
       opacity: 0;
       visibility: hidden;
@@ -78,22 +78,9 @@ export class VelgTooltip extends LitElement {
       display: none !important;
     }
 
-    /* ── Position variants ── */
+    /* ── Reveal ── */
 
-    :host([position='above']) .tip,
-    .tip {
-      bottom: calc(100% + 6px);
-    }
-
-    :host([position='below']) .tip {
-      top: calc(100% + 6px);
-      bottom: auto;
-    }
-
-    /* ── Reveal on hover / keyboard focus ── */
-
-    :host(:hover) .tip,
-    :host(:focus-within) .tip {
+    .tip--visible {
       opacity: 1;
       visibility: visible;
     }
@@ -116,6 +103,57 @@ export class VelgTooltip extends LitElement {
   /** Tracks whether the named `tip` slot has slotted content. */
   @state() private _hasSlottedTip = false;
 
+  /** Whether the tooltip is currently visible. */
+  @state() private _visible = false;
+
+  /** Computed fixed position for the tooltip. */
+  @state() private _tipPos: Record<string, string> = {};
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('mouseenter', this._show);
+    this.addEventListener('mouseleave', this._hide);
+    this.addEventListener('focusin', this._show);
+    this.addEventListener('focusout', this._hide);
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener('mouseenter', this._show);
+    this.removeEventListener('mouseleave', this._hide);
+    this.removeEventListener('focusin', this._show);
+    this.removeEventListener('focusout', this._hide);
+    super.disconnectedCallback();
+  }
+
+  private _show = (): void => {
+    const rect = this.getBoundingClientRect();
+    const gap = 6;
+
+    // Horizontal: center on trigger, clamp to viewport
+    let left = rect.left + rect.width / 2;
+    // Will be adjusted after render via translate(-50%), so clamp after
+
+    if (this.position === 'below') {
+      this._tipPos = {
+        top: `${rect.bottom + gap}px`,
+        left: `${left}px`,
+        transform: 'translateX(-50%)',
+      };
+    } else {
+      // above (default)
+      this._tipPos = {
+        bottom: `${window.innerHeight - rect.top + gap}px`,
+        left: `${left}px`,
+        transform: 'translateX(-50%)',
+      };
+    }
+    this._visible = true;
+  };
+
+  private _hide = (): void => {
+    this._visible = false;
+  };
+
   private _handleTipSlotChange(e: Event): void {
     const slot = e.target as HTMLSlotElement;
     this._hasSlottedTip = slot.assignedNodes({ flatten: true }).length > 0;
@@ -126,11 +164,17 @@ export class VelgTooltip extends LitElement {
     const tipClasses = {
       tip: true,
       'tip--rich': this._hasSlottedTip,
+      'tip--visible': this._visible,
     };
 
     return html`
       <slot></slot>
-      <span class=${classMap(tipClasses)} role="tooltip" ?hidden=${!hasTip}>
+      <span
+        class=${classMap(tipClasses)}
+        style=${styleMap(this._tipPos)}
+        role="tooltip"
+        ?hidden=${!hasTip}
+      >
         <slot name="tip" @slotchange=${this._handleTipSlotChange}>
           ${this.content || nothing}
         </slot>
