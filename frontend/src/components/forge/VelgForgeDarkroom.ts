@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import type { ForgeDraft } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
 import {
@@ -380,11 +381,17 @@ export class VelgForgeDarkroom extends LitElement {
       }),
     );
 
-    // Auto-generate theme on entry if none exists.
-    // Check signal directly since effects may not have fired yet.
-    const existingTheme = forgeStateManager.draft.value?.theme_config ?? {};
-    if (Object.keys(existingTheme).length === 0 && !forgeStateManager.isGeneratingTheme.value) {
-      this._generateTheme();
+    // Auto-generate theme on entry if none exists OR if agents/buildings
+    // changed since the last generation (detected via fingerprint hash).
+    const draft = forgeStateManager.draft.value;
+    const existingTheme = (draft?.theme_config ?? {}) as Record<string, unknown>;
+    const currentHash = this._entityFingerprint(draft ?? null);
+    const storedHash = existingTheme._entity_hash as string | undefined;
+
+    if (!forgeStateManager.isGeneratingTheme.value) {
+      if (Object.keys(existingTheme).length === 0 || currentHash !== storedHash) {
+        this._generateTheme();
+      }
     }
   }
 
@@ -394,10 +401,23 @@ export class VelgForgeDarkroom extends LitElement {
     super.disconnectedCallback();
   }
 
+  /** Stable fingerprint of agent/building roster for change detection. */
+  private _entityFingerprint(draft: ForgeDraft | null): string {
+    if (!draft) return '';
+    const agents = draft.agents ?? [];
+    const buildings = draft.buildings ?? [];
+    return `${agents.length}:${agents.map((a) => a.name ?? '').join(',')}|${buildings.length}:${buildings.map((b) => b.name ?? '').join(',')}`;
+  }
+
   private async _generateTheme() {
     const result = await forgeStateManager.generateTheme();
     if (result) {
-      this._themeConfig = result;
+      // Store entity fingerprint so we can detect changes on re-entry
+      const draft = forgeStateManager.draft.value;
+      const hash = this._entityFingerprint(draft);
+      const merged = { ...result, _entity_hash: hash };
+      forgeStateManager.updateDraft({ theme_config: merged } as Partial<ForgeDraft>);
+      this._themeConfig = merged;
       VelgToast.success(msg('Visual identity generated.'));
     } else {
       VelgToast.error(forgeStateManager.error.value ?? msg('Theme generation failed. Try again.'));
