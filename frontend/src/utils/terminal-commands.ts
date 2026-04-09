@@ -1039,21 +1039,17 @@ async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
 
   // Fetch the epoch to get current_cycle
   const epochResp = await epochsApi.getEpoch(epochId);
-  if (!epochResp.success || !epochResp.data) {
+  if (!epochResp.success) {
     return [errorLine(msg('Failed to retrieve epoch data.'))];
   }
   const currentCycle = epochResp.data.current_cycle ?? 1;
 
   const resp = await epochsApi.getSitrep(epochId, currentCycle, participant.simulation_id);
-  if (!resp.success || !resp.data) {
+  if (!resp.success) {
     return [errorLine(msg('Failed to generate situation report.'))];
   }
 
-  const narrative =
-    typeof resp.data === 'string'
-      ? resp.data
-      : ((resp.data as { narrative?: string }).narrative ?? JSON.stringify(resp.data));
-  return formatSitrep(narrative, currentCycle, terminalState.epochStatus.value ?? 'competition');
+  return formatSitrep(resp.data.sitrep, currentCycle, terminalState.epochStatus.value ?? 'competition');
 }
 
 /** Dossier — formatted intelligence file on an opponent. */
@@ -1139,8 +1135,7 @@ async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
 
   const resp = await epochsApi.counterIntelSweep(epochId, participant.simulation_id);
   if (!resp.success) {
-    const errMsg =
-      typeof resp.error === 'string' ? resp.error : msg('Counter-intelligence sweep failed.');
+    const errMsg = resp.error?.message ?? msg('Counter-intelligence sweep failed.');
     // Check for insufficient RP
     if (errMsg.toLowerCase().includes('rp') || errMsg.toLowerCase().includes('points')) {
       return formatInsufficientRP(terminalState.currentRP.value, 4);

@@ -1378,19 +1378,13 @@ export interface ApiError {
   message: string;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  meta?: { count?: number; total?: number; limit?: number; offset?: number };
-  error?: ApiError;
-}
+export type ApiResponse<T> =
+  | { success: true; data: T; meta?: { count?: number; total?: number; limit?: number; offset?: number }; error?: undefined }
+  | { success: false; data?: undefined; meta?: undefined; error: ApiError };
 
-export interface PaginatedResponse<T> {
-  success: boolean;
-  data?: T[];
-  meta?: { count: number; total: number; limit: number; offset: number };
-  error?: ApiError;
-}
+export type PaginatedResponse<T> =
+  | { success: true; data: T[]; meta: { count: number; total: number; limit: number; offset: number }; error?: undefined }
+  | { success: false; data?: undefined; meta?: undefined; error: ApiError };
 
 // --- Style References ---
 
