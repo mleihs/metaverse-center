@@ -19,11 +19,9 @@ from backend.services.constants import (
     OPERATIVE_MISSION_CYCLES,
     OPERATIVE_RP_COSTS,
     SECURITY_LEVEL_MAP,
-    _downgrade_security,
     _upgrade_security,
 )
 from backend.services.epoch_service import EpochService
-from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -494,25 +492,16 @@ class OperativeMissionService:
             if mission["operative_type"] == "guardian":
                 continue
 
-            # Advance deploying -> active (migration 148: atomic compare-and-swap)
+            # Advance deploying -> active (atomic compare-and-swap, migration 148)
             if mission["status"] == "deploying":
-                use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
-                if use_rpc:
-                    await supabase.rpc(
-                        "fn_transition_mission_status",
-                        {
-                            "p_mission_id": mission["id"],
-                            "p_from_status": "deploying",
-                            "p_to_status": "active",
-                        },
-                    ).execute()
-                else:
-                    await (
-                        supabase.table("operative_missions")
-                        .update({"status": "active"})
-                        .eq("id", mission["id"])
-                        .execute()
-                    )
+                await supabase.rpc(
+                    "fn_transition_mission_status",
+                    {
+                        "p_mission_id": mission["id"],
+                        "p_from_status": "deploying",
+                        "p_to_status": "active",
+                    },
+                ).execute()
                 continue
 
             # Resolve active missions
@@ -551,6 +540,8 @@ class OperativeMissionService:
             "mission_result": {**mission_result, "outcome": outcome},
         }
         resp = await supabase.table("operative_missions").update(update_data).eq("id", mission["id"]).execute()
+        if not resp.data:
+            logger.error("Mission %s update returned empty response", mission["id"])
 
         # Check for betrayal (same-team attack)
         await cls._check_betrayal(supabase, mission, outcome)
@@ -761,52 +752,26 @@ class OperativeMissionService:
         result: dict = {"outcome": "success"}
 
         if mission.get("target_entity_id"):
-            use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
-            if use_rpc:
-                # Atomic building degradation (migration 148)
-                rpc_result = await supabase.rpc(
-                    "fn_degrade_building",
-                    {
-                        "p_building_id": mission["target_entity_id"],
-                    },
-                ).execute()
-                rpc_data = rpc_result.data or {}
-                if rpc_data.get("changed"):
-                    result["damage_dealt"] = {
-                        "building_id": mission["target_entity_id"],
-                        "old_condition": rpc_data["old_condition"],
-                        "new_condition": rpc_data["new_condition"],
-                    }
-                elif rpc_data.get("old_condition"):
-                    result["damage_dealt"] = {
-                        "building_id": mission["target_entity_id"],
-                        "old_condition": rpc_data["old_condition"],
-                        "new_condition": rpc_data["old_condition"],
-                    }
-            else:
-                building_resp = await (
-                    supabase.table("buildings")
-                    .select("id, building_condition")
-                    .eq("id", mission["target_entity_id"])
-                    .single()
-                    .execute()
-                )
-                if building_resp.data:
-                    condition_map = {"good": "moderate", "moderate": "poor", "poor": "ruined"}
-                    old_cond = building_resp.data["building_condition"]
-                    new_cond = condition_map.get(old_cond, old_cond)
-                    if old_cond != new_cond:
-                        await (
-                            supabase.table("buildings")
-                            .update({"building_condition": new_cond})
-                            .eq("id", mission["target_entity_id"])
-                            .execute()
-                        )
-                    result["damage_dealt"] = {
-                        "building_id": mission["target_entity_id"],
-                        "old_condition": old_cond,
-                        "new_condition": new_cond,
-                    }
+            # Atomic building degradation (migration 148)
+            rpc_result = await supabase.rpc(
+                "fn_degrade_building",
+                {
+                    "p_building_id": mission["target_entity_id"],
+                },
+            ).execute()
+            rpc_data = rpc_result.data or {}
+            if rpc_data.get("changed"):
+                result["damage_dealt"] = {
+                    "building_id": mission["target_entity_id"],
+                    "old_condition": rpc_data["old_condition"],
+                    "new_condition": rpc_data["new_condition"],
+                }
+            elif rpc_data.get("old_condition"):
+                result["damage_dealt"] = {
+                    "building_id": mission["target_entity_id"],
+                    "old_condition": rpc_data["old_condition"],
+                    "new_condition": rpc_data["old_condition"],
+                }
 
         target_sim_id = mission.get("target_simulation_id")
         if target_sim_id:
@@ -816,37 +781,20 @@ class OperativeMissionService:
             )
             if zones_resp.data:
                 target_zone = secrets.SystemRandom().choice(zones_resp.data)
-                use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
-                if use_rpc:
-                    # Atomic zone security downgrade (migration 148)
-                    rpc_result = await supabase.rpc(
-                        "fn_downgrade_zone_security",
-                        {
-                            "p_zone_id": target_zone["id"],
-                            "p_tiers_down": 1,
-                        },
-                    ).execute()
-                    rpc_data = rpc_result.data or {}
-                    result["zone_downgraded"] = {
-                        "zone_id": target_zone["id"],
-                        "old_level": rpc_data.get("old_level", target_zone["security_level"]),
-                        "new_level": rpc_data.get("new_level", target_zone["security_level"]),
-                    }
-                else:
-                    old_level = target_zone["security_level"]
-                    new_level = _downgrade_security(old_level)
-                    if old_level != new_level:
-                        await (
-                            supabase.table("zones")
-                            .update({"security_level": new_level})
-                            .eq("id", target_zone["id"])
-                            .execute()
-                        )
-                    result["zone_downgraded"] = {
-                        "zone_id": target_zone["id"],
-                        "old_level": old_level,
-                        "new_level": new_level,
-                    }
+                # Atomic zone security downgrade (migration 148)
+                rpc_result = await supabase.rpc(
+                    "fn_downgrade_zone_security",
+                    {
+                        "p_zone_id": target_zone["id"],
+                        "p_tiers_down": 1,
+                    },
+                ).execute()
+                rpc_data = rpc_result.data or {}
+                result["zone_downgraded"] = {
+                    "zone_id": target_zone["id"],
+                    "old_level": rpc_data.get("old_level", target_zone["security_level"]),
+                    "new_level": rpc_data.get("new_level", target_zone["security_level"]),
+                }
 
         # Generate crisis event from sabotage (feeds event->pressure->cascade pipeline)
         # Diminishing returns: impact decreases with existing active sabotage events
@@ -925,13 +873,18 @@ class OperativeMissionService:
                 "operative_type": "propagandist",
             },
         }
-        await supabase.table("events").insert(event_data).execute()
+        event_created = False
+        try:
+            event_resp = await supabase.table("events").insert(event_data).execute()
+            event_created = bool(event_resp.data)
+        except (PostgrestAPIError, httpx.HTTPError):
+            logger.warning("Propaganda event insert failed", exc_info=True)
 
         return {
             "outcome": "success",
             "narrative": "Propaganda campaign succeeded. Target population's morale undermined.",
             "score_awarded": True,
-            "event_created": True,
+            "event_created": event_created,
         }
 
     @classmethod
@@ -940,35 +893,15 @@ class OperativeMissionService:
         if not mission.get("target_entity_id"):
             return {"outcome": "success", "narrative": "Mission completed."}
 
-        use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
-        if use_rpc:
-            # Atomic batch relationship weakening (migration 148)
-            rpc_result = await supabase.rpc(
-                "fn_weaken_relationships",
-                {
-                    "p_agent_id": mission["target_entity_id"],
-                    "p_delta": 2,
-                },
-            ).execute()
-            relationships_affected = rpc_result.data or 0
-        else:
-            rel_resp = await (
-                supabase.table("agent_relationships")
-                .select("id, intensity")
-                .or_(
-                    f"source_agent_id.eq.{mission['target_entity_id']},target_agent_id.eq.{mission['target_entity_id']}"
-                )
-                .execute()
-            )
-            relationships_affected = len(extract_list(rel_resp))
-            for rel in extract_list(rel_resp):
-                new_intensity = max(1, rel["intensity"] - 2)
-                await (
-                    supabase.table("agent_relationships")
-                    .update({"intensity": new_intensity})
-                    .eq("id", rel["id"])
-                    .execute()
-                )
+        # Atomic batch relationship weakening (migration 148)
+        rpc_result = await supabase.rpc(
+            "fn_weaken_relationships",
+            {
+                "p_agent_id": mission["target_entity_id"],
+                "p_delta": 2,
+            },
+        ).execute()
+        relationships_affected = rpc_result.data or 0
 
         epoch_resp = await (
             supabase.table("game_epochs").select("config").eq("id", mission["epoch_id"]).single().execute()
@@ -1106,9 +1039,19 @@ class OperativeMissionService:
 
         detected = []
         for mission in extract_list(resp):
-            # Each detected mission updates to 'detected' status
-            await supabase.table("operative_missions").update({"status": "detected"}).eq("id", mission["id"]).execute()
-            detected.append(mission)
+            try:
+                update_resp = await (
+                    supabase.table("operative_missions")
+                    .update({"status": "detected"})
+                    .eq("id", mission["id"])
+                    .execute()
+                )
+                if update_resp.data:
+                    detected.append(mission)
+                else:
+                    logger.warning("Failed to mark mission %s as detected", mission["id"])
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.warning("DB error marking mission %s as detected", mission["id"], exc_info=True)
 
         return detected
 
