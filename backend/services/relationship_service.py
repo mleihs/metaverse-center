@@ -123,7 +123,7 @@ class RelationshipService(BaseService):
             .execute()
         )
         if not response.data:
-            raise not_found(detail=f"Relationship '{relationship_id}' not found.")
+            raise not_found("relationship", relationship_id)
         return response.data[0]
 
     @classmethod

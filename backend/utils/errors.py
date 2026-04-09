@@ -21,13 +21,17 @@ from fastapi import HTTPException, status
 
 
 def not_found(
-    entity_type: str,
+    entity_type: str | None = None,
     entity_id: UUID | str | None = None,
     *,
     context: str | None = None,
     detail: str | None = None,
 ) -> HTTPException:
     """Create a 404 Not Found error with a consistent message format.
+
+    Supports both calling conventions:
+      - ``not_found("agent", agent_id)`` — entity-based (preferred)
+      - ``not_found(detail="Custom message")`` — legacy detail-only
 
     Args:
         entity_type: Human-readable entity name (e.g. "Agent", "Conversation").
@@ -36,14 +40,17 @@ def not_found(
         detail: Override the entire detail message.
     """
     if detail is None:
-        if entity_id is not None:
-            msg = f"{entity_type} '{entity_id}' not found"
+        if entity_type is not None:
+            if entity_id is not None:
+                msg = f"{entity_type} '{entity_id}' not found"
+            else:
+                msg = f"{entity_type} not found"
+            if context:
+                msg += f" {context}"
+            msg += "."
+            detail = msg
         else:
-            msg = f"{entity_type} not found"
-        if context:
-            msg += f" {context}"
-        msg += "."
-        detail = msg
+            detail = "Resource not found."
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 

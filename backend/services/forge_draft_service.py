@@ -56,7 +56,7 @@ class ForgeDraftService:
             .execute()
         )
         if not response.data:
-            raise not_found(detail=f"Forge draft '{draft_id}' not found.")
+            raise not_found("forge_draft", draft_id)
         return response.data
 
     @staticmethod
@@ -101,7 +101,7 @@ class ForgeDraftService:
             .execute()
         )
         if not response.data:
-            raise not_found(detail=f"Forge draft '{draft_id}' not found.")
+            raise not_found("forge_draft", draft_id)
         return response.data[0]
 
     @staticmethod
@@ -135,7 +135,7 @@ class ForgeDraftService:
             supabase.table("forge_drafts").delete().eq("id", str(draft_id)).eq("user_id", str(user_id)).execute()
         )
         if not response.data:
-            raise not_found(detail=f"Forge draft '{draft_id}' not found.")
+            raise not_found("forge_draft", draft_id)
         return response.data[0]
 
     @staticmethod
@@ -457,7 +457,7 @@ class ForgeDraftService:
             .execute()
         )
         if not resp.data:
-            raise not_found(detail="User wallet not found.")
+            raise not_found("wallet")
         return {"user_id": str(target_user_id), "byok_bypass": enabled}
 
     @staticmethod
@@ -477,7 +477,7 @@ class ForgeDraftService:
             .execute()
         )
         if not resp.data:
-            raise not_found(detail="User wallet not found.")
+            raise not_found("wallet")
         return {"user_id": str(target_user_id), "byok_allowed": enabled}
 
     @staticmethod

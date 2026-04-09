@@ -361,7 +361,7 @@ class ConnectionService:
         update_data = {**serialize_for_json(data), "updated_at": datetime.now(UTC).isoformat()}
         response = await admin_supabase.table(cls.table_name).update(update_data).eq("id", str(connection_id)).execute()
         if not response.data:
-            raise not_found(detail=f"Connection '{connection_id}' not found.")
+            raise not_found("connection", connection_id)
         return ConnectionResponse.model_validate(response.data[0])
 
     @classmethod
@@ -373,4 +373,4 @@ class ConnectionService:
         """Delete a simulation connection (admin only)."""
         response = await admin_supabase.table(cls.table_name).delete().eq("id", str(connection_id)).execute()
         if not response.data:
-            raise not_found(detail=f"Connection '{connection_id}' not found.")
+            raise not_found("connection", connection_id)
