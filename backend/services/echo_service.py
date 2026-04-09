@@ -95,6 +95,34 @@ class EchoService:
             raise not_found("echo", echo_id)
         return response.data
 
+    # --- Ward Master Badge ---
+
+    @classmethod
+    async def _award_ward_badge(cls, supabase: Client, target_sim_id: str, ward_vector: str) -> None:
+        """Credit target simulation owner for successfully warding an echo. Best-effort."""
+        try:
+            sim_resp = await (
+                supabase.table("simulations")
+                .select("created_by_id")
+                .eq("id", target_sim_id)
+                .single()
+                .execute()
+            )
+            user_id = sim_resp.data.get("created_by_id") if sim_resp.data else None
+            if not user_id:
+                return
+            await supabase.rpc(
+                "fn_increment_progress",
+                {
+                    "p_user_id": user_id,
+                    "p_achievement_id": "ward_master",
+                    "p_target": 3,
+                    "p_context": {"ward_vector": ward_vector, "target_simulation_id": target_sim_id},
+                },
+            ).execute()
+        except Exception:
+            logger.debug("Ward badge increment failed (non-critical)", exc_info=True)
+
     # --- Echo strength computation ---
 
     @staticmethod
@@ -279,6 +307,10 @@ class EchoService:
                     ward_reduction = float(ward_resp.data)
             except (PostgrestAPIError, httpx.HTTPError):
                 logger.debug("Ward strength query failed for %s", target_sim, exc_info=True)
+
+            # Ward master badge: credit target sim owner when ward actually engaged
+            if ward_reduction > 0:
+                await cls._award_ward_badge(supabase, target_sim, best_vector)
 
             echo_strength = cls.compute_echo_strength(
                 connection_strength=connection_strength,

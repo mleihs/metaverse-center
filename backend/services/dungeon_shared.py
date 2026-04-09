@@ -148,40 +148,8 @@ async def rpc_with_retry(
     raise last_exc  # type: ignore[misc]  # unreachable, satisfies type checker
 
 
-async def award_secret_badge(
-    admin_supabase: Client,
-    instance: DungeonInstance,
-    achievement_id: str,
-    extra_context: dict[str, Any] | None = None,
-) -> None:
-    """Best-effort award of a secret achievement badge during a dungeon run.
 
-    Calls fn_award_achievement RPC for each human player in the run.
-    Non-critical: swallows all exceptions to avoid breaking the dungeon flow.
-    The RPC itself is idempotent (ON CONFLICT DO NOTHING).
-    """
-    context = {
-        "archetype": instance.archetype,
-        "run_id": str(instance.run_id),
-        "simulation_id": str(instance.simulation_id),
-        **(extra_context or {}),
-    }
-    for player_id in instance.player_ids:
-        try:
-            await admin_supabase.rpc(
-                "fn_award_achievement",
-                {
-                    "p_user_id": str(player_id),
-                    "p_achievement_id": achievement_id,
-                    "p_context": context,
-                },
-            ).execute()
-        except Exception:
-            logger.warning(
-                "Secret badge award failed (non-critical)",
-                extra={
-                    "run_id": str(instance.run_id),
-                    "achievement_id": achievement_id,
-                    "player_id": str(player_id),
-                },
-            )
+# Badge awarding logic has been centralized in DungeonAchievementService
+# (backend/services/dungeon/dungeon_achievements.py). The award_badge()
+# helper that previously lived here was removed — all callers now use
+# the service's hook methods directly.

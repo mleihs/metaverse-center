@@ -42,6 +42,7 @@ from backend.services.combat.combat_engine import (
 from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.stress_system import apply_stress
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
+from backend.services.dungeon.dungeon_achievements import DungeonAchievementService
 from backend.services.dungeon.dungeon_combat import (
     check_ambush,
     get_enemy_templates_dict,
@@ -57,7 +58,6 @@ from backend.services.dungeon_shared import (
     CLIENT_TIMER_BUFFER_MS,
     COMBAT_PLANNING_TIMEOUT_MS,
     FALLBACK_SPAWNS,
-    award_secret_badge,
     log_extra,
     rpc_with_retry,
 )
@@ -218,6 +218,9 @@ class DungeonCombatService:
         instance.combat.round_num += 1
         instance.combat.submitted_actions.clear()
 
+        # Track peak stress after all combat mutations (for flawless_run badge)
+        DungeonAchievementService.track_peak_stress(instance)
+
         # Log combat event
         await DungeonCheckpointService.log_event(
             admin_supabase,
@@ -322,16 +325,7 @@ class DungeonCombatService:
         )
 
         if current_room.room_type == "boss":
-            # Secret badges — boss victory with specific mechanic conditions
-            if instance.archetype == "The Shadow":
-                if instance.archetype_state.get("visibility", 1) == 0:
-                    await award_secret_badge(admin_supabase, instance, "the_remnant", {"visibility": 0})
-            elif instance.archetype == "The Devouring Mother":
-                attachment = instance.archetype_state.get("attachment", 0)
-                if attachment >= 100:
-                    await award_secret_badge(
-                        admin_supabase, instance, "mothers_embrace", {"attachment": attachment},
-                    )
+            await DungeonAchievementService.on_boss_victory(admin_supabase, instance)
 
             distributable = [item for item in loot if item.effect_type not in AUTO_APPLY_EFFECT_TYPES]
             operational_count = sum(1 for a in instance.party if can_act(a.condition))
@@ -442,6 +436,7 @@ class DungeonCombatService:
             if can_act(agent.condition):
                 agent.stress, _ = apply_stress(agent.stress, 80)
 
+        DungeonAchievementService.track_peak_stress(instance)
         await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
         await DungeonCheckpointService.log_event(
