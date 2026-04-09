@@ -43,10 +43,12 @@ from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse
 from backend.models.settings import is_sensitive_key
 from backend.models.simulation import SimulationResponse
 from backend.services.admin_user_service import AdminUserService
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.audit_service import AuditService
 from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
+from backend.services.dungeon.showcase_image_service import ARCHETYPE_VISUALS, generate_and_upload_showcase
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_model_config import invalidate as invalidate_model_config
@@ -508,42 +510,8 @@ async def list_dungeon_overrides(
     Excludes game_instance (epoch) and archived simulations — dungeon
     overrides are only meaningful for template (base) simulations.
     """
-    sim_resp = (
-        await admin_supabase.table("simulations")
-        .select("id, name, slug")
-        .eq("simulation_type", "template")
-        .is_("deleted_at", "null")
-        .order("name")
-        .execute()
-    )
-    simulations = sim_resp.data or []
-
-    # Fetch all dungeon override settings in one query
-    override_resp = (
-        await admin_supabase.table("simulation_settings")
-        .select("simulation_id, setting_value")
-        .eq("category", "game")
-        .eq("setting_key", "dungeon_override")
-        .execute()
-    )
-    overrides_by_sim: dict[str, dict] = {
-        row["simulation_id"]: row["setting_value"]
-        for row in (override_resp.data or [])
-        if isinstance(row.get("setting_value"), dict)
-    }
-
-    result = []
-    for sim in simulations:
-        config = overrides_by_sim.get(sim["id"], {})
-        result.append({
-            "id": sim["id"],
-            "name": sim["name"],
-            "slug": sim["slug"],
-            "mode": config.get("mode", "off"),
-            "archetypes": config.get("archetypes", []),
-        })
-
-    return SuccessResponse(data=result)
+    data = await SettingsService.list_dungeon_overrides(admin_supabase)
+    return SuccessResponse(data=data)
 
 
 @router.get("/dungeon-override/simulations/{simulation_id}")
@@ -553,20 +521,8 @@ async def get_dungeon_override(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[DungeonOverrideResponse]:
     """Get dungeon override config for a simulation."""
-    resp = (
-        await admin_supabase.table("simulation_settings")
-        .select("setting_value")
-        .eq("simulation_id", str(simulation_id))
-        .eq("category", "game")
-        .eq("setting_key", "dungeon_override")
-        .maybe_single()
-        .execute()
-    )
-    config = resp.data.get("setting_value", {}) if resp.data else {}
-    return SuccessResponse(data={
-        "mode": config.get("mode", "off"),
-        "archetypes": config.get("archetypes", []),
-    })
+    data = await SettingsService.get_dungeon_override(admin_supabase, simulation_id)
+    return SuccessResponse(data=data)
 
 
 @router.put("/dungeon-override/simulations/{simulation_id}")
@@ -638,7 +594,7 @@ def _invalidate_caches(key: str) -> None:
     invalidate_cache_config()
 
     if key == "cache_map_data_ttl":
-        ConnectionService._map_data_cache.clear()
+        ConnectionService.invalidate_map_cache()
     elif key == "cache_seo_metadata_ttl":
         _sim_meta_cache.clear()
 
@@ -653,8 +609,6 @@ async def get_ai_usage_stats(
     days: Annotated[int, Query(ge=1, le=365)] = 30,
 ) -> SuccessResponse[AIUsageStatsResponse]:
     """Get aggregated AI usage stats for the platform."""
-    from backend.services.ai_usage_service import AIUsageService
-
     data = await AIUsageService.get_platform_stats(admin_supabase, days=days)
     return SuccessResponse(data=data)
 
@@ -685,44 +639,9 @@ async def generate_showcase_image_endpoint(
     Uploads the result to Supabase Storage as AVIF (full + thumbnail).
     Returns the public thumbnail URL.
     """
-    from backend.services.dungeon.showcase_image_service import (
-        ARCHETYPE_VISUALS,
-        generate_showcase_image,
-    )
-    from backend.services.external.openrouter import OpenRouterService
-    from backend.services.image_service import AVIF_QUALITY, _convert_to_avif
-
     if body.archetype_id not in ARCHETYPE_VISUALS:
         valid = ", ".join(sorted(ARCHETYPE_VISUALS))
         raise HTTPException(status_code=400, detail=f"Unknown archetype. Valid: {valid}")
 
-    visual = ARCHETYPE_VISUALS[body.archetype_id]
-    openrouter = OpenRouterService()
-    raw_bytes = await generate_showcase_image(openrouter, body.archetype_id)
-
-    # Convert to AVIF (full + thumb)
-    full_avif = _convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
-    thumb_avif = _convert_to_avif(raw_bytes, max_dimension=1920, quality=AVIF_QUALITY)
-
-    # Upload to simulation.assets/showcase/
-    base_path = f"showcase/dungeon-{body.archetype_id}.avif"
-    full_path = f"showcase/dungeon-{body.archetype_id}.full.avif"
-
-    await admin_supabase.storage.from_("simulation.assets").upload(
-        full_path, full_avif, {"content-type": "image/avif", "upsert": "true"},
-    )
-    await admin_supabase.storage.from_("simulation.assets").upload(
-        base_path, thumb_avif, {"content-type": "image/avif", "upsert": "true"},
-    )
-
-    public_url = admin_supabase.storage.from_("simulation.assets").get_public_url(base_path)
-
-    return SuccessResponse(data={
-        "archetype": body.archetype_id,
-        "model": visual.model,
-        "url": public_url,
-        "full_path": full_path,
-        "thumb_path": base_path,
-        "bytes": len(raw_bytes),
-        "usage": openrouter.last_usage,
-    })
+    data = await generate_and_upload_showcase(admin_supabase, body.archetype_id)
+    return SuccessResponse(data=data)

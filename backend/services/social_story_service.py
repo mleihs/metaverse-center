@@ -25,7 +25,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
 from backend.services.base_service import serialize_for_json
-from backend.services.instagram_image_composer import InstagramImageComposer
+from backend.services.instagram_image_service import InstagramImageService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -661,7 +661,7 @@ class SocialStoryService:
             {"status": "composing"},
         ).eq("id", str(story_id)).execute()
 
-        composer = InstagramImageComposer(admin)
+        composer = InstagramImageService(admin)
         story_type = story["story_type"]
         archetype = story.get("archetype") or ""
         accent_hex = ARCHETYPE_COLORS.get(archetype, "#e2e8f0")
@@ -735,7 +735,7 @@ class SocialStoryService:
 
     @staticmethod
     def _compose_detection(
-        composer: InstagramImageComposer,
+        composer: InstagramImageService,
         story: dict,
         accent_hex: str,
         magnitude: float,
@@ -751,7 +751,7 @@ class SocialStoryService:
 
     @staticmethod
     async def _compose_classification(
-        composer: InstagramImageComposer,
+        composer: InstagramImageService,
         admin: Client,
         story: dict,
         accent_hex: str,
@@ -795,7 +795,7 @@ class SocialStoryService:
 
     @staticmethod
     async def _compose_impact(
-        composer: InstagramImageComposer,
+        composer: InstagramImageService,
         admin: Client,
         story: dict,
         accent_hex: str,
@@ -906,7 +906,7 @@ class SocialStoryService:
         if urls_to_download:
             results = await asyncio.gather(
                 *[
-                    InstagramImageComposer._download_image_safe(url)
+                    InstagramImageService._download_image_safe(url)
                     for _, url in urls_to_download
                 ],
             )
@@ -938,7 +938,7 @@ class SocialStoryService:
 
     @staticmethod
     def _compose_advisory(
-        composer: InstagramImageComposer,
+        composer: InstagramImageService,
         story: dict,
         accent_hex: str,
     ) -> bytes:
@@ -955,7 +955,7 @@ class SocialStoryService:
 
     @staticmethod
     async def _compose_subsiding(
-        composer: InstagramImageComposer,
+        composer: InstagramImageService,
         admin: Client,
         story: dict,
         accent_hex: str,

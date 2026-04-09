@@ -11,7 +11,7 @@ from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
-from backend.utils.encryption import encrypt
+from backend.utils.encryption import decrypt, encrypt
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -155,6 +155,35 @@ class ForgeDraftService:
                 detail=f"Forge draft '{draft_id}' not found.",
             )
         return response.data[0]
+
+    @staticmethod
+    async def get_user_keys(supabase: Client, user_id: UUID) -> tuple[str | None, str | None]:
+        """Fetch and decrypt a user's BYOK API keys.
+
+        Returns (openrouter_key, replicate_key) — None if not set.
+        """
+        logger.debug("Fetching BYOK keys for user %s", user_id)
+        resp = await (
+            supabase.table("user_wallets")
+            .select("encrypted_openrouter_key, encrypted_replicate_key")
+            .eq("user_id", str(user_id))
+            .maybe_single()
+            .execute()
+        )
+        data = resp.data or {}
+
+        or_key = data.get("encrypted_openrouter_key")
+        rep_key = data.get("encrypted_replicate_key")
+
+        decrypted_or = decrypt(or_key) if or_key else None
+        decrypted_rep = decrypt(rep_key) if rep_key else None
+
+        if decrypted_or:
+            logger.debug("Using personal OpenRouter key for user %s", user_id)
+        if decrypted_rep:
+            logger.debug("Using personal Replicate key for user %s", user_id)
+
+        return decrypted_or, decrypted_rep
 
     @staticmethod
     async def check_byok_allowed(supabase: Client, user_id: UUID) -> bool:

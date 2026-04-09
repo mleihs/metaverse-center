@@ -572,7 +572,7 @@ async def purchase_classified_dossier(
     )
 
     # Get user's BYOK key if available
-    or_key, _ = await _orchestrator_service._get_user_keys(supabase, user.id)
+    or_key, _ = await ForgeDraftService.get_user_keys(supabase, user.id)
 
     background_tasks.add_task(
         safe_background(ForgeLoreService.generate_dossier),
@@ -614,7 +614,7 @@ async def evolve_dossier_section(
     # Get user's BYOK key if available
     or_key = None
     try:
-        or_key, _ = await _orchestrator_service._get_user_keys(
+        or_key, _ = await ForgeDraftService.get_user_keys(
             admin_supabase,
             user.id,
         )
@@ -668,7 +668,7 @@ async def purchase_recruitment(
         "recruitment",
     )
 
-    or_key, rep_key = await _orchestrator_service._get_user_keys(supabase, user.id)
+    or_key, rep_key = await ForgeDraftService.get_user_keys(supabase, user.id)
 
     background_tasks.add_task(
         safe_background(_orchestrator_service.recruit_agents),

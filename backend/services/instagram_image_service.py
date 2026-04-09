@@ -119,7 +119,7 @@ def _load_italic_font(size: int):
     return _load_monospace_font(size)
 
 
-class InstagramImageComposer:
+class InstagramImageService:
     """Composes Instagram-ready JPEG images from platform content."""
 
     def __init__(self, supabase: Client):
@@ -1849,7 +1849,7 @@ class InstagramImageComposer:
         except ImportError as exc:
             raise ImportError("Pillow is required for image composition") from exc
 
-        rgb = InstagramImageComposer._hex_to_rgb(hex_color)
+        rgb = InstagramImageService._hex_to_rgb(hex_color)
         img = Image.new("RGB", (IG_WIDTH, IG_HEIGHT_PORTRAIT), rgb)
         output = io.BytesIO()
         img.save(output, format="PNG")

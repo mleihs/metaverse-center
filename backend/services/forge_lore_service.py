@@ -554,33 +554,30 @@ REQUIREMENTS:
 
             # 5. Generate dossier images
             try:
+                from backend.services.forge_image_service import ForgeImageService
+                from backend.services.simulation_service import SimulationService
+
                 image_sections = [s for s in sections if s.get("image_slug")]
-                for section in image_sections[:3]:
-                    from backend.services.image_service import ImageService
+                if image_sections:
+                    sim_data = await SimulationService.get_active_by_id(admin_supabase, simulation_id)
+                    sim_slug = sim_data["slug"] if sim_data else str(simulation_id)
+                    img_service = ForgeImageService(admin_supabase, simulation_id)
 
-                    desc = section.get("image_caption", section["title"])
-                    style_resp = await admin_supabase.table("simulation_settings").select(
-                        "setting_value"
-                    ).eq("simulation_id", str(simulation_id)).eq(
-                        "setting_key", "image_style_prompt_lore"
-                    ).maybe_single().execute()
-                    style = ""
-                    if style_resp.data:
-                        val = style_resp.data.get("setting_value", "")
-                        style = val.strip('"') if isinstance(val, str) else str(val)
-                    if style:
-                        desc = f"{desc}. Style: {style}"
-
-                    lore_rows = await admin_supabase.table("simulation_lore").select(
-                        "id"
-                    ).eq("simulation_id", str(simulation_id)).eq(
-                        "title", section["title"]
-                    ).maybe_single().execute()
-                    if lore_rows.data:
-                        await ImageService.generate_and_upload(
-                            admin_supabase, simulation_id, "lore",
-                            lore_rows.data["id"], desc, "", None,
-                        )
+                    for section in image_sections[:3]:
+                        lore_rows = await admin_supabase.table("simulation_lore").select(
+                            "id"
+                        ).eq("simulation_id", str(simulation_id)).eq(
+                            "title", section["title"]
+                        ).maybe_single().execute()
+                        if lore_rows.data:
+                            await img_service.generate_lore_image(
+                                section_title=section["title"],
+                                section_body=section.get("body", ""),
+                                image_slug=section["image_slug"],
+                                sim_slug=sim_slug,
+                                section_id=lore_rows.data["id"],
+                                image_caption=section.get("image_caption"),
+                            )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier image generation failed")
 

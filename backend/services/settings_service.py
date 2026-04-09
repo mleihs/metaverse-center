@@ -138,6 +138,70 @@ class SettingsService:
             )
         return response.data[0]
 
+    # ── Dungeon Override Queries ────────────────────────────────────────
+
+    @staticmethod
+    async def list_dungeon_overrides(admin_supabase: Client) -> list[dict]:
+        """List all template simulations with their dungeon override configs.
+
+        Returns a flat list of {id, name, slug, mode, archetypes} dicts.
+        Excludes game_instance and archived simulations.
+        """
+        sim_resp = await (
+            admin_supabase.table("simulations")
+            .select("id, name, slug")
+            .eq("simulation_type", "template")
+            .is_("deleted_at", "null")
+            .order("name")
+            .execute()
+        )
+        simulations = sim_resp.data or []
+
+        override_resp = await (
+            admin_supabase.table("simulation_settings")
+            .select("simulation_id, setting_value")
+            .eq("category", "game")
+            .eq("setting_key", "dungeon_override")
+            .execute()
+        )
+        overrides_by_sim: dict[str, dict] = {
+            row["simulation_id"]: row["setting_value"]
+            for row in (override_resp.data or [])
+            if isinstance(row.get("setting_value"), dict)
+        }
+
+        return [
+            {
+                "id": sim["id"],
+                "name": sim["name"],
+                "slug": sim["slug"],
+                "mode": overrides_by_sim.get(sim["id"], {}).get("mode", "off"),
+                "archetypes": overrides_by_sim.get(sim["id"], {}).get("archetypes", []),
+            }
+            for sim in simulations
+        ]
+
+    @staticmethod
+    async def get_dungeon_override(
+        admin_supabase: Client,
+        simulation_id: UUID,
+    ) -> dict:
+        """Get dungeon override config for a single simulation."""
+        resp = await (
+            admin_supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("category", "game")
+            .eq("setting_key", "dungeon_override")
+            .maybe_single()
+            .execute()
+        )
+        config = resp.data.get("setting_value", {}) if resp.data else {}
+        return {
+            "mode": config.get("mode", "off"),
+            "archetypes": config.get("archetypes", []),
+        }
+
 
 def _mask_if_encrypted(setting: dict) -> dict:
     """Mask the value if this is an encrypted setting key.

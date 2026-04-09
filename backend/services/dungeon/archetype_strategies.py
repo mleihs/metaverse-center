@@ -17,6 +17,7 @@ Strategies are stateless singletons. All mutable state lives in
 
 from __future__ import annotations
 
+import logging
 import random
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
@@ -25,6 +26,8 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.stress_system import apply_stress
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
 from backend.services.dungeon.dungeon_loot import roll_debris
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from backend.models.resonance_dungeon import DungeonInstance

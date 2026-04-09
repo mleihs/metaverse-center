@@ -31,6 +31,8 @@ import logging
 from dataclasses import dataclass
 
 from backend.services.external.openrouter import OpenRouterService
+from backend.utils.image import AVIF_QUALITY, convert_to_avif
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -394,3 +396,58 @@ async def generate_showcase_image(
         },
     )
     return image_bytes
+
+
+async def generate_and_upload_showcase(
+    admin_supabase: Client,
+    archetype_id: str,
+) -> dict:
+    """Generate a showcase image, convert to AVIF, and upload to Storage.
+
+    Full pipeline: AI generation → AVIF dual-resolution → Supabase Storage.
+    Returns metadata dict with URLs, model info, and byte sizes.
+
+    Raises:
+        ValueError: If archetype_id is not recognized.
+    """
+    visual = ARCHETYPE_VISUALS[archetype_id]
+    openrouter = OpenRouterService()
+    raw_bytes = await generate_showcase_image(openrouter, archetype_id)
+
+    # Convert to AVIF (full + display thumbnail at 1920px)
+    full_avif = convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+    thumb_avif = convert_to_avif(raw_bytes, max_dimension=1920, quality=AVIF_QUALITY)
+
+    # Upload to simulation.assets/showcase/
+    base_path = f"showcase/dungeon-{archetype_id}.avif"
+    full_path = f"showcase/dungeon-{archetype_id}.full.avif"
+
+    await admin_supabase.storage.from_("simulation.assets").upload(
+        full_path, full_avif, {"content-type": "image/avif", "upsert": "true"},
+    )
+    await admin_supabase.storage.from_("simulation.assets").upload(
+        base_path, thumb_avif, {"content-type": "image/avif", "upsert": "true"},
+    )
+
+    public_url = admin_supabase.storage.from_("simulation.assets").get_public_url(base_path)
+
+    logger.info(
+        "Showcase image uploaded",
+        extra={
+            "archetype": archetype_id,
+            "model": visual.model,
+            "full_path": full_path,
+            "thumb_path": base_path,
+            "raw_bytes": len(raw_bytes),
+        },
+    )
+
+    return {
+        "archetype": archetype_id,
+        "model": visual.model,
+        "url": public_url,
+        "full_path": full_path,
+        "thumb_path": base_path,
+        "bytes": len(raw_bytes),
+        "usage": openrouter.last_usage,
+    }

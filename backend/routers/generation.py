@@ -25,9 +25,9 @@ from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external_service_resolver import ExternalServiceResolver
+from backend.services.forge_image_service import ForgeImageService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.generation_service import GenerationService
-from backend.services.image_service import ImageService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -57,11 +57,11 @@ async def _get_generation_service(
 async def _get_image_service(
     simulation_id: UUID,
     supabase: Client,
-) -> ImageService:
-    """Create an ImageService with per-simulation API keys."""
+) -> ForgeImageService:
+    """Create a ForgeImageService with per-simulation API keys."""
     resolver = ExternalServiceResolver(supabase, simulation_id)
     ai_config = await resolver.get_ai_provider_config()
-    return ImageService(
+    return ForgeImageService(
         supabase, simulation_id,
         replicate_api_key=ai_config.replicate_api_key,
         openrouter_api_key=ai_config.openrouter_api_key,

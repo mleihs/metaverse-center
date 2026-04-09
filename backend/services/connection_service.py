@@ -34,6 +34,11 @@ class ConnectionService:
     _map_data_cache: TTLCache = TTLCache(maxsize=1, ttl=get_ttl("cache_map_data_ttl"))
 
     @classmethod
+    def invalidate_map_cache(cls) -> None:
+        """Clear the in-process map data cache (called when TTL settings change)."""
+        cls._map_data_cache.clear()
+
+    @classmethod
     async def list_all(
         cls,
         supabase: Client,

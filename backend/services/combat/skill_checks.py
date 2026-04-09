@@ -27,9 +27,12 @@ War Room Ops (operative missions).
 
 from __future__ import annotations
 
+import logging
 import random
 from dataclasses import dataclass, field
 from typing import Literal
+
+logger = logging.getLogger(__name__)
 
 SkillCheckResult = Literal["success", "partial", "fail"]
 

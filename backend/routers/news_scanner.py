@@ -94,26 +94,22 @@ async def list_candidates(
     source: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> dict:
+) -> SuccessResponse:
     """List scan candidates with filters.
 
-    Returns dict (not PaginatedResponse) because meta includes extra
-    ``recommended_threshold`` field that doesn't fit PaginationMeta.
+    Returns SuccessResponse wrapping items, pagination meta, and the
+    recommended magnitude threshold (derived from the returned data set).
     """
     data, total = await ScannerService.list_candidates(
         admin_supabase, status=status, category=category, source=source,
         limit=limit, offset=offset,
     )
-    # Compute recommended magnitude threshold (top 20%, minimum 0.4)
     recommended_threshold = ScannerService.compute_recommended_threshold(data)
-    return {
-        "success": True,
-        "data": data,
-        "meta": {
-            **PaginationMeta(count=len(data), total=total, limit=limit, offset=offset).model_dump(),
-            "recommended_threshold": recommended_threshold,
-        },
-    }
+    return SuccessResponse(data={
+        "items": data,
+        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset).model_dump(),
+        "recommended_threshold": recommended_threshold,
+    })
 
 
 @router.post("/candidates/{candidate_id}/approve")

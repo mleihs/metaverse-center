@@ -1208,11 +1208,9 @@ export class VelgAdminScannerTab extends LitElement {
       const resp = await scannerApi.listCandidates(params);
       if (resp.success && resp.data) {
         // Sort by magnitude DESC — best candidates first
-        this._candidates = resp.data.sort((a, b) => b.magnitude - a.magnitude);
-        // Use API-provided threshold (top-20% of pending, min 0.4)
-        const meta = (resp as unknown as { meta?: { recommended_threshold?: number } }).meta;
-        if (meta?.recommended_threshold !== undefined) {
-          this._recommendedThreshold = meta.recommended_threshold;
+        this._candidates = (resp.data.items ?? []).sort((a, b) => b.magnitude - a.magnitude);
+        if (resp.data.recommended_threshold !== undefined) {
+          this._recommendedThreshold = resp.data.recommended_threshold;
         }
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to load candidates'));
