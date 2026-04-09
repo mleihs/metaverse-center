@@ -127,6 +127,7 @@ class BotService:
 
         # 3a. Execute fortifications (foundation phase only)
         fortified = []
+        fortification_outcomes: list[dict] = []
         for fort_plan in decisions.fortifications:
             try:
                 result = await OperativeService.fortify_zone(
@@ -136,6 +137,9 @@ class BotService:
                     UUID(fort_plan.zone_id),
                 )
                 fortified.append(result)
+                fortification_outcomes.append(
+                    {"zone_id": fort_plan.zone_id, "cost": fort_plan.cost_rp, "success": True}
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
                     "Bot fortification failed: %s",
@@ -144,9 +148,14 @@ class BotService:
                     exc_info=True,
                 )
                 sentry_sdk.capture_exception(exc)
+                fortification_outcomes.append({
+                    "zone_id": fort_plan.zone_id, "cost": fort_plan.cost_rp,
+                    "success": False, "reason": str(exc)[:100],
+                })
 
         # 3b. Execute deployments (via same OperativeService humans use)
         deployed = []
+        deployment_outcomes: list[dict] = []
         for plan in decisions.deployments:
             try:
                 body = OperativeDeploy(
@@ -162,6 +171,15 @@ class BotService:
                     body,
                 )
                 deployed.append(mission)
+                deployment_outcomes.append(
+                    {
+                        "type": plan.operative_type,
+                        "target": plan.target_simulation_id,
+                        "cost": plan.cost_rp,
+                        "success": True,
+                        "mission_id": mission.get("id"),
+                    }
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
                     "Bot deployment failed: %s",
@@ -174,11 +192,21 @@ class BotService:
                     exc_info=True,
                 )
                 sentry_sdk.capture_exception(exc)
+                deployment_outcomes.append(
+                    {
+                        "type": plan.operative_type,
+                        "target": plan.target_simulation_id,
+                        "cost": plan.cost_rp,
+                        "success": False,
+                        "reason": str(exc)[:100],
+                    }
+                )
 
         # 4. Execute alliance actions
         alliance_results = await cls._execute_alliances(admin_supabase, epoch_id, participant, decisions.alliances)
 
         # 4b. Vote on pending alliance proposals
+        proposal_vote_outcomes: list[dict] = []
         for pv in decisions.proposal_votes:
             try:
                 await AllianceService.vote_on_proposal(
@@ -191,6 +219,9 @@ class BotService:
                     "Bot cast alliance vote",
                     extra={"bot_id": participant.get("simulation_id"), "proposal_id": pv.proposal_id, "vote": pv.vote},
                 )
+                proposal_vote_outcomes.append(
+                    {"proposal_id": pv.proposal_id, "vote": pv.vote, "success": True}
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
                     "Bot proposal vote failed: %s",
@@ -199,10 +230,23 @@ class BotService:
                     exc_info=True,
                 )
                 sentry_sdk.capture_exception(exc)
+                proposal_vote_outcomes.append(
+                    {"proposal_id": pv.proposal_id, "vote": pv.vote, "success": False, "reason": str(exc)[:100]}
+                )
 
-        # 5. Log decisions for transparency
+        # 5. Log decisions with per-action outcomes for transparency
         await cls._log_decisions(
-            admin_supabase, epoch_id, participant["id"], cycle_number, decisions, deployed, fortified
+            admin_supabase,
+            epoch_id,
+            participant["id"],
+            cycle_number,
+            decisions,
+            deployed,
+            fortified,
+            deployment_outcomes=deployment_outcomes,
+            fortification_outcomes=fortification_outcomes,
+            alliance_results=alliance_results,
+            proposal_vote_outcomes=proposal_vote_outcomes,
         )
 
         # 6. Generate chat message (template or LLM, best-effort)
@@ -288,30 +332,45 @@ class BotService:
         decisions,
         deployed: list[dict],
         fortified: list[dict] | None = None,
+        *,
+        deployment_outcomes: list[dict] | None = None,
+        fortification_outcomes: list[dict] | None = None,
+        alliance_results: list[dict] | None = None,
+        proposal_vote_outcomes: list[dict] | None = None,
     ) -> None:
-        """Log bot decisions for transparency and debugging."""
+        """Log bot decisions with per-action outcome tracking.
+
+        Logs planned actions alongside actual execution results so admin
+        dashboards show ground truth, not just intent.
+        """
         log_entry = {
             "epoch_id": epoch_id,
             "participant_id": participant_id,
             "cycle_number": cycle_number,
-            "phase": "deployment",
+            "phase": "full_cycle",
             "decision": {
                 "reasoning": decisions.reasoning,
+                # Plans (what the personality decided)
                 "planned_deployments": [
-                    {
-                        "type": d.operative_type,
-                        "target": d.target_simulation_id,
-                        "cost": d.cost_rp,
-                    }
+                    {"type": d.operative_type, "target": d.target_simulation_id, "cost": d.cost_rp}
                     for d in decisions.deployments
                 ],
-                "executed_deployments": len(deployed),
-                "planned_fortifications": [{"zone_id": f.zone_id, "cost": f.cost_rp} for f in decisions.fortifications],
-                "executed_fortifications": len(fortified or []),
+                "planned_fortifications": [
+                    {"zone_id": f.zone_id, "cost": f.cost_rp} for f in decisions.fortifications
+                ],
                 "alliance_actions": [
                     {"action": a.action, "target": a.target_simulation_id} for a in decisions.alliances
                 ],
-                "proposal_votes": [{"proposal_id": v.proposal_id, "vote": v.vote} for v in decisions.proposal_votes],
+                "proposal_votes": [
+                    {"proposal_id": v.proposal_id, "vote": v.vote} for v in decisions.proposal_votes
+                ],
+                # Outcomes (what actually happened — per-action success/failure)
+                "deployment_outcomes": deployment_outcomes or [],
+                "deployment_success_count": len(deployed),
+                "fortification_outcomes": fortification_outcomes or [],
+                "fortification_success_count": len(fortified or []),
+                "alliance_outcomes": alliance_results or [],
+                "proposal_vote_outcomes": proposal_vote_outcomes or [],
                 "rp_spent": decisions.rp_spent,
             },
         }

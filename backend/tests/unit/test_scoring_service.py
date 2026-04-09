@@ -959,7 +959,9 @@ class TestScoringServiceLogging:
         """Scoring RPC returning no data should log WARNING."""
         sb = MagicMock()
 
-        # RPC chain: refresh_all_game_metrics succeeds, scoring RPC returns empty
+        # RPC returns empty (no participants). Since migration 187, MV refresh
+        # happens inside the SQL function — Python no longer calls
+        # refresh_all_game_metrics separately.
         def rpc_side_effect(name, *args, **kwargs):
             chain = MagicMock()
             if name == "fn_compute_cycle_scores":
@@ -976,10 +978,10 @@ class TestScoringServiceLogging:
                 new_callable=AsyncMock,
                 return_value={"id": str(EPOCH_ID), "status": "competition", "config": {}},
             ),
-            caplog.at_level(logging.WARNING, logger="backend.services.scoring_service"),
+            caplog.at_level(logging.ERROR, logger="backend.services.scoring_service"),
         ):
             result = await ScoringService.compute_cycle_scores(sb, EPOCH_ID, 1)
 
         assert result == []
-        warning_records = [r for r in caplog.records if r.levelno == logging.WARNING and "rpc" in r.message.lower()]
-        assert len(warning_records) >= 1
+        error_records = [r for r in caplog.records if r.levelno == logging.ERROR and "no data" in r.message.lower()]
+        assert len(error_records) >= 1
