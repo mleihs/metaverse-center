@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -826,6 +827,8 @@ class GenerationService:
             "locale": locale,
         }
 
+    _BACKOFFS = (5, 10)  # seconds to wait on rate limit before retry
+
     async def _call_with_fallback(
         self,
         model: ResolvedModel,
@@ -834,29 +837,59 @@ class GenerationService:
         *,
         purpose: str = "description",
     ) -> str:
-        """Call LLM with automatic fallback on rate limit or model unavailability."""
+        """Call LLM with 3-layer resilience: backoff-retry → fallback → default.
+
+        Layer 1: On RateLimitError, backoff-retry on the SAME model (5s, 10s).
+        Layer 2: If retries exhausted, fall back to platform fallback model.
+        Layer 3: On ModelUnavailableError, fall back to platform default.
+        """
+        # ── Layer 1: backoff-retry on same model ────────────────────
+        for attempt, backoff in enumerate((0, *self._BACKOFFS)):
+            if backoff:
+                logger.warning(
+                    "Rate limited on %s, retrying in %ds (attempt %d/%d)",
+                    model.model_id, backoff, attempt + 1, len(self._BACKOFFS) + 1,
+                    extra={"purpose": purpose},
+                )
+                sentry_sdk.add_breadcrumb(
+                    category="ai", level="warning",
+                    message=f"429 retry #{attempt} for {purpose}, waiting {backoff}s",
+                )
+                await asyncio.sleep(backoff)
+
+            try:
+                result = await self._openrouter.generate_with_system(
+                    model=model.model_id,
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    temperature=model.temperature,
+                    max_tokens=model.max_tokens,
+                )
+                await AIUsageService.log(
+                    self._supabase,
+                    simulation_id=self._simulation_id,
+                    provider="openrouter",
+                    model=model.model_id,
+                    purpose=purpose,
+                    usage=self._openrouter.last_usage,
+                )
+                return result
+            except RateLimitError:
+                continue  # try next backoff
+            except ModelUnavailableError:
+                break  # skip to layer 3
+
+        # ── Layer 2: platform fallback model ────────────────────────
+        logger.warning(
+            "Rate limited after %d retries, falling back to platform fallback",
+            len(self._BACKOFFS) + 1,
+            extra={"purpose": purpose, "original_model": model.model_id},
+        )
+        sentry_sdk.add_breadcrumb(
+            category="ai", level="warning",
+            message=f"429 fallback for {purpose}",
+        )
         try:
-            result = await self._openrouter.generate_with_system(
-                model=model.model_id,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                temperature=model.temperature,
-                max_tokens=model.max_tokens,
-            )
-            await AIUsageService.log(
-                self._supabase,
-                simulation_id=self._simulation_id,
-                provider="openrouter",
-                model=model.model_id,
-                purpose=purpose,
-                usage=self._openrouter.last_usage,
-            )
-            return result
-        except RateLimitError:
-            logger.warning(
-                "Rate limited on %s, falling back",
-                model.model_id,
-            )
             fallback = await self._model_resolver.resolve_text_model("fallback")
             result = await self._openrouter.generate_with_system(
                 model=fallback.model_id,
@@ -874,26 +907,29 @@ class GenerationService:
                 usage=self._openrouter.last_usage,
             )
             return result
-        except ModelUnavailableError:
-            logger.warning(
-                "Model %s unavailable, using platform default",
-                model.model_id,
-            )
-            default_model = PLATFORM_DEFAULT_MODELS["default"]
-            result = await self._openrouter.generate_with_system(
-                model=default_model,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-            )
-            await AIUsageService.log(
-                self._supabase,
-                simulation_id=self._simulation_id,
-                provider="openrouter",
-                model=default_model,
-                purpose=purpose,
-                usage=self._openrouter.last_usage,
-            )
-            return result
+        except (RateLimitError, ModelUnavailableError):
+            pass  # fall through to layer 3
+
+        # ── Layer 3: platform default model (last resort) ──────────
+        logger.warning(
+            "Fallback also failed, using platform default",
+            extra={"purpose": purpose},
+        )
+        default_model = PLATFORM_DEFAULT_MODELS["default"]
+        result = await self._openrouter.generate_with_system(
+            model=default_model,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+        await AIUsageService.log(
+            self._supabase,
+            simulation_id=self._simulation_id,
+            provider="openrouter",
+            model=default_model,
+            purpose=purpose,
+            usage=self._openrouter.last_usage,
+        )
+        return result
 
     @staticmethod
     def _format_game_context(ctx: dict) -> str:
