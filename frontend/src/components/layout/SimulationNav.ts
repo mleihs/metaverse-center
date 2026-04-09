@@ -11,6 +11,8 @@ interface NavTab {
   path: string;
   icon: () => TemplateResult;
   requireAdmin?: boolean;
+  /** Only show this tab if the named setting_key is 'true' in appState.settings. */
+  requireSetting?: string;
 }
 
 function getTabs(): NavTab[] {
@@ -19,7 +21,7 @@ function getTabs(): NavTab[] {
     { label: msg('Agents'), path: 'agents', icon: () => icons.users(14) },
     { label: msg('Buildings'), path: 'buildings', icon: () => icons.building(14) },
     { label: msg('Broadsheet'), path: 'broadsheet', icon: () => icons.columns(14) },
-    { label: msg('Chronicle'), path: 'chronicle', icon: () => icons.newspaper(14) },
+    { label: msg('Chronicle'), path: 'chronicle', icon: () => icons.newspaper(14), requireSetting: 'show_chronicle' },
     { label: msg('Health'), path: 'health', icon: () => icons.heartbeat(14) },
     { label: msg('Pulse'), path: 'pulse', icon: () => icons.radar(14) },
     { label: msg('Events'), path: 'events', icon: () => icons.bolt(14) },
@@ -466,6 +468,12 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
   private get _visibleTabs(): NavTab[] {
     return getTabs().filter((tab) => {
       if (tab.requireAdmin && !appState.canAdmin.value) return false;
+      if (tab.requireSetting) {
+        const setting = appState.settings.value.find(
+          (s) => s.setting_key === tab.requireSetting,
+        );
+        if (!setting || String(setting.setting_value) !== 'true') return false;
+      }
       return true;
     });
   }
