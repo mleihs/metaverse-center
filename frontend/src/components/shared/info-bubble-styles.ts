@@ -1,7 +1,12 @@
 import { css, html, nothing } from 'lit';
 
+import './VelgTooltip.js';
+
 /**
  * Shared info bubble styles + render helper for edit modals and settings panels.
+ *
+ * The tooltip is rendered via `<velg-tooltip>` which uses `position: fixed`
+ * to escape `overflow: hidden` containers (modals, panels, cards).
  *
  * Usage:
  *   static styles = [infoBubbleStyles, css`...`];
@@ -16,25 +21,25 @@ import { css, html, nothing } from 'lit';
 
 /**
  * Render an info bubble with tooltip text.
+ * Delegates to `<velg-tooltip>` for position: fixed overflow-safe rendering.
  * @param text  The tooltip content (should be wrapped in msg() by the caller)
- * @param id    Optional id for the tooltip span — use with aria-describedby on the input
+ * @param id    Optional id for aria-describedby linkage (preserved on wrapper)
  */
 export function renderInfoBubble(text: string, id?: string) {
   return html`
-    <span class="info-bubble">
-      <span class="info-bubble__icon" tabindex="0" aria-label="Info">i</span>
+    <velg-tooltip content=${text} position="below">
       <span
-        class="info-bubble__tooltip"
+        class="info-bubble"
         id=${id ?? nothing}
-        role="tooltip"
-      >${text}</span>
-    </span>
+      >
+        <span class="info-bubble__icon" tabindex="0" aria-label="Info">i</span>
+      </span>
+    </velg-tooltip>
   `;
 }
 
 export const infoBubbleStyles = css`
   .info-bubble {
-    position: relative;
     display: inline-flex;
     align-items: center;
     cursor: help;
@@ -70,43 +75,5 @@ export const infoBubbleStyles = css`
     background: var(--color-accent-amber);
     box-shadow: 0 0 6px
       color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
-  }
-
-  .info-bubble__tooltip {
-    display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-text-primary);
-    color: var(--color-surface);
-    padding: var(--space-2) var(--space-3);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    line-height: 1.5;
-    white-space: normal;
-    width: 240px;
-    z-index: var(--z-tooltip);
-    box-shadow: var(--shadow-md);
-    pointer-events: none;
-  }
-
-  /* Arrow pointing up */
-  .info-bubble__tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: var(--color-text-primary);
-  }
-
-  .info-bubble:hover .info-bubble__tooltip,
-  .info-bubble:focus-within .info-bubble__tooltip {
-    display: block;
   }
 `;
