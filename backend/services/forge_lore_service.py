@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 from uuid import UUID
 
@@ -206,7 +206,7 @@ class ForgeLoreService:
     async def translate_lore(
         sections: list[dict[str, Any]],
         openrouter_key: str | None = None,
-        on_section_start: Callable[[int, str], None] | None = None,
+        on_section_start: Callable[[int, str], Awaitable[None]] | None = None,
     ) -> list[dict[str, Any]]:
         """Translate lore sections from English to German via AI.
 
@@ -228,7 +228,7 @@ class ForgeLoreService:
 
         for i, s in enumerate(sections):
             if on_section_start is not None:
-                on_section_start(i + 1, s["title"])
+                await on_section_start(i + 1, s["title"])
             block = f"Title: {s['title']}\n"
             if s.get("epigraph"):
                 block += f"Epigraph: {s['epigraph']}\n"
