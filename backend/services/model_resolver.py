@@ -20,11 +20,11 @@ __all__ = ["PLATFORM_DEFAULT_MODELS", "ModelResolver", "ResolvedModel", "Resolve
 # Upgraded from flux-dev (non-commercial) in April 2026.
 # Simulations can override via settings.
 PLATFORM_DEFAULT_IMAGE_MODELS: dict[str, str] = {
-    "agent_portrait": "black-forest-labs/flux.2-pro",
-    "building_image": "black-forest-labs/flux.2-pro",
-    "lore_image": "black-forest-labs/flux.2-pro",
-    "banner": "black-forest-labs/flux.2-pro",
-    "fallback": "black-forest-labs/flux.2-pro",
+    "agent_portrait": "black-forest-labs/flux-2-pro",
+    "building_image": "black-forest-labs/flux-2-pro",
+    "lore_image": "black-forest-labs/flux-2-pro",
+    "banner": "black-forest-labs/flux-2-pro",
+    "fallback": "black-forest-labs/flux-2-pro",
 }
 
 PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {

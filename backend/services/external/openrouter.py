@@ -371,7 +371,7 @@ class OpenRouterService:
         """Generate an image using an OpenRouter image model.
 
         Args:
-            model: OpenRouter image model ID (e.g. "black-forest-labs/flux.2-pro",
+            model: OpenRouter image model ID (e.g. "black-forest-labs/flux-2-pro",
                    "openai/gpt-5-image", "google/gemini-3-pro-image-preview").
             prompt: Text description of the image to generate.
             aspect_ratio: Aspect ratio — "1:1", "2:3", "3:2", "4:3", "9:16", "16:9", "21:9".
