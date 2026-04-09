@@ -4,6 +4,7 @@
  */
 const viewImports: Record<string, () => Promise<unknown>> = {
   lore: () => import('../components/lore/SimulationLoreView.js'),
+  broadsheet: () => import('../components/broadsheet/SimulationBroadsheet.js'),
   chronicle: () => import('../components/chronicle/ChronicleView.js'),
   health: () => import('../components/health/SimulationHealthView.js'),
   pulse: () => import('../components/heartbeat/SimulationPulse.js'),

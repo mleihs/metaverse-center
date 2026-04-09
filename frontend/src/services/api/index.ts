@@ -3,6 +3,7 @@ export { AgentAutonomyApiService, agentAutonomyApi } from './AgentAutonomyApiSer
 export { AgentMemoryApiService, agentMemoryApi } from './AgentMemoryApiService.js';
 export { AgentsApiService, agentsApi } from './AgentsApiService.js';
 export { BaseApiService } from './BaseApiService.js';
+export { BroadsheetApiService, broadsheetApi } from './BroadsheetApiService.js';
 export { BuildingsApiService, buildingsApi } from './BuildingsApiService.js';
 export { BureauApiService, bureauApi } from './BureauApiService.js';
 export { CampaignsApiService, campaignsApi } from './CampaignsApiService.js';

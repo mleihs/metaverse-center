@@ -21,6 +21,7 @@ from backend.services.agent_service import AgentService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.bleed_gazette_service import BleedGazetteService
+from backend.services.broadsheet_service import BroadsheetService
 from backend.services.building_service import BuildingService
 from backend.services.cache_config import get_ttl
 from backend.services.campaign_service import CampaignService
@@ -340,6 +341,35 @@ async def get_chronicle_public(
 ) -> SuccessResponse:
     """Get a single chronicle edition (public)."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
+    return SuccessResponse(data=data)
+
+
+# ── Broadsheets ───────────────────────────────────────────────────────────
+
+
+@router.get("/simulations/{simulation_id}/broadsheets")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_broadsheets_public(
+    request: Request,
+    simulation_id: SimId,
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
+    """List broadsheet editions (public)."""
+    data, total = await BroadsheetService.list(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
+
+
+@router.get("/simulations/{simulation_id}/broadsheets/latest")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_latest_broadsheet_public(
+    request: Request,
+    simulation_id: SimId,
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse:
+    """Get the latest broadsheet edition (public)."""
+    data = await BroadsheetService.get_latest(supabase, simulation_id)
     return SuccessResponse(data=data)
 
 
