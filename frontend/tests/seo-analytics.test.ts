@@ -12,7 +12,7 @@ describe('agentAltText', () => {
 
   it('includes profession when available', () => {
     const result = agentAltText({ name: 'Viktor', primary_profession: 'Commander' });
-    expect(result).toBe('Portrait of Viktor — Commander');
+    expect(result).toBe('Portrait of Viktor – Commander');
   });
 
   it('includes character and background', () => {
@@ -21,7 +21,7 @@ describe('agentAltText', () => {
       character: 'Stern and disciplined',
       background: 'Former garrison leader',
     });
-    expect(result).toBe('Portrait of Viktor — Stern and disciplined — Former garrison leader');
+    expect(result).toBe('Portrait of Viktor – Stern and disciplined – Former garrison leader');
   });
 
   it('includes all fields in correct order', () => {
@@ -31,7 +31,7 @@ describe('agentAltText', () => {
       character: 'Stern',
       background: 'Military veteran',
     });
-    expect(result).toBe('Portrait of Viktor — Commander — Stern — Military veteran');
+    expect(result).toBe('Portrait of Viktor – Commander – Stern – Military veteran');
   });
 
   it('skips undefined fields', () => {
@@ -41,7 +41,7 @@ describe('agentAltText', () => {
       character: 'Stern',
       background: undefined,
     });
-    expect(result).toBe('Portrait of Viktor — Stern');
+    expect(result).toBe('Portrait of Viktor – Stern');
   });
 });
 
@@ -52,7 +52,7 @@ describe('buildingAltText', () => {
 
   it('includes building type', () => {
     const result = buildingAltText({ name: 'Rathaus', building_type: 'government' });
-    expect(result).toBe('Rathaus — government');
+    expect(result).toBe('Rathaus – government');
   });
 
   it('includes zone with "in" prefix', () => {
@@ -60,7 +60,7 @@ describe('buildingAltText', () => {
       name: 'Rathaus',
       zone: { name: 'Altstadt' },
     });
-    expect(result).toBe('Rathaus — in Altstadt');
+    expect(result).toBe('Rathaus – in Altstadt');
   });
 
   it('includes description and condition', () => {
@@ -69,7 +69,7 @@ describe('buildingAltText', () => {
       description: 'City hall building',
       building_condition: 'good',
     });
-    expect(result).toBe('Rathaus — City hall building — condition: good');
+    expect(result).toBe('Rathaus – City hall building – condition: good');
   });
 
   it('includes all fields in correct order', () => {
@@ -80,7 +80,7 @@ describe('buildingAltText', () => {
       building_condition: 'good',
       zone: { name: 'Altstadt' },
     });
-    expect(result).toBe('Rathaus — government — in Altstadt — City hall — condition: good');
+    expect(result).toBe('Rathaus – government – in Altstadt – City hall – condition: good');
   });
 
   it('handles null zone', () => {

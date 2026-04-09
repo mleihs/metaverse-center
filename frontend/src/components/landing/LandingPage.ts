@@ -1527,6 +1527,9 @@ export class VelgLandingPage extends LitElement {
   @state() private _stats: PlatformStats | null = null;
   @state() private _worlds: Simulation[] = [];
 
+  /** Interval ID for the signal-decode hero animation (cleared on disconnect). */
+  private _decodeInterval?: ReturnType<typeof setInterval>;
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     this._fetchStats();
@@ -1536,6 +1539,7 @@ export class VelgLandingPage extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (this._decodeInterval) clearInterval(this._decodeInterval);
     seoService.removeStructuredData();
   }
 
@@ -1893,7 +1897,7 @@ export class VelgLandingPage extends LitElement {
     const totalSteps = 30;
     let step = 0;
 
-    const interval = setInterval(() => {
+    this._decodeInterval = setInterval(() => {
       step++;
       const progress = step / totalSteps;
 
@@ -1922,7 +1926,8 @@ export class VelgLandingPage extends LitElement {
       restEl.textContent = restText;
 
       if (step >= totalSteps) {
-        clearInterval(interval);
+        clearInterval(this._decodeInterval);
+        this._decodeInterval = undefined;
         accentEl.textContent = targetAccent;
         restEl.textContent = targetRest;
         section.querySelector('.hero__content')?.classList.add('decode-complete');

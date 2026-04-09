@@ -7,7 +7,7 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
@@ -21,6 +21,41 @@ logger = logging.getLogger(__name__)
 
 class ForgeDraftService:
     """Service layer for forge draft operations."""
+
+    # Forge state machine: current_phase → set of legal next phases.
+    # Terminal states ('completed') have no outgoing edges; 'failed' can
+    # restart from 'astrolabe'.
+    VALID_PHASE_TRANSITIONS: dict[str, set[str]] = {
+        "astrolabe": {"drafting"},
+        "drafting": {"darkroom", "astrolabe"},
+        "darkroom": {"ignition", "drafting"},
+        "ignition": {"completed", "failed", "darkroom"},
+        "completed": set(),
+        "failed": {"astrolabe"},
+    }
+
+    @staticmethod
+    def validate_draft_update(data: ForgeDraftUpdate, *, current_phase: str = "astrolabe") -> None:
+        """Enforce forge draft business rules before persisting.
+
+        Raises ``HTTPException(422)`` when:
+        - A client attempts to set *status* to ``'completed'`` directly
+          (only the ignition pipeline may do this).
+        - A *current_phase* transition violates the forge state machine.
+        """
+        if data.status == "completed":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Status 'completed' can only be set by the ignition process.",
+            )
+
+        if data.current_phase is not None:
+            allowed = ForgeDraftService.VALID_PHASE_TRANSITIONS.get(current_phase, set())
+            if data.current_phase not in allowed:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=f"Cannot transition from '{current_phase}' to '{data.current_phase}'.",
+                )
 
     @staticmethod
     async def list_drafts(
