@@ -46,15 +46,20 @@ class SocialPlatformClient(Protocol):
     """Every social platform API client implements this."""
 
     async def publish_post(
-        self, content: AdaptedContent, media: list[UploadedMedia],
+        self,
+        content: AdaptedContent,
+        media: list[UploadedMedia],
     ) -> PublishResult: ...
 
     async def upload_media(
-        self, data: bytes, mime_type: str,
+        self,
+        data: bytes,
+        mime_type: str,
     ) -> UploadedMedia: ...
 
     async def get_post_metrics(
-        self, platform_post_id: str,
+        self,
+        platform_post_id: str,
     ) -> dict: ...
 
     async def validate_credentials(self) -> bool: ...

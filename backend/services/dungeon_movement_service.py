@@ -20,8 +20,6 @@ import logging
 import random
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.resonance_dungeon import (
     ArchetypeActionResponse,
     CombatState,
@@ -47,6 +45,7 @@ from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_instance_store import store as _store
 from backend.services.dungeon_shared import FALLBACK_SPAWNS, log_extra
+from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -189,14 +188,14 @@ class DungeonMovementService:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("exploring", "room_clear", "exit"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot move in phase: {instance.phase}")
+            raise bad_request(f"Cannot move in phase: {instance.phase}")
 
         current_room = instance.rooms[instance.current_room]
         if room_index not in current_room.connections:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room is not adjacent to current room")
+            raise bad_request("Room is not adjacent to current room")
 
         if room_index < 0 or room_index >= len(instance.rooms):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid room index")
+            raise bad_request("Invalid room index")
 
         target_room = instance.rooms[room_index]
 
@@ -386,7 +385,7 @@ class DungeonMovementService:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("encounter", "rest", "threshold"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in encounter phase")
+            raise bad_request("Not in encounter phase")
 
         current_room = instance.rooms[instance.current_room]
 
@@ -400,44 +399,43 @@ class DungeonMovementService:
 
         encounter = get_encounter_by_id(current_room.encounter_template_id or "")
         if not encounter:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No encounter in current room")
+            raise bad_request("No encounter in current room")
 
         choice = next((c for c in encounter.choices if c.id == action.choice_id), None)
         if not choice:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown choice: {action.choice_id}")
+            raise bad_request(f"Unknown choice: {action.choice_id}")
 
         # Resolve skill check
         result_tier = "success"
         check_result = None
         acting_agent = (
-            next((a for a in instance.party if a.agent_id == action.agent_id), None)
-            if action.agent_id
-            else None
+            next((a for a in instance.party if a.agent_id == action.agent_id), None) if action.agent_id else None
         )
         if choice.check_aptitude and acting_agent:
-                # Apply debris check bonuses from The Current Carries
-                debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
-                    choice.check_aptitude, 0,
-                )
-                ctx = SkillCheckContext(
-                    aptitude=choice.check_aptitude,
-                    aptitude_level=acting_agent.aptitudes.get(choice.check_aptitude, 3),
-                    difficulty_modifier=choice.check_difficulty - debris_bonus,
-                    personality=acting_agent.personality,
-                    condition=acting_agent.condition,
-                    visibility=instance.archetype_state.get("visibility", 3),
-                    archetype_state=instance.archetype_state,
-                )
-                outcome = resolve_skill_check(ctx)
-                result_tier = outcome.result
-                check_result = {
-                    "aptitude": choice.check_aptitude,
-                    "level": ctx.aptitude_level,
-                    "chance": outcome.check_value,
-                    "roll": outcome.roll,
-                    "result": result_tier,
-                    "breakdown": outcome.breakdown,
-                }
+            # Apply debris check bonuses from The Current Carries
+            debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
+                choice.check_aptitude,
+                0,
+            )
+            ctx = SkillCheckContext(
+                aptitude=choice.check_aptitude,
+                aptitude_level=acting_agent.aptitudes.get(choice.check_aptitude, 3),
+                difficulty_modifier=choice.check_difficulty - debris_bonus,
+                personality=acting_agent.personality,
+                condition=acting_agent.condition,
+                visibility=instance.archetype_state.get("visibility", 3),
+                archetype_state=instance.archetype_state,
+            )
+            outcome = resolve_skill_check(ctx)
+            result_tier = outcome.result
+            check_result = {
+                "aptitude": choice.check_aptitude,
+                "level": ctx.aptitude_level,
+                "chance": outcome.check_value,
+                "roll": outcome.roll,
+                "result": result_tier,
+                "breakdown": outcome.breakdown,
+            }
 
         # Archetype penalty on failed check
         if result_tier == "fail":
@@ -512,18 +510,23 @@ class DungeonMovementService:
 
     @classmethod
     async def _scout_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ScoutResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+            raise bad_request("Agent cannot act")
 
         spy_level = agent.aptitudes.get("spy", 0)
         if spy_level < 3:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent needs Spy 3+ to scout")
+            raise bad_request("Agent needs Spy 3+ to scout")
 
         current = instance.rooms[instance.current_room]
         revealed_count = 0
@@ -553,7 +556,12 @@ class DungeonMovementService:
 
     @classmethod
     async def seal_breach(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Guardian: Seal Breach — reduce water level, gain stress (Deluge only)."""
         async with _store.lock(run_id):
@@ -561,26 +569,28 @@ class DungeonMovementService:
 
     @classmethod
     async def _seal_breach_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Deluge":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Seal Breach only available in Deluge dungeons")
+            raise bad_request("Seal Breach only available in Deluge dungeons")
 
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+            raise bad_request("Agent cannot act")
 
         mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
         guardian_level = agent.aptitudes.get("guardian", 0)
         if guardian_level < mc.get("seal_min_aptitude", 40):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Agent needs Guardian {mc.get('seal_min_aptitude', 40)}+ to Seal Breach",
-            )
+            raise bad_request(f"Agent needs Guardian {mc.get('seal_min_aptitude', 40)}+ to Seal Breach")
 
         # Cooldown: once per N rooms (design doc §2.6)
         cooldown = mc.get("seal_cooldown_rooms", 3)
@@ -588,10 +598,7 @@ class DungeonMovementService:
         rooms_entered = instance.archetype_state.get("rooms_entered", 0)
         if rooms_entered - last_seal_room < cooldown:
             rooms_remaining = cooldown - (rooms_entered - last_seal_room)
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Seal Breach on cooldown ({rooms_remaining} rooms remaining)",
-            )
+            raise bad_request(f"Seal Breach on cooldown ({rooms_remaining} rooms remaining)")
 
         strategy = get_archetype_strategy(instance.archetype)
         strategy.apply_restore(instance, "seal")
@@ -614,7 +621,12 @@ class DungeonMovementService:
 
     @classmethod
     async def ground(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Spy: Ground — reduce awareness, gain stress (Awakening only)."""
         async with _store.lock(run_id):
@@ -622,26 +634,28 @@ class DungeonMovementService:
 
     @classmethod
     async def _ground_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Awakening":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ground only available in Awakening dungeons")
+            raise bad_request("Ground only available in Awakening dungeons")
 
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+            raise bad_request("Agent cannot act")
 
         mc = ARCHETYPE_CONFIGS["The Awakening"]["mechanic_config"]
         spy_level = agent.aptitudes.get("spy", 0)
         if spy_level < mc.get("ground_min_aptitude", 40):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Agent needs Spy {mc.get('ground_min_aptitude', 40)}+ to Ground",
-            )
+            raise bad_request(f"Agent needs Spy {mc.get('ground_min_aptitude', 40)}+ to Ground")
 
         # Cooldown: once per N rooms
         cooldown = mc.get("ground_cooldown_rooms", 3)
@@ -649,10 +663,7 @@ class DungeonMovementService:
         rooms_entered = instance.archetype_state.get("rooms_entered", 0)
         if rooms_entered - last_ground_room < cooldown:
             rooms_remaining = cooldown - (rooms_entered - last_ground_room)
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Ground on cooldown ({rooms_remaining} rooms remaining)",
-            )
+            raise bad_request(f"Ground on cooldown ({rooms_remaining} rooms remaining)")
 
         strategy = get_archetype_strategy(instance.archetype)
         strategy.apply_restore(instance, "ground")
@@ -675,7 +686,12 @@ class DungeonMovementService:
 
     @classmethod
     async def rally(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Propagandist: Rally — reduce authority fracture, gain stress (Overthrow only)."""
         async with _store.lock(run_id):
@@ -683,26 +699,28 @@ class DungeonMovementService:
 
     @classmethod
     async def _rally_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Overthrow":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Rally only available in Overthrow dungeons")
+            raise bad_request("Rally only available in Overthrow dungeons")
 
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+            raise bad_request("Agent cannot act")
 
         mc = ARCHETYPE_CONFIGS["The Overthrow"]["mechanic_config"]
         propagandist_level = agent.aptitudes.get("propagandist", 0)
         if propagandist_level < mc.get("rally_min_aptitude", 40):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Agent needs Propagandist {mc.get('rally_min_aptitude', 40)}+ to Rally",
-            )
+            raise bad_request(f"Agent needs Propagandist {mc.get('rally_min_aptitude', 40)}+ to Rally")
 
         # Cooldown: once per N rooms
         cooldown = mc.get("rally_cooldown_rooms", 3)
@@ -710,10 +728,7 @@ class DungeonMovementService:
         rooms_entered = instance.archetype_state.get("rooms_entered", 0)
         if rooms_entered - last_rally_room < cooldown:
             rooms_remaining = cooldown - (rooms_entered - last_rally_room)
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Rally on cooldown ({rooms_remaining} rooms remaining)",
-            )
+            raise bad_request(f"Rally on cooldown ({rooms_remaining} rooms remaining)")
 
         strategy = get_archetype_strategy(instance.archetype)
         strategy.apply_restore(instance, "rally")
@@ -736,7 +751,13 @@ class DungeonMovementService:
 
     @classmethod
     async def salvage(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        room_index: int,
+        *,
+        user_id: UUID,
     ) -> SalvageResponse:
         """Salvage submerged loot — Guardian aptitude check (Deluge only)."""
         async with _store.lock(run_id):
@@ -744,47 +765,51 @@ class DungeonMovementService:
 
     @classmethod
     async def _salvage_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        room_index: int,
+        *,
+        user_id: UUID,
     ) -> SalvageResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.archetype != "The Deluge":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Salvage only available in Deluge dungeons")
+            raise bad_request("Salvage only available in Deluge dungeons")
 
         if instance.phase not in ("exploring", "room_clear", "exit"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Cannot salvage in phase: {instance.phase}")
+            raise bad_request(f"Cannot salvage in phase: {instance.phase}")
 
         # Validate agent
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent cannot act")
+            raise bad_request("Agent cannot act")
 
         # Validate room
         if room_index < 0 or room_index >= len(instance.rooms):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid room index")
+            raise bad_request("Invalid room index")
         target_room = instance.rooms[room_index]
         if not target_room.revealed or not target_room.cleared:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room must be revealed and cleared")
+            raise bad_request("Room must be revealed and cleared")
         if room_index == instance.current_room:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot salvage current room")
+            raise bad_request("Cannot salvage current room")
 
         # Check room is submerged (depth-based flooding)
         water_level = instance.archetype_state.get("water_level", 0)
         room_depth = target_room.depth
         submerged = (
-            (water_level >= 75)
-            or (water_level >= 50 and room_depth >= 2)
-            or (water_level >= 25 and room_depth >= 4)
+            (water_level >= 75) or (water_level >= 50 and room_depth >= 2) or (water_level >= 25 and room_depth >= 4)
         )
         if not submerged:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room is not submerged — water level too low")
+            raise bad_request("Room is not submerged — water level too low")
 
         # Prevent double-diving
         salvaged = instance.archetype_state.get("_salvaged_rooms", [])
         if room_index in salvaged:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Room already salvaged")
+            raise bad_request("Room already salvaged")
 
         # Run aptitude check
         mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
@@ -794,7 +819,8 @@ class DungeonMovementService:
 
         # Apply debris check bonuses from The Current Carries
         debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
-            check_aptitude, 0,
+            check_aptitude,
+            0,
         )
         ctx = SkillCheckContext(
             aptitude=check_aptitude,
@@ -854,16 +880,21 @@ class DungeonMovementService:
 
     @classmethod
     async def _rest_locked(
-        cls, admin_supabase: Client, run_id: UUID, agent_ids: list[UUID], *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_ids: list[UUID],
+        *,
+        user_id: UUID,
     ) -> RestResponse:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("rest", "encounter"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not at a rest site")
+            raise bad_request("Not at a rest site")
 
         current_room = instance.rooms[instance.current_room]
         if current_room.room_type != "rest":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current room is not a rest site")
+            raise bad_request("Current room is not a rest site")
 
         # Check for ambush
         is_ambushed = check_ambush(instance.archetype_state, instance.archetype)
@@ -1010,7 +1041,7 @@ class DungeonMovementService:
 
         choice_id = action.choice_id
         if choice_id not in ("threshold_blood", "threshold_memory", "threshold_defiance"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown threshold choice: {choice_id}")
+            raise bad_request(f"Unknown threshold choice: {choice_id}")
 
         current_room = instance.rooms[instance.current_room]
         narrative_data: dict = {}
@@ -1124,10 +1155,7 @@ class DungeonMovementService:
         boss_choices = instance.archetype_state.get("_boss_deployment_choices", [])
         choice = next((c for c in boss_choices if c["id"] == action.choice_id), None)
         if not choice:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Unknown deployment choice: {action.choice_id}",
-            )
+            raise bad_request(f"Unknown deployment choice: {action.choice_id}")
 
         current_room = instance.rooms[instance.current_room]
         strategy = get_archetype_strategy(instance.archetype)
@@ -1176,24 +1204,30 @@ class DungeonMovementService:
                 narrative_en=narrative_en,
                 narrative_de=narrative_de,
             )
-            return EncounterChoiceResponse.model_validate({
-                "result": "success",
-                "narrative_en": narrative_en,
-                "narrative_de": narrative_de,
-                "effects": {},
-                "state": DungeonCheckpointService.build_client_state(instance),
-                **combat_result,
-            })
+            return EncounterChoiceResponse.model_validate(
+                {
+                    "result": "success",
+                    "narrative_en": narrative_en,
+                    "narrative_de": narrative_de,
+                    "effects": {},
+                    "state": DungeonCheckpointService.build_client_state(instance),
+                    **combat_result,
+                }
+            )
 
         # ── Check-based deployment (Deluge pattern) ──
         if choice.get("check_aptitude"):
-            agent = next(
-                (a for a in instance.party if a.agent_id == action.agent_id),
-                None,
-            ) if action.agent_id else (instance.party[0] if instance.party else None)
+            agent = (
+                next(
+                    (a for a in instance.party if a.agent_id == action.agent_id),
+                    None,
+                )
+                if action.agent_id
+                else (instance.party[0] if instance.party else None)
+            )
 
             if not agent:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "No agent for deployment check")
+                raise bad_request("No agent for deployment check")
 
             check_ctx = SkillCheckContext(
                 aptitude=choice["check_aptitude"],
@@ -1217,11 +1251,13 @@ class DungeonMovementService:
 
             # Store deployment result for combat phase
             deployed = instance.archetype_state.setdefault("deployed_boss_effects", [])
-            deployed.append({
-                "choice_id": choice["id"],
-                "outcome": check_result.result,
-                **effects,
-            })
+            deployed.append(
+                {
+                    "choice_id": choice["id"],
+                    "outcome": check_result.result,
+                    **effects,
+                }
+            )
 
             # Regenerate remaining choices (remove used choice)
             remaining = [c for c in boss_choices if c["id"] != choice["id"]]
@@ -1254,10 +1290,7 @@ class DungeonMovementService:
         crafted_items = instance.archetype_state.get("crafted_items", [])
         item = next((i for i in crafted_items if i["id"] == item_id), None)
         if not item or not item.get("boss_effect"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Invalid deployment item: {item_id}",
-            )
+            raise bad_request(f"Invalid deployment item: {item_id}")
 
         boss_effect = item["boss_effect"]
 

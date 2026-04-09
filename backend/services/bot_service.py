@@ -62,9 +62,7 @@ class BotService:
         results = []
         for bot_p in bot_participants:
             try:
-                result = await cls._execute_single_bot(
-                    supabase, admin_supabase, epoch_id, bot_p, cycle_number, config
-                )
+                result = await cls._execute_single_bot(supabase, admin_supabase, epoch_id, bot_p, cycle_number, config)
                 results.append(result)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception(
@@ -72,11 +70,13 @@ class BotService:
                     extra={"participant_id": bot_p["id"], "epoch_id": epoch_id},
                 )
                 sentry_sdk.capture_exception(exc)
-                results.append({
-                    "participant_id": bot_p["id"],
-                    "success": False,
-                    "error": "Bot execution failed",
-                })
+                results.append(
+                    {
+                        "participant_id": bot_p["id"],
+                        "success": False,
+                        "error": "Bot execution failed",
+                    }
+                )
 
         return results
 
@@ -108,19 +108,13 @@ class BotService:
 
         # Add epoch status to config for state builder
         epoch_resp = await (
-            admin_supabase.table("game_epochs")
-            .select("status")
-            .eq("id", epoch_id)
-            .maybe_single()
-            .execute()
+            admin_supabase.table("game_epochs").select("status").eq("id", epoch_id).maybe_single().execute()
         )
         epoch_status = epoch_resp.data.get("status", "competition") if epoch_resp.data else "competition"
         config_with_status = {**config, "_epoch_status": epoch_status}
 
         # 1. Build fog-of-war game state
-        game_state = await BotGameState.build(
-            admin_supabase, epoch_id, participant, cycle_number, config_with_status
-        )
+        game_state = await BotGameState.build(admin_supabase, epoch_id, participant, cycle_number, config_with_status)
 
         # 2. Create personality and make decisions
         personality = create_personality(
@@ -181,9 +175,7 @@ class BotService:
                 sentry_sdk.capture_exception(exc)
 
         # 4. Execute alliance actions
-        alliance_results = await cls._execute_alliances(
-            admin_supabase, epoch_id, participant, decisions.alliances
-        )
+        alliance_results = await cls._execute_alliances(admin_supabase, epoch_id, participant, decisions.alliances)
 
         # 4b. Vote on pending alliance proposals
         for pv in decisions.proposal_votes:
@@ -196,15 +188,13 @@ class BotService:
                 )
                 logger.info(
                     "Bot cast alliance vote",
-                    extra={"bot_id": participant.get("simulation_id"),
-                           "proposal_id": pv.proposal_id, "vote": pv.vote},
+                    extra={"bot_id": participant.get("simulation_id"), "proposal_id": pv.proposal_id, "vote": pv.vote},
                 )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
                     "Bot proposal vote failed: %s",
                     exc,
-                    extra={"bot_id": participant.get("simulation_id"),
-                           "proposal_id": pv.proposal_id, "vote": pv.vote},
+                    extra={"bot_id": participant.get("simulation_id"), "proposal_id": pv.proposal_id, "vote": pv.vote},
                     exc_info=True,
                 )
                 sentry_sdk.capture_exception(exc)
@@ -216,16 +206,17 @@ class BotService:
 
         # 6. Generate chat message (template or LLM, best-effort)
         try:
-            await BotChatService.maybe_send_message(
-                admin_supabase, epoch_id, participant, game_state, config
-            )
+            await BotChatService.maybe_send_message(admin_supabase, epoch_id, participant, game_state, config)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.debug("Bot chat generation failed for %s", participant["id"], exc_info=True)
 
         # 7. Set cycle_ready
-        await admin_supabase.table("epoch_participants").update(
-            {"cycle_ready": True}
-        ).eq("id", participant["id"]).execute()
+        await (
+            admin_supabase.table("epoch_participants")
+            .update({"cycle_ready": True})
+            .eq("id", participant["id"])
+            .execute()
+        )
 
         return {
             "participant_id": participant["id"],
@@ -273,9 +264,7 @@ class BotService:
                     teams = await EpochService.list_teams(admin_supabase, UUID(epoch_id))
                     for t in teams:
                         if t["name"] == action.team_name:
-                            await EpochService.join_team(
-                                admin_supabase, UUID(epoch_id), UUID(t["id"]), UUID(sim_id)
-                            )
+                            await EpochService.join_team(admin_supabase, UUID(epoch_id), UUID(t["id"]), UUID(sim_id))
                             results.append({"action": "join", "team_id": t["id"]})
                             break
 
@@ -316,19 +305,12 @@ class BotService:
                     for d in decisions.deployments
                 ],
                 "executed_deployments": len(deployed),
-                "planned_fortifications": [
-                    {"zone_id": f.zone_id, "cost": f.cost_rp}
-                    for f in decisions.fortifications
-                ],
+                "planned_fortifications": [{"zone_id": f.zone_id, "cost": f.cost_rp} for f in decisions.fortifications],
                 "executed_fortifications": len(fortified or []),
                 "alliance_actions": [
-                    {"action": a.action, "target": a.target_simulation_id}
-                    for a in decisions.alliances
+                    {"action": a.action, "target": a.target_simulation_id} for a in decisions.alliances
                 ],
-                "proposal_votes": [
-                    {"proposal_id": v.proposal_id, "vote": v.vote}
-                    for v in decisions.proposal_votes
-                ],
+                "proposal_votes": [{"proposal_id": v.proposal_id, "vote": v.vote} for v in decisions.proposal_votes],
                 "rp_spent": decisions.rp_spent,
             },
         }

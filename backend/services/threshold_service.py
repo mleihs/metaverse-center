@@ -11,11 +11,10 @@ import random
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.audit_service import AuditService
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.utils.errors import bad_request, conflict, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -54,33 +53,19 @@ class ThresholdService:
             .execute()
         )
         if not sim_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Simulation not found.",
-            )
+            raise not_found(detail="Simulation not found.")
 
         sim = sim_resp.data[0]
         if sim.get("simulation_type") != "game_instance" or not sim.get("epoch_id"):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Threshold actions are only available during active epochs.",
-            )
+            raise conflict("Threshold actions are only available during active epochs.")
 
-        health = await GameMechanicsService.get_simulation_health(
-            supabase, simulation_id
-        )
+        health = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
         if not health:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No health data for simulation.",
-            )
+            raise not_found(detail="No health data for simulation.")
 
         overall = health.get("overall_health", 1.0)
         if overall >= 0.25:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Simulation health is {overall:.2f} \u2013 threshold actions require health below 0.25.",
-            )
+            raise conflict(f"Simulation health is {overall:.2f} \u2013 threshold actions require health below 0.25.")
         return health
 
     @staticmethod
@@ -95,27 +80,18 @@ class ThresholdService:
     ) -> dict:
         """Execute a threshold action and log it."""
         if action_type not in VALID_ACTIONS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action type: {action_type}. Must be one of {VALID_ACTIONS}.",
-            )
+            raise bad_request(f"Invalid action type: {action_type}. Must be one of {VALID_ACTIONS}.")
 
         await ThresholdService.validate_critical_state(admin_supabase, simulation_id)
 
         if action_type == "scorched_earth":
-            result = await ThresholdService.scorched_earth(
-                admin_supabase, simulation_id, target_building_id
-            )
+            result = await ThresholdService.scorched_earth(admin_supabase, simulation_id, target_building_id)
         elif action_type == "emergency_draft":
-            result = await ThresholdService.emergency_draft(
-                admin_supabase, simulation_id
-            )
+            result = await ThresholdService.emergency_draft(admin_supabase, simulation_id)
         elif action_type == "reality_anchor":
-            result = await ThresholdService.reality_anchor(
-                admin_supabase, simulation_id
-            )
+            result = await ThresholdService.reality_anchor(admin_supabase, simulation_id)
         else:
-            raise HTTPException(status_code=400, detail="Unknown action.")
+            raise bad_request("Unknown action.")
 
         # Log action
         log_data = {
@@ -126,9 +102,7 @@ class ThresholdService:
             "target_zone_id": str(target_zone_id) if target_zone_id else None,
             "result": result,
         }
-        await admin_supabase.table("threshold_actions").insert(
-            serialize_for_json(log_data)
-        ).execute()
+        await admin_supabase.table("threshold_actions").insert(serialize_for_json(log_data)).execute()
 
         # Audit
         await AuditService.safe_log(
@@ -158,10 +132,7 @@ class ThresholdService:
         by SCORCHED_EARTH_STABILITY_BOOST.
         """
         if not building_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="target_building_id is required for scorched_earth.",
-            )
+            raise bad_request("target_building_id is required for scorched_earth.")
 
         # Get the building to find its zone
         building_resp = await (
@@ -173,10 +144,7 @@ class ThresholdService:
             .execute()
         )
         if not building_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Building not found.",
-            )
+            raise not_found(detail="Building not found.")
 
         building = building_resp.data[0]
         zone_id = building.get("zone_id")
@@ -186,7 +154,8 @@ class ThresholdService:
 
         logger.info(
             "Scorched earth: destroyed building %s in zone %s",
-            building_id, zone_id,
+            building_id,
+            zone_id,
             extra={"simulation_id": str(simulation_id), "building_id": str(building_id)},
         )
 
@@ -240,7 +209,8 @@ class ThresholdService:
 
         logger.info(
             "Emergency draft: created agent %s for simulation %s",
-            agent_data.get("id"), simulation_id,
+            agent_data.get("id"),
+            simulation_id,
             extra={"simulation_id": str(simulation_id)},
         )
 
@@ -277,14 +247,19 @@ class ThresholdService:
         }
 
         # Upsert the setting
-        await supabase.table("simulation_settings").upsert(
-            serialize_for_json(setting_data),
-            on_conflict="simulation_id,category,setting_key",
-        ).execute()
+        await (
+            supabase.table("simulation_settings")
+            .upsert(
+                serialize_for_json(setting_data),
+                on_conflict="simulation_id,category,setting_key",
+            )
+            .execute()
+        )
 
         logger.info(
             "Reality anchor activated for simulation %s (%d cycles)",
-            simulation_id, REALITY_ANCHOR_CYCLES,
+            simulation_id,
+            REALITY_ANCHOR_CYCLES,
             extra={"simulation_id": str(simulation_id)},
         )
 

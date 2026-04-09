@@ -60,23 +60,25 @@ class HackerNewsScannerAdapter(SourceAdapter):
 
                     url = item.get("url", f"https://news.ycombinator.com/item?id={story_id}")
 
-                    results.append(ScanResult(
-                        source_id=f"hn_{story_id}",
-                        source_name=self.name,
-                        title=title,
-                        url=url,
-                        description=f"HN score: {score}, comments: {item.get('descendants', 0)}",
-                        raw_data={
-                            "id": story_id,
-                            "score": score,
-                            "descendants": item.get("descendants", 0),
-                            "time": item.get("time"),
-                            "by": item.get("by"),
-                        },
-                        source_category=None,  # LLM classifies
-                        magnitude=None,
-                        is_structured=False,
-                    ))
+                    results.append(
+                        ScanResult(
+                            source_id=f"hn_{story_id}",
+                            source_name=self.name,
+                            title=title,
+                            url=url,
+                            description=f"HN score: {score}, comments: {item.get('descendants', 0)}",
+                            raw_data={
+                                "id": story_id,
+                                "score": score,
+                                "descendants": item.get("descendants", 0),
+                                "time": item.get("time"),
+                                "by": item.get("by"),
+                            },
+                            source_category=None,  # LLM classifies
+                            magnitude=None,
+                            is_structured=False,
+                        )
+                    )
                 except (httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.debug("Failed to fetch HN item %d", story_id)
 

@@ -19,7 +19,6 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -61,6 +60,7 @@ from backend.services.dungeon_shared import (
     log_extra,
     rpc_with_retry,
 )
+from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ class DungeonCombatService:
             instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
             if instance.phase != "combat_planning" or not instance.combat:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in combat planning phase")
+                raise bad_request("Not in combat planning phase")
 
             # Store actions for this player (mode="json" → UUID → str for checkpoint safety)
             instance.combat.submitted_actions[str(user_id)] = [a.model_dump(mode="json") for a in submission.actions]

@@ -124,10 +124,7 @@ class GenerationService:
         Parses JSON from the LLM response to return structured fields:
         name, description, building_condition.
         """
-        template_type = (
-            "building_generation_named" if building_name
-            else "building_generation"
-        )
+        template_type = "building_generation_named" if building_name else "building_generation"
         variables: dict[str, str] = {
             "building_type": building_type,
             "simulation_name": await self._get_simulation_name(),
@@ -466,10 +463,14 @@ class GenerationService:
         narrative = re.sub(r"```json[\s\S]*?```", "", raw_content).strip()
         narrative = re.sub(r"\n---\s*$", "", narrative, flags=re.MULTILINE).strip()
         narrative = re.sub(
-            r"^\*\*(?:Titel|Title):\*\*\s*[^\n]*\n?", "", narrative,
+            r"^\*\*(?:Titel|Title):\*\*\s*[^\n]*\n?",
+            "",
+            narrative,
         ).strip()
         narrative = re.sub(
-            r"^\*\*(?:Artikel|Article):\*\*\s*\n?", "", narrative,
+            r"^\*\*(?:Artikel|Article):\*\*\s*\n?",
+            "",
+            narrative,
         ).strip()
         result["narrative"] = narrative
 
@@ -523,8 +524,7 @@ class GenerationService:
         target_agent_id, relationship_type, intensity, description, is_bidirectional
         """
         agents_summary = "\n".join(
-            f"- {a['name']} (ID: {a['id']}, system: {a.get('system', 'N/A')})"
-            for a in other_agents[:20]
+            f"- {a['name']} (ID: {a['id']}, system: {a.get('system', 'N/A')})" for a in other_agents[:20]
         )
 
         result = await self._generate(
@@ -787,8 +787,7 @@ class GenerationService:
             logger.info("MOCK_MODE: returning template %s content", template_type)
             return {
                 "content": (
-                    f"[MOCK {template_type}] Generated content for"
-                    f" {variables.get('simulation_name', 'simulation')}."
+                    f"[MOCK {template_type}] Generated content for {variables.get('simulation_name', 'simulation')}."
                 ),
                 "model_used": "mock",
                 "template_source": "mock",
@@ -845,14 +844,18 @@ class GenerationService:
                 max_tokens=model.max_tokens,
             )
             await AIUsageService.log(
-                self._supabase, simulation_id=self._simulation_id,
-                provider="openrouter", model=model.model_id,
-                purpose=purpose, usage=self._openrouter.last_usage,
+                self._supabase,
+                simulation_id=self._simulation_id,
+                provider="openrouter",
+                model=model.model_id,
+                purpose=purpose,
+                usage=self._openrouter.last_usage,
             )
             return result
         except RateLimitError:
             logger.warning(
-                "Rate limited on %s, falling back", model.model_id,
+                "Rate limited on %s, falling back",
+                model.model_id,
             )
             fallback = await self._model_resolver.resolve_text_model("fallback")
             result = await self._openrouter.generate_with_system(
@@ -863,9 +866,12 @@ class GenerationService:
                 max_tokens=fallback.max_tokens,
             )
             await AIUsageService.log(
-                self._supabase, simulation_id=self._simulation_id,
-                provider="openrouter", model=fallback.model_id,
-                purpose=purpose, usage=self._openrouter.last_usage,
+                self._supabase,
+                simulation_id=self._simulation_id,
+                provider="openrouter",
+                model=fallback.model_id,
+                purpose=purpose,
+                usage=self._openrouter.last_usage,
             )
             return result
         except ModelUnavailableError:
@@ -880,9 +886,12 @@ class GenerationService:
                 user_prompt=user_prompt,
             )
             await AIUsageService.log(
-                self._supabase, simulation_id=self._simulation_id,
-                provider="openrouter", model=default_model,
-                purpose=purpose, usage=self._openrouter.last_usage,
+                self._supabase,
+                simulation_id=self._simulation_id,
+                provider="openrouter",
+                model=default_model,
+                purpose=purpose,
+                usage=self._openrouter.last_usage,
             )
             return result
 
@@ -897,23 +906,17 @@ class GenerationService:
 
         if "zone_stability" in ctx:
             s = ctx["zone_stability"]
-            lines.append(
-                f"Zone stability: {s:.0%} ({ctx.get('zone_stability_label', '')})"
-            )
+            lines.append(f"Zone stability: {s:.0%} ({ctx.get('zone_stability_label', '')})")
         if "zone_security" in ctx:
             lines.append(f"Zone security level: {ctx['zone_security']}")
         if "building_readiness" in ctx:
             r = ctx["building_readiness"]
             lines.append(f"Average building readiness: {r:.0%}")
         if "critical_buildings" in ctx:
-            lines.append(
-                f"Critically understaffed buildings: {ctx['critical_buildings']}"
-            )
+            lines.append(f"Critically understaffed buildings: {ctx['critical_buildings']}")
         if "simulation_health" in ctx:
             h = ctx["simulation_health"]
-            lines.append(
-                f"Overall simulation health: {h:.0%} ({ctx.get('health_label', '')})"
-            )
+            lines.append(f"Overall simulation health: {h:.0%} ({ctx.get('health_label', '')})")
         if "embassy_effectiveness" in ctx:
             e = ctx["embassy_effectiveness"]
             lines.append(f"Embassy effectiveness: {e:.0%}")
@@ -936,11 +939,7 @@ class GenerationService:
     async def _get_simulation_name(self) -> str:
         """Get the simulation name from the database."""
         response = await (
-            self._supabase.table("simulations")
-            .select("name")
-            .eq("id", str(self._simulation_id))
-            .limit(1)
-            .execute()
+            self._supabase.table("simulations").select("name").eq("id", str(self._simulation_id)).limit(1).execute()
         )
         if response and response.data:
             return response.data[0].get("name", "Unknown Simulation")

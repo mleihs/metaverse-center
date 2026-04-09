@@ -130,21 +130,10 @@ class DungeonContentAdminService:
         if isinstance(pk, tuple):
             parent_id, child_id = _parse_composite_id(item_id)
             response = await (
-                supabase.table(table)
-                .select("*")
-                .eq(pk[0], parent_id)
-                .eq(pk[1], child_id)
-                .maybe_single()
-                .execute()
+                supabase.table(table).select("*").eq(pk[0], parent_id).eq(pk[1], child_id).maybe_single().execute()
             )
         else:
-            response = await (
-                supabase.table(table)
-                .select("*")
-                .eq(pk, item_id)
-                .maybe_single()
-                .execute()
-            )
+            response = await supabase.table(table).select("*").eq(pk, item_id).maybe_single().execute()
 
         if not response.data:
             raise not_found(content_type, item_id)
@@ -165,19 +154,10 @@ class DungeonContentAdminService:
         if isinstance(pk, tuple):
             parent_id, child_id = _parse_composite_id(item_id)
             response = await (
-                supabase.table(table)
-                .update(update_data)
-                .eq(pk[0], parent_id)
-                .eq(pk[1], child_id)
-                .execute()
+                supabase.table(table).update(update_data).eq(pk[0], parent_id).eq(pk[1], child_id).execute()
             )
         else:
-            response = await (
-                supabase.table(table)
-                .update(update_data)
-                .eq(pk, item_id)
-                .execute()
-            )
+            response = await supabase.table(table).update(update_data).eq(pk, item_id).execute()
 
         if not response.data:
             raise not_found(content_type, item_id)
@@ -198,11 +178,7 @@ class DungeonContentAdminService:
         table = TABLE_MAP[content_type]
         create_data = {k: v for k, v in data.items() if k not in ("created_at", "updated_at")}
 
-        response = await (
-            supabase.table(table)
-            .insert(create_data)
-            .execute()
-        )
+        response = await supabase.table(table).insert(create_data).execute()
 
         if not response.data:
             raise server_error(f"Failed to create {content_type} item.")
@@ -225,20 +201,9 @@ class DungeonContentAdminService:
 
         if isinstance(pk, tuple):
             parent_id, child_id = _parse_composite_id(item_id)
-            response = await (
-                supabase.table(table)
-                .delete()
-                .eq(pk[0], parent_id)
-                .eq(pk[1], child_id)
-                .execute()
-            )
+            response = await supabase.table(table).delete().eq(pk[0], parent_id).eq(pk[1], child_id).execute()
         else:
-            response = await (
-                supabase.table(table)
-                .delete()
-                .eq(pk, item_id)
-                .execute()
-            )
+            response = await supabase.table(table).delete().eq(pk, item_id).execute()
 
         if not response.data:
             raise not_found(content_type, item_id)

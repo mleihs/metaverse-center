@@ -39,15 +39,19 @@ class SitrepService:
         if simulation_id:
             params["p_simulation_id"] = simulation_id
         response = await supabase.rpc("get_cycle_battle_summary", params).execute()
-        return response.data if response.data else {
-            "cycle_number": cycle_number,
-            "missions_deployed": 0,
-            "successes": 0,
-            "failures": 0,
-            "detections": 0,
-            "events_by_type": {},
-            "narrative_highlights": [],
-        }
+        return (
+            response.data
+            if response.data
+            else {
+                "cycle_number": cycle_number,
+                "missions_deployed": 0,
+                "successes": 0,
+                "failures": 0,
+                "detections": 0,
+                "events_by_type": {},
+                "narrative_highlights": [],
+            }
+        )
 
     @classmethod
     async def generate_sitrep(
@@ -59,7 +63,10 @@ class SitrepService:
     ) -> dict:
         """Generate an AI tactical situation report for a cycle."""
         summary = await cls.get_cycle_summary(
-            supabase, epoch_id, cycle_number, simulation_id=simulation_id,
+            supabase,
+            epoch_id,
+            cycle_number,
+            simulation_id=simulation_id,
         )
 
         if settings.forge_mock_mode:
@@ -95,7 +102,9 @@ class SitrepService:
             }
 
         gen = GenerationService(
-            supabase, gen_sim_id, settings.openrouter_api_key,
+            supabase,
+            gen_sim_id,
+            settings.openrouter_api_key,
         )
         result = await gen._generate(
             template_type="cycle_sitrep_generation",

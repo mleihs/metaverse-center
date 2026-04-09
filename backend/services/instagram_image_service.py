@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 # Instagram image specs
 IG_WIDTH = 1080
 IG_HEIGHT_PORTRAIT = 1350  # 4:5 ratio — highest engagement
-IG_HEIGHT_STORY = 1920     # 9:16 ratio — Stories
-IG_HEIGHT_SQUARE = 1080    # 1:1 fallback
+IG_HEIGHT_STORY = 1920  # 9:16 ratio — Stories
+IG_HEIGHT_SQUARE = 1080  # 1:1 fallback
 IG_JPEG_QUALITY = 90
 IG_MAX_BYTES = 8 * 1024 * 1024  # 8MB
 
@@ -45,21 +45,21 @@ BUREAU_WATERMARK_TEXT = "BUREAU OF IMPOSSIBLE GEOGRAPHY — [REDACTED]"
 CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
 
 # Story template layout constants
-STORY_HEADER_Y = 260       # Main content starts below top safe area
-STORY_FOOTER_Y = 1840      # Footer above bottom safe area
-STORY_LINE_HEIGHT = 48     # Line spacing for body text
+STORY_HEADER_Y = 260  # Main content starts below top safe area
+STORY_FOOTER_Y = 1840  # Footer above bottom safe area
+STORY_LINE_HEIGHT = 48  # Line spacing for body text
 STORY_SCANLINE_ALPHA = 18  # Scan line overlay opacity (~7%) — not used directly; templates pass explicit alpha
-STORY_SAFE_TOP = 160       # Top safe area (notch/status bar)
+STORY_SAFE_TOP = 160  # Top safe area (notch/status bar)
 STORY_CLOSING_MIN_Y = 1200  # Earliest Y for poetic closing line
 STORY_CLOSING_MAX_Y = 1680  # Latest Y (before footer)
 
 # Operative type symbols for advisory template
 OPERATIVE_SYMBOLS: dict[str, str] = {
-    "Saboteur": "\u265c",     # ♜
+    "Saboteur": "\u265c",  # ♜
     "Infiltrator": "\u265e",  # ♞
-    "Spy": "\u265d",          # ♝
-    "Propagandist": "\u265b", # ♛
-    "Assassin": "\u265a",     # ♚
+    "Spy": "\u265d",  # ♝
+    "Propagandist": "\u265b",  # ♛
+    "Assassin": "\u265a",  # ♚
 }
 
 
@@ -74,9 +74,9 @@ def _load_monospace_font(size: int):
     from PIL import ImageFont
 
     for path in (
-        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",      # Debian/Ubuntu
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",  # Debian/Ubuntu
         "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf",  # Fedora/RHEL
-        "/System/Library/Fonts/Menlo.ttc",                            # macOS
+        "/System/Library/Fonts/Menlo.ttc",  # macOS
     ):
         try:
             return ImageFont.truetype(path, size)
@@ -145,11 +145,14 @@ class InstagramImageService:
         - Optional steganographic cipher hint (rotated marginal text)
         - JPEG conversion at 1080×1350
         """
-        logger.info("Composing agent dossier image", extra={
-            "source_url": portrait_url,
-            "simulation_name": simulation_name,
-            "stage": "agent_dossier",
-        })
+        logger.info(
+            "Composing agent dossier image",
+            extra={
+                "source_url": portrait_url,
+                "simulation_name": simulation_name,
+                "stage": "agent_dossier",
+            },
+        )
         raw_bytes = await self._download_image(portrait_url)
         return self._compose_with_overlay(
             raw_bytes,
@@ -173,11 +176,14 @@ class InstagramImageService:
         cipher_hint: str | None = None,
     ) -> bytes:
         """Compose a building surveillance image for Instagram."""
-        logger.info("Composing building surveillance image", extra={
-            "source_url": image_url,
-            "simulation_name": simulation_name,
-            "stage": "building_surveillance",
-        })
+        logger.info(
+            "Composing building surveillance image",
+            extra={
+                "source_url": image_url,
+                "simulation_name": simulation_name,
+                "stage": "building_surveillance",
+            },
+        )
         raw_bytes = await self._download_image(image_url)
         return self._compose_with_overlay(
             raw_bytes,
@@ -204,12 +210,15 @@ class InstagramImageService:
 
         If no source image, generates a solid background with Bureau styling.
         """
-        logger.info("Composing bureau dispatch image", extra={
-            "source_url": source_image_url,
-            "simulation_name": simulation_name,
-            "dispatch_number": dispatch_number,
-            "stage": "bureau_dispatch",
-        })
+        logger.info(
+            "Composing bureau dispatch image",
+            extra={
+                "source_url": source_image_url,
+                "simulation_name": simulation_name,
+                "dispatch_number": dispatch_number,
+                "stage": "bureau_dispatch",
+            },
+        )
         if source_image_url:
             raw_bytes = await self._download_image(source_image_url)
         else:
@@ -239,11 +248,14 @@ class InstagramImageService:
             {"content-type": "image/jpeg", "upsert": "true"},
         )
         url = await self._supabase.storage.from_("simulation.assets").get_public_url(filename)
-        logger.info("Uploaded composed image to staging", extra={
-            "simulation_id": simulation_id,
-            "output_size": len(jpeg_bytes),
-            "stage": "upload",
-        })
+        logger.info(
+            "Uploaded composed image to staging",
+            extra={
+                "simulation_id": simulation_id,
+                "output_size": len(jpeg_bytes),
+                "stage": "upload",
+            },
+        )
         return url
 
     # ── Story Visual Helpers ───────────────────────────────────────────────
@@ -282,7 +294,9 @@ class InstagramImageService:
 
     @staticmethod
     def _add_noise_grain(
-        img: PILImage, sigma: int = 15, opacity: float = 0.08,
+        img: PILImage,
+        sigma: int = 15,
+        opacity: float = 0.08,
     ) -> PILImage:
         """Add film grain noise overlay."""
         import numpy as np
@@ -366,8 +380,12 @@ class InstagramImageService:
 
         # Crisp text on top with dark stroke for readability
         ImageDraw.Draw(img).text(
-            position, text, fill=fill, font=font,
-            stroke_width=2, stroke_fill=(0, 0, 0, 180),
+            position,
+            text,
+            fill=fill,
+            font=font,
+            stroke_width=2,
+            stroke_fill=(0, 0, 0, 180),
         )
 
     @staticmethod
@@ -405,12 +423,14 @@ class InstagramImageService:
             # Diamond (rotated square) with inner diamond
             draw.polygon(
                 [(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)],
-                outline=color, width=lw,
+                outline=color,
+                width=lw,
             )
             r2 = r // 2
             draw.polygon(
                 [(cx, cy - r2), (cx + r2, cy), (cx, cy + r2), (cx - r2, cy)],
-                outline=color, width=lw,
+                outline=color,
+                width=lw,
             )
 
         elif archetype == "The Shadow":
@@ -441,11 +461,13 @@ class InstagramImageService:
             offset = int(r * 0.55)
             draw.line(
                 [(cx - offset, cy - offset), (cx + offset, cy + offset)],
-                fill=color, width=lw + 1,
+                fill=color,
+                width=lw + 1,
             )
             draw.line(
                 [(cx + offset, cy - offset), (cx - offset, cy + offset)],
-                fill=color, width=lw + 1,
+                fill=color,
+                width=lw + 1,
             )
 
         elif archetype == "The Prometheus":
@@ -453,7 +475,8 @@ class InstagramImageService:
             r_inner = r // 2
             draw.ellipse(
                 (cx - r_inner, cy - r_inner, cx + r_inner, cy + r_inner),
-                outline=color, width=lw,
+                outline=color,
+                width=lw,
             )
             for angle_deg in range(0, 360, 45):
                 angle = math.radians(angle_deg)
@@ -475,7 +498,8 @@ class InstagramImageService:
             offset = int(r * 0.7)
             draw.line(
                 [(cx - offset, cy - offset), (cx + offset, cy + offset)],
-                fill=color, width=lw + 2,
+                fill=color,
+                width=lw + 2,
             )
 
         else:
@@ -561,7 +585,8 @@ class InstagramImageService:
             glow = Image.new("RGBA", (total, total), (0, 0, 0, 0))
             ImageDraw.Draw(glow).ellipse(
                 (0, 0, total - 1, total - 1),
-                outline=(*border_color, 200), width=border_width + 6,
+                outline=(*border_color, 200),
+                width=border_width + 6,
             )
             glow = glow.filter(ImageFilter.GaussianBlur(radius=10))
             result.alpha_composite(glow)
@@ -569,7 +594,8 @@ class InstagramImageService:
             # Crisp border ring
             ImageDraw.Draw(result).ellipse(
                 (0, 0, total - 1, total - 1),
-                outline=(*border_color, 255), width=border_width,
+                outline=(*border_color, 255),
+                width=border_width,
             )
 
             # Paste portrait in center
@@ -673,33 +699,49 @@ class InstagramImageService:
         badge_th = badge_bbox[3] - badge_bbox[1]
         badge_pad_x, badge_pad_y = 16, 8
         draw.rounded_rectangle(
-            [(56, STORY_SAFE_TOP - badge_pad_y),
-             (56 + badge_tw + badge_pad_x * 2, STORY_SAFE_TOP + badge_th + badge_pad_y)],
-            radius=8, fill=(*accent, 50),
+            [
+                (56, STORY_SAFE_TOP - badge_pad_y),
+                (56 + badge_tw + badge_pad_x * 2, STORY_SAFE_TOP + badge_th + badge_pad_y),
+            ],
+            radius=8,
+            fill=(*accent, 50),
         )
         draw.text(
             (56 + badge_pad_x, STORY_SAFE_TOP),
-            badge_text, fill=(*accent, 255), font=font_stamp,
+            badge_text,
+            fill=(*accent, 255),
+            font=font_stamp,
         )
 
         # Title backdrop panel (tight around text, close to badge)
         title_panel_y = 240
         draw.rounded_rectangle(
             [(48, title_panel_y), (w - 48, title_panel_y + 160)],
-            radius=12, fill=(0, 0, 0, 100),
+            radius=12,
+            fill=(0, 0, 0, 100),
         )
 
         # Title with glow — large and dramatic (C1: accent color title)
         font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
-            img, (60, y), "SUBSTRATE ANOMALY",
-            font_title, (*accent, 255), (*accent, 100), glow_radius=14,
+            img,
+            (60, y),
+            "SUBSTRATE ANOMALY",
+            font_title,
+            (*accent, 255),
+            (*accent, 100),
+            glow_radius=14,
         )
         y += 64
         self._text_with_glow(
-            img, (60, y), "DETECTED",
-            font_title, (*accent, 255), (*accent, 100), glow_radius=14,
+            img,
+            (60, y),
+            "DETECTED",
+            font_title,
+            (*accent, 255),
+            (*accent, 100),
+            glow_radius=14,
         )
         y += 72  # Tighter post-title gap
 
@@ -713,15 +755,21 @@ class InstagramImageService:
         font_md = _load_monospace_font(48)
         sig_display = signature.upper().replace("_", " ")[:25]
         draw.text(
-            (60, y), f"Signature: [{sig_display}]",
-            fill=(200, 200, 200, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 120),
+            (60, y),
+            f"Signature: [{sig_display}]",
+            fill=(200, 200, 200, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 120),
         )
         y += 60
         draw.text(
-            (60, y), f"Archetype: {archetype.upper()}",
-            fill=(255, 255, 255, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 120),
+            (60, y),
+            f"Archetype: {archetype.upper()}",
+            fill=(255, 255, 255, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 120),
         )
         y += 56
 
@@ -756,8 +804,13 @@ class InstagramImageService:
         cx = w // 2 - (bbox[0] + bbox[2]) // 2
         cy = gauge_cy - (bbox[1] + bbox[3]) // 2
         self._text_with_glow(
-            img, (cx, cy), mag_text,
-            font_mag, (255, 255, 255, 255), (*accent, 80), glow_radius=10,
+            img,
+            (cx, cy),
+            mag_text,
+            font_mag,
+            (255, 255, 255, 255),
+            (*accent, 80),
+            glow_radius=10,
         )
 
         # "MAGNITUDE" label below gauge
@@ -767,8 +820,10 @@ class InstagramImageService:
         lbbox = draw.textbbox((0, 0), mag_label, font=font_label)
         lw = lbbox[2] - lbbox[0]
         draw.text(
-            (w // 2 - lw // 2, gauge_cy + 175), mag_label,
-            fill=(120, 120, 120, 255), font=font_label,
+            (w // 2 - lw // 2, gauge_cy + 175),
+            mag_label,
+            fill=(120, 120, 120, 255),
+            font=font_label,
         )
 
         # Directive — below gauge
@@ -778,8 +833,13 @@ class InstagramImageService:
         dw = dbbox[2] - dbbox[0]
         directive_y = gauge_cy + 264  # Below gauge, tighter
         self._text_with_glow(
-            img, (w // 2 - dw // 2, directive_y), directive,
-            font_directive, (*accent, 200), (*accent, 60), glow_radius=6,
+            img,
+            (w // 2 - dw // 2, directive_y),
+            directive,
+            font_directive,
+            (*accent, 200),
+            (*accent, 60),
+            glow_radius=6,
         )
 
         # Threat assessment label — additional bottom-third content
@@ -790,8 +850,10 @@ class InstagramImageService:
         tbbox = draw.textbbox((0, 0), threat_text, font=font_threat)
         tw = tbbox[2] - tbbox[0]
         draw.text(
-            (w // 2 - tw // 2, threat_y), threat_text,
-            fill=(*accent, 160), font=font_threat,
+            (w // 2 - tw // 2, threat_y),
+            threat_text,
+            fill=(*accent, 160),
+            font=font_threat,
         )
 
         # Horizontal rule near bottom
@@ -848,8 +910,10 @@ class InstagramImageService:
         seal_bbox = draw.textbbox((0, 0), seal_text, font=seal_font)
         seal_w = seal_bbox[2] - seal_bbox[0]
         draw.text(
-            ((w - seal_w) // 2, 160), seal_text,
-            fill=(*accent, 40), font=seal_font,
+            ((w - seal_w) // 2, 160),
+            seal_text,
+            fill=(*accent, 40),
+            font=seal_font,
         )
 
         # Subtle scan lines (clinical document feel) (C5: +50% alpha)
@@ -863,15 +927,21 @@ class InstagramImageService:
         title_panel_y = 240
         draw.rounded_rectangle(
             [(48, title_panel_y), (w - 48, title_panel_y + 96)],
-            radius=12, fill=(0, 0, 0, 100),
+            radius=12,
+            fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
         font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
-            img, (60, y), "BUREAU CLASSIFICATION",
-            font_title, (*accent, 255), (*accent, 80), glow_radius=8,
+            img,
+            (60, y),
+            "BUREAU CLASSIFICATION",
+            font_title,
+            (*accent, 255),
+            (*accent, 80),
+            glow_radius=8,
         )
         y += 84  # Tighter post-title
 
@@ -886,39 +956,54 @@ class InstagramImageService:
         fields_panel_h = 380
         draw.rounded_rectangle(
             [(48, fields_panel_y), (w - 48, fields_panel_y + fields_panel_h)],
-            radius=12, fill=(0, 0, 0, 40),
+            radius=12,
+            fill=(0, 0, 0, 40),
         )
 
         # Classification fields — bigger fonts, tighter spacing
         font_md = _load_monospace_font(48)
         category_display = source_category.upper().replace("_", " ")
         draw.text(
-            (60, y), f"Source Category: [{category_display}]",
-            fill=(200, 200, 200, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (60, y),
+            f"Source Category: [{category_display}]",
+            fill=(200, 200, 200, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 72
         draw.text(
-            (60, y), f"Affected Shards: [{affected_shard_count}]",
-            fill=(200, 200, 200, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (60, y),
+            f"Affected Shards: [{affected_shard_count}]",
+            fill=(200, 200, 200, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 72
         draw.text(
-            (60, y), "Peak Susceptibility:",
-            fill=(255, 255, 255, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (60, y),
+            "Peak Susceptibility:",
+            fill=(255, 255, 255, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 60
         draw.text(
-            (72, y), f"{highest_susceptibility_sim[:28]}",
-            fill=(*accent, 240), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (72, y),
+            f"{highest_susceptibility_sim[:28]}",
+            fill=(*accent, 240),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 48
         draw.text(
-            (72, y), f"({highest_susceptibility_val:.1f}\u00d7 baseline)",
-            fill=(*accent, 200), font=font_sm,
+            (72, y),
+            f"({highest_susceptibility_val:.1f}\u00d7 baseline)",
+            fill=(*accent, 200),
+            font=font_sm,
         )
         y += 96
 
@@ -946,12 +1031,14 @@ class InstagramImageService:
             # Top cap
             draw.line(
                 [(bar_x, bar_top - 4), (bar_x + 20, bar_top - 4)],
-                fill=(*accent, 140), width=2,
+                fill=(*accent, 140),
+                width=2,
             )
             # Bottom cap
             draw.line(
                 [(bar_x, bar_bottom + 4), (bar_x + 20, bar_bottom + 4)],
-                fill=(*accent, 140), width=2,
+                fill=(*accent, 140),
+                width=2,
             )
             y += 72
 
@@ -964,15 +1051,22 @@ class InstagramImageService:
         closing_y = min(closing_y, 1300)
         font_closing = _load_italic_font(44)
         closing_lines = self._wrap_text(
-            "The Substrate trembles. Reality bleeds.", font_closing, w - 140,
+            "The Substrate trembles. Reality bleeds.",
+            font_closing,
+            w - 140,
         )
         draw = ImageDraw.Draw(img)
         for ci, cline in enumerate(closing_lines[:2]):
             cbbox = draw.textbbox((0, 0), cline, font=font_closing)
             ctw = cbbox[2] - cbbox[0]
             self._text_with_glow(
-                img, (w // 2 - ctw // 2, closing_y + ci * 64), cline,
-                font_closing, (*accent, 220), (*accent, 60), glow_radius=8,
+                img,
+                (w // 2 - ctw // 2, closing_y + ci * 64),
+                cline,
+                font_closing,
+                (*accent, 220),
+                (*accent, 60),
+                glow_radius=8,
             )
 
         # Filing reference — additional bottom content
@@ -981,12 +1075,16 @@ class InstagramImageService:
             font_filing = _load_monospace_font(28)
             draw = ImageDraw.Draw(img)
             draw.text(
-                (60, filing_y), f"FILING: R-{archetype.upper().replace('THE ', '')}-CLASS",
-                fill=(60, 60, 60, 255), font=font_filing,
+                (60, filing_y),
+                f"FILING: R-{archetype.upper().replace('THE ', '')}-CLASS",
+                fill=(60, 60, 60, 255),
+                font=font_filing,
             )
             draw.text(
-                (60, filing_y + 28), "STATUS: ACTIVE / MONITORING",
-                fill=(60, 60, 60, 255), font=font_filing,
+                (60, filing_y + 28),
+                "STATUS: ACTIVE / MONITORING",
+                fill=(60, 60, 60, 255),
+                font=font_filing,
             )
 
         # Accent bars — width 10, double-line effect
@@ -1066,29 +1164,45 @@ class InstagramImageService:
         title_panel_y = 240
         draw.rounded_rectangle(
             [(48, title_panel_y), (w - 48, title_panel_y + 210)],
-            radius=12, fill=(0, 0, 0, 100),
+            radius=12,
+            fill=(0, 0, 0, 100),
         )
 
         # "SHARD IMPACT:" top line
         y = 252
         self._text_with_glow(
-            img, (60, y), "SHARD IMPACT:",
-            font_title, (*sim_color, 255), (*sim_color, 80), glow_radius=10,
+            img,
+            (60, y),
+            "SHARD IMPACT:",
+            font_title,
+            (*sim_color, 255),
+            (*sim_color, 80),
+            glow_radius=10,
         )
         y += 64
 
         # Sim name left-aligned, magnitude right-aligned on same row
         self._text_with_glow(
-            img, (60, y), f"[{simulation_name.upper()[:24]}]",
-            font_title, (*sim_color, 255), (*sim_color, 80), glow_radius=10,
+            img,
+            (60, y),
+            f"[{simulation_name.upper()[:24]}]",
+            font_title,
+            (*sim_color, 255),
+            (*sim_color, 80),
+            glow_radius=10,
         )
         draw = ImageDraw.Draw(img)
         mag_text = f"{effective_magnitude:.2f}"
         mag_bbox = draw.textbbox((0, 0), mag_text, font=font_mag)
         mag_tw = mag_bbox[2] - mag_bbox[0]
         self._text_with_glow(
-            img, (w - 60 - mag_tw, y + 4), mag_text,
-            font_mag, (255, 255, 255, 255), (*sim_color, 80), glow_radius=8,
+            img,
+            (w - 60 - mag_tw, y + 4),
+            mag_text,
+            font_mag,
+            (255, 255, 255, 255),
+            (*sim_color, 80),
+            glow_radius=8,
         )
         y += 84  # Breathing room before bar
 
@@ -1097,13 +1211,15 @@ class InstagramImageService:
         bar_x, bar_w, bar_h = 60, w - 120, 12
         draw.rounded_rectangle(
             [(bar_x, y), (bar_x + bar_w, y + bar_h)],
-            radius=4, fill=(40, 40, 40, 180),
+            radius=4,
+            fill=(40, 40, 40, 180),
         )
         fill_w = int(bar_w * min(effective_magnitude, 1.0))
         if fill_w > 0:
             draw.rounded_rectangle(
                 [(bar_x, y), (bar_x + fill_w, y + bar_h)],
-                radius=4, fill=(*sim_color, 255),
+                radius=4,
+                fill=(*sim_color, 255),
             )
         # Jump below panel bottom + breathing room
         y = title_panel_y + 210 + 24
@@ -1113,8 +1229,10 @@ class InstagramImageService:
         draw.text(
             (60, y),
             f"Events: {len(events_spawned)}  \u2502  Impact: {impact_lvl}/10",
-            fill=(180, 180, 180, 255), font=font_sm,
-            stroke_width=1, stroke_fill=(0, 0, 0, 120),
+            fill=(180, 180, 180, 255),
+            font=font_sm,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 120),
         )
         y += 24  # Symmetric spacing below events line
 
@@ -1124,7 +1242,10 @@ class InstagramImageService:
             portrait_size = 220
             for p_data in portraits[:4]:
                 circle = self._crop_to_circle(
-                    p_data["image_bytes"], portrait_size, sim_color, border_width=5,
+                    p_data["image_bytes"],
+                    portrait_size,
+                    sim_color,
+                    border_width=5,
                 )
                 if circle:
                     portrait_images.append((circle, p_data["agent_name"]))
@@ -1146,8 +1267,11 @@ class InstagramImageService:
                 name_w = name_bbox[2] - name_bbox[0]
                 draw.text(
                     (px + total_size // 2 - name_w // 2, portrait_y + total_size + 8),
-                    p_name[:14], fill=(180, 180, 180, 200), font=name_font,
-                    stroke_width=1, stroke_fill=(0, 0, 0, 120),
+                    p_name[:14],
+                    fill=(180, 180, 180, 200),
+                    font=name_font,
+                    stroke_width=1,
+                    stroke_fill=(0, 0, 0, 120),
                 )
 
             y = portrait_y + total_size + 48  # A: grid-aligned (2*24)
@@ -1156,8 +1280,10 @@ class InstagramImageService:
             y += 24  # A: grid-aligned (1*24)
             for title in events_spawned[:5]:
                 draw.text(
-                    (72, y), f"\u25b8 {title[:45]}",
-                    fill=(220, 220, 220, 255), font=font_event,
+                    (72, y),
+                    f"\u25b8 {title[:45]}",
+                    fill=(220, 220, 220, 255),
+                    font=font_event,
                 )
                 y += 48
             y += 24  # A: grid-aligned (1*24)
@@ -1183,16 +1309,20 @@ class InstagramImageService:
                 draw = ImageDraw.Draw(img)
                 draw.rounded_rectangle(
                     [(48, card_y), (w - 48, card_y + card_h)],
-                    radius=8, fill=(0, 0, 0, 140),
-                    outline=(*sim_color, 80), width=2,
+                    radius=8,
+                    fill=(0, 0, 0, 140),
+                    outline=(*sim_color, 80),
+                    width=2,
                 )
 
                 # Quote text (20px top padding)
                 text_y = card_y + 20
                 for wline in wrapped:
                     draw.text(
-                        (72, text_y), wline,
-                        fill=(220, 220, 220, 240), font=font_quote,
+                        (72, text_y),
+                        wline,
+                        fill=(220, 220, 220, 240),
+                        font=font_quote,
                     )
                     text_y += 56
 
@@ -1200,8 +1330,10 @@ class InstagramImageService:
                 emotion_tag = f" [{rxn.get('emotion', '')}]" if rxn.get("emotion") else ""
                 attrib = f"\u2014 {rxn['agent_name']}{emotion_tag}"
                 draw.text(
-                    (72, text_y + 8), attrib,
-                    fill=(*sim_color, 200), font=font_attrib,
+                    (72, text_y + 8),
+                    attrib,
+                    fill=(*sim_color, 200),
+                    font=font_attrib,
                 )
 
                 y = card_y + card_h + 24
@@ -1221,8 +1353,13 @@ class InstagramImageService:
                 cbbox = draw.textbbox((0, 0), cline, font=font_closing)
                 ctw = cbbox[2] - cbbox[0]
                 self._text_with_glow(
-                    img, (w // 2 - ctw // 2, closing_y + i * 64), cline,
-                    font_closing, (*sim_color, 230), (*sim_color, 60), glow_radius=10,
+                    img,
+                    (w // 2 - ctw // 2, closing_y + i * 64),
+                    cline,
+                    font_closing,
+                    (*sim_color, 230),
+                    (*sim_color, 60),
+                    glow_radius=10,
                 )
 
         # ── Finishing touches ─────────────────────────────────────────
@@ -1279,15 +1416,21 @@ class InstagramImageService:
         title_panel_y = 240
         draw.rounded_rectangle(
             [(48, title_panel_y), (w - 48, title_panel_y + 96)],
-            radius=12, fill=(0, 0, 0, 100),
+            radius=12,
+            fill=(0, 0, 0, 100),
         )
 
         # Title with glow (C1: accent color title)
         font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
-            img, (60, y), "OPERATIVE ADVISORY",
-            font_title, (*accent, 255), (*accent, 80), glow_radius=8,
+            img,
+            (60, y),
+            "OPERATIVE ADVISORY",
+            font_title,
+            (*accent, 255),
+            (*accent, 80),
+            glow_radius=8,
         )
         y += 84
 
@@ -1297,9 +1440,12 @@ class InstagramImageService:
         y += 48  # Consistent post-divider gap (matches other templates)
 
         draw.text(
-            (60, y), f"Active Resonance: [{archetype.upper()}]",
-            fill=(255, 255, 255, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (60, y),
+            f"Active Resonance: [{archetype.upper()}]",
+            fill=(255, 255, 255, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 72  # Before columns
 
@@ -1314,54 +1460,73 @@ class InstagramImageService:
         columns_panel_h = 96 + max_types * 120 + 48  # A: taller item spacing
         draw.rounded_rectangle(
             [(48, y - 16), (w - 48, y + columns_panel_h)],
-            radius=12, fill=(0, 0, 0, 40),
+            radius=12,
+            fill=(0, 0, 0, 40),
         )
 
         # ALIGNED column
         if aligned_types:
             draw.text(
-                (col_left_x, y), "ALIGNED",
-                fill=(*aligned_color, 255), font=font_type,
+                (col_left_x, y),
+                "ALIGNED",
+                fill=(*aligned_color, 255),
+                font=font_type,
             )
             draw.text(
-                (col_left_x, y + 56), "+3% effectiveness",
-                fill=(*aligned_color, 160), font=_load_monospace_font(32),
+                (col_left_x, y + 56),
+                "+3% effectiveness",
+                fill=(*aligned_color, 160),
+                font=_load_monospace_font(32),
             )
             col_y = y + 96
             for op_type in aligned_types:
                 symbol = OPERATIVE_SYMBOLS.get(op_type, "\u25cf")
                 draw.text(
-                    (col_left_x, col_y), symbol,
-                    fill=(*aligned_color, 200), font=font_symbol,
+                    (col_left_x, col_y),
+                    symbol,
+                    fill=(*aligned_color, 200),
+                    font=font_symbol,
                 )
                 draw.text(
-                    (col_left_x + 56, col_y + 4), op_type,
-                    fill=(220, 220, 220, 255), font=font_md,
-                    stroke_width=1, stroke_fill=(0, 0, 0, 100),
+                    (col_left_x + 56, col_y + 4),
+                    op_type,
+                    fill=(220, 220, 220, 255),
+                    font=font_md,
+                    stroke_width=1,
+                    stroke_fill=(0, 0, 0, 100),
                 )
                 col_y += 120
 
         # OPPOSED column
         if opposed_types:
             draw.text(
-                (col_right_x, y), "OPPOSED",
-                fill=(*opposed_color, 255), font=font_type,
+                (col_right_x, y),
+                "OPPOSED",
+                fill=(*opposed_color, 255),
+                font=font_type,
             )
             draw.text(
-                (col_right_x, y + 56), "-2% effectiveness",
-                fill=(*opposed_color, 160), font=_load_monospace_font(32),
+                (col_right_x, y + 56),
+                "-2% effectiveness",
+                fill=(*opposed_color, 160),
+                font=_load_monospace_font(32),
             )
             col_y = y + 96
             for op_type in opposed_types:
                 symbol = OPERATIVE_SYMBOLS.get(op_type, "\u25cf")
                 draw.text(
-                    (col_right_x, col_y), symbol,
-                    fill=(*opposed_color, 200), font=font_symbol,
+                    (col_right_x, col_y),
+                    symbol,
+                    fill=(*opposed_color, 200),
+                    font=font_symbol,
                 )
                 draw.text(
-                    (col_right_x + 56, col_y + 4), op_type,
-                    fill=(220, 220, 220, 255), font=font_md,
-                    stroke_width=1, stroke_fill=(0, 0, 0, 100),
+                    (col_right_x + 56, col_y + 4),
+                    op_type,
+                    fill=(220, 220, 220, 255),
+                    font=font_md,
+                    stroke_width=1,
+                    stroke_fill=(0, 0, 0, 100),
                 )
                 col_y += 120
 
@@ -1374,18 +1539,24 @@ class InstagramImageService:
 
         if zone_name:
             draw.text(
-                (60, y_bottom), f"Zone pressure elevated in {zone_name}.",
-                fill=(200, 200, 200, 255), font=font_sm,
+                (60, y_bottom),
+                f"Zone pressure elevated in {zone_name}.",
+                fill=(200, 200, 200, 255),
+                font=font_sm,
             )
             y_bottom += 48  # A: grid-aligned (2*24)
         draw.text(
-            (60, y_bottom), "Defenders gain tactical advantage.",
-            fill=(200, 200, 200, 255), font=font_sm,
+            (60, y_bottom),
+            "Defenders gain tactical advantage.",
+            fill=(200, 200, 200, 255),
+            font=font_sm,
         )
         y_bottom += 48  # A: grid-aligned (2*24)
         draw.text(
-            (60, y_bottom), "Adjust deployment accordingly.",
-            fill=(140, 140, 140, 255), font=font_sm,
+            (60, y_bottom),
+            "Adjust deployment accordingly.",
+            fill=(140, 140, 140, 255),
+            font=font_sm,
         )
         y_bottom += 168  # A: grid-aligned (7*24)
 
@@ -1397,8 +1568,13 @@ class InstagramImageService:
         cta_bbox = draw.textbbox((0, 0), cta_text, font=cta_font)
         cta_tw = cta_bbox[2] - cta_bbox[0]
         self._text_with_glow(
-            img, (w // 2 - cta_tw // 2, cta_y), cta_text,
-            cta_font, (*accent, 255), (*accent, 80), glow_radius=12,
+            img,
+            (w // 2 - cta_tw // 2, cta_y),
+            cta_text,
+            cta_font,
+            (*accent, 255),
+            (*accent, 80),
+            glow_radius=12,
         )
 
         # Status line below CTA
@@ -1409,8 +1585,10 @@ class InstagramImageService:
             sbbox = draw.textbbox((0, 0), status_text, font=font_status)
             sw = sbbox[2] - sbbox[0]
             draw.text(
-                (w // 2 - sw // 2, status_y), status_text,
-                fill=(*accent, 100), font=font_status,
+                (w // 2 - sw // 2, status_y),
+                status_text,
+                fill=(*accent, 100),
+                font=font_status,
             )
 
         # Vignette
@@ -1458,7 +1636,10 @@ class InstagramImageService:
 
         # Subtle bokeh for atmospheric depth
         self._add_bokeh_dots(
-            img, accent, count=10, alpha_range=(5, 15),
+            img,
+            accent,
+            count=10,
+            alpha_range=(5, 15),
             seed=hash(archetype) & 0xFFFF,
         )
 
@@ -1468,15 +1649,21 @@ class InstagramImageService:
         title_panel_y = 240
         draw.rounded_rectangle(
             [(48, title_panel_y), (w - 48, title_panel_y + 96)],
-            radius=12, fill=(0, 0, 0, 100),
+            radius=12,
+            fill=(0, 0, 0, 100),
         )
 
         # Title with faint glow (C1: accent color title)
         font_title = _load_bold_font(60)
         y = 252
         self._text_with_glow(
-            img, (60, y), "SUBSTRATE STABILIZING",
-            font_title, (*accent, 200), (*accent, 40), glow_radius=6,
+            img,
+            (60, y),
+            "SUBSTRATE STABILIZING",
+            font_title,
+            (*accent, 200),
+            (*accent, 40),
+            glow_radius=6,
         )
         y += 84
 
@@ -1486,14 +1673,19 @@ class InstagramImageService:
 
         font_md = _load_monospace_font(48)
         draw.text(
-            (60, y), f"[{archetype.upper()}] resonance subsiding.",
-            fill=(180, 180, 180, 255), font=font_md,
-            stroke_width=1, stroke_fill=(0, 0, 0, 100),
+            (60, y),
+            f"[{archetype.upper()}] resonance subsiding.",
+            fill=(180, 180, 180, 255),
+            font=font_md,
+            stroke_width=1,
+            stroke_fill=(0, 0, 0, 100),
         )
         y += 60
         draw.text(
-            (60, y), "Residual effects at 50% magnitude.",
-            fill=(120, 120, 120, 255), font=font_sm,
+            (60, y),
+            "Residual effects at 50% magnitude.",
+            fill=(120, 120, 120, 255),
+            font=font_sm,
         )
         y += 72  # Gap above stats panel
 
@@ -1506,7 +1698,8 @@ class InstagramImageService:
         stats_panel_h = 580
         draw.rounded_rectangle(
             [(w // 2 - 280, stats_panel_y), (w // 2 + 280, stats_panel_y + stats_panel_h)],
-            radius=12, fill=(0, 0, 0, 40),
+            radius=12,
+            fill=(0, 0, 0, 40),
         )
 
         # Events spawned (C7: stat numbers in accent color)
@@ -1515,16 +1708,23 @@ class InstagramImageService:
         tw = bbox[2] - bbox[0]
         stat_x = w // 2 - tw // 2
         self._text_with_glow(
-            img, (stat_x, y), events_text,
-            font_stat, (*accent, 230), (*accent, 50), glow_radius=10,
+            img,
+            (stat_x, y),
+            events_text,
+            font_stat,
+            (*accent, 230),
+            (*accent, 50),
+            glow_radius=10,
         )
         draw = ImageDraw.Draw(img)
         label_text = "EVENTS SPAWNED"
         lbbox = draw.textbbox((0, 0), label_text, font=font_label)
         lw = lbbox[2] - lbbox[0]
         draw.text(
-            (w // 2 - lw // 2, y + 145), label_text,
-            fill=(100, 100, 100, 255), font=font_label,
+            (w // 2 - lw // 2, y + 145),
+            label_text,
+            fill=(100, 100, 100, 255),
+            font=font_label,
         )
         y += 288
 
@@ -1534,16 +1734,23 @@ class InstagramImageService:
         tw = bbox[2] - bbox[0]
         stat_x = w // 2 - tw // 2
         self._text_with_glow(
-            img, (stat_x, y), shards_text,
-            font_stat, (*accent, 230), (*accent, 50), glow_radius=10,
+            img,
+            (stat_x, y),
+            shards_text,
+            font_stat,
+            (*accent, 230),
+            (*accent, 50),
+            glow_radius=10,
         )
         draw = ImageDraw.Draw(img)
         label_text = "SHARDS AFFECTED"
         lbbox = draw.textbbox((0, 0), label_text, font=font_label)
         lw = lbbox[2] - lbbox[0]
         draw.text(
-            (w // 2 - lw // 2, y + 145), label_text,
-            fill=(100, 100, 100, 255), font=font_label,
+            (w // 2 - lw // 2, y + 145),
+            label_text,
+            fill=(100, 100, 100, 255),
+            font=font_label,
         )
         y += 264
 
@@ -1557,16 +1764,23 @@ class InstagramImageService:
         bbox_1 = draw.textbbox((0, 0), closing_1, font=font_closing)
         w1 = bbox_1[2] - bbox_1[0]
         self._text_with_glow(
-            img, (w // 2 - w1 // 2, closing_y), closing_1,
-            font_closing, (*accent, 220), (*accent, 60), glow_radius=8,
+            img,
+            (w // 2 - w1 // 2, closing_y),
+            closing_1,
+            font_closing,
+            (*accent, 220),
+            (*accent, 60),
+            glow_radius=8,
         )
 
         bbox_2 = draw.textbbox((0, 0), closing_2, font=font_closing)
         w2 = bbox_2[2] - bbox_2[0]
         draw = ImageDraw.Draw(img)
         draw.text(
-            (w // 2 - w2 // 2, closing_y + 64), closing_2,  # Consistent closing line gap
-            fill=(*accent, 120), font=font_closing,
+            (w // 2 - w2 // 2, closing_y + 64),
+            closing_2,  # Consistent closing line gap
+            fill=(*accent, 120),
+            font=font_closing,
         )
 
         # Very gentle vignette
@@ -1695,7 +1909,11 @@ class InstagramImageService:
             if cipher_hint:
                 try:
                     self._render_cipher_margin(
-                        img, cipher_hint, primary_rgb, width, height,
+                        img,
+                        cipher_hint,
+                        primary_rgb,
+                        width,
+                        height,
                     )
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as cipher_exc:
                     # Non-fatal — post continues without visual cipher
@@ -1712,25 +1930,34 @@ class InstagramImageService:
                         sentry_sdk.capture_exception(cipher_exc)
 
             result = self._image_to_jpeg(img)
-            logger.debug("Image composition complete", extra={
-                "output_size": len(result),
-                "output_dimensions": f"{width}x{height}",
-                "has_cipher_hint": cipher_hint is not None,
-                "stage": "compose_complete",
-            })
+            logger.debug(
+                "Image composition complete",
+                extra={
+                    "output_size": len(result),
+                    "output_dimensions": f"{width}x{height}",
+                    "has_cipher_hint": cipher_hint is not None,
+                    "stage": "compose_complete",
+                },
+            )
             return result
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
-            logger.exception("Image composition failed", extra={
-                "stage": "compose_overlay",
-                "title": title[:60],
-            })
+            logger.exception(
+                "Image composition failed",
+                extra={
+                    "stage": "compose_overlay",
+                    "title": title[:60],
+                },
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("instagram_phase", "image_composition")
-                scope.set_context("instagram", {
-                    "title": title[:60],
-                    "classification": classification,
-                })
+                scope.set_context(
+                    "instagram",
+                    {
+                        "title": title[:60],
+                        "classification": classification,
+                    },
+                )
                 sentry_sdk.capture_exception(exc)
             raise
 
@@ -1770,13 +1997,16 @@ class InstagramImageService:
         paste_y = BUREAU_HEADER_HEIGHT + 4
         img.paste(rotated, (paste_x, paste_y), rotated)
 
-        logger.debug("Rendered steganographic cipher margin", extra={
-            "cipher_length": len(cipher_hint),
-            "position": f"({paste_x}, {paste_y})",
-            "opacity": "15%",
-            "font_size": 11,
-            "stage": "cipher_margin_render",
-        })
+        logger.debug(
+            "Rendered steganographic cipher margin",
+            extra={
+                "cipher_length": len(cipher_hint),
+                "position": f"({paste_x}, {paste_y})",
+                "opacity": "15%",
+                "font_size": 11,
+                "stage": "cipher_margin_render",
+            },
+        )
 
     def _resize_for_instagram(self, img: PILImage) -> PILImage:
         """Resize image to fit Instagram 4:5 portrait format (1080×1350).
@@ -1876,10 +2106,13 @@ class InstagramImageService:
                 resp.raise_for_status()
                 return resp.content
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
-            logger.error("Image download failed", extra={
-                "source_url": url,
-                "stage": "download",
-            })
+            logger.error(
+                "Image download failed",
+                extra={
+                    "source_url": url,
+                    "stage": "download",
+                },
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("instagram_phase", "image_download")
                 scope.set_context("instagram", {"source_url": url})
@@ -1895,8 +2128,11 @@ class InstagramImageService:
                 resp.raise_for_status()
                 return resp.content
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
-            logger.warning("Story asset download failed (non-fatal)", extra={
-                "source_url": url[:200],
-                "stage": "story_asset_download",
-            })
+            logger.warning(
+                "Story asset download failed (non-fatal)",
+                extra={
+                    "source_url": url[:200],
+                    "stage": "story_asset_download",
+                },
+            )
             return None

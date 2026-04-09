@@ -45,7 +45,7 @@ _BRIEFING_SYSTEM = (
     "You are a Bureau of Impossible Geography field analyst writing a "
     "classified daily briefing for a Cartographer. Write in the Bureau's "
     "voice: formal, slightly ominous, institutional. Use present tense. "
-    "Return JSON: {\"narrative_en\": \"...\", \"narrative_de\": \"...\"}"
+    'Return JSON: {"narrative_en": "...", "narrative_de": "..."}'
 )
 
 _BRIEFING_USER = """Write a daily briefing for simulation "{simulation_name}".
@@ -100,33 +100,29 @@ class MorningBriefingService:
 
         # Fetch activities since last login
         activities = await cls._fetch_activities(
-            supabase, simulation_id, since,
+            supabase,
+            simulation_id,
+            since,
         )
 
         # Classify by priority
-        critical = [
-            a for a in activities
-            if a.get("significance", 0) >= CRITICAL_MIN_SIGNIFICANCE
-        ][:MAX_CRITICAL]
+        critical = [a for a in activities if a.get("significance", 0) >= CRITICAL_MIN_SIGNIFICANCE][:MAX_CRITICAL]
         important = [
-            a for a in activities
-            if IMPORTANT_MIN_SIGNIFICANCE
-            <= a.get("significance", 0)
-            < CRITICAL_MIN_SIGNIFICANCE
+            a for a in activities if IMPORTANT_MIN_SIGNIFICANCE <= a.get("significance", 0) < CRITICAL_MIN_SIGNIFICANCE
         ][:MAX_IMPORTANT]
-        routine = [
-            a for a in activities
-            if a.get("significance", 0) < IMPORTANT_MIN_SIGNIFICANCE
-        ]
+        routine = [a for a in activities if a.get("significance", 0) < IMPORTANT_MIN_SIGNIFICANCE]
 
         # Compute mood summary
         mood_summary = await cls._compute_mood_summary(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
         )
 
         # Fetch significant opinion changes
         opinion_changes = await cls._fetch_opinion_changes(
-            supabase, simulation_id, since,
+            supabase,
+            simulation_id,
+            since,
         )
 
         # Aggregate routine into summary text
@@ -138,8 +134,12 @@ class MorningBriefingService:
 
         if mode == "narrative" and (critical or important):
             narrative_en, narrative_de = await cls._generate_narrative(
-                supabase, simulation_id, since,
-                critical, important, routine_summary,
+                supabase,
+                simulation_id,
+                since,
+                critical,
+                important,
+                routine_summary,
                 mood_summary,
                 openrouter_api_key=openrouter_api_key,
             )
@@ -173,14 +173,15 @@ class MorningBriefingService:
 
     @classmethod
     async def _fetch_activities(
-        cls, supabase: Client, simulation_id: UUID, since: datetime,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        since: datetime,
     ) -> list[dict]:
         """Fetch all activities since timestamp, ordered by significance."""
         result = await (
             supabase.table("agent_activities")
-            .select(
-                "*, agents!agent_activities_agent_id_fkey(name, portrait_image_url)"
-            )
+            .select("*, agents!agent_activities_agent_id_fkey(name, portrait_image_url)")
             .eq("simulation_id", str(simulation_id))
             .gte("created_at", since.isoformat())
             .order("significance", desc=True)
@@ -200,7 +201,9 @@ class MorningBriefingService:
 
     @classmethod
     async def _compute_mood_summary(
-        cls, supabase: Client, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
     ) -> SimulationMoodSummary:
         """Compute aggregate mood state."""
         result = await (
@@ -231,12 +234,8 @@ class MorningBriefingService:
             simulation_id=simulation_id,
             agent_count=len(moods),
             avg_mood_score=sum(m["mood_score"] for m in moods) / len(moods),
-            avg_stress_level=(
-                sum(m["stress_level"] for m in moods) / len(moods)
-            ),
-            agents_in_crisis=sum(
-                1 for m in moods if m["stress_level"] >= 800
-            ),
+            avg_stress_level=(sum(m["stress_level"] for m in moods) / len(moods)),
+            agents_in_crisis=sum(1 for m in moods if m["stress_level"] >= 800),
             agents_happy=sum(1 for m in moods if m["mood_score"] > 30),
             agents_unhappy=sum(1 for m in moods if m["mood_score"] < -30),
             dominant_emotions=emotion_counts,
@@ -244,15 +243,15 @@ class MorningBriefingService:
 
     @classmethod
     async def _fetch_opinion_changes(
-        cls, supabase: Client, simulation_id: UUID, since: datetime,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        since: datetime,
     ) -> list[dict]:
         """Fetch significant opinion modifier additions since timestamp."""
         result = await (
             supabase.table("agent_opinion_modifiers")
-            .select(
-                "agent_id, target_agent_id, modifier_type, opinion_change, "
-                "created_at"
-            )
+            .select("agent_id, target_agent_id, modifier_type, opinion_change, created_at")
             .eq("simulation_id", str(simulation_id))
             .gte("created_at", since.isoformat())
             .order("created_at", desc=True)
@@ -265,7 +264,8 @@ class MorningBriefingService:
 
     @classmethod
     def _aggregate_routine(
-        cls, routine_activities: list[dict],
+        cls,
+        routine_activities: list[dict],
     ) -> tuple[str, str]:
         """Aggregate routine activities into a summary sentence."""
         if not routine_activities:
@@ -281,28 +281,19 @@ class MorningBriefingService:
             type_counts[t] = type_counts.get(t, 0) + 1
 
         # Unique agents involved
-        agent_names = {
-            a.get("agent_name", "Unknown")
-            for a in routine_activities
-            if a.get("agent_name")
-        }
+        agent_names = {a.get("agent_name", "Unknown") for a in routine_activities if a.get("agent_name")}
 
         parts_en = []
         parts_de = []
         for activity_type, count in sorted(
-            type_counts.items(), key=lambda x: -x[1],
+            type_counts.items(),
+            key=lambda x: -x[1],
         ):
             parts_en.append(f"{count}x {activity_type}")
             parts_de.append(f"{count}x {activity_type}")
 
-        summary_en = (
-            f"{len(agent_names)} agent(s) performed routine activities: "
-            f"{', '.join(parts_en[:5])}."
-        )
-        summary_de = (
-            f"{len(agent_names)} Agent(en) führten Routineaktivitäten durch: "
-            f"{', '.join(parts_de[:5])}."
-        )
+        summary_en = f"{len(agent_names)} agent(s) performed routine activities: {', '.join(parts_en[:5])}."
+        summary_de = f"{len(agent_names)} Agent(en) führten Routineaktivitäten durch: {', '.join(parts_de[:5])}."
         return summary_en, summary_de
 
     # ── Narrative Generation ─────────────────────────────────────
@@ -322,21 +313,23 @@ class MorningBriefingService:
     ) -> tuple[str | None, str | None]:
         """Generate AI narrative summary of the briefing."""
         sim_name = await cls._get_simulation_name(supabase, simulation_id)
-        hours_ago = int(
-            (datetime.now(UTC) - since).total_seconds() / 3600
+        hours_ago = int((datetime.now(UTC) - since).total_seconds() / 3600)
+
+        critical_text = (
+            "\n".join(
+                f"- [{a.get('activity_type')}] {a.get('agent_name', '?')}: significance {a.get('significance', 0)}"
+                for a in critical
+            )
+            or "None"
         )
 
-        critical_text = "\n".join(
-            f"- [{a.get('activity_type')}] {a.get('agent_name', '?')}: "
-            f"significance {a.get('significance', 0)}"
-            for a in critical
-        ) or "None"
-
-        important_text = "\n".join(
-            f"- [{a.get('activity_type')}] {a.get('agent_name', '?')}: "
-            f"significance {a.get('significance', 0)}"
-            for a in important
-        ) or "None"
+        important_text = (
+            "\n".join(
+                f"- [{a.get('activity_type')}] {a.get('agent_name', '?')}: significance {a.get('significance', 0)}"
+                for a in important
+            )
+            or "None"
+        )
 
         user_prompt = _BRIEFING_USER.format(
             simulation_name=sim_name,
@@ -375,16 +368,12 @@ class MorningBriefingService:
 
     @classmethod
     async def _get_simulation_name(
-        cls, supabase: Client, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
     ) -> str:
         """Fetch simulation name."""
         result = await (
-            supabase.table("simulations")
-            .select("name")
-            .eq("id", str(simulation_id))
-            .maybe_single()
-            .execute()
+            supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single().execute()
         )
-        return (
-            result.data.get("name", "Unknown") if result.data else "Unknown"
-        )
+        return result.data.get("name", "Unknown") if result.data else "Unknown"

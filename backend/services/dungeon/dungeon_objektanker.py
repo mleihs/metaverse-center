@@ -890,8 +890,7 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
                 "echo": {
                     "text_en": (
-                        "{agent} pauses. The whisper again. Closer."
-                        " It has found vowels now. It is practicing."
+                        "{agent} pauses. The whisper again. Closer. It has found vowels now. It is practicing."
                     ),
                     "text_de": (
                         "{agent} h\u00e4lt inne. Das Fl\u00fcstern wieder. N\u00e4her."
@@ -1448,15 +1447,9 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     ),
                 },
                 "climax": {
-                    "text_en": (
-                        "The Crown Keeper's clock. One hand."
-                        " It points at you."
-                        " It has always pointed at you."
-                    ),
+                    "text_en": ("The Crown Keeper's clock. One hand. It points at you. It has always pointed at you."),
                     "text_de": (
-                        "Die Uhr des Crown Keepers. Ein Zeiger."
-                        " Er zeigt auf euch."
-                        " Er hat immer auf euch gezeigt."
+                        "Die Uhr des Crown Keepers. Ein Zeiger. Er zeigt auf euch. Er hat immer auf euch gezeigt."
                     ),
                 },
             },
@@ -2153,13 +2146,9 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
                 "echo": {
                     "text_en": (
-                        "{agent} finds the clock again. Or a clock."
-                        " They are becoming difficult to distinguish."
+                        "{agent} finds the clock again. Or a clock. They are becoming difficult to distinguish."
                     ),
-                    "text_de": (
-                        "{agent} findet die Uhr wieder. Oder eine Uhr."
-                        " Sie werden schwer zu unterscheiden."
-                    ),
+                    "text_de": ("{agent} findet die Uhr wieder. Oder eine Uhr. Sie werden schwer zu unterscheiden."),
                 },
                 "mutation": {
                     "text_en": "Clocks. Faces. No hands. Same.",
@@ -2253,11 +2242,7 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     ),
                 },
                 "mutation": {
-                    "text_en": (
-                        "Scale. Pans. Equal."
-                        " The objects in them are the same color now."
-                        " Same texture. Same."
-                    ),
+                    "text_en": ("Scale. Pans. Equal. The objects in them are the same color now. Same texture. Same."),
                     "text_de": (
                         "Waage. Schalen. Gleich."
                         " Die Gegenst\u00e4nde darin haben jetzt dieselbe Farbe."
@@ -2302,15 +2287,9 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                     ),
                 },
                 "mutation": {
-                    "text_en": (
-                        "Photo. Figures. Grey."
-                        " Same height, same width."
-                        " Background same grey as figures."
-                    ),
+                    "text_en": ("Photo. Figures. Grey. Same height, same width. Background same grey as figures."),
                     "text_de": (
-                        "Foto. Gestalten. Grau."
-                        " Selbe H\u00f6he, selbe Breite."
-                        " Hintergrund selbes Grau wie Gestalten."
+                        "Foto. Gestalten. Grau. Selbe H\u00f6he, selbe Breite. Hintergrund selbes Grau wie Gestalten."
                     ),
                 },
                 "climax": {
@@ -2352,9 +2331,7 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
                 "mutation": {
                     "text_en": (
-                        "Key. Cylinder. Teeth gone."
-                        " Shaft. Metal."
-                        " Same metal as the door. Same metal as the lock."
+                        "Key. Cylinder. Teeth gone. Shaft. Metal. Same metal as the door. Same metal as the lock."
                     ),
                     "text_de": (
                         "Schl\u00fcssel. Zylinder. Z\u00e4hne weg."
@@ -2445,9 +2422,7 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
                 "mutation": {
                     "text_en": (
-                        "Compass. Needle still."
-                        " Not pointing. Not spinning."
-                        " The markings have faded into the dial."
+                        "Compass. Needle still. Not pointing. Not spinning. The markings have faded into the dial."
                     ),
                     "text_de": (
                         "Kompass. Nadel still."
@@ -2494,9 +2469,7 @@ ANCHOR_OBJECTS: dict[str, list[dict]] = {
                 },
                 "mutation": {
                     "text_en": (
-                        "Mirror. Surface. Grey."
-                        " It reflects the room. It reflects you."
-                        " There is no difference."
+                        "Mirror. Surface. Grey. It reflects the room. It reflects you. There is no difference."
                     ),
                     "text_de": (
                         "Spiegel. Fl\u00e4che. Grau."
@@ -4309,10 +4282,7 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
     "The Shadow": [
         {
             "tier": 0,
-            "text_en": (
-                "The amber terminal glow pulses steadily."
-                " Warm. Present. It knows where you are."
-            ),
+            "text_en": ("The amber terminal glow pulses steadily. Warm. Present. It knows where you are."),
             "text_de": (
                 "Das Bernsteinleuchten des Terminals pulsiert gleichm\u00e4\u00dfig."
                 " Warm. Gegenw\u00e4rtig. Es wei\u00df, wo ihr seid."
@@ -4320,14 +4290,8 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
         },
         {
             "tier": 1,
-            "text_en": (
-                "The amber glow flickers."
-                " For the first time, the terminal seems uncertain."
-            ),
-            "text_de": (
-                "Das Bernsteinleuchten flackert."
-                " Zum ersten Mal wirkt das Terminal unsicher."
-            ),
+            "text_en": ("The amber glow flickers. For the first time, the terminal seems uncertain."),
+            "text_de": ("Das Bernsteinleuchten flackert. Zum ersten Mal wirkt das Terminal unsicher."),
         },
         {
             "tier": 2,
@@ -4361,25 +4325,13 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
     "The Tower": [
         {
             "tier": 0,
-            "text_en": (
-                "A hairline crack in the east wall."
-                " Cosmetic. The building compensates."
-            ),
-            "text_de": (
-                "Ein Haarriss in der Ostwand."
-                " Kosmetisch. Das Geb\u00e4ude kompensiert."
-            ),
+            "text_en": ("A hairline crack in the east wall. Cosmetic. The building compensates."),
+            "text_de": ("Ein Haarriss in der Ostwand. Kosmetisch. Das Geb\u00e4ude kompensiert."),
         },
         {
             "tier": 1,
-            "text_en": (
-                "The crack has branched."
-                " The building no longer compensates \u2013 it negotiates."
-            ),
-            "text_de": (
-                "Der Riss hat sich verzweigt."
-                " Das Geb\u00e4ude kompensiert nicht mehr \u2013 es verhandelt."
-            ),
+            "text_en": ("The crack has branched. The building no longer compensates \u2013 it negotiates."),
+            "text_de": ("Der Riss hat sich verzweigt. Das Geb\u00e4ude kompensiert nicht mehr \u2013 es verhandelt."),
         },
         {
             "tier": 2,
@@ -4414,14 +4366,8 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
     "The Devouring Mother": [
         {
             "tier": 0,
-            "text_en": (
-                "The air is warm. Comfortable."
-                " The kind of warmth that asks nothing of you."
-            ),
-            "text_de": (
-                "Die Luft ist warm. Behaglich."
-                " Die Art von W\u00e4rme, die nichts von euch verlangt."
-            ),
+            "text_en": ("The air is warm. Comfortable. The kind of warmth that asks nothing of you."),
+            "text_de": ("Die Luft ist warm. Behaglich. Die Art von W\u00e4rme, die nichts von euch verlangt."),
         },
         {
             "tier": 1,
@@ -4497,14 +4443,8 @@ BAROMETER_TEXTS: dict[str, list[dict]] = {
         },
         {
             "tier": 2,
-            "text_en": (
-                "Grey. Not the grey of concrete or ash"
-                " \u2013 the grey of averaged everything."
-            ),
-            "text_de": (
-                "Grau. Nicht das Grau von Beton oder Asche"
-                " \u2013 das Grau des Durchschnitts von allem."
-            ),
+            "text_en": ("Grey. Not the grey of concrete or ash \u2013 the grey of averaged everything."),
+            "text_de": ("Grau. Nicht das Grau von Beton oder Asche \u2013 das Grau des Durchschnitts von allem."),
         },
         {
             "tier": 3,
@@ -4919,12 +4859,14 @@ def select_anchor_text(
 
         if eligible_phase and eligible_phase in obj.get("phases", {}):
             phase_data = obj["phases"][eligible_phase]
-            results.append({
-                "text_en": phase_data["text_en"],
-                "text_de": phase_data["text_de"],
-                "anchor_id": obj_id,
-                "phase": eligible_phase,
-            })
+            results.append(
+                {
+                    "text_en": phase_data["text_en"],
+                    "text_de": phase_data["text_de"],
+                    "anchor_id": obj_id,
+                    "phase": eligible_phase,
+                }
+            )
 
     # Boss room: return all climaxes (special case — both objects shown)
     if target_room.room_type == "boss":

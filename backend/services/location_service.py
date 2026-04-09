@@ -45,11 +45,19 @@ class LocationService:
 
     @classmethod
     async def list_cities(
-        cls, supabase: Client, simulation_id: UUID, limit: int = 25, offset: int = 0,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        limit: int = 25,
+        offset: int = 0,
     ) -> tuple[list[dict], int]:
         return await CityService.list(
-            supabase, simulation_id,
-            order_by="name", order_desc=False, limit=limit, offset=offset,
+            supabase,
+            simulation_id,
+            order_by="name",
+            order_desc=False,
+            limit=limit,
+            offset=offset,
         )
 
     @classmethod
@@ -62,7 +70,11 @@ class LocationService:
 
     @classmethod
     async def update_city(
-        cls, supabase: Client, simulation_id: UUID, city_id: UUID, data: dict,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        city_id: UUID,
+        data: dict,
     ) -> dict:
         return await CityService.update(supabase, simulation_id, city_id, data)
 
@@ -79,9 +91,13 @@ class LocationService:
     ) -> tuple[list[dict], int]:
         filters = {"city_id": str(city_id)} if city_id else None
         return await ZoneService.list(
-            supabase, simulation_id,
-            filters=filters, order_by="name", order_desc=False,
-            limit=limit, offset=offset,
+            supabase,
+            simulation_id,
+            filters=filters,
+            order_by="name",
+            order_desc=False,
+            limit=limit,
+            offset=offset,
         )
 
     @classmethod
@@ -94,7 +110,11 @@ class LocationService:
 
     @classmethod
     async def update_zone(
-        cls, supabase: Client, simulation_id: UUID, zone_id: UUID, data: dict,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        zone_id: UUID,
+        data: dict,
     ) -> dict:
         return await ZoneService.update(supabase, simulation_id, zone_id, data)
 
@@ -116,9 +136,13 @@ class LocationService:
         if zone_id:
             filters["zone_id"] = str(zone_id)
         return await StreetService.list(
-            supabase, simulation_id,
-            filters=filters or None, order_by="name", order_desc=False,
-            limit=limit, offset=offset,
+            supabase,
+            simulation_id,
+            filters=filters or None,
+            order_by="name",
+            order_desc=False,
+            limit=limit,
+            offset=offset,
         )
 
     @classmethod
@@ -127,6 +151,10 @@ class LocationService:
 
     @classmethod
     async def update_street(
-        cls, supabase: Client, simulation_id: UUID, street_id: UUID, data: dict,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        street_id: UUID,
+        data: dict,
     ) -> dict:
         return await StreetService.update(supabase, simulation_id, street_id, data)

@@ -362,10 +362,7 @@ def get_available_abilities(
         a
         for a in school_abilities
         if aptitude_level >= a.min_aptitude
-        and (
-            not a.effect_params.get("archetype_required")
-            or a.effect_params["archetype_required"] == archetype
-        )
+        and (not a.effect_params.get("archetype_required") or a.effect_params["archetype_required"] == archetype)
     ]
 
 

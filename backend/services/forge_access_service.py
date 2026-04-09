@@ -13,7 +13,6 @@ import logging
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError
 
 from backend.config import settings
@@ -23,6 +22,7 @@ from backend.services.email_templates import (
     render_clearance_granted,
     render_clearance_request_admin_notification,
 )
+from backend.utils.errors import conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -54,16 +54,10 @@ class ForgeAccessService:
             response = await supabase.table("forge_access_requests").insert(insert_data).execute()
         except APIError as e:
             if "idx_forge_access_one_pending" in str(e) or "duplicate" in str(e).lower():
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="You already have a pending clearance request.",
-                ) from e
+                raise conflict("You already have a pending clearance request.") from e
             raise
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create request.",
-            )
+            raise server_error("Failed to create request.")
 
         logger.info("Forge access request created: %s for user %s", response.data[0].get("id"), user_id)
 
@@ -134,7 +128,9 @@ class ForgeAccessService:
         """Count pending requests (admin)."""
         response = (
             await admin_supabase.table("forge_access_requests")
-            .select("id", count="exact").eq("status", "pending").execute()
+            .select("id", count="exact")
+            .eq("status", "pending")
+            .execute()
         )
         return response.count or 0
 
@@ -166,22 +162,13 @@ class ForgeAccessService:
         except (APIError, httpx.HTTPError) as e:
             detail = str(e)
             if "not found" in detail.lower() or "already reviewed" in detail.lower():
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Request not found or already reviewed.",
-                ) from e
+                raise not_found(detail="Request not found or already reviewed.") from e
             logger.exception("Forge access review failed for %s", request_id)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Review failed.",
-            ) from e
+            raise server_error("Review failed.") from e
 
         result = response.data
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Review failed.",
-            )
+            raise server_error("Review failed.")
 
         logger.info("Forge access request %s: %s by %s", action, request_id, reviewer_id)
 

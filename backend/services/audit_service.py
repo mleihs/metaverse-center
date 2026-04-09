@@ -27,7 +27,13 @@ class AuditService:
         """Best-effort audit log — swallows exceptions (for RLS-constrained contexts)."""
         try:
             await AuditService.log_action(
-                supabase, simulation_id, user_id, entity_type, entity_id, action, details,
+                supabase,
+                simulation_id,
+                user_id,
+                entity_type,
+                entity_id,
+                action,
+                details,
             )
         except (PostgrestAPIError, httpx.HTTPError):
             logger.warning("Audit log skipped (RLS): %s %s %s", entity_type, action, entity_id)

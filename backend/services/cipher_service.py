@@ -48,12 +48,15 @@ class CipherService:
         ).execute()
 
         code = response.data if isinstance(response.data, str) else str(response.data)
-        logger.info("Generated cipher code", extra={
-            "simulation_id": str(simulation_id),
-            "entity_id": str(entity_id) if entity_id else None,
-            "difficulty": difficulty,
-            "code_prefix": code[:8] if code else "",
-        })
+        logger.info(
+            "Generated cipher code",
+            extra={
+                "simulation_id": str(simulation_id),
+                "entity_id": str(entity_id) if entity_id else None,
+                "difficulty": difficulty,
+                "code_prefix": code[:8] if code else "",
+            },
+        )
         return code
 
     @classmethod
@@ -79,22 +82,31 @@ class CipherService:
             ).execute()
 
             result = response.data if isinstance(response.data, dict) else {}
-            logger.info("Cipher redemption attempt", extra={
-                "success": result.get("success", False),
-                "error_code": result.get("error_code"),
-                "user_id": str(user_id) if user_id else "anonymous",
-            })
+            logger.info(
+                "Cipher redemption attempt",
+                extra={
+                    "success": result.get("success", False),
+                    "error_code": result.get("error_code"),
+                    "user_id": str(user_id) if user_id else "anonymous",
+                },
+            )
             return result
 
         except (PostgrestAPIError, httpx.HTTPError) as exc:
-            logger.exception("Cipher redemption RPC failed", extra={
-                "user_id": str(user_id) if user_id else "anonymous",
-            })
+            logger.exception(
+                "Cipher redemption RPC failed",
+                extra={
+                    "user_id": str(user_id) if user_id else "anonymous",
+                },
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("instagram_phase", "cipher_redemption")
-                scope.set_context("cipher", {
-                    "user_id": str(user_id) if user_id else "anonymous",
-                })
+                scope.set_context(
+                    "cipher",
+                    {
+                        "user_id": str(user_id) if user_id else "anonymous",
+                    },
+                )
                 sentry_sdk.capture_exception(exc)
             raise
 
@@ -102,39 +114,22 @@ class CipherService:
     async def get_redemption_stats(cls, admin: Client) -> dict:
         """Get aggregated cipher statistics for admin panel."""
         # Total redemptions
-        redemptions_resp = await (
-            admin.table("cipher_redemptions")
-            .select("id", count="exact")
-            .execute()
-        )
+        redemptions_resp = await admin.table("cipher_redemptions").select("id", count="exact").execute()
         total_redemptions = redemptions_resp.count or 0
 
         # Unique users
-        users_resp = await (
-            admin.table("cipher_redemptions")
-            .select("user_id")
-            .not_.is_("user_id", "null")
-            .execute()
-        )
+        users_resp = await admin.table("cipher_redemptions").select("user_id").not_.is_("user_id", "null").execute()
         unique_users = len({r["user_id"] for r in (users_resp.data or [])})
 
         # Total attempts (last 24h)
-        attempts_resp = await (
-            admin.table("cipher_attempts")
-            .select("id, success", count="exact")
-            .execute()
-        )
+        attempts_resp = await admin.table("cipher_attempts").select("id, success", count="exact").execute()
         total_attempts = attempts_resp.count or 0
         successful = sum(1 for r in (attempts_resp.data or []) if r.get("success"))
         success_rate = round(successful / total_attempts, 4) if total_attempts > 0 else 0.0
 
         # Recent redemptions
         recent_resp = await (
-            admin.table("cipher_redemptions")
-            .select("*")
-            .order("redeemed_at", desc=True)
-            .limit(20)
-            .execute()
+            admin.table("cipher_redemptions").select("*").order("redeemed_at", desc=True).limit(20).execute()
         )
 
         return {
@@ -152,13 +147,7 @@ class CipherService:
         post_id: UUID,
     ) -> dict | None:
         """Fetch an Instagram post by ID. Returns None if not found."""
-        resp = await (
-            supabase.table("instagram_posts")
-            .select("id, status")
-            .eq("id", str(post_id))
-            .limit(1)
-            .execute()
-        )
+        resp = await supabase.table("instagram_posts").select("id, status").eq("id", str(post_id)).limit(1).execute()
         return resp.data[0] if resp.data else None
 
     @classmethod
@@ -169,9 +158,16 @@ class CipherService:
         unlock_code: str,
     ) -> None:
         """Update the unlock_code on an Instagram post."""
-        await supabase.table("instagram_posts").update({
-            "unlock_code": unlock_code,
-        }).eq("id", str(post_id)).execute()
+        await (
+            supabase.table("instagram_posts")
+            .update(
+                {
+                    "unlock_code": unlock_code,
+                }
+            )
+            .eq("id", str(post_id))
+            .execute()
+        )
 
     @classmethod
     def prepare_cipher_for_post(
@@ -193,34 +189,40 @@ class CipherService:
         if hint_format == "steganographic":
             encoded_hint = cls.encode_hint(unlock_code, difficulty)
             # Caption gets a notice instead of the actual cipher
-            notice = (
-                "\n\n\u2013\nVISUAL CIPHER EMBEDDED \u2013 "
-                "Decode at metaverse.center/bureau/dispatch"
-            )
+            notice = "\n\n\u2013\nVISUAL CIPHER EMBEDDED \u2013 Decode at metaverse.center/bureau/dispatch"
             disclosure = "\n\n\u2013\nAI-generated content from metaverse.center"
             if disclosure in caption:
                 result_caption = caption.replace(disclosure, notice + disclosure)
             else:
                 result_caption = caption + notice
 
-            logger.info("Prepared steganographic cipher", extra={
-                "hint_format": hint_format,
-                "difficulty": difficulty,
-                "has_image_cipher": True,
-                "hint_length": len(encoded_hint),
-            })
+            logger.info(
+                "Prepared steganographic cipher",
+                extra={
+                    "hint_format": hint_format,
+                    "difficulty": difficulty,
+                    "has_image_cipher": True,
+                    "hint_length": len(encoded_hint),
+                },
+            )
             return {"caption": result_caption, "image_cipher": encoded_hint}
 
         # footer / caption — embed in caption text, no image cipher
         result_caption = cls.embed_cipher_hint(
-            caption, unlock_code, difficulty, hint_format,
+            caption,
+            unlock_code,
+            difficulty,
+            hint_format,
         )
-        logger.info("Prepared caption cipher", extra={
-            "hint_format": hint_format,
-            "difficulty": difficulty,
-            "has_image_cipher": False,
-            "hint_length": len(result_caption) - len(caption),
-        })
+        logger.info(
+            "Prepared caption cipher",
+            extra={
+                "hint_format": hint_format,
+                "difficulty": difficulty,
+                "has_image_cipher": False,
+                "hint_length": len(result_caption) - len(caption),
+            },
+        )
         return {"caption": result_caption, "image_cipher": None}
 
     @classmethod

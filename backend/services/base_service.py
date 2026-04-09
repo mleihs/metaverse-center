@@ -121,7 +121,8 @@ class BaseService:
 
         if not data:
             raise not_found(
-                cls.table_name, entity_id,
+                cls.table_name,
+                entity_id,
                 context=f"in simulation '{simulation_id}'",
             )
 
@@ -154,7 +155,8 @@ class BaseService:
         data = extract_one(response)
         if not data:
             raise not_found(
-                cls.table_name, slug,
+                cls.table_name,
+                slug,
                 context=f"in simulation '{simulation_id}'",
             )
 
@@ -169,20 +171,18 @@ class BaseService:
         data: dict,
     ) -> dict:
         """Create a new entity in a simulation."""
-        insert_data = serialize_for_json({
-            **data,
-            "simulation_id": str(simulation_id),
-        })
+        insert_data = serialize_for_json(
+            {
+                **data,
+                "simulation_id": str(simulation_id),
+            }
+        )
 
         # Set created_by_id if the table supports it
         if cls.supports_created_by and "created_by_id" not in insert_data:
             insert_data.setdefault("created_by_id", str(user_id))
 
-        response = await (
-            supabase.table(cls.table_name)
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).insert(insert_data).execute()
 
         if not response.data:
             # Empty response with no exception = RLS policy rejected the insert
@@ -268,8 +268,7 @@ class BaseService:
                         },
                     )
                     raise conflict(
-                        "Conflict: entity was modified by another user. "
-                        "Please refresh and try again.",
+                        "Conflict: entity was modified by another user. Please refresh and try again.",
                     )
 
             logger.warning(
@@ -290,12 +289,7 @@ class BaseService:
         extra_filters: dict | None = None,
     ) -> dict:
         """Hard-delete an entity (permanent removal)."""
-        query = (
-            supabase.table(cls.table_name)
-            .delete()
-            .eq("simulation_id", str(simulation_id))
-            .eq("id", str(entity_id))
-        )
+        query = supabase.table(cls.table_name).delete().eq("simulation_id", str(simulation_id)).eq("id", str(entity_id))
 
         if extra_filters:
             for key, value in extra_filters.items():
@@ -335,7 +329,8 @@ class BaseService:
                 extra={"table": cls.table_name, "entity_id": str(entity_id), "simulation_id": str(simulation_id)},
             )
             raise not_found(
-                cls.table_name, entity_id,
+                cls.table_name,
+                entity_id,
                 detail=f"{cls.table_name} '{entity_id}' not found or already deleted.",
             )
 

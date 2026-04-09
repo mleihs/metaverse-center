@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -31,22 +32,21 @@ class InvitationService:
 
         response = await (
             supabase.table("simulation_invitations")
-            .insert({
-                "simulation_id": str(simulation_id),
-                "invited_email": invited_email,
-                "invite_token": token,
-                "invited_role": invited_role,
-                "invited_by_id": str(invited_by_id),
-                "expires_at": expires_at.isoformat(),
-            })
+            .insert(
+                {
+                    "simulation_id": str(simulation_id),
+                    "invited_email": invited_email,
+                    "invite_token": token,
+                    "invited_role": invited_role,
+                    "invited_by_id": str(invited_by_id),
+                    "expires_at": expires_at.isoformat(),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create invitation.",
-            )
+            raise server_error("Failed to create invitation.")
         logger.info("Invitation created", extra={"simulation_id": str(simulation_id), "invited_role": invited_role})
         return response.data[0]
 
@@ -62,10 +62,7 @@ class InvitationService:
         )
 
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invalid or expired invitation token.",
-            )
+            raise not_found(detail="Invalid or expired invitation token.")
         return response.data[0]
 
     @staticmethod
@@ -86,10 +83,7 @@ class InvitationService:
         )
 
         if not inv_response or not inv_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invitation not found or already accepted.",
-            )
+            raise not_found(detail="Invitation not found or already accepted.")
 
         invitation = inv_response.data[0]
 
@@ -105,25 +99,31 @@ class InvitationService:
         # Create member
         member_response = await (
             supabase.table("simulation_members")
-            .insert({
-                "simulation_id": invitation["simulation_id"],
-                "user_id": str(user_id),
-                "member_role": invitation["invited_role"],
-                "invited_by_id": invitation["invited_by_id"],
-            })
+            .insert(
+                {
+                    "simulation_id": invitation["simulation_id"],
+                    "user_id": str(user_id),
+                    "member_role": invitation["invited_role"],
+                    "invited_by_id": invitation["invited_by_id"],
+                }
+            )
             .execute()
         )
 
         if not member_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create membership.",
-            )
+            raise server_error("Failed to create membership.")
 
         # Mark invitation as accepted
-        await supabase.table("simulation_invitations").update({
-            "accepted_at": datetime.now(UTC).isoformat(),
-        }).eq("id", invitation["id"]).execute()
+        await (
+            supabase.table("simulation_invitations")
+            .update(
+                {
+                    "accepted_at": datetime.now(UTC).isoformat(),
+                }
+            )
+            .eq("id", invitation["id"])
+            .execute()
+        )
 
         logger.info(
             "Invitation accepted",

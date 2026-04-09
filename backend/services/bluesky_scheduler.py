@@ -82,19 +82,28 @@ class BlueskyScheduler:
                 logger.info("Bluesky scheduler shutting down")
                 raise
             except (httpx.ConnectError, httpx.ConnectTimeout):
-                logger.warning("Bluesky scheduler: database unavailable, retrying", extra={
-                    "iteration": cls._iteration_count,
-                    "retry_in_s": interval,
-                })
+                logger.warning(
+                    "Bluesky scheduler: database unavailable, retrying",
+                    extra={
+                        "iteration": cls._iteration_count,
+                        "retry_in_s": interval,
+                    },
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception("Bluesky scheduler loop error", extra={
-                    "iteration": cls._iteration_count,
-                })
+                logger.exception(
+                    "Bluesky scheduler loop error",
+                    extra={
+                        "iteration": cls._iteration_count,
+                    },
+                )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("bluesky_phase", "scheduler_loop")
-                    scope.set_context("bluesky", {
-                        "iteration": cls._iteration_count,
-                    })
+                    scope.set_context(
+                        "bluesky",
+                        {
+                            "iteration": cls._iteration_count,
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
@@ -114,14 +123,17 @@ class BlueskyScheduler:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "bluesky_enabled",
-                    "bluesky_posting_enabled",
-                    "bluesky_handle",
-                    "bluesky_app_password",
-                    "bluesky_pds_url",
-                    "bluesky_scheduler_interval_seconds",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "bluesky_enabled",
+                        "bluesky_posting_enabled",
+                        "bluesky_handle",
+                        "bluesky_app_password",
+                        "bluesky_pds_url",
+                        "bluesky_scheduler_interval_seconds",
+                    ],
+                )
                 .execute()
             )
             rows = _resp.data or []
@@ -144,28 +156,41 @@ class BlueskyScheduler:
             if raw_password and raw_password.startswith("gAAAAA"):
                 try:
                     from backend.utils.encryption import decrypt
+
                     config["app_password"] = decrypt(raw_password)
                 except (ValueError, Exception):
-                    logger.warning("Failed to decrypt Bluesky app password", extra={
-                        "iteration": cls._iteration_count,
-                        "password_status": "decrypt_failed",
-                    })
+                    logger.warning(
+                        "Failed to decrypt Bluesky app password",
+                        extra={
+                            "iteration": cls._iteration_count,
+                            "password_status": "decrypt_failed",
+                        },
+                    )
                     config["app_password"] = ""
             else:
                 pw = str(raw_password).strip().strip('"')
                 config["app_password"] = pw
 
             try:
-                config["interval"] = max(60, int(settings_map.get(
-                    "bluesky_scheduler_interval_seconds", "300",
-                )))
+                config["interval"] = max(
+                    60,
+                    int(
+                        settings_map.get(
+                            "bluesky_scheduler_interval_seconds",
+                            "300",
+                        )
+                    ),
+                )
             except (ValueError, TypeError):
                 pass
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-            logger.warning("Failed to load Bluesky scheduler config, using defaults", extra={
-                "iteration": cls._iteration_count,
-            })
+            logger.warning(
+                "Failed to load Bluesky scheduler config, using defaults",
+                extra={
+                    "iteration": cls._iteration_count,
+                },
+            )
 
         return config
 
@@ -187,24 +212,33 @@ class BlueskyScheduler:
         if not due:
             return
 
-        logger.info("Found due Bluesky posts to publish", extra={
-            "post_count": len(due),
-            "iteration": cls._iteration_count,
-            "config_enabled": config["posting_enabled"],
-        })
-
-        if not config["posting_enabled"]:
-            logger.info("Bluesky posting disabled (dry-run mode) — skipping publish", extra={
+        logger.info(
+            "Found due Bluesky posts to publish",
+            extra={
                 "post_count": len(due),
                 "iteration": cls._iteration_count,
-            })
+                "config_enabled": config["posting_enabled"],
+            },
+        )
+
+        if not config["posting_enabled"]:
+            logger.info(
+                "Bluesky posting disabled (dry-run mode) — skipping publish",
+                extra={
+                    "post_count": len(due),
+                    "iteration": cls._iteration_count,
+                },
+            )
             return
 
         if not config["handle"] or not config["app_password"]:
-            logger.warning("Bluesky credentials not configured — cannot publish", extra={
-                "iteration": cls._iteration_count,
-                "handle": config["handle"] or "EMPTY",
-            })
+            logger.warning(
+                "Bluesky credentials not configured — cannot publish",
+                extra={
+                    "iteration": cls._iteration_count,
+                    "handle": config["handle"] or "EMPTY",
+                },
+            )
             return
 
         bsky = BlueskyService(
@@ -219,8 +253,7 @@ class BlueskyScheduler:
                 await cls._publish_single_post(admin, bsky, post)
             except BlueskyAuthError as exc:
                 logger.error(
-                    "Bluesky authentication failed — disabling posting. "
-                    "Check app password in Admin Panel → Bluesky.",
+                    "Bluesky authentication failed — disabling posting. Check app password in Admin Panel → Bluesky.",
                     extra={
                         "post_id": str(post_id),
                         "iteration": cls._iteration_count,
@@ -232,71 +265,125 @@ class BlueskyScheduler:
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("bluesky_phase", "auth_failed")
                     scope.set_tag("action_required", "check_credentials")
-                    scope.set_context("bluesky", {
-                        "post_id": str(post_id),
-                        "handle": config["handle"],
-                    })
+                    scope.set_context(
+                        "bluesky",
+                        {
+                            "post_id": str(post_id),
+                            "handle": config["handle"],
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
                 # Disable posting
-                await admin.table("platform_settings").update(
-                    {"setting_value": '"false"'},
-                ).eq("setting_key", "bluesky_posting_enabled").execute()
+                await (
+                    admin.table("platform_settings")
+                    .update(
+                        {"setting_value": '"false"'},
+                    )
+                    .eq("setting_key", "bluesky_posting_enabled")
+                    .execute()
+                )
                 return
             except BlueskyRateLimitError:
-                logger.warning("Bluesky rate limit reached — stopping publish cycle", extra={
-                    "post_id": str(post_id),
-                    "iteration": cls._iteration_count,
-                })
+                logger.warning(
+                    "Bluesky rate limit reached — stopping publish cycle",
+                    extra={
+                        "post_id": str(post_id),
+                        "iteration": cls._iteration_count,
+                    },
+                )
                 return
             except BlueskyBlobTooLargeError as exc:
-                await admin.table("bluesky_posts").update({
-                    "status": "failed",
-                    "failure_reason": f"Image too large for Bluesky: {str(exc)[:300]}",
-                }).eq("id", str(post_id)).execute()
-                logger.error("Bluesky blob too large", extra={
-                    "post_id": str(post_id),
-                    "iteration": cls._iteration_count,
-                })
+                await (
+                    admin.table("bluesky_posts")
+                    .update(
+                        {
+                            "status": "failed",
+                            "failure_reason": f"Image too large for Bluesky: {str(exc)[:300]}",
+                        }
+                    )
+                    .eq("id", str(post_id))
+                    .execute()
+                )
+                logger.error(
+                    "Bluesky blob too large",
+                    extra={
+                        "post_id": str(post_id),
+                        "iteration": cls._iteration_count,
+                    },
+                )
             except BlueskyAPIError as exc:
                 retry_count = post.get("retry_count", 0)
                 if retry_count < _MAX_RETRIES:
-                    await admin.table("bluesky_posts").update({
-                        "status": "pending",
-                        "retry_count": retry_count + 1,
-                        "failure_reason": str(exc)[:500],
-                    }).eq("id", str(post_id)).execute()
-                    logger.warning("Bluesky API error, will retry", extra={
-                        "post_id": str(post_id),
-                        "retry_count": retry_count + 1,
-                        "max_retries": _MAX_RETRIES,
-                        "iteration": cls._iteration_count,
-                    })
+                    await (
+                        admin.table("bluesky_posts")
+                        .update(
+                            {
+                                "status": "pending",
+                                "retry_count": retry_count + 1,
+                                "failure_reason": str(exc)[:500],
+                            }
+                        )
+                        .eq("id", str(post_id))
+                        .execute()
+                    )
+                    logger.warning(
+                        "Bluesky API error, will retry",
+                        extra={
+                            "post_id": str(post_id),
+                            "retry_count": retry_count + 1,
+                            "max_retries": _MAX_RETRIES,
+                            "iteration": cls._iteration_count,
+                        },
+                    )
                 else:
-                    await admin.table("bluesky_posts").update({
-                        "status": "failed",
-                        "failure_reason": str(exc)[:500],
-                    }).eq("id", str(post_id)).execute()
-                    logger.error("Bluesky post failed after max retries", extra={
-                        "post_id": str(post_id),
-                        "retry_count": _MAX_RETRIES,
-                        "iteration": cls._iteration_count,
-                    })
-                    with sentry_sdk.push_scope() as scope:
-                        scope.set_tag("bluesky_phase", "retries_exhausted")
-                        scope.set_context("bluesky", {
+                    await (
+                        admin.table("bluesky_posts")
+                        .update(
+                            {
+                                "status": "failed",
+                                "failure_reason": str(exc)[:500],
+                            }
+                        )
+                        .eq("id", str(post_id))
+                        .execute()
+                    )
+                    logger.error(
+                        "Bluesky post failed after max retries",
+                        extra={
                             "post_id": str(post_id),
                             "retry_count": _MAX_RETRIES,
-                        })
+                            "iteration": cls._iteration_count,
+                        },
+                    )
+                    with sentry_sdk.push_scope() as scope:
+                        scope.set_tag("bluesky_phase", "retries_exhausted")
+                        scope.set_context(
+                            "bluesky",
+                            {
+                                "post_id": str(post_id),
+                                "retry_count": _MAX_RETRIES,
+                            },
+                        )
                         sentry_sdk.capture_exception(exc)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                await admin.table("bluesky_posts").update({
-                    "status": "failed",
-                    "failure_reason": "Unexpected error during publishing",
-                }).eq("id", str(post_id)).execute()
-                logger.exception("Unexpected error publishing Bluesky post", extra={
-                    "post_id": str(post_id),
-                    "iteration": cls._iteration_count,
-                })
+                await (
+                    admin.table("bluesky_posts")
+                    .update(
+                        {
+                            "status": "failed",
+                            "failure_reason": "Unexpected error during publishing",
+                        }
+                    )
+                    .eq("id", str(post_id))
+                    .execute()
+                )
+                logger.exception(
+                    "Unexpected error publishing Bluesky post",
+                    extra={
+                        "post_id": str(post_id),
+                        "iteration": cls._iteration_count,
+                    },
+                )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("bluesky_phase", "publish_unexpected")
                     scope.set_context("bluesky", {"post_id": str(post_id)})
@@ -304,7 +391,10 @@ class BlueskyScheduler:
 
     @classmethod
     async def publish_post(
-        cls, admin: Client, bsky: BlueskyService, post: dict,
+        cls,
+        admin: Client,
+        bsky: BlueskyService,
+        post: dict,
     ) -> None:
         """Public interface for force-publishing a single post."""
         await cls._publish_single_post(admin, bsky, post)
@@ -323,9 +413,14 @@ class BlueskyScheduler:
         image_urls = post.get("image_urls") or []
 
         # Mark as publishing
-        await admin.table("bluesky_posts").update(
-            {"status": "publishing"},
-        ).eq("id", post_id).execute()
+        await (
+            admin.table("bluesky_posts")
+            .update(
+                {"status": "publishing"},
+            )
+            .eq("id", post_id)
+            .execute()
+        )
 
         # Adapt caption if this is a cross-posted Instagram post (trigger placeholder)
         if post.get("instagram_post_id"):
@@ -365,11 +460,14 @@ class BlueskyScheduler:
                     media = await bsky.upload_media(img_data, mime)
                     uploaded_media.append(media)
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                    logger.warning("Failed to download/upload image for Bluesky post", extra={
-                        "post_id": post_id,
-                        "image_url": url[:100],
-                        "error": str(exc)[:200],
-                    })
+                    logger.warning(
+                        "Failed to download/upload image for Bluesky post",
+                        extra={
+                            "post_id": post_id,
+                            "image_url": url[:100],
+                            "error": str(exc)[:200],
+                        },
+                    )
 
         # Publish
         content = AdaptedContent(
@@ -380,20 +478,30 @@ class BlueskyScheduler:
         result = await bsky.publish_post(content, uploaded_media)
 
         # Update post as published
-        await admin.table("bluesky_posts").update({
-            "status": "published",
-            "published_at": datetime.now(UTC).isoformat(),
-            "bsky_uri": result.platform_post_id,
-            "bsky_cid": result.cid,
-        }).eq("id", post_id).execute()
+        await (
+            admin.table("bluesky_posts")
+            .update(
+                {
+                    "status": "published",
+                    "published_at": datetime.now(UTC).isoformat(),
+                    "bsky_uri": result.platform_post_id,
+                    "bsky_cid": result.cid,
+                }
+            )
+            .eq("id", post_id)
+            .execute()
+        )
 
-        logger.info("Published Bluesky post", extra={
-            "post_id": post_id,
-            "bsky_uri": result.platform_post_id,
-            "permalink": result.permalink,
-            "media_count": len(uploaded_media),
-            "iteration": cls._iteration_count,
-        })
+        logger.info(
+            "Published Bluesky post",
+            extra={
+                "post_id": post_id,
+                "bsky_uri": result.platform_post_id,
+                "permalink": result.permalink,
+                "media_count": len(uploaded_media),
+                "iteration": cls._iteration_count,
+            },
+        )
 
     @classmethod
     async def _collect_pending_metrics(cls, admin: Client, config: dict) -> None:
@@ -442,19 +550,27 @@ class BlueskyScheduler:
             try:
                 metrics = await bsky.get_post_metrics(post["bsky_uri"])
                 await BlueskyContentService.update_engagement_metrics(
-                    admin, UUID(post["id"]), metrics,
+                    admin,
+                    UUID(post["id"]),
+                    metrics,
                 )
-                logger.debug("Collected Bluesky metrics", extra={
-                    "post_id": post["id"],
-                    "likes": metrics.get("likes", 0),
-                    "reposts": metrics.get("reposts", 0),
-                    "iteration": cls._iteration_count,
-                })
+                logger.debug(
+                    "Collected Bluesky metrics",
+                    extra={
+                        "post_id": post["id"],
+                        "likes": metrics.get("likes", 0),
+                        "reposts": metrics.get("reposts", 0),
+                        "iteration": cls._iteration_count,
+                    },
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                logger.warning("Failed to collect Bluesky metrics for post", extra={
-                    "post_id": post["id"],
-                    "iteration": cls._iteration_count,
-                })
+                logger.warning(
+                    "Failed to collect Bluesky metrics for post",
+                    extra={
+                        "post_id": post["id"],
+                        "iteration": cls._iteration_count,
+                    },
+                )
 
 
 def _parse_bool(value: str) -> bool:

@@ -45,9 +45,7 @@ class NewsAPIService:
             if resp.status_code == 429:
                 raise NewsAPIError("NewsAPI rate limit exceeded.")
             if resp.status_code != 200:
-                raise NewsAPIError(
-                    f"NewsAPI error {resp.status_code}: {resp.text[:200]}"
-                )
+                raise NewsAPIError(f"NewsAPI error {resp.status_code}: {resp.text[:200]}")
 
             data = resp.json()
 
@@ -82,9 +80,7 @@ class NewsAPIService:
             if resp.status_code == 429:
                 raise NewsAPIError("NewsAPI rate limit exceeded.")
             if resp.status_code != 200:
-                raise NewsAPIError(
-                    f"NewsAPI error {resp.status_code}: {resp.text[:200]}"
-                )
+                raise NewsAPIError(f"NewsAPI error {resp.status_code}: {resp.text[:200]}")
 
             data = resp.json()
 

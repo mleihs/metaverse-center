@@ -94,20 +94,26 @@ class AIUsageService:
             total_tokens = u.get("total_tokens", 0)
             estimated_cost = _estimate_cost(provider, model, total_tokens)
 
-            await admin_supabase.table("ai_usage_log").insert({
-                "simulation_id": str(simulation_id) if simulation_id else None,
-                "user_id": str(user_id) if user_id else None,
-                "provider": provider,
-                "model": model,
-                "purpose": purpose,
-                "prompt_tokens": u.get("prompt_tokens", 0),
-                "completion_tokens": u.get("completion_tokens", 0),
-                "total_tokens": total_tokens,
-                "duration_ms": u.get("duration_ms", 0),
-                "estimated_cost_usd": estimated_cost,
-                "key_source": key_source,
-                "metadata": metadata or {},
-            }).execute()
+            await (
+                admin_supabase.table("ai_usage_log")
+                .insert(
+                    {
+                        "simulation_id": str(simulation_id) if simulation_id else None,
+                        "user_id": str(user_id) if user_id else None,
+                        "provider": provider,
+                        "model": model,
+                        "purpose": purpose,
+                        "prompt_tokens": u.get("prompt_tokens", 0),
+                        "completion_tokens": u.get("completion_tokens", 0),
+                        "total_tokens": total_tokens,
+                        "duration_ms": u.get("duration_ms", 0),
+                        "estimated_cost_usd": estimated_cost,
+                        "key_source": key_source,
+                        "metadata": metadata or {},
+                    }
+                )
+                .execute()
+            )
 
         except Exception:  # noqa: BLE001 — fire-and-forget, must never propagate
             logger.debug("AI usage log insert failed (non-blocking)", exc_info=True)
@@ -118,7 +124,5 @@ class AIUsageService:
         days: int = 30,
     ) -> dict:
         """Get aggregated AI usage stats via ``get_ai_usage_stats`` PG function (migration 152)."""
-        resp = await admin_supabase.rpc(
-            "get_ai_usage_stats", {"p_days": days}
-        ).execute()
+        resp = await admin_supabase.rpc("get_ai_usage_stats", {"p_days": days}).execute()
         return resp.data

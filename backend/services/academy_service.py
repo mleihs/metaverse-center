@@ -6,12 +6,12 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import AcademyConfig
 from backend.services.bot_personality import auto_draft
 from backend.services.epoch_service import EpochService
+from backend.utils.errors import conflict
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -59,10 +59,7 @@ class AcademyService:
             .execute()
         )
         if active.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "You already have an active academy epoch. Complete or cancel it before starting a new one.",
-            )
+            raise conflict("You already have an active academy epoch. Complete or cancel it before starting a new one.")
 
         academy = AcademyConfig()
 
@@ -95,14 +92,20 @@ class AcademyService:
         epoch_id = UUID(epoch["id"])
 
         await cls._populate_academy_bots(
-            admin_supabase, epoch_id, user_id, academy,
+            admin_supabase,
+            epoch_id,
+            user_id,
+            academy,
         )
 
         # Auto-start: lobby → foundation (academy skips manual start)
         from backend.services.epoch_lifecycle_service import EpochLifecycleService
 
         started = await EpochLifecycleService.start_epoch(
-            admin_supabase, epoch_id, user_id, admin_supabase,
+            admin_supabase,
+            epoch_id,
+            user_id,
+            admin_supabase,
         )
         return started
 
@@ -137,7 +140,7 @@ class AcademyService:
             return
 
         human_sim_id = templates.data[0]["id"]
-        bot_sim_ids = [row["id"] for row in templates.data[1: academy.bot_count + 1]]
+        bot_sim_ids = [row["id"] for row in templates.data[1 : academy.bot_count + 1]]
 
         # Step 1: Atomic batch insert of bot_players + epoch_participants
         try:
@@ -215,10 +218,12 @@ class AcademyService:
                 # Update participant with drafted agents
                 await (
                     admin_supabase.table("epoch_participants")
-                    .update({
-                        "drafted_agent_ids": drafted_ids,
-                        "draft_completed_at": datetime.now(UTC).isoformat(),
-                    })
+                    .update(
+                        {
+                            "drafted_agent_ids": drafted_ids,
+                            "draft_completed_at": datetime.now(UTC).isoformat(),
+                        }
+                    )
                     .eq("id", participant_id)
                     .execute()
                 )

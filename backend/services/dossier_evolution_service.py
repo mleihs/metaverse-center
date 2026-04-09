@@ -127,9 +127,13 @@ class DossierEvolutionService:
                     return False
                 remaining = purchase_resp.data.get("regen_budget_remaining", 0) or 0
                 if remaining <= 0:
-                    logger.info("Dossier evolution budget exhausted", extra={
-                        "simulation_id": str(simulation_id), "arcanum": arcanum,
-                    })
+                    logger.info(
+                        "Dossier evolution budget exhausted",
+                        extra={
+                            "simulation_id": str(simulation_id),
+                            "arcanum": arcanum,
+                        },
+                    )
                     return False
 
             # 3. Get simulation name + theme for translation context
@@ -182,7 +186,9 @@ class DossierEvolutionService:
                     ),
                 )
                 addendum_de = await TranslationService.translate_text(
-                    addendum, context=context, openrouter_key=openrouter_key,
+                    addendum,
+                    context=context,
+                    openrouter_key=openrouter_key,
                 )
                 separator_de = "\n\n─── BUREAU-NACHTRAG ───\n\n"
                 updated_body_de = updated_body_de + separator_de + addendum_de
@@ -213,13 +219,20 @@ class DossierEvolutionService:
             current_log.append(log_entry)
 
             # Update section
-            await admin_supabase.table("simulation_lore").update({
-                "body": updated_body,
-                "body_de": updated_body_de,
-                "evolved_at": now,
-                "evolution_count": evolution_count + 1,
-                "evolution_log": current_log,
-            }).eq("id", section["id"]).execute()
+            await (
+                admin_supabase.table("simulation_lore")
+                .update(
+                    {
+                        "body": updated_body,
+                        "body_de": updated_body_de,
+                        "evolved_at": now,
+                        "evolution_count": evolution_count + 1,
+                        "evolution_log": current_log,
+                    }
+                )
+                .eq("id", section["id"])
+                .execute()
+            )
 
             logger.info(
                 "Dossier section evolved",

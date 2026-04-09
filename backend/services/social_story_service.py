@@ -26,6 +26,7 @@ from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
 from backend.services.base_service import serialize_for_json
 from backend.services.instagram_image_service import InstagramImageService
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -80,13 +81,7 @@ class SocialStoryService:
     @staticmethod
     async def get_by_id(admin: Client, story_id: UUID) -> dict | None:
         """Get a single social story by ID. Returns None if not found."""
-        response = await (
-            admin.table("social_stories")
-            .select("*")
-            .eq("id", str(story_id))
-            .limit(1)
-            .execute()
-        )
+        response = await admin.table("social_stories").select("*").eq("id", str(story_id)).limit(1).execute()
         return response.data[0] if response.data else None
 
     @staticmethod
@@ -110,25 +105,27 @@ class SocialStoryService:
     ) -> dict | None:
         """Update a story's status and optional extra fields. Returns updated record."""
         payload: dict = {"status": status, **{k: v for k, v in fields.items() if v is not None}}
-        response = await (
-            admin.table("social_stories")
-            .update(payload)
-            .eq("id", str(story_id))
-            .execute()
-        )
+        response = await admin.table("social_stories").update(payload).eq("id", str(story_id)).execute()
         return response.data[0] if response.data else None
 
     @staticmethod
     async def clear_and_reset(admin: Client, story_id: UUID) -> None:
         """Reset a story to pending, clearing image and IG metadata."""
-        await admin.table("social_stories").update({
-            "status": "pending",
-            "image_url": None,
-            "ig_story_id": None,
-            "ig_posted_at": None,
-            "published_at": None,
-            "failure_reason": None,
-        }).eq("id", str(story_id)).execute()
+        await (
+            admin.table("social_stories")
+            .update(
+                {
+                    "status": "pending",
+                    "image_url": None,
+                    "ig_story_id": None,
+                    "ig_posted_at": None,
+                    "published_at": None,
+                    "failure_reason": None,
+                }
+            )
+            .eq("id", str(story_id))
+            .execute()
+        )
 
     @staticmethod
     async def get_pipeline_settings(admin: Client) -> dict[str, str]:
@@ -157,23 +154,20 @@ class SocialStoryService:
         Returns the updated story record.
         Raises HTTPException on validation/publish failures.
         """
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
 
         story = await cls.get_by_id(admin, story_id)
         if not story:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Story not found.")
+            raise not_found(detail="Story not found.")
 
         if story["status"] not in ("pending", "ready"):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Cannot publish story with status '{story['status']}'.",
-            )
+            raise bad_request(f"Cannot publish story with status '{story['status']}'.")
 
         # Compose image if not yet ready
         if not story.get("image_url"):
             url = await cls.compose_story_image(admin, story_id)
             if not url:
-                raise HTTPException(status_code=500, detail="Image composition failed.")
+                raise server_error("Image composition failed.")
             story["image_url"] = url
 
         try:
@@ -183,7 +177,9 @@ class SocialStoryService:
             now_iso = datetime.now(UTC).isoformat()
 
             updated = await cls.update_status(
-                admin, story_id, "published",
+                admin,
+                story_id,
+                "published",
                 published_at=now_iso,
                 ig_story_id=media_id,
                 ig_posted_at=now_iso,
@@ -193,11 +189,16 @@ class SocialStoryService:
         except HTTPException:
             raise
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-            logger.exception("Force-publish story failed", extra={
-                "story_id": str(story_id),
-            })
+            logger.exception(
+                "Force-publish story failed",
+                extra={
+                    "story_id": str(story_id),
+                },
+            )
             await cls.update_status(
-                admin, story_id, "failed",
+                admin,
+                story_id,
+                "failed",
                 failure_reason=f"Force-publish failed: {exc!s}"[:500],
             )
             with sentry_sdk.push_scope() as scope:
@@ -225,23 +226,29 @@ class SocialStoryService:
 
         story = await cls.get_by_id(admin, story_id)
         if not story:
-            raise HTTPException(status_code=404, detail="Story not found.")
+            raise not_found(detail="Story not found.")
 
         # Step 1: Delete from Instagram if published
         ig_story_id = story.get("ig_story_id")
         if ig_story_id:
             try:
                 await ig_service.delete_media(ig_story_id)
-                logger.info("Deleted story from Instagram", extra={
-                    "story_id": str(story_id),
-                    "ig_story_id": ig_story_id,
-                })
+                logger.info(
+                    "Deleted story from Instagram",
+                    extra={
+                        "story_id": str(story_id),
+                        "ig_story_id": ig_story_id,
+                    },
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.warning("Could not delete story from Instagram (may have expired)", extra={
-                    "story_id": str(story_id),
-                    "ig_story_id": ig_story_id,
-                    "error": str(exc)[:200],
-                })
+                logger.warning(
+                    "Could not delete story from Instagram (may have expired)",
+                    extra={
+                        "story_id": str(story_id),
+                        "ig_story_id": ig_story_id,
+                        "error": str(exc)[:200],
+                    },
+                )
 
         # Step 2: Reset status and clear old image reference
         await cls.clear_and_reset(admin, story_id)
@@ -249,7 +256,7 @@ class SocialStoryService:
         # Step 3: Recompose image
         url = await cls.compose_story_image(admin, story_id)
         if not url:
-            raise HTTPException(status_code=500, detail="Image recomposition failed.")
+            raise server_error("Image recomposition failed.")
 
         # Step 4: Publish to Instagram
         try:
@@ -259,7 +266,9 @@ class SocialStoryService:
             now_iso = datetime.now(UTC).isoformat()
 
             updated = await cls.update_status(
-                admin, story_id, "published",
+                admin,
+                story_id,
+                "published",
                 published_at=now_iso,
                 ig_story_id=media_id,
                 ig_posted_at=now_iso,
@@ -269,11 +278,16 @@ class SocialStoryService:
         except HTTPException:
             raise
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-            logger.exception("Regenerate publish failed", extra={
-                "story_id": str(story_id),
-            })
+            logger.exception(
+                "Regenerate publish failed",
+                extra={
+                    "story_id": str(story_id),
+                },
+            )
             await cls.update_status(
-                admin, story_id, "failed",
+                admin,
+                story_id,
+                "failed",
                 failure_reason=f"Regenerate publish failed: {exc!s}"[:500],
             )
             with sentry_sdk.push_scope() as scope:
@@ -308,23 +322,23 @@ class SocialStoryService:
         """
         config = await cls._load_config(admin)
         if not config["enabled"]:
-            logger.debug("Resonance stories disabled — skipping", extra={
-                "resonance_id": str(resonance_id),
-            })
+            logger.debug(
+                "Resonance stories disabled — skipping",
+                extra={
+                    "resonance_id": str(resonance_id),
+                },
+            )
             return []
 
         # Fetch resonance record
-        res_resp = await (
-            admin.table("substrate_resonances")
-            .select("*")
-            .eq("id", str(resonance_id))
-            .limit(1)
-            .execute()
-        )
+        res_resp = await admin.table("substrate_resonances").select("*").eq("id", str(resonance_id)).limit(1).execute()
         if not res_resp.data:
-            logger.warning("Resonance not found for story creation", extra={
-                "resonance_id": str(resonance_id),
-            })
+            logger.warning(
+                "Resonance not found for story creation",
+                extra={
+                    "resonance_id": str(resonance_id),
+                },
+            )
             return []
         resonance = res_resp.data[0]
         magnitude = float(resonance.get("magnitude") or 0)
@@ -336,45 +350,59 @@ class SocialStoryService:
 
         # Layer 1: Magnitude gate
         if magnitude < config["auto_magnitude"] and not is_catastrophic:
-            logger.info("Resonance magnitude below auto threshold — skipping stories", extra={
-                "resonance_id": str(resonance_id),
-                "magnitude": magnitude,
-                "threshold": config["auto_magnitude"],
-            })
+            logger.info(
+                "Resonance magnitude below auto threshold — skipping stories",
+                extra={
+                    "resonance_id": str(resonance_id),
+                    "magnitude": magnitude,
+                    "threshold": config["auto_magnitude"],
+                },
+            )
             return []
 
         # Layer 2: Daily sequence budget (catastrophic bypasses)
         if not is_catastrophic:
             today_count = await cls._count_sequences_today(admin)
             if today_count >= config["max_sequences_per_day"]:
-                logger.info("Daily story sequence budget exhausted", extra={
-                    "resonance_id": str(resonance_id),
-                    "today_count": today_count,
-                    "max": config["max_sequences_per_day"],
-                })
+                logger.info(
+                    "Daily story sequence budget exhausted",
+                    extra={
+                        "resonance_id": str(resonance_id),
+                        "today_count": today_count,
+                        "max": config["max_sequences_per_day"],
+                    },
+                )
                 return []
 
         # Layer 3: Archetype dedup
         is_dedup = await cls._check_archetype_dedup(
-            admin, archetype, config["archetype_dedup_hours"],
+            admin,
+            archetype,
+            config["archetype_dedup_hours"],
         )
 
         # Layer 4: Cooldown window (catastrophic bypasses)
         if not is_catastrophic:
             in_cooldown = await cls._check_cooldown(admin, config["cooldown_hours"])
             if in_cooldown:
-                logger.info("Story cooldown active — skipping", extra={
-                    "resonance_id": str(resonance_id),
-                    "cooldown_hours": config["cooldown_hours"],
-                })
+                logger.info(
+                    "Story cooldown active — skipping",
+                    extra={
+                        "resonance_id": str(resonance_id),
+                        "cooldown_hours": config["cooldown_hours"],
+                    },
+                )
                 return []
 
         # Layer 5: Shared API budget
         api_ok = await cls._check_api_budget(admin, config["feed_post_reserve"])
         if not api_ok:
-            logger.warning("Insufficient API budget for stories", extra={
-                "resonance_id": str(resonance_id),
-            })
+            logger.warning(
+                "Insufficient API budget for stories",
+                extra={
+                    "resonance_id": str(resonance_id),
+                },
+            )
             return []
 
         # ── Build story sequence ──────────────────────────────────────────
@@ -383,7 +411,8 @@ class SocialStoryService:
 
         # Filter to completed impacts with sufficient magnitude
         significant_impacts = [
-            imp for imp in impacts
+            imp
+            for imp in impacts
             if imp.get("status") == "completed"
             and float(imp.get("effective_magnitude") or 0) >= config["impact_threshold"]
         ]
@@ -393,34 +422,40 @@ class SocialStoryService:
 
         if is_dedup:
             # Simplified single-story update for archetype dedup
-            story = await cls._create_story_record(admin, {
-                "resonance_id": str(resonance_id),
-                "story_type": "detection",
-                "sequence_index": 0,
-                "status": "pending",
-                "scheduled_at": now.isoformat(),
-                "archetype": archetype,
-                "magnitude": magnitude,
-                "caption": f"CONTINUED: {archetype} resonance intensifies. Magnitude {magnitude:.2f}.",
-            })
+            story = await cls._create_story_record(
+                admin,
+                {
+                    "resonance_id": str(resonance_id),
+                    "story_type": "detection",
+                    "sequence_index": 0,
+                    "status": "pending",
+                    "scheduled_at": now.isoformat(),
+                    "archetype": archetype,
+                    "magnitude": magnitude,
+                    "caption": f"CONTINUED: {archetype} resonance intensifies. Magnitude {magnitude:.2f}.",
+                },
+            )
             if story:
                 stories.append(story)
             return stories
 
         # Story 1: Detection (immediate)
-        story = await cls._create_story_record(admin, {
-            "resonance_id": str(resonance_id),
-            "story_type": "detection",
-            "sequence_index": seq,
-            "status": "pending",
-            "scheduled_at": (now + timedelta(minutes=_DETECTION_DELAY)).isoformat(),
-            "archetype": archetype,
-            "magnitude": magnitude,
-            "caption": (
-                f"Substrate anomaly detected. Signature: {resonance.get('resonance_signature', '')}. "
-                f"Archetype: {archetype}. Magnitude: {magnitude:.2f}."
-            ),
-        })
+        story = await cls._create_story_record(
+            admin,
+            {
+                "resonance_id": str(resonance_id),
+                "story_type": "detection",
+                "sequence_index": seq,
+                "status": "pending",
+                "scheduled_at": (now + timedelta(minutes=_DETECTION_DELAY)).isoformat(),
+                "archetype": archetype,
+                "magnitude": magnitude,
+                "caption": (
+                    f"Substrate anomaly detected. Signature: {resonance.get('resonance_signature', '')}. "
+                    f"Archetype: {archetype}. Magnitude: {magnitude:.2f}."
+                ),
+            },
+        )
         if story:
             stories.append(story)
         seq += 1
@@ -446,20 +481,23 @@ class SocialStoryService:
             highest_sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
             highest_susc_val = float(highest_susc.get("susceptibility") or 1.0)
 
-        story = await cls._create_story_record(admin, {
-            "resonance_id": str(resonance_id),
-            "story_type": "classification",
-            "sequence_index": seq,
-            "status": "pending",
-            "scheduled_at": (now + timedelta(minutes=_CLASSIFICATION_DELAY)).isoformat(),
-            "archetype": archetype,
-            "magnitude": magnitude,
-            "caption": (
-                f"Bureau classification: {resonance.get('source_category', '')}. "
-                f"Affected shards: {len(significant_impacts)}. "
-                f"Highest susceptibility: {highest_sim_name} ({highest_susc_val:.1f}x)."
-            ),
-        })
+        story = await cls._create_story_record(
+            admin,
+            {
+                "resonance_id": str(resonance_id),
+                "story_type": "classification",
+                "sequence_index": seq,
+                "status": "pending",
+                "scheduled_at": (now + timedelta(minutes=_CLASSIFICATION_DELAY)).isoformat(),
+                "archetype": archetype,
+                "magnitude": magnitude,
+                "caption": (
+                    f"Bureau classification: {resonance.get('source_category', '')}. "
+                    f"Affected shards: {len(significant_impacts)}. "
+                    f"Highest susceptibility: {highest_sim_name} ({highest_susc_val:.1f}x)."
+                ),
+            },
+        )
         if story:
             stories.append(story)
         seq += 1
@@ -471,11 +509,7 @@ class SocialStoryService:
 
             # Fetch simulation name, description, and events
             sim_resp = await (
-                admin.table("simulations")
-                .select("name, slug, description")
-                .eq("id", sim_id)
-                .limit(1)
-                .execute()
+                admin.table("simulations").select("name, slug, description").eq("id", sim_id).limit(1).execute()
             )
             sim_data = sim_resp.data[0] if sim_resp.data else {}
             sim_name = sim_data.get("name", "Unknown Shard")
@@ -485,35 +519,39 @@ class SocialStoryService:
             spawned_ids = impact.get("spawned_event_ids") or []
             if spawned_ids:
                 evt_resp = await (
-                    admin.table("events")
-                    .select("title")
-                    .in_("id", [str(eid) for eid in spawned_ids[:5]])
-                    .execute()
+                    admin.table("events").select("title").in_("id", [str(eid) for eid in spawned_ids[:5]]).execute()
                 )
                 event_titles = [e["title"] for e in (evt_resp.data or [])]
 
             # Generate AI poetic closing line
             closing_line = await cls._generate_closing_line(
-                admin, UUID(sim_id), archetype, sim_name, sim_description,
+                admin,
+                UUID(sim_id),
+                archetype,
+                sim_name,
+                sim_description,
             )
 
             delay = _IMPACT_BASE_DELAY + (i * _IMPACT_STAGGER)
-            story = await cls._create_story_record(admin, {
-                "resonance_id": str(resonance_id),
-                "simulation_id": sim_id,
-                "story_type": "impact",
-                "sequence_index": seq,
-                "status": "pending",
-                "scheduled_at": (now + timedelta(minutes=delay)).isoformat(),
-                "archetype": archetype,
-                "magnitude": magnitude,
-                "effective_magnitude": eff_mag,
-                "narrative_closing": closing_line,
-                "caption": (
-                    f"Shard impact: {sim_name}. Effective magnitude: {eff_mag:.2f}. "
-                    f"Events spawned: {len(event_titles)}."
-                ),
-            })
+            story = await cls._create_story_record(
+                admin,
+                {
+                    "resonance_id": str(resonance_id),
+                    "simulation_id": sim_id,
+                    "story_type": "impact",
+                    "sequence_index": seq,
+                    "status": "pending",
+                    "scheduled_at": (now + timedelta(minutes=delay)).isoformat(),
+                    "archetype": archetype,
+                    "magnitude": magnitude,
+                    "effective_magnitude": eff_mag,
+                    "narrative_closing": closing_line,
+                    "caption": (
+                        f"Shard impact: {sim_name}. Effective magnitude: {eff_mag:.2f}. "
+                        f"Events spawned: {len(event_titles)}."
+                    ),
+                },
+            )
             if story:
                 stories.append(story)
             seq += 1
@@ -530,31 +568,37 @@ class SocialStoryService:
             opposed = alignment.get("opposed", [])
 
             if aligned or opposed:
-                story = await cls._create_story_record(admin, {
-                    "resonance_id": str(resonance_id),
-                    "story_type": "advisory",
-                    "sequence_index": seq,
-                    "status": "pending",
-                    "scheduled_at": (now + timedelta(minutes=_ADVISORY_DELAY)).isoformat(),
-                    "archetype": archetype,
-                    "magnitude": magnitude,
-                    "caption": (
-                        f"Operative advisory: {archetype} resonance active. "
-                        f"Aligned: {', '.join(aligned)} (+3%). "
-                        f"Opposed: {', '.join(opposed)} (-2%). "
-                        "Deploy accordingly."
-                    ),
-                })
+                story = await cls._create_story_record(
+                    admin,
+                    {
+                        "resonance_id": str(resonance_id),
+                        "story_type": "advisory",
+                        "sequence_index": seq,
+                        "status": "pending",
+                        "scheduled_at": (now + timedelta(minutes=_ADVISORY_DELAY)).isoformat(),
+                        "archetype": archetype,
+                        "magnitude": magnitude,
+                        "caption": (
+                            f"Operative advisory: {archetype} resonance active. "
+                            f"Aligned: {', '.join(aligned)} (+3%). "
+                            f"Opposed: {', '.join(opposed)} (-2%). "
+                            "Deploy accordingly."
+                        ),
+                    },
+                )
                 if story:
                     stories.append(story)
 
-        logger.info("Created resonance story sequence", extra={
-            "resonance_id": str(resonance_id),
-            "archetype": archetype,
-            "magnitude": magnitude,
-            "story_count": len(stories),
-            "is_catastrophic": is_catastrophic,
-        })
+        logger.info(
+            "Created resonance story sequence",
+            extra={
+                "resonance_id": str(resonance_id),
+                "archetype": archetype,
+                "magnitude": magnitude,
+                "story_count": len(stories),
+                "is_catastrophic": is_catastrophic,
+            },
+        )
         return stories
 
     @classmethod
@@ -571,13 +615,7 @@ class SocialStoryService:
         if not config["enabled"]:
             return None
 
-        res_resp = await (
-            admin.table("substrate_resonances")
-            .select("*")
-            .eq("id", str(resonance_id))
-            .limit(1)
-            .execute()
-        )
+        res_resp = await admin.table("substrate_resonances").select("*").eq("id", str(resonance_id)).limit(1).execute()
         if not res_resp.data:
             return None
         resonance = res_resp.data[0]
@@ -592,9 +630,7 @@ class SocialStoryService:
             .execute()
         )
         impacts = impacts_resp.data or []
-        total_events = sum(
-            len(imp.get("spawned_event_ids") or []) for imp in impacts
-        )
+        total_events = sum(len(imp.get("spawned_event_ids") or []) for imp in impacts)
         shards_affected = len(impacts)
 
         # Get highest sequence_index for this resonance
@@ -608,28 +644,34 @@ class SocialStoryService:
         )
         next_seq = (existing.data[0]["sequence_index"] + 1) if existing.data else 0
 
-        story = await cls._create_story_record(admin, {
-            "resonance_id": str(resonance_id),
-            "story_type": "subsiding",
-            "sequence_index": next_seq,
-            "status": "pending",
-            "scheduled_at": datetime.now(UTC).isoformat(),
-            "archetype": archetype,
-            "magnitude": float(resonance.get("magnitude") or 0),
-            "caption": (
-                f"Substrate stabilizing. {archetype} resonance subsiding. "
-                f"{total_events} events spawned across {shards_affected} shards. "
-                "The trembling fades. The scars remain."
-            ),
-        })
+        story = await cls._create_story_record(
+            admin,
+            {
+                "resonance_id": str(resonance_id),
+                "story_type": "subsiding",
+                "sequence_index": next_seq,
+                "status": "pending",
+                "scheduled_at": datetime.now(UTC).isoformat(),
+                "archetype": archetype,
+                "magnitude": float(resonance.get("magnitude") or 0),
+                "caption": (
+                    f"Substrate stabilizing. {archetype} resonance subsiding. "
+                    f"{total_events} events spawned across {shards_affected} shards. "
+                    "The trembling fades. The scars remain."
+                ),
+            },
+        )
 
         if story:
-            logger.info("Created subsiding story", extra={
-                "resonance_id": str(resonance_id),
-                "archetype": archetype,
-                "total_events": total_events,
-                "shards_affected": shards_affected,
-            })
+            logger.info(
+                "Created subsiding story",
+                extra={
+                    "resonance_id": str(resonance_id),
+                    "archetype": archetype,
+                    "total_events": total_events,
+                    "shards_affected": shards_affected,
+                },
+            )
         return story
 
     # ── Image Composition ─────────────────────────────────────────────────
@@ -645,21 +687,20 @@ class SocialStoryService:
         Reads story record, selects template by story_type, composes 1080×1920
         image, uploads to Supabase storage, and updates the record.
         """
-        resp = await (
-            admin.table("social_stories")
-            .select("*")
-            .eq("id", str(story_id))
-            .limit(1)
-            .execute()
-        )
+        resp = await admin.table("social_stories").select("*").eq("id", str(story_id)).limit(1).execute()
         if not resp.data:
             return None
         story = resp.data[0]
 
         # Update status to composing
-        await admin.table("social_stories").update(
-            {"status": "composing"},
-        ).eq("id", str(story_id)).execute()
+        await (
+            admin.table("social_stories")
+            .update(
+                {"status": "composing"},
+            )
+            .eq("id", str(story_id))
+            .execute()
+        )
 
         composer = InstagramImageService(admin)
         story_type = story["story_type"]
@@ -672,24 +713,38 @@ class SocialStoryService:
                 jpeg_bytes = cls._compose_detection(composer, story, accent_hex, magnitude)
             elif story_type == "classification":
                 jpeg_bytes = await cls._compose_classification(
-                    composer, admin, story, accent_hex,
+                    composer,
+                    admin,
+                    story,
+                    accent_hex,
                 )
             elif story_type == "impact":
                 jpeg_bytes = await cls._compose_impact(
-                    composer, admin, story, accent_hex,
+                    composer,
+                    admin,
+                    story,
+                    accent_hex,
                 )
             elif story_type == "advisory":
                 jpeg_bytes = cls._compose_advisory(composer, story, accent_hex)
             elif story_type == "subsiding":
                 jpeg_bytes = await cls._compose_subsiding(composer, admin, story, accent_hex)
             else:
-                logger.warning("Unknown story type — cannot compose", extra={
-                    "story_id": str(story_id),
-                    "story_type": story_type,
-                })
-                await admin.table("social_stories").update(
-                    {"status": "failed", "failure_reason": f"Unknown story type: {story_type}"},
-                ).eq("id", str(story_id)).execute()
+                logger.warning(
+                    "Unknown story type — cannot compose",
+                    extra={
+                        "story_id": str(story_id),
+                        "story_type": story_type,
+                    },
+                )
+                await (
+                    admin.table("social_stories")
+                    .update(
+                        {"status": "failed", "failure_reason": f"Unknown story type: {story_type}"},
+                    )
+                    .eq("id", str(story_id))
+                    .execute()
+                )
                 return None
 
             # Upload to staging
@@ -701,33 +756,56 @@ class SocialStoryService:
             )
 
             # Update record
-            await admin.table("social_stories").update({
-                "image_url": url,
-                "status": "ready",
-            }).eq("id", str(story_id)).execute()
+            await (
+                admin.table("social_stories")
+                .update(
+                    {
+                        "image_url": url,
+                        "status": "ready",
+                    }
+                )
+                .eq("id", str(story_id))
+                .execute()
+            )
 
-            logger.info("Composed story image", extra={
-                "story_id": str(story_id),
-                "story_type": story_type,
-                "image_size": len(jpeg_bytes),
-            })
+            logger.info(
+                "Composed story image",
+                extra={
+                    "story_id": str(story_id),
+                    "story_type": story_type,
+                    "image_size": len(jpeg_bytes),
+                },
+            )
             return url
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-            logger.exception("Story image composition failed", extra={
-                "story_id": str(story_id),
-                "story_type": story_type,
-            })
-            await admin.table("social_stories").update({
-                "status": "failed",
-                "failure_reason": f"Image composition failed: {exc!s}"[:500],
-            }).eq("id", str(story_id)).execute()
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("social_story_phase", "compose")
-                scope.set_context("story", {
+            logger.exception(
+                "Story image composition failed",
+                extra={
                     "story_id": str(story_id),
                     "story_type": story_type,
-                })
+                },
+            )
+            await (
+                admin.table("social_stories")
+                .update(
+                    {
+                        "status": "failed",
+                        "failure_reason": f"Image composition failed: {exc!s}"[:500],
+                    }
+                )
+                .eq("id", str(story_id))
+                .execute()
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("social_story_phase", "compose")
+                scope.set_context(
+                    "story",
+                    {
+                        "story_id": str(story_id),
+                        "story_type": story_type,
+                    },
+                )
                 sentry_sdk.capture_exception(exc)
             return None
 
@@ -817,11 +895,7 @@ class SocialStoryService:
         banner_url = None
         if sim_id:
             sim_resp = await (
-                admin.table("simulations")
-                .select("name, slug, banner_url")
-                .eq("id", sim_id)
-                .limit(1)
-                .execute()
+                admin.table("simulations").select("name, slug, banner_url").eq("id", sim_id).limit(1).execute()
             )
             if sim_resp.data:
                 sim_name = sim_resp.data[0]["name"]
@@ -851,10 +925,7 @@ class SocialStoryService:
         event_titles: list[str] = []
         if spawned_ids:
             evt_resp = await (
-                admin.table("events")
-                .select("title")
-                .in_("id", [str(eid) for eid in spawned_ids[:5]])
-                .execute()
+                admin.table("events").select("title").in_("id", [str(eid) for eid in spawned_ids[:5]]).execute()
             )
             event_titles = [e["title"] for e in (evt_resp.data or [])]
 
@@ -865,8 +936,7 @@ class SocialStoryService:
             rxn_resp = await (
                 admin.table("event_reactions")
                 .select(
-                    "agent_name, reaction_text, emotion, confidence_score,"
-                    " agent_id, agents(portrait_image_url)",
+                    "agent_name, reaction_text, emotion, confidence_score, agent_id, agents(portrait_image_url)",
                 )
                 .in_("event_id", [str(eid) for eid in spawned_ids])
                 .order("confidence_score", desc=True)
@@ -884,16 +954,20 @@ class SocialStoryService:
                 agent_data = rxn.get("agents") or {}
                 portrait_url = agent_data.get("portrait_image_url")
                 if portrait_url and len(portrait_candidates) < 4:
-                    portrait_candidates.append({
-                        "url": portrait_url,
-                        "agent_name": rxn["agent_name"],
-                    })
+                    portrait_candidates.append(
+                        {
+                            "url": portrait_url,
+                            "agent_name": rxn["agent_name"],
+                        }
+                    )
                 if len(reaction_data) < 3:
-                    reaction_data.append({
-                        "agent_name": rxn["agent_name"],
-                        "text": rxn["reaction_text"],
-                        "emotion": rxn.get("emotion"),
-                    })
+                    reaction_data.append(
+                        {
+                            "agent_name": rxn["agent_name"],
+                            "text": rxn["reaction_text"],
+                            "emotion": rxn.get("emotion"),
+                        }
+                    )
 
         # Download banner + portraits concurrently
         urls_to_download: list[tuple[str, str]] = []
@@ -905,10 +979,7 @@ class SocialStoryService:
         downloaded: dict[str, bytes] = {}
         if urls_to_download:
             results = await asyncio.gather(
-                *[
-                    InstagramImageService._download_image_safe(url)
-                    for _, url in urls_to_download
-                ],
+                *[InstagramImageService._download_image_safe(url) for _, url in urls_to_download],
             )
             for (label, _), result in zip(urls_to_download, results, strict=True):
                 if result is not None:
@@ -919,10 +990,12 @@ class SocialStoryService:
         for i, p in enumerate(portrait_candidates):
             img_bytes = downloaded.get(f"portrait_{i}")
             if img_bytes:
-                portraits.append({
-                    "image_bytes": img_bytes,
-                    "agent_name": p["agent_name"],
-                })
+                portraits.append(
+                    {
+                        "image_bytes": img_bytes,
+                        "agent_name": p["agent_name"],
+                    }
+                )
 
         return composer.compose_story_impact(
             simulation_name=sim_name,
@@ -976,9 +1049,7 @@ class SocialStoryService:
             )
             impacts = impacts_resp.data or []
             shards_affected = len(impacts)
-            events_total = sum(
-                len(imp.get("spawned_event_ids") or []) for imp in impacts
-            )
+            events_total = sum(len(imp.get("spawned_event_ids") or []) for imp in impacts)
 
         return composer.compose_story_subsiding(
             archetype=archetype,
@@ -1005,7 +1076,9 @@ class SocialStoryService:
 
     @staticmethod
     async def _check_archetype_dedup(
-        admin: Client, archetype: str, dedup_hours: int,
+        admin: Client,
+        archetype: str,
+        dedup_hours: int,
     ) -> bool:
         """Check if this archetype already had a sequence within the dedup window.
 
@@ -1108,17 +1181,20 @@ class SocialStoryService:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "resonance_stories_enabled",
-                    "resonance_stories_auto_magnitude",
-                    "resonance_stories_max_sequences_per_day",
-                    "resonance_stories_cooldown_hours",
-                    "resonance_stories_archetype_dedup_hours",
-                    "resonance_stories_catastrophic_threshold",
-                    "resonance_stories_advisory_in_epochs_only",
-                    "resonance_stories_impact_threshold",
-                    "resonance_stories_feed_post_reserve",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "resonance_stories_enabled",
+                        "resonance_stories_auto_magnitude",
+                        "resonance_stories_max_sequences_per_day",
+                        "resonance_stories_cooldown_hours",
+                        "resonance_stories_archetype_dedup_hours",
+                        "resonance_stories_catastrophic_threshold",
+                        "resonance_stories_advisory_in_epochs_only",
+                        "resonance_stories_impact_threshold",
+                        "resonance_stories_feed_post_reserve",
+                    ],
+                )
                 .execute()
             )
             rows = _resp.data or []
@@ -1199,10 +1275,13 @@ class SocialStoryService:
             resp = await admin.table("social_stories").insert(insert_data).execute()
             return resp.data[0] if resp.data else None
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-            logger.exception("Failed to create social story record", extra={
-                "story_type": data.get("story_type"),
-                "resonance_id": data.get("resonance_id"),
-            })
+            logger.exception(
+                "Failed to create social story record",
+                extra={
+                    "story_type": data.get("story_type"),
+                    "resonance_id": data.get("resonance_id"),
+                },
+            )
             return None
 
 

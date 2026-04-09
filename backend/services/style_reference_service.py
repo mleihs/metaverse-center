@@ -59,13 +59,10 @@ class StyleReferenceService:
         # Validate
         if content_type not in ALLOWED_CONTENT_TYPES:
             raise ValueError(
-                f"Unsupported image type: {content_type}. "
-                f"Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
+                f"Unsupported image type: {content_type}. Allowed: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
             )
         if len(image_data) > MAX_FILE_SIZE:
-            raise ValueError(
-                f"File too large: {len(image_data)} bytes (max {MAX_FILE_SIZE // (1024 * 1024)} MB)"
-            )
+            raise ValueError(f"File too large: {len(image_data)} bytes (max {MAX_FILE_SIZE // (1024 * 1024)} MB)")
         if entity_type not in ("portrait", "building"):
             raise ValueError(f"Invalid entity_type: {entity_type}")
         if scope not in ("global", "entity"):
@@ -78,9 +75,7 @@ class StyleReferenceService:
 
         # Upload to storage
         file_id = str(uuid4())
-        storage_path = (
-            f"{simulation_id}/style-refs/{entity_type}/{file_id}.avif"
-        )
+        storage_path = f"{simulation_id}/style-refs/{entity_type}/{file_id}.avif"
 
         await supabase.storage.from_(STORAGE_BUCKET).upload(
             storage_path,
@@ -92,18 +87,27 @@ class StyleReferenceService:
         # Persist reference
         if scope == "global":
             await _upsert_setting(
-                supabase, simulation_id,
-                f"image_ref_global_{entity_type}", url,
+                supabase,
+                simulation_id,
+                f"image_ref_global_{entity_type}",
+                url,
             )
             await _upsert_setting(
-                supabase, simulation_id,
-                f"image_ref_strength_{entity_type}", str(strength),
+                supabase,
+                simulation_id,
+                f"image_ref_strength_{entity_type}",
+                str(strength),
             )
         else:
             table = "agents" if entity_type == "portrait" else "buildings"
-            await supabase.table(table).update(
-                {"style_reference_url": url},
-            ).eq("id", str(entity_id)).execute()
+            await (
+                supabase.table(table)
+                .update(
+                    {"style_reference_url": url},
+                )
+                .eq("id", str(entity_id))
+                .execute()
+            )
 
         logger.info(
             "Style reference uploaded",
@@ -164,13 +168,7 @@ class StyleReferenceService:
         # 1. Check entity-level reference
         if entity_id:
             table = "agents" if entity_type == "portrait" else "buildings"
-            resp = await (
-                supabase.table(table)
-                .select("style_reference_url")
-                .eq("id", str(entity_id))
-                .limit(1)
-                .execute()
-            )
+            resp = await supabase.table(table).select("style_reference_url").eq("id", str(entity_id)).limit(1).execute()
             if resp.data and resp.data[0].get("style_reference_url"):
                 return {
                     "url": resp.data[0]["style_reference_url"],
@@ -269,19 +267,18 @@ class StyleReferenceService:
             table = "agents" if entity_type == "portrait" else "buildings"
 
             # Resolve current URL to delete from storage
-            resp = await (
-                supabase.table(table)
-                .select("style_reference_url")
-                .eq("id", str(entity_id))
-                .limit(1)
-                .execute()
-            )
+            resp = await supabase.table(table).select("style_reference_url").eq("id", str(entity_id)).limit(1).execute()
             if resp.data and resp.data[0].get("style_reference_url"):
                 await _try_delete_storage_file(supabase, resp.data[0]["style_reference_url"])
 
-            await supabase.table(table).update(
-                {"style_reference_url": None},
-            ).eq("id", str(entity_id)).execute()
+            await (
+                supabase.table(table)
+                .update(
+                    {"style_reference_url": None},
+                )
+                .eq("id", str(entity_id))
+                .execute()
+            )
 
         logger.info(
             "Style reference deleted",
@@ -307,17 +304,21 @@ class StyleReferenceService:
 
         # Global reference
         ref = await StyleReferenceService.resolve_reference(
-            supabase, simulation_id, entity_type,
+            supabase,
+            simulation_id,
+            entity_type,
         )
         if ref and ref["scope"] == "global":
-            results.append({
-                "entity_type": entity_type,
-                "scope": "global",
-                "reference_image_url": ref["url"],
-                "strength": ref["strength"],
-                "entity_id": None,
-                "entity_name": None,
-            })
+            results.append(
+                {
+                    "entity_type": entity_type,
+                    "scope": "global",
+                    "reference_image_url": ref["url"],
+                    "strength": ref["strength"],
+                    "entity_id": None,
+                    "entity_name": None,
+                }
+            )
 
         # Per-entity references
         table = "agents" if entity_type == "portrait" else "buildings"
@@ -330,14 +331,16 @@ class StyleReferenceService:
         )
         for row in resp.data or []:
             if row.get("style_reference_url"):
-                results.append({
-                    "entity_type": entity_type,
-                    "scope": "entity",
-                    "reference_image_url": row["style_reference_url"],
-                    "strength": 0.75,
-                    "entity_id": row["id"],
-                    "entity_name": row.get("name"),
-                })
+                results.append(
+                    {
+                        "entity_type": entity_type,
+                        "scope": "entity",
+                        "reference_image_url": row["style_reference_url"],
+                        "strength": 0.75,
+                        "entity_id": row["id"],
+                        "entity_name": row.get("name"),
+                    }
+                )
 
         return results
 
@@ -349,15 +352,19 @@ async def _upsert_setting(
     value: str,
 ) -> None:
     """Upsert a simulation_settings row in the 'ai' category."""
-    await supabase.table("simulation_settings").upsert(
-        {
-            "simulation_id": str(simulation_id),
-            "category": "ai",
-            "setting_key": key,
-            "setting_value": value,
-        },
-        on_conflict="simulation_id,category,setting_key",
-    ).execute()
+    await (
+        supabase.table("simulation_settings")
+        .upsert(
+            {
+                "simulation_id": str(simulation_id),
+                "category": "ai",
+                "setting_key": key,
+                "setting_value": value,
+            },
+            on_conflict="simulation_id,category,setting_key",
+        )
+        .execute()
+    )
 
 
 async def _try_delete_storage_file(supabase: Client, url: str) -> None:
@@ -369,7 +376,7 @@ async def _try_delete_storage_file(supabase: Client, url: str) -> None:
             # Remove the "object/public/" prefix if present
             path = parts[1]
             if path.startswith("object/public/"):
-                path = path[len("object/public/"):]
+                path = path[len("object/public/") :]
             await supabase.storage.from_(STORAGE_BUCKET).remove([path])
     except (PostgrestAPIError, httpx.HTTPError, OSError):
         logger.warning("Failed to delete storage file: %s", url, exc_info=True)

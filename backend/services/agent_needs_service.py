@@ -73,10 +73,13 @@ class AgentNeedsService:
             phase="needs_decay",
         )
 
-        result = await supabase.rpc("fn_decay_agent_needs", {
-            "p_simulation_id": str(simulation_id),
-            "p_rate_multiplier": rate_multiplier,
-        }).execute()
+        result = await supabase.rpc(
+            "fn_decay_agent_needs",
+            {
+                "p_simulation_id": str(simulation_id),
+                "p_rate_multiplier": rate_multiplier,
+            },
+        ).execute()
 
         updated = result.data if isinstance(result.data, int) else 0
         logger.info("Needs decayed", extra={"agents_updated": updated, "rate": rate_multiplier})
@@ -98,11 +101,14 @@ class AgentNeedsService:
             logger.warning("Invalid need type", extra={"need_type": need_type})
             return 0.0
 
-        result = await supabase.rpc("fn_fulfill_agent_need", {
-            "p_agent_id": str(agent_id),
-            "p_need_type": need_type,
-            "p_amount": amount,
-        }).execute()
+        result = await supabase.rpc(
+            "fn_fulfill_agent_need",
+            {
+                "p_agent_id": str(agent_id),
+                "p_need_type": need_type,
+                "p_amount": amount,
+            },
+        ).execute()
 
         return float(result.data) if result.data is not None else 0.0
 
@@ -168,7 +174,10 @@ class AgentNeedsService:
 
     @classmethod
     async def get_agent_needs(
-        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+        simulation_id: UUID,
     ) -> dict | None:
         """Get need levels for a single agent."""
         result = await (

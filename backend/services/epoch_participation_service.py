@@ -4,10 +4,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.epoch import EpochConfig
 from backend.services.bot_personality import auto_draft
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -57,27 +56,17 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only join epochs in lobby phase.",
-            )
+            raise bad_request("Can only join epochs in lobby phase.")
 
         # Check simulation is a template (not game instance/archived)
         sim_resp = await (
-            supabase.table("simulations")
-            .select("simulation_type")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("simulation_type").eq("id", str(simulation_id)).limit(1).execute()
         )
         if not sim_resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Simulation not found.")
+            raise not_found(detail="Simulation not found.")
         sim_type = sim_resp.data[0].get("simulation_type")
         if sim_type and sim_type != "template":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only join with template simulations.",
-            )
+            raise bad_request("Can only join with template simulations.")
 
         # Check simulation not already in epoch
         existing = await (
@@ -88,10 +77,7 @@ class EpochParticipationService:
             .execute()
         )
         if existing.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "This simulation is already in the epoch.",
-            )
+            raise conflict("This simulation is already in the epoch.")
 
         # Check user not already in epoch (with different sim)
         if user_id:
@@ -103,18 +89,17 @@ class EpochParticipationService:
                 .execute()
             )
             if existing_user.data:
-                raise HTTPException(
-                    status.HTTP_409_CONFLICT,
-                    "You are already in this epoch.",
-                )
+                raise conflict("You are already in this epoch.")
 
         resp = await (
             supabase.table("epoch_participants")
-            .insert({
-                "epoch_id": str(epoch_id),
-                "simulation_id": str(simulation_id),
-                **({"user_id": str(user_id)} if user_id else {}),
-            })
+            .insert(
+                {
+                    "epoch_id": str(epoch_id),
+                    "simulation_id": str(simulation_id),
+                    **({"user_id": str(user_id)} if user_id else {}),
+                }
+            )
             .execute()
         )
         return resp.data[0] if resp.data else {}
@@ -131,14 +116,15 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only leave epochs in lobby phase.",
-            )
+            raise bad_request("Can only leave epochs in lobby phase.")
 
-        await supabase.table("epoch_participants").delete().eq(
-            "epoch_id", str(epoch_id)
-        ).eq("simulation_id", str(simulation_id)).execute()
+        await (
+            supabase.table("epoch_participants")
+            .delete()
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
 
     # ── Draft ────────────────────────────────────────────────
 
@@ -155,19 +141,13 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only draft agents during lobby phase.",
-            )
+            raise bad_request("Can only draft agents during lobby phase.")
 
         # Check max_agents_per_player
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         max_agents = config.get("max_agents_per_player", 6)
         if len(agent_ids) > max_agents:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Cannot draft more than {max_agents} agents.",
-            )
+            raise bad_request(f"Cannot draft more than {max_agents} agents.")
 
         # Verify all agents belong to the participant's simulation
         for aid in agent_ids:
@@ -180,27 +160,23 @@ class EpochParticipationService:
                 .execute()
             )
             if not agent_resp.data:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    f"Agent {aid} not found in simulation {simulation_id}.",
-                )
+                raise bad_request(f"Agent {aid} not found in simulation {simulation_id}.")
 
         # Update participant row
         resp = await (
             supabase.table("epoch_participants")
-            .update({
-                "drafted_agent_ids": [str(a) for a in agent_ids],
-                "draft_completed_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "drafted_agent_ids": [str(a) for a in agent_ids],
+                    "draft_completed_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                "Participant not found for this epoch/simulation.",
-            )
+            raise not_found(detail="Participant not found for this epoch/simulation.")
         return resp.data[0]
 
     # ── Teams / Alliances ────────────────────────────────────
@@ -209,11 +185,7 @@ class EpochParticipationService:
     async def list_teams(cls, supabase: Client, epoch_id: UUID) -> list[dict]:
         """List all teams in an epoch."""
         resp = await (
-            supabase.table("epoch_teams")
-            .select("*")
-            .eq("epoch_id", str(epoch_id))
-            .order("created_at")
-            .execute()
+            supabase.table("epoch_teams").select("*").eq("epoch_id", str(epoch_id)).order("created_at").execute()
         )
         return resp.data or []
 
@@ -230,29 +202,30 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] not in ("lobby", "foundation", "competition"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Alliances can only be formed during lobby, foundation, or competition phase.",
-            )
+            raise bad_request("Alliances can only be formed during lobby, foundation, or competition phase.")
 
         resp = await (
             supabase.table("epoch_teams")
-            .insert({
-                "epoch_id": str(epoch_id),
-                "name": name,
-                "created_by_simulation_id": str(simulation_id),
-            })
+            .insert(
+                {
+                    "epoch_id": str(epoch_id),
+                    "name": name,
+                    "created_by_simulation_id": str(simulation_id),
+                }
+            )
             .execute()
         )
         team = resp.data[0] if resp.data else {}
 
         # Auto-join creator to team
         if team:
-            await supabase.table("epoch_participants").update(
-                {"team_id": team["id"]}
-            ).eq("epoch_id", str(epoch_id)).eq(
-                "simulation_id", str(simulation_id)
-            ).execute()
+            await (
+                supabase.table("epoch_participants")
+                .update({"team_id": team["id"]})
+                .eq("epoch_id", str(epoch_id))
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
 
         return team
 
@@ -271,17 +244,11 @@ class EpochParticipationService:
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
 
         if epoch["status"] not in ("lobby", "foundation", "competition"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Cannot join alliances during reckoning or after completion.",
-            )
+            raise bad_request("Cannot join alliances during reckoning or after completion.")
 
         # During competition, require alliance proposals instead of instant join
         if epoch["status"] == "competition":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "During active competition, use alliance proposals to request joining a team.",
-            )
+            raise bad_request("During active competition, use alliance proposals to request joining a team.")
 
         # Check team size limit
         members = await (
@@ -292,10 +259,7 @@ class EpochParticipationService:
             .execute()
         )
         if len(members.data or []) >= config["max_team_size"]:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Team is full (max {config['max_team_size']} members).",
-            )
+            raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
         resp = await (
             supabase.table("epoch_participants")
@@ -338,10 +302,7 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only add bots during lobby phase.",
-            )
+            raise bad_request("Can only add bots during lobby phase.")
 
         # Verify bot exists
         bot_resp = await (
@@ -352,7 +313,7 @@ class EpochParticipationService:
             .execute()
         )
         if not bot_resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bot player not found.")
+            raise not_found(detail="Bot player not found.")
 
         # Check simulation not already in epoch
         existing = await (
@@ -363,10 +324,7 @@ class EpochParticipationService:
             .execute()
         )
         if existing.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "This simulation is already in the epoch.",
-            )
+            raise conflict("This simulation is already in the epoch.")
 
         # Auto-draft agents based on bot personality
         # Use the provided supabase client (admin from router) to bypass RLS —
@@ -401,24 +359,24 @@ class EpochParticipationService:
         for agent in agents:
             agent["aptitudes"] = apt_map.get(agent["id"], {})
 
-        drafted_ids = auto_draft(
-            bot_resp.data["personality"], agents, max_agents
-        )
+        drafted_ids = auto_draft(bot_resp.data["personality"], agents, max_agents)
 
         resp = await (
             supabase.table("epoch_participants")
-            .insert({
-                "epoch_id": str(epoch_id),
-                "simulation_id": str(simulation_id),
-                "is_bot": True,
-                "bot_player_id": str(bot_player_id),
-                "drafted_agent_ids": drafted_ids,
-                "draft_completed_at": datetime.now(UTC).isoformat(),
-            })
+            .insert(
+                {
+                    "epoch_id": str(epoch_id),
+                    "simulation_id": str(simulation_id),
+                    "is_bot": True,
+                    "bot_player_id": str(bot_player_id),
+                    "drafted_agent_ids": drafted_ids,
+                    "draft_completed_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to add bot.")
+            raise server_error("Failed to add bot.")
         return resp.data[0]
 
     @classmethod
@@ -433,10 +391,7 @@ class EpochParticipationService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only remove bots during lobby phase.",
-            )
+            raise bad_request("Can only remove bots during lobby phase.")
 
         p_resp = await (
             supabase.table("epoch_participants")
@@ -447,8 +402,8 @@ class EpochParticipationService:
             .execute()
         )
         if not p_resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Participant not found.")
+            raise not_found(detail="Participant not found.")
         if not p_resp.data.get("is_bot"):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This participant is not a bot.")
+            raise bad_request("This participant is not a bot.")
 
         await supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()

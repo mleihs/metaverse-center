@@ -136,9 +136,12 @@ class AgentOpinionService:
         )
 
         # 1. Recalculate all opinion scores (PostgreSQL atomic)
-        recalc_result = await supabase.rpc("fn_recalculate_opinion_scores", {
-            "p_simulation_id": str(simulation_id),
-        }).execute()
+        recalc_result = await supabase.rpc(
+            "fn_recalculate_opinion_scores",
+            {
+                "p_simulation_id": str(simulation_id),
+            },
+        ).execute()
         recalculated = recalc_result.data if isinstance(recalc_result.data, int) else 0
 
         # 2. Check relationship thresholds
@@ -204,11 +207,14 @@ class AgentOpinionService:
         # Check stacking cap
         if stacking_group:
             cap = STACKING_CAPS.get(stacking_group, DEFAULT_STACKING_CAP)
-            count_result = await supabase.rpc("fn_count_opinion_modifier_stacking", {
-                "p_agent_id": str(agent_id),
-                "p_target_agent_id": str(target_agent_id),
-                "p_stacking_group": stacking_group,
-            }).execute()
+            count_result = await supabase.rpc(
+                "fn_count_opinion_modifier_stacking",
+                {
+                    "p_agent_id": str(agent_id),
+                    "p_target_agent_id": str(target_agent_id),
+                    "p_stacking_group": stacking_group,
+                },
+            ).execute()
             current_count = count_result.data if isinstance(count_result.data, int) else 0
 
             if current_count >= cap:
@@ -223,25 +229,34 @@ class AgentOpinionService:
         await cls._ensure_opinion_record(supabase, agent_id, target_agent_id, simulation_id)
 
         # Insert modifier
-        await supabase.table("agent_opinion_modifiers").insert({
-            "agent_id": str(agent_id),
-            "target_agent_id": str(target_agent_id),
-            "simulation_id": str(simulation_id),
-            "modifier_type": modifier_type,
-            "opinion_change": max(-30, min(30, opinion_change)),
-            "decay_type": decay_type,
-            "initial_value": opinion_change,
-            "expires_at": expires_at,
-            "stacking_group": stacking_group,
-            "source_event_id": str(source_event_id) if source_event_id else None,
-            "description": description,
-        }).execute()
+        await (
+            supabase.table("agent_opinion_modifiers")
+            .insert(
+                {
+                    "agent_id": str(agent_id),
+                    "target_agent_id": str(target_agent_id),
+                    "simulation_id": str(simulation_id),
+                    "modifier_type": modifier_type,
+                    "opinion_change": max(-30, min(30, opinion_change)),
+                    "decay_type": decay_type,
+                    "initial_value": opinion_change,
+                    "expires_at": expires_at,
+                    "stacking_group": stacking_group,
+                    "source_event_id": str(source_event_id) if source_event_id else None,
+                    "description": description,
+                }
+            )
+            .execute()
+        )
 
         # Atomic interaction tracking via fn_increment_opinion_interaction (migration 146)
-        await supabase.rpc("fn_increment_opinion_interaction", {
-            "p_agent_id": str(agent_id),
-            "p_target_agent_id": str(target_agent_id),
-        }).execute()
+        await supabase.rpc(
+            "fn_increment_opinion_interaction",
+            {
+                "p_agent_id": str(agent_id),
+                "p_target_agent_id": str(target_agent_id),
+            },
+        ).execute()
 
         return True
 
@@ -262,11 +277,14 @@ class AgentOpinionService:
         added = 0
         for _zone_id, agent_ids in zone_agent_map.items():
             for i, agent_a in enumerate(agent_ids):
-                for agent_b in agent_ids[i + 1:]:
+                for agent_b in agent_ids[i + 1 :]:
                     # Bidirectional
                     for source, target in [(agent_a, agent_b), (agent_b, agent_a)]:
                         if await cls.add_modifier(
-                            supabase, source, target, simulation_id,
+                            supabase,
+                            source,
+                            target,
+                            simulation_id,
                             "zone_cohabitation",
                         ):
                             added += 1
@@ -290,10 +308,13 @@ class AgentOpinionService:
         added = 0
 
         for i, agent_a in enumerate(affected_agent_ids):
-            for agent_b in affected_agent_ids[i + 1:]:
+            for agent_b in affected_agent_ids[i + 1 :]:
                 for source, target in [(agent_a, agent_b), (agent_b, agent_a)]:
                     if await cls.add_modifier(
-                        supabase, source, target, simulation_id,
+                        supabase,
+                        source,
+                        target,
+                        simulation_id,
                         preset,
                         source_event_id=event_id,
                     ):
@@ -302,7 +323,10 @@ class AgentOpinionService:
 
     @classmethod
     async def list_opinions(
-        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+        simulation_id: UUID,
     ) -> list[dict]:
         """List all opinions an agent holds, enriched with target agent name/portrait."""
         result = await (
@@ -323,7 +347,10 @@ class AgentOpinionService:
 
     @classmethod
     async def list_modifiers(
-        cls, supabase: Client, agent_id: UUID, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+        simulation_id: UUID,
         target_agent_id: UUID | None = None,
     ) -> list[dict]:
         """List opinion modifiers for an agent, optionally filtered by target."""
@@ -347,16 +374,20 @@ class AgentOpinionService:
         simulation_id: UUID,
     ) -> None:
         """Create opinion record if it doesn't exist (idempotent)."""
-        await supabase.table("agent_opinions").upsert(
-            {
-                "agent_id": str(agent_id),
-                "target_agent_id": str(target_agent_id),
-                "simulation_id": str(simulation_id),
-                "base_compatibility": 0.0,
-                "opinion_score": 0,
-            },
-            on_conflict="agent_id,target_agent_id",
-        ).execute()
+        await (
+            supabase.table("agent_opinions")
+            .upsert(
+                {
+                    "agent_id": str(agent_id),
+                    "target_agent_id": str(target_agent_id),
+                    "simulation_id": str(simulation_id),
+                    "base_compatibility": 0.0,
+                    "opinion_score": 0,
+                },
+                on_conflict="agent_id,target_agent_id",
+            )
+            .execute()
+        )
 
     @classmethod
     async def _check_relationship_thresholds(
@@ -387,12 +418,14 @@ class AgentOpinionService:
                 .execute()
             )
             if not existing.data:
-                events.append({
-                    "type": "relationship_breakthrough",
-                    "agent_id": opinion["agent_id"],
-                    "target_agent_id": opinion["target_agent_id"],
-                    "opinion_score": opinion["opinion_score"],
-                })
+                events.append(
+                    {
+                        "type": "relationship_breakthrough",
+                        "agent_id": opinion["agent_id"],
+                        "target_agent_id": opinion["target_agent_id"],
+                        "opinion_score": opinion["opinion_score"],
+                    }
+                )
 
         # Find opinions below hostile threshold
         low_result = await (
@@ -404,12 +437,14 @@ class AgentOpinionService:
         )
 
         for opinion in low_result.data or []:
-            events.append({
-                "type": "relationship_breakdown",
-                "agent_id": opinion["agent_id"],
-                "target_agent_id": opinion["target_agent_id"],
-                "opinion_score": opinion["opinion_score"],
-            })
+            events.append(
+                {
+                    "type": "relationship_breakdown",
+                    "agent_id": opinion["agent_id"],
+                    "target_agent_id": opinion["target_agent_id"],
+                    "opinion_score": opinion["opinion_score"],
+                }
+            )
 
         if events:
             logger.info(

@@ -77,7 +77,10 @@ class AmbientWeatherService:
 
     @classmethod
     async def fetch_conditions(
-        cls, lat: float, lon: float, sim_name: str = "",
+        cls,
+        lat: float,
+        lon: float,
+        sim_name: str = "",
         cached_weather: dict | None = None,
     ) -> WeatherConditions:
         """Fetch current weather from Open-Meteo API.
@@ -88,17 +91,20 @@ class AmbientWeatherService:
         logger.info("Fetching weather for %s (%.2f, %.2f)", sim_name, lat, lon)
         try:
             async with httpx.AsyncClient(timeout=_OPEN_METEO_TIMEOUT) as client:
-                resp = await client.get(_OPEN_METEO_URL, params={
-                    "latitude": lat,
-                    "longitude": lon,
-                    "current": (
-                        "temperature_2m,relative_humidity_2m,wind_speed_10m,"
-                        "precipitation,cloud_cover,weather_code,visibility,is_day"
-                    ),
-                    "daily": "sunrise,sunset",
-                    "timezone": "auto",
-                    "forecast_days": 1,
-                })
+                resp = await client.get(
+                    _OPEN_METEO_URL,
+                    params={
+                        "latitude": lat,
+                        "longitude": lon,
+                        "current": (
+                            "temperature_2m,relative_humidity_2m,wind_speed_10m,"
+                            "precipitation,cloud_cover,weather_code,visibility,is_day"
+                        ),
+                        "daily": "sunrise,sunset",
+                        "timezone": "auto",
+                        "forecast_days": 1,
+                    },
+                )
                 resp.raise_for_status()
                 data = resp.json()
 
@@ -122,13 +128,18 @@ class AmbientWeatherService:
             )
             logger.info(
                 "Weather fetched: code=%d, temp=%.1f°C, wind=%.1f km/h",
-                conditions.weather_code, conditions.temperature, conditions.wind_speed,
+                conditions.weather_code,
+                conditions.temperature,
+                conditions.wind_speed,
             )
             return conditions
 
         except (httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
-                "Weather fetch failed for %s (%.2f, %.2f)", sim_name, lat, lon,
+                "Weather fetch failed for %s (%.2f, %.2f)",
+                sim_name,
+                lat,
+                lon,
             )
             sentry_sdk.capture_exception()
 
@@ -287,14 +298,20 @@ class AmbientWeatherService:
         # Layer 1: Opener (7-bag)
         opener_pool = OPENERS.get(theme_key, {}).get(time_of_day.value, [])
         opener_en, opener_de = cls._pick_from_bag(
-            rng, opener_pool, bag_state, f"opener:{time_of_day.value}",
+            rng,
+            opener_pool,
+            bag_state,
+            f"opener:{time_of_day.value}",
             fallback=("In {zone},", "In {zone},"),
         )
 
         # Layer 2: Core weather (7-bag)
         core_pool = CORE_WEATHER.get(theme_key, {}).get(primary_cat, [])
         core_en, core_de = cls._pick_from_bag(
-            rng, core_pool, bag_state, f"core:{primary_cat}",
+            rng,
+            core_pool,
+            bag_state,
+            f"core:{primary_cat}",
             fallback=("conditions are notable", "die Bedingungen sind bemerkenswert"),
         )
 
@@ -338,7 +355,8 @@ class AmbientWeatherService:
 
         primary = categories[0]
         effect = CATEGORY_MOODLET_EFFECTS.get(
-            primary, MoodletEffect(strength=0, emotion="neutral"),
+            primary,
+            MoodletEffect(strength=0, emotion="neutral"),
         )
 
         # Composite amplification: 2+ high-impact categories strengthen the effect
@@ -347,7 +365,8 @@ class AmbientWeatherService:
             if secondary_impact >= 5:
                 amplified = min(20, max(-20, int(effect.strength * 1.3)))
                 return MoodletEffect(
-                    strength=amplified, emotion=effect.emotion,
+                    strength=amplified,
+                    emotion=effect.emotion,
                     duration_hours=effect.duration_hours,
                 )
 
@@ -388,23 +407,38 @@ class AmbientWeatherService:
 
         # Step 3: Compose zone events (pass cached_weather to avoid redundant DB query)
         entries, bag_state = await cls._compose_zone_events(
-            supabase, sim_id, sim, categories, conditions, time_of_day,
-            heartbeat_id, tick_number, overrides, cached_weather,
+            supabase,
+            sim_id,
+            sim,
+            categories,
+            conditions,
+            time_of_day,
+            heartbeat_id,
+            tick_number,
+            overrides,
+            cached_weather,
         )
 
         # Step 4: Apply moodlets
         await cls._apply_zone_moodlets_batch(
-            supabase, sim_id, categories, conditions,
+            supabase,
+            sim_id,
+            categories,
+            conditions,
         )
 
         # Build weather summary (stored in heartbeat summary, NOT simulation_settings)
         weather_summary = cls._build_weather_summary(
-            conditions, categories, time_of_day, bag_state,
+            conditions,
+            categories,
+            time_of_day,
+            bag_state,
         )
 
         logger.info(
             "Ambient weather: %d zone events for %s",
-            len(entries), sim_name,
+            len(entries),
+            sim_name,
             extra={"simulation_id": str(sim_id), "tick_number": tick_number},
         )
 
@@ -431,12 +465,7 @@ class AmbientWeatherService:
         """Compose narrative entries for each zone. Returns (entries, bag_state)."""
         theme = sim.get("theme", "custom")
 
-        zone_resp = await (
-            supabase.table("zones")
-            .select("id, name")
-            .eq("simulation_id", str(sim_id))
-            .execute()
-        )
+        zone_resp = await supabase.table("zones").select("id, name").eq("simulation_id", str(sim_id)).execute()
         zones = zone_resp.data or []
         if not zones:
             return [], {}
@@ -454,15 +483,25 @@ class AmbientWeatherService:
 
             try:
                 narrative_en, narrative_de = cls.compose_narrative(
-                    categories, theme, zone_name, conditions,
-                    time_of_day, zone_mood, tick_number, zone_id,
-                    bag_state, overrides,
+                    categories,
+                    theme,
+                    zone_name,
+                    conditions,
+                    time_of_day,
+                    zone_mood,
+                    tick_number,
+                    zone_id,
+                    bag_state,
+                    overrides,
                 )
 
                 entry = make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number,
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
                     "ambient_weather",
-                    narrative_en, narrative_de,
+                    narrative_en,
+                    narrative_de,
                     severity="info",
                     metadata={
                         "zone_id": zone_id,
@@ -477,7 +516,8 @@ class AmbientWeatherService:
 
             except (KeyError, TypeError, ValueError):
                 logger.exception(
-                    "Ambient event failed for zone %s", zone_name,
+                    "Ambient event failed for zone %s",
+                    zone_name,
                     extra={"zone_id": zone_id, "simulation_id": str(sim_id)},
                 )
                 sentry_sdk.capture_exception()
@@ -509,15 +549,14 @@ class AmbientWeatherService:
             for agent in agents_resp.data or []:
                 try:
                     await AgentMoodService.add_moodlet(
-                        supabase, agent["id"], sim_id,
+                        supabase,
+                        agent["id"],
+                        sim_id,
                         moodlet_type="zone_weather",
                         emotion=moodlet.emotion,
                         strength=moodlet.strength,
                         source_type="weather",
-                        source_description=(
-                            f"Weather: WMO {conditions.weather_code}, "
-                            f"{conditions.temperature:.0f}°C"
-                        ),
+                        source_description=(f"Weather: WMO {conditions.weather_code}, {conditions.temperature:.0f}°C"),
                         decay_type="timed",
                         duration_hours=moodlet.duration_hours,
                         stacking_group="zone_ambient",
@@ -605,7 +644,10 @@ class AmbientWeatherService:
                     )
                     if pool:
                         return cls._pick_from_bag(
-                            rng, pool, bag_state, f"composite:{key[0]}+{key[1]}",
+                            rng,
+                            pool,
+                            bag_state,
+                            f"composite:{key[0]}+{key[1]}",
                         )
 
         primary = categories[0].value if categories else "clear"
@@ -614,7 +656,10 @@ class AmbientWeatherService:
 
     @classmethod
     def _pick_reaction(
-        cls, rng: random.Random, zone_avg_mood: float, bag_state: dict,
+        cls,
+        rng: random.Random,
+        zone_avg_mood: float,
+        bag_state: dict,
     ) -> tuple[str, str]:
         """Pick agent reaction based on average zone mood (7-bag)."""
         if zone_avg_mood > 20:
@@ -664,7 +709,9 @@ class AmbientWeatherService:
 
     @classmethod
     async def _get_zone_moods(
-        cls, supabase: Client, sim_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
     ) -> dict[str, float]:
         """Get average agent mood per zone (LEFT JOIN — agents without mood are excluded from avg)."""
         moods: dict[str, float] = {}
@@ -694,7 +741,9 @@ class AmbientWeatherService:
 
     @classmethod
     async def _load_cached_weather(
-        cls, supabase: Client, sim_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
     ) -> dict:
         """Load weather data from the most recent completed heartbeat summary."""
         try:

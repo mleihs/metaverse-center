@@ -4,9 +4,9 @@ import logging
 from uuid import UUID
 
 import sentry_sdk
-from fastapi import HTTPException, status
 
 from backend.services.epoch_service import EpochService
+from backend.utils.errors import bad_request, forbidden, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -32,32 +32,17 @@ class EpochChatService:
         - For team messages, the sender's participant has matching team_id
         """
         # Validate epoch is active
-        epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("id, status")
-            .eq("id", str(epoch_id))
-            .limit(1)
-            .execute()
-        )
+        epoch_resp = await supabase.table("game_epochs").select("id, status").eq("id", str(epoch_id)).limit(1).execute()
         if not epoch_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Epoch not found.",
-            )
+            raise not_found(detail="Epoch not found.")
         epoch = epoch_resp.data[0]
         if epoch["status"] in ("completed", "cancelled"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot send messages in a completed or cancelled epoch.",
-            )
+            raise bad_request("Cannot send messages in a completed or cancelled epoch.")
 
         # For team messages, validate sender is on that team
         if channel_type == "team":
             if not team_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="team_id is required for team messages.",
-                )
+                raise bad_request("team_id is required for team messages.")
             participant_resp = await (
                 supabase.table("epoch_participants")
                 .select("id, team_id")
@@ -67,15 +52,9 @@ class EpochChatService:
                 .execute()
             )
             if not participant_resp.data:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You are not a participant in this epoch.",
-                )
+                raise forbidden("You are not a participant in this epoch.")
             if str(participant_resp.data[0].get("team_id")) != str(team_id):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You are not a member of this team.",
-                )
+                raise forbidden("You are not a member of this team.")
 
         # Insert message
         insert_data = {
@@ -88,16 +67,9 @@ class EpochChatService:
         if team_id and channel_type == "team":
             insert_data["team_id"] = str(team_id)
 
-        response = await (
-            supabase.table("epoch_chat_messages")
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table("epoch_chat_messages").insert(insert_data).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to send message.",
-            )
+            raise server_error("Failed to send message.")
 
         # Enrich with sender simulation name
         msg = response.data[0]
@@ -139,12 +111,7 @@ class EpochChatService:
         # Enrich with sender names (batch)
         if messages:
             sim_ids = list({m["sender_simulation_id"] for m in messages})
-            sim_resp = await (
-                supabase.table("simulations")
-                .select("id, name")
-                .in_("id", sim_ids)
-                .execute()
-            )
+            sim_resp = await supabase.table("simulations").select("id, name").in_("id", sim_ids).execute()
             name_map = {s["id"]: s["name"] for s in (sim_resp.data or [])}
             for m in messages:
                 m["sender_name"] = name_map.get(m["sender_simulation_id"])
@@ -168,23 +135,11 @@ class EpochChatService:
         Returns the participant row with optional `auto_resolved` and `new_cycle` fields.
         """
         # Validate epoch is in an active phase
-        epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("id, status")
-            .eq("id", str(epoch_id))
-            .limit(1)
-            .execute()
-        )
+        epoch_resp = await supabase.table("game_epochs").select("id, status").eq("id", str(epoch_id)).limit(1).execute()
         if not epoch_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Epoch not found.",
-            )
+            raise not_found(detail="Epoch not found.")
         if epoch_resp.data[0]["status"] not in ("foundation", "competition", "reckoning"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ready signals are only available during active epoch phases.",
-            )
+            raise bad_request("Ready signals are only available during active epoch phases.")
 
         response = await (
             supabase.table("epoch_participants")
@@ -194,10 +149,7 @@ class EpochChatService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Participant not found in this epoch.",
-            )
+            raise not_found(detail="Participant not found in this epoch.")
 
         result = response.data[0]
 
@@ -225,9 +177,7 @@ class EpochChatService:
 
             if all_humans_ready:
                 try:
-                    epoch_data = await EpochService.resolve_cycle_full(
-                        supabase, epoch_id, admin_supabase
-                    )
+                    epoch_data = await EpochService.resolve_cycle_full(supabase, epoch_id, admin_supabase)
                     result["auto_resolved"] = True
                     result["new_cycle"] = epoch_data.get("current_cycle", 1)
                 except Exception:  # noqa: BLE001 — auto-resolve is best-effort, must not crash toggle_ready
@@ -241,13 +191,7 @@ class EpochChatService:
     async def _enrich_sender_name(supabase: Client, message: dict) -> dict:
         """Add sender_name from simulations table."""
         sim_resp = await (
-            supabase.table("simulations")
-            .select("name")
-            .eq("id", message["sender_simulation_id"])
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("name").eq("id", message["sender_simulation_id"]).limit(1).execute()
         )
-        message["sender_name"] = (
-            sim_resp.data[0]["name"] if sim_resp.data else None
-        )
+        message["sender_name"] = sim_resp.data[0]["name"] if sim_resp.data else None
         return message

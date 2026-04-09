@@ -70,10 +70,7 @@ async def notify_search_engines(slug: str) -> None:
         logger.debug("IndexNow skipped: INDEXNOW_KEY not configured")
         return
 
-    urls = [
-        f"{SITE_URL}/simulations/{slug}/{view}"
-        for view in SIMULATION_VIEWS
-    ]
+    urls = [f"{SITE_URL}/simulations/{slug}/{view}" for view in SIMULATION_VIEWS]
     urls.append(f"{SITE_URL}/worlds")
 
     payload = {
@@ -88,7 +85,8 @@ async def notify_search_engines(slug: str) -> None:
             resp = await client.post("https://api.indexnow.org/indexnow", json=payload)
         logger.info(
             "IndexNow notified: %d URLs, status %d",
-            len(urls), resp.status_code,
+            len(urls),
+            resp.status_code,
             extra={"slug": slug},
         )
     except (httpx.HTTPError, OSError):

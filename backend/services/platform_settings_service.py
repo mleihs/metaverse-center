@@ -13,11 +13,11 @@ from typing import TypedDict
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, mask
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -40,18 +40,16 @@ class PlatformSettingsService:
 
     @classmethod
     async def list_all(
-        cls, admin_supabase: Client, *, mask_sensitive: bool = False,
+        cls,
+        admin_supabase: Client,
+        *,
+        mask_sensitive: bool = False,
     ) -> list[dict]:
         """Fetch all platform settings.
 
         When mask_sensitive=True, sensitive keys show masked values (for admin UI).
         """
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .select("*")
-            .order("setting_key")
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).select("*").order("setting_key").execute()
         rows = response.data or []
         if not mask_sensitive:
             return rows
@@ -78,18 +76,9 @@ class PlatformSettingsService:
     @classmethod
     async def get(cls, admin_supabase: Client, key: str) -> dict:
         """Fetch a single platform setting by key."""
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .select("*")
-            .eq("setting_key", key)
-            .limit(1)
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).select("*").eq("setting_key", key).limit(1).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Platform setting '{key}' not found.",
-            )
+            raise not_found(detail=f"Platform setting '{key}' not found.")
         return response.data[0]
 
     @classmethod
@@ -116,10 +105,7 @@ class PlatformSettingsService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to save platform setting '{key}'.",
-            )
+            raise server_error(f"Failed to save platform setting '{key}'.")
         return response.data[0]
 
     @classmethod
@@ -180,16 +166,22 @@ class PlatformSettingsService:
 
     @classmethod
     async def get_dungeon_global_config(
-        cls, admin_supabase: Client,
+        cls,
+        admin_supabase: Client,
     ) -> DungeonGlobalConfig:
         """Full dungeon global config (admin panel). Reads 4 keys."""
         response = await (
             admin_supabase.table(cls.table_name)
             .select("setting_key, setting_value")
-            .in_("setting_key", [
-                cls._DG_MODE, cls._DG_ARCHETYPES,
-                cls._DG_CLEARANCE_MODE, cls._DG_CLEARANCE_THRESHOLD,
-            ])
+            .in_(
+                "setting_key",
+                [
+                    cls._DG_MODE,
+                    cls._DG_ARCHETYPES,
+                    cls._DG_CLEARANCE_MODE,
+                    cls._DG_CLEARANCE_THRESHOLD,
+                ],
+            )
             .execute()
         )
         by_key = {r["setting_key"]: r["setting_value"] for r in (response.data or [])}
@@ -197,7 +189,8 @@ class PlatformSettingsService:
 
     @classmethod
     async def get_dungeon_clearance_config(
-        cls, admin_supabase: Client,
+        cls,
+        admin_supabase: Client,
     ) -> DungeonClearanceConfig:
         """Clearance-only subset (public endpoint). Reads 2 keys."""
         response = await (
@@ -215,7 +208,8 @@ class PlatformSettingsService:
 
     @classmethod
     async def get_dungeon_override_config(
-        cls, admin_supabase: Client,
+        cls,
+        admin_supabase: Client,
     ) -> tuple[str, set[str]]:
         """Override-only subset (engine service). Returns (mode, archetypes)."""
         response = await (
@@ -255,16 +249,9 @@ class PlatformSettingsService:
                 cls._DG_CLEARANCE_THRESHOLD: str(clearance_threshold),
             }.items()
         ]
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .upsert(rows, on_conflict="setting_key")
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).upsert(rows, on_conflict="setting_key").execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to save global dungeon configuration.",
-            )
+            raise server_error("Failed to save global dungeon configuration.")
         return DungeonGlobalConfig(
             override_mode=override_mode,
             override_archetypes=override_archetypes,
@@ -276,9 +263,9 @@ class PlatformSettingsService:
 class DungeonGlobalConfig(TypedDict):
     """Full global dungeon configuration."""
 
-    override_mode: str          # "off" | "supplement" | "override"
+    override_mode: str  # "off" | "supplement" | "override"
     override_archetypes: list[str]
-    clearance_mode: str         # "off" | "standard" | "custom"
+    clearance_mode: str  # "off" | "standard" | "custom"
     clearance_threshold: int
 
 

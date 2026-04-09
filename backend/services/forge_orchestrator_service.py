@@ -33,6 +33,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
+from backend.utils.errors import bad_request, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -311,7 +312,10 @@ class ForgeOrchestratorService:
     ) -> ForgeImageService:
         """Build a ``ForgeImageService`` with world context from the simulation."""
         world_context = await ForgeOrchestratorService._build_world_context(
-            supabase, simulation_id, sim_data, anchor_data,
+            supabase,
+            simulation_id,
+            sim_data,
+            anchor_data,
         )
         return ForgeImageService(
             supabase,
@@ -397,10 +401,7 @@ class ForgeOrchestratorService:
         draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
         anchor = draft_data.get("philosophical_anchor", {}).get("selected")
         if not anchor:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Must select a philosophical anchor first.",
-            )
+            raise bad_request("Must select a philosophical anchor first.")
 
         # Parse generation config with validated defaults
         raw_config = draft_data.get("generation_config") or {}
@@ -411,15 +412,11 @@ class ForgeOrchestratorService:
             logger.debug("FORGE_MOCK_MODE: using mock data", extra={"chunk_type": chunk_type})
             if chunk_type == "geography":
                 geo_data = mock.mock_geography(seed, gen_config.zone_count, gen_config.street_count)
-                await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data)
-                )
+                await ForgeDraftService.update_draft(supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data))
                 return geo_data
             elif chunk_type == "agents":
                 agents_list = mock.mock_agents(seed, gen_config.agent_count)
-                await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list)
-                )
+                await ForgeDraftService.update_draft(supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list))
                 return {"agents": agents_list}
             elif chunk_type == "buildings":
                 buildings_list = mock.mock_buildings(seed, gen_config.building_count)
@@ -428,7 +425,7 @@ class ForgeOrchestratorService:
                 )
                 return {"buildings": buildings_list}
             else:
-                raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
+                raise bad_request(f"Invalid chunk type: {chunk_type}")
 
         or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
@@ -459,9 +456,7 @@ class ForgeOrchestratorService:
                     ["street_type_de"],
                     "street",
                 )
-                await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data)
-                )
+                await ForgeDraftService.update_draft(supabase, user_id, draft_id, ForgeDraftUpdate(geography=geo_data))
                 return geo_data
 
             elif chunk_type == "agents":
@@ -477,9 +472,7 @@ class ForgeOrchestratorService:
                     ["character_de", "background_de", "primary_profession_de"],
                     "agent",
                 )
-                await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list)
-                )
+                await ForgeDraftService.update_draft(supabase, user_id, draft_id, ForgeDraftUpdate(agents=agents_list))
                 return {"agents": agents_list}
 
             elif chunk_type == "buildings":
@@ -501,7 +494,7 @@ class ForgeOrchestratorService:
                 return {"buildings": buildings_list}
 
             else:
-                raise HTTPException(status_code=400, detail=f"Invalid chunk type: {chunk_type}")
+                raise bad_request(f"Invalid chunk type: {chunk_type}")
         except ModelHTTPError as exc:
             raise ai_error_to_http(exc) from exc
         except UnexpectedModelBehavior as exc:
@@ -533,10 +526,7 @@ class ForgeOrchestratorService:
         draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
         anchor = draft_data.get("philosophical_anchor", {}).get("selected")
         if not anchor:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Must select a philosophical anchor first.",
-            )
+            raise bad_request("Must select a philosophical anchor first.")
         seed = draft_data.get("seed_prompt", "")
         geography = draft_data.get("geography") or None
         existing_entities = draft_data.get(entity_type, [])
@@ -551,8 +541,13 @@ class ForgeOrchestratorService:
             or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
 
             prompt = _build_entity_prompt(
-                entity_type, anchor, seed, entity_index, entity_total,
-                existing_entities, geography,
+                entity_type,
+                anchor,
+                seed,
+                entity_index,
+                entity_total,
+                existing_entities,
+                geography,
             )
             dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
 
@@ -567,11 +562,14 @@ class ForgeOrchestratorService:
             except UnexpectedModelBehavior as exc:
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "entity_generation")
-                    scope.set_context("forge", {
-                        "entity_type": entity_type,
-                        "draft_id": str(draft_id),
-                        "entity_index": entity_index,
-                    })
+                    scope.set_context(
+                        "forge",
+                        {
+                            "entity_type": entity_type,
+                            "draft_id": str(draft_id),
+                            "entity_index": entity_index,
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
                 logger.error(
                     "LLM entity output validation failed",
@@ -601,7 +599,11 @@ class ForgeOrchestratorService:
 
         # Persist to draft
         await ForgeDraftService.append_entity(
-            supabase, user_id, draft_id, entity_type, entity,
+            supabase,
+            user_id,
+            draft_id,
+            entity_type,
+            entity,
         )
         return entity
 
@@ -620,7 +622,9 @@ class ForgeOrchestratorService:
 
         # Mark draft as processing
         await ForgeDraftService.update_draft(
-            supabase, user_id, draft_id,
+            supabase,
+            user_id,
+            draft_id,
             ForgeDraftUpdate(status="processing"),
         )
 
@@ -632,27 +636,27 @@ class ForgeOrchestratorService:
                 err_msg = str(rpc_err)
                 status_code, detail = ForgeOrchestratorService._classify_rpc_error(err_msg)
                 await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id,
+                    supabase,
+                    user_id,
+                    draft_id,
                     ForgeDraftUpdate(status="failed", error_log=err_msg[:500]),
                 )
                 raise HTTPException(status_code=status_code, detail=detail) from rpc_err
 
             if not response.data:
                 await ForgeDraftService.update_draft(
-                    supabase, user_id, draft_id,
+                    supabase,
+                    user_id,
+                    draft_id,
                     ForgeDraftUpdate(status="failed", error_log="Materialization returned no data."),
                 )
-                raise HTTPException(status_code=500, detail="Materialization failed in database.")
+                raise server_error("Materialization failed in database.")
 
             sim_id = response.data
 
             # Resolve slug + name for frontend navigation and ceremony
             slug_resp = await (
-                supabase.table("simulations")
-                .select("slug, name, description")
-                .eq("id", str(sim_id))
-                .single()
-                .execute()
+                supabase.table("simulations").select("slug, name, description").eq("id", str(sim_id)).single().execute()
             )
             slug = slug_resp.data["slug"] if slug_resp.data else None
             sim_name = slug_resp.data.get("name", "") if slug_resp.data else ""
@@ -702,13 +706,12 @@ class ForgeOrchestratorService:
                 sentry_sdk.capture_exception(e)
             logger.exception("Shard materialization failed", extra={"draft_id": str(draft_id)})
             await ForgeDraftService.update_draft(
-                supabase, user_id, draft_id,
+                supabase,
+                user_id,
+                draft_id,
                 ForgeDraftUpdate(status="failed", error_log=str(e)[:500]),
             )
-            raise HTTPException(
-                status_code=500,
-                detail="Shard materialization failed. Please contact support if the issue persists.",
-            ) from e
+            raise server_error("Shard materialization failed. Please contact support if the issue persists.") from e
 
     @classmethod
     async def generate_theme_for_draft(
@@ -740,8 +743,12 @@ class ForgeOrchestratorService:
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
             except (
-                PostgrestAPIError, httpx.HTTPError, UnexpectedModelBehavior,
-                KeyError, TypeError, ValueError,
+                PostgrestAPIError,
+                httpx.HTTPError,
+                UnexpectedModelBehavior,
+                KeyError,
+                TypeError,
+                ValueError,
             ) as exc:
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "theme_generation")
@@ -758,7 +765,9 @@ class ForgeOrchestratorService:
 
         # Store in draft
         await ForgeDraftService.update_draft(
-            supabase, user_id, draft_id,
+            supabase,
+            user_id,
+            draft_id,
             ForgeDraftUpdate(theme_config=theme_data),
         )
 
@@ -771,9 +780,14 @@ class ForgeOrchestratorService:
         progress: dict | None,
     ) -> None:
         """Write lore-generation progress to simulations.lore_progress."""
-        await supabase.table("simulations").update(
-            {"lore_progress": progress},
-        ).eq("id", str(simulation_id)).execute()
+        await (
+            supabase.table("simulations")
+            .update(
+                {"lore_progress": progress},
+            )
+            .eq("id", str(simulation_id))
+            .execute()
+        )
 
     @classmethod
     async def _generate_lore_and_translations(
@@ -800,7 +814,10 @@ class ForgeOrchestratorService:
                 lore_sections = mock.mock_lore_sections(seed)
                 translations = mock.mock_lore_translations(lore_sections)
                 await ForgeLoreService.persist_lore(
-                    supabase, simulation_id, lore_sections, translations,
+                    supabase,
+                    simulation_id,
+                    lore_sections,
+                    translations,
                 )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
                 logger.exception("Mock lore persist failed", extra={"simulation_id": str(simulation_id)})
@@ -893,20 +910,33 @@ class ForgeOrchestratorService:
             section_count = len(lore_sections)
 
             async def on_section_start(index: int, title: str) -> None:
-                await cls._update_lore_progress(supabase, simulation_id, {
-                    "phase": "translating",
-                    "current": index,
-                    "total": section_count,
-                    "section_title": title,
-                })
+                await cls._update_lore_progress(
+                    supabase,
+                    simulation_id,
+                    {
+                        "phase": "translating",
+                        "current": index,
+                        "total": section_count,
+                        "section_title": title,
+                    },
+                )
 
-            await cls._update_lore_progress(supabase, simulation_id, {
-                "phase": "translating", "current": 0, "total": section_count, "section_title": "",
-            })
+            await cls._update_lore_progress(
+                supabase,
+                simulation_id,
+                {
+                    "phase": "translating",
+                    "current": 0,
+                    "total": section_count,
+                    "section_title": "",
+                },
+            )
             translations = None
             try:
                 translations = await ForgeLoreService.translate_lore(
-                    lore_sections, openrouter_key=or_key, on_section_start=on_section_start,
+                    lore_sections,
+                    openrouter_key=or_key,
+                    on_section_start=on_section_start,
                 )
             except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
@@ -916,11 +946,19 @@ class ForgeOrchestratorService:
                 logger.exception("Lore translation failed", extra={"simulation_id": str(simulation_id)})
 
             await ForgeLoreService.persist_lore(
-                supabase, simulation_id, lore_sections, translations,
+                supabase,
+                simulation_id,
+                lore_sections,
+                translations,
             )
         except (
-            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
-            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+            PostgrestAPIError,
+            httpx.HTTPError,
+            ModelHTTPError,
+            UnexpectedModelBehavior,
+            KeyError,
+            TypeError,
+            ValueError,
         ):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "lore_generation")
@@ -979,11 +1017,18 @@ class ForgeOrchestratorService:
                     openrouter_key=or_key,
                 )
                 await ForgeEntityTranslationService.persist_translations(
-                    supabase, simulation_id, entity_translations,
+                    supabase,
+                    simulation_id,
+                    entity_translations,
                 )
         except (
-            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
-            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+            PostgrestAPIError,
+            httpx.HTTPError,
+            ModelHTTPError,
+            UnexpectedModelBehavior,
+            KeyError,
+            TypeError,
+            ValueError,
         ):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "entity_translation")
@@ -1015,7 +1060,8 @@ class ForgeOrchestratorService:
         """
         batch_id = f"batch-{simulation_id!s:.8}"
         structlog.contextvars.bind_contextvars(
-            simulation_id=str(simulation_id), batch_id=batch_id,
+            simulation_id=str(simulation_id),
+            batch_id=batch_id,
         )
         logger.info("Batch generation starting", extra={"batch_id": batch_id})
         t_batch = time.monotonic()
@@ -1033,7 +1079,11 @@ class ForgeOrchestratorService:
             logger.info("Phase A: lore + translations")
             t_a = time.monotonic()
             await cls._generate_lore_and_translations(
-                supabase, simulation_id, user_id, or_key, draft_data,
+                supabase,
+                simulation_id,
+                user_id,
+                or_key,
+                draft_data,
             )
             phase_a_s = time.monotonic() - t_a
             logger.info("Phase A complete", extra={"elapsed_s": round(phase_a_s, 1)})
@@ -1044,7 +1094,9 @@ class ForgeOrchestratorService:
         if draft_data:
             try:
                 await ForgeThemeService.refine_style_prompts(
-                    supabase, simulation_id, or_key,
+                    supabase,
+                    simulation_id,
+                    or_key,
                 )
             except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 logger.warning(
@@ -1056,7 +1108,9 @@ class ForgeOrchestratorService:
         if draft_data:
             try:
                 await ForgeThemeService.generate_simulation_templates(
-                    supabase, simulation_id, or_key,
+                    supabase,
+                    simulation_id,
+                    or_key,
                 )
             except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 logger.warning(
@@ -1078,8 +1132,12 @@ class ForgeOrchestratorService:
         sim_data = sim_resp.data or {}
 
         image_service = await cls._create_image_service(
-            supabase, simulation_id, sim_data, anchor_data,
-            replicate_api_key=rep_key, openrouter_api_key=or_key,
+            supabase,
+            simulation_id,
+            sim_data,
+            anchor_data,
+            replicate_api_key=rep_key,
+            openrouter_api_key=or_key,
         )
 
         _types = entity_types  # None = all types
@@ -1092,19 +1150,38 @@ class ForgeOrchestratorService:
         if not _types or "banner" in _types:
             img_total_parts.append(1)
         if not _types or "agent" in _types:
-            agent_count_resp = await supabase.table("agents").select("id", count="exact").eq(
-                "simulation_id", str(simulation_id),
-            ).execute()
+            agent_count_resp = (
+                await supabase.table("agents")
+                .select("id", count="exact")
+                .eq(
+                    "simulation_id",
+                    str(simulation_id),
+                )
+                .execute()
+            )
             img_total_parts.append(agent_count_resp.count or 0)
         if not _types or "building" in _types:
-            bldg_count_resp = await supabase.table("buildings").select("id", count="exact").eq(
-                "simulation_id", str(simulation_id),
-            ).execute()
+            bldg_count_resp = (
+                await supabase.table("buildings")
+                .select("id", count="exact")
+                .eq(
+                    "simulation_id",
+                    str(simulation_id),
+                )
+                .execute()
+            )
             img_total_parts.append(bldg_count_resp.count or 0)
         if not _types or "lore" in _types:
-            lore_count_resp = await supabase.table("simulation_lore").select("id", count="exact").eq(
-                "simulation_id", str(simulation_id),
-            ).not_.is_("image_slug", "null").execute()
+            lore_count_resp = (
+                await supabase.table("simulation_lore")
+                .select("id", count="exact")
+                .eq(
+                    "simulation_id",
+                    str(simulation_id),
+                )
+                .not_.is_("image_slug", "null")
+                .execute()
+            )
             img_total_parts.append(lore_count_resp.count or 0)
         img_total = sum(img_total_parts)
 
@@ -1156,15 +1233,21 @@ class ForgeOrchestratorService:
                         simulation_name=sim_name,
                         banner_url=banner_url,
                     )
-                    await supabase.table("simulation_settings").upsert(
-                        [{
-                            "simulation_id": str(simulation_id),
-                            "setting_key": "terminal_boot_art",
-                            "setting_value": boot_art,
-                            "category": "design",
-                        }],
-                        on_conflict="simulation_id,category,setting_key",
-                    ).execute()
+                    await (
+                        supabase.table("simulation_settings")
+                        .upsert(
+                            [
+                                {
+                                    "simulation_id": str(simulation_id),
+                                    "setting_key": "terminal_boot_art",
+                                    "setting_value": boot_art,
+                                    "category": "design",
+                                }
+                            ],
+                            on_conflict="simulation_id,category,setting_key",
+                        )
+                        .execute()
+                    )
                     logger.info(
                         "Terminal boot art generated (%d chars, banner=%s)",
                         len(boot_art),
@@ -1186,7 +1269,8 @@ class ForgeOrchestratorService:
                     logger.info(
                         "Generating image",
                         extra={
-                            "entity_type": "agent", "progress": f"{img_counter}/{img_total}",
+                            "entity_type": "agent",
+                            "progress": f"{img_counter}/{img_total}",
                             "entity_name": agent_row["name"],
                         },
                     )
@@ -1208,11 +1292,14 @@ class ForgeOrchestratorService:
                         with sentry_sdk.push_scope() as scope:
                             scope.set_tag("forge_phase", "batch_images")
                             scope.set_tag("entity_type", "agent")
-                            scope.set_context("image_generation", {
-                                "simulation_id": str(simulation_id),
-                                "entity_id": str(agent_row["id"]),
-                                "entity_name": agent_row["name"],
-                            })
+                            scope.set_context(
+                                "image_generation",
+                                {
+                                    "simulation_id": str(simulation_id),
+                                    "entity_id": str(agent_row["id"]),
+                                    "entity_name": agent_row["name"],
+                                },
+                            )
                             sentry_sdk.capture_exception()
 
             # 3. Building images
@@ -1232,7 +1319,8 @@ class ForgeOrchestratorService:
                     logger.info(
                         "Generating image",
                         extra={
-                            "entity_type": "building", "progress": f"{img_counter}/{img_total}",
+                            "entity_type": "building",
+                            "progress": f"{img_counter}/{img_total}",
                             "entity_name": building["name"],
                         },
                     )
@@ -1264,11 +1352,14 @@ class ForgeOrchestratorService:
                         with sentry_sdk.push_scope() as scope:
                             scope.set_tag("forge_phase", "batch_images")
                             scope.set_tag("entity_type", "building")
-                            scope.set_context("image_generation", {
-                                "simulation_id": str(simulation_id),
-                                "entity_id": str(building["id"]),
-                                "entity_name": building["name"],
-                            })
+                            scope.set_context(
+                                "image_generation",
+                                {
+                                    "simulation_id": str(simulation_id),
+                                    "entity_id": str(building["id"]),
+                                    "entity_name": building["name"],
+                                },
+                            )
                             sentry_sdk.capture_exception()
 
             # 4. Lore images (sections with image_slug)
@@ -1287,7 +1378,8 @@ class ForgeOrchestratorService:
                     logger.info(
                         "Generating image",
                         extra={
-                            "entity_type": "lore", "progress": f"{img_counter}/{img_total}",
+                            "entity_type": "lore",
+                            "progress": f"{img_counter}/{img_total}",
                             "entity_name": section["title"],
                         },
                     )
@@ -1312,11 +1404,14 @@ class ForgeOrchestratorService:
                         with sentry_sdk.push_scope() as scope:
                             scope.set_tag("forge_phase", "batch_images")
                             scope.set_tag("entity_type", "lore")
-                            scope.set_context("image_generation", {
-                                "simulation_id": str(simulation_id),
-                                "entity_id": str(section["id"]),
-                                "entity_name": section["title"],
-                            })
+                            scope.set_context(
+                                "image_generation",
+                                {
+                                    "simulation_id": str(simulation_id),
+                                    "entity_id": str(section["id"]),
+                                    "entity_name": section["title"],
+                                },
+                            )
                             sentry_sdk.capture_exception()
 
         except ReplicateBillingError:
@@ -1326,11 +1421,14 @@ class ForgeOrchestratorService:
             )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "batch_images")
-                scope.set_context("forge", {
-                    "simulation_id": str(simulation_id),
-                    "images_succeeded": images_succeeded,
-                    "images_failed": images_failed,
-                })
+                scope.set_context(
+                    "forge",
+                    {
+                        "simulation_id": str(simulation_id),
+                        "images_succeeded": images_succeeded,
+                        "images_failed": images_failed,
+                    },
+                )
                 sentry_sdk.capture_exception()
 
         phase_b_s = time.monotonic() - t_b
@@ -1340,15 +1438,17 @@ class ForgeOrchestratorService:
         if images_failed > 0:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "batch_images")
-                scope.set_context("forge", {
-                    "simulation_id": str(simulation_id),
-                    "images_succeeded": images_succeeded,
-                    "images_failed": images_failed,
-                    "img_total": img_total,
-                })
+                scope.set_context(
+                    "forge",
+                    {
+                        "simulation_id": str(simulation_id),
+                        "images_succeeded": images_succeeded,
+                        "images_failed": images_failed,
+                        "img_total": img_total,
+                    },
+                )
                 sentry_sdk.capture_message(
-                    f"Batch image gen: {images_failed}/{img_total} failed"
-                    f" ({images_succeeded} succeeded)",
+                    f"Batch image gen: {images_failed}/{img_total} failed ({images_succeeded} succeeded)",
                     level="error" if images_succeeded == 0 else "warning",
                 )
 
@@ -1388,19 +1488,29 @@ class ForgeOrchestratorService:
 
         try:
             # 1. Fetch simulation data
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, description"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, description")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim = sim_resp.data
 
-            agents_resp = await admin_supabase.table("agents").select(
-                "name, primary_profession, character"
-            ).eq("simulation_id", str(simulation_id)).execute()
+            agents_resp = (
+                await admin_supabase.table("agents")
+                .select("name, primary_profession, character")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
             existing_agents = agents_resp.data or []
 
-            zones_resp = await admin_supabase.table("zones").select(
-                "id, name, zone_type, description"
-            ).eq("simulation_id", str(simulation_id)).execute()
+            zones_resp = (
+                await admin_supabase.table("zones")
+                .select("id, name, zone_type, description")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
             zones = zones_resp.data or []
 
             # 2. Build recruitment prompt
@@ -1409,13 +1519,12 @@ class ForgeOrchestratorService:
                 for a in existing_agents[:10]
             )
             zone_context = "\n".join(
-                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}"
-                for z in zones
+                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}" for z in zones
             )
 
-            prompt = f"""You are a Bureau Recruitment Officer processing new arrivals for {sim['name']}.
+            prompt = f"""You are a Bureau Recruitment Officer processing new arrivals for {sim["name"]}.
 
-WORLD DESCRIPTION: {sim.get('description', '')}
+WORLD DESCRIPTION: {sim.get("description", "")}
 
 EXISTING AGENTS ({len(existing_agents)} total):
 {agent_list}
@@ -1424,7 +1533,7 @@ ZONES:
 {zone_context}
 
 {"RECRUITMENT FOCUS: " + focus if focus else ""}
-{"TARGET ZONE: " + next((z['name'] for z in zones if z['id'] == str(zone_id)), 'any') if zone_id else ""}
+{"TARGET ZONE: " + next((z["name"] for z in zones if z["id"] == str(zone_id)), "any") if zone_id else ""}
 
 Generate exactly 3 new agents. Requirements:
 - Each agent MUST have an ARRIVAL NARRATIVE woven into their background (how/why they arrived)
@@ -1468,16 +1577,22 @@ Generate exactly 3 new agents. Requirements:
             try:
                 sim_data = {"name": sim["name"], "description": sim.get("description", "")}
                 image_service = await ForgeOrchestratorService._create_image_service(
-                    admin_supabase, simulation_id, sim_data,
-                    replicate_api_key=replicate_key, openrouter_api_key=openrouter_key,
+                    admin_supabase,
+                    simulation_id,
+                    sim_data,
+                    replicate_api_key=replicate_key,
+                    openrouter_api_key=openrouter_key,
                 )
 
                 for agent_draft in generated:
-                    agent_in_db = await admin_supabase.table("agents").select(
-                        "id"
-                    ).eq("simulation_id", str(simulation_id)).eq(
-                        "name", agent_draft.name
-                    ).maybe_single().execute()
+                    agent_in_db = (
+                        await admin_supabase.table("agents")
+                        .select("id")
+                        .eq("simulation_id", str(simulation_id))
+                        .eq("name", agent_draft.name)
+                        .maybe_single()
+                        .execute()
+                    )
 
                     if agent_in_db.data:
                         await image_service.generate_agent_portrait(
@@ -1497,16 +1612,22 @@ Generate exactly 3 new agents. Requirements:
 
             # 5. Translate
             try:
-                agent_rows = await admin_supabase.table("agents").select(
-                    "id, name, primary_profession, character, background"
-                ).eq("simulation_id", str(simulation_id)).in_(
-                    "name", [a.name for a in generated]
-                ).execute()
+                agent_rows = (
+                    await admin_supabase.table("agents")
+                    .select("id, name, primary_profession, character, background")
+                    .eq("simulation_id", str(simulation_id))
+                    .in_("name", [a.name for a in generated])
+                    .execute()
+                )
 
                 if agent_rows.data:
                     await ForgeEntityTranslationService.translate_entities(
-                        admin_supabase, simulation_id,
-                        agent_rows.data, [], [], [],
+                        admin_supabase,
+                        simulation_id,
+                        agent_rows.data,
+                        [],
+                        [],
+                        [],
                         sim.get("description", ""),
                         openrouter_key,
                     )
@@ -1519,7 +1640,8 @@ Generate exactly 3 new agents. Requirements:
 
             # 6. Complete feature purchase
             await ForgeFeatureService.complete_feature(
-                admin_supabase, purchase_id,
+                admin_supabase,
+                purchase_id,
                 result={
                     "agents": [a.name for a in generated],
                     "count": len(generated),
@@ -1531,8 +1653,13 @@ Generate exactly 3 new agents. Requirements:
             )
 
         except (
-            PostgrestAPIError, httpx.HTTPError, ModelHTTPError,
-            UnexpectedModelBehavior, KeyError, TypeError, ValueError,
+            PostgrestAPIError,
+            httpx.HTTPError,
+            ModelHTTPError,
+            UnexpectedModelBehavior,
+            KeyError,
+            TypeError,
+            ValueError,
         ) as exc:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "recruitment")
@@ -1540,7 +1667,9 @@ Generate exactly 3 new agents. Requirements:
                 sentry_sdk.capture_exception(exc)
             logger.exception("Recruitment failed")
             await ForgeFeatureService.fail_feature(
-                admin_supabase, purchase_id, str(exc),
+                admin_supabase,
+                purchase_id,
+                str(exc),
             )
 
     @staticmethod
@@ -1567,27 +1696,33 @@ Generate exactly 3 new agents. Requirements:
                 return
 
             select = "*, zones(name)" if entity_type == "building" else "*"
-            entity_resp = await admin_supabase.table(table).select(select).eq(
-                "id", str(entity_id)
-            ).single().execute()
+            entity_resp = await admin_supabase.table(table).select(select).eq("id", str(entity_id)).single().execute()
             entity = entity_resp.data
 
             # Fetch simulation data + BYOK keys
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, description, slug"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, description, slug")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim_data = sim_resp.data or {}
 
             or_key = None
             rep_key = None
             if user_id:
                 or_key, rep_key = await ForgeDraftService.get_user_keys(
-                    admin_supabase, user_id,
+                    admin_supabase,
+                    user_id,
                 )
 
             image_service = await ForgeOrchestratorService._create_image_service(
-                admin_supabase, simulation_id, sim_data,
-                replicate_api_key=rep_key, openrouter_api_key=or_key,
+                admin_supabase,
+                simulation_id,
+                sim_data,
+                replicate_api_key=rep_key,
+                openrouter_api_key=or_key,
             )
 
             if entity_type == "agent":
@@ -1632,11 +1767,14 @@ Generate exactly 3 new agents. Requirements:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "darkroom_regen")
-                scope.set_context("forge", {
-                    "simulation_id": str(simulation_id),
-                    "entity_type": entity_type,
-                    "entity_id": str(entity_id),
-                })
+                scope.set_context(
+                    "forge",
+                    {
+                        "simulation_id": str(simulation_id),
+                        "entity_type": entity_type,
+                        "entity_id": str(entity_id),
+                    },
+                )
                 sentry_sdk.capture_exception()
             logger.exception("Darkroom regen failed")
 
@@ -1650,26 +1788,42 @@ Generate exactly 3 new agents. Requirements:
         Used by the admin retrigger endpoint to re-run lore + translations
         for a simulation that has already been materialized.
         """
-        sim_resp = await supabase.table("simulations").select(
-            "name, description"
-        ).eq("id", str(simulation_id)).single().execute()
+        sim_resp = (
+            await supabase.table("simulations")
+            .select("name, description")
+            .eq("id", str(simulation_id))
+            .single()
+            .execute()
+        )
         sim = sim_resp.data
 
-        agents_resp = await supabase.table("agents").select(
-            "name, gender, system, primary_profession, character, background"
-        ).eq("simulation_id", str(simulation_id)).execute()
+        agents_resp = (
+            await supabase.table("agents")
+            .select("name, gender, system, primary_profession, character, background")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
 
-        buildings_resp = await supabase.table("buildings").select(
-            "name, building_type, building_condition, description, style"
-        ).eq("simulation_id", str(simulation_id)).execute()
+        buildings_resp = (
+            await supabase.table("buildings")
+            .select("name, building_type, building_condition, description, style")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
 
-        zones_resp = await supabase.table("zones").select(
-            "name, zone_type, description"
-        ).eq("simulation_id", str(simulation_id)).execute()
+        zones_resp = (
+            await supabase.table("zones")
+            .select("name, zone_type, description")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
 
-        streets_resp = await supabase.table("city_streets").select(
-            "name, street_type"
-        ).eq("simulation_id", str(simulation_id)).execute()
+        streets_resp = (
+            await supabase.table("city_streets")
+            .select("name, street_type")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
 
         # Reconstruct geography block
         geography = {
@@ -1680,19 +1834,28 @@ Generate exactly 3 new agents. Requirements:
         }
 
         # Try to fetch the original anchor from simulation_settings
-        anchor_resp = await supabase.table("simulation_settings").select(
-            "setting_value"
-        ).eq("simulation_id", str(simulation_id)).eq(
-            "setting_key", "philosophical_anchor"
-        ).maybe_single().execute()
+        anchor_resp = (
+            await supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("setting_key", "philosophical_anchor")
+            .maybe_single()
+            .execute()
+        )
 
         anchor = {}
         if anchor_resp.data:
             import json
+
             try:
-                anchor = json.loads(anchor_resp.data["setting_value"]) if isinstance(
-                    anchor_resp.data["setting_value"], str,
-                ) else anchor_resp.data["setting_value"]
+                anchor = (
+                    json.loads(anchor_resp.data["setting_value"])
+                    if isinstance(
+                        anchor_resp.data["setting_value"],
+                        str,
+                    )
+                    else anchor_resp.data["setting_value"]
+                )
             except (json.JSONDecodeError, TypeError):
                 pass
 
@@ -1711,9 +1874,15 @@ Generate exactly 3 new agents. Requirements:
 
         Used before re-generating lore to avoid duplicates.
         """
-        await supabase.table("simulation_lore").delete().eq(
-            "simulation_id", str(simulation_id),
-        ).execute()
+        await (
+            supabase.table("simulation_lore")
+            .delete()
+            .eq(
+                "simulation_id",
+                str(simulation_id),
+            )
+            .execute()
+        )
 
     @staticmethod
     async def _build_world_context(
@@ -1758,9 +1927,7 @@ Generate exactly 3 new agents. Requirements:
         for section in lore_sections:
             body = section.get("body", "")
             # First ~600 chars of each section — enough for visual identity
-            parts.append(
-                f"LORE — {section.get('title', '')}:\n{body[:600]}"
-            )
+            parts.append(f"LORE — {section.get('title', '')}:\n{body[:600]}")
 
         context = "\n\n".join(parts)
         logger.debug(

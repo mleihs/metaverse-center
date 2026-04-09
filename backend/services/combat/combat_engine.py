@@ -383,15 +383,27 @@ def _resolve_agent_actions(
                         )
                         events.extend(
                             _resolve_agent_damage(
-                                agent, ability, aoe_action, enemy_map, enemy_templates,
-                                visibility, context.round_num, context.archetype_state,
+                                agent,
+                                ability,
+                                aoe_action,
+                                enemy_map,
+                                enemy_templates,
+                                visibility,
+                                context.round_num,
+                                context.archetype_state,
                             )
                         )
             else:
                 events.extend(
                     _resolve_agent_damage(
-                        agent, ability, action, enemy_map, enemy_templates,
-                        visibility, context.round_num, context.archetype_state,
+                        agent,
+                        ability,
+                        action,
+                        enemy_map,
+                        enemy_templates,
+                        visibility,
+                        context.round_num,
+                        context.archetype_state,
                     )
                 )
         elif ability.effect_type == "heal_stress":

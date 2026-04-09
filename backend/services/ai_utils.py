@@ -22,17 +22,17 @@ logger = logging.getLogger(__name__)
 # ── Centralized max_tokens budgets for all Pydantic AI agent calls ───
 # Prevents the default 65536 from exhausting OpenRouter credits.
 PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
-    "research": 2048,      # ~3 sections of citations
-    "anchors": 3072,       # 3 compact structured objects (bilingual EN+DE)
-    "chunk": 12288,        # geography/agents/buildings structured output (bilingual EN+DE)
-    "lore": 8192,          # 5-7 section lore scroll
+    "research": 2048,  # ~3 sections of citations
+    "anchors": 3072,  # 3 compact structured objects (bilingual EN+DE)
+    "chunk": 12288,  # geography/agents/buildings structured output (bilingual EN+DE)
+    "lore": 8192,  # 5-7 section lore scroll
     "lore_translation": 8192,  # mirrors lore output
-    "dossier": 16384,      # ~9000 words across 6 sections
-    "theme": 2048,         # flat structured object ~30 fields
-    "translation": 4096,   # entity translation batch
+    "dossier": 16384,  # ~9000 words across 6 sections
+    "theme": 2048,  # flat structured object ~30 fields
+    "translation": 4096,  # entity translation batch
     "dossier_evolution": 1024,  # short 100-250 word addenda
-    "entity": 3072,             # single agent/building (character + background + DE)
-    "ascii_art": 1024,          # terminal boot art (monospace scene)
+    "entity": 3072,  # single agent/building (character + background + DE)
+    "ascii_art": 1024,  # terminal boot art (monospace scene)
 }
 
 # ── Centralized timeout budgets (seconds) ────────────────────────────
@@ -146,6 +146,7 @@ def safe_background(func):
     error propagates silently. This decorator ensures every background task
     failure is logged and reported.
     """
+
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         task_name = func.__qualname__
@@ -159,11 +160,14 @@ def safe_background(func):
             elapsed = time.monotonic() - t0
             logger.exception("Background task FAILED: %s (after %.1fs)", task_name, elapsed)
             sentry_sdk.capture_exception()
+
     return wrapper
 
 
 def validate_bilingual_output(
-    entities: list, de_fields: list[str], entity_type: str,
+    entities: list,
+    de_fields: list[str],
+    entity_type: str,
 ) -> int:
     """Patch empty _de fields with EN fallback. Returns count of patched entities.
 
@@ -188,7 +192,9 @@ def validate_bilingual_output(
     if incomplete:
         logger.warning(
             "Bilingual gap: %d/%d %s(s) missing _de fields — patched with EN fallback",
-            incomplete, len(entities), entity_type,
+            incomplete,
+            len(entities),
+            entity_type,
             extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
         )
     return incomplete

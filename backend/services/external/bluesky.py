@@ -116,18 +116,24 @@ class BlueskyService:
                 auth=False,
             )
         except BlueskyAPIError as exc:
-            logger.error("Bluesky authentication failed", extra={
-                "handle": self._handle,
-                "pds_url": self._base_url,
-                "error": str(exc)[:200],
-            })
+            logger.error(
+                "Bluesky authentication failed",
+                extra={
+                    "handle": self._handle,
+                    "pds_url": self._base_url,
+                    "error": str(exc)[:200],
+                },
+            )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("bluesky_phase", "auth")
                 scope.set_tag("action_required", "check_credentials")
-                scope.set_context("bluesky", {
-                    "handle": self._handle,
-                    "pds_url": self._base_url,
-                })
+                scope.set_context(
+                    "bluesky",
+                    {
+                        "handle": self._handle,
+                        "pds_url": self._base_url,
+                    },
+                )
                 sentry_sdk.capture_exception(exc)
             raise
 
@@ -137,11 +143,14 @@ class BlueskyService:
             refresh_jwt=data["refreshJwt"],
             created_at=time.monotonic(),
         )
-        logger.info("Bluesky session created", extra={
-            "did": data["did"],
-            "handle": data.get("handle", self._handle),
-            "pds_url": self._base_url,
-        })
+        logger.info(
+            "Bluesky session created",
+            extra={
+                "did": data["did"],
+                "handle": data.get("handle", self._handle),
+                "pds_url": self._base_url,
+            },
+        )
 
     async def _refresh_session(self) -> None:
         """Refresh session via com.atproto.server.refreshSession."""
@@ -168,7 +177,9 @@ class BlueskyService:
     # ── Publishing ────────────────────────────────────────────────────
 
     async def publish_post(
-        self, content: AdaptedContent, media: list[UploadedMedia],
+        self,
+        content: AdaptedContent,
+        media: list[UploadedMedia],
     ) -> PublishResult:
         """Create a post via com.atproto.repo.createRecord (app.bsky.feed.post).
 
@@ -216,13 +227,16 @@ class BlueskyService:
         cid = data.get("cid", "")
         elapsed_ms = int((time.monotonic() - t0) * 1000)
 
-        logger.info("Published Bluesky post", extra={
-            "bsky_uri": uri,
-            "bsky_cid": cid,
-            "text_length": len(post_text),
-            "media_count": len(media),
-            "elapsed_ms": elapsed_ms,
-        })
+        logger.info(
+            "Published Bluesky post",
+            extra={
+                "bsky_uri": uri,
+                "bsky_cid": cid,
+                "text_length": len(post_text),
+                "media_count": len(media),
+                "elapsed_ms": elapsed_ms,
+            },
+        )
 
         # Build permalink from URI: at://did:plc:xxx/app.bsky.feed.post/rkey
         permalink = None
@@ -251,11 +265,14 @@ class BlueskyService:
         # Recompress if needed
         if original_size > BLOB_RECOMPRESS_THRESHOLD and mime_type == "image/jpeg":
             data = self._recompress_jpeg(data, quality=80)
-            logger.info("Recompressed JPEG for Bluesky upload", extra={
-                "original_bytes": original_size,
-                "compressed_bytes": len(data),
-                "quality": 80,
-            })
+            logger.info(
+                "Recompressed JPEG for Bluesky upload",
+                extra={
+                    "original_bytes": original_size,
+                    "compressed_bytes": len(data),
+                    "quality": 80,
+                },
+            )
 
         if len(data) > BLOB_MAX_BYTES:
             raise BlueskyBlobTooLargeError(
@@ -272,12 +289,15 @@ class BlueskyService:
         elapsed_ms = int((time.monotonic() - t0) * 1000)
 
         blob = resp_data.get("blob", {})
-        logger.info("Uploaded Bluesky blob", extra={
-            "blob_size": len(data),
-            "mime_type": mime_type,
-            "elapsed_ms": elapsed_ms,
-            "blob_ref": str(blob.get("ref", {}).get("$link", ""))[:16] + "…",
-        })
+        logger.info(
+            "Uploaded Bluesky blob",
+            extra={
+                "blob_size": len(data),
+                "mime_type": mime_type,
+                "elapsed_ms": elapsed_ms,
+                "blob_ref": str(blob.get("ref", {}).get("$link", ""))[:16] + "…",
+            },
+        )
 
         return UploadedMedia(
             ref=blob,
@@ -361,13 +381,17 @@ class BlueskyService:
             byte_end = byte_start + len(tag_bytes)
 
             if byte_end <= len(encoded):
-                facets.append({
-                    "index": {"byteStart": byte_start, "byteEnd": byte_end},
-                    "features": [{
-                        "$type": "app.bsky.richtext.facet#tag",
-                        "tag": tag_value,
-                    }],
-                })
+                facets.append(
+                    {
+                        "index": {"byteStart": byte_start, "byteEnd": byte_end},
+                        "features": [
+                            {
+                                "$type": "app.bsky.richtext.facet#tag",
+                                "tag": tag_value,
+                            }
+                        ],
+                    }
+                )
 
         # URLs: https://...
         for match in re.finditer(r"https?://\S+", text):
@@ -378,13 +402,17 @@ class BlueskyService:
             byte_end = byte_start + len(url_bytes)
 
             if byte_end <= len(encoded):
-                facets.append({
-                    "index": {"byteStart": byte_start, "byteEnd": byte_end},
-                    "features": [{
-                        "$type": "app.bsky.richtext.facet#link",
-                        "uri": url_text,
-                    }],
-                })
+                facets.append(
+                    {
+                        "index": {"byteStart": byte_start, "byteEnd": byte_end},
+                        "features": [
+                            {
+                                "$type": "app.bsky.richtext.facet#link",
+                                "uri": url_text,
+                            }
+                        ],
+                    }
+                )
 
         return facets
 
@@ -405,13 +433,16 @@ class BlueskyService:
                     resp = await client.get(url, params=params, headers=headers)
 
                 if resp.status_code in (429, 500, 502, 503) and attempt < MAX_RETRIES - 1:
-                    wait = BACKOFF_BASE * (2 ** attempt)
-                    logger.warning("Bluesky API retrying", extra={
-                        "method": method,
-                        "status": resp.status_code,
-                        "attempt": attempt + 1,
-                        "wait_s": wait,
-                    })
+                    wait = BACKOFF_BASE * (2**attempt)
+                    logger.warning(
+                        "Bluesky API retrying",
+                        extra={
+                            "method": method,
+                            "status": resp.status_code,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                        },
+                    )
                     await asyncio.sleep(wait)
                     continue
 
@@ -420,13 +451,16 @@ class BlueskyService:
 
             except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
                 if attempt < MAX_RETRIES - 1:
-                    wait = BACKOFF_BASE * (2 ** attempt)
-                    logger.warning("Bluesky connection error, retrying", extra={
-                        "method": method,
-                        "attempt": attempt + 1,
-                        "wait_s": wait,
-                        "error": str(exc)[:100],
-                    })
+                    wait = BACKOFF_BASE * (2**attempt)
+                    logger.warning(
+                        "Bluesky connection error, retrying",
+                        extra={
+                            "method": method,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                            "error": str(exc)[:100],
+                        },
+                    )
                     await asyncio.sleep(wait)
                     continue
                 raise BlueskyAPIError(f"Connection failed after {MAX_RETRIES} attempts: {exc}") from exc
@@ -458,13 +492,16 @@ class BlueskyService:
                         resp = await client.post(url, json=json_body, headers=headers)
 
                 if resp.status_code in (429, 500, 502, 503) and attempt < MAX_RETRIES - 1:
-                    wait = BACKOFF_BASE * (2 ** attempt)
-                    logger.warning("Bluesky API retrying", extra={
-                        "method": method,
-                        "status": resp.status_code,
-                        "attempt": attempt + 1,
-                        "wait_s": wait,
-                    })
+                    wait = BACKOFF_BASE * (2**attempt)
+                    logger.warning(
+                        "Bluesky API retrying",
+                        extra={
+                            "method": method,
+                            "status": resp.status_code,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                        },
+                    )
                     await asyncio.sleep(wait)
                     continue
 
@@ -473,13 +510,16 @@ class BlueskyService:
 
             except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
                 if attempt < MAX_RETRIES - 1:
-                    wait = BACKOFF_BASE * (2 ** attempt)
-                    logger.warning("Bluesky connection error, retrying", extra={
-                        "method": method,
-                        "attempt": attempt + 1,
-                        "wait_s": wait,
-                        "error": str(exc)[:100],
-                    })
+                    wait = BACKOFF_BASE * (2**attempt)
+                    logger.warning(
+                        "Bluesky connection error, retrying",
+                        extra={
+                            "method": method,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                            "error": str(exc)[:100],
+                        },
+                    )
                     await asyncio.sleep(wait)
                     continue
                 raise BlueskyAPIError(f"Connection failed after {MAX_RETRIES} attempts: {exc}") from exc
@@ -508,14 +548,17 @@ class BlueskyService:
         error_message = body.get("message", resp.text[:500])
 
         # Log every error with full context
-        logger.error("Bluesky XRPC error", extra={
-            "http_status": resp.status_code,
-            "error_name": error_name,
-            "error_message": error_message[:300],
-            "request_url": str(resp.request.url).split("?")[0] if resp.request else "",
-            "request_method": str(resp.request.method) if resp.request else "",
-            "response_body": resp.text[:500],
-        })
+        logger.error(
+            "Bluesky XRPC error",
+            extra={
+                "http_status": resp.status_code,
+                "error_name": error_name,
+                "error_message": error_message[:300],
+                "request_url": str(resp.request.url).split("?")[0] if resp.request else "",
+                "request_method": str(resp.request.method) if resp.request else "",
+                "response_body": resp.text[:500],
+            },
+        )
 
         # 401 — auth failure
         if resp.status_code == 401 or error_name in ("AuthenticationRequired", "InvalidToken", "ExpiredToken"):
@@ -549,11 +592,14 @@ class BlueskyService:
         )
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("bluesky_phase", "api_response")
-            scope.set_context("bluesky", {
-                "error_name": error_name,
-                "message": error_message[:500],
-                "status_code": resp.status_code,
-            })
+            scope.set_context(
+                "bluesky",
+                {
+                    "error_name": error_name,
+                    "message": error_message[:500],
+                    "status_code": resp.status_code,
+                },
+            )
             sentry_sdk.capture_exception(api_exc)
         raise api_exc
 

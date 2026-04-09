@@ -22,7 +22,7 @@ _rng = secrets.SystemRandom()
 DIFFICULTY_PARAMS: dict[str, dict] = {
     "easy": {
         "rp_waste_pct": 0.30,
-        "success_threshold": 0.0,   # Deploy at any %
+        "success_threshold": 0.0,  # Deploy at any %
         "use_intel": False,
         "optimal_targeting": False,
         "proactive_counter": False,
@@ -148,10 +148,12 @@ class BotPersonality(ABC):
         votes: list[ProposalVote] = []
         for proposal in state.pending_proposals:
             if proposal.get("team_id") == state.own_team_id:
-                votes.append(ProposalVote(
-                    proposal_id=proposal["id"],
-                    vote="accept",
-                ))
+                votes.append(
+                    ProposalVote(
+                        proposal_id=proposal["id"],
+                        vote="accept",
+                    )
+                )
         return votes
 
     def _apply_difficulty_waste(self, rp: int) -> int:
@@ -194,6 +196,7 @@ class BotPersonality(ABC):
             # Sort by aptitude for this operative type (desc), pick best
             def apt_score(agent: dict) -> int:
                 return agent.get("aptitudes", {}).get(operative_type, 6)
+
             available.sort(key=apt_score, reverse=True)
             return available[0]
         return _rng.choice(available)
@@ -368,11 +371,13 @@ class SentinelPersonality(BotPersonality):
             if not actions:
                 opponents = state.get_opponent_sim_ids()
                 if opponents:
-                    actions.append(AllianceAction(
-                        action="form",
-                        target_simulation_id=opponents[0],
-                        team_name=f"Sentinel Pact C{state.current_cycle}",
-                    ))
+                    actions.append(
+                        AllianceAction(
+                            action="form",
+                            target_simulation_id=opponents[0],
+                            team_name=f"Sentinel Pact C{state.current_cycle}",
+                        )
+                    )
 
         # Never betray unless betrayed first
         return actions
@@ -439,9 +444,7 @@ class WarlordPersonality(BotPersonality):
 
         # Resonance awareness: shift budget toward aligned types
         if state.active_resonances and self.params["use_intel"]:
-            aligned_offensive = [
-                t for t in state.resonance_aligned_types if t != "guardian"
-            ]
+            aligned_offensive = [t for t in state.resonance_aligned_types if t != "guardian"]
             if aligned_offensive:
                 # Prepend aligned types to the queue
                 offensive_queue = aligned_offensive + offensive_queue
@@ -491,11 +494,13 @@ class WarlordPersonality(BotPersonality):
             # Losing badly — consider temporary alliance
             opponents = state.get_opponent_sim_ids()
             if opponents and _rng.random() < 0.3:
-                actions.append(AllianceAction(
-                    action="form",
-                    target_simulation_id=opponents[0],
-                    team_name=f"War Pact C{state.current_cycle}",
-                ))
+                actions.append(
+                    AllianceAction(
+                        action="form",
+                        target_simulation_id=opponents[0],
+                        team_name=f"War Pact C{state.current_cycle}",
+                    )
+                )
 
         # Betray ally if they become a threat (leading)
         if state.own_team_id and state.allies:
@@ -601,17 +606,19 @@ class DiplomatPersonality(BotPersonality):
             # Form alliance with another non-allied participant
             opponents = state.get_opponent_sim_ids()
             non_teamed = [
-                p["simulation_id"] for p in state.participants
-                if p["simulation_id"] != state.simulation_id
-                and not p.get("team_id")
+                p["simulation_id"]
+                for p in state.participants
+                if p["simulation_id"] != state.simulation_id and not p.get("team_id")
             ]
             target = non_teamed[0] if non_teamed else (opponents[0] if opponents else None)
             if target:
-                actions.append(AllianceAction(
-                    action="form",
-                    target_simulation_id=target,
-                    team_name=f"Diplomatic Union C{state.current_cycle}",
-                ))
+                actions.append(
+                    AllianceAction(
+                        action="form",
+                        target_simulation_id=target,
+                        team_name=f"Diplomatic Union C{state.current_cycle}",
+                    )
+                )
 
         # Never betray (diplomat is loyal)
         return actions
@@ -712,9 +719,7 @@ class StrategistPersonality(BotPersonality):
         return plans
 
     @staticmethod
-    def _apply_resonance_preference(
-        state: BotGameState, ops: list[str]
-    ) -> list[str]:
+    def _apply_resonance_preference(state: BotGameState, ops: list[str]) -> list[str]:
         """Substitute non-guardian ops with resonance-aligned types where possible."""
         result: list[str] = []
         for op in ops:
@@ -750,17 +755,19 @@ class StrategistPersonality(BotPersonality):
             rank = state.get_my_score_rank()
             if rank > 1:
                 non_leaders = [
-                    p["simulation_id"] for p in state.participants
-                    if p["simulation_id"] != state.simulation_id
-                    and not p.get("team_id")
+                    p["simulation_id"]
+                    for p in state.participants
+                    if p["simulation_id"] != state.simulation_id and not p.get("team_id")
                 ]
                 if non_leaders:
                     target = non_leaders[-1] if len(non_leaders) > 1 else non_leaders[0]
-                    actions.append(AllianceAction(
-                        action="form",
-                        target_simulation_id=target,
-                        team_name=f"Counter-Alliance C{state.current_cycle}",
-                    ))
+                    actions.append(
+                        AllianceAction(
+                            action="form",
+                            target_simulation_id=target,
+                            team_name=f"Counter-Alliance C{state.current_cycle}",
+                        )
+                    )
         elif not state.own_team_id:
             for team in state.teams:
                 actions.append(AllianceAction(action="join", team_name=team["name"]))
@@ -821,12 +828,12 @@ class ChaosPersonality(BotPersonality):
 
         # Random operative types (weighted)
         op_pool = (
-            ["guardian"] * 2 +
-            ["spy"] * 2 +
-            ["saboteur"] * 3 +
-            ["propagandist"] * 3 +
-            ["assassin"] * 1 +
-            ["infiltrator"] * 2
+            ["guardian"] * 2
+            + ["spy"] * 2
+            + ["saboteur"] * 3
+            + ["propagandist"] * 3
+            + ["assassin"] * 1
+            + ["infiltrator"] * 2
         )
         _rng.shuffle(op_pool)
 
@@ -861,10 +868,12 @@ class ChaosPersonality(BotPersonality):
         # 30% chance to betray each cycle
         if state.own_team_id and _rng.random() < 0.30:
             if state.allies:
-                actions.append(AllianceAction(
-                    action="betray",
-                    target_simulation_id=_rng.choice(state.allies),
-                ))
+                actions.append(
+                    AllianceAction(
+                        action="betray",
+                        target_simulation_id=_rng.choice(state.allies),
+                    )
+                )
             return actions
 
         # 40% chance to form/join alliance if not in one
@@ -874,11 +883,13 @@ class ChaosPersonality(BotPersonality):
             else:
                 opponents = state.get_opponent_sim_ids()
                 if opponents:
-                    actions.append(AllianceAction(
-                        action="form",
-                        target_simulation_id=_rng.choice(opponents),
-                        team_name=f"Chaos Pact C{state.current_cycle}",
-                    ))
+                    actions.append(
+                        AllianceAction(
+                            action="form",
+                            target_simulation_id=_rng.choice(opponents),
+                            team_name=f"Chaos Pact C{state.current_cycle}",
+                        )
+                    )
 
         return actions
 

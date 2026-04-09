@@ -69,24 +69,26 @@ class USGSEarthquakeAdapter(SourceAdapter):
             alert = props.get("alert")
             tsunami = props.get("tsunami", 0)
 
-            results.append(ScanResult(
-                source_id=feature.get("id", ""),
-                source_name=self.name,
-                title=props.get("title", f"M {mag} Earthquake"),
-                url=props.get("url"),
-                description=props.get("place", ""),
-                raw_data={
-                    "mag": mag,
-                    "place": props.get("place"),
-                    "time": props.get("time"),
-                    "alert": alert,
-                    "tsunami": tsunami,
-                    "coordinates": feature.get("geometry", {}).get("coordinates"),
-                },
-                source_category="natural_disaster",
-                magnitude=_richter_to_magnitude(mag, alert, tsunami),
-                classification_reason=f"Richter {mag}, alert={alert}, tsunami={tsunami}",
-                is_structured=True,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=feature.get("id", ""),
+                    source_name=self.name,
+                    title=props.get("title", f"M {mag} Earthquake"),
+                    url=props.get("url"),
+                    description=props.get("place", ""),
+                    raw_data={
+                        "mag": mag,
+                        "place": props.get("place"),
+                        "time": props.get("time"),
+                        "alert": alert,
+                        "tsunami": tsunami,
+                        "coordinates": feature.get("geometry", {}).get("coordinates"),
+                    },
+                    source_category="natural_disaster",
+                    magnitude=_richter_to_magnitude(mag, alert, tsunami),
+                    classification_reason=f"Richter {mag}, alert={alert}, tsunami={tsunami}",
+                    is_structured=True,
+                )
+            )
 
         return results

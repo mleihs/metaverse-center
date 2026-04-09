@@ -104,10 +104,12 @@ class ForgeThemeService:
         result = await run_ai(agent, prompt, "theme", output_type=ForgeThemeOutput)
         theme_data = result.output.model_dump()
 
-        logger.info("Theme generated: primary=%s, shadow=%s, texture=%s",
-                     theme_data.get("color_primary"),
-                     theme_data.get("shadow_style"),
-                     theme_data.get("card_frame_texture"))
+        logger.info(
+            "Theme generated: primary=%s, shadow=%s, texture=%s",
+            theme_data.get("color_primary"),
+            theme_data.get("shadow_style"),
+            theme_data.get("card_frame_texture"),
+        )
 
         return theme_data
 
@@ -149,10 +151,14 @@ class ForgeThemeService:
 
         logger.info("Applying %d theme settings for simulation %s", len(rows), simulation_id)
 
-        await supabase.table("simulation_settings").upsert(
-            rows,
-            on_conflict="simulation_id,category,setting_key",
-        ).execute()
+        await (
+            supabase.table("simulation_settings")
+            .upsert(
+                rows,
+                on_conflict="simulation_id,category,setting_key",
+            )
+            .execute()
+        )
 
         logger.info("Theme settings applied for simulation %s", simulation_id)
 
@@ -171,11 +177,7 @@ class ForgeThemeService:
         """
         # Load simulation + lore context
         sim_resp = await (
-            supabase.table("simulations")
-            .select("name, description")
-            .eq("id", str(simulation_id))
-            .single()
-            .execute()
+            supabase.table("simulations").select("name, description").eq("id", str(simulation_id)).single().execute()
         )
         sim = sim_resp.data or {}
 
@@ -206,13 +208,11 @@ class ForgeThemeService:
 
         # Build lore digest for context
         lore_digest = "\n".join(
-            f"- {s['title']}: {(s.get('epigraph') or '')[:100]} "
-            f"{(s.get('body') or '')[:200]}"
-            for s in lore_sections
+            f"- {s['title']}: {(s.get('epigraph') or '')[:100]} {(s.get('body') or '')[:200]}" for s in lore_sections
         )
 
         prompt = (
-            f"You are refining image style prompts for the world \"{sim.get('name', '?')}\".\n\n"
+            f'You are refining image style prompts for the world "{sim.get("name", "?")}".\n\n'
             f"WORLD DESCRIPTION: {sim.get('description', '')}\n\n"
             f"LORE EXCERPTS (these define the world's unique atmosphere):\n{lore_digest}\n\n"
             f"CURRENT STYLE PROMPTS (too generic — need to be more distinctive):\n"
@@ -265,10 +265,14 @@ class ForgeThemeService:
                 if value and len(value) > 20  # Reject too-short prompts
             ]
             if rows:
-                await supabase.table("simulation_settings").upsert(
-                    rows,
-                    on_conflict="simulation_id,category,setting_key",
-                ).execute()
+                await (
+                    supabase.table("simulation_settings")
+                    .upsert(
+                        rows,
+                        on_conflict="simulation_id,category,setting_key",
+                    )
+                    .execute()
+                )
                 logger.info(
                     "Style prompts refined using lore context",
                     extra={
@@ -298,11 +302,7 @@ class ForgeThemeService:
 
         # Load simulation + lore context
         sim_resp = await (
-            supabase.table("simulations")
-            .select("name, description")
-            .eq("id", str(simulation_id))
-            .single()
-            .execute()
+            supabase.table("simulations").select("name, description").eq("id", str(simulation_id)).single().execute()
         )
         sim = sim_resp.data or {}
         sim_name = sim.get("name", "Unknown")
@@ -331,9 +331,7 @@ class ForgeThemeService:
         styles = {r["setting_key"]: r["setting_value"] for r in style_resp.data or []}
 
         lore_digest = "\n".join(
-            f"- {s['title']}: {(s.get('epigraph') or '')[:80]} "
-            f"{(s.get('body') or '')[:150]}"
-            for s in lore_sections
+            f"- {s['title']}: {(s.get('epigraph') or '')[:80]} {(s.get('body') or '')[:150]}" for s in lore_sections
         )
 
         prompt = (
@@ -346,24 +344,24 @@ class ForgeThemeService:
             f"specific to this world — referencing its materials, aesthetics, social "
             f"structures, and atmospheric qualities from the lore.\n\n"
             f"Return valid JSON with exactly these 4 keys:\n"
-            f'{{\n'
+            f"{{\n"
             f'  "portrait_description": {{\n'
             f'    "system_prompt": "You are a [world-specific] portrait specialist...",\n'
             f'    "prompt_content": "Describe a portrait of {{agent_name}}..."\n'
-            f'  }},\n'
+            f"  }},\n"
             f'  "building_image_description": {{\n'
             f'    "system_prompt": "You are a [world-specific] architectural photographer...",\n'
             f'    "prompt_content": "Describe an image of {{building_name}}..."\n'
-            f'  }},\n'
+            f"  }},\n"
             f'  "chronicle_generation": {{\n'
             f'    "system_prompt": "You are the editor of {sim_name}\'s chronicle...",\n'
             f'    "prompt_content": "Write edition #{{edition_number}}..."\n'
-            f'  }},\n'
+            f"  }},\n"
             f'  "chat_system_prompt": {{\n'
             f'    "system_prompt": "You roleplay characters from {sim_name}...",\n'
             f'    "prompt_content": "You are {{agent_name}}..."\n'
-            f'  }}\n'
-            f'}}\n\n'
+            f"  }}\n"
+            f"}}\n\n"
             f"RULES:\n"
             f"- system_prompt: Sets the AI's persona (2-4 sentences, world-specific)\n"
             f"- prompt_content: The user-facing template with {{variable}} placeholders\n"
@@ -440,29 +438,40 @@ class ForgeThemeService:
                 if not isinstance(tdata, dict):
                     continue
                 meta = template_meta[ttype]
-                rows.append({
-                    "simulation_id": str(simulation_id),
-                    "template_type": ttype,
-                    "prompt_category": meta["prompt_category"],
-                    "locale": "en",
-                    "template_name": meta["template_name"],
-                    "prompt_content": tdata.get("prompt_content", ""),
-                    "system_prompt": tdata.get("system_prompt", ""),
-                    "variables": _json.dumps([]),
-                    "temperature": meta["temperature"],
-                    "max_tokens": meta["max_tokens"],
-                    "is_system_default": False,
-                })
+                rows.append(
+                    {
+                        "simulation_id": str(simulation_id),
+                        "template_type": ttype,
+                        "prompt_category": meta["prompt_category"],
+                        "locale": "en",
+                        "template_name": meta["template_name"],
+                        "prompt_content": tdata.get("prompt_content", ""),
+                        "system_prompt": tdata.get("system_prompt", ""),
+                        "variables": _json.dumps([]),
+                        "temperature": meta["temperature"],
+                        "max_tokens": meta["max_tokens"],
+                        "is_system_default": False,
+                    }
+                )
 
             if rows:
                 # Delete existing templates for this simulation first
                 # (partial unique index doesn't support standard upsert)
                 for r in rows:
-                    await supabase.table("prompt_templates").delete().eq(
-                        "simulation_id", str(simulation_id),
-                    ).eq("template_type", r["template_type"]).eq(
-                        "locale", "en",
-                    ).execute()
+                    await (
+                        supabase.table("prompt_templates")
+                        .delete()
+                        .eq(
+                            "simulation_id",
+                            str(simulation_id),
+                        )
+                        .eq("template_type", r["template_type"])
+                        .eq(
+                            "locale",
+                            "en",
+                        )
+                        .execute()
+                    )
                 await supabase.table("prompt_templates").insert(rows).execute()
                 logger.info(
                     "Generated %d world-specific prompt templates",
@@ -493,25 +502,35 @@ class ForgeThemeService:
 
         try:
             # Fetch simulation data for context
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, description"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, description")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim = sim_resp.data
 
             # Fetch current theme settings
-            settings_resp = await admin_supabase.table("simulation_settings").select(
-                "setting_key, setting_value"
-            ).eq("simulation_id", str(simulation_id)).eq("category", "design").execute()
-            current_theme = {
-                s["setting_key"]: s["setting_value"]
-                for s in (settings_resp.data or [])
-            }
+            settings_resp = (
+                await admin_supabase.table("simulation_settings")
+                .select("setting_key, setting_value")
+                .eq("simulation_id", str(simulation_id))
+                .eq("category", "design")
+                .execute()
+            )
+            current_theme = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
 
             # Get user BYOK key
             from backend.utils.encryption import decrypt
-            wallet_resp = await admin_supabase.table("user_wallets").select(
-                "encrypted_openrouter_key"
-            ).eq("user_id", str(user_id)).maybe_single().execute()
+
+            wallet_resp = (
+                await admin_supabase.table("user_wallets")
+                .select("encrypted_openrouter_key")
+                .eq("user_id", str(user_id))
+                .maybe_single()
+                .execute()
+            )
             or_key = None
             if wallet_resp.data and wallet_resp.data.get("encrypted_openrouter_key"):
                 or_key = decrypt(wallet_resp.data["encrypted_openrouter_key"])
@@ -519,26 +538,28 @@ class ForgeThemeService:
             variants = []
             if settings.forge_mock_mode:
                 for i in range(3):
-                    variants.append({
-                        "variant_name": f"Variant {i + 1}",
-                        "color_primary": ["#e74c3c", "#3498db", "#2ecc71"][i],
-                        "color_background": ["#1a0a0a", "#0a0a1a", "#0a1a0a"][i],
-                        "color_surface": ["#1f1111", "#11111f", "#111f11"][i],
-                        "color_text": "#e5e5e5",
-                        "font_heading": ["Playfair Display", "JetBrains Mono", "Crimson Text"][i],
-                        "shadow_style": ["blur", "glow", "offset"][i],
-                        "card_frame_texture": ["scanlines", "circuits", "filigree"][i],
-                    })
+                    variants.append(
+                        {
+                            "variant_name": f"Variant {i + 1}",
+                            "color_primary": ["#e74c3c", "#3498db", "#2ecc71"][i],
+                            "color_background": ["#1a0a0a", "#0a0a1a", "#0a1a0a"][i],
+                            "color_surface": ["#1f1111", "#11111f", "#111f11"][i],
+                            "color_text": "#e5e5e5",
+                            "font_heading": ["Playfair Display", "JetBrains Mono", "Crimson Text"][i],
+                            "shadow_style": ["blur", "glow", "offset"][i],
+                            "card_frame_texture": ["scanlines", "circuits", "filigree"][i],
+                        }
+                    )
             else:
                 model = get_openrouter_model(or_key, model_id=get_platform_model("forge"))
 
                 for i in range(3):
                     variant_prompt = f"""Generate a COMPLETELY DIFFERENT visual theme variant (#{i + 1}/3)
-for the world "{sim['name']}": {sim.get('description', '')}
+for the world "{sim["name"]}": {sim.get("description", "")}
 
-Current theme uses: primary={current_theme.get('color_primary', '?')},
-background={current_theme.get('color_background', '?')},
-font={current_theme.get('font_heading', '?')}
+Current theme uses: primary={current_theme.get("color_primary", "?")},
+background={current_theme.get("color_background", "?")},
+font={current_theme.get("font_heading", "?")}
 
 {"Previous variant used: " + variants[-1].get("color_primary", "") if variants else ""}
 
@@ -553,7 +574,8 @@ different typography. Same world, radically different visual identity."""
 
             # Store variants in purchase result and mark completed
             await ForgeFeatureService.complete_feature(
-                admin_supabase, purchase_id,
+                admin_supabase,
+                purchase_id,
                 result={"variants": variants, "current_theme": current_theme},
             )
             logger.info(
@@ -565,5 +587,7 @@ different typography. Same world, radically different visual identity."""
             sentry_sdk.capture_exception(exc)
             logger.exception("Darkroom variant generation failed")
             await ForgeFeatureService.fail_feature(
-                admin_supabase, purchase_id, str(exc),
+                admin_supabase,
+                purchase_id,
+                str(exc),
             )

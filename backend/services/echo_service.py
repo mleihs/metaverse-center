@@ -11,11 +11,12 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -54,10 +55,7 @@ class EchoService:
         col = "target_simulation_id" if direction == "incoming" else "source_simulation_id"
 
         query = (
-            supabase.table(cls.table_name)
-            .select("*", count="exact")
-            .eq(col, sim_str)
-            .order("created_at", desc=True)
+            supabase.table(cls.table_name).select("*", count="exact").eq(col, sim_str).order("created_at", desc=True)
         )
 
         if status_filter:
@@ -91,18 +89,9 @@ class EchoService:
         echo_id: UUID,
     ) -> dict:
         """Get a single echo by ID."""
-        response = await (
-            supabase.table(cls.table_name)
-            .select("*")
-            .eq("id", str(echo_id))
-            .single()
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).select("*").eq("id", str(echo_id)).single().execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Echo '{echo_id}' not found.",
-            )
+            raise not_found(detail=f"Echo '{echo_id}' not found.")
         return response.data
 
     # --- Echo strength computation ---
@@ -131,7 +120,7 @@ class EchoService:
         base = connection_strength
         base *= 1 + embassy_effectiveness * 0.3
         base *= 1 + min(tag_resonance_count, 3) * 0.2
-        base *= strength_decay ** echo_depth
+        base *= strength_decay**echo_depth
         base *= 1 + source_instability * 0.2
         return max(0.0, min(1.0, base))
 
@@ -176,10 +165,15 @@ class EchoService:
             .select("setting_key, setting_value")
             .eq("simulation_id", sim_str)
             .eq("category", "world")
-            .in_("setting_key", [
-                "bleed_enabled", "bleed_min_impact", "bleed_max_depth",
-                "bleed_strength_decay",
-            ])
+            .in_(
+                "setting_key",
+                [
+                    "bleed_enabled",
+                    "bleed_min_impact",
+                    "bleed_max_depth",
+                    "bleed_strength_decay",
+                ],
+            )
             .execute()
         )
         settings = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
@@ -212,9 +206,7 @@ class EchoService:
             supabase.table("simulation_connections")
             .select("*")
             .eq("is_active", True)
-            .or_(
-                f"simulation_a_id.eq.{sim_str},simulation_b_id.eq.{sim_str}"
-            )
+            .or_(f"simulation_a_id.eq.{sim_str},simulation_b_id.eq.{sim_str}")
             .execute()
         )
         if not conn_resp.data:
@@ -222,7 +214,8 @@ class EchoService:
 
         # Fetch game metrics for threshold modification + strength calculation
         source_health = await GameMechanicsService.get_simulation_health(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
         )
         source_instability = 0.0
         if source_health:
@@ -230,14 +223,13 @@ class EchoService:
 
         # Embassy effectiveness per target simulation (best per target)
         embassy_data = await GameMechanicsService.list_embassy_effectiveness(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
         )
         embassy_map: dict[str, float] = {}
         for emb in embassy_data:
             other_sim = (
-                emb.get("simulation_b_id")
-                if emb.get("simulation_a_id") == sim_str
-                else emb.get("simulation_a_id")
+                emb.get("simulation_b_id") if emb.get("simulation_a_id") == sim_str else emb.get("simulation_a_id")
             )
             if other_sim:
                 embassy_map[other_sim] = max(
@@ -250,11 +242,7 @@ class EchoService:
         # Build candidate list with per-target threshold + strength
         candidates = []
         for conn in conn_resp.data:
-            target_sim = (
-                conn["simulation_b_id"]
-                if conn["simulation_a_id"] == sim_str
-                else conn["simulation_a_id"]
-            )
+            target_sim = conn["simulation_b_id"] if conn["simulation_a_id"] == sim_str else conn["simulation_a_id"]
             connection_strength = float(conn.get("strength", 0.5))
             emb_eff = embassy_map.get(target_sim, 0.0)
             conn_vectors = conn.get("bleed_vectors") or []
@@ -287,29 +275,28 @@ class EchoService:
 
             # Deterministic: impact meets modified threshold
             if impact >= modified_threshold:
-                candidates.append({
-                    "target_simulation_id": target_sim,
-                    "connection": conn,
-                    "depth": current_depth + 1,
-                    "echo_vector": best_vector,
-                    "echo_strength": echo_strength,
-                })
-            # Probabilistic: events 1-2 below threshold may still bleed
-            elif impact >= modified_threshold - 2:
-                bleed_prob = (
-                    0.15
-                    * connection_strength
-                    * (1 + emb_eff * 0.5)
-                    * (1 + source_instability * 0.3)
-                )
-                if random.random() < bleed_prob:  # noqa: S311
-                    candidates.append({
+                candidates.append(
+                    {
                         "target_simulation_id": target_sim,
                         "connection": conn,
                         "depth": current_depth + 1,
                         "echo_vector": best_vector,
-                        "echo_strength": echo_strength * 0.7,  # weaker
-                    })
+                        "echo_strength": echo_strength,
+                    }
+                )
+            # Probabilistic: events 1-2 below threshold may still bleed
+            elif impact >= modified_threshold - 2:
+                bleed_prob = 0.15 * connection_strength * (1 + emb_eff * 0.5) * (1 + source_instability * 0.3)
+                if random.random() < bleed_prob:  # noqa: S311
+                    candidates.append(
+                        {
+                            "target_simulation_id": target_sim,
+                            "connection": conn,
+                            "depth": current_depth + 1,
+                            "echo_vector": best_vector,
+                            "echo_strength": echo_strength * 0.7,  # weaker
+                        }
+                    )
 
         return candidates
 
@@ -329,31 +316,26 @@ class EchoService:
         source_event_id = source_event["id"]
         root_id = str(root_event_id) if root_event_id else source_event_id
 
-        insert_data = serialize_for_json({
-            "source_event_id": source_event_id,
-            "source_simulation_id": str(source_simulation_id),
-            "target_simulation_id": str(target_simulation_id),
-            "echo_vector": echo_vector,
-            "echo_strength": echo_strength,
-            "echo_depth": echo_depth,
-            "root_event_id": root_id,
-            "status": "pending",
-            "bleed_metadata": {
-                "source_title": source_event.get("title"),
-                "source_impact": source_event.get("impact_level"),
-            },
-        })
-
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .insert(insert_data)
-            .execute()
+        insert_data = serialize_for_json(
+            {
+                "source_event_id": source_event_id,
+                "source_simulation_id": str(source_simulation_id),
+                "target_simulation_id": str(target_simulation_id),
+                "echo_vector": echo_vector,
+                "echo_strength": echo_strength,
+                "echo_depth": echo_depth,
+                "root_event_id": root_id,
+                "status": "pending",
+                "bleed_metadata": {
+                    "source_title": source_event.get("title"),
+                    "source_impact": source_event.get("impact_level"),
+                },
+            }
         )
+
+        response = await admin_supabase.table(cls.table_name).insert(insert_data).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create echo record.",
-            )
+            raise server_error("Failed to create echo record.")
         return response.data[0]
 
     @classmethod
@@ -376,17 +358,9 @@ class EchoService:
         if metadata_update:
             update_data["bleed_metadata"] = metadata_update
 
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .update(update_data)
-            .eq("id", str(echo_id))
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).update(update_data).eq("id", str(echo_id)).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Echo '{echo_id}' not found.",
-            )
+            raise not_found(detail=f"Echo '{echo_id}' not found.")
         return response.data[0]
 
     @classmethod
@@ -398,10 +372,7 @@ class EchoService:
         """Approve a pending echo — marks as 'generating'."""
         echo = await cls.get(admin_supabase, echo_id)
         if echo["status"] != "pending":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot approve echo with status '{echo['status']}'.",
-            )
+            raise bad_request(f"Cannot approve echo with status '{echo['status']}'.")
         return await cls.update_echo_status(admin_supabase, echo_id, "generating")
 
     @classmethod
@@ -413,10 +384,7 @@ class EchoService:
         """Reject a pending echo."""
         echo = await cls.get(admin_supabase, echo_id)
         if echo["status"] != "pending":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot reject echo with status '{echo['status']}'.",
-            )
+            raise bad_request(f"Cannot reject echo with status '{echo['status']}'.")
         return await cls.update_echo_status(admin_supabase, echo_id, "rejected")
 
     # --- Echo transformation (AI-powered) ---
@@ -462,27 +430,14 @@ class EchoService:
 
         try:
             # 2. Fetch source event
-            source_event_resp = await (
-                supabase.table("events")
-                .select("*")
-                .eq("id", source_event_id)
-                .single()
-                .execute()
-            )
+            source_event_resp = await supabase.table("events").select("*").eq("id", source_event_id).single().execute()
             if not source_event_resp.data:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Source event no longer exists.",
-                )
+                raise not_found(detail="Source event no longer exists.")
             source_event = source_event_resp.data
 
             # Fetch target simulation info
             target_sim_resp = await (
-                supabase.table("simulations")
-                .select("name, description")
-                .eq("id", target_sim_id)
-                .single()
-                .execute()
+                supabase.table("simulations").select("name, description").eq("id", target_sim_id).single().execute()
             )
             target_sim = target_sim_resp.data or {}
 
@@ -502,51 +457,48 @@ class EchoService:
                 source_tags.append(echo_vector)
 
             # Impact scales with echo strength — weaker echoes are less impactful
-            target_impact = max(1, round(
-                (source_event.get("impact_level") or 5) * float(echo["echo_strength"])
-            ))
+            target_impact = max(1, round((source_event.get("impact_level") or 5) * float(echo["echo_strength"])))
 
-            target_event_data = serialize_for_json({
-                "simulation_id": target_sim_id,
-                "title": transformed.get("title", source_event.get("title", "")),
-                "description": transformed.get("description", ""),
-                "event_type": source_event.get("event_type", "echo"),
-                "data_source": "bleed",
-                "impact_level": min(10, target_impact),
-                "occurred_at": datetime.now(UTC).isoformat(),
-                "tags": source_tags,
-                "external_refs": {
-                    "echo_id": str(echo_id),
-                    "source_event_id": source_event_id,
-                    "source_simulation_id": echo["source_simulation_id"],
-                    "echo_depth": echo["echo_depth"],
-                    "echo_vector": echo_vector,
-                    "model_used": transformed.get("model_used"),
-                },
-            })
-
-            event_resp = await (
-                admin_supabase.table("events")
-                .insert(target_event_data)
-                .execute()
+            target_event_data = serialize_for_json(
+                {
+                    "simulation_id": target_sim_id,
+                    "title": transformed.get("title", source_event.get("title", "")),
+                    "description": transformed.get("description", ""),
+                    "event_type": source_event.get("event_type", "echo"),
+                    "data_source": "bleed",
+                    "impact_level": min(10, target_impact),
+                    "occurred_at": datetime.now(UTC).isoformat(),
+                    "tags": source_tags,
+                    "external_refs": {
+                        "echo_id": str(echo_id),
+                        "source_event_id": source_event_id,
+                        "source_simulation_id": echo["source_simulation_id"],
+                        "echo_depth": echo["echo_depth"],
+                        "echo_vector": echo_vector,
+                        "model_used": transformed.get("model_used"),
+                    },
+                }
             )
+
+            event_resp = await admin_supabase.table("events").insert(target_event_data).execute()
             if not event_resp.data:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to create target event from echo.",
-                )
+                raise server_error("Failed to create target event from echo.")
             target_event = event_resp.data[0]
 
             # 5. Mark echo as completed
             metadata = dict(echo.get("bleed_metadata") or {})
-            metadata.update({
-                "transformed_title": transformed.get("title"),
-                "model_used": transformed.get("model_used"),
-                "target_impact": target_impact,
-            })
+            metadata.update(
+                {
+                    "transformed_title": transformed.get("title"),
+                    "model_used": transformed.get("model_used"),
+                    "target_impact": target_impact,
+                }
+            )
 
             return await cls.update_echo_status(
-                admin_supabase, echo_id, "completed",
+                admin_supabase,
+                echo_id,
+                "completed",
                 target_event_id=UUID(target_event["id"]),
                 metadata_update=metadata,
             )
@@ -556,16 +508,15 @@ class EchoService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as e:
             logger.exception("Echo transformation failed for echo %s", echo_id)
             await cls.update_echo_status(
-                admin_supabase, echo_id, "failed",
+                admin_supabase,
+                echo_id,
+                "failed",
                 metadata_update={
                     **(echo.get("bleed_metadata") or {}),
                     "error": type(e).__name__,
                 },
             )
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Echo transformation failed. Please try again.",
-            ) from e
+            raise server_error("Echo transformation failed. Please try again.") from e
 
     @classmethod
     async def compute_strength_for_manual_trigger(
@@ -588,7 +539,8 @@ class EchoService:
 
         # Get source instability
         source_health = await GameMechanicsService.get_simulation_health(
-            supabase, source_simulation_id,
+            supabase,
+            source_simulation_id,
         )
         source_instability = 0.0
         if source_health:
@@ -596,16 +548,13 @@ class EchoService:
 
         # Get embassy effectiveness for this pair
         embassy_data = await GameMechanicsService.list_embassy_effectiveness(
-            supabase, source_simulation_id,
+            supabase,
+            source_simulation_id,
         )
         target_str = str(target_simulation_id)
         emb_eff = 0.0
         for emb in embassy_data:
-            other = (
-                emb.get("simulation_b_id")
-                if emb.get("simulation_a_id") == sim_str
-                else emb.get("simulation_a_id")
-            )
+            other = emb.get("simulation_b_id") if emb.get("simulation_a_id") == sim_str else emb.get("simulation_a_id")
             if other == target_str:
                 emb_eff = max(emb_eff, float(emb.get("effectiveness", 0.0)))
 

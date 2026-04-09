@@ -37,6 +37,7 @@ from backend.services.combat.stress_system import stress_threshold
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id
 from backend.services.dungeon_instance_store import store as _store
 from backend.services.dungeon_shared import AUTO_APPLY_EFFECT_TYPES, log_extra
+from backend.utils.errors import forbidden, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -68,10 +69,10 @@ class DungeonCheckpointService:
             if admin_supabase:
                 instance = await cls.recover_from_checkpoint(admin_supabase, run_id)
             if not instance:
-                raise HTTPException(status.HTTP_404_NOT_FOUND, "Dungeon run not found or not active")
+                raise not_found(detail="Dungeon run not found or not active")
 
         if require_player and require_player not in instance.player_ids:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "Not a participant in this dungeon run")
+            raise forbidden("Not a participant in this dungeon run")
 
         # C4: If a prior checkpoint failed, re-attempt before allowing mutation
         if _store.is_dirty(run_id):

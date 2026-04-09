@@ -65,6 +65,7 @@ Ensure values reflect the character's personality as implied by their backstory.
 # Maps Big Five scores to autonomy system parameters
 # These derivations are inspired by psychological research on trait correlations
 
+
 def _derive_autonomy_params(profile: dict) -> dict:
     """Derive mood/needs parameters from Big Five personality profile."""
     o = profile.get("openness", 0.5)
@@ -79,11 +80,11 @@ def _derive_autonomy_params(profile: dict) -> dict:
         "volatility": round(max(0.1, min(0.9, n * 0.5 + (1 - a) * 0.3 + o * 0.1 + 0.1)), 2),
         "sociability": round(max(0.1, min(0.9, e * 0.6 + a * 0.3 + 0.1)), 2),
         # Need decay rates (higher = faster decay = more urgent)
-        "social_decay": round(3.0 + e * 4.0, 1),        # Extraverts need social faster
-        "purpose_decay": round(2.0 + c * 3.0, 1),        # Conscientious need purpose faster
-        "safety_decay": round(1.0 + n * 3.0, 1),         # Neurotic need safety faster
+        "social_decay": round(3.0 + e * 4.0, 1),  # Extraverts need social faster
+        "purpose_decay": round(2.0 + c * 3.0, 1),  # Conscientious need purpose faster
+        "safety_decay": round(1.0 + n * 3.0, 1),  # Neurotic need safety faster
         "comfort_decay": round(1.5 + (1 - o) * 2.5, 1),  # Low openness = more comfort need
-        "stimulation_decay": round(2.0 + o * 4.0, 1),    # Open people crave stimulation
+        "stimulation_decay": round(2.0 + o * 4.0, 1),  # Open people crave stimulation
     }
 
 
@@ -159,9 +160,7 @@ class PersonalityExtractionService:
         profile = cls._parse_profile(content)
 
         # Store on agent
-        await supabase.table("agents").update(
-            {"personality_profile": profile}
-        ).eq("id", str(agent_id)).execute()
+        await supabase.table("agents").update({"personality_profile": profile}).eq("id", str(agent_id)).execute()
 
         logger.info(
             "Personality extracted",
@@ -187,7 +186,9 @@ class PersonalityExtractionService:
         """
         # Extract personality (or use existing)
         profile = await cls.extract_personality(
-            supabase, agent_id, simulation_id,
+            supabase,
+            agent_id,
+            simulation_id,
             openrouter_api_key=openrouter_api_key,
         )
 
@@ -195,18 +196,21 @@ class PersonalityExtractionService:
         params = _derive_autonomy_params(profile)
 
         # Call PostgreSQL function to create mood + needs records (idempotent)
-        await supabase.rpc("fn_initialize_agent_autonomy", {
-            "p_agent_id": str(agent_id),
-            "p_simulation_id": str(simulation_id),
-            "p_resilience": params["resilience"],
-            "p_volatility": params["volatility"],
-            "p_sociability": params["sociability"],
-            "p_social_decay": params["social_decay"],
-            "p_purpose_decay": params["purpose_decay"],
-            "p_safety_decay": params["safety_decay"],
-            "p_comfort_decay": params["comfort_decay"],
-            "p_stimulation_decay": params["stimulation_decay"],
-        }).execute()
+        await supabase.rpc(
+            "fn_initialize_agent_autonomy",
+            {
+                "p_agent_id": str(agent_id),
+                "p_simulation_id": str(simulation_id),
+                "p_resilience": params["resilience"],
+                "p_volatility": params["volatility"],
+                "p_sociability": params["sociability"],
+                "p_social_decay": params["social_decay"],
+                "p_purpose_decay": params["purpose_decay"],
+                "p_safety_decay": params["safety_decay"],
+                "p_comfort_decay": params["comfort_decay"],
+                "p_stimulation_decay": params["stimulation_decay"],
+            },
+        ).execute()
 
         logger.info(
             "Agent autonomy initialized",
@@ -235,7 +239,9 @@ class PersonalityExtractionService:
         for agent_row in agents:
             try:
                 await cls.initialize_agent_autonomy(
-                    supabase, agent_row["id"], simulation_id,
+                    supabase,
+                    agent_row["id"],
+                    simulation_id,
                     openrouter_api_key=openrouter_api_key,
                 )
                 processed += 1
@@ -300,7 +306,7 @@ class PersonalityExtractionService:
         # Build all opinion rows in Python (O(N²) computation, but no DB calls)
         rows: list[dict] = []
         for i, agent_a in enumerate(agents):
-            for agent_b in agents[i + 1:]:
+            for agent_b in agents[i + 1 :]:
                 compat = cls.compute_base_compatibility(
                     agent_a.get("personality_profile", {}),
                     agent_b.get("personality_profile", {}),
@@ -311,20 +317,26 @@ class PersonalityExtractionService:
 
                 # Bidirectional: A→B and B→A
                 for source, target in [(agent_a, agent_b), (agent_b, agent_a)]:
-                    rows.append({
-                        "agent_id": source["id"],
-                        "target_agent_id": target["id"],
-                        "simulation_id": str(simulation_id),
-                        "base_compatibility": compat,
-                        "opinion_score": opinion_score,
-                    })
+                    rows.append(
+                        {
+                            "agent_id": source["id"],
+                            "target_agent_id": target["id"],
+                            "simulation_id": str(simulation_id),
+                            "base_compatibility": compat,
+                            "opinion_score": opinion_score,
+                        }
+                    )
 
         # Single batch upsert — 1 DB call instead of N*(N-1)
         if rows:
-            await supabase.table("agent_opinions").upsert(
-                rows,
-                on_conflict="agent_id,target_agent_id",
-            ).execute()
+            await (
+                supabase.table("agent_opinions")
+                .upsert(
+                    rows,
+                    on_conflict="agent_id,target_agent_id",
+                )
+                .execute()
+            )
 
         logger.info("Opinions initialized", extra={"created": len(rows)})
         return len(rows)
@@ -346,10 +358,7 @@ class PersonalityExtractionService:
         """
         # Big Five distance (inverted: similar = higher compatibility)
         dimensions = ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism")
-        dist = math.sqrt(sum(
-            (profile_a.get(d, 0.5) - profile_b.get(d, 0.5)) ** 2
-            for d in dimensions
-        ))
+        dist = math.sqrt(sum((profile_a.get(d, 0.5) - profile_b.get(d, 0.5)) ** 2 for d in dimensions))
         # Normalize: max distance = sqrt(5) ≈ 2.24, min = 0
         similarity = 1.0 - (dist / 2.24)  # 0..1
 

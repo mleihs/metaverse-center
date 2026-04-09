@@ -92,14 +92,18 @@ def get_platform_model(purpose: str) -> str:
         if dev_model:
             logger.debug(
                 "Resolved model for %s [env=%s]: %s",
-                purpose, settings.environment, dev_model,
+                purpose,
+                settings.environment,
+                dev_model,
             )
             return dev_model
 
     model = _cache.get(base_key) or HARDCODED_DEFAULTS[base_key]
     logger.debug(
         "Resolved model for %s [env=%s]: %s",
-        purpose, settings.environment, model,
+        purpose,
+        settings.environment,
+        model,
     )
     return model
 

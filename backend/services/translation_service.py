@@ -105,12 +105,8 @@ class TranslationService:
             return text
 
         if settings.translation_backend == "deepl":
-            return await TranslationService._translate_deepl(
-                text, source_lang, target_lang, context
-            )
-        return await TranslationService._translate_claude(
-            text, source_lang, target_lang, context, openrouter_key
-        )
+            return await TranslationService._translate_deepl(text, source_lang, target_lang, context)
+        return await TranslationService._translate_claude(text, source_lang, target_lang, context, openrouter_key)
 
     @staticmethod
     async def translate_fields(
@@ -132,9 +128,7 @@ class TranslationService:
             return dict(fields)
 
         if settings.translation_backend == "deepl":
-            return await TranslationService._translate_fields_deepl(
-                fields, source_lang, target_lang, context
-            )
+            return await TranslationService._translate_fields_deepl(fields, source_lang, target_lang, context)
         return await TranslationService._translate_fields_claude(
             fields, source_lang, target_lang, context, openrouter_key
         )
@@ -161,7 +155,10 @@ class TranslationService:
             retries=3,
         )
         result = await run_ai(
-            agent, f"Translate the following text:\n\n{text}", "translation", output_type=str,
+            agent,
+            f"Translate the following text:\n\n{text}",
+            "translation",
+            output_type=str,
         )
         return result.output
 
@@ -193,7 +190,10 @@ class TranslationService:
             retries=3,
         )
         result = await run_ai(
-            agent, "\n".join(prompt_parts), "translation", output_type=TranslationResult,
+            agent,
+            "\n".join(prompt_parts),
+            "translation",
+            output_type=TranslationResult,
         )
         return result.output.translations
 
@@ -315,9 +315,7 @@ async def _run_auto_translate(
         return
 
     try:
-        translated = await TranslationService.translate_fields(
-            to_translate, context=context
-        )
+        translated = await TranslationService.translate_fields(to_translate, context=context)
     except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
         logger.exception("Auto-translation failed", extra={"entity_type": table, "entity_id": entity_id})
         sentry_sdk.capture_exception(exc)

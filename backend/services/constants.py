@@ -26,7 +26,14 @@ SECURITY_LEVEL_MAP: dict[str, float] = {
 
 # Ordered list of security tiers (lowest -> highest) for upgrade/downgrade
 SECURITY_TIER_ORDER: list[str] = [
-    "lawless", "contested", "low", "moderate", "guarded", "high", "maximum", "fortress",
+    "lawless",
+    "contested",
+    "low",
+    "moderate",
+    "guarded",
+    "high",
+    "maximum",
+    "fortress",
 ]
 
 # Score value for successful missions

@@ -94,8 +94,7 @@ class ForgeEntityTranslationService:
         prompt = (
             f"Translate these {entity_count} entity descriptions to German. "
             "Return exactly the same number of entities in each category, "
-            "with the name field matching the original exactly.\n\n"
-            + "\n".join(sections)
+            "with the name field matching the original exactly.\n\n" + "\n".join(sections)
         )
 
         agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key)
@@ -122,9 +121,12 @@ class ForgeEntityTranslationService:
 
         # Update simulation description_de
         if translations.simulation.description_de:
-            await supabase.table("simulations").update(
-                {"description_de": translations.simulation.description_de}
-            ).eq("id", sim_id).execute()
+            await (
+                supabase.table("simulations")
+                .update({"description_de": translations.simulation.description_de})
+                .eq("id", sim_id)
+                .execute()
+            )
             logger.debug("Updated simulation description_de", extra={"simulation_id": sim_id})
         else:
             logger.warning(
@@ -143,16 +145,21 @@ class ForgeEntityTranslationService:
             if at.primary_profession_de:
                 update_data["primary_profession_de"] = at.primary_profession_de
             if update_data:
-                await supabase.table("agents").update(update_data).eq(
-                    "simulation_id", sim_id
-                ).eq("name", at.name).execute()
+                await (
+                    supabase.table("agents")
+                    .update(update_data)
+                    .eq("simulation_id", sim_id)
+                    .eq("name", at.name)
+                    .execute()
+                )
             else:
                 agents_missing_de += 1
 
         if agents_missing_de:
             logger.warning(
                 "Entity translation: %d/%d agents have no _de fields",
-                agents_missing_de, len(translations.agents),
+                agents_missing_de,
+                len(translations.agents),
                 extra={"simulation_id": sim_id},
             )
         logger.debug(
@@ -171,16 +178,21 @@ class ForgeEntityTranslationService:
             if bt.building_condition_de:
                 update_data["building_condition_de"] = bt.building_condition_de
             if update_data:
-                await supabase.table("buildings").update(update_data).eq(
-                    "simulation_id", sim_id
-                ).eq("name", bt.name).execute()
+                await (
+                    supabase.table("buildings")
+                    .update(update_data)
+                    .eq("simulation_id", sim_id)
+                    .eq("name", bt.name)
+                    .execute()
+                )
             else:
                 buildings_missing_de += 1
 
         if buildings_missing_de:
             logger.warning(
                 "Entity translation: %d/%d buildings have no _de fields",
-                buildings_missing_de, len(translations.buildings),
+                buildings_missing_de,
+                len(translations.buildings),
                 extra={"simulation_id": sim_id},
             )
         logger.debug(
@@ -197,16 +209,21 @@ class ForgeEntityTranslationService:
             if zt.zone_type_de:
                 update_data["zone_type_de"] = zt.zone_type_de
             if update_data:
-                await supabase.table("zones").update(update_data).eq(
-                    "simulation_id", sim_id
-                ).eq("name", zt.name).execute()
+                await (
+                    supabase.table("zones")
+                    .update(update_data)
+                    .eq("simulation_id", sim_id)
+                    .eq("name", zt.name)
+                    .execute()
+                )
             else:
                 zones_missing_de += 1
 
         if zones_missing_de:
             logger.warning(
                 "Entity translation: %d/%d zones have no _de fields",
-                zones_missing_de, len(translations.zones),
+                zones_missing_de,
+                len(translations.zones),
                 extra={"simulation_id": sim_id},
             )
         logger.debug(
@@ -221,16 +238,21 @@ class ForgeEntityTranslationService:
             if st.street_type_de:
                 update_data["street_type_de"] = st.street_type_de
             if update_data:
-                await supabase.table("city_streets").update(update_data).eq(
-                    "simulation_id", sim_id
-                ).eq("name", st.name).execute()
+                await (
+                    supabase.table("city_streets")
+                    .update(update_data)
+                    .eq("simulation_id", sim_id)
+                    .eq("name", st.name)
+                    .execute()
+                )
             else:
                 streets_missing_de += 1
 
         if streets_missing_de:
             logger.warning(
                 "Entity translation: %d/%d streets have no _de fields",
-                streets_missing_de, len(translations.streets),
+                streets_missing_de,
+                len(translations.streets),
                 extra={"simulation_id": sim_id},
             )
         logger.debug(

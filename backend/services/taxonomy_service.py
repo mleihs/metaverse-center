@@ -4,8 +4,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -66,15 +65,10 @@ class TaxonomyService:
     async def create_taxonomy(supabase: Client, simulation_id: UUID, data: dict) -> dict:
         """Create a new taxonomy value."""
         response = await (
-            supabase.table("simulation_taxonomies")
-            .insert({**data, "simulation_id": str(simulation_id)})
-            .execute()
+            supabase.table("simulation_taxonomies").insert({**data, "simulation_id": str(simulation_id)}).execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create taxonomy value.",
-            )
+            raise server_error("Failed to create taxonomy value.")
         return response.data[0]
 
     @staticmethod
@@ -86,7 +80,7 @@ class TaxonomyService:
     ) -> dict:
         """Update a taxonomy value."""
         if not data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update.")
+            raise bad_request("No fields to update.")
         data["updated_at"] = datetime.now(UTC).isoformat()
         response = await (
             supabase.table("simulation_taxonomies")
@@ -96,10 +90,7 @@ class TaxonomyService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Taxonomy '{taxonomy_id}' not found.",
-            )
+            raise not_found(detail=f"Taxonomy '{taxonomy_id}' not found.")
         return response.data[0]
 
     @staticmethod
@@ -117,8 +108,5 @@ class TaxonomyService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Taxonomy '{taxonomy_id}' not found.",
-            )
+            raise not_found(detail=f"Taxonomy '{taxonomy_id}' not found.")
         return response.data[0]

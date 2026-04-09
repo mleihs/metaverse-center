@@ -5,8 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -84,18 +83,9 @@ class PromptTemplateService:
         template_id: UUID,
     ) -> dict:
         """Get a single prompt template by ID."""
-        response = await (
-            supabase.table(cls.table_name)
-            .select("*")
-            .eq("id", str(template_id))
-            .limit(1)
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).select("*").eq("id", str(template_id)).limit(1).execute()
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Template '{template_id}' not found.",
-            )
+            raise not_found(detail=f"Template '{template_id}' not found.")
         return response.data[0]
 
     @classmethod
@@ -113,17 +103,10 @@ class PromptTemplateService:
             "created_by_id": str(user_id),
         }
 
-        response = await (
-            supabase.table(cls.table_name)
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).insert(insert_data).execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create prompt template.",
-            )
+            raise server_error("Failed to create prompt template.")
         return response.data[0]
 
     @classmethod
@@ -136,10 +119,7 @@ class PromptTemplateService:
     ) -> dict:
         """Update a prompt template."""
         if not data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields to update.",
-            )
+            raise bad_request("No fields to update.")
 
         response = await (
             supabase.table(cls.table_name)
@@ -150,10 +130,7 @@ class PromptTemplateService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Template '{template_id}' not found in simulation.",
-            )
+            raise not_found(detail=f"Template '{template_id}' not found in simulation.")
         return response.data[0]
 
     @classmethod
@@ -173,8 +150,5 @@ class PromptTemplateService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Template '{template_id}' not found.",
-            )
+            raise not_found(detail=f"Template '{template_id}' not found.")
         return response.data[0]

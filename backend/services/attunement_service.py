@@ -11,11 +11,10 @@ import logging
 import random
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException, status
-
 from backend.models.resonance import RESONANCE_SIGNATURES
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -68,21 +67,25 @@ class AttunementService:
 
     @classmethod
     async def set_attunement(
-        cls, supabase: Client, sim_id: UUID,
-        signature: str, user_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
+        signature: str,
+        user_id: UUID,
     ) -> dict:
         """Set a resonance signature attunement (max 2 per sim)."""
         if signature not in RESONANCE_SIGNATURES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid resonance signature '{signature}'.",
-            )
+            raise bad_request(f"Invalid resonance signature '{signature}'.")
 
         # Load max attunements from config via PlatformConfigService
-        att_config = await PlatformConfigService.get_multiple(supabase, {
-            "max_attunements": _DEFAULT_MAX_ATTUNEMENTS,
-            "switching_cooldown_ticks": _DEFAULT_SWITCHING_COOLDOWN_TICKS,
-        }, prefix="heartbeat_")
+        att_config = await PlatformConfigService.get_multiple(
+            supabase,
+            {
+                "max_attunements": _DEFAULT_MAX_ATTUNEMENTS,
+                "switching_cooldown_ticks": _DEFAULT_SWITCHING_COOLDOWN_TICKS,
+            },
+            prefix="heartbeat_",
+        )
         max_attunements = att_config["max_attunements"]
         cooldown_ticks = att_config["switching_cooldown_ticks"]
 
@@ -96,47 +99,44 @@ class AttunementService:
         existing = _resp.data or []
 
         if len(existing) >= max_attunements:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Maximum {max_attunements} attunements per simulation. Remove one first.",
-            )
+            raise bad_request(f"Maximum {max_attunements} attunements per simulation. Remove one first.")
 
         # Check if already attuned to this signature
         if any(a["resonance_signature"] == signature for a in existing):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Already attuned to '{signature}'.",
-            )
+            raise conflict(f"Already attuned to '{signature}'.")
 
         response = await (
             supabase.table("substrate_attunements")
-            .insert({
-                "simulation_id": str(sim_id),
-                "resonance_signature": signature,
-                "depth": 0.0,
-                "ticks_exposed": 0,
-                "switching_cooldown_ticks": cooldown_ticks,
-                "created_by_id": str(user_id),
-            })
+            .insert(
+                {
+                    "simulation_id": str(sim_id),
+                    "resonance_signature": signature,
+                    "depth": 0.0,
+                    "ticks_exposed": 0,
+                    "switching_cooldown_ticks": cooldown_ticks,
+                    "created_by_id": str(user_id),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create attunement.",
-            )
+            raise server_error("Failed to create attunement.")
 
         logger.info(
             "Attunement set: %s for sim %s",
-            signature, sim_id,
+            signature,
+            sim_id,
             extra={"simulation_id": str(sim_id), "signature": signature},
         )
         return response.data[0]
 
     @classmethod
     async def remove_attunement(
-        cls, supabase: Client, sim_id: UUID, signature: str,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
+        signature: str,
     ) -> dict:
         """Remove an attunement."""
         response = await (
@@ -147,20 +147,20 @@ class AttunementService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Attunement to '{signature}' not found.",
-            )
+            raise not_found(detail=f"Attunement to '{signature}' not found.")
         logger.info(
             "Attunement removed: %s for sim %s",
-            signature, sim_id,
+            signature,
+            sim_id,
             extra={"simulation_id": str(sim_id), "signature": signature},
         )
         return response.data[0]
 
     @classmethod
     async def list_attunements(
-        cls, supabase: Client, sim_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
     ) -> list[dict]:
         """List all attunements for a simulation."""
         response = await (
@@ -176,8 +176,11 @@ class AttunementService:
 
     @classmethod
     async def deepen_at_tick(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         config: dict,
     ) -> list[dict]:
         """Deepen attunements each tick via batch RPC. Called from HeartbeatService Phase 6."""
@@ -186,11 +189,14 @@ class AttunementService:
         passive_rate = config.get("attunement_passive_growth_rate", 0.01)
 
         # Single RPC call handles cooldown, event checks, and depth updates
-        result = await admin.rpc("fn_deepen_attunements_batch", {
-            "p_sim_id": str(sim_id),
-            "p_growth_rate": growth_rate,
-            "p_passive_rate": passive_rate,
-        }).execute()
+        result = await admin.rpc(
+            "fn_deepen_attunements_batch",
+            {
+                "p_sim_id": str(sim_id),
+                "p_growth_rate": growth_rate,
+                "p_passive_rate": passive_rate,
+            },
+        ).execute()
 
         changes = result.data or []
         if isinstance(changes, str):
@@ -207,39 +213,51 @@ class AttunementService:
             just_harmonized = change.get("just_harmonized", False)
             harmonized = change.get("harmonized", False)
 
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "attunement_deepen",
-                (
-                    f"'{signature}' attunement deepened "
-                    f"({old_depth:.2f} -> {new_depth:.2f}). "
-                    + (
-                        "HARMONIZED — positive events possible!"
-                        if just_harmonized
-                        else f"Threshold at {threshold:.2f}."
-                    )
-                ),
-                (
-                    f"'{signature}' Abstimmung vertieft "
-                    f"({old_depth:.2f} -> {new_depth:.2f}). "
-                    + (
-                        "HARMONISIERT — positive Ereignisse moeglich!"
-                        if just_harmonized
-                        else f"Schwelle bei {threshold:.2f}."
-                    )
-                ),
-                severity="positive" if just_harmonized else "info",
-                metadata={
-                    "signature": signature, "old_depth": old_depth, "new_depth": new_depth,
-                    "threshold": threshold, "harmonized": harmonized,
-                },
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "attunement_deepen",
+                    (
+                        f"'{signature}' attunement deepened "
+                        f"({old_depth:.2f} -> {new_depth:.2f}). "
+                        + (
+                            "HARMONIZED — positive events possible!"
+                            if just_harmonized
+                            else f"Threshold at {threshold:.2f}."
+                        )
+                    ),
+                    (
+                        f"'{signature}' Abstimmung vertieft "
+                        f"({old_depth:.2f} -> {new_depth:.2f}). "
+                        + (
+                            "HARMONISIERT — positive Ereignisse moeglich!"
+                            if just_harmonized
+                            else f"Schwelle bei {threshold:.2f}."
+                        )
+                    ),
+                    severity="positive" if just_harmonized else "info",
+                    metadata={
+                        "signature": signature,
+                        "old_depth": old_depth,
+                        "new_depth": new_depth,
+                        "threshold": threshold,
+                        "harmonized": harmonized,
+                    },
+                )
+            )
 
             # Check for positive event generation (requires randomness — stays in Python)
             if harmonized:
                 pos_prob = config.get("positive_event_probability", _DEFAULT_POSITIVE_EVENT_PROBABILITY)
                 if random.random() < pos_prob:  # noqa: S311 — game mechanic, not crypto
                     pos_entry = await cls._spawn_positive_event(
-                        admin, sim_id, signature, tick_number, heartbeat_id,
+                        admin,
+                        sim_id,
+                        signature,
+                        tick_number,
+                        heartbeat_id,
                     )
                     if pos_entry:
                         entries.append(pos_entry)
@@ -248,8 +266,12 @@ class AttunementService:
 
     @classmethod
     async def _spawn_positive_event(
-        cls, admin: Client, sim_id: UUID,
-        signature: str, tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        signature: str,
+        tick_number: int,
+        heartbeat_id: UUID,
     ) -> dict | None:
         """Spawn a positive event from attunement harmony."""
         templates = POSITIVE_EVENTS.get(signature, [])
@@ -257,13 +279,7 @@ class AttunementService:
             return None
 
         # Get a random zone name
-        _resp = await (
-            admin.table("zones")
-            .select("name")
-            .eq("simulation_id", str(sim_id))
-            .limit(10)
-            .execute()
-        )
+        _resp = await admin.table("zones").select("name").eq("simulation_id", str(sim_id)).limit(10).execute()
         zones = _resp.data or []
         zone_name = random.choice(zones)["name"] if zones else "the districts"  # noqa: S311
 
@@ -273,37 +289,48 @@ class AttunementService:
 
         # Create positive event
         event_id = uuid4()
-        await admin.table("events").insert({
-            "id": str(event_id),
-            "simulation_id": str(sim_id),
-            "title": title,
-            "description": description,
-            "event_type": "positive",
-            "event_status": "active",
-            "impact_level": 3,  # Low positive impact
-            "heartbeat_pressure": -0.1,  # Negative pressure = healing
-            "tags": ["resonance", signature, "positive", "attunement"],
-            "external_refs": {
-                "source": "attunement_harmony",
-                "signature": signature,
-                "tick": tick_number,
-            },
-            "data_source": "heartbeat",
-        }).execute()
+        await (
+            admin.table("events")
+            .insert(
+                {
+                    "id": str(event_id),
+                    "simulation_id": str(sim_id),
+                    "title": title,
+                    "description": description,
+                    "event_type": "positive",
+                    "event_status": "active",
+                    "impact_level": 3,  # Low positive impact
+                    "heartbeat_pressure": -0.1,  # Negative pressure = healing
+                    "tags": ["resonance", signature, "positive", "attunement"],
+                    "external_refs": {
+                        "source": "attunement_harmony",
+                        "signature": signature,
+                        "tick": tick_number,
+                    },
+                    "data_source": "heartbeat",
+                }
+            )
+            .execute()
+        )
 
         logger.info(
             "Positive event spawned from attunement: %s (%s)",
-            title, signature,
+            title,
+            signature,
             extra={"simulation_id": str(sim_id), "event_id": str(event_id)},
         )
 
         return make_heartbeat_entry(
-            heartbeat_id, sim_id, tick_number, "positive_event",
+            heartbeat_id,
+            sim_id,
+            tick_number,
+            "positive_event",
             f"ATTUNEMENT HARVEST: '{title}' spawned from {signature} harmony.",
             f"ABSTIMMUNGSERNTE: '{title}' aus {signature}-Harmonie entstanden.",
             severity="positive",
             metadata={
-                "event_id": str(event_id), "signature": signature,
+                "event_id": str(event_id),
+                "signature": signature,
                 "title": title,
             },
         )

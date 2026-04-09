@@ -6,9 +6,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.base_service import BaseService
+from backend.utils.errors import bad_request, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -68,10 +67,7 @@ class AgentProfessionService(BaseService):
     ) -> dict:
         """Update an agent profession (no deleted_at filter)."""
         if not data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields to update.",
-            )
+            raise bad_request("No fields to update.")
 
         update_data = {**data, "updated_at": datetime.now(UTC).isoformat()}
 
@@ -88,10 +84,7 @@ class AgentProfessionService(BaseService):
         response = await query.execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Profession '{profession_id}' not found.",
-            )
+            raise not_found(detail=f"Profession '{profession_id}' not found.")
         return response.data[0]
 
     @classmethod

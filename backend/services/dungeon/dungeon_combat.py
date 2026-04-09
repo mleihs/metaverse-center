@@ -367,8 +367,11 @@ TOWER_ENEMIES: dict[str, EnemyTemplate] = {
         resistances=["infiltrator", "propagandist"],
         vulnerabilities=["saboteur"],
         action_weights={
-            "attack": 20, "stress_attack": 20, "summon_brokers": 25,
-            "market_crash": 20, "defend": 15,
+            "attack": 20,
+            "stress_attack": 20,
+            "summon_brokers": 25,
+            "market_crash": 20,
+            "defend": 15,
         },
         special_abilities=["summon_brokers", "market_crash"],
         description_en=(
@@ -548,8 +551,11 @@ ENTROPY_ENEMIES: dict[str, EnemyTemplate] = {
         resistances=["propagandist", "spy"],
         vulnerabilities=["saboteur"],
         action_weights={
-            "attack": 30, "stress_attack": 20, "entropy_pulse": 25,
-            "summon_phantoms": 15, "ambient": 10,
+            "attack": 30,
+            "stress_attack": 20,
+            "entropy_pulse": 25,
+            "summon_phantoms": 15,
+            "ambient": 10,
         },
         special_abilities=["entropy_pulse", "summon_phantoms"],
         description_en=(
@@ -739,8 +745,12 @@ MOTHER_ENEMIES: dict[str, EnemyTemplate] = {
         resistances=["infiltrator", "spy"],
         vulnerabilities=["saboteur"],
         action_weights={
-            "attack": 25, "stress_attack": 15, "embrace": 25,
-            "summon_weavers": 15, "spore_cloud": 10, "ambient": 10,
+            "attack": 25,
+            "stress_attack": 15,
+            "embrace": 25,
+            "summon_weavers": 15,
+            "spore_cloud": 10,
+            "ambient": 10,
         },
         special_abilities=["embrace", "summon_weavers", "spore_cloud"],
         description_en=(
@@ -784,8 +794,12 @@ MOTHER_ENEMIES: dict[str, EnemyTemplate] = {
         resistances=["infiltrator", "spy", "guardian"],
         vulnerabilities=["saboteur"],
         action_weights={
-            "attack": 20, "stress_attack": 20, "embrace": 25,
-            "summon_weavers": 10, "spore_cloud": 10, "ambient": 15,
+            "attack": 20,
+            "stress_attack": 20,
+            "embrace": 25,
+            "summon_weavers": 10,
+            "spore_cloud": 10,
+            "ambient": 15,
         },
         special_abilities=["embrace", "summon_weavers", "spore_cloud"],
         description_en=(
@@ -875,10 +889,7 @@ PROMETHEUS_ENEMIES: dict[str, EnemyTemplate] = {
         resistances=["guardian"],
         vulnerabilities=["saboteur"],
         action_weights={"stress_attack": 50, "evade": 40, "ambient": 10},
-        description_en=(
-            "A spark that refused to go out. It orbits the party "
-            "like a hypothesis testing itself."
-        ),
+        description_en=("A spark that refused to go out. It orbits the party like a hypothesis testing itself."),
         description_de=(
             "Ein Funke, der sich weigerte zu verlöschen. Er umkreist "
             "den Trupp wie eine Hypothese, die sich selbst überprüft."

@@ -45,9 +45,7 @@ class GuardianService:
             if resp.status_code == 429:
                 raise GuardianError("Guardian API rate limit exceeded.")
             if resp.status_code != 200:
-                raise GuardianError(
-                    f"Guardian API error {resp.status_code}: {resp.text[:200]}"
-                )
+                raise GuardianError(f"Guardian API error {resp.status_code}: {resp.text[:200]}")
 
             data = resp.json()
 
@@ -78,9 +76,7 @@ class GuardianService:
             if resp.status_code == 429:
                 raise GuardianError("Guardian API rate limit exceeded.")
             if resp.status_code != 200:
-                raise GuardianError(
-                    f"Guardian API error {resp.status_code}: {resp.text[:200]}"
-                )
+                raise GuardianError(f"Guardian API error {resp.status_code}: {resp.text[:200]}")
 
             data = resp.json()
 

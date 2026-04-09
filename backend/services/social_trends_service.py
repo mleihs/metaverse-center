@@ -4,8 +4,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -58,25 +57,15 @@ class SocialTrendsService:
             .execute()
         )
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Social trend '{trend_id}' not found.",
-            )
+            raise not_found(detail=f"Social trend '{trend_id}' not found.")
         return response.data[0]
 
     @staticmethod
     async def create_trend(supabase: Client, simulation_id: UUID, data: dict) -> dict:
         """Create a trend manually."""
-        response = await (
-            supabase.table("social_trends")
-            .insert({**data, "simulation_id": str(simulation_id)})
-            .execute()
-        )
+        response = await supabase.table("social_trends").insert({**data, "simulation_id": str(simulation_id)}).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create social trend.",
-            )
+            raise server_error("Failed to create social trend.")
         return response.data[0]
 
     @staticmethod
@@ -91,11 +80,13 @@ class SocialTrendsService:
 
         rows = []
         for t in trends:
-            rows.append({
-                **t,
-                "simulation_id": str(simulation_id),
-                "fetched_at": datetime.now(UTC).isoformat(),
-            })
+            rows.append(
+                {
+                    **t,
+                    "simulation_id": str(simulation_id),
+                    "fetched_at": datetime.now(UTC).isoformat(),
+                }
+            )
 
         response = await supabase.table("social_trends").insert(rows).execute()
         return response.data or []
@@ -109,17 +100,16 @@ class SocialTrendsService:
         """Mark a trend as processed."""
         response = await (
             supabase.table("social_trends")
-            .update({
-                "is_processed": True,
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "is_processed": True,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("simulation_id", str(simulation_id))
             .eq("id", str(trend_id))
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Social trend '{trend_id}' not found.",
-            )
+            raise not_found(detail=f"Social trend '{trend_id}' not found.")
         return response.data[0]

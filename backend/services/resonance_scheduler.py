@@ -68,10 +68,13 @@ class ResonanceScheduler:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "resonance_auto_process_enabled",
-                    "resonance_auto_process_interval_seconds",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "resonance_auto_process_enabled",
+                        "resonance_auto_process_interval_seconds",
+                    ],
+                )
                 .execute()
             )
             rows = _resp.data or []

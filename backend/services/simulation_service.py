@@ -2,9 +2,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.simulation import SimulationCreate, SimulationUpdate
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.slug import slugify
 from supabase import AsyncClient as Client
 
@@ -99,19 +98,10 @@ class SimulationService:
         slug = data.slug if data.slug else slugify(data.name)
 
         # Check slug uniqueness
-        existing = await (
-            supabase.table("simulations")
-            .select("id")
-            .eq("slug", slug)
-            .limit(1)
-            .execute()
-        )
+        existing = await supabase.table("simulations").select("id").eq("slug", slug).limit(1).execute()
 
         if existing and existing.data:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"A simulation with slug '{slug}' already exists.",
-            )
+            raise conflict(f"A simulation with slug '{slug}' already exists.")
 
         # Create simulation
         sim_data = {
@@ -124,17 +114,10 @@ class SimulationService:
             "owner_id": str(user_id),
         }
 
-        sim_response = await (
-            supabase.table("simulations")
-            .insert(sim_data)
-            .execute()
-        )
+        sim_response = await supabase.table("simulations").insert(sim_data).execute()
 
         if not sim_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create simulation.",
-            )
+            raise server_error("Failed to create simulation.")
 
         simulation = sim_response.data[0]
         logger.info(
@@ -143,23 +126,35 @@ class SimulationService:
         )
 
         # Add creator as owner member
-        await supabase.table("simulation_members").insert({
-            "simulation_id": simulation["id"],
-            "user_id": str(user_id),
-            "member_role": "owner",
-        }).execute()
+        await (
+            supabase.table("simulation_members")
+            .insert(
+                {
+                    "simulation_id": simulation["id"],
+                    "user_id": str(user_id),
+                    "member_role": "owner",
+                }
+            )
+            .execute()
+        )
 
         # Seed theme_preset design setting so ThemeService resolves the
         # correct base preset instead of always falling back to brutalist.
         preset = _get_preset_for_theme(data.theme)
         if preset != "brutalist":
-            await supabase.table("simulation_settings").upsert({
-                "simulation_id": simulation["id"],
-                "category": "design",
-                "setting_key": "theme_preset",
-                "setting_value": f'"{preset}"',
-                "updated_by_id": str(user_id),
-            }).execute()
+            await (
+                supabase.table("simulation_settings")
+                .upsert(
+                    {
+                        "simulation_id": simulation["id"],
+                        "category": "design",
+                        "setting_key": "theme_preset",
+                        "setting_value": f'"{preset}"',
+                        "updated_by_id": str(user_id),
+                    }
+                )
+                .execute()
+            )
 
         return simulation
 
@@ -178,10 +173,7 @@ class SimulationService:
         )
 
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Simulation '{simulation_id}' not found.",
-            )
+            raise not_found(detail=f"Simulation '{simulation_id}' not found.")
 
         return response.data[0]
 
@@ -195,10 +187,7 @@ class SimulationService:
         update_data = data.model_dump(exclude_none=True)
 
         if not update_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields to update.",
-            )
+            raise bad_request("No fields to update.")
 
         update_data["updated_at"] = datetime.now(UTC).isoformat()
 
@@ -211,10 +200,7 @@ class SimulationService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Simulation '{simulation_id}' not found.",
-            )
+            raise not_found(detail=f"Simulation '{simulation_id}' not found.")
 
         return response.data[0]
 
@@ -226,20 +212,19 @@ class SimulationService:
         """Soft-delete a simulation by setting deleted_at."""
         response = await (
             supabase.table("simulations")
-            .update({
-                "deleted_at": datetime.now(UTC).isoformat(),
-                "status": "archived",
-            })
+            .update(
+                {
+                    "deleted_at": datetime.now(UTC).isoformat(),
+                    "status": "archived",
+                }
+            )
             .eq("id", str(simulation_id))
             .is_("deleted_at", "null")
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Simulation '{simulation_id}' not found or already deleted.",
-            )
+            raise not_found(detail=f"Simulation '{simulation_id}' not found or already deleted.")
 
         logger.info("Simulation soft-deleted", extra={"simulation_id": str(simulation_id)})
         return response.data[0]
@@ -257,17 +242,10 @@ class SimulationService:
         Uses admin (service_role) client to bypass RLS.
         """
         fetch = await (
-            supabase.table("simulations")
-            .select("id, name, slug")
-            .eq("id", str(simulation_id))
-            .maybe_single()
-            .execute()
+            supabase.table("simulations").select("id, name, slug").eq("id", str(simulation_id)).maybe_single().execute()
         )
         if not fetch.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Simulation '{simulation_id}' not found.",
-            )
+            raise not_found(detail=f"Simulation '{simulation_id}' not found.")
 
         sim_info = fetch.data
         sim_id_str = str(simulation_id)
@@ -378,11 +356,7 @@ class SimulationService:
         Returns {"name": ..., "theme": ...} or None if not found.
         """
         response = await (
-            supabase.table("simulations")
-            .select("name, theme")
-            .eq("id", str(simulation_id))
-            .maybe_single()
-            .execute()
+            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
         )
         return response.data
 
@@ -394,17 +368,10 @@ class SimulationService:
     ) -> dict:
         """Verify a simulation exists and return its row, or raise 404."""
         response = await (
-            supabase.table("simulations")
-            .select("id, name")
-            .eq("id", str(simulation_id))
-            .maybe_single()
-            .execute()
+            supabase.table("simulations").select("id, name").eq("id", str(simulation_id)).maybe_single().execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Simulation not found.",
-            )
+            raise not_found(detail="Simulation not found.")
         return response.data
 
     @classmethod
@@ -413,12 +380,7 @@ class SimulationService:
         supabase: Client,
     ) -> list[dict]:
         """List slugs, IDs, and updated_at for all active simulations (sitemap)."""
-        response = await (
-            supabase.table("simulations")
-            .select("id, slug, updated_at")
-            .eq("status", "active")
-            .execute()
-        )
+        response = await supabase.table("simulations").select("id, slug, updated_at").eq("status", "active").execute()
         return response.data or []
 
     @staticmethod
@@ -429,20 +391,19 @@ class SimulationService:
         """Restore a soft-deleted simulation."""
         response = await (
             supabase.table("simulations")
-            .update({
-                "deleted_at": None,
-                "status": "active",
-            })
+            .update(
+                {
+                    "deleted_at": None,
+                    "status": "active",
+                }
+            )
             .eq("id", str(simulation_id))
             .not_.is_("deleted_at", "null")
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Simulation '{simulation_id}' not found or not deleted.",
-            )
+            raise not_found(detail=f"Simulation '{simulation_id}' not found or not deleted.")
 
         logger.info("Simulation restored", extra={"simulation_id": str(simulation_id)})
         return response.data[0]
@@ -466,10 +427,7 @@ class SimulationService:
             .execute()
         )
         resonances = await (
-            supabase.table("substrate_resonances")
-            .select("id", count="exact")
-            .is_("deleted_at", "null")
-            .execute()
+            supabase.table("substrate_resonances").select("id", count="exact").is_("deleted_at", "null").execute()
         )
         return {
             "simulation_count": sims.count or 0,

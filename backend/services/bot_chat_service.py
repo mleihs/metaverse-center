@@ -261,9 +261,7 @@ class BotChatService:
             chat_mode = "template"
 
         if chat_mode == "llm":
-            content = await cls._generate_llm_message(
-                admin_supabase, participant, game_state, personality
-            )
+            content = await cls._generate_llm_message(admin_supabase, participant, game_state, personality)
         else:
             content = cls._generate_template_message(personality, game_state)
 
@@ -273,11 +271,7 @@ class BotChatService:
         # Insert via admin client (bot is a system actor)
         # Use epoch creator's user_id as sender_id (bots don't have auth accounts)
         epoch_resp = await (
-            admin_supabase.table("game_epochs")
-            .select("created_by_id")
-            .eq("id", epoch_id)
-            .single()
-            .execute()
+            admin_supabase.table("game_epochs").select("created_by_id").eq("id", epoch_id).single().execute()
         )
         creator_id = epoch_resp.data.get("created_by_id") if epoch_resp.data else None
         if not creator_id:
@@ -360,10 +354,12 @@ class BotChatService:
                 model=model.model_id,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": (
-                        f"Game state:\n{context}\n\n"
-                        "Generate a brief in-character message (1-2 sentences)."
-                    )},
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Game state:\n{context}\n\nGenerate a brief in-character message (1-2 sentences)."
+                        ),
+                    },
                 ],
                 temperature=0.9,
                 max_tokens=100,

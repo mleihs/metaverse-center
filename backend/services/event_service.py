@@ -8,7 +8,6 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.agent_memory_service import AgentMemoryService
@@ -17,6 +16,7 @@ from backend.services.base_service import BaseService
 from backend.services.constants import EVENT_STATUSES
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -107,17 +107,10 @@ class EventService(BaseService):
             "event_id": str(event_id),
         }
 
-        response = await (
-            supabase.table("event_reactions")
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table("event_reactions").insert(insert_data).execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to add event reaction.",
-            )
+            raise server_error("Failed to add event reaction.")
 
         return response.data[0]
 
@@ -129,18 +122,10 @@ class EventService(BaseService):
         data: dict,
     ) -> dict:
         """Update an existing event reaction."""
-        response = await (
-            supabase.table("event_reactions")
-            .update(data)
-            .eq("id", str(reaction_id))
-            .execute()
-        )
+        response = await supabase.table("event_reactions").update(data).eq("id", str(reaction_id)).execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event reaction not found.",
-            )
+            raise not_found(detail="Event reaction not found.")
 
         return response.data[0]
 
@@ -161,10 +146,7 @@ class EventService(BaseService):
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event reaction not found.",
-            )
+            raise not_found(detail="Event reaction not found.")
 
         return response.data[0]
 
@@ -196,12 +178,12 @@ class EventService(BaseService):
     ) -> dict:
         """Transition an event to a new lifecycle status."""
         if new_status not in EVENT_STATUSES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid status '{new_status}'. Must be one of: {', '.join(EVENT_STATUSES)}",
-            )
+            raise bad_request(f"Invalid status '{new_status}'. Must be one of: {', '.join(EVENT_STATUSES)}")
         return await cls.update(
-            supabase, simulation_id, event_id, {"event_status": new_status},
+            supabase,
+            simulation_id,
+            event_id,
+            {"event_status": new_status},
         )
 
     @classmethod
@@ -237,16 +219,9 @@ class EventService(BaseService):
             **data,
             "simulation_id": str(simulation_id),
         }
-        response = await (
-            supabase.table("event_chains")
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table("event_chains").insert(insert_data).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create event chain.",
-            )
+            raise server_error("Failed to create event chain.")
         return response.data[0]
 
     @classmethod
@@ -265,10 +240,7 @@ class EventService(BaseService):
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event chain not found.",
-            )
+            raise not_found(detail="Event chain not found.")
         return response.data[0]
 
     @classmethod
@@ -297,7 +269,10 @@ class EventService(BaseService):
             List of created/updated reaction dicts.
         """
         agents = await AgentService.list_for_reaction(
-            supabase, simulation_id, agent_ids=agent_ids, limit=max_agents,
+            supabase,
+            simulation_id,
+            agent_ids=agent_ids,
+            limit=max_agents,
         )
 
         if not agents:
@@ -305,7 +280,8 @@ class EventService(BaseService):
 
         # Build game context once for all reactions (cheap MV read)
         game_context = await GameMechanicsService.build_generation_context(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
         )
 
         event_id = UUID(event["id"])
@@ -331,12 +307,15 @@ class EventService(BaseService):
                 prev = existing_map.get(agent["id"])
                 if prev:
                     reaction = await cls.update_reaction(
-                        supabase, prev["id"],
+                        supabase,
+                        prev["id"],
                         {"reaction_text": reaction_text, "data_source": "ai_generated"},
                     )
                 else:
                     reaction = await cls.add_reaction(
-                        supabase, simulation_id, event_id,
+                        supabase,
+                        simulation_id,
+                        event_id,
                         {
                             "agent_id": agent["id"],
                             "agent_name": agent["name"],
@@ -355,7 +334,10 @@ class EventService(BaseService):
         # Create agent memories from reactions so agents remember crises
         if reactions:
             await cls._create_memories_from_reactions(
-                supabase, simulation_id, event, reactions,
+                supabase,
+                simulation_id,
+                event,
+                reactions,
             )
 
         return reactions
@@ -383,9 +365,7 @@ class EventService(BaseService):
                 continue
 
             try:
-                content = (
-                    f"During the event '{event_title}', I reacted: {reaction_text[:200]}"
-                )
+                content = f"During the event '{event_title}', I reacted: {reaction_text[:200]}"
                 await AgentMemoryService.record_observation(
                     supabase,
                     agent_id=UUID(agent_id),
@@ -467,9 +447,16 @@ class EventService(BaseService):
                             existing_ids = arc.get("source_event_ids") or []
                             if event["id"] not in existing_ids:
                                 existing_ids.append(event["id"])
-                                await supabase.table("narrative_arcs").update({
-                                    "source_event_ids": existing_ids,
-                                }).eq("id", arc["id"]).execute()
+                                await (
+                                    supabase.table("narrative_arcs")
+                                    .update(
+                                        {
+                                            "source_event_ids": existing_ids,
+                                        }
+                                    )
+                                    .eq("id", arc["id"])
+                                    .execute()
+                                )
         except (PostgrestAPIError, httpx.HTTPError, KeyError):
             logger.debug("Heartbeat arc attachment unavailable")
 
@@ -502,7 +489,9 @@ class EventService(BaseService):
                     )
                     warding_effects = _ward_resp.data or []
                     heartbeat_interval = await PlatformConfigService.get(
-                        supabase, "heartbeat_interval", 300,
+                        supabase,
+                        "heartbeat_interval",
+                        300,
                     )
                     now = datetime.now(UTC)
                     for ward in warding_effects:
@@ -528,14 +517,13 @@ class EventService(BaseService):
                     logger.debug("Warding check unavailable", exc_info=True)
 
                 degradation = await PlatformConfigService.get(
-                    supabase, "heartbeat_building_crisis_degradation", 0.10,
+                    supabase,
+                    "heartbeat_building_crisis_degradation",
+                    0.10,
                 )
                 for ev in crisis_events:
                     _resp = await (
-                        supabase.table("event_zone_links")
-                        .select("zone_id")
-                        .eq("event_id", ev["id"])
-                        .execute()
+                        supabase.table("event_zone_links").select("zone_id").eq("event_id", ev["id"]).execute()
                     )
                     zone_links = _resp.data or []
                     zone_ids = [zl["zone_id"] for zl in zone_links]
@@ -555,12 +543,20 @@ class EventService(BaseService):
                             old_cond = float(bldg.get("building_condition") or 1.0)
                             new_cond = round(max(0.0, old_cond - degradation), 4)
                             if new_cond < old_cond:
-                                await supabase.table("buildings").update({
-                                    "building_condition": new_cond,
-                                }).eq("id", bldg["id"]).execute()
+                                await (
+                                    supabase.table("buildings")
+                                    .update(
+                                        {
+                                            "building_condition": new_cond,
+                                        }
+                                    )
+                                    .eq("id", bldg["id"])
+                                    .execute()
+                                )
                         logger.info(
                             "Crisis event degraded %d building(s) by %.2f",
-                            len(buildings), degradation,
+                            len(buildings),
+                            degradation,
                             extra={
                                 "simulation_id": str(simulation_id),
                                 "event_id": ev["id"],

@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.aptitude import OPERATIVE_TYPES, AptitudeSet
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -17,9 +16,7 @@ class AptitudeService:
     """Manage agent aptitudes (operative-type skill scores)."""
 
     @classmethod
-    async def get_for_agent(
-        cls, supabase: Client, simulation_id: UUID, agent_id: UUID
-    ) -> list[dict]:
+    async def get_for_agent(cls, supabase: Client, simulation_id: UUID, agent_id: UUID) -> list[dict]:
         """Get all aptitude rows for an agent."""
         resp = await (
             supabase.table("agent_aptitudes")
@@ -32,9 +29,7 @@ class AptitudeService:
         return resp.data or []
 
     @classmethod
-    async def get_all_for_simulation(
-        cls, supabase: Client, simulation_id: UUID
-    ) -> list[dict]:
+    async def get_all_for_simulation(cls, supabase: Client, simulation_id: UUID) -> list[dict]:
         """Get all aptitude rows for all agents in a simulation."""
         resp = await (
             supabase.table("agent_aptitudes")
@@ -66,32 +61,24 @@ class AptitudeService:
             .execute()
         )
         if not agent_resp.data:
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                "Agent not found in this simulation.",
-            )
+            raise not_found(detail="Agent not found in this simulation.")
 
         # Upsert all 6 operative types
         rows = []
         for op_type in OPERATIVE_TYPES:
             level = getattr(aptitudes, op_type)
-            rows.append({
-                "agent_id": str(agent_id),
-                "simulation_id": str(simulation_id),
-                "operative_type": op_type,
-                "aptitude_level": level,
-            })
-
-        resp = await (
-            supabase.table("agent_aptitudes")
-            .upsert(rows, on_conflict="agent_id,operative_type")
-            .execute()
-        )
-        if not resp.data:
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to save aptitudes.",
+            rows.append(
+                {
+                    "agent_id": str(agent_id),
+                    "simulation_id": str(simulation_id),
+                    "operative_type": op_type,
+                    "aptitude_level": level,
+                }
             )
+
+        resp = await supabase.table("agent_aptitudes").upsert(rows, on_conflict="agent_id,operative_type").execute()
+        if not resp.data:
+            raise server_error("Failed to save aptitudes.")
         return resp.data
 
     @classmethod

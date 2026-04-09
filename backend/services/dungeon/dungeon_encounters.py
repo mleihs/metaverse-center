@@ -2829,8 +2829,7 @@ MOTHER_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "was sie euch sehen lassen wollte."
                 ),
                 fail_narrative_en=(
-                    "The pool refills from below. The diagnostic resumes. "
-                    "The Mother's attention cannot be drained."
+                    "The pool refills from below. The diagnostic resumes. The Mother's attention cannot be drained."
                 ),
                 fail_narrative_de=(
                     "Das Becken füllt sich von unten. Die Diagnostik wird "
@@ -4189,8 +4188,7 @@ PROMETHEUS_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "{agent}s Berührung \u2013 nicht weg, sondern hin. Sie will verschmelzen."
                 ),
                 fail_narrative_en=(
-                    "The seal resists. Inside, the fluid settles into stillness. "
-                    "It has decided {agent} is not ready."
+                    "The seal resists. Inside, the fluid settles into stillness. It has decided {agent} is not ready."
                 ),
                 fail_narrative_de=(
                     "Das Siegel widersteht. Darin kommt die Flüssigkeit zur Ruhe. "
@@ -4285,8 +4283,7 @@ PROMETHEUS_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "eifrig. Sie wollte tragbar sein. Sie wollte benutzt werden."
                 ),
                 fail_narrative_en=(
-                    "The energy arcs. {agent}'s instruments spike. "
-                    "The conduit seals itself \u2013 offended, perhaps."
+                    "The energy arcs. {agent}'s instruments spike. The conduit seals itself \u2013 offended, perhaps."
                 ),
                 fail_narrative_de=(
                     "Die Energie entlädt sich. {agent}s Instrumente schlagen aus. "
@@ -4562,8 +4559,7 @@ PROMETHEUS_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "wonach sie nicht gesucht hat."
                 ),
                 fail_narrative_en=(
-                    "The wreckage shifts. Components you thought were inert "
-                    "react to {agent}'s touch. Not helpfully."
+                    "The wreckage shifts. Components you thought were inert react to {agent}'s touch. Not helpfully."
                 ),
                 fail_narrative_de=(
                     "Das Wrack verschiebt sich. Komponenten, die ihr für inert "
@@ -5312,8 +5308,7 @@ DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
         max_depth=3,
         min_difficulty=1,
         description_en=(
-            "A line on the wall. Faint. Mineral-white. The watermark shows "
-            "how high the water reached last time."
+            "A line on the wall. Faint. Mineral-white. The watermark shows how high the water reached last time."
         ),
         description_de=(
             "Eine Linie an der Wand. Schwach. Mineralweiß. Das Wasserzeichen "
@@ -5339,13 +5334,9 @@ DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "der Rhythmus der Gezeiten, vorhersagbar wie Atmen. "
                     "Der nächste Rückgang wird stärker sein."
                 ),
-                fail_narrative_en=(
-                    "The marks blur. Time wasted. The water does not wait "
-                    "for comprehension."
-                ),
+                fail_narrative_en=("The marks blur. Time wasted. The water does not wait for comprehension."),
                 fail_narrative_de=(
-                    "Die Markierungen verschwimmen. Verschwendete Zeit. "
-                    "Das Wasser wartet nicht auf Verständnis."
+                    "Die Markierungen verschwimmen. Verschwendete Zeit. Das Wasser wartet nicht auf Verständnis."
                 ),
             ),
             EncounterChoice(
@@ -5366,13 +5357,9 @@ DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "ist eingedämmt \u2013 vorerst. {agent}s Hände sind wund, "
                     "aber die Arithmetik verbessert sich."
                 ),
-                fail_narrative_en=(
-                    "The seal breaches. The water finds the weakness before "
-                    "{agent} can reinforce it."
-                ),
+                fail_narrative_en=("The seal breaches. The water finds the weakness before {agent} can reinforce it."),
                 fail_narrative_de=(
-                    "Die Abdichtung bricht. Das Wasser findet die Schwachstelle, "
-                    "bevor {agent} sie verstärken kann."
+                    "Die Abdichtung bricht. Das Wasser findet die Schwachstelle, bevor {agent} sie verstärken kann."
                 ),
             ),
             EncounterChoice(
@@ -5420,12 +5407,10 @@ DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "irgendwo Wertvollem hierher."
                 ),
                 fail_narrative_en=(
-                    "The current pulls {agent} deeper than intended. "
-                    "Nothing retrieved. Stress accumulated."
+                    "The current pulls {agent} deeper than intended. Nothing retrieved. Stress accumulated."
                 ),
                 fail_narrative_de=(
-                    "Die Strömung zieht {agent} tiefer als beabsichtigt. "
-                    "Nichts geborgen. Stress angesammelt."
+                    "Die Strömung zieht {agent} tiefer als beabsichtigt. Nichts geborgen. Stress angesammelt."
                 ),
             ),
             EncounterChoice(
@@ -5454,13 +5439,9 @@ DELUGE_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_en="Leave it. The water owns it now.",
                 label_de="Es lassen. Das Wasser besitzt es jetzt.",
                 success_effects={"stress": -5},
-                success_narrative_en=(
-                    "The party moves on. The containers settle. "
-                    "Acceptance is its own economy."
-                ),
+                success_narrative_en=("The party moves on. The containers settle. Acceptance is its own economy."),
                 success_narrative_de=(
-                    "Die Gruppe geht weiter. Die Behälter setzen sich ab. "
-                    "Akzeptanz ist ihre eigene Ökonomie."
+                    "Die Gruppe geht weiter. Die Behälter setzen sich ab. Akzeptanz ist ihre eigene Ökonomie."
                 ),
             ),
         ],
@@ -6137,13 +6118,9 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_en="Do not look. Move through.",
                 label_de="Nicht hinsehen. Weitergehen.",
                 success_effects={},
-                success_narrative_en=(
-                    "The party passes. Orpheus's discipline. "
-                    "The mirror reflects their backs."
-                ),
+                success_narrative_en=("The party passes. Orpheus's discipline. The mirror reflects their backs."),
                 success_narrative_de=(
-                    "Die Gruppe geht weiter. Orpheus' Disziplin. "
-                    "Der Spiegel reflektiert ihre Rücken."
+                    "Die Gruppe geht weiter. Orpheus' Disziplin. Der Spiegel reflektiert ihre Rücken."
                 ),
             ),
         ],
@@ -6264,8 +6241,7 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Dann setzt die Drift wieder ein."
                 ),
                 fail_narrative_en=(
-                    "The clocks split further. What else can happen "
-                    "but that the two worlds split apart?"
+                    "The clocks split further. What else can happen but that the two worlds split apart?"
                 ),
                 fail_narrative_de=(
                     "Die Uhren entfernen sich weiter. Was kann sonst "
@@ -6310,12 +6286,10 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_de="Warten, bis der Moment vergeht",
                 success_effects={"awareness": 2},
                 success_narrative_en=(
-                    "The clocks drift past each other. The room normalizes. "
-                    "The party is not unchanged."
+                    "The clocks drift past each other. The room normalizes. The party is not unchanged."
                 ),
                 success_narrative_de=(
-                    "Die Uhren driften aneinander vorbei. Der Raum "
-                    "normalisiert sich. Die Gruppe ist nicht unverändert."
+                    "Die Uhren driften aneinander vorbei. Der Raum normalisiert sich. Die Gruppe ist nicht unverändert."
                 ),
             ),
         ],
@@ -6467,12 +6441,10 @@ AWAKENING_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Das Dungeon vermerkt die Weigerung ohne Urteil."
                 ),
                 fail_narrative_en=(
-                    "The humming finds a way through. Not through the "
-                    "walls \u2013 through the awareness itself."
+                    "The humming finds a way through. Not through the walls \u2013 through the awareness itself."
                 ),
                 fail_narrative_de=(
-                    "Das Summen findet einen Weg hindurch. Nicht durch "
-                    "die Wände \u2013 durch das Bewusstsein selbst."
+                    "Das Summen findet einen Weg hindurch. Nicht durch die Wände \u2013 durch das Bewusstsein selbst."
                 ),
             ),
         ],
@@ -6927,8 +6899,7 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 partial_effects={"fracture": 3},
                 fail_effects={"fracture": 5, "stress": 5},
                 success_narrative_en=(
-                    "{agent} reads the offer beneath the offer. Every faction "
-                    "has a second agenda. The Spy sees both."
+                    "{agent} reads the offer beneath the offer. Every faction has a second agenda. The Spy sees both."
                 ),
                 success_narrative_de=(
                     "{agent} liest das Angebot unter dem Angebot. Jede Fraktion "
@@ -6945,12 +6916,10 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Teilwissen ist die gefährlichste Art."
                 ),
                 fail_narrative_en=(
-                    "The intelligence is incomplete. What {agent} does not "
-                    "know is being reported to someone else."
+                    "The intelligence is incomplete. What {agent} does not know is being reported to someone else."
                 ),
                 fail_narrative_de=(
-                    "Die Aufklärung ist unvollständig. Was {agent} nicht weiß, "
-                    "wird jemand anderem gemeldet."
+                    "Die Aufklärung ist unvollständig. Was {agent} nicht weiß, wird jemand anderem gemeldet."
                 ),
             ),
             EncounterChoice(
@@ -7026,8 +6995,7 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "eine andere Art von Beweis."
                 ),
                 fail_narrative_en=(
-                    "The defense fails. {agent}'s words are entered "
-                    "into evidence — as proof of complicity."
+                    "The defense fails. {agent}'s words are entered into evidence — as proof of complicity."
                 ),
                 fail_narrative_de=(
                     "Die Verteidigung scheitert. {agent}s Worte werden "
@@ -7066,14 +7034,8 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Der Prozess ist ein Text. {agent} hat genug gelesen "
                     "um zu wissen, dass das Ende bereits geschrieben ist."
                 ),
-                fail_narrative_en=(
-                    "The mechanism is visible. But visibility "
-                    "is not protection."
-                ),
-                fail_narrative_de=(
-                    "Der Mechanismus ist sichtbar. Aber Sichtbarkeit "
-                    "ist kein Schutz."
-                ),
+                fail_narrative_en=("The mechanism is visible. But visibility is not protection."),
+                fail_narrative_de=("Der Mechanismus ist sichtbar. Aber Sichtbarkeit ist kein Schutz."),
             ),
             EncounterChoice(
                 id="trial_pass",
@@ -7186,12 +7148,10 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Die Verweigerung einer Person ist noch nicht ansteckend."
                 ),
                 fail_narrative_en=(
-                    "The refusal costs. Living in truth is the most "
-                    "expensive option in the Spiegelpalast."
+                    "The refusal costs. Living in truth is the most expensive option in the Spiegelpalast."
                 ),
                 fail_narrative_de=(
-                    "Die Verweigerung kostet. In der Wahrheit leben ist die "
-                    "teuerste Option im Spiegelpalast."
+                    "Die Verweigerung kostet. In der Wahrheit leben ist die teuerste Option im Spiegelpalast."
                 ),
             ),
             EncounterChoice(
@@ -7225,13 +7185,9 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "kann nicht sicher sein, wer es wie liest. "
                     "Mehrdeutigkeit ist eine Waffe, die in beide Richtungen schneidet."
                 ),
-                fail_narrative_en=(
-                    "The subversion is detected. The sign is confiscated. "
-                    "So is {agent}'s anonymity."
-                ),
+                fail_narrative_en=("The subversion is detected. The sign is confiscated. So is {agent}'s anonymity."),
                 fail_narrative_de=(
-                    "Die Subversion wird entdeckt. Das Schild wird "
-                    "konfisziert. Ebenso {agent}s Anonymität."
+                    "Die Subversion wird entdeckt. Das Schild wird konfisziert. Ebenso {agent}s Anonymität."
                 ),
             ),
         ],
@@ -7290,12 +7246,10 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Rekonstruktion redigiert."
                 ),
                 fail_narrative_en=(
-                    "Memory fails. Not naturally — actively. "
-                    "Something in the Spiegelpalast assists forgetting."
+                    "Memory fails. Not naturally — actively. Something in the Spiegelpalast assists forgetting."
                 ),
                 fail_narrative_de=(
-                    "Die Erinnerung versagt. Nicht natürlich — aktiv. "
-                    "Etwas im Spiegelpalast unterstützt das Vergessen."
+                    "Die Erinnerung versagt. Nicht natürlich — aktiv. Etwas im Spiegelpalast unterstützt das Vergessen."
                 ),
             ),
             EncounterChoice(
@@ -7329,14 +7283,8 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Camus: jeder Revolutionär endet als Unterdrücker oder Ketzer. "
                     "Die Löschung ist unvollständig. Die Revolution auch."
                 ),
-                fail_narrative_en=(
-                    "The scratching is noticed. Someone is always watching "
-                    "the watchers."
-                ),
-                fail_narrative_de=(
-                    "Das Kratzen wird bemerkt. Jemand beobachtet immer "
-                    "die Beobachter."
-                ),
+                fail_narrative_en=("The scratching is noticed. Someone is always watching the watchers."),
+                fail_narrative_de=("Das Kratzen wird bemerkt. Jemand beobachtet immer die Beobachter."),
             ),
             EncounterChoice(
                 id="portrait_pass",
@@ -7410,12 +7358,10 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Das Bild ist unvollständig, aber aufschlussreich."
                 ),
                 fail_narrative_en=(
-                    "{agent} watches. But watching is also a position. "
-                    "The one who does not scramble is noticed."
+                    "{agent} watches. But watching is also a position. The one who does not scramble is noticed."
                 ),
                 fail_narrative_de=(
-                    "{agent} beobachtet. Aber Beobachten ist auch eine "
-                    "Position. Wer nicht mitrennt, wird bemerkt."
+                    "{agent} beobachtet. Aber Beobachten ist auch eine Position. Wer nicht mitrennt, wird bemerkt."
                 ),
             ),
             EncounterChoice(
@@ -7450,12 +7396,10 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                     "bleibt abzuwarten."
                 ),
                 fail_narrative_en=(
-                    "The scramble turns ugly. Material interest "
-                    "stripped of ideology. Brecht was right."
+                    "The scramble turns ugly. Material interest stripped of ideology. Brecht was right."
                 ),
                 fail_narrative_de=(
-                    "Das Gerangel wird hässlich. Materielles Interesse, "
-                    "von Ideologie befreit. Brecht hatte Recht."
+                    "Das Gerangel wird hässlich. Materielles Interesse, von Ideologie befreit. Brecht hatte Recht."
                 ),
             ),
             EncounterChoice(
@@ -7464,8 +7408,7 @@ OVERTHROW_NARRATIVE_ENCOUNTERS: list[EncounterTemplate] = [
                 label_de="Die Fraktionen warnen: das ist eine Falle.",
                 success_effects={"fracture": -3},
                 success_narrative_en=(
-                    "The warning is issued. Some listen. Most do not. "
-                    "Manuscripts don't burn. But money does."
+                    "The warning is issued. Some listen. Most do not. Manuscripts don't burn. But money does."
                 ),
                 success_narrative_de=(
                     "Die Warnung wird ausgesprochen. Manche hören zu. "
@@ -7641,14 +7584,8 @@ OVERTHROW_REST_ENCOUNTERS: list[EncounterTemplate] = [
                     "Die Aufklärung ist nützlich. Das Wissen, "
                     "dass alle besprochen werden, weniger."
                 ),
-                fail_narrative_en=(
-                    "The wall is thinner than expected. "
-                    "In both directions."
-                ),
-                fail_narrative_de=(
-                    "Die Wand ist dünner als erwartet. "
-                    "In beiden Richtungen."
-                ),
+                fail_narrative_en=("The wall is thinner than expected. In both directions."),
+                fail_narrative_de=("Die Wand ist dünner als erwartet. In beiden Richtungen."),
             ),
         ],
     ),
@@ -7746,14 +7683,8 @@ OVERTHROW_TREASURE_ENCOUNTERS: list[EncounterTemplate] = [
                     "Die Interpretation erfordert Kontext, den "
                     "{agent} noch nicht besitzt."
                 ),
-                fail_narrative_en=(
-                    "The dossiers are incomplete. Or they have been "
-                    "pre-edited for whoever found them."
-                ),
-                fail_narrative_de=(
-                    "Die Dossiers sind unvollständig. Oder sie wurden "
-                    "für den Finder vorbearbeitet."
-                ),
+                fail_narrative_en=("The dossiers are incomplete. Or they have been pre-edited for whoever found them."),
+                fail_narrative_de=("Die Dossiers sind unvollständig. Oder sie wurden für den Finder vorbearbeitet."),
             ),
             EncounterChoice(
                 id="archive_take",
@@ -7919,5 +7850,3 @@ def select_encounter(
     if not candidates:
         return None
     return random.choice(candidates)
-
-

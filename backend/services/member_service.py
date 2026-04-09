@@ -6,8 +6,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -21,9 +20,7 @@ def _check_last_owner_error(exc: Exception) -> None:
     """Raise ``LastOwnerError`` if *exc* originates from the DB trigger."""
     error_msg = str(exc).lower()
     if "last owner" in error_msg or "cannot remove" in error_msg:
-        raise LastOwnerError(
-            "Cannot modify: this is the last owner of the simulation."
-        ) from exc
+        raise LastOwnerError("Cannot modify: this is the last owner of the simulation.") from exc
 
 
 class MemberService:
@@ -74,20 +71,19 @@ class MemberService:
         """Add a new member to a simulation."""
         response = await (
             supabase.table(cls.table_name)
-            .insert({
-                "simulation_id": str(simulation_id),
-                "user_id": str(user_id),
-                "member_role": member_role,
-                "invited_by_id": str(invited_by_id),
-            })
+            .insert(
+                {
+                    "simulation_id": str(simulation_id),
+                    "user_id": str(user_id),
+                    "member_role": member_role,
+                    "invited_by_id": str(invited_by_id),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to add member.",
-            )
+            raise server_error("Failed to add member.")
         logger.info(
             "Member added",
             extra={"user_id": str(user_id), "simulation_id": str(simulation_id), "role": member_role},
@@ -109,10 +105,12 @@ class MemberService:
         try:
             response = await (
                 supabase.table(cls.table_name)
-                .update({
-                    "member_role": member_role,
-                    "updated_at": datetime.now(UTC).isoformat(),
-                })
+                .update(
+                    {
+                        "member_role": member_role,
+                        "updated_at": datetime.now(UTC).isoformat(),
+                    }
+                )
                 .eq("simulation_id", str(simulation_id))
                 .eq("id", str(member_id))
                 .execute()
@@ -129,10 +127,7 @@ class MemberService:
             raise
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Member '{member_id}' not found.",
-            )
+            raise not_found(detail=f"Member '{member_id}' not found.")
         logger.info(
             "Member role changed",
             extra={"member_id": str(member_id), "simulation_id": str(simulation_id), "new_role": member_role},
@@ -170,8 +165,5 @@ class MemberService:
             raise
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Member '{member_id}' not found.",
-            )
+            raise not_found(detail=f"Member '{member_id}' not found.")
         logger.info("Member removed", extra={"member_id": str(member_id), "simulation_id": str(simulation_id)})

@@ -64,11 +64,7 @@ class AgentMemoryService:
 
         # Get simulation info for translation
         sim_resp = await (
-            supabase.table("simulations")
-            .select("name, theme")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).limit(1).execute()
         )
         if sim_resp.data:
             schedule_auto_translation(
@@ -106,31 +102,23 @@ class AgentMemoryService:
             saved = []
             for obs in MOCK_OBSERVATIONS:
                 record = await cls.record_observation(
-                    admin, agent_id, simulation_id,
-                    obs["content"], obs["importance"],
-                    source_type="chat", api_key=api_key,
+                    admin,
+                    agent_id,
+                    simulation_id,
+                    obs["content"],
+                    obs["importance"],
+                    source_type="chat",
+                    api_key=api_key,
                 )
                 saved.append(record)
             return saved
 
         # Get simulation name (reads are fine with any client)
-        sim_resp = await (
-            supabase.table("simulations")
-            .select("name")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
-        )
+        sim_resp = await supabase.table("simulations").select("name").eq("id", str(simulation_id)).limit(1).execute()
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
 
         # Get agent name
-        agent_resp = await (
-            supabase.table("agents")
-            .select("name")
-            .eq("id", str(agent_id))
-            .limit(1)
-            .execute()
-        )
+        agent_resp = await supabase.table("agents").select("name").eq("id", str(agent_id)).limit(1).execute()
         agent_name = agent_resp.data[0]["name"] if agent_resp.data else "Agent"
 
         gen = GenerationService(admin, simulation_id, api_key or settings.openrouter_api_key)
@@ -154,7 +142,9 @@ class AgentMemoryService:
             if not obs.get("content"):
                 continue
             record = await cls.record_observation(
-                admin, agent_id, simulation_id,
+                admin,
+                agent_id,
+                simulation_id,
                 obs["content"],
                 obs.get("importance", 5),
                 source_type="chat",
@@ -197,9 +187,7 @@ class AgentMemoryService:
         # Update last_accessed_at for retrieved memories
         if memories:
             memory_ids = [m["id"] for m in memories]
-            await supabase.table("agent_memories").update(
-                {"last_accessed_at": "now()"}
-            ).in_("id", memory_ids).execute()
+            await supabase.table("agent_memories").update({"last_accessed_at": "now()"}).in_("id", memory_ids).execute()
 
         return memories
 
@@ -236,37 +224,27 @@ class AgentMemoryService:
             saved = []
             for ref in MOCK_REFLECTIONS:
                 record = await cls.record_observation(
-                    supabase, agent_id, simulation_id,
-                    ref["content"], ref["importance"],
-                    source_type="reflection", memory_type="reflection",
+                    supabase,
+                    agent_id,
+                    simulation_id,
+                    ref["content"],
+                    ref["importance"],
+                    source_type="reflection",
+                    memory_type="reflection",
                     api_key=api_key,
                 )
                 saved.append(record)
             return saved
 
         # Get names
-        sim_resp = await (
-            supabase.table("simulations")
-            .select("name")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
-        )
+        sim_resp = await supabase.table("simulations").select("name").eq("id", str(simulation_id)).limit(1).execute()
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
 
-        agent_resp = await (
-            supabase.table("agents")
-            .select("name")
-            .eq("id", str(agent_id))
-            .limit(1)
-            .execute()
-        )
+        agent_resp = await supabase.table("agents").select("name").eq("id", str(agent_id)).limit(1).execute()
         agent_name = agent_resp.data[0]["name"] if agent_resp.data else "Agent"
 
         # Format observations text
-        obs_text = "\n".join(
-            f"- [{o['importance']}/10] {o['content']}" for o in observations
-        )
+        obs_text = "\n".join(f"- [{o['importance']}/10] {o['content']}" for o in observations)
 
         gen = GenerationService(supabase, simulation_id, api_key or settings.openrouter_api_key)
         result = await gen._generate(
@@ -288,7 +266,9 @@ class AgentMemoryService:
             if not ref.get("content"):
                 continue
             record = await cls.record_observation(
-                supabase, agent_id, simulation_id,
+                supabase,
+                agent_id,
+                simulation_id,
                 ref["content"],
                 ref.get("importance", 7),
                 source_type="reflection",
@@ -314,9 +294,11 @@ class AgentMemoryService:
         """Paginated list of agent memories for display."""
         query = (
             supabase.table("agent_memories")
-            .select("id, agent_id, simulation_id, memory_type, content, content_de, "
-                     "importance, source_type, source_id, created_at, last_accessed_at",
-                     count="exact")
+            .select(
+                "id, agent_id, simulation_id, memory_type, content, content_de, "
+                "importance, source_type, source_id, created_at, last_accessed_at",
+                count="exact",
+            )
             .eq("agent_id", str(agent_id))
             .eq("simulation_id", str(simulation_id))
             .order("created_at", desc=True)

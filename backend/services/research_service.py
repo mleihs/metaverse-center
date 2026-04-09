@@ -158,22 +158,13 @@ def _emulate_tavily_phase4(seed: str, anchor: dict) -> str:
     parts: list[str] = []
 
     lens_lit = _THEMATIC_LENSES[idx_lit]
-    parts.append(
-        f"[WEB: LITERARY AXIS]\n"
-        f"Literary context for '{literary or title}': {lens_lit['context']}"
-    )
+    parts.append(f"[WEB: LITERARY AXIS]\nLiterary context for '{literary or title}': {lens_lit['context']}")
 
     lens_phil = _THEMATIC_LENSES[idx_phil]
-    parts.append(
-        f"[WEB: PHILOSOPHICAL AXIS]\n"
-        f"Philosophical context for '{core_q or title}': {lens_phil['context']}"
-    )
+    parts.append(f"[WEB: PHILOSOPHICAL AXIS]\nPhilosophical context for '{core_q or title}': {lens_phil['context']}")
 
     lens_arch = _THEMATIC_LENSES[idx_arch]
-    parts.append(
-        f"[WEB: ARCHITECTURAL AXIS]\n"
-        f"Architectural context for '{title}': {lens_arch['context']}"
-    )
+    parts.append(f"[WEB: ARCHITECTURAL AXIS]\nArchitectural context for '{title}': {lens_arch['context']}")
 
     return "\n\n".join(parts)
 
@@ -215,9 +206,7 @@ class ResearchService:
             ),
         ]
 
-        results = await TavilySearchService.parallel_search(
-            requests, timeout_s=10.0
-        )
+        results = await TavilySearchService.parallel_search(requests, timeout_s=10.0)
 
         if not results:
             logger.warning(
@@ -365,9 +354,7 @@ class ResearchService:
                 ),
             ]
 
-            results = await TavilySearchService.parallel_search(
-                requests, timeout_s=20.0, max_retries=1
-            )
+            results = await TavilySearchService.parallel_search(requests, timeout_s=20.0, max_retries=1)
 
             if results:
                 augmentation = TavilySearchService.format_results(results)

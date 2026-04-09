@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -49,10 +50,7 @@ class ZoneActionService:
     ) -> dict:
         """Create a zone action after validating cooldown and active constraints."""
         if action_type not in ACTION_CONFIG:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action_type '{action_type}'.",
-            )
+            raise bad_request(f"Invalid action_type '{action_type}'.")
 
         config = ACTION_CONFIG[action_type]
         now = datetime.now(UTC)
@@ -69,10 +67,7 @@ class ZoneActionService:
             .execute()
         )
         if active_check.data:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Zone already has an active action. Cancel it first.",
-            )
+            raise conflict("Zone already has an active action. Cancel it first.")
 
         # Check cooldown — find most recent expired action of this type
         cooldown_check = await (
@@ -86,9 +81,7 @@ class ZoneActionService:
             .execute()
         )
         if cooldown_check.data:
-            cooldown_until = datetime.fromisoformat(
-                cooldown_check.data[0]["cooldown_until"].replace("Z", "+00:00")
-            )
+            cooldown_until = datetime.fromisoformat(cooldown_check.data[0]["cooldown_until"].replace("Z", "+00:00"))
             if cooldown_until > now:
                 remaining = cooldown_until - now
                 raise HTTPException(
@@ -101,23 +94,22 @@ class ZoneActionService:
 
         response = await (
             supabase.table("zone_actions")
-            .insert({
-                "zone_id": str(zone_id),
-                "simulation_id": str(simulation_id),
-                "action_type": action_type,
-                "effect_value": config["effect_value"],
-                "created_by_id": str(user_id),
-                "expires_at": expires_at.isoformat(),
-                "cooldown_until": cooldown_until.isoformat(),
-            })
+            .insert(
+                {
+                    "zone_id": str(zone_id),
+                    "simulation_id": str(simulation_id),
+                    "action_type": action_type,
+                    "effect_value": config["effect_value"],
+                    "created_by_id": str(user_id),
+                    "expires_at": expires_at.isoformat(),
+                    "cooldown_until": cooldown_until.isoformat(),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create zone action.",
-            )
+            raise server_error("Failed to create zone action.")
 
         logger.info(
             "Zone action created",
@@ -151,10 +143,7 @@ class ZoneActionService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Zone action not found or already cancelled.",
-            )
+            raise not_found(detail="Zone action not found or already cancelled.")
 
         logger.info(
             "Zone action cancelled",

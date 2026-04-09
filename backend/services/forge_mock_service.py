@@ -130,14 +130,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "The Inkwell",
             "zone_type": "cultural",
             "zone_type_de": "kulturell",
-            "description": (
-                "Where stories are distilled into liquid form"
-                " and sold by the dram."
-            ),
-            "description_de": (
-                "Hier werden Geschichten zu flüssiger Form"
-                " destilliert und schluckweise verkauft."
-            ),
+            "description": ("Where stories are distilled into liquid form and sold by the dram."),
+            "description_de": ("Hier werden Geschichten zu flüssiger Form destilliert und schluckweise verkauft."),
             "characteristics": [
                 "liquid narratives",
                 "alchemical fumes",
@@ -148,14 +142,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "Thornwalk",
             "zone_type": "residential",
             "zone_type_de": "Wohngebiet",
-            "description": (
-                "A labyrinth of terraced houses growing thorned"
-                " hedges as load-bearing walls."
-            ),
-            "description_de": (
-                "Ein Labyrinth aus Reihenhäusern, deren tragende"
-                " Wände aus Dornenhecken bestehen."
-            ),
+            "description": ("A labyrinth of terraced houses growing thorned hedges as load-bearing walls."),
+            "description_de": ("Ein Labyrinth aus Reihenhäusern, deren tragende Wände aus Dornenhecken bestehen."),
             "characteristics": [
                 "living architecture",
                 "rustling walls",
@@ -166,14 +154,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "The Furnace Quarter",
             "zone_type": "industrial",
             "zone_type_de": "Industriegebiet",
-            "description": (
-                "Perpetual smoke. The factories here produce"
-                " things no one ordered."
-            ),
-            "description_de": (
-                "Ewiger Rauch. Die Fabriken hier produzieren"
-                " Dinge, die niemand bestellt hat."
-            ),
+            "description": ("Perpetual smoke. The factories here produce things no one ordered."),
+            "description_de": ("Ewiger Rauch. Die Fabriken hier produzieren Dinge, die niemand bestellt hat."),
             "characteristics": [
                 "perpetual smoke",
                 "unexplained output",
@@ -184,14 +166,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "Echoplex",
             "zone_type": "entertainment",
             "zone_type_de": "Unterhaltung",
-            "description": (
-                "An amphitheatre district where yesterday's"
-                " conversations replay at dusk."
-            ),
-            "description_de": (
-                "Ein Amphitheaterviertel, in dem die Gespräche"
-                " von gestern bei Dämmerung wiederhallen."
-            ),
+            "description": ("An amphitheatre district where yesterday's conversations replay at dusk."),
+            "description_de": ("Ein Amphitheaterviertel, in dem die Gespräche von gestern bei Dämmerung wiederhallen."),
             "characteristics": [
                 "temporal echoes",
                 "acoustic anomalies",
@@ -202,14 +178,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "The Stillwater",
             "zone_type": "government",
             "zone_type_de": "Regierungsviertel",
-            "description": (
-                "Administrative buildings arranged around a"
-                " canal that flows in no direction."
-            ),
-            "description_de": (
-                "Verwaltungsgebäude, angeordnet um einen Kanal,"
-                " der in keine Richtung fließt."
-            ),
+            "description": ("Administrative buildings arranged around a canal that flows in no direction."),
+            "description_de": ("Verwaltungsgebäude, angeordnet um einen Kanal, der in keine Richtung fließt."),
             "characteristics": [
                 "bureaucratic calm",
                 "directionless canal",
@@ -220,14 +190,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "Ashgrove",
             "zone_type": "military",
             "zone_type_de": "Militärgebiet",
-            "description": (
-                "A fortified garden where trees grow ammunition"
-                " instead of fruit."
-            ),
-            "description_de": (
-                "Ein befestigter Garten, in dem Bäume Munition"
-                " statt Früchte tragen."
-            ),
+            "description": ("A fortified garden where trees grow ammunition instead of fruit."),
+            "description_de": ("Ein befestigter Garten, in dem Bäume Munition statt Früchte tragen."),
             "characteristics": [
                 "militant horticulture",
                 "brass-leaf canopy",
@@ -238,14 +202,9 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "The Hollows",
             "zone_type": "slum",
             "zone_type_de": "Elendsviertel",
-            "description": (
-                "Underground caverns repurposed as housing."
-                " The rent is paid in secrets."
-            ),
+            "description": ("Underground caverns repurposed as housing. The rent is paid in secrets."),
             "description_de": (
-                "Unterirdische Höhlen, umfunktioniert zu"
-                " Wohnraum. Die Miete wird in Geheimnissen"
-                " bezahlt."
+                "Unterirdische Höhlen, umfunktioniert zu Wohnraum. Die Miete wird in Geheimnissen bezahlt."
             ),
             "characteristics": [
                 "subterranean",
@@ -257,14 +216,8 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "Mirrorside",
             "zone_type": "commercial",
             "zone_type_de": "Gewerbegebiet",
-            "description": (
-                "Every shopfront reflects a slightly different"
-                " version of the customer."
-            ),
-            "description_de": (
-                "Jede Schaufensterfront spiegelt eine leicht"
-                " veränderte Version des Kunden wider."
-            ),
+            "description": ("Every shopfront reflects a slightly different version of the customer."),
+            "description_de": ("Jede Schaufensterfront spiegelt eine leicht veränderte Version des Kunden wider."),
             "characteristics": [
                 "distorted reflections",
                 "identity commerce",
@@ -277,75 +230,49 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
             "name": "Threadneedle Passage",
             "street_type": "alley",
             "street_type_de": "Gasse",
-            "description": (
-                "A narrow gap between buildings where"
-                " seamstresses once threaded needles"
-                " by moonlight."
-            ),
+            "description": ("A narrow gap between buildings where seamstresses once threaded needles by moonlight."),
         },
         {
             "name": "Rue du Souvenir",
             "street_type": "boulevard",
             "street_type_de": "Boulevard",
-            "description": (
-                "Lined with trees that shed memories"
-                " instead of leaves each autumn."
-            ),
+            "description": ("Lined with trees that shed memories instead of leaves each autumn."),
         },
         {
             "name": "Forgetting Lane",
             "street_type": "lane",
             "street_type_de": "Weg",
-            "description": (
-                "Visitors report mild amnesia upon"
-                " reaching the far end."
-            ),
+            "description": ("Visitors report mild amnesia upon reaching the far end."),
         },
         {
             "name": "The Long Exhale",
             "street_type": "avenue",
             "street_type_de": "Allee",
-            "description": (
-                "A gently sloping avenue where the"
-                " wind always sighs downhill."
-            ),
+            "description": ("A gently sloping avenue where the wind always sighs downhill."),
         },
         {
             "name": "Clinker Row",
             "street_type": "road",
             "street_type_de": "Straße",
-            "description": (
-                "Paved with fused furnace slag that"
-                " still radiates warmth underfoot."
-            ),
+            "description": ("Paved with fused furnace slag that still radiates warmth underfoot."),
         },
         {
             "name": "Drift Street",
             "street_type": "street",
             "street_type_de": "Straße",
-            "description": (
-                "Its position shifts by a few meters"
-                " each decade, confounding cartographers."
-            ),
+            "description": ("Its position shifts by a few meters each decade, confounding cartographers."),
         },
         {
             "name": "Parliament Way",
             "street_type": "avenue",
             "street_type_de": "Allee",
-            "description": (
-                "The widest avenue in the city, designed"
-                " so that shouted debates carry from"
-                " end to end."
-            ),
+            "description": ("The widest avenue in the city, designed so that shouted debates carry from end to end."),
         },
         {
             "name": "The Spiral Descent",
             "street_type": "stairway",
             "street_type_de": "Treppe",
-            "description": (
-                "A corkscrew stairway carved into bedrock,"
-                " connecting the surface to the Hollows."
-            ),
+            "description": ("A corkscrew stairway carved into bedrock, connecting the surface to the Hollows."),
         },
     ]
 
@@ -723,14 +650,10 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "residence",
             "building_type_de": "Wohnhaus",
             "description": (
-                "A townhouse in Thornwalk where the"
-                " load-bearing hedges have developed"
-                " opinions about the residents."
+                "A townhouse in Thornwalk where the load-bearing hedges have developed opinions about the residents."
             ),
             "description_de": (
-                "Ein Stadthaus in Thornwalk, dessen tragende"
-                " Hecken Meinungen \u00fcber die Bewohner"
-                " entwickelt haben."
+                "Ein Stadthaus in Thornwalk, dessen tragende Hecken Meinungen \u00fcber die Bewohner entwickelt haben."
             ),
             "building_condition": "fair",
             "building_condition_de": "m\u00e4\u00dfig",
@@ -757,9 +680,7 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "inn",
             "building_type_de": "Gasthof",
             "description": (
-                "An inn that occupies a different location"
-                " each morning. Regulars navigate by the"
-                " smell of breakfast."
+                "An inn that occupies a different location each morning. Regulars navigate by the smell of breakfast."
             ),
             "description_de": (
                 "Ein Gasthof, der jeden Morgen einen anderen"
@@ -773,14 +694,9 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "name": "The Hollow Market",
             "building_type": "market",
             "building_type_de": "Markt",
-            "description": (
-                "An underground bazaar where prices are"
-                " quoted in secrets of equivalent weight."
-            ),
+            "description": ("An underground bazaar where prices are quoted in secrets of equivalent weight."),
             "description_de": (
-                "Ein unterirdischer Basar, auf dem Preise in"
-                " Geheimnissen gleichen Gewichts angegeben"
-                " werden."
+                "Ein unterirdischer Basar, auf dem Preise in Geheimnissen gleichen Gewichts angegeben werden."
             ),
             "building_condition": "fair",
             "building_condition_de": "m\u00e4\u00dfig",
@@ -870,21 +786,13 @@ def mock_theme(seed: str) -> dict:
             "card_frame_corners": "floral",
             "card_frame_foil": "patina",
             "image_style_prompt_portrait": (
-                "daguerreotype portrait, formal studio"
-                " lighting, sepia warmth, antiquarian grain"
+                "daguerreotype portrait, formal studio lighting, sepia warmth, antiquarian grain"
             ),
-            "image_style_prompt_building": (
-                "architectural photography, overcast,"
-                " desaturated amber tones, mist"
-            ),
+            "image_style_prompt_building": ("architectural photography, overcast, desaturated amber tones, mist"),
             "image_style_prompt_banner": (
-                "romantic landscape painting, oil on canvas,"
-                " atmospheric perspective, golden light"
+                "romantic landscape painting, oil on canvas, atmospheric perspective, golden light"
             ),
-            "image_style_prompt_lore": (
-                "etching illustration, cross-hatched,"
-                " parchment texture, archival quality"
-            ),
+            "image_style_prompt_lore": ("etching illustration, cross-hatched, parchment texture, archival quality"),
         },
         {
             "color_primary": "#00d4aa",
@@ -929,21 +837,13 @@ def mock_theme(seed: str) -> dict:
             "card_frame_corners": "crosshairs",
             "card_frame_foil": "phosphor",
             "image_style_prompt_portrait": (
-                "cyberpunk neon portrait, holographic overlay,"
-                " chromatic aberration, moody lighting"
+                "cyberpunk neon portrait, holographic overlay, chromatic aberration, moody lighting"
             ),
             "image_style_prompt_building": (
-                "brutalist architecture, neon signage,"
-                " rain-slicked concrete, night photography"
+                "brutalist architecture, neon signage, rain-slicked concrete, night photography"
             ),
-            "image_style_prompt_banner": (
-                "aerial drone photo, neon city grid,"
-                " fog layer, cinematic color grade"
-            ),
-            "image_style_prompt_lore": (
-                "concept art, moody environmental,"
-                " desaturated cyan palette, digital painting"
-            ),
+            "image_style_prompt_banner": ("aerial drone photo, neon city grid, fog layer, cinematic color grade"),
+            "image_style_prompt_lore": ("concept art, moody environmental, desaturated cyan palette, digital painting"),
         },
     ]
     return themes[h % len(themes)]
@@ -1368,9 +1268,6 @@ def mock_entity_translations(agents: list, buildings: list, zones: list, streets
             }
             for z in zones
         ],
-        "streets": [
-            {"name": s.get("name", "?"), "street_type_de": s.get("street_type", "")}
-            for s in streets
-        ],
+        "streets": [{"name": s.get("name", "?"), "street_type_de": s.get("street_type", "")} for s in streets],
         "simulation": {"description_de": f"[DE Mock] {sim_desc[:100]}..."},
     }

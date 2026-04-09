@@ -10,6 +10,7 @@ from uuid import UUID
 from backend.config import settings
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -49,13 +50,17 @@ class ChronicleService:
                 "p_period_end": period_end.isoformat(),
             },
         ).execute()
-        return response.data if response.data else {
-            "events": [],
-            "echoes": [],
-            "battle_entries": [],
-            "reactions": [],
-            "event_count": 0,
-        }
+        return (
+            response.data
+            if response.data
+            else {
+                "events": [],
+                "echoes": [],
+                "battle_entries": [],
+                "reactions": [],
+                "event_count": 0,
+            }
+        )
 
     @classmethod
     async def generate(
@@ -101,11 +106,7 @@ class ChronicleService:
 
         # Get simulation name for prompt
         sim_resp = await (
-            supabase.table("simulations")
-            .select("name, theme")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).limit(1).execute()
         )
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
         sim_theme = sim_resp.data[0].get("theme", "dystopian") if sim_resp.data else "dystopian"
@@ -240,9 +241,5 @@ class ChronicleService:
             .execute()
         )
         if not response.data:
-            from fastapi import HTTPException, status
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Chronicle edition not found.",
-            )
+            raise not_found(detail="Chronicle edition not found.")
         return response.data[0]

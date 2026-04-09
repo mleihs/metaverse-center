@@ -50,20 +50,22 @@ class WHOOutbreaksAdapter(SourceAdapter):
             if not title:
                 continue
 
-            results.append(ScanResult(
-                source_id=f"who_{don_id}",
-                source_name=self.name,
-                title=title,
-                url=f"https://www.who.int{url}" if url and not url.startswith("http") else url,
-                description=summary[:500] if summary else None,
-                raw_data={
-                    "DonId": don_id,
-                    "PublicationDate": item.get("PublicationDateAndTime"),
-                },
-                # Category is known (always pandemic), but leave for LLM to set magnitude
-                source_category="pandemic",
-                magnitude=None,  # LLM will determine
-                is_structured=False,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=f"who_{don_id}",
+                    source_name=self.name,
+                    title=title,
+                    url=f"https://www.who.int{url}" if url and not url.startswith("http") else url,
+                    description=summary[:500] if summary else None,
+                    raw_data={
+                        "DonId": don_id,
+                        "PublicationDate": item.get("PublicationDateAndTime"),
+                    },
+                    # Category is known (always pandemic), but leave for LLM to set magnitude
+                    source_category="pandemic",
+                    magnitude=None,  # LLM will determine
+                    is_structured=False,
+                )
+            )
 
         return results

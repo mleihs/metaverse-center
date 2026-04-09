@@ -14,8 +14,9 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -44,12 +45,7 @@ class GameMechanicsService:
         supabase: Client,
     ) -> list[dict]:
         """Get health metrics for all simulations (for map/dashboard)."""
-        response = await (
-            supabase.table("mv_simulation_health")
-            .select("*")
-            .order("overall_health", desc=True)
-            .execute()
-        )
+        response = await supabase.table("mv_simulation_health").select("*").order("overall_health", desc=True).execute()
         return response.data or []
 
     @staticmethod
@@ -68,10 +64,7 @@ class GameMechanicsService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Building readiness not found for '{building_id}'.",
-            )
+            raise not_found(detail=f"Building readiness not found for '{building_id}'.")
         return response.data[0]
 
     @staticmethod
@@ -117,10 +110,7 @@ class GameMechanicsService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Zone stability not found for '{zone_id}'.",
-            )
+            raise not_found(detail=f"Zone stability not found for '{zone_id}'.")
         return response.data[0]
 
     @staticmethod
@@ -147,10 +137,7 @@ class GameMechanicsService:
         response = await (
             supabase.table("mv_embassy_effectiveness")
             .select("*")
-            .or_(
-                f"simulation_a_id.eq.{simulation_id},"
-                f"simulation_b_id.eq.{simulation_id}"
-            )
+            .or_(f"simulation_a_id.eq.{simulation_id},simulation_b_id.eq.{simulation_id}")
             .order("effectiveness", desc=True)
             .execute()
         )
@@ -166,24 +153,13 @@ class GameMechanicsService:
         Combines: simulation health + zone stability + building readiness +
         embassy effectiveness + recent high-impact events.
         """
-        health = await GameMechanicsService.get_simulation_health(
-            supabase, simulation_id
-        )
+        health = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
         if not health:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No health data for simulation '{simulation_id}'.",
-            )
+            raise not_found(detail=f"No health data for simulation '{simulation_id}'.")
 
-        zones = await GameMechanicsService.list_zone_stability(
-            supabase, simulation_id
-        )
-        buildings, _ = await GameMechanicsService.list_building_readiness(
-            supabase, simulation_id, limit=200
-        )
-        embassies = await GameMechanicsService.list_embassy_effectiveness(
-            supabase, simulation_id
-        )
+        zones = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
+        buildings, _ = await GameMechanicsService.list_building_readiness(supabase, simulation_id, limit=200)
+        embassies = await GameMechanicsService.list_embassy_effectiveness(supabase, simulation_id)
 
         # Recent high-impact events (last 30 days, impact >= 7)
         events_response = await (
@@ -222,25 +198,19 @@ class GameMechanicsService:
         ctx: dict = {}
 
         # Simulation-level health
-        health = await GameMechanicsService.get_simulation_health(
-            supabase, simulation_id
-        )
+        health = await GameMechanicsService.get_simulation_health(supabase, simulation_id)
         if health:
             ctx["simulation_health"] = health.get("overall_health", 0.5)
             ctx["health_label"] = health.get("health_label", "")
             ctx["building_readiness"] = health.get("avg_readiness", 0.5)
-            ctx["critical_buildings"] = health.get(
-                "critically_understaffed_buildings", 0
-            )
+            ctx["critical_buildings"] = health.get("critically_understaffed_buildings", 0)
             ctx["diplomatic_reach"] = health.get("diplomatic_reach", 0)
             ctx["bleed_permeability"] = health.get("bleed_permeability", 0)
 
         # Zone-level stability (if zone_id provided)
         if zone_id:
             try:
-                zone = await GameMechanicsService.get_zone_stability(
-                    supabase, simulation_id, zone_id
-                )
+                zone = await GameMechanicsService.get_zone_stability(supabase, simulation_id, zone_id)
                 ctx["zone_stability"] = zone.get("stability", 0.5)
                 ctx["zone_stability_label"] = zone.get("stability_label", "")
                 ctx["zone_security"] = zone.get("security_level", "moderate")
@@ -249,9 +219,7 @@ class GameMechanicsService:
                 pass  # Zone not in materialized view yet
 
         # Derive narrative guidance from metrics
-        ctx["narrative_guidance"] = (
-            GameMechanicsService._derive_narrative_guidance(ctx)
-        )
+        ctx["narrative_guidance"] = GameMechanicsService._derive_narrative_guidance(ctx)
 
         return ctx
 
@@ -266,44 +234,26 @@ class GameMechanicsService:
 
         sim_health = ctx.get("simulation_health", 0.5)
         if sim_health < 0.3:
-            parts.append(
-                "The simulation is in crisis. "
-                "Write with urgency, desperation, and a sense of collapse."
-            )
+            parts.append("The simulation is in crisis. Write with urgency, desperation, and a sense of collapse.")
         elif sim_health < 0.5:
-            parts.append(
-                "The simulation is struggling. "
-                "Reflect tension, scarcity, and growing unease."
-            )
+            parts.append("The simulation is struggling. Reflect tension, scarcity, and growing unease.")
         elif sim_health > 0.8:
-            parts.append(
-                "The simulation is thriving. "
-                "Show confidence, ambition, and the quiet tension of prosperity."
-            )
+            parts.append("The simulation is thriving. Show confidence, ambition, and the quiet tension of prosperity.")
 
         zone_stability = ctx.get("zone_stability")
         if zone_stability is not None:
             if zone_stability < 0.3:
                 parts.append(
-                    "This zone is failing — infrastructure crumbling, "
-                    "security collapsing, cascading crises likely."
+                    "This zone is failing — infrastructure crumbling, security collapsing, cascading crises likely."
                 )
             elif zone_stability < 0.5:
-                parts.append(
-                    "This zone is unstable — one more shock could tip it."
-                )
+                parts.append("This zone is unstable — one more shock could tip it.")
             elif zone_stability > 0.8:
-                parts.append(
-                    "This zone is exemplary — a model district, "
-                    "but stability breeds complacency."
-                )
+                parts.append("This zone is exemplary — a model district, but stability breeds complacency.")
 
         critical = ctx.get("critical_buildings", 0)
         if critical >= 3:
-            parts.append(
-                f"{critical} critical buildings are understaffed. "
-                "Institutions are failing. People notice."
-            )
+            parts.append(f"{critical} critical buildings are understaffed. Institutions are failing. People notice.")
 
         return " ".join(parts) if parts else "The simulation is functional."
 
@@ -349,7 +299,8 @@ class GameMechanicsService:
         # 1. Global setting
         try:
             row = await PlatformSettingsService.get(
-                admin_supabase, "critical_health_effects_enabled",
+                admin_supabase,
+                "critical_health_effects_enabled",
             )
             global_enabled = str(row.get("setting_value", "true")).strip('"') != "false"
         except Exception:
@@ -357,7 +308,10 @@ class GameMechanicsService:
 
         # 2. All active simulations
         sims_data, _total = await SimulationService.list_all_simulations(
-            admin_supabase, include_deleted=False, limit=200, offset=0,
+            admin_supabase,
+            include_deleted=False,
+            limit=200,
+            offset=0,
         )
         sim_ids = [str(s["id"]) for s in sims_data]
 
@@ -367,7 +321,10 @@ class GameMechanicsService:
 
         # 4. Per-sim health effects settings
         effects_rows = await SettingsService.batch_get_by_key(
-            admin_supabase, sim_ids, "game", "critical_health_effects_enabled",
+            admin_supabase,
+            sim_ids,
+            "game",
+            "critical_health_effects_enabled",
         )
         effects_map: dict[str, str] = {}
         for s in effects_rows:
@@ -387,14 +344,16 @@ class GameMechanicsService:
             else:
                 threshold_state = "normal"
 
-            simulations.append({
-                "id": sid,
-                "name": sim.get("name", ""),
-                "slug": sim.get("slug", ""),
-                "overall_health": round(oh, 4),
-                "threshold_state": threshold_state,
-                "effects_enabled": effects_map.get(sid, "true") != "false",
-            })
+            simulations.append(
+                {
+                    "id": sid,
+                    "name": sim.get("name", ""),
+                    "slug": sim.get("slug", ""),
+                    "overall_health": round(oh, 4),
+                    "threshold_state": threshold_state,
+                    "effects_enabled": effects_map.get(sid, "true") != "false",
+                }
+            )
 
         return {
             "global_enabled": global_enabled,

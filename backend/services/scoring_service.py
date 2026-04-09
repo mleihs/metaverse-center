@@ -4,12 +4,12 @@ import logging
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
+from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -51,11 +51,14 @@ class ScoringService:
             "military": weights.get("military", 20),
         }
 
-        resp = await supabase.rpc("fn_compute_cycle_scores", {
-            "p_epoch_id": str(epoch_id),
-            "p_cycle_number": cycle_number,
-            "p_score_weights": score_weights,
-        }).execute()
+        resp = await supabase.rpc(
+            "fn_compute_cycle_scores",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_cycle_number": cycle_number,
+                "p_score_weights": score_weights,
+            },
+        ).execute()
 
         scores = resp.data or []
         if not scores:
@@ -69,11 +72,14 @@ class ScoringService:
                 await supabase.rpc("refresh_all_game_metrics").execute()
             except (PostgrestAPIError, httpx.HTTPError):
                 logger.warning("MV refresh retry also failed")
-            resp = await supabase.rpc("fn_compute_cycle_scores", {
-                "p_epoch_id": str(epoch_id),
-                "p_cycle_number": cycle_number,
-                "p_score_weights": score_weights,
-            }).execute()
+            resp = await supabase.rpc(
+                "fn_compute_cycle_scores",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_cycle_number": cycle_number,
+                    "p_score_weights": score_weights,
+                },
+            ).execute()
             scores = resp.data or []
             if not scores:
                 logger.error(
@@ -107,19 +113,14 @@ class ScoringService:
         }
 
     @classmethod
-    async def _compute_stability(
-        cls, supabase: Client, epoch_id: UUID, simulation_id: str
-    ) -> float:
+    async def _compute_stability(cls, supabase: Client, epoch_id: UUID, simulation_id: str) -> float:
         """Stability = avg(zone_stability) × 100 - propaganda×3 - saboteur×6 - assassin×5.
 
         Uses ``mv_zone_stability`` (migration 031). Rewards keeping infrastructure healthy.
         Penalized by inbound propaganda events, sabotage, and assassinations.
         """
         resp = await (
-            supabase.table("mv_zone_stability")
-            .select("stability")
-            .eq("simulation_id", simulation_id)
-            .execute()
+            supabase.table("mv_zone_stability").select("stability").eq("simulation_id", simulation_id).execute()
         )
         if not resp.data:
             base_stability = 50.0
@@ -147,19 +148,13 @@ class ScoringService:
             .in_("operative_type", ["saboteur", "assassin"])
             .execute()
         )
-        saboteur_count = sum(
-            1 for m in (inbound_resp.data or []) if m["operative_type"] == "saboteur"
-        )
-        assassin_count = sum(
-            1 for m in (inbound_resp.data or []) if m["operative_type"] == "assassin"
-        )
+        saboteur_count = sum(1 for m in (inbound_resp.data or []) if m["operative_type"] == "saboteur")
+        assassin_count = sum(1 for m in (inbound_resp.data or []) if m["operative_type"] == "assassin")
 
         return max(0.0, base_stability - (propaganda_count * 3) - (saboteur_count * 6) - (assassin_count * 5))
 
     @classmethod
-    async def _compute_influence(
-        cls, supabase: Client, epoch_id: UUID, simulation_id: str
-    ) -> float:
+    async def _compute_influence(cls, supabase: Client, epoch_id: UUID, simulation_id: str) -> float:
         """Influence = (propagandist × 5) + (spy × 2) + (infiltrator × 3) + echo_strength_sum.
 
         Rewards projecting cultural and intelligence power.
@@ -174,15 +169,9 @@ class ScoringService:
             .in_("operative_type", ["propagandist", "spy", "infiltrator"])
             .execute()
         )
-        propagandist_wins = sum(
-            1 for m in (missions_resp.data or []) if m["operative_type"] == "propagandist"
-        )
-        spy_wins = sum(
-            1 for m in (missions_resp.data or []) if m["operative_type"] == "spy"
-        )
-        infiltrator_wins = sum(
-            1 for m in (missions_resp.data or []) if m["operative_type"] == "infiltrator"
-        )
+        propagandist_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "propagandist")
+        spy_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "spy")
+        infiltrator_wins = sum(1 for m in (missions_resp.data or []) if m["operative_type"] == "infiltrator")
 
         # Echo strength (bleed system — may be 0 in competitive play)
         echo_resp = await (
@@ -197,9 +186,7 @@ class ScoringService:
         return (propagandist_wins * 5) + (spy_wins * 2) + (infiltrator_wins * 3) + echo_sum
 
     @classmethod
-    async def _compute_sovereignty(
-        cls, supabase: Client, epoch_id: UUID, simulation_id: str
-    ) -> float:
+    async def _compute_sovereignty(cls, supabase: Client, epoch_id: UUID, simulation_id: str) -> float:
         """Sovereignty = 100 - type_penalties + detected_bonus + guardian_bonus.
 
         Penalties per successful inbound mission type:
@@ -249,14 +236,10 @@ class ScoringService:
         )
         guardian_count = len(guardian_resp.data or [])
 
-        return max(0.0, min(100.0,
-            100.0 - penalty_total + (detected_count * 3) + (guardian_count * 4)
-        ))
+        return max(0.0, min(100.0, 100.0 - penalty_total + (detected_count * 3) + (guardian_count * 4)))
 
     @classmethod
-    async def _compute_diplomatic(
-        cls, supabase: Client, epoch_id: UUID, simulation_id: str
-    ) -> float:
+    async def _compute_diplomatic(cls, supabase: Client, epoch_id: UUID, simulation_id: str) -> float:
         """Diplomatic = (sum(embassy_eff) × 10 + spy_bonus) × (1 + 0.15 × allies) × (1 - betrayal_penalty).
 
         Rewards building and maintaining diplomatic networks.
@@ -268,10 +251,7 @@ class ScoringService:
         resp = await (
             supabase.table("mv_embassy_effectiveness")
             .select("effectiveness")
-            .or_(
-                f"simulation_a_id.eq.{simulation_id},"
-                f"simulation_b_id.eq.{simulation_id}"
-            )
+            .or_(f"simulation_a_id.eq.{simulation_id},simulation_b_id.eq.{simulation_id}")
             .execute()
         )
         total_effectiveness = sum(float(e.get("effectiveness", 0)) for e in resp.data or [])
@@ -281,10 +261,7 @@ class ScoringService:
             supabase.table("embassies")
             .select("id")
             .eq("status", "active")
-            .or_(
-                f"simulation_a_id.eq.{simulation_id},"
-                f"simulation_b_id.eq.{simulation_id}"
-            )
+            .or_(f"simulation_a_id.eq.{simulation_id},simulation_b_id.eq.{simulation_id}")
             .execute()
         )
         embassy_count = len(embassy_resp.data or [])
@@ -310,12 +287,7 @@ class ScoringService:
             team_id = participant_resp.data.get("team_id")
             betrayal_penalty = float(participant_resp.data.get("betrayal_penalty") or 0)
             if team_id:
-                allies_resp = await (
-                    supabase.table("epoch_participants")
-                    .select("id")
-                    .eq("team_id", team_id)
-                    .execute()
-                )
+                allies_resp = await supabase.table("epoch_participants").select("id").eq("team_id", team_id).execute()
                 active_alliance_count = max(0, len(allies_resp.data or []) - 1)
 
         alliance_multiplier = 1.0 + (0.15 * active_alliance_count)
@@ -338,9 +310,7 @@ class ScoringService:
         return (base_score + spy_bonus) * alliance_multiplier * betrayal_multiplier
 
     @classmethod
-    async def _compute_military(
-        cls, supabase: Client, epoch_id: UUID, simulation_id: str
-    ) -> float:
+    async def _compute_military(cls, supabase: Client, epoch_id: UUID, simulation_id: str) -> float:
         """Military = sum(mission_value) - sum(failure_penalty).
 
         Rewards successful covert operations.
@@ -446,13 +416,14 @@ class ScoringService:
                 raw = s[col]
                 normalized[dim] = (raw / maxes[dim]) * 100 if maxes[dim] > 0 else 0
 
-            composite = sum(
-                normalized[dim] * w[dim] / 100 for dim in dimensions
-            )
+            composite = sum(normalized[dim] * w[dim] / 100 for dim in dimensions)
 
-            await supabase.table("epoch_scores").update(
-                {"composite_score": round(composite, 2)}
-            ).eq("id", s["id"]).execute()
+            await (
+                supabase.table("epoch_scores")
+                .update({"composite_score": round(composite, 2)})
+                .eq("id", s["id"])
+                .execute()
+            )
 
             s["composite_score"] = round(composite, 2)
             updated.append(s)
@@ -520,12 +491,7 @@ class ScoringService:
         # Batch-fetch simulation names (separate query avoids PostgREST
         # join coercion failures when FK cardinality is ambiguous)
         score_sim_ids = [s["simulation_id"] for s in scores]
-        sims_resp = await (
-            supabase.table("simulations")
-            .select("id, name, slug")
-            .in_("id", score_sim_ids)
-            .execute()
-        )
+        sims_resp = await supabase.table("simulations").select("id, name, slug").in_("id", score_sim_ids).execute()
         sim_map: dict[str, dict] = {s["id"]: s for s in sims_resp.data or []}
 
         # Batch-fetch all participant team assignments + betrayal data for this epoch
@@ -559,22 +525,24 @@ class ScoringService:
             sim_id = score["simulation_id"]
             sim = sim_map.get(sim_id, {})
             ac = ally_counts.get(sim_id, 0)
-            entries.append({
-                "rank": rank,
-                "simulation_id": sim_id,
-                "simulation_name": sim.get("name", "Unknown"),
-                "simulation_slug": sim.get("slug"),
-                "team_name": team_by_sim.get(sim_id),
-                "stability": float(score["stability_score"]),
-                "influence": float(score["influence_score"]),
-                "sovereignty": float(score["sovereignty_score"]),
-                "diplomatic": float(score["diplomatic_score"]),
-                "military": float(score["military_score"]),
-                "composite": float(score["composite_score"]),
-                "ally_count": ac,
-                "ally_bonus_pct": round(ac * 15, 1),
-                "betrayal_penalty": betrayal_by_sim.get(sim_id, 0.0),
-            })
+            entries.append(
+                {
+                    "rank": rank,
+                    "simulation_id": sim_id,
+                    "simulation_name": sim.get("name", "Unknown"),
+                    "simulation_slug": sim.get("slug"),
+                    "team_name": team_by_sim.get(sim_id),
+                    "stability": float(score["stability_score"]),
+                    "influence": float(score["influence_score"]),
+                    "sovereignty": float(score["sovereignty_score"]),
+                    "diplomatic": float(score["diplomatic_score"]),
+                    "military": float(score["military_score"]),
+                    "composite": float(score["composite_score"]),
+                    "ally_count": ac,
+                    "ally_bonus_pct": round(ac * 15, 1),
+                    "betrayal_penalty": betrayal_by_sim.get(sim_id, 0.0),
+                }
+            )
 
         return entries
 
@@ -621,18 +589,20 @@ class ScoringService:
             sim_info = latest.get("simulations") or {}
 
             last_intel_cycle = latest.get("cycle_number", 0)
-            dossiers.append({
-                "simulation_id": target_sim_id,
-                "simulation_name": sim_info.get("name", target_sim_id[:8]),
-                "simulation_slug": sim_info.get("slug"),
-                "zone_security_levels": meta.get("zone_security", []),
-                "zone_details": meta.get("zone_details", []),
-                "guardian_count": meta.get("guardian_count", 0),
-                "fortifications": meta.get("fortifications", []),
-                "last_intel_cycle": last_intel_cycle,
-                "report_count": len(target_reports),
-                "is_stale": (current_cycle - last_intel_cycle) > staleness_threshold,
-            })
+            dossiers.append(
+                {
+                    "simulation_id": target_sim_id,
+                    "simulation_name": sim_info.get("name", target_sim_id[:8]),
+                    "simulation_slug": sim_info.get("slug"),
+                    "zone_security_levels": meta.get("zone_security", []),
+                    "zone_details": meta.get("zone_details", []),
+                    "guardian_count": meta.get("guardian_count", 0),
+                    "fortifications": meta.get("fortifications", []),
+                    "last_intel_cycle": last_intel_cycle,
+                    "report_count": len(target_reports),
+                    "is_stale": (current_cycle - last_intel_cycle) > staleness_threshold,
+                }
+            )
 
         # Sort by most recently gathered first
         dossiers.sort(key=lambda d: d["last_intel_cycle"], reverse=True)
@@ -670,10 +640,7 @@ class ScoringService:
         """
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] != "completed":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Results summary only available for completed epochs.",
-            )
+            raise bad_request("Results summary only available for completed epochs.")
 
         standings = await cls.get_final_standings(supabase, epoch_id)
 
@@ -706,15 +673,17 @@ class ScoringService:
             captured = sum(1 for m in missions if m["status"] == "captured")
             success_rate = round(successes / total_ops, 2) if total_ops > 0 else 0.0
 
-            participant_stats.append({
-                "simulation_id": sid,
-                "total_operations": total_ops,
-                "successes": successes,
-                "failures": failures,
-                "detections": detections,
-                "captured": captured,
-                "success_rate": success_rate,
-            })
+            participant_stats.append(
+                {
+                    "simulation_id": sid,
+                    "total_operations": total_ops,
+                    "successes": successes,
+                    "failures": failures,
+                    "detections": detections,
+                    "captured": captured,
+                    "success_rate": success_rate,
+                }
+            )
 
         # MVP Awards
         mvp_awards = cls._compute_mvp_awards(standings, participant_stats)
@@ -761,35 +730,41 @@ class ScoringService:
         # Master Spy — highest military score
         best_military = max(standings, key=lambda e: e.get("military", 0))
         if best_military.get("military", 0) > 0:
-            awards.append({
-                "title": "Master Spy",
-                "description": "Highest military score — supreme covert operations.",
-                "simulation_id": best_military["simulation_id"],
-                "simulation_name": best_military.get("simulation_name", ""),
-                "value": best_military["military"],
-            })
+            awards.append(
+                {
+                    "title": "Master Spy",
+                    "description": "Highest military score — supreme covert operations.",
+                    "simulation_id": best_military["simulation_id"],
+                    "simulation_name": best_military.get("simulation_name", ""),
+                    "value": best_military["military"],
+                }
+            )
 
         # Iron Guardian — highest sovereignty score
         best_sovereignty = max(standings, key=lambda e: e.get("sovereignty", 0))
         if best_sovereignty.get("sovereignty", 0) > 0:
-            awards.append({
-                "title": "Iron Guardian",
-                "description": "Highest sovereignty — impenetrable defenses.",
-                "simulation_id": best_sovereignty["simulation_id"],
-                "simulation_name": best_sovereignty.get("simulation_name", ""),
-                "value": best_sovereignty["sovereignty"],
-            })
+            awards.append(
+                {
+                    "title": "Iron Guardian",
+                    "description": "Highest sovereignty — impenetrable defenses.",
+                    "simulation_id": best_sovereignty["simulation_id"],
+                    "simulation_name": best_sovereignty.get("simulation_name", ""),
+                    "value": best_sovereignty["sovereignty"],
+                }
+            )
 
         # The Diplomat — highest diplomatic score
         best_diplomatic = max(standings, key=lambda e: e.get("diplomatic", 0))
         if best_diplomatic.get("diplomatic", 0) > 0:
-            awards.append({
-                "title": "The Diplomat",
-                "description": "Highest diplomatic score — master of alliances.",
-                "simulation_id": best_diplomatic["simulation_id"],
-                "simulation_name": best_diplomatic.get("simulation_name", ""),
-                "value": best_diplomatic["diplomatic"],
-            })
+            awards.append(
+                {
+                    "title": "The Diplomat",
+                    "description": "Highest diplomatic score — master of alliances.",
+                    "simulation_id": best_diplomatic["simulation_id"],
+                    "simulation_name": best_diplomatic.get("simulation_name", ""),
+                    "value": best_diplomatic["diplomatic"],
+                }
+            )
 
         # Most Lethal — highest success rate with minimum operations
         best_rate = None
@@ -800,28 +775,31 @@ class ScoringService:
                 best_rate = stat
         if best_rate:
             sim_name = next(
-                (s.get("simulation_name", "") for s in standings
-                 if s["simulation_id"] == best_rate["simulation_id"]),
+                (s.get("simulation_name", "") for s in standings if s["simulation_id"] == best_rate["simulation_id"]),
                 "",
             )
-            awards.append({
-                "title": "Most Lethal",
-                "description": "Highest success rate — surgical precision.",
-                "simulation_id": best_rate["simulation_id"],
-                "simulation_name": sim_name,
-                "value": round(best_rate_val * 100),
-            })
+            awards.append(
+                {
+                    "title": "Most Lethal",
+                    "description": "Highest success rate — surgical precision.",
+                    "simulation_id": best_rate["simulation_id"],
+                    "simulation_name": sim_name,
+                    "value": round(best_rate_val * 100),
+                }
+            )
 
         # Cultural Domination — highest influence score
         best_influence = max(standings, key=lambda e: e.get("influence", 0))
         if best_influence.get("influence", 0) > 0:
-            awards.append({
-                "title": "Cultural Domination",
-                "description": "Highest influence — reshaping the narrative.",
-                "simulation_id": best_influence["simulation_id"],
-                "simulation_name": best_influence.get("simulation_name", ""),
-                "value": best_influence["influence"],
-            })
+            awards.append(
+                {
+                    "title": "Cultural Domination",
+                    "description": "Highest influence — reshaping the narrative.",
+                    "simulation_id": best_influence["simulation_id"],
+                    "simulation_name": best_influence.get("simulation_name", ""),
+                    "value": best_influence["influence"],
+                }
+            )
 
         return awards
 
@@ -837,10 +815,7 @@ class ScoringService:
         """
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] not in ("completed", "cancelled"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Final standings only available for completed or cancelled epochs.",
-            )
+            raise bad_request("Final standings only available for completed or cancelled epochs.")
 
         leaderboard = await cls.get_leaderboard(supabase, epoch_id)
 

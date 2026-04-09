@@ -11,9 +11,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -26,26 +25,22 @@ class AnchorService:
 
     @classmethod
     async def create_anchor(
-        cls, supabase: Client,
-        resonance_id: UUID, resonance_signature: str,
-        sim_id: UUID, user_id: UUID,
+        cls,
+        supabase: Client,
+        resonance_id: UUID,
+        resonance_signature: str,
+        sim_id: UUID,
+        user_id: UUID,
         name: str,
     ) -> dict:
         """Create a collaborative anchor for a resonance."""
         # Validate resonance exists
         _resp = await (
-            supabase.table("substrate_resonances")
-            .select("id, status")
-            .eq("id", str(resonance_id))
-            .limit(1)
-            .execute()
+            supabase.table("substrate_resonances").select("id, status").eq("id", str(resonance_id)).limit(1).execute()
         )
         resonance = _resp.data
         if not resonance:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resonance not found.",
-            )
+            raise not_found(detail="Resonance not found.")
 
         # Check embassy connections exist
         _resp = await (
@@ -60,47 +55,41 @@ class AnchorService:
         )
         embassies = _resp.data
         if not embassies:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Anchoring requires at least one active embassy connection.",
-            )
+            raise bad_request("Anchoring requires at least one active embassy connection.")
 
         # Get simulation's current tick
         _resp = await (
-            supabase.table("simulations")
-            .select("last_heartbeat_tick")
-            .eq("id", str(sim_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("last_heartbeat_tick").eq("id", str(sim_id)).limit(1).execute()
         )
         sim = _resp.data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
         response = await (
             supabase.table("collaborative_anchors")
-            .insert({
-                "name": name,
-                "resonance_id": str(resonance_id),
-                "resonance_signature": resonance_signature,
-                "anchor_simulation_ids": [str(sim_id)],
-                "strength": 0.0,
-                "status": "forming",
-                "formed_at_tick": current_tick,
-                "created_by_simulation_id": str(sim_id),
-                "created_by_user_id": str(user_id),
-            })
+            .insert(
+                {
+                    "name": name,
+                    "resonance_id": str(resonance_id),
+                    "resonance_signature": resonance_signature,
+                    "anchor_simulation_ids": [str(sim_id)],
+                    "strength": 0.0,
+                    "status": "forming",
+                    "formed_at_tick": current_tick,
+                    "created_by_simulation_id": str(sim_id),
+                    "created_by_user_id": str(user_id),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create anchor.",
-            )
+            raise server_error("Failed to create anchor.")
 
         logger.info(
             "Anchor created: '%s' for resonance %s by sim %s",
-            name, resonance_id, sim_id,
+            name,
+            resonance_id,
+            sim_id,
             extra={
                 "anchor_id": response.data[0]["id"],
                 "resonance_id": str(resonance_id),
@@ -111,8 +100,11 @@ class AnchorService:
 
     @classmethod
     async def join_anchor(
-        cls, supabase: Client,
-        anchor_id: UUID, sim_id: UUID, user_id: UUID,
+        cls,
+        supabase: Client,
+        anchor_id: UUID,
+        sim_id: UUID,
+        user_id: UUID,
     ) -> dict:
         """Join an existing anchor."""
         _resp = await (
@@ -125,69 +117,55 @@ class AnchorService:
         )
         anchor = _resp.data
         if not anchor:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Anchor not found or no longer accepting participants.",
-            )
+            raise not_found(detail="Anchor not found or no longer accepting participants.")
 
         anchor = anchor[0]
         sim_ids = anchor.get("anchor_simulation_ids") or []
         if str(sim_id) in sim_ids:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Simulation already participating in this anchor.",
-            )
+            raise conflict("Simulation already participating in this anchor.")
 
         # Add simulation
         sim_ids.append(str(sim_id))
         response = await (
             supabase.table("collaborative_anchors")
-            .update({
-                "anchor_simulation_ids": sim_ids,
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "anchor_simulation_ids": sim_ids,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("id", str(anchor_id))
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to join anchor.",
-            )
+            raise server_error("Failed to join anchor.")
 
         logger.info(
-            "Simulation %s joined anchor %s", sim_id, anchor_id,
+            "Simulation %s joined anchor %s",
+            sim_id,
+            anchor_id,
             extra={"simulation_id": str(sim_id), "anchor_id": str(anchor_id)},
         )
         return response.data[0]
 
     @classmethod
     async def leave_anchor(
-        cls, supabase: Client,
-        anchor_id: UUID, sim_id: UUID,
+        cls,
+        supabase: Client,
+        anchor_id: UUID,
+        sim_id: UUID,
     ) -> dict:
         """Leave an anchor."""
-        _resp = await (
-            supabase.table("collaborative_anchors")
-            .select("*")
-            .eq("id", str(anchor_id))
-            .limit(1)
-            .execute()
-        )
+        _resp = await supabase.table("collaborative_anchors").select("*").eq("id", str(anchor_id)).limit(1).execute()
         anchor = _resp.data
         if not anchor:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Anchor not found.",
-            )
+            raise not_found(detail="Anchor not found.")
 
         anchor = anchor[0]
         sim_ids = anchor.get("anchor_simulation_ids") or []
         if str(sim_id) not in sim_ids:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Simulation not participating in this anchor.",
-            )
+            raise bad_request("Simulation not participating in this anchor.")
 
         sim_ids.remove(str(sim_id))
         update_data: dict = {
@@ -197,27 +175,21 @@ class AnchorService:
         if not sim_ids:
             update_data["status"] = "dissolved"
 
-        response = await (
-            supabase.table("collaborative_anchors")
-            .update(update_data)
-            .eq("id", str(anchor_id))
-            .execute()
-        )
+        response = await supabase.table("collaborative_anchors").update(update_data).eq("id", str(anchor_id)).execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to leave anchor.",
-            )
+            raise server_error("Failed to leave anchor.")
 
         return response.data[0]
 
     @classmethod
     async def list_anchors(
-        cls, supabase: Client,
+        cls,
+        supabase: Client,
         status_filter: str | None = None,
         sim_id: UUID | None = None,
-        limit: int = 50, offset: int = 0,
+        limit: int = 50,
+        offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List collaborative anchors, optionally filtered."""
         query = (
@@ -237,19 +209,25 @@ class AnchorService:
 
     @classmethod
     async def strengthen_at_tick(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         config: dict,
     ) -> list[dict]:
         """Strengthen anchors this simulation participates in via batch RPC. Phase 7."""
         entries: list[dict] = []
 
         # Single RPC call handles all anchor updates
-        result = await admin.rpc("fn_strengthen_anchors_batch", {
-            "p_sim_id": str(sim_id),
-            "p_growth_per_sim": config.get("anchor_growth_per_sim", 0.03),
-            "p_protection_cap": config.get("anchor_protection_cap", 0.70),
-        }).execute()
+        result = await admin.rpc(
+            "fn_strengthen_anchors_batch",
+            {
+                "p_sim_id": str(sim_id),
+                "p_growth_per_sim": config.get("anchor_growth_per_sim", 0.03),
+                "p_protection_cap": config.get("anchor_protection_cap", 0.70),
+            },
+        ).execute()
 
         changes = result.data or []
         if isinstance(changes, str):
@@ -263,27 +241,34 @@ class AnchorService:
             protection = float(change["protection"])
             participant_count = int(change["participant_count"])
 
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "anchor_strengthen",
-                (
-                    f"Anchor '{anchor_name}' strengthened "
-                    f"({old_strength:.2f} -> {new_strength:.2f}). "
-                    f"{participant_count} shard(s) participating. "
-                    f"Protection factor: {protection:.2f}."
-                ),
-                (
-                    f"Anker '{anchor_name}' verstaerkt "
-                    f"({old_strength:.2f} -> {new_strength:.2f}). "
-                    f"{participant_count} Scherbe(n) beteiligt. "
-                    f"Schutzfaktor: {protection:.2f}."
-                ),
-                severity="positive" if new_strength > old_strength else "info",
-                metadata={
-                    "anchor_id": anchor_id, "old_strength": old_strength,
-                    "new_strength": new_strength, "protection": protection,
-                    "participant_count": participant_count,
-                },
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "anchor_strengthen",
+                    (
+                        f"Anchor '{anchor_name}' strengthened "
+                        f"({old_strength:.2f} -> {new_strength:.2f}). "
+                        f"{participant_count} shard(s) participating. "
+                        f"Protection factor: {protection:.2f}."
+                    ),
+                    (
+                        f"Anker '{anchor_name}' verstaerkt "
+                        f"({old_strength:.2f} -> {new_strength:.2f}). "
+                        f"{participant_count} Scherbe(n) beteiligt. "
+                        f"Schutzfaktor: {protection:.2f}."
+                    ),
+                    severity="positive" if new_strength > old_strength else "info",
+                    metadata={
+                        "anchor_id": anchor_id,
+                        "old_strength": old_strength,
+                        "new_strength": new_strength,
+                        "protection": protection,
+                        "participant_count": participant_count,
+                    },
+                )
+            )
 
         return entries
 
@@ -291,7 +276,9 @@ class AnchorService:
 
     @classmethod
     async def get_protection_factor(
-        cls, admin: Client, sim_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
     ) -> float:
         """Calculate total anchor protection for a simulation."""
         _resp = await (
