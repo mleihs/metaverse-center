@@ -10,7 +10,7 @@ PostgreSQL functions used:
 - ``fn_expire_autonomy_modifiers`` (migration 145) — bulk-delete expired moodlets
 - ``fn_decay_moodlet_strengths`` (migration 145) — linear strength decay
 - ``fn_recalculate_mood_scores`` (migration 145) — atomic SUM(moodlets) → mood_score
-- ``fn_count_moodlet_stacking`` (migration 145) — stacking cap check
+- ``fn_add_moodlet_capped`` (migration 162) — atomic insert with stacking cap check
 - ``fn_update_stress_levels`` (migration 146) — bulk stress update with mood logic
 - ``fn_add_agent_stress`` (migration 146) — atomic stress increment
 - ``fn_apply_resonance_moodlets`` (migration 161) — A3 resonance→mood bridge
