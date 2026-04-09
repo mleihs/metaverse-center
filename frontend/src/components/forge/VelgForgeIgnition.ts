@@ -154,19 +154,16 @@ export class VelgForgeIgnition extends LitElement {
 
       velg-hold-button {
         --hold-btn-fill: var(--color-danger);
+        --hold-btn-color: var(--color-danger);
         --hold-btn-active-color: var(--color-text-inverse);
         --hold-btn-active-border: var(--color-danger);
+        --hold-btn-border: 2px solid var(--color-danger);
+        --hold-btn-width: 320px;
+        --hold-btn-height: 80px;
         font-family: var(--font-brutalist);
         font-weight: 900;
         font-size: var(--text-xl);
         letter-spacing: 0.15em;
-        color: var(--color-text-inverse);
-      }
-
-      velg-hold-button button {
-        height: 80px;
-        width: 320px;
-        border: 2px solid var(--color-danger);
       }
 
       /* ── Error Box ───────────────────────── */

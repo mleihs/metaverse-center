@@ -95,16 +95,12 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       /* ── Hold button terminal theming ── */
       velg-hold-button {
         --hold-btn-fill: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
+        --hold-btn-color: var(--_phosphor-dim);
+        --hold-btn-border: 1px dashed color-mix(in srgb, var(--_border) 70%, transparent);
         font-family: var(--_mono);
         font-size: 11px;
         font-weight: 600;
         letter-spacing: 0.5px;
-        color: var(--_phosphor-dim);
-      }
-
-      velg-hold-button button {
-        border: 1px dashed color-mix(in srgb, var(--_border) 70%, transparent);
-        padding: 5px 12px;
       }
     `,
   ];
