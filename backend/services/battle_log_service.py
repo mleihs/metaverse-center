@@ -54,7 +54,9 @@ class BattleLogService:
         except (PostgrestAPIError, httpx.HTTPError):
             logger.error(
                 "Battle log insert failed for event_type=%s: %s",
-                event_type, data.get("narrative", "")[:100], exc_info=True,
+                event_type,
+                data.get("narrative", "")[:100],
+                exc_info=True,
             )
             return data
 
@@ -94,21 +96,33 @@ class BattleLogService:
             # Fallback: fetch from DB (used by bot deploy path)
             try:
                 if mission.get("agent_id"):
-                    agent_resp = await supabase.table("agents").select("name").eq(
-                        "id", str(mission["agent_id"])
-                    ).maybe_single().execute()
+                    agent_resp = (
+                        await supabase.table("agents")
+                        .select("name")
+                        .eq("id", str(mission["agent_id"]))
+                        .maybe_single()
+                        .execute()
+                    )
                     if agent_resp.data:
                         metadata["agent_name"] = agent_resp.data["name"]
                 if mission.get("target_zone_id"):
-                    zone_resp = await supabase.table("zones").select("name").eq(
-                        "id", str(mission["target_zone_id"])
-                    ).maybe_single().execute()
+                    zone_resp = (
+                        await supabase.table("zones")
+                        .select("name")
+                        .eq("id", str(mission["target_zone_id"]))
+                        .maybe_single()
+                        .execute()
+                    )
                     if zone_resp.data:
                         metadata["target_zone_name"] = zone_resp.data["name"]
                 if mission.get("target_simulation_id"):
-                    sim_resp = await supabase.table("simulations").select("name").eq(
-                        "id", str(mission["target_simulation_id"])
-                    ).maybe_single().execute()
+                    sim_resp = (
+                        await supabase.table("simulations")
+                        .select("name")
+                        .eq("id", str(mission["target_simulation_id"]))
+                        .maybe_single()
+                        .execute()
+                    )
                     if sim_resp.data:
                         metadata["target_sim_name"] = sim_resp.data["name"]
             except (PostgrestAPIError, httpx.HTTPError, KeyError):
@@ -122,9 +136,7 @@ class BattleLogService:
             f"{article} {op_type} has been deployed.",
             source_simulation_id=UUID(mission["source_simulation_id"]),
             target_simulation_id=(
-                UUID(mission["target_simulation_id"])
-                if mission.get("target_simulation_id")
-                else None
+                UUID(mission["target_simulation_id"]) if mission.get("target_simulation_id") else None
             ),
             mission_id=UUID(mission["id"]),
             is_public=(mission["operative_type"] == "guardian"),
@@ -160,9 +172,7 @@ class BattleLogService:
             narrative,
             source_simulation_id=UUID(mission["source_simulation_id"]),
             target_simulation_id=(
-                UUID(mission["target_simulation_id"])
-                if mission.get("target_simulation_id")
-                else None
+                UUID(mission["target_simulation_id"]) if mission.get("target_simulation_id") else None
             ),
             mission_id=UUID(mission["id"]),
             is_public=is_public,
@@ -170,9 +180,7 @@ class BattleLogService:
                 "operative_type": mission["operative_type"],
                 "outcome": outcome,
                 "agent_name": (
-                    mission.get("agents", {}).get("name")
-                    if isinstance(mission.get("agents"), dict)
-                    else None
+                    mission.get("agents", {}).get("name") if isinstance(mission.get("agents"), dict) else None
                 ),
             },
         )
@@ -282,7 +290,9 @@ class BattleLogService:
     ) -> dict:
         """Log an alliance join proposal."""
         return await cls.log_event(
-            supabase, epoch_id, cycle_number,
+            supabase,
+            epoch_id,
+            cycle_number,
             "alliance_proposal",
             f"A simulation has requested to join '{team_name}'.",
             source_simulation_id=proposer_simulation_id,
@@ -308,8 +318,11 @@ class BattleLogService:
             narrative = f"'{team_name}' has denied a membership request. Diplomatic relations strained."
 
         return await cls.log_event(
-            supabase, epoch_id, cycle_number,
-            event_type, narrative,
+            supabase,
+            epoch_id,
+            cycle_number,
+            event_type,
+            narrative,
             source_simulation_id=proposer_simulation_id,
             is_public=True,
             metadata={"team_name": team_name, "resolution": resolution},
@@ -327,7 +340,9 @@ class BattleLogService:
     ) -> dict:
         """Log alliance tension increase."""
         return await cls.log_event(
-            supabase, epoch_id, cycle_number,
+            supabase,
+            epoch_id,
+            cycle_number,
             "alliance_tension_increase",
             f"Internal tensions rising within '{team_name}'. Overlapping operations detected.",
             is_public=(new_tension >= 50),
@@ -357,7 +372,9 @@ class BattleLogService:
         if affected_simulation_ids:
             metadata["affected_simulation_ids"] = affected_simulation_ids
         return await cls.log_event(
-            supabase, epoch_id, cycle_number,
+            supabase,
+            epoch_id,
+            cycle_number,
             "alliance_dissolved_tension",
             f"'{team_name}' has collapsed under internal tensions. All members are now unaligned.",
             is_public=True,
@@ -376,7 +393,9 @@ class BattleLogService:
     ) -> dict:
         """Log alliance upkeep deduction (team-only, not public)."""
         return await cls.log_event(
-            supabase, epoch_id, cycle_number,
+            supabase,
+            epoch_id,
+            cycle_number,
             "alliance_upkeep",
             f"Alliance maintenance: {cost_per_member} RP deducted from '{team_name}' operations budget.",
             is_public=False,
@@ -423,21 +442,14 @@ class BattleLogService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List battle log entries with filters."""
-        query = (
-            supabase.table("battle_log")
-            .select("*", count="exact")
-            .eq("epoch_id", str(epoch_id))
-        )
+        query = supabase.table("battle_log").select("*", count="exact").eq("epoch_id", str(epoch_id))
 
         if public_only:
             query = query.eq("is_public", True)
 
         if simulation_id:
             # Show entries where the simulation is source or target
-            query = query.or_(
-                f"source_simulation_id.eq.{simulation_id},"
-                f"target_simulation_id.eq.{simulation_id}"
-            )
+            query = query.or_(f"source_simulation_id.eq.{simulation_id},target_simulation_id.eq.{simulation_id}")
 
         if event_type:
             query = query.eq("event_type", event_type)
@@ -456,6 +468,4 @@ class BattleLogService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """Get public battle log entries (for spectators)."""
-        return await cls.list_entries(
-            supabase, epoch_id, public_only=True, limit=limit, offset=offset
-        )
+        return await cls.list_entries(supabase, epoch_id, public_only=True, limit=limit, offset=offset)

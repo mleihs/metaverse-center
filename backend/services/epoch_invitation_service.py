@@ -12,6 +12,7 @@ from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.prompt_service import PromptResolver
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -34,21 +35,20 @@ class EpochInvitationService:
 
         response = await (
             supabase.table("epoch_invitations")
-            .insert({
-                "epoch_id": str(epoch_id),
-                "invited_email": email,
-                "invite_token": token,
-                "invited_by_id": str(invited_by_id),
-                "expires_at": expires_at.isoformat(),
-            })
+            .insert(
+                {
+                    "epoch_id": str(epoch_id),
+                    "invited_email": email,
+                    "invite_token": token,
+                    "invited_by_id": str(invited_by_id),
+                    "expires_at": expires_at.isoformat(),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create epoch invitation.",
-            )
+            raise server_error("Failed to create epoch invitation.")
         return response.data[0]
 
     @staticmethod
@@ -65,19 +65,17 @@ class EpochInvitationService:
         lore_text = await EpochInvitationService.generate_lore(supabase, epoch_id)
 
         invitation = await EpochInvitationService.create_invitation(
-            supabase, epoch_id, invited_by_id, email, expires_in_hours,
+            supabase,
+            epoch_id,
+            invited_by_id,
+            email,
+            expires_in_hours,
         )
 
         invite_url = f"{base_url}/epoch/join?token={invitation['invite_token']}"
 
         # Fetch epoch name for email subject
-        epoch_response = await (
-            supabase.table("game_epochs")
-            .select("name")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
-        )
+        epoch_response = await supabase.table("game_epochs").select("name").eq("id", str(epoch_id)).single().execute()
         epoch_name = epoch_response.data["name"] if epoch_response.data else "Unknown"
 
         email_sent = await EpochInvitationService.send_email(
@@ -115,10 +113,7 @@ class EpochInvitationService:
         )
 
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invalid or expired invitation token.",
-            )
+            raise not_found(detail="Invalid or expired invitation token.")
         return response.data[0]
 
     @staticmethod
@@ -149,27 +144,24 @@ class EpochInvitationService:
 
     @staticmethod
     async def revoke_invitation(
-        supabase: Client, invitation_id: UUID,
+        supabase: Client,
+        invitation_id: UUID,
     ) -> dict:
         """Revoke an invitation by setting status to 'revoked'."""
         response = await (
-            supabase.table("epoch_invitations")
-            .update({"status": "revoked"})
-            .eq("id", str(invitation_id))
-            .execute()
+            supabase.table("epoch_invitations").update({"status": "revoked"}).eq("id", str(invitation_id)).execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invitation not found.",
-            )
+            raise not_found(detail="Invitation not found.")
         logger.info("Epoch invitation revoked", extra={"invitation_id": str(invitation_id)})
         return response.data[0]
 
     @staticmethod
     async def mark_accepted(
-        supabase: Client, token: str, user_id: UUID,
+        supabase: Client,
+        token: str,
+        user_id: UUID,
     ) -> dict:
         """Mark an invitation as accepted."""
         # Fetch the invitation first
@@ -183,17 +175,12 @@ class EpochInvitationService:
         )
 
         if not inv_response or not inv_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invitation not found or already used.",
-            )
+            raise not_found(detail="Invitation not found or already used.")
 
         invitation = inv_response.data[0]
 
         # Check expiry
-        expires_at = datetime.fromisoformat(
-            invitation["expires_at"].replace("Z", "+00:00")
-        )
+        expires_at = datetime.fromisoformat(invitation["expires_at"].replace("Z", "+00:00"))
         if expires_at < datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_410_GONE,
@@ -203,20 +190,19 @@ class EpochInvitationService:
         # Mark accepted
         update_response = await (
             supabase.table("epoch_invitations")
-            .update({
-                "status": "accepted",
-                "accepted_at": datetime.now(UTC).isoformat(),
-                "accepted_by_id": str(user_id),
-            })
+            .update(
+                {
+                    "status": "accepted",
+                    "accepted_at": datetime.now(UTC).isoformat(),
+                    "accepted_by_id": str(user_id),
+                }
+            )
             .eq("id", invitation["id"])
             .execute()
         )
 
         if not update_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to accept invitation.",
-            )
+            raise server_error("Failed to accept invitation.")
         logger.info(
             "Epoch invitation accepted",
             extra={"epoch_id": str(invitation["epoch_id"]), "user_id": str(user_id)},
@@ -228,18 +214,11 @@ class EpochInvitationService:
         """Generate invitation lore via OpenRouter. Caches in game_epochs.config.invitation_lore."""
         # Fetch epoch
         epoch_response = await (
-            supabase.table("game_epochs")
-            .select("name, description, config")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
+            supabase.table("game_epochs").select("name, description, config").eq("id", str(epoch_id)).single().execute()
         )
 
         if not epoch_response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Epoch not found.",
-            )
+            raise not_found(detail="Epoch not found.")
 
         epoch = epoch_response.data
         config = epoch.get("config") or {}
@@ -257,9 +236,7 @@ class EpochInvitationService:
                 "Will you answer the call? [MOCK LORE]"
             )
             config["invitation_lore"] = mock_lore
-            await supabase.table("game_epochs").update({"config": config}).eq(
-                "id", str(epoch_id)
-            ).execute()
+            await supabase.table("game_epochs").update({"config": config}).eq("id", str(epoch_id)).execute()
             return mock_lore
 
         # Fetch participant names
@@ -269,10 +246,10 @@ class EpochInvitationService:
             .eq("epoch_id", str(epoch_id))
             .execute()
         )
-        participant_names = ", ".join(
-            p.get("simulations", {}).get("name", "Unknown")
-            for p in (participants_response.data or [])
-        ) or "None yet"
+        participant_names = (
+            ", ".join(p.get("simulations", {}).get("name", "Unknown") for p in (participants_response.data or []))
+            or "None yet"
+        )
 
         # Resolve prompt template
         resolver = PromptResolver(supabase)
@@ -299,9 +276,7 @@ class EpochInvitationService:
 
         # Cache in config
         config["invitation_lore"] = lore_text
-        await supabase.table("game_epochs").update({"config": config}).eq(
-            "id", str(epoch_id)
-        ).execute()
+        await supabase.table("game_epochs").update({"config": config}).eq("id", str(epoch_id)).execute()
 
         return lore_text
 
@@ -309,19 +284,11 @@ class EpochInvitationService:
     async def regenerate_lore(supabase: Client, epoch_id: UUID) -> str:
         """Force-regenerate lore by clearing cache first."""
         # Clear cached lore
-        epoch_response = await (
-            supabase.table("game_epochs")
-            .select("config")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
-        )
+        epoch_response = await supabase.table("game_epochs").select("config").eq("id", str(epoch_id)).single().execute()
         if epoch_response.data:
             config = epoch_response.data.get("config") or {}
             config.pop("invitation_lore", None)
-            await supabase.table("game_epochs").update({"config": config}).eq(
-                "id", str(epoch_id)
-            ).execute()
+            await supabase.table("game_epochs").update({"config": config}).eq("id", str(epoch_id)).execute()
 
         return await EpochInvitationService.generate_lore(supabase, epoch_id)
 

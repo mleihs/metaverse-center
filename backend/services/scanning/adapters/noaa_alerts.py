@@ -72,24 +72,26 @@ class NOAAAlertAdapter(SourceAdapter):
             severity = props.get("severity", "Moderate")
             alert_id = props.get("id", "")
 
-            results.append(ScanResult(
-                source_id=alert_id,
-                source_name=self.name,
-                title=props.get("headline", event),
-                url=f"https://alerts.weather.gov/alert/{alert_id}" if alert_id else None,
-                description=props.get("description", "")[:500],
-                raw_data={
-                    "event": event,
-                    "severity": severity,
-                    "urgency": props.get("urgency"),
-                    "areaDesc": props.get("areaDesc"),
-                    "onset": props.get("onset"),
-                    "expires": props.get("expires"),
-                },
-                source_category="natural_disaster",
-                magnitude=_severity_to_magnitude(severity, event),
-                classification_reason=f"{event}, severity={severity}",
-                is_structured=True,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=alert_id,
+                    source_name=self.name,
+                    title=props.get("headline", event),
+                    url=f"https://alerts.weather.gov/alert/{alert_id}" if alert_id else None,
+                    description=props.get("description", "")[:500],
+                    raw_data={
+                        "event": event,
+                        "severity": severity,
+                        "urgency": props.get("urgency"),
+                        "areaDesc": props.get("areaDesc"),
+                        "onset": props.get("onset"),
+                        "expires": props.get("expires"),
+                    },
+                    source_category="natural_disaster",
+                    magnitude=_severity_to_magnitude(severity, event),
+                    classification_reason=f"{event}, severity={severity}",
+                    is_structured=True,
+                )
+            )
 
         return results

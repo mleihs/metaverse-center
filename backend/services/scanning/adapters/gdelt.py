@@ -23,16 +23,11 @@ GDELT_CATEGORY_QUERIES = {
     "natural_disaster": 'earthquake OR tsunami OR hurricane OR "volcanic eruption" OR flood',
     "political_upheaval": 'revolution OR coup OR "mass protest" OR "regime change" OR uprising',
     "tech_breakthrough": (
-        '"artificial intelligence" OR "quantum computing"'
-        ' OR "space launch" OR "scientific breakthrough"'
+        '"artificial intelligence" OR "quantum computing" OR "space launch" OR "scientific breakthrough"'
     ),
-    "cultural_shift": (
-        '"social movement" OR "civil rights"'
-        ' OR "cultural revolution" OR "generational change"'
-    ),
+    "cultural_shift": ('"social movement" OR "civil rights" OR "cultural revolution" OR "generational change"'),
     "environmental_disaster": (
-        '"oil spill" OR deforestation OR "extinction event"'
-        ' OR "climate tipping point" OR "pollution crisis"'
+        '"oil spill" OR deforestation OR "extinction event" OR "climate tipping point" OR "pollution crisis"'
     ),
 }
 
@@ -42,9 +37,14 @@ class GDELTAdapter(SourceAdapter):
     name = "gdelt"
     display_name = "GDELT Project"
     categories = [
-        "economic_crisis", "military_conflict", "pandemic",
-        "natural_disaster", "political_upheaval", "tech_breakthrough",
-        "cultural_shift", "environmental_disaster",
+        "economic_crisis",
+        "military_conflict",
+        "pandemic",
+        "natural_disaster",
+        "political_upheaval",
+        "tech_breakthrough",
+        "cultural_shift",
+        "environmental_disaster",
     ]
     is_structured = False
     requires_api_key = False
@@ -82,22 +82,24 @@ class GDELTAdapter(SourceAdapter):
                         if not title:
                             continue
 
-                        results.append(ScanResult(
-                            source_id=f"gdelt_{url}",
-                            source_name=self.name,
-                            title=title,
-                            url=url,
-                            description=None,  # GDELT artlist doesn't include descriptions
-                            raw_data={
-                                "domain": article.get("domain"),
-                                "language": article.get("language"),
-                                "seendate": article.get("seendate"),
-                                "socialimage": article.get("socialimage"),
-                            },
-                            source_category=None,  # LLM classifies
-                            magnitude=None,
-                            is_structured=False,
-                        ))
+                        results.append(
+                            ScanResult(
+                                source_id=f"gdelt_{url}",
+                                source_name=self.name,
+                                title=title,
+                                url=url,
+                                description=None,  # GDELT artlist doesn't include descriptions
+                                raw_data={
+                                    "domain": article.get("domain"),
+                                    "language": article.get("language"),
+                                    "seendate": article.get("seendate"),
+                                    "socialimage": article.get("socialimage"),
+                                },
+                                source_category=None,  # LLM classifies
+                                magnitude=None,
+                                is_structured=False,
+                            )
+                        )
                 except (httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning("GDELT query failed for category", exc_info=True)
 

@@ -65,24 +65,26 @@ class GDACSAdapter(SourceAdapter):
 
             magnitude = _ALERT_MAGNITUDE.get(alert_level, 0.30)
 
-            results.append(ScanResult(
-                source_id=f"gdacs_{event_type}_{event_id}",
-                source_name=self.name,
-                title=title[:500],
-                url=props.get("url"),
-                description=props.get("description", "")[:500] if props.get("description") else None,
-                raw_data={
-                    "eventtype": event_type,
-                    "alertlevel": alert_level,
-                    "eventid": event_id,
-                    "severity": props.get("severity"),
-                    "country": props.get("country"),
-                    "coordinates": feature.get("geometry", {}).get("coordinates"),
-                },
-                source_category="natural_disaster",
-                magnitude=magnitude,
-                classification_reason=f"GDACS {event_type}, alert={alert_level}",
-                is_structured=True,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=f"gdacs_{event_type}_{event_id}",
+                    source_name=self.name,
+                    title=title[:500],
+                    url=props.get("url"),
+                    description=props.get("description", "")[:500] if props.get("description") else None,
+                    raw_data={
+                        "eventtype": event_type,
+                        "alertlevel": alert_level,
+                        "eventid": event_id,
+                        "severity": props.get("severity"),
+                        "country": props.get("country"),
+                        "coordinates": feature.get("geometry", {}).get("coordinates"),
+                    },
+                    source_category="natural_disaster",
+                    magnitude=magnitude,
+                    classification_reason=f"GDACS {event_type}, alert={alert_level}",
+                    is_structured=True,
+                )
+            )
 
         return results

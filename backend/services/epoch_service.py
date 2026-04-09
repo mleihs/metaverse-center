@@ -8,10 +8,9 @@ sub-services while keeping the EpochService interface stable for all callers.
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.epoch import EpochConfig
 from backend.services.constants import OPERATIVE_RP_COSTS
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -53,15 +52,9 @@ class EpochService:
     @classmethod
     async def get(cls, supabase: Client, epoch_id: UUID) -> dict:
         """Get a single epoch by ID."""
-        resp = await (
-            supabase.table("game_epochs")
-            .select("*")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
-        )
+        resp = await supabase.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Epoch not found.")
+            raise not_found(detail="Epoch not found.")
         return resp.data
 
     @classmethod
@@ -100,7 +93,7 @@ class EpochService:
         }
         resp = await supabase.table("game_epochs").insert(data).execute()
         if not resp.data:
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create epoch.")
+            raise server_error("Failed to create epoch.")
         return resp.data[0]
 
     @classmethod
@@ -113,18 +106,10 @@ class EpochService:
         """Update epoch details (only in lobby phase)."""
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Can only edit epoch configuration during lobby phase.",
-            )
-        resp = await (
-            supabase.table("game_epochs")
-            .update(updates)
-            .eq("id", str(epoch_id))
-            .execute()
-        )
+            raise bad_request("Can only edit epoch configuration during lobby phase.")
+        resp = await supabase.table("game_epochs").update(updates).eq("id", str(epoch_id)).execute()
         if not resp.data:
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to update epoch.")
+            raise server_error("Failed to update epoch.")
         return resp.data[0]
 
     # ── Delegated methods ────────────────────────────────────

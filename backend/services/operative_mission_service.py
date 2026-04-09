@@ -7,7 +7,6 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import OperativeDeploy
@@ -25,6 +24,7 @@ from backend.services.constants import (
 )
 from backend.services.epoch_service import EpochService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -53,50 +53,28 @@ class OperativeMissionService:
 
         # Phase restrictions
         if epoch["status"] not in ("foundation", "competition", "reckoning"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Operatives can only be deployed during active epoch phases.",
-            )
+            raise bad_request("Operatives can only be deployed during active epoch phases.")
 
         # Foundation phase: only guardians and spies allowed
         if epoch["status"] == "foundation" and body.operative_type not in ("guardian", "spy"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Only guardian and spy operatives can be deployed during foundation phase.",
-            )
+            raise bad_request("Only guardian and spy operatives can be deployed during foundation phase.")
 
         # Guardians are self-deploy only
         if body.operative_type == "guardian" and body.target_simulation_id is not None:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Guardians can only be deployed to your own simulation.",
-            )
+            raise bad_request("Guardians can only be deployed to your own simulation.")
 
         # Non-guardians require embassy + target
         if body.operative_type != "guardian":
             if not body.target_simulation_id:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Offensive operatives require a target simulation.",
-                )
+                raise bad_request("Offensive operatives require a target simulation.")
             if not body.embassy_id:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Operatives must deploy through an embassy.",
-                )
+                raise bad_request("Operatives must deploy through an embassy.")
             # Validate embassy exists and is active
             embassy = await (
-                supabase.table("embassies")
-                .select("id, status")
-                .eq("id", str(body.embassy_id))
-                .single()
-                .execute()
+                supabase.table("embassies").select("id, status").eq("id", str(body.embassy_id)).single().execute()
             )
             if not embassy.data or embassy.data.get("status") != "active":
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    "Embassy must be active to deploy operatives.",
-                )
+                raise bad_request("Embassy must be active to deploy operatives.")
 
         # Check for betrayal (attacking an ally)
         if body.operative_type != "guardian" and body.target_simulation_id:
@@ -122,10 +100,7 @@ class OperativeMissionService:
             if source_team and target_team and source_team == target_team:
                 config = epoch.get("config", {})
                 if not config.get("allow_betrayal", True):
-                    raise HTTPException(
-                        status.HTTP_400_BAD_REQUEST,
-                        "Betrayal is disabled in this epoch.",
-                    )
+                    raise bad_request("Betrayal is disabled in this epoch.")
 
         # Validate agent belongs to simulation
         agent = await (
@@ -137,10 +112,7 @@ class OperativeMissionService:
             .execute()
         )
         if not agent.data:
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                "Agent not found in this simulation.",
-            )
+            raise not_found(detail="Agent not found in this simulation.")
 
         # Check agent isn't already deployed
         existing = await (
@@ -152,10 +124,7 @@ class OperativeMissionService:
             .execute()
         )
         if existing.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "This agent is already on an active mission.",
-            )
+            raise conflict("This agent is already on an active mission.")
 
         # Check RP cost
         cost = OPERATIVE_RP_COSTS.get(body.operative_type, 5)
@@ -200,10 +169,7 @@ class OperativeMissionService:
 
         resp = await supabase.table("operative_missions").insert(mission_data).execute()
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to create operative mission.",
-            )
+            raise server_error("Failed to create operative mission.")
 
         mission = resp.data[0]
 
@@ -227,11 +193,7 @@ class OperativeMissionService:
                     context["target_sim_name"] = sim_resp.data["name"]
             if body.target_zone_id:
                 zone_resp = await (
-                    supabase.table("zones")
-                    .select("name")
-                    .eq("id", str(body.target_zone_id))
-                    .maybe_single()
-                    .execute()
+                    supabase.table("zones").select("name").eq("id", str(body.target_zone_id)).maybe_single().execute()
                 )
                 if zone_resp.data:
                     context["target_zone_name"] = zone_resp.data["name"]
@@ -241,8 +203,11 @@ class OperativeMissionService:
         # Log deployment to battle log with pre-fetched context
         try:
             await BattleLogService.log_operative_deployed(
-                supabase, epoch_id, epoch.get("current_cycle", 1),
-                mission, context=context,
+                supabase,
+                epoch_id,
+                epoch.get("current_cycle", 1),
+                mission,
+                context=context,
             )
         except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Battle log write failed for deployment", exc_info=True)
@@ -283,9 +248,7 @@ class OperativeMissionService:
         base = 0.55
 
         # Agent aptitude for this operative type (replaces qualification)
-        aptitude = await AptitudeService.get_aptitude_for_operative(
-            supabase, body.agent_id, body.operative_type
-        )
+        aptitude = await AptitudeService.get_aptitude_for_operative(supabase, body.agent_id, body.operative_type)
 
         # Admin client for cross-sim reads (target zones/guardians/embassies
         # may be in a game instance the user's JWT can't access via RLS)
@@ -334,13 +297,20 @@ class OperativeMissionService:
                 expires_at = emb_resp.data.get("infiltration_penalty_expires_at")
                 if penalty > 0 and expires_at:
                     if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) > datetime.now(UTC):
-                        base_eff *= (1.0 - penalty)
+                        base_eff *= 1.0 - penalty
                     else:
                         # Penalty expired -- clear it lazily
-                        await admin.table("embassies").update({
-                            "infiltration_penalty": 0,
-                            "infiltration_penalty_expires_at": None,
-                        }).eq("id", str(body.embassy_id)).execute()
+                        await (
+                            admin.table("embassies")
+                            .update(
+                                {
+                                    "infiltration_penalty": 0,
+                                    "infiltration_penalty_expires_at": None,
+                                }
+                            )
+                            .eq("id", str(body.embassy_id))
+                            .execute()
+                        )
                 embassy_eff = base_eff
 
         # Guardian penalty: -0.06 per guardian, capped at -0.15
@@ -358,9 +328,7 @@ class OperativeMissionService:
                 admin, str(body.target_simulation_id), body.operative_type
             )
             # Attacker's own instability reduces mission effectiveness
-            attacker_pressure_penalty = await cls._get_attacker_pressure_penalty(
-                admin, str(source_simulation_id)
-            )
+            attacker_pressure_penalty = await cls._get_attacker_pressure_penalty(admin, str(source_simulation_id))
 
         # ── Heartbeat integration: convergence operative modifiers ──
         convergence_mod = 0.0
@@ -447,9 +415,7 @@ class OperativeMissionService:
     # ── Resonance Helpers ─────────────────────────────────
 
     @staticmethod
-    async def _get_target_zone_pressure(
-        admin: Client, target_sim_id: str, target_zone_id: UUID | None = None
-    ) -> float:
+    async def _get_target_zone_pressure(admin: Client, target_sim_id: str, target_zone_id: UUID | None = None) -> float:
         """Get zone pressure modifier: pressured zones are easier to infiltrate.
 
         Uses Postgres ``fn_target_zone_pressure`` (migration 078).
@@ -466,9 +432,7 @@ class OperativeMissionService:
             return 0.0
 
     @staticmethod
-    async def _get_resonance_operative_modifier(
-        admin: Client, target_sim_id: str, operative_type: str
-    ) -> float:
+    async def _get_resonance_operative_modifier(admin: Client, target_sim_id: str, operative_type: str) -> float:
         """Get net resonance archetype modifier for an operative type.
 
         Uses Postgres ``fn_resonance_operative_modifier`` (migration 078).
@@ -486,9 +450,7 @@ class OperativeMissionService:
             return 0.0
 
     @staticmethod
-    async def _get_attacker_pressure_penalty(
-        admin: Client, source_sim_id: str
-    ) -> float:
+    async def _get_attacker_pressure_penalty(admin: Client, source_sim_id: str) -> float:
         """Get attacker's own pressure penalty: own instability hurts outbound ops.
 
         Uses Postgres ``fn_attacker_pressure_penalty`` (migration 078).
@@ -535,15 +497,21 @@ class OperativeMissionService:
             if mission["status"] == "deploying":
                 use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
                 if use_rpc:
-                    await supabase.rpc("fn_transition_mission_status", {
-                        "p_mission_id": mission["id"],
-                        "p_from_status": "deploying",
-                        "p_to_status": "active",
-                    }).execute()
+                    await supabase.rpc(
+                        "fn_transition_mission_status",
+                        {
+                            "p_mission_id": mission["id"],
+                            "p_from_status": "deploying",
+                            "p_to_status": "active",
+                        },
+                    ).execute()
                 else:
-                    await supabase.table("operative_missions").update(
-                        {"status": "active"}
-                    ).eq("id", mission["id"]).execute()
+                    await (
+                        supabase.table("operative_missions")
+                        .update({"status": "active"})
+                        .eq("id", mission["id"])
+                        .execute()
+                    )
                 continue
 
             # Resolve active missions
@@ -581,12 +549,7 @@ class OperativeMissionService:
             "resolved_at": datetime.now(UTC).isoformat(),
             "mission_result": {**mission_result, "outcome": outcome},
         }
-        resp = await (
-            supabase.table("operative_missions")
-            .update(update_data)
-            .eq("id", mission["id"])
-            .execute()
-        )
+        resp = await supabase.table("operative_missions").update(update_data).eq("id", mission["id"]).execute()
 
         # Check for betrayal (same-team attack)
         await cls._check_betrayal(supabase, mission, outcome)
@@ -594,9 +557,7 @@ class OperativeMissionService:
         return resp.data[0] if resp.data else {**mission, **update_data}
 
     @classmethod
-    async def _check_betrayal(
-        cls, supabase: Client, mission: dict, outcome: str
-    ) -> None:
+    async def _check_betrayal(cls, supabase: Client, mission: dict, outcome: str) -> None:
         """Detect betrayal when a mission targets an ally. On detection,
         dissolve the alliance and apply a -25% diplomatic penalty."""
         if not mission.get("target_simulation_id"):
@@ -629,11 +590,7 @@ class OperativeMissionService:
 
         # Fetch epoch for cycle number
         epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("current_cycle")
-            .eq("id", mission["epoch_id"])
-            .maybe_single()
-            .execute()
+            supabase.table("game_epochs").select("current_cycle").eq("id", mission["epoch_id"]).maybe_single().execute()
         )
         cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
 
@@ -648,18 +605,22 @@ class OperativeMissionService:
 
         if is_detected:
             # Dissolve alliance -- remove all members from team
-            await supabase.table("epoch_participants").update(
-                {"team_id": None}
-            ).eq("epoch_id", mission["epoch_id"]).eq(
-                "team_id", source_team
-            ).execute()
+            await (
+                supabase.table("epoch_participants")
+                .update({"team_id": None})
+                .eq("epoch_id", mission["epoch_id"])
+                .eq("team_id", source_team)
+                .execute()
+            )
 
             # Apply -25% diplomatic penalty to betrayer
-            await supabase.table("epoch_participants").update(
-                {"betrayal_penalty": 0.25}
-            ).eq("epoch_id", mission["epoch_id"]).eq(
-                "simulation_id", mission["source_simulation_id"]
-            ).execute()
+            await (
+                supabase.table("epoch_participants")
+                .update({"betrayal_penalty": 0.25})
+                .eq("epoch_id", mission["epoch_id"])
+                .eq("simulation_id", mission["source_simulation_id"])
+                .execute()
+            )
 
             logger.info(
                 "Betrayal detected — alliance dissolved, penalty applied",
@@ -703,10 +664,7 @@ class OperativeMissionService:
         intel = {}
         if target_sim_id:
             zones_resp = await (
-                supabase.table("zones")
-                .select("name, security_level")
-                .eq("simulation_id", target_sim_id)
-                .execute()
+                supabase.table("zones").select("name, security_level").eq("simulation_id", target_sim_id).execute()
             )
             guardian_resp = await (
                 supabase.table("operative_missions")
@@ -722,18 +680,10 @@ class OperativeMissionService:
                 .eq("simulation_id", target_sim_id)
                 .execute()
             )
-            agents_resp = await (
-                supabase.table("agents")
-                .select("id, name")
-                .eq("simulation_id", target_sim_id)
-                .execute()
-            )
+            agents_resp = await supabase.table("agents").select("id, name").eq("simulation_id", target_sim_id).execute()
             zones_data = zones_resp.data or []
             zone_levels = [z["security_level"] for z in zones_data]
-            zone_details = [
-                {"name": z["name"], "security_level": z["security_level"]}
-                for z in zones_data
-            ]
+            zone_details = [{"name": z["name"], "security_level": z["security_level"]} for z in zones_data]
             guardian_count = guardian_resp.count or 0
             buildings_data = buildings_resp.data or []
             agents_data = agents_resp.data or []
@@ -744,8 +694,7 @@ class OperativeMissionService:
                 "building_ids": [b["id"] for b in buildings_data],
                 "building_count": len(buildings_data),
                 "buildings": [
-                    {"id": b["id"], "name": b["name"], "condition": b["building_condition"]}
-                    for b in buildings_data
+                    {"id": b["id"], "name": b["name"], "condition": b["building_condition"]} for b in buildings_data
                 ],
                 "agent_ids": [a["id"] for a in agents_data],
                 "agent_count": len(agents_data),
@@ -762,12 +711,7 @@ class OperativeMissionService:
             if fort_resp.data:
                 # Enrich with zone names
                 fort_zone_ids = [f["zone_id"] for f in fort_resp.data]
-                zone_names_resp = await (
-                    supabase.table("zones")
-                    .select("id, name")
-                    .in_("id", fort_zone_ids)
-                    .execute()
-                )
+                zone_names_resp = await supabase.table("zones").select("id, name").in_("id", fort_zone_ids).execute()
                 zone_name_map = {z["id"]: z["name"] for z in (zone_names_resp.data or [])}
                 intel["fortifications"] = [
                     {
@@ -795,7 +739,7 @@ class OperativeMissionService:
                 "intel_report",
                 f"Spy intel: {guardian_count} guardians, "
                 f"{len(buildings_data)} buildings, {len(agents_data)} agents, "
-                f"zones: {', '.join(f'{z['name']}: {z['security_level']}' for z in zone_details)}",
+                f"zones: {', '.join(f'{z["name"]}: {z["security_level"]}' for z in zone_details)}",
                 source_simulation_id=UUID(mission["source_simulation_id"]),
                 target_simulation_id=UUID(target_sim_id),
                 mission_id=UUID(mission["id"]),
@@ -819,9 +763,12 @@ class OperativeMissionService:
             use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
             if use_rpc:
                 # Atomic building degradation (migration 148)
-                rpc_result = await supabase.rpc("fn_degrade_building", {
-                    "p_building_id": mission["target_entity_id"],
-                }).execute()
+                rpc_result = await supabase.rpc(
+                    "fn_degrade_building",
+                    {
+                        "p_building_id": mission["target_entity_id"],
+                    },
+                ).execute()
                 rpc_data = rpc_result.data or {}
                 if rpc_data.get("changed"):
                     result["damage_dealt"] = {
@@ -848,9 +795,12 @@ class OperativeMissionService:
                     old_cond = building_resp.data["building_condition"]
                     new_cond = condition_map.get(old_cond, old_cond)
                     if old_cond != new_cond:
-                        await supabase.table("buildings").update(
-                            {"building_condition": new_cond}
-                        ).eq("id", mission["target_entity_id"]).execute()
+                        await (
+                            supabase.table("buildings")
+                            .update({"building_condition": new_cond})
+                            .eq("id", mission["target_entity_id"])
+                            .execute()
+                        )
                     result["damage_dealt"] = {
                         "building_id": mission["target_entity_id"],
                         "old_condition": old_cond,
@@ -861,20 +811,20 @@ class OperativeMissionService:
         if target_sim_id:
             # Always fetch zones (needed for zone selection + crisis event labeling)
             zones_resp = await (
-                supabase.table("zones")
-                .select("id, name, security_level")
-                .eq("simulation_id", target_sim_id)
-                .execute()
+                supabase.table("zones").select("id, name, security_level").eq("simulation_id", target_sim_id).execute()
             )
             if zones_resp.data:
                 target_zone = secrets.SystemRandom().choice(zones_resp.data)
                 use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
                 if use_rpc:
                     # Atomic zone security downgrade (migration 148)
-                    rpc_result = await supabase.rpc("fn_downgrade_zone_security", {
-                        "p_zone_id": target_zone["id"],
-                        "p_tiers_down": 1,
-                    }).execute()
+                    rpc_result = await supabase.rpc(
+                        "fn_downgrade_zone_security",
+                        {
+                            "p_zone_id": target_zone["id"],
+                            "p_tiers_down": 1,
+                        },
+                    ).execute()
                     rpc_data = rpc_result.data or {}
                     result["zone_downgraded"] = {
                         "zone_id": target_zone["id"],
@@ -885,9 +835,12 @@ class OperativeMissionService:
                     old_level = target_zone["security_level"]
                     new_level = _downgrade_security(old_level)
                     if old_level != new_level:
-                        await supabase.table("zones").update(
-                            {"security_level": new_level}
-                        ).eq("id", target_zone["id"]).execute()
+                        await (
+                            supabase.table("zones")
+                            .update({"security_level": new_level})
+                            .eq("id", target_zone["id"])
+                            .execute()
+                        )
                     result["zone_downgraded"] = {
                         "zone_id": target_zone["id"],
                         "old_level": old_level,
@@ -989,47 +942,50 @@ class OperativeMissionService:
         use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
         if use_rpc:
             # Atomic batch relationship weakening (migration 148)
-            rpc_result = await supabase.rpc("fn_weaken_relationships", {
-                "p_agent_id": mission["target_entity_id"],
-                "p_delta": 2,
-            }).execute()
+            rpc_result = await supabase.rpc(
+                "fn_weaken_relationships",
+                {
+                    "p_agent_id": mission["target_entity_id"],
+                    "p_delta": 2,
+                },
+            ).execute()
             relationships_affected = rpc_result.data or 0
         else:
             rel_resp = await (
                 supabase.table("agent_relationships")
                 .select("id, intensity")
                 .or_(
-                    f"source_agent_id.eq.{mission['target_entity_id']},"
-                    f"target_agent_id.eq.{mission['target_entity_id']}"
+                    f"source_agent_id.eq.{mission['target_entity_id']},target_agent_id.eq.{mission['target_entity_id']}"
                 )
                 .execute()
             )
             relationships_affected = len(rel_resp.data or [])
             for rel in rel_resp.data or []:
                 new_intensity = max(1, rel["intensity"] - 2)
-                await supabase.table("agent_relationships").update(
-                    {"intensity": new_intensity}
-                ).eq("id", rel["id"]).execute()
+                await (
+                    supabase.table("agent_relationships")
+                    .update({"intensity": new_intensity})
+                    .eq("id", rel["id"])
+                    .execute()
+                )
 
         epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("config")
-            .eq("id", mission["epoch_id"])
-            .single()
-            .execute()
+            supabase.table("game_epochs").select("config").eq("id", mission["epoch_id"]).single().execute()
         )
         config = (epoch_resp.data or {}).get("config", {})
         cycle_hours = config.get("cycle_hours", 8)
         blocked_until = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
-        await supabase.table("agents").update(
-            {"ambassador_blocked_until": blocked_until.isoformat()}
-        ).eq("id", mission["target_entity_id"]).execute()
+        await (
+            supabase.table("agents")
+            .update({"ambassador_blocked_until": blocked_until.isoformat()})
+            .eq("id", mission["target_entity_id"])
+            .execute()
+        )
 
         return {
             "outcome": "success",
             "narrative": (
-                "Assassination successful. Target agent's influence "
-                "diminished and ambassador status suspended."
+                "Assassination successful. Target agent's influence diminished and ambassador status suspended."
             ),
             "relationships_weakened": relationships_affected,
             "ambassador_blocked_until": blocked_until.isoformat(),
@@ -1042,20 +998,23 @@ class OperativeMissionService:
             return {"outcome": "success", "narrative": "Mission completed."}
 
         epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("config")
-            .eq("id", mission["epoch_id"])
-            .single()
-            .execute()
+            supabase.table("game_epochs").select("config").eq("id", mission["epoch_id"]).single().execute()
         )
         config = (epoch_resp.data or {}).get("config", {})
         cycle_hours = config.get("cycle_hours", 8)
         expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
 
-        await supabase.table("embassies").update({
-            "infiltration_penalty": 0.65,
-            "infiltration_penalty_expires_at": expires_at.isoformat(),
-        }).eq("id", mission["target_entity_id"]).execute()
+        await (
+            supabase.table("embassies")
+            .update(
+                {
+                    "infiltration_penalty": 0.65,
+                    "infiltration_penalty_expires_at": expires_at.isoformat(),
+                }
+            )
+            .eq("id", mission["target_entity_id"])
+            .execute()
+        )
 
         return {
             "outcome": "success",
@@ -1078,24 +1037,15 @@ class OperativeMissionService:
 
         mission = await OperativeService.get_mission(supabase, mission_id)
         if simulation_id and mission["source_simulation_id"] != str(simulation_id):
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
-                "You can only recall operatives from your own simulation.",
-            )
+            raise forbidden("You can only recall operatives from your own simulation.")
 
         # Guard: prevent recall on completed/cancelled epochs
         epoch = await EpochService.get(supabase, UUID(mission["epoch_id"]))
         if epoch["status"] in ("completed", "cancelled"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Cannot recall operatives from a completed or cancelled epoch.",
-            )
+            raise bad_request("Cannot recall operatives from a completed or cancelled epoch.")
 
         if mission["status"] not in ("deploying", "active"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Cannot recall mission with status '{mission['status']}'.",
-            )
+            raise bad_request(f"Cannot recall mission with status '{mission['status']}'.")
 
         # Refund 50% of deployment cost (rounded down)
         op_type = mission.get("operative_type", "")
@@ -1108,10 +1058,12 @@ class OperativeMissionService:
 
         resp = await (
             supabase.table("operative_missions")
-            .update({
-                "status": "returning",
-                "resolved_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "status": "returning",
+                    "resolved_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("id", str(mission_id))
             .execute()
         )
@@ -1133,16 +1085,10 @@ class OperativeMissionService:
         epoch = await EpochService.get(supabase, epoch_id)
 
         if epoch["status"] not in ("foundation", "competition", "reckoning"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Counter-intel sweep is only available during active phases.",
-            )
+            raise bad_request("Counter-intel sweep is only available during active phases.")
 
         if epoch.get("current_cycle", 1) < 2:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Counter-intel sweep is not available in the first cycle.",
-            )
+            raise bad_request("Counter-intel sweep is not available in the first cycle.")
 
         # Spend 4 RP
         await EpochService.spend_rp(supabase, epoch_id, simulation_id, 4)
@@ -1160,9 +1106,7 @@ class OperativeMissionService:
         detected = []
         for mission in resp.data or []:
             # Each detected mission updates to 'detected' status
-            await supabase.table("operative_missions").update(
-                {"status": "detected"}
-            ).eq("id", mission["id"]).execute()
+            await supabase.table("operative_missions").update({"status": "detected"}).eq("id", mission["id"]).execute()
             detected.append(mission)
 
         return detected
@@ -1188,10 +1132,7 @@ class OperativeMissionService:
         epoch = await EpochService.get(supabase, epoch_id)
 
         if epoch["status"] != "foundation":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Zone fortification is only available during foundation phase.",
-            )
+            raise bad_request("Zone fortification is only available during foundation phase.")
 
         # Verify zone belongs to this simulation
         zone_resp = await (
@@ -1202,10 +1143,7 @@ class OperativeMissionService:
             .execute()
         )
         if not zone_resp.data or zone_resp.data["simulation_id"] != str(simulation_id):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Zone does not belong to your simulation.",
-            )
+            raise bad_request("Zone does not belong to your simulation.")
 
         # Duplicate check (UNIQUE constraint would also catch this)
         existing = await (
@@ -1216,10 +1154,7 @@ class OperativeMissionService:
             .execute()
         )
         if existing.data:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "This zone is already fortified.",
-            )
+            raise bad_request("This zone is already fortified.")
 
         # Spend RP
         await EpochService.spend_rp(supabase, epoch_id, simulation_id, FORTIFICATION_RP_COST)
@@ -1238,9 +1173,7 @@ class OperativeMissionService:
         old_level = zone_resp.data["security_level"]
         new_level = _upgrade_security(old_level)
         if old_level != new_level:
-            await db.table("zones").update(
-                {"security_level": new_level}
-            ).eq("id", str(zone_id)).execute()
+            await db.table("zones").update({"security_level": new_level}).eq("id", str(zone_id)).execute()
 
         # Insert fortification record (admin client — game state mutation)
         fort_data = {

@@ -8,7 +8,6 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -20,6 +19,7 @@ from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_story_service import SocialStoryService
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -73,18 +73,9 @@ class ResonanceService(BaseService):
         resonance_id: UUID,
     ) -> dict:
         """Get a single resonance by ID."""
-        response = await (
-            supabase.table(cls.view_name)
-            .select("*")
-            .eq("id", str(resonance_id))
-            .limit(1)
-            .execute()
-        )
+        response = await supabase.table(cls.view_name).select("*").eq("id", str(resonance_id)).limit(1).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resonance not found.",
-            )
+            raise not_found(detail="Resonance not found.")
         result = response.data[0]
         result["magnitude_class"] = cls._classify_magnitude(float(result.get("magnitude") or 0))
         return result
@@ -97,20 +88,15 @@ class ResonanceService(BaseService):
         data: dict,
     ) -> dict:
         """Create a resonance. Postgres trigger derives signature/archetype/event_types."""
-        insert_data = serialize_for_json({
-            **data,
-            "created_by_id": str(user_id),
-        })
-        response = await (
-            supabase.table(cls.table_name)
-            .insert(insert_data)
-            .execute()
+        insert_data = serialize_for_json(
+            {
+                **data,
+                "created_by_id": str(user_id),
+            }
         )
+        response = await supabase.table(cls.table_name).insert(insert_data).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create resonance.",
-            )
+            raise server_error("Failed to create resonance.")
         return response.data[0]
 
     @classmethod
@@ -122,17 +108,9 @@ class ResonanceService(BaseService):
     ) -> dict:
         """Update a resonance."""
         update_data = serialize_for_json(data)
-        response = await (
-            supabase.table(cls.table_name)
-            .update(update_data)
-            .eq("id", str(resonance_id))
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).update(update_data).eq("id", str(resonance_id)).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resonance not found.",
-            )
+            raise not_found(detail="Resonance not found.")
         return response.data[0]
 
     @classmethod
@@ -178,16 +156,10 @@ class ResonanceService(BaseService):
     ) -> dict:
         """Restore a soft-deleted resonance."""
         response = await (
-            supabase.table(cls.table_name)
-            .update({"deleted_at": None})
-            .eq("id", str(resonance_id))
-            .execute()
+            supabase.table(cls.table_name).update({"deleted_at": None}).eq("id", str(resonance_id)).execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resonance not found.",
-            )
+            raise not_found(detail="Resonance not found.")
         return response.data[0]
 
     # ── Impact Processing ────────────────────────────────────────────────
@@ -255,19 +227,16 @@ class ResonanceService(BaseService):
         # Validate resonance can be impacted
         current_status = resonance.get("status")
         if current_status not in cls._VALID_IMPACT_TRANSITIONS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot process impact: resonance status is '{current_status}', "
-                       f"must be one of {sorted(cls._VALID_IMPACT_TRANSITIONS)}.",
+            raise bad_request(
+                f"Cannot process impact: resonance status is '{current_status}', "
+                f"must be one of {sorted(cls._VALID_IMPACT_TRANSITIONS)}.",
             )
 
         # Validate signature exists (trigger should have populated it)
         signature = resonance.get("resonance_signature")
         if not signature:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Resonance has no signature — the derive trigger may not have fired. "
-                       "Check source_category is valid.",
+            raise bad_request(
+                "Resonance has no signature — the derive trigger may not have fired. Check source_category is valid.",
             )
 
         # Transition to impacting
@@ -302,7 +271,9 @@ class ResonanceService(BaseService):
 
         logger.info(
             "Processing resonance %s (%s / %s) across %d simulations",
-            resonance_id, signature, resonance.get("archetype", "?"),
+            resonance_id,
+            signature,
+            resonance.get("archetype", "?"),
             len(simulations),
         )
 
@@ -328,27 +299,33 @@ class ResonanceService(BaseService):
                 failed_count += 1
                 logger.exception(
                     "Failed to process resonance impact for simulation %s (%s)",
-                    sim_name, sim_id,
+                    sim_name,
+                    sim_id,
                 )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("resonance_phase", "process_impact")
-                    scope.set_context("resonance", {
-                        "resonance_id": str(resonance_id),
-                        "simulation_id": str(sim_id),
-                        "simulation_name": sim_name,
-                        "signature": signature,
-                    })
+                    scope.set_context(
+                        "resonance",
+                        {
+                            "resonance_id": str(resonance_id),
+                            "simulation_id": str(sim_id),
+                            "simulation_name": sim_name,
+                            "signature": signature,
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
                 # Record failed impact with reason
                 reason = f"{type(exc).__name__}: {exc!s}"[:500]
-                fail_data = serialize_for_json({
-                    "resonance_id": str(resonance_id),
-                    "simulation_id": str(sim_id),
-                    "susceptibility": 1.0,
-                    "effective_magnitude": 0,
-                    "status": "failed",
-                    "failure_reason": reason,
-                })
+                fail_data = serialize_for_json(
+                    {
+                        "resonance_id": str(resonance_id),
+                        "simulation_id": str(sim_id),
+                        "susceptibility": 1.0,
+                        "effective_magnitude": 0,
+                        "status": "failed",
+                        "failure_reason": reason,
+                    }
+                )
                 try:
                     resp = await (
                         supabase.table("resonance_impacts")
@@ -363,7 +340,9 @@ class ResonanceService(BaseService):
         if failed_count:
             logger.warning(
                 "Resonance %s impact: %d/%d simulations failed",
-                resonance_id, failed_count, len(simulations),
+                resonance_id,
+                failed_count,
+                len(simulations),
             )
 
         # ── Generate Instagram Stories for this resonance ──
@@ -371,14 +350,18 @@ class ResonanceService(BaseService):
         # restricts writes to platform admins; the scheduler also needs access.
         try:
             from backend.dependencies import get_admin_supabase
+
             admin_sb = await get_admin_supabase()
             stories = await SocialStoryService.create_resonance_stories(
-                admin_sb, resonance_id, impacts,
+                admin_sb,
+                resonance_id,
+                impacts,
             )
             if stories:
                 logger.info(
                     "Created %d resonance stories for %s",
-                    len(stories), resonance_id,
+                    len(stories),
+                    resonance_id,
                 )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
@@ -412,7 +395,9 @@ class ResonanceService(BaseService):
 
         logger.info(
             "Processing impact for simulation %s (%s), signature=%s",
-            sim_name, sim_id, signature,
+            sim_name,
+            sim_id,
+            signature,
         )
 
         # ── 1. Susceptibility ──
@@ -439,7 +424,8 @@ class ResonanceService(BaseService):
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning(
                 "Event type lookup failed for sim %s, using fallback",
-                sim_id, exc_info=True,
+                sim_id,
+                exc_info=True,
             )
             event_types = []
 
@@ -448,28 +434,28 @@ class ResonanceService(BaseService):
             event_types = ["crisis", "social", "intrigue"]
             logger.warning(
                 "No event types mapped for signature %r in simulation %s (%s), using fallback %s",
-                signature, sim_name, sim_id, event_types,
+                signature,
+                sim_name,
+                sim_id,
+                event_types,
             )
 
         # ── 3. Create/upsert impact record ──
-        impact_data = serialize_for_json({
-            "resonance_id": str(resonance_id),
-            "simulation_id": str(sim_id),
-            "susceptibility": susceptibility,
-            "effective_magnitude": 0,  # overwritten by DB trigger
-            "status": "generating",
-            "failure_reason": None,  # clear previous failure if re-processing
-        })
+        impact_data = serialize_for_json(
+            {
+                "resonance_id": str(resonance_id),
+                "simulation_id": str(sim_id),
+                "susceptibility": susceptibility,
+                "effective_magnitude": 0,  # overwritten by DB trigger
+                "status": "generating",
+                "failure_reason": None,  # clear previous failure if re-processing
+            }
+        )
         impact_resp = await (
-            supabase.table("resonance_impacts")
-            .upsert(impact_data, on_conflict="resonance_id,simulation_id")
-            .execute()
+            supabase.table("resonance_impacts").upsert(impact_data, on_conflict="resonance_id,simulation_id").execute()
         )
         if not impact_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create impact record for simulation {sim_name}",
-            )
+            raise server_error(f"Failed to create impact record for simulation {sim_name}")
         impact = impact_resp.data[0]
 
         # Guard against None effective_magnitude (trigger didn't fire)
@@ -495,7 +481,9 @@ class ResonanceService(BaseService):
                     effective_mag = round(max(0, effective_mag - reduction), 4)
                     logger.info(
                         "Attunement reduced magnitude by %.4f for %s (depth %.2f)",
-                        reduction, sim_name, depth,
+                        reduction,
+                        sim_name,
+                        depth,
                     )
 
             protection = await AnchorService.get_protection_factor(supabase, UUID(sim_id))
@@ -503,7 +491,8 @@ class ResonanceService(BaseService):
                 effective_mag = round(effective_mag * (1.0 - protection), 4)
                 logger.info(
                     "Anchor protection reduced magnitude by %.1f%% for %s",
-                    protection * 100, sim_name,
+                    protection * 100,
+                    sim_name,
                 )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.info(
@@ -515,7 +504,8 @@ class ResonanceService(BaseService):
         if effective_mag < 0.05:
             logger.info(
                 "Skipping low-impact simulation %s (effective_mag=%.4f)",
-                sim_name, effective_mag,
+                sim_name,
+                effective_mag,
             )
             await cls._update_impact_status(supabase, impact["id"], "skipped")
             return impact
@@ -530,7 +520,9 @@ class ResonanceService(BaseService):
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "AI generation unavailable for %s (%s), using template titles",
-                    sim_name, sim_id, exc_info=True,
+                    sim_name,
+                    sim_id,
+                    exc_info=True,
                 )
 
         # ── 7. Spawn events ──
@@ -556,16 +548,21 @@ class ResonanceService(BaseService):
                 spawn_errors.append(error_msg)
                 logger.exception(
                     "Failed to spawn %s event for %s (%s)",
-                    event_type, sim_name, sim_id,
+                    event_type,
+                    sim_name,
+                    sim_id,
                 )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("resonance_phase", "spawn_event")
-                    scope.set_context("resonance", {
-                        "resonance_id": str(resonance_id),
-                        "simulation_id": str(sim_id),
-                        "event_type": event_type,
-                        "effective_magnitude": effective_mag,
-                    })
+                    scope.set_context(
+                        "resonance",
+                        {
+                            "resonance_id": str(resonance_id),
+                            "simulation_id": str(sim_id),
+                            "event_type": event_type,
+                            "effective_magnitude": effective_mag,
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
 
         # ── 8. Determine final status ──
@@ -573,10 +570,7 @@ class ResonanceService(BaseService):
         if spawned_ids and spawn_errors:
             final_status = "partial"
             errors_joined = "; ".join(spawn_errors)
-            failure_reason = (
-                f"{len(spawned_ids)}/{total_attempted} events spawned. "
-                f"Errors: {errors_joined}"
-            )[:500]
+            failure_reason = (f"{len(spawned_ids)}/{total_attempted} events spawned. Errors: {errors_joined}")[:500]
         elif spawned_ids:
             final_status = "completed"
             failure_reason = None
@@ -584,40 +578,43 @@ class ResonanceService(BaseService):
             final_status = "failed"
             if spawn_errors:
                 errors_joined = "; ".join(spawn_errors)
-                failure_reason = (
-                    f"All {total_attempted} event spawns failed: {errors_joined}"
-                )[:500]
+                failure_reason = (f"All {total_attempted} event spawns failed: {errors_joined}")[:500]
             else:
                 failure_reason = "No events could be spawned (unknown error)"
 
         # ── 9. Update impact record ──
-        update_data = serialize_for_json({
-            "spawned_event_ids": spawned_ids,
-            "status": final_status,
-            "failure_reason": failure_reason,
-            "effective_magnitude": effective_mag,  # persist heartbeat-adjusted value
-        })
+        update_data = serialize_for_json(
+            {
+                "spawned_event_ids": spawned_ids,
+                "status": final_status,
+                "failure_reason": failure_reason,
+                "effective_magnitude": effective_mag,  # persist heartbeat-adjusted value
+            }
+        )
         update_resp = await (
-            supabase.table("resonance_impacts")
-            .update(update_data)
-            .eq("id", str(impact["id"]))
-            .execute()
+            supabase.table("resonance_impacts").update(update_data).eq("id", str(impact["id"])).execute()
         )
 
         if final_status == "failed":
             logger.error(
                 "Impact FAILED for %s (%s): %s",
-                sim_name, sim_id, failure_reason,
+                sim_name,
+                sim_id,
+                failure_reason,
             )
         elif final_status == "partial":
             logger.warning(
                 "Impact PARTIAL for %s (%s): %s",
-                sim_name, sim_id, failure_reason,
+                sim_name,
+                sim_id,
+                failure_reason,
             )
         else:
             logger.info(
                 "Impact completed for %s: %d events spawned (mag=%.4f)",
-                sim_name, len(spawned_ids), effective_mag,
+                sim_name,
+                len(spawned_ids),
+                effective_mag,
             )
 
         # ── 10. Post-processing (non-fatal) ──
@@ -627,19 +624,26 @@ class ResonanceService(BaseService):
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Post-mutation pipeline failed for %s (%s)",
-                    sim_name, sim_id, exc_info=True,
+                    sim_name,
+                    sim_id,
+                    exc_info=True,
                 )
 
         if generate_reactions and gen_service and spawned_events:
             for event in spawned_events:
                 try:
                     await EventService.generate_reactions(
-                        supabase, UUID(sim_id), event, gen_service,
+                        supabase,
+                        UUID(sim_id),
+                        event,
+                        gen_service,
                     )
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning(
                         "Auto-reaction generation failed for event %s in %s",
-                        event["id"], sim_name, exc_info=True,
+                        event["id"],
+                        sim_name,
+                        exc_info=True,
                     )
 
         return update_resp.data[0] if update_resp.data else impact
@@ -737,12 +741,18 @@ class ResonanceService(BaseService):
 
         sim_id = UUID(simulation["id"])
         event = await EventService.create(
-            supabase, sim_id, user_id, event_data,
+            supabase,
+            sim_id,
+            user_id,
+            event_data,
         )
 
         logger.info(
             "Spawned resonance event: %s (type=%s, impact=%d) in %s",
-            event["id"], event_type, impact_level, simulation.get("name", sim_id),
+            event["id"],
+            event_type,
+            impact_level,
+            simulation.get("name", sim_id),
         )
         return event
 
@@ -755,6 +765,4 @@ class ResonanceService(BaseService):
         new_status: str,
     ) -> None:
         """Update a resonance impact status."""
-        await supabase.table("resonance_impacts").update(
-            {"status": new_status}
-        ).eq("id", impact_id).execute()
+        await supabase.table("resonance_impacts").update({"status": new_status}).eq("id", impact_id).execute()

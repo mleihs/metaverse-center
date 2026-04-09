@@ -5,11 +5,10 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.chat_ai_service import ChatAIService, SSEEvent
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.i18n_utils import get_localized_field
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -36,10 +35,7 @@ class ChatService:
             .execute()
         )
         if not result.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found",
-            )
+            raise not_found(detail="Conversation not found")
 
     # ── Batch-load helpers (shared by list + single-load) ──
 
@@ -188,10 +184,7 @@ class ChatService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create conversation.",
-            )
+            raise server_error("Failed to create conversation.")
 
         conversation = response.data[0]
 
@@ -338,7 +331,10 @@ class ChatService:
         )
 
         async for event in ChatService.stream_ai_response(
-            supabase, simulation_id, conversation_id, last_user["content"],
+            supabase,
+            simulation_id,
+            conversation_id,
+            last_user["content"],
         ):
             yield event
 
@@ -398,10 +394,7 @@ class ChatService:
     ) -> dict:
         """Send a message in a conversation. message_count is updated by DB trigger."""
         if not content or not content.strip():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Message content cannot be empty.",
-            )
+            raise bad_request("Message content cannot be empty.")
 
         insert_data: dict = {
             "conversation_id": str(conversation_id),
@@ -415,10 +408,7 @@ class ChatService:
         response = await supabase.table("chat_messages").insert(insert_data).execute()
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to send message.",
-            )
+            raise server_error("Failed to send message.")
 
         # last_message_at is updated by DB trigger update_conversation_stats()
         # (migration 009) — no manual Python update needed.
@@ -443,10 +433,7 @@ class ChatService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to add agent to conversation.",
-            )
+            raise server_error("Failed to add agent to conversation.")
         return response.data[0]
 
     @staticmethod
@@ -464,10 +451,7 @@ class ChatService:
             .execute()
         )
         if count_resp.count is not None and count_resp.count <= 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot remove last agent from conversation.",
-            )
+            raise bad_request("Cannot remove last agent from conversation.")
 
         await (
             supabase.table("chat_conversation_agents")
@@ -500,10 +484,7 @@ class ChatService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to add event reference.",
-            )
+            raise server_error("Failed to add event reference.")
 
         # Load the event details for the response
         ref = response.data[0]
@@ -573,10 +554,7 @@ class ChatService:
         ).execute()
 
         if not result.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to toggle reaction.",
-            )
+            raise server_error("Failed to toggle reaction.")
         # RPC returns a scalar text value
         return result.data
 
@@ -602,11 +580,13 @@ class ChatService:
         grouped: dict[str, list[dict]] = {}
         for row in result.data or []:
             mid = row["message_id"]
-            grouped.setdefault(mid, []).append({
-                "emoji": row["emoji"],
-                "count": row["count"],
-                "reacted_by_me": row["reacted_by_me"],
-            })
+            grouped.setdefault(mid, []).append(
+                {
+                    "emoji": row["emoji"],
+                    "count": row["count"],
+                    "reacted_by_me": row["reacted_by_me"],
+                }
+            )
         return grouped
 
     @staticmethod
@@ -623,10 +603,7 @@ class ChatService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation '{conversation_id}' not found.",
-            )
+            raise not_found(detail=f"Conversation '{conversation_id}' not found.")
 
         return response.data[0]
 
@@ -645,10 +622,7 @@ class ChatService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation '{conversation_id}' not found.",
-            )
+            raise not_found(detail=f"Conversation '{conversation_id}' not found.")
 
         return response.data[0]
 
@@ -662,10 +636,7 @@ class ChatService:
         fetch = await supabase.table("chat_conversations").select("*").eq("id", str(conversation_id)).execute()
 
         if not fetch.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Conversation '{conversation_id}' not found.",
-            )
+            raise not_found(detail=f"Conversation '{conversation_id}' not found.")
 
         conversation = fetch.data[0]
 
@@ -746,11 +717,7 @@ class ChatService:
             .eq("conversation_id", str(conversation_id))
             .execute()
         )
-        agents = [
-            row["agents"]
-            for row in (agents_resp.data or [])
-            if row.get("agents")
-        ]
+        agents = [row["agents"] for row in (agents_resp.data or []) if row.get("agents")]
 
         # Fallback: single-agent conversation (agent_id on conversation row)
         if not agents:

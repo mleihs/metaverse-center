@@ -24,8 +24,6 @@ from uuid import UUID, uuid4
 import httpx
 import sentry_sdk
 import structlog
-from fastapi import HTTPException
-from fastapi import status as http_status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -43,6 +41,7 @@ from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.encryption import decrypt
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -1318,10 +1317,7 @@ class HeartbeatService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=http_status.HTTP_404_NOT_FOUND,
-                detail="Simulation not found.",
-            )
+            raise not_found(detail="Simulation not found.")
 
         sim = response.data[0]
         _, interval = await cls._load_config(admin)

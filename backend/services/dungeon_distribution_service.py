@@ -16,7 +16,6 @@ import logging
 from uuid import UUID
 
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -34,6 +33,7 @@ from backend.services.dungeon_shared import (
     log_extra,
     rpc_with_retry,
 )
+from backend.utils.errors import bad_request, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -210,7 +210,12 @@ class DungeonDistributionService:
         """Assign one distributable loot item to an agent."""
         async with _store.lock(run_id):
             return await cls._assign_loot_locked(
-                admin_supabase, run_id, loot_id, agent_id, dimension=dimension, user_id=user_id,
+                admin_supabase,
+                run_id,
+                loot_id,
+                agent_id,
+                dimension=dimension,
+                user_id=user_id,
             )
 
     @classmethod
@@ -228,29 +233,26 @@ class DungeonDistributionService:
 
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
         if instance.phase != "distributing":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
+            raise bad_request("Not in distribution phase")
 
         # Validate loot_id exists and is distributable
         loot_item = next((i for i in instance.pending_loot if i["id"] == loot_id), None)
         if not loot_item:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Loot item '{loot_id}' not found")
+            raise bad_request(f"Loot item '{loot_id}' not found")
         if loot_item.get("effect_type") in AUTO_APPLY_EFFECT_TYPES:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This item is auto-applied")
+            raise bad_request("This item is auto-applied")
 
         # Personality modifier: require valid Big Five dimension
         if loot_item.get("effect_type") == "personality_modifier":
             if not dimension or dimension not in BIG_FIVE_DIMENSIONS:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST,
-                    f"personality_modifier requires dimension: {', '.join(sorted(BIG_FIVE_DIMENSIONS))}",
-                )
+                raise bad_request(f"personality_modifier requires dimension: {', '.join(sorted(BIG_FIVE_DIMENSIONS))}")
 
         # Validate agent is in party and operational
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)
         if not agent:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent not in party")
+            raise bad_request("Agent not in party")
         if not can_act(agent.condition):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Agent is captured and cannot receive loot")
+            raise bad_request("Agent is captured and cannot receive loot")
 
         instance.loot_assignments[loot_id] = str(agent_id)
         # Store extra params for items that need player choices (personality dimension)
@@ -304,9 +306,9 @@ class DungeonDistributionService:
             require_player=user_id,
         )
         if instance.phase != "distributing":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not in distribution phase")
+            raise bad_request("Not in distribution phase")
         if cls._count_unassigned(instance) > 0:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Not all items assigned")
+            raise bad_request("Not all items assigned")
 
         # Build final loot items: auto-applied + player-assigned
         loot_items = list(instance.auto_apply_loot)
@@ -354,7 +356,7 @@ class DungeonDistributionService:
                 scope.set_tag("run_id", str(instance.run_id))
                 scope.set_tag("phase", "finalize_distribution")
                 sentry_sdk.capture_exception()
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to finalize") from None
+            raise server_error("Failed to finalize") from None
 
         loot_result = rpc_result.data if rpc_result and rpc_result.data else {}
         if isinstance(loot_result, dict) and loot_result.get("loot_result", {}).get("skipped"):

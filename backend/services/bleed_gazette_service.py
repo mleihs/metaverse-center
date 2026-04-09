@@ -37,9 +37,12 @@ class BleedGazetteService:
         if cached_data and (now - cached_at) < _CACHE_TTL:
             return cached_data[:limit]
 
-        response = await supabase.rpc("get_bleed_gazette_feed", {
-            "p_limit": limit,
-        }).execute()
+        response = await supabase.rpc(
+            "get_bleed_gazette_feed",
+            {
+                "p_limit": limit,
+            },
+        ).execute()
 
         entries = response.data or []
         _gazette_cache = (entries, now)

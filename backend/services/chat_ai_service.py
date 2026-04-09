@@ -292,7 +292,10 @@ class ChatAIService:
                     stream_error = True
                     logger.warning(
                         "Stream error on attempt %d/%d for %s: %s",
-                        attempt, max_retries, agent_name, chunk.error,
+                        attempt,
+                        max_retries,
+                        agent_name,
+                        chunk.error,
                     )
                     break
 
@@ -315,14 +318,18 @@ class ChatAIService:
             if attempt < max_retries:
                 logger.warning(
                     "Attempt %d/%d produced empty/error response for %s — retrying",
-                    attempt, max_retries, agent_name,
+                    attempt,
+                    max_retries,
+                    agent_name,
                 )
                 continue
 
             # All retries exhausted
             logger.error(
                 "All %d attempts exhausted for %s in conversation %s",
-                max_retries, agent_name, conversation_id,
+                max_retries,
+                agent_name,
+                conversation_id,
             )
             yield SSEEvent(
                 event="error",
@@ -349,7 +356,8 @@ class ChatAIService:
         if not saved:
             logger.error(
                 "Persist returned empty for %s in conversation %s after successful stream",
-                agent_name, conversation_id,
+                agent_name,
+                conversation_id,
             )
             yield SSEEvent(
                 event="error",
@@ -510,8 +518,11 @@ class ChatAIService:
         locale = await self._get_locale()
 
         memories = await AgentMemoryService.retrieve(
-            self._supabase, UUID(agent["id"]), self._simulation_id,
-            query_text=user_message, top_k=8,
+            self._supabase,
+            UUID(agent["id"]),
+            self._simulation_id,
+            query_text=user_message,
+            top_k=8,
         )
         memory_text = AgentMemoryService.format_for_prompt(memories)
 
@@ -545,8 +556,11 @@ class ChatAIService:
             try:
                 await asyncio.wait_for(
                     AgentMemoryService.extract_from_chat(
-                        self._supabase, self._simulation_id,
-                        UUID(agent_id), user_message, response_text,
+                        self._supabase,
+                        self._simulation_id,
+                        UUID(agent_id),
+                        user_message,
+                        response_text,
                     ),
                     timeout=30.0,
                 )
@@ -586,7 +600,9 @@ class ChatAIService:
             return ""
 
         self._fire_and_forget_memory_extraction(
-            ctx["agent"]["id"], user_message, response_text,
+            ctx["agent"]["id"],
+            user_message,
+            response_text,
         )
         return response_text
 
@@ -673,7 +689,9 @@ class ChatAIService:
                 response_text = sse_event.data.get("message", {}).get("content", "")
 
         self._fire_and_forget_memory_extraction(
-            ctx["agent"]["id"], user_message, response_text,
+            ctx["agent"]["id"],
+            user_message,
+            response_text,
         )
 
     async def stream_group_response(
@@ -866,8 +884,11 @@ class ChatAIService:
         # Assemble context with localized templates
         templates = MOOD_CONTEXT_TEMPLATES.get(locale, MOOD_CONTEXT_TEMPLATES["en"])
         context = templates["state"].format(
-            mood_desc=mood_desc, score=score, emotion=emotion_localized,
-            stress_desc=stress_desc, stress=stress,
+            mood_desc=mood_desc,
+            score=score,
+            emotion=emotion_localized,
+            stress_desc=stress_desc,
+            stress=stress,
         )
         if moodlet_lines:
             context += templates["influences"].format(moodlet_lines="\n".join(moodlet_lines))
@@ -971,8 +992,10 @@ class ChatAIService:
         """Load agent profile."""
         response = await (
             self._supabase.table("agents")
-            .select("id, name, character, character_de, background, background_de, "
-                    "system, gender, primary_profession, primary_profession_de")
+            .select(
+                "id, name, character, character_de, background, background_de, "
+                "system, gender, primary_profession, primary_profession_de"
+            )
             .eq("id", agent_id)
             .limit(1)
             .execute()
@@ -1020,9 +1043,7 @@ class ChatAIService:
         )
         return response.data[0] if response and response.data else {}
 
-    async def _load_history(
-        self, conversation_id: UUID, model_id: str = ""
-    ) -> list[dict]:
+    async def _load_history(self, conversation_id: UUID, model_id: str = "") -> list[dict]:
         """Load recent messages from conversation history.
 
         The number of messages is computed from the model's context window

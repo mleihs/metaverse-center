@@ -73,13 +73,9 @@ class FacebookService:
         """Check Facebook API response for errors."""
         if resp.status_code == 400:
             error = resp.json().get("error", {})
-            raise FacebookError(
-                f"Facebook API error: {error.get('message', resp.text[:200])}"
-            )
+            raise FacebookError(f"Facebook API error: {error.get('message', resp.text[:200])}")
         if resp.status_code != 200:
-            raise FacebookError(
-                f"Facebook API error {resp.status_code}: {resp.text[:200]}"
-            )
+            raise FacebookError(f"Facebook API error {resp.status_code}: {resp.text[:200]}")
 
     @staticmethod
     def _normalize_post(post: dict[str, Any], page_id: str) -> dict[str, Any]:

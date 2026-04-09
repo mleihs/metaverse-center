@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.base_service import BaseService
+from backend.utils.errors import not_found, server_error
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -38,12 +37,7 @@ class BuildingService(BaseService):
     ) -> tuple[list[dict], int]:
         """List buildings with optional filters and full-text search."""
         table = cls._read_table(include_deleted)
-        query = (
-            supabase.table(table)
-            .select("*", count="exact")
-            .eq("simulation_id", str(simulation_id))
-            .order("name")
-        )
+        query = supabase.table(table).select("*", count="exact").eq("simulation_id", str(simulation_id)).order("name")
 
         if building_type:
             query = query.eq("building_type", building_type)
@@ -91,20 +85,19 @@ class BuildingService(BaseService):
         """Assign an agent to a building."""
         response = await (
             supabase.table("building_agent_relations")
-            .insert({
-                "simulation_id": str(simulation_id),
-                "building_id": str(building_id),
-                "agent_id": str(agent_id),
-                "relation_type": relation_type,
-            })
+            .insert(
+                {
+                    "simulation_id": str(simulation_id),
+                    "building_id": str(building_id),
+                    "agent_id": str(agent_id),
+                    "relation_type": relation_type,
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to assign agent to building.",
-            )
+            raise server_error("Failed to assign agent to building.")
 
         return response.data[0]
 
@@ -127,10 +120,7 @@ class BuildingService(BaseService):
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Agent-building relation not found.",
-            )
+            raise not_found(detail="Agent-building relation not found.")
 
     @classmethod
     async def get_profession_requirements(
@@ -172,10 +162,7 @@ class BuildingService(BaseService):
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to set profession requirement.",
-            )
+            raise server_error("Failed to set profession requirement.")
 
         return response.data[0]
 

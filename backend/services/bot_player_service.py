@@ -3,8 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -29,15 +28,9 @@ class BotPlayerService:
     @classmethod
     async def get(cls, supabase: Client, bot_id: UUID) -> dict:
         """Get a single bot player preset."""
-        resp = await (
-            supabase.table("bot_players")
-            .select("*")
-            .eq("id", str(bot_id))
-            .single()
-            .execute()
-        )
+        resp = await supabase.table("bot_players").select("*").eq("id", str(bot_id)).single().execute()
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bot player not found.")
+            raise not_found(detail="Bot player not found.")
         return resp.data
 
     @classmethod
@@ -46,14 +39,14 @@ class BotPlayerService:
         data["created_by_id"] = str(user_id)
         resp = await supabase.table("bot_players").insert(data).execute()
         if not resp.data:
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create bot player.")
+            raise server_error("Failed to create bot player.")
         return resp.data[0]
 
     @classmethod
     async def update(cls, supabase: Client, bot_id: UUID, user_id: UUID, updates: dict) -> dict:
         """Update a bot player preset (own bots only)."""
         if not updates:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No fields to update.")
+            raise bad_request("No fields to update.")
         resp = await (
             supabase.table("bot_players")
             .update(updates)
@@ -62,18 +55,14 @@ class BotPlayerService:
             .execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bot player not found or not owned by you.")
+            raise not_found(detail="Bot player not found or not owned by you.")
         return resp.data[0]
 
     @classmethod
     async def delete(cls, supabase: Client, bot_id: UUID, user_id: UUID) -> None:
         """Delete a bot player preset (own bots only)."""
         resp = await (
-            supabase.table("bot_players")
-            .delete()
-            .eq("id", str(bot_id))
-            .eq("created_by_id", str(user_id))
-            .execute()
+            supabase.table("bot_players").delete().eq("id", str(bot_id)).eq("created_by_id", str(user_id)).execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bot player not found or not owned by you.")
+            raise not_found(detail="Bot player not found or not owned by you.")

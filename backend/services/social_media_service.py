@@ -4,8 +4,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -57,10 +56,7 @@ class SocialMediaService:
             .execute()
         )
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Social media post '{post_id}' not found.",
-            )
+            raise not_found(detail=f"Social media post '{post_id}' not found.")
         return response.data[0]
 
     @staticmethod
@@ -75,12 +71,14 @@ class SocialMediaService:
 
         rows = []
         for p in posts:
-            rows.append({
-                **p,
-                "simulation_id": str(simulation_id),
-                "imported_at": datetime.now(UTC).isoformat(),
-                "last_synced_at": datetime.now(UTC).isoformat(),
-            })
+            rows.append(
+                {
+                    **p,
+                    "simulation_id": str(simulation_id),
+                    "imported_at": datetime.now(UTC).isoformat(),
+                    "last_synced_at": datetime.now(UTC).isoformat(),
+                }
+            )
 
         response = await (
             supabase.table("social_media_posts")
@@ -106,10 +104,7 @@ class SocialMediaService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Social media post '{post_id}' not found.",
-            )
+            raise not_found(detail=f"Social media post '{post_id}' not found.")
         return response.data[0]
 
     @staticmethod
@@ -122,18 +117,17 @@ class SocialMediaService:
         """Store a single comment for a post."""
         response = await (
             supabase.table("social_media_comments")
-            .insert({
-                **data,
-                "simulation_id": str(simulation_id),
-                "post_id": str(post_id),
-            })
+            .insert(
+                {
+                    **data,
+                    "simulation_id": str(simulation_id),
+                    "post_id": str(post_id),
+                }
+            )
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to store comment.",
-            )
+            raise server_error("Failed to store comment.")
         return response.data[0]
 
     @staticmethod
@@ -166,10 +160,7 @@ class SocialMediaService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to store agent reaction.",
-            )
+            raise server_error("Failed to store agent reaction.")
         return response.data[0]
 
     @staticmethod

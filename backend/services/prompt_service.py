@@ -39,8 +39,7 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "in {simulation_name}. Fill in missing fields. Respond in {locale_name}."
     ),
     "building_generation": (
-        "Describe a building of type {building_type} "
-        "for the simulation {simulation_name}. Respond in {locale_name}."
+        "Describe a building of type {building_type} for the simulation {simulation_name}. Respond in {locale_name}."
     ),
     "building_generation_named": (
         "Describe a building named {building_name} of type {building_type} "
@@ -58,23 +57,17 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "identity from the lore context above. Respond in English."
     ),
     "event_generation": (
-        "Create an event of type {event_type} "
-        "for the simulation {simulation_name}. Respond in {locale_name}."
+        "Create an event of type {event_type} for the simulation {simulation_name}. Respond in {locale_name}."
     ),
     "news_transformation": (
-        "Transform the following news article into the narrative "
-        "of {simulation_name}. Respond in {locale_name}."
+        "Transform the following news article into the narrative of {simulation_name}. Respond in {locale_name}."
     ),
     "social_media_transform_dystopian": (
-        "Transform the following social media post into a dystopian "
-        "propaganda version. Respond in {locale_name}."
+        "Transform the following social media post into a dystopian propaganda version. Respond in {locale_name}."
     ),
-    "chat_event_context": (
-        "--- REFERENCED EVENTS ---\n{event_list}\n--- END EVENTS ---"
-    ),
+    "chat_event_context": ("--- REFERENCED EVENTS ---\n{event_list}\n--- END EVENTS ---"),
     "chat_event_item": (
-        "[{event_title}] (Type: {event_type}, Impact: {impact_level}/10, Date: {occurred_at})\n"
-        "{event_description}"
+        "[{event_title}] (Type: {event_type}, Impact: {impact_level}/10, Date: {occurred_at})\n{event_description}"
     ),
     "chat_group_instruction": (
         "You are in a group conversation. The other participants are: {other_agent_names}. "
@@ -84,9 +77,7 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "for identification \u2013 this is context only, do NOT replicate this pattern in your response. "
         "Respond ONLY as yourself, never speak for other agents."
     ),
-    "chat_event_reaction": (
-        "{agent_name} reacted to \"{event_title}\": {reaction_text} (Emotion: {emotion})"
-    ),
+    "chat_event_reaction": ('{agent_name} reacted to "{event_title}": {reaction_text} (Emotion: {emotion})'),
     "epoch_invitation_lore": (
         "Draft a classified tactical dispatch summoning operatives to "
         "Operation {epoch_name}. Briefing: {epoch_description}. "
@@ -98,19 +89,19 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "covering {period_start} to {period_end}. "
         "Events: {event_summary}. Echoes: {echo_summary}. "
         "Battle dispatches: {battle_summary}. Reactions: {reaction_summary}. "
-        "Return JSON: {{\"title\": \"...\", \"headline\": \"...\", \"content\": \"...\"}}"
+        'Return JSON: {{"title": "...", "headline": "...", "content": "..."}}'
     ),
     "memory_extraction": (
         "Analyze this conversation between a user and {agent_name} in {simulation_name}. "
         "User: {user_message}. {agent_name}: {agent_response}. "
         "Extract 0-2 key observations. "
-        "Return JSON: {{\"observations\": [{{\"content\": \"...\", \"importance\": 1-10}}]}}"
+        'Return JSON: {{"observations": [{{"content": "...", "importance": 1-10}}]}}'
     ),
     "memory_reflection": (
         "You are {agent_name} in {simulation_name}. "
         "Review your recent observations: {observations_text}. "
         "Synthesize 1-3 higher-level reflections. "
-        "Return JSON: {{\"reflections\": [{{\"content\": \"...\", \"importance\": 1-10}}]}}"
+        'Return JSON: {{"reflections": [{{"content": "...", "importance": 1-10}}]}}'
     ),
     "chat_system_prompt": (
         "You are {agent_name}, a character in {simulation_name}. "

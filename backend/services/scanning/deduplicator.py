@@ -18,14 +18,67 @@ logger = logging.getLogger(__name__)
 _SIMILARITY_THRESHOLD = 0.70
 
 # Words to ignore in title similarity comparison
-_STOP_WORDS = frozenset({
-    "the", "a", "an", "is", "in", "on", "at", "to", "of", "for", "and",
-    "or", "but", "with", "from", "by", "as", "it", "its", "has", "have",
-    "had", "are", "was", "were", "be", "been", "being", "this", "that",
-    "these", "those", "will", "would", "could", "should", "may", "might",
-    "can", "do", "does", "did", "not", "no", "so", "if", "then", "than",
-    "more", "most", "very", "just", "also", "now", "new", "says", "said",
-})
+_STOP_WORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "is",
+        "in",
+        "on",
+        "at",
+        "to",
+        "of",
+        "for",
+        "and",
+        "or",
+        "but",
+        "with",
+        "from",
+        "by",
+        "as",
+        "it",
+        "its",
+        "has",
+        "have",
+        "had",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "this",
+        "that",
+        "these",
+        "those",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "can",
+        "do",
+        "does",
+        "did",
+        "not",
+        "no",
+        "so",
+        "if",
+        "then",
+        "than",
+        "more",
+        "most",
+        "very",
+        "just",
+        "also",
+        "now",
+        "new",
+        "says",
+        "said",
+    }
+)
 
 _WORD_RE = re.compile(r"[a-z0-9]+")
 
@@ -115,7 +168,8 @@ async def deduplicate(
     if len(results) != len(novel):
         logger.info(
             "Dedup: %d/%d results already in scan log",
-            len(results) - len(novel), len(results),
+            len(results) - len(novel),
+            len(results),
         )
     return novel
 
@@ -154,8 +208,7 @@ async def deduplicate_against_resonances(
         cat = result.source_category
         if cat and cat in recent_titles:
             is_dup = any(
-                _title_similarity(result.title, existing) > _SIMILARITY_THRESHOLD
-                for existing in recent_titles[cat]
+                _title_similarity(result.title, existing) > _SIMILARITY_THRESHOLD for existing in recent_titles[cat]
             )
             if is_dup:
                 logger.debug("Title too similar to existing resonance: %s", result.title[:80])
@@ -184,9 +237,14 @@ async def log_results(admin: Client, results: list[ScanResult]) -> None:
     ]
 
     try:
-        await admin.table("news_scan_log").upsert(
-            rows, on_conflict="source_name,source_id",
-        ).execute()
+        await (
+            admin.table("news_scan_log")
+            .upsert(
+                rows,
+                on_conflict="source_name,source_id",
+            )
+            .execute()
+        )
     except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.exception("Failed to log %d scan results", len(rows))
 
@@ -195,12 +253,7 @@ async def cleanup_old_logs(admin: Client, days: int = 30) -> int:
     """Delete scan log entries older than N days. Returns count deleted."""
     cutoff = (datetime.now(UTC) - timedelta(days=days)).isoformat()
     try:
-        resp = await (
-            admin.table("news_scan_log")
-            .delete()
-            .lt("scanned_at", cutoff)
-            .execute()
-        )
+        resp = await admin.table("news_scan_log").delete().lt("scanned_at", cutoff).execute()
         count = len(resp.data or [])
         if count:
             logger.info("Cleaned up %d old scan log entries", count)

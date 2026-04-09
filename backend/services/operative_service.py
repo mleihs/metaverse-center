@@ -3,8 +3,6 @@
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.constants import (
     DETECTION_PENALTY,
     FORTIFICATION_DURATION_CYCLES,
@@ -19,6 +17,7 @@ from backend.services.constants import (
     _downgrade_security,
     _upgrade_security,
 )
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -58,15 +57,8 @@ class OperativeService:
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List operative missions with optional filters."""
-        select_fields = (
-            "*, agents(name, portrait_image_url),"
-            " target_sim:simulations!target_simulation_id(name)"
-        )
-        query = (
-            supabase.table("operative_missions")
-            .select(select_fields, count="exact")
-            .eq("epoch_id", str(epoch_id))
-        )
+        select_fields = "*, agents(name, portrait_image_url), target_sim:simulations!target_simulation_id(name)"
+        query = supabase.table("operative_missions").select(select_fields, count="exact").eq("epoch_id", str(epoch_id))
         if simulation_id:
             query = query.eq("source_simulation_id", str(simulation_id))
         if status_filter:
@@ -78,19 +70,12 @@ class OperativeService:
     @classmethod
     async def get_mission(cls, supabase: Client, mission_id: UUID) -> dict:
         """Get a single mission by ID."""
-        select_fields = (
-            "*, agents(name, portrait_image_url),"
-            " target_sim:simulations!target_simulation_id(name)"
-        )
+        select_fields = "*, agents(name, portrait_image_url), target_sim:simulations!target_simulation_id(name)"
         resp = await (
-            supabase.table("operative_missions")
-            .select(select_fields)
-            .eq("id", str(mission_id))
-            .single()
-            .execute()
+            supabase.table("operative_missions").select(select_fields).eq("id", str(mission_id)).single().execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Mission not found.")
+            raise not_found(detail="Mission not found.")
         return resp.data
 
     @classmethod
@@ -136,4 +121,3 @@ OperativeService._apply_saboteur_effect = OperativeMissionService._apply_saboteu
 OperativeService._apply_propagandist_effect = OperativeMissionService._apply_propagandist_effect  # type: ignore[attr-defined]
 OperativeService._apply_assassin_effect = OperativeMissionService._apply_assassin_effect  # type: ignore[attr-defined]
 OperativeService._apply_infiltrator_effect = OperativeMissionService._apply_infiltrator_effect  # type: ignore[attr-defined]
-

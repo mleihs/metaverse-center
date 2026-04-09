@@ -61,24 +61,26 @@ class DiseaseSHAdapter(SourceAdapter):
         _last_global_cases = cases
 
         if magnitude is not None:
-            results.append(ScanResult(
-                source_id=f"disease_sh_global_{data.get('updated', 0)}",
-                source_name=self.name,
-                title=f"Global pandemic spike: {today_cases:,} new cases today",
-                url="https://disease.sh",
-                description=f"Active: {active:,}, Today deaths: {today_deaths:,}",
-                raw_data={
-                    "cases": cases,
-                    "todayCases": today_cases,
-                    "todayDeaths": today_deaths,
-                    "active": active,
-                    "critical": data.get("critical", 0),
-                    "updated": data.get("updated"),
-                },
-                source_category="pandemic",
-                magnitude=magnitude,
-                classification_reason=">10% daily case increase globally",
-                is_structured=True,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=f"disease_sh_global_{data.get('updated', 0)}",
+                    source_name=self.name,
+                    title=f"Global pandemic spike: {today_cases:,} new cases today",
+                    url="https://disease.sh",
+                    description=f"Active: {active:,}, Today deaths: {today_deaths:,}",
+                    raw_data={
+                        "cases": cases,
+                        "todayCases": today_cases,
+                        "todayDeaths": today_deaths,
+                        "active": active,
+                        "critical": data.get("critical", 0),
+                        "updated": data.get("updated"),
+                    },
+                    source_category="pandemic",
+                    magnitude=magnitude,
+                    classification_reason=">10% daily case increase globally",
+                    is_structured=True,
+                )
+            )
 
         return results

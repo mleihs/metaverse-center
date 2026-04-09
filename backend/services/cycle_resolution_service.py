@@ -7,7 +7,6 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.epoch import EpochConfig
@@ -15,6 +14,7 @@ from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import SECURITY_TIER_ORDER
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.errors import bad_request, conflict, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -70,14 +70,11 @@ class CycleResolutionService:
             .execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a participant.")
+            raise not_found(detail="Not a participant.")
 
         current = resp.data["current_rp"]
         if current < amount:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Insufficient RP: have {current}, need {amount}.",
-            )
+            raise bad_request(f"Insufficient RP: have {current}, need {amount}.")
 
         new_rp = current - amount
         update_resp = await (
@@ -89,10 +86,7 @@ class CycleResolutionService:
         )
 
         if not update_resp.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "RP balance changed concurrently. Please retry.",
-            )
+            raise conflict("RP balance changed concurrently. Please retry.")
 
         return new_rp
 
@@ -110,25 +104,22 @@ class CycleResolutionService:
         platform setting is enabled. Falls back to Python fetch-compute-update otherwise.
         """
         # Read epoch config for rp_cap (needed by both paths)
-        epoch_resp = await (
-            supabase.table("game_epochs")
-            .select("config")
-            .eq("id", str(epoch_id))
-            .single()
-            .execute()
-        )
+        epoch_resp = await supabase.table("game_epochs").select("config").eq("id", str(epoch_id)).single().execute()
         config = {**DEFAULT_CONFIG, **(epoch_resp.data or {}).get("config", {})}
         rp_cap = config["rp_cap"]
 
         use_rpc = await PlatformConfigService.get(supabase, "use_atomic_game_rpcs", False)
         if use_rpc:
             # Atomic RP grant with cap enforcement (migration 148)
-            rpc_resp = await supabase.rpc("fn_grant_rp_single", {
-                "p_epoch_id": str(epoch_id),
-                "p_simulation_id": str(simulation_id),
-                "p_amount": amount,
-                "p_rp_cap": rp_cap,
-            }).execute()
+            rpc_resp = await supabase.rpc(
+                "fn_grant_rp_single",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_simulation_id": str(simulation_id),
+                    "p_amount": amount,
+                    "p_rp_cap": rp_cap,
+                },
+            ).execute()
             return rpc_resp.data
 
         # Legacy: fetch-compute-update with no locking
@@ -141,14 +132,12 @@ class CycleResolutionService:
             .execute()
         )
         if not resp.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a participant.")
+            raise not_found(detail="Not a participant.")
 
         current = resp.data["current_rp"]
         new_rp = min(current + amount, rp_cap)
 
-        await supabase.table("epoch_participants").update(
-            {"current_rp": new_rp}
-        ).eq("id", resp.data["id"]).execute()
+        await supabase.table("epoch_participants").update({"current_rp": new_rp}).eq("id", resp.data["id"]).execute()
 
         return new_rp
 
@@ -222,9 +211,7 @@ class CycleResolutionService:
             # Log mission results to battle log
             for mission in resolved:
                 try:
-                    await BattleLogService.log_mission_result(
-                        db, epoch_id, cycle_number, mission
-                    )
+                    await BattleLogService.log_mission_result(db, epoch_id, cycle_number, mission)
                 except (PostgrestAPIError, httpx.HTTPError):
                     logger.debug("Battle log write failed for mission result", exc_info=True)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
@@ -237,10 +224,13 @@ class CycleResolutionService:
             if use_rpc:
                 # Atomic fortification expiry (migration 148): downgrades zones
                 # and deletes forts in a single transaction.
-                await db.rpc("fn_expire_fortifications", {
-                    "p_epoch_id": str(epoch_id),
-                    "p_cycle_number": cycle_number,
-                }).execute()
+                await db.rpc(
+                    "fn_expire_fortifications",
+                    {
+                        "p_epoch_id": str(epoch_id),
+                        "p_cycle_number": cycle_number,
+                    },
+                ).execute()
             else:
                 expired_forts = await (
                     db.table("zone_fortifications")
@@ -251,11 +241,7 @@ class CycleResolutionService:
                 )
                 for fort in expired_forts.data or []:
                     zone_resp = await (
-                        db.table("zones")
-                        .select("id, security_level")
-                        .eq("id", fort["zone_id"])
-                        .single()
-                        .execute()
+                        db.table("zones").select("id, security_level").eq("id", fort["zone_id"]).single().execute()
                     )
                     if zone_resp.data:
                         current_level = zone_resp.data["security_level"]
@@ -266,9 +252,12 @@ class CycleResolutionService:
                         except ValueError:
                             new_level = current_level
                         if new_level != current_level:
-                            await db.table("zones").update(
-                                {"security_level": new_level}
-                            ).eq("id", fort["zone_id"]).execute()
+                            await (
+                                db.table("zones")
+                                .update({"security_level": new_level})
+                                .eq("id", fort["zone_id"])
+                                .execute()
+                            )
                     await db.table("zone_fortifications").delete().eq("id", fort["id"]).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Fortification expiry failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
@@ -301,10 +290,14 @@ class CycleResolutionService:
             tension_results = await AllianceService.compute_tension(db, epoch_id, cycle_number)
             dissolved = [r for r in tension_results if r.get("dissolved")]
             if dissolved:
-                logger.info("Alliance tension dissolved teams", extra={
-                    "epoch_id": str(epoch_id), "dissolved_count": len(dissolved),
-                    "teams": [r.get("team_name") for r in dissolved],
-                })
+                logger.info(
+                    "Alliance tension dissolved teams",
+                    extra={
+                        "epoch_id": str(epoch_id),
+                        "dissolved_count": len(dissolved),
+                        "teams": [r.get("team_name") for r in dissolved],
+                    },
+                )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
             logger.warning("Alliance tension computation failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
@@ -350,10 +343,7 @@ class CycleResolutionService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] not in ("foundation", "competition", "reckoning"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Cannot resolve cycle for epoch with status '{epoch['status']}'.",
-            )
+            raise bad_request(f"Cannot resolve cycle for epoch with status '{epoch['status']}'.")
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         new_cycle = epoch["current_cycle"] + 1
@@ -370,9 +360,7 @@ class CycleResolutionService:
         await cls._grant_rp_batch(db, epoch_id, rp_amount, config["rp_cap"])
 
         # Reset all cycle_ready flags before advancing
-        await db.table("epoch_participants").update(
-            {"cycle_ready": False}
-        ).eq("epoch_id", str(epoch_id)).execute()
+        await db.table("epoch_participants").update({"cycle_ready": False}).eq("epoch_id", str(epoch_id)).execute()
 
         # Advance mission timers by one cycle interval so operatives resolve
         # in sync with admin-triggered cycle resolution (not wall-clock time).
@@ -393,28 +381,28 @@ class CycleResolutionService:
             new_resolves = old_resolves - timedelta(hours=cycle_hours)
             by_new_resolve[new_resolves.isoformat()].append(m["id"])
         for new_ts, ids in by_new_resolve.items():
-            await db.table("operative_missions").update(
-                {"resolves_at": new_ts}
-            ).in_("id", ids).execute()
+            await db.table("operative_missions").update({"resolves_at": new_ts}).in_("id", ids).execute()
 
         # ─── Atomic cycle advancement (migration 167) ───────────────
         use_atomic_advance = await PlatformConfigService.get(
-            db, "use_atomic_cycle_advance", False,
+            db,
+            "use_atomic_cycle_advance",
+            False,
         )
         if use_atomic_advance:
-            rpc_resp = await db.rpc("fn_advance_epoch_cycle", {
-                "p_epoch_id": str(epoch_id),
-                "p_expected_cycle": epoch["current_cycle"],
-            }).execute()
+            rpc_resp = await db.rpc(
+                "fn_advance_epoch_cycle",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_expected_cycle": epoch["current_cycle"],
+                },
+            ).execute()
             result = rpc_resp.data or {}
 
             if result.get("error_code") == "concurrent_resolution":
-                raise HTTPException(
-                    status.HTTP_409_CONFLICT,
-                    "Cycle was resolved concurrently. Please retry.",
-                )
+                raise conflict("Cycle was resolved concurrently. Please retry.")
             if result.get("error_code") == "epoch_not_found":
-                raise HTTPException(status.HTTP_404_NOT_FOUND, "Epoch not found.")
+                raise not_found(detail="Epoch not found.")
 
             # Phase overlap warning
             foundation_end = result.get("foundation_end", 0)
@@ -437,28 +425,39 @@ class CycleResolutionService:
                 logger.info(
                     "Epoch auto-advancing phase",
                     extra={
-                        "epoch_id": str(epoch_id), "old_status": old_status,
-                        "new_status": new_status, "cycle_number": new_cycle_num,
+                        "epoch_id": str(epoch_id),
+                        "old_status": old_status,
+                        "new_status": new_status,
+                        "cycle_number": new_cycle_num,
                     },
                 )
                 if new_status == "completed":
                     await GameInstanceService.archive_instances(
-                        admin_supabase or supabase, epoch_id,
+                        admin_supabase or supabase,
+                        epoch_id,
                     )
 
                 await BattleLogService.log_phase_change(
-                    db, epoch_id, new_cycle_num, old_status, new_status,
+                    db,
+                    epoch_id,
+                    new_cycle_num,
+                    old_status,
+                    new_status,
                 )
                 try:
                     from backend.services.cycle_notification_service import CycleNotificationService
+
                     if new_status == "completed":
                         await CycleNotificationService.send_epoch_completed_notifications(
-                            admin_supabase or supabase, str(epoch_id),
+                            admin_supabase or supabase,
+                            str(epoch_id),
                         )
                     else:
                         await CycleNotificationService.send_phase_change_notifications(
-                            admin_supabase or supabase, str(epoch_id),
-                            old_status, new_status,
+                            admin_supabase or supabase,
+                            str(epoch_id),
+                            old_status,
+                            new_status,
                         )
                 except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
                     logger.warning(
@@ -469,13 +468,7 @@ class CycleResolutionService:
                     sentry_sdk.capture_exception()
 
             # Re-fetch full epoch row for downstream consumers
-            epoch_resp = await (
-                db.table("game_epochs")
-                .select("*")
-                .eq("id", str(epoch_id))
-                .single()
-                .execute()
-            )
+            epoch_resp = await db.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
             return epoch_resp.data
 
         # ─── Legacy path: separate cycle-increment + phase-update ───
@@ -490,10 +483,7 @@ class CycleResolutionService:
         )
 
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "Cycle was resolved concurrently. Please retry.",
-            )
+            raise conflict("Cycle was resolved concurrently. Please retry.")
 
         # Auto-advance phase if cycle crosses a boundary
         current_status = epoch["status"]
@@ -530,16 +520,13 @@ class CycleResolutionService:
             logger.info(
                 "Epoch auto-advancing phase",
                 extra={
-                    "epoch_id": str(epoch_id), "old_status": current_status,
-                    "new_status": new_status, "cycle_number": new_cycle,
+                    "epoch_id": str(epoch_id),
+                    "old_status": current_status,
+                    "new_status": new_status,
+                    "cycle_number": new_cycle,
                 },
             )
-            phase_resp = await (
-                db.table("game_epochs")
-                .update({"status": new_status})
-                .eq("id", str(epoch_id))
-                .execute()
-            )
+            phase_resp = await db.table("game_epochs").update({"status": new_status}).eq("id", str(epoch_id)).execute()
             if phase_resp.data:
                 resp = phase_resp
                 # Archive game instances when epoch completes
@@ -549,17 +536,26 @@ class CycleResolutionService:
 
                 # Log auto-phase transition
                 await BattleLogService.log_phase_change(
-                    db, epoch_id, new_cycle, current_status, new_status,
+                    db,
+                    epoch_id,
+                    new_cycle,
+                    current_status,
+                    new_status,
                 )
                 try:
                     from backend.services.cycle_notification_service import CycleNotificationService
+
                     if new_status == "completed":
                         await CycleNotificationService.send_epoch_completed_notifications(
-                            admin_supabase or supabase, str(epoch_id),
+                            admin_supabase or supabase,
+                            str(epoch_id),
                         )
                     else:
                         await CycleNotificationService.send_phase_change_notifications(
-                            admin_supabase or supabase, str(epoch_id), current_status, new_status,
+                            admin_supabase or supabase,
+                            str(epoch_id),
+                            current_status,
+                            new_status,
                         )
                 except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
                     logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)

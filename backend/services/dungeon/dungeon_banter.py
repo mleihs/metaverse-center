@@ -1649,8 +1649,7 @@ PROMETHEUS_BANTER: list[dict] = [
             "It is a process. The party is inside the process now."
         ),
         "text_de": (
-            "So tief hört die Werkstatt auf, ein Ort zu sein. "
-            "Sie ist ein Prozess. Der Trupp ist jetzt im Prozess."
+            "So tief hört die Werkstatt auf, ein Ort zu sein. Sie ist ein Prozess. Der Trupp ist jetzt im Prozess."
         ),
     },
     # ── Elite Spotted (2) ─────────────────────────────────────────────────

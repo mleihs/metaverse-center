@@ -3,8 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
+from backend.utils.errors import server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -51,17 +50,11 @@ class GameInstanceService:
         ).execute()
 
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to clone simulations for epoch.",
-            )
+            raise server_error("Failed to clone simulations for epoch.")
 
         mapping = resp.data
         if not isinstance(mapping, list):
-            raise HTTPException(
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Clone function returned unexpected format.",
-            )
+            raise server_error("Clone function returned unexpected format.")
 
         logger.info(
             "Cloned simulations for epoch",
@@ -146,9 +139,5 @@ class GameInstanceService:
     @classmethod
     async def get_epoch_number(cls, supabase: Client) -> int:
         """Get the next epoch number (count of all epochs + 1)."""
-        resp = await (
-            supabase.table("game_epochs")
-            .select("id", count="exact")
-            .execute()
-        )
+        resp = await supabase.table("game_epochs").select("id", count="exact").execute()
         return (resp.count or 0) + 1

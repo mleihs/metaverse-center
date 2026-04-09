@@ -9,6 +9,7 @@ import httpx
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.errors import bad_request, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -44,19 +45,19 @@ class ForgeFeatureService:
         """
         cost = TOKEN_COSTS.get(feature_type)
         if cost is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unknown feature type: {feature_type}",
-            )
+            raise bad_request(f"Unknown feature type: {feature_type}")
 
         try:
-            resp = await supabase.rpc("fn_purchase_feature", {
-                "p_user_id": str(user_id),
-                "p_simulation_id": str(simulation_id),
-                "p_feature_type": feature_type,
-                "p_token_cost": cost,
-                "p_config": config or {},
-            }).execute()
+            resp = await supabase.rpc(
+                "fn_purchase_feature",
+                {
+                    "p_user_id": str(user_id),
+                    "p_simulation_id": str(simulation_id),
+                    "p_feature_type": feature_type,
+                    "p_token_cost": cost,
+                    "p_config": config or {},
+                },
+            ).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             error_msg = str(exc).lower()
             if "insufficient tokens" in error_msg:
@@ -64,10 +65,7 @@ class ForgeFeatureService:
                     status_code=status.HTTP_402_PAYMENT_REQUIRED,
                     detail=str(exc),
                 ) from exc
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Feature purchase failed: {exc}",
-            ) from exc
+            raise server_error(f"Feature purchase failed: {exc}") from exc
 
         purchase_id = resp.data
         logger.info(
@@ -91,36 +89,38 @@ class ForgeFeatureService:
         update = {"status": "completed", "completed_at": "now()"}
         if result:
             update["result"] = result  # type: ignore[assignment]
-        await supabase.table("feature_purchases").update(update).eq(
-            "id", purchase_id
-        ).execute()
+        await supabase.table("feature_purchases").update(update).eq("id", purchase_id).execute()
 
     @staticmethod
     async def fail_feature(
-        supabase: Client, purchase_id: str, error: str,
+        supabase: Client,
+        purchase_id: str,
+        error: str,
     ) -> None:
         """Mark feature as failed and trigger token refund via RPC."""
         try:
             await supabase.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception(
-                "Refund failed for purchase %s", purchase_id,
+                "Refund failed for purchase %s",
+                purchase_id,
             )
         # Also store error in result
-        await supabase.table("feature_purchases").update({
-            "result": {"error": error},
-        }).eq("id", purchase_id).execute()
+        await (
+            supabase.table("feature_purchases")
+            .update(
+                {
+                    "result": {"error": error},
+                }
+            )
+            .eq("id", purchase_id)
+            .execute()
+        )
 
     @staticmethod
     async def get_purchase(supabase: Client, purchase_id: str) -> dict | None:
         """Fetch a single feature purchase by ID."""
-        resp = await (
-            supabase.table("feature_purchases")
-            .select("*")
-            .eq("id", purchase_id)
-            .maybe_single()
-            .execute()
-        )
+        resp = await supabase.table("feature_purchases").select("*").eq("id", purchase_id).maybe_single().execute()
         return resp.data
 
     @staticmethod
@@ -146,7 +146,9 @@ class ForgeFeatureService:
 
     @staticmethod
     async def get_active_darkroom(
-        supabase: Client, simulation_id: UUID, user_id: UUID,
+        supabase: Client,
+        simulation_id: UUID,
+        user_id: UUID,
     ) -> dict | None:
         """Get the active (completed) Darkroom pass for a simulation, if any."""
         resp = await (
@@ -165,16 +167,17 @@ class ForgeFeatureService:
 
     @staticmethod
     async def use_darkroom_regen(
-        supabase: Client, purchase_id: str,
+        supabase: Client,
+        purchase_id: str,
     ) -> int:
         """Decrement darkroom regen budget. Returns remaining count."""
         try:
-            resp = await supabase.rpc("fn_darkroom_use_regen", {
-                "p_purchase_id": purchase_id,
-            }).execute()
+            resp = await supabase.rpc(
+                "fn_darkroom_use_regen",
+                {
+                    "p_purchase_id": purchase_id,
+                },
+            ).execute()
             return resp.data
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Darkroom regen failed: {exc}",
-            ) from exc
+            raise bad_request(f"Darkroom regen failed: {exc}") from exc

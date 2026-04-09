@@ -32,7 +32,8 @@ class ForgeImageService:
         self._simulation_id = simulation_id
         self._replicate = ReplicateService(api_key=replicate_api_key)
         self._generation = GenerationService(
-            supabase, simulation_id,
+            supabase,
+            simulation_id,
             openrouter_api_key=openrouter_api_key,
             world_context=world_context,
         )
@@ -42,8 +43,11 @@ class ForgeImageService:
     async def _log_image_usage(self, model: str, purpose: str) -> None:
         """Fire-and-forget Replicate usage logging."""
         await AIUsageService.log(
-            self._supabase, simulation_id=self._simulation_id,
-            provider="replicate", model=model, purpose=purpose,
+            self._supabase,
+            simulation_id=self._simulation_id,
+            provider="replicate",
+            model=model,
+            purpose=purpose,
         )
 
     @staticmethod
@@ -91,7 +95,8 @@ class ForgeImageService:
             )
         elif data.get("is_ambassador"):
             description = await self._generate_ambassador_description(
-                agent_name, data,
+                agent_name,
+                data,
             )
         else:
             description = await self._generation.generate_portrait_description(
@@ -109,7 +114,10 @@ class ForgeImageService:
 
         # 3. Resolve style reference (img2img) or standard model
         ref = await StyleReferenceService.resolve_reference(
-            self._supabase, self._simulation_id, "portrait", agent_id,
+            self._supabase,
+            self._simulation_id,
+            "portrait",
+            agent_id,
         )
         if ref:
             image_model = await self._model_resolver.resolve_img2img_model("agent_portrait")
@@ -150,9 +158,14 @@ class ForgeImageService:
         )
 
         # 5. Update agent record (persist both URL and description for debugging)
-        await self._supabase.table("agents").update(
-            {"portrait_image_url": url, "portrait_description": description[:2000]},
-        ).eq("id", str(agent_id)).execute()
+        await (
+            self._supabase.table("agents")
+            .update(
+                {"portrait_image_url": url, "portrait_description": description[:2000]},
+            )
+            .eq("id", str(agent_id))
+            .execute()
+        )
 
         await self._log_image_usage(image_model.model_id, "portrait")
         logger.info("Portrait uploaded", extra={"entity_type": "agent", "entity_id": str(agent_id), "path": url})
@@ -179,7 +192,8 @@ class ForgeImageService:
             )
         elif data.get("special_type") == "embassy":
             description = await self._generate_embassy_description(
-                building_name, data,
+                building_name,
+                data,
             )
         else:
             description = await self._generation.generate_building_image_description(
@@ -200,7 +214,10 @@ class ForgeImageService:
 
         # 3. Resolve style reference (img2img) or standard model
         ref = await StyleReferenceService.resolve_reference(
-            self._supabase, self._simulation_id, "building", building_id,
+            self._supabase,
+            self._simulation_id,
+            "building",
+            building_id,
         )
         if ref:
             image_model = await self._model_resolver.resolve_img2img_model("building_image")
@@ -239,9 +256,14 @@ class ForgeImageService:
         )
 
         # 5. Update building record (persist both URL and prompt for debugging)
-        await self._supabase.table("buildings").update(
-            {"image_url": url, "image_prompt_text": description[:2000]},
-        ).eq("id", str(building_id)).execute()
+        await (
+            self._supabase.table("buildings")
+            .update(
+                {"image_url": url, "image_prompt_text": description[:2000]},
+            )
+            .eq("id", str(building_id))
+            .execute()
+        )
 
         await self._log_image_usage(image_model.model_id, "building")
         logger.info("Image uploaded", extra={"entity_type": "building", "entity_id": str(building_id), "path": url})
@@ -267,11 +289,7 @@ class ForgeImageService:
             .limit(10)
             .execute()
         )
-        zone_summaries = [
-            f"{z['name']}: {z['description']}"
-            for z in (zones_resp.data or [])
-            if z.get("description")
-        ]
+        zone_summaries = [f"{z['name']}: {z['description']}" for z in (zones_resp.data or []) if z.get("description")]
 
         description = await self._generation.generate_banner_description(
             sim_name=sim_name,
@@ -301,9 +319,14 @@ class ForgeImageService:
             raw_bytes=raw_bytes,
         )
 
-        await self._supabase.table("simulations").update(
-            {"banner_url": url},
-        ).eq("id", str(self._simulation_id)).execute()
+        await (
+            self._supabase.table("simulations")
+            .update(
+                {"banner_url": url},
+            )
+            .eq("id", str(self._simulation_id))
+            .execute()
+        )
 
         await self._log_image_usage("replicate/image-model", "banner")
         logger.info(
@@ -366,9 +389,14 @@ class ForgeImageService:
         # Mark section AFTER upload succeeds — prevents orphaned DB state
         # where image_generated_at is set but no file exists in storage.
         if section_id:
-            await self._supabase.table("simulation_lore").update(
-                {"image_generated_at": "now()"},
-            ).eq("id", section_id).execute()
+            await (
+                self._supabase.table("simulation_lore")
+                .update(
+                    {"image_generated_at": "now()"},
+                )
+                .eq("id", section_id)
+                .execute()
+            )
 
         await self._log_image_usage(image_model.model_id, "lore_image")
         logger.info("Lore image uploaded", extra={"entity_type": "lore", "path": url})
@@ -398,13 +426,7 @@ class ForgeImageService:
             )
 
         # Fetch embassy record
-        embassy_resp = await (
-            self._supabase.table("embassies")
-            .select("*")
-            .eq("id", str(embassy_id))
-            .limit(1)
-            .execute()
-        )
+        embassy_resp = await self._supabase.table("embassies").select("*").eq("id", str(embassy_id)).limit(1).execute()
         if not embassy_resp.data:
             logger.warning("Embassy %s not found — falling back to standard", embassy_id)
             return await self._generation.generate_building_image_description(
@@ -429,15 +451,9 @@ class ForgeImageService:
 
         # Fetch partner simulation name
         partner_resp = await (
-            self._supabase.table("simulations")
-            .select("name")
-            .eq("id", str(partner_sim_id))
-            .limit(1)
-            .execute()
+            self._supabase.table("simulations").select("name").eq("id", str(partner_sim_id)).limit(1).execute()
         )
-        partner_name = (
-            partner_resp.data[0]["name"] if partner_resp.data else "Unknown"
-        )
+        partner_name = partner_resp.data[0]["name"] if partner_resp.data else "Unknown"
 
         # Fetch partner style prompt
         partner_style_resp = await (
@@ -448,10 +464,7 @@ class ForgeImageService:
             .limit(1)
             .execute()
         )
-        partner_theme = (
-            partner_style_resp.data[0]["setting_value"]
-            if partner_style_resp.data else ""
-        )
+        partner_theme = partner_style_resp.data[0]["setting_value"] if partner_style_resp.data else ""
 
         # Fetch our own style prompt for the template
         own_style_resp = await (
@@ -462,10 +475,7 @@ class ForgeImageService:
             .limit(1)
             .execute()
         )
-        own_theme = (
-            own_style_resp.data[0]["setting_value"]
-            if own_style_resp.data else ""
-        )
+        own_theme = own_style_resp.data[0]["setting_value"] if own_style_resp.data else ""
 
         building_data_with_theme = {**building_data, "simulation_theme": own_theme}
 
@@ -488,8 +498,7 @@ class ForgeImageService:
             self._supabase.table("embassies")
             .select("*")
             .or_(
-                f"simulation_a_id.eq.{self._simulation_id},"
-                f"simulation_b_id.eq.{self._simulation_id}",
+                f"simulation_a_id.eq.{self._simulation_id},simulation_b_id.eq.{self._simulation_id}",
             )
             .eq("status", "active")
             .limit(1)
@@ -517,15 +526,9 @@ class ForgeImageService:
 
         # Fetch partner simulation name
         partner_resp = await (
-            self._supabase.table("simulations")
-            .select("name")
-            .eq("id", str(partner_sim_id))
-            .limit(1)
-            .execute()
+            self._supabase.table("simulations").select("name").eq("id", str(partner_sim_id)).limit(1).execute()
         )
-        partner_name = (
-            partner_resp.data[0]["name"] if partner_resp.data else "Unknown"
-        )
+        partner_name = partner_resp.data[0]["name"] if partner_resp.data else "Unknown"
 
         # Fetch partner style prompt (portrait)
         partner_style_resp = await (
@@ -536,10 +539,7 @@ class ForgeImageService:
             .limit(1)
             .execute()
         )
-        partner_theme = (
-            partner_style_resp.data[0]["setting_value"]
-            if partner_style_resp.data else ""
-        )
+        partner_theme = partner_style_resp.data[0]["setting_value"] if partner_style_resp.data else ""
 
         # Fetch our own style prompt
         own_style_resp = await (
@@ -550,10 +550,7 @@ class ForgeImageService:
             .limit(1)
             .execute()
         )
-        own_theme = (
-            own_style_resp.data[0]["setting_value"]
-            if own_style_resp.data else ""
-        )
+        own_theme = own_style_resp.data[0]["setting_value"] if own_style_resp.data else ""
 
         agent_data_with_theme = {**agent_data, "simulation_theme": own_theme}
 
@@ -576,10 +573,14 @@ class ForgeImageService:
         Thumbnail file: {uuid}.avif (max 1024px, quality 80)
         """
         full_avif = convert_to_avif(
-            raw_bytes, max_dimension=None, quality=AVIF_QUALITY,
+            raw_bytes,
+            max_dimension=None,
+            quality=AVIF_QUALITY,
         )
         thumb_avif = convert_to_avif(
-            raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB,
+            raw_bytes,
+            max_dimension=MAX_IMAGE_DIMENSION,
+            quality=AVIF_QUALITY_THUMB,
         )
 
         full_path = base_path.replace(".avif", ".full.avif")

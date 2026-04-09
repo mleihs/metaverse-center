@@ -108,9 +108,7 @@ class ReplicateService:
                 "Replicate timeout",
                 extra={"model": model, "timeout_s": _GENERATION_TIMEOUT_S, "duration_ms": duration_ms},
             )
-            raise ReplicateError(
-                f"Replicate generation timed out after {_GENERATION_TIMEOUT_S}s"
-            ) from None
+            raise ReplicateError(f"Replicate generation timed out after {_GENERATION_TIMEOUT_S}s") from None
         except replicate.exceptions.ModelError as e:
             duration_ms = int((time.monotonic() - t0) * 1000)
             logger.error(

@@ -22,9 +22,14 @@ class GuardianScannerAdapter(SourceAdapter):
     name = "guardian"
     display_name = "The Guardian"
     categories = [
-        "economic_crisis", "military_conflict", "pandemic",
-        "natural_disaster", "political_upheaval", "tech_breakthrough",
-        "cultural_shift", "environmental_disaster",
+        "economic_crisis",
+        "military_conflict",
+        "pandemic",
+        "natural_disaster",
+        "political_upheaval",
+        "tech_breakthrough",
+        "cultural_shift",
+        "environmental_disaster",
     ]
     is_structured = False
     requires_api_key = True
@@ -51,17 +56,19 @@ class GuardianScannerAdapter(SourceAdapter):
                     raw = article.get("raw_data", {})
                     guardian_id = raw.get("id", url)
 
-                    results.append(ScanResult(
-                        source_id=f"guardian_{guardian_id}",
-                        source_name=self.name,
-                        title=article.get("name", ""),
-                        url=url,
-                        description=raw.get("trail_text") or raw.get("standfirst"),
-                        raw_data=raw,
-                        source_category=None,  # LLM classifies
-                        magnitude=None,
-                        is_structured=False,
-                    ))
+                    results.append(
+                        ScanResult(
+                            source_id=f"guardian_{guardian_id}",
+                            source_name=self.name,
+                            title=article.get("name", ""),
+                            url=url,
+                            description=raw.get("trail_text") or raw.get("standfirst"),
+                            raw_data=raw,
+                            source_category=None,  # LLM classifies
+                            magnitude=None,
+                            is_structured=False,
+                        )
+                    )
             except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("Guardian section %s fetch failed", section, exc_info=True)
 

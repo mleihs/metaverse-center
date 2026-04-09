@@ -89,12 +89,8 @@ class CycleNotificationService:
 
         # 3. Get email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
         user_ids = list({m["user_id"] for m in members})
-        email_resp = await admin_supabase.rpc(
-            "get_user_emails_batch", {"user_ids": user_ids}
-        ).execute()
-        email_map: dict[str, str] = {
-            row["id"]: row["email"] for row in (email_resp.data or [])
-        }
+        email_resp = await admin_supabase.rpc("get_user_emails_batch", {"user_ids": user_ids}).execute()
+        email_map: dict[str, str] = {row["id"]: row["email"] for row in (email_resp.data or [])}
 
         # 4. Get notification preferences (batch)
         prefs_resp = await (
@@ -103,20 +99,13 @@ class CycleNotificationService:
             .in_("user_id", user_ids)
             .execute()
         )
-        prefs_map: dict[str, dict] = {
-            row["user_id"]: row for row in (prefs_resp.data or [])
-        }
+        prefs_map: dict[str, dict] = {row["user_id"]: row for row in (prefs_resp.data or [])}
 
         # 5. Resolve template simulation slugs for accent colors
         # The game instance slug may not be the right one — get the template slug
         template_slugs: dict[str, str] = {}
         if template_ids:
-            slug_resp = await (
-                admin_supabase.table("simulations")
-                .select("id, slug")
-                .in_("id", template_ids)
-                .execute()
-            )
+            slug_resp = await admin_supabase.table("simulations").select("id, slug").in_("id", template_ids).execute()
             template_slugs = {s["id"]: s.get("slug", "") for s in (slug_resp.data or [])}
 
         # 6. Build recipient list with preference filtering
@@ -135,14 +124,16 @@ class CycleNotificationService:
             participant_info = template_to_participant.get(m["simulation_id"], {})
             # Get template slug for accent color
             template_slug = template_slugs.get(m["simulation_id"], "")
-            recipients.append({
-                "user_id": user_id,
-                "email": email,
-                "simulation_id": participant_info.get("simulation_id", m["simulation_id"]),
-                "simulation_name": participant_info.get("simulation_name", "Unknown"),
-                "simulation_slug": template_slug or participant_info.get("simulation_slug", ""),
-                "email_locale": prefs.get("email_locale", "en"),
-            })
+            recipients.append(
+                {
+                    "user_id": user_id,
+                    "email": email,
+                    "simulation_id": participant_info.get("simulation_id", m["simulation_id"]),
+                    "simulation_name": participant_info.get("simulation_name", "Unknown"),
+                    "simulation_slug": template_slug or participant_info.get("simulation_slug", ""),
+                    "email_locale": prefs.get("email_locale", "en"),
+                }
+            )
 
         return recipients
 
@@ -190,10 +181,10 @@ class CycleNotificationService:
             prev_resp = await (
                 admin_supabase.table("epoch_scores")
                 .select(
-                "simulation_id, composite_score,"
-                " stability_score, influence_score, sovereignty_score,"
-                " diplomatic_score, military_score"
-            )
+                    "simulation_id, composite_score,"
+                    " stability_score, influence_score, sovereignty_score,"
+                    " diplomatic_score, military_score"
+                )
                 .eq("epoch_id", epoch_id)
                 .eq("cycle_number", prev_cycle)
                 .execute()
@@ -231,11 +222,13 @@ class CycleNotificationService:
                 col = f"{dim}_score"
                 current_val = float(player_score.get(col, 0))
                 prev_val = float(prev_score.get(col, 0)) if prev_score else 0
-                dim_data.append({
-                    "name": dim,
-                    "value": round(current_val, 1),
-                    "delta": round(current_val - prev_val, 1),
-                })
+                dim_data.append(
+                    {
+                        "name": dim,
+                        "value": round(current_val, 1),
+                        "delta": round(current_val - prev_val, 1),
+                    }
+                )
 
         composite = float(player_score["composite_score"]) if player_score else 0
         prev_composite = float(prev_score.get("composite_score", 0)) if prev_score else 0
@@ -261,10 +254,7 @@ class CycleNotificationService:
         sim_name_map: dict[str, str] = {}
         if target_sim_ids:
             names_resp = await (
-                admin_supabase.table("simulations")
-                .select("id, name")
-                .in_("id", target_sim_ids)
-                .execute()
+                admin_supabase.table("simulations").select("id, name").in_("id", target_sim_ids).execute()
             )
             sim_name_map = {s["id"]: s["name"] for s in (names_resp.data or [])}
 
@@ -274,11 +264,13 @@ class CycleNotificationService:
             if o["operative_type"] in ("guardian", "counter_intel"):
                 continue  # Defensive ops shown in summary, not mission log
             target_name = sim_name_map.get(o.get("target_simulation_id", ""), "?")
-            mission_details.append({
-                "type": o["operative_type"],
-                "target_name": target_name,
-                "status": o["status"],
-            })
+            mission_details.append(
+                {
+                    "type": o["operative_type"],
+                    "target_name": target_name,
+                    "status": o["status"],
+                }
+            )
 
         # ── RP balance ──
         rp_resp = await (
@@ -306,10 +298,7 @@ class CycleNotificationService:
         threat_source_ids = list({t["source_simulation_id"] for t in threats_raw})
         if threat_source_ids:
             threat_names_resp = await (
-                admin_supabase.table("simulations")
-                .select("id, name")
-                .in_("id", threat_source_ids)
-                .execute()
+                admin_supabase.table("simulations").select("id, name").in_("id", threat_source_ids).execute()
             )
             threat_name_map = {s["id"]: s["name"] for s in (threat_names_resp.data or [])}
         else:
@@ -337,17 +326,12 @@ class CycleNotificationService:
             .execute()
         )
         # Resolve target sim names for intel reports
-        intel_target_ids = list({
-            e["target_simulation_id"]
-            for e in (intel_resp.data or [])
-            if e.get("target_simulation_id")
-        })
+        intel_target_ids = list(
+            {e["target_simulation_id"] for e in (intel_resp.data or []) if e.get("target_simulation_id")}
+        )
         if intel_target_ids:
             intel_names_resp = await (
-                admin_supabase.table("simulations")
-                .select("id, name")
-                .in_("id", intel_target_ids)
-                .execute()
+                admin_supabase.table("simulations").select("id, name").in_("id", intel_target_ids).execute()
             )
             intel_name_map = {s["id"]: s["name"] for s in (intel_names_resp.data or [])}
         else:
@@ -456,10 +440,7 @@ class CycleNotificationService:
             .limit(5)
             .execute()
         )
-        public_events = [
-            {"narrative": e["narrative"], "event_type": e["event_type"]}
-            for e in (log_resp.data or [])
-        ]
+        public_events = [{"narrative": e["narrative"], "event_type": e["event_type"]} for e in (log_resp.data or [])]
 
         return {
             "epoch_name": epoch_name,
@@ -590,11 +571,7 @@ class CycleNotificationService:
         """
         # Fetch epoch info
         epoch_resp = await (
-            admin_supabase.table("game_epochs")
-            .select("name, status, config")
-            .eq("id", epoch_id)
-            .single()
-            .execute()
+            admin_supabase.table("game_epochs").select("name, status, config").eq("id", epoch_id).single().execute()
         )
         if not epoch_resp.data:
             logger.warning("Epoch %s not found for cycle notifications", epoch_id)
@@ -605,9 +582,7 @@ class CycleNotificationService:
         epoch_status = epoch.get("status", "competition")
         epoch_config = epoch.get("config") or {}
 
-        recipients = await cls._resolve_recipients(
-            admin_supabase, epoch_id, notification_type="cycle_resolved"
-        )
+        recipients = await cls._resolve_recipients(admin_supabase, epoch_id, notification_type="cycle_resolved")
         if not recipients:
             logger.info("No recipients for cycle %d notifications (epoch %s)", cycle_number, epoch_id)
             return 0
@@ -649,8 +624,10 @@ class CycleNotificationService:
         logger.info(
             "Cycle notifications sent",
             extra={
-                "sent_count": sent_count, "total_recipients": len(recipients),
-                "cycle_number": cycle_number, "epoch_id": epoch_id,
+                "sent_count": sent_count,
+                "total_recipients": len(recipients),
+                "cycle_number": cycle_number,
+                "epoch_id": epoch_id,
             },
         )
         return sent_count
@@ -665,11 +642,7 @@ class CycleNotificationService:
     ) -> int:
         """Send phase-change emails to all human participants (per-player with standing)."""
         epoch_resp = await (
-            admin_supabase.table("game_epochs")
-            .select("name, current_cycle")
-            .eq("id", epoch_id)
-            .single()
-            .execute()
+            admin_supabase.table("game_epochs").select("name, current_cycle").eq("id", epoch_id).single().execute()
         )
         if not epoch_resp.data:
             return 0
@@ -677,9 +650,7 @@ class CycleNotificationService:
         epoch_name = epoch_resp.data.get("name", "Unknown Operation")
         cycle_count = epoch_resp.data.get("current_cycle", 0)
 
-        recipients = await cls._resolve_recipients(
-            admin_supabase, epoch_id, notification_type="phase_changed"
-        )
+        recipients = await cls._resolve_recipients(admin_supabase, epoch_id, notification_type="phase_changed")
         if not recipients:
             return 0
 
@@ -698,7 +669,9 @@ class CycleNotificationService:
             try:
                 # Per-player standing data (C1)
                 standing = await cls._build_standing_snapshot(
-                    admin_supabase, epoch_id, recipient["simulation_id"],
+                    admin_supabase,
+                    epoch_id,
+                    recipient["simulation_id"],
                 )
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")
@@ -727,8 +700,11 @@ class CycleNotificationService:
         logger.info(
             "Phase change notifications sent",
             extra={
-                "sent_count": sent_count, "total_recipients": len(recipients),
-                "old_status": old_phase, "new_status": new_phase, "epoch_id": epoch_id,
+                "sent_count": sent_count,
+                "total_recipients": len(recipients),
+                "old_status": old_phase,
+                "new_status": new_phase,
+                "epoch_id": epoch_id,
             },
         )
         return sent_count
@@ -741,11 +717,7 @@ class CycleNotificationService:
     ) -> int:
         """Send epoch-completed emails with final leaderboard + campaign stats."""
         epoch_resp = await (
-            admin_supabase.table("game_epochs")
-            .select("name, current_cycle")
-            .eq("id", epoch_id)
-            .single()
-            .execute()
+            admin_supabase.table("game_epochs").select("name, current_cycle").eq("id", epoch_id).single().execute()
         )
         if not epoch_resp.data:
             return 0
@@ -753,9 +725,7 @@ class CycleNotificationService:
         epoch_name = epoch_resp.data.get("name", "Unknown Operation")
         cycle_count = epoch_resp.data.get("current_cycle", 0)
 
-        recipients = await cls._resolve_recipients(
-            admin_supabase, epoch_id, notification_type="epoch_completed"
-        )
+        recipients = await cls._resolve_recipients(admin_supabase, epoch_id, notification_type="epoch_completed")
         if not recipients:
             return 0
 
@@ -769,7 +739,9 @@ class CycleNotificationService:
             try:
                 # Per-player campaign statistics (D1)
                 campaign_stats = await cls._build_campaign_stats(
-                    admin_supabase, epoch_id, recipient["simulation_id"],
+                    admin_supabase,
+                    epoch_id,
+                    recipient["simulation_id"],
                 )
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")

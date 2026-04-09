@@ -192,10 +192,7 @@ class TavilySearchService:
         max_retries: int = 0,
     ) -> list[TavilySearchResult]:
         """Execute multiple searches in parallel, returning partial results on partial failure."""
-        tasks = [
-            cls.search(req, timeout_s=timeout_s, max_retries=max_retries)
-            for req in requests
-        ]
+        tasks = [cls.search(req, timeout_s=timeout_s, max_retries=max_retries) for req in requests]
         raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         results: list[TavilySearchResult] = []

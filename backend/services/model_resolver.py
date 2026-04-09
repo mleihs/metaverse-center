@@ -44,8 +44,7 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
         "extra limbs, extra fingers, cropped, out of frame, full body"
     ),
     "negative_prompt_building": (
-        "people, humans, characters, faces, text, watermark, "
-        "cartoon, anime, low quality, blurry, distorted"
+        "people, humans, characters, faces, text, watermark, cartoon, anime, low quality, blurry, distorted"
     ),
     # Flux defaults (used when model contains "flux")
     "flux_guidance": 3.5,
@@ -69,8 +68,7 @@ PLATFORM_DEFAULT_STYLE_PROMPTS: dict[str, str] = {
         "atmospheric perspective, rich textures and materials"
     ),
     "banner": (
-        "cinematic matte painting, epic scale, volumetric lighting, "
-        "rich color, high detail, no text, no UI elements"
+        "cinematic matte painting, epic scale, volumetric lighting, rich color, high detail, no text, no UI elements"
     ),
     "lore": (
         "atmospheric concept art, painterly composition, moody lighting, "
@@ -298,7 +296,8 @@ class ModelResolver:
         sim_model = ai_settings.get(f"image_model_{purpose}")
         if not sim_model:
             sim_model = PLATFORM_DEFAULT_IMAGE_MODELS.get(
-                purpose, PLATFORM_DEFAULT_IMAGE_MODELS["fallback"],
+                purpose,
+                PLATFORM_DEFAULT_IMAGE_MODELS["fallback"],
             )
 
         is_flux = "flux" in sim_model.lower()
@@ -310,13 +309,15 @@ class ModelResolver:
             default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
             guidance = min(
                 self._get_float(
-                    ai_settings, "image_guidance_scale",
+                    ai_settings,
+                    "image_guidance_scale",
                     float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5)),
                 ),
                 10.0,  # Flux-dev hard max
             )
             steps = self._get_int(
-                ai_settings, "image_num_inference_steps",
+                ai_settings,
+                "image_num_inference_steps",
                 int(PLATFORM_DEFAULT_PARAMS.get("flux_num_inference_steps", 28)),
             )
             aspect_ratio = ai_settings.get("image_aspect_ratio", default_ar)
@@ -325,7 +326,8 @@ class ModelResolver:
                 str(PLATFORM_DEFAULT_PARAMS.get("flux_output_format", "png")),
             )
             output_quality = self._get_int(
-                ai_settings, "image_output_quality",
+                ai_settings,
+                "image_output_quality",
                 int(PLATFORM_DEFAULT_PARAMS.get("flux_output_quality", 100)),
             )
             lora_url = ai_settings.get("image_lora_url", "")
@@ -344,20 +346,28 @@ class ModelResolver:
             )
 
         # SD parameters
-        default_w = int(PLATFORM_DEFAULT_PARAMS.get(
-            f"image_width_{'portrait' if is_portrait else 'building'}", 512,
-        ))
-        default_h = int(PLATFORM_DEFAULT_PARAMS.get(
-            f"image_height_{'portrait' if is_portrait else 'building'}", 768 if is_portrait else 512,
-        ))
+        default_w = int(
+            PLATFORM_DEFAULT_PARAMS.get(
+                f"image_width_{'portrait' if is_portrait else 'building'}",
+                512,
+            )
+        )
+        default_h = int(
+            PLATFORM_DEFAULT_PARAMS.get(
+                f"image_height_{'portrait' if is_portrait else 'building'}",
+                768 if is_portrait else 512,
+            )
+        )
         width = self._get_int(ai_settings, "image_width", default_w)
         height = self._get_int(ai_settings, "image_height", default_h)
         guidance = self._get_float(
-            ai_settings, "image_guidance_scale",
+            ai_settings,
+            "image_guidance_scale",
             float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5)),
         )
         steps = self._get_int(
-            ai_settings, "image_num_inference_steps",
+            ai_settings,
+            "image_num_inference_steps",
             int(PLATFORM_DEFAULT_PARAMS.get("image_num_inference_steps", 50)),
         )
         scheduler = ai_settings.get(

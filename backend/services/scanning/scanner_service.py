@@ -22,6 +22,7 @@ from backend.services.external.openrouter import OpenRouterService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -86,14 +87,17 @@ class ScannerService:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "news_scanner_enabled",
-                    "news_scanner_interval_seconds",
-                    "news_scanner_auto_create",
-                    "news_scanner_adapters",
-                    "news_scanner_min_magnitude",
-                    "news_scanner_impacts_delay_hours",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "news_scanner_enabled",
+                        "news_scanner_interval_seconds",
+                        "news_scanner_auto_create",
+                        "news_scanner_adapters",
+                        "news_scanner_min_magnitude",
+                        "news_scanner_impacts_delay_hours",
+                    ],
+                )
                 .execute()
             )
             rows = _resp.data or []
@@ -132,9 +136,13 @@ class ScannerService:
             _resp = await (
                 admin.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "guardian_api_key", "newsapi_api_key",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "guardian_api_key",
+                        "newsapi_api_key",
+                    ],
+                )
                 .execute()
             )
             api_key_rows = _resp.data or []
@@ -224,8 +232,7 @@ class ScannerService:
 
         # Filter by minimum magnitude and require classification
         qualified = [
-            r for r in classified
-            if r.source_category and r.magnitude is not None and r.magnitude >= min_magnitude
+            r for r in classified if r.source_category and r.magnitude is not None and r.magnitude >= min_magnitude
         ]
         metrics["total_classified"] = len(qualified)
 
@@ -241,7 +248,10 @@ class ScannerService:
             try:
                 if auto_create:
                     resonance = await cls._create_resonance(
-                        admin, result, delay_hours, config,
+                        admin,
+                        result,
+                        delay_hours,
+                        config,
                     )
                     if resonance:
                         metrics["resonances_created"] += 1
@@ -257,8 +267,11 @@ class ScannerService:
         metrics["finished_at"] = datetime.now(UTC).isoformat()
         logger.info(
             "Scan cycle complete: %d fetched, %d classified, %d new, %d created, %d staged",
-            metrics["total_fetched"], metrics["total_classified"], metrics["total_new"],
-            metrics["resonances_created"], metrics["candidates_staged"],
+            metrics["total_fetched"],
+            metrics["total_classified"],
+            metrics["total_new"],
+            metrics["resonances_created"],
+            metrics["candidates_staged"],
         )
         return metrics
 
@@ -317,21 +330,23 @@ class ScannerService:
         if status == "pending":
             dispatch = await cls._generate_dispatch(result, config)
 
-        row = serialize_for_json({
-            "source_category": result.source_category,
-            "title": result.title,
-            "description": result.description or result.classification_reason,
-            "bureau_dispatch": dispatch,
-            "article_url": result.url,
-            "article_platform": result.source_name,
-            "article_raw_data": result.raw_data,
-            "magnitude": result.magnitude,
-            "classification_reason": result.classification_reason,
-            "source_adapter": result.source_name,
-            "is_structured": result.is_structured,
-            "status": status,
-            "resonance_id": resonance_id,
-        })
+        row = serialize_for_json(
+            {
+                "source_category": result.source_category,
+                "title": result.title,
+                "description": result.description or result.classification_reason,
+                "bureau_dispatch": dispatch,
+                "article_url": result.url,
+                "article_platform": result.source_name,
+                "article_raw_data": result.raw_data,
+                "magnitude": result.magnitude,
+                "classification_reason": result.classification_reason,
+                "source_adapter": result.source_name,
+                "is_structured": result.is_structured,
+                "status": status,
+                "resonance_id": resonance_id,
+            }
+        )
 
         try:
             await admin.table("news_scan_candidates").insert(row).execute()
@@ -420,9 +435,14 @@ class ScannerService:
         elif not enabled and name in current:
             current.remove(name)
 
-        await admin.table("platform_settings").update(
-            {"setting_value": json.dumps(current)},
-        ).eq("setting_key", "news_scanner_adapters").execute()
+        await (
+            admin.table("platform_settings")
+            .update(
+                {"setting_value": json.dumps(current)},
+            )
+            .eq("setting_key", "news_scanner_adapters")
+            .execute()
+        )
 
         return {"name": name, "enabled": enabled}
 
@@ -483,12 +503,7 @@ class ScannerService:
         if not data:
             return None
 
-        resp = await (
-            admin.table("news_scan_candidates")
-            .update(data)
-            .eq("id", str(candidate_id))
-            .execute()
-        )
+        resp = await admin.table("news_scan_candidates").update(data).eq("id", str(candidate_id)).execute()
         return resp.data[0] if resp.data else None
 
     @classmethod
@@ -535,8 +550,7 @@ class ScannerService:
             .execute()
         )
         if not resp.data:
-            from fastapi import HTTPException, status
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found or not pending.")
+            raise not_found(detail="Candidate not found or not pending.")
 
         candidate = resp.data[0]
         impacts_at = datetime.now(UTC) + timedelta(hours=delay_hours)
@@ -558,12 +572,19 @@ class ScannerService:
         resonance = await ResonanceService.create(admin, user_id, insert_data)
 
         # Mark candidate as created
-        await admin.table("news_scan_candidates").update({
-            "status": "created",
-            "resonance_id": resonance["id"],
-            "reviewed_at": datetime.now(UTC).isoformat(),
-            "reviewed_by_id": str(user_id),
-        }).eq("id", str(candidate_id)).execute()
+        await (
+            admin.table("news_scan_candidates")
+            .update(
+                {
+                    "status": "created",
+                    "resonance_id": resonance["id"],
+                    "reviewed_at": datetime.now(UTC).isoformat(),
+                    "reviewed_by_id": str(user_id),
+                }
+            )
+            .eq("id", str(candidate_id))
+            .execute()
+        )
 
         return resonance
 
@@ -575,11 +596,18 @@ class ScannerService:
         user_id: UUID,
     ) -> None:
         """Reject a candidate."""
-        await admin.table("news_scan_candidates").update({
-            "status": "rejected",
-            "reviewed_at": datetime.now(UTC).isoformat(),
-            "reviewed_by_id": str(user_id),
-        }).eq("id", str(candidate_id)).execute()
+        await (
+            admin.table("news_scan_candidates")
+            .update(
+                {
+                    "status": "rejected",
+                    "reviewed_at": datetime.now(UTC).isoformat(),
+                    "reviewed_by_id": str(user_id),
+                }
+            )
+            .eq("id", str(candidate_id))
+            .execute()
+        )
 
     @classmethod
     async def get_dashboard(cls, admin: Client) -> dict:
@@ -608,10 +636,7 @@ class ScannerService:
         today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
         scanned_resp = await (
-            admin.table("news_scan_log")
-            .select("id", count="exact")
-            .gte("scanned_at", today_start)
-            .execute()
+            admin.table("news_scan_log").select("id", count="exact").gte("scanned_at", today_start).execute()
         )
         scanned_today = scanned_resp.count or 0
 
@@ -635,20 +660,13 @@ class ScannerService:
 
         # Pending candidates count
         pending_resp = await (
-            admin.table("news_scan_candidates")
-            .select("id", count="exact")
-            .eq("status", "pending")
-            .execute()
+            admin.table("news_scan_candidates").select("id", count="exact").eq("status", "pending").execute()
         )
         pending_count = pending_resp.count or 0
 
         # Last scan timestamp
         last_scan_resp = await (
-            admin.table("news_scan_log")
-            .select("scanned_at")
-            .order("scanned_at", desc=True)
-            .limit(1)
-            .execute()
+            admin.table("news_scan_log").select("scanned_at").order("scanned_at", desc=True).limit(1).execute()
         )
         last_scan = last_scan_resp.data[0]["scanned_at"] if last_scan_resp.data else None
 

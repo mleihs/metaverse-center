@@ -11,7 +11,6 @@ from uuid import UUID
 
 import httpx
 from cachetools import TTLCache
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic import TypeAdapter
 
@@ -19,6 +18,7 @@ from backend.models.echo import ConnectionResponse
 from backend.services.base_service import serialize_for_json
 from backend.services.cache_config import get_ttl
 from backend.services.embassy_service import EmbassyService
+from backend.utils.errors import bad_request, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -102,9 +102,9 @@ class ConnectionService:
         # Game instance cloning duplicates embassies, creating dozens of redundant
         # instance-instance embassy edges that overwhelm the visualization.
         embassies = [
-            e for e in all_embassies
-            if e.get("simulation_a_id") not in instance_ids
-            and e.get("simulation_b_id") not in instance_ids
+            e
+            for e in all_embassies
+            if e.get("simulation_a_id") not in instance_ids and e.get("simulation_b_id") not in instance_ids
         ]
 
         active_instance_counts = cls._compute_active_instance_counts(simulations)
@@ -141,7 +141,7 @@ class ConnectionService:
                 .in_("id", sim_id_list)
                 .execute()
             )
-            for sim in (hb_resp.data or []):
+            for sim in hb_resp.data or []:
                 sid = sim["id"]
                 # Get active arc count + total scar tissue
                 _resp = await (
@@ -191,11 +191,7 @@ class ConnectionService:
         - Joins simulation_dashboard for agent/building/event counts
         - Excludes game instances from completed/cancelled epochs
         """
-        resp = await (
-            supabase.table("map_simulations")
-            .select("*")
-            .execute()
-        )
+        resp = await supabase.table("map_simulations").select("*").execute()
         return resp.data or []
 
     @staticmethod
@@ -299,10 +295,7 @@ class ConnectionService:
             # source_template_id required for grouping — LEFT JOIN would add unusable null rows
             spark_resp = await (
                 supabase.table("epoch_scores")
-                .select(
-                    "simulation_id, composite_score, cycle_number,"
-                    " simulations!inner(source_template_id)"
-                )
+                .select("simulation_id, composite_score, cycle_number, simulations!inner(source_template_id)")
                 .order("cycle_number", desc=True)
                 .limit(200)
                 .execute()
@@ -325,9 +318,7 @@ class ConnectionService:
         return sparklines
 
     @classmethod
-    async def _fetch_map_overlay_data(
-        cls, supabase: Client, sim_ids: set[str]
-    ) -> dict:
+    async def _fetch_map_overlay_data(cls, supabase: Client, sim_ids: set[str]) -> dict:
         """Fetch zone topology, historical events, and bleed details in one RPC.
 
         Uses the ``get_map_overlay_data`` Postgres function (migration 100).
@@ -353,16 +344,9 @@ class ConnectionService:
         data: dict,
     ) -> ConnectionResponse:
         """Create a simulation connection (admin only)."""
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .insert(serialize_for_json(data))
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).insert(serialize_for_json(data)).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to create connection.",
-            )
+            raise bad_request("Failed to create connection.")
         return ConnectionResponse.model_validate(response.data[0])
 
     @classmethod
@@ -374,17 +358,9 @@ class ConnectionService:
     ) -> ConnectionResponse:
         """Update a simulation connection (admin only)."""
         update_data = {**serialize_for_json(data), "updated_at": datetime.now(UTC).isoformat()}
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .update(update_data)
-            .eq("id", str(connection_id))
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).update(update_data).eq("id", str(connection_id)).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Connection '{connection_id}' not found.",
-            )
+            raise not_found(detail=f"Connection '{connection_id}' not found.")
         return ConnectionResponse.model_validate(response.data[0])
 
     @classmethod
@@ -394,14 +370,6 @@ class ConnectionService:
         connection_id: UUID,
     ) -> None:
         """Delete a simulation connection (admin only)."""
-        response = await (
-            admin_supabase.table(cls.table_name)
-            .delete()
-            .eq("id", str(connection_id))
-            .execute()
-        )
+        response = await admin_supabase.table(cls.table_name).delete().eq("id", str(connection_id)).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Connection '{connection_id}' not found.",
-            )
+            raise not_found(detail=f"Connection '{connection_id}' not found.")

@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.base_service import BaseService
+from backend.utils.errors import server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -75,19 +74,18 @@ class CampaignService(BaseService):
         """Link an event to a campaign."""
         response = await (
             supabase.table("campaign_events")
-            .insert({
-                "simulation_id": str(simulation_id),
-                "campaign_id": str(campaign_id),
-                "event_id": str(event_id),
-                "integration_type": integration_type,
-            })
+            .insert(
+                {
+                    "simulation_id": str(simulation_id),
+                    "campaign_id": str(campaign_id),
+                    "event_id": str(event_id),
+                    "integration_type": integration_type,
+                }
+            )
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to add event to campaign.",
-            )
+            raise server_error("Failed to add event to campaign.")
         return response.data[0]
 
     @classmethod
@@ -98,17 +96,24 @@ class CampaignService(BaseService):
         campaign_id: UUID,
     ) -> dict:
         """Aggregated campaign analytics via Postgres ``get_campaign_analytics`` (migration 065)."""
-        response = await supabase.rpc("get_campaign_analytics", {
-            "p_simulation_id": str(simulation_id),
-            "p_campaign_id": str(campaign_id),
-        }).execute()
-        return response.data if response.data else {
-            "event_count": 0,
-            "events_by_type": {},
-            "echo_count": 0,
-            "avg_impact": None,
-            "metrics_timeline": [],
-        }
+        response = await supabase.rpc(
+            "get_campaign_analytics",
+            {
+                "p_simulation_id": str(simulation_id),
+                "p_campaign_id": str(campaign_id),
+            },
+        ).execute()
+        return (
+            response.data
+            if response.data
+            else {
+                "event_count": 0,
+                "events_by_type": {},
+                "echo_count": 0,
+                "avg_impact": None,
+                "metrics_timeline": [],
+            }
+        )
 
     @classmethod
     async def get_campaign_metrics(

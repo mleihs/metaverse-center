@@ -8,10 +8,9 @@ service layer orchestrates calls and handles battle log integration.
 import logging
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
+from backend.utils.errors import bad_request, conflict, forbidden, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -46,10 +45,7 @@ class AllianceService:
 
         epoch = await EpochService.get(supabase, epoch_id)
         if epoch["status"] in ("reckoning", "completed", "cancelled"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "Alliance proposals are not accepted during reckoning or after completion.",
-            )
+            raise bad_request("Alliance proposals are not accepted during reckoning or after completion.")
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         current_cycle = epoch.get("current_cycle", 0)
@@ -64,12 +60,9 @@ class AllianceService:
             .execute()
         )
         if not proposer.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Proposer is not a participant.")
+            raise not_found(detail="Proposer is not a participant.")
         if proposer.data.get("team_id"):
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "You must leave your current alliance before requesting to join another.",
-            )
+            raise bad_request("You must leave your current alliance before requesting to join another.")
 
         # Verify team exists and is active
         team = await (
@@ -82,7 +75,7 @@ class AllianceService:
             .execute()
         )
         if not team.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Team not found or dissolved.")
+            raise not_found(detail="Team not found or dissolved.")
 
         # Check team size limit
         members = await (
@@ -94,75 +87,84 @@ class AllianceService:
         )
         member_count = len(members.data or [])
         if member_count >= config["max_team_size"]:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Team is full (max {config['max_team_size']} members).",
-            )
+            raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
         # Solo team: auto-accept immediately (skip voting)
         if member_count == 1:
             logger.info(
                 "Alliance proposal auto-accepted (solo team)",
-                extra={"epoch_id": str(epoch_id), "team_id": str(team_id),
-                       "proposer_id": str(proposer_simulation_id)},
+                extra={"epoch_id": str(epoch_id), "team_id": str(team_id), "proposer_id": str(proposer_simulation_id)},
             )
             # Directly join the proposer to the team
-            await supabase.table("epoch_participants").update(
-                {"team_id": str(team_id)}
-            ).eq("epoch_id", str(epoch_id)).eq(
-                "simulation_id", str(proposer_simulation_id)
-            ).execute()
+            await (
+                supabase.table("epoch_participants")
+                .update({"team_id": str(team_id)})
+                .eq("epoch_id", str(epoch_id))
+                .eq("simulation_id", str(proposer_simulation_id))
+                .execute()
+            )
 
             # Create proposal record as accepted
             resp = await (
                 supabase.table("epoch_alliance_proposals")
-                .insert({
-                    "epoch_id": str(epoch_id),
-                    "team_id": str(team_id),
-                    "proposer_simulation_id": str(proposer_simulation_id),
-                    "expires_at_cycle": current_cycle + 2,
-                    "status": "accepted",
-                    "resolved_at": "now()",
-                })
+                .insert(
+                    {
+                        "epoch_id": str(epoch_id),
+                        "team_id": str(team_id),
+                        "proposer_simulation_id": str(proposer_simulation_id),
+                        "expires_at_cycle": current_cycle + 2,
+                        "status": "accepted",
+                        "resolved_at": "now()",
+                    }
+                )
                 .execute()
             )
 
             # Log acceptance
             await BattleLogService.log_alliance_proposal_resolved(
-                supabase, epoch_id, current_cycle,
-                proposer_simulation_id, team.data["name"], "accepted",
+                supabase,
+                epoch_id,
+                current_cycle,
+                proposer_simulation_id,
+                team.data["name"],
+                "accepted",
             )
 
             return resp.data[0] if resp.data else {}
 
         logger.info(
             "Alliance proposal created",
-            extra={"epoch_id": str(epoch_id), "team_id": str(team_id),
-                   "proposer_id": str(proposer_simulation_id),
-                   "expires_at_cycle": current_cycle + 2},
+            extra={
+                "epoch_id": str(epoch_id),
+                "team_id": str(team_id),
+                "proposer_id": str(proposer_simulation_id),
+                "expires_at_cycle": current_cycle + 2,
+            },
         )
 
         # Create pending proposal
         resp = await (
             supabase.table("epoch_alliance_proposals")
-            .insert({
-                "epoch_id": str(epoch_id),
-                "team_id": str(team_id),
-                "proposer_simulation_id": str(proposer_simulation_id),
-                "expires_at_cycle": current_cycle + 2,
-            })
+            .insert(
+                {
+                    "epoch_id": str(epoch_id),
+                    "team_id": str(team_id),
+                    "proposer_simulation_id": str(proposer_simulation_id),
+                    "expires_at_cycle": current_cycle + 2,
+                }
+            )
             .execute()
         )
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "A pending proposal already exists for this team.",
-            )
+            raise conflict("A pending proposal already exists for this team.")
 
         # Log proposal
         await BattleLogService.log_alliance_proposal(
-            supabase, epoch_id, current_cycle,
-            proposer_simulation_id, team.data["name"],
+            supabase,
+            epoch_id,
+            current_cycle,
+            proposer_simulation_id,
+            team.data["name"],
         )
 
         return resp.data[0]
@@ -194,14 +196,14 @@ class AllianceService:
             .execute()
         )
         if not inviter.data or inviter.data.get("team_id") != str(team_id):
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
-                "You must be a member of this team to invite players.",
-            )
+            raise forbidden("You must be a member of this team to invite players.")
 
         # Delegate to create_proposal with target as proposer
         return await cls.create_proposal(
-            supabase, epoch_id, team_id, target_simulation_id,
+            supabase,
+            epoch_id,
+            team_id,
+            target_simulation_id,
         )
 
     # ── Proposal: Vote ────────────────────────────────────
@@ -227,12 +229,9 @@ class AllianceService:
             .execute()
         )
         if not proposal.data:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Proposal not found.")
+            raise not_found(detail="Proposal not found.")
         if proposal.data["status"] != "pending":
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"Proposal is already {proposal.data['status']}.",
-            )
+            raise bad_request(f"Proposal is already {proposal.data['status']}.")
 
         # Verify voter is a team member
         voter = await (
@@ -244,46 +243,38 @@ class AllianceService:
             .execute()
         )
         if not voter.data or voter.data.get("team_id") != proposal.data["team_id"]:
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
-                "Only team members can vote on proposals.",
-            )
+            raise forbidden("Only team members can vote on proposals.")
 
         logger.info(
             "Alliance vote cast",
-            extra={"proposal_id": str(proposal_id), "vote": vote,
-                   "voter_id": str(voter_simulation_id)},
+            extra={"proposal_id": str(proposal_id), "vote": vote, "voter_id": str(voter_simulation_id)},
         )
 
         # Insert vote — DB trigger resolves the proposal
         resp = await (
             supabase.table("epoch_alliance_votes")
-            .insert({
-                "proposal_id": str(proposal_id),
-                "voter_simulation_id": str(voter_simulation_id),
-                "vote": vote,
-            })
+            .insert(
+                {
+                    "proposal_id": str(proposal_id),
+                    "voter_simulation_id": str(voter_simulation_id),
+                    "vote": vote,
+                }
+            )
             .execute()
         )
         if not resp.data:
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                "You have already voted on this proposal.",
-            )
+            raise conflict("You have already voted on this proposal.")
 
         # Check if proposal was resolved by the trigger
         updated_proposal = await (
-            supabase.table("epoch_alliance_proposals")
-            .select("status")
-            .eq("id", str(proposal_id))
-            .single()
-            .execute()
+            supabase.table("epoch_alliance_proposals").select("status").eq("id", str(proposal_id)).single().execute()
         )
         resolved_status = updated_proposal.data.get("status") if updated_proposal.data else "pending"
 
         # Log resolution if it happened
         if resolved_status in ("accepted", "rejected"):
             from backend.services.epoch_service import EpochService
+
             epoch = await EpochService.get(supabase, UUID(proposal.data["epoch_id"]))
             team_name = (proposal.data.get("epoch_teams") or {}).get("name", "")
             await BattleLogService.log_alliance_proposal_resolved(
@@ -312,8 +303,7 @@ class AllianceService:
         query = (
             supabase.table("epoch_alliance_proposals")
             .select(
-                "*, epoch_alliance_votes(*), "
-                "simulations!epoch_alliance_proposals_proposer_simulation_id_fkey(name)"
+                "*, epoch_alliance_votes(*), simulations!epoch_alliance_proposals_proposer_simulation_id_fkey(name)"
             )
             .eq("epoch_id", str(epoch_id))
             .order("proposed_at", desc=True)
@@ -383,9 +373,12 @@ class AllianceService:
         if teams:
             logger.info(
                 "Alliance upkeep deducted",
-                extra={"epoch_id": str(epoch_id), "cycle": cycle_number,
-                       "teams": len(teams),
-                       "total_rp": sum(t.get("cost_per_member", 0) * t.get("member_count", 0) for t in teams)},
+                extra={
+                    "epoch_id": str(epoch_id),
+                    "cycle": cycle_number,
+                    "teams": len(teams),
+                    "total_rp": sum(t.get("cost_per_member", 0) * t.get("member_count", 0) for t in teams),
+                },
             )
 
         # Log upkeep per team
@@ -432,19 +425,32 @@ class AllianceService:
             if new_t > old_t:
                 logger.info(
                     "Alliance tension increased",
-                    extra={"epoch_id": str(epoch_id), "team_id": team_id,
-                           "team_name": team_name, "old": old_t, "new": new_t},
+                    extra={
+                        "epoch_id": str(epoch_id),
+                        "team_id": team_id,
+                        "team_name": team_name,
+                        "old": old_t,
+                        "new": new_t,
+                    },
                 )
                 await BattleLogService.log_tension_change(
-                    admin_supabase, epoch_id, cycle_number,
-                    team_name, old_t, new_t,
+                    admin_supabase,
+                    epoch_id,
+                    cycle_number,
+                    team_name,
+                    old_t,
+                    new_t,
                 )
 
             if r.get("dissolved"):
                 logger.warning(
                     "Alliance dissolved due to tension",
-                    extra={"epoch_id": str(epoch_id), "team_id": team_id,
-                           "team_name": team_name, "final_tension": new_t},
+                    extra={
+                        "epoch_id": str(epoch_id),
+                        "team_id": team_id,
+                        "team_name": team_name,
+                        "final_tension": new_t,
+                    },
                 )
                 # team_ids still set — read current members for logging
                 members_resp = await (
@@ -454,13 +460,14 @@ class AllianceService:
                     .eq("team_id", team_id)
                     .execute()
                 )
-                affected_sims = [
-                    m["simulation_id"] for m in (members_resp.data or [])
-                ]
+                affected_sims = [m["simulation_id"] for m in (members_resp.data or [])]
 
                 await BattleLogService.log_tension_dissolution(
-                    admin_supabase, epoch_id, cycle_number,
-                    team_name, affected_sims,
+                    admin_supabase,
+                    epoch_id,
+                    cycle_number,
+                    team_name,
+                    affected_sims,
                 )
 
         return results
@@ -490,11 +497,13 @@ class AllianceService:
                 extra={"epoch_id": str(epoch_id), "dissolved_teams": len(dissolved_teams)},
             )
         for team in dissolved_teams:
-            await admin_supabase.table("epoch_participants").update(
-                {"team_id": None}
-            ).eq("epoch_id", str(epoch_id)).eq(
-                "team_id", team["id"]
-            ).execute()
+            await (
+                admin_supabase.table("epoch_participants")
+                .update({"team_id": None})
+                .eq("epoch_id", str(epoch_id))
+                .eq("team_id", team["id"])
+                .execute()
+            )
 
     # ── Dissolve Team ─────────────────────────────────────
 
@@ -511,38 +520,47 @@ class AllianceService:
 
         # Get team name for logging
         team_resp = await (
-            admin_supabase.table("epoch_teams")
-            .select("name")
-            .eq("id", str(team_id))
-            .maybe_single()
-            .execute()
+            admin_supabase.table("epoch_teams").select("name").eq("id", str(team_id)).maybe_single().execute()
         )
         team_name = (team_resp.data or {}).get("name", "Unknown")
 
         logger.info(
             "Alliance dissolved manually",
-            extra={"epoch_id": str(epoch_id), "team_id": str(team_id),
-                   "team_name": team_name, "reason": reason},
+            extra={"epoch_id": str(epoch_id), "team_id": str(team_id), "team_name": team_name, "reason": reason},
         )
 
         # Dissolve
-        await admin_supabase.table("epoch_teams").update({
-            "dissolved_at": datetime.now(UTC).isoformat(),
-            "dissolved_reason": reason,
-        }).eq("id", str(team_id)).execute()
+        await (
+            admin_supabase.table("epoch_teams")
+            .update(
+                {
+                    "dissolved_at": datetime.now(UTC).isoformat(),
+                    "dissolved_reason": reason,
+                }
+            )
+            .eq("id", str(team_id))
+            .execute()
+        )
 
         # Clear members
-        await admin_supabase.table("epoch_participants").update(
-            {"team_id": None}
-        ).eq("epoch_id", str(epoch_id)).eq("team_id", str(team_id)).execute()
+        await (
+            admin_supabase.table("epoch_participants")
+            .update({"team_id": None})
+            .eq("epoch_id", str(epoch_id))
+            .eq("team_id", str(team_id))
+            .execute()
+        )
 
         # Get cycle for logging
         from backend.services.epoch_service import EpochService
+
         epoch = await EpochService.get(admin_supabase, epoch_id)
         cycle = epoch.get("current_cycle", 0)
 
         await BattleLogService.log_event(
-            admin_supabase, epoch_id, cycle,
+            admin_supabase,
+            epoch_id,
+            cycle,
             "alliance_dissolved",
             f"Alliance '{team_name}' has been dissolved ({reason}).",
             is_public=True,

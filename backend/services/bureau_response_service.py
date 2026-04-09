@@ -10,9 +10,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.utils.errors import bad_request, conflict, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -53,44 +52,35 @@ class BureauResponseService:
 
     @classmethod
     async def create_response(
-        cls, supabase: Client, sim_id: UUID, event_id: UUID,
-        response_type: str, agent_ids: list[UUID], user_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
+        event_id: UUID,
+        response_type: str,
+        agent_ids: list[UUID],
+        user_id: UUID,
     ) -> dict:
         """Create a bureau response to an event."""
         if response_type not in RESPONSE_CONFIG:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid response_type '{response_type}'.",
-            )
+            raise bad_request(f"Invalid response_type '{response_type}'.")
 
         config = RESPONSE_CONFIG[response_type]
 
         # Validate agent count
         if response_type == "adapt":
             # Adapt requires 5+ reactions on the event, not agents
-            reaction_count = len((
-                await supabase.table("event_reactions")
-                .select("id")
-                .eq("event_id", str(event_id))
-                .execute()
-            ).data or [])
+            reaction_count = len(
+                (await supabase.table("event_reactions").select("id").eq("event_id", str(event_id)).execute()).data
+                or []
+            )
             if reaction_count < 5:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Adapt requires 5+ event reactions. Current: {reaction_count}.",
-                )
+                raise bad_request(f"Adapt requires 5+ event reactions. Current: {reaction_count}.")
             agent_ids = []  # Adapt uses no agents
         else:
             if len(agent_ids) < config["min_agents"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"{response_type} requires at least {config['min_agents']} agent(s).",
-                )
+                raise bad_request(f"{response_type} requires at least {config['min_agents']} agent(s).")
             if len(agent_ids) > config["max_agents"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"{response_type} allows at most {config['max_agents']} agent(s).",
-                )
+                raise bad_request(f"{response_type} allows at most {config['max_agents']} agent(s).")
 
         # Check event exists and is not archived
         _resp = await (
@@ -104,12 +94,9 @@ class BureauResponseService:
         )
         event = _resp.data
         if not event:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found.")
+            raise not_found(detail="Event not found.")
         if event[0]["event_status"] in ("resolved", "archived"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot respond to a resolved/archived event.",
-            )
+            raise bad_request("Cannot respond to a resolved/archived event.")
 
         # Check no pending response exists for this event
         _resp = await (
@@ -123,47 +110,42 @@ class BureauResponseService:
         )
         existing = _resp.data
         if existing:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="A pending bureau response already exists for this event.",
-            )
+            raise conflict("A pending bureau response already exists for this event.")
 
         # Get current tick
         _resp = await (
-            supabase.table("simulations")
-            .select("last_heartbeat_tick")
-            .eq("id", str(sim_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("last_heartbeat_tick").eq("id", str(sim_id)).limit(1).execute()
         )
         sim = _resp.data
         current_tick = (sim[0].get("last_heartbeat_tick") or 0) if sim else 0
 
         response = await (
             supabase.table("bureau_responses")
-            .insert({
-                "simulation_id": str(sim_id),
-                "event_id": str(event_id),
-                "response_type": response_type,
-                "assigned_agent_ids": [str(a) for a in agent_ids],
-                "agent_count": len(agent_ids),
-                "status": "pending",
-                "submitted_before_tick": current_tick + 1,
-                "staffing_penalty_active": len(agent_ids) > 0,
-                "created_by_id": str(user_id),
-            })
+            .insert(
+                {
+                    "simulation_id": str(sim_id),
+                    "event_id": str(event_id),
+                    "response_type": response_type,
+                    "assigned_agent_ids": [str(a) for a in agent_ids],
+                    "agent_count": len(agent_ids),
+                    "status": "pending",
+                    "submitted_before_tick": current_tick + 1,
+                    "staffing_penalty_active": len(agent_ids) > 0,
+                    "created_by_id": str(user_id),
+                }
+            )
             .execute()
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create bureau response.",
-            )
+            raise server_error("Failed to create bureau response.")
 
         logger.info(
             "Bureau response created: %s for event %s (sim %s, %d agents)",
-            response_type, event_id, sim_id, len(agent_ids),
+            response_type,
+            event_id,
+            sim_id,
+            len(agent_ids),
             extra={
                 "simulation_id": str(sim_id),
                 "event_id": str(event_id),
@@ -175,38 +157,44 @@ class BureauResponseService:
 
     @classmethod
     async def cancel_response(
-        cls, supabase: Client, sim_id: UUID, response_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
+        response_id: UUID,
     ) -> dict:
         """Cancel a pending bureau response."""
         response = await (
             supabase.table("bureau_responses")
-            .update({
-                "status": "expired",
-                "staffing_penalty_active": False,
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "status": "expired",
+                    "staffing_penalty_active": False,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("id", str(response_id))
             .eq("simulation_id", str(sim_id))
             .eq("status", "pending")
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Pending bureau response not found.",
-            )
+            raise not_found(detail="Pending bureau response not found.")
         logger.info(
             "Bureau response cancelled: %s (sim %s)",
-            response_id, sim_id,
+            response_id,
+            sim_id,
             extra={"simulation_id": str(sim_id), "response_id": str(response_id)},
         )
         return response.data[0]
 
     @classmethod
     async def list_responses(
-        cls, supabase: Client, sim_id: UUID,
+        cls,
+        supabase: Client,
+        sim_id: UUID,
         event_id: UUID | None = None,
-        limit: int = 50, offset: int = 0,
+        limit: int = 50,
+        offset: int = 0,
     ) -> tuple[list[dict], int]:
         """List bureau responses for a simulation, optionally filtered by event."""
         query = (
@@ -225,8 +213,11 @@ class BureauResponseService:
 
     @classmethod
     async def resolve_at_tick(
-        cls, admin: Client, sim_id: UUID,
-        tick_number: int, heartbeat_id: UUID,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        heartbeat_id: UUID,
         config: dict | None = None,
     ) -> tuple[int, list[dict]]:
         """Resolve pending bureau responses. Called from HeartbeatService Phase 5."""
@@ -303,42 +294,61 @@ class BureauResponseService:
             elif resp_type == "adapt":
                 # Adapt reduces scar tissue on the parent narrative arc
                 pressure_reduction = await cls._apply_adapt_scar_reduction(
-                    admin, sim_id, resp["event_id"], config,
+                    admin,
+                    sim_id,
+                    resp["event_id"],
+                    config,
                 )
 
             # Update response record
-            await admin.table("bureau_responses").update({
-                "status": "resolved",
-                "resolved_at_tick": tick_number,
-                "effectiveness": effectiveness,
-                "pressure_reduction": pressure_reduction,
-                "staffing_penalty_active": False,
-                "updated_at": datetime.now(UTC).isoformat(),
-            }).eq("id", resp_id).execute()
+            await (
+                admin.table("bureau_responses")
+                .update(
+                    {
+                        "status": "resolved",
+                        "resolved_at_tick": tick_number,
+                        "effectiveness": effectiveness,
+                        "pressure_reduction": pressure_reduction,
+                        "staffing_penalty_active": False,
+                        "updated_at": datetime.now(UTC).isoformat(),
+                    }
+                )
+                .eq("id", resp_id)
+                .execute()
+            )
 
             resolved_count += 1
 
-            entries.append(make_heartbeat_entry(
-                heartbeat_id, sim_id, tick_number, "bureau_response",
-                (
-                    f"Bureau Response resolved: {resp_type.title()} of '{event_title}' "
-                    f"effectiveness {effectiveness:.2f}. Pressure reduced by {pressure_reduction:.2f}."
-                ),
-                (
-                    f"Buero-Reaktion aufgeloest: {resp_type.title()} von '{event_title}' "
-                    f"Effektivitaet {effectiveness:.2f}. Druck reduziert um {pressure_reduction:.2f}."
-                ),
-                severity="positive" if effectiveness > 0.5 else "info",
-                metadata={
-                    "response_id": resp_id, "response_type": resp_type,
-                    "event_id": resp["event_id"], "effectiveness": effectiveness,
-                    "pressure_reduction": pressure_reduction,
-                },
-            ))
+            entries.append(
+                make_heartbeat_entry(
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
+                    "bureau_response",
+                    (
+                        f"Bureau Response resolved: {resp_type.title()} of '{event_title}' "
+                        f"effectiveness {effectiveness:.2f}. Pressure reduced by {pressure_reduction:.2f}."
+                    ),
+                    (
+                        f"Buero-Reaktion aufgeloest: {resp_type.title()} von '{event_title}' "
+                        f"Effektivitaet {effectiveness:.2f}. Druck reduziert um {pressure_reduction:.2f}."
+                    ),
+                    severity="positive" if effectiveness > 0.5 else "info",
+                    metadata={
+                        "response_id": resp_id,
+                        "response_type": resp_type,
+                        "event_id": resp["event_id"],
+                        "effectiveness": effectiveness,
+                        "pressure_reduction": pressure_reduction,
+                    },
+                )
+            )
 
             logger.info(
                 "Bureau response resolved: %s for event %s (effectiveness %.2f)",
-                resp_type, resp["event_id"], effectiveness,
+                resp_type,
+                resp["event_id"],
+                effectiveness,
                 extra={
                     "simulation_id": str(sim_id),
                     "response_id": resp_id,
@@ -352,8 +362,11 @@ class BureauResponseService:
 
     @classmethod
     async def _apply_adapt_scar_reduction(
-        cls, admin: Client, sim_id: UUID,
-        event_id: str, config: dict | None,
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        event_id: str,
+        config: dict | None,
     ) -> float:
         """Reduce scar tissue on the narrative arc containing this event.
 
@@ -375,13 +388,22 @@ class BureauResponseService:
             if event_id in source_ids:
                 current_scar = float(arc.get("scar_tissue_deposited", 0))
                 new_scar = round(max(0, current_scar * (1 - adapt_scar_reduction)), 4)
-                await admin.table("narrative_arcs").update({
-                    "scar_tissue_deposited": new_scar,
-                }).eq("id", arc["id"]).execute()
+                await (
+                    admin.table("narrative_arcs")
+                    .update(
+                        {
+                            "scar_tissue_deposited": new_scar,
+                        }
+                    )
+                    .eq("id", arc["id"])
+                    .execute()
+                )
                 reduction = round(current_scar - new_scar, 4)
                 logger.info(
                     "Adapt response reduced scar tissue on arc %s: %.4f -> %.4f",
-                    arc["id"], current_scar, new_scar,
+                    arc["id"],
+                    current_scar,
+                    new_scar,
                     extra={
                         "simulation_id": str(sim_id),
                         "arc_id": arc["id"],

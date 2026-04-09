@@ -40,13 +40,15 @@ def get_adapter_info() -> list[dict[str, Any]]:
     """Return metadata for all registered adapters."""
     result = []
     for name, cls in _ADAPTERS.items():
-        result.append({
-            "name": name,
-            "display_name": cls.display_name,
-            "categories": cls.categories,
-            "is_structured": cls.is_structured,
-            "requires_api_key": cls.requires_api_key,
-            "api_key_setting": cls.api_key_setting,
-            "default_interval": cls.default_interval,
-        })
+        result.append(
+            {
+                "name": name,
+                "display_name": cls.display_name,
+                "categories": cls.categories,
+                "is_structured": cls.is_structured,
+                "requires_api_key": cls.requires_api_key,
+                "api_key_setting": cls.api_key_setting,
+                "default_interval": cls.default_interval,
+            }
+        )
     return result

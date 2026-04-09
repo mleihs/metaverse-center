@@ -4,10 +4,9 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.models.settings import is_sensitive_key
 from backend.utils.encryption import decrypt, encrypt, mask
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -53,10 +52,7 @@ class SettingsService:
             .execute()
         )
         if not response or not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Setting '{setting_id}' not found.",
-            )
+            raise not_found(detail=f"Setting '{setting_id}' not found.")
         return _mask_if_encrypted(response.data[0])
 
     @staticmethod
@@ -90,10 +86,7 @@ class SettingsService:
         )
 
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to save setting.",
-            )
+            raise server_error("Failed to save setting.")
 
         return _mask_if_encrypted(response.data[0])
 
@@ -132,10 +125,7 @@ class SettingsService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Setting '{setting_id}' not found.",
-            )
+            raise not_found(detail=f"Setting '{setting_id}' not found.")
         return response.data[0]
 
     # ── Dungeon Override Queries ────────────────────────────────────────

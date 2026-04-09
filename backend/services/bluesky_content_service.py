@@ -15,10 +15,10 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.bluesky import BlueskyService
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -29,22 +29,47 @@ _HASHTAG_BUDGET = 3  # Max hashtags to append
 
 # Brand/simulation-specific tags — zero search volume, skip for Bluesky
 _SKIP_TAG_PATTERNS = {
-    "bureauofimpossiblegeography", "substratedispatch",
+    "bureauofimpossiblegeography",
+    "substratedispatch",
     # Simulation slugs become CamelCase tags — detect by checking if
     # the lowered tag matches no known community hashtag
 }
 
 # Community tags worth keeping on Bluesky (high discoverability)
 _BLUESKY_WORTHY_TAGS = {
-    "#worldbuilding", "#aiart", "#speculativefiction", "#scifi",
-    "#digitalart", "#conceptart", "#storytelling", "#alternatehistory",
-    "#creativewriting", "#fantasyworldbuilding", "#scifiart", "#ttrpg",
-    "#fantasy", "#characterdesign", "#oc", "#aicharacter", "#characterart",
-    "#aiportrait", "#rpg", "#fictionalcharacter", "#portraitart",
-    "#ttrpgcommunity", "#aiarchitecture", "#fantasyarchitecture",
-    "#environmentdesign", "#urbanfantasy", "#proceduralgeneration",
-    "#microfiction", "#flashfiction", "#lorebuilding", "#narrativedesign",
-    "#emergentnarrative", "#indiedev",
+    "#worldbuilding",
+    "#aiart",
+    "#speculativefiction",
+    "#scifi",
+    "#digitalart",
+    "#conceptart",
+    "#storytelling",
+    "#alternatehistory",
+    "#creativewriting",
+    "#fantasyworldbuilding",
+    "#scifiart",
+    "#ttrpg",
+    "#fantasy",
+    "#characterdesign",
+    "#oc",
+    "#aicharacter",
+    "#characterart",
+    "#aiportrait",
+    "#rpg",
+    "#fictionalcharacter",
+    "#portraitart",
+    "#ttrpgcommunity",
+    "#aiarchitecture",
+    "#fantasyarchitecture",
+    "#environmentdesign",
+    "#urbanfantasy",
+    "#proceduralgeneration",
+    "#microfiction",
+    "#flashfiction",
+    "#lorebuilding",
+    "#narrativedesign",
+    "#emergentnarrative",
+    "#indiedev",
 }
 
 
@@ -86,10 +111,7 @@ class BlueskyContentService:
             .execute()
         )
         if not bp_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Bluesky post not found.",
-            )
+            raise not_found(detail="Bluesky post not found.")
 
         bp = bp_resp.data[0]
         ig_data = bp.get("instagram_posts") or {}
@@ -107,12 +129,7 @@ class BlueskyContentService:
 
         # Update
         update_data = {"caption": adapted, "facets": facets}
-        resp = await (
-            admin_supabase.table("bluesky_posts")
-            .update(update_data)
-            .eq("id", str(bluesky_post_id))
-            .execute()
-        )
+        resp = await admin_supabase.table("bluesky_posts").update(update_data).eq("id", str(bluesky_post_id)).execute()
         return resp.data[0] if resp.data else update_data
 
     @classmethod
@@ -215,7 +232,7 @@ class BlueskyContentService:
         if last_space > 0:
             return truncated[:last_space] + "…"
 
-        return truncated[:max_graphemes - 1] + "…"
+        return truncated[: max_graphemes - 1] + "…"
 
     # ── Queue Management ───────────────────────────────────────────────
 
@@ -228,10 +245,7 @@ class BlueskyContentService:
         offset: int = 0,
     ) -> tuple[list, int]:
         """List Bluesky queue items from v_bluesky_queue."""
-        query = (
-            admin_supabase.table("v_bluesky_queue")
-            .select("*", count="exact")
-        )
+        query = admin_supabase.table("v_bluesky_queue").select("*", count="exact")
         if status_filter:
             query = query.eq("status", status_filter)
 
@@ -248,18 +262,9 @@ class BlueskyContentService:
         post_id: UUID,
     ) -> dict:
         """Get a single Bluesky post."""
-        resp = await (
-            admin_supabase.table("bluesky_posts")
-            .select("*")
-            .eq("id", str(post_id))
-            .limit(1)
-            .execute()
-        )
+        resp = await admin_supabase.table("bluesky_posts").select("*").eq("id", str(post_id)).limit(1).execute()
         if not resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Bluesky post not found.",
-            )
+            raise not_found(detail="Bluesky post not found.")
         return resp.data[0]
 
     @classmethod
@@ -277,10 +282,7 @@ class BlueskyContentService:
             .execute()
         )
         if not resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Post not found or not in skippable status.",
-            )
+            raise not_found(detail="Post not found or not in skippable status.")
         return resp.data[0]
 
     @classmethod
@@ -298,10 +300,7 @@ class BlueskyContentService:
             .execute()
         )
         if not resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Post not found or not in skipped status.",
-            )
+            raise not_found(detail="Post not found or not in skipped status.")
         return resp.data[0]
 
     @classmethod
@@ -312,10 +311,17 @@ class BlueskyContentService:
         failure_reason: str,
     ) -> None:
         """Reset a post back to pending after a publish failure."""
-        await admin_supabase.table("bluesky_posts").update({
-            "status": "pending",
-            "failure_reason": failure_reason[:500],
-        }).eq("id", post_id).execute()
+        await (
+            admin_supabase.table("bluesky_posts")
+            .update(
+                {
+                    "status": "pending",
+                    "failure_reason": failure_reason[:500],
+                }
+            )
+            .eq("id", post_id)
+            .execute()
+        )
 
     @classmethod
     async def update_engagement_metrics(
@@ -332,12 +338,7 @@ class BlueskyContentService:
             "quotes_count": metrics.get("quotes", 0) or 0,
             "metrics_updated_at": datetime.now(UTC).isoformat(),
         }
-        resp = await (
-            admin_supabase.table("bluesky_posts")
-            .update(update)
-            .eq("id", str(post_id))
-            .execute()
-        )
+        resp = await admin_supabase.table("bluesky_posts").update(update).eq("id", str(post_id)).execute()
         return resp.data[0] if resp.data else update
 
     # ── Analytics ──────────────────────────────────────────────────────
@@ -401,11 +402,14 @@ class BlueskyContentService:
         _resp = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
-            .in_("setting_key", [
-                "bluesky_handle",
-                "bluesky_app_password",
-                "bluesky_pds_url",
-            ])
+            .in_(
+                "setting_key",
+                [
+                    "bluesky_handle",
+                    "bluesky_app_password",
+                    "bluesky_pds_url",
+                ],
+            )
             .execute()
         )
         rows = _resp.data or []
@@ -428,20 +432,25 @@ class BlueskyContentService:
                 if raw.startswith("gAAAAA"):
                     try:
                         from backend.utils.encryption import decrypt
+
                         result["app_password"] = decrypt(raw)
                     except (ValueError, Exception):
                         logger.warning("Failed to decrypt Bluesky app password")
                 else:
                     result["app_password"] = raw
 
-        logger.info("Bluesky credentials loaded", extra={
-            "handle": result["handle"] or "EMPTY",
-            "pds_url": result["pds_url"],
-            "password_len": len(result["app_password"]),
-            "password_prefix": result["app_password"][:4] + "…" if result["app_password"] else "EMPTY",
-            "was_encrypted": any(
-                str(r["setting_value"] or "").startswith("gAAAAA")
-                for r in rows if r["setting_key"] == "bluesky_app_password"
-            ),
-        })
+        logger.info(
+            "Bluesky credentials loaded",
+            extra={
+                "handle": result["handle"] or "EMPTY",
+                "pds_url": result["pds_url"],
+                "password_len": len(result["app_password"]),
+                "password_prefix": result["app_password"][:4] + "…" if result["app_password"] else "EMPTY",
+                "was_encrypted": any(
+                    str(r["setting_value"] or "").startswith("gAAAAA")
+                    for r in rows
+                    if r["setting_key"] == "bluesky_app_password"
+                ),
+            },
+        )
         return result

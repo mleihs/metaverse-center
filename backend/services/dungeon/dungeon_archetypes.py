@@ -90,9 +90,9 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "stress_multiplier": 1.20,
         },
         "aptitude_weights": {
-            "guardian": 30,   # critical: stabilize + tank
-            "spy": 20,        # high: efficiency, shortcuts
-            "saboteur": 20,   # high: controlled demolition
+            "guardian": 30,  # critical: stabilize + tank
+            "spy": 20,  # high: efficiency, shortcuts
+            "saboteur": 20,  # high: controlled demolition
             "propagandist": 12,
             "assassin": 8,
             "infiltrator": 10,
@@ -121,7 +121,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "heal_stress_per_room": 5,
             "heal_stress_per_room_deep": 10,  # depth 5+: more generous
             # Rest site bonus
-            "rest_stress_heal": 60,           # vs standard 40
+            "rest_stress_heal": 60,  # vs standard 40
             "rest_attachment_gain": 8,
             # Combat accumulation (lower than Entropy — combat RESISTS the Mother)
             "gain_per_combat_round": 1,
@@ -141,10 +141,10 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "critical_threshold": 75,
             "dependent_threshold": 45,
             # Warmth gradient: buffs that increase WITH attachment (the trap)
-            "warmth_stress_resist_45": 0.15,   # -15% incoming stress
-            "warmth_stress_resist_75": 0.30,   # -30% incoming stress
-            "warmth_heal_bonus_45": 1.25,      # rest heals 25% more
-            "warmth_heal_bonus_75": 1.50,      # rest heals 50% more
+            "warmth_stress_resist_45": 0.15,  # -15% incoming stress
+            "warmth_stress_resist_75": 0.30,  # -30% incoming stress
+            "warmth_heal_bonus_45": 1.25,  # rest heals 25% more
+            "warmth_heal_bonus_75": 1.50,  # rest heals 50% more
             # High attachment penalties
             "high_attachment_retreat_stress_75": 80,
             "high_attachment_retreat_stress_90": 150,
@@ -263,28 +263,28 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "gain_depth_3_4": 7,
             "gain_depth_5_plus": 10,
             # ── Event-driven fracture changes ──
-            "gain_per_combat_round": 2,   # violence fractures authority
-            "gain_on_failed_check": 5,    # failed diplomacy accelerates crisis
-            "gain_per_enemy_hit": 2,      # each blow widens the cracks
+            "gain_per_combat_round": 2,  # violence fractures authority
+            "gain_on_failed_check": 5,  # failed diplomacy accelerates crisis
+            "gain_per_enemy_hit": 2,  # each blow widens the cracks
             # ── Fracture reduction ──
-            "reduce_on_combat_win": 0,    # violence does not restore order
-            "reduce_on_rest": 5,          # brief respite from the crisis
-            "reduce_on_treasure": 0,      # material gain does not heal rifts
-            "reduce_on_rally_action": 10, # Propagandist rally: restore order
+            "reduce_on_combat_win": 0,  # violence does not restore order
+            "reduce_on_rest": 5,  # brief respite from the crisis
+            "reduce_on_treasure": 0,  # material gain does not heal rifts
+            "reduce_on_rally_action": 10,  # Propagandist rally: restore order
             # ── Thresholds (emotional gradient — literary research §Tone) ──
-            "whispers_threshold": 20,          # Court Order → Whispers
-            "schism_threshold": 40,            # Whispers → Schism
-            "revolution_threshold": 60,        # Schism → Revolution
-            "new_regime_threshold": 80,        # Revolution → New Regime
-            "total_fracture_threshold": 100,   # collapse: power vacuum (wipe)
+            "whispers_threshold": 20,  # Court Order → Whispers
+            "schism_threshold": 40,  # Whispers → Schism
+            "revolution_threshold": 60,  # Schism → Revolution
+            "new_regime_threshold": 80,  # Revolution → New Regime
+            "total_fracture_threshold": 100,  # collapse: power vacuum (wipe)
             # ── Stress multipliers (ascending paranoia, not descending grammar) ──
-            "stress_multiplier_40": 1.10,           # Schism: mild tension
-            "stress_multiplier_60": 1.25,           # Revolution: significant
-            "stress_multiplier_80": 1.50,           # New Regime: severe
+            "stress_multiplier_40": 1.10,  # Schism: mild tension
+            "stress_multiplier_60": 1.25,  # Revolution: significant
+            "stress_multiplier_80": 1.50,  # New Regime: severe
             "total_fracture_stress_multiplier": 2.0,  # collapse: double stress
             # ── Ambush modification (political ambush = betrayal, not monsters) ──
-            "high_fracture_ambush_60": 0.20,   # Revolution: factional betrayals
-            "high_fracture_ambush_80": 0.35,   # New Regime: constant treachery
+            "high_fracture_ambush_60": 0.20,  # Revolution: factional betrayals
+            "high_fracture_ambush_80": 0.35,  # New Regime: constant treachery
             # ── Rally ability (Propagandist — reduces fracture) ──
             # Pattern: POST /runs/{id}/rally → apply_restore(instance, "rally")
             "rally_stress_cost": 15,
@@ -298,15 +298,15 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             # ── Faction standings (encounter-driven, tracked in archetype_state) ──
             "max_faction_standing": 100,
             "start_faction_standing": 50,  # neutral: neither allied nor hostile
-            "betrayal_stress_cost": 20,    # Canetti's sting: switching costs stress
+            "betrayal_stress_cost": 20,  # Canetti's sting: switching costs stress
         },
         "aptitude_weights": {
-            "propagandist": 30,   # critical: rhetoric, debate, faction rally
-            "spy": 25,            # high: intelligence, truth-reading, exposure
-            "infiltrator": 15,    # medium: navigating faction layers
-            "saboteur": 12,       # medium: undermining rival factions
-            "guardian": 10,       # low: holding ground in political storm
-            "assassin": 8,        # low: the Overthrow is social, not violent
+            "propagandist": 30,  # critical: rhetoric, debate, faction rally
+            "spy": 25,  # high: intelligence, truth-reading, exposure
+            "infiltrator": 15,  # medium: navigating faction layers
+            "saboteur": 12,  # medium: undermining rival factions
+            "guardian": 10,  # low: holding ground in political storm
+            "assassin": 8,  # low: the Overthrow is social, not violent
         },
         # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
         "atmosphere_enter_en": "",
@@ -331,28 +331,28 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "gain_depth_3_4": 7,
             "gain_depth_5_plus": 10,
             # ── Event-driven insight changes ──
-            "gain_on_combat_win": 5,       # studying defeated constructs
-            "gain_on_craft_success": 8,    # creative momentum builds
-            "gain_on_craft_fail": 4,       # Lem: "the residue is interesting"
-            "gain_on_treasure": 5,         # component discovery inspires
+            "gain_on_combat_win": 5,  # studying defeated constructs
+            "gain_on_craft_success": 8,  # creative momentum builds
+            "gain_on_craft_fail": 4,  # Lem: "the residue is interesting"
+            "gain_on_treasure": 5,  # component discovery inspires
             # ── Insight reduction ──
-            "reduce_on_rest": 15,          # the fire cools — deliberate respite
-            "drain_per_combat_round": 2,   # focus disrupted in combat
-            "drain_on_failed_check": 5,    # confusion breaks the flow
-            "drain_per_enemy_hit": 3,      # physical disruption
+            "reduce_on_rest": 15,  # the fire cools — deliberate respite
+            "drain_per_combat_round": 2,  # focus disrupted in combat
+            "drain_on_failed_check": 5,  # confusion breaks the flow
+            "drain_per_enemy_hit": 3,  # physical disruption
             # ── Thresholds ──
-            "cold_forge_threshold": 20,    # below: crafting penalty
-            "inspired_threshold": 45,      # crafting bonus tier 1
-            "feverish_threshold": 75,      # crafting bonus tier 2 + stress
-            "breakthrough_threshold": 100, # legendary crafts + max stress
+            "cold_forge_threshold": 20,  # below: crafting penalty
+            "inspired_threshold": 45,  # crafting bonus tier 1
+            "feverish_threshold": 75,  # crafting bonus tier 2 + stress
+            "breakthrough_threshold": 100,  # legendary crafts + max stress
             # ── Stress multipliers (the fire burns) ──
-            "stress_multiplier_75": 1.25,          # feverish: 25% more stress
-            "stress_multiplier_90": 1.50,          # white heat: 50% more stress
-            "breakthrough_stress_multiplier": 2.0, # breakthrough: double stress
+            "stress_multiplier_75": 1.25,  # feverish: 25% more stress
+            "stress_multiplier_90": 1.50,  # white heat: 50% more stress
+            "breakthrough_stress_multiplier": 2.0,  # breakthrough: double stress
             # ── Crafting success modifiers ──
-            "craft_penalty_cold": -0.15,   # cold forge: -15% success
-            "craft_bonus_45": 0.15,        # inspired: +15% success
-            "craft_bonus_75": 0.30,        # feverish: +30% success
+            "craft_penalty_cold": -0.15,  # cold forge: -15% success
+            "craft_bonus_45": 0.15,  # inspired: +15% success
+            "craft_bonus_75": 0.30,  # feverish: +30% success
             # ── High-insight ambush (volatile workshop) ──
             "high_insight_ambush_75": 0.15,
             "high_insight_ambush_90": 0.30,
@@ -361,12 +361,12 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "max_crafted_items": 6,
         },
         "aptitude_weights": {
-            "saboteur": 30,       # critical: crafting, combination, material work
-            "spy": 20,            # high: scouting components, analysis
-            "infiltrator": 20,    # high: delicate assembly, precision
-            "guardian": 12,       # medium: protecting creations
-            "propagandist": 10,   # medium: inspiring the workshop
-            "assassin": 8,        # low: destructive, not creative
+            "saboteur": 30,  # critical: crafting, combination, material work
+            "spy": 20,  # high: scouting components, analysis
+            "infiltrator": 20,  # high: delicate assembly, precision
+            "guardian": 12,  # medium: protecting creations
+            "propagandist": 10,  # medium: inspiring the workshop
+            "assassin": 8,  # low: destructive, not creative
         },
         # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
         "atmosphere_enter_en": "",
@@ -426,12 +426,12 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "ground_cooldown_rooms": 3,
         },
         "aptitude_weights": {
-            "spy": 30,            # critical: perception, observation, inner sight
-            "propagandist": 25,   # high: shared consciousness, collective voice
-            "guardian": 15,       # medium: grounding, maintaining identity
-            "infiltrator": 12,    # medium: navigating layers of consciousness
-            "saboteur": 10,       # low: disruption of patterns
-            "assassin": 8,        # low: precision in unstable reality
+            "spy": 30,  # critical: perception, observation, inner sight
+            "propagandist": 25,  # high: shared consciousness, collective voice
+            "guardian": 15,  # medium: grounding, maintaining identity
+            "infiltrator": 12,  # medium: navigating layers of consciousness
+            "saboteur": 10,  # low: disruption of patterns
+            "assassin": 8,  # low: precision in unstable reality
         },
         # Entrance text pool in dungeon_objektanker.py ENTRANCE_TEXTS
         "atmosphere_enter_en": "",

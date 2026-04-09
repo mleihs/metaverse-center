@@ -15,9 +15,14 @@ from backend.services.scanning.base_adapter import ScanResult
 logger = logging.getLogger(__name__)
 
 VALID_CATEGORIES = {
-    "economic_crisis", "military_conflict", "pandemic",
-    "natural_disaster", "political_upheaval", "tech_breakthrough",
-    "cultural_shift", "environmental_disaster",
+    "economic_crisis",
+    "military_conflict",
+    "pandemic",
+    "natural_disaster",
+    "political_upheaval",
+    "tech_breakthrough",
+    "cultural_shift",
+    "environmental_disaster",
 }
 
 # Classification system prompt
@@ -45,8 +50,16 @@ Return JSON array:
 
 # Map significance (1-10) → magnitude (0.1-1.0)
 _SIGNIFICANCE_TO_MAGNITUDE = {
-    1: 0.10, 2: 0.20, 3: 0.30, 4: 0.40, 5: 0.50,
-    6: 0.60, 7: 0.70, 8: 0.80, 9: 0.90, 10: 1.00,
+    1: 0.10,
+    2: 0.20,
+    3: 0.30,
+    4: 0.40,
+    5: 0.50,
+    6: 0.60,
+    7: 0.70,
+    8: 0.80,
+    9: 0.90,
+    10: 1.00,
 }
 
 
@@ -103,8 +116,7 @@ async def classify_batch(
 
     # Build headlines JSON for LLM
     headlines = [
-        {"index": idx, "title": r.title, "description": r.description or ""}
-        for idx, (_, r) in enumerate(unstructured)
+        {"index": idx, "title": r.title, "description": r.description or ""} for idx, (_, r) in enumerate(unstructured)
     ]
 
     user_prompt = f"Headlines:\n{json.dumps(headlines, ensure_ascii=False)}"

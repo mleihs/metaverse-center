@@ -17,13 +17,13 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_service import InstagramImageService
+from backend.utils.errors import not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -39,33 +39,65 @@ _AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
 # Broad reach pool (high search volume, relevant communities).
 # Rotated per post via entity name hash to avoid identical tag sets.
 _BROAD_POOL = [
-    "#worldbuilding", "#AIart", "#speculativefiction", "#scifi",
-    "#digitalart", "#conceptart", "#storytelling", "#alternatehistory",
-    "#creativewriting", "#indiedev", "#fantasyworldbuilding", "#scifiart",
-    "#ttrpg", "#fantasy",
+    "#worldbuilding",
+    "#AIart",
+    "#speculativefiction",
+    "#scifi",
+    "#digitalart",
+    "#conceptart",
+    "#storytelling",
+    "#alternatehistory",
+    "#creativewriting",
+    "#indiedev",
+    "#fantasyworldbuilding",
+    "#scifiart",
+    "#ttrpg",
+    "#fantasy",
 ]
 
 # Niche engagement pools — high relevance, per content type.
 # These attract genuinely interested followers (better engagement rate).
 _NICHE_POOLS: dict[str, list[str]] = {
     "agent": [
-        "#characterdesign", "#OC", "#AIcharacter", "#characterart",
-        "#AIportrait", "#RPG", "#dndcharacter", "#fictionalcharacter",
-        "#portraitart", "#ttrpgcommunity",
+        "#characterdesign",
+        "#OC",
+        "#AIcharacter",
+        "#characterart",
+        "#AIportrait",
+        "#RPG",
+        "#dndcharacter",
+        "#fictionalcharacter",
+        "#portraitart",
+        "#ttrpgcommunity",
     ],
     "building": [
-        "#AIarchitecture", "#fantasyarchitecture", "#environmentdesign",
-        "#scifibuilding", "#conceptarchitecture", "#urbanfantasy",
-        "#proceduralgeneration", "#virtualworld",
+        "#AIarchitecture",
+        "#fantasyarchitecture",
+        "#environmentdesign",
+        "#scifibuilding",
+        "#conceptarchitecture",
+        "#urbanfantasy",
+        "#proceduralgeneration",
+        "#virtualworld",
     ],
     "chronicle": [
-        "#microfiction", "#flashfiction", "#lorebuilding",
-        "#narrativedesign", "#ttrpg", "#emergentnarrative",
-        "#fictionwriting", "#worldlore",
+        "#microfiction",
+        "#flashfiction",
+        "#lorebuilding",
+        "#narrativedesign",
+        "#ttrpg",
+        "#emergentnarrative",
+        "#fictionwriting",
+        "#worldlore",
     ],
     "lore": [
-        "#lore", "#deepdive", "#secrethistory", "#fictionallore",
-        "#narrativedesign", "#ttrpg", "#archivesfiction",
+        "#lore",
+        "#deepdive",
+        "#secrethistory",
+        "#fictionallore",
+        "#narrativedesign",
+        "#ttrpg",
+        "#archivesfiction",
         "#classifieddocument",
     ],
 }
@@ -146,21 +178,28 @@ class InstagramContentService:
         record = {**data, "status": "draft", "ai_disclosure_included": True, "created_by_id": user_id}
         resp = await admin_supabase.table("instagram_posts").insert(record).execute()
         if not resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create Instagram post.",
-            )
+            raise server_error("Failed to create Instagram post.")
         return resp.data[0]
 
     @classmethod
     async def reset_post_status(
-        cls, admin_supabase: Client, post_id: str, failure_reason: str,
+        cls,
+        admin_supabase: Client,
+        post_id: str,
+        failure_reason: str,
     ) -> None:
         """Reset a post back to scheduled status after a publish failure."""
-        await admin_supabase.table("instagram_posts").update({
-            "status": "scheduled",
-            "failure_reason": failure_reason[:500],
-        }).eq("id", post_id).execute()
+        await (
+            admin_supabase.table("instagram_posts")
+            .update(
+                {
+                    "status": "scheduled",
+                    "failure_reason": failure_reason[:500],
+                }
+            )
+            .eq("id", post_id)
+            .execute()
+        )
 
     @classmethod
     async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
@@ -249,6 +288,7 @@ class InstagramContentService:
         # Lore entries store image_slug, not full URL — resolve it
         if not image_url and content_type == "lore" and candidate.get("image_slug"):
             from backend.config import settings
+
             image_url = (
                 f"{settings.supabase_url}/storage/v1/object/public/"
                 f"simulation.assets/{simulation_slug}/{candidate['image_slug']}.avif"
@@ -284,7 +324,8 @@ class InstagramContentService:
             logger.debug("Failed to load instagram_trending_tags")
 
         hashtags = cls._build_hashtags(
-            simulation_slug, content_type,
+            simulation_slug,
+            content_type,
             entity_name=candidate.get("name", ""),
             trending_tags=trending_tags,
         )
@@ -317,11 +358,14 @@ class InstagramContentService:
             cipher_resp = await (
                 admin_supabase.table("platform_settings")
                 .select("setting_key, setting_value")
-                .in_("setting_key", [
-                    "instagram_cipher_enabled",
-                    "instagram_cipher_difficulty",
-                    "instagram_cipher_hint_format",
-                ])
+                .in_(
+                    "setting_key",
+                    [
+                        "instagram_cipher_enabled",
+                        "instagram_cipher_difficulty",
+                        "instagram_cipher_hint_format",
+                    ],
+                )
                 .execute()
             )
             cipher_settings: dict[str, str] = {}
@@ -341,17 +385,23 @@ class InstagramContentService:
                     entity_id=entity_id,
                 )
                 cipher_result = CipherService.prepare_cipher_for_post(
-                    caption, unlock_code, cipher_difficulty, cipher_hint_format,
+                    caption,
+                    unlock_code,
+                    cipher_difficulty,
+                    cipher_hint_format,
                 )
                 caption = cipher_result["caption"]
                 image_cipher_hint = cipher_result["image_cipher"]
-                logger.info("Cipher code generated for draft", extra={
-                    "unlock_code_prefix": unlock_code[:8] if unlock_code else "",
-                    "difficulty": cipher_difficulty,
-                    "hint_format": cipher_hint_format,
-                    "has_image_cipher": image_cipher_hint is not None,
-                    "simulation_id": simulation_id,
-                })
+                logger.info(
+                    "Cipher code generated for draft",
+                    extra={
+                        "unlock_code_prefix": unlock_code[:8] if unlock_code else "",
+                        "difficulty": cipher_difficulty,
+                        "hint_format": cipher_hint_format,
+                        "has_image_cipher": image_cipher_hint is not None,
+                        "simulation_id": simulation_id,
+                    },
+                )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Cipher generation failed, proceeding without cipher", exc_info=True)
 
@@ -433,11 +483,7 @@ class InstagramContentService:
             "created_by_id": str(user_id) if user_id else None,
         }
 
-        resp = await (
-            admin_supabase.table("instagram_posts")
-            .insert(record)
-            .execute()
-        )
+        resp = await admin_supabase.table("instagram_posts").insert(record).execute()
         saved = resp.data[0] if resp.data else record
 
         logger.info(
@@ -477,10 +523,7 @@ class InstagramContentService:
 
         # Filter to specific simulation if requested
         if simulation_id:
-            candidates = [
-                c for c in candidates
-                if c.get("simulation_id") == str(simulation_id)
-            ]
+            candidates = [c for c in candidates if c.get("simulation_id") == str(simulation_id)]
 
         # Load configurable content mix from platform_settings
         mix = dict(DEFAULT_CONTENT_MIX)
@@ -506,7 +549,9 @@ class InstagramContentService:
         for candidate in selected:
             try:
                 post = await cls.generate_post_from_candidate(
-                    admin_supabase, candidate, user_id=user_id,
+                    admin_supabase,
+                    candidate,
+                    user_id=user_id,
                 )
                 results.append(post)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
@@ -521,11 +566,14 @@ class InstagramContentService:
                 )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("instagram_phase", "content_generation")
-                    scope.set_context("instagram", {
-                        "candidate_id": str(candidate.get("id")),
-                        "content_type": candidate.get("content_type"),
-                        "simulation_id": str(candidate.get("simulation_id")),
-                    })
+                    scope.set_context(
+                        "instagram",
+                        {
+                            "candidate_id": str(candidate.get("id")),
+                            "content_type": candidate.get("content_type"),
+                            "simulation_id": str(candidate.get("simulation_id")),
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
 
         return results
@@ -623,10 +671,7 @@ class InstagramContentService:
         offset: int = 0,
     ) -> tuple[list, int]:
         """List Instagram queue items with simulation metadata."""
-        query = (
-            admin_supabase.table("v_instagram_queue")
-            .select("*", count="exact")
-        )
+        query = admin_supabase.table("v_instagram_queue").select("*", count="exact")
         if status_filter:
             query = query.eq("status", status_filter)
 
@@ -656,11 +701,7 @@ class InstagramContentService:
             .execute()
         )
         if not resp.data:
-
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Post not found or not in draft status.",
-            )
+            raise not_found(detail="Post not found or not in draft status.")
         return resp.data[0]
 
     @classmethod
@@ -683,11 +724,7 @@ class InstagramContentService:
             .execute()
         )
         if not resp.data:
-
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Post not found or already published.",
-            )
+            raise not_found(detail="Post not found or already published.")
         return resp.data[0]
 
     @classmethod
@@ -697,19 +734,9 @@ class InstagramContentService:
         post_id: UUID,
     ) -> dict:
         """Get a single Instagram post."""
-        resp = await (
-            admin_supabase.table("instagram_posts")
-            .select("*")
-            .eq("id", str(post_id))
-            .limit(1)
-            .execute()
-        )
+        resp = await admin_supabase.table("instagram_posts").select("*").eq("id", str(post_id)).limit(1).execute()
         if not resp.data:
-
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instagram post not found.",
-            )
+            raise not_found(detail="Instagram post not found.")
         return resp.data[0]
 
     @classmethod
@@ -741,12 +768,7 @@ class InstagramContentService:
             "engagement_rate": engagement_rate,
             "metrics_updated_at": datetime.now(UTC).isoformat(),
         }
-        resp = await (
-            admin_supabase.table("instagram_posts")
-            .update(update)
-            .eq("id", str(post_id))
-            .execute()
-        )
+        resp = await admin_supabase.table("instagram_posts").update(update).eq("id", str(post_id)).execute()
         return resp.data[0] if resp.data else update
 
     @classmethod
@@ -776,11 +798,7 @@ class InstagramContentService:
     @classmethod
     async def _get_next_dispatch_number(cls, admin_supabase: Client) -> int:
         """Get the next Bureau dispatch number (sequential across all posts)."""
-        count_resp = await (
-            admin_supabase.table("instagram_posts")
-            .select("id", count="exact")
-            .execute()
-        )
+        count_resp = await admin_supabase.table("instagram_posts").select("id", count="exact").execute()
         total = count_resp.count if count_resp.count is not None else 0
         return total + 1
 
@@ -846,10 +864,13 @@ class InstagramContentService:
                 )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("instagram_phase", "caption_generation")
-                    scope.set_context("instagram", {
-                        "content_type": content_type,
-                        "simulation_id": str(simulation_id),
-                    })
+                    scope.set_context(
+                        "instagram",
+                        {
+                            "content_type": content_type,
+                            "simulation_id": str(simulation_id),
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
 
         # Template fallback
@@ -950,10 +971,7 @@ class InstagramContentService:
         if content_type == "chronicle":
             headline = candidate.get("headline", "")
             content = candidate.get("content", "")
-            return (
-                f"{headline}\n\n"
-                f"{content[:500] if content else 'Full dispatch available at metaverse.center.'}"
-            )
+            return f"{headline}\n\n{content[:500] if content else 'Full dispatch available at metaverse.center.'}"
 
         if content_type == "lore":
             title = candidate.get("name", "Unknown Archive")
@@ -1057,10 +1075,13 @@ class InstagramContentService:
             admin_supabase.table("simulation_settings")
             .select("setting_key, setting_value")
             .eq("simulation_id", simulation_id)
-            .in_("setting_key", [
-                "design.color_primary",
-                "design.color_background",
-            ])
+            .in_(
+                "setting_key",
+                [
+                    "design.color_primary",
+                    "design.color_background",
+                ],
+            )
             .execute()
         )
 
@@ -1076,9 +1097,19 @@ class InstagramContentService:
 
     # Default blocklist — catches obvious issues. Overridable via platform_settings.
     _DEFAULT_BLOCKLIST = [
-        "kill yourself", "suicide", "self-harm", "racial slur", "n-word",
-        "child abuse", "sexual content", "porn", "nude", "naked",
-        "terrorist", "bomb threat", "school shooting",
+        "kill yourself",
+        "suicide",
+        "self-harm",
+        "racial slur",
+        "n-word",
+        "child abuse",
+        "sexual content",
+        "porn",
+        "nude",
+        "naked",
+        "terrorist",
+        "bomb threat",
+        "school shooting",
     ]
 
     @classmethod
@@ -1121,6 +1152,7 @@ class InstagramContentService:
 
         # Check for excessive emoji (Bureau voice should have none)
         import unicodedata
+
         emoji_count = sum(1 for ch in caption if unicodedata.category(ch).startswith("So"))
         if emoji_count > 3:
             return {"blocked": True, "reason": f"Too many emojis ({emoji_count}) — not Bureau voice"}
@@ -1151,21 +1183,26 @@ class InstagramContentService:
                 if raw.startswith("gAAAAA"):
                     try:
                         from backend.utils.encryption import decrypt
+
                         result["access_token"] = decrypt(raw)
                     except (ValueError, Exception):
                         logger.warning("Failed to decrypt Instagram access token")
                 else:
                     result["access_token"] = raw
 
-        logger.info("Instagram credentials loaded", extra={
-            "token_prefix": result["access_token"][:12] + "…" if result["access_token"] else "EMPTY",
-            "token_len": len(result["access_token"]),
-            "ig_user_id": result["ig_user_id"],
-            "was_encrypted": any(
-                str(r["setting_value"] or "").startswith("gAAAAA")
-                for r in rows if r["setting_key"] == "instagram_access_token"
-            ),
-        })
+        logger.info(
+            "Instagram credentials loaded",
+            extra={
+                "token_prefix": result["access_token"][:12] + "…" if result["access_token"] else "EMPTY",
+                "token_len": len(result["access_token"]),
+                "ig_user_id": result["ig_user_id"],
+                "was_encrypted": any(
+                    str(r["setting_value"] or "").startswith("gAAAAA")
+                    for r in rows
+                    if r["setting_key"] == "instagram_access_token"
+                ),
+            },
+        )
         return result
 
     @classmethod

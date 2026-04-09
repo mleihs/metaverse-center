@@ -242,11 +242,7 @@ class AgentActivityService:
         if activity_type:
             query = query.eq("activity_type", activity_type)
 
-        result = await (
-            query.order("created_at", desc=True)
-            .range(offset, offset + limit - 1)
-            .execute()
-        )
+        result = await query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
 
         data = []
         for row in result.data or []:
@@ -277,11 +273,7 @@ class AgentActivityService:
 
         # Load simulation context once (for narrative translation)
         sim_result = await (
-            supabase.table("simulations")
-            .select("name, theme")
-            .eq("id", str(simulation_id))
-            .limit(1)
-            .execute()
+            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).limit(1).execute()
         )
         sim_info = sim_result.data[0] if sim_result.data else {"name": "Unknown", "theme": "unknown"}
         sim_name = sim_info["name"]
@@ -301,8 +293,13 @@ class AgentActivityService:
             try:
                 activity = cls._select_activity(agent, zone_agents)
                 executed = await cls._execute_activity(
-                    supabase, simulation_id, agent, activity, tick_id,
-                    sim_name, sim_theme,
+                    supabase,
+                    simulation_id,
+                    agent,
+                    activity,
+                    tick_id,
+                    sim_name,
+                    sim_theme,
                 )
                 activities.append(executed)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
@@ -335,14 +332,8 @@ class AgentActivityService:
         colocated_ids = [a["id"] for a in colocated if a["id"] != agent["id"]]
         opinions = agent.get("opinions", {})
 
-        has_positive_neighbor = any(
-            opinions.get(aid, {}).get("opinion_score", 0) > 20
-            for aid in colocated_ids
-        )
-        has_negative_neighbor = any(
-            opinions.get(aid, {}).get("opinion_score", 0) < -20
-            for aid in colocated_ids
-        )
+        has_positive_neighbor = any(opinions.get(aid, {}).get("opinion_score", 0) > 20 for aid in colocated_ids)
+        has_negative_neighbor = any(opinions.get(aid, {}).get("opinion_score", 0) < -20 for aid in colocated_ids)
 
         # Compute utility for each activity
         utilities: dict[str, float] = {}
@@ -443,10 +434,7 @@ class AgentActivityService:
 
         # Compute softmax probabilities
         max_util = max(utilities.values())
-        exp_scores = {
-            a: math.exp((u - max_util) / temperature)
-            for a, u in utilities.items()
-        }
+        exp_scores = {a: math.exp((u - max_util) / temperature) for a, u in utilities.items()}
         total = sum(exp_scores.values())
         if total == 0:
             return random.choice(list(utilities.keys()))  # noqa: S311
@@ -475,7 +463,9 @@ class AgentActivityService:
 
         # Fulfill needs from activity
         fulfilled = await AgentNeedsService.fulfill_from_activity(
-            supabase, agent_id, activity_type,
+            supabase,
+            agent_id,
+            activity_type,
         )
 
         # Determine significance
@@ -514,7 +504,9 @@ class AgentActivityService:
         # Schedule async DeepL translation (fire-and-forget)
         if sim_name and saved.get("id"):
             schedule_auto_translation(
-                supabase, "agent_activities", saved["id"],
+                supabase,
+                "agent_activities",
+                saved["id"],
                 {"narrative_text": narrative, "name": agent_name},
                 simulation_name=sim_name,
                 simulation_theme=sim_theme,
@@ -555,7 +547,9 @@ class AgentActivityService:
             for agent_a, agent_b in combinations(zone_agent_list, 2):
                 # Check interaction probability
                 prob = cls._interaction_probability(
-                    agent_a, agent_b, interaction_rate,
+                    agent_a,
+                    agent_b,
+                    interaction_rate,
                 )
                 if random.random() > prob:  # noqa: S311
                     continue
@@ -567,8 +561,14 @@ class AgentActivityService:
 
                 # Execute interaction effects
                 result = await cls._execute_interaction(
-                    supabase, simulation_id, agent_a, agent_b,
-                    interaction, tick_id, sim_name, sim_theme,
+                    supabase,
+                    simulation_id,
+                    agent_a,
+                    agent_b,
+                    interaction,
+                    tick_id,
+                    sim_name,
+                    sim_theme,
                 )
                 if result:
                     interactions.append(result)
@@ -581,7 +581,10 @@ class AgentActivityService:
 
     @classmethod
     def _interaction_probability(
-        cls, agent_a: dict, agent_b: dict, rate: float,
+        cls,
+        agent_a: dict,
+        agent_b: dict,
+        rate: float,
     ) -> float:
         """Compute probability of two co-located agents interacting."""
         base = BASE_INTERACTION_PROBABILITY * rate
@@ -589,9 +592,7 @@ class AgentActivityService:
         # Sociability average
         mood_a = agent_a.get("mood", {})
         mood_b = agent_b.get("mood", {})
-        soc_avg = (
-            mood_a.get("sociability", 0.5) + mood_b.get("sociability", 0.5)
-        ) / 2
+        soc_avg = (mood_a.get("sociability", 0.5) + mood_b.get("sociability", 0.5)) / 2
         soc_mod = soc_avg * 0.2
 
         # Existing relationship boosts interaction
@@ -651,8 +652,11 @@ class AgentActivityService:
             preset = interaction.get("opinion_preset")
             if preset:
                 await AgentOpinionService.add_modifier(
-                    supabase, agent_a["id"], agent_b["id"],
-                    simulation_id, preset,
+                    supabase,
+                    agent_a["id"],
+                    agent_b["id"],
+                    simulation_id,
+                    preset,
                 )
 
             # Apply mood effect to target (B)
@@ -660,7 +664,9 @@ class AgentActivityService:
             if mood_effect != 0:
                 emotion = "joy" if mood_effect > 0 else "distress"
                 await AgentMoodService.add_moodlet(
-                    supabase, agent_b["id"], simulation_id,
+                    supabase,
+                    agent_b["id"],
+                    simulation_id,
                     moodlet_type=f"social_{name}",
                     emotion=emotion,
                     strength=mood_effect,
@@ -676,7 +682,9 @@ class AgentActivityService:
             aggressor_effect = interaction.get("aggressor_mood_effect", 0)
             if aggressor_effect != 0:
                 await AgentMoodService.add_moodlet(
-                    supabase, agent_a["id"], simulation_id,
+                    supabase,
+                    agent_a["id"],
+                    simulation_id,
                     moodlet_type=f"social_{name}_self",
                     emotion="satisfaction" if aggressor_effect > 0 else "guilt",
                     strength=aggressor_effect,
@@ -691,44 +699,59 @@ class AgentActivityService:
             need_amount = interaction.get("need_amount", 0)
             if need_type and need_amount > 0:
                 await AgentNeedsService.fulfill_need(
-                    supabase, agent_a["id"], need_type, need_amount,
+                    supabase,
+                    agent_a["id"],
+                    need_type,
+                    need_amount,
                 )
                 await AgentNeedsService.fulfill_need(
-                    supabase, agent_b["id"], need_type, need_amount * 0.7,
+                    supabase,
+                    agent_b["id"],
+                    need_type,
+                    need_amount * 0.7,
                 )
 
             # Log activity for both agents (with bilingual narrative)
             significance = interaction.get("significance", 1)
             interaction_template = INTERACTION_NARRATIVES.get(
-                name, "{agent_a} interacted with {agent_b}",
+                name,
+                "{agent_a} interacted with {agent_b}",
             )
             for agent, other in [(agent_a, agent_b), (agent_b, agent_a)]:
                 narrative = interaction_template.format(
                     agent_a=agent.get("name", "Agent"),
                     agent_b=other.get("name", "Agent"),
                 )
-                resp = await supabase.table("agent_activities").insert({
-                    "agent_id": str(agent["id"]),
-                    "simulation_id": str(simulation_id),
-                    "activity_type": "socialize",
-                    "activity_subtype": name,
-                    "location_zone_id": agent.get("current_zone_id"),
-                    "target_agent_id": str(other["id"]),
-                    "significance": significance,
-                    "effects": {
-                        "interaction": name,
-                        "opinion_effect": interaction.get("opinion_effect", 0),
-                        "mood_effect": mood_effect,
-                    },
-                    "heartbeat_tick_id": str(tick_id) if tick_id else None,
-                    "narrative_text": narrative,
-                }).execute()
+                resp = (
+                    await supabase.table("agent_activities")
+                    .insert(
+                        {
+                            "agent_id": str(agent["id"]),
+                            "simulation_id": str(simulation_id),
+                            "activity_type": "socialize",
+                            "activity_subtype": name,
+                            "location_zone_id": agent.get("current_zone_id"),
+                            "target_agent_id": str(other["id"]),
+                            "significance": significance,
+                            "effects": {
+                                "interaction": name,
+                                "opinion_effect": interaction.get("opinion_effect", 0),
+                                "mood_effect": mood_effect,
+                            },
+                            "heartbeat_tick_id": str(tick_id) if tick_id else None,
+                            "narrative_text": narrative,
+                        }
+                    )
+                    .execute()
+                )
 
                 # Schedule async DeepL translation
                 saved = resp.data[0] if resp.data else None
                 if sim_name and saved and saved.get("id"):
                     schedule_auto_translation(
-                        supabase, "agent_activities", saved["id"],
+                        supabase,
+                        "agent_activities",
+                        saved["id"],
                         {"narrative_text": narrative, "name": agent.get("name", "")},
                         simulation_name=sim_name,
                         simulation_theme=sim_theme,
@@ -758,15 +781,15 @@ class AgentActivityService:
 
     @classmethod
     async def _load_agent_context(
-        cls, supabase: Client, simulation_id: UUID,
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
     ) -> list[dict]:
         """Load all agents with their autonomy data (needs, mood, opinions)."""
         # Fetch agents (only those with autonomy enabled)
         agents_result = await (
             supabase.table("agents")
-            .select(
-                "id, name, current_zone_id, current_building_id, personality_profile"
-            )
+            .select("id, name, current_zone_id, current_building_id, personality_profile")
             .eq("simulation_id", str(simulation_id))
             .is_("deleted_at", "null")
             .eq("autonomy_active", True)
@@ -815,18 +838,14 @@ class AgentActivityService:
         zone_ids = list({a["current_zone_id"] for a in agents if a.get("current_zone_id")})
         zone_name_map: dict[str, str] = {}
         if zone_ids:
-            zone_result = await (
-                supabase.table("zones").select("id, name").in_("id", zone_ids).execute()
-            )
+            zone_result = await supabase.table("zones").select("id, name").in_("id", zone_ids).execute()
             zone_name_map = {z["id"]: z["name"] for z in (zone_result.data or [])}
 
         # Batch fetch building names for narrative templates
         building_ids = list({a["current_building_id"] for a in agents if a.get("current_building_id")})
         building_name_map: dict[str, str] = {}
         if building_ids:
-            building_result = await (
-                supabase.table("buildings").select("id, name").in_("id", building_ids).execute()
-            )
+            building_result = await supabase.table("buildings").select("id, name").in_("id", building_ids).execute()
             building_name_map = {b["id"]: b["name"] for b in (building_result.data or [])}
 
         # Enrich agents

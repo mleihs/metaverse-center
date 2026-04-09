@@ -6,9 +6,8 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.base_service import BaseService
+from backend.utils.errors import bad_request, not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -96,16 +95,9 @@ class RelationshipService(BaseService):
             "target_agent_id": str(data["target_agent_id"]),
         }
 
-        response = await (
-            supabase.table(cls.table_name)
-            .insert(insert_data)
-            .execute()
-        )
+        response = await supabase.table(cls.table_name).insert(insert_data).execute()
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to create relationship.",
-            )
+            raise bad_request("Failed to create relationship.")
         return response.data[0]
 
     @classmethod
@@ -118,10 +110,7 @@ class RelationshipService(BaseService):
     ) -> dict:
         """Update an existing relationship."""
         if not data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No fields to update.",
-            )
+            raise bad_request("No fields to update.")
 
         update_data = {**data, "updated_at": datetime.now(UTC).isoformat()}
 
@@ -133,10 +122,7 @@ class RelationshipService(BaseService):
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Relationship '{relationship_id}' not found.",
-            )
+            raise not_found(detail=f"Relationship '{relationship_id}' not found.")
         return response.data[0]
 
     @classmethod

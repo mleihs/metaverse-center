@@ -22,7 +22,6 @@ import random
 from uuid import UUID
 
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -71,6 +70,7 @@ from backend.services.dungeon_shared import (
     rpc_with_retry,
 )
 from backend.services.platform_settings_service import PlatformSettingsService
+from backend.utils.errors import bad_request, conflict, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -162,7 +162,7 @@ class DungeonEngineService:
         archetype = body.archetype
         config = ARCHETYPE_CONFIGS.get(archetype)
         if not config:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown archetype: {archetype}")
+            raise bad_request(f"Unknown archetype: {archetype}")
 
         difficulty = body.difficulty
         depth = get_depth_for_difficulty(difficulty)
@@ -179,7 +179,7 @@ class DungeonEngineService:
 
         party_data = party_resp.data if party_resp.data else []
         if len(party_data) != len(body.party_agent_ids):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more agents not found in simulation")
+            raise bad_request("One or more agents not found in simulation")
 
         # Build party state from RPC result
         party: list[AgentCombatState] = []
@@ -254,10 +254,7 @@ class DungeonEngineService:
             )
         except PostgrestAPIError as exc:
             if "idx_dungeon_runs_one_active_per_sim" in str(exc):
-                raise HTTPException(
-                    status.HTTP_409_CONFLICT,
-                    f"An active {archetype} dungeon run already exists for this simulation",
-                ) from exc
+                raise conflict(f"An active {archetype} dungeon run already exists for this simulation") from exc
             logger.exception(
                 "Failed to create dungeon run",
                 extra={"sim_id": str(simulation_id), "archetype": archetype, "difficulty": difficulty},
@@ -266,7 +263,7 @@ class DungeonEngineService:
                 scope.set_tag("service", "dungeon_engine")
                 scope.set_tag("simulation_id", str(simulation_id))
                 sentry_sdk.capture_exception(exc)
-            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create dungeon run") from exc
+            raise server_error("Failed to create dungeon run") from exc
 
         run = insert_resp.data[0]
         run_id = UUID(run["id"])
@@ -380,28 +377,49 @@ class DungeonEngineService:
 
     @classmethod
     async def seal_breach(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Guardian: Seal Breach — reduce water level (Deluge only)."""
         return await DungeonMovementService.seal_breach(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
     async def ground(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Spy: Ground — reduce awareness (Awakening only)."""
         return await DungeonMovementService.ground(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
     async def rally(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        *,
+        user_id: UUID,
     ) -> ArchetypeActionResponse:
         """Propagandist: Rally — reduce authority fracture (Overthrow only)."""
         return await DungeonMovementService.rally(admin_supabase, run_id, agent_id, user_id=user_id)
 
     @classmethod
     async def salvage(
-        cls, admin_supabase: Client, run_id: UUID, agent_id: UUID, room_index: int, *, user_id: UUID,
+        cls,
+        admin_supabase: Client,
+        run_id: UUID,
+        agent_id: UUID,
+        room_index: int,
+        *,
+        user_id: UUID,
     ) -> SalvageResponse:
         """Salvage submerged loot (Deluge only)."""
         return await DungeonMovementService.salvage(admin_supabase, run_id, agent_id, room_index, user_id=user_id)
@@ -634,7 +652,12 @@ class DungeonEngineService:
     ) -> LootAssignResponse:
         """Assign one distributable loot item to an agent."""
         return await DungeonDistributionService.assign_loot(
-            admin_supabase, run_id, loot_id, agent_id, dimension=dimension, user_id=user_id,
+            admin_supabase,
+            run_id,
+            loot_id,
+            agent_id,
+            dimension=dimension,
+            user_id=user_id,
         )
 
     @classmethod

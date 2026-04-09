@@ -40,43 +40,69 @@ class CodexExportService:
 
         try:
             # 1. Fetch all simulation data
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, slug, description, created_at"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, slug, description, created_at")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim = sim_resp.data
 
-            agents_resp = await admin_supabase.table("agents").select(
-                "name, gender, primary_profession, character, background, portrait_image_url"
-            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            agents_resp = (
+                await admin_supabase.table("agents")
+                .select("name, gender, primary_profession, character, background, portrait_image_url")
+                .eq("simulation_id", str(simulation_id))
+                .order("name")
+                .execute()
+            )
             agents = agents_resp.data or []
 
-            buildings_resp = await admin_supabase.table("buildings").select(
-                "name, building_type, description, building_condition, image_url"
-            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            buildings_resp = (
+                await admin_supabase.table("buildings")
+                .select("name, building_type, description, building_condition, image_url")
+                .eq("simulation_id", str(simulation_id))
+                .order("name")
+                .execute()
+            )
             buildings = buildings_resp.data or []
 
-            zones_resp = await admin_supabase.table("zones").select(
-                "name, zone_type, description"
-            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            zones_resp = (
+                await admin_supabase.table("zones")
+                .select("name, zone_type, description")
+                .eq("simulation_id", str(simulation_id))
+                .order("name")
+                .execute()
+            )
             zones = zones_resp.data or []
 
-            lore_resp = await admin_supabase.table("simulation_lore").select(
-                "chapter, arcanum, title, epigraph, body, image_slug, image_caption"
-            ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
+            lore_resp = (
+                await admin_supabase.table("simulation_lore")
+                .select("chapter, arcanum, title, epigraph, body, image_slug, image_caption")
+                .eq("simulation_id", str(simulation_id))
+                .order("sort_order")
+                .execute()
+            )
             lore = lore_resp.data or []
 
             # Fetch theme settings
-            settings_resp = await admin_supabase.table("simulation_settings").select(
-                "setting_key, setting_value"
-            ).eq("simulation_id", str(simulation_id)).eq("category", "design").execute()
-            theme = {
-                s["setting_key"]: s["setting_value"]
-                for s in (settings_resp.data or [])
-            }
+            settings_resp = (
+                await admin_supabase.table("simulation_settings")
+                .select("setting_key, setting_value")
+                .eq("simulation_id", str(simulation_id))
+                .eq("category", "design")
+                .execute()
+            )
+            theme = {s["setting_key"]: s["setting_value"] for s in (settings_resp.data or [])}
 
             # 2. Render HTML
             html_content = CodexExportService._render_codex_html(
-                sim, agents, buildings, zones, lore, theme,
+                sim,
+                agents,
+                buildings,
+                zones,
+                lore,
+                theme,
             )
 
             # 3. Convert to PDF via WeasyPrint
@@ -84,11 +110,10 @@ class CodexExportService:
             ext = "pdf"
             try:
                 from weasyprint import HTML as WEASY_HTML
+
                 pdf_bytes = WEASY_HTML(string=html_content).write_pdf()
             except ImportError:
-                logger.warning(
-                    "WeasyPrint not available, generating HTML codex instead"
-                )
+                logger.warning("WeasyPrint not available, generating HTML codex instead")
                 pdf_bytes = html_content.encode("utf-8")
                 content_type = "text/html"
                 ext = "html"
@@ -105,15 +130,16 @@ class CodexExportService:
                     pdf_bytes,
                     {"content-type": content_type},
                 )
-                download_url = await admin_supabase.storage.from_(
-                    "simulation.assets"
-                ).get_public_url(f"{simulation_id}/exports/{filename}")
+                download_url = await admin_supabase.storage.from_("simulation.assets").get_public_url(
+                    f"{simulation_id}/exports/{filename}"
+                )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 logger.exception("Storage upload failed for codex")
 
             # 5. Mark feature purchase completed
             await ForgeFeatureService.complete_feature(
-                admin_supabase, purchase_id,
+                admin_supabase,
+                purchase_id,
                 result={
                     "download_url": download_url,
                     "filename": filename,
@@ -133,7 +159,9 @@ class CodexExportService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.exception("Chronicle generation failed")
             await ForgeFeatureService.fail_feature(
-                admin_supabase, purchase_id, str(exc),
+                admin_supabase,
+                purchase_id,
+                str(exc),
             )
 
     @staticmethod
@@ -154,26 +182,42 @@ class CodexExportService:
 
         try:
             # 1. Fetch simulation metadata
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, slug, banner_url"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, slug, banner_url")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim = sim_resp.data
             slug = sim.get("slug", str(simulation_id)[:8])
 
             # 2. Fetch entities
-            agents_resp = await admin_supabase.table("agents").select(
-                "name, portrait_image_url"
-            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            agents_resp = (
+                await admin_supabase.table("agents")
+                .select("name, portrait_image_url")
+                .eq("simulation_id", str(simulation_id))
+                .order("name")
+                .execute()
+            )
             agents = agents_resp.data or []
 
-            buildings_resp = await admin_supabase.table("buildings").select(
-                "name, image_url"
-            ).eq("simulation_id", str(simulation_id)).order("name").execute()
+            buildings_resp = (
+                await admin_supabase.table("buildings")
+                .select("name, image_url")
+                .eq("simulation_id", str(simulation_id))
+                .order("name")
+                .execute()
+            )
             buildings = buildings_resp.data or []
 
-            lore_resp = await admin_supabase.table("simulation_lore").select(
-                "image_slug"
-            ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
+            lore_resp = (
+                await admin_supabase.table("simulation_lore")
+                .select("image_slug")
+                .eq("simulation_id", str(simulation_id))
+                .order("sort_order")
+                .execute()
+            )
             lore = [s for s in (lore_resp.data or []) if s.get("image_slug")]
 
             # 3. Build download manifest: (full_url, fallback_url, zip_path)
@@ -206,10 +250,7 @@ class CodexExportService:
                 manifest.append((full, url, f"{safe_name}-fullres/buildings/{fname}.avif"))
 
             # Lore
-            base_storage = (
-                f"{settings.supabase_url}/storage/v1/object/public"
-                f"/simulation.assets/{slug}/lore"
-            )
+            base_storage = f"{settings.supabase_url}/storage/v1/object/public/simulation.assets/{slug}/lore"
             for section in lore:
                 img_slug = section["image_slug"]
                 full = f"{base_storage}/{img_slug}.full.avif"
@@ -241,15 +282,14 @@ class CodexExportService:
                     zip_bytes,
                     {"content-type": "application/zip"},
                 )
-                download_url = await admin_supabase.storage.from_(
-                    "simulation.assets"
-                ).get_public_url(storage_path)
+                download_url = await admin_supabase.storage.from_("simulation.assets").get_public_url(storage_path)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
                 logger.exception("Storage upload failed for hires archive")
 
             # 6. Mark completed
             await ForgeFeatureService.complete_feature(
-                admin_supabase, purchase_id,
+                admin_supabase,
+                purchase_id,
                 result={
                     "download_url": download_url,
                     "filename": filename,
@@ -268,7 +308,9 @@ class CodexExportService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError) as exc:
             logger.exception("Hi-res archive generation failed")
             await ForgeFeatureService.fail_feature(
-                admin_supabase, purchase_id, str(exc),
+                admin_supabase,
+                purchase_id,
+                str(exc),
             )
 
     @staticmethod
@@ -293,16 +335,13 @@ class CodexExportService:
             cls = "classified" if classified else ""
             epigraph_html = ""
             if section.get("epigraph"):
-                epigraph_html = (
-                    f'<blockquote class="epigraph">'
-                    f"{_esc(section['epigraph'])}</blockquote>"
-                )
+                epigraph_html = f'<blockquote class="epigraph">{_esc(section["epigraph"])}</blockquote>'
             lore_html += f"""
             <div class="lore-section {cls}">
-                <h3>{_esc(section.get('arcanum', ''))}
-                    &mdash; {_esc(section['title'])}</h3>
+                <h3>{_esc(section.get("arcanum", ""))}
+                    &mdash; {_esc(section["title"])}</h3>
                 {epigraph_html}
-                <div class="lore-body">{_nl2p(section['body'])}</div>
+                <div class="lore-body">{_nl2p(section["body"])}</div>
             </div>"""
 
         agents_html = ""
@@ -315,27 +354,23 @@ class CodexExportService:
             agents_html += f"""
             <div class="agent-card">
                 {img}
-                <h4>{_esc(agent['name'])}</h4>
+                <h4>{_esc(agent["name"])}</h4>
                 <p class="profession">
-                    {_esc(agent.get('primary_profession', ''))}</p>
-                <p>{_esc(agent.get('character', ''))}</p>
-                <p class="background">{_esc(agent.get('background', ''))}</p>
+                    {_esc(agent.get("primary_profession", ""))}</p>
+                <p>{_esc(agent.get("character", ""))}</p>
+                <p class="background">{_esc(agent.get("background", ""))}</p>
             </div>"""
 
         buildings_html = ""
         for b in buildings:
-            img = (
-                f'<img src="{b["image_url"]}" class="building-img" />'
-                if b.get("image_url")
-                else ""
-            )
+            img = f'<img src="{b["image_url"]}" class="building-img" />' if b.get("image_url") else ""
             buildings_html += f"""
             <div class="building-card">
                 {img}
-                <h4>{_esc(b['name'])}</h4>
-                <p class="type">{_esc(b.get('building_type', ''))}
-                    &mdash; {_esc(b.get('building_condition', ''))}</p>
-                <p>{_esc(b.get('description', ''))}</p>
+                <h4>{_esc(b["name"])}</h4>
+                <p class="type">{_esc(b.get("building_type", ""))}
+                    &mdash; {_esc(b.get("building_condition", ""))}</p>
+                <p>{_esc(b.get("description", ""))}</p>
             </div>"""
 
         now_str = datetime.now(UTC).strftime("%Y-%m-%d")
@@ -344,7 +379,7 @@ class CodexExportService:
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>{_esc(sim['name'])} &mdash; Bureau Codex</title>
+<title>{_esc(sim["name"])} &mdash; Bureau Codex</title>
 <style>
 @page {{ size: A4; margin: 2cm; }}
 body {{
@@ -390,8 +425,8 @@ h3 {{ font-size: 14pt; }}
 </style>
 </head>
 <body>
-<h1>{_esc(sim['name'])}</h1>
-<p class="subtitle">{_esc(sim.get('description', ''))}</p>
+<h1>{_esc(sim["name"])}</h1>
+<p class="subtitle">{_esc(sim.get("description", ""))}</p>
 <p class="stamp">Bureau of Impossible Geography &mdash; Classified Codex</p>
 
 <h2>Table of Contents</h2>
@@ -418,21 +453,13 @@ h3 {{ font-size: 14pt; }}
 
 def _esc(text: str) -> str:
     """Basic HTML escaping."""
-    return (
-        (text or "")
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _nl2p(text: str) -> str:
     """Convert double newlines to paragraph tags."""
     paragraphs = (text or "").split("\n\n")
-    return "".join(
-        f"<p>{_esc(p.strip())}</p>" for p in paragraphs if p.strip()
-    )
+    return "".join(f"<p>{_esc(p.strip())}</p>" for p in paragraphs if p.strip())
 
 
 def _sanitize_filename(name: str) -> str:

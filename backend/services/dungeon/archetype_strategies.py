@@ -130,7 +130,9 @@ class ArchetypeStrategy(ABC):
         return None
 
     def modify_enemy_templates(
-        self, instance: DungeonInstance, templates: dict[str, dict],
+        self,
+        instance: DungeonInstance,
+        templates: dict[str, dict],
     ) -> dict[str, dict]:
         """Modify enemy template dicts before combat resolution.
 
@@ -150,6 +152,7 @@ class ArchetypeStrategy(ABC):
 
 
 # ── Shadow Strategy ────────────────────────────────────────────────────────
+
 
 class ShadowStrategy(ArchetypeStrategy):
     """The Shadow: Visibility mechanic (3 VP, drain every 2 rooms)."""
@@ -208,6 +211,7 @@ class ShadowStrategy(ArchetypeStrategy):
 
 # ── Tower Strategy ─────────────────────────────────────────────────────────
 
+
 class TowerStrategy(ArchetypeStrategy):
     """The Tower: Stability countdown mechanic (100→0, depth-based drain)."""
 
@@ -264,15 +268,13 @@ class TowerStrategy(ArchetypeStrategy):
     def on_combat_round(self, instance: DungeonInstance) -> None:
         instance.archetype_state["stability"] = max(
             0,
-            instance.archetype_state.get("stability", 100)
-            - self.mechanic_config["drain_per_combat_round"],
+            instance.archetype_state.get("stability", 100) - self.mechanic_config["drain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         instance.archetype_state["stability"] = max(
             0,
-            instance.archetype_state.get("stability", 100)
-            - self.mechanic_config["drain_on_failed_check"],
+            instance.archetype_state.get("stability", 100) - self.mechanic_config["drain_on_failed_check"],
         )
 
     def _apply_room_entry_drain(self, instance: DungeonInstance) -> None:
@@ -285,11 +287,13 @@ class TowerStrategy(ArchetypeStrategy):
         else:
             drain = self.mechanic_config["drain_depth_5_plus"]
         instance.archetype_state["stability"] = max(
-            0, instance.archetype_state.get("stability", 100) - drain,
+            0,
+            instance.archetype_state.get("stability", 100) - drain,
         )
 
 
 # ── Entropy Strategy ──────────────────────────────────────────────────────
+
 
 class EntropyStrategy(ArchetypeStrategy):
     """The Entropy: Decay accumulation mechanic (0→100, room-entry + contagion).
@@ -326,8 +330,7 @@ class EntropyStrategy(ArchetypeStrategy):
         if reduce_key and self.mechanic_config.get(reduce_key):
             instance.archetype_state["decay"] = max(
                 0,
-                instance.archetype_state.get("decay", 0)
-                - self.mechanic_config[reduce_key],
+                instance.archetype_state.get("decay", 0) - self.mechanic_config[reduce_key],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -362,23 +365,20 @@ class EntropyStrategy(ArchetypeStrategy):
     def on_combat_round(self, instance: DungeonInstance) -> None:
         instance.archetype_state["decay"] = min(
             self.mechanic_config["max_decay"],
-            instance.archetype_state.get("decay", 0)
-            + self.mechanic_config["gain_per_combat_round"],
+            instance.archetype_state.get("decay", 0) + self.mechanic_config["gain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         instance.archetype_state["decay"] = min(
             self.mechanic_config["max_decay"],
-            instance.archetype_state.get("decay", 0)
-            + self.mechanic_config["gain_on_failed_check"],
+            instance.archetype_state.get("decay", 0) + self.mechanic_config["gain_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
         """Contagious decay: each enemy hit on an agent accelerates party decay."""
         instance.archetype_state["decay"] = min(
             self.mechanic_config["max_decay"],
-            instance.archetype_state.get("decay", 0)
-            + self.mechanic_config["gain_per_enemy_hit"],
+            instance.archetype_state.get("decay", 0) + self.mechanic_config["gain_per_enemy_hit"],
         )
 
     def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
@@ -397,6 +397,7 @@ class EntropyStrategy(ArchetypeStrategy):
 
 
 # ── Devouring Mother Strategy ────────────────────────────────────────────
+
 
 class DevouringMotherStrategy(ArchetypeStrategy):
     """The Devouring Mother: Parasitic attachment (0→100) + passive healing.
@@ -439,14 +440,12 @@ class DevouringMotherStrategy(ArchetypeStrategy):
         if event == "combat_victory":
             instance.archetype_state["attachment"] = min(
                 self.mechanic_config["max_attachment"],
-                instance.archetype_state.get("attachment", 0)
-                + self.mechanic_config["gain_on_combat_win"],
+                instance.archetype_state.get("attachment", 0) + self.mechanic_config["gain_on_combat_win"],
             )
         elif event == "rest":
             instance.archetype_state["attachment"] = min(
                 self.mechanic_config["max_attachment"],
-                instance.archetype_state.get("attachment", 0)
-                + self.mechanic_config["rest_attachment_gain"],
+                instance.archetype_state.get("attachment", 0) + self.mechanic_config["rest_attachment_gain"],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -474,23 +473,20 @@ class DevouringMotherStrategy(ArchetypeStrategy):
     def on_combat_round(self, instance: DungeonInstance) -> None:
         instance.archetype_state["attachment"] = min(
             self.mechanic_config["max_attachment"],
-            instance.archetype_state.get("attachment", 0)
-            + self.mechanic_config["gain_per_combat_round"],
+            instance.archetype_state.get("attachment", 0) + self.mechanic_config["gain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         instance.archetype_state["attachment"] = min(
             self.mechanic_config["max_attachment"],
-            instance.archetype_state.get("attachment", 0)
-            + self.mechanic_config["gain_on_failed_check"],
+            instance.archetype_state.get("attachment", 0) + self.mechanic_config["gain_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
         """Contagious attachment: enemy contact deepens the parasitic bond."""
         instance.archetype_state["attachment"] = min(
             self.mechanic_config["max_attachment"],
-            instance.archetype_state.get("attachment", 0)
-            + self.mechanic_config.get("gain_per_enemy_hit", 3),
+            instance.archetype_state.get("attachment", 0) + self.mechanic_config.get("gain_per_enemy_hit", 3),
         )
 
     def _apply_room_entry_gain(self, instance: DungeonInstance) -> None:
@@ -524,6 +520,7 @@ class DevouringMotherStrategy(ArchetypeStrategy):
 
 
 # ── Prometheus Strategy ───────────────────────────────────────────────────
+
 
 class PrometheusStrategy(ArchetypeStrategy):
     """The Prometheus: Crafting insight mechanic (0→100, pharmakon accumulation).
@@ -591,8 +588,7 @@ class PrometheusStrategy(ArchetypeStrategy):
             # heals stress but costs crafting potential.
             instance.archetype_state["insight"] = max(
                 0,
-                instance.archetype_state.get("insight", 0)
-                - self.mechanic_config["reduce_on_rest"],
+                instance.archetype_state.get("insight", 0) - self.mechanic_config["reduce_on_rest"],
             )
             return
 
@@ -603,8 +599,7 @@ class PrometheusStrategy(ArchetypeStrategy):
         if gain_key and self.mechanic_config.get(gain_key):
             instance.archetype_state["insight"] = min(
                 self.mechanic_config["max_insight"],
-                instance.archetype_state.get("insight", 0)
-                + self.mechanic_config[gain_key],
+                instance.archetype_state.get("insight", 0) + self.mechanic_config[gain_key],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -626,7 +621,8 @@ class PrometheusStrategy(ArchetypeStrategy):
         insight_delta = effects.get("insight", 0)
         if insight_delta:
             state["insight"] = max(
-                0, min(max_insight, state.get("insight", 0) + insight_delta),
+                0,
+                min(max_insight, state.get("insight", 0) + insight_delta),
             )
 
         # ── Component acquisition ──
@@ -642,9 +638,7 @@ class PrometheusStrategy(ArchetypeStrategy):
         remove_ids = effects.get("remove_components")
         if remove_ids and isinstance(remove_ids, list):
             components = state.get("components", [])
-            state["components"] = [
-                c for c in components if c.get("id") not in remove_ids
-            ]
+            state["components"] = [c for c in components if c.get("id") not in remove_ids]
 
         # ── Crafted item creation ──
         crafted_item = effects.get("add_crafted_item")
@@ -658,8 +652,7 @@ class PrometheusStrategy(ArchetypeStrategy):
             # Creative momentum: successful craft boosts insight
             state["insight"] = min(
                 max_insight,
-                state.get("insight", 0)
-                + self.mechanic_config.get("gain_on_craft_success", 8),
+                state.get("insight", 0) + self.mechanic_config.get("gain_on_craft_success", 8),
             )
 
         # ── Failed craft tracking ──
@@ -668,8 +661,7 @@ class PrometheusStrategy(ArchetypeStrategy):
             # Lem: "the residue is interesting" — failed crafts still teach
             state["insight"] = min(
                 max_insight,
-                state.get("insight", 0)
-                + self.mechanic_config.get("gain_on_craft_fail", 4),
+                state.get("insight", 0) + self.mechanic_config.get("gain_on_craft_fail", 4),
             )
 
     def apply_threshold_memory_toll(self, instance: DungeonInstance) -> None:
@@ -702,16 +694,14 @@ class PrometheusStrategy(ArchetypeStrategy):
         """
         instance.archetype_state["insight"] = max(
             0,
-            instance.archetype_state.get("insight", 0)
-            - self.mechanic_config["drain_per_combat_round"],
+            instance.archetype_state.get("insight", 0) - self.mechanic_config["drain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         """Confusion breaks the creative flow — insight drains on failed checks."""
         instance.archetype_state["insight"] = max(
             0,
-            instance.archetype_state.get("insight", 0)
-            - self.mechanic_config["drain_on_failed_check"],
+            instance.archetype_state.get("insight", 0) - self.mechanic_config["drain_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
@@ -723,8 +713,7 @@ class PrometheusStrategy(ArchetypeStrategy):
         """
         instance.archetype_state["insight"] = max(
             0,
-            instance.archetype_state.get("insight", 0)
-            - self.mechanic_config["drain_per_enemy_hit"],
+            instance.archetype_state.get("insight", 0) - self.mechanic_config["drain_per_enemy_hit"],
         )
 
     def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
@@ -754,34 +743,40 @@ class PrometheusStrategy(ArchetypeStrategy):
             suffix_en = ""
             suffix_de = ""
             if deploy_count > 0:
-                effectiveness = int(100 * (0.5 ** deploy_count))
+                effectiveness = int(100 * (0.5**deploy_count))
                 suffix_en = f" [{effectiveness}% effectiveness]"
                 suffix_de = f" [{effectiveness}% Wirksamkeit]"
 
-            choices.append({
-                "id": f"deploy_{item_id}",
-                "label_en": f"Deploy: {item['name_en']}{suffix_en}",
-                "label_de": f"Einsetzen: {item['name_de']}{suffix_de}",
-                "requires_aptitude": None,
-                "check_aptitude": None,
-                "check_difficulty": 0,
-            })
+            choices.append(
+                {
+                    "id": f"deploy_{item_id}",
+                    "label_en": f"Deploy: {item['name_en']}{suffix_en}",
+                    "label_de": f"Einsetzen: {item['name_de']}{suffix_de}",
+                    "requires_aptitude": None,
+                    "check_aptitude": None,
+                    "check_difficulty": 0,
+                }
+            )
 
         if not choices:
             return None
 
-        choices.append({
-            "id": "begin_combat",
-            "label_en": "Enough preparation. Engage The Prototype.",
-            "label_de": "Genug Vorbereitung. Den Prototypen angreifen.",
-            "requires_aptitude": None,
-            "check_aptitude": None,
-            "check_difficulty": 0,
-        })
+        choices.append(
+            {
+                "id": "begin_combat",
+                "label_en": "Enough preparation. Engage The Prototype.",
+                "label_de": "Genug Vorbereitung. Den Prototypen angreifen.",
+                "requires_aptitude": None,
+                "check_aptitude": None,
+                "check_difficulty": 0,
+            }
+        )
         return choices
 
     def modify_enemy_templates(
-        self, instance: DungeonInstance, templates: dict[str, dict],
+        self,
+        instance: DungeonInstance,
+        templates: dict[str, dict],
     ) -> dict[str, dict]:
         """Apply boss debuffs from pre-combat crafted item deployment.
 
@@ -814,7 +809,8 @@ class PrometheusStrategy(ArchetypeStrategy):
                     boss["attack_power"] = max(1, boss.get("attack_power", 3) - int(eff_val))
                 case "reduce_stress_attack":
                     boss["stress_attack_power"] = max(
-                        1, boss.get("stress_attack_power", 3) - int(eff_val),
+                        1,
+                        boss.get("stress_attack_power", 3) - int(eff_val),
                     )
         return templates
 
@@ -921,8 +917,7 @@ class DelugeStrategy(ArchetypeStrategy):
         if reduce_key and self.mechanic_config.get(reduce_key):
             instance.archetype_state["water_level"] = max(
                 0,
-                instance.archetype_state.get("water_level", 0)
-                - self.mechanic_config[reduce_key],
+                instance.archetype_state.get("water_level", 0) - self.mechanic_config[reduce_key],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -960,24 +955,21 @@ class DelugeStrategy(ArchetypeStrategy):
         """Water rises each combat round — delay means drowning."""
         instance.archetype_state["water_level"] = min(
             self.mechanic_config["max_water_level"],
-            instance.archetype_state.get("water_level", 0)
-            + self.mechanic_config["surge_per_combat_round"],
+            instance.archetype_state.get("water_level", 0) + self.mechanic_config["surge_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         """Breach: failed skill checks accelerate flooding."""
         instance.archetype_state["water_level"] = min(
             self.mechanic_config["max_water_level"],
-            instance.archetype_state.get("water_level", 0)
-            + self.mechanic_config["surge_on_failed_check"],
+            instance.archetype_state.get("water_level", 0) + self.mechanic_config["surge_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
         """Physical disruption of seals — each hit raises water."""
         instance.archetype_state["water_level"] = min(
             self.mechanic_config["max_water_level"],
-            instance.archetype_state.get("water_level", 0)
-            + self.mechanic_config["surge_per_enemy_hit"],
+            instance.archetype_state.get("water_level", 0) + self.mechanic_config["surge_per_enemy_hit"],
         )
 
     def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
@@ -1107,8 +1099,7 @@ class AwakeningStrategy(ArchetypeStrategy):
         if reduce_key and self.mechanic_config.get(reduce_key):
             instance.archetype_state["awareness"] = max(
                 0,
-                instance.archetype_state.get("awareness", 0)
-                - self.mechanic_config[reduce_key],
+                instance.archetype_state.get("awareness", 0) - self.mechanic_config[reduce_key],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -1140,24 +1131,21 @@ class AwakeningStrategy(ArchetypeStrategy):
         """Awareness rises each combat round — consciousness expands under duress."""
         instance.archetype_state["awareness"] = min(
             self.mechanic_config["max_awareness"],
-            instance.archetype_state.get("awareness", 0)
-            + self.mechanic_config["gain_per_combat_round"],
+            instance.archetype_state.get("awareness", 0) + self.mechanic_config["gain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         """Failed introspection accelerates awakening — Plato's painful expansion."""
         instance.archetype_state["awareness"] = min(
             self.mechanic_config["max_awareness"],
-            instance.archetype_state.get("awareness", 0)
-            + self.mechanic_config["gain_on_failed_check"],
+            instance.archetype_state.get("awareness", 0) + self.mechanic_config["gain_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
         """Consciousness intrusion — each hit from a memory-entity raises awareness."""
         instance.archetype_state["awareness"] = min(
             self.mechanic_config["max_awareness"],
-            instance.archetype_state.get("awareness", 0)
-            + self.mechanic_config["gain_per_enemy_hit"],
+            instance.archetype_state.get("awareness", 0) + self.mechanic_config["gain_per_enemy_hit"],
         )
 
     def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:
@@ -1320,8 +1308,7 @@ class OverthrowStrategy(ArchetypeStrategy):
         if reduce_key and self.mechanic_config.get(reduce_key):
             instance.archetype_state["fracture"] = max(
                 0,
-                instance.archetype_state.get("fracture", 0)
-                - self.mechanic_config[reduce_key],
+                instance.archetype_state.get("fracture", 0) - self.mechanic_config[reduce_key],
             )
 
     def apply_encounter_effects(self, instance: DungeonInstance, effects: dict) -> None:
@@ -1341,7 +1328,8 @@ class OverthrowStrategy(ArchetypeStrategy):
         fracture_delta = effects.get("fracture", 0)
         if fracture_delta:
             state["fracture"] = max(
-                0, min(max_fracture, state.get("fracture", 0) + fracture_delta),
+                0,
+                min(max_fracture, state.get("fracture", 0) + fracture_delta),
             )
 
         # ── Faction standing modification ──
@@ -1390,24 +1378,21 @@ class OverthrowStrategy(ArchetypeStrategy):
         """Violence fractures authority — each combat round widens the cracks."""
         instance.archetype_state["fracture"] = min(
             self.mechanic_config["max_fracture"],
-            instance.archetype_state.get("fracture", 0)
-            + self.mechanic_config["gain_per_combat_round"],
+            instance.archetype_state.get("fracture", 0) + self.mechanic_config["gain_per_combat_round"],
         )
 
     def on_failed_check(self, instance: DungeonInstance) -> None:
         """Failed diplomacy accelerates the crisis — Koestler's logical collapse."""
         instance.archetype_state["fracture"] = min(
             self.mechanic_config["max_fracture"],
-            instance.archetype_state.get("fracture", 0)
-            + self.mechanic_config["gain_on_failed_check"],
+            instance.archetype_state.get("fracture", 0) + self.mechanic_config["gain_on_failed_check"],
         )
 
     def on_enemy_hit(self, instance: DungeonInstance) -> None:
         """Each blow widens the cracks — structural violence as political accelerant."""
         instance.archetype_state["fracture"] = min(
             self.mechanic_config["max_fracture"],
-            instance.archetype_state.get("fracture", 0)
-            + self.mechanic_config["gain_per_enemy_hit"],
+            instance.archetype_state.get("fracture", 0) + self.mechanic_config["gain_per_enemy_hit"],
         )
 
     def get_boss_deployment_choices(self, instance: DungeonInstance) -> list[dict] | None:

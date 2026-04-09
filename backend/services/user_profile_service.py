@@ -80,11 +80,7 @@ class UserProfileService:
             "email_locale": data["email_locale"],
         }
 
-        response = await (
-            supabase.table("notification_preferences")
-            .upsert(row, on_conflict="user_id")
-            .execute()
-        )
+        response = await supabase.table("notification_preferences").upsert(row, on_conflict="user_id").execute()
 
         result = response.data[0] if response.data else row
         logger.info(
@@ -108,9 +104,12 @@ class UserProfileService:
 
         Uses admin client because user_profiles may require elevated access.
         """
-        await admin_supabase.table("user_profiles").update(
-            {"onboarding_completed": True}
-        ).eq("id", str(user_id)).execute()
+        await (
+            admin_supabase.table("user_profiles")
+            .update({"onboarding_completed": True})
+            .eq("id", str(user_id))
+            .execute()
+        )
         logger.info(
             "Onboarding completed",
             extra={"user_id": str(user_id)},

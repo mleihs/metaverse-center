@@ -87,24 +87,25 @@ class NASAEONETAdapter(SourceAdapter):
             sources = event.get("sources", [])
             url = sources[0].get("url") if sources else None
 
-            results.append(ScanResult(
-                source_id=eonet_id,
-                source_name=self.name,
-                title=title,
-                url=url,
-                description=f"EONET event: {', '.join(c.get('title', '') for c in categories)}",
-                raw_data={
-                    "categories": [c.get("id") for c in categories],
-                    "geometry": geometry[:1] if geometry else [],
-                    "sources": [s.get("url") for s in sources],
-                },
-                source_category=source_category,
-                magnitude=round(game_magnitude, 2),
-                classification_reason=(
-                    f"EONET category:"
-                    f" {categories[0].get('id', 'unknown') if categories else 'unknown'}"
-                ),
-                is_structured=True,
-            ))
+            results.append(
+                ScanResult(
+                    source_id=eonet_id,
+                    source_name=self.name,
+                    title=title,
+                    url=url,
+                    description=f"EONET event: {', '.join(c.get('title', '') for c in categories)}",
+                    raw_data={
+                        "categories": [c.get("id") for c in categories],
+                        "geometry": geometry[:1] if geometry else [],
+                        "sources": [s.get("url") for s in sources],
+                    },
+                    source_category=source_category,
+                    magnitude=round(game_magnitude, 2),
+                    classification_reason=(
+                        f"EONET category: {categories[0].get('id', 'unknown') if categories else 'unknown'}"
+                    ),
+                    is_structured=True,
+                )
+            )
 
         return results

@@ -75,11 +75,14 @@ class InstagramService:
         container_id = data.get("id")
         if not container_id:
             raise InstagramContainerError("No container ID in response")
-        logger.info("Created image container", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_type": "IMAGE",
-        })
+        logger.info(
+            "Created image container",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_type": "IMAGE",
+            },
+        )
         return container_id
 
     async def create_carousel_item_container(
@@ -102,11 +105,14 @@ class InstagramService:
         container_id = data.get("id")
         if not container_id:
             raise InstagramContainerError("No carousel item container ID in response")
-        logger.info("Created carousel item container", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_type": "CAROUSEL_ITEM",
-        })
+        logger.info(
+            "Created carousel item container",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_type": "CAROUSEL_ITEM",
+            },
+        )
         return container_id
 
     async def create_carousel_container(
@@ -126,12 +132,15 @@ class InstagramService:
         container_id = data.get("id")
         if not container_id:
             raise InstagramContainerError("No carousel container ID in response")
-        logger.info("Created carousel container", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_type": "CAROUSEL",
-            "children_count": len(children_ids),
-        })
+        logger.info(
+            "Created carousel container",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_type": "CAROUSEL",
+                "children_count": len(children_ids),
+            },
+        )
         return container_id
 
     async def create_story_container(
@@ -149,11 +158,14 @@ class InstagramService:
         container_id = data.get("id")
         if not container_id:
             raise InstagramContainerError("No story container ID in response")
-        logger.info("Created story container", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_type": "STORIES",
-        })
+        logger.info(
+            "Created story container",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_type": "STORIES",
+            },
+        )
         return container_id
 
     # ── Container Status ────────────────────────────────────────────────
@@ -175,12 +187,15 @@ class InstagramService:
         elapsed = 0
         while elapsed < CONTAINER_POLL_MAX_WAIT:
             status_code = await self.check_container_status(container_id)
-            logger.debug("Container status poll", extra={
-                "ig_user_id": self.ig_user_id,
-                "container_id": container_id,
-                "status_code": status_code,
-                "elapsed_s": elapsed,
-            })
+            logger.debug(
+                "Container status poll",
+                extra={
+                    "ig_user_id": self.ig_user_id,
+                    "container_id": container_id,
+                    "status_code": status_code,
+                    "elapsed_s": elapsed,
+                },
+            )
 
             if status_code == "FINISHED":
                 return status_code
@@ -190,12 +205,15 @@ class InstagramService:
                 )
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("instagram_phase", "container_poll")
-                    scope.set_context("instagram", {
-                        "ig_user_id": self.ig_user_id,
-                        "container_id": container_id,
-                        "status_code": status_code,
-                        "elapsed_s": elapsed,
-                    })
+                    scope.set_context(
+                        "instagram",
+                        {
+                            "ig_user_id": self.ig_user_id,
+                            "container_id": container_id,
+                            "status_code": status_code,
+                            "elapsed_s": elapsed,
+                        },
+                    )
                     sentry_sdk.capture_exception(exc)
                 raise exc
 
@@ -207,11 +225,14 @@ class InstagramService:
         )
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("instagram_phase", "container_timeout")
-            scope.set_context("instagram", {
-                "ig_user_id": self.ig_user_id,
-                "container_id": container_id,
-                "elapsed_s": elapsed,
-            })
+            scope.set_context(
+                "instagram",
+                {
+                    "ig_user_id": self.ig_user_id,
+                    "container_id": container_id,
+                    "elapsed_s": elapsed,
+                },
+            )
             sentry_sdk.capture_exception(exc)
         raise exc
 
@@ -227,11 +248,14 @@ class InstagramService:
         media_id = data.get("id")
         if not media_id:
             raise InstagramContainerError("No media ID in publish response")
-        logger.info("Published container", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_id": media_id,
-        })
+        logger.info(
+            "Published container",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_id": media_id,
+            },
+        )
         return data
 
     async def publish_image(
@@ -244,17 +268,22 @@ class InstagramService:
         """End-to-end: create container → wait → publish. Returns published media data."""
         t0 = time.monotonic()
         container_id = await self.create_image_container(
-            image_url, caption, alt_text=alt_text,
+            image_url,
+            caption,
+            alt_text=alt_text,
         )
         await self.wait_for_container(container_id)
         result = await self.publish_container(container_id)
-        logger.info("Image publish complete", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_id": result.get("id"),
-            "media_type": "IMAGE",
-            "elapsed_ms": int((time.monotonic() - t0) * 1000),
-        })
+        logger.info(
+            "Image publish complete",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_id": result.get("id"),
+                "media_type": "IMAGE",
+                "elapsed_ms": int((time.monotonic() - t0) * 1000),
+            },
+        )
         return result
 
     async def publish_carousel(
@@ -278,14 +307,17 @@ class InstagramService:
         container_id = await self.create_carousel_container(child_ids, caption)
         await self.wait_for_container(container_id)
         result = await self.publish_container(container_id)
-        logger.info("Carousel publish complete", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_id": result.get("id"),
-            "media_type": "CAROUSEL",
-            "children_count": len(child_ids),
-            "elapsed_ms": int((time.monotonic() - t0) * 1000),
-        })
+        logger.info(
+            "Carousel publish complete",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_id": result.get("id"),
+                "media_type": "CAROUSEL",
+                "children_count": len(child_ids),
+                "elapsed_ms": int((time.monotonic() - t0) * 1000),
+            },
+        )
         return result
 
     async def publish_story(self, image_url: str) -> dict[str, Any]:
@@ -294,13 +326,16 @@ class InstagramService:
         container_id = await self.create_story_container(image_url)
         await self.wait_for_container(container_id)
         result = await self.publish_container(container_id)
-        logger.info("Story publish complete", extra={
-            "ig_user_id": self.ig_user_id,
-            "container_id": container_id,
-            "media_id": result.get("id"),
-            "media_type": "STORIES",
-            "elapsed_ms": int((time.monotonic() - t0) * 1000),
-        })
+        logger.info(
+            "Story publish complete",
+            extra={
+                "ig_user_id": self.ig_user_id,
+                "container_id": container_id,
+                "media_id": result.get("id"),
+                "media_type": "STORIES",
+                "elapsed_ms": int((time.monotonic() - t0) * 1000),
+            },
+        )
         return result
 
     # ── Media Management ────────────────────────────────────────────────
@@ -320,11 +355,14 @@ class InstagramService:
             self._check_response(resp)
             result = resp.json()
             success = result.get("success", False)
-            logger.info("Deleted Instagram media", extra={
-                "ig_user_id": self.ig_user_id,
-                "media_id": media_id,
-                "success": success,
-            })
+            logger.info(
+                "Deleted Instagram media",
+                extra={
+                    "ig_user_id": self.ig_user_id,
+                    "media_id": media_id,
+                    "success": success,
+                },
+            )
             return success
 
     # ── Insights ────────────────────────────────────────────────────────
@@ -482,11 +520,7 @@ class InstagramService:
             "retry-after",
             "www-authenticate",
         ]
-        return {
-            h: resp.headers.get(h, "")
-            for h in headers_of_interest
-            if resp.headers.get(h)
-        }
+        return {h: resp.headers.get(h, "") for h in headers_of_interest if resp.headers.get(h)}
 
     @staticmethod
     def _check_response(resp: httpx.Response) -> None:
@@ -494,10 +528,13 @@ class InstagramService:
         # Log rate-limit headers on ALL responses (success + error)
         rate_info = InstagramService._extract_rate_limit_info(resp)
         if rate_info:
-            logger.debug("Instagram API rate info", extra={
-                "http_status": resp.status_code,
-                "meta_headers": rate_info,
-            })
+            logger.debug(
+                "Instagram API rate info",
+                extra={
+                    "http_status": resp.status_code,
+                    "meta_headers": rate_info,
+                },
+            )
 
         if resp.status_code == 200:
             return
@@ -510,10 +547,13 @@ class InstagramService:
             )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("instagram_phase", "api_response")
-                scope.set_context("instagram", {
-                    "status_code": resp.status_code,
-                    "response_text": resp.text[:500],
-                })
+                scope.set_context(
+                    "instagram",
+                    {
+                        "status_code": resp.status_code,
+                        "response_text": resp.text[:500],
+                    },
+                )
                 sentry_sdk.capture_exception(api_exc)
             raise api_exc from parse_exc
 
@@ -525,31 +565,31 @@ class InstagramService:
         # Log EVERY error response with full context for debugging.
         # Includes Meta rate-limit headers, fbtrace_id, and full response.
         rate_info = InstagramService._extract_rate_limit_info(resp)
-        logger.error("Instagram Graph API error", extra={
-            "http_status": resp.status_code,
-            "error_code": code,
-            "error_subcode": subcode,
-            "error_type": error.get("type", ""),
-            "error_message": message[:300],
-            "fbtrace_id": error.get("fbtrace_id", ""),
-            "is_transient": error.get("is_transient", False),
-            "error_user_title": error.get("error_user_title", ""),
-            "error_user_msg": error.get("error_user_msg", "")[:200],
-            "request_url": str(resp.request.url).split("?")[0] if resp.request else "",
-            "request_method": str(resp.request.method) if resp.request else "",
-            "meta_rate_limit_headers": rate_info,
-            "response_body": resp.text[:500],
-        })
+        logger.error(
+            "Instagram Graph API error",
+            extra={
+                "http_status": resp.status_code,
+                "error_code": code,
+                "error_subcode": subcode,
+                "error_type": error.get("type", ""),
+                "error_message": message[:300],
+                "fbtrace_id": error.get("fbtrace_id", ""),
+                "is_transient": error.get("is_transient", False),
+                "error_user_title": error.get("error_user_title", ""),
+                "error_user_msg": error.get("error_user_msg", "")[:200],
+                "request_url": str(resp.request.url).split("?")[0] if resp.request else "",
+                "request_method": str(resp.request.method) if resp.request else "",
+                "meta_rate_limit_headers": rate_info,
+                "response_body": resp.text[:500],
+            },
+        )
 
         # Token expired (code 190) — ALSO triggers on IP blocks.
         # Subcodes: 463=expired, 460=password changed, 467=invalid.
         # "Cannot parse access token" with no subcode = likely IP block,
         # NOT an actual token issue. Distinguish for operator clarity.
         if code == 190:
-            is_ip_block = (
-                subcode is None
-                and "Cannot parse" in message
-            )
+            is_ip_block = subcode is None and "Cannot parse" in message
             if is_ip_block:
                 raise InstagramTokenExpiredError(
                     f"Instagram IP block suspected — 'Cannot parse access token' with no "
@@ -574,13 +614,17 @@ class InstagramService:
         # Rate limited
         if code == 4 or resp.status_code == 429:
             raise InstagramRateLimitError(
-                f"Rate limit exceeded: {message}", code=code, subcode=subcode,
+                f"Rate limit exceeded: {message}",
+                code=code,
+                subcode=subcode,
             )
 
         # Temporarily blocked (spam detection)
         if code == 368:
             raise InstagramRateLimitError(
-                f"Temporarily blocked by Instagram: {message}", code=code, subcode=subcode,
+                f"Temporarily blocked by Instagram: {message}",
+                code=code,
+                subcode=subcode,
             )
 
         api_exc = InstagramAPIError(
@@ -590,11 +634,14 @@ class InstagramService:
         )
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("instagram_phase", "api_response")
-            scope.set_context("instagram", {
-                "error_code": code,
-                "error_subcode": subcode,
-                "message": message[:500],
-                "status_code": resp.status_code,
-            })
+            scope.set_context(
+                "instagram",
+                {
+                    "error_code": code,
+                    "error_subcode": subcode,
+                    "message": message[:500],
+                    "status_code": resp.status_code,
+                },
+            )
             sentry_sdk.capture_exception(api_exc)
         raise api_exc

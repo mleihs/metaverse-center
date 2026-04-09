@@ -13,9 +13,9 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -54,10 +54,7 @@ class AdminUserService:
         ).execute()
 
         if not user_resp.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User '{user_id}' not found.",
-            )
+            raise not_found(detail=f"User '{user_id}' not found.")
 
         user_data = user_resp.data
 
@@ -97,19 +94,21 @@ class AdminUserService:
             update_data["is_architect"] = is_architect
 
         if not update_data:
-            raise HTTPException(status_code=400, detail="No update data provided.")
+            raise bad_request("No update data provided.")
 
         response = await (
             admin_supabase.table("user_wallets")
-            .upsert({
-                "user_id": str(user_id),
-                **update_data,
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
+            .upsert(
+                {
+                    "user_id": str(user_id),
+                    **update_data,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .execute()
         )
         if not response.data:
-            raise HTTPException(status_code=500, detail="Failed to update wallet.")
+            raise server_error("Failed to update wallet.")
         return response.data[0]
 
     @classmethod
@@ -126,10 +125,7 @@ class AdminUserService:
             logger.info("User deleted", extra={"user_id": str(user_id)})
         except (PostgrestAPIError, httpx.HTTPError) as e:
             logger.warning("User deletion failed", extra={"user_id": str(user_id)}, exc_info=True)
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User '{user_id}' not found or could not be deleted.",
-            ) from e
+            raise not_found(detail=f"User '{user_id}' not found or could not be deleted.") from e
 
     @classmethod
     async def add_membership(
@@ -142,18 +138,17 @@ class AdminUserService:
         """Add a user to a simulation with a specific role."""
         response = await (
             admin_supabase.table("simulation_members")
-            .insert({
-                "user_id": str(user_id),
-                "simulation_id": str(simulation_id),
-                "member_role": role,
-            })
+            .insert(
+                {
+                    "user_id": str(user_id),
+                    "simulation_id": str(simulation_id),
+                    "member_role": role,
+                }
+            )
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to add membership. User may already be a member.",
-            )
+            raise bad_request("Failed to add membership. User may already be a member.")
         return response.data[0]
 
     @classmethod
@@ -167,19 +162,18 @@ class AdminUserService:
         """Change a user's role in a simulation."""
         response = await (
             admin_supabase.table("simulation_members")
-            .update({
-                "member_role": role,
-                "updated_at": datetime.now(UTC).isoformat(),
-            })
+            .update(
+                {
+                    "member_role": role,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
             .eq("user_id", str(user_id))
             .eq("simulation_id", str(simulation_id))
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Membership not found.",
-            )
+            raise not_found(detail="Membership not found.")
         return response.data[0]
 
     @classmethod
@@ -198,8 +192,5 @@ class AdminUserService:
             .execute()
         )
         if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Membership not found.",
-            )
+            raise not_found(detail="Membership not found.")
         return response.data[0]

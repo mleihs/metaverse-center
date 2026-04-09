@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 
 # Archetype → (aligned operative types, opposed operative types)
 ARCHETYPE_OPERATIVE_AFFINITIES: dict[str, tuple[list[str], list[str]]] = {
-    "The Shadow":           (["spy", "assassin"],        ["propagandist"]),
-    "The Tower":            (["saboteur", "infiltrator"], []),
-    "The Devouring Mother": (["spy", "propagandist"],    ["infiltrator"]),
-    "The Deluge":           (["saboteur", "infiltrator"], ["spy"]),
-    "The Overthrow":        (["propagandist", "infiltrator"], []),
-    "The Prometheus":       (["spy", "infiltrator"],      ["saboteur"]),
-    "The Awakening":        (["propagandist", "spy"],     ["assassin"]),
-    "The Entropy":          (["saboteur", "assassin"],    ["infiltrator"]),
+    "The Shadow": (["spy", "assassin"], ["propagandist"]),
+    "The Tower": (["saboteur", "infiltrator"], []),
+    "The Devouring Mother": (["spy", "propagandist"], ["infiltrator"]),
+    "The Deluge": (["saboteur", "infiltrator"], ["spy"]),
+    "The Overthrow": (["propagandist", "infiltrator"], []),
+    "The Prometheus": (["spy", "infiltrator"], ["saboteur"]),
+    "The Awakening": (["propagandist", "spy"], ["assassin"]),
+    "The Entropy": (["saboteur", "assassin"], ["infiltrator"]),
 }
 
 
@@ -156,16 +156,12 @@ class BotGameState:
         )
         self.own_missions = missions_resp.data or []
         self.own_guardians = sum(
-            1 for m in self.own_missions
-            if m["operative_type"] == "guardian" and m["status"] == "active"
+            1 for m in self.own_missions if m["operative_type"] == "guardian" and m["status"] == "active"
         )
 
         # Own zones (security levels)
         zones_resp = await (
-            supabase.table("zones")
-            .select("id, name, security_level")
-            .eq("simulation_id", sim_id)
-            .execute()
+            supabase.table("zones").select("id, name, security_level").eq("simulation_id", sim_id).execute()
         )
         self.own_zones = zones_resp.data or []
 
@@ -202,8 +198,7 @@ class BotGameState:
         embassies_resp = await (
             supabase.table("embassies")
             .select(
-                "id, simulation_a_id, simulation_b_id, status,"
-                " infiltration_penalty, infiltration_penalty_expires_at"
+                "id, simulation_a_id, simulation_b_id, status, infiltration_penalty, infiltration_penalty_expires_at"
             )
             .eq("status", "active")
             .or_(f"simulation_a_id.eq.{sim_id},simulation_b_id.eq.{sim_id}")
@@ -244,7 +239,7 @@ class BotGameState:
         # (own intel naturally ranks first since it's interleaved by created_at)
         seen_targets: set[str] = set()
         reports: list[dict] = []
-        for report in (intel_resp.data or []):
+        for report in intel_resp.data or []:
             target = report.get("target_simulation_id")
             if target not in seen_targets:
                 reports.append(report)
@@ -277,11 +272,7 @@ class BotGameState:
 
         # Teams/alliances
         teams_resp = await (
-            supabase.table("epoch_teams")
-            .select("*")
-            .eq("epoch_id", epoch_id)
-            .is_("dissolved_at", "null")
-            .execute()
+            supabase.table("epoch_teams").select("*").eq("epoch_id", epoch_id).is_("dissolved_at", "null").execute()
         )
         self.teams = teams_resp.data or []
 
@@ -311,11 +302,7 @@ class BotGameState:
         if self.own_team_id:
             try:
                 tension_resp = await (
-                    supabase.table("epoch_teams")
-                    .select("tension")
-                    .eq("id", self.own_team_id)
-                    .maybe_single()
-                    .execute()
+                    supabase.table("epoch_teams").select("tension").eq("id", self.own_team_id).maybe_single().execute()
                 )
                 if tension_resp.data:
                     self.own_team_tension = tension_resp.data.get("tension", 0)
@@ -328,9 +315,9 @@ class BotGameState:
             self.allies = []
             return
         self.allies = [
-            p["simulation_id"] for p in self.participants
-            if p.get("team_id") == self.own_team_id
-            and p["simulation_id"] != self.simulation_id
+            p["simulation_id"]
+            for p in self.participants
+            if p.get("team_id") == self.own_team_id and p["simulation_id"] != self.simulation_id
         ]
 
     async def _load_world_state(self, supabase: Client, sim_id: str) -> None:
@@ -348,9 +335,9 @@ class BotGameState:
             )
             self.own_zone_stability = stability_resp.data or []
             if self.own_zone_stability:
-                self.own_avg_pressure = sum(
-                    float(z.get("total_pressure", 0)) for z in self.own_zone_stability
-                ) / len(self.own_zone_stability)
+                self.own_avg_pressure = sum(float(z.get("total_pressure", 0)) for z in self.own_zone_stability) / len(
+                    self.own_zone_stability
+                )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Zone stability load failed", exc_info=True)
 
@@ -365,8 +352,8 @@ class BotGameState:
                 .execute()
             )
             self.active_resonances = resonance_resp.data or []
-            self.resonance_aligned_types, self.resonance_opposed_types = (
-                _derive_resonance_affinities(self.active_resonances)
+            self.resonance_aligned_types, self.resonance_opposed_types = _derive_resonance_affinities(
+                self.active_resonances
             )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Active resonances load failed", exc_info=True)
@@ -381,9 +368,7 @@ class BotGameState:
                 .execute()
             )
             self.active_narrative_arcs = arcs_resp.data or []
-            self.active_convergences = [
-                a for a in self.active_narrative_arcs if a.get("arc_type") == "convergence"
-            ]
+            self.active_convergences = [a for a in self.active_narrative_arcs if a.get("arc_type") == "convergence"]
 
             # Scar tissue
             scar_resp = await (
@@ -393,9 +378,7 @@ class BotGameState:
                 .gt("scar_tissue_deposited", 0)
                 .execute()
             )
-            self.own_scar_tissue = sum(
-                float(a.get("scar_tissue_deposited", 0)) for a in (scar_resp.data or [])
-            )
+            self.own_scar_tissue = sum(float(a.get("scar_tissue_deposited", 0)) for a in (scar_resp.data or []))
 
             # Pending bureau responses
             pending_resp = await (
@@ -423,8 +406,7 @@ class BotGameState:
     def get_available_agents(self) -> list[dict]:
         """Get agents not currently on active missions."""
         deployed_agent_ids = {
-            m["agent_id"] for m in self.own_missions
-            if m["status"] in ("deploying", "active", "returning")
+            m["agent_id"] for m in self.own_missions if m["status"] in ("deploying", "active", "returning")
         }
         return [a for a in self.own_agents if a["id"] not in deployed_agent_ids]
 
@@ -439,9 +421,9 @@ class BotGameState:
     def get_opponent_sim_ids(self) -> list[str]:
         """Get non-allied opponent simulation IDs."""
         return [
-            p["simulation_id"] for p in self.participants
-            if p["simulation_id"] != self.simulation_id
-            and p["simulation_id"] not in self.allies
+            p["simulation_id"]
+            for p in self.participants
+            if p["simulation_id"] != self.simulation_id and p["simulation_id"] not in self.allies
         ]
 
     def get_my_score_rank(self) -> int:

@@ -235,14 +235,13 @@ class ForgeLoreService:
             if s.get("image_caption"):
                 block += f"Image Caption: {s['image_caption']}\n"
 
-            prompt = (
-                "Translate this lore section to German. "
-                "Return exactly 1 translated section.\n\n" + block
-            )
+            prompt = "Translate this lore section to German. Return exactly 1 translated section.\n\n" + block
 
             try:
                 result = await run_ai(
-                    agent, prompt, "lore_translation",
+                    agent,
+                    prompt,
+                    "lore_translation",
                     output_type=ForgeLoreTranslatedOutput,
                 )
                 translated = result.output.sections[0].model_dump()
@@ -263,12 +262,14 @@ class ForgeLoreService:
                     },
                 )
                 # Append empty translation so indices stay aligned
-                translations.append({
-                    "title": s["title"],
-                    "epigraph": s.get("epigraph", ""),
-                    "body": "",
-                    "image_caption": s.get("image_caption"),
-                })
+                translations.append(
+                    {
+                        "title": s["title"],
+                        "epigraph": s.get("epigraph", ""),
+                        "body": "",
+                        "image_caption": s.get("image_caption"),
+                    }
+                )
 
         succeeded = sum(1 for t in translations if t.get("body"))
         logger.info(
@@ -279,7 +280,8 @@ class ForgeLoreService:
 
     @staticmethod
     async def list_for_simulation(
-        supabase: Client, simulation_id: UUID,
+        supabase: Client,
+        simulation_id: UUID,
     ) -> list[dict[str, Any]]:
         """List all lore sections for a simulation, ordered by sort_order."""
         resp = await (
@@ -293,7 +295,9 @@ class ForgeLoreService:
 
     @staticmethod
     async def get_by_slug(
-        supabase: Client, simulation_id: UUID, slug: str,
+        supabase: Client,
+        simulation_id: UUID,
+        slug: str,
     ) -> dict[str, Any] | None:
         """Get a single lore section by simulation-scoped slug."""
         resp = await (
@@ -323,7 +327,8 @@ class ForgeLoreService:
             logger.warning(
                 "Lore translation count mismatch: %d translations for %d sections — "
                 "later sections will be persisted without _de fields",
-                len(translations), len(sections),
+                len(translations),
+                len(sections),
                 extra={"simulation_id": str(simulation_id)},
             )
 
@@ -375,29 +380,46 @@ class ForgeLoreService:
 
         try:
             # 1. Fetch full simulation data
-            sim_resp = await admin_supabase.table("simulations").select(
-                "name, description"
-            ).eq("id", str(simulation_id)).single().execute()
+            sim_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, description")
+                .eq("id", str(simulation_id))
+                .single()
+                .execute()
+            )
             sim = sim_resp.data
 
-            agents_resp = await admin_supabase.table("agents").select(
-                "name, primary_profession, character, background"
-            ).eq("simulation_id", str(simulation_id)).execute()
+            agents_resp = (
+                await admin_supabase.table("agents")
+                .select("name, primary_profession, character, background")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
             agents = agents_resp.data or []
 
-            buildings_resp = await admin_supabase.table("buildings").select(
-                "name, building_type, description"
-            ).eq("simulation_id", str(simulation_id)).execute()
+            buildings_resp = (
+                await admin_supabase.table("buildings")
+                .select("name, building_type, description")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
             buildings = buildings_resp.data or []
 
-            zones_resp = await admin_supabase.table("zones").select(
-                "name, zone_type, description"
-            ).eq("simulation_id", str(simulation_id)).execute()
+            zones_resp = (
+                await admin_supabase.table("zones")
+                .select("name, zone_type, description")
+                .eq("simulation_id", str(simulation_id))
+                .execute()
+            )
             zones = zones_resp.data or []
 
-            lore_resp = await admin_supabase.table("simulation_lore").select(
-                "title, body, chapter"
-            ).eq("simulation_id", str(simulation_id)).order("sort_order").execute()
+            lore_resp = (
+                await admin_supabase.table("simulation_lore")
+                .select("title, body, chapter")
+                .eq("simulation_id", str(simulation_id))
+                .order("sort_order")
+                .execute()
+            )
             existing_lore = lore_resp.data or []
 
             # 2. Build dossier prompt
@@ -407,12 +429,10 @@ class ForgeLoreService:
                 for a in agents[:12]
             )
             building_block = "\n".join(
-                f"  - {b['name']} ({b['building_type']}): {b.get('description', '')[:100]}..."
-                for b in buildings[:10]
+                f"  - {b['name']} ({b['building_type']}): {b.get('description', '')[:100]}..." for b in buildings[:10]
             )
             zone_block = "\n".join(
-                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}"
-                for z in zones
+                f"  - {z['name']} ({z['zone_type']}): {z.get('description', '')[:80]}" for z in zones
             )
             lore_block = "\n".join(
                 f"  [{entry['chapter']}] {entry['title']}: {entry.get('body', '')[:200]}..."
@@ -420,9 +440,14 @@ class ForgeLoreService:
             )
 
             # Fetch user's other simulations for cross-shard references
-            other_sims_resp = await admin_supabase.table("simulations").select(
-                "name, description"
-            ).eq("owner_id", str(user_id)).neq("id", str(simulation_id)).limit(5).execute()
+            other_sims_resp = (
+                await admin_supabase.table("simulations")
+                .select("name, description")
+                .eq("owner_id", str(user_id))
+                .neq("id", str(simulation_id))
+                .limit(5)
+                .execute()
+            )
             other_sims = other_sims_resp.data or []
             cross_shard_block = ""
             if other_sims:
@@ -436,10 +461,10 @@ class ForgeLoreService:
 
             dossier_prompt = f"""You are the Bureau's Senior Classified Analyst \
 producing an expanded intelligence dossier
-for the materialized shard "{sim['name']}".
+for the materialized shard "{sim["name"]}".
 
-WORLD: {sim['name']}
-DESCRIPTION: {sim.get('description', '')}
+WORLD: {sim["name"]}
+DESCRIPTION: {sim.get("description", "")}
 
 EXISTING LORE (for continuity):
 {lore_block}
@@ -522,7 +547,8 @@ REQUIREMENTS:
             translations = None
             try:
                 translations = await ForgeLoreService.translate_lore(
-                    sections, openrouter_key,
+                    sections,
+                    openrouter_key,
                 )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier translation failed")
@@ -564,11 +590,14 @@ REQUIREMENTS:
                     img_service = ForgeImageService(admin_supabase, simulation_id)
 
                     for section in image_sections[:3]:
-                        lore_rows = await admin_supabase.table("simulation_lore").select(
-                            "id"
-                        ).eq("simulation_id", str(simulation_id)).eq(
-                            "title", section["title"]
-                        ).maybe_single().execute()
+                        lore_rows = (
+                            await admin_supabase.table("simulation_lore")
+                            .select("id")
+                            .eq("simulation_id", str(simulation_id))
+                            .eq("title", section["title"])
+                            .maybe_single()
+                            .execute()
+                        )
                         if lore_rows.data:
                             await img_service.generate_lore_image(
                                 section_title=section["title"],
@@ -583,7 +612,8 @@ REQUIREMENTS:
 
             # 6. Mark purchase completed
             await ForgeFeatureService.complete_feature(
-                admin_supabase, purchase_id,
+                admin_supabase,
+                purchase_id,
                 result={"sections": len(sections)},
             )
             logger.info(
@@ -595,5 +625,7 @@ REQUIREMENTS:
             sentry_sdk.capture_exception(exc)
             logger.exception("Dossier generation failed")
             await ForgeFeatureService.fail_feature(
-                admin_supabase, purchase_id, str(exc),
+                admin_supabase,
+                purchase_id,
+                str(exc),
             )

@@ -423,10 +423,14 @@ async def generate_and_upload_showcase(
     full_path = f"showcase/dungeon-{archetype_id}.full.avif"
 
     await admin_supabase.storage.from_("simulation.assets").upload(
-        full_path, full_avif, {"content-type": "image/avif", "upsert": "true"},
+        full_path,
+        full_avif,
+        {"content-type": "image/avif", "upsert": "true"},
     )
     await admin_supabase.storage.from_("simulation.assets").upload(
-        base_path, thumb_avif, {"content-type": "image/avif", "upsert": "true"},
+        base_path,
+        thumb_avif,
+        {"content-type": "image/avif", "upsert": "true"},
     )
 
     public_url = admin_supabase.storage.from_("simulation.assets").get_public_url(base_path)

@@ -19,9 +19,14 @@ class NewsAPIScannerAdapter(SourceAdapter):
     name = "newsapi"
     display_name = "NewsAPI"
     categories = [
-        "economic_crisis", "military_conflict", "pandemic",
-        "natural_disaster", "political_upheaval", "tech_breakthrough",
-        "cultural_shift", "environmental_disaster",
+        "economic_crisis",
+        "military_conflict",
+        "pandemic",
+        "natural_disaster",
+        "political_upheaval",
+        "tech_breakthrough",
+        "cultural_shift",
+        "environmental_disaster",
     ]
     is_structured = False
     requires_api_key = True
@@ -48,17 +53,19 @@ class NewsAPIScannerAdapter(SourceAdapter):
 
                     raw = article.get("raw_data", {})
 
-                    results.append(ScanResult(
-                        source_id=f"newsapi_{url}",
-                        source_name=self.name,
-                        title=article.get("name", ""),
-                        url=url,
-                        description=raw.get("description"),
-                        raw_data=raw,
-                        source_category=None,  # LLM classifies
-                        magnitude=None,
-                        is_structured=False,
-                    ))
+                    results.append(
+                        ScanResult(
+                            source_id=f"newsapi_{url}",
+                            source_name=self.name,
+                            title=article.get("name", ""),
+                            url=url,
+                            description=raw.get("description"),
+                            raw_data=raw,
+                            source_category=None,  # LLM classifies
+                            magnitude=None,
+                            is_structured=False,
+                        )
+                    )
             except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("NewsAPI country=%s fetch failed", country, exc_info=True)
 

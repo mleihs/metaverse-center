@@ -7,10 +7,10 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import BaseService
+from backend.utils.errors import not_found
 from backend.utils.search import apply_search_filter
 from supabase import AsyncClient as Client
 
@@ -39,12 +39,7 @@ class AgentService(BaseService):
     ) -> tuple[list[dict], int]:
         """List agents with optional filters and full-text search."""
         table = cls._read_table(include_deleted)
-        query = (
-            supabase.table(table)
-            .select("*", count="exact")
-            .eq("simulation_id", str(simulation_id))
-            .order("name")
-        )
+        query = supabase.table(table).select("*", count="exact").eq("simulation_id", str(simulation_id)).order("name")
 
         if system:
             query = query.eq("system", system)
@@ -74,11 +69,7 @@ class AgentService(BaseService):
         select: str = "id, name, character, system",
     ) -> list[dict]:
         """Fetch agents for reaction generation (lightweight select)."""
-        query = (
-            supabase.table(cls._read_table())
-            .select(select)
-            .eq("simulation_id", str(simulation_id))
-        )
+        query = supabase.table(cls._read_table()).select(select).eq("simulation_id", str(simulation_id))
         if agent_ids:
             query = query.in_("id", agent_ids)
         else:
@@ -202,10 +193,7 @@ class AgentService(BaseService):
 
         agent = response.data
         if not agent:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"agents '{agent_id}' not found in simulation '{simulation_id}'.",
-            )
+            raise not_found(detail=f"agents '{agent_id}' not found in simulation '{simulation_id}'.")
 
         # Normalize embedded keys to match the original API contract
         agent["professions"] = agent.pop("agent_professions", []) or []
@@ -261,9 +249,7 @@ class AgentService(BaseService):
             blocked_until = agent.get("ambassador_blocked_until")
             if blocked_until and is_ambassador:
                 try:
-                    blocked_dt = datetime.fromisoformat(
-                        str(blocked_until).replace("Z", "+00:00")
-                    )
+                    blocked_dt = datetime.fromisoformat(str(blocked_until).replace("Z", "+00:00"))
                     if blocked_dt > now:
                         is_ambassador = False
                 except (ValueError, TypeError):
