@@ -4,17 +4,14 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
 import { seoService } from '../../services/SeoService.js';
-import type { Event as SimEvent } from '../../types/index.js';
+import type { ApiResponse, Event as SimEvent } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
-import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
+import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
-import '../shared/LoadingState.js';
-import '../shared/ErrorState.js';
-import '../shared/EmptyState.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import './EventCard.js';
@@ -24,7 +21,7 @@ import './EventSeismograph.js';
 
 @localized()
 @customElement('velg-events-view')
-export class VelgEventsView extends LitElement {
+export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   static styles = [
     viewHeaderStyles,
     gridLayoutStyles,
@@ -62,14 +59,6 @@ export class VelgEventsView extends LitElement {
 
   @property({ type: String }) simulationId = '';
 
-  @state() private _events: SimEvent[] = [];
-  @state() private _total = 0;
-  @state() private _loading = true;
-  @state() private _error: string | null = null;
-  @state() private _limit = 25;
-  @state() private _offset = 0;
-  @state() private _filters: Record<string, string> = {};
-  @state() private _search = '';
   @state() private _selectedEvent: SimEvent | null = null;
   @state() private _editEvent: SimEvent | null = null;
   @state() private _showEditModal = false;
@@ -78,6 +67,44 @@ export class VelgEventsView extends LitElement {
   @state() private _seismographEvents: SimEvent[] = [];
   @state() private _dateFrom: string | null = null;
   @state() private _dateTo: string | null = null;
+
+  /* ── DataLoaderMixin contract ────────── */
+
+  protected get _events(): SimEvent[] {
+    return (this._data as SimEvent[]) ?? [];
+  }
+
+  protected async _fetchData(): Promise<ApiResponse<SimEvent[]>> {
+    const params = this._buildParams();
+    if (this._bleedOnly) params.data_source = 'bleed';
+    if (this._dateFrom) params.date_from = this._dateFrom;
+    if (this._dateTo) params.date_to = this._dateTo;
+    return eventsApi.list(this.simulationId, params);
+  }
+
+  protected _getLoadingMessage(): string {
+    return msg('Loading events...');
+  }
+
+  protected _getEmptyMessage(): string {
+    return msg('No events found.');
+  }
+
+  protected _getErrorFallback(): string {
+    return msg('An unexpected error occurred');
+  }
+
+  protected _onDataLoaded(): void {
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      seoService.setCollectionPage({
+        name: `${sim.name} \u2013 Events`,
+        description: `Recent events in the ${sim.name} simulation.`,
+        url: `https://metaverse.center/simulations/${sim.slug}/events`,
+        numberOfItems: this._total,
+      });
+    }
+  }
 
   private get _canEdit(): boolean {
     return appState.canEdit.value;
@@ -92,8 +119,7 @@ export class VelgEventsView extends LitElement {
   }
 
   connectedCallback(): void {
-    super.connectedCallback();
-    this._loadEvents();
+    super.connectedCallback(); // mixin auto-loads
     this._loadSeismographEvents();
   }
 
@@ -102,82 +128,11 @@ export class VelgEventsView extends LitElement {
     super.disconnectedCallback();
   }
 
-  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('simulationId') && this.simulationId) {
-      this._offset = 0;
-      this._search = '';
-      this._filters = {};
-      this._loadEvents();
+  protected willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has('simulationId') && this.simulationId) {
       this._loadSeismographEvents();
     }
-  }
-
-  private async _loadEvents(): Promise<void> {
-    if (!this.simulationId) return;
-
-    this._loading = true;
-    this._error = null;
-
-    const params: Record<string, string> = {
-      limit: String(this._limit),
-      offset: String(this._offset),
-    };
-
-    if (this._search) {
-      params.search = this._search;
-    }
-
-    if (this._bleedOnly) {
-      params.data_source = 'bleed';
-    }
-
-    if (this._dateFrom) {
-      params.date_from = this._dateFrom;
-    }
-    if (this._dateTo) {
-      params.date_to = this._dateTo;
-    }
-
-    for (const [key, value] of Object.entries(this._filters)) {
-      params[key] = value;
-    }
-
-    try {
-      const response = await eventsApi.list(this.simulationId, params);
-
-      if (response.success && response.data) {
-        this._events = Array.isArray(response.data) ? response.data : [];
-        this._total = response.meta?.total ?? this._events.length;
-        const sim = appState.currentSimulation.value;
-        if (sim) {
-          seoService.setCollectionPage({
-            name: `${sim.name} — Events`,
-            description: `Recent events in the ${sim.name} simulation.`,
-            url: `https://metaverse.center/simulations/${sim.slug}/events`,
-            numberOfItems: this._total,
-          });
-        }
-      } else {
-        this._error = response.error?.message ?? msg('Failed to load events');
-      }
-    } catch {
-      this._error = msg('An unexpected error occurred');
-    } finally {
-      this._loading = false;
-    }
-  }
-
-  private _handleFilterChange(e: CustomEvent<FilterChangeDetail>): void {
-    this._filters = e.detail.filters;
-    this._search = e.detail.search;
-    this._offset = 0;
-    this._loadEvents();
-  }
-
-  private _handlePageChange(e: CustomEvent<{ limit: number; offset: number }>): void {
-    this._limit = e.detail.limit;
-    this._offset = e.detail.offset;
-    this._loadEvents();
+    super.willUpdate(changed); // mixin handles pagination reset + _load()
   }
 
   private _handleEventClick(e: CustomEvent<SimEvent>): void {
@@ -210,7 +165,7 @@ export class VelgEventsView extends LitElement {
       const response = await eventsApi.remove(this.simulationId, evt.id);
       if (response.success) {
         VelgToast.success(msg('Event deleted successfully'));
-        this._loadEvents();
+        this._load();
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete event'));
       }
@@ -232,7 +187,7 @@ export class VelgEventsView extends LitElement {
   private _handleEventSaved(): void {
     this._showEditModal = false;
     this._editEvent = null;
-    this._loadEvents();
+    this._load();
   }
 
   private _handleDetailsClose(): void {
@@ -243,11 +198,7 @@ export class VelgEventsView extends LitElement {
   private _handleBleedToggle(e: InputEvent): void {
     this._bleedOnly = (e.target as HTMLInputElement).checked;
     this._offset = 0;
-    this._loadEvents();
-  }
-
-  private _handleRetry(): void {
-    this._loadEvents();
+    this._load();
   }
 
   private async _loadSeismographEvents(): Promise<void> {
@@ -266,14 +217,24 @@ export class VelgEventsView extends LitElement {
     this._dateFrom = e.detail.dateFrom;
     this._dateTo = e.detail.dateTo;
     this._offset = 0;
-    this._loadEvents();
+    this._load();
   }
 
   private _handleBrushClear(): void {
     this._dateFrom = null;
     this._dateTo = null;
     this._offset = 0;
-    this._loadEvents();
+    this._load();
+  }
+
+  protected _renderEmptyState() {
+    return html`
+      <velg-empty-state
+        message=${this._getEmptyMessage()}
+        cta-label=${this._canEdit ? msg('Create Event') : ''}
+        @cta-click=${this._handleCreateClick}
+      ></velg-empty-state>
+    `;
   }
 
   protected render() {
@@ -327,41 +288,21 @@ export class VelgEventsView extends LitElement {
           </label>
         </div>
 
-        ${
-          this._loading
-            ? html`<velg-loading-state message=${msg('Loading events...')}></velg-loading-state>`
-            : this._error
-              ? html`
-              <velg-error-state
-                message=${this._error}
-                show-retry
-                @retry=${this._handleRetry}
-              ></velg-error-state>
-            `
-              : this._events.length === 0
-                ? html`
-                <velg-empty-state
-                  message=${msg('No events found.')}
-                  ${this._canEdit ? html`cta-label=${msg('Create Event')}` : ''}
-                  @cta-click=${this._handleCreateClick}
-                ></velg-empty-state>
-              `
-                : html`
-                <div class="entity-grid">
-                  ${this._events.map(
-                    (evt, i) => html`
-                      <velg-event-card
-                        style="--i: ${i}"
-                        .event=${evt}
-                        @event-click=${this._handleEventClick}
-                        @event-edit=${this._handleEventEdit}
-                        @event-delete=${this._handleEventDelete}
-                      ></velg-event-card>
-                    `,
-                  )}
-                </div>
-              `
-        }
+        ${this._renderDataGuard(() => html`
+          <div class="entity-grid">
+            ${this._events.map(
+              (evt, i) => html`
+                <velg-event-card
+                  style="--i: ${i}"
+                  .event=${evt}
+                  @event-click=${this._handleEventClick}
+                  @event-edit=${this._handleEventEdit}
+                  @event-delete=${this._handleEventDelete}
+                ></velg-event-card>
+              `,
+            )}
+          </div>
+        `)}
 
         <velg-pagination
           .total=${this._total}

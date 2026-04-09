@@ -7,15 +7,12 @@ import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
-import type { Building } from '../../types/index.js';
+import type { ApiResponse, Building } from '../../types/index.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
-import type { FilterChangeDetail } from '../shared/SharedFilterBar.js';
+import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
-import '../shared/LoadingState.js';
-import '../shared/ErrorState.js';
-import '../shared/EmptyState.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import './BuildingCard.js';
@@ -25,7 +22,7 @@ import './EmbassyCreateModal.js';
 
 @localized()
 @customElement('velg-buildings-view')
-export class VelgBuildingsView extends SignalWatcher(LitElement) {
+export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitElement)) {
   static styles = [
     viewHeaderStyles,
     gridLayoutStyles,
@@ -50,14 +47,6 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   @property({ type: String }) simulationId = '';
   @property({ type: String }) entitySlug = '';
 
-  @state() private _buildings: Building[] = [];
-  @state() private _total = 0;
-  @state() private _loading = true;
-  @state() private _error: string | null = null;
-  @state() private _limit = 25;
-  @state() private _offset = 0;
-  @state() private _filters: Record<string, string> = {};
-  @state() private _search = '';
   @state() private _selectedBuilding: Building | null = null;
   @state() private _editBuilding: Building | null = null;
   @state() private _showEditModal = false;
@@ -67,15 +56,47 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
 
   private _disposeImageTracking?: () => void;
 
-  connectedCallback(): void {
-    super.connectedCallback();
-    if (this.simulationId) {
-      this._loadBuildings();
+  /* ── DataLoaderMixin contract ────────── */
+
+  protected get _buildings(): Building[] {
+    return (this._data as Building[]) ?? [];
+  }
+
+  protected async _fetchData(): Promise<ApiResponse<Building[]>> {
+    return buildingsApi.list(this.simulationId, this._buildParams());
+  }
+
+  protected _getLoadingMessage(): string {
+    return msg('Loading buildings...');
+  }
+
+  protected _getEmptyMessage(): string {
+    return msg('No buildings found. Create one to get started.');
+  }
+
+  protected _getErrorFallback(): string {
+    return msg('An unexpected error occurred while loading buildings');
+  }
+
+  protected _onDataLoaded(): void {
+    this._checkDeepLink();
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      seoService.setCollectionPage({
+        name: `${sim.name} \u2013 Buildings`,
+        description: `All buildings in the ${sim.name} simulation.`,
+        url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
+        numberOfItems: this._total,
+      });
     }
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback(); // mixin auto-loads
     this._disposeImageTracking = effect(() => {
       const version = forgeStateManager.imageUpdateVersion.value;
       if (version > 0 && this._buildings.length > 0) {
-        this._loadBuildings();
+        this._load();
       }
     });
   }
@@ -84,15 +105,6 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
     this._disposeImageTracking?.();
     seoService.removeStructuredData();
     super.disconnectedCallback();
-  }
-
-  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('simulationId') && this.simulationId) {
-      this._offset = 0;
-      this._search = '';
-      this._filters = {};
-      this._loadBuildings();
-    }
   }
 
   private get _canEdit(): boolean {
@@ -127,49 +139,6 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
     ];
   }
 
-  private async _loadBuildings(): Promise<void> {
-    this._loading = true;
-    this._error = null;
-
-    try {
-      const params: Record<string, string> = {
-        limit: String(this._limit),
-        offset: String(this._offset),
-      };
-
-      if (this._search) {
-        params.search = this._search;
-      }
-
-      for (const [key, value] of Object.entries(this._filters)) {
-        params[key] = value;
-      }
-
-      const response = await buildingsApi.list(this.simulationId, params);
-
-      if (response.success && response.data) {
-        this._buildings = Array.isArray(response.data) ? response.data : [];
-        this._total = response.meta?.total ?? this._buildings.length;
-        this._checkDeepLink();
-        const sim = appState.currentSimulation.value;
-        if (sim) {
-          seoService.setCollectionPage({
-            name: `${sim.name} — Buildings`,
-            description: `All buildings in the ${sim.name} simulation.`,
-            url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
-            numberOfItems: this._total,
-          });
-        }
-      } else {
-        this._error = response.error?.message ?? msg('Failed to load buildings');
-      }
-    } catch {
-      this._error = msg('An unexpected error occurred while loading buildings');
-    } finally {
-      this._loading = false;
-    }
-  }
-
   private async _checkDeepLink(): Promise<void> {
     // Slug-based deep link from URL route (primary)
     if (this.entitySlug) {
@@ -201,19 +170,6 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
       this._selectedBuilding = building;
       this._showDetails = true;
     }
-  }
-
-  private _handleFilterChange(e: CustomEvent<FilterChangeDetail>): void {
-    this._filters = e.detail.filters;
-    this._search = e.detail.search;
-    this._offset = 0;
-    this._loadBuildings();
-  }
-
-  private _handlePageChange(e: CustomEvent<{ limit: number; offset: number }>): void {
-    this._limit = e.detail.limit;
-    this._offset = e.detail.offset;
-    this._loadBuildings();
   }
 
   private _handleBuildingClick(e: CustomEvent<Building>): void {
@@ -267,7 +223,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
         VelgToast.success(msg(str`"${building.name}" has been deleted`));
         this._showDetails = false;
         this._selectedBuilding = null;
-        this._loadBuildings();
+        this._load();
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete building'));
       }
@@ -289,7 +245,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   private _handleBuildingSaved(_e: CustomEvent<Building>): void {
     this._showEditModal = false;
     this._editBuilding = null;
-    this._loadBuildings();
+    this._load();
   }
 
   private _handleDetailsClose(): void {
@@ -323,16 +279,12 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
   private _handleEmbassyCreated(): void {
     this._showEmbassyModal = false;
     this._embassySourceBuilding = null;
-    this._loadBuildings();
+    this._load();
   }
 
   private _handleEmbassyModalClose(): void {
     this._showEmbassyModal = false;
     this._embassySourceBuilding = null;
-  }
-
-  private _handleRetry(): void {
-    this._loadBuildings();
   }
 
   protected render() {
@@ -357,7 +309,7 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
           @filter-change=${this._handleFilterChange}
         ></velg-filter-bar>
 
-        ${this._renderContent()}
+        ${this._renderDataGuard(() => this._renderGrid())}
 
         <velg-building-edit-modal
           .building=${this._editBuilding}
@@ -392,31 +344,17 @@ export class VelgBuildingsView extends SignalWatcher(LitElement) {
     `;
   }
 
-  private _renderContent() {
-    if (this._loading) {
-      return html`<velg-loading-state message=${msg('Loading buildings...')}></velg-loading-state>`;
-    }
+  protected _renderEmptyState() {
+    return html`
+      <velg-empty-state
+        message=${this._getEmptyMessage()}
+        cta-label=${this._canEdit ? msg('Create Building') : ''}
+        @cta-click=${this._handleCreateClick}
+      ></velg-empty-state>
+    `;
+  }
 
-    if (this._error) {
-      return html`
-        <velg-error-state
-          message=${this._error}
-          show-retry
-          @retry=${this._handleRetry}
-        ></velg-error-state>
-      `;
-    }
-
-    if (this._buildings.length === 0) {
-      return html`
-        <velg-empty-state
-          message=${msg('No buildings found. Create one to get started.')}
-          cta-label=${this._canEdit ? msg('Create Building') : ''}
-          @cta-click=${this._handleCreateClick}
-        ></velg-empty-state>
-      `;
-    }
-
+  private _renderGrid() {
     return html`
       <span class="view__count">${this._total !== 1 ? msg(str`${this._total} buildings total`) : msg(str`${this._total} building total`)}</span>
 

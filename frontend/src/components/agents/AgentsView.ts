@@ -7,18 +7,16 @@ import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
-import type { Agent, AgentAptitude, AptitudeSet, OperativeType } from '../../types/index.js';
+import type { Agent, AgentAptitude, ApiResponse, AptitudeSet, OperativeType } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
-import type { FilterChangeDetail, FilterConfig } from '../shared/SharedFilterBar.js';
+import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
+import type { FilterConfig } from '../shared/SharedFilterBar.js';
 import { VelgToast } from '../shared/Toast.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 
 import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
-import '../shared/LoadingState.js';
-import '../shared/ErrorState.js';
-import '../shared/EmptyState.js';
 import '../shared/VelgAptitudeBars.js';
 import '../shared/VelgAvatar.js';
 import './AgentCard.js';
@@ -28,7 +26,7 @@ import './VelgRecruitmentOffice.js';
 
 @localized()
 @customElement('velg-agents-view')
-export class VelgAgentsView extends SignalWatcher(LitElement) {
+export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElement)) {
   static styles = [
     viewHeaderStyles,
     gridLayoutStyles,
@@ -164,14 +162,6 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   @property({ type: String }) simulationId = '';
   @property({ type: String }) entitySlug = '';
 
-  @state() private _agents: Agent[] = [];
-  @state() private _total = 0;
-  @state() private _loading = true;
-  @state() private _error: string | null = null;
-  @state() private _limit = 25;
-  @state() private _offset = 0;
-  @state() private _filters: Record<string, string> = {};
-  @state() private _search = '';
   @state() private _selectedAgent: Agent | null = null;
   @state() private _editAgent: Agent | null = null;
   @state() private _showEditModal = false;
@@ -179,6 +169,42 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   @state() private _aptitudeMap: Map<string, AptitudeSet> = new Map();
 
   private _disposeImageTracking?: () => void;
+
+  /* ── DataLoaderMixin contract ────────── */
+
+  protected get _agents(): Agent[] {
+    return (this._data as Agent[]) ?? [];
+  }
+
+  protected async _fetchData(): Promise<ApiResponse<Agent[]>> {
+    return agentsApi.list(this.simulationId, this._buildParams());
+  }
+
+  protected _getLoadingMessage(): string {
+    return msg('Loading agents...');
+  }
+
+  protected _getEmptyMessage(): string {
+    return msg('No agents found.');
+  }
+
+  protected _getErrorFallback(): string {
+    return msg('Failed to load agents');
+  }
+
+  protected _onDataLoaded(): void {
+    this._checkDeepLink();
+    this._loadAllAptitudes();
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      seoService.setCollectionPage({
+        name: `${sim.name} \u2013 Agents`,
+        description: `All agents in the ${sim.name} simulation.`,
+        url: `https://metaverse.center/simulations/${sim.slug}/agents`,
+        numberOfItems: this._total,
+      });
+    }
+  }
 
   private get _canEdit(): boolean {
     return appState.canEdit.value;
@@ -211,14 +237,11 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   }
 
   connectedCallback(): void {
-    super.connectedCallback();
-    if (this.simulationId) {
-      this._loadAgents();
-    }
+    super.connectedCallback(); // mixin auto-loads
     this._disposeImageTracking = effect(() => {
       const version = forgeStateManager.imageUpdateVersion.value;
       if (version > 0 && this._agents.length > 0) {
-        this._loadAgents();
+        this._load();
       }
     });
   }
@@ -227,63 +250,6 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     this._disposeImageTracking?.();
     seoService.removeStructuredData();
     super.disconnectedCallback();
-  }
-
-  protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('simulationId') && this.simulationId) {
-      this._offset = 0;
-      this._search = '';
-      this._filters = {};
-      this._loadAgents();
-    }
-  }
-
-  private async _loadAgents(): Promise<void> {
-    if (!this.simulationId) return;
-
-    this._loading = true;
-    this._error = null;
-
-    try {
-      const params: Record<string, string> = {
-        limit: String(this._limit),
-        offset: String(this._offset),
-      };
-
-      if (this._search) {
-        params.search = this._search;
-      }
-
-      for (const [key, value] of Object.entries(this._filters)) {
-        if (value) {
-          params[key] = value;
-        }
-      }
-
-      const response = await agentsApi.list(this.simulationId, params);
-
-      if (response.success && response.data) {
-        this._agents = Array.isArray(response.data) ? response.data : [];
-        this._total = response.meta?.total ?? this._agents.length;
-        this._checkDeepLink();
-        this._loadAllAptitudes();
-        const sim = appState.currentSimulation.value;
-        if (sim) {
-          seoService.setCollectionPage({
-            name: `${sim.name} — Agents`,
-            description: `All agents in the ${sim.name} simulation.`,
-            url: `https://metaverse.center/simulations/${sim.slug}/agents`,
-            numberOfItems: this._total,
-          });
-        }
-      } else {
-        this._error = response.error?.message ?? msg('Failed to load agents');
-      }
-    } catch (err) {
-      this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
-    } finally {
-      this._loading = false;
-    }
   }
 
   private async _checkDeepLink(): Promise<void> {
@@ -400,19 +366,6 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     `;
   }
 
-  private _handleFilterChange(e: CustomEvent<FilterChangeDetail>): void {
-    this._filters = e.detail.filters;
-    this._search = e.detail.search;
-    this._offset = 0;
-    this._loadAgents();
-  }
-
-  private _handlePageChange(e: CustomEvent<{ limit: number; offset: number }>): void {
-    this._limit = e.detail.limit;
-    this._offset = e.detail.offset;
-    this._loadAgents();
-  }
-
   private _handleAgentClick(e: CustomEvent<Agent>): void {
     this._selectedAgent = e.detail;
     this._showDetails = true;
@@ -463,7 +416,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
         VelgToast.success(msg(str`Agent "${agent.name}" deleted successfully.`));
         this._showDetails = false;
         this._selectedAgent = null;
-        this._loadAgents();
+        this._load();
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete agent.'));
       }
@@ -484,7 +437,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     VelgToast.success(
       isEdit ? msg('Agent updated successfully.') : msg('Agent created successfully.'),
     );
-    this._loadAgents();
+    this._load();
   }
 
   private _handleEditModalClose(): void {
@@ -515,17 +468,17 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
   }
 
   private _handleRecruitmentComplete(): void {
-    this._loadAgents();
+    this._load();
   }
 
-  private _handleRetry(): void {
-    this._loadAgents();
-  }
-
-  private _handleEmptyCta(): void {
-    if (this._canEdit) {
-      this._handleCreateClick();
-    }
+  protected _renderEmptyState() {
+    return html`
+      <velg-empty-state
+        message=${this._getEmptyMessage()}
+        cta-label=${this._canEdit ? msg('Create First Agent') : ''}
+        @cta-click=${this._handleCreateClick}
+      ></velg-empty-state>
+    `;
   }
 
   protected render() {
@@ -550,7 +503,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
           @filter-change=${this._handleFilterChange}
         ></velg-filter-bar>
 
-        ${this._renderContent()}
+        ${this._renderDataGuard(() => this._renderGrid())}
 
         <velg-pagination
           .total=${this._total}
@@ -584,31 +537,7 @@ export class VelgAgentsView extends SignalWatcher(LitElement) {
     `;
   }
 
-  private _renderContent() {
-    if (this._loading) {
-      return html`<velg-loading-state message=${msg('Loading agents...')}></velg-loading-state>`;
-    }
-
-    if (this._error) {
-      return html`
-        <velg-error-state
-          message=${this._error}
-          show-retry
-          @retry=${this._handleRetry}
-        ></velg-error-state>
-      `;
-    }
-
-    if (this._agents.length === 0) {
-      return html`
-        <velg-empty-state
-          message=${msg('No agents found.')}
-          cta-label=${this._canEdit ? msg('Create First Agent') : ''}
-          @cta-click=${this._handleEmptyCta}
-        ></velg-empty-state>
-      `;
-    }
-
+  private _renderGrid() {
     return html`
       <span class="view__count">${msg(str`${this._total} Agent${this._total !== 1 ? 's' : ''}`)}</span>
       ${this._renderLineup()}
