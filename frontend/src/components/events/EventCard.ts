@@ -72,15 +72,17 @@ export class VelgEventCard extends LitElement {
     .card__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      font-size: var(--text-md);
+      font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       flex: 1;
       min-width: 0;
+      line-height: var(--leading-tight);
     }
 
     .card__impact {
@@ -154,7 +156,7 @@ export class VelgEventCard extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-1-5);
-      font-size: var(--text-sm);
+      font-size: var(--text-xs);
       color: var(--color-text-secondary);
       line-height: var(--leading-snug);
       overflow: hidden;
