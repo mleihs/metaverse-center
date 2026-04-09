@@ -4,23 +4,21 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
 import { seoService } from '../../services/SeoService.js';
-import type { Chronicle } from '../../types/index.js';
+import type { ApiResponse, Chronicle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/Pagination.js';
-import '../shared/LoadingState.js';
-import '../shared/ErrorState.js';
-import '../shared/EmptyState.js';
 import '../shared/VelgBadge.js';
 import './VelgChronicleExport.js';
 
 @localized()
 @customElement('velg-chronicle-view')
-export class VelgChronicleView extends LitElement {
+export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -538,12 +536,6 @@ export class VelgChronicleView extends LitElement {
 
   @property({ type: String }) simulationId = '';
 
-  @state() private _chronicles: Chronicle[] = [];
-  @state() private _total = 0;
-  @state() private _loading = true;
-  @state() private _error: string | null = null;
-  @state() private _limit = 25;
-  @state() private _offset = 0;
   @state() private _expandedId: string | null = null;
   @state() private _generating = false;
   @state() private _generatingElapsed = 0;
@@ -551,6 +543,47 @@ export class VelgChronicleView extends LitElement {
   @state() private _periodEnd = '';
 
   private _elapsedTimer: ReturnType<typeof setInterval> | null = null;
+
+  /* ── DataLoaderMixin contract ────────── */
+
+  protected get _chronicles(): Chronicle[] {
+    return (this._data as Chronicle[]) ?? [];
+  }
+
+  protected async _fetchData(): Promise<ApiResponse<Chronicle[]>> {
+    return chronicleApi.list(this.simulationId, {
+      limit: this._limit,
+      offset: this._offset,
+    });
+  }
+
+  protected _getLoadingMessage(): string {
+    return msg('Loading chronicles...');
+  }
+
+  protected _getEmptyMessage(): string {
+    return msg('No chronicle editions yet.');
+  }
+
+  protected _getErrorFallback(): string {
+    return msg('Failed to load chronicles.');
+  }
+
+  protected _onDataLoaded(): void {
+    const chronicles = this._chronicles;
+    if (chronicles.length > 0) {
+      const featured = chronicles[0];
+      const sim = appState.currentSimulation.value;
+      if (sim) {
+        seoService.setArticle({
+          headline: featured.title ?? sim.name,
+          articleBody: (featured.content ?? '').slice(0, 500),
+          url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
+          datePublished: featured.published_at ?? undefined,
+        });
+      }
+    }
+  }
 
   private get _canEdit(): boolean {
     return appState.canEdit.value;
@@ -573,9 +606,8 @@ export class VelgChronicleView extends LitElement {
   }
 
   connectedCallback(): void {
-    super.connectedCallback();
     this._initDates();
-    this._load();
+    super.connectedCallback(); // mixin auto-loads
   }
 
   disconnectedCallback(): void {
@@ -587,52 +619,11 @@ export class VelgChronicleView extends LitElement {
     super.disconnectedCallback();
   }
 
-  protected willUpdate(changed: Map<PropertyKey, unknown>): void {
-    if (changed.has('simulationId') && this.simulationId) {
-      this._offset = 0;
-      this._load();
-    }
-  }
-
   private _initDates(): void {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     this._periodEnd = now.toISOString().slice(0, 10);
     this._periodStart = weekAgo.toISOString().slice(0, 10);
-  }
-
-  private async _load(): Promise<void> {
-    if (!this.simulationId) return;
-    this._loading = true;
-    this._error = null;
-    try {
-      const resp = await chronicleApi.list(this.simulationId, {
-        limit: this._limit,
-        offset: this._offset,
-      });
-      if (resp.success && resp.data) {
-        this._chronicles = resp.data;
-        this._total = resp.meta?.total ?? resp.data.length;
-        if (resp.data.length > 0) {
-          const featured = resp.data[0];
-          const sim = appState.currentSimulation.value;
-          if (sim) {
-            seoService.setArticle({
-              headline: featured.title ?? sim.name,
-              articleBody: (featured.content ?? '').slice(0, 500),
-              url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
-              datePublished: featured.published_at ?? undefined,
-            });
-          }
-        }
-      } else if (!resp.success) {
-        this._error = resp.error?.message ?? msg('Failed to load chronicles.');
-      }
-    } catch {
-      this._error = msg('Failed to load chronicles.');
-    } finally {
-      this._loading = false;
-    }
   }
 
   /** Check if an edition already covers the selected period (exact match). */
@@ -702,12 +693,6 @@ export class VelgChronicleView extends LitElement {
     this._expandedId = id;
   }
 
-  private _handlePageChange(e: CustomEvent): void {
-    this._limit = e.detail.limit;
-    this._offset = e.detail.offset;
-    this._load();
-  }
-
   private _renderArticle(content: string) {
     // Replace literal \n sequences (backslash + n) with actual newlines
     const cleaned = content.replace(/\\n/g, '\n');
@@ -727,15 +712,7 @@ export class VelgChronicleView extends LitElement {
             : nothing
         }
 
-        ${
-          this._loading
-            ? html`<velg-loading-state message=${msg('Loading chronicles...')}></velg-loading-state>`
-            : this._error
-              ? html`<velg-error-state message=${this._error} show-retry @retry=${this._load}></velg-error-state>`
-              : this._chronicles.length === 0
-                ? html`<velg-empty-state message=${msg('No chronicle editions yet.')}></velg-empty-state>`
-                : this._renderBroadsheet()
-        }
+        ${this._renderDataGuard(() => this._renderBroadsheet())}
       </div>
     `;
   }
