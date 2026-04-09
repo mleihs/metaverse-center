@@ -461,7 +461,7 @@ async def list_taxonomies(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse:
     """List taxonomies (public)."""
-    data, total = await TaxonomyService.list_taxonomiespaginated(
+    data, total = await TaxonomyService.list_taxonomies_paginated(
         supabase, simulation_id, taxonomy_type=taxonomy_type, limit=limit, offset=offset
     )
     return paginated(data, total, limit, offset)
