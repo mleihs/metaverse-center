@@ -222,11 +222,23 @@ export class VelgAchievementSummaryCard extends LitElement {
   @state() private _summary: AchievementSummary | null = null;
   @state() private _loading = true;
 
+  private _disposeUnlockWatch: (() => void) | null = null;
+
   connectedCallback() {
     super.connectedCallback();
     if (appState.isAuthenticated.value) {
       this._load();
     }
+    // Refresh when a new badge is earned (set by VelgAchievementToast)
+    this._disposeUnlockWatch = appState.recentUnlock.subscribe((unlock) => {
+      if (unlock) this._refetchSummary();
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    try { this._disposeUnlockWatch?.(); } catch { /* best-effort cleanup */ }
+    this._disposeUnlockWatch = null;
   }
 
   private async _load() {
@@ -247,6 +259,18 @@ export class VelgAchievementSummaryCard extends LitElement {
       // Non-critical — card simply doesn't render
     } finally {
       this._loading = false;
+    }
+  }
+
+  private async _refetchSummary() {
+    try {
+      const res = await achievementsApi.getSummary();
+      if (res.data) {
+        this._summary = res.data;
+        appState.setAchievementSummary(res.data);
+      }
+    } catch {
+      // Non-critical — card keeps stale data
     }
   }
 

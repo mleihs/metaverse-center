@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "3.9"
-date: 2026-03-27
+version: "4.0"
+date: 2026-04-09
 lang: de
 type: reference
 status: active
@@ -3560,3 +3560,66 @@ Fuegt eine 'distributing'-Phase zwischen Boss-Sieg und Run-Abschluss hinzu. Nach
 |----------|-------|---------|
 | `fn_begin_distribution(p_run_id, p_simulation_id, p_agent_outcomes)` | Setzt status='distributing', wendet Agent-Outcomes (Mood, Moodlets, Activities) an. Trennt Outcome-Anwendung von Loot-Zuweisung. | ADR-007 |
 | `fn_finalize_dungeon_run(p_run_id, p_simulation_id, p_loot_items, p_outcome)` | Setzt status='completed', wendet spieler-zugewiesenen Loot an. Ruft intern `fn_apply_dungeon_loot` auf. | ADR-007 |
+
+### Migrationen 190–195: Achievement & Badge System
+
+Leichtgewichtiges Auszeichnungssystem mit 35 Badges in 7 Kategorien und 5 Seltenheitsstufen. Alle Bewertungslogik lebt in PostgreSQL-Triggern — Badges werden automatisch vergeben, nie manuell beansprucht.
+
+**Tabellen:**
+
+| Tabelle | Zweck | Schluessel |
+|---------|-------|------------|
+| `achievement_definitions` | Katalog aller Badges (35 Eintraege, data-driven) | `id TEXT PK` |
+| `user_achievements` | Verdiente Badges pro User (immutable nach Vergabe) | `id UUID PK`, `UNIQUE(user_id, achievement_id)` |
+| `achievement_progress` | Inkrementeller Fortschritt fuer Schwellenwert-Badges | `PK(user_id, achievement_id)` |
+
+**`achievement_definitions` Schema:**
+
+| Spalte | Typ | Constraint | Beschreibung |
+|--------|-----|------------|-------------|
+| `id` | TEXT | PK | Slug-ID (z.B. `shadow_walker`, `flawless_run`) |
+| `category` | TEXT | CHECK (7 Werte) | `initiation`, `dungeon`, `epoch`, `collection`, `social`, `challenge`, `secret` |
+| `name_en` / `name_de` | TEXT | NOT NULL | Bilingualer Badge-Name |
+| `description_en` / `description_de` | TEXT | NOT NULL | Bilinguale Beschreibung |
+| `hint_en` / `hint_de` | TEXT | Nullable | Hinweis (NULL fuer Secret-Badges) |
+| `icon_key` | TEXT | NOT NULL | Verweis auf `icons.ts` SVG-Funktion |
+| `rarity` | TEXT | CHECK (5 Werte) | `common`, `uncommon`, `rare`, `epic`, `legendary` |
+| `is_secret` | BOOLEAN | NOT NULL DEFAULT FALSE | Secret-Badges: Name/Beschreibung erst nach Unlock sichtbar |
+| `sort_order` | INT | NOT NULL | Sortierung innerhalb Kategorie (100er-Bloecke) |
+| `is_active` | BOOLEAN | NOT NULL DEFAULT TRUE | Soft-Deaktivierung ohne Datenverlust |
+
+**RLS:**
+
+| Tabelle | Policy | Regel |
+|---------|--------|-------|
+| `achievement_definitions` | `SELECT` fuer `authenticated` | `USING (true)` — oeffentlicher Katalog |
+| `user_achievements` | `SELECT` fuer `authenticated` | `USING (true)` — alle verdiente Badges sichtbar (Profil-Display) |
+| `user_achievements` | `INSERT` fuer `service_role` | Nur System-Vergabe, nie User-Claim |
+| `achievement_progress` | `SELECT` fuer `authenticated` | `USING ((SELECT auth.uid()) = user_id)` — nur eigener Fortschritt |
+| `achievement_progress` | `ALL` fuer `service_role` | Voller Zugriff fuer Trigger-/RPC-Schreibzugriffe |
+
+**RPCs:**
+
+| Funktion | Signatur | Zweck |
+|----------|----------|-------|
+| `fn_award_achievement` | `(UUID, TEXT, JSONB) → BOOLEAN` | Idempotente Badge-Vergabe. TRUE wenn neu vergeben, FALSE wenn bereits vorhanden. REVOKE von `authenticated` (Migration 195). |
+| `fn_increment_progress` | `(UUID, TEXT, INT, JSONB) → VOID` | Atomarer Fortschritt + Auto-Award bei Schwellenwert. |
+| `fn_increment_progress_unique` | `(UUID, TEXT, TEXT, INT, JSONB) → VOID` | Deduplizierter Fortschritt via `item_key` (z.B. 50 einzigartige Banter-Texte). NULL-Guard fuer `item_key`. |
+
+**Trigger Functions (13):**
+
+| Trigger | Source Table | Badges |
+|---------|-------------|--------|
+| `trg_ach_onboarding` | `user_profiles` | `first_steps` |
+| `trg_ach_first_operative` | `operative_missions` | `first_operative` |
+| `trg_ach_dungeon_complete` | `resonance_dungeon_runs` | 8 Archetype-Badges + `first_dungeon` + `archetype_explorer` + `all_archetypes` + `depth_master` |
+| `trg_ach_epoch_score` | `epoch_scores` | `master_strategist`, `undefeated` |
+| `trg_ach_alliance` | `epoch_alliance_proposals` | `the_diplomat` |
+| `trg_ach_forge` | `simulations` (data_source='forge') | `forgemaster` |
+| `trg_ach_loot` | `resonance_dungeon_loot` | `loot_collector`, `literary_collector` |
+| `trg_ach_cipher` | `cipher_redemptions` | `cipher_decoder` |
+| `trg_ach_embassy` (×2) | `embassies` | `embassy_builder` (beide Seiten) |
+| `trg_ach_echo` | `event_echoes` | `echo_sender` |
+| `trg_ach_operative_deploy` | `operative_missions` | `iron_guardian`, `shadow_operative` |
+
+Alle Trigger `SECURITY DEFINER`. `fn_award_achievement` nur fuer `service_role` (Migration 195: REVOKE von `authenticated`).

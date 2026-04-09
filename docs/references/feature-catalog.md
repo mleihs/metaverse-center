@@ -1,8 +1,8 @@
 ---
 title: "Feature Catalog"
 id: feature-catalog
-version: "3.5"
-date: 2026-04-02
+version: "3.6"
+date: 2026-04-09
 lang: de
 type: reference
 status: active
@@ -490,15 +490,59 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 
 ---
 
+### N. Achievement & Badge System (Commendations)
+
+35 Badges in 7 Kategorien, 5 Seltenheitsstufen. Alle Auszeichnungen werden automatisch durch PostgreSQL-Trigger oder Backend-Hooks vergeben – kein manuelles Einlösen. Bilingual (EN/DE). Route: `/commendations`.
+
+#### N1. Datenbank & Kern-Architektur
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| N1 | **Achievement Tables** | ✅ IMPL | 3 Tabellen (Migration 190): `achievement_definitions` (Katalog, 35 Einträge), `user_achievements` (verdiente Badges, immutable), `achievement_progress` (inkrementeller Fortschritt für Schwellenwert-Badges). RLS: Definitionen + verdiente Badges public-read für authenticated, Fortschritt nur eigener User. |
+| N2 | **Core RPCs** | ✅ IMPL | `fn_award_achievement(user_id, achievement_id, context)` — idempotent (UNIQUE constraint). `fn_increment_progress(user_id, achievement_id, target, context)` — atomarer Fortschritt + Auto-Award bei Schwellenwert. `fn_increment_progress_unique(user_id, achievement_id, item_key, target, context)` — deduplizierter Fortschritt (z.B. 50 _einzigartige_ Banter-Texte). Alle RPCs nur für `service_role` (Migration 195: REVOKE von authenticated). |
+| N3 | **DB-Trigger (13)** | ✅ IMPL | Migration 190 (9 Trigger): Onboarding, First Operative, Dungeon Complete (8-Archetypen-CASE), Epoch Score (Strategist/Undefeated), Alliance (Diplomat), Forge, Loot, Cipher. Migration 194 (4 Trigger): Embassy Builder (beide Seiten), Echo Sender, Epoch Score erweitert. Alle `SECURITY DEFINER`. |
+
+#### N2. Badge-Kategorien
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| N4 | **Initiation (4 Badges)** | ✅ IMPL | First Steps (Onboarding), Field Agent (erster Operativer), Into the Depths (erster Dungeon), Forgemaster (Forge-Simulation). Common/Uncommon. |
+| N5 | **Dungeon Mastery (11 Badges)** | ✅ IMPL | 8 Archetypen-Abschluss-Badges (Shadow Walker, Tower Sentinel, Entropy Witness, Mother's Bond, Flame Bearer, Flood Navigator, Awakening Seer, The Insurgent) + Archetype Explorer (4 verschiedene), Master of Archetypes (alle 8), Depth Master (Schwierigkeit 5). Common→Epic. Migration 192: fehlende 5 Archetypen + Icon-Key-Fixes. |
+| N6 | **Epoch Warfare (5 Badges)** | ✅ IMPL | Iron Guardian (10 Guardians), Shadow Operative (5 Spionage-Missionen), The Diplomat (3 Allianzen), Master Strategist (3 Epochen gewonnen), Undefeated (Epoche ohne Aufdeckung). Uncommon→Legendary. |
+| N7 | **Collection (4 Badges)** | ✅ IMPL | Loot Collector (10 Items), Literary Collector (5 Legendary-Items), Objektanker Finder (16 Objekte, `fn_increment_progress_unique`), Banter Connoisseur (50 einzigartige Geplänkel). Common→Rare. |
+| N8 | **Social & Bleed (4 Badges)** | ✅ IMPL | Embassy Builder (3 aktive Botschaften), Echo Sender (5 Bleed-Echos), Cipher Decoder (Instagram-Code eingelöst), Ward Master (3 Echos abgewehrt, Python-driven in `echo_service.py`). Uncommon→Rare. |
+| N9 | **Challenge (3 Badges)** | ✅ IMPL | Flawless Run (kein Agent >200 Stress), Speed Runner (≤8 Räume), Pacifist (nur Encounters). Rare→Epic. |
+| N10 | **Secret (3 Badges)** | ✅ IMPL | The Remnant (Shadow-Boss bei VP=0), Mother's Embrace (Attachment 100), Political Vertigo (totale Fraktur im Overthrow). `is_secret=TRUE`, Hints NULL, Name/Beschreibung erst nach Unlock sichtbar. Rare/Epic. |
+
+#### N3. Backend-Hooks
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| N11 | **DungeonAchievementService** | ✅ IMPL | Zentrales Domain-Logik-Modul (`backend/services/dungeon/dungeon_achievements.py`). Hook-Methoden: `on_boss_victory()` (5 Badges: the_remnant, mothers_embrace, flawless_run, speed_runner, pacifist), `on_drain_trigger()` (political_vertigo), `on_banter_witnessed()` (banter_connoisseur), `on_anchor_encountered()` (objektanker_finder), `track_peak_stress()` (7 Checkpoints). |
+| N12 | **Ward Master Hook** | ✅ IMPL | Python-driven in `echo_service.py:_award_ward_badge`. Feuert bei `ward_reduction > 0` während Echo-Transmission — VOR Schwellenwert-Prüfung (vollständig geblockte Echos zählen). Schreibt Ziel-Sim-Owner gut. |
+
+#### N4. Frontend & API
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|-------------|
+| N13 | **VelgAchievementBadge** | ✅ IMPL | Hexagonale Badge-Komponente, 5 Seltenheitsstufen (Common→Legendary), 17 game-icons.net SVGs (CC BY 3.0), Kontrast/Glow pro Tier. Secret-Badges zeigen `???` wenn nicht verdient. |
+| N14 | **VelgAchievementGrid** | ✅ IMPL | Route `/commendations`. Kategorie-Gruppierung, Seltenheits-Filter, verdient/offen-Filter. Badge-Katalog aus `appState.achievementDefinitions`. |
+| N15 | **VelgAchievementToast** | ✅ IMPL | Headless Supabase-Realtime-Listener auf `user_achievements` INSERT. Cached `achievement_definitions` lokal, zeigt `VelgToast.success()` mit Badge-Name. Setzt `appState.recentUnlock` für Dashboard-Reaktivität. Auth-Resubscription bei Login/Logout. |
+| N16 | **VelgAchievementSummaryCard** | ✅ IMPL | Dashboard-Rechte-Spalte. Earned/Total-Zähler, bis zu 3 Mini-Hex-Badges der letzten Unlocks. Link zu `/commendations`. Subscribes auf `appState.recentUnlock` für Live-Aktualisierung bei Badge-Earn. |
+| N17 | **API (4 Endpoints)** | ✅ IMPL | Read-only, kein Write (system-awarded). `GET /achievements/definitions` (Katalog), `GET /users/me/achievements` (verdiente Badges), `GET /users/me/achievements/progress` (Fortschritt), `GET /users/me/achievements/summary` (Dashboard-Aggregat: earned/total/by-rarity/recent-3). `AchievementService` Backend-Service. |
+
+---
+
 ## Technische Infrastruktur-Übersicht
 
 | Kennzahl | Wert |
 |----------|------|
 | **Simulationen** | 5 (Velgarien, The Gaslit Reach, Station Null, Speranza, Cité des Dames) |
-| **Datenbanktabellen** | 58 |
-| **SQL-Migrationen** | 161 |
-| **RLS-Policies** | 150+ |
-| **Trigger** | 41+ |
+| **Datenbanktabellen** | 90+ |
+| **SQL-Migrationen** | 195 |
+| **RLS-Policies** | 270+ |
+| **Trigger** | 62+ (27 Trigger Functions) |
+| **Achievement-Badges** | 35 (7 Kategorien, 5 Seltenheitsstufen, 13 DB-Trigger) |
 | **Views** | 8 Standard + 6 Materialized |
 | **API-Endpoints** | ~295 (über 37 Router) |
 | **Backend-Tests** | 917 (pytest: unit + integration + security + performance) |

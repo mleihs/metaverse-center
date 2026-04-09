@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "3.9"
-date: 2026-04-05
+version: "4.0"
+date: 2026-04-09
 lang: de
 type: reference
 status: active
@@ -81,7 +81,7 @@ App (Root)                           ⚡ = lazy-loaded via route enter()
     └── Mobile Card List (≤768px fallback)
 ```
 
-**platform/ directory:** PlatformHeader, HeaderCluster, SimulationSwitcher, CommandPalette, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, SimulationCard (12 files)
+**platform/ directory:** PlatformHeader, HeaderCluster, SimulationSwitcher, CommandPalette, UserMenu, DevAccountSwitcher, SimulationsDashboard, LoreScroll, CreateSimulationWizard, UserProfileView, InvitationAcceptView, SimulationCard, VelgAchievementBadge, VelgAchievementGrid, VelgAchievementToast, VelgAchievementSummaryCard (16 files)
 
 ### Simulation-Level
 
@@ -823,7 +823,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 
 | Verzeichnis | Dateien | @customElement | Beschreibung |
 |-------------|---------|----------------|--------------|
-| platform/ | 9 | 9 | Header, Dashboard, Wizard, Profile, Lore, DevAccounts |
+| platform/ | 13 | 13 | Header, Dashboard, Wizard, Profile, Lore, DevAccounts, AchievementBadge, AchievementGrid, AchievementToast, AchievementSummaryCard |
 | auth/ | 3 | 3 | Login, Register, LoginPanel (Bureau terminal HUD aesthetic) |
 | layout/ | 3 | 3 | Shell, Header, Nav |
 | agents/ | 6 | 6 | View, Card, EditModal, DetailsPanel, RelationshipCard/EditModal |
@@ -1990,3 +1990,100 @@ Singleton API service for Simulation Forge draft lifecycle, BYOK key management,
 | `reviewRequest(id, action, adminNotes?)` | POST | `/forge/access-requests/{id}/review` | Platform Admin |
 | `getAdminStats()` | GET | `/forge/admin/stats` | Platform Admin |
 | `purgeStale(days?)` | DELETE | `/forge/admin/purge` | Platform Admin |
+
+---
+
+## Achievement / Badge Components
+
+### VelgAchievementBadge (`velg-achievement-badge`)
+
+Hexagonal badge component with 5 rarity-driven visual tiers.
+
+**Tag:** `<velg-achievement-badge>`
+
+**Properties:**
+
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `definition` | `AchievementDefinition` | Badge catalog entry (name, icon, rarity, secret flag) |
+| `earned` | `boolean` | Whether the user has earned this badge |
+
+**Visual:**
+- Hexagonal clip-path (polygon), 5 rarity tiers: Common (border only), Uncommon (green glow), Rare (blue glow), Epic (purple glow), Legendary (amber glow + animated shimmer)
+- 17 game-icons.net SVGs (CC BY 3.0) via `icons.ts` — `badgeShadow`, `badgeTower`, `badgeShield`, `badgeStar`, etc.
+- Secret badges: show `???` for name/description and locked icon when `is_secret && !earned`
+- Earned state: full color; Unearned state: desaturated, reduced opacity
+
+### VelgAchievementGrid (`velg-achievement-grid`)
+
+Full-page badge catalog with category grouping and filters. Route: `/commendations`.
+
+**Tag:** `<velg-achievement-grid>`
+
+**State:**
+
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `_definitions` | `AchievementDefinition[]` | All badge definitions from API |
+| `_earned` | `UserAchievement[]` | User's earned badges |
+| `_categoryFilter` | `string` | Active category filter (all, initiation, dungeon, epoch, etc.) |
+| `_rarityFilter` | `string` | Active rarity filter |
+
+**Features:**
+- Grouped by category (Initiation, Dungeon Mastery, Epoch Warfare, Collection, Social & Bleed, Challenge, Secret)
+- Filter chips: category, rarity, earned/locked
+- Staggered entrance animation via `--i` CSS variable
+- Loading/error/empty states via shared components
+- Responsive grid: `repeat(auto-fill, minmax(200px, 1fr))`
+
+### VelgAchievementToast (`velg-achievement-toast`)
+
+Headless Supabase Realtime listener. Mounted once in app shell.
+
+**Tag:** `<velg-achievement-toast>`
+
+**Architecture:**
+- Subscribes to `postgres_changes` INSERT on `user_achievements` filtered by `user_id`
+- Caches `achievement_definitions` locally (static catalog, fetched once)
+- On badge earn: resolves definition from cache, shows `VelgToast.success()` with localized badge name
+- Sets `appState.recentUnlock` signal for dashboard reactivity
+- Auth-aware: unsubscribes/resubscribes on login/logout via `appState.user.subscribe()`
+- Proper cleanup in `disconnectedCallback()` (channel removal + dispose)
+
+### VelgAchievementSummaryCard (`velg-achievement-summary-card`)
+
+Dashboard right-column card showing achievement progress.
+
+**Tag:** `<velg-achievement-summary-card>`
+
+**State:**
+
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `_summary` | `AchievementSummary \| null` | Aggregated stats (earned/total/recent) |
+| `_loading` | `boolean` | Loading state |
+
+**Features:**
+- Earned/total counter with tabular-nums
+- Up to 3 mini hexagonal badge previews (recent unlocks) with rarity-driven colors
+- "View All" CTA links to `/commendations`
+- Subscribes to `appState.recentUnlock` — refetches summary on new badge earn
+- Declassified-folder aesthetic: accent bar, corner brackets, monospace metadata
+- Stagger-compatible via `--i` CSS variable
+
+### AchievementsApiService
+
+| Methode | HTTP | Endpoint | Auth |
+|---------|------|----------|------|
+| `getDefinitions()` | GET | `/achievements/definitions` | Auth |
+| `getUserAchievements()` | GET | `/users/me/achievements` | Auth |
+| `getProgress()` | GET | `/users/me/achievements/progress` | Auth |
+| `getSummary()` | GET | `/users/me/achievements/summary` | Auth |
+
+### AppStateManager Achievement Signals
+
+| Signal | Typ | Beschreibung |
+|--------|-----|-------------|
+| `achievementDefinitions` | `Signal<AchievementDefinition[]>` | Cached badge catalog |
+| `achievementSummary` | `Signal<AchievementSummary \| null>` | Dashboard summary data |
+| `recentUnlock` | `Signal<UserAchievement \| null>` | Set on Realtime INSERT, consumed by toast + summary card |
