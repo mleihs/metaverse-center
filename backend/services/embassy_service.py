@@ -243,6 +243,57 @@ class EmbassyService:
 
         return result
 
+    # ── Ward Mechanic (migration 191) ──────────────────
+
+    @classmethod
+    async def set_ward(
+        cls,
+        supabase: Client,
+        embassy_id: UUID,
+        ward_vector: str,
+        ward_strength: float = 0.5,
+    ) -> dict:
+        """Set a bleed ward on an embassy. Reduces echo strength for the
+        chosen vector by ``ward_strength`` (0.0-1.0) on incoming echoes.
+
+        Requires the embassy to be active. Only one ward_vector per embassy.
+        """
+        logger.info(
+            "Setting embassy ward",
+            extra={"embassy_id": str(embassy_id), "ward_vector": ward_vector, "ward_strength": ward_strength},
+        )
+        resp = await (
+            supabase.table(cls.table_name)
+            .update({
+                "ward_vector": ward_vector,
+                "ward_strength": max(0.0, min(1.0, ward_strength)),
+            })
+            .eq("id", str(embassy_id))
+            .eq("status", "active")
+            .execute()
+        )
+        if not resp.data:
+            raise not_found(detail=f"Embassy '{embassy_id}' not found or not active.")
+        return resp.data[0]
+
+    @classmethod
+    async def remove_ward(
+        cls,
+        supabase: Client,
+        embassy_id: UUID,
+    ) -> dict:
+        """Remove the bleed ward from an embassy."""
+        logger.info("Removing embassy ward", extra={"embassy_id": str(embassy_id)})
+        resp = await (
+            supabase.table(cls.table_name)
+            .update({"ward_vector": None, "ward_strength": 0.0})
+            .eq("id", str(embassy_id))
+            .execute()
+        )
+        if not resp.data:
+            raise not_found(detail=f"Embassy '{embassy_id}' not found.")
+        return resp.data[0]
+
     @classmethod
     async def list_all_active(
         cls,

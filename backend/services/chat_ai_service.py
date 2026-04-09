@@ -527,6 +527,9 @@ class ChatAIService:
         )
         memory_text = AgentMemoryService.format_for_prompt(memories)
 
+        # L4: Inject relationship context into agent prompts
+        relationship_context = await self._build_relationship_context(agent["id"], locale)
+
         prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         model = await self._model_resolver.resolve_text_model("chat_response")
 
@@ -541,7 +544,57 @@ class ChatAIService:
             "model": model,
             "history_messages": history_messages,
             "memory_text": memory_text,
+            "relationship_context": relationship_context,
         }
+
+    async def _build_relationship_context(self, agent_id: str, locale: str) -> str:
+        """Build relationship context string for injection into agent prompts.
+
+        Queries the agent's relationships and formats them as natural-language
+        context that the AI can reference when generating responses.
+        Returns empty string if no relationships exist (no prompt pollution).
+        """
+        try:
+            resp = await (
+                self._supabase.table("agent_relationships")
+                .select(
+                    "relationship_type, intensity, is_bidirectional, description,"
+                    " source_agent:agents!source_agent_id(name),"
+                    " target_agent:agents!target_agent_id(name)"
+                )
+                .or_(f"source_agent_id.eq.{agent_id},target_agent_id.eq.{agent_id}")
+                .eq("simulation_id", str(self._simulation_id))
+                .order("intensity", desc=True)
+                .limit(6)
+                .execute()
+            )
+        except Exception:
+            logger.debug("Relationship context query failed for agent %s", agent_id, exc_info=True)
+            return ""
+
+        if not resp.data:
+            return ""
+
+        lines = []
+        for rel in resp.data:
+            source_name = (rel.get("source_agent") or {}).get("name", "?")
+            target_name = (rel.get("target_agent") or {}).get("name", "?")
+            # Show the "other" agent from this agent's perspective
+            other = target_name if source_name != target_name else source_name
+            rel_type = rel.get("relationship_type", "associated with").replace("_", " ")
+            intensity = rel.get("intensity", 5)
+            desc = rel.get("description", "")
+            direction = " (mutual)" if rel.get("is_bidirectional") else ""
+            line = f"- {rel_type} of {other} (intensity {intensity}/10{direction})"
+            if desc:
+                line += f": {desc}"
+            lines.append(line)
+
+        if not lines:
+            return ""
+
+        header = "Relationships:" if locale == "en" else "Beziehungen:"
+        return f"{header}\n" + "\n".join(lines)
 
     def _fire_and_forget_memory_extraction(
         self,
@@ -591,6 +644,7 @@ class ChatAIService:
             model=ctx["model"],
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
+            extra_context=ctx.get("relationship_context", ""),
         )
 
         if not saved:
@@ -684,6 +738,7 @@ class ChatAIService:
             model=ctx["model"],
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
+            extra_context=ctx.get("relationship_context", ""),
         ):
             yield sse_event
             if sse_event.event == "agent_done":

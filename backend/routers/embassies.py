@@ -166,3 +166,41 @@ async def dissolve_embassy(
     await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
+
+
+# ── Ward Mechanic (migration 191) ────────────────────
+
+
+@router.patch("/embassies/{embassy_id}/ward")
+async def set_embassy_ward(
+    simulation_id: UUID,
+    embassy_id: UUID,
+    ward_vector: Annotated[str, Query(description="Bleed vector to ward against")],
+    ward_strength: Annotated[float, Query(ge=0.0, le=1.0, description="Ward reduction strength")] = 0.5,
+    user: Annotated[CurrentUser, Depends(get_current_user)] = None,
+    _role_check: Annotated[str, Depends(require_role("editor"))] = None,
+    supabase: Annotated[Client, Depends(get_effective_supabase)] = None,
+) -> SuccessResponse[EmbassyResponse]:
+    """Set a bleed ward on an embassy to reduce incoming echo strength.
+
+    The ward reduces the echo_strength of matching-vector echoes by
+    ``ward_strength`` (e.g., 0.5 = halve incoming echo power). Only
+    one ward_vector per embassy; setting a new one replaces the old.
+    """
+    result = await EmbassyService.set_ward(supabase, embassy_id, ward_vector, ward_strength)
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    return SuccessResponse(data=result)
+
+
+@router.delete("/embassies/{embassy_id}/ward")
+async def remove_embassy_ward(
+    simulation_id: UUID,
+    embassy_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)] = None,
+    _role_check: Annotated[str, Depends(require_role("editor"))] = None,
+    supabase: Annotated[Client, Depends(get_effective_supabase)] = None,
+) -> SuccessResponse[EmbassyResponse]:
+    """Remove the bleed ward from an embassy."""
+    result = await EmbassyService.remove_ward(supabase, embassy_id)
+    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    return SuccessResponse(data=result)
