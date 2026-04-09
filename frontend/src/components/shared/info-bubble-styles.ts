@@ -27,11 +27,8 @@ import './VelgTooltip.js';
  */
 export function renderInfoBubble(text: string, id?: string) {
   return html`
-    <velg-tooltip content=${text} position="below">
-      <span
-        class="info-bubble"
-        id=${id ?? nothing}
-      >
+    <velg-tooltip content=${text} position="below" variant="info" ${id ? html`id=${id}` : nothing}>
+      <span class="info-bubble">
         <span class="info-bubble__icon" tabindex="0" aria-label="Info">i</span>
       </span>
     </velg-tooltip>
