@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_current_user, get_effective_supabase, require_role
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.models.relationship import (
     RelationshipCreate,
     RelationshipResponse,
@@ -15,6 +15,7 @@ from backend.models.relationship import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.relationship_service import RelationshipService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -48,13 +49,8 @@ async def list_simulation_relationships(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[RelationshipResponse]:
     """List all relationships in a simulation (for graph views)."""
-    data, total = await RelationshipService.list_for_simulation(
-        supabase, simulation_id, limit=limit, offset=offset
-    )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    data, total = await RelationshipService.list_for_simulation(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.post(
@@ -73,9 +69,7 @@ async def create_relationship(
     result = await RelationshipService.create_relationship(
         supabase, simulation_id, agent_id, body.model_dump(exclude_none=True)
     )
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "agent_relationships", result["id"], "create"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "agent_relationships", result["id"], "create")
     return SuccessResponse(data=result)
 
 
@@ -92,9 +86,7 @@ async def update_relationship(
     result = await RelationshipService.update_relationship(
         supabase, simulation_id, relationship_id, body.model_dump(exclude_none=True)
     )
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "agent_relationships", relationship_id, "update"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "agent_relationships", relationship_id, "update")
     return SuccessResponse(data=result)
 
 
@@ -110,7 +102,5 @@ async def delete_relationship(
 ) -> SuccessResponse[MessageResponse]:
     """Delete a relationship."""
     await RelationshipService.delete_relationship(supabase, simulation_id, relationship_id)
-    await AuditService.log_action(
-        supabase, simulation_id, user.id, "agent_relationships", relationship_id, "delete"
-    )
+    await AuditService.log_action(supabase, simulation_id, user.id, "agent_relationships", relationship_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Relationship deleted."))

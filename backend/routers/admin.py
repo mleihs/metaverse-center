@@ -39,7 +39,7 @@ from backend.models.cleanup import (
     CleanupPreviewResult,
     CleanupStats,
 )
-from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, DeleteResponse, PaginatedResponse, SuccessResponse
 from backend.models.settings import is_sensitive_key
 from backend.models.simulation import SimulationResponse
 from backend.services.admin_user_service import AdminUserService
@@ -57,6 +57,7 @@ from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.settings_service import SettingsService
 from backend.services.simulation_service import SimulationService
 from backend.utils.encryption import encrypt as encrypt_value
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,12 @@ async def update_setting(
 
     data = await PlatformSettingsService.update(admin_supabase, key, value, user.id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "platform_settings", key, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "platform_settings",
+        key,
+        "update",
         details={"key": key},
     )
 
@@ -227,7 +233,12 @@ async def delete_user(
     """Delete a user from the platform."""
     await AdminUserService.delete_user(admin_supabase, user_id)
     await AuditService.safe_log(
-        admin_supabase, None, _user.id, "users", user_id, "delete",
+        admin_supabase,
+        None,
+        _user.id,
+        "users",
+        user_id,
+        "delete",
     )
     return SuccessResponse(data=DeleteResponse())
 
@@ -241,10 +252,18 @@ async def add_membership(
 ) -> SuccessResponse[AdminMembershipResponse]:
     """Add a user to a simulation with a role."""
     data = await AdminUserService.add_membership(
-        admin_supabase, user_id, body.simulation_id, body.role,
+        admin_supabase,
+        user_id,
+        body.simulation_id,
+        body.role,
     )
     await AuditService.safe_log(
-        admin_supabase, body.simulation_id, _user.id, "simulation_members", user_id, "create",
+        admin_supabase,
+        body.simulation_id,
+        _user.id,
+        "simulation_members",
+        user_id,
+        "create",
         details={"role": body.role},
     )
     return SuccessResponse(data=data)
@@ -260,10 +279,18 @@ async def change_membership_role(
 ) -> SuccessResponse[AdminMembershipResponse]:
     """Change a user's role in a simulation."""
     data = await AdminUserService.change_membership_role(
-        admin_supabase, user_id, simulation_id, body.role,
+        admin_supabase,
+        user_id,
+        simulation_id,
+        body.role,
     )
     await AuditService.safe_log(
-        admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "update",
+        admin_supabase,
+        simulation_id,
+        _user.id,
+        "simulation_members",
+        user_id,
+        "update",
         details={"new_role": body.role},
     )
     return SuccessResponse(data=data)
@@ -279,7 +306,12 @@ async def remove_membership(
     """Remove a user from a simulation."""
     data = await AdminUserService.remove_membership(admin_supabase, user_id, simulation_id)
     await AuditService.safe_log(
-        admin_supabase, simulation_id, _user.id, "simulation_members", user_id, "delete",
+        admin_supabase,
+        simulation_id,
+        _user.id,
+        "simulation_members",
+        user_id,
+        "delete",
     )
     return SuccessResponse(data=data)
 
@@ -295,10 +327,18 @@ async def update_user_wallet(
 ) -> SuccessResponse[AdminWalletResponse]:
     """Update a user's forge wallet settings."""
     data = await AdminUserService.update_user_wallet(
-        admin_supabase, user_id, body.forge_tokens, body.is_architect,
+        admin_supabase,
+        user_id,
+        body.forge_tokens,
+        body.is_architect,
     )
     await AuditService.safe_log(
-        admin_supabase, None, _user.id, "user_wallets", user_id, "update",
+        admin_supabase,
+        None,
+        _user.id,
+        "user_wallets",
+        user_id,
+        "update",
         details={"forge_tokens": body.forge_tokens, "is_architect": body.is_architect},
     )
     return SuccessResponse(data=data)
@@ -325,7 +365,10 @@ async def preview_cleanup(
 ) -> SuccessResponse[CleanupPreviewResult]:
     """Preview what would be deleted without actually deleting."""
     data = await CleanupService.preview(
-        admin_supabase, body.cleanup_type, body.min_age_days, epoch_ids=body.epoch_ids,
+        admin_supabase,
+        body.cleanup_type,
+        body.min_age_days,
+        epoch_ids=body.epoch_ids,
     )
     return SuccessResponse(data=data)
 
@@ -338,11 +381,19 @@ async def execute_cleanup(
 ) -> SuccessResponse[CleanupExecuteResult]:
     """Execute data cleanup. Requires prior preview for safety."""
     data = await CleanupService.execute(
-        admin_supabase, body.cleanup_type, body.min_age_days, user.id,
+        admin_supabase,
+        body.cleanup_type,
+        body.min_age_days,
+        user.id,
         epoch_ids=body.epoch_ids,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "cleanup", None, "execute",
+        admin_supabase,
+        None,
+        user.id,
+        "cleanup",
+        None,
+        "execute",
         details={"cleanup_type": body.cleanup_type, "min_age_days": body.min_age_days},
     )
     return SuccessResponse(data=data)
@@ -364,10 +415,12 @@ async def list_simulations(
     """List all simulations (admin). Optionally include soft-deleted."""
     offset = (page - 1) * per_page
     data, total = await _sim_service.list_all_simulations(
-        admin_supabase, include_deleted=include_deleted, limit=per_page, offset=offset,
+        admin_supabase,
+        include_deleted=include_deleted,
+        limit=per_page,
+        offset=offset,
     )
-    meta = PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset)
-    return PaginatedResponse(data=data, meta=meta)
+    return paginated(data, total, per_page, offset)
 
 
 @router.get("/simulations/deleted")
@@ -380,10 +433,11 @@ async def list_deleted_simulations(
     """List only soft-deleted simulations (trash view)."""
     offset = (page - 1) * per_page
     data, total = await _sim_service.list_deleted_simulations(
-        admin_supabase, limit=per_page, offset=offset,
+        admin_supabase,
+        limit=per_page,
+        offset=offset,
     )
-    meta = PaginationMeta(count=len(data), total=total, limit=per_page, offset=offset)
-    return PaginatedResponse(data=data, meta=meta)
+    return paginated(data, total, per_page, offset)
 
 
 @router.post("/simulations/{simulation_id}/restore")
@@ -395,7 +449,12 @@ async def restore_simulation(
     """Restore a soft-deleted simulation."""
     data = await _sim_service.restore_simulation(admin_supabase, simulation_id)
     await AuditService.safe_log(
-        admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "restore",
+        admin_supabase,
+        simulation_id,
+        _user.id,
+        "simulations",
+        simulation_id,
+        "restore",
     )
     return SuccessResponse(data=data)
 
@@ -411,13 +470,23 @@ async def admin_delete_simulation(
     if hard:
         data = await _sim_service.hard_delete_simulation(admin_supabase, simulation_id)
         await AuditService.safe_log(
-            admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "hard_delete",
+            admin_supabase,
+            simulation_id,
+            _user.id,
+            "simulations",
+            simulation_id,
+            "hard_delete",
         )
         return SuccessResponse(data={"deleted": True, "simulation": data})
     else:
         data = await _sim_service.delete_simulation(admin_supabase, simulation_id)
         await AuditService.safe_log(
-            admin_supabase, simulation_id, _user.id, "simulations", simulation_id, "delete",
+            admin_supabase,
+            simulation_id,
+            _user.id,
+            "simulations",
+            simulation_id,
+            "delete",
         )
         return SuccessResponse(data=data)
 
@@ -454,8 +523,12 @@ async def update_simulation_health_effects(
         },
     )
     await AuditService.safe_log(
-        admin_supabase, simulation_id, user.id,
-        "simulation_settings", "critical_health_effects_enabled", "update",
+        admin_supabase,
+        simulation_id,
+        user.id,
+        "simulation_settings",
+        "critical_health_effects_enabled",
+        "update",
         details={"enabled": body.enabled},
     )
     return SuccessResponse(data={"enabled": body.enabled})
@@ -490,8 +563,12 @@ async def update_dungeon_global_config(
         clearance_threshold=body.clearance_threshold,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "platform_settings", "dungeon_global_config", "update",
+        admin_supabase,
+        None,
+        user.id,
+        "platform_settings",
+        "dungeon_global_config",
+        "update",
         details=dict(config),
     )
     return SuccessResponse(data=config)
@@ -550,8 +627,12 @@ async def update_dungeon_override(
         },
     )
     await AuditService.safe_log(
-        admin_supabase, simulation_id, user.id,
-        "simulation_settings", "dungeon_override", "update",
+        admin_supabase,
+        simulation_id,
+        user.id,
+        "simulation_settings",
+        "dungeon_override",
+        "update",
         details=config,
     )
     return SuccessResponse(data=config)
@@ -574,14 +655,21 @@ async def impersonate_user(
     if not user or not user.email:
         raise HTTPException(status_code=404, detail="User not found")
 
-    link_response = await admin_supabase.auth.admin.generate_link({
-        "type": "magiclink",
-        "email": user.email,
-    })
+    link_response = await admin_supabase.auth.admin.generate_link(
+        {
+            "type": "magiclink",
+            "email": user.email,
+        }
+    )
     hashed_token = link_response.properties.hashed_token
 
     await AuditService.safe_log(
-        admin_supabase, None, admin_user.id, "users", body.user_id, "impersonate",
+        admin_supabase,
+        None,
+        admin_user.id,
+        "users",
+        body.user_id,
+        "impersonate",
         details={"target_email": user.email},
     )
 

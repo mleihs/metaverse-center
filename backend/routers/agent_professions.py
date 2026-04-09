@@ -34,9 +34,7 @@ async def list_professions(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AgentProfessionResponse]]:
     """List all professions for an agent."""
-    data = await AgentProfessionService.list_for_agent(
-        supabase, simulation_id, agent_id
-    )
+    data = await AgentProfessionService.list_for_agent(supabase, simulation_id, agent_id)
     return SuccessResponse(data=data)
 
 
@@ -50,9 +48,7 @@ async def add_profession(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentProfessionResponse]:
     """Add a profession to an agent. Primary-profession uniqueness enforced by DB trigger."""
-    result = await AgentProfessionService.add(
-        supabase, simulation_id, agent_id, body.model_dump(exclude_none=True)
-    )
+    result = await AgentProfessionService.add(supabase, simulation_id, agent_id, body.model_dump(exclude_none=True))
     await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", result["id"], "create")
     return SuccessResponse(data=result)
 
@@ -89,8 +85,6 @@ async def delete_profession(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[MessageResponse]:
     """Remove a profession from an agent."""
-    await AgentProfessionService.remove(
-        supabase, simulation_id, agent_id, profession_id
-    )
+    await AgentProfessionService.remove(supabase, simulation_id, agent_id, profession_id)
     await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", profession_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Profession removed."))

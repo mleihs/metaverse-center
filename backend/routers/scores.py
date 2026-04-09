@@ -93,7 +93,12 @@ async def compute_scores(
     data = await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
     try:
         await AuditService.log_action(
-            supabase, None, user.id, "epoch_scores", None, "create",
+            supabase,
+            None,
+            user.id,
+            "epoch_scores",
+            None,
+            "create",
             details={"epoch_id": str(epoch_id), "cycle": cycle_number, "scores_computed": len(data)},
         )
     except Exception:

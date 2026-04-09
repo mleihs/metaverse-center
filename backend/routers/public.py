@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 
 from backend.dependencies import get_admin_supabase, get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
-from backend.models.common import PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import PaginatedResponse, SuccessResponse
 from backend.models.gazette import GazetteEntry
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.agent_service import AgentService
@@ -53,6 +53,7 @@ from backend.services.simulation_service import SimulationService
 from backend.services.social_media_service import SocialMediaService
 from backend.services.social_trends_service import SocialTrendsService
 from backend.services.taxonomy_service import TaxonomyService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -68,21 +69,12 @@ RATE_LIMIT_PUBLIC = RATE_LIMIT_STANDARD  # 100/minute
 # ── Helpers ─────────────────────────────────────────────────────────────
 
 
-def _paginated(data: list[dict], total: int, limit: int, offset: int) -> PaginatedResponse:
-    """Build a standard paginated response."""
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset))
-
-
 # ── Platform Stats ───────────────────────────────────────────────────────
 
 
 @router.get("/platform-stats")
 @limiter.limit(RATE_LIMIT_PUBLIC)
-async def get_platform_stats(
-    request: Request,
-    anon: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+async def get_platform_stats(request: Request, anon: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
     """Aggregated platform statistics for landing page."""
     try:
         data = await SimulationService.get_platform_stats(anon)
@@ -103,7 +95,8 @@ async def list_simulations(
     http_response: Response,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List all active template simulations (public). Excludes game instances."""
     max_age = get_ttl("cache_http_simulations_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
@@ -114,15 +107,14 @@ async def list_simulations(
         logger.warning("Public simulation list unavailable", exc_info=True)
         sentry_sdk.capture_exception()
         data, total = [], 0
-    return _paginated(data, total, limit, offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/by-slug/{slug}/forge-progress")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_forge_progress(
-    request: Request,
-    slug: str,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, slug: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Lightweight image-generation progress for the forge ceremony.
 
     Delegates to ``get_forge_progress(slug)`` Postgres function via
@@ -137,9 +129,8 @@ async def get_forge_progress(
 @router.get("/simulations/{simulation_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single active simulation (public)."""
     sim = await SimulationService.get_active_by_id(supabase, simulation_id)
     if not sim:
@@ -155,9 +146,8 @@ async def get_simulation(
 @router.get("/simulations/{simulation_id}/bleed-status")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_bleed_status(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get aggregated bleed status for a simulation (public).
 
     Returns active bleeds, threshold state, and fracture warning for
@@ -178,20 +168,18 @@ async def list_agents(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     search: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List agents in a simulation (public)."""
-    data, total = await AgentService.list(
-        supabase, simulation_id, search=search, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await AgentService.list(supabase, simulation_id, search=search, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/agents/by-slug/{slug}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent_by_slug(
-    request: Request,
-    simulation_id: SimId,
-    slug: str,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, slug: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single agent by slug (public)."""
     data = await AgentService.get_by_slug(supabase, simulation_id, slug)
     return SuccessResponse(data=data)
@@ -200,10 +188,8 @@ async def get_agent_by_slug(
 @router.get("/simulations/{simulation_id}/agents/{agent_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent(
-    request: Request,
-    simulation_id: SimId,
-    agent_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, agent_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single agent (public)."""
     data = await AgentService.get(supabase, simulation_id, agent_id)
     return SuccessResponse(data=data)
@@ -220,20 +206,18 @@ async def list_buildings(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     search: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List buildings in a simulation (public)."""
-    data, total = await BuildingService.list(
-        supabase, simulation_id, search=search, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await BuildingService.list(supabase, simulation_id, search=search, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/buildings/by-slug/{slug}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building_by_slug(
-    request: Request,
-    simulation_id: SimId,
-    slug: str,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, slug: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single building by slug (public)."""
     data = await BuildingService.get_by_slug(supabase, simulation_id, slug)
     return SuccessResponse(data=data)
@@ -242,10 +226,8 @@ async def get_building_by_slug(
 @router.get("/simulations/{simulation_id}/buildings/{building_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building(
-    request: Request,
-    simulation_id: SimId,
-    building_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, building_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single building (public)."""
     data = await BuildingService.get(supabase, simulation_id, building_id)
     return SuccessResponse(data=data)
@@ -262,20 +244,18 @@ async def list_events(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     search: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List events in a simulation (public)."""
-    data, total = await EventService.list(
-        supabase, simulation_id, search=search, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await EventService.list(supabase, simulation_id, search=search, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/events/{event_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_event(
-    request: Request,
-    simulation_id: SimId,
-    event_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, event_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single event (public)."""
     data = await EventService.get(supabase, simulation_id, event_id)
     return SuccessResponse(data=data)
@@ -287,9 +267,8 @@ async def get_event(
 @router.get("/simulations/{simulation_id}/anchor")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_anchor(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get philosophical anchor data (public)."""
     rows = await SettingsService.list_settings(supabase, simulation_id, category="anchor")
     data = {row["setting_key"]: row["setting_value"] for row in rows}
@@ -302,10 +281,8 @@ async def get_anchor(
 @router.get("/simulations/{simulation_id}/lore/by-slug/{slug}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_lore_by_slug(
-    request: Request,
-    simulation_id: SimId,
-    slug: str,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, slug: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single lore section by slug (public)."""
     data = await ForgeLoreService.get_by_slug(supabase, simulation_id, slug)
     if not data:
@@ -316,9 +293,8 @@ async def get_lore_by_slug(
 @router.get("/simulations/{simulation_id}/lore")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_simulation_lore(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get lore sections for a simulation (public)."""
     data = await ForgeLoreService.list_for_simulation(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -334,12 +310,13 @@ async def list_chronicles_global(
     http_response: Response,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """Recent chronicles across all active simulations (public feed)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
     data, total = await ChronicleService.list_all_recent(supabase, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/chronicles")
@@ -349,19 +326,18 @@ async def list_chronicles_public(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List chronicle editions (public)."""
     data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/chronicles/{chronicle_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_chronicle_public(
-    request: Request,
-    simulation_id: SimId,
-    chronicle_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, chronicle_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single chronicle edition (public)."""
     data = await ChronicleService.get(supabase, simulation_id, chronicle_id)
     return SuccessResponse(data=data)
@@ -379,12 +355,13 @@ async def list_agent_memories_public(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     memory_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List agent memories (public)."""
     data, total = await AgentMemoryService.list_memories(
-        supabase, agent_id, simulation_id,
-        memory_type=memory_type, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+        supabase, agent_id, simulation_id, memory_type=memory_type, limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 # ── Locations ────────────────────────────────────────────────────────────
@@ -393,22 +370,18 @@ async def list_agent_memories_public(
 @router.get("/simulations/{simulation_id}/locations/cities")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_cities(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List cities (public)."""
     data, _ = await LocationService.list_cities(supabase, simulation_id, limit=500)
     return SuccessResponse(data=data)
 
 
-@router.get(
-    "/simulations/{simulation_id}/locations/cities/{city_id}")
+@router.get("/simulations/{simulation_id}/locations/cities/{city_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_city(
-    request: Request,
-    simulation_id: SimId,
-    city_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, city_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single city (public)."""
     data = await LocationService.get_city(supabase, simulation_id, city_id)
     return SuccessResponse(data=data)
@@ -417,22 +390,18 @@ async def get_city(
 @router.get("/simulations/{simulation_id}/locations/zones")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_zones(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List zones (public)."""
     data, _ = await LocationService.list_zones(supabase, simulation_id, limit=500)
     return SuccessResponse(data=data)
 
 
-@router.get(
-    "/simulations/{simulation_id}/locations/zones/{zone_id}")
+@router.get("/simulations/{simulation_id}/locations/zones/{zone_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_zone(
-    request: Request,
-    simulation_id: SimId,
-    zone_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, zone_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single zone (public)."""
     data = await LocationService.get_zone(supabase, simulation_id, zone_id)
     return SuccessResponse(data=data)
@@ -441,9 +410,8 @@ async def get_zone(
 @router.get("/simulations/{simulation_id}/locations/streets")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_streets(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List streets (public)."""
     data, _ = await LocationService.list_streets(supabase, simulation_id, limit=500)
     return SuccessResponse(data=data)
@@ -457,16 +425,14 @@ async def list_streets(
 @router.get("/simulations/{simulation_id}/chat/conversations")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_conversations(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List chat conversations (public, read-only)."""
     data = await ChatService.list_conversations_public(supabase, simulation_id)
     return SuccessResponse(data=data)
 
 
-@router.get(
-    "/simulations/{simulation_id}/chat/conversations/{conversation_id}/messages")
+@router.get("/simulations/{simulation_id}/chat/conversations/{conversation_id}/messages")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_messages(
     request: Request,
@@ -474,10 +440,11 @@ async def list_messages(
     conversation_id: UUID,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List messages in a conversation (public, read-only)."""
     data, total = await ChatService.list_messages_public(supabase, conversation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    return paginated(data, total, limit, offset)
 
 
 # ── Taxonomies ───────────────────────────────────────────────────────────
@@ -491,11 +458,13 @@ async def list_taxonomies(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     taxonomy_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=1000)] = 500,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List taxonomies (public)."""
-    data, total = await TaxonomyService.list_taxonomies_paginated(
-        supabase, simulation_id, taxonomy_type=taxonomy_type, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await TaxonomyService.list_taxonomiespaginated(
+        supabase, simulation_id, taxonomy_type=taxonomy_type, limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 # ── Settings (design category only) ─────────────────────────────────────
@@ -504,9 +473,8 @@ async def list_taxonomies(
 @router.get("/simulations/{simulation_id}/settings")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_settings(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List design settings only (public — for theming)."""
     data = await SettingsService.list_settings(supabase, simulation_id, category="design")
     return SuccessResponse(data=data)
@@ -522,11 +490,11 @@ async def list_social_trends(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List social trends (public)."""
-    data, total = await SocialTrendsService.list_trends(
-        supabase, simulation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await SocialTrendsService.list_trends(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/social-media")
@@ -536,11 +504,11 @@ async def list_social_posts(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List social media posts (public)."""
-    data, total = await SocialMediaService.list_posts(
-        supabase, simulation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await SocialMediaService.list_posts(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 # ── Campaigns ────────────────────────────────────────────────────────────
@@ -553,11 +521,11 @@ async def list_campaigns(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List campaigns (public)."""
-    data, total = await CampaignService.list_campaigns(
-        supabase, simulation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await CampaignService.list_campaigns(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 # ── Agent Relationships ─────────────────────────────────────────────────
@@ -566,10 +534,8 @@ async def list_campaigns(
 @router.get("/simulations/{simulation_id}/agents/{agent_id}/relationships")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_agent_relationships(
-    request: Request,
-    simulation_id: SimId,
-    agent_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, agent_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List relationships for a specific agent (public)."""
     data = await RelationshipService.list_for_agent(supabase, simulation_id, agent_id)
     return SuccessResponse(data=data)
@@ -578,10 +544,8 @@ async def list_agent_relationships(
 @router.get("/simulations/{simulation_id}/agents/{agent_id}/aptitudes")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_agent_aptitudes(
-    request: Request,
-    simulation_id: SimId,
-    agent_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, agent_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get aptitude scores for a specific agent (public)."""
     data = await AptitudeService.get_for_agent(supabase, simulation_id, agent_id)
     return SuccessResponse(data=data)
@@ -590,9 +554,8 @@ async def get_agent_aptitudes(
 @router.get("/simulations/{simulation_id}/aptitudes")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation_aptitudes(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get all aptitude scores for all agents in a simulation (public)."""
     data = await AptitudeService.get_all_for_simulation(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -605,11 +568,11 @@ async def list_simulation_relationships(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List all relationships in a simulation (public)."""
-    data, total = await RelationshipService.list_for_simulation(
-        supabase, simulation_id, limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+    data, total = await RelationshipService.list_for_simulation(supabase, simulation_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 # ── Event Echoes ────────────────────────────────────────────────────────
@@ -622,20 +585,20 @@ async def list_echoes(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List incoming echoes for a simulation (public)."""
     data, total = await EchoService.list_for_simulation(
-        supabase, simulation_id, direction="incoming", limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+        supabase, simulation_id, direction="incoming", limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/events/{event_id}/echoes")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_event_echoes(
-    request: Request,
-    simulation_id: SimId,
-    event_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, event_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List echoes for a specific event (public)."""
     data = await EchoService.list_for_event(supabase, event_id)
     return SuccessResponse(data=data)
@@ -647,9 +610,8 @@ async def list_event_echoes(
 @router.get("/connections")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_connections(
-    request: Request,
-    http_response: Response,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, http_response: Response, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List all active simulation connections (public, for map)."""
     max_age = get_ttl("cache_http_connections_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
@@ -660,9 +622,8 @@ async def list_connections(
 @router.get("/map-data")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_map_data(
-    request: Request,
-    http_response: Response,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, http_response: Response, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Aggregated endpoint for Cartographer's Map — simulations + connections + echo counts."""
     max_age = get_ttl("cache_http_map_data_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 4}"
@@ -679,7 +640,8 @@ async def get_battle_feed(
     request: Request,
     http_response: Response,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
-    limit: Annotated[int, Query(ge=1, le=50)] = 20) -> SuccessResponse:
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> SuccessResponse:
     """Global public battle feed across all active epochs."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
@@ -696,7 +658,8 @@ async def get_bleed_gazette(
     request: Request,
     http_response: Response,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
-    limit: Annotated[int, Query(ge=1, le=50)] = 20) -> SuccessResponse[list[GazetteEntry]]:
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> SuccessResponse[list[GazetteEntry]]:
     """Bleed Gazette — multiverse news wire (public, no auth)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
@@ -706,6 +669,7 @@ async def get_bleed_gazette(
 
 # ── Embassies ──────────────────────────────────────────────────────────
 
+
 @router.get("/simulations/{simulation_id}/embassies")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_embassies(
@@ -713,21 +677,20 @@ async def list_embassies(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List active embassies for a simulation (public)."""
     data, total = await EmbassyService.list_for_simulation(
-        supabase, simulation_id, status_filter="active",
-        limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+        supabase, simulation_id, status_filter="active", limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/embassies/{embassy_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_embassy(
-    request: Request,
-    simulation_id: SimId,
-    embassy_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, embassy_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single embassy (public)."""
     data = await EmbassyService.get(supabase, embassy_id)
     return SuccessResponse(data=data)
@@ -736,10 +699,8 @@ async def get_embassy(
 @router.get("/simulations/{simulation_id}/buildings/{building_id}/embassy")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_building_embassy(
-    request: Request,
-    simulation_id: SimId,
-    building_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, building_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get the embassy linked to a building (public)."""
     data = await EmbassyService.get_for_building(supabase, building_id)
     return SuccessResponse(data=data)
@@ -748,8 +709,8 @@ async def get_building_embassy(
 @router.get("/embassies")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_all_embassies(
-    request: Request,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List all active embassies across all simulations (public, for map)."""
     data = await EmbassyService.list_all_active(supabase)
     return SuccessResponse(data=data)
@@ -761,9 +722,8 @@ async def list_all_embassies(
 @router.get("/simulations/{simulation_id}/health")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_simulation_health_dashboard(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Full health dashboard for a simulation (public)."""
     data = await GameMechanicsService.get_health_dashboard(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -779,21 +739,20 @@ async def list_building_readiness(
     order_by: Annotated[str, Query()] = "readiness",
     order_asc: Annotated[bool, Query()] = True,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List building readiness for a simulation (public)."""
     data, total = await GameMechanicsService.list_building_readiness(
-        supabase, simulation_id,
-        zone_id=zone_id, order_by=order_by, order_asc=order_asc,
-        limit=limit, offset=offset)
-    return _paginated(data, total, limit, offset)
+        supabase, simulation_id, zone_id=zone_id, order_by=order_by, order_asc=order_asc, limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/simulations/{simulation_id}/health/zones")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_zone_stability(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List zone stability for a simulation (public)."""
     data = await GameMechanicsService.list_zone_stability(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -802,9 +761,8 @@ async def list_zone_stability(
 @router.get("/simulations/{simulation_id}/health/embassies")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_embassy_effectiveness(
-    request: Request,
-    simulation_id: SimId,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, simulation_id: SimId, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List embassy effectiveness for a simulation (public)."""
     data = await GameMechanicsService.list_embassy_effectiveness(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -813,8 +771,8 @@ async def list_embassy_effectiveness(
 @router.get("/health/all")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_all_simulations_health(
-    request: Request,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Health metrics for all simulations (public, for map/dashboard)."""
     data = await GameMechanicsService.list_simulation_health(supabase)
     return SuccessResponse(data=data)
@@ -830,19 +788,18 @@ async def list_epochs_public(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List all epochs (public)."""
-    data, total = await EpochService.list_epochs(
-        supabase, status_filter=status_filter, limit=limit, offset=offset
-    )
-    return _paginated(data, total, limit, offset)
+    data, total = await EpochService.list_epochs(supabase, status_filter=status_filter, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/epochs/active")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_active_epochs_public(
-    request: Request,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get all active epochs — lobby + running (public)."""
     data = await EpochService.get_active_epochs(supabase)
     return SuccessResponse(data=data)
@@ -851,9 +808,8 @@ async def get_active_epochs_public(
 @router.get("/epochs/{epoch_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_epoch_public(
-    request: Request,
-    epoch_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single epoch (public)."""
     data = await EpochService.get(supabase, epoch_id)
     return SuccessResponse(data=data)
@@ -862,9 +818,8 @@ async def get_epoch_public(
 @router.get("/epochs/{epoch_id}/participants")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_epoch_participants_public(
-    request: Request,
-    epoch_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List epoch participants (public)."""
     data = await EpochService.list_participants(supabase, epoch_id)
     return SuccessResponse(data=data)
@@ -873,9 +828,8 @@ async def list_epoch_participants_public(
 @router.get("/epochs/{epoch_id}/teams")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_epoch_teams_public(
-    request: Request,
-    epoch_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List epoch teams (public)."""
     data = await EpochService.list_teams(supabase, epoch_id)
     return SuccessResponse(data=data)
@@ -890,7 +844,8 @@ async def get_leaderboard_public(
     request: Request,
     epoch_id: UUID,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
-    cycle: Annotated[int | None, Query()] = None) -> SuccessResponse:
+    cycle: Annotated[int | None, Query()] = None,
+) -> SuccessResponse:
     """Get epoch leaderboard (public spectator view)."""
     data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
     return SuccessResponse(data=data)
@@ -899,9 +854,8 @@ async def get_leaderboard_public(
 @router.get("/epochs/{epoch_id}/standings")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_standings_public(
-    request: Request,
-    epoch_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get final standings for a completed epoch (public)."""
     data = await ScoringService.get_final_standings(supabase, epoch_id)
     return SuccessResponse(data=data)
@@ -918,12 +872,11 @@ async def get_battle_log_public(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     event_type: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """Get public battle log entries (spectator view)."""
-    data, total = await BattleLogService.get_public_feed(
-        supabase, epoch_id, limit=limit, offset=offset
-    )
-    return _paginated(data, total, limit, offset)
+    data, total = await BattleLogService.get_public_feed(supabase, epoch_id, limit=limit, offset=offset)
+    return paginated(data, total, limit, offset)
 
 
 # ── Substrate Resonances (Public) ──────────────────────────────────
@@ -938,25 +891,22 @@ async def list_resonances_public(
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     signature: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """List substrate resonances (public)."""
     max_age = get_ttl("cache_http_battle_feed_max_age")
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 3}"
     data, total = await ResonanceService.list(
-        supabase,
-        status_filter=status_filter,
-        signature=signature,
-        limit=limit,
-        offset=offset)
-    return _paginated(data, total, limit, offset)
+        supabase, status_filter=status_filter, signature=signature, limit=limit, offset=offset
+    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/resonances/{resonance_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_resonance_public(
-    request: Request,
-    resonance_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, resonance_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Get a single resonance (public)."""
     data = await ResonanceService.get(supabase, resonance_id)
     return SuccessResponse(data=data)
@@ -965,9 +915,8 @@ async def get_resonance_public(
 @router.get("/resonances/{resonance_id}/impacts")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def list_resonance_impacts_public(
-    request: Request,
-    resonance_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, resonance_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """List impact records for a resonance (public)."""
     data = await ResonanceService.list_impacts(supabase, resonance_id)
     return SuccessResponse(data=data)
@@ -982,14 +931,16 @@ async def get_operative_types(request: Request) -> SuccessResponse:
     """Operative type metadata: costs, colors, durations, target requirements."""
     types = []
     for op_type in OPERATIVE_RP_COSTS:
-        types.append({
-            "type": op_type,
-            "cost_rp": OPERATIVE_RP_COSTS[op_type],
-            "color": OPERATIVE_TYPE_COLORS.get(op_type, "#6b7280"),
-            "deploy_cycles": OPERATIVE_DEPLOY_CYCLES.get(op_type, 1),
-            "mission_cycles": OPERATIVE_MISSION_CYCLES.get(op_type, 1),
-            "needs_target": OPERATIVE_TARGET_TYPE.get(op_type, "none"),
-        })
+        types.append(
+            {
+                "type": op_type,
+                "cost_rp": OPERATIVE_RP_COSTS[op_type],
+                "color": OPERATIVE_TYPE_COLORS.get(op_type, "#6b7280"),
+                "deploy_cycles": OPERATIVE_DEPLOY_CYCLES.get(op_type, 1),
+                "mission_cycles": OPERATIVE_MISSION_CYCLES.get(op_type, 1),
+                "needs_target": OPERATIVE_TARGET_TYPE.get(op_type, "none"),
+            }
+        )
     return SuccessResponse(data=types)
 
 
@@ -999,9 +950,8 @@ async def get_operative_types(request: Request) -> SuccessResponse:
 @router.get("/epoch-invitations/{token}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def validate_epoch_invitation(
-    request: Request,
-    token: str,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, token: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Validate an epoch invitation token and return epoch info + lore."""
     data = await EpochInvitationService.validate_token(supabase, token)
     return SuccessResponse(data=data)
@@ -1010,27 +960,25 @@ async def validate_epoch_invitation(
 # ── Resonance Dungeons (Public) ───────────────────────────────────────
 
 
-@router.get(
-    "/simulations/{simulation_id}/dungeons/history")
+@router.get("/simulations/{simulation_id}/dungeons/history")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def public_dungeon_history(
     request: Request,
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
-    offset: Annotated[int, Query(ge=0)] = 0) -> PaginatedResponse:
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
     """Public: list completed dungeon runs for a simulation."""
-    data, meta = await DungeonQueryService.list_history_public(
-        supabase, simulation_id, limit=limit, offset=offset)
+    data, meta = await DungeonQueryService.list_history_public(supabase, simulation_id, limit=limit, offset=offset)
     return PaginatedResponse(data=data, meta=meta)
 
 
 @router.get("/dungeons/runs/{run_id}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def public_dungeon_run(
-    request: Request,
-    run_id: UUID,
-    supabase: Annotated[Client, Depends(get_anon_supabase)]) -> SuccessResponse:
+    request: Request, run_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+) -> SuccessResponse:
     """Public: get a completed dungeon run detail."""
     data = await DungeonQueryService.get_run_public(supabase, run_id)
     return SuccessResponse(data=data)
@@ -1039,8 +987,8 @@ async def public_dungeon_run(
 @router.get("/dungeons/clearance-config")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def public_dungeon_clearance_config(
-    request: Request,
-    admin_supabase: Annotated[Client, Depends(get_admin_supabase)]) -> SuccessResponse:
+    request: Request, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
+) -> SuccessResponse:
     """Public: get global dungeon clearance configuration.
 
     Returns the admin-configured clearance mode and threshold so the

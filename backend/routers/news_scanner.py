@@ -19,6 +19,7 @@ from backend.models.news_scanner import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.scanning.scanner_service import ScannerService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,12 @@ async def toggle_adapter(
     """Enable or disable an adapter in platform settings."""
     data = await ScannerService.toggle_adapter(admin_supabase, name, enabled)
     await AuditService.safe_log(
-        admin_supabase, None, _user.id, "scanner_adapters", name, "toggle",
+        admin_supabase,
+        None,
+        _user.id,
+        "scanner_adapters",
+        name,
+        "toggle",
         details={"adapter": name, "enabled": enabled},
     )
     return SuccessResponse(data=data)
@@ -79,7 +85,12 @@ async def trigger_scan(
     adapter_names = body.adapter_names if body else None
     metrics = await ScannerService.run_scan_cycle(admin_supabase, adapter_names=adapter_names)
     await AuditService.safe_log(
-        admin_supabase, None, _user.id, "scanner", None, "scan",
+        admin_supabase,
+        None,
+        _user.id,
+        "scanner",
+        None,
+        "scan",
         details={"adapter_names": adapter_names},
     )
     return SuccessResponse(data=metrics)
@@ -101,15 +112,21 @@ async def list_candidates(
     recommended magnitude threshold (derived from the returned data set).
     """
     data, total = await ScannerService.list_candidates(
-        admin_supabase, status=status, category=category, source=source,
-        limit=limit, offset=offset,
+        admin_supabase,
+        status=status,
+        category=category,
+        source=source,
+        limit=limit,
+        offset=offset,
     )
     recommended_threshold = ScannerService.compute_recommended_threshold(data)
-    return SuccessResponse(data={
-        "items": data,
-        "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset).model_dump(),
-        "recommended_threshold": recommended_threshold,
-    })
+    return SuccessResponse(
+        data={
+            "items": data,
+            "meta": PaginationMeta(count=len(data), total=total, limit=limit, offset=offset).model_dump(),
+            "recommended_threshold": recommended_threshold,
+        }
+    )
 
 
 @router.post("/candidates/{candidate_id}/approve")
@@ -124,10 +141,18 @@ async def approve_candidate(
     """Approve a candidate → create resonance."""
     delay_hours = body.delay_hours if body else 4
     resonance = await ScannerService.approve_candidate(
-        admin_supabase, candidate_id, user.id, delay_hours=delay_hours,
+        admin_supabase,
+        candidate_id,
+        user.id,
+        delay_hours=delay_hours,
     )
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "scan_candidates", candidate_id, "approve",
+        admin_supabase,
+        None,
+        user.id,
+        "scan_candidates",
+        candidate_id,
+        "approve",
         details={"delay_hours": delay_hours},
     )
     return SuccessResponse(data=resonance)
@@ -144,7 +169,12 @@ async def reject_candidate(
     """Reject a candidate."""
     await ScannerService.reject_candidate(admin_supabase, candidate_id, user.id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id, "scan_candidates", candidate_id, "reject",
+        admin_supabase,
+        None,
+        user.id,
+        "scan_candidates",
+        candidate_id,
+        "reject",
     )
     return SuccessResponse(data={"rejected": True})
 
@@ -162,7 +192,12 @@ async def update_candidate(
     update_data = body.model_dump(exclude_none=True)
     result = await ScannerService.update_candidate(admin_supabase, candidate_id, update_data)
     await AuditService.safe_log(
-        admin_supabase, None, _user.id, "scan_candidates", candidate_id, "update",
+        admin_supabase,
+        None,
+        _user.id,
+        "scan_candidates",
+        candidate_id,
+        "update",
     )
     return SuccessResponse(data=result)
 
@@ -177,9 +212,9 @@ async def get_scan_log(
 ) -> PaginatedResponse:
     """Recent scan history."""
     data, total = await ScannerService.list_scan_log(
-        admin_supabase, limit=limit, offset=offset, source=source,
+        admin_supabase,
+        limit=limit,
+        offset=offset,
+        source=source,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)

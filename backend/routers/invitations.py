@@ -45,8 +45,12 @@ async def create_invitation(
         expires_in_hours=body.expires_in_hours,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "simulation_invitations", result.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "simulation_invitations",
+        result.get("id"),
+        "create",
         details={"invited_email": body.invited_email, "invited_role": body.invited_role},
     )
     return SuccessResponse(data=result)
@@ -104,8 +108,12 @@ async def accept_invitation(
     """Accept an invitation — creates membership."""
     result = await InvitationService.accept_invitation(supabase, token, user.id)
     await AuditService.safe_log(
-        supabase, result.get("simulation_id"), user.id,
-        "simulation_invitations", None, "accept",
+        supabase,
+        result.get("simulation_id"),
+        user.id,
+        "simulation_invitations",
+        None,
+        "accept",
         details={"token": token[:8] + "..."},
     )
     return SuccessResponse(data=result)

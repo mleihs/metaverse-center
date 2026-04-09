@@ -25,12 +25,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, RATE_LIMIT_EXTERNAL_API, limiter
 from backend.models.bluesky import BlueskyAnalytics, BlueskyPostResponse, BlueskyQueueItem, BlueskyStatusResponse
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.social import PipelineSettingValue
 from backend.services.audit_service import AuditService
 from backend.services.bluesky_content_service import BlueskyContentService
 from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.external.bluesky import BlueskyService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -77,10 +78,7 @@ async def list_queue(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/queue/{post_id}")
@@ -106,15 +104,22 @@ async def skip_post(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[BlueskyPostResponse]:
     """Skip a post — don't publish to Bluesky."""
-    logger.info("Bluesky admin action", extra={
-        "action": "skip",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Bluesky admin action",
+        extra={
+            "action": "skip",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        },
+    )
     post = await BlueskyContentService.skip_post(admin_supabase, post_id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "bluesky_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "bluesky_posts",
+        post_id,
+        "update",
         {"action": "skip"},
     )
     return SuccessResponse(data=post)
@@ -129,15 +134,22 @@ async def unskip_post(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[BlueskyPostResponse]:
     """Re-enable a skipped post."""
-    logger.info("Bluesky admin action", extra={
-        "action": "unskip",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Bluesky admin action",
+        extra={
+            "action": "unskip",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        },
+    )
     post = await BlueskyContentService.unskip_post(admin_supabase, post_id)
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "bluesky_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "bluesky_posts",
+        post_id,
+        "update",
         {"action": "unskip"},
     )
     return SuccessResponse(data=post)
@@ -155,11 +167,14 @@ async def force_publish(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[BlueskyPostResponse]:
     """Force-publish a post immediately (bypasses scheduler)."""
-    logger.info("Bluesky admin action", extra={
-        "action": "force_publish",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-    })
+    logger.info(
+        "Bluesky admin action",
+        extra={
+            "action": "force_publish",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+        },
+    )
 
     post = await BlueskyContentService.get_post(admin_supabase, post_id)
 
@@ -174,19 +189,27 @@ async def force_publish(
     try:
         await BlueskyScheduler.publish_post(admin_supabase, bsky, post)
     except Exception as exc:
-        logger.exception("Bluesky force-publish failed", extra={
-            "post_id": str(post_id),
-            "user_id": str(user.id),
-        })
-        with sentry_sdk.push_scope() as scope:
-            scope.set_tag("bluesky_phase", "force_publish")
-            scope.set_context("bluesky", {
+        logger.exception(
+            "Bluesky force-publish failed",
+            extra={
                 "post_id": str(post_id),
                 "user_id": str(user.id),
-            })
+            },
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("bluesky_phase", "force_publish")
+            scope.set_context(
+                "bluesky",
+                {
+                    "post_id": str(post_id),
+                    "user_id": str(user.id),
+                },
+            )
             sentry_sdk.capture_exception(exc)
         await BlueskyContentService.reset_post_status(
-            admin_supabase, str(post_id), f"Force-publish failed: {str(exc)[:300]}",
+            admin_supabase,
+            str(post_id),
+            f"Force-publish failed: {str(exc)[:300]}",
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -194,8 +217,12 @@ async def force_publish(
         ) from exc
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "bluesky_posts", post_id, "update",
+        admin_supabase,
+        None,
+        user.id,
+        "bluesky_posts",
+        post_id,
+        "update",
         {"action": "force_publish"},
     )
 
@@ -242,12 +269,14 @@ async def get_connection_status(
     config = await BlueskyContentService.load_bluesky_credentials(admin_supabase)
 
     if not config["handle"] or not config["app_password"]:
-        return SuccessResponse(data=BlueskyStatusResponse(
-            configured=False,
-            authenticated=False,
-            handle=config["handle"] or None,
-            pds_url=config["pds_url"],
-        ))
+        return SuccessResponse(
+            data=BlueskyStatusResponse(
+                configured=False,
+                authenticated=False,
+                handle=config["handle"] or None,
+                pds_url=config["pds_url"],
+            )
+        )
 
     bsky = BlueskyService(
         handle=config["handle"],
@@ -256,9 +285,11 @@ async def get_connection_status(
     )
     authenticated = await bsky.validate_credentials()
 
-    return SuccessResponse(data=BlueskyStatusResponse(
-        configured=True,
-        authenticated=authenticated,
-        handle=config["handle"],
-        pds_url=config["pds_url"],
-    ))
+    return SuccessResponse(
+        data=BlueskyStatusResponse(
+            configured=True,
+            authenticated=authenticated,
+            handle=config["handle"],
+            pds_url=config["pds_url"],
+        )
+    )

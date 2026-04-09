@@ -12,7 +12,6 @@ from backend.models.common import (
     CurrentUser,
     MessageResponse,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.models.event import (
@@ -29,6 +28,7 @@ from backend.services.audit_service import AuditService
 from backend.services.event_service import EventService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -69,10 +69,7 @@ async def list_events(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{event_id}")
@@ -97,9 +94,7 @@ async def create_event(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EventResponse]:
     """Create a new event."""
-    event = await _service.create(
-        supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
-    )
+    event = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.log_action(supabase, simulation_id, user.id, "events", event["id"], "create")
     await _service._post_event_mutation(supabase, simulation_id)
     return SuccessResponse(data=event)
@@ -117,7 +112,10 @@ async def update_event(
 ) -> SuccessResponse[EventResponse]:
     """Update an event."""
     event = await _service.update(
-        supabase, simulation_id, event_id, body.model_dump(exclude_none=True),
+        supabase,
+        simulation_id,
+        event_id,
+        body.model_dump(exclude_none=True),
         if_updated_at=if_updated_at,
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "events", event_id, "update")
@@ -215,7 +213,10 @@ async def generate_reactions(
     # Delegate fully to EventService — supports both specific agent_ids and auto-selection
     agent_id_strs = [str(a) for a in body.agent_ids] if body.agent_ids else None
     reactions = await EventService.generate_reactions(
-        supabase, simulation_id, event, gen,
+        supabase,
+        simulation_id,
+        event,
+        gen,
         agent_ids=agent_id_strs,
         max_agents=body.max_agents,
     )
@@ -241,7 +242,12 @@ async def update_event_status(
     """Transition an event to a new lifecycle status."""
     event = await _service.update_status(supabase, simulation_id, event_id, event_status)
     await AuditService.log_action(
-        supabase, simulation_id, user.id, "events", event_id, "status_change",
+        supabase,
+        simulation_id,
+        user.id,
+        "events",
+        event_id,
+        "status_change",
         details={"new_status": event_status},
     )
     await _service._post_event_mutation(supabase, simulation_id)
@@ -272,7 +278,8 @@ async def create_event_chain(
 ) -> SuccessResponse[EventChainResponse]:
     """Link two events in a narrative chain."""
     chain = await _service.add_chain(
-        supabase, simulation_id,
+        supabase,
+        simulation_id,
         {
             "parent_event_id": str(body.parent_event_id),
             "child_event_id": str(body.child_event_id),
@@ -280,7 +287,12 @@ async def create_event_chain(
         },
     )
     await AuditService.log_action(
-        supabase, simulation_id, user.id, "event_chains", chain["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "event_chains",
+        chain["id"],
+        "create",
     )
     return SuccessResponse(data=chain)
 

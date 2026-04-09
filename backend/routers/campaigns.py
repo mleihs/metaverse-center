@@ -19,11 +19,11 @@ from backend.models.common import (
     CurrentUser,
     MessageResponse,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.campaign_service import CampaignService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -46,12 +46,13 @@ async def list_campaigns(
 ) -> PaginatedResponse[CampaignResponse]:
     """List campaigns with optional type filter."""
     data, total = await CampaignService.list_campaigns(
-        supabase, simulation_id, campaign_type=campaign_type, limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        campaign_type=campaign_type,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{campaign_id}")
@@ -77,7 +78,10 @@ async def create_campaign(
 ) -> SuccessResponse[CampaignResponse]:
     """Create a new campaign."""
     campaign = await CampaignService.create(
-        supabase, simulation_id, user_id=user.id, data=body.model_dump(exclude_none=True),
+        supabase,
+        simulation_id,
+        user_id=user.id,
+        data=body.model_dump(exclude_none=True),
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign["id"], "create")
     return SuccessResponse(data=campaign)
@@ -94,7 +98,10 @@ async def update_campaign(
 ) -> SuccessResponse[CampaignResponse]:
     """Update a campaign."""
     campaign = await CampaignService.update(
-        supabase, simulation_id, campaign_id, body.model_dump(exclude_none=True),
+        supabase,
+        simulation_id,
+        campaign_id,
+        body.model_dump(exclude_none=True),
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "update")
     return SuccessResponse(data=campaign)
@@ -152,7 +159,11 @@ async def add_campaign_event(
 ) -> SuccessResponse[CampaignEventResponse]:
     """Link an event to a campaign."""
     result = await CampaignService.add_campaign_event(
-        supabase, simulation_id, campaign_id, event_id, integration_type,
+        supabase,
+        simulation_id,
+        campaign_id,
+        event_id,
+        integration_type,
     )
     return SuccessResponse(data=result)
 

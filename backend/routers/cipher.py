@@ -70,10 +70,13 @@ async def redeem_cipher(
     client_ip = request.client.host if request.client else "unknown"
     ip_hash = CipherService.hash_ip(client_ip)
 
-    logger.info("Cipher redemption attempt", extra={
-        "user_id": str(user_id) if user_id else "anonymous",
-        "action": "redeem_cipher",
-    })
+    logger.info(
+        "Cipher redemption attempt",
+        extra={
+            "user_id": str(user_id) if user_id else "anonymous",
+            "action": "redeem_cipher",
+        },
+    )
 
     try:
         result = await CipherService.redeem_code(
@@ -84,15 +87,22 @@ async def redeem_cipher(
         )
         if user_id is not None:
             await AuditService.safe_log(
-                admin_supabase, None, user_id,
-                "cipher", None, "redeem",
+                admin_supabase,
+                None,
+                user_id,
+                "cipher",
+                None,
+                "redeem",
                 details={"success": result.success, "ip_hash": ip_hash},
             )
         return result
     except Exception as exc:
-        logger.exception("Cipher redemption failed", extra={
-            "user_id": str(user_id) if user_id else "anonymous",
-        })
+        logger.exception(
+            "Cipher redemption failed",
+            extra={
+                "user_id": str(user_id) if user_id else "anonymous",
+            },
+        )
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("instagram_phase", "cipher_redeem_endpoint")
             sentry_sdk.capture_exception(exc)
@@ -130,12 +140,15 @@ async def set_cipher_for_post(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[CipherSetResponse]:
     """Set or override the cipher code for an Instagram post."""
-    logger.info("Instagram admin action", extra={
-        "action": "set_cipher",
-        "post_id": str(post_id),
-        "user_id": str(user.id),
-        "difficulty": body.difficulty,
-    })
+    logger.info(
+        "Instagram admin action",
+        extra={
+            "action": "set_cipher",
+            "post_id": str(post_id),
+            "user_id": str(user.id),
+            "difficulty": body.difficulty,
+        },
+    )
 
     # Verify post exists
     post = await CipherService.get_instagram_post(admin_supabase, post_id)
@@ -147,17 +160,25 @@ async def set_cipher_for_post(
 
     # Update unlock code
     await CipherService.update_post_unlock_code(
-        admin_supabase, post_id, body.unlock_code.upper(),
+        admin_supabase,
+        post_id,
+        body.unlock_code.upper(),
     )
 
     await AuditService.safe_log(
-        admin_supabase, None, user.id,
-        "cipher", post_id, "set_cipher",
+        admin_supabase,
+        None,
+        user.id,
+        "cipher",
+        post_id,
+        "set_cipher",
         details={"difficulty": body.difficulty},
     )
 
-    return SuccessResponse(data=CipherSetResponse(
-        post_id=str(post_id),
-        unlock_code=body.unlock_code.upper(),
-        difficulty=body.difficulty,
-    ))
+    return SuccessResponse(
+        data=CipherSetResponse(
+            post_id=str(post_id),
+            unlock_code=body.unlock_code.upper(),
+            difficulty=body.difficulty,
+        )
+    )

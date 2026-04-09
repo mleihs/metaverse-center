@@ -18,7 +18,7 @@ from backend.dependencies import (
     require_platform_admin,
     require_role,
 )
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.models.heartbeat import (
     AnchorCreate,
     AttunementCreate,
@@ -30,6 +30,7 @@ from backend.services.audit_service import AuditService
 from backend.services.bureau_response_service import BureauResponseService
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.narrative_arc_service import NarrativeArcService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -76,14 +77,14 @@ async def list_heartbeat_entries(
 ) -> PaginatedResponse:
     """Paginated chronicle feed (heartbeat entries)."""
     data, total = await HeartbeatService.list_heartbeat_entries(
-        supabase, simulation_id,
-        entry_type=entry_type, tick_number=tick_number,
-        limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        entry_type=entry_type,
+        tick_number=tick_number,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/api/v1/simulations/{simulation_id}/heartbeat/arcs")
@@ -97,13 +98,13 @@ async def list_narrative_arcs(
 ) -> PaginatedResponse:
     """List narrative arcs for a simulation."""
     data, total = await NarrativeArcService.list_arcs(
-        supabase, simulation_id, status_filter=status_filter,
-        limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        status_filter=status_filter,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -121,14 +122,13 @@ async def public_list_heartbeat_entries(
 ) -> PaginatedResponse:
     """Public chronicle feed — no authentication required."""
     data, total = await HeartbeatService.list_heartbeat_entries(
-        supabase, simulation_id,
+        supabase,
+        simulation_id,
         entry_type=entry_type,
-        limit=limit, offset=offset,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -148,12 +148,13 @@ async def list_bureau_responses(
 ) -> PaginatedResponse:
     """List bureau responses for an event."""
     data, total = await BureauResponseService.list_responses(
-        supabase, simulation_id, event_id=event_id, limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        event_id=event_id,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/api/v1/simulations/{simulation_id}/events/{event_id}/responses")
@@ -167,12 +168,20 @@ async def create_bureau_response(
 ) -> SuccessResponse:
     """Create a bureau response to an event."""
     data = await BureauResponseService.create_response(
-        supabase, simulation_id, event_id,
-        body.response_type, body.assigned_agent_ids, user.id,
+        supabase,
+        simulation_id,
+        event_id,
+        body.response_type,
+        body.assigned_agent_ids,
+        user.id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "bureau_responses", data["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "bureau_responses",
+        data["id"],
+        "create",
         details={"response_type": body.response_type, "agent_count": len(body.assigned_agent_ids)},
     )
     return SuccessResponse(data=data)
@@ -192,8 +201,12 @@ async def cancel_bureau_response(
     """Cancel a pending bureau response."""
     data = await BureauResponseService.cancel_response(supabase, simulation_id, response_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "bureau_responses", response_id, "cancel",
+        supabase,
+        simulation_id,
+        user.id,
+        "bureau_responses",
+        response_id,
+        "cancel",
     )
     return SuccessResponse(data=data)
 
@@ -225,11 +238,18 @@ async def set_attunement(
 ) -> SuccessResponse:
     """Set a resonance signature attunement."""
     data = await AttunementService.set_attunement(
-        supabase, simulation_id, body.resonance_signature, user.id,
+        supabase,
+        simulation_id,
+        body.resonance_signature,
+        user.id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "substrate_attunements", data["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "substrate_attunements",
+        data["id"],
+        "create",
         details={"signature": body.resonance_signature},
     )
     return SuccessResponse(data=data)
@@ -246,8 +266,12 @@ async def remove_attunement(
     """Remove an attunement."""
     data = await AttunementService.remove_attunement(supabase, simulation_id, signature)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "substrate_attunements", None, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "substrate_attunements",
+        None,
+        "delete",
         details={"signature": signature},
     )
     return SuccessResponse(data=data)
@@ -269,13 +293,13 @@ async def list_anchors(
 ) -> PaginatedResponse:
     """List all collaborative anchors."""
     data, total = await AnchorService.list_anchors(
-        supabase, status_filter=status_filter, sim_id=simulation_id,
-        limit=limit, offset=offset,
+        supabase,
+        status_filter=status_filter,
+        sim_id=simulation_id,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("/api/v1/anchors")
@@ -288,12 +312,20 @@ async def create_anchor(
 ) -> SuccessResponse:
     """Create a collaborative anchor."""
     data = await AnchorService.create_anchor(
-        supabase, body.resonance_id, body.resonance_signature,
-        simulation_id, user.id, body.name,
+        supabase,
+        body.resonance_id,
+        body.resonance_signature,
+        simulation_id,
+        user.id,
+        body.name,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "collaborative_anchors", data["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "collaborative_anchors",
+        data["id"],
+        "create",
         details={"name": body.name, "resonance_signature": body.resonance_signature},
     )
     return SuccessResponse(data=data)
@@ -310,8 +342,12 @@ async def join_anchor(
     """Join an existing anchor."""
     data = await AnchorService.join_anchor(supabase, anchor_id, simulation_id, user.id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "collaborative_anchors", anchor_id, "join",
+        supabase,
+        simulation_id,
+        user.id,
+        "collaborative_anchors",
+        anchor_id,
+        "join",
     )
     return SuccessResponse(data=data)
 
@@ -327,8 +363,12 @@ async def leave_anchor(
     """Leave an anchor."""
     data = await AnchorService.leave_anchor(supabase, anchor_id, simulation_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "collaborative_anchors", anchor_id, "leave",
+        supabase,
+        simulation_id,
+        user.id,
+        "collaborative_anchors",
+        anchor_id,
+        "leave",
     )
     return SuccessResponse(data=data)
 
@@ -367,11 +407,16 @@ async def force_tick(
     """Force a heartbeat tick for a specific simulation (admin only)."""
     data = await HeartbeatService.force_tick(admin_supabase, simulation_id)
     await AuditService.safe_log(
-        admin_supabase, simulation_id, user.id,
-        "simulation_heartbeats", None, "force_tick",
+        admin_supabase,
+        simulation_id,
+        user.id,
+        "simulation_heartbeats",
+        None,
+        "force_tick",
     )
     logger.info(
-        "Admin forced tick for sim %s", simulation_id,
+        "Admin forced tick for sim %s",
+        simulation_id,
         extra={"simulation_id": str(simulation_id), "admin_id": str(user.id)},
     )
     return SuccessResponse(data=data)

@@ -18,13 +18,13 @@ from backend.models.common import (
     CurrentUser,
     MessageResponse,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.building_service import BuildingService
 from backend.services.simulation_service import SimulationService
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -63,10 +63,7 @@ async def list_buildings(
         limit=limit,
         offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{building_id}")
@@ -91,15 +88,17 @@ async def create_building(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[BuildingResponse]:
     """Create a new building."""
-    building = await _service.create(
-        supabase, simulation_id, user.id, body.model_dump(exclude_none=True)
-    )
+    building = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building["id"], "create")
     sim = await SimulationService.get_simulation_context(supabase, simulation_id)
     if sim:
         schedule_auto_translation(
-            supabase, "buildings", building["id"], building,
-            simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
+            supabase,
+            "buildings",
+            building["id"],
+            building,
+            simulation_name=sim["name"],
+            simulation_theme=sim.get("theme", ""),
             entity_type="building",
         )
     return SuccessResponse(data=building)
@@ -121,7 +120,10 @@ async def update_building(
     if de_nulls:
         update_data.update(de_nulls)
     building = await _service.update(
-        supabase, simulation_id, building_id, update_data,
+        supabase,
+        simulation_id,
+        building_id,
+        update_data,
         if_updated_at=if_updated_at,
     )
     await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "update")
@@ -129,8 +131,12 @@ async def update_building(
         sim = await SimulationService.get_simulation_context(supabase, simulation_id)
         if sim:
             schedule_auto_translation(
-                supabase, "buildings", building["id"], building,
-                simulation_name=sim["name"], simulation_theme=sim.get("theme", ""),
+                supabase,
+                "buildings",
+                building["id"],
+                building,
+                simulation_name=sim["name"],
+                simulation_theme=sim.get("theme", ""),
                 entity_type="building",
             )
     return SuccessResponse(data=building)

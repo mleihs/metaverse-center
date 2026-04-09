@@ -9,9 +9,10 @@ from fastapi import APIRouter, Depends, Query, Request
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.chronicle import ChronicleGenerateRequest
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.chronicle_service import ChronicleService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -42,8 +43,12 @@ async def generate_chronicle(
         locale=body.locale,
     )
     await AuditService.safe_log(
-        admin_supabase, simulation_id, user.id,
-        "chronicles", None, "generate",
+        admin_supabase,
+        simulation_id,
+        user.id,
+        "chronicles",
+        None,
+        "generate",
         details={
             "period_start": str(body.period_start),
             "period_end": str(body.period_end),
@@ -66,10 +71,7 @@ async def list_chronicles(
 ) -> PaginatedResponse:
     """List chronicle editions (paginated)."""
     data, total = await ChronicleService.list(supabase, simulation_id, limit=limit, offset=offset)
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/{chronicle_id}")

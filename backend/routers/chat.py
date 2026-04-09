@@ -302,7 +302,10 @@ async def get_conversation_starters(
     """
     await _service.verify_ownership(supabase, conversation_id, user.id)
     starters = await _service.get_conversation_starters(
-        supabase, simulation_id, conversation_id, locale,
+        supabase,
+        simulation_id,
+        conversation_id,
+        locale,
     )
     return SuccessResponse(data=starters)
 

@@ -22,12 +22,13 @@ from backend.models.agent_autonomy import (
     OpinionModifierResponse,
     SimulationMoodSummary,
 )
-from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.services.agent_activity_service import AgentActivityService
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
 from backend.services.morning_briefing_service import MorningBriefingService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,10 @@ async def list_agent_opinion_modifiers(
 ) -> SuccessResponse[list[OpinionModifierResponse]]:
     """List active opinion modifiers for an agent, optionally filtered by target."""
     data = await AgentOpinionService.list_modifiers(
-        supabase, agent_id, simulation_id, target_agent_id,
+        supabase,
+        agent_id,
+        simulation_id,
+        target_agent_id,
     )
     return SuccessResponse(data=data)
 
@@ -134,15 +138,16 @@ async def list_activities(
     """List autonomous activities for a simulation with filters."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     data, total = await AgentActivityService.list_activities(
-        supabase, simulation_id,
-        agent_id=agent_id, activity_type=activity_type,
-        min_significance=min_significance, since=since,
-        limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        agent_id=agent_id,
+        activity_type=activity_type,
+        min_significance=min_significance,
+        since=since,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 # -- Simulation-Level Summaries --------------------------------------------------
@@ -157,7 +162,8 @@ async def get_simulation_mood_summary(
 ) -> SuccessResponse[SimulationMoodSummary]:
     """Get aggregate mood/stress state for all agents in a simulation."""
     summary = await MorningBriefingService._compute_mood_summary(
-        supabase, simulation_id,
+        supabase,
+        simulation_id,
     )
     return SuccessResponse(data=summary)
 
@@ -177,6 +183,9 @@ async def get_morning_briefing(
     """Generate a morning briefing with prioritized activity summary."""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     briefing = await MorningBriefingService.generate(
-        supabase, simulation_id, since, mode=mode,
+        supabase,
+        simulation_id,
+        since,
+        mode=mode,
     )
     return SuccessResponse(data=briefing)

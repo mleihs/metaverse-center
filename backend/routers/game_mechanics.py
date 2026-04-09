@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
-from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.common import CurrentUser, MessageResponse, PaginatedResponse, SuccessResponse
 from backend.models.game_mechanics import (
     BuildingReadinessResponse,
     EmbassyEffectivenessResponse,
@@ -21,6 +21,7 @@ from backend.models.game_mechanics import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -69,14 +70,15 @@ async def list_building_readiness(
 ) -> PaginatedResponse[BuildingReadinessResponse]:
     """List building readiness for all buildings in a simulation."""
     data, total = await GameMechanicsService.list_building_readiness(
-        supabase, simulation_id,
-        zone_id=zone_id, order_by=order_by, order_asc=order_asc,
-        limit=limit, offset=offset,
+        supabase,
+        simulation_id,
+        zone_id=zone_id,
+        order_by=order_by,
+        order_asc=order_asc,
+        limit=limit,
+        offset=offset,
     )
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(count=len(data), total=total, limit=limit, offset=offset),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.get("/health/buildings/{building_id}")
@@ -89,7 +91,9 @@ async def get_building_readiness(
 ) -> SuccessResponse[BuildingReadinessResponse]:
     """Get readiness metrics for a single building."""
     data = await GameMechanicsService.get_building_readiness(
-        supabase, simulation_id, building_id,
+        supabase,
+        simulation_id,
+        building_id,
     )
     return SuccessResponse(data=data)
 
@@ -116,7 +120,9 @@ async def get_zone_stability(
 ) -> SuccessResponse[ZoneStabilityResponse]:
     """Get stability metrics for a single zone."""
     data = await GameMechanicsService.get_zone_stability(
-        supabase, simulation_id, zone_id,
+        supabase,
+        simulation_id,
+        zone_id,
     )
     return SuccessResponse(data=data)
 
@@ -130,7 +136,8 @@ async def list_embassy_effectiveness(
 ) -> SuccessResponse[list[EmbassyEffectivenessResponse]]:
     """List embassy effectiveness for embassies involving this simulation."""
     data = await GameMechanicsService.list_embassy_effectiveness(
-        supabase, simulation_id,
+        supabase,
+        simulation_id,
     )
     return SuccessResponse(data=data)
 
@@ -151,7 +158,11 @@ async def refresh_metrics(
     """
     await GameMechanicsService.refresh_metrics(admin_supabase)
     await AuditService.safe_log(
-        admin_supabase, simulation_id, user.id,
-        "game_mechanics", None, "refresh_metrics",
+        admin_supabase,
+        simulation_id,
+        user.id,
+        "game_mechanics",
+        None,
+        "refresh_metrics",
     )
     return SuccessResponse(data=MessageResponse(message="Game metrics refresh triggered."))

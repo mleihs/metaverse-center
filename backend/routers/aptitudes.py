@@ -62,12 +62,14 @@ async def set_aptitudes(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[AptitudeResponse]]:
     """Set all 6 aptitude scores for an agent (budget must equal 36)."""
-    data = await AptitudeService.set_aptitudes(
-        supabase, simulation_id, agent_id, body
-    )
+    data = await AptitudeService.set_aptitudes(supabase, simulation_id, agent_id, body)
     await AuditService.log_action(
-        supabase, simulation_id, user.id,
-        "agent_aptitudes", agent_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "agent_aptitudes",
+        agent_id,
+        "update",
         details={"aptitudes": body.model_dump()},
     )
     return SuccessResponse(data=data)

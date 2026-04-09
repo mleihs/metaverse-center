@@ -14,7 +14,6 @@ from backend.dependencies import (
 from backend.models.common import (
     CurrentUser,
     PaginatedResponse,
-    PaginationMeta,
     SuccessResponse,
 )
 from backend.models.lore import LoreSectionCreate, LoreSectionReorder, LoreSectionUpdate
@@ -28,6 +27,7 @@ from backend.services.audit_service import AuditService
 from backend.services.lore_service import LoreService
 from backend.services.simulation_service import SimulationService
 from backend.services.threshold_service import ThresholdService
+from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -55,15 +55,7 @@ async def list_simulations(
         offset=offset,
     )
 
-    return PaginatedResponse(
-        data=data,
-        meta=PaginationMeta(
-            count=len(data),
-            total=total,
-            limit=limit,
-            offset=offset,
-        ),
-    )
+    return paginated(data, total, limit, offset)
 
 
 @router.post("", status_code=201)
@@ -79,7 +71,12 @@ async def create_simulation(
         data=body,
     )
     await AuditService.safe_log(
-        supabase, UUID(simulation["id"]), user.id, "simulations", simulation["id"], "create",
+        supabase,
+        UUID(simulation["id"]),
+        user.id,
+        "simulations",
+        simulation["id"],
+        "create",
         details={"name": body.name},
     )
 
@@ -116,7 +113,12 @@ async def update_simulation(
         data=body,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "simulations", simulation_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "simulations",
+        simulation_id,
+        "update",
     )
 
     return SuccessResponse(data=simulation)
@@ -138,7 +140,12 @@ async def delete_simulation(
         simulation_id=simulation_id,
     )
     await AuditService.safe_log(
-        client, simulation_id, _user.id, "simulations", simulation_id, "delete",
+        client,
+        simulation_id,
+        _user.id,
+        "simulations",
+        simulation_id,
+        "delete",
     )
 
     return SuccessResponse(data=simulation)
@@ -184,11 +191,14 @@ async def create_lore_section(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Create a new lore section for a simulation."""
-    section = await _lore_service.create_section(
-        supabase, simulation_id, body.model_dump(exclude_none=True)
-    )
+    section = await _lore_service.create_section(supabase, simulation_id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "lore_sections", section.get("id"), "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "lore_sections",
+        section.get("id"),
+        "create",
         details={"title": body.title if hasattr(body, "title") else None},
     )
     return SuccessResponse(data=section)
@@ -208,7 +218,12 @@ async def update_lore_section(
         supabase, simulation_id, section_id, body.model_dump(exclude_none=True)
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "lore_sections", section_id, "update",
+        supabase,
+        simulation_id,
+        user.id,
+        "lore_sections",
+        section_id,
+        "update",
     )
     return SuccessResponse(data=section)
 
@@ -224,7 +239,12 @@ async def delete_lore_section(
     """Delete a lore section and re-sort remaining sections."""
     deleted = await _lore_service.delete_section(supabase, simulation_id, section_id)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "lore_sections", section_id, "delete",
+        supabase,
+        simulation_id,
+        user.id,
+        "lore_sections",
+        section_id,
+        "delete",
     )
     return SuccessResponse(data=deleted)
 
@@ -238,11 +258,14 @@ async def reorder_lore_sections(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Bulk reorder lore sections by providing ordered section IDs."""
-    sections = await _lore_service.reorder_sections(
-        supabase, simulation_id, body.section_ids
-    )
+    sections = await _lore_service.reorder_sections(supabase, simulation_id, body.section_ids)
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "lore_sections", None, "reorder",
+        supabase,
+        simulation_id,
+        user.id,
+        "lore_sections",
+        None,
+        "reorder",
         details={"section_count": len(body.section_ids)},
     )
     return SuccessResponse(data=sections)

@@ -45,10 +45,19 @@ async def create_zone_action(
 ) -> SuccessResponse[ZoneActionResponse]:
     """Create a zone fortification action."""
     action = await ZoneActionService.create_action(
-        supabase, simulation_id, zone_id, body.action_type, user.id,
+        supabase,
+        simulation_id,
+        zone_id,
+        body.action_type,
+        user.id,
     )
     await AuditService.log_action(
-        supabase, simulation_id, user.id, "zone_actions", action["id"], "create",
+        supabase,
+        simulation_id,
+        user.id,
+        "zone_actions",
+        action["id"],
+        "create",
         details={"action_type": body.action_type},
     )
     return SuccessResponse(data=action)
@@ -65,9 +74,17 @@ async def cancel_zone_action(
 ) -> SuccessResponse[ZoneActionResponse]:
     """Cancel an active zone action."""
     action = await ZoneActionService.cancel_action(
-        supabase, simulation_id, zone_id, action_id,
+        supabase,
+        simulation_id,
+        zone_id,
+        action_id,
     )
     await AuditService.log_action(
-        supabase, simulation_id, user.id, "zone_actions", action_id, "cancel",
+        supabase,
+        simulation_id,
+        user.id,
+        "zone_actions",
+        action_id,
+        "cancel",
     )
     return SuccessResponse(data=action)
