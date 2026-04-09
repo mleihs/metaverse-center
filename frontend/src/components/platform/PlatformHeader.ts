@@ -603,7 +603,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
   connectedCallback(): void {
     super.connectedCallback();
     this._simulations = appState.simulations.value;
-    import('./DevAccountSwitcher.js');
+    if (import.meta.env.DEV) import('./DevAccountSwitcher.js');
     document.addEventListener('keydown', this._handleKeyDown);
     // Listen for Ctrl+K from app-shell
     this.addEventListener('open-command-palette', () => {
@@ -763,9 +763,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       <div class="cluster-divider"></div>
       <div class="sys-label">${msg('System')}</div>
 
-      <div style="padding: 0 12px 4px;">
-        <velg-dev-account-switcher></velg-dev-account-switcher>
-      </div>
+      ${import.meta.env.DEV ? html`
+        <div style="padding: 0 12px 4px;">
+          <velg-dev-account-switcher></velg-dev-account-switcher>
+        </div>
+      ` : nothing}
 
       ${
         appState.mockMode.value
@@ -871,9 +873,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
             : msg('Language: DE \u2192 EN')
         }</button>
 
-        <div style="padding: 0 var(--space-3); --i:${navIdx++}">
-          <velg-dev-account-switcher></velg-dev-account-switcher>
-        </div>
+        ${import.meta.env.DEV ? html`
+          <div style="padding: 0 var(--space-3); --i:${navIdx++}">
+            <velg-dev-account-switcher></velg-dev-account-switcher>
+          </div>
+        ` : nothing}
 
         <a class="header__menu-github"
           href="https://www.instagram.com/bureau.of.impossible.geography/"
@@ -977,7 +981,7 @@ m-988 -63 c33 -44 61 -87 61 -97 0 -22 62 -135 103 -189 l31 -40 -42 39 c-42
             .icon=${icons.gear(12)}
           >${this._renderSysPanel()}</velg-header-cluster>
 
-          <div class="dev-mobile"><velg-dev-account-switcher></velg-dev-account-switcher></div>
+          ${import.meta.env.DEV ? html`<div class="dev-mobile"><velg-dev-account-switcher></velg-dev-account-switcher></div>` : nothing}
 
           ${
             appState.isAuthenticated.value
