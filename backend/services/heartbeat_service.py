@@ -1470,11 +1470,11 @@ class HeartbeatService:
                             ),
                             (
                                 "Citizens report a rare sense of optimism in the streets.",
-                                "Buerger berichten von seltener Zuversicht in den Strassen.",
+                                "Bürger berichten von seltener Zuversicht in den Straßen.",
                             ),
                             (
                                 "Building occupancy is high. The simulation breathes steadily.",
-                                "Die Gebaeudebelegung ist hoch. Die Simulation atmet gleichmaessig.",
+                                "Die Gebäudebelegung ist hoch. Die Simulation atmet gleichmäßig.",
                             ),
                         ]
                     )
@@ -1498,7 +1498,7 @@ class HeartbeatService:
                             tick_number,
                             "system_note",
                             "The substrate holds steady. No significant disturbances detected.",
-                            "Das Substrat haelt sich stabil. Keine nennenswerten Stoerungen erkannt.",
+                            "Das Substrat hält sich stabil. Keine nennenswerten Störungen erkannt.",
                             severity="info",
                             metadata={"health": h, "label": label, "peacetime": True},
                         )
@@ -1511,7 +1511,7 @@ class HeartbeatService:
                             tick_number,
                             "system_note",
                             "An uneasy calm. The substrate's silence may not last.",
-                            "Eine unruhige Stille. Das Schweigen des Substrats duerfte nicht anhalten.",
+                            "Eine unruhige Stille. Das Schweigen des Substrats dürfte nicht anhalten.",
                             severity="warning",
                             metadata={"health": h, "label": label, "peacetime": True},
                         )
@@ -1528,7 +1528,7 @@ class HeartbeatService:
                     tick_number,
                     "system_note",
                     "All quiet in the districts. No significant substrate activity.",
-                    "Alles ruhig in den Bezirken. Keine nennenswerte Substrataktivitaet.",
+                    "Alles ruhig in den Bezirken. Keine nennenswerte Substrataktivität.",
                     severity="info",
                 )
             )
