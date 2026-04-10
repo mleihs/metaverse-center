@@ -41,6 +41,29 @@ class ForgeImageService:
 
         self._model_resolver = ModelResolver(supabase, simulation_id)
 
+    @staticmethod
+    def _sanitize_prompt(description: str) -> str:
+        """Strip markdown formatting and meta-text from AI-generated image prompts.
+
+        DeepSeek sometimes wraps descriptions in markdown (``**bold**``,
+        ``## headings``, ``- lists``) which confuses Replicate's content
+        filter and produces worse images.  This method extracts the raw
+        descriptive text.
+        """
+        import re
+
+        # Remove markdown bold/italic markers
+        text = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', description)
+        # Remove markdown headings
+        text = re.sub(r'^#{1,4}\s*', '', text, flags=re.MULTILINE)
+        # Remove markdown list markers
+        text = re.sub(r'^[-*]\s+', '', text, flags=re.MULTILINE)
+        # Remove "Image Generation Prompt:" meta-text
+        text = re.sub(r'(?i)image generation prompt:?\s*', '', text)
+        # Collapse excessive whitespace
+        text = re.sub(r'\n{2,}', '\n', text).strip()
+        return text
+
     async def _log_image_usage(self, model: str, purpose: str) -> None:
         """Fire-and-forget Replicate usage logging."""
         await AIUsageService.log(
@@ -108,7 +131,10 @@ class ForgeImageService:
 
         logger.debug("Portrait description generated", extra={"entity_type": "agent", "entity_id": str(agent_id)})
 
-        # 2. Append style prompt from settings
+        # 2. Sanitize AI-generated description (strip markdown, meta-text)
+        description = self._sanitize_prompt(description)
+
+        # 3. Append style prompt from settings
         style_prompt = await self._model_resolver.resolve_style_prompt("portrait")
         if style_prompt:
             description = f"{description}, {style_prompt}"
@@ -208,7 +234,10 @@ class ForgeImageService:
             extra={"entity_type": "building", "entity_id": str(building_id)},
         )
 
-        # 2. Append style prompt from settings
+        # 2. Sanitize AI-generated description (strip markdown, meta-text)
+        description = self._sanitize_prompt(description)
+
+        # 3. Append style prompt from settings
         style_prompt = await self._model_resolver.resolve_style_prompt("building")
         if style_prompt:
             description = f"{description}, {style_prompt}"
