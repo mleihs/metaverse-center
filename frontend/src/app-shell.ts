@@ -544,6 +544,18 @@ export class VelgApp extends LitElement {
           return false;
         },
       },
+      // Bare simulation URL → redirect to default view (lore)
+      {
+        path: '/simulations/:id',
+        render: () => html``,
+        enter: async ({ id }) => {
+          if (id) {
+            window.history.replaceState(null, '', `/simulations/${id}/lore`);
+            this._router.goto(`/simulations/${id}/lore`);
+          }
+          return false;
+        },
+      },
       {
         path: '/worlds',
         render: () => html`<velg-worlds-gallery></velg-worlds-gallery>`,
