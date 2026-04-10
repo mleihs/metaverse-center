@@ -254,6 +254,7 @@ export class VelgEntityLightbox extends LitElement {
     /* ── Content (right column) ── */
     .lightbox__body {
       overflow-y: auto;
+      overflow-x: hidden;
       overscroll-behavior: contain;
       padding-bottom: var(--space-6);
       scrollbar-width: thin;
@@ -263,6 +264,7 @@ export class VelgEntityLightbox extends LitElement {
 
     /* Entity transition: crossfade on navigate */
     .lightbox__content-inner {
+      min-width: 0;
       transition: opacity 150ms ease-out;
     }
 

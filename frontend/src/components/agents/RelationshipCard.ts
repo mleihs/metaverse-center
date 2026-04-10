@@ -23,6 +23,9 @@ export class VelgRelationshipCard extends LitElement {
       appearance: none;
       font: inherit;
       text-align: start;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       background: var(--color-surface-raised);
       border: var(--border-default);
       box-shadow: var(--shadow-md);

@@ -96,17 +96,19 @@ class EventChainResponse(BaseModel):
 
 
 class ReactionResponse(BaseModel):
-    """Event reaction with optional embedded agent summary."""
+    """Event reaction with optional embedded agent/event summary."""
 
     id: UUID
     simulation_id: UUID
     event_id: UUID
     agent_id: UUID
     reaction_text: str
+    reaction_text_de: str | None = None
     emotion: str | None = None
     confidence_score: float | None = None
     created_at: datetime
     agents: dict | None = None
+    events: dict | None = None
 
 
 class EventZoneLinkResponse(BaseModel):
