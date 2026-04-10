@@ -40,11 +40,11 @@ export const panelCascadeStyles = css`
   @keyframes panel-cascade {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      translate: 0 8px;
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      translate: none;
     }
   }
 

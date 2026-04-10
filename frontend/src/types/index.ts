@@ -340,6 +340,7 @@ export interface EventReaction {
   agent_id: UUID;
   agent_name: string;
   reaction_text: string;
+  reaction_text_de?: string;
   occurred_at: string;
   emotion?: string;
   confidence_score?: number;

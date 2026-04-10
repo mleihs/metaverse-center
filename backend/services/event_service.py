@@ -285,6 +285,21 @@ class EventService(BaseService):
             simulation_id,
         )
 
+        # Resolve simulation content locale for bilingual column placement
+        locale_resp = await (
+            supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("setting_key", "general.content_locale")
+            .limit(1)
+            .execute()
+        )
+        content_locale = (
+            str(locale_resp.data[0].get("setting_value", "de"))
+            if locale_resp.data
+            else "de"
+        )
+
         event_id = UUID(event["id"])
         existing = await cls.get_reactions(supabase, simulation_id, event_id)
         existing_map: dict[str, dict] = {r["agent_id"]: r for r in existing}
@@ -302,15 +317,26 @@ class EventService(BaseService):
                         "title": event["title"],
                         "description": event.get("description", ""),
                     },
+                    locale=content_locale,
                     game_context=game_context,
                 )
+
+                # Store in the locale-appropriate column.
+                # reaction_text (base) = English; reaction_text_de = German.
+                # Always write to reaction_text as universal fallback.
+                reaction_data: dict[str, object] = {
+                    "reaction_text": reaction_text,
+                    "data_source": "ai_generated",
+                }
+                if content_locale == "de":
+                    reaction_data["reaction_text_de"] = reaction_text
 
                 prev = existing_map.get(agent["id"])
                 if prev:
                     reaction = await cls.update_reaction(
                         supabase,
                         prev["id"],
-                        {"reaction_text": reaction_text, "data_source": "ai_generated"},
+                        reaction_data,
                     )
                 else:
                     reaction = await cls.add_reaction(
@@ -320,8 +346,7 @@ class EventService(BaseService):
                         {
                             "agent_id": agent["id"],
                             "agent_name": agent["name"],
-                            "reaction_text": reaction_text,
-                            "data_source": "ai_generated",
+                            **reaction_data,
                         },
                     )
                 reactions.append(reaction)

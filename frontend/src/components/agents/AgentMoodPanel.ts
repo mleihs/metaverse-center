@@ -126,6 +126,8 @@ export class AgentMoodPanel extends LitElement {
         display: block;
         --_gauge-color: var(--color-info);
         --_stress-color: var(--color-success);
+        /* Tier 3 micro-typography for instrument panel aesthetic */
+        --_text-micro: 8px;
       }
 
       /* ── Panel Container ──────────────────────────────── */
@@ -185,10 +187,10 @@ export class AgentMoodPanel extends LitElement {
         text-align: right;
         margin-bottom: var(--space-2);
         font-family: var(--font-brutalist);
-        font-size: 10px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-primary);
         opacity: 0.6;
       }
@@ -215,13 +217,13 @@ export class AgentMoodPanel extends LitElement {
 
       .gauge__title {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         text-align: center;
-        border-bottom: 1px solid var(--color-border-light);
+        border-bottom: var(--border-width-thin) solid var(--color-border-light);
         padding-bottom: var(--space-1);
         width: 100%;
       }
@@ -256,8 +258,8 @@ export class AgentMoodPanel extends LitElement {
 
       .gauge__value {
         font-family: var(--font-brutalist);
-        font-size: var(--font-size-2xl);
-        font-weight: 900;
+        font-size: var(--text-2xl);
+        font-weight: var(--font-black);
         fill: var(--color-text-primary);
         text-anchor: middle;
         dominant-baseline: central;
@@ -265,30 +267,30 @@ export class AgentMoodPanel extends LitElement {
 
       .gauge__label-text {
         font-family: var(--font-brutalist);
-        font-size: 9px;
-        font-weight: 700;
+        font-size: var(--_text-micro);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: var(--tracking-brutalist);
         fill: var(--color-text-secondary);
         text-anchor: middle;
       }
 
       .gauge__emotion {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 700;
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: var(--tracking-widest);
         color: var(--_gauge-color);
         text-align: center;
       }
 
       .gauge__mood-label {
         font-family: var(--font-brutalist);
-        font-size: 9px;
-        font-weight: 700;
+        font-size: var(--_text-micro);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-muted);
         text-align: center;
       }
@@ -313,24 +315,24 @@ export class AgentMoodPanel extends LitElement {
 
       .stress__title {
         font-family: var(--font-brutalist);
-        font-size: 10px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
       }
 
       .stress__value {
         font-family: var(--font-mono);
-        font-size: 12px;
-        font-weight: 700;
+        font-size: var(--text-sm);
+        font-weight: var(--font-bold);
         color: var(--_stress-color);
       }
 
       .stress__track {
         height: 6px;
         background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border-light);
+        border: var(--border-width-thin) solid var(--color-border-light);
         overflow: hidden;
         position: relative;
       }
@@ -348,10 +350,10 @@ export class AgentMoodPanel extends LitElement {
 
       .stress__label {
         font-family: var(--font-brutalist);
-        font-size: 9px;
-        font-weight: 700;
+        font-size: var(--_text-micro);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: var(--tracking-widest);
         color: var(--color-text-muted);
         margin-top: var(--space-1);
         text-align: right;
@@ -378,13 +380,13 @@ export class AgentMoodPanel extends LitElement {
 
       .needs__title {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         text-align: center;
-        border-bottom: 1px solid var(--color-border-light);
+        border-bottom: var(--border-width-thin) solid var(--color-border-light);
         padding-bottom: var(--space-1);
         width: 100%;
       }
@@ -424,20 +426,19 @@ export class AgentMoodPanel extends LitElement {
 
       .needs__label {
         font-family: var(--font-brutalist);
-        font-size: 10px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: var(--tracking-widest);
         fill: var(--color-text-primary);
         text-anchor: middle;
         dominant-baseline: central;
-        /* Fallback: also try inline style */
       }
 
       .needs__value-label {
         font-family: var(--font-mono);
-        font-size: 9px;
-        font-weight: 700;
+        font-size: var(--_text-micro);
+        font-weight: var(--font-bold);
         fill: var(--color-text-muted);
       }
 
@@ -463,10 +464,10 @@ export class AgentMoodPanel extends LitElement {
 
       .needs__html-label-name {
         font-family: var(--font-brutalist);
-        font-size: 8px;
-        font-weight: 700;
+        font-size: var(--_text-micro);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
         line-height: 1;
         white-space: nowrap;
@@ -474,8 +475,8 @@ export class AgentMoodPanel extends LitElement {
 
       .needs__html-label-value {
         font-family: var(--font-mono);
-        font-size: 11px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         color: var(--color-primary);
         line-height: 1.4;
       }
@@ -493,12 +494,12 @@ export class AgentMoodPanel extends LitElement {
 
       .moodlets__title {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 900;
+        font-size: var(--text-xs);
+        font-weight: var(--font-black);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
-        border-bottom: 1px solid var(--color-border-light);
+        border-bottom: var(--border-width-thin) solid var(--color-border-light);
         padding-bottom: var(--space-1);
       }
 
@@ -518,15 +519,15 @@ export class AgentMoodPanel extends LitElement {
         gap: var(--space-2);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-sunken);
-        border: 1px solid var(--color-border-light);
+        border: var(--border-width-thin) solid var(--color-border-light);
         opacity: 0;
         animation: moodlet-in 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
         animation-delay: var(--_delay);
       }
 
       @keyframes moodlet-in {
-        from { opacity: 0; transform: translateX(-8px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { opacity: 0; translate: -8px 0; }
+        to { opacity: 1; translate: none; }
       }
 
       .moodlet__dot {
@@ -544,10 +545,10 @@ export class AgentMoodPanel extends LitElement {
 
       .moodlet__type {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 700;
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         white-space: nowrap;
         overflow: hidden;
@@ -555,7 +556,7 @@ export class AgentMoodPanel extends LitElement {
       }
 
       .moodlet__source {
-        font-size: 9px;
+        font-size: var(--_text-micro);
         color: var(--color-text-muted);
         white-space: nowrap;
         overflow: hidden;
@@ -564,11 +565,11 @@ export class AgentMoodPanel extends LitElement {
 
       .moodlet__strength {
         font-family: var(--font-mono);
-        font-size: var(--font-size-sm);
-        font-weight: 700;
+        font-size: var(--text-sm);
+        font-weight: var(--font-bold);
         flex-shrink: 0;
-        padding: 2px 6px;
-        border: 1px solid;
+        padding: var(--space-0-5) var(--space-1-5);
+        border: var(--border-width-thin) solid;
       }
 
       .moodlet__strength--positive {
@@ -602,7 +603,7 @@ export class AgentMoodPanel extends LitElement {
       }
 
       .moodlets__empty {
-        font-size: var(--font-size-sm);
+        font-size: var(--text-sm);
         color: var(--color-text-muted);
         font-style: italic;
         padding: var(--space-3);
@@ -620,10 +621,10 @@ export class AgentMoodPanel extends LitElement {
 
       .loading-text {
         font-family: var(--font-brutalist);
-        font-size: 11px;
-        font-weight: 700;
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: 0.14em;
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-muted);
         animation: loading-pulse 1.5s ease-in-out infinite;
       }
@@ -741,7 +742,7 @@ export class AgentMoodPanel extends LitElement {
         }
 
         .mood-panel__stamp {
-          font-size: 8px;
+          font-size: var(--_text-micro);
           top: var(--space-2);
           right: var(--space-2);
         }

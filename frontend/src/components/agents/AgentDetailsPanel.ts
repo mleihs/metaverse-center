@@ -403,7 +403,7 @@ export class VelgAgentDetailsPanel extends LitElement {
     .panel__influence-row-label {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: 10px;
+      font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-muted);
@@ -418,10 +418,10 @@ export class VelgAgentDetailsPanel extends LitElement {
     }
 
     .panel__influence-hint {
-      font-size: 10px;
+      font-size: var(--text-xs);
       color: var(--color-text-muted);
       padding: var(--space-1-5) var(--space-2);
-      border-left: 2px solid var(--color-warning);
+      border-left: var(--border-width-default) solid var(--color-warning);
       background: color-mix(in srgb, var(--color-warning) 4%, transparent);
       line-height: 1.4;
     }
@@ -430,12 +430,14 @@ export class VelgAgentDetailsPanel extends LitElement {
     .panel__tier {
       display: inline-flex;
       padding: 1px var(--space-1-5);
+      margin-left: var(--space-2);
       font-family: var(--font-brutalist);
-      font-size: 9px;
+      font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       line-height: 1.4;
+      vertical-align: middle;
     }
 
     .panel__tier--weak {
@@ -491,11 +493,11 @@ export class VelgAgentDetailsPanel extends LitElement {
     @keyframes suggestion-enter {
       from {
         opacity: 0;
-        transform: translateX(-12px);
+        translate: -12px 0;
       }
       to {
         opacity: 1;
-        transform: translateX(0);
+        translate: none;
       }
     }
 
@@ -1382,7 +1384,7 @@ export class VelgAgentDetailsPanel extends LitElement {
                 isOpen
                   ? html`
                   <div class="panel__reaction-body">
-                    <div class="panel__reaction-text">${r.reaction_text}</div>
+                    <div class="panel__reaction-text">${t(r, 'reaction_text')}</div>
                   </div>
                 `
                   : nothing
