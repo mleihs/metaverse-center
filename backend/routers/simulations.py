@@ -10,6 +10,7 @@ from backend.dependencies import (
     get_effective_supabase,
     require_owner_or_platform_admin,
     require_role,
+    resolve_simulation_id,
 )
 from backend.models.common import (
     CurrentUser,
@@ -85,11 +86,14 @@ async def create_simulation(
 
 @router.get("/{simulation_id}")
 async def get_simulation(
-    simulation_id: UUID,
+    simulation_id: Annotated[UUID, Depends(resolve_simulation_id)],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[SimulationDashboardResponse]:
-    """Get a single simulation with aggregated counts from the dashboard view."""
+    """Get a single simulation with aggregated counts from the dashboard view.
+
+    Accepts both UUID and slug as path parameter.
+    """
     simulation = await _service.get_simulation(
         supabase=supabase,
         simulation_id=simulation_id,
