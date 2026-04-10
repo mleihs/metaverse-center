@@ -23,6 +23,18 @@ window.addEventListener('vite:preloadError', (event) => {
   }
 });
 
+// ── Trailing-slash normalization ────────────────────────────────────
+// @lit-labs/router uses URLPattern which is trailing-slash-sensitive.
+// Normalize before any component imports — the Router reads
+// window.location.pathname at class-field init time, so this must
+// run before the app-shell module is even parsed.
+{
+  const { pathname, search, hash } = window.location;
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    window.history.replaceState(null, '', pathname.slice(0, -1) + search + hash);
+  }
+}
+
 import { initSentry } from './services/SentryService.js';
 
 initSentry();
