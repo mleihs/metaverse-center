@@ -8,7 +8,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from backend.config import settings
@@ -44,6 +44,7 @@ from backend.models.settings import is_sensitive_key
 from backend.models.simulation import SimulationResponse
 from backend.services.admin_user_service import AdminUserService
 from backend.services.ai_usage_service import AIUsageService
+from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
 from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
@@ -750,57 +751,60 @@ async def regenerate_lore(
     request: Request,
     simulation_id: UUID,
     body: RegenerateLoreRequest,
+    background_tasks: BackgroundTasks,
     _admin: Annotated[str, Depends(require_platform_admin())],
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Regenerate lore for an existing simulation (admin only).
 
     Reads the original draft data (seed, anchor, geography, agents, buildings),
-    generates fresh lore + translations, and persists to simulation_lore.
-    Existing lore is deleted first.
+    generates fresh lore + translations in the background, and persists to
+    simulation_lore.  Returns immediately — lore is generated asynchronously
+    to avoid Cloudflare's 100s timeout.
     """
-    from backend.services.forge_lore_service import ForgeLoreService
-
-    # Find the draft that created this simulation
+    # Find the most recent completed draft (source data for the simulation)
     draft_resp = await (
         admin_supabase.table("forge_drafts")
         .select("seed_prompt, philosophical_anchor, geography, agents, buildings, research_context")
         .eq("status", "completed")
         .order("updated_at", desc=True)
-        .limit(10)
+        .limit(1)
         .execute()
     )
-    # Match draft to simulation by checking materialized simulations
-    draft_data = None
-    for d in draft_resp.data or []:
-        draft_data = d
-        break
+    draft_data = (draft_resp.data or [None])[0]
     if not draft_data:
-        # Fallback: use simulation's own data
-        sim_resp = await (
-            admin_supabase.table("simulations")
-            .select("name, description, slug")
-            .eq("id", str(simulation_id))
-            .single()
-            .execute()
-        )
-        if not sim_resp.data:
-            raise HTTPException(status_code=404, detail="Simulation not found")
+        raise HTTPException(status_code=404, detail="No completed forge draft found")
 
-    # Extract lore generation inputs
-    seed = draft_data.get("seed_prompt", "") if draft_data else ""
-    anchor = (draft_data.get("philosophical_anchor") or {}).get("selected", {}) if draft_data else {}
-    geography = draft_data.get("geography", {}) if draft_data else {}
-    agents = draft_data.get("agents", []) if draft_data else []
-    buildings = draft_data.get("buildings", []) if draft_data else []
+    background_tasks.add_task(
+        safe_background(_regenerate_lore_task),
+        admin_supabase,
+        simulation_id,
+        draft_data,
+    )
+
+    return SuccessResponse(data=MessageResponse(message="Lore regeneration started (background)"))
+
+
+async def _regenerate_lore_task(
+    supabase: object,
+    simulation_id: UUID,
+    draft_data: dict,
+) -> None:
+    """Background task for lore regeneration."""
+    from backend.services.forge_lore_service import ForgeLoreService
+
+    seed = draft_data.get("seed_prompt", "")
+    anchor = (draft_data.get("philosophical_anchor") or {}).get("selected", {})
+    geography = draft_data.get("geography", {})
+    agents = draft_data.get("agents", [])
+    buildings = draft_data.get("buildings", [])
     research_ctx = ""
-    if draft_data:
-        raw = draft_data.get("research_context") or {}
-        if isinstance(raw, dict):
-            research_ctx = raw.get("raw_data", "")
+    raw = draft_data.get("research_context") or {}
+    if isinstance(raw, dict):
+        research_ctx = raw.get("raw_data", "")
 
     # Delete existing lore
-    await admin_supabase.table("simulation_lore").delete().eq("simulation_id", str(simulation_id)).execute()
+    await supabase.table("simulation_lore").delete().eq("simulation_id", str(simulation_id)).execute()
 
     # Generate lore
     lore_sections = await ForgeLoreService.generate_lore(
@@ -820,6 +824,5 @@ async def regenerate_lore(
         logger.exception("Lore translation failed during regeneration")
 
     # Persist
-    await ForgeLoreService.persist_lore(admin_supabase, simulation_id, lore_sections, translations)
-
-    return SuccessResponse(data=MessageResponse(message=f"Lore regenerated: {len(lore_sections)} sections"))
+    await ForgeLoreService.persist_lore(supabase, simulation_id, lore_sections, translations)
+    logger.info("Lore regenerated", extra={"simulation_id": str(simulation_id), "sections": len(lore_sections)})
