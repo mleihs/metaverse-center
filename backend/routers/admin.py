@@ -780,17 +780,21 @@ async def regenerate_lore(
         admin_supabase,
         simulation_id,
         draft_data,
+        body.include_images,
     )
 
-    return SuccessResponse(data=MessageResponse(message="Lore regeneration started (background)"))
+    return SuccessResponse(data=MessageResponse(
+        message=f"Lore regeneration started (background{', with images' if body.include_images else ''})"
+    ))
 
 
 async def _regenerate_lore_task(
     supabase: object,
     simulation_id: UUID,
     draft_data: dict,
+    include_images: bool = False,
 ) -> None:
-    """Background task for lore regeneration."""
+    """Background task for lore regeneration (+ optional image generation)."""
     from backend.services.forge_lore_service import ForgeLoreService
 
     seed = draft_data.get("seed_prompt", "")
@@ -826,3 +830,57 @@ async def _regenerate_lore_task(
     # Persist
     await ForgeLoreService.persist_lore(supabase, simulation_id, lore_sections, translations)
     logger.info("Lore regenerated", extra={"simulation_id": str(simulation_id), "sections": len(lore_sections)})
+
+    # Generate lore images if requested
+    if include_images:
+        from backend.services.forge_orchestrator_service import ForgeOrchestratorService
+
+        await ForgeOrchestratorService.run_batch_generation(
+            supabase,
+            simulation_id,
+            UUID("00000000-0000-0000-0000-000000000001"),
+            anchor_data=anchor,
+            draft_data=draft_data,
+            entity_types={"lore"},
+        )
+
+
+class RegenerateImagesRequest(BaseModel):
+    """Request body for selective image regeneration."""
+
+    types: list[str] = Field(
+        default=["banner", "agent", "building", "lore"],
+        description="Entity types to regenerate: banner, agent, building, lore",
+    )
+
+
+@router.post("/simulations/{simulation_id}/regenerate-images")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def regenerate_images(
+    request: Request,
+    simulation_id: UUID,
+    body: RegenerateImagesRequest,
+    background_tasks: BackgroundTasks,
+    _admin: Annotated[str, Depends(require_platform_admin())],
+    admin_supabase=Depends(get_admin_supabase),
+) -> SuccessResponse[MessageResponse]:
+    """Regenerate images for an existing simulation (admin only).
+
+    Accepts a list of entity types to regenerate (banner, agent, building, lore).
+    Runs in background to avoid Cloudflare timeout.
+    """
+    from backend.services.forge_orchestrator_service import ForgeOrchestratorService
+
+    background_tasks.add_task(
+        safe_background(ForgeOrchestratorService.run_batch_generation),
+        admin_supabase,
+        simulation_id,
+        UUID("00000000-0000-0000-0000-000000000001"),
+        None,
+        None,
+        set(body.types),
+    )
+
+    return SuccessResponse(data=MessageResponse(
+        message=f"Image regeneration started: {', '.join(body.types)}"
+    ))
