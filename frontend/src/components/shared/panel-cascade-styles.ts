@@ -38,14 +38,8 @@ export const panelCascadeStyles = css`
   .panel__info > :nth-child(10) { animation-delay: 620ms; }
 
   @keyframes panel-cascade {
-    from {
-      opacity: 0;
-      translate: 0 8px;
-    }
-    to {
-      opacity: 1;
-      translate: none;
-    }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   @media (prefers-reduced-motion: reduce) {

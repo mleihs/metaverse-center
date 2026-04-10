@@ -491,14 +491,8 @@ export class VelgAgentDetailsPanel extends LitElement {
     }
 
     @keyframes suggestion-enter {
-      from {
-        opacity: 0;
-        translate: -12px 0;
-      }
-      to {
-        opacity: 1;
-        translate: none;
-      }
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     .panel__suggestion:hover {

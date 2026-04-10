@@ -526,8 +526,8 @@ export class AgentMoodPanel extends LitElement {
       }
 
       @keyframes moodlet-in {
-        from { opacity: 0; translate: -8px 0; }
-        to { opacity: 1; translate: none; }
+        from { opacity: 0; }
+        to   { opacity: 1; }
       }
 
       .moodlet__dot {
