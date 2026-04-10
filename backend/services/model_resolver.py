@@ -168,7 +168,7 @@ class ResolvedImageModel:
                 "num_inference_steps": self.num_inference_steps,
                 "output_format": self.output_format,
                 "output_quality": self.output_quality,
-                "safety_tolerance": 6,  # max permissiveness (1=strict, 6=off)
+                "safety_tolerance": 5,  # max permissiveness (1=strict, 5=max for flux-2-pro)
             }
             if self.aspect_ratio:
                 params["aspect_ratio"] = self.aspect_ratio
