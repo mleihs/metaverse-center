@@ -328,6 +328,8 @@ class ForgeImageService:
             anchor_data=anchor_data,
         )
 
+        description = self._sanitize_prompt(description)
+
         style_prompt = await self._model_resolver.resolve_style_prompt("banner")
         if style_prompt:
             description = f"{description}, {style_prompt}"
@@ -391,6 +393,8 @@ class ForgeImageService:
                 section_title=section_title,
                 section_body=section_body,
             )
+
+        description = self._sanitize_prompt(description)
 
         style_prompt = await self._model_resolver.resolve_style_prompt("lore")
         if style_prompt:
