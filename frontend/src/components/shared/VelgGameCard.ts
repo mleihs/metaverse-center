@@ -524,6 +524,8 @@ export class VelgGameCard extends LitElement {
       color: var(--card-text-dim);
       line-height: 1.4;
       display: -webkit-box;
+      flex-shrink: 1;
+      min-height: 0;
       -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
@@ -538,6 +540,8 @@ export class VelgGameCard extends LitElement {
       display: flex;
       flex-wrap: wrap;
       gap: 3px;
+      flex-shrink: 0;
+      margin-top: auto;
     }
 
     .card__badge {
