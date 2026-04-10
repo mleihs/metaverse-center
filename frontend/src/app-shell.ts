@@ -766,7 +766,12 @@ export class VelgApp extends LitElement {
     // Lit Router matches on pathname only — strip query params and hash.
     // Target components read query params from window.location.search.
     const url = new URL(fullPath, window.location.origin);
-    this._router.goto(url.pathname);
+    // Strip trailing slash to prevent route mismatch
+    let normalized = url.pathname;
+    if (normalized.length > 1 && normalized.endsWith('/')) {
+      normalized = normalized.slice(0, -1);
+    }
+    this._router.goto(normalized);
   };
 
   private _handleLoginPanelOpen = (): void => {
