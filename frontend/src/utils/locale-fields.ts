@@ -12,12 +12,16 @@ import { localeService } from '../services/i18n/locale-service.js';
 /**
  * Returns the locale-appropriate value for an entity field.
  * Looks up `${field}_de` when locale is not English.
+ * Falls back bidirectionally: DE→EN if _de is empty, EN→DE if base is empty.
  */
 export function t<T extends object>(entity: T, field: string): string {
   const useDe = localeService.currentLocale !== 'en';
   const deKey = `${field}_de`;
   const record = entity as Record<string, unknown>;
-  return ((useDe && record[deKey]) || record[field] || '') as string;
+  if (useDe) {
+    return ((record[deKey] as string) || (record[field] as string) || '');
+  }
+  return ((record[field] as string) || (record[deKey] as string) || '');
 }
 
 /**
