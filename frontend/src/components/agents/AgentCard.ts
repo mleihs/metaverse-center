@@ -92,6 +92,7 @@ export class VelgAgentCard extends LitElement {
     const agent = this.agent;
     if (!agent) return badges;
 
+    if (agent.gender) badges.push({ label: agent.gender, variant: 'default' });
     if (agent.system) badges.push({ label: agent.system, variant: 'primary' });
     if (agent.is_ambassador) badges.push({ label: msg('Ambassador'), variant: 'warning' });
     if (agent.ambassador_blocked_until && new Date(agent.ambassador_blocked_until) > new Date()) {
@@ -103,11 +104,8 @@ export class VelgAgentCard extends LitElement {
   }
 
   private _getSubtitle(): string {
-    const parts: string[] = [];
     const prof = t(this.agent, 'primary_profession');
-    if (prof) parts.push(prof);
-    if (this.agent?.gender) parts.push(this.agent.gender);
-    return parts.join(' \u00b7 ');
+    return prof || '';
   }
 
   private _getEntityUrl(): string {
