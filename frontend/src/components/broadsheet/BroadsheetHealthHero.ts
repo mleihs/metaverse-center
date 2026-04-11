@@ -64,6 +64,14 @@ export class VelgBroadsheetHealthHero extends LitElement {
         margin: 0;
       }
 
+      .sitrep__snapshot-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--color-text-muted);
+        letter-spacing: 0.06em;
+        font-style: italic;
+      }
+
       /* ── Health Bar ────────────────────────── */
 
       .health {
@@ -137,6 +145,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
     return html`
       <div class="sitrep">
         <h3 class="sitrep__heading">${msg('Situation Report')}</h3>
+        <span class="sitrep__snapshot-label">${msg('Current snapshot')}</span>
         ${this._renderHealthBar()}
         ${this._renderMoodStats()}
         ${this._renderStatistics()}
@@ -218,6 +227,12 @@ export class VelgBroadsheetHealthHero extends LitElement {
             ${stats.activity_count ?? 0}
           </div>
           <div class="dispatch-stat__label">${msg('Activities')}</div>
+        </div>
+        <div class="dispatch-stat" style="--i: 6">
+          <div class="dispatch-stat__value dispatch-stat__value--accent">
+            ${stats.resonance_count ?? 0}
+          </div>
+          <div class="dispatch-stat__label">${msg('Resonances')}</div>
         </div>
       </div>
     `;

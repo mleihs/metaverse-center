@@ -76,16 +76,11 @@ class BroadsheetService:
         # 4. Compute statistics snapshot
         statistics = cls._compute_statistics(source)
 
-        # 5. Get next edition number
-        next_edition = await cls._next_edition_number(supabase, simulation_id)
-
-        # 6. Build title from top article or fallback
+        # 5. Build title from top article or fallback
         title = articles[0]["headline"] if articles else "No News to Report"
 
-        # 7. Persist
+        # 6. Persist via atomic RPC (advisory lock prevents edition number race)
         record = {
-            "simulation_id": str(simulation_id),
-            "edition_number": next_edition,
             "period_start": period_start.isoformat(),
             "period_end": period_end.isoformat(),
             "title": title,
@@ -95,10 +90,14 @@ class BroadsheetService:
             "statistics": statistics,
             "gazette_wire": source.get("gazette_entries", []),
             "editorial_voice": voice,
+            "model_used": "aggregation_v1",
             "published_at": datetime.now(UTC).isoformat(),
         }
-        resp = await supabase.table("simulation_broadsheets").insert(record).execute()
-        return resp.data[0]
+        resp = await supabase.rpc(
+            "insert_broadsheet_edition",
+            {"p_simulation_id": str(simulation_id), "p_data": record},
+        ).execute()
+        return resp.data
 
     # ── Article ranking ─────────────────────────────────────────────────────
 
@@ -114,7 +113,9 @@ class BroadsheetService:
                 "source_id": str(event.get("id", "")),
                 "priority": impact * 10,
                 "headline": event.get("title", "Untitled Event"),
+                "headline_de": event.get("title_de"),
                 "content": event.get("description", ""),
+                "content_de": event.get("description_de"),
                 "layout_hint": "hero" if impact >= 8 else "column",
                 "impact_level": impact,
                 "tags": event.get("tags"),
@@ -184,21 +185,6 @@ class BroadsheetService:
             "activity_count": len(source.get("activities", [])),
             "resonance_count": len(source.get("resonance_impacts", [])),
         }
-
-    # ── Next edition number ─────────────────────────────────────────────────
-
-    @classmethod
-    async def _next_edition_number(cls, supabase: Client, simulation_id: UUID) -> int:
-        """Get the next edition number for a simulation."""
-        max_resp = await (
-            supabase.table("simulation_broadsheets")
-            .select("edition_number")
-            .eq("simulation_id", str(simulation_id))
-            .order("edition_number", desc=True)
-            .limit(1)
-            .execute()
-        )
-        return (max_resp.data[0]["edition_number"] + 1) if max_resp.data else 1
 
     # ── List / Get ──────────────────────────────────────────────────────────
 

@@ -196,35 +196,6 @@ export const broadsheetStyles = css`
     background-blend-mode: multiply;
   }
 
-  /* ── Drop Cap (Hero Article Lede) ────────────────── */
-
-  .broadsheet__hero-lede::first-letter {
-    initial-letter: 3;
-    font-family: var(--heading-font);
-    font-weight: var(--heading-weight);
-    color: var(--color-primary);
-    margin-right: var(--space-2);
-  }
-
-  @supports not (initial-letter: 3) {
-    .broadsheet__hero-lede::first-letter {
-      float: left;
-      font-size: 3.5em;
-      line-height: 0.8;
-      padding-right: var(--space-2);
-      padding-top: 4px;
-    }
-  }
-
-  /* ── Article Container Query ─────────────────────── */
-
-  .broadsheet__article-wrap {
-    container-type: inline-size;
-    container-name: article;
-    break-inside: avoid;
-    margin-bottom: var(--space-6);
-  }
-
   /* ── Archive Section ─────────────────────────────── */
 
   .broadsheet__archive {
