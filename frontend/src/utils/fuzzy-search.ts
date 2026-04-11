@@ -60,3 +60,13 @@ export function fuzzyMatch<T extends NamedEntity>(
   });
   return lev;
 }
+
+/**
+ * Convenience: fuzzy match a query against a plain string list.
+ * Returns the matched name or null. Used by dungeon command handlers.
+ */
+export function fuzzyName(query: string, names: string[]): string | null {
+  const entities = names.map((n) => ({ id: n, name: n }));
+  const matches = fuzzyMatch(query, entities);
+  return matches.length > 0 ? matches[0].name : null;
+}

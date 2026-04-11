@@ -440,27 +440,27 @@ export const terminalActionStyles = css`
   .action-btn {
     font-family: var(--_mono);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: var(--_btn-weight, 600);
     letter-spacing: 0.5px;
     text-transform: uppercase;
     padding: 5px 12px;
     background: transparent;
-    color: var(--_phosphor-dim);
-    border: 1px solid color-mix(in srgb, var(--_border) 70%, transparent);
+    color: var(--_btn-color, var(--_phosphor-dim));
+    border: 1px solid var(--_btn-border, color-mix(in srgb, var(--_border) 70%, transparent));
     cursor: pointer;
     transition: all 150ms;
     white-space: nowrap;
   }
 
   .action-btn:hover {
-    color: var(--_phosphor);
-    border-color: var(--_phosphor-dim);
-    background: color-mix(in srgb, var(--_phosphor) 5%, transparent);
+    color: var(--_btn-color, var(--_phosphor));
+    border-color: var(--_btn-border, var(--_phosphor-dim));
+    background: color-mix(in srgb, var(--_btn-color, var(--_phosphor)) 5%, transparent);
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .action-btn:hover {
-      box-shadow: 0 0 8px color-mix(in srgb, var(--_phosphor-glow) 30%, transparent);
+      box-shadow: 0 0 8px color-mix(in srgb, var(--_btn-color, var(--_phosphor-glow)) 30%, transparent);
     }
   }
 

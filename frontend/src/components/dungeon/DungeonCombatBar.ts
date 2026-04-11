@@ -36,7 +36,7 @@ import {
   getConditionLabel,
   getEnemyConditionLabel,
 } from '../../utils/dungeon-formatters.js';
-import { localized as localizedField } from '../../utils/locale-fields.js';
+import { localized as localizedValue } from '../../utils/locale-fields.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 
 /** Timer urgency thresholds (milliseconds). */
@@ -928,10 +928,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         ?disabled=${onCooldown}
         role="radio"
         aria-checked=${isSelected ? 'true' : 'false'}
-        title=${localizedField(ability, 'description')}
+        title=${localizedValue(ability, 'description')}
         @click=${() => this._handleAbilityClick(agent, ability, enemies)}
       >
-        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedField(ability, 'name')}${
+        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedValue(ability, 'name')}${
           onCooldown
             ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
             : nothing

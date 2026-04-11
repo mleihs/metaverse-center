@@ -457,6 +457,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   @state() private _initialized = false;
   @state() private _error: string | null = null;
   @state() private _mapDialogOpen = false;
+  @state() private _audioDialogOpen = false;
 
   private _wakeLock: WakeLockSentinel | null = null;
 
@@ -650,7 +651,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
       <dialog
         class="audio-dialog"
-        @close=${() => this.requestUpdate()}
+        @close=${this._onAudioDialogClose}
         @click=${this._onAudioDialogBackdropClick}
       >
         <div class="audio-dialog__header">
@@ -661,7 +662,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
             aria-label=${msg('Close audio settings')}
           >&times;</button>
         </div>
-        <velg-dungeon-audio-settings></velg-dungeon-audio-settings>
+        ${this._audioDialogOpen ? html`<velg-dungeon-audio-settings></velg-dungeon-audio-settings>` : nothing}
       </dialog>
     `;
   }
@@ -683,7 +684,12 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   }
 
   private _openAudioDialog(): void {
+    this._audioDialogOpen = true;
     this._audioDialog?.showModal();
+  }
+
+  private _onAudioDialogClose(): void {
+    this._audioDialogOpen = false;
   }
 
   private _onAudioDialogBackdropClick(e: MouseEvent): void {

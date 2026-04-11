@@ -13,6 +13,7 @@
 
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
+import { computed } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
@@ -343,18 +344,13 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     `,
   ];
 
-  // -- Memo guard for display names (avoids rebuilding Map on every signal tick) --
+  // -- Computed signal for display names (rebuilds only when combat signal changes) --
 
-  private _lastEnemies: readonly EnemyCombatStateClient[] | null = null;
-  private _cachedDisplayNames: Map<string, string> = new Map();
-
-  private _getDisplayNames(enemies: readonly EnemyCombatStateClient[]): Map<string, string> {
-    if (enemies !== this._lastEnemies) {
-      this._lastEnemies = enemies;
-      this._cachedDisplayNames = buildEnemyDisplayNames(enemies as EnemyCombatStateClient[]);
-    }
-    return this._cachedDisplayNames;
-  }
+  private readonly _displayNames = computed(() => {
+    const combat = dungeonState.combat.value;
+    if (!combat) return new Map<string, string>();
+    return buildEnemyDisplayNames(combat.enemies);
+  });
 
   // -- Render ---------------------------------------------------------------
 
@@ -362,7 +358,7 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     const combat = dungeonState.combat.value;
     if (!combat || combat.enemies.length === 0) return nothing;
 
-    const displayNames = this._getDisplayNames(combat.enemies);
+    const displayNames = this._displayNames.value;
 
     return html`
       <div class="panel" role="region" aria-label=${msg('Enemy status')}>
