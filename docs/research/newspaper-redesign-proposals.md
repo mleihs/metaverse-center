@@ -1,8 +1,9 @@
 # Zeitungsmodul Redesign -- Analyse & 8 Proposals
 
-> Erstellt: 2026-04-09
+> Erstellt: 2026-04-09 | Aktualisiert: 2026-04-09
 > Perspektiven: UI/UX-Experte, Game Designer, Zeitungswebseiten-Layout-Experte
 > Recherche: 90+ Websuchen, 25+ Referenzseiten, 8 Game-Design-Analysen
+> Status: Proposal 1 DONE (4b99e9c). Proposal 2 DETAIL-SPEZIFIKATION.
 
 ## Context
 
@@ -153,94 +154,766 @@ Geschätzt: ~800 Zeilen CSS-Duplizierung eliminiert. Statt 2263 Zeilen in 3 Komp
 
 ---
 
-## Proposal 2: The Simulation Broadsheet -- Theme-Adaptive Newspaper View
+## Proposal 2: The Simulation Broadsheet -- Theme-Adaptive Newspaper View (DETAIL)
+
+> Status: Detaillierte Implementierungsspezifikation
+> Abhängigkeiten: Proposal 1 (Unified Dispatch Component Library) -- DONE
+> Geschätzter Scope: ~2500 Zeilen Frontend, ~400 Zeilen Backend, 1 Migration
 
 ### Konzept
 
-Eine dedizierte Zeitungs-View pro Simulation (`/simulations/{slug}/newspaper`), die als immersives, theme-adaptives Leseerlebnis alle Nachrichtenquellen aggregiert. Inspiriert von de Volkskrants Grid-Virtuosität, Zetlands "finishable" Philosophie und Frostpunks Moralspiegel-Mechanik.
+Eine dedizierte Zeitungs-View pro Simulation (`/simulations/{slug}/broadsheet`), die als immersives, theme-adaptives Leseerlebnis **alle vier Nachrichtenquellen** in einer einzigen "Ausgabe" aggregiert. Jede Simulation erhält ihre eigene Zeitung, die sich automatisch dem aktiven Theme-Preset anpasst -- von der Typografie über Schatten bis zur Papiermetapher.
 
-### Layout-Architektur: Die Broadsheet-Grid
+**Design-Philosophie:**
+- **Zetland-Prinzip** ("finishable"): Maximal 7 Artikel pro Ausgabe. Kein Endlos-Scroll.
+- **de Volkskrant-Grid**: Rigoroses 8-Spalten-Grid mit hierarchischer Headline-Gewichtung.
+- **Frostpunk-Moralspiegel**: Simulation-Health beeinflusst den visuellen Ton (alarmiert bei < 25%).
+- **Semafor-Struktur**: Fakten / Analyse / Kontext getrennt pro Artikel.
+
+### 1. Architektur-Übersicht
 
 ```
-+-----------------------------------------------------+
-|  MASTHEAD: Sim-Name + "The [Theme] Chronicle"       |
-|  Subtitle: "Edition #7 -- Cycle 12, Day 4"          |
-|  Theme-adaptive Font + Farbe                         |
-+-----------------------+-----------------------------+
-|                       |                             |
-|   HERO ARTICLE        |   SIDEBAR                   |
-|   (Latest Chronicle)  |   24h Briefing Summary      |
-|   Full-width image    |   Health Bar                |
-|   Drop Cap lede       |   Arc Pressure Gauges       |
-|   AI-generated        |   Weather Zones             |
-|                       |                             |
-+-----------+-----------+-----------------------------+
-|           |           |                             |
-|  COLUMN A |  COLUMN B |   GAZETTE WIRE              |
-|  Event 1  |  Event 2  |   Latest Cross-Sim          |
-|  (Scanner |  (Agent   |   Echoes relevant to        |
-|   Reso-   |   Mood    |   THIS simulation           |
-|   nance)  |   Shift)  |                             |
-|           |           |                             |
-+-----------+-----------+-----------------------------+
-|                       |                             |
-|  SECTION: DISPATCHES  |   OBJEKTANKER               |
-|  2-column grid of     |   "Found Object" sidebar    |
-|  recent events        |   with lore connection      |
-|                       |                             |
-+-----------------------+-----------------------------+
-|  FOOTER: Previous Editions Archive + Newsletter CTA |
-+-----------------------------------------------------+
+Frontend                              Backend
+--------                              -------
+VelgSimulationBroadsheet              GET /api/v1/simulations/{id}/broadsheet
+  +-- VelgDispatchMasthead (shared)     +-- BroadsheetService
+  +-- VelgBroadsheetHealthHero            +-- get_source_data() via RPC
+  +-- VelgBroadsheetHeroArticle           +-- compile_edition()
+  +-- VelgBroadsheetColumns               +-- list_editions()
+  |     +-- VelgBroadsheetArticle (x5)  GET /api/v1/public/simulations/{id}/broadsheet
+  +-- VelgBroadsheetGazetteWire
+  +-- VelgBroadsheetFooter              DB: simulation_broadsheets table
+  +-- VelgDispatchTicker (shared)       DB: RPC get_broadsheet_source_data()
 ```
 
-### Theme-Adaption (10 Presets)
+### 2. Backend-Spezifikation
 
-| Theme Preset | Newspaper-Metapher | Typografie | Visuelle Signatur |
-|---|---|---|---|
-| **brutalist** | Drahtnachricht / Telegramm | Oswald + system-ui | Hard shadows, uppercase, tracked |
-| **sunless-sea** | Unterwasser-Gazette | Cormorant Garamond + Lora | Teal-Schimmer, Seetang-Ornamente |
-| **cyberpunk** | Holo-Newsfeed | Barlow Condensed + Rajdhani | Neon-Glow Scanning-Effekt, CRT-Lines |
-| **illuminated-literary** | Illustrierte Monatsschrift | Libre Baskerville + Cormorant | Gilded Drop Caps, Floral Borders |
-| **deep-space-horror** | Schiffstagebuch / Notfunkspruch | Space Mono + IBM Plex | Phosphor-Green, Scanlines, Static |
-| **nordic-noir** | Polizeibericht / Akte | Inter | Cool grays, blur shadows, minimal |
-| **arc-raiders** | Werkstatt-Bulletin | Default + parchment bg | Nieten-Rahmen, brass accents |
-| **solarpunk** | Community-Bulletin Board | Default + rounded corners | Grune Akzente, eco-aesthetic |
-| **vbdos** | DOS-Terminal-Ausgabe | VT323 + IBM Plex Mono | Cyan borders, scanlines, C:\> prompt |
-| **deep-fried-horror** | Satiremagazin / Fanzine | Comic Sans chaos | Neon saturation, collage-aesthetic |
+#### 2.1 Neues Datenmodell: `simulation_broadsheets`
 
-### CSS Multi-Column fur echtes Zeitungsgefuhl
+```sql
+CREATE TABLE simulation_broadsheets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  simulation_id UUID NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+  edition_number INT NOT NULL,
+  period_start TIMESTAMPTZ NOT NULL,
+  period_end TIMESTAMPTZ NOT NULL,
+
+  -- Masthead
+  title TEXT NOT NULL,
+  title_de TEXT,
+  subtitle TEXT,
+  subtitle_de TEXT,
+
+  -- Aggregated content (JSONB for flexible article structure)
+  articles JSONB NOT NULL DEFAULT '[]'::jsonb,
+  -- Each article: {type, headline, headline_de, content, content_de,
+  --   source_type, source_id, image_url, layout_hint, priority}
+
+  -- Snapshot data (frozen at generation time)
+  health_snapshot JSONB,       -- {overall_health, health_label, avg_stability}
+  mood_snapshot JSONB,         -- {happy, unhappy, crisis, dominant_emotion}
+  statistics JSONB,            -- {event_count, activity_count, agents_affected}
+  gazette_wire JSONB,          -- [{entry_type, narrative, source_sim, created_at}]
+
+  -- Metadata
+  editorial_voice TEXT DEFAULT 'neutral',  -- neutral|alarmed|optimistic|satirical
+  model_used TEXT,
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  UNIQUE(simulation_id, edition_number)
+);
+
+-- RLS: Public read for active simulations, editor+ write
+ALTER TABLE simulation_broadsheets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY broadsheet_public_read ON simulation_broadsheets
+  FOR SELECT USING (
+    (SELECT s.status FROM simulations s WHERE s.id = simulation_id) = 'active'
+  );
+
+CREATE POLICY broadsheet_editor_write ON simulation_broadsheets
+  FOR ALL USING (
+    (SELECT user_has_simulation_role(simulation_id, 'editor'))
+  );
+```
+
+#### 2.2 Aggregations-RPC: `get_broadsheet_source_data`
+
+```sql
+CREATE OR REPLACE FUNCTION get_broadsheet_source_data(
+  p_simulation_id UUID,
+  p_period_start TIMESTAMPTZ,
+  p_period_end TIMESTAMPTZ
+) RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  SELECT jsonb_build_object(
+    'events', (
+      SELECT COALESCE(jsonb_agg(row_to_json(e.*) ORDER BY e.impact_level DESC), '[]')
+      FROM (
+        SELECT id, title, event_type, description, occurred_at,
+               impact_level, tags, event_status, data_source
+        FROM events
+        WHERE simulation_id = p_simulation_id
+          AND occurred_at BETWEEN p_period_start AND p_period_end
+          AND deleted_at IS NULL
+        ORDER BY impact_level DESC
+        LIMIT 20
+      ) e
+    ),
+    'activities', (
+      SELECT COALESCE(jsonb_agg(row_to_json(a.*) ORDER BY a.significance DESC), '[]')
+      FROM (
+        SELECT aa.id, aa.activity_type, aa.narrative_text, aa.narrative_text_de,
+               aa.significance, aa.effects, ag.name AS agent_name
+        FROM agent_activities aa
+        JOIN agents ag ON ag.id = aa.agent_id
+        WHERE aa.simulation_id = p_simulation_id
+          AND aa.created_at BETWEEN p_period_start AND p_period_end
+          AND aa.significance >= 5
+        ORDER BY aa.significance DESC
+        LIMIT 15
+      ) a
+    ),
+    'resonance_impacts', (
+      SELECT COALESCE(jsonb_agg(row_to_json(ri.*)), '[]')
+      FROM (
+        SELECT ri.id, ri.effective_magnitude, ri.status, ri.narrative_context,
+               r.title AS resonance_title, r.source_category
+        FROM resonance_impacts ri
+        JOIN substrate_resonances r ON r.id = ri.resonance_id
+        WHERE ri.simulation_id = p_simulation_id
+          AND ri.created_at BETWEEN p_period_start AND p_period_end
+        ORDER BY ri.effective_magnitude DESC
+        LIMIT 5
+      ) ri
+    ),
+    'mood_summary', (
+      SELECT jsonb_build_object(
+        'avg_mood', AVG(mood_score),
+        'avg_stress', AVG(stress_level),
+        'crisis_count', COUNT(*) FILTER (WHERE stress_level > 800),
+        'happy_count', COUNT(*) FILTER (WHERE mood_score > 60),
+        'unhappy_count', COUNT(*) FILTER (WHERE mood_score < 30)
+      )
+      FROM agent_mood am
+      JOIN agents ag ON ag.id = am.agent_id
+      WHERE ag.simulation_id = p_simulation_id
+    ),
+    'gazette_entries', (
+      SELECT COALESCE(jsonb_agg(row_to_json(g.*) ORDER BY g.created_at DESC), '[]')
+      FROM (
+        SELECT entry_type, narrative, source_simulation, target_simulation,
+               echo_vector, strength, created_at
+        FROM bleed_gazette_entries_v  -- Use the view
+        WHERE source_simulation->>'id' = p_simulation_id::text
+           OR target_simulation->>'id' = p_simulation_id::text
+        ORDER BY created_at DESC
+        LIMIT 5
+      ) g
+    ),
+    'health', (
+      SELECT row_to_json(h.*)
+      FROM simulation_health h
+      WHERE h.simulation_id = p_simulation_id
+      LIMIT 1
+    )
+  ) INTO result;
+
+  RETURN result;
+END;
+$$;
+```
+
+#### 2.3 Backend-Service: `BroadsheetService`
+
+```python
+# backend/services/broadsheet_service.py
+
+class BroadsheetService(BaseService):
+    """Aggregates all news sources into a unified broadsheet edition."""
+
+    FINISHABLE_LIMIT = 7  # Zetland principle: max articles per edition
+
+    async def compile_edition(
+        self, simulation_id: UUID, period_start: datetime, period_end: datetime
+    ) -> BroadsheetResponse:
+        # 1. Fetch aggregated source data via RPC
+        source = await self._call_rpc(
+            'get_broadsheet_source_data',
+            {'p_simulation_id': str(simulation_id),
+             'p_period_start': period_start.isoformat(),
+             'p_period_end': period_end.isoformat()}
+        )
+
+        # 2. Rank and deduplicate into articles
+        articles = self._rank_articles(source)[:self.FINISHABLE_LIMIT]
+
+        # 3. Determine editorial voice from health
+        health = source.get('health', {})
+        voice = self._derive_voice(health)
+
+        # 4. Generate AI headlines + summaries (bilingual)
+        articles = await self._enrich_with_ai(articles, voice, simulation_id)
+
+        # 5. Get next edition number
+        edition_number = await self._next_edition_number(simulation_id)
+
+        # 6. Persist
+        broadsheet = await self._insert('simulation_broadsheets', {
+            'simulation_id': str(simulation_id),
+            'edition_number': edition_number,
+            'period_start': period_start.isoformat(),
+            'period_end': period_end.isoformat(),
+            'title': articles[0]['headline'] if articles else 'No News',
+            'articles': articles,
+            'health_snapshot': health,
+            'mood_snapshot': source.get('mood_summary'),
+            'statistics': self._compute_statistics(source),
+            'gazette_wire': source.get('gazette_entries', []),
+            'editorial_voice': voice,
+        })
+
+        return BroadsheetResponse(**broadsheet)
+
+    def _rank_articles(self, source: dict) -> list[dict]:
+        """Priority: critical events > resonances > high-significance activities > gazette."""
+        ranked = []
+        for event in source.get('events', []):
+            ranked.append({
+                'source_type': 'event',
+                'source_id': event['id'],
+                'priority': event['impact_level'] * 10,
+                'headline': event['title'],
+                'content': event.get('description', ''),
+                'layout_hint': 'hero' if event['impact_level'] >= 8 else 'column',
+            })
+        for impact in source.get('resonance_impacts', []):
+            ranked.append({
+                'source_type': 'resonance',
+                'source_id': impact['id'],
+                'priority': int(impact['effective_magnitude'] * 80),
+                'headline': impact.get('resonance_title', 'Cross-Reality Disturbance'),
+                'content': impact.get('narrative_context', ''),
+                'layout_hint': 'column',
+            })
+        for activity in source.get('activities', []):
+            ranked.append({
+                'source_type': 'activity',
+                'source_id': activity['id'],
+                'priority': activity['significance'] * 8,
+                'headline': f"{activity['agent_name']}: {activity['activity_type']}",
+                'content': activity.get('narrative_text', ''),
+                'layout_hint': 'sidebar',
+            })
+        ranked.sort(key=lambda a: a['priority'], reverse=True)
+        # Ensure max 1 hero article
+        hero_found = False
+        for article in ranked:
+            if article['layout_hint'] == 'hero':
+                if hero_found:
+                    article['layout_hint'] = 'column'
+                hero_found = True
+        return ranked
+
+    def _derive_voice(self, health: dict) -> str:
+        """Frostpunk moral mirror: health determines editorial tone."""
+        pct = (health.get('overall_health') or 0.5) * 100
+        if pct < 25:
+            return 'alarmed'
+        if pct < 50:
+            return 'concerned'
+        if pct > 85:
+            return 'optimistic'
+        return 'neutral'
+```
+
+#### 2.4 API-Endpoints
+
+```python
+# backend/routers/broadsheets.py
+
+@router.get("/simulations/{simulation_id}/broadsheets")
+async def list_broadsheets(
+    simulation_id: UUID,
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+) -> PaginatedResponse[BroadsheetResponse]: ...
+
+@router.get("/simulations/{simulation_id}/broadsheets/latest")
+async def get_latest_broadsheet(
+    simulation_id: UUID,
+) -> SuccessResponse[BroadsheetResponse | None]: ...
+
+@router.post("/simulations/{simulation_id}/broadsheets")
+async def generate_broadsheet(
+    simulation_id: UUID,
+    body: BroadsheetGenerateRequest,  # period_start, period_end
+    role=Depends(require_role("editor")),
+) -> SuccessResponse[BroadsheetResponse]: ...
+
+# Public
+@public_router.get("/simulations/{simulation_id}/broadsheets/latest")
+async def public_latest_broadsheet(
+    simulation_id: UUID,
+) -> SuccessResponse[BroadsheetResponse | None]: ...
+```
+
+### 3. Frontend-Komponentenarchitektur
+
+#### 3.1 Haupt-View: `VelgSimulationBroadsheet`
+
+Route: `/simulations/{slug}/broadsheet`
+
+```
+VelgSimulationBroadsheet
+|
++-- VelgDispatchMasthead              (shared, Proposal 1)
+|     classification="Bureau Gazette"
+|     title="The {Sim-Name} Broadsheet"
+|     subtitle="Edition #7 -- Cycle 12, Day 4"
+|     themeColor={getThemeColor(sim.theme)}
+|
++-- VelgDispatchTicker                (shared, Proposal 1)
+|     items={top 5 headlines}
+|
++-- .broadsheet (CSS Grid container)
+|   |
+|   +-- .broadsheet__hero             (grid-column: 1 / -1)
+|   |     VelgBroadsheetHeroArticle
+|   |       headline, lede with drop cap, optional image
+|   |       VelgDispatchStamp tone="danger" (if voice=alarmed)
+|   |
+|   +-- .broadsheet__health           (grid-column: sidebar)
+|   |     VelgBroadsheetHealthHero
+|   |       health bar, mood summary, arc pressure
+|   |
+|   +-- .broadsheet__columns          (grid-column: main, CSS multi-column)
+|   |     VelgBroadsheetArticle x 4-6
+|   |       headline, excerpt, source badge, read-more
+|   |
+|   +-- .broadsheet__wire             (grid-column: sidebar)
+|   |     VelgBroadsheetGazetteWire
+|   |       5 most recent cross-sim echoes
+|   |
+|   +-- .broadsheet__fold             (grid-column: 1 / -1)
+|         Visual fold line (broadsheet crease)
+|         "Above the fold" / "Below the fold" marker
+|
++-- .broadsheet__footer
+|     Previous editions archive links
+|     Newsletter CTA (if P5 implemented)
+|     "You've read everything" completion marker
+|
++-- velg-platform-footer
+```
+
+#### 3.2 CSS Grid Layout
 
 ```css
+.broadsheet {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--space-6);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.broadsheet__hero {
+  grid-column: 1 / -1;
+  border-bottom: 3px double var(--color-border);
+  padding-bottom: var(--space-8);
+}
+
 .broadsheet__columns {
+  grid-column: 1;
   column-width: 28ch;
   column-gap: var(--space-6);
   column-rule: 1px solid var(--color-border-light);
   column-fill: balance;
 }
 
-.broadsheet__hero {
-  column-span: all;  /* Hero-Artikel uber alle Spalten */
+.broadsheet__health {
+  grid-column: 2;
+  grid-row: 2;
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  height: fit-content;
 }
 
+.broadsheet__wire {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.broadsheet__fold {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--color-border-light) 10%,
+    var(--color-border-light) 90%,
+    transparent 100%
+  );
+  margin: var(--space-4) 0;
+}
+
+.broadsheet__fold::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%);
+  font-family: var(--font-brutalist);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 0 var(--space-3);
+}
+
+/* ── Drop Cap (Hero Article Lede) ─────────── */
+
 .broadsheet__hero-lede::first-letter {
-  initial-letter: 3;  /* Drop Cap, 3 Zeilen hoch */
+  initial-letter: 3;
   font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
   color: var(--color-primary);
   margin-right: var(--space-2);
 }
+
+@supports not (initial-letter: 3) {
+  .broadsheet__hero-lede::first-letter {
+    float: left;
+    font-size: 3.5em;
+    line-height: 0.8;
+    padding-right: var(--space-2);
+    padding-top: 4px;
+  }
+}
+
+/* ── Container Queries for Article Cards ──── */
+
+.broadsheet__article-wrap {
+  container-type: inline-size;
+  container-name: article;
+}
+
+@container article (min-width: 400px) {
+  .broadsheet__article {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: var(--space-4);
+  }
+}
+
+@container article (max-width: 399px) {
+  .broadsheet__article {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ── Responsive Breakpoints ───────────────── */
+
+@media (max-width: 1024px) {
+  .broadsheet {
+    grid-template-columns: 1fr;
+  }
+  .broadsheet__health {
+    grid-column: 1;
+    grid-row: auto;
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-3);
+  }
+  .broadsheet__wire {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .broadsheet__columns {
+    column-width: 24ch;
+  }
+}
+
+@media (max-width: 640px) {
+  .broadsheet__columns {
+    columns: 1;
+  }
+  .broadsheet {
+    padding: 0 var(--space-4);
+  }
+}
 ```
 
-### "Finishable" Design (Zetland-Prinzip)
+### 4. Theme-Adaption: 10 Zeitungsmetaphern (Detailliert)
 
-Maximal 5-7 Artikel pro Ausgabe. Keine Endlos-Scroll-Feeds. Ein klares "Du hast alles gelesen"-Signal am Ende. Jede Ausgabe ist ein abgeschlossenes Artefakt.
+Die Broadsheet-View erbt alle Token-Overrides automatisch vom ThemeService. Zusätzlich werden theme-spezifische Atmosphäreneffekte via CSS-Klassen angewendet, die aus dem aktiven Preset abgeleitet werden.
+
+#### 4.1 Theme-Mapping-Tabelle (Exakte Token-Werte)
+
+| Preset | Masthead-Font | Body-Font | Drop-Cap Farbe | Shadow | Zeitungsmetapher | Atmosphäreneffekt |
+|--------|---------------|-----------|----------------|--------|-------------------|-------------------|
+| **brutalist** | Oswald 900 uppercase 1px | system-ui | #000000 | offset 4px | Drahtnachricht | Keine Filter, hard shadows |
+| **sunless-sea** | Cormorant Garamond 700 | Lora | #0d7377 | glow #00e5cc | Unterwasser-Gazette | `filter: url(#parchment-noise)` auf Hero, teal `column-rule` |
+| **cyberpunk** | Arial Narrow 900 uppercase 0.08em | Rajdhani | #ff6b2b | glow #ff6b2b | Holo-Newsfeed | Scanline overlay auf `.broadsheet`, neon `column-rule`, CRT-Vignette |
+| **illuminated-literary** | Libre Baskerville 700 | Cormorant | #B8860B (Gold) | blur #8B7D6B88 | Illustrierte Monatsschrift | Gilded Drop Cap mit `text-shadow: 0 0 8px #B8860B40`, floral `column-rule` ornament |
+| **deep-space-horror** | Space Mono 700 uppercase 0.12em | IBM Plex Sans | #00cc88 | glow #00cc88 | Schiffstagebuch | `filter: url(#ghost-text-blur)` auf Excerpts, phosphor-grüne `column-rule`, Scanlines |
+| **nordic-noir** | Inter 500 -0.01em | Inter | #64748b | blur #64748b | Polizeibericht | Keine Filter, blur shadows, minimale Ornamente, 4px border-radius |
+| **arc-raiders** | Barlow 800 uppercase 0.06em | Source Sans 3 | #C08A10 | offset #8B7D6B | Werkstatt-Bulletin | Parchment-Hintergrund, `column-rule: 2px solid var(--color-border)`, Nieten-Corners via `::before`/`::after` |
+| **solarpunk** | Georgia 600 capitalize 0.02em | Nunito Sans | #16a34a | blur #16a34a | Community-Bulletin | 12px border-radius, spring-easing auf Entrance, grüne `column-rule`, keine sharp edges |
+| **vbdos** | VT323 700 uppercase 0.15em | IBM Plex Mono | #AA00AA | offset #000 | DOS-Terminal-Ausgabe | Scanline overlay, `column-rule: 1px solid var(--color-border)` cyan, steps(3) easing, `C:\BROADSHEET>` Prompt im Masthead |
+| **deep-fried-horror** | Comic Sans 900 uppercase 0.2em | Courier New | #FF00FF | offset #FF0000 | Satiremagazin | Chaotische `column-rule` (abwechselnd rot/magenta/cyan), steps(4) easing, SCHREIENDES Layout |
+
+#### 4.2 Theme-Atmosphäre als CSS-Klasse
+
+```typescript
+// Derived from simulation theme preset in VelgSimulationBroadsheet
+private _getAtmosphereClass(): string {
+  const preset = this._themePreset; // from ThemeService
+  switch (preset) {
+    case 'cyberpunk':
+    case 'deep-space-horror':
+    case 'vbdos':
+      return 'broadsheet--scanlines';
+    case 'sunless-sea':
+    case 'illuminated-literary':
+    case 'arc-raiders':
+      return 'broadsheet--textured';
+    default:
+      return '';
+  }
+}
+```
+
+```css
+/* Scanline overlay for terminal themes */
+.broadsheet--scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.015) 2px,
+    rgba(255, 255, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Paper texture for literary/physical themes */
+.broadsheet--textured {
+  background-image: url("data:image/svg+xml,..."); /* inline noise pattern */
+  background-blend-mode: multiply;
+}
+```
+
+### 5. Artikel-Struktur und Inhaltstypen
+
+#### 5.1 ArticleBlock Interface
+
+```typescript
+interface BroadsheetArticle {
+  source_type: 'event' | 'resonance' | 'activity' | 'chronicle' | 'gazette';
+  source_id: string;
+  priority: number;
+  layout_hint: 'hero' | 'column' | 'sidebar' | 'ticker';
+
+  headline: string;
+  headline_de?: string;
+  content: string;
+  content_de?: string;
+
+  // Optional enrichment
+  image_url?: string;
+  agent_name?: string;
+  impact_level?: number;
+  tags?: string[];
+}
+```
+
+#### 5.2 Layout-Hint-Rendering
+
+| Layout Hint | Grid-Position | Typografie | Verhalten |
+|-------------|---------------|------------|-----------|
+| `hero` | `grid-column: 1 / -1` (full width) | `--text-2xl`, Drop Cap, serif | Max 1 pro Ausgabe. Obligatorisch wenn ein Event impact_level >= 8. |
+| `column` | In CSS multi-column flow | `--text-lg` headline, `--text-base` body | 2-4 pro Ausgabe. Kann CSS `break-inside: avoid` für Spaltenumbruch. |
+| `sidebar` | `grid-column: 2` (rechts) | `--text-sm` headline, `--text-xs` body | Kompakte Agent-Aktivitäten, Gazette-Wire. Max 3. |
+| `ticker` | Im Ticker-Band | Monospace, einzeilig | Nur Headlines, keine Excerpts. Max 8. |
+
+### 6. Health-Hero-Komponente
+
+```typescript
+// VelgBroadsheetHealthHero: Frozen health snapshot from edition generation time
+
+@customElement('velg-broadsheet-health-hero')
+export class VelgBroadsheetHealthHero extends LitElement {
+  @property({ type: Object }) health: HealthSnapshot | null = null;
+  @property({ type: Object }) mood: MoodSnapshot | null = null;
+  @property({ type: Object }) statistics: StatisticsSnapshot | null = null;
+
+  // Reuses dispatch-stat classes from dispatch-styles.ts
+  // Reuses health bar pattern from DailyBriefingModal
+  // Adds: mood pie chart (tiny ECharts), agent count badges
+}
+```
+
+### 7. "Finishable" Design-System
+
+#### 7.1 Edition-Vollständigkeitsanzeige
+
+Am Ende jeder Ausgabe: ein visuelles "Du hast alles gelesen"-Signal.
+
+```css
+.broadsheet__complete {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  border-top: 1px dashed var(--color-border-light);
+}
+
+.broadsheet__complete-mark {
+  font-family: var(--font-brutalist);
+  font-size: var(--text-4xl);
+  color: var(--color-primary);
+  opacity: 0.15;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+
+.broadsheet__complete-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+```
+
+Das Symbol variiert per Theme:
+- **brutalist**: `///` (triple slash)
+- **sunless-sea**: `~` (Welle)
+- **cyberpunk**: `[EOF]`
+- **illuminated-literary**: `Finis.` (kursiv, serif)
+- **deep-space-horror**: `> END TRANSMISSION_`
+- **vbdos**: `C:\> EXIT`
+
+#### 7.2 Lesefortschritt (CSS-only Reading Progress)
+
+```css
+.broadsheet__progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  transform-origin: left;
+  animation: broadsheet-progress linear;
+  animation-timeline: scroll(nearest block);
+  z-index: var(--z-header);
+}
+
+@keyframes broadsheet-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .broadsheet__progress { display: none; }
+}
+```
+
+### 8. Frostpunk-Moralspiegel: Health-Responsive Design
+
+Die Simulation-Health (0-100%) beeinflusst den visuellen Ton der Ausgabe:
+
+| Health | Voice | Visueller Effekt |
+|--------|-------|------------------|
+| **85-100%** | `optimistic` | Grüne Akzente, `--color-success` Masthead-Glow |
+| **50-84%** | `neutral` | Standard Theme-Farben |
+| **25-49%** | `concerned` | Warning-farbige `column-rule`, leicht erhöhter Kontrast |
+| **0-24%** | `alarmed` | Danger-Akzente, pulsierender Health-Bar, Breaking-News-Banner über dem Masthead, Hero-Artikel-Headline in `--color-danger` |
+
+```css
+/* Breaking News Banner (only when voice = alarmed) */
+.broadsheet__breaking {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  font-family: var(--font-brutalist);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: var(--space-2) var(--space-4);
+  animation: breaking-pulse 2s ease-in-out infinite;
+}
+
+@keyframes breaking-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+```
+
+### 9. Routing und Navigation
+
+```typescript
+// In app-shell.ts, add new route:
+{
+  path: '/simulations/:id/broadsheet',
+  render: ({ id }) => this._renderSimulationView(id, 'broadsheet'),
+  enter: async ({ id }) => this._enterSimulationRoute(id, 'broadsheet'),
+}
+```
+
+Navigation-Tab in der SimulationShell: Icon `icons.newspaper()` (neu), Label `msg('Broadsheet')`.
+
+### 10. Implementierungs-Roadmap
+
+| Schritt | Dateien | Geschätzter Aufwand |
+|---------|---------|---------------------|
+| **10.1** Migration + RPC | `supabase/migrations/XXX_broadsheet_tables.sql` | ~120 Zeilen SQL |
+| **10.2** Backend-Model | `backend/models/broadsheet.py` | ~60 Zeilen |
+| **10.3** Backend-Service | `backend/services/broadsheet_service.py` | ~250 Zeilen |
+| **10.4** Backend-Router | `backend/routers/broadsheets.py` | ~80 Zeilen |
+| **10.5** Frontend: HealthHero | `frontend/src/components/broadsheet/BroadsheetHealthHero.ts` | ~200 Zeilen |
+| **10.6** Frontend: HeroArticle | `frontend/src/components/broadsheet/BroadsheetHeroArticle.ts` | ~150 Zeilen |
+| **10.7** Frontend: ArticleCard | `frontend/src/components/broadsheet/BroadsheetArticle.ts` | ~180 Zeilen |
+| **10.8** Frontend: GazetteWire | `frontend/src/components/broadsheet/BroadsheetGazetteWire.ts` | ~120 Zeilen |
+| **10.9** Frontend: Main View | `frontend/src/components/broadsheet/SimulationBroadsheet.ts` | ~500 Zeilen |
+| **10.10** Frontend: Broadsheet styles | `frontend/src/components/broadsheet/broadsheet-styles.ts` | ~300 Zeilen |
+| **10.11** Routing + Navigation | `app-shell.ts`, `SimulationShell.ts` | ~30 Zeilen delta |
+| **10.12** Lint + Theme-Verification | Alle 10 Presets visuell prüfen | -- |
+
+**Total: ~1990 Zeilen neue Dateien + ~30 Zeilen Routing-Delta**
 
 ### Quellen
 
-- Zetland (finishable daily, SND Scandinavia Gold)
-- de Volkskrant (SND46 World's Best, Grid-Virtuositat)
-- Frostpunk (newspaper as moral mirror)
-- CSS Multi-Column: column-width, column-span, column-rule (MDN)
-- `initial-letter` CSS Property (91%+ Support, caniuse.com)
+- [CSS-Tricks: Newspaper Layout with CSS Grid and Border Lines](https://css-tricks.com/techniques-for-a-newspaper-layout-with-css-grid-and-border-lines-between-elements/) -- Marco Troost, Grid-Lines-Technik für Spaltentrennlinien
+- [CSS-Tricks: New Multi-Column Layout Features](https://css-tricks.com/css-multi-column-layout-wrapping-features/) -- Chrome 145 column-wrap/column-height
+- [Chrome DevBlog: initial-letter](https://developer.chrome.com/blog/control-your-drop-caps-with-css-initial-letter) -- Drop Cap mit 95%+ Support
+- [MDN: CSS Container Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries) -- Component-responsive Article Cards
+- [web.dev: Container Query Card Pattern](https://web.dev/patterns/layout/container-query-card/) -- Google's Referenzimplementation
+- [Smashing Magazine: Drop Caps Historical Use](https://www.smashingmagazine.com/2012/04/drop-caps-historical-use-and-current-best-practices/) -- Historischer Kontext + Best Practices
+- de Volkskrant (SND46 World's Best Newspaper) -- 8-Spalten-Grid, Whitespace-Hierarchie
+- Zetland (SND Scandinavia Gold + Best of Show) -- "Finishable" Prinzip, max 2-4 Stories/Tag
+- Frostpunk (11 bit studios) -- Newspaper as delayed moral mirror, health-responsive tone
+- Semafor -- Fakten/Analyse/Kontext-Trennung pro Artikel
+- Axios "Smart Brevity" (ISBN 978-1982190439) -- Eye-Tracking-basierte Artikelstruktur
+- NRK Scroll-driven Animation Study -- `animation-timeline: scroll()` 0.16ms/frame Performance
 
 ---
 
