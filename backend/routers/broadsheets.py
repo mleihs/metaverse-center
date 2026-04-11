@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
-from backend.models.broadsheet import BroadsheetGenerateRequest
+from backend.models.broadsheet import BroadsheetGenerateRequest, BroadsheetResponse
 from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
 from backend.services.audit_service import AuditService
 from backend.services.broadsheet_service import BroadsheetService
@@ -32,7 +32,7 @@ async def generate_broadsheet(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[BroadsheetResponse]:
     """Compile a new broadsheet edition (requires editor+)."""
     data = await BroadsheetService.compile_edition(
         admin_supabase,
@@ -65,7 +65,7 @@ async def list_broadsheets(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> PaginatedResponse:
+) -> PaginatedResponse[BroadsheetResponse]:
     """List broadsheet editions (paginated)."""
     data, total = await BroadsheetService.list(supabase, simulation_id, limit=limit, offset=offset)
     return paginated(data, total, limit, offset)
@@ -78,7 +78,7 @@ async def get_latest_broadsheet(
     simulation_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[BroadsheetResponse | None]:
     """Get the latest broadsheet edition."""
     data = await BroadsheetService.get_latest(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -92,7 +92,7 @@ async def get_broadsheet(
     broadsheet_id: UUID,
     _user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[BroadsheetResponse]:
     """Get a single broadsheet edition."""
     data = await BroadsheetService.get(supabase, simulation_id, broadsheet_id)
     return SuccessResponse(data=data)

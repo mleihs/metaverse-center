@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 class BroadsheetGenerateRequest(BaseModel):
@@ -14,6 +14,13 @@ class BroadsheetGenerateRequest(BaseModel):
 
     period_start: datetime
     period_end: datetime
+
+    @model_validator(mode="after")
+    def validate_period(self) -> BroadsheetGenerateRequest:
+        if self.period_start >= self.period_end:
+            msg = "period_start must be before period_end."
+            raise ValueError(msg)
+        return self
 
 
 class BroadsheetArticle(BaseModel):

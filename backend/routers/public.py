@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 
 from backend.dependencies import get_admin_supabase, get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
+from backend.models.broadsheet import BroadsheetResponse
 from backend.models.common import PaginatedResponse, SuccessResponse
 from backend.models.gazette import GazetteEntry
 from backend.services.agent_memory_service import AgentMemoryService
@@ -355,7 +356,7 @@ async def list_broadsheets_public(
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> PaginatedResponse:
+) -> PaginatedResponse[BroadsheetResponse]:
     """List broadsheet editions (public)."""
     data, total = await BroadsheetService.list(supabase, simulation_id, limit=limit, offset=offset)
     return paginated(data, total, limit, offset)
@@ -367,7 +368,7 @@ async def get_latest_broadsheet_public(
     request: Request,
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[BroadsheetResponse | None]:
     """Get the latest broadsheet edition (public)."""
     data = await BroadsheetService.get_latest(supabase, simulation_id)
     return SuccessResponse(data=data)

@@ -559,8 +559,8 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
     const heroArticle = articles.find((a) => a.layout_hint === 'hero') ?? articles[0];
     const columnArticles = articles.filter((a) => a !== heroArticle && a.layout_hint !== 'ticker');
     const tickerItems = articles
-      .filter((a) => a.layout_hint === 'ticker' || a.priority > 0)
-      .slice(0, 8)
+      .filter((a) => a !== heroArticle)
+      .slice(0, 6)
       .map((a) => ({ text: a.headline }));
 
     const voice = featured.editorial_voice ?? 'neutral';
