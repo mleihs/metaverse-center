@@ -33,8 +33,10 @@ import {
   ARCHETYPE_TOWER,
   isAwakeningState,
   isDelugeState,
+  isEntropyState,
   isMotherState,
   isOverthrowState,
+  isPrometheusState,
   isShadowState,
   isTowerState,
 } from '../types/dungeon.js';
@@ -125,6 +127,61 @@ export function formatTidalStatus(roomsEntered: number, recessionInterval = 3): 
 function getMaxDepth(rooms: RoomNodeClient[]): number {
   if (rooms.length === 0) return 0;
   return Math.max(...rooms.map((r) => r.depth));
+}
+
+// ── Centralized Archetype Gauge ─────────────────────────────────────────────
+
+/**
+ * Extract label/value/max from any archetype state for gauge rendering.
+ * Single source of truth for the 8 archetype-specific numeric gauges.
+ * Used by: formatRoomEntry, formatDungeonStatus, and potentially DungeonHeader.
+ */
+export function getArchetypeGaugeInfo(
+  archetypeState: ArchetypeState,
+): { label: string; value: number; max: number } | null {
+  if (isShadowState(archetypeState)) {
+    return { label: 'VISIBILITY', value: archetypeState.visibility, max: archetypeState.max_visibility };
+  }
+  if (isTowerState(archetypeState)) {
+    return { label: 'STRUCTURAL INTEGRITY', value: archetypeState.stability, max: archetypeState.max_stability };
+  }
+  if (isEntropyState(archetypeState)) {
+    return { label: 'DECAY', value: archetypeState.decay, max: archetypeState.max_decay };
+  }
+  if (isMotherState(archetypeState)) {
+    return { label: 'PARASITIC ATTACHMENT', value: archetypeState.attachment, max: archetypeState.max_attachment };
+  }
+  if (isPrometheusState(archetypeState)) {
+    return { label: 'INSIGHT', value: archetypeState.insight, max: archetypeState.max_insight };
+  }
+  if (isDelugeState(archetypeState)) {
+    return { label: 'WATER LEVEL', value: archetypeState.water_level, max: archetypeState.max_water_level };
+  }
+  if (isAwakeningState(archetypeState)) {
+    return { label: 'AWARENESS', value: archetypeState.awareness, max: archetypeState.max_awareness };
+  }
+  if (isOverthrowState(archetypeState)) {
+    return { label: 'FRACTURE', value: archetypeState.fracture, max: archetypeState.max_fracture };
+  }
+  return null;
+}
+
+// ── Enemy HP Approximation ──────────────────────────────────────────────────
+
+/**
+ * Map enemy condition string to approximate HP percentage.
+ * Single source of truth — used by both terminal formatters and UI components.
+ */
+export function getEnemyHpPercent(condition: string): number {
+  const HP_MAP: Record<string, number> = {
+    healthy: 100,
+    scratched: 70,
+    damaged: 50,
+    wounded: 30,
+    critical: 10,
+    defeated: 0,
+  };
+  return HP_MAP[condition] ?? 50;
 }
 
 // ── Enemy Name Disambiguation ───────────────────────────────────────────────
@@ -222,7 +279,7 @@ function stressBar(stress: number, width = 10): string {
 }
 
 /** Map stress percentage to a descriptive label. */
-function getStressLabel(stressPct: number): string {
+export function getStressLabel(stressPct: number): string {
   if (stressPct >= 80) return msg('BREAKING');
   if (stressPct >= 60) return msg('CRITICAL');
   if (stressPct >= 40) return msg('STRAINED');
@@ -411,6 +468,29 @@ export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
         msg('The Spiegelpalast shows everyone what they want to see. Not what they are.'),
       ),
     );
+  } else if (archetype === ARCHETYPE_PROMETHEUS) {
+    lines.push(combatSystemLine(msg('PROMETHEUS PROTOCOL')));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('The fire was never meant to be carried. It was meant to be understood.')));
+    lines.push(
+      responseLine(msg('Every room yields components. Every component is a question about what to build.')),
+    );
+    lines.push(systemLine(''));
+    lines.push(
+      systemLine(`\u25C9 ${msg('Insight rises with exploration. Deeper rooms yield more.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('Components are found in combat, encounters, and treasure rooms.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('Craft items at insight thresholds. Each creation costs insight.')}`),
+    );
+    lines.push(
+      systemLine(`\u25C9 ${msg('The pharmakon accumulates \u2013 the fire that illuminates also burns.')}`),
+    );
+    lines.push(systemLine(`\u25C9 ${msg('At Insight 100: breakthrough. The forge ignites fully.')}`));
+    lines.push(systemLine(''));
+    lines.push(responseLine(msg('What you build here will outlast you. Choose what deserves to exist.')));
   } else {
     // Shadow (default)
     lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
@@ -441,6 +521,9 @@ export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
   );
   lines.push(systemLine(''));
 
+  // Index rooms by index for O(1) lookup in connection rendering
+  const roomByIndex = new Map(state.rooms.map((r) => [r.index, r]));
+
   // Group rooms by depth
   const byDepth = new Map<number, RoomNodeClient[]>();
   for (const room of state.rooms) {
@@ -468,7 +551,7 @@ export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
     if (byDepth.has(depth + 1)) {
       const connStrs = rooms.map((r) => {
         const hasDown = r.connections.some((c) => {
-          const target = state.rooms.find((t) => t.index === c);
+          const target = roomByIndex.get(c);
           return target && target.depth === depth + 1;
         });
         return hasDown ? ' \u2502 ' : '   ';
@@ -520,46 +603,15 @@ export function formatRoomEntry(
     }
   }
 
-  // Archetype-specific state (Shadow: visibility)
-  if (isShadowState(archetypeState)) {
+  // Archetype-specific state gauge (all 8 archetypes via centralized helper)
+  const gauge = getArchetypeGaugeInfo(archetypeState);
+  if (gauge) {
+    const barWidth = gauge.max <= 10 ? gauge.max : Math.round(gauge.max / 5);
+    const filled = gauge.max <= 10 ? gauge.value : Math.round(gauge.value / 5);
+    const empty = barWidth - filled;
     const bar =
-      '\u2588'.repeat(archetypeState.visibility) +
-      '\u2591'.repeat(Math.max(0, archetypeState.max_visibility - archetypeState.visibility));
-    lines.push(
-      systemLine(
-        `VISIBILITY: ${bar} [${archetypeState.visibility}/${archetypeState.max_visibility}]`,
-      ),
-    );
-  } else if (isTowerState(archetypeState)) {
-    const { stability, max_stability } = archetypeState;
-    const filled = Math.round(stability / 5);
-    const empty = Math.round((max_stability - stability) / 5);
-    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
-    lines.push(systemLine(`STRUCTURAL INTEGRITY: ${bar} [${stability}/${max_stability}]`));
-  } else if (isMotherState(archetypeState)) {
-    const { attachment, max_attachment } = archetypeState;
-    const filled = Math.round(attachment / 5);
-    const empty = Math.round((max_attachment - attachment) / 5);
-    const bar = '\u2591'.repeat(empty) + '\u2588'.repeat(filled);
-    lines.push(systemLine(`PARASITIC ATTACHMENT: ${bar} [${attachment}/${max_attachment}]`));
-  } else if (isDelugeState(archetypeState)) {
-    const { water_level, max_water_level } = archetypeState;
-    const filled = Math.round(water_level / 5);
-    const empty = Math.round((max_water_level - water_level) / 5);
-    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
-    lines.push(systemLine(`WATER LEVEL: ${bar} [${water_level}/${max_water_level}]`));
-  } else if (isAwakeningState(archetypeState)) {
-    const { awareness, max_awareness } = archetypeState;
-    const filled = Math.round(awareness / 5);
-    const empty = Math.round((max_awareness - awareness) / 5);
-    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
-    lines.push(systemLine(`AWARENESS: ${bar} [${awareness}/${max_awareness}]`));
-  } else if (isOverthrowState(archetypeState)) {
-    const { fracture, max_fracture } = archetypeState;
-    const filled = Math.round(fracture / 5);
-    const empty = Math.round((max_fracture - fracture) / 5);
-    const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(empty);
-    lines.push(systemLine(`FRACTURE: ${bar} [${fracture}/${max_fracture}]`));
+      '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
+    lines.push(systemLine(`${gauge.label}: ${bar} [${gauge.value}/${gauge.max}]`));
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
@@ -568,7 +620,6 @@ export function formatRoomEntry(
   }
 
   // Room type header
-  const roomType = room.room_type.toUpperCase();
   switch (room.room_type) {
     case 'combat':
       lines.push(systemLine(`[${msg('COMBAT ENCOUNTER')}]`));
@@ -600,7 +651,7 @@ export function formatRoomEntry(
       lines.push(systemLine(`[${msg('THRESHOLD')}]`));
       break;
     default:
-      lines.push(systemLine(`[${roomType}]`));
+      lines.push(systemLine(`[${room.room_type.toUpperCase()}]`));
   }
 
   return lines;
@@ -1388,22 +1439,16 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
   lines.push(responseLine(`${msg('Rooms')}: ${clearedRooms}/${state.rooms.length}`));
   lines.push(responseLine(`${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}`));
 
-  // Archetype-specific
-  if (isShadowState(state.archetype_state)) {
-    const { visibility, max_visibility } = state.archetype_state;
+  // Archetype-specific gauge (all 8 archetypes via centralized helper)
+  const statusGauge = getArchetypeGaugeInfo(state.archetype_state);
+  if (statusGauge) {
+    const barWidth = statusGauge.max <= 10 ? statusGauge.max : Math.round(statusGauge.max / 5);
+    const filled = statusGauge.max <= 10 ? statusGauge.value : Math.round(statusGauge.value / 5);
+    const empty = barWidth - filled;
+    const bar =
+      '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
     lines.push(
-      responseLine(
-        `${msg('Visibility')}: ${'\u2588'.repeat(visibility)}${'\u2591'.repeat(Math.max(0, max_visibility - visibility))} [${visibility}/${max_visibility}]`,
-      ),
-    );
-  } else if (isTowerState(state.archetype_state)) {
-    const { stability, max_stability } = state.archetype_state;
-    const filled = Math.round(stability / 5);
-    const empty = Math.round((max_stability - stability) / 5);
-    lines.push(
-      responseLine(
-        `${msg('Stability')}: ${'\u2588'.repeat(filled)}${'\u2591'.repeat(empty)} [${stability}/${max_stability}]`,
-      ),
+      responseLine(`${statusGauge.label}: ${bar} [${statusGauge.value}/${statusGauge.max}]`),
     );
   }
 
@@ -1429,6 +1474,47 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
   return lines;
 }
 
+// ── Dungeon Help ────────────────────────────────────────────────────────────
+
+/** Format `help dungeon` — lists all dungeon verbs with syntax and aliases. */
+export function formatDungeonHelp(): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(systemLine(msg('RESONANCE DUNGEON COMMANDS:')));
+  lines.push(systemLine(''));
+
+  const cmds: [string, string][] = [
+    ['dungeon [n|name]', msg('Enter a dungeon (by number or name)')],
+    ['move [room]', msg('Move to adjacent room (alias: m)')],
+    ['scout [agent]', msg('Reveal adjacent rooms (alias: sc)')],
+    ['look', msg('Re-examine current room (alias: l)')],
+    ['status', msg('Dungeon status overview')],
+    ['map', msg('Show dungeon layout')],
+    ['rest', msg('Rest at rest site (alias: r)')],
+    ['interact [n]', msg('Choose encounter option (alias: i)')],
+    ['attack [agent] [ab]', msg('Select combat ability (alias: a)')],
+    ['submit', msg('Execute combat round (alias: sub)')],
+    ['retreat', msg('Leave dungeon (hold-to-confirm)')],
+    ['protocol', msg('Recall archetype briefing')],
+    ['assign [n] [agent]', msg('Assign loot item')],
+    ['confirm', msg('Finalize loot distribution')],
+  ];
+
+  for (const [syntax, desc] of cmds) {
+    lines.push(responseLine(`  ${syntax.padEnd(22)} ${desc}`));
+  }
+
+  lines.push(systemLine(''));
+  lines.push(systemLine(msg('Archetype-specific:')));
+  lines.push(responseLine(`  ${'seal [agent]'.padEnd(22)} ${msg('Seal breach (Deluge only)')}`));
+  lines.push(
+    responseLine(
+      `  ${'salvage [room]'.padEnd(22)} ${msg('Dive for submerged loot (Deluge only)')}`,
+    ),
+  );
+
+  return lines;
+}
+
 // ── Available Dungeons ───────────────────────────────────────────────────────
 
 export function formatAvailableDungeons(dungeons: AvailableDungeonResponse[]): TerminalLine[] {
@@ -1443,20 +1529,22 @@ export function formatAvailableDungeons(dungeons: AvailableDungeonResponse[]): T
   lines.push(systemLine(msg('AVAILABLE RESONANCE DUNGEONS:')));
   lines.push(systemLine(''));
 
-  for (const d of dungeons) {
+  for (let i = 0; i < dungeons.length; i++) {
+    const d = dungeons[i];
     const badges: string[] = [];
     if (!d.available) badges.push(`[${msg('COOLDOWN')}]`);
     if (d.admin_override) badges.push('[ADMIN]');
     const badgeStr = badges.length > 0 ? ` ${badges.join(' ')}` : '';
+    const num = String(i + 1).padStart(2, ' ');
     lines.push(
       responseLine(
-        `  ${d.archetype} (${d.signature}) \u2014 ${msg('Suggested')}: ${'*'.repeat(d.suggested_difficulty)}${badgeStr}`,
+        `  [${num}] ${d.archetype} (${d.signature}) \u2013 ${msg('Suggested')}: ${'*'.repeat(d.suggested_difficulty)}${badgeStr}`,
       ),
     );
   }
 
   lines.push(responseLine(''));
-  lines.push(hintLine(msg('Type "dungeon <archetype>" to enter. Example: dungeon shadow')));
+  lines.push(hintLine(msg('Type "dungeon <number>" or "dungeon <name>". Example: dungeon 1')));
 
   return lines;
 }
@@ -1507,8 +1595,8 @@ export function formatAgentPicker(
   }
 
   lines.push(systemLine(''));
-  lines.push(hintLine(msg('Select 2\u20134 agents: "dungeon <archetype> 1 2 3"')));
-  lines.push(hintLine(msg('Auto-pick best party: "dungeon <archetype> auto"')));
+  lines.push(hintLine(msg('Select 2\u20134 agents: "dungeon 1 2 3"')));
+  lines.push(hintLine(msg('Auto-pick best party: "dungeon auto"')));
 
   return lines;
 }
@@ -1584,18 +1672,8 @@ export function formatDebrisFound(debris: LootItem): TerminalLine[] {
 // ── Private Helpers ──────────────────────────────────────────────────────────
 
 function _enemyConditionBar(display: string): string {
-  switch (display) {
-    case 'healthy':
-      return progressBar(10, 10, 8);
-    case 'damaged':
-      return progressBar(6, 10, 8);
-    case 'critical':
-      return progressBar(3, 10, 8);
-    case 'defeated':
-      return progressBar(0, 10, 8);
-    default:
-      return progressBar(5, 10, 8);
-  }
+  const hpPct = getEnemyHpPercent(display);
+  return progressBar(Math.round(hpPct / 10), 10, 8);
 }
 
 function _findBestAgent(

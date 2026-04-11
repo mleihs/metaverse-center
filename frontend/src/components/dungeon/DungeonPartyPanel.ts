@@ -25,7 +25,7 @@ import type {
   StressThreshold,
 } from '../../types/dungeon.js';
 import type { OperativeType } from '../../types/index.js';
-import { getConditionLabel } from '../../utils/dungeon-formatters.js';
+import { getConditionLabel, getStressLabel } from '../../utils/dungeon-formatters.js';
 import { OPERATIVE_COLORS, OPERATIVE_SHORT } from '../../utils/operative-constants.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
@@ -335,7 +335,6 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
           margin-bottom: 0;
         }
 
-        .bar-row--stress,
         .bar-row--mood {
           display: none;
         }
@@ -460,18 +459,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
           ? 'var(--color-danger)'
           : 'var(--_phosphor-dim)';
     const stressPct = Math.round(stressFill);
-    const stressLabel =
-      stressPct >= 80
-        ? msg('BREAKING')
-        : stressPct >= 60
-          ? msg('CRITICAL')
-          : stressPct >= 40
-            ? msg('STRAINED')
-            : stressPct >= 25
-              ? msg('TENSE')
-              : stressPct >= 10
-                ? msg('UNEASY')
-                : '';
+    const stressLabel = getStressLabel(stressPct);
     const stressText = stressLabel ? `${stressPct}% ${stressLabel}` : `${stressPct}%`;
     // Stress severity class for card glow/pulse
     const stressSeverity =

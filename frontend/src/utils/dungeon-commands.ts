@@ -5,31 +5,30 @@
  * Handlers import from DungeonStateManager (state) and DungeonApiService (API).
  * Formatters are pure functions from dungeon-formatters.ts.
  *
+ * Entry flow (archetype selection, agent picker, disambiguation, run creation)
+ * is in dungeon-entry-flow.ts. This module handles the remaining 16 verbs.
+ *
  * Pattern: terminal-commands.ts handlers (async, return TerminalLine[]).
  */
 
 import { msg } from '@lit/localize';
 
-import { appState } from '../services/AppStateManager.js';
 import { dungeonApi } from '../services/api/DungeonApiService.js';
 import { dungeonAudio } from '../services/DungeonAudioService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import type { CombatEvent, CombatSubmission, DungeonRunCreate } from '../types/dungeon.js';
+import type { CombatEvent, CombatSubmission } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
   AUTO_APPLY_EFFECTS,
-  formatAgentPicker,
   formatArchetypeBriefing,
-  formatAvailableDungeons,
   formatCombatPlanning,
   formatCombatResolution,
   formatCombatStalemate,
   formatCombatStart,
   formatDebrisFound,
   formatDungeonComplete,
-  formatDungeonEntry,
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
@@ -45,8 +44,8 @@ import {
   formatSealResult,
   formatSkillCheckResult,
   formatThresholdEntry,
-  getArchetypeDisplayName,
 } from './dungeon-formatters.js';
+import { handleDungeonEnter } from './dungeon-entry-flow.js';
 import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import {
@@ -151,9 +150,10 @@ export async function dispatchDungeonCommand(
     // Custom threshold: check command count directly instead of tier level.
     // This avoids polluting the general tier-2 progression (fortify, quarantine, etc.).
     const customThreshold = terminalState.dungeonClearanceThreshold.value;
+    const commandCount = terminalState.commandCount.value;
     if (customThreshold !== null && requiredTier === 2) {
-      if (clearance < 2 && terminalState.commandCount.value < customThreshold) {
-        return formatInsufficientClearance(verb, requiredTier);
+      if (clearance < 2 && commandCount < customThreshold) {
+        return formatInsufficientClearance(verb, requiredTier, commandCount, customThreshold);
       }
     } else if (clearance < requiredTier) {
       return formatInsufficientClearance(verb, requiredTier);
@@ -228,142 +228,8 @@ async function _dispatchVerb(verb: string, ctx: CommandContext): Promise<Termina
   }
 }
 
-// ── Command: dungeon ─────────────────────────────────────────────────────────
-
-async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> {
-  const sid = ctx.simulationId || appState.simulationId.value;
-  if (!sid) return [errorLine(msg('No simulation active.'))];
-
-  // Already in a dungeon?
-  if (dungeonState.isInDungeon.value) {
-    return [
-      systemLine(msg('Already in a dungeon.')),
-      hintLine(msg('Type "status" for current state, "retreat" to leave.')),
-    ];
-  }
-
-  // Load available dungeons
-  await dungeonState.loadAvailable(sid);
-  const available = dungeonState.availableDungeons.value;
-
-  // No args → list available archetypes
-  if (ctx.args.length === 0) {
-    return formatAvailableDungeons(available);
-  }
-
-  // Parse archetype from first arg (fuzzy match against known names)
-  const archetypeNames = available.map((d) => d.archetype);
-  const firstArg = ctx.args[0].toLowerCase();
-  const matched = fuzzyName(firstArg, archetypeNames);
-
-  if (!matched) {
-    return [errorLine(msg('Unknown archetype.')), ...formatAvailableDungeons(available)];
-  }
-
-  const selectedDungeon = available.find(
-    (d) => d.archetype.toLowerCase() === matched.toLowerCase(),
-  );
-  if (!selectedDungeon?.available) {
-    return [errorLine(msg('That dungeon is not available (cooldown active or no resonance).'))];
-  }
-
-  // Load agents for the picker (cached after first call)
-  await dungeonState.loadPickerAgents(sid);
-  if (dungeonState.error.value) {
-    return [errorLine(msg('Failed to load agents. Try again.'))];
-  }
-  const agents = dungeonState.pickerAgents.value;
-  const aptMap = dungeonState.pickerAptitudes.value;
-
-  if (agents.length < 2) {
-    return [
-      errorLine(msg('Need at least 2 agents for a dungeon party. Recruit more agents first.')),
-    ];
-  }
-
-  // Remaining args after archetype determine action
-  const selectionArgs = ctx.args.slice(1);
-
-  // No selection args → show picker
-  if (selectionArgs.length === 0) {
-    return formatAgentPicker(agents, aptMap, matched);
-  }
-
-  // "auto" → smart-pick top 3 by aggregate aptitude score
-  if (selectionArgs[0] === 'auto') {
-    const scored = agents.map((a) => {
-      const apts = aptMap.get(a.id);
-      const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
-      return { agent: a, score: total };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    const partyIds = scored.slice(0, 3).map((s) => s.agent.id);
-    return startDungeonRun(sid, {
-      archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
-      party_agent_ids: partyIds,
-      difficulty: selectedDungeon.suggested_difficulty,
-    });
-  }
-
-  // Numeric args → indices into the agent list (1-based)
-  const indices = selectionArgs
-    .map(Number)
-    .filter((n) => !Number.isNaN(n) && n >= 1 && n <= agents.length);
-  if (indices.length < 2) {
-    return [
-      errorLine(msg('Select 2\u20134 agents by number.')),
-      ...formatAgentPicker(agents, aptMap, matched),
-    ];
-  }
-  if (indices.length > 4) {
-    return [errorLine(msg('Maximum 4 agents per party.'))];
-  }
-
-  // Map 1-based indices to agent IDs
-  const partyIds = [...new Set(indices)].map((i) => agents[i - 1].id);
-  if (partyIds.length < 2) {
-    return [errorLine(msg('Need at least 2 unique agents.'))];
-  }
-
-  return startDungeonRun(sid, {
-    archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
-    party_agent_ids: partyIds,
-    difficulty: selectedDungeon.suggested_difficulty,
-  });
-}
-
-/**
- * Initialize dungeon mode after a run is created (called by external code
- * like DungeonTerminalView or a future agent selection flow).
- */
-export async function startDungeonRun(
-  simulationId: string,
-  body: DungeonRunCreate,
-): Promise<TerminalLine[]> {
-  dungeonState.loading.value = true;
-  try {
-    const resp = await dungeonApi.createRun(simulationId, body);
-    if (!resp.success || !resp.data) {
-      return [errorLine(resp.error?.message ?? msg('Failed to create dungeon run.'))];
-    }
-
-    const { run, state, entrance_text } = resp.data;
-    dungeonState.applyState(state);
-    terminalState.clearOutput();
-    terminalState.initializeDungeon(String(run.id), getArchetypeDisplayName(state.archetype));
-    dungeonAudio.play('room-enter');
-
-    const atmosphereText = localized(entrance_text, 'text');
-
-    return formatDungeonEntry(state, atmosphereText);
-  } catch (err) {
-    captureError(err, { source: 'dungeon-commands.startDungeonRun' });
-    const message = err instanceof Error ? err.message : msg('Failed to create dungeon run.');
-    return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
-  }
-}
+// Re-export startDungeonRun for external consumers (DungeonTerminalView deep-link)
+export { startDungeonRun } from './dungeon-entry-flow.js';
 
 // ── Command: move ────────────────────────────────────────────────────────────
 

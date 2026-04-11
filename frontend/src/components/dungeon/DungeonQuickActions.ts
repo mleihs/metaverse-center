@@ -27,13 +27,35 @@ import { customElement } from 'lit/decorators.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
-import { localized as localizedField } from '../../utils/locale-fields.js';
+import { localized as localField } from '../../utils/locale-fields.js';
 import {
   terminalActionStyles,
   terminalComponentTokens,
   terminalTokens,
 } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgHoldButton.js';
+
+// ── Room-type risk styling via CSS custom properties ───────────────────────
+// Sets --_btn-color, --_btn-border, --_btn-weight on the button element,
+// which the shared .action-btn rule reads via fallback values.
+
+const _ROOM_TYPE_STYLES: Record<string, string> = {
+  combat:    '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 60%, transparent)',
+  elite:     '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 80%, transparent)',
+  boss:      '--_btn-color: var(--color-danger); --_btn-border: var(--color-danger); --_btn-weight: 700',
+  encounter: '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 60%, transparent)',
+  treasure:  '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
+  rest:      '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
+  exit:      '--_btn-color: var(--_phosphor); --_btn-border: color-mix(in srgb, var(--_phosphor) 60%, transparent)',
+};
+
+const _RISK_UNKNOWN_STYLE = '--_btn-color: var(--_phosphor-dim); --_btn-border: color-mix(in srgb, var(--_phosphor-dim) 40%, transparent)';
+const _RISK_HIGH_STYLE = '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 50%, transparent)';
+const _RISK_EXTREME_STYLE = '--_btn-color: color-mix(in srgb, var(--color-danger) 80%, var(--color-warning)); --_btn-border: color-mix(in srgb, var(--color-danger) 40%, transparent)';
+
+function _roomTypeStyle(roomType: string): string {
+  return _ROOM_TYPE_STYLES[roomType] ?? _RISK_UNKNOWN_STYLE;
+}
 
 @localized()
 @customElement('velg-dungeon-quick-actions')
@@ -47,50 +69,9 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         display: block;
       }
 
-      /* ── Room-type risk colors on move buttons ── */
-      .action-btn--room-combat {
-        border-color: color-mix(in srgb, var(--color-danger) 60%, transparent) !important;
-        color: var(--color-danger) !important;
-      }
-      .action-btn--room-elite {
-        border-color: color-mix(in srgb, var(--color-danger) 80%, transparent) !important;
-        color: var(--color-danger) !important;
-      }
-      .action-btn--room-boss {
-        border-color: var(--color-danger) !important;
-        color: var(--color-danger) !important;
-        font-weight: 700 !important;
-      }
-      .action-btn--room-encounter {
-        border-color: color-mix(in srgb, var(--color-warning) 60%, transparent) !important;
-        color: var(--color-warning) !important;
-      }
-      .action-btn--room-treasure {
-        border-color: color-mix(in srgb, var(--color-success) 60%, transparent) !important;
-        color: var(--color-success) !important;
-      }
-      .action-btn--room-rest {
-        border-color: color-mix(in srgb, var(--color-success) 60%, transparent) !important;
-        color: var(--color-success) !important;
-      }
-      .action-btn--room-exit {
-        border-color: color-mix(in srgb, var(--_phosphor) 60%, transparent) !important;
-        color: var(--_phosphor) !important;
-      }
-      .action-btn--room-unknown {
-        border-color: color-mix(in srgb, var(--_phosphor-dim) 40%, transparent) !important;
-        color: var(--_phosphor-dim) !important;
-      }
-
-      /* Depth-based risk shimmer for unknown rooms */
-      .action-btn--risk-high {
-        border-color: color-mix(in srgb, var(--color-warning) 50%, transparent) !important;
-        color: var(--color-warning) !important;
-      }
-      .action-btn--risk-extreme {
-        border-color: color-mix(in srgb, var(--color-danger) 40%, transparent) !important;
-        color: color-mix(in srgb, var(--color-danger) 80%, var(--color-warning)) !important;
-      }
+      /* Room-type risk colors are set via --_btn-color / --_btn-border / --_btn-weight
+         custom properties on each button's style attribute (see _renderMoveButtons).
+         This avoids !important overrides against the shared terminalActionStyles. */
 
       /* ── Hold button terminal theming ── */
       velg-hold-button {
@@ -269,7 +250,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
             class="action-btn action-btn--primary"
             @click=${() => this._dispatch(`interact ${i + 1}`)}
           >
-            [${i + 1}] ${localizedField(choice, 'label')}
+            [${i + 1}] ${localField(choice, 'label')}
           </button>
         `,
       )}
@@ -322,26 +303,25 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           ? ` ${VelgDungeonQuickActions._PATH_LABELS[pathIdx] ?? pathIdx + 1}`
           : '';
 
-      // Risk CSS class: room-type color if known, depth-risk if unknown
-      let riskClass = '';
-      if (isRevealed) {
-        riskClass = `action-btn--room-${room.room_type}`;
-      } else if (room.depth >= 4) {
-        riskClass = 'action-btn--risk-extreme';
-      } else if (room.depth >= 3) {
-        riskClass = 'action-btn--risk-high';
-      } else {
-        riskClass = 'action-btn--room-unknown';
-      }
+      // Risk styling via CSS custom properties (no !important needed)
+      const riskStyle = isRevealed
+        ? _roomTypeStyle(room.room_type)
+        : room.depth >= 4
+          ? _RISK_EXTREME_STYLE
+          : room.depth >= 3
+            ? _RISK_HIGH_STYLE
+            : _RISK_UNKNOWN_STYLE;
 
       // Button label: full info if scouted, path label + depth if fog
+      const clearedTag = room.cleared ? ' \u2713' : '';
       const label = isRevealed
-        ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}`
+        ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}${clearedTag}`
         : `D${room.depth}${pathLabel}`;
 
       return html`
         <button
-          class="action-btn action-btn--primary ${riskClass}"
+          class="action-btn action-btn--primary"
+          style=${riskStyle}
           @click=${() => this._dispatch(`move ${room.index}`)}
         >
           ${msg('Move')} \u2192 ${label}

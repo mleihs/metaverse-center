@@ -21,6 +21,7 @@ import { terminalState } from '../services/TerminalStateManager.js';
 import type { Agent, BuildingReadiness } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';
 import { dispatchDungeonCommand } from './dungeon-commands.js';
+import { formatDungeonHelp } from './dungeon-formatters.js';
 import {
   commandLine,
   errorLine,
@@ -124,12 +125,19 @@ const SYNONYM_MAP = new Map<string, string>([
   // Dungeon commands
   ['explore', 'dungeon'],
   ['delve', 'dungeon'],
+  ['d', 'dungeon'],
+  ['m', 'go'],
+  ['sc', 'scout'],
+  ['r', 'rest'],
   ['camp', 'rest'],
   ['flee', 'retreat'],
   ['escape', 'retreat'],
+  ['i', 'interact'],
   ['choose', 'interact'],
+  ['a', 'attack'],
   ['fight', 'attack'],
   ['strike', 'attack'],
+  ['sub', 'submit'],
   ['ready', 'submit'],
   // Stage 4: Epoch Intelligence (tier 4)
   ['briefing', 'sitrep'],
@@ -588,6 +596,9 @@ async function handleHelp(ctx: CommandContext): Promise<TerminalLine[]> {
   const target = ctx.args[0]?.toLowerCase();
 
   if (target) {
+    // "help dungeon" → full dungeon verb reference
+    if (target === 'dungeon') return formatDungeonHelp();
+
     // Help for specific command
     const cmd = COMMAND_REGISTRY.get(target) ?? COMMAND_REGISTRY.get(SYNONYM_MAP.get(target) ?? '');
     if (cmd) return formatHelpCommand(cmd);

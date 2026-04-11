@@ -16,6 +16,7 @@ export type TerminalLineType =
   | 'command' // echoed player input
   | 'response' // command output (formatted prose)
   | 'system' // [SYSTEM] clearance upgrades, boot sequence
+  | 'art' // ASCII art banner (tight line-height, pre-wrap)
   | 'error' // unknown command, insufficient points
   | 'feed' // realtime heartbeat feed entry
   | 'hint' // onboarding guidance
