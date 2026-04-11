@@ -24,7 +24,7 @@ import {
   formatDungeonEntry,
   getArchetypeDisplayName,
 } from './dungeon-formatters.js';
-import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
+import { fuzzyName } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import { errorLine, hintLine, systemLine } from './terminal-formatters.js';
 
@@ -47,6 +47,8 @@ export function resolveEntryArgs(
   available: AvailableDungeonResponse[],
   pendingArchetype: string | null,
 ): { archetype: string | null; selectionArgs: string[] } {
+  if (args.length === 0) return { archetype: null, selectionArgs: [] };
+
   const firstArg = args[0].toLowerCase();
   const firstArgNum = parseInt(firstArg, 10);
   const isNumeric = !Number.isNaN(firstArgNum) && String(firstArgNum) === firstArg;
@@ -59,7 +61,7 @@ export function resolveEntryArgs(
   // Rule 1: Non-numeric → fuzzy match archetype name
   if (!isNumeric) {
     const archetypeNames = available.map((d) => d.archetype);
-    return { archetype: _fuzzyName(firstArg, archetypeNames), selectionArgs: args.slice(1) };
+    return { archetype: fuzzyName(firstArg, archetypeNames), selectionArgs: args.slice(1) };
   }
 
   // Rule 2: Single numeric arg → archetype by 1-based index
@@ -234,13 +236,6 @@ export async function startDungeonRun(
 }
 
 // ── Private Helpers ─────────────────────────────────────────────────────────
-
-/** Fuzzy match a string against a list of names. Returns matched name or null. */
-function _fuzzyName(query: string, names: string[]): string | null {
-  const entities = names.map((n) => ({ id: n, name: n }));
-  const matches = fuzzyMatchEntities(query, entities);
-  return matches.length > 0 ? matches[0].name : null;
-}
 
 /** Resolve a 1-based numeric index to an archetype name from the available list. */
 function _resolveByIndex(

@@ -46,7 +46,7 @@ import {
   formatThresholdEntry,
 } from './dungeon-formatters.js';
 import { handleDungeonEnter } from './dungeon-entry-flow.js';
-import { fuzzyMatch as fuzzyMatchEntities } from './fuzzy-search.js';
+import { fuzzyName } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import {
   combatSystemLine,
@@ -56,13 +56,6 @@ import {
   responseLine,
   systemLine,
 } from './terminal-formatters.js';
-
-/** Fuzzy match a string against a list of names. Returns matched name or null. */
-function fuzzyName(query: string, names: string[]): string | null {
-  const entities = names.map((n) => ({ id: n, name: n }));
-  const matches = fuzzyMatchEntities(query, entities);
-  return matches.length > 0 ? matches[0].name : null;
-}
 
 // ── Dungeon-Mode Verb Sets & Clearance ───────────────────────────────────────
 
@@ -227,9 +220,6 @@ async function _dispatchVerb(verb: string, ctx: CommandContext): Promise<Termina
       return null;
   }
 }
-
-// Re-export startDungeonRun for external consumers (DungeonTerminalView deep-link)
-export { startDungeonRun } from './dungeon-entry-flow.js';
 
 // ── Command: move ────────────────────────────────────────────────────────────
 

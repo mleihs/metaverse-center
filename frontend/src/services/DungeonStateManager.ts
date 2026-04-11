@@ -40,7 +40,10 @@ import { terminalState } from './TerminalStateManager.js';
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'dungeon_active_run';
-const TIMER_TICK_MS = 250; // 250ms precision — 4 updates/sec is visually smooth for the fill bar
+// 250ms tick — 4 updates/sec is visually smooth for the CSS-transitioned fill bar.
+// Tradeoff: auto-submit may fire up to 250ms after server deadline. The backend
+// grants a grace period (see combat_submit timeout_tolerance_ms), so this is safe.
+const TIMER_TICK_MS = 250;
 
 // ── State Manager ──────────────────────────────────────────────────────────
 

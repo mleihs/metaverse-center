@@ -134,36 +134,52 @@ function getMaxDepth(rooms: RoomNodeClient[]): number {
 /**
  * Extract label/value/max from any archetype state for gauge rendering.
  * Single source of truth for the 8 archetype-specific numeric gauges.
- * Used by: formatRoomEntry, formatDungeonStatus, and potentially DungeonHeader.
+ * Used by: formatArchetypeGaugeBar, and potentially DungeonHeader.
  */
 export function getArchetypeGaugeInfo(
   archetypeState: ArchetypeState,
 ): { label: string; value: number; max: number } | null {
   if (isShadowState(archetypeState)) {
-    return { label: 'VISIBILITY', value: archetypeState.visibility, max: archetypeState.max_visibility };
+    return { label: msg('VISIBILITY'), value: archetypeState.visibility, max: archetypeState.max_visibility };
   }
   if (isTowerState(archetypeState)) {
-    return { label: 'STRUCTURAL INTEGRITY', value: archetypeState.stability, max: archetypeState.max_stability };
+    return { label: msg('STRUCTURAL INTEGRITY'), value: archetypeState.stability, max: archetypeState.max_stability };
   }
   if (isEntropyState(archetypeState)) {
-    return { label: 'DECAY', value: archetypeState.decay, max: archetypeState.max_decay };
+    return { label: msg('DECAY'), value: archetypeState.decay, max: archetypeState.max_decay };
   }
   if (isMotherState(archetypeState)) {
-    return { label: 'PARASITIC ATTACHMENT', value: archetypeState.attachment, max: archetypeState.max_attachment };
+    return { label: msg('PARASITIC ATTACHMENT'), value: archetypeState.attachment, max: archetypeState.max_attachment };
   }
   if (isPrometheusState(archetypeState)) {
-    return { label: 'INSIGHT', value: archetypeState.insight, max: archetypeState.max_insight };
+    return { label: msg('INSIGHT'), value: archetypeState.insight, max: archetypeState.max_insight };
   }
   if (isDelugeState(archetypeState)) {
-    return { label: 'WATER LEVEL', value: archetypeState.water_level, max: archetypeState.max_water_level };
+    return { label: msg('WATER LEVEL'), value: archetypeState.water_level, max: archetypeState.max_water_level };
   }
   if (isAwakeningState(archetypeState)) {
-    return { label: 'AWARENESS', value: archetypeState.awareness, max: archetypeState.max_awareness };
+    return { label: msg('AWARENESS'), value: archetypeState.awareness, max: archetypeState.max_awareness };
   }
   if (isOverthrowState(archetypeState)) {
-    return { label: 'FRACTURE', value: archetypeState.fracture, max: archetypeState.max_fracture };
+    return { label: msg('FRACTURE'), value: archetypeState.fracture, max: archetypeState.max_fracture };
   }
   return null;
+}
+
+/**
+ * Render an archetype gauge as a formatted ASCII bar string.
+ * Combines getArchetypeGaugeInfo() data extraction with bar rendering.
+ * Returns null if the archetype state has no gauge.
+ */
+export function formatArchetypeGaugeBar(archetypeState: ArchetypeState): string | null {
+  const gauge = getArchetypeGaugeInfo(archetypeState);
+  if (!gauge) return null;
+  const barWidth = gauge.max <= 10 ? gauge.max : Math.round(gauge.max / 5);
+  const filled = gauge.max <= 10 ? gauge.value : Math.round(gauge.value / 5);
+  const empty = barWidth - filled;
+  const bar =
+    '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
+  return `${gauge.label}: ${bar} [${gauge.value}/${gauge.max}]`;
 }
 
 // ── Enemy HP Approximation ──────────────────────────────────────────────────
@@ -172,16 +188,17 @@ export function getArchetypeGaugeInfo(
  * Map enemy condition string to approximate HP percentage.
  * Single source of truth — used by both terminal formatters and UI components.
  */
+const ENEMY_HP_MAP: Record<string, number> = {
+  healthy: 100,
+  scratched: 70,
+  damaged: 50,
+  wounded: 30,
+  critical: 10,
+  defeated: 0,
+};
+
 export function getEnemyHpPercent(condition: string): number {
-  const HP_MAP: Record<string, number> = {
-    healthy: 100,
-    scratched: 70,
-    damaged: 50,
-    wounded: 30,
-    critical: 10,
-    defeated: 0,
-  };
-  return HP_MAP[condition] ?? 50;
+  return ENEMY_HP_MAP[condition] ?? 50;
 }
 
 // ── Enemy Name Disambiguation ───────────────────────────────────────────────
@@ -343,167 +360,149 @@ export function formatDungeonEntry(
   return lines;
 }
 
-/** Generate archetype-specific protocol briefing for first-time dungeon entry. */
+/** Protocol briefing data shape. Lazy-evaluated via functions to satisfy i18n (msg() at call time). */
+interface ProtocolBriefing {
+  title: () => string;
+  intro: () => string[];
+  bullets: () => string[];
+  outro: () => string;
+}
+
+/** Data-driven protocol briefings for all 8 archetypes. */
+const PROTOCOL_BRIEFINGS: Record<string, ProtocolBriefing> = {
+  [ARCHETYPE_SHADOW]: {
+    title: () => msg('SHADOW PROTOCOL'),
+    intro: () => [
+      msg('You descend into the dark. Visibility is your lifeline \u2013'),
+      msg('when it fails, the shadows move closer.'),
+    ],
+    bullets: () => [
+      msg('Scout to reveal rooms. Observe to maintain sight.'),
+      msg('The darkness drains visibility each floor.'),
+      msg('At Visibility 0, enemies strike first. Always.'),
+    ],
+    outro: () => msg('The darkness does not forgive blindness.'),
+  },
+  [ARCHETYPE_TOWER]: {
+    title: () => msg('STRUCTURAL PROTOCOL'),
+    intro: () => [
+      msg('The building remembers every footstep as a tremor.'),
+      msg('Each floor you ascend weakens the one beneath.'),
+    ],
+    bullets: () => [
+      msg('Structural integrity drains each floor.'),
+      msg('Use REINFORCE (Guardian) to restore stability.'),
+      msg('At integrity 0, the building collapses. No retreat.'),
+    ],
+    outro: () => msg('Reinforce what holds you up \u2013 or become what it buries.'),
+  },
+  [ARCHETYPE_ENTROPY]: {
+    title: () => msg('ENTROPY PROTOCOL'),
+    intro: () => [
+      msg('Everything here is becoming everything else.'),
+      msg('Decay accumulates. It does not reverse on its own.'),
+    ],
+    bullets: () => [
+      msg('Decay increases each floor and each combat round.'),
+      msg('Enemy contact accelerates decay (contagious).'),
+      msg('Use PRESERVE (Guardian) to slow dissolution.'),
+      msg('At Decay 100, the party dissolves. No retreat.'),
+    ],
+    outro: () => msg('Reinforce the differences. Or join the equilibrium.'),
+  },
+  [ARCHETYPE_MOTHER]: {
+    title: () => msg('PARASITIC PROTOCOL'),
+    intro: () => [
+      msg('The dungeon provides. The provision is the threat.'),
+      msg('Everything here heals you. Everything here binds you.'),
+    ],
+    bullets: () => [
+      msg('Attachment rises each floor. The dungeon heals stress in return.'),
+      msg('Accepting gifts deepens the bond. Refusing costs stress.'),
+      msg('Use SEVER (Guardian) to cut the parasitic attachment.'),
+      msg('At Attachment 100, the party is incorporated. No exit.'),
+    ],
+    outro: () => msg('The warmth is genuine. The warmth is also the trap.'),
+  },
+  [ARCHETYPE_PROMETHEUS]: {
+    title: () => msg('PROMETHEUS PROTOCOL'),
+    intro: () => [
+      msg('The fire was never meant to be carried. It was meant to be understood.'),
+      msg('Every room yields components. Every component is a question about what to build.'),
+    ],
+    bullets: () => [
+      msg('Insight rises with exploration. Deeper rooms yield more.'),
+      msg('Components are found in combat, encounters, and treasure rooms.'),
+      msg('Craft items at insight thresholds. Each creation costs insight.'),
+      msg('The pharmakon accumulates \u2013 the fire that illuminates also burns.'),
+      msg('At Insight 100: breakthrough. The forge ignites fully.'),
+    ],
+    outro: () => msg('What you build here will outlast you. Choose what deserves to exist.'),
+  },
+  [ARCHETYPE_DELUGE]: {
+    title: () => msg('DELUGE PROTOCOL'),
+    intro: () => [
+      msg('The water rises. Not fast. It has time.'),
+      msg('What the flood takes, it keeps. What it spares, it marks.'),
+    ],
+    bullets: () => [
+      msg('Lower floors flood first. They also hold better salvage.'),
+      msg('The tide recedes \u2013 briefly \u2013 every 3 rooms.'),
+      msg('Each recession is smaller than the last.'),
+      msg('Use SEAL (Guardian) to close the breaches.'),
+      msg('Use SALVAGE to dive cleared rooms for submerged loot.'),
+      msg('At water level 100: submersion. Total loss.'),
+    ],
+    outro: () => msg('The waterline does not negotiate. Read it, or join it.'),
+  },
+  [ARCHETYPE_AWAKENING]: {
+    title: () => msg('AWAKENING PROTOCOL'),
+    intro: () => [
+      msg('The collective mind turns over in its sleep.'),
+      msg('Something in the architecture recognizes you. Not personally \u2013 collectively.'),
+    ],
+    bullets: () => [
+      msg('Awareness rises with each room. The deeper you go, the faster.'),
+      msg('High awareness grants perception \u2013 but erodes certainty.'),
+      msg('At Awareness 70: lucid state. The dungeon responds to thought.'),
+      msg('Use GROUND (Spy) to reduce awareness. Grounding has a cooldown.'),
+      msg('At Awareness 100: dissolution. Complete ego loss.'),
+    ],
+    outro: () => msg('The dungeon does not read your thoughts. It resonates with them.'),
+  },
+  [ARCHETYPE_OVERTHROW]: {
+    title: () => msg('OVERTHROW PROTOCOL'),
+    intro: () => [
+      msg('Power changes hands. The old order does not die \u2013 it metamorphoses.'),
+      msg('Every NPC is a political actor. Every room is a negotiation.'),
+    ],
+    bullets: () => [
+      msg('Authority fracture rises with each room. Factions shift.'),
+      msg('High fracture means betrayals, ambushes, and paranoia.'),
+      msg('At Fracture 60: revolution. The old order cracks.'),
+      msg('Use RALLY (Propagandist) to reduce fracture. Rally has a cooldown.'),
+      msg('At Fracture 100: total collapse. Power vacuum.'),
+    ],
+    outro: () => msg('The Spiegelpalast shows everyone what they want to see. Not what they are.'),
+  },
+};
+
+/** Generate archetype-specific protocol briefing. Data-driven: 8 entries, 1 renderer. */
 export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
+  const briefing = PROTOCOL_BRIEFINGS[archetype] ?? PROTOCOL_BRIEFINGS[ARCHETYPE_SHADOW];
   const lines: TerminalLine[] = [];
 
-  if (archetype === ARCHETYPE_ENTROPY) {
-    lines.push(combatSystemLine(msg('ENTROPY PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('Everything here is becoming everything else.')));
-    lines.push(responseLine(msg('Decay accumulates. It does not reverse on its own.')));
-    lines.push(systemLine(''));
-    lines.push(systemLine(`\u25C9 ${msg('Decay increases each floor and each combat round.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('Enemy contact accelerates decay (contagious).')}`));
-    lines.push(systemLine(`\u25C9 ${msg('Use PRESERVE (Guardian) to slow dissolution.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('At Decay 100, the party dissolves. No retreat.')}`));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('Reinforce the differences. Or join the equilibrium.')));
-  } else if (archetype === ARCHETYPE_TOWER) {
-    lines.push(combatSystemLine(msg('STRUCTURAL PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The building remembers every footstep as a tremor.')));
-    lines.push(responseLine(msg('Each floor you ascend weakens the one beneath.')));
-    lines.push(systemLine(''));
-    lines.push(systemLine(`\u25C9 ${msg('Structural integrity drains each floor.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('Use REINFORCE (Guardian) to restore stability.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('At integrity 0, the building collapses. No retreat.')}`));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('Reinforce what holds you up \u2013 or become what it buries.')));
-  } else if (archetype === ARCHETYPE_MOTHER) {
-    lines.push(combatSystemLine(msg('PARASITIC PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The dungeon provides. The provision is the threat.')));
-    lines.push(responseLine(msg('Everything here heals you. Everything here binds you.')));
-    lines.push(systemLine(''));
-    lines.push(
-      systemLine(
-        `\u25C9 ${msg('Attachment rises each floor. The dungeon heals stress in return.')}`,
-      ),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('Accepting gifts deepens the bond. Refusing costs stress.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('Use SEVER (Guardian) to cut the parasitic attachment.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('At Attachment 100, the party is incorporated. No exit.')}`),
-    );
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The warmth is genuine. The warmth is also the trap.')));
-  } else if (archetype === ARCHETYPE_DELUGE) {
-    lines.push(combatSystemLine(msg('DELUGE PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The water rises. Not fast. It has time.')));
-    lines.push(responseLine(msg('What the flood takes, it keeps. What it spares, it marks.')));
-    lines.push(systemLine(''));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Lower floors flood first. They also hold better salvage.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('The tide recedes \u2013 briefly \u2013 every 3 rooms.')}`),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('Each recession is smaller than the last.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('Use SEAL (Guardian) to close the breaches.')}`));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Use SALVAGE to dive cleared rooms for submerged loot.')}`),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('At water level 100: submersion. Total loss.')}`));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The waterline does not negotiate. Read it, or join it.')));
-  } else if (archetype === ARCHETYPE_AWAKENING) {
-    lines.push(combatSystemLine(msg('AWAKENING PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The collective mind turns over in its sleep.')));
-    lines.push(
-      responseLine(
-        msg('Something in the architecture recognizes you. Not personally \u2013 collectively.'),
-      ),
-    );
-    lines.push(systemLine(''));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Awareness rises with each room. The deeper you go, the faster.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('High awareness grants perception \u2013 but erodes certainty.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('At Awareness 70: lucid state. The dungeon responds to thought.')}`),
-    );
-    lines.push(
-      systemLine(
-        `\u25C9 ${msg('Use GROUND (Spy) to reduce awareness. Grounding has a cooldown.')}`,
-      ),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('At Awareness 100: dissolution. Complete ego loss.')}`));
-    lines.push(systemLine(''));
-    lines.push(
-      responseLine(msg('The dungeon does not read your thoughts. It resonates with them.')),
-    );
-  } else if (archetype === ARCHETYPE_OVERTHROW) {
-    lines.push(combatSystemLine(msg('OVERTHROW PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(
-      responseLine(msg('Power changes hands. The old order does not die \u2013 it metamorphoses.')),
-    );
-    lines.push(responseLine(msg('Every NPC is a political actor. Every room is a negotiation.')));
-    lines.push(systemLine(''));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Authority fracture rises with each room. Factions shift.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('High fracture means betrayals, ambushes, and paranoia.')}`),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('At Fracture 60: revolution. The old order cracks.')}`));
-    lines.push(
-      systemLine(
-        `\u25C9 ${msg('Use RALLY (Propagandist) to reduce fracture. Rally has a cooldown.')}`,
-      ),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('At Fracture 100: total collapse. Power vacuum.')}`));
-    lines.push(systemLine(''));
-    lines.push(
-      responseLine(
-        msg('The Spiegelpalast shows everyone what they want to see. Not what they are.'),
-      ),
-    );
-  } else if (archetype === ARCHETYPE_PROMETHEUS) {
-    lines.push(combatSystemLine(msg('PROMETHEUS PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The fire was never meant to be carried. It was meant to be understood.')));
-    lines.push(
-      responseLine(msg('Every room yields components. Every component is a question about what to build.')),
-    );
-    lines.push(systemLine(''));
-    lines.push(
-      systemLine(`\u25C9 ${msg('Insight rises with exploration. Deeper rooms yield more.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('Components are found in combat, encounters, and treasure rooms.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('Craft items at insight thresholds. Each creation costs insight.')}`),
-    );
-    lines.push(
-      systemLine(`\u25C9 ${msg('The pharmakon accumulates \u2013 the fire that illuminates also burns.')}`),
-    );
-    lines.push(systemLine(`\u25C9 ${msg('At Insight 100: breakthrough. The forge ignites fully.')}`));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('What you build here will outlast you. Choose what deserves to exist.')));
-  } else {
-    // Shadow (default)
-    lines.push(combatSystemLine(msg('SHADOW PROTOCOL')));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('You descend into the dark. Visibility is your lifeline \u2013')));
-    lines.push(responseLine(msg('when it fails, the shadows move closer.')));
-    lines.push(systemLine(''));
-    lines.push(systemLine(`\u25C9 ${msg('Scout to reveal rooms. Observe to maintain sight.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('The darkness drains visibility each floor.')}`));
-    lines.push(systemLine(`\u25C9 ${msg('At Visibility 0, enemies strike first. Always.')}`));
-    lines.push(systemLine(''));
-    lines.push(responseLine(msg('The darkness does not forgive blindness.')));
+  lines.push(combatSystemLine(briefing.title()));
+  lines.push(systemLine(''));
+  for (const line of briefing.intro()) {
+    lines.push(responseLine(line));
   }
+  lines.push(systemLine(''));
+  for (const bullet of briefing.bullets()) {
+    lines.push(systemLine(`\u25C9 ${bullet}`));
+  }
+  lines.push(systemLine(''));
+  lines.push(responseLine(briefing.outro()));
 
   return lines;
 }
@@ -604,14 +603,9 @@ export function formatRoomEntry(
   }
 
   // Archetype-specific state gauge (all 8 archetypes via centralized helper)
-  const gauge = getArchetypeGaugeInfo(archetypeState);
-  if (gauge) {
-    const barWidth = gauge.max <= 10 ? gauge.max : Math.round(gauge.max / 5);
-    const filled = gauge.max <= 10 ? gauge.value : Math.round(gauge.value / 5);
-    const empty = barWidth - filled;
-    const bar =
-      '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
-    lines.push(systemLine(`${gauge.label}: ${bar} [${gauge.value}/${gauge.max}]`));
+  const gaugeBar = formatArchetypeGaugeBar(archetypeState);
+  if (gaugeBar) {
+    lines.push(systemLine(gaugeBar));
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
@@ -1440,16 +1434,9 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
   lines.push(responseLine(`${msg('Difficulty')}: ${'*'.repeat(state.difficulty)}`));
 
   // Archetype-specific gauge (all 8 archetypes via centralized helper)
-  const statusGauge = getArchetypeGaugeInfo(state.archetype_state);
-  if (statusGauge) {
-    const barWidth = statusGauge.max <= 10 ? statusGauge.max : Math.round(statusGauge.max / 5);
-    const filled = statusGauge.max <= 10 ? statusGauge.value : Math.round(statusGauge.value / 5);
-    const empty = barWidth - filled;
-    const bar =
-      '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
-    lines.push(
-      responseLine(`${statusGauge.label}: ${bar} [${statusGauge.value}/${statusGauge.max}]`),
-    );
+  const statusGaugeBar = formatArchetypeGaugeBar(state.archetype_state);
+  if (statusGaugeBar) {
+    lines.push(responseLine(statusGaugeBar));
   }
 
   lines.push(systemLine(''));
