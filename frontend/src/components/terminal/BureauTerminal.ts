@@ -35,7 +35,7 @@ import './TerminalQuickActions.js';
 
 const FEED_POLL_INTERVAL_MS = 30_000;
 const BOOT_LINE_DELAY_MS = 80;
-const MAX_SCROLL_TOLERANCE = 60;
+const MAX_SCROLL_TOLERANCE = 150;
 
 // ── Component ──────────────────────────────────────────────────────────────
 
@@ -225,8 +225,16 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         letter-spacing: 0.5px;
       }
 
+      .line--art {
+        color: var(--_phosphor);
+        letter-spacing: 0.5px;
+        line-height: 1.15;
+        padding: 0;
+      }
+
       @media (prefers-reduced-motion: no-preference) {
-        .line--system {
+        .line--system,
+        .line--art {
           text-shadow:
             0 0 4px var(--_phosphor-glow),
             -0.4px 0 color-mix(in srgb, var(--_danger) 6%, transparent),

@@ -18,7 +18,11 @@ import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { EnemyCombatStateClient, TelegraphedAction } from '../../types/dungeon.js';
-import { buildEnemyDisplayNames, getEnemyConditionLabel } from '../../utils/dungeon-formatters.js';
+import {
+  buildEnemyDisplayNames,
+  getEnemyConditionLabel,
+  getEnemyHpPercent,
+} from '../../utils/dungeon-formatters.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgBadge.js';
 
@@ -274,7 +278,7 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
           display: none;
         }
 
-        .intent {
+        .intent__text {
           display: none;
         }
       }
@@ -339,13 +343,26 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     `,
   ];
 
+  // -- Memo guard for display names (avoids rebuilding Map on every signal tick) --
+
+  private _lastEnemies: readonly EnemyCombatStateClient[] | null = null;
+  private _cachedDisplayNames: Map<string, string> = new Map();
+
+  private _getDisplayNames(enemies: readonly EnemyCombatStateClient[]): Map<string, string> {
+    if (enemies !== this._lastEnemies) {
+      this._lastEnemies = enemies;
+      this._cachedDisplayNames = buildEnemyDisplayNames(enemies as EnemyCombatStateClient[]);
+    }
+    return this._cachedDisplayNames;
+  }
+
   // -- Render ---------------------------------------------------------------
 
   protected render() {
     const combat = dungeonState.combat.value;
     if (!combat || combat.enemies.length === 0) return nothing;
 
-    const displayNames = buildEnemyDisplayNames(combat.enemies);
+    const displayNames = this._getDisplayNames(combat.enemies);
 
     return html`
       <div class="panel" role="region" aria-label=${msg('Enemy status')}>
@@ -369,18 +386,8 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
     const cond = enemy.condition_display;
     const displayName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
 
-    // HP fill percentage (approximate from condition state)
-    const hpPct = isDead
-      ? 0
-      : cond === 'healthy'
-        ? 100
-        : cond === 'scratched'
-          ? 70
-          : cond === 'damaged'
-            ? 50
-            : cond === 'wounded'
-              ? 30
-              : 10; // critical
+    // HP fill percentage (centralized condition → percent mapping)
+    const hpPct = getEnemyHpPercent(cond);
 
     return html`
       <div

@@ -40,7 +40,7 @@ import { terminalState } from './TerminalStateManager.js';
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'dungeon_active_run';
-const TIMER_TICK_MS = 100; // 100ms precision for smooth countdown
+const TIMER_TICK_MS = 250; // 250ms precision — 4 updates/sec is visually smooth for the fill bar
 
 // ── State Manager ──────────────────────────────────────────────────────────
 
@@ -69,6 +69,11 @@ class DungeonStateManager {
 
   /** Aptitude map for picker agents: agent_id → {spy: N, guardian: N, ...}. */
   readonly pickerAptitudes = signal<Map<string, AptitudeSet>>(new Map());
+
+  /** Archetype stored after showing the agent picker — lets the user type
+   *  `dungeon 1 2 3` (agent indices) without re-specifying the archetype.
+   *  Cleared on run start, explicit re-selection, or archetype listing. */
+  readonly pendingArchetypeForPicker = signal<string | null>(null);
 
   // ── Encounter State (client-only, ephemeral) ───────────────────────────
 
@@ -236,6 +241,7 @@ class DungeonStateManager {
     this.encounterChoices.value = [];
     this.pickerAgents.value = [];
     this.pickerAptitudes.value = new Map();
+    this.pendingArchetypeForPicker.value = null;
     this._stopTimer();
     this._clearPersistedRunId();
   }

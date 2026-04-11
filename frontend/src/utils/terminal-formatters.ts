@@ -40,6 +40,12 @@ function systemLine(content: string): TerminalLine {
   return { id: lineId(), type: 'system', content, timestamp: new Date() };
 }
 
+/** ASCII art block — rendered with tight line-height so underscore glyphs
+ *  don't create visual gaps between rows. */
+function artLine(content: string): TerminalLine {
+  return { id: lineId(), type: 'art', content, timestamp: new Date() };
+}
+
 function errorLine(content: string): TerminalLine {
   return { id: lineId(), type: 'error', content, timestamp: new Date() };
 }
@@ -656,14 +662,16 @@ export function formatBootSequence(
   // Strip blank lines from custom art — AI generators often include leading/trailing
   // empty lines that create ugly gaps in the terminal banner.
   const artLines = customArt
-    ? customArt.split('\n').filter((l) => l.trimEnd().length > 0)
+    ? customArt.split('\n').filter((l) => l.trim().length > 0)
     : getThemeAsciiArt(theme ?? 'custom');
   const lines: TerminalLine[] = [];
 
-  // ASCII art header (AI-generated or theme fallback)
+  // ASCII art header (AI-generated or theme fallback).
+  // Each row is a separate 'art' line (tight line-height: 1.15) so underscore
+  // glyphs don't create visual gaps, while preserving line-by-line boot animation.
   lines.push(systemLine(''));
-  for (const artLine of artLines) {
-    lines.push(systemLine(artLine));
+  for (const row of artLines) {
+    lines.push(artLine(row));
   }
   lines.push(systemLine(''));
 
@@ -777,12 +785,26 @@ export function formatUnknownCommand(input: string, suggestion?: string): Termin
   return lines;
 }
 
-export function formatInsufficientClearance(verb: string, requiredTier: number): TerminalLine[] {
-  return [
+export function formatInsufficientClearance(
+  verb: string,
+  requiredTier: number,
+  commandsRun?: number,
+  commandsNeeded?: number,
+): TerminalLine[] {
+  const lines = [
     errorLine(
       `${msg('Insufficient clearance for')} '${verb}'. ${msg('Requires Level')} ${requiredTier}.`,
     ),
   ];
+  if (commandsRun !== undefined && commandsNeeded !== undefined && commandsNeeded > commandsRun) {
+    const remaining = commandsNeeded - commandsRun;
+    lines.push(
+      hintLine(
+        `${msg('Run')} ${remaining} ${msg('more commands to unlock.')} (${commandsRun}/${commandsNeeded})`,
+      ),
+    );
+  }
+  return lines;
 }
 
 export function formatInsufficientPoints(

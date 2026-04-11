@@ -194,6 +194,22 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         opacity: 0.7;
       }
 
+      .lobby-dungeon--available {
+        cursor: pointer;
+        transition: border-color var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease);
+      }
+
+      .lobby-dungeon--available:hover {
+        border-color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_phosphor) 6%, transparent);
+      }
+
+      .lobby-dungeon--available:focus-visible {
+        outline: 1px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+
       .lobby-dungeon--unavailable {
         opacity: 0.4;
       }
@@ -440,6 +456,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
   @state() private _initialized = false;
   @state() private _error: string | null = null;
+  @state() private _mapDialogOpen = false;
 
   private _wakeLock: WakeLockSentinel | null = null;
 
@@ -617,7 +634,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
       <dialog
         class="map-dialog"
-        @close=${() => this.requestUpdate()}
+        @close=${this._onMapDialogClose}
         @click=${this._onMapDialogBackdropClick}
       >
         <div class="map-dialog__header">
@@ -628,7 +645,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
             aria-label=${msg('Close map')}
           >&times;</button>
         </div>
-        <velg-dungeon-map persistent></velg-dungeon-map>
+        ${this._mapDialogOpen ? html`<velg-dungeon-map persistent></velg-dungeon-map>` : nothing}
       </dialog>
 
       <dialog
@@ -650,7 +667,12 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
   }
 
   private _openMapDialog(): void {
+    this._mapDialogOpen = true;
     this._mapDialog?.showModal();
+  }
+
+  private _onMapDialogClose(): void {
+    this._mapDialogOpen = false;
   }
 
   /** Close dialog when clicking backdrop (outside content area). */
@@ -687,11 +709,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
                 : html`<span>${msg('No dungeon archetypes detected in this simulation.')}</span>`
           }
           <div class="lobby-info__hint">
-            ${msg("Type 'dungeon' in the terminal to start a run.")}
+            ${msg("Click an archetype or type 'dungeon' in the terminal.")}
           </div>
         </div>
         <div class="terminal-wrapper" style="flex:1;min-height:0">
-          <velg-bureau-terminal .simulationId=${simulationId}></velg-bureau-terminal>
+          <velg-bureau-terminal .simulationId=${simulationId} .dungeonMode=${true}></velg-bureau-terminal>
         </div>
       </div>
     `;
@@ -704,8 +726,21 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         ${dungeons.map(
           (d) => html`
             <div
-              class="lobby-dungeon ${d.available ? '' : 'lobby-dungeon--unavailable'}"
-              role="listitem"
+              class="lobby-dungeon ${d.available ? 'lobby-dungeon--available' : 'lobby-dungeon--unavailable'}"
+              role=${d.available ? 'button' : 'listitem'}
+              tabindex=${d.available ? '0' : '-1'}
+              aria-label=${d.available ? msg('Enter') + ' ' + getArchetypeDisplayName(d.archetype) : ''}
+              @click=${() => d.available && this._handleTerminalCommand(
+                new CustomEvent('terminal-command', { detail: `dungeon ${d.archetype}` }),
+              )}
+              @keydown=${(e: KeyboardEvent) => {
+                if (d.available && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  this._handleTerminalCommand(
+                    new CustomEvent('terminal-command', { detail: `dungeon ${d.archetype}` }),
+                  );
+                }
+              }}
             >
               <span class="lobby-dungeon__name">${getArchetypeDisplayName(d.archetype)}</span>
               <span class="lobby-dungeon__meta">
