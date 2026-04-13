@@ -46,6 +46,10 @@ export class EpochChatApiServiceImpl extends BaseApiService {
       ready,
     });
   }
+
+  passCycle(epochId: string, simulationId: string): Promise<ApiResponse<{ passed: boolean }>> {
+    return this.post(`/epochs/${epochId}/pass-cycle?simulation_id=${simulationId}`, {});
+  }
 }
 
 export const epochChatApi = new EpochChatApiServiceImpl();
