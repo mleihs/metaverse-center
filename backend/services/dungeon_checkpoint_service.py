@@ -445,7 +445,12 @@ class DungeonCheckpointService:
                 continue
 
             if effect_type == "aptitude_boost":
-                choices = item.get("effect_params", {}).get("aptitude_choices", [])
+                params = item.get("effect_params", {})
+                choices = params.get("aptitude_choices", [])
+                # Single-aptitude items use "aptitude" key (string) instead of array
+                if not choices and params.get("aptitude"):
+                    apt = params["aptitude"]
+                    choices = [apt] if "|" not in apt else apt.split("|")
                 if choices:
                     best_agent = min(
                         operational,

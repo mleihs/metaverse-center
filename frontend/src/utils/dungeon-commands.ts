@@ -48,7 +48,7 @@ import {
   formatThresholdEntry,
 } from './dungeon-formatters.js';
 import { handleDungeonEnter } from './dungeon-entry-flow.js';
-import { fuzzyName } from './fuzzy-search.js';
+import { fuzzyName, resolveToken } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import {
   combatSystemLine,
@@ -577,11 +577,10 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
   }
 
   if (ctx.args.length < 2) {
-    return [hintLine(msg('Usage: assign <item#> <agent_name>'))];
+    return [hintLine(msg('Usage: assign <item#> <agent_name> [dimension]'))];
   }
 
   const itemNum = parseInt(ctx.args[0], 10);
-  const agentNameInput = ctx.args.slice(1).join(' ').toLowerCase();
 
   // Find the distributable items (same filter as formatter)
   const autoEffects = AUTO_APPLY_EFFECTS;
@@ -593,6 +592,29 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
 
   const lootItem = distributable[itemNum - 1];
 
+  // ── Separate agent name from optional dimension argument ───────────
+  // Big Five dimensions — mirrors BIG_FIVE_DIMENSIONS in
+  // backend/models/resonance_dungeon.py:310.  Stable set since 1961.
+  const BIG_FIVE = new Set([
+    'openness', 'conscientiousness', 'extraversion',
+    'agreeableness', 'neuroticism',
+  ]);
+
+  const restArgs = ctx.args.slice(1);
+  let dimension: string | undefined;
+
+  // If the loot is a personality_modifier AND the last arg is a valid
+  // dimension, split it off; otherwise all remaining args form the name.
+  if (
+    lootItem.effect_type === 'personality_modifier' &&
+    restArgs.length >= 2 &&
+    BIG_FIVE.has(restArgs[restArgs.length - 1].toLowerCase())
+  ) {
+    dimension = restArgs.pop()!.toLowerCase();
+  }
+
+  const agentNameInput = restArgs.join(' ').toLowerCase();
+
   // Fuzzy match agent name (same pattern as attack/encounter commands)
   const operationalNames = state.party
     .filter((a) => a.condition !== 'captured')
@@ -603,10 +625,28 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
   }
   const agent = state.party.find((a) => a.agent_name === matchedName)!;
 
+  // For personality_modifier items: dimension is required (player choice
+  // or auto-extracted from effect_params.trait on the backend).
+  // If the item's effect_params has a pre-set trait, the backend handles it.
+  // If not, the player must specify the dimension.
+  if (lootItem.effect_type === 'personality_modifier' && !dimension) {
+    // Try to get trait from effect_params (fixed-trait items)
+    const fixedTrait = lootItem.effect_params?.trait as string | undefined;
+    if (fixedTrait && BIG_FIVE.has(fixedTrait)) {
+      dimension = fixedTrait;
+    } else {
+      return [
+        errorLine(msg('This item modifies personality. Specify a Big Five dimension:')),
+        hintLine(msg('assign <#> <agent> openness|conscientiousness|extraversion|agreeableness|neuroticism')),
+      ];
+    }
+  }
+
   try {
     const resp = await dungeonApi.assignLoot(runId, {
       loot_id: lootItem.id,
       agent_id: agent.agent_id,
+      ...(dimension ? { dimension } : {}),
     });
     if (!resp.success || !resp.data) {
       return [errorLine(resp.error?.message ?? msg('Assignment failed.'))];
@@ -793,10 +833,12 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   }
 
   // Syntax: attack <agent> <ability> [target]
+  // All three tokens can be multi-word: "attack General Wolf Precision Strike Echo Fragment A"
+  // Resolution: agent → ability → target, each via resolveToken (longest-prefix-first).
   if (ctx.args.length < 2) {
     return [
       errorLine(msg('Usage: attack <agent> <ability> [target]')),
-      hintLine(msg('Example: attack Kovacs observe')),
+      hintLine(msg('Example: attack Mueller precision strike sentinel')),
     ];
   }
 
@@ -804,50 +846,53 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
     (a) => a.condition !== 'captured' && a.available_abilities.length > 0,
   );
 
-  // Fuzzy match agent
-  const agentName = ctx.args[0];
+  // Step 1: agent (cap prefix length to leave room for ability)
   const agentNames = party.map((a) => a.agent_name);
-  const matchedAgent = fuzzyName(agentName, agentNames);
-
-  if (!matchedAgent) {
-    return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
+  const agentResult = resolveToken(ctx.args, agentNames, Math.min(ctx.args.length - 1, 3));
+  if (!agentResult.match) {
+    return [errorLine(`${msg('Unknown agent')}: ${ctx.args[0]}`)];
   }
+  const agent = party.find((a) => a.agent_name === agentResult.match)!;
 
-  const agent = party.find((a) => a.agent_name === matchedAgent)!;
-
-  // Fuzzy match ability
-  const abilityArg = ctx.args[1].toLowerCase();
+  // Step 2: ability
+  if (agentResult.rest.length === 0) {
+    return [errorLine(msg('Specify an ability.'))];
+  }
   const abilityNames = agent.available_abilities
     .filter((a) => a.cooldown_remaining === 0)
     .map((a) => localized(a, 'name'));
-  const matchedAbility = fuzzyName(abilityArg, abilityNames);
-
-  if (!matchedAbility) {
-    return [errorLine(`${msg('Unknown or unavailable ability')}: ${abilityArg}`)];
+  const abilityResult = resolveToken(agentResult.rest, abilityNames);
+  if (!abilityResult.match) {
+    return [errorLine(`${msg('Unknown or unavailable ability')}: ${agentResult.rest.join(' ')}`)];
   }
+  const ability = agent.available_abilities.find((a) => localized(a, 'name') === abilityResult.match)!;
 
-  const ability = agent.available_abilities.find((a) => localized(a, 'name') === matchedAbility)!;
-
-  // Optional target (enemy)
-  const targetArg = ctx.args.length > 2 ? ctx.args.slice(2).join(' ') : undefined;
+  // Step 3: target (remainder — already multi-word via resolveToken)
   let targetId: string | undefined;
+  let resolvedTargetName: string | undefined;
 
-  if (targetArg && state.combat) {
+  if (abilityResult.rest.length > 0 && state.combat) {
     const enemyNames = state.combat.enemies
       .filter((e) => e.is_alive)
       .map((e) => localized(e, 'name'));
-    const matchedEnemy = fuzzyName(targetArg, enemyNames);
+    const { match: matchedEnemy } = resolveToken(abilityResult.rest, enemyNames);
     if (matchedEnemy) {
       const enemy = state.combat.enemies.find((e) => localized(e, 'name') === matchedEnemy);
       targetId = enemy?.instance_id;
+      resolvedTargetName = matchedEnemy;
     }
+  }
+
+  // Warn if target arg was provided but didn't match any alive enemy
+  if (abilityResult.rest.length > 0 && !targetId) {
+    return [errorLine(`${msg('Unknown target')}: ${abilityResult.rest.join(' ')}`)];
   }
 
   // Register selection
   dungeonState.selectAction(agent.agent_id, ability.id, targetId);
 
   const lines: TerminalLine[] = [
-    systemLine(`${matchedAgent} \u2192 ${matchedAbility}${targetId ? ` \u2192 ${targetArg}` : ''}`),
+    systemLine(`${agentResult.match} \u2192 ${abilityResult.match}${resolvedTargetName ? ` \u2192 ${resolvedTargetName}` : ''}`),
   ];
 
   // Show selection summary

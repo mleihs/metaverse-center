@@ -33,9 +33,14 @@ export interface NamedEntity {
 
 /**
  * Find entities matching a search string.
+ *
+ * Match hierarchy (first non-empty tier wins):
  * 1. Exact case-insensitive match
- * 2. Substring match
- * 3. Levenshtein distance <= maxDistance (default 2)
+ * 2. Prefix match — query is a prefix of the entity name
+ * 3. Word-start match — query matches the start of any word in the name
+ *    (favours distinctive tokens: "awak" → "The Awakening")
+ * 4. General substring match
+ * 5. Levenshtein distance ≤ maxDistance against individual words
  */
 export function fuzzyMatch<T extends NamedEntity>(
   query: string,
@@ -45,15 +50,25 @@ export function fuzzyMatch<T extends NamedEntity>(
   const q = query.toLowerCase().trim();
   if (!q) return [];
 
-  // Exact match
+  // 1. Exact match
   const exact = entities.filter((e) => e.name.toLowerCase() === q);
   if (exact.length > 0) return exact;
 
-  // Substring match
+  // 2. Prefix match — "The Awak" → "The Awakening"
+  const prefix = entities.filter((e) => e.name.toLowerCase().startsWith(q));
+  if (prefix.length > 0) return prefix;
+
+  // 3. Word-start match — "awak" matches word "Awakening" in "The Awakening"
+  const wordStart = entities.filter((e) =>
+    e.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q)),
+  );
+  if (wordStart.length > 0) return wordStart;
+
+  // 4. General substring match
   const substring = entities.filter((e) => e.name.toLowerCase().includes(q));
   if (substring.length > 0) return substring;
 
-  // Levenshtein fallback (match against individual words in name)
+  // 5. Levenshtein fallback (match against individual words in name)
   const lev = entities.filter((e) => {
     const words = e.name.toLowerCase().split(/\s+/);
     return words.some((w) => levenshtein(q, w) <= maxDistance);
@@ -69,4 +84,33 @@ export function fuzzyName(query: string, names: string[]): string | null {
   const entities = names.map((n) => ({ id: n, name: n }));
   const matches = fuzzyMatch(query, entities);
   return matches.length > 0 ? matches[0].name : null;
+}
+
+/**
+ * Resolve a multi-word token from the start of an args array.
+ *
+ * Tries progressively shorter prefixes (longest first) against a known
+ * set of candidates via fuzzyName.  Returns the match and remaining args.
+ *
+ * Used by dungeon commands where agent names ("General Aldric Wolf"),
+ * ability names ("Precision Strike"), and archetype names ("The Awakening")
+ * must be extracted from a flat whitespace-split arg list.
+ *
+ * @param args     - Remaining args to parse (not mutated).
+ * @param candidates - Known valid names to match against.
+ * @param maxWords - Maximum prefix length to try (default: args.length).
+ * @returns `{ match, rest }` — matched name (or null) and unconsumed args.
+ */
+export function resolveToken(
+  args: string[],
+  candidates: string[],
+  maxWords?: number,
+): { match: string | null; rest: string[] } {
+  const limit = Math.min(maxWords ?? args.length, args.length);
+  for (let end = limit; end >= 1; end--) {
+    const candidate = args.slice(0, end).join(' ');
+    const match = fuzzyName(candidate, candidates);
+    if (match) return { match, rest: args.slice(end) };
+  }
+  return { match: null, rest: args };
 }

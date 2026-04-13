@@ -799,7 +799,7 @@ export function formatCombatPlanning(party: AgentCombatStateClient[]): TerminalL
   lines.push(systemLine(`${msg('SELECT ACTIONS')}: ${names}`));
   lines.push(
     hintLine(
-      msg('Select abilities in the combat bar below. Type "help combat" for commands.'),
+      msg('Select abilities in the combat bar below. Type "attack <agent> <ability> [target]" for commands.'),
     ),
   );
 

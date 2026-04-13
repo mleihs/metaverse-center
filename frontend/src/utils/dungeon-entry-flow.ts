@@ -24,7 +24,7 @@ import {
   formatDungeonEntry,
   getArchetypeDisplayName,
 } from './dungeon-formatters.js';
-import { fuzzyName } from './fuzzy-search.js';
+import { resolveToken } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
 import { errorLine, hintLine, systemLine } from './terminal-formatters.js';
@@ -80,10 +80,28 @@ export function resolveEntryArgs(
     return { archetype: pendingArchetype, selectionArgs: ['auto'] };
   }
 
-  // Rule 1: Non-numeric → fuzzy match archetype name
+  // Rule 1: Non-numeric first arg → fuzzy match archetype name.
+  // Uses resolveToken (longest-prefix-first) to handle multi-word names
+  // like "The Awakening" before falling back to shorter prefixes.
   if (!isNumeric) {
     const archetypeNames = available.map((d) => d.archetype);
-    return { archetype: fuzzyName(firstArg, archetypeNames), selectionArgs: args.slice(1) };
+
+    // Boundary: first numeric or keyword arg ends the potential name
+    let nameEnd = args.length;
+    for (let i = 0; i < args.length; i++) {
+      const tok = args[i];
+      const n = parseInt(tok, 10);
+      if ((!Number.isNaN(n) && String(n) === tok) || tok.toLowerCase() === 'auto') {
+        nameEnd = i;
+        break;
+      }
+    }
+
+    const { match, rest } = resolveToken(args.slice(0, nameEnd), archetypeNames);
+    if (match) {
+      return { archetype: match, selectionArgs: [...rest, ...args.slice(nameEnd)] };
+    }
+    return { archetype: null, selectionArgs: args };
   }
 
   // Rule 2: Single numeric arg → archetype by 1-based index
