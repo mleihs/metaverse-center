@@ -59,10 +59,10 @@ class EpochConfig(BaseModel):
     # Epoch creation UI sets "activity_gated" as the recommended value.
     auto_resolve_mode: Literal[
         "manual",
-        "hard_deadline",
-        "deadline_or_ready",
+        "hard_deadline",  # not yet implemented
+        "deadline_or_ready",  # not yet implemented
         "activity_gated",
-        "fixed_schedule",
+        "fixed_schedule",  # not yet implemented
     ] = "manual"
     cycle_deadline_minutes: int = Field(480, ge=15, le=2880)
     min_cycle_duration_minutes: int = Field(15, ge=5, le=120)

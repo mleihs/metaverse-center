@@ -1153,6 +1153,7 @@ export interface EpochConfig {
   score_weights: EpochScoreWeights;
   referee_mode: boolean;
   // Auto-resolve (defaults to "manual" for backward compat)
+  // Only 'manual' and 'activity_gated' are implemented. Others are spec stubs.
   auto_resolve_mode?: 'manual' | 'hard_deadline' | 'deadline_or_ready' | 'activity_gated' | 'fixed_schedule';
   cycle_deadline_minutes?: number;
   min_cycle_duration_minutes?: number;
