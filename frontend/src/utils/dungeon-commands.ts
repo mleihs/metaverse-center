@@ -871,21 +871,26 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   let targetId: string | undefined;
   let resolvedTargetName: string | undefined;
 
-  if (abilityResult.rest.length > 0 && state.combat) {
-    const enemyNames = state.combat.enemies
-      .filter((e) => e.is_alive)
-      .map((e) => localized(e, 'name'));
-    const { match: matchedEnemy } = resolveToken(abilityResult.rest, enemyNames);
-    if (matchedEnemy) {
-      const enemy = state.combat.enemies.find((e) => localized(e, 'name') === matchedEnemy);
-      targetId = enemy?.instance_id;
-      resolvedTargetName = matchedEnemy;
-    }
-  }
+  if (state.combat) {
+    const alive = state.combat.enemies.filter((e) => e.is_alive);
 
-  // Warn if target arg was provided but didn't match any alive enemy
-  if (abilityResult.rest.length > 0 && !targetId) {
-    return [errorLine(`${msg('Unknown target')}: ${abilityResult.rest.join(' ')}`)];
+    if (abilityResult.rest.length > 0) {
+      // Explicit target provided — resolve it
+      const enemyNames = alive.map((e) => localized(e, 'name'));
+      const { match: matchedEnemy } = resolveToken(abilityResult.rest, enemyNames);
+      if (matchedEnemy) {
+        const enemy = alive.find((e) => localized(e, 'name') === matchedEnemy);
+        targetId = enemy?.instance_id;
+        resolvedTargetName = matchedEnemy;
+      } else {
+        return [errorLine(`${msg('Unknown target')}: ${abilityResult.rest.join(' ')}`)];
+      }
+    } else if (alive.length > 0 && ability.targets !== 'self' && ability.targets !== 'all_allies') {
+      // No target specified for enemy-targeting ability → auto-target first alive enemy.
+      // Mirrors DungeonCombatBar auto-target fix.
+      targetId = alive[0].instance_id;
+      resolvedTargetName = localized(alive[0], 'name');
+    }
   }
 
   // Register selection
