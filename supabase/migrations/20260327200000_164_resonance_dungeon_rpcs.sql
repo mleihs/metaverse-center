@@ -87,6 +87,7 @@ DECLARE
     v_skipped       JSONB := '[]'::JSONB;
     v_bonus_count   INT;
     v_aptitude      TEXT;
+    v_resolved_apt  TEXT;  -- resolved from pipe-separated list
     v_bonus_amount  INT;
 BEGIN
     FOR v_item IN SELECT * FROM jsonb_array_elements(p_loot_items)
@@ -135,6 +136,21 @@ BEGIN
                 CONTINUE;
             END IF;
 
+            -- Handle pipe-separated aptitude choices ("guardian|propagandist"):
+            -- pick the one with the lowest current level for maximum impact.
+            IF v_aptitude LIKE '%|%' THEN
+                SELECT apt.operative_type INTO v_resolved_apt
+                FROM unnest(string_to_array(v_aptitude, '|')) AS choice(val)
+                JOIN agent_aptitudes apt ON apt.agent_id = v_agent_id AND apt.operative_type = choice.val
+                ORDER BY apt.aptitude_level ASC
+                LIMIT 1;
+                IF v_resolved_apt IS NULL THEN
+                    v_resolved_apt := split_part(v_aptitude, '|', 1);
+                END IF;
+            ELSE
+                v_resolved_apt := v_aptitude;
+            END IF;
+
             -- Accept both "bonus" (legacy) and "boost" (Python loot defs) field names
             v_bonus_amount := COALESCE(
                 (v_effect_params ->> 'bonus')::INT,
@@ -146,7 +162,7 @@ BEGIN
             UPDATE agent_aptitudes
             SET aptitude_level = LEAST(9, aptitude_level + v_bonus_amount)
             WHERE agent_id = v_agent_id
-            AND operative_type = v_aptitude;
+            AND operative_type = v_resolved_apt;
 
             -- Record the effect
             INSERT INTO agent_dungeon_loot_effects (
@@ -154,13 +170,13 @@ BEGIN
                 source_run_id, source_loot_id
             ) VALUES (
                 v_agent_id, p_simulation_id, 'aptitude_boost',
-                jsonb_build_object('aptitude', v_aptitude, 'bonus', v_bonus_amount),
+                jsonb_build_object('aptitude', v_resolved_apt, 'bonus', v_bonus_amount),
                 p_run_id, v_loot_id
             );
 
             v_applied := v_applied || jsonb_build_object(
                 'loot_id', v_loot_id, 'agent_id', v_agent_id::TEXT,
-                'effect', 'aptitude_boost', 'aptitude', v_aptitude
+                'effect', 'aptitude_boost', 'aptitude', v_resolved_apt
             );
 
         -- ── memory: create agent_memories entry ─────────────────────
