@@ -31,7 +31,7 @@ import {
   formatLootDrop,
   formatPartyWipe,
 } from '../utils/dungeon-formatters.js';
-import { combatSystemLine } from '../utils/terminal-formatters.js';
+import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
 import { captureError } from './SentryService.js';
@@ -48,6 +48,20 @@ const TIMER_TICK_MS = 250;
 // ── State Manager ──────────────────────────────────────────────────────────
 
 class DungeonStateManager {
+  /** Guard flag: prevents concurrent validateActiveRun calls (e.g. rapid tab switches). */
+  private _validating = false;
+
+  constructor() {
+    // Detect externally-abandoned runs when the user returns to the tab.
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && this.runId.value) {
+          void this.validateActiveRun();
+        }
+      });
+    }
+  }
+
   // ── Core State (server-authoritative) ──────────────────────────────────
 
   /** Full client state from the last API response. */
@@ -273,6 +287,51 @@ class DungeonStateManager {
       return false;
     } finally {
       this.loading.value = false;
+    }
+  }
+
+  /**
+   * Validate that the active in-memory run still exists on the server.
+   * Called on tab focus return (visibilitychange) to detect externally-abandoned runs.
+   *
+   * Distinguishes server-confirmed removal (HTTP 4xx → clear state) from
+   * transient network errors (retain state — the run is likely still alive).
+   */
+  async validateActiveRun(): Promise<boolean> {
+    const runId = this.runId.value;
+    if (!runId || this._validating) return false;
+
+    this._validating = true;
+    try {
+      const resp = await dungeonApi.getState(runId);
+      if (resp.success && resp.data) {
+        const phase = resp.data.phase;
+        if (phase === 'completed' || phase === 'wiped') {
+          terminalState.appendOutput([systemLine('Dungeon run ended. Returning to lobby.')]);
+          terminalState.clearDungeon();
+          this.clear();
+          return false;
+        }
+        // Run is still active — resync state
+        this.applyState(resp.data);
+        return true;
+      }
+      // Non-success response: check if server confirmed (4xx) vs network failure
+      const code = resp.error?.code ?? '';
+      if (code === 'NETWORK_ERROR') {
+        // Transient network issue — retain state, run is likely still alive
+        return true;
+      }
+      // Server confirmed the run is gone (404, 403, etc.)
+      terminalState.appendOutput([systemLine('Dungeon run expired. Returning to lobby.')]);
+      terminalState.clearDungeon();
+      this.clear();
+      return false;
+    } catch {
+      // Unexpected error — retain state (conservative)
+      return false;
+    } finally {
+      this._validating = false;
     }
   }
 

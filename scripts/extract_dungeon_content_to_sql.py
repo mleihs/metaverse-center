@@ -80,6 +80,16 @@ def _bool(val: bool) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+_TIER_FIELD_FOR_ARCHETYPE: dict[str, str] = {
+    "The Entropy": "decay_tier",
+    "The Devouring Mother": "attachment_tier",
+    "The Prometheus": "insight_tier",
+    "The Deluge": "water_tier",
+    "The Awakening": "awareness_tier",
+    "The Overthrow": "fracture_tier",
+}
+
+
 def generate_banter(lines: list[str]) -> int:
     """Generate INSERT statements for dungeon_banter."""
     count = 0
@@ -97,21 +107,27 @@ def generate_banter(lines: list[str]) -> int:
             for k, v in b.get("personality_filter", {}).items():
                 pf[k] = list(v) if isinstance(v, tuple) else v
 
+            # Resolve archetype_tier from the archetype-specific field name
+            tier_field = _TIER_FIELD_FOR_ARCHETYPE.get(archetype)
+            archetype_tier = b.get(tier_field, 0) if tier_field else 0
+
             lines.append(
                 f"INSERT INTO dungeon_banter "
                 f"(id, archetype, trigger, personality_filter, text_en, text_de, "
-                f"decay_tier, attachment_tier, sort_order) VALUES ("
+                f"decay_tier, attachment_tier, archetype_tier, sort_order) VALUES ("
                 f"{_dq(banter_id)}, {_dq(archetype)}, {_dq(b['trigger'])}, "
                 f"{_jsonb(pf)}, "
                 f"{_dq(b['text_en'])}, {_dq(b['text_de'])}, "
                 f"{'NULL' if b.get('decay_tier') is None else b['decay_tier']}, "
                 f"{'NULL' if b.get('attachment_tier') is None else b['attachment_tier']}, "
+                f"{archetype_tier}, "
                 f"{idx}"
                 f") ON CONFLICT (id) DO UPDATE SET "
                 f"archetype = EXCLUDED.archetype, trigger = EXCLUDED.trigger, "
                 f"personality_filter = EXCLUDED.personality_filter, "
                 f"text_en = EXCLUDED.text_en, text_de = EXCLUDED.text_de, "
                 f"decay_tier = EXCLUDED.decay_tier, attachment_tier = EXCLUDED.attachment_tier, "
+                f"archetype_tier = EXCLUDED.archetype_tier, "
                 f"sort_order = EXCLUDED.sort_order;"
             )
             count += 1

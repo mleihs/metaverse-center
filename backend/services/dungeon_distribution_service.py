@@ -19,6 +19,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
+from backend.models.combat import AgentCombatState
 from backend.models.resonance_dungeon import (
     DistributeConfirmResponse,
     DungeonInstance,
@@ -41,6 +42,43 @@ logger = logging.getLogger(__name__)
 
 class DungeonDistributionService:
     """Loot distribution, assignment, and run finalization."""
+
+    # ── Pipe-Separated Aptitude Resolution ─────────────────────────────────
+
+    @staticmethod
+    def _resolve_pipe_aptitude(
+        party: list[AgentCombatState],
+        agent_id: str,
+        raw_aptitude: str,
+    ) -> str:
+        """Resolve pipe-separated aptitude choices to the agent's lowest-level option.
+
+        Game design decision: pick the aptitude with the lowest current level
+        for maximum impact. Falls back to first choice if the agent has none
+        of the listed aptitudes.
+
+        Called before passing loot_items to the SQL RPC so the function
+        receives a clean single string (R1 refactor: business logic in Python,
+        not SQL).
+        """
+        if "|" not in raw_aptitude:
+            return raw_aptitude
+        choices = raw_aptitude.split("|")
+        # Find agent's aptitudes from the party
+        agent_aptitudes: dict[str, int] = {}
+        for agent in party:
+            if str(agent.agent_id) == agent_id:
+                agent_aptitudes = agent.aptitudes
+                break
+        # Pick the choice with the lowest current level
+        best: str | None = None
+        best_level = float("inf")
+        for choice in choices:
+            level = agent_aptitudes.get(choice)
+            if level is not None and level < best_level:
+                best = choice
+                best_level = level
+        return best if best is not None else choices[0]
 
     # ── Run Completion (no distribution) ───────────────────────────────────
 
@@ -328,6 +366,12 @@ class DungeonDistributionService:
                 extra = instance.loot_extra_params.get(loot_id)
                 if extra:
                     params.update(extra)
+                # Resolve pipe-separated aptitude to single value (R1)
+                raw_apt = params.get("aptitude", "")
+                if "|" in raw_apt:
+                    params["aptitude"] = cls._resolve_pipe_aptitude(
+                        instance.party, assigned_agent, raw_apt,
+                    )
                 loot_items.append(
                     {
                         "loot_id": loot_id,
@@ -495,12 +539,19 @@ class DungeonDistributionService:
                     )
             else:
                 # Assign to first operational agent
+                params = dict(loot_item.effect_params)
+                # Resolve pipe-separated aptitude to single value (R1)
+                raw_apt = params.get("aptitude", "")
+                if "|" in raw_apt:
+                    params["aptitude"] = cls._resolve_pipe_aptitude(
+                        instance.party, first_agent_id, raw_apt,
+                    )
                 items.append(
                     {
                         "loot_id": loot_item.id,
                         "agent_id": first_agent_id,
                         "effect_type": effect_type,
-                        "effect_params": loot_item.effect_params,
+                        "effect_params": params,
                     }
                 )
 

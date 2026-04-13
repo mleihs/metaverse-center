@@ -2680,12 +2680,12 @@ def _deluge_water_tier(archetype_state: dict) -> int:
 # Replaces 6 identical elif blocks with one generic filter.
 # Shadow and Tower have no tier-based banter and are absent.
 _ARCHETYPE_TIER_CONFIG: dict[str, tuple[Callable[[dict], int], str]] = {
-    "The Entropy": (_entropy_decay_tier, "decay_tier"),
-    "The Devouring Mother": (_mother_attachment_tier, "attachment_tier"),
-    "The Prometheus": (_prometheus_insight_tier, "insight_tier"),
-    "The Deluge": (_deluge_water_tier, "water_tier"),
-    "The Awakening": (_awakening_awareness_tier, "awareness_tier"),
-    "The Overthrow": (_overthrow_fracture_tier, "fracture_tier"),
+    "The Entropy": (_entropy_decay_tier, "archetype_tier"),
+    "The Devouring Mother": (_mother_attachment_tier, "archetype_tier"),
+    "The Prometheus": (_prometheus_insight_tier, "archetype_tier"),
+    "The Deluge": (_deluge_water_tier, "archetype_tier"),
+    "The Awakening": (_awakening_awareness_tier, "archetype_tier"),
+    "The Overthrow": (_overthrow_fracture_tier, "archetype_tier"),
 }
 
 
