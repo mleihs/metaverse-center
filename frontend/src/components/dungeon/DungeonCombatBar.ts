@@ -1043,20 +1043,24 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         this._clearTargeting();
         return;
       }
-      // Multiple allies: enter targeting mode for ally selection
+      // Multiple allies: auto-target first, allow override via target click
+      dungeonState.selectAction(agent.agent_id, ability.id, allies[0].agent_id);
       this._targetingAgentId = agent.agent_id;
       this._targetingAbilityId = ability.id;
       return;
     }
 
-    // Single enemy: auto-target if 1 alive, else target picker
+    // Single enemy: auto-target directly
     if (alive.length <= 1) {
       dungeonState.selectAction(agent.agent_id, ability.id, alive[0]?.instance_id);
       this._clearTargeting();
       return;
     }
 
-    // Multiple enemies: enter targeting mode
+    // Multiple enemies: auto-target first enemy, allow override via target click.
+    // Without the default, the action registers with target_id: null and the
+    // backend silently drops it (no damage, no miss — invisible failure).
+    dungeonState.selectAction(agent.agent_id, ability.id, alive[0].instance_id);
     this._targetingAgentId = agent.agent_id;
     this._targetingAbilityId = ability.id;
   }

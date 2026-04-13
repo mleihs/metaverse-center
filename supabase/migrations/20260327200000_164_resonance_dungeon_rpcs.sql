@@ -118,10 +118,14 @@ BEGIN
                 CONTINUE;
             END IF;
 
-            -- Determine which aptitude to boost (first available from choices)
-            v_aptitude := v_effect_params -> 'aptitude_choices' ->> 0;
+            -- Determine which aptitude to boost.
+            -- Accepts both Python format ("aptitude": "spy") and legacy ("aptitude_choices": ["spy"])
+            v_aptitude := COALESCE(
+                v_effect_params -> 'aptitude_choices' ->> 0,
+                v_effect_params ->> 'aptitude'
+            );
 
-            -- Validate aptitude is not NULL (empty choices array)
+            -- Validate aptitude resolved
             IF v_aptitude IS NULL THEN
                 v_skipped := v_skipped || jsonb_build_object(
                     'loot_id', v_loot_id,
@@ -131,7 +135,12 @@ BEGIN
                 CONTINUE;
             END IF;
 
-            v_bonus_amount := COALESCE((v_effect_params ->> 'bonus')::INT, 1);
+            -- Accept both "bonus" (legacy) and "boost" (Python loot defs) field names
+            v_bonus_amount := COALESCE(
+                (v_effect_params ->> 'bonus')::INT,
+                (v_effect_params ->> 'boost')::INT,
+                1
+            );
 
             -- Apply the aptitude boost (cap individual level at 9)
             UPDATE agent_aptitudes

@@ -199,7 +199,7 @@ class TestConstants:
         assert INSTANCE_TTL_SECONDS == 1800
 
     def test_combat_planning_timeout(self):
-        assert COMBAT_PLANNING_TIMEOUT_MS == 45_000
+        assert COMBAT_PLANNING_TIMEOUT_MS == 63_000
 
 
 # ── _get_instance ────────────────────────────────────────────────────────

@@ -757,6 +757,8 @@ export interface AgentLootEffect {
 export interface LootAssignmentRequest {
   loot_id: string;
   agent_id: string;
+  /** Big Five dimension for personality_modifier items (e.g. "openness"). */
+  dimension?: string;
 }
 
 /** Response from assign loot endpoint. */
