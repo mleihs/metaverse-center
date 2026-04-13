@@ -97,6 +97,7 @@ from backend.routers import (
 from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.dungeon_content_service import load_all_content as load_dungeon_content
 from backend.services.dungeon_engine_service import start_instance_cleanup
+from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
@@ -118,9 +119,11 @@ async def lifespan(app: FastAPI):
     heartbeat_task = await HeartbeatService.start()
     instagram_task = await InstagramScheduler.start()
     bluesky_task = await BlueskyScheduler.start()
+    epoch_cycle_task = await EpochCycleScheduler.start()
     dungeon_cleanup_task = await start_instance_cleanup()
     yield
     dungeon_cleanup_task.cancel()
+    epoch_cycle_task.cancel()
     bluesky_task.cancel()
     instagram_task.cancel()
     heartbeat_task.cancel()
@@ -193,6 +196,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         },
     )
 
+
 # --- Routers ---
 app.include_router(health.router)
 app.include_router(achievements.router)
@@ -255,9 +259,7 @@ if _static_dir.is_dir():
     app.mount("/assets", StaticFiles(directory=_static_dir / "assets"), name="static-assets")
 
     @app.get("/{full_path:path}", response_model=None)
-    async def serve_spa(
-        request: Request, full_path: str
-    ) -> FileResponse | HTMLResponse | RedirectResponse:
+    async def serve_spa(request: Request, full_path: str) -> FileResponse | HTMLResponse | RedirectResponse:
         """Serve SPA index.html for all non-API, non-asset routes."""
         if full_path.startswith("api/"):
             return JSONResponse(status_code=404, content={"success": False, "message": "API route not found"})

@@ -38,6 +38,7 @@ from backend.services.academy_service import AcademyService
 from backend.services.alliance_service import AllianceService
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
+from backend.services.cycle_resolution_service import CycleResolutionService
 from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
@@ -369,6 +370,24 @@ async def resolve_cycle(
     return SuccessResponse(data=data)
 
 
+@router.post("/{epoch_id}/pass-cycle")
+async def pass_cycle(
+    epoch_id: UUID,
+    simulation_id: Annotated[UUID, Query(description="Your simulation ID")],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse:
+    """Explicitly pass this cycle without taking action.
+
+    Sets has_acted_this_cycle = true so the player can signal ready.
+    Does not deploy any operatives or take any strategic action.
+    """
+    data = await CycleResolutionService.pass_cycle(supabase, admin_supabase, epoch_id, simulation_id)
+    return SuccessResponse(data=data)
+
+
 # ── Participants ────────────────────────────────────────
 
 
@@ -636,6 +655,7 @@ async def create_proposal(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[AllianceProposalResponse]:
     """Request to join a team. Requires unanimous member approval."""
     data = await AllianceService.create_proposal(
@@ -644,6 +664,9 @@ async def create_proposal(
         body.team_id,
         simulation_id,
     )
+
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
+
     await AuditService.safe_log(
         supabase,
         simulation_id,
@@ -705,6 +728,7 @@ async def vote_on_proposal(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[AllianceVoteResponse]:
     """Vote accept/reject on an alliance proposal. Team members only."""
     data = await AllianceService.vote_on_proposal(
@@ -713,6 +737,9 @@ async def vote_on_proposal(
         simulation_id,
         body.vote,
     )
+
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
+
     await AuditService.safe_log(
         supabase,
         simulation_id,

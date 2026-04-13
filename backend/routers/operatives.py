@@ -17,6 +17,7 @@ from backend.models.common import CurrentUser, PaginatedResponse, SuccessRespons
 from backend.models.epoch import MissionResponse, OperativeDeploy
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
+from backend.services.cycle_resolution_service import CycleResolutionService
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
 from backend.utils.responses import paginated
@@ -42,6 +43,9 @@ async def deploy_operative(
 ) -> SuccessResponse[MissionResponse]:
     """Deploy an operative agent on a mission. Must be a participant in the epoch."""
     mission = await OperativeService.deploy(supabase, epoch_id, simulation_id, body, admin_supabase)
+
+    # Track player action for activity-gated ready (not in service — bots must not trigger)
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
 
     await AuditService.safe_log(
         supabase,
@@ -142,6 +146,9 @@ async def fortify_zone(
 ) -> SuccessResponse[dict]:
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
     result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id, admin_supabase)
+
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
+
     await AuditService.safe_log(
         supabase,
         simulation_id,
@@ -164,9 +171,13 @@ async def counter_intel_sweep(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[list[MissionResponse]]:
     """Run a counter-intelligence sweep. Must be a participant in the epoch."""
     detected = await OperativeService.counter_intel_sweep(supabase, epoch_id, simulation_id)
+
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
+
     await AuditService.safe_log(
         supabase,
         simulation_id,
@@ -205,9 +216,13 @@ async def recall_operative(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MissionResponse]:
     """Recall an active operative. Must be a participant in the epoch."""
     data = await OperativeService.recall(supabase, mission_id, simulation_id)
+
+    await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
+
     await AuditService.safe_log(
         supabase,
         simulation_id,

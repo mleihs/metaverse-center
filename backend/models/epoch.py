@@ -11,7 +11,11 @@ from backend.services.constants import OPERATIVE_TARGET_TYPE
 # ── Scoring Dimensions (canonical list) ──────────────────────────
 
 SCORING_DIMENSIONS: list[str] = [
-    "stability", "influence", "sovereignty", "diplomatic", "military",
+    "stability",
+    "influence",
+    "sovereignty",
+    "diplomatic",
+    "military",
 ]
 
 # ── Epoch Configuration ──────────────────────────────────────────
@@ -50,6 +54,33 @@ class EpochConfig(BaseModel):
     score_weights: EpochScoreWeights = Field(default_factory=EpochScoreWeights)
     referee_mode: bool = False
 
+    # ── Auto-Resolve ──────────────────────────────────────────
+    # Default "manual" preserves IST-Verhalten for existing epochs.
+    # Epoch creation UI sets "activity_gated" as the recommended value.
+    auto_resolve_mode: Literal[
+        "manual",
+        "hard_deadline",
+        "deadline_or_ready",
+        "activity_gated",
+        "fixed_schedule",
+    ] = "manual"
+    cycle_deadline_minutes: int = Field(480, ge=15, le=2880)
+    min_cycle_duration_minutes: int = Field(15, ge=5, le=120)
+    require_action_for_ready: bool = False
+
+    # ── AFK Handling ──────────────────────────────────────────
+    afk_penalty_enabled: bool = False
+    afk_rp_penalty: int = Field(2, ge=0, le=10)
+    afk_escalation_threshold: int = Field(3, ge=2, le=10)
+    afk_ai_personality: Literal["sentinel", "warlord", "diplomat", "strategist", "chaos"] = "sentinel"
+
+    @model_validator(mode="after")
+    def validate_deadline_vs_min(self) -> "EpochConfig":
+        if self.cycle_deadline_minutes < self.min_cycle_duration_minutes:
+            msg = "cycle_deadline_minutes must be >= min_cycle_duration_minutes"
+            raise ValueError(msg)
+        return self
+
 
 # ── Epoch CRUD ───────────────────────────────────────────────────
 
@@ -80,9 +111,7 @@ class EpochUpdate(BaseModel):
     config: EpochConfig | None = None
 
 
-EpochStatus = Literal[
-    "lobby", "foundation", "competition", "reckoning", "completed", "cancelled"
-]
+EpochStatus = Literal["lobby", "foundation", "competition", "reckoning", "completed", "cancelled"]
 
 
 class EpochResponse(BaseModel):
@@ -206,9 +235,7 @@ class AllianceVoteResponse(BaseModel):
 # ── Operative Missions ───────────────────────────────────────────
 
 
-OperativeType = Literal[
-    "spy", "saboteur", "propagandist", "assassin", "guardian", "infiltrator"
-]
+OperativeType = Literal["spy", "saboteur", "propagandist", "assassin", "guardian", "infiltrator"]
 
 
 class OperativeDeploy(BaseModel):
@@ -227,19 +254,14 @@ class OperativeDeploy(BaseModel):
         has_id = self.target_entity_id is not None
         has_type = self.target_entity_type is not None
         if has_id != has_type:
-            raise ValueError(
-                "target_entity_id and target_entity_type must both be set or both be omitted"
-            )
+            raise ValueError("target_entity_id and target_entity_type must both be set or both be omitted")
         if has_type:
             expected = OPERATIVE_TARGET_TYPE.get(self.operative_type, "none")
             if expected == "none":
-                raise ValueError(
-                    f"{self.operative_type} operatives do not accept target entities"
-                )
+                raise ValueError(f"{self.operative_type} operatives do not accept target entities")
             if self.target_entity_type != expected:
                 raise ValueError(
-                    f"{self.operative_type} requires target_entity_type='{expected}', "
-                    f"got '{self.target_entity_type}'"
+                    f"{self.operative_type} requires target_entity_type='{expected}', got '{self.target_entity_type}'"
                 )
         return self
 
@@ -311,14 +333,38 @@ class LeaderboardEntry(BaseModel):
 
 
 BattleLogEventType = Literal[
-    "operative_deployed", "mission_success", "mission_failed",
-    "detected", "captured", "sabotage", "propaganda", "assassination",
-    "infiltration", "alliance_formed", "alliance_dissolved", "betrayal",
-    "phase_change", "epoch_start", "epoch_end", "rp_allocated",
-    "building_damaged", "agent_wounded", "counter_intel", "zone_fortified",
-    "alliance_proposal", "alliance_proposal_accepted",
-    "alliance_proposal_rejected", "alliance_tension_increase",
-    "alliance_dissolved_tension", "alliance_upkeep",
+    "operative_deployed",
+    "mission_success",
+    "mission_failed",
+    "detected",
+    "captured",
+    "sabotage",
+    "propaganda",
+    "assassination",
+    "infiltration",
+    "alliance_formed",
+    "alliance_dissolved",
+    "betrayal",
+    "phase_change",
+    "epoch_start",
+    "epoch_end",
+    "rp_allocated",
+    "building_damaged",
+    "agent_wounded",
+    "counter_intel",
+    "zone_fortified",
+    "alliance_proposal",
+    "alliance_proposal_accepted",
+    "alliance_proposal_rejected",
+    "alliance_tension_increase",
+    "alliance_dissolved_tension",
+    "alliance_upkeep",
+    "cycle_auto_resolved",
+    "player_afk",
+    "player_afk_penalty",
+    "player_afk_ai_takeover",
+    "player_returned",
+    "player_passed",
 ]
 
 

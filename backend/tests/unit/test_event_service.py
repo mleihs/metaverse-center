@@ -18,19 +18,31 @@ from uuid import UUID, uuid4
 MOCK_SIM_ID = UUID("22222222-2222-2222-2222-222222222222")
 
 
+def _async_supabase_mock() -> MagicMock:
+    """Create a MagicMock supabase where any table().…execute() chain is async.
+
+    Required because ``generate_reactions`` queries ``simulation_settings``
+    directly (locale lookup at line 289), which needs an awaitable ``.execute()``.
+    """
+    sb = MagicMock()
+    chain = MagicMock()
+    chain.select.return_value = chain
+    chain.eq.return_value = chain
+    chain.limit.return_value = chain
+    chain.order.return_value = chain
+    chain.in_.return_value = chain
+    chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+    sb.table.return_value = chain
+    return sb
+
+
 def _mock_supabase_for_reactions(
     existing_reactions: list[dict] | None = None,
 ) -> MagicMock:
     """Create a MagicMock Supabase client for event_reactions queries."""
     mock_sb = MagicMock()
     # get_reactions: table("event_reactions").select(...).eq(...).eq(...).order(...).execute()
-    reaction_chain = (
-        mock_sb.table.return_value
-        .select.return_value
-        .eq.return_value
-        .eq.return_value
-        .order.return_value
-    )
+    reaction_chain = mock_sb.table.return_value.select.return_value.eq.return_value.eq.return_value.order.return_value
     reaction_chain.execute = AsyncMock(return_value=MagicMock(data=existing_reactions or []))
     return mock_sb
 
@@ -58,24 +70,35 @@ class TestGenerateReactionsCreatePath:
 
         with (
             patch.object(
-                EventService, "get_reactions", new_callable=AsyncMock, return_value=[],
+                EventService,
+                "get_reactions",
+                new_callable=AsyncMock,
+                return_value=[],
             ),
             patch.object(
-                EventService, "add_reaction", new_callable=AsyncMock,
+                EventService,
+                "add_reaction",
+                new_callable=AsyncMock,
                 side_effect=[reaction1, reaction2],
             ) as mock_add,
             patch(
                 "backend.services.event_service.AgentService.list_for_reaction",
-                new_callable=AsyncMock, return_value=agents,
+                new_callable=AsyncMock,
+                return_value=agents,
             ),
             patch(
                 "backend.services.event_service.GameMechanicsService.build_generation_context",
-                new_callable=AsyncMock, return_value={"simulation_health": 0.5},
+                new_callable=AsyncMock,
+                return_value={"simulation_health": 0.5},
             ),
         ):
             event = {"id": event_id, "title": "Crisis", "description": "A major crisis"}
             result = await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, mock_gen, max_agents=10,
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                mock_gen,
+                max_agents=10,
             )
 
         assert len(result) == 2
@@ -108,26 +131,39 @@ class TestGenerateReactionsUpdatePath:
 
         with (
             patch.object(
-                EventService, "get_reactions", new_callable=AsyncMock, return_value=existing,
+                EventService,
+                "get_reactions",
+                new_callable=AsyncMock,
+                return_value=existing,
             ),
             patch.object(
-                EventService, "update_reaction", new_callable=AsyncMock, return_value=updated_reaction,
+                EventService,
+                "update_reaction",
+                new_callable=AsyncMock,
+                return_value=updated_reaction,
             ) as mock_update,
             patch.object(
-                EventService, "add_reaction", new_callable=AsyncMock,
+                EventService,
+                "add_reaction",
+                new_callable=AsyncMock,
             ) as mock_add,
             patch(
                 "backend.services.event_service.AgentService.list_for_reaction",
-                new_callable=AsyncMock, return_value=agents,
+                new_callable=AsyncMock,
+                return_value=agents,
             ),
             patch(
                 "backend.services.event_service.GameMechanicsService.build_generation_context",
-                new_callable=AsyncMock, return_value={"simulation_health": 0.5},
+                new_callable=AsyncMock,
+                return_value={"simulation_health": 0.5},
             ),
         ):
             event = {"id": event_id, "title": "Crisis", "description": "A major crisis"}
             result = await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, mock_gen,
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                mock_gen,
             )
 
         assert len(result) == 1
@@ -144,11 +180,15 @@ class TestGenerateReactionsEmptyAgents:
 
         with patch(
             "backend.services.event_service.AgentService.list_for_reaction",
-            new_callable=AsyncMock, return_value=[],
+            new_callable=AsyncMock,
+            return_value=[],
         ):
             event = {"id": str(uuid4()), "title": "Test", "description": ""}
             result = await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, AsyncMock(),
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                AsyncMock(),
             )
 
         assert result == []
@@ -176,23 +216,34 @@ class TestGenerateReactionsPartialFailure:
 
         with (
             patch.object(
-                EventService, "get_reactions", new_callable=AsyncMock, return_value=[],
+                EventService,
+                "get_reactions",
+                new_callable=AsyncMock,
+                return_value=[],
             ),
             patch.object(
-                EventService, "add_reaction", new_callable=AsyncMock, return_value=reaction,
+                EventService,
+                "add_reaction",
+                new_callable=AsyncMock,
+                return_value=reaction,
             ),
             patch(
                 "backend.services.event_service.AgentService.list_for_reaction",
-                new_callable=AsyncMock, return_value=agents,
+                new_callable=AsyncMock,
+                return_value=agents,
             ),
             patch(
                 "backend.services.event_service.GameMechanicsService.build_generation_context",
-                new_callable=AsyncMock, return_value={"simulation_health": 0.5},
+                new_callable=AsyncMock,
+                return_value={"simulation_health": 0.5},
             ),
         ):
             event = {"id": event_id, "title": "Test", "description": ""}
             result = await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, mock_gen,
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                mock_gen,
             )
 
         # Only the successful reaction should be returned
@@ -208,11 +259,16 @@ class TestGenerateReactionsMaxAgents:
 
         with patch(
             "backend.services.event_service.AgentService.list_for_reaction",
-            new_callable=AsyncMock, return_value=[],
+            new_callable=AsyncMock,
+            return_value=[],
         ) as mock_list:
             event = {"id": str(uuid4()), "title": "T", "description": ""}
             await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, AsyncMock(), max_agents=7,
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                AsyncMock(),
+                max_agents=7,
             )
 
         mock_list.assert_called_once()
@@ -236,21 +292,29 @@ class TestGenerateReactionsLogging:
 
         with (
             patch.object(
-                EventService, "get_reactions", new_callable=AsyncMock, return_value=[],
+                EventService,
+                "get_reactions",
+                new_callable=AsyncMock,
+                return_value=[],
             ),
             patch(
                 "backend.services.event_service.AgentService.list_for_reaction",
-                new_callable=AsyncMock, return_value=agents,
+                new_callable=AsyncMock,
+                return_value=agents,
             ),
             patch(
                 "backend.services.event_service.GameMechanicsService.build_generation_context",
-                new_callable=AsyncMock, return_value={"simulation_health": 0.5},
+                new_callable=AsyncMock,
+                return_value={"simulation_health": 0.5},
             ),
             caplog.at_level(logging.WARNING, logger="backend.services.event_service"),
         ):
             event = {"id": event_id, "title": "Test", "description": ""}
             await EventService.generate_reactions(
-                MagicMock(), MOCK_SIM_ID, event, mock_gen,
+                _async_supabase_mock(),
+                MOCK_SIM_ID,
+                event,
+                mock_gen,
             )
 
         warning_records = [r for r in caplog.records if r.levelno == logging.WARNING]
