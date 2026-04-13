@@ -784,6 +784,10 @@ export class VelgEpochOverviewTab extends LitElement {
                   .participants=${this.participants}
                   .mySimulationId=${this.myParticipant.simulation_id}
                   .epochStatus=${this.epoch.status}
+                  .cycleDeadlineAt=${this.epoch.cycle_deadline_at ?? ''}
+                  .cycleStartedAt=${this.epoch.cycle_started_at ?? ''}
+                  .autoResolveMode=${this.epoch.config?.auto_resolve_mode ?? 'manual'}
+                  .requireActionForReady=${this.epoch.config?.require_action_for_ready ?? false}
                 ></velg-epoch-ready-panel>
               </div>
             </div>

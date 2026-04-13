@@ -1152,6 +1152,15 @@ export interface EpochConfig {
   allow_betrayal: boolean;
   score_weights: EpochScoreWeights;
   referee_mode: boolean;
+  // Auto-resolve (defaults to "manual" for backward compat)
+  auto_resolve_mode?: 'manual' | 'hard_deadline' | 'deadline_or_ready' | 'activity_gated' | 'fixed_schedule';
+  cycle_deadline_minutes?: number;
+  min_cycle_duration_minutes?: number;
+  require_action_for_ready?: boolean;
+  afk_penalty_enabled?: boolean;
+  afk_rp_penalty?: number;
+  afk_escalation_threshold?: number;
+  afk_ai_personality?: 'sentinel' | 'warlord' | 'diplomat' | 'strategist' | 'chaos';
 }
 
 export type EpochType = 'competitive' | 'academy';
@@ -1171,6 +1180,8 @@ export interface Epoch {
   updated_at: string;
   participant_count?: number;
   team_count?: number;
+  cycle_started_at?: string;
+  cycle_deadline_at?: string;
 }
 
 export interface EpochInvitation {
@@ -1229,6 +1240,11 @@ export interface EpochParticipant {
   is_bot: boolean;
   bot_player_id?: UUID;
   bot_players?: BotPlayer;
+  // Auto-resolve activity tracking
+  has_acted_this_cycle?: boolean;
+  consecutive_afk_cycles?: number;
+  total_afk_cycles?: number;
+  afk_replaced_by_ai?: boolean;
   simulations?: {
     name: string;
     slug: string;
