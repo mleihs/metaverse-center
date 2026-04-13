@@ -38,6 +38,16 @@ export const OPERATIVE_LABEL: Record<OperativeType, string> = {
   assassin: 'ASN',
 };
 
+/** Full names for tooltips and accessibility. */
+export const OPERATIVE_FULL: Record<OperativeType, string> = {
+  spy: 'Spy',
+  guardian: 'Guardian',
+  saboteur: 'Saboteur',
+  propagandist: 'Propagandist',
+  infiltrator: 'Infiltrator',
+  assassin: 'Assassin',
+};
+
 /** RP cost per operative type. */
 export const OPERATIVE_RP_COSTS: Record<OperativeType, number> = {
   spy: 3,

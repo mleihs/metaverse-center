@@ -26,7 +26,7 @@ import type {
 } from '../../types/dungeon.js';
 import type { OperativeType } from '../../types/index.js';
 import { getConditionLabel, getStressLabel } from '../../utils/dungeon-formatters.js';
-import { OPERATIVE_COLORS, OPERATIVE_SHORT } from '../../utils/operative-constants.js';
+import { OPERATIVE_COLORS, OPERATIVE_FULL, OPERATIVE_SHORT } from '../../utils/operative-constants.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
@@ -504,7 +504,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
               .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(
                 ([k, v]) =>
-                  html`<span class="apt">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`,
+                  html`<span class="apt" title="${OPERATIVE_FULL[k as OperativeType] ?? k}">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`,
               )}
           </div>
         `

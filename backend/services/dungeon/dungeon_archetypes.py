@@ -227,7 +227,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "low_water_loot_bonus_chance": 0.50,
             # ── Seal Breach ability ──
             "seal_stress_cost": 15,
-            "seal_min_aptitude": 40,
+            "seal_min_aptitude": 4,
             "seal_cooldown_rooms": 3,
         },
         "aptitude_weights": {
@@ -288,7 +288,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             # ── Rally ability (Propagandist — reduces fracture) ──
             # Pattern: POST /runs/{id}/rally → apply_restore(instance, "rally")
             "rally_stress_cost": 15,
-            "rally_min_aptitude": 40,
+            "rally_min_aptitude": 4,
             "rally_cooldown_rooms": 3,
             # ── Loot modifiers (political stability rewards / chaos degrades) ──
             "low_fracture_loot_bonus_threshold": 20,  # Court Order: stable = richer
@@ -422,7 +422,7 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
             "dissolution_loot_downgrade_chance": 0.30,
             # ── Ground action (introspective grounding) ──
             "ground_stress_cost": 15,
-            "ground_min_aptitude": 40,
+            "ground_min_aptitude": 4,
             "ground_cooldown_rooms": 3,
         },
         "aptitude_weights": {

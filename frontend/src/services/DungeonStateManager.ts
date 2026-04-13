@@ -337,13 +337,24 @@ class DungeonStateManager {
   private _startTimer(timer: PhaseTimer): void {
     this._stopTimer();
 
-    const startMs = new Date(timer.started_at).getTime();
-    if (Number.isNaN(startMs)) {
-      this.timerRemaining.value = 0;
-      return;
+    // Use remaining_ms from backend (clock-skew-free) if available,
+    // otherwise fall back to cross-clock calculation for backward compat.
+    let remaining: number;
+    if (timer.remaining_ms && timer.remaining_ms > 0) {
+      remaining = timer.remaining_ms;
+    } else {
+      const startMs = new Date(timer.started_at).getTime();
+      if (Number.isNaN(startMs)) {
+        this.timerRemaining.value = 0;
+        return;
+      }
+      remaining = startMs + timer.duration_ms - Date.now();
     }
-    const endMs = startMs + timer.duration_ms;
-    const remaining = endMs - Date.now();
+
+    // First-time players: grant 10s grace for onboarding briefing read time
+    if (!globalThis.localStorage?.getItem('dungeon_combat_onboarded')) {
+      remaining += 10_000;
+    }
 
     // If the timer already expired (stale from server checkpoint), don't
     // start a countdown. This prevents a recursive loop where auto-submit
@@ -354,6 +365,9 @@ class DungeonStateManager {
     }
 
     this._autoSubmitFired = false;
+
+    // Use local clock for countdown — endMs is our own Date.now() + remaining
+    const endMs = Date.now() + remaining;
 
     const tick = (): void => {
       const rem = endMs - Date.now();

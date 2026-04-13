@@ -231,7 +231,7 @@ class TestDelugeConfig:
     def test_deluge_has_seal_breach_config(self):
         mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
         assert mc["seal_stress_cost"] == 15
-        assert mc["seal_min_aptitude"] == 40
+        assert mc["seal_min_aptitude"] == 4
         assert mc["reduce_on_seal_action"] == 10
 
 

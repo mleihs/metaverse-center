@@ -413,8 +413,10 @@ export interface TelegraphedAction {
 export interface PhaseTimer {
   /** ISO 8601 timestamp of when the timer started (server clock). */
   started_at: string;
-  /** Total duration in milliseconds. */
+  /** Total duration in milliseconds (server-side, includes buffer). */
   duration_ms: number;
+  /** Client-facing countdown in ms (eliminates clock skew). */
+  remaining_ms?: number;
   /** Phase this timer belongs to. */
   phase: string;
 }
@@ -512,24 +514,39 @@ export interface AnchorText {
 
 /** POST /dungeons/runs/{id}/move — room entry response. */
 export interface MoveToRoomResponse {
+  // Always present
   banter?: Record<string, string> | null;
   anchor_texts?: AnchorText[] | null;
   barometer_text?: Record<string, string> | null;
+  /** Debris item deposited by the current (Deluge, every 2nd room). */
+  debris?: LootItem;
+  /** Awakening: cleared room morphed on re-entry. */
+  deja_vu?: boolean;
+  state: DungeonClientState;
+
+  // Combat room entry
   combat?: boolean;
+  is_ambush?: boolean;
+  encounter_description_en?: string;
+  encounter_description_de?: string;
+
+  // Interactive room (encounter / rest / threshold / boss_deployment)
+  threshold?: boolean;
   encounter?: boolean;
-  encounter_id?: string;
+  rest?: boolean;
+  treasure?: boolean;
+  boss_deployment?: boolean;
   description_en?: string;
   description_de?: string;
   choices?: EncounterChoiceClient[];
-  rest?: boolean;
-  threshold?: boolean;
-  treasure?: boolean;
+  encounter_id?: string;
+
+  // Treasure auto-loot
   auto_loot?: boolean;
   loot?: LootItem[];
+
+  // Exit
   exit_available?: boolean;
-  /** Debris item deposited by the current (Deluge, every 2nd room). */
-  debris?: LootItem;
-  state: DungeonClientState;
 }
 
 /** Encounter choice as presented to the client. */
@@ -537,6 +554,8 @@ export interface EncounterChoiceClient {
   id: string;
   label_en: string;
   label_de: string;
+  description_en?: string | null;
+  description_de?: string | null;
   requires_aptitude: Record<string, number> | null;
   check_aptitude: string | null;
   check_difficulty: number;
@@ -544,14 +563,22 @@ export interface EncounterChoiceClient {
 
 /** POST /dungeons/runs/{id}/combat/submit — combat submission response. */
 export interface CombatSubmitResponse {
-  round_result?: CombatRoundResult | null;
+  // Waiting case (submission accepted, waiting for other players)
+  accepted?: boolean;
   waiting_for_players?: boolean;
-  /** True when combat ended in victory (room_clear or completed phase). */
+
+  // Resolution case — state is always present when round_result is present
+  round_result?: CombatRoundResult | null;
+  state: DungeonClientState;
+
+  // Outcome flags (from victory/wipe/stalemate handlers)
   victory?: boolean;
+  wipe?: boolean;
+  stalemate?: boolean;
   /** Loot items rolled on combat victory. Empty/absent on wipe or stalemate. */
   loot?: LootItem[];
-  state: DungeonClientState;
-  /** True when the finalization RPC failed after retry. Instance kept in memory. */
+
+  // RPC failure fallback (graceful degradation)
   rpc_failed?: boolean;
   rpc_error_message?: string;
 }
@@ -590,7 +617,9 @@ export interface EncounterChoiceResponse {
   narrative_en: string;
   narrative_de: string;
   state: DungeonClientState;
-  /** Boss deployment → combat transition fields (Prometheus). */
+  /** Threshold toll type (populated only for threshold choices). */
+  threshold_toll?: string;
+  /** Boss deployment → combat transition fields. */
   combat?: boolean;
   is_ambush?: boolean;
   encounter_description_en?: string;
@@ -607,13 +636,27 @@ export interface SkillCheckDetail {
   breakdown: Record<string, number>;
 }
 
-/** POST /dungeons/runs/{id}/seal — seal breach response (Deluge only). */
-export interface SealBreachResponse {
-  water_level: number;
+/** Shared fields for archetype-specific restore actions (Seal/Ground/Rally). */
+interface ArchetypeActionBase {
   stress_cost: number;
   agent_stress: number;
   cooldown_until_room: number;
   state: DungeonClientState;
+}
+
+/** POST /dungeons/runs/{id}/seal — Deluge: reduce water level. */
+export interface SealBreachResponse extends ArchetypeActionBase {
+  water_level: number;
+}
+
+/** POST /dungeons/runs/{id}/ground — Awakening: reduce awareness. */
+export interface GroundResponse extends ArchetypeActionBase {
+  awareness: number;
+}
+
+/** POST /dungeons/runs/{id}/rally — Overthrow: reduce fracture. */
+export interface RallyResponse extends ArchetypeActionBase {
+  fracture: number;
 }
 
 /** POST /dungeons/runs/{id}/salvage — salvage submerged loot response (Deluge only). */
@@ -644,6 +687,8 @@ export interface RestResponse {
 export interface RetreatResponse {
   retreated: boolean;
   loot: LootItem[];
+  /** Archetype-specific farewell banter. */
+  banter?: Record<string, string> | null;
   rpc_failed?: boolean;
   rpc_error_message?: string;
 }

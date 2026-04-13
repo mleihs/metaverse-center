@@ -242,10 +242,14 @@ class DungeonDistributionService:
         if loot_item.get("effect_type") in AUTO_APPLY_EFFECT_TYPES:
             raise bad_request("This item is auto-applied")
 
-        # Personality modifier: require valid Big Five dimension
+        # Personality modifier: require valid Big Five dimension.
+        # Fixed-trait items (e.g. Overthrow Mirror Shard) have trait pre-baked in
+        # effect_params — auto-extract so the frontend doesn't need to prompt.
         if loot_item.get("effect_type") == "personality_modifier":
-            if not dimension or dimension not in BIG_FIVE_DIMENSIONS:
+            effective_dimension = dimension or loot_item.get("effect_params", {}).get("trait")
+            if not effective_dimension or effective_dimension not in BIG_FIVE_DIMENSIONS:
                 raise bad_request(f"personality_modifier requires dimension: {', '.join(sorted(BIG_FIVE_DIMENSIONS))}")
+            dimension = effective_dimension
 
         # Validate agent is in party and operational
         agent = next((a for a in instance.party if a.agent_id == agent_id), None)

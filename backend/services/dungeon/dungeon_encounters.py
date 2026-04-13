@@ -7950,11 +7950,14 @@ def select_encounter(
     depth: int,
     difficulty: int,
     archetype: str = "The Shadow",
+    used_ids: list[str] | None = None,
 ) -> EncounterTemplate | None:
     """Select an appropriate encounter for a room.
 
     Filters by room_type, depth, difficulty, and archetype.
-    Returns None if no matching encounter exists (shouldn't happen for Shadow).
+    Deduplicates against used_ids to avoid consecutive repeats.
+    If all matching encounters are exhausted, resets and allows repeats.
+    Returns None if no matching encounter exists.
     """
     from backend.services.dungeon_content_service import get_encounter_registry
 
@@ -7966,4 +7969,12 @@ def select_encounter(
     ]
     if not candidates:
         return None
+
+    # Deduplicate: prefer unused encounters
+    if used_ids:
+        fresh = [e for e in candidates if e.id not in used_ids]
+        if fresh:
+            candidates = fresh
+        # If all exhausted, allow repeats (full pool reset handled by caller)
+
     return random.choice(candidates)

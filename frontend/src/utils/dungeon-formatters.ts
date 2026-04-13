@@ -75,6 +75,78 @@ const ROOM_SYMBOLS: Record<string, string> = {
 /** Unicode markers for loot tiers: ◆ minor, ★ major, ✦ legendary. */
 export const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
 
+// ── Archetype Ambient Texts (data-driven, no code-branching) ────────────────
+// Each archetype defines its own scout, boss, rest, and treasure flavor text.
+// IMPORTANT: msg() must be called at render time, not module scope (i18n gotcha).
+// Using functions that return msg() ensures correct locale resolution.
+
+interface AmbientTexts {
+  scout: string;
+  boss: string;
+  rest: string;
+  treasure: string;
+}
+
+type AmbientFactory = () => AmbientTexts;
+
+const ARCHETYPE_AMBIENT_FACTORIES: Record<string, AmbientFactory> = {
+  [ARCHETYPE_SHADOW]: () => ({
+    scout: msg('probes the surrounding darkness'),
+    boss: msg('The darkness is thicker here. Absolute. Intentional.'),
+    rest: msg('A fragile pocket of stillness in the darkness.'),
+    treasure: msg('Something glints in the shadow.'),
+  }),
+  [ARCHETYPE_TOWER]: () => ({
+    scout: msg('surveys the structural layout'),
+    boss: msg('The structure shudders. The load-bearing walls are screaming.'),
+    rest: msg('A reinforced alcove. The ceiling holds, for now.'),
+    treasure: msg('Assets, abandoned in the collapse.'),
+  }),
+  [ARCHETYPE_ENTROPY]: () => ({
+    scout: msg('examines the dissolving patterns'),
+    boss: msg('The dissolution accelerates. What remains is not enough.'),
+    rest: msg('A pocket of coherence in the decay.'),
+    treasure: msg('Something crystallized before it could dissolve.'),
+  }),
+  [ARCHETYPE_MOTHER]: () => ({
+    scout: msg('searches through the suffocating warmth'),
+    boss: msg('The embrace tightens. There is no leaving without a wound.'),
+    rest: msg('A room that feels like childhood. Almost too safe.'),
+    treasure: msg('A gift, left where you would find it. Deliberate.'),
+  }),
+  [ARCHETYPE_PROMETHEUS]: () => ({
+    scout: msg('traces the pathways of stolen knowledge'),
+    boss: msg('The light here burns. Knowledge has a cost.'),
+    rest: msg('A cooling chamber. The forge rests, briefly.'),
+    treasure: msg('An insight, crystallized into form.'),
+  }),
+  [ARCHETYPE_DELUGE]: () => ({
+    scout: msg('reads the current ahead'),
+    boss: msg('The water rises. The final chamber is submerged.'),
+    rest: msg('An air pocket. The flood pauses, not retreats.'),
+    treasure: msg('Salvage, caught in the debris field.'),
+  }),
+  [ARCHETYPE_AWAKENING]: () => ({
+    scout: msg('extends awareness through the layers'),
+    boss: msg('Every layer of consciousness converges. The dreamer stirs.'),
+    rest: msg('A lucid interval. The boundaries hold, temporarily.'),
+    treasure: msg('A fragment of clarity, solid enough to hold.'),
+  }),
+  [ARCHETYPE_OVERTHROW]: () => ({
+    scout: msg('surveys the transparent corridors'),
+    boss: msg('The mirrors intensify. Every reflection is a verdict.'),
+    rest: msg('A room where the cameras have been covered.'),
+    treasure: msg('Files left exposed. Someone wanted these found.'),
+  }),
+};
+
+/** Get ambient text for an archetype, falling back to Shadow defaults.
+ *  msg() is called at invocation time (not module scope) for correct i18n. */
+function getAmbient(archetype: string): AmbientTexts {
+  const factory = ARCHETYPE_AMBIENT_FACTORIES[archetype] ?? ARCHETYPE_AMBIENT_FACTORIES[ARCHETYPE_SHADOW];
+  return factory();
+}
+
 // ── Archetype Display Names ─────────────────────────────────────────────────
 
 /** Locale-aware archetype display name (EN key → localized label via msg()). */
@@ -574,6 +646,7 @@ export function formatRoomEntry(
   archetypeState: ArchetypeState,
   anchorTexts?: AnchorText[] | null,
   barometerText?: string | null,
+  archetype?: string,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -624,25 +697,35 @@ export function formatRoomEntry(
     case 'encounter':
       lines.push(systemLine(`[${msg('ENCOUNTER')}]`));
       break;
-    case 'rest':
+    case 'rest': {
+      const amb = getAmbient(archetype ?? '');
       lines.push(systemLine(`[${msg('REST SITE')}]`));
-      lines.push(responseLine(msg('A fragile pocket of stillness in the darkness.')));
+      lines.push(responseLine(amb.rest));
       lines.push(hintLine(msg('Use "rest" to recover stress. Risk of ambush.')));
       break;
-    case 'treasure':
+    }
+    case 'treasure': {
+      const amb = getAmbient(archetype ?? '');
       lines.push(systemLine(`[${msg('TREASURE')}]`));
-      lines.push(responseLine(msg('Something glints in the shadow.')));
+      lines.push(responseLine(amb.treasure));
       break;
-    case 'boss':
+    }
+    case 'boss': {
+      const amb = getAmbient(archetype ?? '');
       lines.push(systemLine(`[${msg('BOSS CHAMBER')}]`));
-      lines.push(responseLine(msg('The darkness is thicker here. Absolute. Intentional.')));
+      lines.push(responseLine(amb.boss));
       break;
+    }
     case 'exit':
       lines.push(systemLine(`[${msg('EXIT')}]`));
       lines.push(hintLine(msg('Use "retreat" to leave with partial loot.')));
       break;
     case 'threshold':
       lines.push(systemLine(`[${msg('THRESHOLD')}]`));
+      break;
+    case 'entrance':
+      lines.push(systemLine(`[${msg('ENTRANCE')}]`));
+      lines.push(hintLine(msg('Type "map" to view the dungeon layout, "move <number>" to advance.')));
       break;
     default:
       lines.push(systemLine(`[${room.room_type.toUpperCase()}]`));
@@ -710,42 +793,13 @@ export function formatCombatStart(combat: CombatStateClient): TerminalLine[] {
 export function formatCombatPlanning(party: AgentCombatStateClient[]): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  lines.push(systemLine(msg('SELECT ACTIONS:')));
-  lines.push(systemLine(''));
-
-  for (const agent of party) {
-    if (agent.condition === 'captured') continue;
-
-    const aptEntries = Object.entries(agent.aptitudes).sort(([, a], [, b]) => b - a);
-    const primaryApt = aptEntries[0] ? `${aptEntries[0][0]} ${aptEntries[0][1]}` : '';
-    lines.push(
-      systemLine(
-        `${agent.agent_name.toUpperCase()} (${primaryApt}) \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`,
-      ),
-    );
-
-    if (agent.available_abilities.length === 0) {
-      lines.push(responseLine(msg('  (no actions available)')));
-      continue;
-    }
-
-    for (const ability of agent.available_abilities) {
-      const cdStr = ability.cooldown_remaining > 0 ? ` [CD: ${ability.cooldown_remaining}]` : '';
-      const ultStr = ability.is_ultimate ? ' \u2605' : '';
-      const checkStr = ability.check_info ? ` (${ability.check_info})` : '';
-      const available = ability.cooldown_remaining === 0;
-      const marker = ability.is_ultimate ? '\u2605' : available ? '\u25C9' : '\u25CB';
-      lines.push(
-        responseLine(`  ${marker} ${localized(ability, 'name')}${checkStr}${cdStr}${ultStr}`),
-      );
-      lines.push(responseLine(`    ${localized(ability, 'description')}`));
-    }
-    lines.push(systemLine(''));
-  }
-
+  // Compact planning summary — the combat bar IS the primary ability UI
+  const active = party.filter((a) => a.condition !== 'captured');
+  const names = active.map((a) => a.agent_name).join(', ');
+  lines.push(systemLine(`${msg('SELECT ACTIONS')}: ${names}`));
   lines.push(
     hintLine(
-      msg('Use the COMBAT BAR below or type "attack <agent> <ability> [target]" + "submit".'),
+      msg('Select abilities in the combat bar below. Type "help combat" for commands.'),
     ),
   );
 
@@ -1029,27 +1083,31 @@ export function formatSkillCheckResult(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  // Check header with aptitude, level, and final chance
+  // Check header with aptitude, level, and modifier
+  const adjustment = check.breakdown?.adjustment ?? 0;
+  const modifierStr = adjustment >= 0 ? `+${adjustment}` : `${adjustment}`;
   lines.push(
     systemLine(
-      `[${check.aptitude.toUpperCase()} CHECK \u2014 ${msg('Level')} ${check.level}: ${check.chance}%]`,
+      `[${check.aptitude.toUpperCase()} CHECK \u2013 ${msg('Modifier')}: ${modifierStr}]`,
     ),
   );
   lines.push(systemLine(''));
 
-  // Rolling bar
-  const rollBar = progressBar(check.chance, 100);
-  lines.push(systemLine(`${msg('Rolling')}... ${rollBar} ${check.chance}%`));
+  // Rolling bar — use effective roll (raw + adjustment) for visual feedback
+  const effectiveRoll = Math.max(1, Math.min(100, check.roll + adjustment));
+  const rollBar = progressBar(effectiveRoll, 100);
+  lines.push(systemLine(`${msg('Rolling')}... ${check.roll} (${modifierStr}) = ${effectiveRoll}`));
+  lines.push(systemLine(`${rollBar}`));
   lines.push(systemLine(''));
 
-  // Result
+  // Result with transparent outcome thresholds
   const resultLabel =
     check.result === 'success'
       ? msg('SUCCESS')
       : check.result === 'partial'
         ? msg('PARTIAL SUCCESS')
         : msg('FAILURE');
-  lines.push(systemLine(`${msg('Result')}: ${check.roll} \u2014 ${resultLabel}`));
+  lines.push(systemLine(`${msg('Result')}: ${effectiveRoll} \u2013 ${resultLabel}`));
   lines.push(responseLine(''));
 
   // Narrative
@@ -1096,11 +1154,8 @@ export function formatScoutResult(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  // Archetype-aware scout text
-  const isTower = archetype === ARCHETYPE_TOWER;
-  const scoutVerb = isTower
-    ? msg('surveys the structural layout')
-    : msg('probes the surrounding darkness');
+  // Archetype-aware scout text (data-driven)
+  const scoutVerb = getAmbient(archetype).scout;
   lines.push(responseLine(`${agentName} ${scoutVerb}...`));
 
   if (revealedRooms > 0) {
@@ -1116,7 +1171,7 @@ export function formatScoutResult(
   }
 
   // Only show visibility for Shadow archetype (where it's a real number, not null)
-  if (visibility != null && !isTower) {
+  if (visibility != null && archetype !== ARCHETYPE_TOWER) {
     lines.push(responseLine(`  \u2192 ${msg('Visibility')}: ${visibility}`));
   }
 
@@ -1555,6 +1610,7 @@ export function formatAgentPicker(
   }
 
   lines.push(systemLine(`${msg('AVAILABLE AGENTS FOR')} ${archetype.toUpperCase()}:`));
+  lines.push(hintLine('SPY=Spy GRD=Guardian SAB=Saboteur PRP=Propagandist INF=Infiltrator ASN=Assassin'));
   lines.push(systemLine(''));
 
   for (let i = 0; i < agents.length; i++) {
@@ -1562,19 +1618,18 @@ export function formatAgentPicker(
     const apts = aptitudeMap.get(agent.id);
 
     // Build aptitude string: top 3 by level
-    let aptStr = '';
-    if (apts) {
-      const sorted = Object.entries(apts)
-        .filter(([, v]) => v > 0)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 3);
-      aptStr = sorted
-        .map(
-          ([k, v]) =>
-            `${OPERATIVE_LABEL[k as import('../types/index.js').OperativeType] ?? k.toUpperCase()} ${v}`,
-        )
-        .join(' | ');
-    }
+    // Generalist agents without explicit aptitudes default to 6 across the board
+    const effectiveApts = apts ?? { spy: 6, guardian: 6, saboteur: 6, propagandist: 6, infiltrator: 6, assassin: 6 };
+    const sorted = Object.entries(effectiveApts)
+      .filter(([, v]) => v > 0)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3);
+    let aptStr = sorted
+      .map(
+        ([k, v]) =>
+          `${OPERATIVE_LABEL[k as import('../types/index.js').OperativeType] ?? k.toUpperCase()} ${v}`,
+      )
+      .join(' | ');
     if (!aptStr) aptStr = msg('generalist');
 
     const num = String(i + 1).padStart(2, ' ');
@@ -1603,6 +1658,46 @@ export function formatSealResult(
   );
   lines.push(
     systemLine(`  \u2192 ${msg('Water level')}: ${waterLevel} | ${msg('Stress')}: +${stressCost}`),
+  );
+  lines.push(hintLine(`${msg('Cooldown until room')} ${cooldownUntilRoom}.`));
+  return lines;
+}
+
+// ── Ground Result (Awakening) ──────────────────────────────────────────────
+
+export function formatGroundResult(
+  agentName: string,
+  awareness: number,
+  stressCost: number,
+  cooldownUntilRoom: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(combatSystemLine(msg('GROUND')));
+  lines.push(
+    responseLine(`${agentName} ${msg('reaches inward. The layers settle \u2013 for now.')}`),
+  );
+  lines.push(
+    systemLine(`  \u2192 ${msg('Awareness')}: ${awareness} | ${msg('Stress')}: +${stressCost}`),
+  );
+  lines.push(hintLine(`${msg('Cooldown until room')} ${cooldownUntilRoom}.`));
+  return lines;
+}
+
+// ── Rally Result (Overthrow) ──────────────────────────────────────────────
+
+export function formatRallyResult(
+  agentName: string,
+  fracture: number,
+  stressCost: number,
+  cooldownUntilRoom: number,
+): TerminalLine[] {
+  const lines: TerminalLine[] = [];
+  lines.push(combatSystemLine(msg('RALLY')));
+  lines.push(
+    responseLine(`${agentName} ${msg('speaks. The factions listen \u2013 briefly.')}`),
+  );
+  lines.push(
+    systemLine(`  \u2192 ${msg('Fracture')}: ${fracture} | ${msg('Stress')}: +${stressCost}`),
   );
   lines.push(hintLine(`${msg('Cooldown until room')} ${cooldownUntilRoom}.`));
   return lines;

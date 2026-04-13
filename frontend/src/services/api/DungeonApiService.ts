@@ -22,7 +22,9 @@ import type {
   EncounterChoiceResponse,
   LootAssignmentRequest,
   LootAssignmentResponse,
+  GroundResponse,
   MoveToRoomResponse,
+  RallyResponse,
   RestResponse,
   RetreatResponse,
   SalvageResponse,
@@ -84,6 +86,16 @@ export class DungeonApiService extends BaseApiService {
   /** Guardian: Seal Breach — reduce water level, gain stress (Deluge only). */
   seal(runId: string, agentId: string): Promise<ApiResponse<SealBreachResponse>> {
     return this.post(`/dungeons/runs/${runId}/seal`, { agent_id: agentId });
+  }
+
+  /** Spy: Ground — reduce awareness, gain stress (Awakening only). */
+  ground(runId: string, agentId: string): Promise<ApiResponse<GroundResponse>> {
+    return this.post(`/dungeons/runs/${runId}/ground`, { agent_id: agentId });
+  }
+
+  /** Propagandist: Rally — reduce fracture, gain stress (Overthrow only). */
+  rally(runId: string, agentId: string): Promise<ApiResponse<RallyResponse>> {
+    return this.post(`/dungeons/runs/${runId}/rally`, { agent_id: agentId });
   }
 
   /** Salvage submerged loot — Guardian/Spy aptitude check (Deluge only). */

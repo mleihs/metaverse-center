@@ -81,7 +81,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       /* ── HUD Grid Layout (active dungeon) ── */
       .dungeon-hud {
         display: grid;
-        grid-template-rows: auto 1fr auto auto;
+        grid-template-rows: auto 1fr auto minmax(auto, 40vh);
         grid-template-columns: 1fr 280px;
         flex: 1;
         min-height: 0;
@@ -714,9 +714,13 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
                 ? this._renderAvailableList(available)
                 : html`<span>${msg('No dungeon archetypes detected in this simulation.')}</span>`
           }
-          <div class="lobby-info__hint">
-            ${msg("Click an archetype or type 'dungeon' in the terminal.")}
-          </div>
+          ${
+            !dungeonState.pendingArchetypeForPicker.value
+              ? html`<div class="lobby-info__hint">
+                  ${msg("Click an archetype or type 'dungeon' in the terminal.")}
+                </div>`
+              : nothing
+          }
         </div>
         <div class="terminal-wrapper" style="flex:1;min-height:0">
           <velg-bureau-terminal .simulationId=${simulationId} .dungeonMode=${true}></velg-bureau-terminal>

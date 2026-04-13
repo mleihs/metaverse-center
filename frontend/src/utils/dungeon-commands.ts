@@ -41,6 +41,8 @@ import {
   formatRoundTransition,
   formatSalvageResult,
   formatScoutResult,
+  formatGroundResult,
+  formatRallyResult,
   formatSealResult,
   formatSkillCheckResult,
   formatThresholdEntry,
@@ -81,6 +83,8 @@ const DUNGEON_ONLY_VERBS = new Set([
   'confirm',
   'protocol',
   'seal',
+  'ground',
+  'rally',
   'salvage',
   'dive',
 ]);
@@ -106,6 +110,8 @@ const DUNGEON_VERB_TIER: Record<string, number> = {
   assign: 2,
   confirm: 2,
   seal: 2,
+  ground: 2,
+  rally: 2,
   salvage: 2,
   dive: 2,
 };
@@ -165,6 +171,25 @@ export async function dispatchDungeonCommand(
 
   // Override verbs: only intercept when in dungeon mode, else fall through
   if (!terminalState.isDungeonMode.value) return null;
+
+  // Bare number shortcut: contextually dispatch to interact or move.
+  // Uses the same SFX-aware dispatch pattern as named verbs below.
+  if (/^\d+$/.test(verb)) {
+    const phase = dungeonState.phase.value;
+    let numberResult: TerminalLine[] | null = null;
+    if (phase === 'encounter' || phase === 'rest' || phase === 'threshold') {
+      numberResult = await handleDungeonInteract({ ...ctx, args: [verb] });
+    } else if (phase === 'exploring' || phase === 'room_clear') {
+      numberResult = await handleDungeonMove({ ...ctx, args: [verb] });
+    }
+    if (numberResult !== null) {
+      if (numberResult.some((l) => l.type === 'error')) {
+        dungeonAudio.play('command-error');
+      }
+      return numberResult;
+    }
+  }
+
   if (!DUNGEON_OVERRIDE_VERBS.has(verb) && !DUNGEON_ONLY_VERBS.has(verb)) return null;
 
   // Dispatch command and play confirm/error SFX for "quiet" verbs.
@@ -213,6 +238,10 @@ async function _dispatchVerb(verb: string, ctx: CommandContext): Promise<Termina
       return handleDungeonProtocol();
     case 'seal':
       return handleDungeonSeal(ctx);
+    case 'ground':
+      return handleDungeonGround(ctx);
+    case 'rally':
+      return handleDungeonRally(ctx);
     case 'salvage':
     case 'dive':
       return handleDungeonSalvage(ctx);
@@ -286,6 +315,7 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
           result.state.archetype_state,
           result.anchor_texts ?? null,
           result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
+          result.state.archetype,
         ),
       );
     }
@@ -370,7 +400,7 @@ function handleDungeonLook(): TerminalLine[] {
   const room = dungeonState.currentRoom.value;
   if (!room) return [errorLine(msg('Current room unknown.'))];
 
-  const lines = formatRoomEntry(room, null, state.archetype_state);
+  const lines = formatRoomEntry(room, null, state.archetype_state, null, null, state.archetype);
 
   // Re-display encounter/threshold choices
   const choices = dungeonState.encounterChoices.value;
@@ -990,6 +1020,112 @@ async function handleDungeonSeal(ctx: CommandContext): Promise<TerminalLine[]> {
   } catch (err) {
     captureError(err, { source: 'dungeon-commands.handleDungeonSeal' });
     const message = err instanceof Error ? err.message : msg('Seal Breach failed.');
+    return [errorLine(message)];
+  } finally {
+    dungeonState.loading.value = false;
+  }
+}
+
+// ── Command: ground (Awakening only) ────────────────────────────────────────
+
+async function handleDungeonGround(ctx: CommandContext): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.archetype !== 'The Awakening') {
+    return [errorLine(msg('Ground is only available in Awakening dungeons.'))];
+  }
+
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
+  if (party.length === 0) return [errorLine(msg('No agents available.'))];
+
+  let agent = party[0];
+  if (ctx.args.length > 0) {
+    const agentName = ctx.args.join(' ');
+    const names = party.map((a) => a.agent_name);
+    const matched = fuzzyName(agentName, names);
+    if (matched) {
+      agent = party.find((a) => a.agent_name === matched) ?? agent;
+    } else {
+      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
+    }
+  } else {
+    agent = party.reduce((best, a) =>
+      (a.aptitudes.spy ?? 0) > (best.aptitudes.spy ?? 0) ? a : best,
+    );
+  }
+
+  dungeonState.loading.value = true;
+  try {
+    const resp = await dungeonApi.ground(runId, agent.agent_id);
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Ground failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+    return formatGroundResult(
+      agent.agent_name,
+      resp.data.awareness,
+      resp.data.stress_cost,
+      resp.data.cooldown_until_room,
+    );
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonGround' });
+    const message = err instanceof Error ? err.message : msg('Ground failed.');
+    return [errorLine(message)];
+  } finally {
+    dungeonState.loading.value = false;
+  }
+}
+
+// ── Command: rally (Overthrow only) ─────────────────────────────────────────
+
+async function handleDungeonRally(ctx: CommandContext): Promise<TerminalLine[]> {
+  const state = dungeonState.clientState.value;
+  const runId = dungeonState.runId.value;
+  if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
+
+  if (state.archetype !== 'The Overthrow') {
+    return [errorLine(msg('Rally is only available in Overthrow dungeons.'))];
+  }
+
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
+  if (party.length === 0) return [errorLine(msg('No agents available.'))];
+
+  let agent = party[0];
+  if (ctx.args.length > 0) {
+    const agentName = ctx.args.join(' ');
+    const names = party.map((a) => a.agent_name);
+    const matched = fuzzyName(agentName, names);
+    if (matched) {
+      agent = party.find((a) => a.agent_name === matched) ?? agent;
+    } else {
+      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
+    }
+  } else {
+    agent = party.reduce((best, a) =>
+      (a.aptitudes.propagandist ?? 0) > (best.aptitudes.propagandist ?? 0) ? a : best,
+    );
+  }
+
+  dungeonState.loading.value = true;
+  try {
+    const resp = await dungeonApi.rally(runId, agent.agent_id);
+    if (!resp.success || !resp.data) {
+      return [errorLine(resp.error?.message ?? msg('Rally failed.'))];
+    }
+
+    dungeonState.applyState(resp.data.state);
+    return formatRallyResult(
+      agent.agent_name,
+      resp.data.fracture,
+      resp.data.stress_cost,
+      resp.data.cooldown_until_room,
+    );
+  } catch (err) {
+    captureError(err, { source: 'dungeon-commands.handleDungeonRally' });
+    const message = err instanceof Error ? err.message : msg('Rally failed.');
     return [errorLine(message)];
   } finally {
     dungeonState.loading.value = false;

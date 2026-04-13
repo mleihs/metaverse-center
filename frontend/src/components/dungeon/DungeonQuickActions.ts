@@ -315,7 +315,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       // Button label: full info if scouted, path label + depth if fog
       const clearedTag = room.cleared ? ' \u2713' : '';
       const label = isRevealed
-        ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}${clearedTag}`
+        ? `${getRoomTypeLabel(room.room_type, room.index)} D${room.depth}${pathLabel}${clearedTag}`
         : `D${room.depth}${pathLabel}`;
 
       return html`

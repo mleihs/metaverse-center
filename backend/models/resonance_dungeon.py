@@ -153,6 +153,9 @@ class DungeonInstance(BaseModel):
     # Banter tracking (no-repeat per run)
     used_banter_ids: list[str] = Field(default_factory=list)
 
+    # Encounter tracking (no-repeat per run; reset on pool exhaustion)
+    used_encounter_ids: list[str] = Field(default_factory=list)
+
     # Phase timer metadata (set during combat planning for client countdown)
     phase_timer: PhaseTimer | None = None
 
@@ -197,6 +200,7 @@ class DungeonInstance(BaseModel):
                 if r.encounter_template_id
             },
             "used_banter_ids": self.used_banter_ids,
+            "used_encounter_ids": self.used_encounter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
             "pending_loot": self.pending_loot,
             "loot_assignments": self.loot_assignments,
@@ -217,6 +221,7 @@ class DungeonInstance(BaseModel):
         self.rooms_cleared = checkpoint["rooms_cleared"]
         self.turn = checkpoint.get("turn", 0)
         self.used_banter_ids = checkpoint.get("used_banter_ids", [])
+        self.used_encounter_ids = checkpoint.get("used_encounter_ids", [])
         timer_data = checkpoint.get("phase_timer")
         self.phase_timer = PhaseTimer(**timer_data) if timer_data else None
         self.pending_loot = checkpoint.get("pending_loot", [])
@@ -479,10 +484,15 @@ class EnemyCombatStateClient(BaseModel):
 
 
 class PhaseTimer(BaseModel):
-    """Timer for timed phases (combat planning)."""
+    """Timer for timed phases (combat planning).
 
-    started_at: str  # ISO timestamp
-    duration_ms: int
+    remaining_ms: Client-facing countdown (avoids cross-clock skew).
+    started_at + duration_ms: Server-side for timeout callbacks (logging only).
+    """
+
+    started_at: str  # ISO timestamp (server-side reference only)
+    duration_ms: int  # Server-side total (includes buffer)
+    remaining_ms: int = 0  # Client-facing countdown, eliminates clock skew
     phase: str
 
 
