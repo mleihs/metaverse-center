@@ -79,7 +79,7 @@ class CycleResolutionService:
         new_rp = current - amount
         update_resp = await (
             supabase.table("epoch_participants")
-            .update({"current_rp": new_rp})
+            .update({"current_rp": new_rp, "has_acted_this_cycle": True})
             .eq("id", resp.data["id"])
             .eq("current_rp", current)  # optimistic lock
             .execute()

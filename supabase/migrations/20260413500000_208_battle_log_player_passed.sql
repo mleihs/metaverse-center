@@ -1,10 +1,9 @@
 -- =============================================================================
--- Migration 208: Add player_passed to battle_log event types
+-- Migration 208: Add auto-resolve event types to battle_log
 -- =============================================================================
--- The epoch auto-resolve system (migration 204) introduced pass-cycle
--- functionality. The battle_log_service logs this as 'player_passed', but
--- the CHECK constraint on battle_log.event_type didn't include it.
--- Also adds 'cycle_resolved' for cycle resolution events.
+-- The epoch auto-resolve system (migration 204) introduced pass-cycle,
+-- AFK tracking, and cycle resolution events. The CHECK constraint on
+-- battle_log.event_type was missing these types.
 -- =============================================================================
 
 ALTER TABLE battle_log DROP CONSTRAINT IF EXISTS battle_log_event_type_check;
@@ -20,6 +19,7 @@ ALTER TABLE battle_log ADD CONSTRAINT battle_log_event_type_check CHECK (
     'alliance_proposal', 'alliance_proposal_accepted',
     'alliance_proposal_rejected', 'alliance_tension_increase',
     'alliance_dissolved_tension', 'alliance_upkeep',
-    'player_passed', 'cycle_resolved'
+    'player_passed', 'cycle_resolved',
+    'player_afk', 'player_afk_penalty', 'player_afk_ai_takeover'
   )
 );
