@@ -127,6 +127,8 @@ class EpochResponse(BaseModel):
     status: str
     config: dict
     epoch_type: str = "competitive"
+    cycle_started_at: datetime | None = None
+    cycle_deadline_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     participant_count: int | None = None
@@ -159,6 +161,10 @@ class ParticipantResponse(BaseModel):
     cycle_ready: bool = False
     is_bot: bool = False
     bot_player_id: UUID | None = None
+    has_acted_this_cycle: bool = False
+    consecutive_afk_cycles: int = 0
+    total_afk_cycles: int = 0
+    afk_replaced_by_ai: bool = False
     simulations: dict | None = None
     bot_players: dict | None = None
 
