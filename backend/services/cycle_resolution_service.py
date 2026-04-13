@@ -2,7 +2,7 @@
 
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
@@ -118,6 +118,97 @@ class CycleResolutionService:
             },
         ).execute()
         return rpc_resp.data
+
+    # ── Deadline Management ──────────────────────────────────
+
+    @classmethod
+    async def _set_next_cycle_deadline(
+        cls,
+        db: Client,
+        epoch_id: UUID,
+        config: dict,
+        epoch_status: str,
+    ) -> None:
+        """Set cycle_started_at + cycle_deadline_at for the next cycle.
+
+        Only sets the deadline when auto_resolve_mode is not "manual" and the
+        epoch has not completed. Registers an eager timer with the
+        EpochCycleScheduler for sub-second precision.
+
+        Called after both atomic and legacy cycle advancement paths.
+        """
+        if config.get("auto_resolve_mode", "manual") == "manual" or epoch_status == "completed":
+            return
+
+        deadline_minutes = config.get("cycle_deadline_minutes", 480)
+        now = datetime.now(UTC)
+        deadline_at = now + timedelta(minutes=deadline_minutes)
+        await (
+            db.table("game_epochs")
+            .update(
+                {
+                    "cycle_started_at": now.isoformat(),
+                    "cycle_deadline_at": deadline_at.isoformat(),
+                }
+            )
+            .eq("id", str(epoch_id))
+            .execute()
+        )
+
+        from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
+
+        await EpochCycleScheduler.schedule_eager_timer(str(epoch_id), deadline_at)
+
+    # ── Cycle Resolution ─────────────────────────────────────
+
+    # ── Activity Tracking ─────────────────────────────────────
+
+    @staticmethod
+    async def mark_acted(admin_supabase: Client, epoch_id: UUID, simulation_id: UUID) -> bool:
+        """Mark a player as having acted this cycle (idempotent).
+
+        Wraps ``fn_set_acted_this_cycle`` RPC. Called from routers after
+        successful human player actions (deploy, fortify, counter-intel,
+        recall, alliance proposal/vote, pass). NOT called for bot actions
+        — bots execute via BotService during resolve_cycle_full().
+        """
+        resp = await admin_supabase.rpc(
+            "fn_set_acted_this_cycle",
+            {"p_epoch_id": str(epoch_id), "p_simulation_id": str(simulation_id)},
+        ).execute()
+        return resp.data
+
+    @classmethod
+    async def pass_cycle(
+        cls,
+        supabase: Client,
+        admin_supabase: Client,
+        epoch_id: UUID,
+        simulation_id: UUID,
+    ) -> dict:
+        """Explicitly pass a cycle without taking action.
+
+        Validates the epoch is in an active phase, sets has_acted_this_cycle,
+        and logs a battle log event.
+        """
+        from backend.services.epoch_service import EpochService
+
+        epoch = await EpochService.get(supabase, epoch_id)
+        if epoch["status"] not in ("foundation", "competition", "reckoning"):
+            raise bad_request("Can only pass during active epoch phases.")
+
+        await cls.mark_acted(admin_supabase, epoch_id, simulation_id)
+
+        await BattleLogService.log_event(
+            admin_supabase,
+            epoch_id,
+            epoch.get("current_cycle", 1),
+            "player_passed",
+            "Player passed this cycle.",
+            source_simulation_id=simulation_id,
+            is_public=False,
+        )
+        return {"passed": True}
 
     # ── Cycle Resolution ─────────────────────────────────────
 
@@ -327,8 +418,13 @@ class CycleResolutionService:
 
         await cls._grant_rp_batch(db, epoch_id, rp_amount, config["rp_cap"])
 
-        # Reset all cycle_ready flags before advancing
-        await db.table("epoch_participants").update({"cycle_ready": False}).eq("epoch_id", str(epoch_id)).execute()
+        # Reset cycle_ready + has_acted_this_cycle flags before advancing
+        await (
+            db.table("epoch_participants")
+            .update({"cycle_ready": False, "has_acted_this_cycle": False})
+            .eq("epoch_id", str(epoch_id))
+            .execute()
+        )
 
         # Advance mission timers by one cycle interval so operatives resolve
         # in sync with admin-triggered cycle resolution (not wall-clock time).
@@ -437,6 +533,10 @@ class CycleResolutionService:
 
             # Re-fetch full epoch row for downstream consumers
             epoch_resp = await db.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
+
+            # Set next cycle deadline + register eager timer
+            await cls._set_next_cycle_deadline(db, epoch_id, config, (epoch_resp.data or {}).get("status", "completed"))
+
             return epoch_resp.data
 
         # ─── Legacy path: separate cycle-increment + phase-update ───
@@ -528,5 +628,8 @@ class CycleResolutionService:
                 except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
                     logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
                     sentry_sdk.capture_exception()
+
+        # Set next cycle deadline + register eager timer
+        await cls._set_next_cycle_deadline(db, epoch_id, config, new_status)
 
         return resp.data[0]

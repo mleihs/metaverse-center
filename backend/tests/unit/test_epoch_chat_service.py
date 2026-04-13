@@ -56,9 +56,7 @@ def _mock_supabase(
     chat_select_chain.order.return_value = chat_select_chain
     chat_select_chain.limit.return_value = chat_select_chain
     chat_select_chain.in_.return_value = chat_select_chain
-    chat_select_chain.execute = AsyncMock(return_value=MagicMock(
-        data=select_data or [], count=select_count or 0
-    ))
+    chat_select_chain.execute = AsyncMock(return_value=MagicMock(data=select_data or [], count=select_count or 0))
 
     # simulations query
     sim_chain = MagicMock()
@@ -68,18 +66,28 @@ def _mock_supabase(
     sim_chain.in_.return_value = sim_chain
     sim_chain.execute = AsyncMock(return_value=MagicMock(data=sim_data or []))
 
-    # update chain
-    update_chain = MagicMock()
-    update_chain.update.return_value = update_chain
-    update_chain.eq.return_value = update_chain
-    update_chain.execute = AsyncMock(return_value=MagicMock(data=update_data))
+    # Combined epoch_participants chain (handles both select and update paths)
+    # Activity gate: .select().eq().eq().single().execute()
+    # Ready toggle: .update().eq().eq().execute()
+    ep_combined = MagicMock()
+
+    gate_subchain = MagicMock()
+    gate_subchain.eq.return_value = gate_subchain
+    gate_subchain.single.return_value = gate_subchain
+    gate_subchain.execute = AsyncMock(return_value=MagicMock(data=None))
+    ep_combined.select = MagicMock(return_value=gate_subchain)
+
+    update_subchain = MagicMock()
+    update_subchain.eq.return_value = update_subchain
+    update_subchain.execute = AsyncMock(return_value=MagicMock(data=update_data))
+    ep_combined.update = MagicMock(return_value=update_subchain)
 
     def table_side_effect(name):
         if name == "game_epochs":
             return epoch_chain
         if name == "epoch_participants":
             if update_data is not None:
-                return update_chain
+                return ep_combined
             return participant_chain
         if name == "epoch_chat_messages":
             if insert_data is not None:
@@ -101,27 +109,21 @@ class TestSendMessage:
     async def test_rejects_when_epoch_not_found(self):
         sb = _mock_supabase(epoch_data=[])
         with pytest.raises(HTTPException) as exc:
-            await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello"
-            )
+            await EpochChatService.send_message(sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello")
         assert exc.value.status_code == 404
 
     @pytest.mark.asyncio
     async def test_rejects_when_epoch_completed(self):
         sb = _mock_supabase(epoch_data=[{"id": str(EPOCH_ID), "status": "completed"}])
         with pytest.raises(HTTPException) as exc:
-            await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello"
-            )
+            await EpochChatService.send_message(sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello")
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
     async def test_rejects_when_epoch_cancelled(self):
         sb = _mock_supabase(epoch_data=[{"id": str(EPOCH_ID), "status": "cancelled"}])
         with pytest.raises(HTTPException) as exc:
-            await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello"
-            )
+            await EpochChatService.send_message(sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello")
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -130,9 +132,7 @@ class TestSendMessage:
             epoch_data=[{"id": str(EPOCH_ID), "status": "competition"}],
         )
         with pytest.raises(HTTPException) as exc:
-            await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello", channel_type="team"
-            )
+            await EpochChatService.send_message(sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello", channel_type="team")
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
@@ -144,8 +144,13 @@ class TestSendMessage:
         )
         with pytest.raises(HTTPException) as exc:
             await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello",
-                channel_type="team", team_id=TEAM_ID,
+                sb,
+                EPOCH_ID,
+                SENDER_ID,
+                SIM_ID,
+                "Hello",
+                channel_type="team",
+                team_id=TEAM_ID,
             )
         assert exc.value.status_code == 403
 
@@ -157,8 +162,13 @@ class TestSendMessage:
         )
         with pytest.raises(HTTPException) as exc:
             await EpochChatService.send_message(
-                sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello",
-                channel_type="team", team_id=TEAM_ID,
+                sb,
+                EPOCH_ID,
+                SENDER_ID,
+                SIM_ID,
+                "Hello",
+                channel_type="team",
+                team_id=TEAM_ID,
             )
         assert exc.value.status_code == 403
 
@@ -178,9 +188,7 @@ class TestSendMessage:
             insert_data=[msg_data],
             sim_data=[{"id": str(SIM_ID), "name": "Velgarien"}],
         )
-        result = await EpochChatService.send_message(
-            sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello everyone"
-        )
+        result = await EpochChatService.send_message(sb, EPOCH_ID, SENDER_ID, SIM_ID, "Hello everyone")
         assert result["content"] == "Hello everyone"
         assert result["sender_name"] == "Velgarien"
 
@@ -293,18 +301,21 @@ class TestEpochChatLogging:
             update_data=[participant_data],
         )
 
-        # Admin supabase — for the all-participants check
+        # Admin supabase — for all-participants check (activity gate is off
+        # for test epochs because auto_resolve_mode defaults to "manual")
         admin_sb = MagicMock()
-        admin_chain = MagicMock()
-        admin_chain.select.return_value = admin_chain
-        admin_chain.eq.return_value = admin_chain
-        admin_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[
-                {"id": "p1", "cycle_ready": True, "is_bot": False},
-                {"id": "p2", "cycle_ready": True, "is_bot": True},
-            ]
-        ))
-        admin_sb.table.return_value = admin_chain
+        all_p_chain = MagicMock()
+        all_p_chain.select.return_value = all_p_chain
+        all_p_chain.eq.return_value = all_p_chain
+        all_p_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"id": "p1", "cycle_ready": True, "is_bot": False},
+                    {"id": "p2", "cycle_ready": True, "is_bot": True},
+                ]
+            )
+        )
+        admin_sb.table.return_value = all_p_chain
 
         with (
             caplog.at_level(logging.INFO, logger="backend.services.epoch_chat_service"),
@@ -315,7 +326,11 @@ class TestEpochChatLogging:
             ),
         ):
             await EpochChatService.toggle_ready(
-                sb, EPOCH_ID, SIM_ID, True, admin_supabase=admin_sb,
+                sb,
+                EPOCH_ID,
+                SIM_ID,
+                True,
+                admin_supabase=admin_sb,
             )
 
         ready_records = [r for r in caplog.records if "Ready check" in r.message]
@@ -340,13 +355,13 @@ class TestEpochChatLogging:
         )
 
         admin_sb = MagicMock()
-        admin_chain = MagicMock()
-        admin_chain.select.return_value = admin_chain
-        admin_chain.eq.return_value = admin_chain
-        admin_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": "p1", "cycle_ready": True, "is_bot": False}]
-        ))
-        admin_sb.table.return_value = admin_chain
+        all_p_chain2 = MagicMock()
+        all_p_chain2.select.return_value = all_p_chain2
+        all_p_chain2.eq.return_value = all_p_chain2
+        all_p_chain2.execute = AsyncMock(
+            return_value=MagicMock(data=[{"id": "p1", "cycle_ready": True, "is_bot": False}])
+        )
+        admin_sb.table.return_value = all_p_chain2
 
         with (
             caplog.at_level(logging.ERROR, logger="backend.services.epoch_chat_service"),
@@ -357,7 +372,11 @@ class TestEpochChatLogging:
             ),
         ):
             await EpochChatService.toggle_ready(
-                sb, EPOCH_ID, SIM_ID, True, admin_supabase=admin_sb,
+                sb,
+                EPOCH_ID,
+                SIM_ID,
+                True,
+                admin_supabase=admin_sb,
             )
 
         error_records = [r for r in caplog.records if r.levelno == logging.ERROR]

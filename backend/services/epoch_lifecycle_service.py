@@ -106,23 +106,26 @@ class EpochLifecycleService:
         duration = timedelta(days=config["duration_days"])
         now = datetime.now(UTC)
 
-        resp = await (
-            supabase.table("game_epochs")
-            .update(
-                {
-                    "status": "foundation",
-                    "starts_at": now.isoformat(),
-                    "ends_at": (now + duration).isoformat(),
-                    "current_cycle": 1,
-                    "config": {
-                        **config,
-                        "instance_mapping": instance_mapping,
-                    },
-                }
-            )
-            .eq("id", str(epoch_id))
-            .execute()
-        )
+        auto_resolve_mode = config.get("auto_resolve_mode", "manual")
+        deadline_minutes = config.get("cycle_deadline_minutes", 480)
+
+        update_data: dict = {
+            "status": "foundation",
+            "starts_at": now.isoformat(),
+            "ends_at": (now + duration).isoformat(),
+            "current_cycle": 1,
+            "config": {
+                **config,
+                "instance_mapping": instance_mapping,
+            },
+        }
+
+        # Set first cycle deadline (only for non-manual modes)
+        if auto_resolve_mode != "manual":
+            update_data["cycle_started_at"] = now.isoformat()
+            update_data["cycle_deadline_at"] = (now + timedelta(minutes=deadline_minutes)).isoformat()
+
+        resp = await supabase.table("game_epochs").update(update_data).eq("id", str(epoch_id)).execute()
 
         # Grant initial RP to all participants (foundation bonus)
         from backend.services.cycle_resolution_service import CycleResolutionService
@@ -132,6 +135,15 @@ class EpochLifecycleService:
 
         if not resp.data:
             raise server_error("Failed to start epoch.")
+
+        # Register eager timer for first cycle deadline
+        if auto_resolve_mode != "manual":
+            from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
+
+            await EpochCycleScheduler.schedule_eager_timer(
+                str(epoch_id),
+                now + timedelta(minutes=deadline_minutes),
+            )
 
         # Log phase transition + notify participants
         await BattleLogService.log_phase_change(

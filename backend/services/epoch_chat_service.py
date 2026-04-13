@@ -5,12 +5,16 @@ from uuid import UUID
 
 import sentry_sdk
 
+from backend.models.epoch import EpochConfig
 from backend.services.epoch_service import EpochService
 from backend.utils.errors import bad_request, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
+
+# Default epoch config (matches EpochConfig defaults)
+DEFAULT_CONFIG = EpochConfig().model_dump()
 
 
 class EpochChatService:
@@ -136,11 +140,33 @@ class EpochChatService:
         Returns the participant row with optional `auto_resolved` and `new_cycle` fields.
         """
         # Validate epoch is in an active phase
-        epoch_resp = await supabase.table("game_epochs").select("id, status").eq("id", str(epoch_id)).limit(1).execute()
+        epoch_resp = await (
+            supabase.table("game_epochs").select("id, status, config").eq("id", str(epoch_id)).limit(1).execute()
+        )
         if not epoch_resp.data:
             raise not_found(detail="Epoch not found.")
-        if epoch_resp.data[0]["status"] not in ("foundation", "competition", "reckoning"):
+        epoch_row = epoch_resp.data[0]
+        if epoch_row["status"] not in ("foundation", "competition", "reckoning"):
             raise bad_request("Ready signals are only available during active epoch phases.")
+
+        # Activity gate: ready requires at least one action this cycle.
+        # Only enforced when auto_resolve_mode is not "manual" AND
+        # require_action_for_ready is True (both default to off for
+        # backward compat — new epochs set them via EpochConfig).
+        config = {**DEFAULT_CONFIG, **(epoch_row.get("config") or {})}
+        if ready and config.get("auto_resolve_mode") != "manual" and config.get("require_action_for_ready"):
+            db = admin_supabase or supabase
+            participant_check = await (
+                db.table("epoch_participants")
+                .select("has_acted_this_cycle, is_bot")
+                .eq("epoch_id", str(epoch_id))
+                .eq("simulation_id", str(simulation_id))
+                .single()
+                .execute()
+            )
+            if participant_check.data and not participant_check.data["is_bot"]:
+                if not participant_check.data["has_acted_this_cycle"]:
+                    raise bad_request("You must perform at least one action (or pass) before signalling ready.")
 
         response = await (
             supabase.table("epoch_participants")

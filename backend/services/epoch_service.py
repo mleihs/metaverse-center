@@ -121,7 +121,7 @@ class EpochService:
     # Participation: list_participants, join_epoch, leave_epoch, draft_agents,
     #   list_teams, create_team, join_team, leave_team, add_bot, remove_bot
     # Cycle resolution: resolve_cycle_full, resolve_cycle,
-    #   _grant_rp_batch, spend_rp, grant_rp
+    #   _grant_rp_batch, spend_rp, grant_rp, mark_acted, pass_cycle
 
 
 # ── Delegate to sub-services ────────────────────────────────────
@@ -163,3 +163,5 @@ EpochService.resolve_cycle = CycleResolutionService.resolve_cycle  # type: ignor
 EpochService._grant_rp_batch = CycleResolutionService._grant_rp_batch  # type: ignore[attr-defined]
 EpochService.spend_rp = CycleResolutionService.spend_rp  # type: ignore[attr-defined]
 EpochService.grant_rp = CycleResolutionService.grant_rp  # type: ignore[attr-defined]
+EpochService.mark_acted = CycleResolutionService.mark_acted  # type: ignore[attr-defined]
+EpochService.pass_cycle = CycleResolutionService.pass_cycle  # type: ignore[attr-defined]
