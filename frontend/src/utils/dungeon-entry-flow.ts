@@ -26,7 +26,29 @@ import {
 } from './dungeon-formatters.js';
 import { fuzzyName } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
+import { OPERATIVE_LABEL } from './operative-constants.js';
 import { errorLine, hintLine, systemLine } from './terminal-formatters.js';
+
+// ── Archetype Critical Aptitude Map ────────────────────────────────────────
+// Derived from ARCHETYPE_CONFIGS.aptitude_weights (highest weight per archetype).
+// Used for party composition warnings — not blocking, just informational.
+
+const ARCHETYPE_CRITICAL_APTITUDE: Record<string, string> = {
+  'The Shadow': 'spy',
+  'The Tower': 'guardian',
+  'The Entropy': 'guardian',
+  'The Devouring Mother': 'guardian',
+  'The Deluge': 'guardian',
+  'The Overthrow': 'propagandist',
+  'The Prometheus': 'saboteur',
+  'The Awakening': 'spy',
+};
+
+const ABILITY_BY_APTITUDE: Record<string, string> = {
+  propagandist: 'RALLY',
+  guardian: 'SEAL',
+  spy: 'GROUND',
+};
 
 // ── Disambiguation (pure, unit-testable) ────────────────────────────────────
 
@@ -193,11 +215,48 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   }
 
   dungeonState.pendingArchetypeForPicker.value = null;
-  return startDungeonRun(sid, {
+
+  // Party composition warning — non-blocking, informational only
+  const warnings = checkPartyComposition(
+    selectedDungeon.archetype,
+    partyIds,
+    aptMap,
+  );
+
+  const runResult = await startDungeonRun(sid, {
     archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
     party_agent_ids: partyIds,
     difficulty: selectedDungeon.suggested_difficulty,
   });
+  return [...warnings, ...runResult];
+}
+
+/**
+ * Check if the selected party covers the archetype's critical aptitude.
+ * Returns warning lines (non-blocking) if the party lacks coverage.
+ */
+function checkPartyComposition(
+  archetype: string,
+  partyIds: string[],
+  aptMap: Map<string, import('../types/index.js').AptitudeSet>,
+): TerminalLine[] {
+  const criticalApt = ARCHETYPE_CRITICAL_APTITUDE[archetype];
+  if (!criticalApt) return [];
+
+  const MIN_THRESHOLD = 4;
+  const hasCoverage = partyIds.some((id) => {
+    const apts = aptMap.get(id);
+    return apts && ((apts as Record<string, number>)[criticalApt] ?? 0) >= MIN_THRESHOLD;
+  });
+
+  if (hasCoverage) return [];
+
+  const aptLabel = OPERATIVE_LABEL[criticalApt as import('../types/index.js').OperativeType] ?? criticalApt.toUpperCase();
+  const ability = ABILITY_BY_APTITUDE[criticalApt];
+  const abilityNote = ability ? ` ${ability} ${msg('will be unavailable')}.` : '';
+  return [
+    hintLine(`\u26A0 ${msg('No agent has')} ${aptLabel} ${MIN_THRESHOLD}+.${abilityNote}`),
+  ];
 }
 
 // ── Run Creation ────────────────────────────────────────────────────────────

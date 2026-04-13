@@ -9,6 +9,7 @@ All text is bilingual (en/de) inline per architecture decision #3.
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 
 # ── Banter Templates ────────────────────────────────────────────────────────
 # 40+ templates for between-encounter dialogue. Personality/opinion filtered.
@@ -2502,6 +2503,7 @@ OVERTHROW_BANTER: list[dict] = [
         "id": "ob_21",
         "trigger": "room_entered",
         "fracture_tier": 3,
+        "min_depth": 6,
         "personality_filter": {},
         "text_en": "The Pretender speaks. {agent} has heard these words before — in their own voice, on Floor 1.",
         "text_de": "Der Prätendent spricht. {agent} hat diese Worte schon gehört — in der eigenen Stimme, auf Etage 1.",
@@ -2558,6 +2560,7 @@ OVERTHROW_BANTER: list[dict] = [
         "id": "ob_28",
         "trigger": "combat_start",
         "fracture_tier": 2,
+        "min_depth": 6,
         "personality_filter": {},
         "text_en": "Power is not a means; it is an end. One does not establish a dictatorship to safeguard a revolution. The Pretender knows this. {agent} is learning.",
         "text_de": "Macht ist kein Mittel; sie ist ein Zweck. Man errichtet keine Diktatur, um eine Revolution zu sichern. Der Prätendent weiß das. {agent} lernt.",
@@ -2673,16 +2676,30 @@ def _deluge_water_tier(archetype_state: dict) -> int:
     return 0
 
 
+# Config-driven tier filtering: archetype → (tier_function, banter_field_name).
+# Replaces 6 identical elif blocks with one generic filter.
+# Shadow and Tower have no tier-based banter and are absent.
+_ARCHETYPE_TIER_CONFIG: dict[str, tuple[Callable[[dict], int], str]] = {
+    "The Entropy": (_entropy_decay_tier, "decay_tier"),
+    "The Devouring Mother": (_mother_attachment_tier, "attachment_tier"),
+    "The Prometheus": (_prometheus_insight_tier, "insight_tier"),
+    "The Deluge": (_deluge_water_tier, "water_tier"),
+    "The Awakening": (_awakening_awareness_tier, "awareness_tier"),
+    "The Overthrow": (_overthrow_fracture_tier, "fracture_tier"),
+}
+
+
 def select_banter(
     trigger: str,
     agents: list[dict],
     used_ids: list[str],
     archetype: str = "The Shadow",
     archetype_state: dict | None = None,
+    depth: int = 0,
 ) -> dict | None:
     """Select a banter template for the current trigger.
 
-    Filters by trigger type, personality match, and ensures no repeats.
+    Filters by trigger type, depth gate, personality match, and ensures no repeats.
     For The Entropy, filters by decay_tier (banter degrades).
     For The Devouring Mother, filters by attachment_tier (banter warms).
     For The Prometheus, filters by insight_tier (banter intensifies).
@@ -2693,56 +2710,31 @@ def select_banter(
         used_ids: List of already-used banter IDs this run.
         archetype: Dungeon archetype for registry lookup.
         archetype_state: Archetype-specific state for tier filtering.
+        depth: Current dungeon depth (0-based). Banter with min_depth > depth is excluded.
     """
     from backend.services.dungeon_content_service import get_banter_registry
 
     banter_pool = get_banter_registry().get(archetype, [])
-    candidates = [b for b in banter_pool if b["trigger"] == trigger and b["id"] not in used_ids]
+    candidates = [
+        b for b in banter_pool
+        if b["trigger"] == trigger
+        and b["id"] not in used_ids
+        and depth >= b.get("min_depth", 0)
+    ]
     if not candidates:
         return None
 
-    # Entropy: filter by decay tier — prefer highest available tier
-    if archetype == "The Entropy" and archetype_state:
-        tier = _entropy_decay_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("decay_tier", 0) <= tier]
+    # Archetype-specific tier filtering — prefer highest available tier.
+    # Config-driven: each archetype maps to (tier_function, banter_field_name).
+    # Shadow and Tower have no tier-based banter and are absent from this map.
+    tier_config = _ARCHETYPE_TIER_CONFIG.get(archetype)
+    if tier_config and archetype_state:
+        tier_fn, tier_field = tier_config
+        tier = tier_fn(archetype_state)
+        tier_candidates = [b for b in candidates if b.get(tier_field, 0) <= tier]
         if tier_candidates:
-            max_tier = max(b.get("decay_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("decay_tier", 0) == max_tier]
-    # Mother: filter by attachment tier — prefer highest available tier
-    elif archetype == "The Devouring Mother" and archetype_state:
-        tier = _mother_attachment_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("attachment_tier", 0) <= tier]
-        if tier_candidates:
-            max_tier = max(b.get("attachment_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("attachment_tier", 0) == max_tier]
-    # Prometheus: filter by insight tier — prefer highest available tier
-    elif archetype == "The Prometheus" and archetype_state:
-        tier = _prometheus_insight_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("insight_tier", 0) <= tier]
-        if tier_candidates:
-            max_tier = max(b.get("insight_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("insight_tier", 0) == max_tier]
-    # Deluge: filter by water tier — prefer highest available tier
-    elif archetype == "The Deluge" and archetype_state:
-        tier = _deluge_water_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("water_tier", 0) <= tier]
-        if tier_candidates:
-            max_tier = max(b.get("water_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("water_tier", 0) == max_tier]
-    # Awakening: filter by awareness tier — prefer highest available tier
-    elif archetype == "The Awakening" and archetype_state:
-        tier = _awakening_awareness_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("awareness_tier", 0) <= tier]
-        if tier_candidates:
-            max_tier = max(b.get("awareness_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("awareness_tier", 0) == max_tier]
-    # Overthrow: filter by fracture tier — prefer highest available tier
-    elif archetype == "The Overthrow" and archetype_state:
-        tier = _overthrow_fracture_tier(archetype_state)
-        tier_candidates = [b for b in candidates if b.get("fracture_tier", 0) <= tier]
-        if tier_candidates:
-            max_tier = max(b.get("fracture_tier", 0) for b in tier_candidates)
-            candidates = [b for b in tier_candidates if b.get("fracture_tier", 0) == max_tier]
+            max_tier = max(b.get(tier_field, 0) for b in tier_candidates)
+            candidates = [b for b in tier_candidates if b.get(tier_field, 0) == max_tier]
 
     if not candidates:
         return None

@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 MAX_CONCURRENT_PER_SIM = 1
 INSTANCE_TTL_SECONDS = 1800  # 30 min inactive → auto-cleanup
-COMBAT_PLANNING_TIMEOUT_MS = 45_000
+COMBAT_PLANNING_TIMEOUT_MS = 63_000  # 60s client after 3s buffer
 DISTRIBUTION_TIMEOUT_MS = 300_000  # 5 min for loot distribution
 CLIENT_TIMER_BUFFER_MS = 3_000  # Client timer is shorter than server timer
 _RPC_MAX_ATTEMPTS = 2

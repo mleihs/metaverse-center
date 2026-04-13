@@ -475,8 +475,13 @@ class DungeonCombatService:
         is_boss: bool = False,
     ) -> dict:
         """Set up combat encounter for a combat/elite/boss room."""
-        encounter = select_encounter(room.room_type, instance.depth, instance.difficulty, instance.archetype)
+        encounter = select_encounter(
+            room.room_type, instance.depth, instance.difficulty, instance.archetype,
+            used_ids=instance.used_encounter_ids,
+        )
         spawn_id = encounter.combat_encounter_id if encounter else None
+        if encounter:
+            instance.used_encounter_ids.append(encounter.id)
 
         if not spawn_id:
             fallbacks = FALLBACK_SPAWNS.get(instance.archetype, FALLBACK_SPAWNS["The Shadow"])
@@ -530,9 +535,11 @@ class DungeonCombatService:
         C1/C3: Timer callback acquires per-instance lock before resolving,
         preventing races with concurrent user submissions.
         """
+        client_ms = COMBAT_PLANNING_TIMEOUT_MS - CLIENT_TIMER_BUFFER_MS
         instance.phase_timer = PhaseTimer(
             started_at=datetime.now(UTC).isoformat(),
-            duration_ms=COMBAT_PLANNING_TIMEOUT_MS - CLIENT_TIMER_BUFFER_MS,
+            duration_ms=COMBAT_PLANNING_TIMEOUT_MS,
+            remaining_ms=client_ms,
             phase="combat_planning",
         )
 

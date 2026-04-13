@@ -157,6 +157,8 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         flex-direction: column;
         gap: 2px;
         padding: 6px 8px;
+        overflow-y: auto;
+        min-height: 0;
       }
 
       .agent {
@@ -847,7 +849,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         <div class="timer__track">
           <div class="timer__fill" style="width: ${pct}%"></div>
         </div>
-        <span class="timer__seconds">${seconds}</span>
+        <span class="timer__seconds">${seconds}s</span>
       </div>
     `;
   }

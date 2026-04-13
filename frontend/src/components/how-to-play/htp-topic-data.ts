@@ -828,7 +828,7 @@ export const TOPICS: TopicDefinition[] = [
     readTime: msg('10 min'),
     tldr: () => [
       msg('Substrate resonances spawn explorable dungeons with FTL-style node maps'),
-      msg('Phase-based combat: 30-second planning phase, then simultaneous resolution'),
+      msg('Phase-based combat: 60-second planning phase, then simultaneous resolution'),
       msg(
         '8 dungeon archetypes \u2013 each tied to a resonance type with unique enemies and encounters',
       ),
@@ -867,7 +867,7 @@ export const TOPICS: TopicDefinition[] = [
             type: 'warn',
             label: msg('Combat System'),
             text: msg(
-              'Combat is phase-based. During the 30-second planning phase, assign abilities from 6 schools (one per operative type) to your agents. Then the round resolves simultaneously \u2013 your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.',
+              'Combat is phase-based. During the 60-second planning phase, assign abilities from 6 schools (one per operative type) to your agents. Then the round resolves simultaneously \u2013 your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.',
             ),
           },
           {
@@ -892,7 +892,7 @@ export const TOPICS: TopicDefinition[] = [
             type: 'info',
             label: msg('The 8 Archetypes'),
             text: msg(
-              'Each resonance type spawns a distinct dungeon archetype: The Shadow (darkness and visibility), The Tower (structural stability), The Devouring Mother (parasitic drain), The Deluge (rising water), The Overthrow (faction navigation), The Prometheus (crafting and combination), The Awakening (memory and psychology), The Entropy (restoration vs. speed). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.',
+              'Each resonance type spawns a distinct dungeon archetype: The Shadow (darkness and visibility), The Tower (structural stability), The Entropy (dissolution and decay), The Devouring Mother (parasitic attachment), The Prometheus (crafting and stolen knowledge), The Deluge (rising water and salvage), The Awakening (consciousness and memory), The Overthrow (political fracture and factions). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.',
             ),
           },
           {

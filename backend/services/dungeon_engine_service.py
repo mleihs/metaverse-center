@@ -454,6 +454,7 @@ class DungeonEngineService:
             instance.used_banter_ids,
             instance.archetype,
             instance.archetype_state,
+            depth=instance.depth,
         )
 
         # Partial loot: Tier 1 for rooms cleared

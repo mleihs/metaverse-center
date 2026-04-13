@@ -3571,7 +3571,7 @@ Leichtgewichtiges Auszeichnungssystem mit 35 Badges in 7 Kategorien und 5 Selten
 |---------|-------|------------|
 | `achievement_definitions` | Katalog aller Badges (35 Eintraege, data-driven) | `id TEXT PK` |
 | `user_achievements` | Verdiente Badges pro User (immutable nach Vergabe) | `id UUID PK`, `UNIQUE(user_id, achievement_id)` |
-| `achievement_progress` | Inkrementeller Fortschritt fuer Schwellenwert-Badges | `PK(user_id, achievement_id)` |
+| `achievement_progress` | Inkrementeller Fortschritt fuer Schwellenwert-Badges. `context JSONB` speichert Deduplizierungs-Tracking (z.B. gesehene Banter-IDs fuer `fn_increment_progress_unique`) | `PK(user_id, achievement_id)` |
 
 **`achievement_definitions` Schema:**
 

@@ -271,6 +271,7 @@ class DungeonMovementService:
             instance.used_banter_ids,
             instance.archetype,
             archetype_state=instance.archetype_state,
+            depth=target_room.depth,
         )
         banter_text = None
         if banter:
@@ -598,8 +599,8 @@ class DungeonMovementService:
 
         mc = ARCHETYPE_CONFIGS["The Deluge"]["mechanic_config"]
         guardian_level = agent.aptitudes.get("guardian", 0)
-        if guardian_level < mc.get("seal_min_aptitude", 40):
-            raise bad_request(f"Agent needs Guardian {mc.get('seal_min_aptitude', 40)}+ to Seal Breach")
+        if guardian_level < mc.get("seal_min_aptitude", 4):
+            raise bad_request(f"Agent needs Guardian {mc.get('seal_min_aptitude', 4)}+ to Seal Breach")
 
         # Cooldown: once per N rooms (design doc §2.6)
         cooldown = mc.get("seal_cooldown_rooms", 3)
@@ -664,8 +665,8 @@ class DungeonMovementService:
 
         mc = ARCHETYPE_CONFIGS["The Awakening"]["mechanic_config"]
         spy_level = agent.aptitudes.get("spy", 0)
-        if spy_level < mc.get("ground_min_aptitude", 40):
-            raise bad_request(f"Agent needs Spy {mc.get('ground_min_aptitude', 40)}+ to Ground")
+        if spy_level < mc.get("ground_min_aptitude", 4):
+            raise bad_request(f"Agent needs Spy {mc.get('ground_min_aptitude', 4)}+ to Ground")
 
         # Cooldown: once per N rooms
         cooldown = mc.get("ground_cooldown_rooms", 3)
@@ -730,8 +731,8 @@ class DungeonMovementService:
 
         mc = ARCHETYPE_CONFIGS["The Overthrow"]["mechanic_config"]
         propagandist_level = agent.aptitudes.get("propagandist", 0)
-        if propagandist_level < mc.get("rally_min_aptitude", 40):
-            raise bad_request(f"Agent needs Propagandist {mc.get('rally_min_aptitude', 40)}+ to Rally")
+        if propagandist_level < mc.get("rally_min_aptitude", 4):
+            raise bad_request(f"Agent needs Propagandist {mc.get('rally_min_aptitude', 4)}+ to Rally")
 
         # Cooldown: once per N rooms
         cooldown = mc.get("rally_cooldown_rooms", 3)
@@ -962,10 +963,14 @@ class DungeonMovementService:
     def _enter_interactive_room(cls, instance: DungeonInstance, room) -> dict:  # noqa: ANN001
         """Set up encounter / rest / treasure room."""
         room_type: str = room.room_type
-        encounter = select_encounter(room_type, instance.depth, instance.difficulty, instance.archetype)
+        encounter = select_encounter(
+            room_type, instance.depth, instance.difficulty, instance.archetype,
+            used_ids=instance.used_encounter_ids,
+        )
 
         if encounter:
             room.encounter_template_id = encounter.id
+            instance.used_encounter_ids.append(encounter.id)
             instance.phase = "rest" if room_type == "rest" else "encounter"
             result: dict = {
                 room_type: True,
@@ -1140,7 +1145,10 @@ class DungeonMovementService:
             instance.depth,
             instance.difficulty,
             instance.archetype,
+            used_ids=instance.used_encounter_ids,
         )
+        if encounter:
+            instance.used_encounter_ids.append(encounter.id)
         room.encounter_template_id = encounter.id if encounter else None
         instance.phase = "encounter"
         instance.archetype_state["_boss_deployment_choices"] = choices

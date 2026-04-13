@@ -36,7 +36,7 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.stress_system import stress_threshold
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id
 from backend.services.dungeon_instance_store import store as _store
-from backend.services.dungeon_shared import AUTO_APPLY_EFFECT_TYPES, log_extra
+from backend.services.dungeon_shared import AUTO_APPLY_EFFECT_TYPES, CLIENT_TIMER_BUFFER_MS, log_extra
 from backend.utils.errors import forbidden, not_found
 from supabase import AsyncClient as Client
 
@@ -365,6 +365,17 @@ class DungeonCheckpointService:
                     encounter_desc_en = encounter.description_en
                     encounter_desc_de = encounter.description_de
 
+        # Recompute remaining_ms for the client (avoids stale values from checkpoint)
+        client_timer = instance.phase_timer
+        if client_timer:
+            try:
+                started = datetime.fromisoformat(client_timer.started_at)
+                elapsed_ms = int((datetime.now(UTC) - started).total_seconds() * 1000)
+                fresh_remaining = max(0, client_timer.duration_ms - CLIENT_TIMER_BUFFER_MS - elapsed_ms)
+                client_timer = client_timer.model_copy(update={"remaining_ms": fresh_remaining})
+            except (ValueError, TypeError):
+                pass  # Malformed started_at — fall through with original timer
+
         return DungeonClientState(
             run_id=instance.run_id,
             archetype=instance.archetype,
@@ -377,7 +388,7 @@ class DungeonCheckpointService:
             archetype_state=instance.archetype_state,
             combat=combat_client,
             phase=instance.phase,
-            phase_timer=instance.phase_timer,
+            phase_timer=client_timer,
             pending_loot=pending_loot,
             loot_assignments=loot_assignments,
             loot_suggestions=loot_suggestions,
@@ -404,6 +415,8 @@ class DungeonCheckpointService:
                 "id": _get(c, "id"),
                 "label_en": _get(c, "label_en"),
                 "label_de": _get(c, "label_de"),
+                "description_en": _get(c, "description_en"),
+                "description_de": _get(c, "description_de"),
                 "requires_aptitude": _get(c, "requires_aptitude"),
                 "check_aptitude": _get(c, "check_aptitude"),
                 "check_difficulty": _get(c, "check_difficulty", 0),
@@ -444,7 +457,18 @@ class DungeonCheckpointService:
             elif effect_type in ("memory", "moodlet"):
                 suggestions[item["id"]] = str(operational[robin_idx % len(operational)].agent_id)
                 robin_idx += 1
+            elif effect_type == "personality_modifier":
+                # Suggest the agent with the lowest value in the target trait
+                trait = item.get("effect_params", {}).get("trait")
+                if trait and operational:
+                    best = min(operational, key=lambda a: a.personality.get(trait, 50.0))
+                    suggestions[item["id"]] = str(best.agent_id)
+                else:
+                    suggestions[item["id"]] = str(operational[robin_idx % len(operational)].agent_id)
+                    robin_idx += 1
             else:
-                suggestions[item["id"]] = str(operational[0].agent_id)
+                # simulation_modifier and unknown types: round-robin fair distribution
+                suggestions[item["id"]] = str(operational[robin_idx % len(operational)].agent_id)
+                robin_idx += 1
 
         return suggestions
