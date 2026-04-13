@@ -2368,6 +2368,7 @@ export class VelgEpochCommandCenter extends LitElement {
       const detected = (result.data as OperativeMission[]) || [];
       this._threats = [...this._threats, ...detected];
       VelgToast.success(msg(str`Sweep complete: ${detected.length} threats detected`));
+      await this._refreshParticipants();
     } else {
       VelgToast.error(msg('Counter-intel sweep failed.'));
     }

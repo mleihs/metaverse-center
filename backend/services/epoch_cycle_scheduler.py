@@ -290,7 +290,6 @@ class EpochCycleScheduler:
                 # Escalation level 4+ (threshold+1): AI takeover
                 if new_consecutive >= escalation_threshold + 1:
                     updates["afk_replaced_by_ai"] = True
-                    updates["is_bot"] = True
 
                     await BattleLogService.log_event(
                         admin,
