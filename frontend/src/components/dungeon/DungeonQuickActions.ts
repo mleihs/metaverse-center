@@ -137,11 +137,12 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         return this._renderEncounterButtons();
 
       case 'rest':
+        // Move buttons excluded: backend rejects moves during rest phase.
+        // After "rest" command, phase transitions to room_clear → move buttons appear.
         return html`
           <button class="action-btn action-btn--primary" @click=${() => this._dispatch('rest')}>
             ${msg('Rest All')}
           </button>
-          ${this._renderMoveButtons()}
         `;
 
       case 'treasure':
