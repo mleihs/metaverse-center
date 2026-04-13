@@ -19,6 +19,7 @@ tags: [index, catalog, documentation]
 | [API Specification](specs/api-specification.md) | 2.7 | 2026-03-17 | de | active |
 | [Auth and Security](specs/auth-and-security.md) | 1.6 | 2026-03-17 | de | active |
 | [Embassies & Ambassadors](specs/embassies.md) | 1.1 | 2026-02-27 | de | active |
+| [Epoch Auto-Resolve & Team PvP](specs/epoch-auto-resolve-team-pvp.md) | 1.0 | 2026-04-13 | de | draft |
 | [Epochs & Competitive Layer](specs/epochs-competitive-layer.md) | 2.2 | 2026-03-17 | de | active |
 | [External Services](specs/external-services.md) | 1.0 | 2026-02-15 | de | active |
 | [Game Systems Design](specs/game-systems.md) | 1.0 | 2026-03-08 | de | active |

@@ -1696,6 +1696,17 @@ export class VelgEpochCommandCenter extends LitElement {
     }
   }
 
+  private async _refreshParticipants() {
+    if (!this._epoch) return;
+    const resp = await epochsApi.listParticipants(this._epoch.id);
+    if (resp.success) {
+      this._participants = (resp.data as EpochParticipant[]) || [];
+      const userId = appState.user.value?.id;
+      this._myParticipant =
+        this._participants.find((p) => !p.is_bot && p.user_id === userId) ?? null;
+    }
+  }
+
   private _switchTab(tab: TabId) {
     this._activeTab = tab;
   }
@@ -2143,6 +2154,7 @@ export class VelgEpochCommandCenter extends LitElement {
             @counter-intel=${this._onCounterIntel}
             @fortify-zone=${(e: CustomEvent) => this._onFortifyZone(e.detail.zoneId)}
             @recall-operative=${(e: CustomEvent) => this._onRecallOperative(e.detail.missionId)}
+            @player-acted=${() => this._refreshParticipants()}
           ></velg-epoch-overview-tab>
         `;
       case 'chat':

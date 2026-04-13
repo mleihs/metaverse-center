@@ -381,7 +381,7 @@ class OperativeMissionService:
                 .maybe_single()
                 .execute()
             )
-            if mood_resp.data:
+            if mood_resp and mood_resp.data:
                 mood_score = mood_resp.data.get("mood_score", 0)
                 stress_level = mood_resp.data.get("stress_level", 0)
                 # High mood: +0.03 (confident operative)
