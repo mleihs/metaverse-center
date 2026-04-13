@@ -19,7 +19,7 @@ ALTER TABLE battle_log ADD CONSTRAINT battle_log_event_type_check CHECK (
     'alliance_proposal', 'alliance_proposal_accepted',
     'alliance_proposal_rejected', 'alliance_tension_increase',
     'alliance_dissolved_tension', 'alliance_upkeep',
-    'player_passed', 'cycle_resolved',
+    'player_passed', 'cycle_resolved', 'cycle_auto_resolved',
     'player_afk', 'player_afk_penalty', 'player_afk_ai_takeover'
   )
 );

@@ -243,7 +243,7 @@ class EpochCycleScheduler:
         participants_resp = await (
             admin.table("epoch_participants")
             .select(
-                "id, simulation_id, has_acted_this_cycle, cycle_ready, "
+                "id, simulation_id, user_id, has_acted_this_cycle, cycle_ready, "
                 "is_bot, consecutive_afk_cycles, total_afk_cycles, "
                 "current_rp, afk_replaced_by_ai"
             )
@@ -289,7 +289,24 @@ class EpochCycleScheduler:
 
                 # Escalation level 4+ (threshold+1): AI takeover
                 if new_consecutive >= escalation_threshold + 1:
+                    # Create a bot_players row so chk_bot_consistency is satisfied
+                    personality = config.get("afk_ai_personality", "sentinel")
+                    bot_resp = await (
+                        admin.table("bot_players")
+                        .insert({
+                            "name": f"AFK Bot ({p['simulation_id'][:8]})",
+                            "personality": personality,
+                            "difficulty": "easy",
+                            "created_by_id": p.get("user_id"),
+                        })
+                        .execute()
+                    )
+                    bot_id = bot_resp.data[0]["id"] if bot_resp.data else None
+
                     updates["afk_replaced_by_ai"] = True
+                    if bot_id:
+                        updates["is_bot"] = True
+                        updates["bot_player_id"] = bot_id
 
                     await BattleLogService.log_event(
                         admin,
@@ -299,7 +316,11 @@ class EpochCycleScheduler:
                         "AI has assumed control due to prolonged absence.",
                         source_simulation_id=UUID(p["simulation_id"]),
                         is_public=True,
-                        metadata={"consecutive": new_consecutive},
+                        metadata={
+                            "consecutive": new_consecutive,
+                            "personality": personality,
+                            "bot_player_id": bot_id,
+                        },
                     )
                 else:
                     # Level 1+: log AFK event
