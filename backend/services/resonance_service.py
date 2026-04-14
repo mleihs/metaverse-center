@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import random
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -11,7 +13,10 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
-from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
+from backend.models.resonance import (
+    ARCHETYPE_DESCRIPTIONS,
+    SECONDARY_EVENT_TYPE_MAP,
+)
 from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
 from backend.services.base_service import BaseService, serialize_for_json
@@ -408,19 +413,28 @@ class ResonanceService(BaseService):
             signature,
         )
 
-        # ── 1. Susceptibility ──
+        # ── 1. Susceptibility (adaptive — uses resonance_memory) ──
         try:
             susc_resp = await supabase.rpc(
-                "fn_get_resonance_susceptibility",
+                "fn_get_adaptive_susceptibility",
                 {"p_simulation_id": sim_id, "p_signature": signature},
             ).execute()
             susceptibility = float(susc_resp.data) if susc_resp.data is not None else 1.0
-        except (TypeError, ValueError):
-            logger.warning(
-                "Invalid susceptibility response for sim %s, defaulting to 1.0",
+        except (PostgrestAPIError, TypeError, ValueError):
+            # Fall back to static susceptibility if adaptive RPC not available
+            try:
+                susc_resp = await supabase.rpc(
+                    "fn_get_resonance_susceptibility",
+                    {"p_simulation_id": sim_id, "p_signature": signature},
+                ).execute()
+                susceptibility = float(susc_resp.data) if susc_resp.data is not None else 1.0
+            except (TypeError, ValueError):
+                susceptibility = 1.0
+            logger.info(
+                "Adaptive susceptibility unavailable for sim %s, using static %.2f",
                 sim_id,
+                susceptibility,
             )
-            susceptibility = 1.0
 
         # ── 2. Event types ──
         try:
@@ -480,11 +494,15 @@ class ResonanceService(BaseService):
             effective_mag = float(raw_mag)
 
         # ── 4. Heartbeat modifiers (attunement + anchor) ──
+        had_attunement = False
+        had_anchor_protection = False
         try:
             attunements = await AttunementService.list_attunements(supabase, UUID(sim_id))
             for att in attunements:
                 if att.get("resonance_signature") == signature:
                     depth = float(att.get("depth", 0))
+                    if depth > 0:
+                        had_attunement = True
                     reduction = depth * 0.3
                     effective_mag = round(max(0, effective_mag - reduction), 4)
                     logger.info(
@@ -496,6 +514,7 @@ class ResonanceService(BaseService):
 
             protection = await AnchorService.get_protection_factor(supabase, UUID(sim_id))
             if protection > 0:
+                had_anchor_protection = True
                 effective_mag = round(effective_mag * (1.0 - protection), 4)
                 logger.info(
                     "Anchor protection reduced magnitude by %.1f%% for %s",
@@ -533,12 +552,13 @@ class ResonanceService(BaseService):
                     exc_info=True,
                 )
 
-        # ── 7. Spawn events ──
+        # ── 7. Spawn events (weighted random selection) ──
+        selected_types = cls._select_event_types(event_types, signature, resonance_id)
         spawned_ids: list[str] = []
         spawned_events: list[dict] = []
         spawn_errors: list[str] = []
 
-        for event_type in event_types[:3]:
+        for event_type in selected_types:
             try:
                 event = await cls._spawn_resonance_event(
                     supabase,
@@ -654,7 +674,108 @@ class ResonanceService(BaseService):
                         exc_info=True,
                     )
 
+        # ── 11. Compound Archetype bonus events ──
+        try:
+            compound_resp = await supabase.rpc(
+                "fn_detect_compound_archetypes",
+                {"p_simulation_id": sim_id},
+            ).execute()
+            compounds = compound_resp.data if compound_resp.data else []
+            for compound in compounds:
+                compound_types = compound.get("event_types", [])
+                # Spawn 1 compound event (not 3 — it's a bonus, not a replacement)
+                if compound_types and gen_service:
+                    compound_type = compound_types[0]
+                    try:
+                        compound_event = await cls._spawn_resonance_event(
+                            supabase,
+                            simulation=simulation,
+                            resonance=resonance,
+                            event_type=compound_type,
+                            effective_magnitude=float(compound.get("combined_magnitude", effective_mag)),
+                            user_id=user_id,
+                            gen_service=gen_service,
+                        )
+                        spawned_ids.append(compound_event["id"])
+                        logger.info(
+                            "Spawned compound archetype event: %s (%s) in %s",
+                            compound["compound_name"],
+                            compound_type,
+                            sim_name,
+                        )
+                    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                        logger.warning(
+                            "Compound event spawn failed for %s in %s",
+                            compound.get("compound_name", "?"),
+                            sim_name,
+                            exc_info=True,
+                        )
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.debug("Compound archetype detection unavailable (non-fatal)")
+
+        # ── 12. Record resonance memory for adaptive susceptibility ──
+        was_mitigated = had_attunement or had_anchor_protection
+        try:
+            await supabase.table("resonance_memory").insert({
+                "simulation_id": sim_id,
+                "resonance_signature": signature,
+                "effective_magnitude": effective_mag,
+                "was_mitigated": was_mitigated,
+            }).execute()
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.debug("Resonance memory recording failed (non-fatal)")
+
         return update_resp.data[0] if update_resp.data else impact
+
+    @classmethod
+    def _select_event_types(
+        cls,
+        primary_types: list[str],
+        signature: str,
+        resonance_id: str,
+        count: int = 3,
+    ) -> list[str]:
+        """Select event types using weighted random from primary + secondary pools.
+
+        Primary types (from simulation config) get weight 3.
+        Secondary types (from SECONDARY_EVENT_TYPE_MAP) get weight 1.
+        Selection is deterministic per resonance_id for reproducibility.
+        """
+        secondary = SECONDARY_EVENT_TYPE_MAP.get(signature, [])
+        # Build weighted pool: primary × 3, secondary × 1
+        pool: list[str] = []
+        weights: list[int] = []
+        seen: set[str] = set()
+        for t in primary_types:
+            if t not in seen:
+                pool.append(t)
+                weights.append(3)
+                seen.add(t)
+        for t in secondary:
+            if t not in seen:
+                pool.append(t)
+                weights.append(1)
+                seen.add(t)
+
+        if not pool:
+            return ["crisis", "social", "intrigue"][:count]
+
+        # Deterministic seed from resonance_id for reproducibility (not crypto)
+        seed = int(hashlib.sha256(str(resonance_id).encode()).hexdigest()[:8], 16)
+        rng = random.Random(seed)  # noqa: S311 — intentional deterministic seeding
+
+        selected: list[str] = []
+        remaining_pool = list(pool)
+        remaining_weights = list(weights)
+        for _ in range(min(count, len(remaining_pool))):
+            choices = rng.choices(remaining_pool, weights=remaining_weights, k=1)
+            choice = choices[0]
+            selected.append(choice)
+            idx = remaining_pool.index(choice)
+            remaining_pool.pop(idx)
+            remaining_weights.pop(idx)
+
+        return selected
 
     @classmethod
     async def _spawn_resonance_event(

@@ -1,6 +1,7 @@
 """Pydantic models for epochs, operatives, scoring, and battle log."""
 
 from datetime import datetime
+from enum import Enum
 from types import MappingProxyType
 from typing import Literal
 from uuid import UUID
@@ -271,6 +272,13 @@ class AllianceVoteResponse(BaseModel):
 OperativeType = Literal["spy", "saboteur", "propagandist", "assassin", "guardian", "infiltrator"]
 
 
+class ResonanceOpType(str, Enum):
+    """Resonance Operation types for substrate exploitation during epochs."""
+
+    SURGE_RIDING = "surge_riding"      # Aligned operative bonus (+0.08), risk: double pressure on own zones
+    SUBSTRATE_TAP = "substrate_tap"    # Steal 1 RP from target's resonance events. Costs 2 RP.
+
+
 class OperativeDeploy(BaseModel):
     """Schema for deploying an operative."""
 
@@ -281,6 +289,7 @@ class OperativeDeploy(BaseModel):
     target_entity_id: UUID | None = None
     target_entity_type: Literal["building", "agent", "embassy", "zone"] | None = None
     target_zone_id: UUID | None = None
+    resonance_op: ResonanceOpType | None = None  # Optional resonance operation
 
     @model_validator(mode="after")
     def _validate_target_entity(self) -> "OperativeDeploy":
