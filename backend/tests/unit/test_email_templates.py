@@ -533,7 +533,7 @@ class TestRenderEpochInvitation:
     def test_contains_intro_de(self):
         html = self._render()
         assert "GEHEIM eingestuft" in html
-        assert "Kommandanten" in html
+        assert "Kommando" in html
 
     def test_contains_operation_label(self):
         html = self._render()
@@ -567,8 +567,8 @@ class TestRenderEpochInvitation:
 
     def test_contains_cta_buttons(self):
         html = self._render()
-        assert "ACCEPT THE SUMMONS" in html
-        assert "EINBERUFUNG ANNEHMEN" in html
+        assert "TAKE COMMAND" in html
+        assert "KOMMANDO" in html
         # URL appears in both CTA buttons
         assert html.count("token=abc") >= 2
 
