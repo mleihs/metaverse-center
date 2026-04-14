@@ -868,6 +868,35 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "REALITY ARCHITECT",
         "de": "REALITÄTSARCHITEKT",
     },
+    # ── Auto-Resolve & AFK ────────────────────────────────────
+    "auto_resolved_banner": {
+        "en": "This cycle was auto-resolved at deadline",
+        "de": "Dieser Zyklus wurde bei Fristablauf automatisch aufgelöst",
+    },
+    "afk_warning_header": {
+        "en": "ABSENCE DETECTED",
+        "de": "ABWESENHEIT ERKANNT",
+    },
+    "afk_penalty_msg": {
+        "en": "You were marked absent. RP penalty: -{rp_loss}",
+        "de": "Du wurdest als abwesend markiert. RP-Strafe: -{rp_loss}",
+    },
+    "afk_ai_takeover_msg": {
+        "en": "Your faction is now commanded by AI ({personality}) due to prolonged absence",
+        "de": "Deine Fraktion wird wegen längerer Abwesenheit nun von KI ({personality}) befehligt",
+    },
+    "afk_consecutive_label": {
+        "en": "Consecutive absences: {n}",
+        "de": "Aufeinanderfolgende Abwesenheiten: {n}",
+    },
+    "participation_summary": {
+        "en": "{acted} of {total} players acted this cycle",
+        "de": "{acted} von {total} Spielern haben diesen Zyklus gehandelt",
+    },
+    "deadline_info": {
+        "en": "Next deadline: {minutes} min after cycle start",
+        "de": "Nächste Frist: {minutes} Min. nach Zyklusbeginn",
+    },
 }
 
 
@@ -1026,6 +1055,85 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
 {rank_gap_html}
                 </table>
               </div>
+            </td>
+          </tr>"""
+
+    # ── Auto-resolve banner + AFK warnings (Phase 7) ──
+    auto_resolve_html = ""
+    if data.get("auto_resolved"):
+        auto_resolve_html = f"""\
+          <tr>
+            <td style="padding:4px 32px 12px;">
+              <div style="border:1px solid {_AMBER};padding:10px 16px;background-color:rgba(245,158,11,0.08);">
+                <p style="margin:0;font-size:12px;color:{_AMBER};font-weight:bold;letter-spacing:1px;text-transform:uppercase;">
+                  &#9888; {_nt("auto_resolved_banner", lang)}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    afk_html = ""
+    if data.get("player_was_afk"):
+        afk_items = f"""\
+                <p style="margin:0 0 4px;font-size:12px;color:{_RED};font-weight:bold;letter-spacing:1px;text-transform:uppercase;">
+                  {_nt("afk_warning_header", lang)}
+                </p>"""
+
+        afk_penalty = data.get("afk_penalty_rp", 0)
+        if afk_penalty > 0:
+            afk_items += f"""\
+                <p style="margin:4px 0;font-size:13px;color:{_RED};line-height:1.6;">
+                  {_nt("afk_penalty_msg", lang, rp_loss=str(afk_penalty))}
+                </p>"""
+
+        if data.get("replaced_by_ai"):
+            personality = data.get("afk_ai_personality", "sentinel")
+            afk_items += f"""\
+                <p style="margin:4px 0;font-size:13px;color:{_RED};font-weight:bold;line-height:1.6;">
+                  &#9888; {_nt("afk_ai_takeover_msg", lang, personality=personality.upper())}
+                </p>"""
+
+        consecutive = data.get("consecutive_afk", 0)
+        if consecutive > 0:
+            afk_items += f"""\
+                <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
+                  {_nt("afk_consecutive_label", lang, n=str(consecutive))}
+                </p>"""
+
+        afk_html = f"""\
+          <tr>
+            <td style="padding:4px 32px 12px;">
+              <div style="border:1px solid {_RED};padding:12px 16px;background-color:rgba(220,38,38,0.06);">
+{afk_items}
+              </div>
+            </td>
+          </tr>"""
+
+    # ── Participation summary + deadline ──
+    participation_html = ""
+    participation = data.get("participation_summary")
+    if participation:
+        acted = participation.get("acted", 0)
+        total = participation.get("total", 0)
+        if total > 0:
+            participation_html = f"""\
+          <tr>
+            <td style="padding:0 32px 8px;">
+              <p style="margin:0;font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;">
+                {_nt("participation_summary", lang, acted=str(acted), total=str(total))}
+              </p>
+            </td>
+          </tr>"""
+
+    deadline_html = ""
+    deadline_minutes = data.get("cycle_deadline_minutes")
+    if deadline_minutes:
+        deadline_html = f"""\
+          <tr>
+            <td style="padding:0 32px 12px;">
+              <p style="margin:0;font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;">
+                {_nt("deadline_info", lang, minutes=str(deadline_minutes))}
+              </p>
             </td>
           </tr>"""
 
@@ -1300,7 +1408,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             </td>
           </tr>"""
 
-    sections = [standing_html, dims_html, ops_html]
+    sections = [standing_html, auto_resolve_html, afk_html, participation_html, deadline_html, dims_html, ops_html]
     if threat_html:
         sections.append(threat_html)
     if intel_html:
@@ -1326,7 +1434,10 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
     command_center_url, accent_color, simulation_slug,
     threats, spy_intel, missions, rank_gap,
     next_cycle_missions, next_cycle_rp_projection, alliance_name,
-    ally_names, alliance_bonus_active, has_threat_data
+    ally_names, alliance_bonus_active, has_threat_data,
+    auto_resolved, player_was_afk, afk_penalty_rp,
+    replaced_by_ai, afk_ai_personality, consecutive_afk,
+    participation_summary, cycle_deadline_minutes
     """
     epoch_name = _esc(data.get("epoch_name", "Unknown"))
     cycle_number = data.get("cycle_number", 0)
