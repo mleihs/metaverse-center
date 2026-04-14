@@ -300,7 +300,7 @@ class BotChatService:
             .maybe_single()
             .execute()
         )
-        return resp.data.get("setting_value", "template") if resp.data else "template"
+        return resp.data.get("setting_value", "template") if resp and resp.data else "template"
 
     @classmethod
     def _generate_template_message(cls, personality: str, game_state: BotGameState) -> str:

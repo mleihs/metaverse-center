@@ -65,7 +65,7 @@ class BotService:
             try:
                 result = await cls._execute_single_bot(supabase, admin_supabase, epoch_id, bot_p, cycle_number, config)
                 results.append(result)
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            except Exception as exc:
                 logger.exception(
                     "Bot execution failed",
                     extra={"participant_id": bot_p["id"], "epoch_id": epoch_id},
