@@ -260,7 +260,7 @@ export class VelgEpochAlliancesTab extends LitElement {
 
     @keyframes proposal-pulse-own {
       from { border-color: var(--color-info); }
-      to { border-color: rgba(56 189 248 / 0.3); }
+      to { border-color: var(--color-info-border); }
     }
 
     .proposal-card__header {

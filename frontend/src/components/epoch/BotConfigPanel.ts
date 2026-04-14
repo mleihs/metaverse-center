@@ -147,6 +147,8 @@ export class VelgBotConfigPanel extends LitElement {
       --text-mid: var(--color-text-tertiary);
       --text-dim: var(--color-text-muted);
       --accent: var(--color-info);
+      --_scanline-fine: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
+      --_scanline-coarse: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
     }
 
     velg-side-panel {
@@ -176,8 +178,8 @@ export class VelgBotConfigPanel extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255 255 255 / 0.012) 2px,
-        rgba(255 255 255 / 0.012) 4px
+        var(--_scanline-fine) 2px,
+        var(--_scanline-fine) 4px
       );
       z-index: 0;
     }
@@ -371,8 +373,8 @@ export class VelgBotConfigPanel extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255 255 255 / 0.03) 3px,
-        rgba(255 255 255 / 0.03) 6px
+        var(--_scanline-coarse) 3px,
+        var(--_scanline-coarse) 6px
       );
       opacity: 0;
       transition: opacity 0.3s;

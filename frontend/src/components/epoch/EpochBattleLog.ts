@@ -22,6 +22,7 @@ export class VelgEpochBattleLog extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
     }
 
     /* ── Feed ─────────────────────────────── */
@@ -59,7 +60,7 @@ export class VelgEpochBattleLog extends LitElement {
     }
 
     .entry:hover {
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
     }
 
     .entry:hover::before {
@@ -115,8 +116,8 @@ export class VelgEpochBattleLog extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--color-info);
-      border: 1px solid rgba(56 189 248 / 0.3);
-      background: rgba(56 189 248 / 0.08);
+      border: 1px solid var(--color-info-border);
+      background: var(--color-info-bg);
       padding: 1px 6px;
       margin-left: var(--space-1);
       vertical-align: middle;

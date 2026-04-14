@@ -22,6 +22,8 @@ export class VelgMissionCard extends LitElement {
 		:host {
 			display: block;
 			--mc-color: var(--mission-card-color, var(--color-text-muted));
+			--_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
+			--_select-inset: color-mix(in srgb, var(--color-primary) 6%, transparent);
 		}
 
 		.card {
@@ -44,14 +46,14 @@ export class VelgMissionCard extends LitElement {
 
 		.card:hover:not(.card--disabled) {
 			transform: translateY(-4px);
-			box-shadow: 0 8px 24px rgba(0 0 0 / 0.5),
+			box-shadow: 0 8px 24px var(--_sh-heavy),
 				0 0 16px color-mix(in srgb, var(--mc-color) 25%, transparent);
 		}
 
 		.card--selected {
 			border-color: var(--color-epoch-accent);
-			box-shadow: 0 0 20px rgba(245 158 11 / 0.3),
-				inset 0 0 20px rgba(245 158 11 / 0.06);
+			box-shadow: 0 0 20px var(--color-primary-border),
+				inset 0 0 20px var(--_select-inset);
 		}
 
 		.card--disabled {

@@ -231,9 +231,9 @@ class TestRenderCycleBriefing:
         # (German is the first and only block)
 
     def test_dark_mode_meta_tag(self):
-        """A4: Dark mode meta tag."""
+        """A4: Dark mode meta tags for Apple Mail/iOS/Outlook compatibility."""
         html = render_cycle_briefing(self._sample_data())
-        assert 'name="color-scheme" content="dark"' in html
+        assert 'name="color-scheme" content="light dark"' in html
 
 
 # ── Phase Change ──────────────────────────────────────────────
@@ -628,6 +628,209 @@ class TestRenderEpochInvitation:
         assert "12-hour cycles" in html
 
     def test_dark_mode_meta(self):
-        """A4: Dark mode meta tag."""
+        """A4: Dark mode meta tags for Apple Mail/iOS/Outlook compatibility."""
         html = self._render()
-        assert 'name="color-scheme" content="dark"' in html
+        assert 'name="color-scheme" content="light dark"' in html
+        assert 'name="supported-color-schemes" content="light dark"' in html
+
+
+# ── Phase 7: Auto-Resolve + AFK Enrichments ──────────────────
+
+
+class TestCycleBriefingPhase7:
+    """Tests for Phase 7 email enrichments: auto-resolve, AFK, participation, deadline."""
+
+    def _sample_data(self, **overrides) -> dict:
+        """Base data with Phase 7 fields populated."""
+        base = {
+            "epoch_name": "Operation Aegis",
+            "epoch_status": "competition",
+            "cycle_number": 5,
+            "rank": 1,
+            "prev_rank": 2,
+            "total_players": 4,
+            "composite": 85.0,
+            "composite_delta": 3.0,
+            "dimensions": [
+                {"name": "stability", "value": 80.0, "delta": 1.0},
+                {"name": "influence", "value": 60.0, "delta": -2.0},
+                {"name": "sovereignty", "value": 90.0, "delta": 0.0},
+                {"name": "diplomatic", "value": 70.0, "delta": 5.0},
+                {"name": "military", "value": 50.0, "delta": 2.0},
+            ],
+            "rp_balance": 25,
+            "rp_cap": 40,
+            "active_ops": 1,
+            "resolved_ops": 2,
+            "success_ops": 1,
+            "detected_ops": 0,
+            "guardians": 1,
+            "counter_intel": 0,
+            "public_events": [],
+            "simulation_name": "Velgarien",
+            "command_center_url": "https://metaverse.center/epoch",
+            "accent_color": "#ff6b2b",
+            "simulation_slug": "velgarien",
+            "missions": [],
+            "threats": [],
+            "has_threat_data": False,
+            "spy_intel": [],
+            "rank_gap": {},
+            "alliance_name": None,
+            "ally_names": [],
+            "alliance_bonus_active": False,
+            "next_cycle_missions": 0,
+            "next_cycle_rp_projection": "+10 → 35 / 40",
+            # Phase 7 fields
+            "auto_resolved": False,
+            "player_was_afk": False,
+            "afk_penalty_rp": 0,
+            "replaced_by_ai": False,
+            "afk_ai_personality": None,
+            "consecutive_afk": 0,
+            "participation_summary": None,
+            "cycle_deadline_minutes": None,
+        }
+        base.update(overrides)
+        return base
+
+    # ── Auto-Resolve Banner ──
+
+    def test_auto_resolve_banner_shown(self):
+        """Auto-resolve banner appears when cycle was auto-resolved."""
+        html = render_cycle_briefing(self._sample_data(auto_resolved=True))
+        assert "auto-resolved" in html.lower() or "automatisch" in html.lower()
+
+    def test_auto_resolve_banner_hidden(self):
+        """No auto-resolve banner when cycle resolved normally."""
+        html = render_cycle_briefing(self._sample_data(auto_resolved=False))
+        # The i18n key "auto_resolved_banner" should NOT appear
+        assert "auto-resolved at deadline" not in html.lower()
+        assert "fristablauf automatisch" not in html.lower()
+
+    # ── AFK Warning ──
+
+    def test_afk_warning_shown(self):
+        """AFK warning section appears when player was absent."""
+        html = render_cycle_briefing(self._sample_data(
+            player_was_afk=True,
+            afk_penalty_rp=15,
+        ))
+        # Header present
+        assert "ABSENCE DETECTED" in html or "ABWESENHEIT ERKANNT" in html
+        # Penalty amount shown
+        assert "-15" in html
+
+    def test_afk_warning_hidden(self):
+        """No AFK section when player was active."""
+        html = render_cycle_briefing(self._sample_data(player_was_afk=False))
+        assert "ABSENCE DETECTED" not in html
+
+    def test_afk_ai_takeover_message(self):
+        """AI takeover message shown when player replaced by bot."""
+        html = render_cycle_briefing(self._sample_data(
+            player_was_afk=True,
+            replaced_by_ai=True,
+            afk_ai_personality="sentinel",
+        ))
+        assert "SENTINEL" in html
+        assert "AI" in html or "KI" in html
+
+    def test_afk_consecutive_count(self):
+        """Consecutive absence count shown when > 0."""
+        html = render_cycle_briefing(self._sample_data(
+            player_was_afk=True,
+            consecutive_afk=3,
+        ))
+        assert "3" in html
+
+    # ── Participation Summary ──
+
+    def test_participation_summary_shown(self):
+        """Participation stats shown when data available."""
+        html = render_cycle_briefing(self._sample_data(
+            participation_summary={"acted": 3, "total": 4},
+        ))
+        assert "3" in html and "4" in html
+
+    def test_participation_summary_hidden(self):
+        """No participation stats when data is None."""
+        html = render_cycle_briefing(self._sample_data(
+            participation_summary=None,
+        ))
+        # Should not contain the participation summary i18n key output
+        assert "players acted" not in html.lower()
+
+    # ── Deadline Info ──
+
+    def test_deadline_info_shown(self):
+        """Deadline info shown when config includes deadline minutes."""
+        html = render_cycle_briefing(self._sample_data(
+            cycle_deadline_minutes=480,
+        ))
+        assert "480" in html
+
+    def test_deadline_info_hidden(self):
+        """No deadline info when not configured."""
+        html = render_cycle_briefing(self._sample_data(
+            cycle_deadline_minutes=None,
+        ))
+        assert "deadline" not in html.lower() or "frist" not in html.lower()
+
+    # ── Combined Scenario ──
+
+    def test_full_afk_scenario(self):
+        """All Phase 7 fields active simultaneously."""
+        html = render_cycle_briefing(self._sample_data(
+            auto_resolved=True,
+            player_was_afk=True,
+            afk_penalty_rp=20,
+            replaced_by_ai=True,
+            afk_ai_personality="guardian",
+            consecutive_afk=2,
+            participation_summary={"acted": 2, "total": 4},
+            cycle_deadline_minutes=480,
+        ))
+        # Auto-resolve banner
+        assert "auto-resolved" in html.lower() or "automatisch" in html.lower()
+        # AFK warning header
+        assert "ABSENCE DETECTED" in html or "ABWESENHEIT ERKANNT" in html
+        # RP penalty
+        assert "-20" in html
+        # AI takeover
+        assert "GUARDIAN" in html
+        # Consecutive
+        assert "2" in html
+        # Participation
+        assert "4" in html
+        # Deadline
+        assert "480" in html
+
+    # ── CSS Animations (progressive enhancement) ──
+
+    def test_css_animations_in_shell(self):
+        """Email shell includes CSS @keyframes for progressive enhancement."""
+        html = render_cycle_briefing(self._sample_data())
+        assert "@keyframes cursor-blink" in html
+        assert "@keyframes glow-breathe" in html
+        assert "@keyframes reveal-up" in html
+        assert "@keyframes stamp-in" in html
+
+    def test_lang_attribute_dynamic(self):
+        """Email lang attribute matches locale."""
+        html_en = render_cycle_briefing(self._sample_data(), email_locale="en")
+        assert 'lang="en"' in html_en
+        html_de = render_cycle_briefing(self._sample_data(), email_locale="de")
+        assert 'lang="de"' in html_de
+
+    def test_no_rgba_in_inline_styles(self):
+        """No rgba() in inline styles — only in @keyframes (which are in <style> block)."""
+        html = render_cycle_briefing(self._sample_data(
+            auto_resolved=True,
+            player_was_afk=True,
+            afk_penalty_rp=10,
+        ))
+        # Split: everything outside <style>...</style> should have no rgba
+        import re
+        outside_style = re.sub(r"<style>.*?</style>", "", html, flags=re.DOTALL)
+        assert "rgba(" not in outside_style

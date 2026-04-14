@@ -1,5 +1,5 @@
 #!/bin/bash
-# lint-color-tokens.sh — Reject raw hex colors and gray tokens in component CSS.
+# lint-color-tokens.sh — Reject raw colors (hex, rgba, rgb) and gray tokens in component CSS.
 # Run: bash frontend/scripts/lint-color-tokens.sh
 #
 # Documented exceptions are filtered out.
@@ -19,7 +19,23 @@ if [ -n "$RESULT" ]; then
   VIOLATIONS=1
 fi
 
-# --- Check 2: Raw #hex in component CSS ---
+# --- Check 2: Raw rgba()/rgb() in epoch components ---
+# Scoped to epoch/ (fully tokenized). Expand to other dirs as they're migrated.
+EPOCH_DIR="$COMPONENTS_DIR/epoch"
+RESULT=$(grep -rnE 'rgba?\(' \
+  --include='*.ts' \
+  "$EPOCH_DIR" 2>/dev/null | \
+  grep -v 'lint-color-ok' | \
+  grep -v 'color-mix' || true)
+
+if [ -n "$RESULT" ]; then
+  echo "ERROR: Raw rgba()/rgb() found in epoch components (use color-mix tokens):"
+  echo "$RESULT"
+  echo ""
+  VIOLATIONS=1
+fi
+
+# --- Check 3: Raw #hex in component CSS ---
 # Exceptions are filtered AFTER grep to support subdirectory paths.
 RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   --include='*.ts' \

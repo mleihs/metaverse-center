@@ -117,7 +117,7 @@ def render_epoch_invitation(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content)
+    return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content, lang=langs[0])
 
 
 def _render_invitation_block(
@@ -140,16 +140,16 @@ def _render_invitation_block(
     if is_primary:
         header = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("inv_header", lang)}
+                {_nt("inv_header", lang)}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
               </p>
             </td>
           </tr>"""
     else:
         header = f"""\
           <tr>
-            <td style="padding:24px 32px 8px;">
+            <td lang="{lang}" style="padding:24px 32px 8px;">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("inv_header", lang)}
               </p>
@@ -169,14 +169,27 @@ def _render_invitation_block(
             </td>
           </tr>"""
 
-    # Operation name
-    op_name = f"""\
+    # Classification urgency bar
+    urgency = f"""\
           <tr>
-            <td style="padding:8px 32px 4px;">
+            <td style="padding:8px 32px 0;">
+              <div style="border-left:3px solid {accent};padding:4px 12px;animation:accent-pulse 3s ease-in-out infinite;">
+                <p style="margin:0;font-size:10px;letter-spacing:3px;color:{accent};text-transform:uppercase;font-weight:bold;">
+                  &#9888; {_nt("inv_urgency", lang)}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+
+    # Operation name (dramatic stamp-in)
+    op_name = f"""\
+{urgency}
+          <tr>
+            <td style="padding:12px 32px 4px;">
               <p style="margin:0 0 2px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("inv_operation", lang)}
               </p>
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
                 {epoch_name}
               </{heading_tag}>
               <p style="margin:4px 0 0;font-size:11px;color:{_BORDER};letter-spacing:1px;">
@@ -185,14 +198,14 @@ def _render_invitation_block(
             </td>
           </tr>"""
 
-    # Intel dossier (AI-generated lore — English only, skip in DE secondary block)
+    # Intel dossier (AI-generated lore — classified document style)
     if is_primary or lang == "en":
         intel = _section_header(_nt("inv_intel", lang))
         intel += f"""\
           <tr>
             <td style="padding:0 32px 16px;">
-              <div style="border:1px dashed {_BORDER};padding:20px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};font-style:italic;">
+              <div style="border:1px dashed {_BORDER};border-left:3px solid {accent};padding:20px;background-color:{_SURFACE};">
+                <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};font-style:italic;">
                   {lore_text}
                 </p>
               </div>
@@ -220,7 +233,7 @@ def _render_invitation_block(
     mp_items = ""
     for bullet in mp_bullets:
         mp_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {bullet}
                 </p>"""
 
@@ -244,7 +257,7 @@ def _render_invitation_block(
     roe_items = ""
     for bullet in roe_bullets:
         roe_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {bullet}
                 </p>"""
 
@@ -325,20 +338,58 @@ def _score_bar(value: float, max_val: float = 100.0, accent: str = _AMBER) -> st
     return f'<table role="presentation" cellpadding="0" cellspacing="1" style="display:inline-table;vertical-align:middle;"><tr>{cells}</tr></table>'
 
 
-def _email_shell(title: str, content: str) -> str:
-    """Wrap content in the standard dark email shell."""
+def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
+    """Wrap content in the standard dark email shell.
+
+    Supports dark mode declarations for Apple Mail/iOS, Outlook.com,
+    and Gmail. CSS animations degrade gracefully to static in Outlook.
+    """
     return f"""\
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <meta name="supported-color-schemes" content="dark">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>{title}</title>
+  <style>
+    :root {{ color-scheme: light dark; }}
+    @media (prefers-color-scheme: dark) {{
+      body, .email-bg {{ background-color: {_BG} !important; }}
+      .email-text {{ color: {_TEXT} !important; }}
+    }}
+    [data-ogsc] body, [data-ogsc] .email-bg {{ background-color: {_BG} !important; }}
+    [data-ogsc] .email-text {{ color: {_TEXT} !important; }}
+    @keyframes scanline-drift {{
+      from {{ background-position: 0 0; }}
+      to {{ background-position: 0 4px; }}
+    }}
+    @keyframes accent-pulse {{
+      0%, 100% {{ border-left-color: {_AMBER}; }}
+      50% {{ border-left-color: {_BORDER}; }}
+    }}
+    @keyframes cursor-blink {{
+      0%, 100% {{ opacity: 1; }}
+      50% {{ opacity: 0; }}
+    }}
+    @keyframes glow-breathe {{
+      0%, 100% {{ box-shadow: 0 0 0 0 rgba(245,158,11,0); }}
+      50% {{ box-shadow: 0 0 14px 2px rgba(245,158,11,0.12); }}
+    }}
+    @keyframes reveal-up {{
+      from {{ opacity: 0; transform: translateY(6px); }}
+      to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    @keyframes stamp-in {{
+      0% {{ opacity: 0; transform: scale(1.5) rotate(-4deg); }}
+      60% {{ opacity: 1; transform: scale(0.97) rotate(0deg); }}
+      100% {{ opacity: 1; transform: scale(1) rotate(0deg); }}
+    }}
+  </style>
 </head>
-<body style="margin:0;padding:0;background-color:{_BG};font-family:{_MONO};">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:{_BG};">
+<body class="email-bg" style="margin:0;padding:0;background-color:{_BG};font-family:{_MONO};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-bg" style="background-color:{_BG};">
     <tr>
       <td align="center" style="padding:40px 20px;">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
@@ -352,10 +403,10 @@ def _email_shell(title: str, content: str) -> str:
 
 
 def _section_header(label: str) -> str:
-    """Render a dossier section header row."""
+    """Render a dossier section header row with reveal animation."""
     return f"""\
           <tr>
-            <td style="padding:20px 32px 8px;">
+            <td style="padding:20px 32px 8px;animation:reveal-up 0.4s ease both;">
               <p style="margin:0;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;border-bottom:1px dashed {_BORDER_SUBTLE};padding-bottom:6px;">
                 &#9472;&#9472; {_esc(label)} &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
               </p>
@@ -369,7 +420,7 @@ def _cta_button(url: str, label: str, *, accent: str = _AMBER) -> str:
           <tr>
             <td align="center" style="padding:24px 32px 32px;">
               <a href="{_esc(url)}"
-                 style="display:inline-block;padding:14px 32px;background-color:{accent};color:{_BG};font-family:{_MONO};font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-decoration:none;border:2px solid {accent};">
+                 style="display:inline-block;padding:14px 32px;background-color:{accent};color:{_BG};font-family:{_MONO};font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-decoration:none;border:2px solid {accent};animation:glow-breathe 2.5s ease-in-out infinite;">
                 &#9608; {_esc(label)} &#9608;
               </a>
             </td>
@@ -438,7 +489,7 @@ def _bullet_list(items: list[str]) -> str:
     html = ""
     for item in items:
         html += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {item}
                 </p>"""
     return html
@@ -665,6 +716,18 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "winner": {
         "en": "OPERATION VICTOR",
         "de": "OPERATIONSSIEGER",
+    },
+    "winner_you": {
+        "en": "VICTORY IS YOURS",
+        "de": "DER SIEG GEHÖRT DIR",
+    },
+    "winner_quip": {
+        "en": "Every empire falls. Yours just hasn't yet.",
+        "de": "Jedes Imperium fällt. Deines nur noch nicht.",
+    },
+    "inv_urgency": {
+        "en": "PRIORITY ALPHA // IMMEDIATE ACTION REQUIRED",
+        "de": "PRIORITÄT ALPHA // SOFORTIGES HANDELN ERFORDERLICH",
     },
     "your_result": {
         "en": "YOUR FINAL POSITION",
@@ -1064,7 +1127,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         auto_resolve_html = f"""\
           <tr>
             <td style="padding:4px 32px 12px;">
-              <div style="border:1px solid {_AMBER};padding:10px 16px;background-color:rgba(245,158,11,0.08);">
+              <div style="border:1px solid {_AMBER};padding:10px 16px;background-color:#231c11;">
                 <p style="margin:0;font-size:12px;color:{_AMBER};font-weight:bold;letter-spacing:1px;text-transform:uppercase;">
                   &#9888; {_nt("auto_resolved_banner", lang)}
                 </p>
@@ -1082,14 +1145,14 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         afk_penalty = data.get("afk_penalty_rp", 0)
         if afk_penalty > 0:
             afk_items += f"""\
-                <p style="margin:4px 0;font-size:13px;color:{_RED};line-height:1.6;">
+                <p style="margin:4px 0;font-size:14px;color:{_RED};line-height:1.6;">
                   {_nt("afk_penalty_msg", lang, rp_loss=str(afk_penalty))}
                 </p>"""
 
         if data.get("replaced_by_ai"):
             personality = data.get("afk_ai_personality", "sentinel")
             afk_items += f"""\
-                <p style="margin:4px 0;font-size:13px;color:{_RED};font-weight:bold;line-height:1.6;">
+                <p style="margin:4px 0;font-size:14px;color:{_RED};font-weight:bold;line-height:1.6;">
                   &#9888; {_nt("afk_ai_takeover_msg", lang, personality=personality.upper())}
                 </p>"""
 
@@ -1103,7 +1166,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         afk_html = f"""\
           <tr>
             <td style="padding:4px 32px 12px;">
-              <div style="border:1px solid {_RED};padding:12px 16px;background-color:rgba(220,38,38,0.06);">
+              <div style="border:1px solid {_RED};padding:12px 16px;background-color:#1d1212;">
 {afk_items}
               </div>
             </td>
@@ -1216,13 +1279,13 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.8;">
+                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.8;">
                   {_nt("active", lang)}: <strong style="color:{accent};">{data["active_ops"]}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("resolved", lang)}: <strong>{data["resolved_ops"]}</strong>
                   ({data["success_ops"]}&#10003; {data["detected_ops"]}&#10007;)
                 </p>
-                <p style="margin:4px 0 0;font-size:13px;color:{_TEXT};line-height:1.8;">
+                <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};line-height:1.8;">
                   {_nt("guardians", lang)}: <strong>{data["guardians"]}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("counter_intel", lang)}: <strong>{data["counter_intel"]}</strong>
@@ -1242,7 +1305,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             status_key = f"threat_status_{raw_status}"
             status_label = _nt(status_key, lang) if status_key in _NOTIF_STRINGS else raw_status.upper()
             threat_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_RED};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_RED};line-height:1.6;">
                   &#9888; {op_type} {_nt("threat_from", lang)} {source} &mdash; {status_label}
                 </p>"""
         threat_html = f"{_section_header(_nt('threat_assessment', lang))}\n{_dashed_box(threat_items)}"
@@ -1278,18 +1341,18 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                         parts.append(f"{level_counts[lv]} {zone_word} {lv_label}")
                 breakdown = ", ".join(parts)
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_nt("intel_zone_analysis", lang, target=target_name, breakdown=breakdown)}
                 </p>"""
             if guardian_ct is not None and target_name:
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_nt("intel_guardian_count", lang, target=target_name, count=str(guardian_ct))}
                 </p>"""
             # Fallback: raw narrative if no structured metadata
             if not zone_sec and guardian_ct is None:
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_esc(si.get("narrative", ""))}
                 </p>"""
         intel_html = f"{_section_header(_nt('spy_intel', lang))}\n{_dashed_box(intel_items)}"
@@ -1333,7 +1396,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:13px;color:{accent};font-weight:bold;line-height:1.6;">
+                <p style="margin:0;font-size:14px;color:{accent};font-weight:bold;line-height:1.6;">
                   {_esc(alliance_name)}{bonus_tag}
                 </p>
                 <p style="margin:4px 0 0;font-size:12px;color:{_TEXT};line-height:1.6;">
@@ -1349,8 +1412,8 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
 {_section_header(_nt("alliance_status", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
-              <div style="border:1px dashed {_RED};padding:12px 16px;background-color:rgba(239,68,68,0.06);">
-                <p style="margin:0;font-size:13px;color:{_RED};font-weight:bold;line-height:1.6;">
+              <div style="border:1px dashed {_RED};padding:12px 16px;background-color:#1e1414;">
+                <p style="margin:0;font-size:14px;color:{_RED};font-weight:bold;line-height:1.6;">
                   &#9888; {_nt("alliance_dissolved", lang, name=_esc(dissolved_name))}
                 </p>
                 <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
@@ -1378,12 +1441,12 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         preview_items = ""
         if next_missions:
             preview_items += f"""\
-                <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   {_nt("pending_missions", lang)}: <strong style="color:{accent};">{next_missions}</strong>
                 </p>"""
         if rp_projection:
             preview_items += f"""\
-                <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.6;">
                   {_nt("rp_projection", lang)}: <strong>{rp_projection}</strong>
                 </p>"""
         next_cycle_html = f"{_section_header(_nt('next_cycle', lang))}\n{_dashed_box(preview_items)}"
@@ -1394,7 +1457,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         event_items = ""
         for ev in events[:5]:
             event_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_esc(ev["narrative"])}
                 </p>"""
         events_html += _dashed_box(event_items)
@@ -1461,9 +1524,9 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
         if is_primary:
             header = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {sim_header}
+                {sim_header}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
               </p>
             </td>
           </tr>
@@ -1481,7 +1544,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
             blocks.append(_language_divider())
             header = f"""\
           <tr>
-            <td style="padding:24px 32px 8px;">
+            <td lang="{lang}" style="padding:24px 32px 8px;">
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {sim_header}
               </p>
@@ -1501,7 +1564,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content)
+    return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content, lang=langs[0])
 
 
 # ── Phase Change Template ────────────────────────────────────────────────
@@ -1532,7 +1595,7 @@ def _render_phase_block(
     desc_items = ""
     for desc in descriptions:
         desc_items += f"""\
-                <p style="margin:0 0 6px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; {desc}
                 </p>"""
 
@@ -1615,15 +1678,15 @@ def render_phase_change(
         if is_primary:
             header = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("phase_change_header", lang)}
+                {_nt("phase_change_header", lang)}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 16px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
                 {safe_name}
               </{heading_tag}>
             </td>
@@ -1632,7 +1695,7 @@ def render_phase_change(
             blocks.append(_language_divider())
             header = f"""\
           <tr>
-            <td style="padding:24px 32px 16px;">
+            <td lang="{lang}" style="padding:24px 32px 16px;">
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("phase_change_header", lang)}
               </p>
@@ -1659,7 +1722,7 @@ def render_phase_change(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content)
+    return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content, lang=langs[0])
 
 
 # ── Epoch Completed Template ─────────────────────────────────────────────
@@ -1676,18 +1739,43 @@ def _render_completed_block(
     campaign_stats: dict | None = None,
 ) -> str:
     """Render a single language block for the epoch completed email."""
-    # Winner
+    # Winner — check if the recipient IS the winner
     winner = leaderboard[0] if leaderboard else None
     winner_name = _esc(winner.get("simulation_name", "Unknown")) if winner else "N/A"
+    is_winner = winner and winner.get("simulation_id") == player_simulation_id
 
-    winner_html = f"""\
+    if is_winner:
+        # Dramatic celebration block for the victor
+        winner_html = f"""\
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <div style="border:3px solid {accent};padding:24px 20px;background-color:{_SURFACE};text-align:center;animation:glow-breathe 2.5s ease-in-out infinite;">
+                <p style="margin:0 0 8px;font-size:28px;animation:stamp-in 0.6s ease both;">&#128081;&#128081;&#128081;</p>
+                <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{accent};text-transform:uppercase;font-weight:bold;">
+                  {_nt("winner_you", lang)}
+                </p>
+                <p style="margin:0 0 12px;font-size:24px;font-weight:900;color:{accent};letter-spacing:3px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
+                  {winner_name}
+                </p>
+                <p style="margin:0 0 8px;font-size:14px;color:{_TEXT};font-style:italic;">
+                  {_nt("winner_quip", lang)}
+                </p>
+                <p style="margin:0;font-size:14px;color:{_TEXT};">
+                  {_nt("composite", lang)}: {winner["composite"]:.1f}
+                </p>
+              </div>
+            </td>
+          </tr>"""
+    else:
+        # Standard winner display for non-winners
+        winner_html = f"""\
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:2px solid {accent};padding:16px 20px;background-color:{_SURFACE};text-align:center;">
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                   {_nt("winner", lang)}
                 </p>
-                <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;">
+                <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;animation:stamp-in 0.5s ease both;">
                   &#128081; {winner_name}
                 </p>
                 <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};">
@@ -1769,7 +1857,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   {_nt("ops_deployed", lang)}: <strong style="color:{accent};">{total_ops}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("success_rate", lang)}: <strong>{success_rate:.0f}%</strong>
@@ -1806,7 +1894,7 @@ def _render_completed_block(
                         player_pos = f" | {_nt('you_label', lang)}: {float(player_val):.1f}"
                 highlight = f"color:{accent};" if is_player else ""
                 title_items += f"""\
-                <p style="margin:0 0 4px;font-size:13px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
                   &#9656; <strong style="color:{accent};">{translated_title}</strong> ({dim_label}) &mdash; <span style="{highlight}">{sim_name}</span>{player_pos}
                 </p>"""
 
@@ -1871,7 +1959,7 @@ def render_epoch_completed(
         if is_primary:
             header = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {accent};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("epoch_complete_header", lang)}
               </p>
@@ -1888,7 +1976,7 @@ def render_epoch_completed(
             blocks.append(_language_divider())
             header = f"""\
           <tr>
-            <td style="padding:24px 32px 16px;">
+            <td lang="{lang}" style="padding:24px 32px 16px;">
               <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("epoch_complete_header", lang)}
               </p>
@@ -1915,7 +2003,7 @@ def render_epoch_completed(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}", content)
+    return _email_shell(f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}", content, lang=langs[0])
 
 
 # ── Clearance Upgrade Templates ──────────────────────────────────────────
@@ -1974,7 +2062,7 @@ def _render_clearance_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:13px;color:{_TEXT};line-height:1.6;font-style:italic;">
+                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.6;font-style:italic;">
                   &ldquo;{_esc(admin_notes)}&rdquo;
                 </p>
               </div>
@@ -2019,7 +2107,7 @@ def render_clearance_granted(
         if is_primary:
             top = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {accent};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 BUREAU OF MULTIVERSE OBSERVATION
               </p>
@@ -2036,7 +2124,7 @@ def render_clearance_granted(
             blocks.append(_language_divider())
             top = f"""\
           <tr>
-            <td style="padding:24px 32px 8px;">
+            <td lang="{lang}" style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {_nt("clearance_granted_header", lang)}
               </{heading_tag}>
@@ -2054,7 +2142,7 @@ def render_clearance_granted(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content)
+    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content, lang=langs[0])
 
 
 def render_clearance_denied(
@@ -2074,7 +2162,7 @@ def render_clearance_denied(
         if is_primary:
             top = f"""\
           <tr>
-            <td style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
               <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
                 BUREAU OF MULTIVERSE OBSERVATION
               </p>
@@ -2091,7 +2179,7 @@ def render_clearance_denied(
             blocks.append(_language_divider())
             top = f"""\
           <tr>
-            <td style="padding:24px 32px 8px;">
+            <td lang="{lang}" style="padding:24px 32px 8px;">
               <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {_nt("clearance_denied_header", lang)}
               </{heading_tag}>
@@ -2104,7 +2192,7 @@ def render_clearance_denied(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content)
+    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content, lang=langs[0])
 
 
 def render_clearance_request_admin_notification(
@@ -2145,7 +2233,7 @@ def render_clearance_request_admin_notification(
               <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:{_TEXT};">
                 A new clearance upgrade request has been submitted.
               </p>
-              <div style="border:1px solid {_BORDER};border-left:3px solid {accent};padding:16px;background:{_SURFACE};">
+              <div style="border:1px solid {_BORDER};border-left:3px solid {accent};animation:accent-pulse 3s ease-in-out infinite;padding:16px;background:{_SURFACE};">
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                   APPLICANT
                 </p>
@@ -2164,7 +2252,7 @@ def render_clearance_request_admin_notification(
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                   OPERATIONAL JUSTIFICATION
                 </p>
-                <p style="margin:0;font-size:13px;line-height:1.7;color:{_TEXT};font-style:italic;">
+                <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};font-style:italic;">
                   {safe_message}
                 </p>
               </div>
@@ -2176,4 +2264,4 @@ def render_clearance_request_admin_notification(
     blocks.append(_footer_row("en"))
 
     content = "\n".join(blocks)
-    return _email_shell("BUREAU ALERT // NEW CLEARANCE REQUEST", content)
+    return _email_shell("BUREAU ALERT // NEW CLEARANCE REQUEST", content, lang="en")

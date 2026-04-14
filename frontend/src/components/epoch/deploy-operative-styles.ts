@@ -3,6 +3,34 @@ import { css } from 'lit';
 export const deployOperativeStyles = css`
 		:host {
 			display: block;
+
+			/* ── Texture patterns ── */
+			--_scanline: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
+			--_hatch-line: color-mix(in srgb, var(--color-text-primary) 0.8%, transparent);
+
+			/* ── Surface highlights (bevel / rim light) ── */
+			--_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+			--_hi-faint: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+			--_hi-soft: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+			--_hi-medium: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+			--_hi-bright: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+
+			/* ── Depth layers (shadow / overlay) ── */
+			--_sh-whisper: color-mix(in srgb, var(--color-surface) 15%, transparent);
+			--_sh-faint: color-mix(in srgb, var(--color-surface) 20%, transparent);
+			--_sh-light: color-mix(in srgb, var(--color-surface) 30%, transparent);
+			--_sh-medium: color-mix(in srgb, var(--color-surface) 35%, transparent);
+			--_sh-strong: color-mix(in srgb, var(--color-surface) 40%, transparent);
+			--_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
+			--_sh-deep: color-mix(in srgb, var(--color-surface) 60%, transparent);
+			--_sh-intense: color-mix(in srgb, var(--color-surface) 70%, transparent);
+
+			/* ── Backdrop ── */
+			--_backdrop: color-mix(in srgb, var(--color-surface) 95%, transparent);
+
+			/* ── Success indicators ── */
+			--_success-faint: color-mix(in srgb, var(--color-success) 5%, transparent);
+			--_success-soft: color-mix(in srgb, var(--color-success) 25%, transparent);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -26,8 +54,8 @@ export const deployOperativeStyles = css`
 			pointer-events: none;
 			background: repeating-linear-gradient(
 				0deg, transparent, transparent 2px,
-				rgba(255 255 255 / 0.012) 2px,
-				rgba(255 255 255 / 0.012) 4px
+				var(--_scanline) 2px,
+				var(--_scanline) 4px
 			);
 			z-index: 1;
 		}
@@ -145,13 +173,13 @@ export const deployOperativeStyles = css`
 			transition: all 200ms ease;
 			/* Recessed bay surface */
 			background:
-				linear-gradient(180deg, rgba(0 0 0 / 0.4) 0%, rgba(0 0 0 / 0.15) 50%, rgba(0 0 0 / 0.35) 100%),
+				linear-gradient(180deg, var(--_sh-strong) 0%, var(--_sh-whisper) 50%, var(--_sh-medium) 100%),
 				var(--color-surface-sunken);
 			border: 1px solid var(--color-border);
 			box-shadow:
-				inset 0 2px 8px rgba(0 0 0 / 0.6),
-				inset 0 0 1px rgba(255 255 255 / 0.03),
-				0 1px 0 rgba(255 255 255 / 0.02);
+				inset 0 2px 8px var(--_sh-deep),
+				inset 0 0 1px var(--_hi-faint),
+				0 1px 0 var(--_hi-dim);
 		}
 
 		/* Corner bracket targeting marks */
@@ -203,7 +231,7 @@ export const deployOperativeStyles = css`
 			transform: scale(1.2) translateY(-12px) !important;
 			filter:
 				drop-shadow(0 0 16px var(--color-primary-border))
-				drop-shadow(0 20px 40px rgba(0 0 0 / 0.7));
+				drop-shadow(0 20px 40px var(--_sh-intense));
 		}
 
 		.zone--filled::before,
@@ -215,10 +243,10 @@ export const deployOperativeStyles = css`
 		.zone--locked {
 			border-color: var(--color-surface);
 			background:
-				repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255 255 255 / 0.008) 4px, rgba(255 255 255 / 0.008) 5px),
-				linear-gradient(180deg, rgba(0 0 0 / 0.5), rgba(0 0 0 / 0.3)),
+				repeating-linear-gradient(-45deg, transparent, transparent 4px, var(--_hatch-line) 4px, var(--_hatch-line) 5px),
+				linear-gradient(180deg, var(--_sh-heavy), var(--_sh-light)),
 				var(--color-surface-sunken);
-			box-shadow: inset 0 2px 12px rgba(0 0 0 / 0.7);
+			box-shadow: inset 0 2px 12px var(--_sh-intense);
 			animation: none;
 		}
 
@@ -282,17 +310,17 @@ export const deployOperativeStyles = css`
 			from {
 				border-color: var(--color-border);
 				box-shadow:
-					inset 0 2px 8px rgba(0 0 0 / 0.6),
-					inset 0 0 1px rgba(255 255 255 / 0.03),
-					0 1px 0 rgba(255 255 255 / 0.02);
+					inset 0 2px 8px var(--_sh-deep),
+					inset 0 0 1px var(--_hi-faint),
+					0 1px 0 var(--_hi-dim);
 			}
 			to {
 				border-color: color-mix(in srgb, var(--color-epoch-accent) 25%, var(--color-surface-raised));
 				box-shadow:
-					inset 0 2px 8px rgba(0 0 0 / 0.6),
+					inset 0 2px 8px var(--_sh-deep),
 					inset 0 0 12px color-mix(in srgb, var(--color-primary) 4%, transparent),
 					0 0 8px color-mix(in srgb, var(--color-primary) 6%, transparent),
-					0 1px 0 rgba(255 255 255 / 0.02);
+					0 1px 0 var(--_hi-dim);
 			}
 		}
 
@@ -306,13 +334,13 @@ export const deployOperativeStyles = css`
 		@keyframes zone-pulse {
 			0%, 100% {
 				box-shadow:
-					inset 0 2px 8px rgba(0 0 0 / 0.6),
+					inset 0 2px 8px var(--_sh-deep),
 					inset 0 0 20px color-mix(in srgb, var(--color-primary) 6%, transparent),
 					0 0 0 0 var(--color-primary-border);
 			}
 			50% {
 				box-shadow:
-					inset 0 2px 8px rgba(0 0 0 / 0.6),
+					inset 0 2px 8px var(--_sh-deep),
 					inset 0 0 30px color-mix(in srgb, var(--color-primary) 10%, transparent),
 					0 0 24px 4px color-mix(in srgb, var(--color-primary) 12%, transparent);
 			}
@@ -327,7 +355,7 @@ export const deployOperativeStyles = css`
 			letter-spacing: 0.2em;
 			color: var(--color-text-muted);
 			margin-bottom: var(--space-1);
-			text-shadow: 0 1px 2px rgba(0 0 0 / 0.5);
+			text-shadow: 0 1px 2px var(--_sh-heavy);
 		}
 
 		.zone__hint {
@@ -567,7 +595,7 @@ export const deployOperativeStyles = css`
 			transform: translateY(-16px) scale(1.35) !important;
 			filter:
 				drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary) 35%, transparent))
-				drop-shadow(0 16px 36px rgba(0 0 0 / 0.7));
+				drop-shadow(0 16px 36px var(--_sh-intense));
 		}
 
 		.mission-grid:hover velg-mission-card:not(:hover) {
@@ -609,7 +637,7 @@ export const deployOperativeStyles = css`
 			border: 1px solid var(--color-border);
 			border-radius: 6px;
 			background:
-				linear-gradient(175deg, rgba(255 255 255 / 0.02) 0%, transparent 40%),
+				linear-gradient(175deg, var(--_hi-dim) 0%, transparent 40%),
 				linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
 			cursor: pointer;
 			overflow: hidden;
@@ -621,10 +649,10 @@ export const deployOperativeStyles = css`
 			display: flex;
 			flex-direction: column;
 			box-shadow:
-				inset 0 1px 0 rgba(255 255 255 / 0.04),
-				inset 0 -1px 4px rgba(0 0 0 / 0.5),
-				0 2px 8px rgba(0 0 0 / 0.4),
-				0 0 0 1px rgba(0 0 0 / 0.2);
+				inset 0 1px 0 var(--_hi-soft),
+				inset 0 -1px 4px var(--_sh-heavy),
+				0 2px 8px var(--_sh-strong),
+				0 0 0 1px var(--_sh-faint);
 		}
 
 		/* Top accent stripe — security level indicator */
@@ -692,7 +720,7 @@ export const deployOperativeStyles = css`
 			color: var(--color-text-secondary);
 			line-height: 1.3;
 			text-align: center;
-			text-shadow: 0 1px 3px rgba(0 0 0 / 0.6);
+			text-shadow: 0 1px 3px var(--_sh-deep);
 		}
 
 		.target-card__type {
@@ -714,10 +742,10 @@ export const deployOperativeStyles = css`
 			border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
 			transform: translateY(-10px) scale(1.08);
 			box-shadow:
-				inset 0 1px 0 rgba(255 255 255 / 0.06),
-				inset 0 -1px 4px rgba(0 0 0 / 0.5),
+				inset 0 1px 0 var(--_hi-medium),
+				inset 0 -1px 4px var(--_sh-heavy),
 				0 0 20px color-mix(in srgb, var(--_accent) 20%, transparent),
-				0 16px 32px rgba(0 0 0 / 0.6),
+				0 16px 32px var(--_sh-deep),
 				0 0 0 1px color-mix(in srgb, var(--_accent) 15%, transparent);
 		}
 
@@ -750,7 +778,7 @@ export const deployOperativeStyles = css`
 				linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
 			box-shadow:
 				inset 0 0 24px var(--color-primary-bg),
-				inset 0 1px 0 rgba(255 255 255 / 0.04),
+				inset 0 1px 0 var(--_hi-soft),
 				0 0 12px var(--color-primary-glow),
 				0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent);
 		}
@@ -1115,7 +1143,7 @@ export const deployOperativeStyles = css`
 			filter:
 				drop-shadow(0 0 16px color-mix(in srgb, var(--color-primary) 35%, transparent))
 				drop-shadow(0 0 36px var(--color-primary-glow))
-				drop-shadow(0 20px 40px rgba(0 0 0 / 0.7));
+				drop-shadow(0 20px 40px var(--_sh-intense));
 		}
 
 		.hand__card-wrapper:hover ~ .hand__card-wrapper {
@@ -1214,7 +1242,7 @@ export const deployOperativeStyles = css`
 			gap: var(--space-4);
 			padding: var(--space-2) var(--space-4);
 			background:
-				linear-gradient(90deg, rgba(255 255 255 / 0.02) 0%, transparent 60%),
+				linear-gradient(90deg, var(--_hi-dim) 0%, transparent 60%),
 				var(--color-surface);
 			border: 1px solid var(--color-border);
 			border-left: 3px solid var(--agent-accent, var(--color-epoch-accent));
@@ -1367,7 +1395,7 @@ export const deployOperativeStyles = css`
 			left: -80%;
 			width: 40%;
 			height: 160%;
-			background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.3), transparent);
+			background: linear-gradient(90deg, transparent, var(--_hi-bright), transparent);
 			transform: skewX(-20deg);
 			animation: deploy-shimmer 3s ease-in-out infinite;
 		}
@@ -1398,8 +1426,8 @@ export const deployOperativeStyles = css`
 			font-size: 10px;
 			color: var(--color-success);
 			padding: var(--space-2) var(--space-3);
-			border: 1px solid rgba(74 222 128 / 0.3);
-			background: rgba(74 222 128 / 0.05);
+			border: 1px solid var(--color-success-border);
+			background: var(--_success-faint);
 			max-width: 400px;
 			text-align: center;
 		}
@@ -1409,8 +1437,8 @@ export const deployOperativeStyles = css`
 			font-size: var(--text-xs);
 			color: var(--color-success);
 			padding: var(--space-2) var(--space-3);
-			border: 1px solid rgba(74 222 128 / 0.25);
-			background: rgba(74 222 128 / 0.06);
+			border: 1px solid var(--_success-soft);
+			background: var(--color-success-bg);
 			margin-bottom: var(--space-3);
 			text-align: center;
 			max-width: 600px;
@@ -1445,7 +1473,7 @@ export const deployOperativeStyles = css`
 		}
 
 		.overlay--frozen {
-			background: rgba(10 10 15 / 0.95);
+			background: var(--_backdrop);
 		}
 
 		.overlay--frozen .hand,

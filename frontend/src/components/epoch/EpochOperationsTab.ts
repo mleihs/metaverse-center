@@ -17,6 +17,8 @@ export class VelgEpochOperationsTab extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+      --_pulse-glow: color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
 
     /* ── Overview Grid ────────────────────────── */
@@ -103,7 +105,7 @@ export class VelgEpochOperationsTab extends LitElement {
 
     .mission:hover {
       padding-left: var(--space-2);
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
     }
 
     .mission:hover .mission__icon {
@@ -192,7 +194,7 @@ export class VelgEpochOperationsTab extends LitElement {
     }
 
     .mission__recall:hover {
-      background: rgba(245 158 11 / 0.15);
+      background: var(--color-primary-glow);
     }
 
     .mission__recall:disabled {
@@ -239,7 +241,7 @@ export class VelgEpochOperationsTab extends LitElement {
 
     @keyframes panel-pulse {
       0% { border-color: var(--color-border-light); box-shadow: none; }
-      30% { border-color: var(--color-warning); box-shadow: 0 0 12px rgba(245 158 11 / 0.2); }
+      30% { border-color: var(--color-warning); box-shadow: 0 0 12px var(--_pulse-glow); }
       100% { border-color: var(--color-border-light); box-shadow: none; }
     }
 
