@@ -1,7 +1,7 @@
 """Epoch CRUD, lifecycle, participation, and team management endpoints."""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -23,13 +23,17 @@ from backend.models.epoch import (
     AllianceVoteCreate,
     AllianceVoteResponse,
     BattleLogEntry,
+    BattleLogEventType,
     BattleSummaryResponse,
     EpochCreate,
     EpochResponse,
     EpochUpdate,
     ParticipantJoin,
     ParticipantResponse,
+    PassCycleResponse,
+    ResultsSummaryResponse,
     SitrepResponse,
+    TeamActionResponse,
     TeamCreate,
     TeamResponse,
 )
@@ -42,6 +46,7 @@ from backend.services.cycle_resolution_service import CycleResolutionService
 from backend.services.epoch_chat_service import EpochChatService
 from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
+from backend.services.scoring_service import ScoringService
 from backend.services.sitrep_service import SitrepService
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
@@ -58,7 +63,10 @@ router = APIRouter(prefix="/api/v1/epochs", tags=["epochs"])
 async def list_epochs(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-    status: Annotated[str | None, Query()] = None,
+    status: Annotated[
+        Literal["lobby", "foundation", "competition", "reckoning", "completed", "cancelled"] | None,
+        Query(),
+    ] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[EpochResponse]:
@@ -124,9 +132,6 @@ async def update_epoch(
 ) -> SuccessResponse[EpochResponse]:
     """Update epoch configuration (lobby phase only)."""
     updates = body.model_dump(exclude_none=True)
-    if "config" in updates and updates["config"]:
-        cfg = updates["config"]
-        updates["config"] = cfg.model_dump() if hasattr(cfg, "model_dump") else cfg
     data = await EpochService.update(supabase, epoch_id, updates)
     return SuccessResponse(data=data)
 
@@ -255,7 +260,7 @@ async def list_instances(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[list[dict]]:
     """List all game instances for an epoch."""
     data = await GameInstanceService.list_instances(supabase, epoch_id)
     return SuccessResponse(data=data)
@@ -302,7 +307,7 @@ async def get_battle_log(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-    event_type: Annotated[str | None, Query()] = None,
+    event_type: Annotated[BattleLogEventType | None, Query()] = None,
     simulation_id: Annotated[UUID | None, Query(description="Your simulation ID for fog-of-war filtering")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -339,12 +344,11 @@ async def get_battle_log(
 @router.get("/{epoch_id}/results-summary")
 async def get_results_summary(
     epoch_id: UUID,
+    user: Annotated[dict, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[ResultsSummaryResponse]:
     """Get comprehensive results summary for a completed epoch."""
-    from backend.services.scoring_service import ScoringService
-
     data = await ScoringService.get_results_summary(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
@@ -380,7 +384,7 @@ async def pass_cycle(
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[PassCycleResponse]:
     """Explicitly pass this cycle without taking action.
 
     Sets has_acted_this_cycle = true so the player can signal ready.
@@ -587,7 +591,7 @@ async def join_team(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[TeamActionResponse]:
     """Join an existing team. Must be a participant in the epoch."""
     data = await EpochService.join_team(supabase, epoch_id, team_id, simulation_id)
     await AuditService.safe_log(
@@ -609,7 +613,7 @@ async def leave_team(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[TeamActionResponse]:
     """Leave your current team. Must be a participant in the epoch."""
     data = await EpochService.leave_team(supabase, epoch_id, simulation_id)
     await AuditService.safe_log(
@@ -765,7 +769,7 @@ async def toggle_ready(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[PassCycleResponse]:
     """Toggle cycle_ready for a participant. Triggers realtime broadcast.
 
     When all human participants signal ready, the cycle auto-resolves.

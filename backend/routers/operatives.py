@@ -1,7 +1,7 @@
 """Operative deployment, recall, and mission query endpoints."""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -14,7 +14,7 @@ from backend.dependencies import (
     require_epoch_participant,
 )
 from backend.models.common import CurrentUser, PaginatedResponse, SuccessResponse
-from backend.models.epoch import MissionResponse, OperativeDeploy
+from backend.models.epoch import FortifyZoneResponse, MissionResponse, OperativeDeploy
 from backend.services.audit_service import AuditService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.cycle_resolution_service import CycleResolutionService
@@ -68,7 +68,10 @@ async def list_missions(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     simulation_id: Annotated[UUID | None, Query(description="Filter by source simulation")] = None,
-    status: Annotated[str | None, Query()] = None,
+    status: Annotated[
+        Literal["deploying", "active", "returning", "success", "failed", "detected", "captured", "expired"] | None,
+        Query(),
+    ] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[MissionResponse]:
@@ -115,18 +118,11 @@ async def resolve_missions(
     cycle = epoch.get("current_cycle", 1)
     for mission in results:
         await BattleLogService.log_mission_result(supabase, epoch_id, cycle, mission)
-        try:
-            await AuditService.log_action(
-                supabase,
-                None,
-                user.id,
-                "operative_missions",
-                mission.get("id"),
-                "update",
-                details={"action": "resolve", "outcome": mission.get("mission_result", {}).get("outcome")},
-            )
-        except Exception:
-            logger.warning("Audit log failed for mission resolve", exc_info=True)
+        await AuditService.safe_log(
+            supabase, None, user.id,
+            "operative_missions", mission.get("id"), "update",
+            details={"action": "resolve", "outcome": mission.get("mission_result", {}).get("outcome")},
+        )
 
     return SuccessResponse(data=results)
 
@@ -143,7 +139,7 @@ async def fortify_zone(
     _participant: Annotated[dict, Depends(require_epoch_participant())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse[dict]:
+) -> SuccessResponse[FortifyZoneResponse]:
     """Fortify a zone during foundation phase (costs 2 RP). Must be a participant in the epoch."""
     result = await OperativeService.fortify_zone(supabase, epoch_id, simulation_id, zone_id, admin_supabase)
 

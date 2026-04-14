@@ -22,7 +22,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -30,8 +30,7 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 _SWEEP_INTERVAL = 30  # seconds
 
@@ -232,117 +231,89 @@ class EpochCycleScheduler:
         Called BEFORE resolve_cycle_full() so that AFK flags are set before
         the bot pipeline runs (AI-takeover participants become bots).
 
-        Escalation (configurable via afk_escalation_threshold):
-          1 miss:  Log only (battle log event)
-          2 misses: -afk_rp_penalty RP
-          3 misses: -afk_rp_penalty * 2 RP
-          4+ misses (>= threshold+1): AI takeover (is_bot=True, afk_replaced_by_ai=True)
-
-        Mercy reset: consecutive_afk_cycles → 0 when player acts.
+        Architecture:
+          - Postgres RPC ``fn_process_afk_batch`` (migration 214) handles atomic
+            penalty updates with graduated escalation (data integrity).
+          - Python logs battle_log events for each affected player (game narrative).
+          - Python calls ``fn_replace_afk_with_bot`` for AI takeover (transactional).
+          - Mercy reset (consecutive_afk_cycles → 0) done via batch UPDATE.
         """
-        participants_resp = await (
-            admin.table("epoch_participants")
-            .select(
-                "id, simulation_id, user_id, has_acted_this_cycle, cycle_ready, "
-                "is_bot, consecutive_afk_cycles, total_afk_cycles, "
-                "current_rp, afk_replaced_by_ai"
-            )
-            .eq("epoch_id", epoch_id)
-            .execute()
-        )
-
         epoch_resp = await admin.table("game_epochs").select("current_cycle").eq("id", epoch_id).single().execute()
         cycle = (epoch_resp.data or {}).get("current_cycle", 0)
 
         penalty_rp = config.get("afk_rp_penalty", 2)
         escalation_threshold = config.get("afk_escalation_threshold", 3)
+        rp_multiplier = config.get("afk_rp_multiplier", 2.5)
 
-        for p in extract_list(participants_resp):
-            # Skip bots and already-replaced players
-            if p["is_bot"] or p["afk_replaced_by_ai"]:
-                continue
+        # ── Step 1: Atomic batch penalty processing ──────────────
+        afk_resp = await admin.rpc(
+            "fn_process_afk_batch",
+            {
+                "p_epoch_id": epoch_id,
+                "p_penalty_rp": penalty_rp,
+                "p_escalation_threshold": escalation_threshold,
+                "p_rp_multiplier": rp_multiplier,
+            },
+        ).execute()
 
-            if not p["has_acted_this_cycle"] and not p.get("cycle_ready", False):
-                # ── AFK this cycle ───────────────────────────
-                new_consecutive = p["consecutive_afk_cycles"] + 1
-                updates: dict = {
-                    "consecutive_afk_cycles": new_consecutive,
-                    "total_afk_cycles": p.get("total_afk_cycles", 0) + 1,
-                }
+        afk_players = afk_resp.data or []
 
-                # Escalation level 2+: RP penalty (graduated)
-                # Level 2: -penalty_rp (default 2), Level 3+: -penalty_rp*2.5 (default 5)
-                if new_consecutive >= 2:
-                    rp_loss = penalty_rp if new_consecutive == 2 else int(penalty_rp * 2.5)
-                    updates["current_rp"] = max(0, p["current_rp"] - rp_loss)
+        # ── Step 2: Log events + handle AI takeover per player ───
+        personality = config.get("afk_ai_personality", "sentinel")
+        difficulty = config.get("afk_ai_difficulty", "easy")
 
-                    await BattleLogService.log_event(
-                        admin,
-                        UUID(epoch_id),
-                        cycle,
-                        "player_afk_penalty",
-                        f"AFK penalty: -{rp_loss} RP (consecutive absence #{new_consecutive}).",
-                        source_simulation_id=UUID(p["simulation_id"]),
-                        is_public=False,
-                        metadata={"rp_loss": rp_loss, "consecutive": new_consecutive},
-                    )
+        for p in afk_players:
+            sim_id = UUID(p["simulation_id"])
+            new_consecutive = p["new_consecutive"]
+            rp_loss = p["rp_loss"]
 
-                # Escalation level 4+ (threshold+1): AI takeover
-                if new_consecutive >= escalation_threshold + 1:
-                    # Create a bot_players row so chk_bot_consistency is satisfied
-                    personality = config.get("afk_ai_personality", "sentinel")
-                    bot_resp = await (
-                        admin.table("bot_players")
-                        .insert({
-                            "name": f"AFK Bot ({p['simulation_id'][:8]})",
-                            "personality": personality,
-                            "difficulty": "easy",
-                            "created_by_id": p.get("user_id"),
-                        })
-                        .execute()
-                    )
-                    bot_id = bot_resp.data[0]["id"] if bot_resp.data else None
+            if p["needs_ai_takeover"]:
+                # Atomic bot creation + participant link (migration 214)
+                bot_id = await admin.rpc(
+                    "fn_replace_afk_with_bot",
+                    {
+                        "p_participant_id": str(p["participant_id"]),
+                        "p_bot_name": f"AFK Bot ({p['simulation_id'][:8]})",
+                        "p_personality": personality,
+                        "p_difficulty": difficulty,
+                        "p_created_by_id": str(p["user_id"]) if p.get("user_id") else None,
+                    },
+                ).execute()
 
-                    updates["afk_replaced_by_ai"] = True
-                    if bot_id:
-                        updates["is_bot"] = True
-                        updates["bot_player_id"] = bot_id
-
-                    await BattleLogService.log_event(
-                        admin,
-                        UUID(epoch_id),
-                        cycle,
-                        "player_afk_ai_takeover",
-                        "AI has assumed control due to prolonged absence.",
-                        source_simulation_id=UUID(p["simulation_id"]),
-                        is_public=True,
-                        metadata={
-                            "consecutive": new_consecutive,
-                            "personality": personality,
-                            "bot_player_id": bot_id,
-                        },
-                    )
-                else:
-                    # Level 1+: log AFK event
-                    await BattleLogService.log_event(
-                        admin,
-                        UUID(epoch_id),
-                        cycle,
-                        "player_afk",
-                        f"Player absent for cycle {cycle}.",
-                        source_simulation_id=UUID(p["simulation_id"]),
-                        is_public=False,
-                        metadata={"consecutive": new_consecutive},
-                    )
-
-                await admin.table("epoch_participants").update(updates).eq("id", p["id"]).execute()
-
+                await BattleLogService.log_event(
+                    admin, UUID(epoch_id), cycle,
+                    "player_afk_ai_takeover",
+                    "AI has assumed control due to prolonged absence.",
+                    source_simulation_id=sim_id, is_public=True,
+                    metadata={
+                        "consecutive": new_consecutive,
+                        "personality": personality,
+                        "bot_player_id": str(bot_id.data) if bot_id.data else None,
+                    },
+                )
+            elif rp_loss > 0:
+                await BattleLogService.log_event(
+                    admin, UUID(epoch_id), cycle,
+                    "player_afk_penalty",
+                    f"AFK penalty: -{rp_loss} RP (consecutive absence #{new_consecutive}).",
+                    source_simulation_id=sim_id, is_public=False,
+                    metadata={"rp_loss": rp_loss, "consecutive": new_consecutive},
+                )
             else:
-                # ── Active: mercy reset ──────────────────────
-                if p["consecutive_afk_cycles"] > 0:
-                    await (
-                        admin.table("epoch_participants")
-                        .update({"consecutive_afk_cycles": 0})
-                        .eq("id", p["id"])
-                        .execute()
-                    )
+                await BattleLogService.log_event(
+                    admin, UUID(epoch_id), cycle,
+                    "player_afk",
+                    f"Player absent for cycle {cycle}.",
+                    source_simulation_id=sim_id, is_public=False,
+                    metadata={"consecutive": new_consecutive},
+                )
+
+        # ── Step 3: Mercy reset for active players ───────────────
+        await (
+            admin.table("epoch_participants")
+            .update({"consecutive_afk_cycles": 0})
+            .eq("epoch_id", epoch_id)
+            .gt("consecutive_afk_cycles", 0)
+            .eq("has_acted_this_cycle", True)
+            .execute()
+        )

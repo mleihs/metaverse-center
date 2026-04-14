@@ -1,6 +1,7 @@
 """Pydantic models for epochs, operatives, scoring, and battle log."""
 
 from datetime import datetime
+from types import MappingProxyType
 from typing import Literal
 from uuid import UUID
 
@@ -73,6 +74,27 @@ class EpochConfig(BaseModel):
     afk_rp_penalty: int = Field(2, ge=0, le=10)
     afk_escalation_threshold: int = Field(3, ge=2, le=10)
     afk_ai_personality: Literal["sentinel", "warlord", "diplomat", "strategist", "chaos"] = "sentinel"
+    afk_ai_difficulty: Literal["easy", "medium", "hard"] = "easy"
+    afk_rp_multiplier: float = Field(2.5, ge=1.0, le=5.0)
+
+    # ── Mission Balance ──────────────────────────────────────
+    # base_success_probability: starting probability before modifiers
+    base_success_probability: float = Field(0.55, ge=0.1, le=0.9)
+    # detection_on_failure: when a mission FAILS, probability the operative is detected
+    detection_on_failure: float = Field(0.45, ge=0.1, le=0.9)
+    # Probability percentage-point modifiers per factor
+    aptitude_modifier_pp: float = Field(0.03, ge=0.01, le=0.1)
+    guardian_defense_cap_pp: float = Field(0.15, ge=0.05, le=0.3)
+    guardian_per_unit_pp: float = Field(0.06, ge=0.02, le=0.15)
+    embassy_bonus_pp: float = Field(0.15, ge=0.05, le=0.3)
+    # infiltrator_embassy_penalty: fraction of embassy effectiveness blocked (0.65 = 65% blocked)
+    infiltrator_embassy_penalty: float = Field(0.65, ge=0.3, le=0.9)
+    probability_floor: float = Field(0.05, ge=0.01, le=0.2)
+    probability_ceiling: float = Field(0.95, ge=0.8, le=0.99)
+
+    # ── Alliance ─────────────────────────────────────────────
+    # proposal_expiry_cycles: how many cycles AHEAD a proposal expires (from creation cycle)
+    proposal_expiry_cycles: int = Field(2, ge=1, le=5)
 
     @model_validator(mode="after")
     def validate_deadline_vs_min(self) -> "EpochConfig":
@@ -81,6 +103,11 @@ class EpochConfig(BaseModel):
             raise ValueError(msg)
         return self
 
+
+# Canonical default config — import this instead of re-instantiating EpochConfig().model_dump().
+# MappingProxyType prevents accidental mutation of the shared default dict.
+_DEFAULT_EPOCH_CONFIG_MUTABLE: dict = EpochConfig().model_dump()
+DEFAULT_EPOCH_CONFIG: MappingProxyType = MappingProxyType(_DEFAULT_EPOCH_CONFIG_MUTABLE)
 
 # ── Epoch CRUD ───────────────────────────────────────────────────
 
@@ -409,3 +436,40 @@ class BattleLogEntry(BaseModel):
     is_public: bool
     metadata: dict
     created_at: datetime
+
+
+# ── Typed Responses for Previously Untyped Endpoints ────────────
+
+
+class PassCycleResponse(BaseModel):
+    """Response for pass-cycle / toggle-ready endpoints."""
+
+    simulation_id: UUID
+    cycle_ready: bool = False
+    auto_resolved: bool = False
+
+
+class TeamActionResponse(BaseModel):
+    """Response for join-team / leave-team actions."""
+
+    simulation_id: UUID
+    team_id: UUID | None = None
+    action: str
+
+
+class FortifyZoneResponse(BaseModel):
+    """Response for fortify-zone operative action."""
+
+    zone_id: UUID
+    security_bonus: int
+    expires_at_cycle: int
+    cost_rp: int
+
+
+class ResultsSummaryResponse(BaseModel):
+    """Comprehensive epoch results (standings, history, awards)."""
+
+    standings: list[dict]
+    score_history: list[dict]
+    mvp_awards: list[dict]
+    participant_stats: list[dict]

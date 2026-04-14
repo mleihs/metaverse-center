@@ -1,7 +1,6 @@
 """Cycle resolution — RP management and full cycle pipeline."""
 
 import logging
-from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -9,18 +8,17 @@ import httpx
 import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.platform_config_service import PlatformConfigService
-from backend.utils.errors import bad_request, conflict, not_found
-from backend.utils.responses import extract_list
+from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.responses import extract_one
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class CycleResolutionService:
@@ -54,41 +52,29 @@ class CycleResolutionService:
         simulation_id: UUID,
         amount: int,
     ) -> int:
-        """Spend RP with optimistic locking. Returns remaining RP.
+        """Spend RP atomically via Postgres RPC. Returns remaining RP.
 
-        Prevents race conditions: the UPDATE includes an eq() check on the
-        current balance. If two concurrent requests read the same balance,
-        the first to write succeeds, the second fails because current_rp
-        no longer matches.
+        Uses fn_spend_rp_atomic (migration 214) — single atomic UPDATE
+        with WHERE current_rp >= amount. No TOCTOU race condition.
+        RPC returns INT (new balance) on success, empty result on failure.
         """
-        resp = await (
-            supabase.table("epoch_participants")
-            .select("id, current_rp")
-            .eq("epoch_id", str(epoch_id))
-            .eq("simulation_id", str(simulation_id))
-            .single()
-            .execute()
-        )
-        if not resp.data:
-            raise not_found(detail="Not a participant.")
+        if amount <= 0:
+            raise bad_request("RP spend amount must be positive.")
 
-        current = resp.data["current_rp"]
-        if current < amount:
-            raise bad_request(f"Insufficient RP: have {current}, need {amount}.")
+        resp = await supabase.rpc(
+            "fn_spend_rp_atomic",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_amount": amount,
+            },
+        ).execute()
 
-        new_rp = current - amount
-        update_resp = await (
-            supabase.table("epoch_participants")
-            .update({"current_rp": new_rp})
-            .eq("id", resp.data["id"])
-            .eq("current_rp", current)  # optimistic lock
-            .execute()
-        )
+        # SQL function returns NULL when WHERE current_rp >= amount doesn't match
+        if resp.data is None:
+            raise bad_request(f"Insufficient RP (need {amount}) or participant not found.")
 
-        if not update_resp.data:
-            raise conflict("RP balance changed concurrently. Please retry.")
-
-        return new_rp
+        return resp.data
 
     @classmethod
     async def grant_rp(
@@ -247,7 +233,7 @@ class CycleResolutionService:
         from backend.services.scoring_service import ScoringService
 
         data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
-        config = data.get("config", {})
+        config = {**DEFAULT_CONFIG, **data.get("config", {})}
         cycle_number = data.get("current_cycle", 1)
 
         db = admin_supabase or supabase
@@ -278,7 +264,7 @@ class CycleResolutionService:
         # CRITICAL: tension computation (below) depends on resolved missions.
         resolved = None
         try:
-            resolved = await OperativeService.resolve_pending_missions(db, epoch_id)
+            resolved = await OperativeService.resolve_pending_missions(db, epoch_id, epoch_config=config)
             # Log mission results to battle log
             for mission in resolved:
                 try:
@@ -382,6 +368,43 @@ class CycleResolutionService:
         return data
 
     @classmethod
+    async def _apply_phase_transition(
+        cls,
+        db: Client,
+        epoch_id: UUID,
+        cycle_number: int,
+        old_status: str,
+        new_status: str,
+        admin_supabase: Client | None = None,
+    ) -> None:
+        """Handle side effects of a phase transition (archive, log, notify).
+
+        Extracted from resolve_cycle() to eliminate duplication between the
+        atomic and legacy cycle advancement paths.
+        """
+        from backend.services.cycle_notification_service import CycleNotificationService
+
+        effective_admin = admin_supabase or db
+
+        if new_status == "completed":
+            await GameInstanceService.archive_instances(effective_admin, epoch_id)
+
+        await BattleLogService.log_phase_change(db, epoch_id, cycle_number, old_status, new_status)
+
+        try:
+            if new_status == "completed":
+                await CycleNotificationService.send_epoch_completed_notifications(
+                    effective_admin, str(epoch_id),
+                )
+            else:
+                await CycleNotificationService.send_phase_change_notifications(
+                    effective_admin, str(epoch_id), old_status, new_status,
+                )
+        except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
+            logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+            sentry_sdk.capture_exception()
+
+    @classmethod
     async def resolve_cycle(
         cls,
         supabase: Client,
@@ -426,26 +449,14 @@ class CycleResolutionService:
             .execute()
         )
 
-        # Advance mission timers by one cycle interval so operatives resolve
-        # in sync with admin-triggered cycle resolution (not wall-clock time).
-        # Subtract cycle_hours from resolves_at for all non-guardian missions.
+        # Advance mission timers by one cycle interval (atomic, migration 214).
+        # Single UPDATE subtracting cycle_hours from resolves_at for all
+        # non-guardian missions — replaces Python read-group-batch-update pattern.
         cycle_hours = config.get("cycle_hours", 8)
-        active_missions = await (
-            db.table("operative_missions")
-            .select("id, resolves_at, operative_type")
-            .eq("epoch_id", str(epoch_id))
-            .in_("status", ["deploying", "active"])
-            .neq("operative_type", "guardian")
-            .execute()
-        )
-        # Batch: group by resolves_at, compute new value, update per-group
-        by_new_resolve: defaultdict[str, list[str]] = defaultdict(list)
-        for m in extract_list(active_missions):
-            old_resolves = datetime.fromisoformat(m["resolves_at"])
-            new_resolves = old_resolves - timedelta(hours=cycle_hours)
-            by_new_resolve[new_resolves.isoformat()].append(m["id"])
-        for new_ts, ids in by_new_resolve.items():
-            await db.table("operative_missions").update({"resolves_at": new_ts}).in_("id", ids).execute()
+        await db.rpc(
+            "fn_advance_mission_timers",
+            {"p_epoch_id": str(epoch_id), "p_cycle_hours": cycle_hours},
+        ).execute()
 
         # ─── Atomic cycle advancement (migration 167) ───────────────
         use_atomic_advance = await PlatformConfigService.get(
@@ -495,41 +506,10 @@ class CycleResolutionService:
                         "cycle_number": new_cycle_num,
                     },
                 )
-                if new_status == "completed":
-                    await GameInstanceService.archive_instances(
-                        admin_supabase or supabase,
-                        epoch_id,
-                    )
-
-                await BattleLogService.log_phase_change(
-                    db,
-                    epoch_id,
-                    new_cycle_num,
-                    old_status,
-                    new_status,
+                await cls._apply_phase_transition(
+                    db, epoch_id, new_cycle_num, old_status, new_status,
+                    admin_supabase=admin_supabase,
                 )
-                try:
-                    from backend.services.cycle_notification_service import CycleNotificationService
-
-                    if new_status == "completed":
-                        await CycleNotificationService.send_epoch_completed_notifications(
-                            admin_supabase or supabase,
-                            str(epoch_id),
-                        )
-                    else:
-                        await CycleNotificationService.send_phase_change_notifications(
-                            admin_supabase or supabase,
-                            str(epoch_id),
-                            old_status,
-                            new_status,
-                        )
-                except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
-                    logger.warning(
-                        "Auto-phase notification failed",
-                        extra={"epoch_id": str(epoch_id)},
-                        exc_info=True,
-                    )
-                    sentry_sdk.capture_exception()
 
             # Re-fetch full epoch row for downstream consumers
             epoch_resp = await db.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
@@ -597,39 +577,15 @@ class CycleResolutionService:
             phase_resp = await db.table("game_epochs").update({"status": new_status}).eq("id", str(epoch_id)).execute()
             if phase_resp.data:
                 resp = phase_resp
-                # Archive game instances when epoch completes
-                if new_status == "completed":
-                    admin = admin_supabase or supabase
-                    await GameInstanceService.archive_instances(admin, epoch_id)
-
-                # Log auto-phase transition
-                await BattleLogService.log_phase_change(
-                    db,
-                    epoch_id,
-                    new_cycle,
-                    current_status,
-                    new_status,
+                await cls._apply_phase_transition(
+                    db, epoch_id, new_cycle, current_status, new_status,
+                    admin_supabase=admin_supabase,
                 )
-                try:
-                    from backend.services.cycle_notification_service import CycleNotificationService
-
-                    if new_status == "completed":
-                        await CycleNotificationService.send_epoch_completed_notifications(
-                            admin_supabase or supabase,
-                            str(epoch_id),
-                        )
-                    else:
-                        await CycleNotificationService.send_phase_change_notifications(
-                            admin_supabase or supabase,
-                            str(epoch_id),
-                            current_status,
-                            new_status,
-                        )
-                except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
-                    logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
-                    sentry_sdk.capture_exception()
 
         # Set next cycle deadline + register eager timer
         await cls._set_next_cycle_deadline(db, epoch_id, config, new_status)
 
-        return resp.data[0]
+        result = extract_one(resp)
+        if result is None:
+            raise server_error("Cycle resolution returned no data.")
+        return result

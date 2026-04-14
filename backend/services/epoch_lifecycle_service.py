@@ -4,18 +4,17 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
-from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, server_error
-from backend.utils.responses import extract_list
+from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
 # Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class EpochLifecycleService:
@@ -167,7 +166,10 @@ class EpochLifecycleService:
             except Exception:  # noqa: BLE001 — notifications are best-effort
                 logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
 
-        return resp.data[0]
+        result = extract_one(resp)
+        if result is None:
+            raise server_error("Failed to start epoch — update returned no data.")
+        return result
 
     @classmethod
     async def advance_phase(cls, supabase: Client, epoch_id: UUID, admin_supabase: Client | None = None) -> dict:
@@ -195,22 +197,12 @@ class EpochLifecycleService:
             admin = admin_supabase or supabase
             await GameInstanceService.archive_instances(admin, epoch_id)
 
-            # Increment academy_epochs_played for academy epochs
+            # Increment academy_epochs_played atomically (migration 214)
             if epoch.get("epoch_type") == "academy":
-                profile_data = await maybe_single_data(
-                    admin.table("user_profiles")
-                    .select("academy_epochs_played")
-                    .eq("id", str(epoch["created_by_id"]))
-                    .maybe_single()
-                )
-                if profile_data:
-                    count = (profile_data.get("academy_epochs_played") or 0) + 1
-                    await (
-                        admin.table("user_profiles")
-                        .update({"academy_epochs_played": count})
-                        .eq("id", str(epoch["created_by_id"]))
-                        .execute()
-                    )
+                await admin.rpc(
+                    "fn_increment_academy_counter",
+                    {"p_user_id": str(epoch["created_by_id"])},
+                ).execute()
 
         if not resp.data:
             raise server_error("Failed to advance phase.")
@@ -241,7 +233,10 @@ class EpochLifecycleService:
         except Exception:  # noqa: BLE001 — notifications are best-effort
             logger.warning("Phase notification failed for epoch %s", epoch_id, exc_info=True)
 
-        return resp.data[0]
+        result = extract_one(resp)
+        if result is None:
+            raise server_error("Failed to advance phase — update returned no data.")
+        return result
 
     @classmethod
     async def cancel_epoch(cls, supabase: Client, epoch_id: UUID, admin_supabase: Client | None = None) -> dict:
@@ -279,7 +274,11 @@ class EpochLifecycleService:
     async def delete_epoch(cls, supabase: Client, epoch_id: UUID) -> dict:
         """Permanently delete an epoch. Only lobby or cancelled epochs can be deleted.
 
-        Deletes child records in reverse FK order, then the epoch row itself.
+        All child tables have ON DELETE CASCADE FKs to game_epochs, so a single
+        DELETE cascades to: bot_decision_log, operative_missions, epoch_scores,
+        battle_log, epoch_chat_messages, epoch_participants, epoch_teams,
+        epoch_invitations, epoch_alliance_proposals, epoch_alliance_votes,
+        zone_fortifications.
         """
         from backend.services.epoch_service import EpochService
 
@@ -287,23 +286,8 @@ class EpochLifecycleService:
         if epoch["status"] not in ("lobby", "cancelled"):
             raise bad_request(f"Cannot delete epoch with status '{epoch['status']}'. Cancel it first.")
 
-        eid = str(epoch_id)
-
-        # Delete child tables in reverse FK order
-        for table in [
-            "bot_decision_log",
-            "operative_missions",
-            "epoch_scores",
-            "battle_log",
-            "epoch_chat_messages",
-            "epoch_participants",
-            "epoch_teams",
-            "epoch_invitations",
-        ]:
-            await supabase.table(table).delete().eq("epoch_id", eid).execute()
-
-        # Delete the epoch row itself
-        resp = await supabase.table("game_epochs").delete().eq("id", eid).execute()
+        # Single DELETE — ON DELETE CASCADE handles all child tables
+        resp = await supabase.table("game_epochs").delete().eq("id", str(epoch_id)).execute()
         if not resp.data:
             raise server_error("Failed to delete epoch.")
         return resp.data[0]

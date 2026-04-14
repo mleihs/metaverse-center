@@ -994,10 +994,15 @@ async def get_operative_types(request: Request) -> SuccessResponse:
 @router.get("/epoch-invitations/{token}")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def validate_epoch_invitation(
-    request: Request, token: str, supabase: Annotated[Client, Depends(get_anon_supabase)]
+    request: Request, token: str, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
 ) -> SuccessResponse:
-    """Validate an epoch invitation token and return epoch info + lore."""
-    data = await EpochInvitationService.validate_token(supabase, token)
+    """Validate an epoch invitation token and return epoch info + lore.
+
+    Uses admin_supabase because anon RLS no longer permits SELECT on
+    epoch_invitations (migration 213 removed the overly-permissive policy).
+    The token itself is the authorization secret — rate-limited above.
+    """
+    data = await EpochInvitationService.validate_token(admin_supabase, token)
     return SuccessResponse(data=data)
 
 
