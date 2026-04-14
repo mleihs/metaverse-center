@@ -16,6 +16,7 @@ from backend.config import settings
 from backend.services.bot_game_state import BotGameState
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.model_resolver import ModelResolver
+from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -291,16 +292,15 @@ class BotChatService:
     @classmethod
     async def _get_chat_mode(cls, supabase: Client, simulation_id: str) -> str:
         """Get bot_chat_mode from simulation AI settings."""
-        resp = await (
+        data = await maybe_single_data(
             supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", simulation_id)
             .eq("category", "ai")
             .eq("setting_key", "bot_chat_mode")
             .maybe_single()
-            .execute()
         )
-        return resp.data.get("setting_value", "template") if resp and resp.data else "template"
+        return data.get("setting_value", "template") if data else "template"
 
     @classmethod
     def _generate_template_message(cls, personality: str, game_state: BotGameState) -> str:

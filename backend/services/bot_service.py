@@ -26,6 +26,7 @@ from backend.services.bot_game_state import BotGameState
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
 from backend.services.operative_service import OperativeService
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -108,10 +109,10 @@ class BotService:
         participant["bot_player"] = bot_player
 
         # Add epoch status to config for state builder
-        epoch_resp = await (
-            admin_supabase.table("game_epochs").select("status").eq("id", epoch_id).maybe_single().execute()
+        epoch_data = await maybe_single_data(
+            admin_supabase.table("game_epochs").select("status").eq("id", epoch_id).maybe_single()
         )
-        epoch_status = epoch_resp.data.get("status", "competition") if epoch_resp.data else "competition"
+        epoch_status = epoch_data.get("status", "competition") if epoch_data else "competition"
         config_with_status = {**config, "_epoch_status": epoch_status}
 
         # 1. Build fog-of-war game state
@@ -158,11 +159,20 @@ class BotService:
         deployment_outcomes: list[dict] = []
         for plan in decisions.deployments:
             try:
+                # Fog-of-war zone targeting: pick weakest zone IF bot has spy intel.
+                # Without intel, target_zone_id stays None (default moderate security).
+                target_zone_id = None
+                if plan.target_simulation_id and plan.operative_type != "guardian":
+                    zone_id_str = game_state.get_weakest_known_zone_id(plan.target_simulation_id)
+                    if zone_id_str:
+                        target_zone_id = UUID(zone_id_str)
+
                 body = OperativeDeploy(
                     agent_id=UUID(plan.agent_id),
                     operative_type=plan.operative_type,
                     target_simulation_id=UUID(plan.target_simulation_id) if plan.target_simulation_id else None,
                     embassy_id=UUID(plan.embassy_id) if plan.embassy_id else None,
+                    target_zone_id=target_zone_id,
                 )
                 mission = await OperativeService.deploy(
                     admin_supabase,
@@ -299,6 +309,23 @@ class BotService:
         for action in alliances:
             try:
                 if action.action == "form" and action.team_name:
+                    # Check if there are other unaligned participants to potentially join.
+                    # Solo alliances cost RP with zero benefit — skip if no partners.
+                    unaligned_resp = await (
+                        admin_supabase.table("epoch_participants")
+                        .select("simulation_id", count="exact")
+                        .eq("epoch_id", epoch_id)
+                        .is_("team_id", "null")
+                        .neq("simulation_id", sim_id)
+                        .execute()
+                    )
+                    if not unaligned_resp.count or unaligned_resp.count < 1:
+                        logger.debug(
+                            "Bot %s skipping alliance formation — no unaligned partners available",
+                            sim_id,
+                        )
+                        continue
+
                     team = await EpochService.create_team(
                         admin_supabase, UUID(epoch_id), UUID(sim_id), action.team_name
                     )

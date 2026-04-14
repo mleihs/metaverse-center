@@ -26,6 +26,7 @@ from backend.services.i18n_utils import (
 )
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -879,17 +880,14 @@ class ChatAIService:
         Returns empty string if no autonomy data exists for this agent.
         Mood and stress descriptors are localized via i18n_utils.
         """
-        mood_result = await (
+        mood = await maybe_single_data(
             self._supabase.table("agent_mood")
             .select("mood_score, dominant_emotion, stress_level")
             .eq("agent_id", str(agent_id))
             .maybe_single()
-            .execute()
         )
-        if not mood_result.data:
+        if not mood:
             return ""
-
-        mood = mood_result.data
         score = mood["mood_score"]
         emotion = mood["dominant_emotion"]
         stress = mood["stress_level"]

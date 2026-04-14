@@ -4,10 +4,11 @@
  * Extracted from EpochCommandCenter.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { EpochParticipant, OperativeMission } from '../../types/index.js';
+import type { BattleLogEntry, EpochParticipant, OperativeMission } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 import { getOperativeIcon } from '../../utils/operative-icons.js';
 
 @localized()
@@ -253,6 +254,8 @@ export class VelgEpochOperationsTab extends LitElement {
   @property({ type: Boolean }) actionLoading = false;
   @property({ type: Boolean }) cycleJustResolved = false;
   @property({ type: String }) epochStatus = '';
+  @property({ type: Array }) battleLog: BattleLogEntry[] = [];
+  @property({ type: Number }) currentCycle = 1;
 
   protected render() {
     if (!this.myParticipant) {
@@ -283,6 +286,8 @@ export class VelgEpochOperationsTab extends LitElement {
           </div>
         </div>
 
+        ${this._renderFortifications(pulseClass)}
+
         <div class="panel ${pulseClass}">
           <div class="panel__header">
             <h3 class="panel__title">${msg('Intelligence')}</h3>
@@ -312,6 +317,52 @@ export class VelgEpochOperationsTab extends LitElement {
                 : html`<p class="empty-hint">${msg('No completed missions yet.')}</p>`
             }
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderFortifications(pulseClass: string) {
+    const mySimId = this.myParticipant?.simulation_id;
+    if (!mySimId) return nothing;
+
+    const forts = this.battleLog
+      .filter((e) => e.event_type === 'zone_fortified' && e.source_simulation_id === mySimId)
+      .map((e) => {
+        const meta = e.metadata as Record<string, unknown>;
+        return {
+          zoneName: (meta.zone_name as string) ?? '???',
+          newLevel: (meta.new_level as string) ?? '',
+          expiresAtCycle: (meta.expires_at_cycle as number) ?? 0,
+          isExpired: this.currentCycle >= ((meta.expires_at_cycle as number) ?? 0),
+        };
+      });
+
+    if (forts.length === 0) return nothing;
+
+    const active = forts.filter((f) => !f.isExpired);
+    return html`
+      <div class="panel ${pulseClass}">
+        <div class="panel__header">
+          <h3 class="panel__title">${msg('Defensive Fortifications')} (${active.length})</h3>
+        </div>
+        <div class="panel__body">
+          ${forts.map(
+            (f) => html`
+              <div class="mission ${f.isExpired ? '' : 'mission--defensive'}">
+                <div class="mission__icon">${icons.fortify(14)}</div>
+                <div class="mission__info">
+                  <div class="mission__type">${f.zoneName}</div>
+                  <div class="mission__detail">
+                    ${f.newLevel} ${msg(str`expires cycle ${f.expiresAtCycle}`)}
+                  </div>
+                </div>
+                <span class="mission__status ${f.isExpired ? 'mission__status--failed' : 'mission__status--active'}">
+                  ${f.isExpired ? msg('expired') : msg('active')}
+                </span>
+              </div>
+            `,
+          )}
         </div>
       </div>
     `;

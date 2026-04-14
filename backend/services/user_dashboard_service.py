@@ -6,6 +6,7 @@ import logging
 from uuid import UUID
 
 from backend.models.user import ActiveEpochParticipation, DashboardData, MembershipInfo
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -33,13 +34,17 @@ class UserDashboardService:
         # ── Memberships ──
         mem_resp = await (
             supabase.table("simulation_members")
-            .select("simulation_id, member_role, joined_at, simulations(name, slug)")
+            .select("simulation_id, member_role, joined_at, simulations(name, slug, simulation_type)")
             .eq("user_id", user_id_str)
             .execute()
         )
         memberships = []
         for row in extract_list(mem_resp):
             sim = row.get("simulations") or {}
+            # Filter out game instance clones — they're epoch-internal
+            # and should not appear in "My Worlds".
+            if sim.get("simulation_type") in ("game_instance", "archived"):
+                continue
             memberships.append(
                 MembershipInfo(
                     simulation_id=row["simulation_id"],
@@ -90,16 +95,15 @@ class UserDashboardService:
             )
 
         # ── Academy epochs played ──
-        profile_resp = await (
+        profile_data = await maybe_single_data(
             admin_supabase.table("user_profiles")
             .select("academy_epochs_played")
             .eq("id", user_id_str)
             .maybe_single()
-            .execute()
         )
         academy_count = 0
-        if profile_resp.data:
-            academy_count = profile_resp.data.get("academy_epochs_played", 0)
+        if profile_data:
+            academy_count = profile_data.get("academy_epochs_played", 0)
 
         # ── Active resonance count ──
         res_resp = await (

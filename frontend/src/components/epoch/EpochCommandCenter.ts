@@ -2184,6 +2184,8 @@ export class VelgEpochCommandCenter extends LitElement {
             .actionLoading=${this._actionLoading}
             .cycleJustResolved=${this._cycleJustResolved}
             .epochStatus=${this._epoch?.status ?? ''}
+            .battleLog=${this._battleLog}
+            .currentCycle=${this._epoch?.current_cycle ?? 1}
             @recall-operative=${(e: CustomEvent) => this._onRecallOperative(e.detail.missionId)}
           ></velg-epoch-operations-tab>
         `;

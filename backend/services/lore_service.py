@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -53,15 +54,17 @@ class LoreService:
         section = response.data[0]
 
         # Auto-translate in background
-        sim = await supabase.table("simulations").select("name, theme").eq("id", sim_id).maybe_single().execute()
-        if sim.data:
+        sim = await maybe_single_data(
+            supabase.table("simulations").select("name, theme").eq("id", sim_id).maybe_single()
+        )
+        if sim:
             schedule_auto_translation(
                 supabase,
                 TABLE,
                 section["id"],
                 section,
-                simulation_name=sim.data["name"],
-                simulation_theme=sim.data.get("theme", ""),
+                simulation_name=sim["name"],
+                simulation_theme=sim.get("theme", ""),
                 entity_type="lore",
             )
 
@@ -97,15 +100,17 @@ class LoreService:
 
         # Re-translate in background if EN fields changed
         if de_nulls:
-            sim = await supabase.table("simulations").select("name, theme").eq("id", sim_id).maybe_single().execute()
-            if sim.data:
+            sim = await maybe_single_data(
+                supabase.table("simulations").select("name, theme").eq("id", sim_id).maybe_single()
+            )
+            if sim:
                 schedule_auto_translation(
                     supabase,
                     TABLE,
                     section["id"],
                     section,
-                    simulation_name=sim.data["name"],
-                    simulation_theme=sim.data.get("theme", ""),
+                    simulation_name=sim["name"],
+                    simulation_theme=sim.get("theme", ""),
                     entity_type="lore",
                 )
 

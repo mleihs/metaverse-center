@@ -100,6 +100,12 @@ export class VelgEpochBattleLog extends LitElement {
     .entry--alliance_tension_increase::before { background: var(--color-warning); }
     .entry--alliance_dissolved_tension::before { background: var(--color-danger); width: 4px; opacity: 1; }
     .entry--alliance_upkeep::before          { background: var(--color-text-muted); }
+    .entry--player_passed::before             { background: var(--color-text-muted); }
+    .entry--cycle_resolved::before            { background: var(--color-warning); }
+    .entry--cycle_auto_resolved::before       { background: var(--color-warning); }
+    .entry--player_afk::before                { background: var(--color-text-muted); }
+    .entry--player_afk_penalty::before        { background: var(--color-danger); }
+    .entry--player_afk_ai_takeover::before    { background: var(--color-info); }
 
     .allied-intel-badge {
       display: inline-block;
@@ -202,6 +208,19 @@ export class VelgEpochBattleLog extends LitElement {
       white-space: nowrap;
       align-self: start;
       padding-top: 2px;
+    }
+
+    /* ── Cycle Divider ────────────────────── */
+
+    .cycle-divider {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      padding: var(--space-2) var(--space-2);
+      border-bottom: 1px dashed var(--color-border-light);
+      margin-top: var(--space-2);
     }
 
     /* ── Phase Divider ────────────────────── */
@@ -381,6 +400,12 @@ export class VelgEpochBattleLog extends LitElement {
       counter_intel: msg('Counter-Intel'),
       intel_report: msg('Intel Report'),
       zone_fortified: msg('Fortified'),
+      player_passed: msg('Passed'),
+      cycle_resolved: msg('Cycle Resolved'),
+      cycle_auto_resolved: msg('Auto-Resolved'),
+      player_afk: msg('AFK'),
+      player_afk_penalty: msg('AFK Penalty'),
+      player_afk_ai_takeover: msg('AI Takeover'),
     };
     return labels[type] || type;
   }
@@ -424,9 +449,28 @@ export class VelgEpochBattleLog extends LitElement {
       return html`<p class="empty">${msg('No battle events yet.')}</p>`;
     }
 
+    // Group entries by cycle for clearer structure (matching War Room layout)
+    const byCycle = new Map<number, BattleLogEntry[]>();
+    for (const e of this.entries) {
+      const c = e.cycle_number;
+      if (!byCycle.has(c)) byCycle.set(c, []);
+      byCycle.get(c)?.push(e);
+    }
+    const sortedCycles = [...byCycle.keys()].sort((a, b) => b - a);
+    let entryIdx = 0;
+
     return html`
       <div class="feed">
-        ${this.entries.map((entry, i) => this._renderEntry(entry, i))}
+        ${sortedCycles.map((cycle) => {
+          const entries = byCycle.get(cycle) ?? [];
+          return html`
+            <div class="cycle-divider">${msg('Cycle')} ${cycle}</div>
+            ${entries.map((entry) => {
+              const idx = entryIdx++;
+              return this._renderEntry(entry, idx);
+            })}
+          `;
+        })}
       </div>
     `;
   }

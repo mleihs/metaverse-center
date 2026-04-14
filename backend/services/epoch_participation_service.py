@@ -6,6 +6,7 @@ from uuid import UUID
 
 from backend.models.epoch import EpochConfig
 from backend.services.bot_personality import auto_draft
+from backend.utils.db import resolve_epoch_sim_names
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -26,8 +27,16 @@ class EpochParticipationService:
         cls,
         supabase: Client,
         epoch_id: UUID,
+        *,
+        admin_supabase: Client | None = None,
     ) -> list[dict]:
-        """List all participants in an epoch."""
+        """List all participants in an epoch.
+
+        When ``admin_supabase`` is provided, simulation names are resolved
+        via admin client (bypasses RLS) and game-instance names are mapped
+        back to their template names.  Without it, the user-scoped join is
+        used — which may return null for cross-player game instances.
+        """
         resp = await (
             supabase.table("epoch_participants")
             .select(
@@ -38,7 +47,23 @@ class EpochParticipationService:
             .order("joined_at")
             .execute()
         )
-        return extract_list(resp)
+        participants = extract_list(resp)
+
+        # Patch sim names when admin client available — fixes RLS-blocked
+        # joins and replaces "X (Epoch N)" clone names with template names.
+        if admin_supabase:
+            sim_ids = [p["simulation_id"] for p in participants]
+            sim_map = await resolve_epoch_sim_names(admin_supabase, sim_ids)
+            for p in participants:
+                resolved = sim_map.get(p["simulation_id"])
+                if resolved:
+                    if not p.get("simulations"):
+                        p["simulations"] = {}
+                    p["simulations"]["name"] = resolved["name"]
+                    if resolved.get("slug"):
+                        p["simulations"]["slug"] = resolved["slug"]
+
+        return participants
 
     @classmethod
     async def join_epoch(

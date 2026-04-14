@@ -6,6 +6,7 @@ from uuid import UUID
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
 from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
+from backend.utils.db import maybe_single_data, resolve_epoch_sim_names
 from backend.utils.errors import bad_request
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -254,18 +255,17 @@ class ScoringService:
 
         # A4: Alliance bonus — +15% per active ally
         active_alliance_count = 0
-        participant_resp = await (
+        participant_data = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("team_id, betrayal_penalty")
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", simulation_id)
             .maybe_single()
-            .execute()
         )
         betrayal_penalty = 0.0
-        if participant_resp.data:
-            team_id = participant_resp.data.get("team_id")
-            betrayal_penalty = float(participant_resp.data.get("betrayal_penalty") or 0)
+        if participant_data:
+            team_id = participant_data.get("team_id")
+            betrayal_penalty = float(participant_data.get("betrayal_penalty") or 0)
             if team_id:
                 allies_resp = await supabase.table("epoch_participants").select("id").eq("team_id", team_id).execute()
                 active_alliance_count = max(0, len(extract_list(allies_resp)) - 1)
@@ -418,12 +418,19 @@ class ScoringService:
         supabase: Client,
         epoch_id: UUID,
         cycle_number: int | None = None,
+        *,
+        admin_supabase: Client | None = None,
     ) -> list[dict]:
         """Get the leaderboard for an epoch (optionally at a specific cycle).
 
         Returns entries sorted by composite_score descending, with rank and
         simulation details. Uses a single query to fetch scores + simulation
         info, and a batch query for team assignments (avoids N+1).
+
+        ``admin_supabase`` bypasses RLS for cross-player sim name resolution.
+        Game instance names are mapped back to their template names so the
+        leaderboard shows "Conventional Memory" instead of
+        "Conventional Memory (Epoch 15)".
         """
         epoch = await EpochService.get(supabase, epoch_id)
 
@@ -468,11 +475,11 @@ class ScoringService:
         if not scores:
             return []
 
-        # Batch-fetch simulation names (separate query avoids PostgREST
-        # join coercion failures when FK cardinality is ambiguous)
+        # Batch-fetch simulation display names. Uses admin client to bypass
+        # RLS (cross-player sims) and resolves game-instance names back to
+        # their template names via source_template_id.
         score_sim_ids = [s["simulation_id"] for s in scores]
-        sims_resp = await supabase.table("simulations").select("id, name, slug").in_("id", score_sim_ids).execute()
-        sim_map: dict[str, dict] = {s["id"]: s for s in extract_list(sims_resp)}
+        sim_map = await resolve_epoch_sim_names(admin_supabase or supabase, score_sim_ids)
 
         # Batch-fetch all participant team assignments + betrayal data for this epoch
         participants_resp = await (
@@ -532,6 +539,8 @@ class ScoringService:
         supabase: Client,
         epoch_id: UUID,
         simulation_id: UUID,
+        *,
+        admin_supabase: Client | None = None,
     ) -> list[dict]:
         """Get pre-aggregated intel dossiers for a simulation's spy reports.
 
@@ -562,11 +571,15 @@ class ScoringService:
             if target:
                 by_target.setdefault(target, []).append(r)
 
+        # Resolve target sim names via admin client (bypasses RLS, uses template names)
+        target_sim_ids = list(by_target.keys())
+        target_sim_map = await resolve_epoch_sim_names(admin_supabase or supabase, target_sim_ids)
+
         dossiers = []
         for target_sim_id, target_reports in by_target.items():
             latest = target_reports[0]  # already sorted desc
             meta = latest.get("metadata") or {}
-            sim_info = latest.get("simulations") or {}
+            sim_info = target_sim_map.get(target_sim_id, {})
 
             last_intel_cycle = latest.get("cycle_number", 0)
             dossiers.append(
@@ -611,6 +624,8 @@ class ScoringService:
         cls,
         supabase: Client,
         epoch_id: UUID,
+        *,
+        admin_supabase: Client | None = None,
     ) -> dict:
         """Get comprehensive results summary for a completed epoch.
 
@@ -622,15 +637,19 @@ class ScoringService:
         if epoch["status"] != "completed":
             raise bad_request("Results summary only available for completed epochs.")
 
-        standings = await cls.get_final_standings(supabase, epoch_id)
+        standings = await cls.get_final_standings(supabase, epoch_id, admin_supabase=admin_supabase)
 
         # Per-participant operation statistics — batch query (no N+1)
-        participants = await EpochService.list_participants(supabase, epoch_id)
+        # Use admin client: epoch is completed so fog-of-war is lifted.
+        # User-scoped client cannot read other players' outbound missions
+        # (RLS restricts to own source/target), causing missing awards (BUG-013).
+        db = admin_supabase or supabase
+        participants = await EpochService.list_participants(db, epoch_id)
         sim_ids = [p["simulation_id"] for p in participants]
 
         # Single batch query for all mission stats
         all_missions_resp = await (
-            supabase.table("operative_missions")
+            db.table("operative_missions")
             .select("source_simulation_id, operative_type, status")
             .eq("epoch_id", str(epoch_id))
             .in_("source_simulation_id", sim_ids)
@@ -642,6 +661,32 @@ class ScoringService:
             sid = m["source_simulation_id"]
             if sid in missions_by_sim:
                 missions_by_sim[sid].append(m)
+
+        # Defensive action counts from battle_log (CI sweeps + fortifications).
+        # These are instant actions not tracked in operative_missions.
+        # Include cycle_number to deduplicate CI sweeps: one sweep can log
+        # N events (one per detected threat). Count distinct (sim, cycle) pairs.
+        defensive_resp = await (
+            db.table("battle_log")
+            .select("source_simulation_id, event_type, cycle_number")
+            .eq("epoch_id", str(epoch_id))
+            .in_("event_type", ["counter_intel", "zone_fortified"])
+            .in_("source_simulation_id", sim_ids)
+            .execute()
+        )
+        ci_sweeps_seen: set[tuple[str, int]] = set()
+        ci_by_sim: dict[str, int] = dict.fromkeys(sim_ids, 0)
+        fort_by_sim: dict[str, int] = dict.fromkeys(sim_ids, 0)
+        for entry in extract_list(defensive_resp):
+            sid = entry["source_simulation_id"]
+            if entry["event_type"] == "counter_intel":
+                # Deduplicate: one sweep per (sim, cycle), not per detection
+                sweep_key = (sid, entry["cycle_number"])
+                if sweep_key not in ci_sweeps_seen:
+                    ci_sweeps_seen.add(sweep_key)
+                    ci_by_sim[sid] = ci_by_sim.get(sid, 0) + 1
+            elif entry["event_type"] == "zone_fortified":
+                fort_by_sim[sid] = fort_by_sim.get(sid, 0) + 1
 
         participant_stats = []
         for sid in sim_ids:
@@ -662,6 +707,8 @@ class ScoringService:
                     "detections": detections,
                     "captured": captured,
                     "success_rate": success_rate,
+                    "counter_intel_sweeps": ci_by_sim.get(sid, 0),
+                    "fortifications": fort_by_sim.get(sid, 0),
                 }
             )
 
@@ -788,6 +835,8 @@ class ScoringService:
         cls,
         supabase: Client,
         epoch_id: UUID,
+        *,
+        admin_supabase: Client | None = None,
     ) -> list[dict]:
         """Get final standings for a completed epoch.
 
@@ -797,7 +846,7 @@ class ScoringService:
         if epoch["status"] not in ("completed", "cancelled"):
             raise bad_request("Final standings only available for completed or cancelled epochs.")
 
-        leaderboard = await cls.get_leaderboard(supabase, epoch_id)
+        leaderboard = await cls.get_leaderboard(supabase, epoch_id, admin_supabase=admin_supabase)
 
         # Award dimension titles
         titles = {

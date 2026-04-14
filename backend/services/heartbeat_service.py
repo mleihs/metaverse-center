@@ -40,6 +40,7 @@ from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
@@ -767,14 +768,13 @@ class HeartbeatService:
             if not owner_resp.data:
                 return None, False
 
-            wallet_resp = await (
+            wallet_data = await maybe_single_data(
                 admin.table("user_wallets")
                 .select("encrypted_openrouter_key")
                 .eq("user_id", owner_resp.data[0]["user_id"])
                 .maybe_single()
-                .execute()
             )
-            enc_key = (wallet_resp.data or {}).get("encrypted_openrouter_key")
+            enc_key = (wallet_data or {}).get("encrypted_openrouter_key")
             if enc_key:
                 return decrypt(enc_key), True
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OSError):

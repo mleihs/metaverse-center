@@ -32,6 +32,13 @@ const EVENT_COLORS: Record<string, string> = {
   alliance_tension_increase: 'var(--color-warning)',
   alliance_dissolved_tension: 'var(--color-danger)',
   alliance_upkeep: 'var(--color-text-muted)',
+  player_passed: 'var(--color-text-muted)',
+  cycle_resolved: 'var(--color-warning)',
+  cycle_auto_resolved: 'var(--color-warning)',
+  player_afk: 'var(--color-text-muted)',
+  player_afk_penalty: 'var(--color-danger)',
+  player_afk_ai_takeover: 'var(--color-info)',
+  intel_report: 'var(--color-info)',
 };
 
 const PHASE_COLORS: Record<string, string> = {
@@ -368,26 +375,6 @@ export class VelgWarRoomPanel extends LitElement {
       padding: var(--space-3);
     }
 
-    .bl-entry--classified {
-      opacity: 0.45;
-    }
-
-    .bl-entry--classified::after {
-      content: 'CLASSIFIED';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-8deg);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      letter-spacing: 0.15em;
-      color: var(--color-danger);
-      opacity: 0.5;
-      pointer-events: none;
-      text-transform: uppercase;
-    }
-
     .allied-intel-badge {
       display: inline-block;
       font-family: var(--font-brutalist);
@@ -514,9 +501,10 @@ export class VelgWarRoomPanel extends LitElement {
   }
 
   private async _loadSummary(): Promise<void> {
+    // Cycle 0 = aggregate across all cycles (migration 212)
     const res = await epochsApi.getCycleSummary(
       this.epochId,
-      this._selectedCycle,
+      0,
       this.simulationId || undefined,
     );
     if (res.success && res.data) {
@@ -602,17 +590,8 @@ export class VelgWarRoomPanel extends LitElement {
     this._sitrep = null;
     this._sitrepRevealed = '';
     clearInterval(this._typewriterTimer);
-    this._loadSummary();
-  }
-
-  private _isClassified(entry: BattleLogEntry): boolean {
-    if (entry.is_public) return false;
-    if ((entry.metadata as Record<string, unknown> | undefined)?.allied_intel) return false;
-    if (!this.simulationId) return true;
-    return (
-      entry.source_simulation_id !== this.simulationId &&
-      entry.target_simulation_id !== this.simulationId
-    );
+    // Stats are aggregate (cycle=0), not per-cycle — no reload needed.
+    // Cycle nav only controls SITREP generation.
   }
 
   private _renderHeader() {
@@ -731,7 +710,6 @@ export class VelgWarRoomPanel extends LitElement {
               <div class="bl-cycle-divider">${msg('Cycle')} ${cycle}</div>
               ${entries.map((entry) => {
                 const color = EVENT_COLORS[entry.event_type] || 'var(--color-border)';
-                const classified = this._isClassified(entry);
                 const isPhase = entry.event_type === 'phase_change';
                 const isBetrayal = entry.event_type === 'betrayal';
                 const isAlliedIntel = !!(entry.metadata as Record<string, unknown> | undefined)
@@ -740,7 +718,7 @@ export class VelgWarRoomPanel extends LitElement {
                 entryIdx++;
                 return html`
                   <div
-                    class="bl-entry ${isPhase ? 'bl-entry--phase' : ''} ${isBetrayal ? 'bl-entry--betrayal' : ''} ${classified ? 'bl-entry--classified' : ''}"
+                    class="bl-entry ${isPhase ? 'bl-entry--phase' : ''} ${isBetrayal ? 'bl-entry--betrayal' : ''}"
                     style="--entry-color: ${color}; animation-delay: ${delay}ms"
                   >
                     <span class="bl-entry__time">${formatTime(entry.created_at)}</span>

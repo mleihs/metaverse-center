@@ -10,6 +10,7 @@ import logging
 from uuid import UUID
 
 from backend.models.common import PaginationMeta
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -36,10 +37,12 @@ class DungeonQueryService:
         run_id: UUID,
     ) -> dict:
         """Get run metadata by ID."""
-        resp = await supabase.table("resonance_dungeon_runs").select("*").eq("id", str(run_id)).maybe_single().execute()
-        if not resp.data:
+        data = await maybe_single_data(
+            supabase.table("resonance_dungeon_runs").select("*").eq("id", str(run_id)).maybe_single()
+        )
+        if not data:
             raise not_found("Dungeon run", run_id)
-        return resp.data
+        return data
 
     @staticmethod
     async def get_run_public(
@@ -47,21 +50,20 @@ class DungeonQueryService:
         run_id: UUID,
     ) -> dict:
         """Get a completed/abandoned/wiped run (public, no auth)."""
-        resp = await (
+        data = await maybe_single_data(
             supabase.table("resonance_dungeon_runs")
             .select("*")
             .eq("id", str(run_id))
             .in_("status", _FINISHED_STATUSES)
             .maybe_single()
-            .execute()
         )
-        if not resp.data:
+        if not data:
             raise not_found(
                 "Dungeon run",
                 run_id,
                 detail="Dungeon run not found or still active.",
             )
-        return resp.data
+        return data
 
     @staticmethod
     async def list_events(

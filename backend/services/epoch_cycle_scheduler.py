@@ -24,6 +24,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -171,17 +172,16 @@ class EpochCycleScheduler:
             # Re-fetch epoch state (may have been resolved by sweep or ready,
             # or cancelled/deleted). Use maybe_single to avoid exceptions when
             # the epoch no longer matches (e.g. cancelled while timer was pending).
-            resp = await (
+            epoch_data = await maybe_single_data(
                 admin.table("game_epochs")
                 .select("id, current_cycle, config, cycle_deadline_at")
                 .eq("id", epoch_id)
                 .in_("status", ["foundation", "competition", "reckoning"])
                 .not_.is_("cycle_deadline_at", "null")
                 .maybe_single()
-                .execute()
             )
-            if resp.data:
-                await cls._auto_resolve_cycle(admin, resp.data)
+            if epoch_data:
+                await cls._auto_resolve_cycle(admin, epoch_data)
         except asyncio.CancelledError:
             pass
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:

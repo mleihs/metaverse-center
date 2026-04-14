@@ -12,6 +12,7 @@ from supabase_auth.errors import AuthApiError
 
 from backend.config import settings
 from backend.models.common import CurrentUser
+from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
 from supabase import create_async_client
 
@@ -412,14 +413,13 @@ def require_architect():
         if await is_platform_admin(user, admin_supabase):
             return user
 
-        wallet_resp = await (
+        wallet_data = await maybe_single_data(
             admin_supabase.table("user_wallets")
             .select("is_architect")
             .eq("user_id", str(user.id))
             .maybe_single()
-            .execute()
         )
-        if not wallet_resp.data or not wallet_resp.data.get("is_architect"):
+        if not wallet_data or not wallet_data.get("is_architect"):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Architect privileges required to access the Simulation Forge.",

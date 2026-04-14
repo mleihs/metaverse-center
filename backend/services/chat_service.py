@@ -8,6 +8,7 @@ from uuid import UUID
 from backend.services.chat_ai_service import ChatAIService, SSEEvent
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.i18n_utils import get_localized_field
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -27,15 +28,14 @@ class ChatService:
         user_id: UUID,
     ) -> None:
         """Verify user owns this conversation. Raises 404 if not found/owned."""
-        result = await (
+        result = await maybe_single_data(
             supabase.table("chat_conversations")
             .select("id")
             .eq("id", str(conversation_id))
             .eq("user_id", str(user_id))
             .maybe_single()
-            .execute()
         )
-        if not result.data:
+        if not result:
             raise not_found(detail="Conversation not found")
 
     # ── Batch-load helpers (shared by list + single-load) ──
@@ -290,17 +290,16 @@ class ChatService:
         to prevent duplicate accumulation on repeated regenerates.
         """
         # Guard: conversation must be active
-        conv = (
-            await supabase.table("chat_conversations")
+        conv = await maybe_single_data(
+            supabase.table("chat_conversations")
             .select("status")
             .eq("id", str(conversation_id))
             .maybe_single()
-            .execute()
         )
-        if not conv.data:
+        if not conv:
             yield SSEEvent(event="error", data={"error": "Conversation not found."})
             return
-        if conv.data["status"] == "archived":
+        if conv["status"] == "archived":
             yield SSEEvent(event="error", data={"error": "Cannot regenerate in archived conversation."})
             return
 
@@ -722,15 +721,14 @@ class ChatService:
 
         # Fallback: single-agent conversation (agent_id on conversation row)
         if not agents:
-            conv_resp = await (
+            conv_data = await maybe_single_data(
                 supabase.table("chat_conversations")
                 .select("agent_id, agents(id, name, primary_profession, character, gender)")
                 .eq("id", str(conversation_id))
                 .maybe_single()
-                .execute()
             )
-            if conv_resp.data and conv_resp.data.get("agents"):
-                agents = [conv_resp.data["agents"]]
+            if conv_data and conv_data.get("agents"):
+                agents = [conv_data["agents"]]
 
         if not agents:
             return _build_fallback_starters(locale)
@@ -750,15 +748,14 @@ class ChatService:
         # Load mood for the first agent (optional context)
         mood_score: int | None = None
         if agents:
-            mood_resp = await (
+            mood_data = await maybe_single_data(
                 supabase.table("agent_mood")
                 .select("mood_score")
                 .eq("agent_id", str(agents[0]["id"]))
                 .maybe_single()
-                .execute()
             )
-            if mood_resp.data:
-                mood_score = mood_resp.data["mood_score"]
+            if mood_data:
+                mood_score = mood_data["mood_score"]
 
         is_group = len(agents) > 1
         primary = agents[0]

@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 
 from backend.services.base_service import paginate_response
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from supabase import AsyncClient as Client
 
@@ -129,15 +130,17 @@ class DungeonContentAdminService:
 
         if isinstance(pk, tuple):
             parent_id, child_id = _parse_composite_id(item_id)
-            response = await (
-                supabase.table(table).select("*").eq(pk[0], parent_id).eq(pk[1], child_id).maybe_single().execute()
+            data = await maybe_single_data(
+                supabase.table(table).select("*").eq(pk[0], parent_id).eq(pk[1], child_id).maybe_single()
             )
         else:
-            response = await supabase.table(table).select("*").eq(pk, item_id).maybe_single().execute()
+            data = await maybe_single_data(
+                supabase.table(table).select("*").eq(pk, item_id).maybe_single()
+            )
 
-        if not response.data:
+        if not data:
             raise not_found(content_type, item_id)
-        return response.data
+        return data
 
     @staticmethod
     async def update_item(

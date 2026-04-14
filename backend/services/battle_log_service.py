@@ -6,6 +6,7 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -97,35 +98,32 @@ class BattleLogService:
             # Fallback: fetch from DB (used by bot deploy path)
             try:
                 if mission.get("agent_id"):
-                    agent_resp = (
-                        await supabase.table("agents")
+                    agent_data = await maybe_single_data(
+                        supabase.table("agents")
                         .select("name")
                         .eq("id", str(mission["agent_id"]))
                         .maybe_single()
-                        .execute()
                     )
-                    if agent_resp.data:
-                        metadata["agent_name"] = agent_resp.data["name"]
+                    if agent_data:
+                        metadata["agent_name"] = agent_data["name"]
                 if mission.get("target_zone_id"):
-                    zone_resp = (
-                        await supabase.table("zones")
+                    zone_data = await maybe_single_data(
+                        supabase.table("zones")
                         .select("name")
                         .eq("id", str(mission["target_zone_id"]))
                         .maybe_single()
-                        .execute()
                     )
-                    if zone_resp.data:
-                        metadata["target_zone_name"] = zone_resp.data["name"]
+                    if zone_data:
+                        metadata["target_zone_name"] = zone_data["name"]
                 if mission.get("target_simulation_id"):
-                    sim_resp = (
-                        await supabase.table("simulations")
+                    sim_data = await maybe_single_data(
+                        supabase.table("simulations")
                         .select("name")
                         .eq("id", str(mission["target_simulation_id"]))
                         .maybe_single()
-                        .execute()
                     )
-                    if sim_resp.data:
-                        metadata["target_sim_name"] = sim_resp.data["name"]
+                    if sim_data:
+                        metadata["target_sim_name"] = sim_data["name"]
             except (PostgrestAPIError, httpx.HTTPError, KeyError):
                 logger.debug("Best-effort battle log enrichment failed", exc_info=True)
 
@@ -408,6 +406,43 @@ class BattleLogService:
         )
 
     # ── Query ─────────────────────────────────────────────
+
+    @classmethod
+    async def list_entries_for_player(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        viewer_simulation_id: UUID,
+        *,
+        event_type: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[dict], int]:
+        """List fog-of-war filtered battle log entries for a specific player.
+
+        Delegates to the ``get_battle_log_for_player`` Postgres RPC (migration 211)
+        which enforces visibility rules and tags allied intel in SQL:
+
+        1. Public events (is_public = true)
+        2. Own actions (source_simulation_id = viewer)
+        3. Incoming VISIBLE threats (target = viewer, event_type restricted)
+        4. Allied intel (teammate source/target, tagged in metadata)
+
+        The RPC uses explicit WHERE clauses (independent of RLS), so it works
+        correctly for both user-JWT and service_role callers.
+        """
+        params: dict = {
+            "p_epoch_id": str(epoch_id),
+            "p_viewer_simulation_id": str(viewer_simulation_id),
+            "p_limit": limit,
+            "p_offset": offset,
+        }
+        if event_type:
+            params["p_event_type"] = event_type
+
+        resp = await supabase.rpc("get_battle_log_for_player", params).execute()
+        result = resp.data if resp.data else {"entries": [], "total": 0}
+        return result.get("entries", []), result.get("total", 0)
 
     @classmethod
     async def get_global_public_feed(

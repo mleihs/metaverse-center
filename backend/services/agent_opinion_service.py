@@ -22,6 +22,7 @@ from uuid import UUID
 
 import structlog
 
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -410,15 +411,14 @@ class AgentOpinionService:
 
         for opinion in extract_list(high_result):
             # Check if relationship already exists
-            existing = await (
+            existing = await maybe_single_data(
                 supabase.table("agent_relationships")
                 .select("id")
                 .eq("source_agent_id", opinion["agent_id"])
                 .eq("target_agent_id", opinion["target_agent_id"])
                 .maybe_single()
-                .execute()
             )
-            if not existing.data:
+            if not existing:
                 events.append(
                     {
                         "type": "relationship_breakthrough",
