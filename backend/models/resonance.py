@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 RESONANCE_STATUSES = ("detected", "impacting", "subsiding", "archived")
 
-RESONANCE_IMPACT_STATUSES = ("pending", "generating", "completed", "skipped", "failed")
+RESONANCE_IMPACT_STATUSES = ("pending", "generating", "completed", "partial", "skipped", "failed")
 
 SOURCE_CATEGORIES = (
     "economic_crisis",
@@ -124,6 +124,7 @@ class ResonanceResponse(BaseModel):
     bureau_dispatch: str | None = None
     real_world_source: dict | None = None
     magnitude: float
+    magnitude_class: str | None = None
     affected_event_types: list[str] = Field(default_factory=list)
     status: str
     detected_at: datetime
@@ -133,6 +134,7 @@ class ResonanceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+    impact_count: int | None = None
 
 
 class ResonanceImpactResponse(BaseModel):
@@ -144,7 +146,10 @@ class ResonanceImpactResponse(BaseModel):
     susceptibility: float
     effective_magnitude: float
     status: str
+    failure_reason: str | None = None
     simulation_name: str | None = None
+    simulation_slug: str | None = None
+    magnitude_class: str | None = None
     spawned_event_ids: list[UUID] = Field(default_factory=list)
     narrative_context: str | None = None
     created_at: datetime

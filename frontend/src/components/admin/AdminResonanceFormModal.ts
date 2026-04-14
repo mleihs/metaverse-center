@@ -4,65 +4,19 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import type { Resonance, SourceCategory } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import {
+  archetypeLabel,
+  CATEGORY_SIGNATURE_MAP,
+  categoryLabel,
+  signatureLabel as sigLabel,
+} from '../../utils/resonance-labels.js';
 
 import '../shared/BaseModal.js';
 
-const SOURCE_CATEGORIES: { value: SourceCategory; label: string }[] = [
-  { value: 'economic_crisis', label: 'Economic Crisis' },
-  { value: 'military_conflict', label: 'Military Conflict' },
-  { value: 'pandemic', label: 'Pandemic' },
-  { value: 'natural_disaster', label: 'Natural Disaster' },
-  { value: 'political_upheaval', label: 'Political Upheaval' },
-  { value: 'tech_breakthrough', label: 'Tech Breakthrough' },
-  { value: 'cultural_shift', label: 'Cultural Shift' },
-  { value: 'environmental_disaster', label: 'Environmental Disaster' },
+const SOURCE_CATEGORY_KEYS: SourceCategory[] = [
+  'economic_crisis', 'military_conflict', 'pandemic', 'natural_disaster',
+  'political_upheaval', 'tech_breakthrough', 'cultural_shift', 'environmental_disaster',
 ];
-
-const CATEGORY_DERIVATION: Record<
-  string,
-  { signatureKey: string; signatureLabel: string; archetype: string }
-> = {
-  economic_crisis: {
-    signatureKey: 'economic_tremor',
-    signatureLabel: 'Economic Tremor',
-    archetype: 'The Tower',
-  },
-  military_conflict: {
-    signatureKey: 'conflict_wave',
-    signatureLabel: 'Conflict Wave',
-    archetype: 'The Shadow',
-  },
-  pandemic: {
-    signatureKey: 'biological_tide',
-    signatureLabel: 'Biological Tide',
-    archetype: 'The Devouring Mother',
-  },
-  natural_disaster: {
-    signatureKey: 'elemental_surge',
-    signatureLabel: 'Elemental Surge',
-    archetype: 'The Deluge',
-  },
-  political_upheaval: {
-    signatureKey: 'authority_fracture',
-    signatureLabel: 'Authority Fracture',
-    archetype: 'The Overthrow',
-  },
-  tech_breakthrough: {
-    signatureKey: 'innovation_spark',
-    signatureLabel: 'Innovation Spark',
-    archetype: 'The Prometheus',
-  },
-  cultural_shift: {
-    signatureKey: 'consciousness_drift',
-    signatureLabel: 'Consciousness Drift',
-    archetype: 'The Awakening',
-  },
-  environmental_disaster: {
-    signatureKey: 'decay_bloom',
-    signatureLabel: 'Decay Bloom',
-    archetype: 'The Entropy',
-  },
-};
 
 @localized()
 @customElement('velg-admin-resonance-form-modal')
@@ -303,7 +257,13 @@ export class VelgAdminResonanceFormModal extends LitElement {
     archetype: string;
   } | null {
     if (!this._category) return null;
-    return CATEGORY_DERIVATION[this._category] ?? null;
+    const sig = CATEGORY_SIGNATURE_MAP[this._category];
+    if (!sig) return null;
+    return {
+      signatureKey: sig,
+      signatureLabel: sigLabel(sig),
+      archetype: archetypeLabel(sig),
+    };
   }
 
   private get _magClass(): string {
@@ -374,7 +334,7 @@ export class VelgAdminResonanceFormModal extends LitElement {
                 }}
               >
                 <option value="" disabled>${msg('Select category...')}</option>
-                ${SOURCE_CATEGORIES.map((c) => html`<option value=${c.value}>${c.label}</option>`)}
+                ${SOURCE_CATEGORY_KEYS.map((c) => html`<option value=${c}>${categoryLabel(c)}</option>`)}
               </select>
             </div>
 

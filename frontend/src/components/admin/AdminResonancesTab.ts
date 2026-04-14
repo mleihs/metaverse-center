@@ -9,22 +9,12 @@ import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import { SIGNATURE_KEYS, signatureLabel } from '../../utils/resonance-labels.js';
 import '../shared/ConfirmDialog.js';
 import './AdminResonanceFormModal.js';
 
 type ResView = 'active' | 'archived' | 'trash';
 type StatusFilter = 'all' | 'detected' | 'impacting' | 'subsiding';
-
-const SIGNATURE_LABELS: Record<string, string> = {
-  economic_tremor: 'Economic Tremor',
-  conflict_wave: 'Conflict Wave',
-  biological_tide: 'Biological Tide',
-  elemental_surge: 'Elemental Surge',
-  authority_fracture: 'Authority Fracture',
-  innovation_spark: 'Innovation Spark',
-  consciousness_drift: 'Consciousness Drift',
-  decay_bloom: 'Decay Bloom',
-};
 
 const STATUS_TRANSITIONS: Record<string, string> = {
   detected: 'impacting',
@@ -962,8 +952,8 @@ export class VelgAdminResonancesTab extends LitElement {
           }}
         >
           <option value="">${msg('All signatures')}</option>
-          ${Object.entries(SIGNATURE_LABELS).map(
-            ([key, label]) => html`<option value=${key}>${label}</option>`,
+          ${SIGNATURE_KEYS.map(
+            (key) => html`<option value=${key}>${signatureLabel(key)}</option>`,
           )}
         </select>
 
@@ -1019,7 +1009,7 @@ export class VelgAdminResonancesTab extends LitElement {
         <div class="res-info">
           <span class="res-title">${r.title}</span>
           <div class="res-subtitle">
-            <span class="res-signature">${SIGNATURE_LABELS[r.resonance_signature] ?? r.resonance_signature}</span>
+            <span class="res-signature">${signatureLabel(r.resonance_signature)}</span>
             <span>${r.archetype}</span>
           </div>
         </div>

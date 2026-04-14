@@ -26,6 +26,9 @@ from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
+# Resolved template dataclass for cached DB templates
+_TemplateCache = dict[str, dict[str, str]]  # {template_type: {system_prompt, prompt_content, ...}}
+
 logger = logging.getLogger(__name__)
 
 # System actor UUID for automated operations
@@ -154,6 +157,28 @@ class ScannerService:
 
         return config
 
+    # ── Template Loading ────────────────────────────────────────────────────
+
+    @classmethod
+    async def _load_templates(cls, admin: Client) -> _TemplateCache:
+        """Load scanner prompt templates from prompt_templates table.
+
+        Falls back to empty dict on failure — callers use inline defaults.
+        """
+        try:
+            resp = await (
+                admin.table("prompt_templates")
+                .select("template_type, system_prompt, prompt_content, temperature, max_tokens")
+                .eq("prompt_category", "scanner")
+                .eq("is_active", True)
+                .is_("simulation_id", "null")
+                .execute()
+            )
+            return {row["template_type"]: row for row in extract_list(resp)}
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.warning("Failed to load scanner templates from DB, using inline defaults")
+            return {}
+
     # ── Scan Cycle ────────────────────────────────────────────────────────
 
     @classmethod
@@ -176,6 +201,10 @@ class ScannerService:
         auto_create = config.get("auto_create", False)
         delay_hours = config.get("impacts_delay_hours", 4)
         api_keys = config.get("api_keys", {})
+
+        # Load prompt templates from DB (falls back to inline defaults)
+        templates = await cls._load_templates(admin)
+        config["_templates"] = templates
 
         metrics = {
             "adapters": {},
@@ -226,7 +255,12 @@ class ScannerService:
         needs_llm = any(not r.is_structured for r in novel)
         if needs_llm and config.get("openrouter_api_key"):
             openrouter = OpenRouterService(config["openrouter_api_key"])
-            classified = await classifier.classify_batch(novel, openrouter)
+            # Use DB template system_prompt if available, else inline default
+            cls_template = templates.get("scanner_classification")
+            cls_system_prompt = cls_template["system_prompt"] if cls_template else None
+            classified = await classifier.classify_batch(
+                novel, openrouter, system_prompt_override=cls_system_prompt,
+            )
             metrics["llm_calls"] = 1
         else:
             classified = novel
@@ -354,13 +388,38 @@ class ScannerService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Failed to stage candidate: %s", result.title[:80])
 
+    # Inline fallback prompts — used when DB templates are unavailable
+    _DISPATCH_SYSTEM_PROMPT = (
+        "You write bureau dispatches — official reports from the Bureau of Substrate Monitoring, "
+        "as if real-world events were tremors detected in the fabric between realities. "
+        "Tone: Clinical yet ominous. Like a seismological report written by someone who "
+        "suspects the instruments are detecting something alive."
+    )
+
+    _DISPATCH_USER_TEMPLATE = (
+        "Source event: {article_title}\n"
+        "{article_description}\n\n"
+        "Category: {source_category}\n"
+        "Archetype: {archetype_name} — {archetype_description}\n"
+        "Magnitude: {magnitude_scaled}/10\n\n"
+        "Write a bureau dispatch (100-200 words). "
+        "Reference the real event obliquely (never name real places or people directly). "
+        "Use the archetype as thematic framing. "
+        "End with a monitoring classification code.\n\n"
+        "Respond in {locale}."
+    )
+
     @classmethod
     async def _generate_dispatch(
         cls,
         result: ScanResult,
         config: dict,
     ) -> str | None:
-        """Generate a bureau dispatch narrative for a scan result."""
+        """Generate a bureau dispatch narrative for a scan result.
+
+        Uses DB prompt_templates (scanner_bureau_dispatch) if loaded,
+        falls back to inline constants.
+        """
         api_key = config.get("openrouter_api_key")
         if not api_key or not result.source_category:
             return None
@@ -373,24 +432,27 @@ class ScannerService:
         archetype_desc = ARCHETYPE_DESCRIPTIONS.get(archetype, "")
         magnitude_scaled = round((result.magnitude or 0.5) * 10)
 
-        system_prompt = (
-            "You write bureau dispatches — official reports from the Bureau of Substrate Monitoring, "
-            "as if real-world events were tremors detected in the fabric between realities. "
-            "Tone: Clinical yet ominous. Like a seismological report written by someone who "
-            "suspects the instruments are detecting something alive."
-        )
+        # Resolve templates — prefer DB, fall back to inline
+        templates: _TemplateCache = config.get("_templates", {})
+        db_template = templates.get("scanner_bureau_dispatch")
 
-        user_prompt = (
-            f"Source event: {result.title}\n"
-            f"{result.description or ''}\n\n"
-            f"Category: {result.source_category}\n"
-            f"Archetype: {archetype} — {archetype_desc}\n"
-            f"Magnitude: {magnitude_scaled}/10\n\n"
-            "Write a bureau dispatch (100-200 words). "
-            "Reference the real event obliquely (never name real places or people directly). "
-            "Use the archetype as thematic framing. "
-            "End with a monitoring classification code.\n\n"
-            "Respond in English."
+        if db_template:
+            system_prompt = db_template.get("system_prompt") or cls._DISPATCH_SYSTEM_PROMPT
+            # DB template uses {{var}} mustache placeholders — convert to Python format
+            user_template = db_template.get("prompt_content", cls._DISPATCH_USER_TEMPLATE)
+            user_template = user_template.replace("{{", "{").replace("}}", "}")
+        else:
+            system_prompt = cls._DISPATCH_SYSTEM_PROMPT
+            user_template = cls._DISPATCH_USER_TEMPLATE
+
+        user_prompt = user_template.format(
+            article_title=result.title,
+            article_description=result.description or "",
+            source_category=result.source_category,
+            archetype_name=archetype,
+            archetype_description=archetype_desc,
+            magnitude_scaled=magnitude_scaled,
+            locale="English",
         )
 
         try:
@@ -399,8 +461,8 @@ class ScannerService:
                 model="deepseek/deepseek-v3.2",
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
-                temperature=0.9,
-                max_tokens=512,
+                temperature=float(db_template.get("temperature", 0.9)) if db_template else 0.9,
+                max_tokens=int(db_template.get("max_tokens", 512)) if db_template else 512,
             )
             return dispatch.strip()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):

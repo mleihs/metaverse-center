@@ -95,11 +95,14 @@ async def classify_batch(
     results: list[ScanResult],
     openrouter: OpenRouterService,
     model: str = "deepseek/deepseek-v3.2",
+    *,
+    system_prompt_override: str | None = None,
 ) -> list[ScanResult]:
     """Classify unstructured results via a single batched LLM call.
 
     Structured results are passed through unchanged.
-    Returns all results with classification applied.
+    Uses system_prompt_override from DB prompt_templates if provided,
+    otherwise falls back to the inline _SYSTEM_PROMPT constant.
     """
     # Separate structured (already classified) from unstructured
     structured: list[ScanResult] = []
@@ -124,7 +127,7 @@ async def classify_batch(
     try:
         raw = await openrouter.generate_with_system(
             model=model,
-            system_prompt=_SYSTEM_PROMPT,
+            system_prompt=system_prompt_override or _SYSTEM_PROMPT,
             user_prompt=user_prompt,
             temperature=0.2,
             max_tokens=1024,
