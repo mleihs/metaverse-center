@@ -374,8 +374,8 @@ class TestRenderEpochCompleted:
             command_center_url="https://metaverse.center/epoch",
         )
         assert "Velgarien" in html
-        # Crown emoji for winner
-        assert "128081" in html or "&#128081;" in html
+        # Star icon for winner (military-grade, replaces crown emoji)
+        assert "&#9733;" in html
 
     def test_contains_leaderboard(self):
         html = render_epoch_completed(
@@ -527,13 +527,13 @@ class TestRenderEpochInvitation:
 
     def test_contains_intro_en(self):
         html = self._render()
-        assert "classified operation" in html
-        assert "tactical decisions" in html
+        assert "Do not forward" in html
+        assert "deployment" in html.lower()
 
     def test_contains_intro_de(self):
         html = self._render()
-        assert "geheime Operation" in html
-        assert "taktischen Entscheidungen" in html
+        assert "GEHEIM eingestuft" in html
+        assert "Kommandanten" in html
 
     def test_contains_operation_label(self):
         html = self._render()
