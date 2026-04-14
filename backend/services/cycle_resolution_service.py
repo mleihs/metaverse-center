@@ -317,18 +317,18 @@ class CycleResolutionService:
                 cycle_number=cycle_number,
                 config=config,
             )
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+        except Exception as exc:
             logger.warning("Bot cycle execution failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
-            sentry_sdk.capture_exception()
+            sentry_sdk.capture_exception(exc)
 
         # Compute scores after missions resolve (best-effort)
         try:
             await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, AttributeError) as exc:
             logger.warning(
                 "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number}, exc_info=True
             )
-            sentry_sdk.capture_exception()
+            sentry_sdk.capture_exception(exc)
 
         # Compute alliance tension (after missions — counts same-target attacks)
         # DEPENDENCY: requires mission resolution to have completed successfully
