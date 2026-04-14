@@ -6,19 +6,9 @@ import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceSignature } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { SIGNATURE_KEYS, signatureLabel } from '../../utils/resonance-labels.js';
 import './ResonanceCard.js';
 import './ResonanceDetailsPanel.js';
-
-const SIGNATURE_LABELS: Record<string, string> = {
-  economic_tremor: 'Economic Tremor',
-  conflict_wave: 'Conflict Wave',
-  biological_tide: 'Biological Tide',
-  elemental_surge: 'Elemental Surge',
-  authority_fracture: 'Authority Fracture',
-  innovation_spark: 'Innovation Spark',
-  consciousness_drift: 'Consciousness Drift',
-  decay_bloom: 'Decay Bloom',
-};
 
 type StatusFilter = 'all' | 'detected' | 'impacting' | 'subsiding';
 
@@ -59,8 +49,8 @@ export class ResonanceMonitor extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255, 255, 255, 0.02) 3px,
-        rgba(255, 255, 255, 0.02) 6px
+        color-mix(in srgb, var(--color-text-inverse) 2%, transparent) 3px,
+        color-mix(in srgb, var(--color-text-inverse) 2%, transparent) 6px
       );
       pointer-events: none;
       animation: scanline-drift 8s linear infinite;
@@ -322,7 +312,6 @@ export class ResonanceMonitor extends LitElement {
   `;
 
   @state() private _resonances: Resonance[] = [];
-  @state() private _impactCounts: Record<string, number> = {};
   @state() private _loading = true;
   @state() private _error = '';
   @state() private _statusFilter: StatusFilter = 'all';
@@ -356,18 +345,6 @@ export class ResonanceMonitor extends LitElement {
       if (res.success && res.data) {
         this._resonances = res.data;
         this._error = '';
-
-        // Load impact counts for each resonance
-        const counts: Record<string, number> = {};
-        for (const r of res.data) {
-          try {
-            const impactRes = await resonanceApi.listImpacts(r.id);
-            counts[r.id] = impactRes.data?.length ?? 0;
-          } catch {
-            counts[r.id] = 0;
-          }
-        }
-        this._impactCounts = counts;
       } else {
         this._error = res.error?.message ?? 'Failed to load resonances';
       }
@@ -470,10 +447,10 @@ export class ResonanceMonitor extends LitElement {
             aria-label=${msg('Filter by signature')}
           >
             <option value="">${msg('All signatures')}</option>
-            ${Object.entries(SIGNATURE_LABELS).map(
-              ([key, label]) =>
+            ${SIGNATURE_KEYS.map(
+              (key) =>
                 html`<option value=${key} ?selected=${this._signatureFilter === key}>
-                  ${label}
+                  ${signatureLabel(key)}
                 </option>`,
             )}
           </select>
@@ -529,7 +506,7 @@ export class ResonanceMonitor extends LitElement {
             <resonance-card
               style="--i: ${i}"
               .resonance=${r}
-              .impactCount=${this._impactCounts[r.id] ?? 0}
+              .impactCount=${r.impact_count ?? 0}
               .showProcessButton=${this._isPlatformAdmin}
               @resonance-click=${this._handleResonanceClick}
               @resonance-process=${this._handleProcess}

@@ -7,22 +7,11 @@ import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDateTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
+import { archetypeLabel } from '../../utils/resonance-labels.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 import '../shared/EntityLightbox.js';
 import '../shared/VelgSectionHeader.js';
-
-/** Human-readable archetype labels. */
-const ARCHETYPE_LABELS: Record<string, string> = {
-  economic_tremor: 'The Tower',
-  conflict_wave: 'The Shadow',
-  biological_tide: 'The Devouring Mother',
-  elemental_surge: 'The Deluge',
-  authority_fracture: 'The Overthrow',
-  innovation_spark: 'The Prometheus',
-  consciousness_drift: 'The Awakening',
-  decay_bloom: 'The Entropy',
-};
 
 /** Resolved impact with simulation metadata. */
 interface ResolvedImpact extends ResonanceImpact {
@@ -66,8 +55,8 @@ export class VelgResonanceDetailsPanel extends LitElement {
           0deg,
           transparent,
           transparent 2px,
-          rgba(128, 128, 128, 0.05) 2px,
-          rgba(128, 128, 128, 0.05) 4px
+          color-mix(in srgb, var(--color-text-muted) 5%, transparent) 2px,
+          color-mix(in srgb, var(--color-text-muted) 5%, transparent) 4px
         );
         pointer-events: none;
         z-index: 1;
@@ -878,7 +867,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
           <!-- Classification -->
           <div class="panel__section">
             <velg-section-header
-              >${ARCHETYPE_LABELS[r.resonance_signature] ?? r.archetype}</velg-section-header
+              >${archetypeLabel(r.resonance_signature)}</velg-section-header
             >
             <p class="panel__description">${r.title}</p>
           </div>

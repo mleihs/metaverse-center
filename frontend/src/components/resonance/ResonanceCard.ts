@@ -6,18 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
-
-/** Human-readable archetype labels. */
-const ARCHETYPE_LABELS: Record<string, string> = {
-  economic_tremor: 'The Tower',
-  conflict_wave: 'The Shadow',
-  biological_tide: 'The Devouring Mother',
-  elemental_surge: 'The Deluge',
-  authority_fracture: 'The Overthrow',
-  innovation_spark: 'The Prometheus',
-  consciousness_drift: 'The Awakening',
-  decay_bloom: 'The Entropy',
-};
+import { archetypeLabel } from '../../utils/resonance-labels.js';
 
 /** Resolved impact with simulation metadata. */
 interface ResolvedImpact extends ResonanceImpact {
@@ -60,8 +49,8 @@ export class ResonanceCard extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(128, 128, 128, 0.06) 2px,
-        rgba(128, 128, 128, 0.06) 4px
+        color-mix(in srgb, var(--color-text-muted) 6%, transparent) 2px,
+        color-mix(in srgb, var(--color-text-muted) 6%, transparent) 4px
       );
       pointer-events: none;
       z-index: 1;
@@ -932,7 +921,7 @@ export class ResonanceCard extends LitElement {
           </div>
           <div class="title-block">
             <div class="archetype-label">
-              ${ARCHETYPE_LABELS[r.resonance_signature] ?? r.archetype}
+              ${archetypeLabel(r.resonance_signature)}
             </div>
             <div class="title">${r.title}</div>
           </div>

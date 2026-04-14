@@ -47,9 +47,12 @@ class ResonanceService(BaseService):
         offset: int = 0,
         include_deleted: bool = False,
     ) -> tuple[list[dict], int]:
-        """List resonances (platform-level, no simulation_id)."""
+        """List resonances (platform-level, no simulation_id).
+
+        Includes per-resonance impact_count to avoid N+1 queries on the frontend.
+        """
         table = cls._read_table(include_deleted)
-        query = supabase.table(table).select("*", count="exact")
+        query = supabase.table(table).select("*, resonance_impacts(count)", count="exact")
 
         if status_filter:
             query = query.eq("status", status_filter)
@@ -65,6 +68,12 @@ class ResonanceService(BaseService):
         results = extract_list(response)
         for r in results:
             r["magnitude_class"] = cls._classify_magnitude(float(r.get("magnitude") or 0))
+            # Extract impact count from the embedded relation and flatten
+            impacts_data = r.pop("resonance_impacts", [])
+            if isinstance(impacts_data, list) and impacts_data:
+                r["impact_count"] = impacts_data[0].get("count", 0)
+            else:
+                r["impact_count"] = 0
         return results, total
 
     @classmethod
@@ -350,8 +359,6 @@ class ResonanceService(BaseService):
         # Stories use service_role (admin) client because social_stories RLS
         # restricts writes to platform admins; the scheduler also needs access.
         try:
-            from backend.dependencies import get_admin_supabase
-
             admin_sb = await get_admin_supabase()
             stories = await SocialStoryService.create_resonance_stories(
                 admin_sb,

@@ -1654,6 +1654,7 @@ export interface Resonance {
   updated_at: string;
   deleted_at?: string;
   magnitude_class?: string;
+  impact_count?: number;
 }
 
 export interface ResonanceImpact {
