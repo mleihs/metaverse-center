@@ -13,6 +13,7 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.constants import SECURITY_LEVEL_MAP
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -116,7 +117,18 @@ class BotGameState:
         cycle_number: int,
         config: dict,
     ) -> BotGameState:
-        """Build game state using same data access a human player has."""
+        """Build fog-of-war compliant game state for bot decisions.
+
+        IMPORTANT — FOG-OF-WAR CONTRACT:
+        Called with admin_supabase (RLS bypassed). Every query in this class
+        MUST use explicit WHERE filters equivalent to what a human player's
+        RLS would enforce. This is the ONLY class that loads data for bot
+        decisions — bot_personality.py has zero DB access.
+
+        If you add a new query, verify it only returns data the bot has
+        legitimately earned (own sim, public events, detected intel, allied
+        shared intel). Never query opponent data directly.
+        """
         sim_id = participant["simulation_id"]
         bot_player = participant.get("bot_player") or {}
 
@@ -287,26 +299,29 @@ class BotGameState:
         self.participants = extract_list(parts_resp)
 
     async def _load_alliance_data(self, supabase: Client, epoch_id: str) -> None:
-        """Load pending alliance proposals and own team tension."""
+        """Load pending alliance proposals for own team and own team tension."""
         try:
-            proposals_resp = await (
-                supabase.table("epoch_alliance_proposals")
-                .select("id, team_id, proposer_simulation_id, expires_at_cycle")
-                .eq("epoch_id", epoch_id)
-                .eq("status", "pending")
-                .execute()
-            )
-            self.pending_proposals = extract_list(proposals_resp)
+            if self.own_team_id:
+                # Only load proposals for own team (fog of war)
+                proposals_resp = await (
+                    supabase.table("epoch_alliance_proposals")
+                    .select("id, team_id, proposer_simulation_id, expires_at_cycle")
+                    .eq("epoch_id", epoch_id)
+                    .eq("team_id", self.own_team_id)
+                    .eq("status", "pending")
+                    .execute()
+                )
+                self.pending_proposals = extract_list(proposals_resp)
         except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Alliance proposals load failed", exc_info=True)
 
         if self.own_team_id:
             try:
-                tension_resp = await (
-                    supabase.table("epoch_teams").select("tension").eq("id", self.own_team_id).maybe_single().execute()
+                tension_data = await maybe_single_data(
+                    supabase.table("epoch_teams").select("tension").eq("id", self.own_team_id).maybe_single()
                 )
-                if tension_resp.data:
-                    self.own_team_tension = tension_resp.data.get("tension", 0)
+                if tension_data:
+                    self.own_team_tension = tension_data.get("tension", 0)
             except (PostgrestAPIError, httpx.HTTPError, KeyError):
                 logger.debug("Team tension load failed", exc_info=True)
 
@@ -463,6 +478,27 @@ class BotGameState:
                 if levels:
                     return sum(SECURITY_LEVEL_MAP.get(lv, 5.0) for lv in levels) / len(levels)
         return 5.0  # Default moderate if no intel
+
+    def get_weakest_known_zone_id(self, target_sim_id: str) -> str | None:
+        """Get the zone_id of the weakest zone for a target sim, from spy intel only.
+
+        Returns None if no intel available (fog of war: bot must have spied first).
+        This is NOT cheating — it only uses data the bot has legitimately gathered.
+        """
+        for report in self.spy_intel_reports:
+            meta = report.get("metadata", {})
+            if report.get("target_simulation_id") != target_sim_id:
+                continue
+            zone_details = meta.get("zone_details")
+            if not zone_details or not isinstance(zone_details, list):
+                continue
+            # Pick the zone with lowest security (easiest to infiltrate)
+            weakest = min(
+                zone_details,
+                key=lambda z: SECURITY_LEVEL_MAP.get(z.get("security_level", "moderate"), 5.0),
+            )
+            return weakest.get("id")
+        return None
 
     def get_target_guardian_count(self, target_sim_id: str) -> int:
         """Get guardian count for target sim from spy intel."""

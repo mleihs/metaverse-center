@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
+from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt, encrypt
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
@@ -180,14 +181,12 @@ class ForgeDraftService:
         Returns (openrouter_key, replicate_key) — None if not set.
         """
         logger.debug("Fetching BYOK keys for user %s", user_id)
-        resp = await (
+        data = await maybe_single_data(
             supabase.table("user_wallets")
             .select("encrypted_openrouter_key, encrypted_replicate_key")
             .eq("user_id", str(user_id))
             .maybe_single()
-            .execute()
-        )
-        data = resp.data or {}
+        ) or {}
 
         or_key = data.get("encrypted_openrouter_key")
         rep_key = data.get("encrypted_replicate_key")

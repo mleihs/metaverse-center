@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from backend.dependencies import get_current_user, get_effective_supabase, require_epoch_creator
+from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, require_epoch_creator
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch import LeaderboardEntry, ScoreResponse
 from backend.services.audit_service import AuditService
@@ -26,10 +26,11 @@ async def get_leaderboard(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     cycle: Annotated[int | None, Query(description="Specific cycle (default: latest)")] = None,
 ) -> SuccessResponse[list[LeaderboardEntry]]:
     """Get the epoch leaderboard."""
-    data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
+    data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 
@@ -38,9 +39,10 @@ async def get_final_standings(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[list[LeaderboardEntry]]:
     """Get final standings for a completed epoch (includes dimension titles)."""
-    data = await ScoringService.get_final_standings(supabase, epoch_id)
+    data = await ScoringService.get_final_standings(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 
@@ -68,9 +70,10 @@ async def get_intel_dossiers(
     simulation_id: Annotated[UUID, Query(description="Requesting simulation's ID")],
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse:
     """Get pre-aggregated intel dossiers for a simulation's spy reports."""
-    data = await ScoringService.get_intel_dossiers(supabase, epoch_id, simulation_id)
+    data = await ScoringService.get_intel_dossiers(supabase, epoch_id, simulation_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 

@@ -30,11 +30,23 @@ const BATTLE_EVENT_ICON_MAP: Record<string, IconFn> = {
   assassination: icons.operativeAssassin,
   agent_wounded: icons.droplet,
   alliance_formed: icons.handshake,
+  alliance_proposal: icons.handshake,
+  alliance_proposal_accepted: icons.checkCircle,
+  alliance_proposal_rejected: icons.xCircle,
+  alliance_tension_increase: icons.alertTriangle,
+  alliance_dissolved_tension: icons.skull,
+  alliance_upkeep: icons.gear,
   betrayal: icons.skull,
   phase_change: icons.bolt,
   counter_intel: icons.radar,
   intel_report: icons.clipboard,
   zone_fortified: icons.operativeGuardian,
+  player_passed: icons.timer,
+  cycle_resolved: icons.bolt,
+  cycle_auto_resolved: icons.timer,
+  player_afk: icons.timer,
+  player_afk_penalty: icons.alertTriangle,
+  player_afk_ai_takeover: icons.brain,
 };
 
 /** Get SVG icon for an operative type. */

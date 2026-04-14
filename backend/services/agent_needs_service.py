@@ -25,6 +25,7 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -144,17 +145,14 @@ class AgentNeedsService:
         agent_id: UUID,
     ) -> tuple[str, float]:
         """Get the most urgent (lowest) need for an agent. Read-only."""
-        result = await (
+        needs = await maybe_single_data(
             supabase.table("agent_needs")
             .select("social, purpose, safety, comfort, stimulation")
             .eq("agent_id", str(agent_id))
             .maybe_single()
-            .execute()
         )
-        if not result.data:
+        if not needs:
             return "social", 60.0
-
-        needs = result.data
         lowest_type = min(NEED_TYPES, key=lambda n: needs.get(n, 100))
         return lowest_type, needs.get(lowest_type, 60.0)
 
@@ -181,15 +179,13 @@ class AgentNeedsService:
         simulation_id: UUID,
     ) -> dict | None:
         """Get need levels for a single agent."""
-        result = await (
+        return await maybe_single_data(
             supabase.table("agent_needs")
             .select("*")
             .eq("agent_id", str(agent_id))
             .eq("simulation_id", str(simulation_id))
             .maybe_single()
-            .execute()
         )
-        return result.data if result else None
 
     @classmethod
     async def apply_zone_modifiers(

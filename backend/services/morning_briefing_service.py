@@ -27,6 +27,7 @@ from backend.models.agent_autonomy import (
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -374,7 +375,7 @@ class MorningBriefingService:
         simulation_id: UUID,
     ) -> str:
         """Fetch simulation name."""
-        result = await (
-            supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single().execute()
+        data = await maybe_single_data(
+            supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single()
         )
-        return result.data.get("name", "Unknown") if result.data else "Unknown"
+        return data.get("name", "Unknown") if data else "Unknown"

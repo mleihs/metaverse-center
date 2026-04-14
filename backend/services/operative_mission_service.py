@@ -22,6 +22,7 @@ from backend.services.constants import (
     _upgrade_security,
 )
 from backend.services.epoch_service import EpochService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -77,24 +78,22 @@ class OperativeMissionService:
 
         # Check for betrayal (attacking an ally)
         if body.operative_type != "guardian" and body.target_simulation_id:
-            source_p = await (
+            source_p = await maybe_single_data(
                 supabase.table("epoch_participants")
                 .select("team_id")
                 .eq("epoch_id", str(epoch_id))
                 .eq("simulation_id", str(simulation_id))
                 .maybe_single()
-                .execute()
             )
-            target_p = await (
+            target_p = await maybe_single_data(
                 supabase.table("epoch_participants")
                 .select("team_id")
                 .eq("epoch_id", str(epoch_id))
                 .eq("simulation_id", str(body.target_simulation_id))
                 .maybe_single()
-                .execute()
             )
-            source_team = source_p.data.get("team_id") if source_p.data else None
-            target_team = target_p.data.get("team_id") if target_p.data else None
+            source_team = source_p.get("team_id") if source_p else None
+            target_team = target_p.get("team_id") if target_p else None
 
             if source_team and target_team and source_team == target_team:
                 config = epoch.get("config", {})
@@ -181,21 +180,20 @@ class OperativeMissionService:
         }
         try:
             if body.target_simulation_id:
-                sim_resp = await (
+                sim_data = await maybe_single_data(
                     supabase.table("simulations")
                     .select("name")
                     .eq("id", str(body.target_simulation_id))
                     .maybe_single()
-                    .execute()
                 )
-                if sim_resp.data:
-                    context["target_sim_name"] = sim_resp.data["name"]
+                if sim_data:
+                    context["target_sim_name"] = sim_data["name"]
             if body.target_zone_id:
-                zone_resp = await (
-                    supabase.table("zones").select("name").eq("id", str(body.target_zone_id)).maybe_single().execute()
+                zone_data = await maybe_single_data(
+                    supabase.table("zones").select("name").eq("id", str(body.target_zone_id)).maybe_single()
                 )
-                if zone_resp.data:
-                    context["target_zone_name"] = zone_resp.data["name"]
+                if zone_data:
+                    context["target_zone_name"] = zone_data["name"]
         except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Context lookup failed", exc_info=True)
 
@@ -256,15 +254,14 @@ class OperativeMissionService:
         # Target zone security
         zone_security = 5.0  # default moderate
         if body.target_zone_id:
-            zone_resp = await (
+            zone_data = await maybe_single_data(
                 admin.table("zones")
                 .select("security_level")
                 .eq("id", str(body.target_zone_id))
                 .maybe_single()
-                .execute()
             )
-            if zone_resp.data:
-                sec_level = zone_resp.data.get("security_level", "moderate")
+            if zone_data:
+                sec_level = zone_data.get("security_level", "moderate")
                 zone_security = SECURITY_LEVEL_MAP.get(sec_level, 5.0)
 
         # Guardian count in target simulation (guardians defend their own sim)
@@ -283,17 +280,16 @@ class OperativeMissionService:
         # Embassy effectiveness -- check for active infiltration penalty
         embassy_eff = 0.5
         if body.embassy_id:
-            emb_resp = await (
+            emb_data = await maybe_single_data(
                 admin.table("embassies")
                 .select("id, infiltration_penalty, infiltration_penalty_expires_at")
                 .eq("id", str(body.embassy_id))
                 .maybe_single()
-                .execute()
             )
-            if emb_resp.data:
+            if emb_data:
                 base_eff = 0.6
-                penalty = float(emb_resp.data.get("infiltration_penalty") or 0)
-                expires_at = emb_resp.data.get("infiltration_penalty_expires_at")
+                penalty = float(emb_data.get("infiltration_penalty") or 0)
+                expires_at = emb_data.get("infiltration_penalty_expires_at")
                 if penalty > 0 and expires_at:
                     if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) > datetime.now(UTC):
                         base_eff *= 1.0 - penalty
@@ -374,16 +370,15 @@ class OperativeMissionService:
         # ── Agent autonomy: mood affects operative effectiveness ──
         mood_modifier = 0.0
         try:
-            mood_resp = await (
+            mood_data = await maybe_single_data(
                 supabase.table("agent_mood")
                 .select("mood_score, stress_level")
                 .eq("agent_id", str(body.agent_id))
                 .maybe_single()
-                .execute()
             )
-            if mood_resp and mood_resp.data:
-                mood_score = mood_resp.data.get("mood_score", 0)
-                stress_level = mood_resp.data.get("stress_level", 0)
+            if mood_data:
+                mood_score = mood_data.get("mood_score", 0)
+                stress_level = mood_data.get("stress_level", 0)
                 # High mood: +0.03 (confident operative)
                 if mood_score > 50:
                     mood_modifier = 0.03
@@ -555,25 +550,23 @@ class OperativeMissionService:
         if not mission.get("target_simulation_id"):
             return
 
-        source_p = await (
+        source_p = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("team_id")
             .eq("epoch_id", mission["epoch_id"])
             .eq("simulation_id", mission["source_simulation_id"])
             .maybe_single()
-            .execute()
         )
-        target_p = await (
+        target_p = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("team_id")
             .eq("epoch_id", mission["epoch_id"])
             .eq("simulation_id", mission["target_simulation_id"])
             .maybe_single()
-            .execute()
         )
 
-        source_team = source_p.data.get("team_id") if source_p.data else None
-        target_team = target_p.data.get("team_id") if target_p.data else None
+        source_team = source_p.get("team_id") if source_p else None
+        target_team = target_p.get("team_id") if target_p else None
 
         if not (source_team and target_team and source_team == target_team):
             return
@@ -581,10 +574,10 @@ class OperativeMissionService:
         is_detected = outcome in ("detected", "captured")
 
         # Fetch epoch for cycle number
-        epoch_resp = await (
-            supabase.table("game_epochs").select("current_cycle").eq("id", mission["epoch_id"]).maybe_single().execute()
+        epoch_data = await maybe_single_data(
+            supabase.table("game_epochs").select("current_cycle").eq("id", mission["epoch_id"]).maybe_single()
         )
-        cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
+        cycle = epoch_data.get("current_cycle", 1) if epoch_data else 1
 
         await BattleLogService.log_betrayal(
             supabase,
@@ -656,7 +649,7 @@ class OperativeMissionService:
         intel = {}
         if target_sim_id:
             zones_resp = await (
-                supabase.table("zones").select("name, security_level").eq("simulation_id", target_sim_id).execute()
+                supabase.table("zones").select("id, name, security_level").eq("simulation_id", target_sim_id).execute()
             )
             guardian_resp = await (
                 supabase.table("operative_missions")
@@ -675,7 +668,10 @@ class OperativeMissionService:
             agents_resp = await supabase.table("agents").select("id, name").eq("simulation_id", target_sim_id).execute()
             zones_data = extract_list(zones_resp)
             zone_levels = [z["security_level"] for z in zones_data]
-            zone_details = [{"name": z["name"], "security_level": z["security_level"]} for z in zones_data]
+            zone_details = [
+                {"id": z["id"], "name": z["name"], "security_level": z["security_level"]}
+                for z in zones_data
+            ]
             guardian_count = guardian_resp.count or 0
             buildings_data = extract_list(buildings_resp)
             agents_data = extract_list(agents_resp)
@@ -715,14 +711,13 @@ class OperativeMissionService:
                     for f in fort_resp.data
                 ]
 
-            epoch_resp = await (
+            epoch_data = await maybe_single_data(
                 supabase.table("game_epochs")
                 .select("current_cycle")
                 .eq("id", mission["epoch_id"])
                 .maybe_single()
-                .execute()
             )
-            cycle = epoch_resp.data.get("current_cycle", 1) if epoch_resp.data else 1
+            cycle = epoch_data.get("current_cycle", 1) if epoch_data else 1
 
             await BattleLogService.log_event(
                 supabase,
@@ -1037,6 +1032,7 @@ class OperativeMissionService:
             .execute()
         )
 
+        cycle_number = epoch.get("current_cycle", 1)
         detected = []
         for mission in extract_list(resp):
             try:
@@ -1052,6 +1048,54 @@ class OperativeMissionService:
                     logger.warning("Failed to mark mission %s as detected", mission["id"])
             except (PostgrestAPIError, httpx.HTTPError):
                 logger.warning("DB error marking mission %s as detected", mission["id"], exc_info=True)
+
+        # Log counter_intel events to battle_log for each detected mission.
+        # source = sweeping player (sees results), target = attacker origin sim.
+        for mission in detected:
+            op_type = mission.get("operative_type", "unknown")
+            agent_name = (
+                mission.get("agents", {}).get("name")
+                if isinstance(mission.get("agents"), dict)
+                else None
+            )
+            try:
+                await BattleLogService.log_event(
+                    supabase,
+                    epoch_id,
+                    cycle_number,
+                    "counter_intel",
+                    f"Counter-intel sweep detected a {op_type}.",
+                    source_simulation_id=simulation_id,
+                    target_simulation_id=(
+                        UUID(mission["source_simulation_id"])
+                        if mission.get("source_simulation_id")
+                        else None
+                    ),
+                    mission_id=UUID(mission["id"]),
+                    is_public=False,
+                    metadata={
+                        "operative_type": op_type,
+                        "agent_name": agent_name,
+                    },
+                )
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.debug("Battle log write failed for counter_intel event", exc_info=True)
+
+        # If no threats found, still log the sweep attempt
+        if not detected:
+            try:
+                await BattleLogService.log_event(
+                    supabase,
+                    epoch_id,
+                    cycle_number,
+                    "counter_intel",
+                    "Counter-intel sweep complete. No threats detected.",
+                    source_simulation_id=simulation_id,
+                    is_public=False,
+                    metadata={"detected_count": 0},
+                )
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.debug("Battle log write failed for empty counter_intel", exc_info=True)
 
         return detected
 

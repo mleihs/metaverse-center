@@ -34,6 +34,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -1595,18 +1596,17 @@ Generate exactly 3 new agents. Requirements:
                 )
 
                 for agent_draft in generated:
-                    agent_in_db = (
-                        await admin_supabase.table("agents")
+                    agent_in_db = await maybe_single_data(
+                        admin_supabase.table("agents")
                         .select("id")
                         .eq("simulation_id", str(simulation_id))
                         .eq("name", agent_draft.name)
                         .maybe_single()
-                        .execute()
                     )
 
-                    if agent_in_db.data:
+                    if agent_in_db:
                         await image_service.generate_agent_portrait(
-                            agent_id=agent_in_db.data["id"],
+                            agent_id=agent_in_db["id"],
                             agent_name=agent_draft.name,
                             agent_data={
                                 "character": agent_draft.character,
@@ -1844,27 +1844,26 @@ Generate exactly 3 new agents. Requirements:
         }
 
         # Try to fetch the original anchor from simulation_settings
-        anchor_resp = (
-            await supabase.table("simulation_settings")
+        anchor_data = await maybe_single_data(
+            supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(simulation_id))
             .eq("setting_key", "philosophical_anchor")
             .maybe_single()
-            .execute()
         )
 
         anchor = {}
-        if anchor_resp.data:
+        if anchor_data:
             import json
 
             try:
                 anchor = (
-                    json.loads(anchor_resp.data["setting_value"])
+                    json.loads(anchor_data["setting_value"])
                     if isinstance(
-                        anchor_resp.data["setting_value"],
+                        anchor_data["setting_value"],
                         str,
                     )
-                    else anchor_resp.data["setting_value"]
+                    else anchor_data["setting_value"]
                 )
             except (json.JSONDecodeError, TypeError):
                 pass

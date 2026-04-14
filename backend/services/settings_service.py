@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.models.settings import is_sensitive_key
+from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt, encrypt, mask
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
@@ -178,16 +179,15 @@ class SettingsService:
         simulation_id: UUID,
     ) -> dict:
         """Get dungeon override config for a single simulation."""
-        resp = await (
+        data = await maybe_single_data(
             admin_supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", str(simulation_id))
             .eq("category", "game")
             .eq("setting_key", "dungeon_override")
             .maybe_single()
-            .execute()
         )
-        config = resp.data.get("setting_value", {}) if resp.data else {}
+        config = data.get("setting_value", {}) if data else {}
         return {
             "mode": config.get("mode", "off"),
             "archetypes": config.get("archetypes", []),

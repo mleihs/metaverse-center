@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -31,14 +32,12 @@ class UserProfileService:
         Uses admin client because user_profiles may not be readable via user RLS.
         Returns an empty dict if no profile row exists.
         """
-        response = await (
+        return await maybe_single_data(
             admin_supabase.table("user_profiles")
             .select("onboarding_completed, academy_epochs_played")
             .eq("id", str(user_id))
             .maybe_single()
-            .execute()
-        )
-        return response.data or {}
+        ) or {}
 
     @classmethod
     async def get_notification_preferences(
@@ -50,15 +49,14 @@ class UserProfileService:
 
         Returns sensible defaults if no preferences have been saved yet.
         """
-        response = await (
+        data = await maybe_single_data(
             supabase.table("notification_preferences")
             .select("cycle_resolved, phase_changed, epoch_completed, email_locale")
             .eq("user_id", str(user_id))
             .maybe_single()
-            .execute()
         )
-        if response.data:
-            return response.data
+        if data:
+            return data
         return dict(DEFAULT_NOTIFICATION_PREFERENCES)
 
     @classmethod

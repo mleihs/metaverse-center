@@ -22,6 +22,7 @@ from backend.services.email_templates import (
     render_phase_change,
 )
 from backend.services.scoring_service import ScoringService
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -274,16 +275,15 @@ class CycleNotificationService:
             )
 
         # ── RP balance ──
-        rp_resp = await (
+        rp_data = await maybe_single_data(
             admin_supabase.table("epoch_participants")
             .select("current_rp, team_id")
             .eq("epoch_id", epoch_id)
             .eq("simulation_id", simulation_id)
             .maybe_single()
-            .execute()
         )
-        rp_balance = rp_resp.data.get("current_rp", 0) if rp_resp.data else 0
-        player_team_id = rp_resp.data.get("team_id") if rp_resp.data else None
+        rp_balance = rp_data.get("current_rp", 0) if rp_data else 0
+        player_team_id = rp_data.get("team_id") if rp_data else None
 
         # ── Threat assessment (B1) — detected inbound ops ──
         threat_resp = await (
@@ -353,19 +353,18 @@ class CycleNotificationService:
         dissolved_alliance_name = None
         if player_team_id:
             # Fetch team — check dissolved_at to distinguish active vs dissolved
-            team_resp = await (
+            team_data = await maybe_single_data(
                 admin_supabase.table("epoch_teams")
                 .select("name, dissolved_at, dissolved_reason")
                 .eq("id", player_team_id)
                 .maybe_single()
-                .execute()
             )
-            if team_resp.data:
-                if team_resp.data.get("dissolved_at"):
+            if team_data:
+                if team_data.get("dissolved_at"):
                     # Team was dissolved this cycle — team_id still set
-                    dissolved_alliance_name = team_resp.data["name"]
+                    dissolved_alliance_name = team_data["name"]
                 else:
-                    alliance_name = team_resp.data["name"]
+                    alliance_name = team_data["name"]
                     alliance_bonus_active = True
                     # Get ally names
                     ally_resp = await (
@@ -398,15 +397,14 @@ class CycleNotificationService:
                 )
                 pending_proposals_count = team_proposals.count or 0
                 # Get tension from team
-                tension_resp = await (
+                tension_data = await maybe_single_data(
                     admin_supabase.table("epoch_teams")
                     .select("tension")
                     .eq("id", player_team_id)
                     .maybe_single()
-                    .execute()
                 )
-                if tension_resp.data:
-                    alliance_tension = tension_resp.data.get("tension", 0)
+                if tension_data:
+                    alliance_tension = tension_data.get("tension", 0)
                 # Compute upkeep cost
                 member_count = len(ally_names) + 1  # +1 for self
                 alliance_upkeep_cost = member_count
@@ -731,7 +729,7 @@ class CycleNotificationService:
             return 0
 
         # Get final leaderboard
-        leaderboard = await ScoringService.get_final_standings(admin_supabase, epoch_id)
+        leaderboard = await ScoringService.get_final_standings(admin_supabase, epoch_id, admin_supabase=admin_supabase)
 
         cta_url = f"{settings.site_url}/epoch/{epoch_id}"
 

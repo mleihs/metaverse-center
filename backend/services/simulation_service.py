@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.models.simulation import SimulationCreate, SimulationUpdate
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.slug import slugify
@@ -242,13 +243,11 @@ class SimulationService:
 
         Uses admin (service_role) client to bypass RLS.
         """
-        fetch = await (
-            supabase.table("simulations").select("id, name, slug").eq("id", str(simulation_id)).maybe_single().execute()
+        sim_info = await maybe_single_data(
+            supabase.table("simulations").select("id, name, slug").eq("id", str(simulation_id)).maybe_single()
         )
-        if not fetch.data:
+        if not sim_info:
             raise not_found(detail=f"Simulation '{simulation_id}' not found.")
-
-        sim_info = fetch.data
         sim_id_str = str(simulation_id)
         slug = sim_info.get("slug", "")
 
@@ -356,10 +355,9 @@ class SimulationService:
 
         Returns {"name": ..., "theme": ...} or None if not found.
         """
-        response = await (
-            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single().execute()
+        return await maybe_single_data(
+            supabase.table("simulations").select("name, theme").eq("id", str(simulation_id)).maybe_single()
         )
-        return response.data
 
     @classmethod
     async def check_exists(
@@ -368,12 +366,12 @@ class SimulationService:
         simulation_id: UUID,
     ) -> dict:
         """Verify a simulation exists and return its row, or raise 404."""
-        response = await (
-            supabase.table("simulations").select("id, name").eq("id", str(simulation_id)).maybe_single().execute()
+        data = await maybe_single_data(
+            supabase.table("simulations").select("id, name").eq("id", str(simulation_id)).maybe_single()
         )
-        if not response.data:
+        if not data:
             raise not_found(detail="Simulation not found.")
-        return response.data
+        return data
 
     @classmethod
     async def list_active_slugs(

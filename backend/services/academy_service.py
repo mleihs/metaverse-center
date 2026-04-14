@@ -11,6 +11,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.epoch import AcademyConfig
 from backend.services.bot_personality import auto_draft
 from backend.services.epoch_service import EpochService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import conflict
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -76,7 +77,7 @@ class AcademyService:
         except (PostgrestAPIError, httpx.HTTPError) as exc:
             # DB unique index catches race condition — return existing epoch
             if "idx_one_active_academy_per_user" in str(exc):
-                existing = await (
+                existing = await maybe_single_data(
                     admin_supabase.table("game_epochs")
                     .select("*")
                     .eq("created_by_id", str(user_id))
@@ -84,10 +85,9 @@ class AcademyService:
                     .in_("status", ["lobby", "foundation", "competition", "reckoning"])
                     .limit(1)
                     .maybe_single()
-                    .execute()
                 )
-                if existing.data:
-                    return existing.data
+                if existing:
+                    return existing
             raise
 
         epoch_id = UUID(epoch["id"])

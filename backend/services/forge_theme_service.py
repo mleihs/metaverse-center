@@ -15,6 +15,7 @@ from backend.config import settings
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -553,16 +554,15 @@ class ForgeThemeService:
             # Get user BYOK key
             from backend.utils.encryption import decrypt
 
-            wallet_resp = (
-                await admin_supabase.table("user_wallets")
+            wallet_data = await maybe_single_data(
+                admin_supabase.table("user_wallets")
                 .select("encrypted_openrouter_key")
                 .eq("user_id", str(user_id))
                 .maybe_single()
-                .execute()
             )
             or_key = None
-            if wallet_resp.data and wallet_resp.data.get("encrypted_openrouter_key"):
-                or_key = decrypt(wallet_resp.data["encrypted_openrouter_key"])
+            if wallet_data and wallet_data.get("encrypted_openrouter_key"):
+                or_key = decrypt(wallet_data["encrypted_openrouter_key"])
 
             variants = []
             if settings.forge_mock_mode:

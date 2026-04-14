@@ -1126,7 +1126,19 @@ export type BattleLogEventType =
   | 'agent_wounded'
   | 'counter_intel'
   | 'intel_report'
-  | 'zone_fortified';
+  | 'zone_fortified'
+  | 'player_passed'
+  | 'cycle_resolved'
+  | 'cycle_auto_resolved'
+  | 'player_afk'
+  | 'player_afk_penalty'
+  | 'player_afk_ai_takeover'
+  | 'alliance_proposal'
+  | 'alliance_proposal_accepted'
+  | 'alliance_proposal_rejected'
+  | 'alliance_tension_increase'
+  | 'alliance_dissolved_tension'
+  | 'alliance_upkeep';
 
 export interface EpochScoreWeights {
   stability: number;
@@ -1357,6 +1369,8 @@ export interface ParticipantStats {
   detections: number;
   captured: number;
   success_rate: number;
+  counter_intel_sweeps: number;
+  fortifications: number;
 }
 
 export interface MVPAward {

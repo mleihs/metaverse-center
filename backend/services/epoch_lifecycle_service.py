@@ -7,6 +7,7 @@ from uuid import UUID
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -196,15 +197,14 @@ class EpochLifecycleService:
 
             # Increment academy_epochs_played for academy epochs
             if epoch.get("epoch_type") == "academy":
-                profile = await (
+                profile_data = await maybe_single_data(
                     admin.table("user_profiles")
                     .select("academy_epochs_played")
                     .eq("id", str(epoch["created_by_id"]))
                     .maybe_single()
-                    .execute()
                 )
-                if profile.data:
-                    count = (profile.data.get("academy_epochs_played") or 0) + 1
+                if profile_data:
+                    count = (profile_data.get("academy_epochs_played") or 0) + 1
                     await (
                         admin.table("user_profiles")
                         .update({"academy_epochs_played": count})

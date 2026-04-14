@@ -860,7 +860,8 @@ async def list_epoch_participants_public(
     request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
 ) -> SuccessResponse:
     """List epoch participants (public)."""
-    data = await EpochService.list_participants(supabase, epoch_id)
+    admin = await get_admin_supabase()
+    data = await EpochService.list_participants(supabase, epoch_id, admin_supabase=admin)
     return SuccessResponse(data=data)
 
 
@@ -883,20 +884,24 @@ async def get_leaderboard_public(
     request: Request,
     epoch_id: UUID,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
     cycle: Annotated[int | None, Query()] = None,
 ) -> SuccessResponse:
     """Get epoch leaderboard (public spectator view)."""
-    data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle)
+    data = await ScoringService.get_leaderboard(supabase, epoch_id, cycle_number=cycle, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 
 @router.get("/epochs/{epoch_id}/standings")
 @limiter.limit(RATE_LIMIT_PUBLIC)
 async def get_standings_public(
-    request: Request, epoch_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
+    request: Request,
+    epoch_id: UUID,
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse:
     """Get final standings for a completed epoch (public)."""
-    data = await ScoringService.get_final_standings(supabase, epoch_id)
+    data = await ScoringService.get_final_standings(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 

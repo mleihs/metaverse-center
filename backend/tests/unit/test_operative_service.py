@@ -611,8 +611,8 @@ class TestSpyEffect:
         zones_chain.eq.return_value = zones_chain
         zones_chain.execute = AsyncMock(return_value=MagicMock(
             data=[
-                {"name": "The Iron Bastion", "security_level": "high"},
-                {"name": "The Undertide Docks", "security_level": "moderate"},
+                {"id": "zone-1", "name": "The Iron Bastion", "security_level": "high"},
+                {"id": "zone-2", "name": "The Undertide Docks", "security_level": "moderate"},
             ]
         ))
 

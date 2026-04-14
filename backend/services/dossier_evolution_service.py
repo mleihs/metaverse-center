@@ -15,6 +15,7 @@ from backend.models.translation import TranslationContext
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
 from backend.services.translation_service import TranslationService
+from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -89,30 +90,27 @@ class DossierEvolutionService:
         """
         try:
             # 1. Get existing section
-            resp = await (
+            section = await maybe_single_data(
                 admin_supabase.table("simulation_lore")
                 .select("id, body, body_de, evolution_count")
                 .eq("simulation_id", str(simulation_id))
                 .eq("chapter", "CLASSIFIED")
                 .eq("arcanum", arcanum)
                 .maybe_single()
-                .execute()
             )
-            if not resp.data:
+            if not section:
                 logger.warning(
                     "No %s section found for evolution",
                     arcanum,
                     extra={"simulation_id": str(simulation_id)},
                 )
                 return False
-
-            section = resp.data
             evolution_count = section.get("evolution_count", 0) or 0
 
             # 2. Check budget (first 3 free, then uses regen budget)
             if evolution_count >= 3:
                 # Check if feature purchase has remaining regen budget
-                purchase_resp = await (
+                purchase_data = await maybe_single_data(
                     admin_supabase.table("feature_purchases")
                     .select("regen_budget_remaining")
                     .eq("simulation_id", str(simulation_id))
@@ -121,11 +119,10 @@ class DossierEvolutionService:
                     .order("created_at", desc=True)
                     .limit(1)
                     .maybe_single()
-                    .execute()
                 )
-                if not purchase_resp.data:
+                if not purchase_data:
                     return False
-                remaining = purchase_resp.data.get("regen_budget_remaining", 0) or 0
+                remaining = purchase_data.get("regen_budget_remaining", 0) or 0
                 if remaining <= 0:
                     logger.info(
                         "Dossier evolution budget exhausted",

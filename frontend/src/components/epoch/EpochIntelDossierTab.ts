@@ -493,6 +493,9 @@ export class VelgEpochIntelDossierTab extends LitElement {
           <p class="empty__hint">
             ${msg('Deploy spies to gather point-in-time intelligence snapshots on your opponents. Intel may become outdated as conditions change.')}
           </p>
+          <p class="empty__hint">
+            ${msg('To detect incoming threats against you, use Counter-Intel Sweep (4 RP) from the action panel.')}
+          </p>
         </div>
       `;
     }

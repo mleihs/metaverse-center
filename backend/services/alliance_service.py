@@ -10,6 +10,7 @@ from uuid import UUID
 
 from backend.models.epoch import EpochConfig
 from backend.services.battle_log_service import BattleLogService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -52,30 +53,28 @@ class AllianceService:
         current_cycle = epoch.get("current_cycle", 0)
 
         # Verify proposer is a participant and unaligned
-        proposer = await (
+        proposer = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("id, team_id")
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", str(proposer_simulation_id))
             .maybe_single()
-            .execute()
         )
-        if not proposer.data:
+        if not proposer:
             raise not_found(detail="Proposer is not a participant.")
-        if proposer.data.get("team_id"):
+        if proposer.get("team_id"):
             raise bad_request("You must leave your current alliance before requesting to join another.")
 
         # Verify team exists and is active
-        team = await (
+        team = await maybe_single_data(
             supabase.table("epoch_teams")
             .select("id, name, epoch_id")
             .eq("id", str(team_id))
             .eq("epoch_id", str(epoch_id))
             .is_("dissolved_at", "null")
             .maybe_single()
-            .execute()
         )
-        if not team.data:
+        if not team:
             raise not_found(detail="Team not found or dissolved.")
 
         # Check team size limit
@@ -127,7 +126,7 @@ class AllianceService:
                 epoch_id,
                 current_cycle,
                 proposer_simulation_id,
-                team.data["name"],
+                team["name"],
                 "accepted",
             )
 
@@ -165,7 +164,7 @@ class AllianceService:
             epoch_id,
             current_cycle,
             proposer_simulation_id,
-            team.data["name"],
+            team["name"],
         )
 
         return resp.data[0]
@@ -188,15 +187,14 @@ class AllianceService:
         which auto-accepts for solo teams.
         """
         # Verify inviter is on this team
-        inviter = await (
+        inviter = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("id, team_id")
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", str(inviter_simulation_id))
             .maybe_single()
-            .execute()
         )
-        if not inviter.data or inviter.data.get("team_id") != str(team_id):
+        if not inviter or inviter.get("team_id") != str(team_id):
             raise forbidden("You must be a member of this team to invite players.")
 
         # Delegate to create_proposal with target as proposer
@@ -222,28 +220,26 @@ class AllianceService:
         Validates voter is a member of the proposal's target team.
         """
         # Fetch proposal
-        proposal = await (
+        proposal = await maybe_single_data(
             supabase.table("epoch_alliance_proposals")
             .select("*, epoch_teams(name)")
             .eq("id", str(proposal_id))
             .maybe_single()
-            .execute()
         )
-        if not proposal.data:
+        if not proposal:
             raise not_found(detail="Proposal not found.")
-        if proposal.data["status"] != "pending":
-            raise bad_request(f"Proposal is already {proposal.data['status']}.")
+        if proposal["status"] != "pending":
+            raise bad_request(f"Proposal is already {proposal['status']}.")
 
         # Verify voter is a team member
-        voter = await (
+        voter = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("id, team_id")
-            .eq("epoch_id", proposal.data["epoch_id"])
+            .eq("epoch_id", proposal["epoch_id"])
             .eq("simulation_id", str(voter_simulation_id))
             .maybe_single()
-            .execute()
         )
-        if not voter.data or voter.data.get("team_id") != proposal.data["team_id"]:
+        if not voter or voter.get("team_id") != proposal["team_id"]:
             raise forbidden("Only team members can vote on proposals.")
 
         logger.info(
@@ -276,13 +272,13 @@ class AllianceService:
         if resolved_status in ("accepted", "rejected"):
             from backend.services.epoch_service import EpochService
 
-            epoch = await EpochService.get(supabase, UUID(proposal.data["epoch_id"]))
-            team_name = (proposal.data.get("epoch_teams") or {}).get("name", "")
+            epoch = await EpochService.get(supabase, UUID(proposal["epoch_id"]))
+            team_name = (proposal.get("epoch_teams") or {}).get("name", "")
             await BattleLogService.log_alliance_proposal_resolved(
                 supabase,
-                UUID(proposal.data["epoch_id"]),
+                UUID(proposal["epoch_id"]),
                 epoch.get("current_cycle", 0),
-                UUID(proposal.data["proposer_simulation_id"]),
+                UUID(proposal["proposer_simulation_id"]),
                 team_name,
                 resolved_status,
             )
@@ -520,10 +516,10 @@ class AllianceService:
         from datetime import UTC, datetime
 
         # Get team name for logging
-        team_resp = await (
-            admin_supabase.table("epoch_teams").select("name").eq("id", str(team_id)).maybe_single().execute()
+        team_data = await maybe_single_data(
+            admin_supabase.table("epoch_teams").select("name").eq("id", str(team_id)).maybe_single()
         )
-        team_name = (team_resp.data or {}).get("name", "Unknown")
+        team_name = (team_data or {}).get("name", "Unknown")
 
         logger.info(
             "Alliance dissolved manually",

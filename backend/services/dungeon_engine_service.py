@@ -70,6 +70,7 @@ from backend.services.dungeon_shared import (
     rpc_with_retry,
 )
 from backend.services.platform_settings_service import PlatformSettingsService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -550,18 +551,14 @@ class DungeonEngineService:
         ]
 
         # ── Admin override: per-sim config takes precedence, then global ──
-        # maybe_single() returns None response when PostgREST gives 406 (no
-        # matching row). Guard both the response object and .data safely.
-        override_resp = (
-            await admin_supabase.table("simulation_settings")
+        override_data = await maybe_single_data(
+            admin_supabase.table("simulation_settings")
             .select("setting_value")
             .eq("simulation_id", sim_id_str)
             .eq("category", "game")
             .eq("setting_key", "dungeon_override")
             .maybe_single()
-            .execute()
         )
-        override_data = override_resp.data if override_resp else None
         override_config = override_data.get("setting_value", {}) if isinstance(override_data, dict) else {}
         override_mode = override_config.get("mode", "off") if isinstance(override_config, dict) else "off"
         override_archetypes = set(override_config.get("archetypes", [])) if isinstance(override_config, dict) else set()

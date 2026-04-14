@@ -239,8 +239,8 @@ export class VelgEpochLeaderboard extends LitElement {
 
     .composite {
       font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-lg);
+      font-weight: var(--font-bold);
+      font-size: var(--text-md);
       text-align: right;
       color: var(--color-text-primary);
       min-width: 50px;
@@ -304,6 +304,11 @@ export class VelgEpochLeaderboard extends LitElement {
     :host([compact]) .sim__title,
     :host([compact]) .sim__team {
       display: none;
+    }
+
+    :host([compact]) .composite {
+      font-size: var(--text-base);
+      font-weight: var(--font-bold);
     }
 
     /* ── Sort indicator ───────────────────── */

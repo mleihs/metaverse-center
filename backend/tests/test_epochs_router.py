@@ -417,16 +417,16 @@ class TestEpochBattleLog:
         call_kwargs = mock_list.call_args
         assert call_kwargs.kwargs.get("event_type") == "mission_result" or call_kwargs[1].get("event_type") == "mission_result"
 
-    @patch("backend.routers.epochs.BattleLogService.list_entries", new_callable=AsyncMock)
+    @patch("backend.routers.epochs.BattleLogService.list_entries_for_player", new_callable=AsyncMock)
     def test_battle_log_allied_intel_tagging(self, mock_list):
-        """When simulation_id is passed, non-own non-public entries get allied_intel metadata."""
+        """When simulation_id is passed, fog-of-war RPC tags allied intel in metadata."""
         sim_id = uuid4()
         other_sim = uuid4()
         entry = _battle_log_entry(
             source_simulation_id=str(other_sim),
             target_simulation_id=None,
             is_public=False,
-            metadata={},
+            metadata={"allied_intel": True},  # RPC tags this
         )
         mock_list.return_value = ([entry], 1)
 
@@ -437,7 +437,7 @@ class TestEpochBattleLog:
         tagged_entry = body["data"][0]
         assert tagged_entry["metadata"]["allied_intel"] is True
 
-    @patch("backend.routers.epochs.BattleLogService.list_entries", new_callable=AsyncMock)
+    @patch("backend.routers.epochs.BattleLogService.list_entries_for_player", new_callable=AsyncMock)
     def test_battle_log_own_entries_not_tagged(self, mock_list):
         """Own entries (source matches simulation_id) should NOT be tagged as allied_intel."""
         sim_id = uuid4()
@@ -455,3 +455,29 @@ class TestEpochBattleLog:
         body = resp.json()
         tagged_entry = body["data"][0]
         assert tagged_entry["metadata"].get("allied_intel") is not True
+
+    @patch("backend.routers.epochs.BattleLogService.list_entries_for_player", new_callable=AsyncMock)
+    def test_battle_log_fog_of_war_delegates_to_rpc(self, mock_list):
+        """With simulation_id, endpoint delegates to list_entries_for_player (RPC-based fog-of-war)."""
+        sim_id = uuid4()
+        mock_list.return_value = ([], 0)
+
+        client = TestClient(app)
+        resp = client.get(f"/api/v1/epochs/{EPOCH_ID}/battle-log?simulation_id={sim_id}")
+        assert resp.status_code == 200
+        mock_list.assert_called_once()
+        call_args = mock_list.call_args
+        assert str(call_args[0][1]) == str(EPOCH_ID)  # epoch_id
+        assert str(call_args[0][2]) == str(sim_id)  # viewer_simulation_id
+
+    @patch("backend.routers.epochs.BattleLogService.list_entries", new_callable=AsyncMock)
+    def test_battle_log_spectator_mode_public_only(self, mock_list):
+        """Without simulation_id, endpoint returns public events only (spectator mode)."""
+        mock_list.return_value = ([], 0)
+
+        client = TestClient(app)
+        resp = client.get(f"/api/v1/epochs/{EPOCH_ID}/battle-log")
+        assert resp.status_code == 200
+        mock_list.assert_called_once()
+        call_kwargs = mock_list.call_args
+        assert call_kwargs.kwargs.get("public_only") is True

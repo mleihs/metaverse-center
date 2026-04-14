@@ -15,6 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -591,21 +592,20 @@ REQUIREMENTS:
                     img_service = ForgeImageService(admin_supabase, simulation_id)
 
                     for section in image_sections[:3]:
-                        lore_rows = (
-                            await admin_supabase.table("simulation_lore")
+                        lore_data = await maybe_single_data(
+                            admin_supabase.table("simulation_lore")
                             .select("id")
                             .eq("simulation_id", str(simulation_id))
                             .eq("title", section["title"])
                             .maybe_single()
-                            .execute()
                         )
-                        if lore_rows.data:
+                        if lore_data:
                             await img_service.generate_lore_image(
                                 section_title=section["title"],
                                 section_body=section.get("body", ""),
                                 image_slug=section["image_slug"],
                                 sim_slug=sim_slug,
-                                section_id=lore_rows.data["id"],
+                                section_id=lore_data["id"],
                                 image_caption=section.get("image_caption"),
                             )
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):

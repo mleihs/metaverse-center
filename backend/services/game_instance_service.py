@@ -3,6 +3,7 @@
 import logging
 from uuid import UUID
 
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -120,16 +121,14 @@ class GameInstanceService:
         template_id: UUID,
     ) -> dict | None:
         """Get the game instance created from a specific template in an epoch."""
-        resp = await (
+        return await maybe_single_data(
             supabase.table("simulations")
             .select("*")
             .eq("epoch_id", str(epoch_id))
             .eq("source_template_id", str(template_id))
             .in_("simulation_type", ["game_instance", "archived"])
             .maybe_single()
-            .execute()
         )
-        return resp.data
 
     @classmethod
     async def _refresh_game_metrics(cls, admin_supabase: Client) -> None:

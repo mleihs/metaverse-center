@@ -37,6 +37,7 @@ from backend.services.echo_service import EchoService
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -505,9 +506,11 @@ class AutonomousEventService:
         zone_name = "Unknown"
         zone_id = event_data.get("zone_id")
         if zone_id:
-            zone_result = await supabase.table("zones").select("name").eq("id", str(zone_id)).maybe_single().execute()
-            if zone_result.data:
-                zone_name = zone_result.data.get("name", "Unknown")
+            zone_data = await maybe_single_data(
+                supabase.table("zones").select("name").eq("id", str(zone_id)).maybe_single()
+            )
+            if zone_data:
+                zone_name = zone_data.get("name", "Unknown")
 
         # Generate narrative
         user_prompt = _EVENT_NARRATIVE_USER.format(
@@ -916,14 +919,12 @@ class AutonomousEventService:
     async def _get_agent_data(cls, supabase: Client, agent_id: str) -> dict | None:
         """Fetch minimal agent data for event context."""
         try:
-            result = await (
+            return await maybe_single_data(
                 supabase.table("agents")
                 .select("id, name, current_zone_id, primary_profession")
                 .eq("id", str(agent_id))
                 .maybe_single()
-                .execute()
             )
-            return result.data
         except Exception:
             logger.warning("Failed to fetch agent data for %s", agent_id)
             return None
@@ -935,7 +936,7 @@ class AutonomousEventService:
         simulation_id: UUID,
     ) -> str:
         """Fetch simulation name."""
-        result = await (
-            supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single().execute()
+        data = await maybe_single_data(
+            supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single()
         )
-        return result.data.get("name", "Unknown") if result.data else "Unknown"
+        return data.get("name", "Unknown") if data else "Unknown"

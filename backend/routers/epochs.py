@@ -303,34 +303,35 @@ async def get_battle_log(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     event_type: Annotated[str | None, Query()] = None,
-    simulation_id: Annotated[UUID | None, Query(description="Your simulation ID for allied intel tagging")] = None,
+    simulation_id: Annotated[UUID | None, Query(description="Your simulation ID for fog-of-war filtering")] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[BattleLogEntry]:
-    """Get battle log entries (authenticated — includes private entries).
+    """Get battle log entries with fog-of-war filtering (authenticated).
 
-    Pass simulation_id to tag entries visible only via alliance as allied_intel.
+    Pass simulation_id for per-player fog-of-war via get_battle_log_for_player RPC.
+    Without simulation_id, returns public events only (spectator mode).
     """
-    data, total = await BattleLogService.list_entries(
-        supabase,
-        epoch_id,
-        event_type=event_type,
-        limit=limit,
-        offset=offset,
-    )
-
-    # Tag allied intel entries (computed at read time, not stored)
     if simulation_id:
-        sim_str = str(simulation_id)
-        for entry in data:
-            is_own_source = entry.get("source_simulation_id") == sim_str
-            is_own_target = entry.get("target_simulation_id") == sim_str
-            is_public = entry.get("is_public", False)
-            if not is_own_source and not is_own_target and not is_public:
-                entry["metadata"] = {
-                    **(entry.get("metadata") or {}),
-                    "allied_intel": True,
-                }
+        # Player view: fog-of-war filtered via Postgres RPC (migration 211)
+        data, total = await BattleLogService.list_entries_for_player(
+            supabase,
+            epoch_id,
+            simulation_id,
+            event_type=event_type,
+            limit=limit,
+            offset=offset,
+        )
+    else:
+        # Spectator view: public events only
+        data, total = await BattleLogService.list_entries(
+            supabase,
+            epoch_id,
+            public_only=True,
+            event_type=event_type,
+            limit=limit,
+            offset=offset,
+        )
 
     return paginated(data, total, limit, offset)
 
@@ -339,11 +340,12 @@ async def get_battle_log(
 async def get_results_summary(
     epoch_id: UUID,
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse:
     """Get comprehensive results summary for a completed epoch."""
     from backend.services.scoring_service import ScoringService
 
-    data = await ScoringService.get_results_summary(supabase, epoch_id)
+    data = await ScoringService.get_results_summary(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 
@@ -398,9 +400,10 @@ async def list_participants(
     epoch_id: UUID,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[list[ParticipantResponse]]:
     """List all participants in an epoch."""
-    data = await EpochService.list_participants(supabase, epoch_id)
+    data = await EpochService.list_participants(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 

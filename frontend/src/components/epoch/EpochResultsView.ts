@@ -851,6 +851,18 @@ export class VelgEpochResultsView extends LitElement {
                 style="--fill: ${stats.success_rate}; transition-delay: 4.1s"></div>
             </div>
           </div>
+          ${stats.counter_intel_sweeps ? html`
+            <div class="stat-card stat-card--ops" style="animation-delay: 4.0s">
+              <span class="stat-card__value">${stats.counter_intel_sweeps}</span>
+              <span class="stat-card__label">${msg('Counter-Intel Sweeps')}</span>
+            </div>
+          ` : nothing}
+          ${stats.fortifications ? html`
+            <div class="stat-card stat-card--ops" style="animation-delay: 4.2s">
+              <span class="stat-card__value">${stats.fortifications}</span>
+              <span class="stat-card__label">${msg('Zone Fortifications')}</span>
+            </div>
+          ` : nothing}
         </div>
       </div>
     `;

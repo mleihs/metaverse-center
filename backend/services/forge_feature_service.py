@@ -9,6 +9,7 @@ import httpx
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -121,8 +122,9 @@ class ForgeFeatureService:
     @staticmethod
     async def get_purchase(supabase: Client, purchase_id: str) -> dict | None:
         """Fetch a single feature purchase by ID."""
-        resp = await supabase.table("feature_purchases").select("*").eq("id", purchase_id).maybe_single().execute()
-        return resp.data
+        return await maybe_single_data(
+            supabase.table("feature_purchases").select("*").eq("id", purchase_id).maybe_single()
+        )
 
     @staticmethod
     async def list_purchases(
@@ -152,7 +154,7 @@ class ForgeFeatureService:
         user_id: UUID,
     ) -> dict | None:
         """Get the active (completed) Darkroom pass for a simulation, if any."""
-        resp = await (
+        return await maybe_single_data(
             supabase.table("feature_purchases")
             .select("*")
             .eq("simulation_id", str(simulation_id))
@@ -162,9 +164,7 @@ class ForgeFeatureService:
             .order("created_at", desc=True)
             .limit(1)
             .maybe_single()
-            .execute()
         )
-        return resp.data
 
     @staticmethod
     async def use_darkroom_regen(
