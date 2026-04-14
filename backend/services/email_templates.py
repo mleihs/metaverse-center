@@ -2022,7 +2022,12 @@ def render_epoch_completed(
     blocks.append(_footer_row(email_locale))
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}", content, lang=langs[0])
+    winner = leaderboard[0] if leaderboard else None
+    is_winner = winner and winner.get("simulation_id") == player_simulation_id
+    subject = f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}"
+    if is_winner:
+        subject += " \u2605\u2605\u2605"
+    return _email_shell(subject, content, lang=langs[0])
 
 
 # ── Clearance Upgrade Templates ──────────────────────────────────────────
