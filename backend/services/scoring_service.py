@@ -1,17 +1,20 @@
 """Epoch scoring — 5-dimension scoring, normalization, and compositing."""
 
+import asyncio
 import logging
 from uuid import UUID
 
-from backend.models.epoch import SCORING_DIMENSIONS
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG, SCORING_DIMENSIONS
 from backend.services.constants import DETECTION_PENALTY, MISSION_SCORE_VALUES
-from backend.services.epoch_service import DEFAULT_CONFIG, EpochService
+from backend.services.epoch_service import EpochService
 from backend.utils.db import maybe_single_data, resolve_epoch_sim_names
 from backend.utils.errors import bad_request
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class ScoringService:
@@ -396,17 +399,18 @@ class ScoringService:
                 raw = s[col]
                 normalized[dim] = (raw / maxes[dim]) * 100 if maxes[dim] > 0 else 0
 
-            composite = sum(normalized[dim] * w[dim] / 100 for dim in dimensions)
-
-            await (
-                supabase.table("epoch_scores")
-                .update({"composite_score": round(composite, 2)})
-                .eq("id", s["id"])
-                .execute()
-            )
-
-            s["composite_score"] = round(composite, 2)
+            composite = round(sum(normalized[dim] * w[dim] / 100 for dim in dimensions), 2)
+            s["composite_score"] = composite
             updated.append(s)
+
+        # Batch update all composites in parallel (N concurrent UPDATEs instead of sequential)
+        await asyncio.gather(*(
+            supabase.table("epoch_scores")
+            .update({"composite_score": s["composite_score"]})
+            .eq("id", s["id"])
+            .execute()
+            for s in updated
+        ))
 
         return updated
 
@@ -507,14 +511,18 @@ class ScoringService:
             else:
                 ally_counts[sim_id] = 0
 
+        # Dense ranking: tied composite scores share the same rank
         entries = []
-        for rank, score in enumerate(scores, start=1):
+        current_rank = 1
+        for idx, score in enumerate(scores):
+            if idx > 0 and float(score["composite_score"]) < float(scores[idx - 1]["composite_score"]):
+                current_rank = idx + 1
             sim_id = score["simulation_id"]
             sim = sim_map.get(sim_id, {})
             ac = ally_counts.get(sim_id, 0)
             entries.append(
                 {
-                    "rank": rank,
+                    "rank": current_rank,
                     "simulation_id": sim_id,
                     "simulation_name": sim.get("name", "Unknown"),
                     "simulation_slug": sim.get("slug"),

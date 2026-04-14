@@ -8,7 +8,7 @@ sub-services while keeping the EpochService interface stable for all callers.
 import logging
 from uuid import UUID
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.constants import OPERATIVE_RP_COSTS
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
@@ -16,8 +16,7 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 # Re-export for backwards compatibility
 __all__ = ["OPERATIVE_RP_COSTS", "DEFAULT_CONFIG", "EpochService"]
@@ -108,6 +107,12 @@ class EpochService:
         epoch = await cls.get(supabase, epoch_id)
         if epoch["status"] != "lobby":
             raise bad_request("Can only edit epoch configuration during lobby phase.")
+
+        # Serialize nested Pydantic models (e.g., EpochConfig) to plain dicts
+        if "config" in updates and updates["config"]:
+            cfg = updates["config"]
+            updates["config"] = cfg.model_dump() if hasattr(cfg, "model_dump") else cfg
+
         resp = await supabase.table("game_epochs").update(updates).eq("id", str(epoch_id)).execute()
         if not resp.data:
             raise server_error("Failed to update epoch.")

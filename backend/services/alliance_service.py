@@ -8,16 +8,16 @@ service layer orchestrates calls and handles battle log integration.
 import logging
 from uuid import UUID
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.utils.db import maybe_single_data
-from backend.utils.errors import bad_request, conflict, forbidden, not_found
-from backend.utils.responses import extract_list
+from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
+from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class AllianceService:
@@ -41,7 +41,7 @@ class AllianceService:
         - Team is active (not dissolved) and not full (max_team_size)
         - No existing pending proposal for this proposer+team
         - Solo teams (1 member): auto-accept immediately (skip voting)
-        Sets expires_at_cycle = current_cycle + 2.
+        Sets expires_at_cycle from config ``proposal_expiry_cycles`` (default 2 ahead).
         """
         from backend.services.epoch_service import EpochService
 
@@ -51,6 +51,7 @@ class AllianceService:
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
         current_cycle = epoch.get("current_cycle", 0)
+        proposal_expiry = config.get("proposal_expiry_cycles", 2)
 
         # Verify proposer is a participant and unaligned
         proposer = await maybe_single_data(
@@ -112,7 +113,7 @@ class AllianceService:
                         "epoch_id": str(epoch_id),
                         "team_id": str(team_id),
                         "proposer_simulation_id": str(proposer_simulation_id),
-                        "expires_at_cycle": current_cycle + 2,
+                        "expires_at_cycle": current_cycle + proposal_expiry,
                         "status": "accepted",
                         "resolved_at": "now()",
                     }
@@ -138,11 +139,13 @@ class AllianceService:
                 "epoch_id": str(epoch_id),
                 "team_id": str(team_id),
                 "proposer_id": str(proposer_simulation_id),
-                "expires_at_cycle": current_cycle + 2,
+                "expires_at_cycle": current_cycle + proposal_expiry,
             },
         )
 
-        # Create pending proposal
+        # Create pending proposal with static quorum (member count at creation time).
+        # The trigger fn_resolve_alliance_proposal checks required_votes instead of
+        # dynamic member count, preventing quorum shifts from mid-vote member changes.
         resp = await (
             supabase.table("epoch_alliance_proposals")
             .insert(
@@ -150,7 +153,8 @@ class AllianceService:
                     "epoch_id": str(epoch_id),
                     "team_id": str(team_id),
                     "proposer_simulation_id": str(proposer_simulation_id),
-                    "expires_at_cycle": current_cycle + 2,
+                    "expires_at_cycle": current_cycle + proposal_expiry,
+                    "required_votes": member_count,
                 }
             )
             .execute()
@@ -167,7 +171,10 @@ class AllianceService:
             team["name"],
         )
 
-        return resp.data[0]
+        result = extract_one(resp)
+        if result is None:
+            raise server_error("Failed to create alliance proposal.")
+        return result
 
     # ── Invite: Team member invites an outsider ──────────
 
@@ -283,7 +290,10 @@ class AllianceService:
                 resolved_status,
             )
 
-        return resp.data[0]
+        result = extract_one(resp)
+        if result is None:
+            raise server_error("Failed to record alliance vote — insert returned no data.")
+        return result
 
     # ── Proposal: List ────────────────────────────────────
 

@@ -165,33 +165,43 @@ class CycleNotificationService:
         config = epoch_config or {}
         accent = get_sim_accent(simulation_slug)
 
-        # Current cycle scores
-        current_resp = await (
-            admin_supabase.table("epoch_scores")
-            .select("*")
-            .eq("epoch_id", epoch_id)
-            .eq("cycle_number", cycle_number)
-            .order("composite_score", desc=True)
-            .execute()
-        )
-        current_scores = extract_list(current_resp)
-
-        # Previous cycle scores (for deltas)
+        # ── Parallel Batch 1: Scores (current + previous) + RP balance ──
+        # These 3 queries are independent and can run concurrently.
         prev_cycle = cycle_number - 1
-        prev_scores_map: dict[str, dict] = {}
-        if prev_cycle >= 1:
-            prev_resp = await (
+
+        async def _scores_current():
+            resp = await (
+                admin_supabase.table("epoch_scores").select("*")
+                .eq("epoch_id", epoch_id).eq("cycle_number", cycle_number)
+                .order("composite_score", desc=True).execute()
+            )
+            return extract_list(resp)
+
+        async def _scores_prev():
+            if prev_cycle < 1:
+                return {}
+            resp = await (
                 admin_supabase.table("epoch_scores")
                 .select(
                     "simulation_id, composite_score,"
                     " stability_score, influence_score, sovereignty_score,"
                     " diplomatic_score, military_score"
                 )
-                .eq("epoch_id", epoch_id)
-                .eq("cycle_number", prev_cycle)
-                .execute()
+                .eq("epoch_id", epoch_id).eq("cycle_number", prev_cycle).execute()
             )
-            prev_scores_map = {s["simulation_id"]: s for s in (extract_list(prev_resp))}
+            return {s["simulation_id"]: s for s in extract_list(resp)}
+
+        async def _participant_data():
+            return await maybe_single_data(
+                admin_supabase.table("epoch_participants")
+                .select("current_rp, team_id")
+                .eq("epoch_id", epoch_id).eq("simulation_id", simulation_id)
+                .maybe_single()
+            )
+
+        current_scores, prev_scores_map, rp_data = await asyncio.gather(
+            _scores_current(), _scores_prev(), _participant_data(),
+        )
 
         # Find this player's score and rank
         player_score = None
@@ -235,15 +245,28 @@ class CycleNotificationService:
         composite = float(player_score["composite_score"]) if player_score else 0
         prev_composite = float(prev_score.get("composite_score", 0)) if prev_score else 0
 
-        # ── Operative missions with per-mission detail (B7) ──
-        ops_resp = await (
-            admin_supabase.table("operative_missions")
-            .select("operative_type, status, target_simulation_id, resolves_at")
-            .eq("epoch_id", epoch_id)
-            .eq("source_simulation_id", simulation_id)
-            .execute()
-        )
-        ops = extract_list(ops_resp)
+        # ── Parallel Batch 2: Outbound ops + Inbound threats ─────
+        async def _outbound_ops():
+            resp = await (
+                admin_supabase.table("operative_missions")
+                .select("operative_type, status, target_simulation_id, resolves_at")
+                .eq("epoch_id", epoch_id).eq("source_simulation_id", simulation_id)
+                .execute()
+            )
+            return extract_list(resp)
+
+        async def _inbound_threats():
+            resp = await (
+                admin_supabase.table("operative_missions")
+                .select("operative_type, status, source_simulation_id")
+                .eq("epoch_id", epoch_id).eq("target_simulation_id", simulation_id)
+                .in_("status", ["detected", "captured"])
+                .execute()
+            )
+            return extract_list(resp)
+
+        ops, threats_raw = await asyncio.gather(_outbound_ops(), _inbound_threats())
+
         active_ops = sum(1 for o in ops if o["status"] == "active")
         resolved_ops = [o for o in ops if o["status"] in ("success", "failed", "detected", "captured")]
         success_ops = sum(1 for o in resolved_ops if o["status"] == "success")
@@ -264,37 +287,13 @@ class CycleNotificationService:
         mission_details = []
         for o in ops:
             if o["operative_type"] in ("guardian", "counter_intel"):
-                continue  # Defensive ops shown in summary, not mission log
+                continue
             target_name = sim_name_map.get(o.get("target_simulation_id", ""), "?")
-            mission_details.append(
-                {
-                    "type": o["operative_type"],
-                    "target_name": target_name,
-                    "status": o["status"],
-                }
-            )
+            mission_details.append({"type": o["operative_type"], "target_name": target_name, "status": o["status"]})
 
-        # ── RP balance ──
-        rp_data = await maybe_single_data(
-            admin_supabase.table("epoch_participants")
-            .select("current_rp, team_id")
-            .eq("epoch_id", epoch_id)
-            .eq("simulation_id", simulation_id)
-            .maybe_single()
-        )
+        # RP balance (already fetched in Batch 1)
         rp_balance = rp_data.get("current_rp", 0) if rp_data else 0
         player_team_id = rp_data.get("team_id") if rp_data else None
-
-        # ── Threat assessment (B1) — detected inbound ops ──
-        threat_resp = await (
-            admin_supabase.table("operative_missions")
-            .select("operative_type, status, source_simulation_id")
-            .eq("epoch_id", epoch_id)
-            .eq("target_simulation_id", simulation_id)
-            .in_("status", ["detected", "captured"])
-            .execute()
-        )
-        threats_raw = extract_list(threat_resp)
         # Resolve source names
         threat_source_ids = list({t["source_simulation_id"] for t in threats_raw})
         if threat_source_ids:

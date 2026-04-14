@@ -1,5 +1,6 @@
 """Operative mission execution: deploy, resolve, recall, and fortification logic."""
 
+import asyncio
 import json
 import logging
 import secrets
@@ -9,7 +10,7 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.epoch import OperativeDeploy
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG, OperativeDeploy
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import (
@@ -124,16 +125,19 @@ class OperativeMissionService:
         if existing.data:
             raise conflict("This agent is already on an active mission.")
 
+        config = {**DEFAULT_EPOCH_CONFIG, **epoch.get("config", {})}
+
         # Check RP cost
         cost = OPERATIVE_RP_COSTS.get(body.operative_type, 5)
         await EpochService.spend_rp(supabase, epoch_id, simulation_id, cost)
 
-        # Calculate success probability
+        # Calculate success probability (uses configurable balance params)
         success_prob = await cls._calculate_success_probability(
             supabase,
             body,
             simulation_id,
             admin_supabase=admin_supabase,
+            epoch_config=config,
         )
 
         # Calculate resolve time
@@ -226,104 +230,106 @@ class OperativeMissionService:
         body: OperativeDeploy,
         source_simulation_id: UUID,
         admin_supabase: Client | None = None,
+        *,
+        epoch_config: dict | None = None,
     ) -> float:
-        """Calculate mission success probability.
+        """Calculate mission success probability using configurable parameters.
+
+        All balance values read from epoch_config (EpochConfig fields) with
+        sensible fallbacks matching the canonical defaults.
 
         Formula:
-          base = 0.55
-          + agent_aptitude x 0.03
+          base_success_probability
+          + agent_aptitude x aptitude_modifier_pp
           - target_zone_security x 0.05
-          - min(0.15, guardian_count x 0.06)
-          + embassy_effectiveness x 0.15
+          - min(guardian_defense_cap_pp, guardian_count x guardian_per_unit_pp)
+          + embassy_effectiveness x embassy_bonus_pp
           + resonance_pressure (0.00 to +0.04)
           + resonance_operative_mod (-0.04 to +0.04)
           + attacker_pressure_penalty (-0.04 to 0.00)
-          Clamped to [0.05, 0.95]
-
-        Aptitude range 3-9 -> contribution +0.09 to +0.27 (18pp swing).
+          + convergence_mod + mood_modifier
+          Clamped to [probability_floor, probability_ceiling]
         """
-        base = 0.55
-
-        # Agent aptitude for this operative type (replaces qualification)
-        aptitude = await AptitudeService.get_aptitude_for_operative(supabase, body.agent_id, body.operative_type)
+        cfg = epoch_config or {}
+        base = cfg.get("base_success_probability", 0.55)
 
         # Admin client for cross-sim reads (target zones/guardians/embassies
         # may be in a game instance the user's JWT can't access via RLS)
         admin = admin_supabase or supabase
 
-        # Target zone security
-        zone_security = 5.0  # default moderate
-        if body.target_zone_id:
+        # ── Batch 1: Independent data lookups (parallel) ─────────
+        # Aptitude, zone security, guardian count, embassy — all independent.
+        # Running concurrently cuts latency from ~4 sequential queries to ~1.
+
+        async def _fetch_aptitude() -> int:
+            return await AptitudeService.get_aptitude_for_operative(supabase, body.agent_id, body.operative_type)
+
+        async def _fetch_zone_security() -> float:
+            if not body.target_zone_id:
+                return 5.0  # default moderate
             zone_data = await maybe_single_data(
-                admin.table("zones")
-                .select("security_level")
-                .eq("id", str(body.target_zone_id))
-                .maybe_single()
+                admin.table("zones").select("security_level").eq("id", str(body.target_zone_id)).maybe_single()
             )
             if zone_data:
-                sec_level = zone_data.get("security_level", "moderate")
-                zone_security = SECURITY_LEVEL_MAP.get(sec_level, 5.0)
+                return SECURITY_LEVEL_MAP.get(zone_data.get("security_level", "moderate"), 5.0)
+            return 5.0
 
-        # Guardian count in target simulation (guardians defend their own sim)
-        guardian_count = 0
-        if body.target_simulation_id:
+        async def _fetch_guardian_count() -> int:
+            if not body.target_simulation_id:
+                return 0
             guardians_resp = await (
                 admin.table("operative_missions")
-                .select("id")
+                .select("id", count="exact")
                 .eq("operative_type", "guardian")
                 .eq("source_simulation_id", str(body.target_simulation_id))
                 .in_("status", ["active"])
                 .execute()
             )
-            guardian_count = len(extract_list(guardians_resp))
+            return guardians_resp.count or 0
 
-        # Embassy effectiveness -- check for active infiltration penalty
-        embassy_eff = 0.5
-        if body.embassy_id:
+        async def _fetch_embassy_eff() -> float:
+            if not body.embassy_id:
+                return 0.5
             emb_data = await maybe_single_data(
                 admin.table("embassies")
                 .select("id, infiltration_penalty, infiltration_penalty_expires_at")
                 .eq("id", str(body.embassy_id))
                 .maybe_single()
             )
-            if emb_data:
-                base_eff = 0.6
-                penalty = float(emb_data.get("infiltration_penalty") or 0)
-                expires_at = emb_data.get("infiltration_penalty_expires_at")
-                if penalty > 0 and expires_at:
-                    if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) > datetime.now(UTC):
-                        base_eff *= 1.0 - penalty
-                    else:
-                        # Penalty expired -- clear it lazily
-                        await (
-                            admin.table("embassies")
-                            .update(
-                                {
-                                    "infiltration_penalty": 0,
-                                    "infiltration_penalty_expires_at": None,
-                                }
-                            )
-                            .eq("id", str(body.embassy_id))
-                            .execute()
-                        )
-                embassy_eff = base_eff
+            if not emb_data:
+                return 0.5
+            base_eff = 0.6
+            penalty = float(emb_data.get("infiltration_penalty") or 0)
+            expires_at = emb_data.get("infiltration_penalty_expires_at")
+            if penalty > 0 and expires_at:
+                if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) > datetime.now(UTC):
+                    base_eff *= 1.0 - penalty
+                else:
+                    # Penalty expired — clear it lazily (fire-and-forget)
+                    await admin.table("embassies").update(
+                        {"infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
+                    ).eq("id", str(body.embassy_id)).execute()
+            return base_eff
 
-        # Guardian penalty: -0.06 per guardian, capped at -0.15
-        guardian_penalty = min(0.15, guardian_count * 0.06)
+        aptitude, zone_security, guardian_count, embassy_eff = await asyncio.gather(
+            _fetch_aptitude(), _fetch_zone_security(), _fetch_guardian_count(), _fetch_embassy_eff(),
+        )
 
-        # Resonance modifiers: zone pressure + archetype alignment + attacker penalty
+        # Guardian penalty: configurable per-unit and cap
+        guardian_cap = cfg.get("guardian_defense_cap_pp", 0.15)
+        guardian_per = cfg.get("guardian_per_unit_pp", 0.06)
+        guardian_penalty = min(guardian_cap, guardian_count * guardian_per)
+
+        # ── Batch 2: Resonance modifiers (parallel, target-sim dependent) ──
         resonance_pressure = 0.0
         resonance_operative_mod = 0.0
         attacker_pressure_penalty = 0.0
         if body.target_simulation_id:
-            resonance_pressure = await cls._get_target_zone_pressure(
-                admin, str(body.target_simulation_id), body.target_zone_id
+            resonance_pressure, resonance_operative_mod, attacker_pressure_penalty = await asyncio.gather(
+                cls._get_target_zone_pressure(admin, str(body.target_simulation_id), body.target_zone_id),
+                cls._get_resonance_operative_modifier(admin, str(body.target_simulation_id), body.operative_type),
+                cls._get_attacker_pressure_penalty(admin, str(source_simulation_id)),
             )
-            resonance_operative_mod = await cls._get_resonance_operative_modifier(
-                admin, str(body.target_simulation_id), body.operative_type
-            )
-            # Attacker's own instability reduces mission effectiveness
-            attacker_pressure_penalty = await cls._get_attacker_pressure_penalty(admin, str(source_simulation_id))
 
         # ── Heartbeat integration: convergence operative modifiers ──
         convergence_mod = 0.0
@@ -391,12 +397,17 @@ class OperativeMissionService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.debug("Agent mood data unavailable for operative calculation")
 
+        apt_mod = cfg.get("aptitude_modifier_pp", 0.03)
+        emb_bonus = cfg.get("embassy_bonus_pp", 0.15)
+        prob_floor = cfg.get("probability_floor", 0.05)
+        prob_ceiling = cfg.get("probability_ceiling", 0.95)
+
         probability = (
             base
-            + aptitude * 0.03
+            + aptitude * apt_mod
             - zone_security * 0.05
             - guardian_penalty
-            + embassy_eff * 0.15
+            + embassy_eff * emb_bonus
             + resonance_pressure
             + resonance_operative_mod
             + attacker_pressure_penalty
@@ -404,7 +415,7 @@ class OperativeMissionService:
             + mood_modifier
         )
 
-        return max(0.05, min(0.95, probability))
+        return max(prob_floor, min(prob_ceiling, probability))
 
     # ── Resonance Helpers ─────────────────────────────────
 
@@ -467,6 +478,8 @@ class OperativeMissionService:
         cls,
         supabase: Client,
         epoch_id: UUID,
+        *,
+        epoch_config: dict | None = None,
     ) -> list[dict]:
         """Resolve all missions that have passed their resolves_at time."""
         now = datetime.now(UTC).isoformat()
@@ -500,15 +513,26 @@ class OperativeMissionService:
                 continue
 
             # Resolve active missions
-            result = await cls._resolve_mission(supabase, mission)
+            result = await cls._resolve_mission(supabase, mission, epoch_config=epoch_config)
             results.append(result)
 
         return results
 
     @classmethod
-    async def _resolve_mission(cls, supabase: Client, mission: dict) -> dict:
-        """Resolve a single mission -- roll for success/failure."""
+    async def _resolve_mission(
+        cls, supabase: Client, mission: dict, *, epoch_config: dict | None = None
+    ) -> dict:
+        """Resolve a single mission -- roll for success/failure.
+
+        Detection uses a SEPARATE probability from success (configurable via
+        ``detection_on_failure`` in EpochConfig). This avoids the old bug where
+        a highly skilled operative (high success_prob) was paradoxically MORE
+        detectable when failing.
+        """
+        cfg = epoch_config or {}
         success_prob = float(mission.get("success_probability") or 0.5)
+        detection_threshold = cfg.get("detection_on_failure", 0.45)
+
         roll = secrets.SystemRandom().random()
 
         if roll <= success_prob:
@@ -517,9 +541,9 @@ class OperativeMissionService:
             final_status = "success"
             mission_result = await cls._apply_success_effect(supabase, mission)
         else:
-            # Failure -- check for detection
+            # Failure — independent detection roll against configurable threshold
             detection_roll = secrets.SystemRandom().random()
-            if detection_roll > success_prob:
+            if detection_roll < detection_threshold:
                 outcome = "detected"
                 final_status = "detected"
                 mission_result = {"outcome": "detected", "narrative": "The operative was detected."}
@@ -922,22 +946,28 @@ class OperativeMissionService:
 
     @classmethod
     async def _apply_infiltrator_effect(cls, supabase: Client, mission: dict) -> dict:
-        """Infiltrator: reduce embassy effectiveness by 65% for 3 cycles."""
+        """Infiltrator: reduce embassy effectiveness for 3 cycles.
+
+        Penalty fraction is configurable via ``infiltrator_embassy_penalty``
+        in EpochConfig (default 0.65 = 65% effectiveness blocked).
+        """
         if not mission.get("target_entity_id"):
             return {"outcome": "success", "narrative": "Mission completed."}
 
         epoch_resp = await (
             supabase.table("game_epochs").select("config").eq("id", mission["epoch_id"]).single().execute()
         )
-        config = (epoch_resp.data or {}).get("config", {})
+        raw_config = (epoch_resp.data or {}).get("config", {})
+        config = {**DEFAULT_EPOCH_CONFIG, **raw_config}
         cycle_hours = config.get("cycle_hours", 8)
+        penalty = config.get("infiltrator_embassy_penalty", 0.65)
         expires_at = datetime.now(UTC) + timedelta(hours=3 * cycle_hours)
 
         await (
             supabase.table("embassies")
             .update(
                 {
-                    "infiltration_penalty": 0.65,
+                    "infiltration_penalty": penalty,
                     "infiltration_penalty_expires_at": expires_at.isoformat(),
                 }
             )

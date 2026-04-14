@@ -4,7 +4,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.bot_personality import auto_draft
 from backend.utils.db import resolve_epoch_sim_names
 from backend.utils.errors import bad_request, conflict, not_found, server_error
@@ -14,7 +14,7 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 # Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class EpochParticipationService:
@@ -75,8 +75,9 @@ class EpochParticipationService:
     ) -> dict:
         """Join an epoch with a simulation.
 
-        Any authenticated user can join with any template simulation.
-        user_id is stored directly on the participant row.
+        Uses fn_join_epoch_atomic (migration 214) for race-condition-free
+        insertion. The RPC checks user uniqueness and uses ON CONFLICT for
+        simulation uniqueness in a single transaction.
         """
         from backend.services.epoch_service import EpochService
 
@@ -94,41 +95,32 @@ class EpochParticipationService:
         if sim_type and sim_type != "template":
             raise bad_request("Can only join with template simulations.")
 
-        # Check simulation not already in epoch
-        existing = await (
+        config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
+
+        # Atomic join — handles both sim and user uniqueness in one transaction
+        resp = await supabase.rpc(
+            "fn_join_epoch_atomic",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_user_id": str(user_id) if user_id else None,
+                "p_initial_rp": config["rp_per_cycle"],
+            },
+        ).execute()
+
+        # plpgsql RETURN NULL yields JSON null; ON CONFLICT yields no RETURNING row
+        if not resp.data:
+            raise conflict("This simulation or user is already in the epoch.")
+
+        # Fetch full participant record for response
+        participant = await (
             supabase.table("epoch_participants")
-            .select("id")
-            .eq("epoch_id", str(epoch_id))
-            .eq("simulation_id", str(simulation_id))
+            .select("*")
+            .eq("id", str(resp.data))
+            .single()
             .execute()
         )
-        if existing.data:
-            raise conflict("This simulation is already in the epoch.")
-
-        # Check user not already in epoch (with different sim)
-        if user_id:
-            existing_user = await (
-                supabase.table("epoch_participants")
-                .select("id")
-                .eq("epoch_id", str(epoch_id))
-                .eq("user_id", str(user_id))
-                .execute()
-            )
-            if existing_user.data:
-                raise conflict("You are already in this epoch.")
-
-        resp = await (
-            supabase.table("epoch_participants")
-            .insert(
-                {
-                    "epoch_id": str(epoch_id),
-                    "simulation_id": str(simulation_id),
-                    **({"user_id": str(user_id)} if user_id else {}),
-                }
-            )
-            .execute()
-        )
-        return resp.data[0] if resp.data else {}
+        return participant.data if participant.data else {}
 
     @classmethod
     async def leave_epoch(
@@ -276,25 +268,33 @@ class EpochParticipationService:
         if epoch["status"] == "competition":
             raise bad_request("During active competition, use alliance proposals to request joining a team.")
 
-        # Check team size limit
-        members = await (
-            supabase.table("epoch_participants")
-            .select("id")
-            .eq("epoch_id", str(epoch_id))
-            .eq("team_id", str(team_id))
-            .execute()
-        )
-        if len(extract_list(members)) >= config["max_team_size"]:
+        # Atomic team join with size enforcement (migration 214).
+        # Returns: true (joined), false (full), NULL (team not found/dissolved).
+        resp = await supabase.rpc(
+            "fn_join_team_checked",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_team_id": str(team_id),
+                "p_simulation_id": str(simulation_id),
+                "p_max_size": config["max_team_size"],
+            },
+        ).execute()
+
+        if resp.data is None:
+            raise not_found(detail="Team not found or has been dissolved.")
+        if resp.data is False:
             raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
-        resp = await (
+        # Fetch updated participant for response
+        updated = await (
             supabase.table("epoch_participants")
-            .update({"team_id": str(team_id)})
+            .select("*")
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", str(simulation_id))
+            .single()
             .execute()
         )
-        return resp.data[0] if resp.data else {}
+        return updated.data if updated.data else {}
 
     @classmethod
     async def leave_team(

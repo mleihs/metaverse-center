@@ -5,7 +5,7 @@ from uuid import UUID
 
 import sentry_sdk
 
-from backend.models.epoch import EpochConfig
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.epoch_service import EpochService
 from backend.utils.errors import bad_request, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
@@ -13,8 +13,7 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# Default epoch config (matches EpochConfig defaults)
-DEFAULT_CONFIG = EpochConfig().model_dump()
+DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 
 class EpochChatService:
