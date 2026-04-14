@@ -440,6 +440,60 @@ class CycleNotificationService:
         )
         public_events = [{"narrative": e["narrative"], "event_type": e["event_type"]} for e in (extract_list(log_resp))]
 
+        # ── Auto-resolve & AFK data (Phase 7) ────────────────
+        # Query AFK events + auto-resolve event for this player + cycle
+        async def _afk_events():
+            resp = await (
+                admin_supabase.table("battle_log")
+                .select("event_type, metadata")
+                .eq("epoch_id", epoch_id)
+                .eq("cycle_number", cycle_number)
+                .in_("event_type", ["player_afk", "player_afk_penalty", "player_afk_ai_takeover"])
+                .or_(f"source_simulation_id.eq.{simulation_id},target_simulation_id.eq.{simulation_id}")
+                .execute()
+            )
+            return extract_list(resp)
+
+        async def _auto_resolve_check():
+            resp = await (
+                admin_supabase.table("battle_log")
+                .select("metadata")
+                .eq("epoch_id", epoch_id)
+                .eq("cycle_number", cycle_number)
+                .eq("event_type", "cycle_auto_resolved")
+                .limit(1)
+                .execute()
+            )
+            return bool(extract_list(resp))
+
+        async def _participation_counts():
+            resp = await (
+                admin_supabase.table("epoch_participants")
+                .select("has_acted_this_cycle, is_bot, consecutive_afk_cycles, afk_replaced_by_ai")
+                .eq("epoch_id", epoch_id)
+                .execute()
+            )
+            participants = extract_list(resp)
+            humans = [p for p in participants if not p.get("is_bot")]
+            acted = sum(1 for p in humans if p.get("has_acted_this_cycle"))
+            return {"acted": acted, "total": len(humans)}
+
+        afk_events, auto_resolved, participation = await asyncio.gather(
+            _afk_events(), _auto_resolve_check(), _participation_counts(),
+        )
+
+        player_was_afk = any(e["event_type"] == "player_afk" for e in afk_events)
+        afk_penalty_rp = sum(
+            (e.get("metadata") or {}).get("rp_loss", 0)
+            for e in afk_events if e["event_type"] == "player_afk_penalty"
+        )
+        replaced_by_ai = any(e["event_type"] == "player_afk_ai_takeover" for e in afk_events)
+        afk_ai_personality = config.get("afk_ai_personality", "sentinel")
+        consecutive_afk = sum(
+            1 for e in afk_events if e["event_type"] in ("player_afk", "player_afk_penalty", "player_afk_ai_takeover")
+        )
+        deadline_minutes = config.get("cycle_deadline_minutes")
+
         return {
             "epoch_name": epoch_name,
             "epoch_status": epoch_status,
@@ -477,6 +531,15 @@ class CycleNotificationService:
             "dissolved_alliance_name": dissolved_alliance_name,
             "next_cycle_missions": pending_missions,
             "next_cycle_rp_projection": rp_projection,
+            # Auto-resolve & AFK (Phase 7)
+            "auto_resolved": auto_resolved,
+            "player_was_afk": player_was_afk,
+            "afk_penalty_rp": afk_penalty_rp,
+            "replaced_by_ai": replaced_by_ai,
+            "afk_ai_personality": afk_ai_personality,
+            "consecutive_afk": consecutive_afk,
+            "participation_summary": participation,
+            "cycle_deadline_minutes": deadline_minutes,
         }
 
     # ── Standing snapshot for phase change (C1) ───────────
