@@ -156,14 +156,20 @@ def _render_invitation_block(
             </td>
           </tr>"""
 
-    # Introduction paragraphs
+    # Introduction — classified warning + deployment briefing
     intro = f"""\
           <tr>
-            <td style="padding:{"24px" if is_primary else "8px"} 32px 16px;">
-              <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:{_TEXT};">
-                {_nt("inv_intro_1", lang)}
-              </p>
-              <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};">
+            <td style="padding:{"24px" if is_primary else "8px"} 32px 8px;">
+              <div style="border:1px solid {_RED};padding:8px 14px;background-color:#1e1414;text-align:center;">
+                <p style="margin:0;font-size:10px;letter-spacing:3px;color:{_RED};text-transform:uppercase;font-weight:bold;">
+                  &#9608; {_nt("inv_intro_1", lang)} &#9608;
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 32px 16px;">
+              <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};">
                 {_nt("inv_intro_2", lang)}
               </p>
             </td>
@@ -767,12 +773,12 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "de": "GEHEIM // EPOCHEN-EINBERUFUNG",
     },
     "inv_intro_1": {
-        "en": "You have been selected for a classified operation. The Bureau has identified you as a viable operative for the next competitive epoch on metaverse.center.",
-        "de": "Sie wurden f\u00fcr eine geheime Operation ausgew\u00e4hlt. Das B\u00fcro hat Sie als geeigneten Agenten f\u00fcr die n\u00e4chste kompetitive Epoche auf metaverse.center identifiziert.",
+        "en": "This transmission is classified. Do not forward.",
+        "de": "Diese \u00dcbertragung ist als GEHEIM eingestuft. Nicht weiterleiten.",
     },
     "inv_intro_2": {
-        "en": "Each epoch pits simulation commanders against each other in a strategic contest across five dimensions. Your tactical decisions shape the multiverse.",
-        "de": "In jeder Epoche treten Simulationskommandanten in einem strategischen Wettbewerb \u00fcber f\u00fcnf Dimensionen gegeneinander an. Ihre taktischen Entscheidungen formen das Multiversum.",
+        "en": "The Bureau has flagged your simulation for immediate deployment. A competitive epoch is forming \u2013 five dimensions, no second chances. Your faction needs a commander. Report to the Command Center before the deployment window closes.",
+        "de": "Das B\u00fcro hat Ihre Simulation zur sofortigen Aufstellung vorgemerkt. Eine kompetitive Epoche formiert sich \u2013 f\u00fcnf Dimensionen, keine zweite Chance. Ihre Fraktion braucht einen Kommandanten. Melden Sie sich in der Kommandozentrale, bevor das Einsatzfenster schlie\u00dft.",
     },
     "inv_operation": {
         "en": "OPERATION",
@@ -1750,7 +1756,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:3px solid {accent};padding:24px 20px;background-color:{_SURFACE};text-align:center;animation:glow-breathe 2.5s ease-in-out infinite;">
-                <p style="margin:0 0 8px;font-size:28px;animation:stamp-in 0.6s ease both;">&#128081;&#128081;&#128081;</p>
+                <p style="margin:0 0 8px;font-size:24px;color:{accent};letter-spacing:8px;animation:stamp-in 0.6s ease both;">&#9733;&#9733;&#9733;</p>
                 <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{accent};text-transform:uppercase;font-weight:bold;">
                   {_nt("winner_you", lang)}
                 </p>
@@ -1776,7 +1782,7 @@ def _render_completed_block(
                   {_nt("winner", lang)}
                 </p>
                 <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;animation:stamp-in 0.5s ease both;">
-                  &#128081; {winner_name}
+                  &#9733; {winner_name}
                 </p>
                 <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};">
                   {_nt("composite", lang)}: {winner["composite"]:.1f}
