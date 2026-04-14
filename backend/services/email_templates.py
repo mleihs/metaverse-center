@@ -168,8 +168,17 @@ def _render_invitation_block(
             </td>
           </tr>
           <tr>
-            <td style="padding:12px 32px 16px;">
-              <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};">
+            <td style="padding:16px 32px;">
+              <div style="border-left:3px solid {accent};padding:12px 16px;background-color:{_SURFACE};">
+                <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};font-weight:bold;">
+                  {_nt("inv_summons", lang)}
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 32px 16px;">
+              <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT_DIM};">
                 {_nt("inv_intro_2", lang)}
               </p>
             </td>
@@ -776,9 +785,13 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "This transmission is classified. Do not forward.",
         "de": "Diese \u00dcbertragung ist als GEHEIM eingestuft. Nicht weiterleiten.",
     },
+    "inv_summons": {
+        "en": "An operative seat has been reserved for you. Take command of your faction before the deployment window closes.",
+        "de": "Ein Operativsitz wurde f\u00fcr Sie reserviert. \u00dcbernehmen Sie das Kommando \u00fcber Ihre Fraktion, bevor das Einsatzfenster schlie\u00dft.",
+    },
     "inv_intro_2": {
-        "en": "The Bureau has flagged your simulation for immediate deployment. A competitive epoch is forming \u2013 five dimensions, no second chances. Your faction needs a commander. Report to the Command Center before the deployment window closes.",
-        "de": "Das B\u00fcro hat Ihre Simulation zur sofortigen Aufstellung vorgemerkt. Eine kompetitive Epoche formiert sich \u2013 f\u00fcnf Dimensionen, keine zweite Chance. Ihre Fraktion braucht einen Kommandanten. Melden Sie sich in der Kommandozentrale, bevor das Einsatzfenster schlie\u00dft.",
+        "en": "A competitive epoch is forming \u2013 five dimensions, no second chances. The deployment window is limited. Report to the Command Center before it closes.",
+        "de": "Eine kompetitive Epoche formiert sich \u2013 f\u00fcnf Dimensionen, keine zweite Chance. Das Einsatzfenster ist begrenzt. Melden Sie sich in der Kommandozentrale, bevor es schlie\u00dft.",
     },
     "inv_operation": {
         "en": "OPERATION",
@@ -829,8 +842,8 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "de": "Bot-Gegner mit eigenen KI-Pers\u00f6nlichkeiten k\u00f6nnen offene Pl\u00e4tze f\u00fcllen",
     },
     "inv_cta": {
-        "en": "ACCEPT THE SUMMONS",
-        "de": "EINBERUFUNG ANNEHMEN",
+        "en": "TAKE COMMAND",
+        "de": "KOMMANDO \u00dcBERNEHMEN",
     },
     "inv_intel_see_above": {
         "en": "See intelligence dispatch above.",
