@@ -31,6 +31,11 @@ export class VelgEpochLeaderboard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_row-hover: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+      --_self-bg: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      --_self-hover: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      --_border-subtle: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+      --_surface-raised-fb: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
     }
 
     /* ── Table ────────────────────────────── */
@@ -89,17 +94,17 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .row:hover {
-      background: rgba(255 255 255 / 0.03);
+      background: var(--_row-hover);
       transform: translateX(2px);
     }
 
     .row--self {
-      background: rgba(245 158 11 / 0.06);
+      background: var(--_self-bg);
       border-left: 3px solid var(--color-epoch-accent);
     }
 
     .row--self:hover {
-      background: rgba(245 158 11 / 0.10);
+      background: var(--_self-hover);
     }
 
     .self-badge {
@@ -352,10 +357,10 @@ export class VelgEpochLeaderboard extends LitElement {
         align-items: center;
         gap: var(--space-2);
         padding: var(--space-3);
-        border: var(--border-width-thin, 1px) solid var(--color-border-subtle, rgba(255,255,255,0.06));
-        border-bottom: var(--border-width-thin, 1px) solid var(--color-border-subtle, rgba(255,255,255,0.06));
+        border: var(--border-width-thin, 1px) solid var(--color-border-subtle, var(--_border-subtle));
+        border-bottom: var(--border-width-thin, 1px) solid var(--color-border-subtle, var(--_border-subtle));
         border-radius: var(--radius-sm, 4px);
-        background: var(--color-surface-raised, rgba(255,255,255,0.03));
+        background: var(--color-surface-raised, var(--_surface-raised-fb));
         transform: none;
       }
 

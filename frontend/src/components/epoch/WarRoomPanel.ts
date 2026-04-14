@@ -59,6 +59,9 @@ export class VelgWarRoomPanel extends LitElement {
       background: var(--color-surface-sunken);
       color: var(--color-text-primary);
       position: relative;
+      --_scanline-dark: color-mix(in srgb, var(--color-surface) 3%, transparent);
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+      --_hi-faint: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
     }
 
     /* Scanline texture overlay */
@@ -71,8 +74,8 @@ export class VelgWarRoomPanel extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(0, 0, 0, 0.03) 2px,
-        rgba(0, 0, 0, 0.03) 4px
+        var(--_scanline-dark) 2px,
+        var(--_scanline-dark) 4px
       );
       z-index: 1;
     }
@@ -233,7 +236,7 @@ export class VelgWarRoomPanel extends LitElement {
       justify-content: space-between;
       padding: var(--space-3) var(--space-4);
       border-bottom: 1px solid var(--color-border);
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--_hi-dim);
     }
 
     .sitrep__stamp {
@@ -370,7 +373,7 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .bl-entry--phase {
-      background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
+      background: linear-gradient(90deg, var(--_hi-faint), transparent);
       border-left-width: 4px;
       padding: var(--space-3);
     }
@@ -383,8 +386,8 @@ export class VelgWarRoomPanel extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--color-info);
-      border: 1px solid rgba(56 189 248 / 0.3);
-      background: rgba(56 189 248 / 0.08);
+      border: 1px solid var(--color-info-border);
+      background: var(--color-info-bg);
       padding: 1px 6px;
       margin-left: var(--space-1);
       vertical-align: middle;

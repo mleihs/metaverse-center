@@ -35,6 +35,7 @@ export class VelgEpochResultsView extends LitElement {
       --silver: #94a3b8; /* lint-color-ok */
       --bronze: #d97706; /* lint-color-ok */
       --declassified-red: var(--color-danger);
+      --_self-bg: color-mix(in srgb, var(--color-primary) 6%, transparent);
       max-width: var(--container-2xl, 1400px);
       margin-inline: auto;
       padding-inline: var(--content-padding, var(--space-4));
@@ -75,7 +76,7 @@ export class VelgEpochResultsView extends LitElement {
       animation: stamp-slam 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.0s forwards;
       pointer-events: none;
       user-select: none;
-      text-shadow: 0 0 30px rgba(220, 38, 38, 0.3);
+      text-shadow: 0 0 30px var(--color-danger-border);
       border: 4px solid var(--declassified-red);
       padding: 4px 24px;
       white-space: nowrap;
@@ -564,7 +565,7 @@ export class VelgEpochResultsView extends LitElement {
     }
 
     .standings-row--self {
-      background: rgba(245 158 11 / 0.06);
+      background: var(--_self-bg);
     }
 
     .standings-rank {

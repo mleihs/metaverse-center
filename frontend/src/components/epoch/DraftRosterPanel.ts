@@ -38,6 +38,7 @@ export class VelgDraftRosterPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_scanline: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
     }
 
     /* ══════════════════════════════════════════════════
@@ -61,8 +62,8 @@ export class VelgDraftRosterPanel extends LitElement {
       pointer-events: none;
       background: repeating-linear-gradient(
         0deg, transparent, transparent 2px,
-        rgba(255 255 255 / 0.012) 2px,
-        rgba(255 255 255 / 0.012) 4px
+        var(--_scanline) 2px,
+        var(--_scanline) 4px
       );
       z-index: 1;
     }
@@ -170,7 +171,7 @@ export class VelgDraftRosterPanel extends LitElement {
       border-style: solid;
       border-color: var(--color-epoch-accent);
       background: color-mix(in srgb, var(--color-epoch-accent) 6%, var(--color-surface));
-      box-shadow: 0 0 20px rgba(245,158,11,0.15);
+      box-shadow: 0 0 20px var(--color-primary-glow);
       transform: scale(1.03);
     }
 
@@ -370,7 +371,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .counter-pip--filled {
       background: var(--color-epoch-accent);
       border-color: var(--color-epoch-accent);
-      box-shadow: 0 0 6px rgba(245,158,11,0.3);
+      box-shadow: 0 0 6px var(--color-primary-border);
       animation: pip-flip 300ms var(--ease-spring);
     }
 

@@ -34,6 +34,11 @@ export class VelgEpochIntelDossierTab extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_stale-bg: color-mix(in srgb, var(--color-text-secondary) 4%, transparent);
+      --_stale-scanline: color-mix(in srgb, var(--color-text-secondary) 3%, transparent);
+      --_info-subtle: color-mix(in srgb, var(--color-info) 3%, transparent);
+      --_info-dim: color-mix(in srgb, var(--color-info) 2%, transparent);
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
     }
 
     /* ── Dossier Grid ────────────────────────── */
@@ -112,7 +117,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     .card--stale .fort-row {
       color: var(--color-text-muted);
       border-left-color: var(--color-icon);
-      background: rgba(148 163 184 / 0.04);
+      background: var(--_stale-bg);
     }
 
     .card--stale .card__header::after {
@@ -126,8 +131,8 @@ export class VelgEpochIntelDossierTab extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(148 163 184 / 0.03) 2px,
-        rgba(148 163 184 / 0.03) 4px
+        var(--_stale-scanline) 2px,
+        var(--_stale-scanline) 4px
       );
       pointer-events: none;
     }
@@ -141,7 +146,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       align-items: center;
       padding: var(--space-3) var(--space-4);
       border-bottom: 1px solid var(--color-border);
-      background: rgba(56 189 248 / 0.03);
+      background: var(--_info-subtle);
     }
 
     .card__name {
@@ -270,7 +275,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       align-items: center;
       padding: var(--space-2) var(--space-4);
       border-top: 1px solid var(--color-border);
-      background: rgba(56 189 248 / 0.02);
+      background: var(--_info-dim);
     }
 
     .card__reports {
@@ -349,7 +354,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .compact-header:hover {
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
     }
 
     .compact-header__icon {

@@ -32,6 +32,7 @@ export class VelgEpochInvitePanel extends LitElement {
       --text-bright: var(--color-text-primary);
       --text-mid: var(--color-text-tertiary);
       --text-dim: var(--color-text-muted);
+      --_scanline: color-mix(in srgb, var(--color-text-primary) 1.5%, transparent);
     }
 
     /* Override VelgSidePanel theme tokens — force dark HUD aesthetic */
@@ -63,8 +64,8 @@ export class VelgEpochInvitePanel extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255 255 255 / 0.015) 2px,
-        rgba(255 255 255 / 0.015) 4px
+        var(--_scanline) 2px,
+        var(--_scanline) 4px
       );
       z-index: 0;
     }

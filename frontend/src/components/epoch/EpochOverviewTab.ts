@@ -29,6 +29,20 @@ export class VelgEpochOverviewTab extends LitElement {
   static styles = css`
     :host {
       display: block;
+
+      /* ── Surface highlights ── */
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+      --_hi-soft: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+
+      /* ── Depth ── */
+      --_sh-light: color-mix(in srgb, var(--color-surface) 30%, transparent);
+
+      /* ── Primary (amber) spectrum ── */
+      --_primary-faint: color-mix(in srgb, var(--color-primary) 4%, transparent);
+      --_primary-subtle: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      --_primary-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      --_primary-medium: color-mix(in srgb, var(--color-primary) 18%, transparent);
+      --_primary-pulse: color-mix(in srgb, var(--color-primary) 50%, transparent);
     }
 
     /* ── Overview Grid ────────────────────────── */
@@ -111,7 +125,7 @@ export class VelgEpochOverviewTab extends LitElement {
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       background:
-        linear-gradient(90deg, rgba(255 255 255 / 0.02) 0%, transparent 60%),
+        linear-gradient(90deg, var(--_hi-dim) 0%, transparent 60%),
         var(--color-border);
       border: 1px solid var(--color-border);
       border-left: 3px solid var(--_accent, var(--color-border));
@@ -153,9 +167,9 @@ export class VelgEpochOverviewTab extends LitElement {
       border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
       border-left-color: var(--_accent);
       box-shadow:
-        0 4px 12px rgba(0 0 0 / 0.3),
+        0 4px 12px var(--_sh-light),
         0 0 20px color-mix(in srgb, var(--_accent) 12%, transparent),
-        inset 0 1px 0 rgba(255 255 255 / 0.04);
+        inset 0 1px 0 var(--_hi-soft);
       background:
         linear-gradient(90deg, color-mix(in srgb, var(--_accent) 6%, transparent) 0%, transparent 50%),
         var(--color-border);
@@ -244,7 +258,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .mission:hover {
       padding-left: var(--space-2);
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
     }
 
     .mission:hover .mission__icon {
@@ -333,7 +347,7 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .mission__recall:hover {
-      background: rgba(245 158 11 / 0.15);
+      background: var(--color-primary-glow);
     }
 
     .mission__recall:disabled {
@@ -358,19 +372,19 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       color: var(--color-warning);
-      background: rgba(245 158 11 / 0.06);
+      background: var(--_primary-subtle);
       border: 1px dashed var(--color-warning);
       cursor: pointer;
       transition: all var(--transition-normal);
     }
 
     .fortify-zone-btn:hover {
-      background: rgba(245 158 11 / 0.12);
+      background: var(--_primary-soft);
       border-style: solid;
     }
 
     .fortify-zone-btn:active {
-      background: rgba(245 158 11 / 0.18);
+      background: var(--_primary-medium);
     }
 
     .fortify-zone-btn:focus-visible {
@@ -466,7 +480,7 @@ export class VelgEpochOverviewTab extends LitElement {
       padding: 5px var(--space-2);
       margin-bottom: 2px;
       border-left: 2px solid var(--color-warning);
-      background: rgba(245 158 11 / 0.04);
+      background: var(--_primary-faint);
       opacity: 0;
       animation: fort-slide 0.3s ease-out forwards;
     }
@@ -499,7 +513,7 @@ export class VelgEpochOverviewTab extends LitElement {
       border-radius: 50%;
       flex-shrink: 0;
       background: var(--color-warning);
-      box-shadow: 0 0 4px rgba(245 158 11 / 0.5);
+      box-shadow: 0 0 4px var(--_primary-pulse);
       animation: fort-pulse 2.5s ease-in-out infinite;
     }
 

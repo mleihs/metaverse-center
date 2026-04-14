@@ -27,6 +27,10 @@ export class VelgEpochOpsBoard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --_scanline: color-mix(in srgb, var(--color-text-primary) 0.8%, transparent);
+      --_sh-strong: color-mix(in srgb, var(--color-surface) 40%, transparent);
+      --_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
     }
 
     /* ── Operations Board ─────────────────── */
@@ -64,8 +68,8 @@ export class VelgEpochOpsBoard extends LitElement {
           0deg,
           transparent,
           transparent 3px,
-          rgba(255 255 255 / 0.008) 3px,
-          rgba(255 255 255 / 0.008) 4px
+          var(--_scanline) 3px,
+          var(--_scanline) 4px
         );
       pointer-events: none;
       z-index: 1;
@@ -337,7 +341,7 @@ export class VelgEpochOpsBoard extends LitElement {
       border-color: var(--dossier-color);
       transform: translateY(-2px);
       box-shadow:
-        0 4px 20px rgba(0 0 0 / 0.4),
+        0 4px 20px var(--_sh-strong),
         inset 0 0 0 1px color-mix(in srgb, var(--dossier-color) 10%, transparent);
     }
 
@@ -377,7 +381,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-card--competition:hover {
       box-shadow:
-        0 4px 24px rgba(0 0 0 / 0.5),
+        0 4px 24px var(--_sh-heavy),
         0 0 20px color-mix(in srgb, var(--color-warning) 15%, transparent);
     }
 
@@ -392,7 +396,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-card--reckoning:hover {
       box-shadow:
-        0 4px 28px rgba(0 0 0 / 0.5),
+        0 4px 28px var(--_sh-heavy),
         0 0 28px color-mix(in srgb, var(--color-danger) 20%, transparent);
       transform: translateY(-3px);
     }
@@ -415,7 +419,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     /* Phase pulse animations — increasing intensity */
     @keyframes dossier-pulse-soft {
-      0%, 100% { box-shadow: 0 0 0 rgba(0 0 0 / 0); }
+      0%, 100% { box-shadow: 0 0 0 transparent; }
       50% { box-shadow: 0 0 10px color-mix(in srgb, var(--dossier-color) 12%, transparent); }
     }
 
@@ -683,7 +687,7 @@ export class VelgEpochOpsBoard extends LitElement {
 
     .dossier-card--create:hover {
       border-color: var(--color-text-muted);
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
       transform: none;
       box-shadow: none;
     }

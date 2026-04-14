@@ -79,6 +79,27 @@ export class VelgEpochCommandCenter extends LitElement {
       min-height: calc(100vh - var(--header-height, 56px));
       background: var(--color-surface-sunken);
       color: var(--color-text-primary);
+
+      /* ── Surface highlights ── */
+      --_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+      --_hi-strong: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
+
+      /* ── Depth ── */
+      --_sh-strong: color-mix(in srgb, var(--color-surface) 40%, transparent);
+      --_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
+      --_overlay-inner: color-mix(in srgb, var(--color-surface) 85%, transparent);
+      --_overlay-outer: color-mix(in srgb, var(--color-surface) 95%, transparent);
+
+      /* ── Primary (amber) pulse spectrum ── */
+      --_primary-faint: color-mix(in srgb, var(--color-primary) 5%, transparent);
+      --_primary-pulse-lo: color-mix(in srgb, var(--color-primary) 40%, transparent);
+      --_primary-pulse-mid: color-mix(in srgb, var(--color-primary) 50%, transparent);
+      --_primary-pulse-hi: color-mix(in srgb, var(--color-primary) 60%, transparent);
+      --_primary-pulse-max: color-mix(in srgb, var(--color-primary) 70%, transparent);
+
+      /* ── Danger pulse spectrum ── */
+      --_danger-pulse-lo: color-mix(in srgb, var(--color-danger) 40%, transparent);
+      --_danger-pulse-hi: color-mix(in srgb, var(--color-danger) 70%, transparent);
     }
 
     /* ── Status Banner ────────────────────────── */
@@ -96,8 +117,8 @@ export class VelgEpochCommandCenter extends LitElement {
           0deg,
           transparent,
           transparent 2px,
-          rgba(255 255 255 / 0.02) 2px,
-          rgba(255 255 255 / 0.02) 4px
+          var(--_hi-dim) 2px,
+          var(--_hi-dim) 4px
         );
       pointer-events: none;
     }
@@ -148,17 +169,17 @@ export class VelgEpochCommandCenter extends LitElement {
     .banner__phase--foundation {
       border-color: var(--color-success);
       color: var(--color-success);
-      box-shadow: 0 0 8px rgba(74 222 128 / 0.3);
+      box-shadow: 0 0 8px var(--color-success-border);
     }
     .banner__phase--competition {
       border-color: var(--color-warning);
       color: var(--color-warning);
-      box-shadow: 0 0 8px rgba(245 158 11 / 0.3);
+      box-shadow: 0 0 8px var(--color-primary-border);
     }
     .banner__phase--reckoning {
       border-color: var(--color-danger);
       color: var(--color-danger);
-      box-shadow: 0 0 12px rgba(239 68 68 / 0.4);
+      box-shadow: 0 0 12px var(--_danger-pulse-lo);
       animation: pulse-glow 2s ease-in-out infinite;
     }
     .banner__phase--completed {
@@ -172,8 +193,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 12px rgba(239 68 68 / 0.4); }
-      50% { box-shadow: 0 0 20px rgba(239 68 68 / 0.7); }
+      0%, 100% { box-shadow: 0 0 12px var(--_danger-pulse-lo); }
+      50% { box-shadow: 0 0 20px var(--_danger-pulse-hi); }
     }
 
     /* ── Phase Stepper ─────────────────────────── */
@@ -230,8 +251,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     @keyframes stepper-pulse {
-      0%, 100% { box-shadow: 0 0 4px rgba(245 158 11 / 0.4); }
-      50% { box-shadow: 0 0 10px rgba(245 158 11 / 0.7); }
+      0%, 100% { box-shadow: 0 0 4px var(--_primary-pulse-lo); }
+      50% { box-shadow: 0 0 10px var(--_primary-pulse-max); }
     }
 
     .stepper__label {
@@ -310,7 +331,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: 10px;
       color: var(--color-text-tertiary);
       letter-spacing: 0.03em;
-      box-shadow: 0 4px 12px rgba(0 0 0 / 0.5);
+      box-shadow: 0 4px 12px var(--_sh-heavy);
     }
 
     /* Caret pointing up */
@@ -358,8 +379,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     @keyframes trophy-glow {
-      0%, 100% { box-shadow: 0 0 4px rgba(245 158 11 / 0.3); }
-      50% { box-shadow: 0 0 14px rgba(245 158 11 / 0.6); }
+      0%, 100% { box-shadow: 0 0 4px var(--color-primary-border); }
+      50% { box-shadow: 0 0 14px var(--_primary-pulse-hi); }
     }
 
     /* ── Winner Banner ────────────────────── */
@@ -370,7 +391,7 @@ export class VelgEpochCommandCenter extends LitElement {
       gap: var(--space-2);
       padding: var(--space-1-5) var(--space-3);
       border-left: 2px solid var(--color-warning);
-      background: rgba(245 158 11 / 0.05);
+      background: var(--_primary-faint);
       margin-left: var(--space-2);
     }
 
@@ -381,8 +402,8 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     @keyframes trophy-glow-icon {
-      0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 2px rgba(245 158 11 / 0.3)); }
-      50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(245 158 11 / 0.6)); }
+      0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 2px var(--color-primary-border)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 6px var(--_primary-pulse-hi)); }
     }
 
     .winner-banner__label {
@@ -637,7 +658,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .mission:hover {
       padding-left: var(--space-2);
-      background: rgba(255 255 255 / 0.02);
+      background: var(--_hi-dim);
     }
 
     .mission:hover .mission__icon {
@@ -845,7 +866,7 @@ export class VelgEpochCommandCenter extends LitElement {
       right: 0;
       bottom: 0;
       width: 4px;
-      background: rgba(255 255 255 / 0.6);
+      background: var(--_hi-strong);
       animation: rp-shimmer 3s ease-in-out infinite;
     }
 
@@ -1015,7 +1036,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .admin-btn--resolve:hover:not(:disabled) {
-      background: rgba(245 158 11 / 0.15);
+      background: var(--color-primary-glow);
     }
 
     .admin-btn--cancel {
@@ -1142,7 +1163,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .mission__recall:hover {
-      background: rgba(245 158 11 / 0.15);
+      background: var(--color-primary-glow);
     }
 
     .mission__recall:disabled {
@@ -1154,7 +1175,7 @@ export class VelgEpochCommandCenter extends LitElement {
     @media (min-width: 2560px) {
       :host {
         background:
-          radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
+          radial-gradient(ellipse at center, transparent 60%, var(--_sh-strong) 100%),
           var(--color-surface-sunken);
       }
       .content {
@@ -1218,7 +1239,7 @@ export class VelgEpochCommandCenter extends LitElement {
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      background: radial-gradient(ellipse at center, rgba(0 0 0 / 0.85), rgba(0 0 0 / 0.95));
+      background: radial-gradient(ellipse at center, var(--_overlay-inner), var(--_overlay-outer));
       animation: overlay-lifecycle 2.2s ease-out forwards;
       pointer-events: none;
     }
@@ -1241,7 +1262,7 @@ export class VelgEpochCommandCenter extends LitElement {
       letter-spacing: 6px;
       text-transform: uppercase;
       color: var(--color-text-primary);
-      text-shadow: 0 0 40px rgba(245 158 11 / 0.4), 0 0 80px rgba(245 158 11 / 0.15);
+      text-shadow: 0 0 40px var(--_primary-pulse-lo), 0 0 80px var(--color-primary-glow);
       opacity: 0;
       animation: overlay-zoom-in 0.5s 0.15s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
     }
@@ -1285,7 +1306,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     @keyframes cycle-bump {
       0% { transform: scale(1); }
-      30% { transform: scale(1.4); color: var(--color-warning); text-shadow: 0 0 16px rgba(245 158 11 / 0.5); }
+      30% { transform: scale(1.4); color: var(--color-warning); text-shadow: 0 0 16px var(--_primary-pulse-mid); }
       100% { transform: scale(1); }
     }
 

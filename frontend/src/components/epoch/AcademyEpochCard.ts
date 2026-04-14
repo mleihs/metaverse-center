@@ -20,6 +20,7 @@ export class VelgAcademyEpochCard extends LitElement {
       opacity: 0;
       animation: shard-enter 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
       animation-delay: calc(var(--i, 0) * 80ms);
+      --_scanline: color-mix(in srgb, var(--color-text-primary) 1%, transparent);
     }
 
     @keyframes shard-enter {
@@ -60,8 +61,8 @@ export class VelgAcademyEpochCard extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255, 255, 255, 0.01) 3px,
-        rgba(255, 255, 255, 0.01) 4px
+        var(--_scanline) 3px,
+        var(--_scanline) 4px
       );
       pointer-events: none;
     }

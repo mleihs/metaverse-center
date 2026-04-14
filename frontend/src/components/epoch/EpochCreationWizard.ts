@@ -125,6 +125,25 @@ export class VelgEpochCreationWizard extends LitElement {
     css`
       :host {
         display: block;
+
+        /* ── Surface highlights ── */
+        --_hi-shimmer: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+        --_hi-shimmer-soft: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+
+        /* ── Depth ── */
+        --_sh-light: color-mix(in srgb, var(--color-surface) 30%, transparent);
+
+        /* ── Success spectrum ── */
+        --_success-subtle: color-mix(in srgb, var(--color-success) 10%, transparent);
+        --_success-medium: color-mix(in srgb, var(--color-success) 20%, transparent);
+        --_success-strong: color-mix(in srgb, var(--color-success) 40%, transparent);
+
+        /* ── Primary (amber) ── */
+        --_primary-subtle: color-mix(in srgb, var(--color-primary) 6%, transparent);
+        --_primary-soft: color-mix(in srgb, var(--color-primary) 8%, transparent);
+
+        /* ── Influence ── */
+        --_influence-faint: color-mix(in srgb, var(--color-epoch-influence) 5%, transparent);
       }
 
       /* Override info bubble for dark theme + position below to avoid modal overflow clipping */
@@ -188,7 +207,7 @@ export class VelgEpochCreationWizard extends LitElement {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255 255 255 / 0.2) 50%, transparent 100%);
+        background: linear-gradient(90deg, transparent 0%, var(--_hi-shimmer) 50%, transparent 100%);
         animation: phase-sweep 2s ease-in-out infinite;
       }
 
@@ -199,7 +218,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .phase--done {
         color: var(--color-success);
-        background: rgba(74 222 128 / 0.1);
+        background: var(--_success-subtle);
       }
 
       .phase--done::before {
@@ -241,7 +260,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .field__input:focus {
         outline: none;
         border-color: var(--color-success);
-        box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
+        box-shadow: 0 0 0 1px var(--color-success-border);
       }
 
       .field__input::placeholder {
@@ -263,7 +282,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .field__textarea:focus {
         outline: none;
         border-color: var(--color-success);
-        box-shadow: 0 0 0 1px rgba(74 222 128 / 0.3);
+        box-shadow: 0 0 0 1px var(--color-success-border);
       }
 
       .field__hint {
@@ -380,7 +399,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .toggle--on {
-        background: rgba(74 222 128 / 0.2);
+        background: var(--_success-medium);
         border-color: var(--color-success);
       }
 
@@ -512,7 +531,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .preset-btn:active {
-        background: rgba(74 222 128 / 0.1);
+        background: var(--_success-subtle);
       }
 
       /* ── Confirm Summary ─────────────────── */
@@ -557,7 +576,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .summary__section--note {
         border-color: var(--color-epoch-influence);
-        background: rgba(167, 139, 250, 0.05);
+        background: var(--_influence-faint);
       }
 
       .summary__note {
@@ -622,7 +641,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .btn--next:hover:not(:disabled) {
         background: var(--color-surface-raised);
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0 0 0 / 0.3);
+        box-shadow: 0 2px 8px var(--_sh-light);
       }
 
       .btn--launch {
@@ -636,20 +655,20 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .btn--launch:hover:not(:disabled) {
-        box-shadow: 0 0 16px rgba(74 222 128 / 0.4);
+        box-shadow: 0 0 16px var(--_success-strong);
         transform: translateY(-1px);
       }
 
       .btn--launch:active:not(:disabled) {
         transform: translateY(0);
-        box-shadow: 0 0 8px rgba(74 222 128 / 0.3);
+        box-shadow: 0 0 8px var(--color-success-border);
       }
 
       .btn--launch::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.15), transparent);
+        background: linear-gradient(90deg, transparent, var(--_hi-shimmer-soft), transparent);
         transform: translateX(-100%);
         animation: launch-shimmer 3s ease-in-out infinite;
       }
@@ -724,10 +743,10 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .format-card[aria-selected="true"] {
-        background: rgba(245 158 11 / 0.06);
+        background: var(--_primary-subtle);
         box-shadow:
           inset 0 2px 0 0 var(--color-warning),
-          0 0 12px rgba(245 158 11 / 0.08);
+          0 0 12px var(--_primary-soft);
         transform: scale(1.02);
       }
 
@@ -781,8 +800,8 @@ export class VelgEpochCreationWizard extends LitElement {
 
       .format-card[aria-selected="true"] .format-card__stats {
         color: var(--color-warning);
-        border-color: rgba(245 158 11 / 0.3);
-        background: rgba(245 158 11 / 0.08);
+        border-color: var(--color-primary-border);
+        background: var(--_primary-soft);
       }
 
       .format-card__desc {
