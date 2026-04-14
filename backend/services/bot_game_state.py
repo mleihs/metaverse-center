@@ -578,6 +578,19 @@ class BotGameState:
                 return op_type
         return None
 
+    def should_use_surge_riding(self, operative_type: str) -> bool:
+        """Whether bot should use Surge Riding for this operative deployment.
+
+        Bots use Surge Riding when:
+        - The operative is aligned with an active resonance
+        - Own zone pressure is low enough to absorb the risk (failure doubles pressure)
+        """
+        return (
+            operative_type in self.resonance_aligned_types
+            and self.own_avg_pressure < 0.2  # Conservative: only when stable
+            and len(self.active_resonances) > 0
+        )
+
     # ── Heartbeat-aware helpers ──────────────────────────────
 
     def has_active_arcs(self) -> bool:

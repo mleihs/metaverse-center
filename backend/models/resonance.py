@@ -56,7 +56,12 @@ CATEGORY_ARCHETYPE_MAP: dict[str, tuple[str, str]] = {
     "environmental_disaster": ("decay_bloom",         "The Entropy"),
 }
 
-# Default event types spawned per signature
+# Reverse map: archetype → (signature, source_category)
+ARCHETYPE_REVERSE_MAP: dict[str, tuple[str, str]] = {
+    v[1]: (v[0], k) for k, v in CATEGORY_ARCHETYPE_MAP.items()
+}
+
+# Default event types spawned per signature (primary = weight 3)
 DEFAULT_EVENT_TYPE_MAP: dict[str, list[str]] = {
     "economic_tremor":     ["trade", "crisis", "social"],
     "conflict_wave":       ["military", "intrigue", "social"],
@@ -66,6 +71,19 @@ DEFAULT_EVENT_TYPE_MAP: dict[str, list[str]] = {
     "innovation_spark":    ["discovery", "trade", "intrigue"],
     "consciousness_drift": ["social", "religious", "discovery"],
     "decay_bloom":         ["crisis", "eldritch", "social"],
+}
+
+# Extended event type pool per signature: secondary types (weight 1)
+# Used for weighted random selection to add variance
+SECONDARY_EVENT_TYPE_MAP: dict[str, list[str]] = {
+    "economic_tremor":     ["intrigue", "discovery"],
+    "conflict_wave":       ["crisis", "eldritch"],
+    "biological_tide":     ["discovery", "religious"],
+    "elemental_surge":     ["social", "trade"],
+    "authority_fracture":  ["crisis", "religious"],
+    "innovation_spark":    ["social", "military"],
+    "consciousness_drift": ["eldritch", "intrigue"],
+    "decay_bloom":         ["trade", "nautical"],
 }
 
 # Archetype descriptions for AI prompts

@@ -632,6 +632,13 @@ class ScannerService:
             "impacts_at": impacts_at,
         }
 
+        # Apply archetype override if admin chose a different interpretation
+        arch_override = candidate.get("archetype_override")
+        sig_override = candidate.get("signature_override")
+        if arch_override and sig_override:
+            insert_data["archetype"] = arch_override
+            insert_data["resonance_signature"] = sig_override
+
         resonance = await ResonanceService.create(admin, user_id, insert_data)
 
         # Mark candidate as created

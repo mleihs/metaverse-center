@@ -41,6 +41,8 @@ class UpdateCandidateRequest(BaseModel):
     magnitude: float | None = Field(default=None, ge=0.1, le=1.0)
     source_category: str | None = None
     bureau_dispatch: str | None = None
+    archetype_override: str | None = None
+    signature_override: str | None = None
 
 
 class TriggerScanRequest(BaseModel):

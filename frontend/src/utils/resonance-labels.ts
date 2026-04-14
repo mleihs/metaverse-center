@@ -66,6 +66,21 @@ export const CATEGORY_SIGNATURE_MAP: Record<string, string> = {
   environmental_disaster: 'decay_bloom',
 };
 
+/** Human-readable compound archetype label (i18n-wrapped). */
+export function compoundLabel(name: string): string {
+  switch (name) {
+    case 'The Ruin': return msg('The Ruin');
+    case 'The Crucible': return msg('The Crucible');
+    case 'The Drowning': return msg('The Drowning');
+    case 'The Erosion': return msg('The Erosion');
+    case 'The Contagion': return msg('The Contagion');
+    case 'The Disruption': return msg('The Disruption');
+    case 'The Deluge Absolute': return msg('The Deluge Absolute');
+    case 'The Awakened Throne': return msg('The Awakened Throne');
+    default: return name;
+  }
+}
+
 /** Human-readable source category label (i18n-wrapped). */
 export function categoryLabel(category: string): string {
   switch (category) {

@@ -127,9 +127,33 @@ class OperativeMissionService:
 
         config = {**DEFAULT_EPOCH_CONFIG, **epoch.get("config", {})}
 
-        # Check RP cost
+        # Check RP cost (resonance ops add extra RP cost)
         cost = OPERATIVE_RP_COSTS.get(body.operative_type, 5)
+        if body.resonance_op and body.resonance_op.value == "substrate_tap":
+            cost += 2  # Substrate Tap costs +2 RP on top of base
         await EpochService.spend_rp(supabase, epoch_id, simulation_id, cost)
+
+        # Validate resonance op eligibility
+        resonance_surge_bonus = 0.0
+        if body.resonance_op and body.target_simulation_id and admin_supabase:
+            from backend.models.epoch import ResonanceOpType
+
+            if body.resonance_op == ResonanceOpType.SURGE_RIDING:
+                try:
+                    elig_resp = await admin_supabase.rpc(
+                        "fn_resonance_surge_eligible",
+                        {"p_simulation_id": str(body.target_simulation_id), "p_operative_type": body.operative_type},
+                    ).execute()
+                    if elig_resp.data:
+                        resonance_surge_bonus = 0.08
+                    else:
+                        logger.warning(
+                            "Surge Riding denied: %s not aligned with active resonance in %s",
+                            body.operative_type,
+                            body.target_simulation_id,
+                        )
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.warning("Surge eligibility check failed, proceeding without bonus")
 
         # Calculate success probability (uses configurable balance params)
         success_prob = await cls._calculate_success_probability(
@@ -138,6 +162,7 @@ class OperativeMissionService:
             simulation_id,
             admin_supabase=admin_supabase,
             epoch_config=config,
+            resonance_surge_bonus=resonance_surge_bonus,
         )
 
         # Calculate resolve time
@@ -167,6 +192,7 @@ class OperativeMissionService:
             "success_probability": float(success_prob),
             "resolves_at": resolves_at.isoformat(),
             "deployed_cycle": epoch.get("current_cycle", 1),
+            "resonance_op": body.resonance_op.value if body.resonance_op else None,
         }
 
         resp = await supabase.table("operative_missions").insert(mission_data).execute()
@@ -232,6 +258,7 @@ class OperativeMissionService:
         admin_supabase: Client | None = None,
         *,
         epoch_config: dict | None = None,
+        resonance_surge_bonus: float = 0.0,
     ) -> float:
         """Calculate mission success probability using configurable parameters.
 
@@ -413,6 +440,7 @@ class OperativeMissionService:
             + attacker_pressure_penalty
             + convergence_mod
             + mood_modifier
+            + resonance_surge_bonus  # Surge Riding: +0.08 when exploiting aligned resonance
         )
 
         return max(prob_floor, min(prob_ceiling, probability))
