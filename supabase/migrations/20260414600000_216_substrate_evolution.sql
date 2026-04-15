@@ -175,7 +175,7 @@ BEGIN
 
   RETURN true;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 COMMENT ON FUNCTION fn_transfer_rp_atomic IS
   'Atomically transfers RP between epoch participants. Reuses fn_spend_rp_atomic (214) + fn_grant_rp_single (148). Returns false if sender has insufficient RP.';
