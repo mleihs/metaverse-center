@@ -1223,7 +1223,7 @@ class StoryComposer:
             fill=(120, 120, 120, 255),
             font=font_sm,
         )
-        y += SPACING_MD  # 48px — clears FONT_BODY text (~28px glyph) with 20px visual gap
+        y += SPACING_MD + SPACING_XS  # 60px above panel
 
         # Large stat numbers (centered, dramatic) (C7: accent color stats)
         font_stat = load_bold_font(FONT_STAT)
@@ -1296,8 +1296,8 @@ class StoryComposer:
             font=font_label,
         )
 
-        # Elegiac closing lines -- gap matches visual gap above panel (~20px)
-        closing_y = stats_panel_y + stats_panel_h + SPACING_SM
+        # Elegiac closing lines -- visually matches gap above panel
+        closing_y = stats_panel_y + stats_panel_h + SPACING_SM + SPACING_XS  # 36px below panel
         closing_y = min(closing_y, STORY_CLOSING_MAX_Y)
         font_closing = load_italic_font(FONT_CTA)
         closing_1 = "The trembling fades."
