@@ -27,6 +27,13 @@ IG_MAX_BYTES = 8 * 1024 * 1024  # 8MB
 
 BUREAU_HEADER_HEIGHT = 80
 BUREAU_FOOTER_HEIGHT = 40
+
+# Feed post overlay safe zones (in final 1080×1350 coordinates).
+# The smart crop algorithm uses these to position faces BELOW the header
+# overlay instead of behind it. Values derived from the dynamic header
+# layout (16+36+12+44+12+30+16 = 166px typical, max 280px) + footer (40px).
+FEED_SAFE_TOP = 180  # Conservative: covers 1-2 line titles (typical 166px)
+FEED_SAFE_BOTTOM = 50  # Footer watermark + accent bar
 BUREAU_WATERMARK_TEXT = "BUREAU OF IMPOSSIBLE GEOGRAPHY — [REDACTED]"
 CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
 

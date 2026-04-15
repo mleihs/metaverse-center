@@ -30,6 +30,8 @@ from backend.services.instagram_image_helpers import (
     BUREAU_FOOTER_HEIGHT,
     BUREAU_HEADER_HEIGHT,
     BUREAU_WATERMARK_TEXT,
+    FEED_SAFE_BOTTOM,
+    FEED_SAFE_TOP,
     FONT_CAPTION,
     FONT_FEED_BADGE,
     FONT_FEED_FOOTER,
@@ -338,7 +340,12 @@ class InstagramImageService:
             # Resize to Instagram portrait (1080x1350) before RGBA conversion
             if img.mode not in ("RGB", "RGBA"):
                 img = img.convert("RGB")
-            img = self._resize_for_instagram(img, gravity=crop_gravity)
+            img = self._resize_for_instagram(
+                img,
+                gravity=crop_gravity,
+                safe_zone_top=FEED_SAFE_TOP,
+                safe_zone_bottom=FEED_SAFE_BOTTOM,
+            )
 
             # Convert to RGBA for alpha compositing (like story templates)
             img = img.convert("RGBA")
@@ -601,6 +608,8 @@ class InstagramImageService:
         self,
         img,
         gravity: str = "center",
+        safe_zone_top: int = 0,
+        safe_zone_bottom: int = 0,
     ) -> object:
         """Resize image to fit Instagram 4:5 portrait format (1080x1350).
 
@@ -610,9 +619,12 @@ class InstagramImageService:
         - ``"top"``: Preserve upper portion (faces, heads). Crops from bottom.
         - ``"center"``: Standard center crop. Best for architecture/landscapes.
         - ``"bottom"``: Preserve lower portion. Crops from top.
-        - ``"smart"``: Entropy-based — finds the region with highest detail
-          (edge density + color variance) and centers the crop there.
-          No external dependency — uses Pillow's ImageStat + ImageFilter.
+        - ``"smart"``: Content-aware crop using smartcrop.js attention algorithm
+          (skin + edges + saturation). Accounts for overlay safe zones so
+          faces land below the header, not behind it.
+
+        ``safe_zone_top`` / ``safe_zone_bottom`` are in final-image pixels
+        (1080x1350 coordinate space). Only used by ``"smart"`` gravity.
         """
         from PIL import Image
 
@@ -630,7 +642,11 @@ class InstagramImageService:
             new_h = int(img.width / target_ratio)
 
             if gravity == "smart":
-                top = self._smart_crop_offset(img, new_h)
+                top = self._smart_crop_offset(
+                    img, new_h,
+                    safe_zone_top=safe_zone_top,
+                    safe_zone_bottom=safe_zone_bottom,
+                )
             elif gravity == "top":
                 top = 0
             elif gravity == "bottom":
@@ -643,7 +659,12 @@ class InstagramImageService:
         return img.resize((target_w, target_h), Image.LANCZOS)
 
     @staticmethod
-    def _smart_crop_offset(img, crop_height: int) -> int:
+    def _smart_crop_offset(
+        img,
+        crop_height: int,
+        safe_zone_top: int = 0,
+        safe_zone_bottom: int = 0,
+    ) -> int:
         """Content-aware vertical crop offset using the smartcrop.js attention algorithm.
 
         Adapts the three-channel attention scoring from **smartcrop.js** by Jonas Wagner
@@ -753,8 +774,27 @@ class InstagramImageService:
         # Map back to original image coordinates
         center_y_orig = center_y / scale
 
-        # Position crop centered on attention center, clamped to image bounds
-        top = int(center_y_orig - crop_height / 2)
+        # ── Safe zone adjustment ──
+        # The overlay covers safe_zone_top pixels at the top and safe_zone_bottom
+        # at the bottom of the FINAL image. The attention center should land at
+        # the visual center of the VISIBLE area, not the geometric center.
+        #
+        # In final image coordinates (1350px):
+        #   geometric center = crop_height_final / 2
+        #   visible  center  = safe_top + (crop_height_final - safe_top - safe_bottom) / 2
+        #   shift = visible_center - geometric_center = (safe_top - safe_bottom) / 2
+        #
+        # Convert shift to original image coordinates via the resize ratio.
+        if safe_zone_top or safe_zone_bottom:
+            final_h = IG_HEIGHT_PORTRAIT
+            shift_final = (safe_zone_top - safe_zone_bottom) / 2.0
+            shift_original = shift_final * (crop_height / final_h)
+        else:
+            shift_original = 0.0
+
+        # Position: place attention center at the visible center, not geometric center
+        # Negative top = crop higher = face lower in result = face below header ✓
+        top = int(center_y_orig - crop_height / 2 - shift_original)
         return max(0, min(top, img.height - crop_height))
 
     @staticmethod
