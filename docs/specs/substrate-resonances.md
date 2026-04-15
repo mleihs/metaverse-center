@@ -73,16 +73,18 @@ Each signature carries an archetype — a Jungian narrative force that shapes ho
 
 ### Archetype Descriptions
 
-| Archetype | Description |
-|-----------|-------------|
-| The Tower | A tremor through the foundations of commerce and trust. Markets buckle, alliances strain, and the architecture of prosperity reveals its cracks. |
-| The Shadow | The drumbeat of conflict reverberates across boundaries. Old enmities surface, new battle lines are drawn, and the shadow of war touches every corner. |
-| The Devouring Mother | A sickness moves through the substrate, indifferent to borders and beliefs. Communities turn inward, healers are sought, and the rhythm of daily life fractures. |
-| The Deluge | The elements assert their dominion. Coastlines shift, storms reshape landscapes, and civilizations remember their smallness before the forces that birthed them. |
-| The Overthrow | The old order trembles. Whether through revolution, reform, or the quiet erosion of legitimacy, power changes hands and nothing remains as it was. |
-| The Prometheus | A new fire illuminates and burns in equal measure. Knowledge advances, old methods become obsolete, and societies must choose: adapt or be consumed by progress. |
-| The Awakening | A subtle shift in the collective mind. New philosophies emerge, old certainties dissolve, and the way people see their world transforms from within. |
-| The Entropy | The slow unwinding. Systems that once sustained life falter, the environment rebels, and communities must confront the consequences of their choices. |
+Canonical source: `ARCHETYPE_DESCRIPTIONS` in `backend/models/resonance.py`. Each description mirrors its archetype's literary grammar (used on Detection story cards and as AI prompt context).
+
+| Archetype | Description | Literary DNA |
+|-----------|-------------|-------------|
+| The Tower | The foundation was a consensus. The consensus has left the building. | Kafka (bureaucratic horror) |
+| The Shadow | Something that was practicing stillness decides to stop practicing. | Büchner (compression) |
+| The Devouring Mother | The warmth is perfect. One stops questioning perfect warmth. This is the mechanism. | Mann (erlebte Rede) |
+| The Deluge | The water table has a longer memory than the city charter. It is waiting for the lease to expire. | Ballard (geological patience) |
+| The Overthrow | The throne is occupied. It was occupied yesterday. These are not the same sentence. | Political vertigo |
+| The Prometheus | The instrument reads perfectly. What it measures has not been named. This is either progress or evidence. | Epistemological crisis |
+| The Awakening | A thought arrives without being sent for. It has the weight of memory and the texture of premonition. | Proust (involuntary memory) |
+| The Entropy | The room still contains distinctions. Walls, floor, ceiling. The categories are losing interest. | Beckett (degradation) |
 
 ---
 

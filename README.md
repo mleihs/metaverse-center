@@ -195,13 +195,15 @@ Every agent and building is rendered as a collectible card – a unified `<velg-
 
 ## Social Media Pipeline
 
-A **Bureau of Impossible Geography Instagram pipeline** generates themed posts from simulation content – agent dossiers, building surveillance reports, chronicle dispatches, and declassified lore archives. Each post is composed as a 1080×1350 JPEG with Bureau header/footer overlays, simulation-colored borders, and optional steganographic cipher hints.
+A **Bureau of Impossible Geography Instagram pipeline** generates themed posts from simulation content -- agent dossiers, building surveillance reports, chronicle dispatches, and declassified lore archives. Each post is composed as a 1080x1350 JPEG with Bureau header/footer overlays, bleach bypass film grading, chromatic aberration, and optional steganographic cipher hints.
+
+The image pipeline is decomposed into three modules: `instagram_image_helpers.py` (59 design tokens derived from a BASE_UNIT/TYPE_SCALE system, Pillow primitives, visual effects), `instagram_story_composer.py` (5 story templates via `StoryComposer`), and `instagram_image_service.py` (feed post orchestration, Supabase I/O). Covered by 101 unit tests and a 52-case stress test suite.
 
 An **ARG cipher system** generates unique unlock codes per post. Followers decode hints from Instagram captions (or hidden in images) and redeem codes at `/bureau/dispatch` for rewards. Difficulty and hint format are configurable from the admin panel.
 
-**Bluesky cross-posting** via the AT Protocol mirrors Instagram content with reformatted captions and re-uploaded images.
+**Bluesky cross-posting** via the AT Protocol mirrors Instagram content with reformatted captions, re-uploaded images, `langs: ["en", "de"]` metadata, and bot self-labels.
 
-**Resonance Stories** convert substrate resonance impacts into multi-slide Instagram Story sequences (detection → classification → impact → advisory → subsiding), each with archetype-colored 9:16 templates.
+**Resonance Stories** convert substrate resonance impacts into multi-slide Instagram Story sequences (detection, classification, impact, advisory, subsiding), each with archetype-colored 9:16 templates, atmospheric filler with luminance-adaptive opacity, and literary archetype descriptions (Kafka for Tower, Büchner for Shadow, Beckett for Entropy).
 
 ---
 

@@ -43,7 +43,7 @@ All in `instagram_image_helpers.py`. Currently FLAT (not derived from base value
 
 ---
 
-## NEXT: Design Token System Refactoring
+## ~~NEXT~~ DONE: Design Token System Refactoring (commit 8580128)
 
 ### Problem
 59 tokens are 59 independent hardcoded values. No derivation hierarchy. Changing one value requires manually checking all related values.
@@ -85,7 +85,7 @@ Pure refactoring. The computed VALUES must stay identical. Only the derivation c
 
 ---
 
-## NEXT: Story Card Polish
+## ~~NEXT~~ DONE: Story Card Polish (commits 8580128, c3c07e9, 0c31c28)
 
 ### Remaining visual issues in story templates
 
