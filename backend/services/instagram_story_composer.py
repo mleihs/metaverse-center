@@ -1223,7 +1223,7 @@ class StoryComposer:
             fill=(120, 120, 120, 255),
             font=font_sm,
         )
-        y += SPACING_MD + SPACING_XS  # 60px above panel
+        y += SPACING_MD + SPACING_SM  # 72px above panel
 
         # Large stat numbers (centered, dramatic) (C7: accent color stats)
         font_stat = load_bold_font(FONT_STAT)
