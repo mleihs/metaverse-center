@@ -10,7 +10,7 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.epoch import DEFAULT_EPOCH_CONFIG, OperativeDeploy
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG, OperativeDeploy, ResonanceOpType
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import (
@@ -136,8 +136,6 @@ class OperativeMissionService:
         # Validate resonance op eligibility
         resonance_surge_bonus = 0.0
         if body.resonance_op and body.target_simulation_id and admin_supabase:
-            from backend.models.epoch import ResonanceOpType
-
             if body.resonance_op == ResonanceOpType.SURGE_RIDING:
                 try:
                     elig_resp = await admin_supabase.rpc(
@@ -563,11 +561,32 @@ class OperativeMissionService:
 
         roll = secrets.SystemRandom().random()
 
+        res_op = mission.get("resonance_op")
+
         if roll <= success_prob:
             # Success
             outcome = "success"
             final_status = "success"
             mission_result = await cls._apply_success_effect(supabase, mission)
+
+            # Substrate Tap: atomically steal 1 RP from target on success
+            if res_op == "substrate_tap" and mission.get("target_simulation_id"):
+                try:
+                    transfer_resp = await supabase.rpc(
+                        "fn_transfer_rp_atomic",
+                        {
+                            "p_epoch_id": mission["epoch_id"],
+                            "p_from_simulation_id": mission["target_simulation_id"],
+                            "p_to_simulation_id": mission["source_simulation_id"],
+                            "p_amount": 1,
+                        },
+                    ).execute()
+                    if transfer_resp.data:
+                        mission_result["substrate_tap"] = "1 RP stolen from target"
+                    else:
+                        mission_result["substrate_tap"] = "Target had insufficient RP"
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.warning("Substrate Tap RP transfer failed (non-fatal)")
         else:
             # Failure — independent detection roll against configurable threshold
             detection_roll = secrets.SystemRandom().random()
@@ -579,6 +598,21 @@ class OperativeMissionService:
                 outcome = "failed"
                 final_status = "failed"
                 mission_result = {"outcome": "failed", "narrative": "The mission failed quietly."}
+
+            # Surge Riding failure penalty: double resonance pressure on own zones
+            if res_op == "surge_riding" and mission.get("source_simulation_id"):
+                mission_result["surge_riding_penalty"] = "Resonance pressure doubled on source zones"
+                # The actual pressure doubling is handled by the heartbeat — we flag
+                # it here via a tag that the heartbeat Phase 3 can detect.
+                try:
+                    await supabase.table("resonance_memory").insert({
+                        "simulation_id": mission["source_simulation_id"],
+                        "resonance_signature": "surge_riding_penalty",
+                        "effective_magnitude": 0.5,
+                        "was_mitigated": False,
+                    }).execute()
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.warning("Surge Riding penalty recording failed (non-fatal)")
 
         # Update mission
         update_data = {

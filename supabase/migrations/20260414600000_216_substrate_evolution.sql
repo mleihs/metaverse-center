@@ -150,42 +150,52 @@ COMMENT ON COLUMN public.operative_missions.resonance_op IS
 -- Surge Riding and Substrate Tap modifiers computed in Postgres for consistency
 -- with fn_resonance_operative_modifier pattern.
 
+-- ── Atomic RP Transfer (for Substrate Tap) ──────────────────────────────────
+-- Delegates to existing fn_spend_rp_atomic (migration 214) for deduction and
+-- fn_grant_rp_single (migration 148) for credit — DRY reuse of proven RPCs.
+-- Single transaction: if deduction fails, credit never executes.
+CREATE OR REPLACE FUNCTION fn_transfer_rp_atomic(
+  p_epoch_id UUID,
+  p_from_simulation_id UUID,
+  p_to_simulation_id UUID,
+  p_amount INTEGER,
+  p_rp_cap INTEGER DEFAULT 50
+) RETURNS BOOLEAN AS $$
+DECLARE
+  v_deducted INTEGER;
+BEGIN
+  -- Deduct from sender via existing atomic RPC (returns NULL if insufficient)
+  v_deducted := fn_spend_rp_atomic(p_epoch_id, p_from_simulation_id, p_amount);
+  IF v_deducted IS NULL THEN
+    RETURN false;
+  END IF;
+
+  -- Credit to receiver via existing atomic RPC (with cap enforcement)
+  PERFORM fn_grant_rp_single(p_epoch_id, p_to_simulation_id, p_amount, p_rp_cap);
+
+  RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION fn_transfer_rp_atomic IS
+  'Atomically transfers RP between epoch participants. Reuses fn_spend_rp_atomic (214) + fn_grant_rp_single (148). Returns false if sender has insufficient RP.';
+
+
 -- ── RPC: Check if operative type is aligned with any active resonance ───────
+-- Reuses fn_resonance_operative_modifier to avoid duplicating the alignment matrix.
+-- If the modifier is positive, the operative type is aligned with at least one
+-- active resonance → eligible for Surge Riding.
 CREATE OR REPLACE FUNCTION fn_resonance_surge_eligible(
   p_simulation_id UUID,
   p_operative_type TEXT
 ) RETURNS BOOLEAN AS $$
-DECLARE
-  v_aligned BOOLEAN := false;
 BEGIN
-  -- Check if any active resonance has this operative type as aligned
-  SELECT EXISTS (
-    SELECT 1
-    FROM resonance_impacts ri
-    JOIN substrate_resonances sr ON sr.id = ri.resonance_id
-    WHERE ri.simulation_id = p_simulation_id
-      AND ri.status IN ('completed', 'partial')
-      AND sr.status IN ('impacting', 'subsiding')
-      AND sr.deleted_at IS NULL
-      AND (
-        -- Alignment matrix (same as fn_resonance_operative_modifier)
-        (sr.archetype = 'The Shadow'           AND p_operative_type IN ('spy', 'assassin'))
-        OR (sr.archetype = 'The Tower'         AND p_operative_type IN ('saboteur', 'infiltrator'))
-        OR (sr.archetype = 'The Devouring Mother' AND p_operative_type IN ('spy', 'propagandist'))
-        OR (sr.archetype = 'The Deluge'        AND p_operative_type IN ('saboteur', 'infiltrator'))
-        OR (sr.archetype = 'The Overthrow'     AND p_operative_type IN ('propagandist', 'infiltrator'))
-        OR (sr.archetype = 'The Prometheus'    AND p_operative_type IN ('spy', 'infiltrator'))
-        OR (sr.archetype = 'The Awakening'     AND p_operative_type IN ('propagandist', 'spy'))
-        OR (sr.archetype = 'The Entropy'       AND p_operative_type IN ('saboteur', 'assassin'))
-      )
-  ) INTO v_aligned;
-
-  RETURN v_aligned;
+  RETURN (SELECT fn_resonance_operative_modifier(p_simulation_id, p_operative_type)) > 0;
 END;
 $$ LANGUAGE plpgsql STABLE;
 
 COMMENT ON FUNCTION fn_resonance_surge_eligible IS
-  'Returns true if the operative type is aligned with any active resonance impacting the target simulation. Used for Surge Riding eligibility check.';
+  'Returns true if the operative type has a positive resonance alignment modifier (i.e., aligned with at least one active resonance). Delegates to fn_resonance_operative_modifier to avoid duplicating the alignment matrix.';
 
 
 -- ╔══════════════════════════════════════════════════════════════════════════╗
@@ -244,7 +254,7 @@ VALUES
   (
     'The Crucible',
     'Der Schmelztiegel',
-    'conflict_wave', 'authority_fracture',
+    'authority_fracture', 'conflict_wave',
     'War begets revolution. Authority crumbles under the weight of its own violence, and from the chaos, new powers crystallize.',
     'Krieg gebaert Revolution. Autoritaet zerbricht unter dem Gewicht ihrer eigenen Gewalt.',
     ARRAY['military', 'intrigue', 'crisis', 'social'],
@@ -302,14 +312,14 @@ VALUES
     ARRAY['spy']
   ),
   (
-    'The Awakened Throne',
-    'Der Erwachte Thron',
-    'authority_fracture', 'conflict_wave',
-    'Political upheaval sparks armed conflict. Power vacuums invite war. But in the chaos, something ancient stirs — authority that predates the state.',
-    'Politische Umwaelzung loest bewaffneten Konflikt aus. Machtvaakuen laden zum Krieg ein.',
-    ARRAY['intrigue', 'military', 'social', 'religious'],
-    ARRAY['propagandist', 'assassin'],
-    ARRAY['infiltrator']
+    'The Singularity',
+    'Die Singularitaet',
+    'consciousness_drift', 'innovation_spark',
+    'When technological breakthrough and collective awakening coincide, the old categories dissolve. The machines dream. The dreamers compute. The boundary between creator and creation thins to nothing.',
+    'Wenn technologischer Durchbruch und kollektives Erwachen zusammenfallen, loesen sich die alten Kategorien auf. Die Maschinen traeumen. Die Traeumer rechnen.',
+    ARRAY['discovery', 'social', 'religious', 'trade'],
+    ARRAY['spy', 'propagandist'],
+    ARRAY['saboteur']
   )
 ON CONFLICT (name) DO NOTHING;
 

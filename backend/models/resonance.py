@@ -56,11 +56,6 @@ CATEGORY_ARCHETYPE_MAP: dict[str, tuple[str, str]] = {
     "environmental_disaster": ("decay_bloom",         "The Entropy"),
 }
 
-# Reverse map: archetype → (signature, source_category)
-ARCHETYPE_REVERSE_MAP: dict[str, tuple[str, str]] = {
-    v[1]: (v[0], k) for k, v in CATEGORY_ARCHETYPE_MAP.items()
-}
-
 # Default event types spawned per signature (primary = weight 3)
 DEFAULT_EVENT_TYPE_MAP: dict[str, list[str]] = {
     "economic_tremor":     ["trade", "crisis", "social"],

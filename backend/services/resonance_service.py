@@ -594,7 +594,7 @@ class ResonanceService(BaseService):
                     sentry_sdk.capture_exception(exc)
 
         # ── 8. Determine final status ──
-        total_attempted = len(event_types[:3])
+        total_attempted = len(selected_types)
         if spawned_ids and spawn_errors:
             final_status = "partial"
             errors_joined = "; ".join(spawn_errors)
@@ -683,33 +683,41 @@ class ResonanceService(BaseService):
             compounds = compound_resp.data if compound_resp.data else []
             for compound in compounds:
                 compound_types = compound.get("event_types", [])
-                # Spawn 1 compound event (not 3 — it's a bonus, not a replacement)
-                if compound_types and gen_service:
-                    compound_type = compound_types[0]
-                    try:
-                        compound_event = await cls._spawn_resonance_event(
-                            supabase,
-                            simulation=simulation,
-                            resonance=resonance,
-                            event_type=compound_type,
-                            effective_magnitude=float(compound.get("combined_magnitude", effective_mag)),
-                            user_id=user_id,
-                            gen_service=gen_service,
-                        )
-                        spawned_ids.append(compound_event["id"])
-                        logger.info(
-                            "Spawned compound archetype event: %s (%s) in %s",
-                            compound["compound_name"],
-                            compound_type,
-                            sim_name,
-                        )
-                    except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-                        logger.warning(
-                            "Compound event spawn failed for %s in %s",
-                            compound.get("compound_name", "?"),
-                            sim_name,
-                            exc_info=True,
-                        )
+                if not compound_types:
+                    continue
+                compound_type = compound_types[0]
+                # Build a synthetic resonance dict with compound context so the
+                # AI generator uses the compound archetype, not the original one.
+                compound_resonance = {
+                    **resonance,
+                    "archetype": compound["compound_name"],
+                    "resonance_signature": f"{signature}_compound",
+                    "title": f"{compound['compound_name']}: {resonance['title']}",
+                }
+                try:
+                    compound_event = await cls._spawn_resonance_event(
+                        supabase,
+                        simulation=simulation,
+                        resonance=compound_resonance,
+                        event_type=compound_type,
+                        effective_magnitude=float(compound.get("combined_magnitude", effective_mag)),
+                        user_id=user_id,
+                        gen_service=gen_service,
+                    )
+                    spawned_ids.append(compound_event["id"])
+                    logger.info(
+                        "Spawned compound archetype event: %s (%s) in %s",
+                        compound["compound_name"],
+                        compound_type,
+                        sim_name,
+                    )
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.warning(
+                        "Compound event spawn failed for %s in %s",
+                        compound.get("compound_name", "?"),
+                        sim_name,
+                        exc_info=True,
+                    )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Compound archetype detection unavailable (non-fatal)")
 
