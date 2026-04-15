@@ -9,6 +9,7 @@ dependencies = [
     "pydantic-settings>=2.13.0",
     "pydantic-ai>=1.66.0",
     "supabase>=2.25.0",
+    "storage3<2.26.0",  # Pin: 2.26+ pulls pyiceberg (Apache data lake) as hard dep — 12 transitive packages, unused analytics feature
     "httpx>=0.28.0",
     "Pillow>=12.0.0",
     "cryptography>=46.0.0",
