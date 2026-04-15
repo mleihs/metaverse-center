@@ -23,6 +23,7 @@ from backend.config import settings
 from backend.services.cipher_service import CipherService
 from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_service import InstagramImageService
+from backend.services.social.constants import BROAD_TAG_POOL, DEFAULT_CONTENT_MIX, NICHE_TAG_POOLS
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -31,87 +32,6 @@ logger = logging.getLogger(__name__)
 
 # Bureau dispatch counter — persisted via MAX(dispatch_number) pattern
 _AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
-
-# Hashtag presets — rotated per post for reach diversity.
-# Instagram 2026: 4-5 tags max, all generic/discoverable. No brand or
-# simulation-specific tags (zero search volume, hurt discoverability).
-# Formula: 2 broad + 2 niche + 1 trending/extra niche.
-
-# Broad reach pool (high search volume, relevant communities).
-# Rotated per post via entity name hash to avoid identical tag sets.
-_BROAD_POOL = [
-    "#worldbuilding",
-    "#AIart",
-    "#speculativefiction",
-    "#scifi",
-    "#digitalart",
-    "#conceptart",
-    "#storytelling",
-    "#alternatehistory",
-    "#creativewriting",
-    "#indiedev",
-    "#fantasyworldbuilding",
-    "#scifiart",
-    "#ttrpg",
-    "#fantasy",
-]
-
-# Niche engagement pools — high relevance, per content type.
-# These attract genuinely interested followers (better engagement rate).
-_NICHE_POOLS: dict[str, list[str]] = {
-    "agent": [
-        "#characterdesign",
-        "#OC",
-        "#AIcharacter",
-        "#characterart",
-        "#AIportrait",
-        "#RPG",
-        "#dndcharacter",
-        "#fictionalcharacter",
-        "#portraitart",
-        "#ttrpgcommunity",
-    ],
-    "building": [
-        "#AIarchitecture",
-        "#fantasyarchitecture",
-        "#environmentdesign",
-        "#scifibuilding",
-        "#conceptarchitecture",
-        "#urbanfantasy",
-        "#proceduralgeneration",
-        "#virtualworld",
-    ],
-    "chronicle": [
-        "#microfiction",
-        "#flashfiction",
-        "#lorebuilding",
-        "#narrativedesign",
-        "#ttrpg",
-        "#emergentnarrative",
-        "#fictionwriting",
-        "#worldlore",
-    ],
-    "lore": [
-        "#lore",
-        "#deepdive",
-        "#secrethistory",
-        "#fictionallore",
-        "#narrativedesign",
-        "#ttrpg",
-        "#archivesfiction",
-        "#classifieddocument",
-    ],
-}
-
-# Content type weights (overridable via platform_settings.instagram_content_mix).
-# Weights are proportional: agent=3, building=2 means ~60% agents, ~40% buildings.
-# Set a weight to 0 to disable that content type entirely.
-DEFAULT_CONTENT_MIX: dict[str, int] = {
-    "agent": 3,
-    "building": 2,
-    "chronicle": 2,
-    "lore": 1,
-}
 
 # Caption templates (hardcoded fallbacks — prompt_templates DB entries take priority)
 CAPTION_TEMPLATES = {
@@ -1013,14 +933,14 @@ class InstagramContentService:
         tags: list[str] = []
 
         # 1-2. Two broad reach tags (rotated from pool)
-        broad_idx = seed % len(_BROAD_POOL)
+        broad_idx = seed % len(BROAD_TAG_POOL)
         for offset in range(2):
-            pick = _BROAD_POOL[(broad_idx + offset) % len(_BROAD_POOL)]
+            pick = BROAD_TAG_POOL[(broad_idx + offset) % len(BROAD_TAG_POOL)]
             if pick not in tags:
                 tags.append(pick)
 
         # 3-4. Two niche tags (rotated from content-type pool)
-        niche_pool = _NICHE_POOLS.get(content_type, _NICHE_POOLS["agent"])
+        niche_pool = NICHE_TAG_POOLS.get(content_type, NICHE_TAG_POOLS["agent"])
         niche_idx = (seed >> 4) % len(niche_pool)
         for offset in range(2):
             pick = niche_pool[(niche_idx + offset) % len(niche_pool)]

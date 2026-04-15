@@ -18,6 +18,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.external.bluesky import BlueskyService
+from backend.services.social.constants import BLUESKY_SKIP_TAG_PATTERNS, BLUESKY_WORTHY_TAGS
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -27,51 +28,6 @@ logger = logging.getLogger(__name__)
 # Bluesky post limit is 300 graphemes; leave room for hashtags
 _GRAPHEME_LIMIT = 260  # Leave ~40 chars for 2-3 hashtags
 _HASHTAG_BUDGET = 3  # Max hashtags to append
-
-# Brand/simulation-specific tags — zero search volume, skip for Bluesky
-_SKIP_TAG_PATTERNS = {
-    "bureauofimpossiblegeography",
-    "substratedispatch",
-    # Simulation slugs become CamelCase tags — detect by checking if
-    # the lowered tag matches no known community hashtag
-}
-
-# Community tags worth keeping on Bluesky (high discoverability)
-_BLUESKY_WORTHY_TAGS = {
-    "#worldbuilding",
-    "#aiart",
-    "#speculativefiction",
-    "#scifi",
-    "#digitalart",
-    "#conceptart",
-    "#storytelling",
-    "#alternatehistory",
-    "#creativewriting",
-    "#fantasyworldbuilding",
-    "#scifiart",
-    "#ttrpg",
-    "#fantasy",
-    "#characterdesign",
-    "#oc",
-    "#aicharacter",
-    "#characterart",
-    "#aiportrait",
-    "#rpg",
-    "#fictionalcharacter",
-    "#portraitart",
-    "#ttrpgcommunity",
-    "#aiarchitecture",
-    "#fantasyarchitecture",
-    "#environmentdesign",
-    "#urbanfantasy",
-    "#proceduralgeneration",
-    "#microfiction",
-    "#flashfiction",
-    "#lorebuilding",
-    "#narrativedesign",
-    "#emergentnarrative",
-    "#indiedev",
-}
 
 
 class BlueskyContentService:
@@ -190,10 +146,10 @@ class BlueskyContentService:
         for tag in ig_hashtags:
             lower = tag.lstrip("#").lower()
             # Skip known brand/simulation patterns
-            if lower in _SKIP_TAG_PATTERNS:
+            if lower in BLUESKY_SKIP_TAG_PATTERNS:
                 continue
             # Keep only tags in the community-worthy set
-            if f"#{lower}" in _BLUESKY_WORTHY_TAGS:
+            if f"#{lower}" in BLUESKY_WORTHY_TAGS:
                 worthy.append(tag)
 
         if not worthy:

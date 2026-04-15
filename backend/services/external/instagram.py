@@ -490,23 +490,86 @@ class InstagramService:
 
     # ── Internal HTTP Helpers ───────────────────────────────────────────
 
+    async def _request_with_retry(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """HTTP request with exponential backoff retry on transient errors.
+
+        Retries up to 3 times on HTTP 500/502/503, 429, and connection errors.
+        Does NOT retry on 4xx (except 429).
+        """
+        max_retries = 3
+        backoff_base = 1.0  # seconds — exponential: 1s, 2s, 4s
+
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+                    if method == "GET":
+                        resp = await client.get(url, params=params)
+                    else:
+                        resp = await client.post(url, data=data)
+
+                # Log X-App-Usage header if present (API quota monitoring)
+                app_usage = resp.headers.get("X-App-Usage")
+                if app_usage:
+                    logger.debug("Instagram API usage", extra={"x_app_usage": app_usage})
+
+                # Retry on transient server errors and rate limits
+                if resp.status_code in (429, 500, 502, 503) and attempt < max_retries - 1:
+                    wait = backoff_base * (2 ** attempt)
+                    logger.warning(
+                        "Instagram API retrying on transient error",
+                        extra={
+                            "url": url.split("?")[0],
+                            "http_method": method,
+                            "status": resp.status_code,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                        },
+                    )
+                    await asyncio.sleep(wait)
+                    continue
+
+                self._check_response(resp)
+                return resp.json()
+
+            except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
+                if attempt < max_retries - 1:
+                    wait = backoff_base * (2 ** attempt)
+                    logger.warning(
+                        "Instagram connection error, retrying",
+                        extra={
+                            "url": url.split("?")[0],
+                            "http_method": method,
+                            "attempt": attempt + 1,
+                            "wait_s": wait,
+                            "error": str(exc)[:100],
+                        },
+                    )
+                    await asyncio.sleep(wait)
+                    continue
+                raise InstagramAPIError(
+                    f"Instagram connection failed after {max_retries} attempts: {exc}",
+                ) from exc
+
+        # Safety net — should not reach here
+        raise InstagramAPIError(f"Instagram {method} {url.split('?')[0]} failed after {max_retries} retries")
+
     async def _get(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
-        """GET request to Graph API."""
+        """GET request to Graph API with retry."""
         url = f"{self.base_url}/{endpoint}"
-        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await client.get(url, params=params)
-            self._check_response(resp)
-            return resp.json()
+        return await self._request_with_retry("GET", url, params=params)
 
     async def _post(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
-        """POST request to Graph API."""
+        """POST request to Graph API with retry."""
         url = f"{self.base_url}/{endpoint}"
-        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
-            resp = await client.post(url, data=params)
-            self._check_response(resp)
-            return resp.json()
+        return await self._request_with_retry("POST", url, data=params)
 
-    @staticmethod
     @staticmethod
     def _extract_rate_limit_info(resp: httpx.Response) -> dict[str, str]:
         """Extract Meta rate limit and debug headers from response."""

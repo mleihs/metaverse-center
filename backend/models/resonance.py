@@ -71,16 +71,38 @@ SECONDARY_EVENT_TYPE_MAP: dict[str, list[str]] = {
     "decay_bloom":         ["trade", "nautical"],
 }
 
-# Archetype descriptions for AI prompts
+# Archetype descriptions — used on Detection story cards (italic, 2-3 lines)
+# and as AI prompt context. Each description mirrors its archetype's literary grammar.
 ARCHETYPE_DESCRIPTIONS: dict[str, str] = {
-    "The Tower": "Structures that seemed permanent reveal themselves as temporary. Value dissolves.",
-    "The Shadow": "The part of reality that knows how to hurt rises to the surface.",
-    "The Devouring Mother": "That which sustains life turns against it. The organic remembers hunger.",
-    "The Deluge": "The world reminds its inhabitants that they are guests, not owners.",
-    "The Overthrow": "Power changes hands. The old order doesn't die — it metamorphoses.",
-    "The Prometheus": "Fire stolen from the gods. Every gift is also a weapon.",
-    "The Awakening": "The collective mind turns over in its sleep. Something new is dreaming.",
-    "The Entropy": "The slow unwinding accelerates. Decay is not destruction — it is transformation's dark twin.",
+    "The Tower": (
+        "The foundation was a consensus. The consensus has left the building."
+    ),
+    "The Shadow": (
+        "Something that was practicing stillness decides to stop practicing."
+    ),
+    "The Devouring Mother": (
+        "The warmth is perfect. One stops questioning perfect warmth. This is the mechanism."
+    ),
+    "The Deluge": (
+        "The water table has a longer memory than the city charter. "
+        "It is waiting for the lease to expire."
+    ),
+    "The Overthrow": (
+        "The throne is occupied. It was occupied yesterday. "
+        "These are not the same sentence."
+    ),
+    "The Prometheus": (
+        "The instrument reads perfectly. What it measures has not been named. "
+        "This is either progress or evidence."
+    ),
+    "The Awakening": (
+        "A thought arrives without being sent for. "
+        "It has the weight of memory and the texture of premonition."
+    ),
+    "The Entropy": (
+        "The room still contains distinctions. Walls, floor, ceiling. "
+        "The categories are losing interest."
+    ),
 }
 
 

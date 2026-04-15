@@ -206,17 +206,14 @@ BUILDING_PROMPTS: dict[str, str] = {
     ),
 
     "Room 441": (
-        "Windowless government office interior, fourth floor, Bureau 12. A grey steel desk with a "
-        "single Olympia SM9 typewriter, its keys depressed as if by invisible fingers. Three floor-"
-        "to-ceiling grey metal filing cabinets, one drawer slightly open revealing documents on "
-        "parchment that should not exist in this century. A swivel chair with cracked faux-leather "
-        "upholstery, pushed back as if its occupant just stood. The only light: a single flickering "
-        "fluorescent tube overhead casting cold blue-white light, its frequency synchronized to "
-        "something rhythmic. Carbon-copy forms in wire trays, rubber stamps, a Bureau telephone "
-        "with rotary dial. Institutional grey-green paint on concrete walls showing decades of "
-        "moisture damage. Shot on Hasselblad X2D, 35mm at f/5.6, deep focus. In the style of "
-        "Candida Höfer institutional interior crossed with the Stasi Headquarters Normannenstrasse, "
-        "the banality of impossible bureaucracy, desaturated palette, documentary photography."
+        "Single image, interior only. Windowless government office, grey steel desk with an "
+        "Olympia SM9 typewriter, three floor-to-ceiling grey metal filing cabinets against the "
+        "back wall, one drawer slightly open. A swivel chair with cracked faux-leather pushed back "
+        "from the desk. Single flickering fluorescent tube overhead casting cold blue-white light "
+        "on institutional grey-green concrete walls showing moisture damage. Carbon-copy forms in "
+        "wire trays, rotary telephone. Shot on Hasselblad X2D, 35mm at f/5.6, deep focus. "
+        "In the style of Candida Höfer crossed with Stasi Headquarters Normannenstrasse, "
+        "desaturated palette, the banality of impossible bureaucracy."
     ),
 
     "Archive Sub-Level C": (
@@ -274,17 +271,14 @@ BUILDING_PROMPTS: dict[str, str] = {
     ),
 
     "Wohnhaus am Markt": (
-        "Nine-storey prefabricated concrete panel building in poor condition, a standardized housing "
-        "unit repurposed as the last shelter for those the state has forgotten. Precast concrete "
-        "facade panels showing cracks and dark moisture streaks like tears on a grey face. Open "
-        "concrete gallery corridors along the front serving as escape routes, laundry lines, and "
-        "gathering places. A hand-painted sign at the ground floor entrance. Warm kitchen light "
-        "spilling from small windows into the grey evening, the only warmth on the facade. A broken "
-        "elevator shaft, a stairwell smelling of concrete and something the residents call hope. "
-        "Shot on 35mm at f/5.6. In the style of Simon Phipps British brutalist photography "
-        "crossed with Robin Hood Gardens documentation, Khrushchyovka decay, the building as "
-        "minimum viable shelter that has become maximum viable compassion, desaturated exterior "
-        "with warm interior light bleeding through."
+        "Tall nine-floor prefabricated concrete panel tower in poor condition, all nine storey "
+        "levels clearly visible from ground to roofline. Precast facade panels cracked with dark "
+        "moisture streaks. Open concrete gallery corridors along the front with hanging laundry. "
+        "Warm amber kitchen light spilling from small windows into grey dusk, the only warmth on "
+        "the facade. Hand-painted shelter sign at the ground floor. Shot on 35mm at f/5.6. "
+        "In the style of Simon Phipps British brutalist photography crossed with Khrushchyovka "
+        "decay documentation, desaturated exterior with warm interior light bleeding through, "
+        "the building as minimum viable shelter."
     ),
 }
 

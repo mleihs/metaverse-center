@@ -16,17 +16,14 @@ Loop:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
 import sentry_sdk
-import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.dependencies import get_admin_supabase
 from backend.services.bluesky_content_service import BlueskyContentService
 from backend.services.external.bluesky import (
     BlueskyAPIError,
@@ -35,85 +32,40 @@ from backend.services.external.bluesky import (
     BlueskyRateLimitError,
     BlueskyService,
 )
+from backend.services.social.constants import (
+    DEFAULT_CHECK_INTERVAL,
+    MAX_PUBLISH_RETRIES,
+    METRICS_COLLECT_DELAYS,
+)
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.services.social.types import AdaptedContent
 from backend.utils.responses import extract_list
+from backend.utils.settings import decrypt_setting, load_platform_settings, parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
 # Defaults (overridable via platform_settings)
-_DEFAULT_CHECK_INTERVAL = 300  # 5 minutes
 _DEFAULT_ENABLED = False
-_MAX_RETRIES = 3
-_METRICS_COLLECT_DELAYS = [3600, 21600, 86400, 172800]  # +1h, +6h, +24h, +48h
 
 
-class BlueskyScheduler:
+class BlueskyScheduler(BaseSchedulerMixin):
     """Periodic background task that publishes scheduled Bluesky posts."""
 
-    _task: asyncio.Task | None = None
-    _iteration_count: int = 0
+    _scheduler_name = "bluesky"
 
     @classmethod
-    async def start(cls) -> asyncio.Task:
-        """Launch the scheduler loop. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_loop())
-        logger.info("Bluesky scheduler started")
-        return cls._task
-
-    @classmethod
-    async def _run_loop(cls) -> None:
-        """Infinite loop: sleep → check for due posts → publish."""
-        while True:
-            interval = _DEFAULT_CHECK_INTERVAL
-            cls._iteration_count += 1
-            try:
-                structlog.contextvars.bind_contextvars(
-                    scheduler="bluesky",
-                    iteration=cls._iteration_count,
-                )
-                admin = await get_admin_supabase()
-                config = await cls._load_config(admin)
-                interval = config["interval"]
-
-                if config["enabled"]:
-                    await cls._process_due_posts(admin, config)
-                    await cls._collect_pending_metrics(admin, config)
-            except asyncio.CancelledError:
-                logger.info("Bluesky scheduler shutting down")
-                raise
-            except (httpx.ConnectError, httpx.ConnectTimeout):
-                logger.warning(
-                    "Bluesky scheduler: database unavailable, retrying",
-                    extra={
-                        "iteration": cls._iteration_count,
-                        "retry_in_s": interval,
-                    },
-                )
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception(
-                    "Bluesky scheduler loop error",
-                    extra={
-                        "iteration": cls._iteration_count,
-                    },
-                )
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("bluesky_phase", "scheduler_loop")
-                    scope.set_context(
-                        "bluesky",
-                        {
-                            "iteration": cls._iteration_count,
-                        },
-                    )
-                    sentry_sdk.capture_exception(exc)
-            await asyncio.sleep(interval)
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One tick: publish due posts and collect metrics."""
+        await cls._process_due_posts(admin, config)
+        await cls._collect_pending_metrics(admin, config)
 
     @classmethod
     async def _load_config(cls, admin: Client) -> dict:
         """Read Bluesky scheduler config from platform_settings."""
         config: dict = {
             "enabled": _DEFAULT_ENABLED,
-            "interval": _DEFAULT_CHECK_INTERVAL,
+            "interval": DEFAULT_CHECK_INTERVAL,
             "posting_enabled": False,
             "handle": "",
             "app_password": "",
@@ -121,76 +73,30 @@ class BlueskyScheduler:
         }
 
         try:
-            _resp = await (
-                admin.table("platform_settings")
-                .select("setting_key, setting_value")
-                .in_(
-                    "setting_key",
-                    [
-                        "bluesky_enabled",
-                        "bluesky_posting_enabled",
-                        "bluesky_handle",
-                        "bluesky_app_password",
-                        "bluesky_pds_url",
-                        "bluesky_scheduler_interval_seconds",
-                    ],
-                )
-                .execute()
-            )
-            rows = extract_list(_resp)
+            sm = await load_platform_settings(admin, [
+                "bluesky_enabled",
+                "bluesky_posting_enabled",
+                "bluesky_handle",
+                "bluesky_app_password",
+                "bluesky_pds_url",
+                "bluesky_scheduler_interval_seconds",
+            ])
 
-            settings_map: dict[str, str] = {}
-            for row in rows:
-                settings_map[row["setting_key"]] = row["setting_value"]
-
-            config["enabled"] = _parse_bool(settings_map.get("bluesky_enabled", "false"))
-            config["posting_enabled"] = _parse_bool(settings_map.get("bluesky_posting_enabled", "false"))
-
-            handle_raw = settings_map.get("bluesky_handle", "")
-            config["handle"] = str(handle_raw).strip().strip('"')
-
-            pds_raw = settings_map.get("bluesky_pds_url", "https://bsky.social")
-            config["pds_url"] = str(pds_raw).strip().strip('"') or "https://bsky.social"
-
-            # App password — may be encrypted
-            raw_password = settings_map.get("bluesky_app_password", "")
-            if raw_password and raw_password.startswith("gAAAAA"):
-                try:
-                    from backend.utils.encryption import decrypt
-
-                    config["app_password"] = decrypt(raw_password)
-                except (ValueError, Exception):
-                    logger.warning(
-                        "Failed to decrypt Bluesky app password",
-                        extra={
-                            "iteration": cls._iteration_count,
-                            "password_status": "decrypt_failed",
-                        },
-                    )
-                    config["app_password"] = ""
-            else:
-                pw = str(raw_password).strip().strip('"')
-                config["app_password"] = pw
+            config["enabled"] = parse_setting_bool(sm.get("bluesky_enabled", "false"))
+            config["posting_enabled"] = parse_setting_bool(sm.get("bluesky_posting_enabled", "false"))
+            config["handle"] = str(sm.get("bluesky_handle", "")).strip().strip('"')
+            config["pds_url"] = str(sm.get("bluesky_pds_url", "https://bsky.social")).strip().strip('"') or "https://bsky.social"
+            config["app_password"] = decrypt_setting(sm.get("bluesky_app_password", ""))
 
             try:
-                config["interval"] = max(
-                    60,
-                    int(
-                        settings_map.get(
-                            "bluesky_scheduler_interval_seconds",
-                            "300",
-                        )
-                    ),
-                )
+                config["interval"] = max(60, int(sm.get("bluesky_scheduler_interval_seconds", "300")))
             except (ValueError, TypeError):
                 pass
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to load Bluesky scheduler config, using defaults",
-                extra={
-                    "iteration": cls._iteration_count,
-                },
+                extra={"iteration": cls._iteration_count},
             )
 
         return config
@@ -314,7 +220,7 @@ class BlueskyScheduler:
                 )
             except BlueskyAPIError as exc:
                 retry_count = post.get("retry_count", 0)
-                if retry_count < _MAX_RETRIES:
+                if retry_count < MAX_PUBLISH_RETRIES:
                     await (
                         admin.table("bluesky_posts")
                         .update(
@@ -332,7 +238,7 @@ class BlueskyScheduler:
                         extra={
                             "post_id": str(post_id),
                             "retry_count": retry_count + 1,
-                            "max_retries": _MAX_RETRIES,
+                            "max_retries": MAX_PUBLISH_RETRIES,
                             "iteration": cls._iteration_count,
                         },
                     )
@@ -352,7 +258,7 @@ class BlueskyScheduler:
                         "Bluesky post failed after max retries",
                         extra={
                             "post_id": str(post_id),
-                            "retry_count": _MAX_RETRIES,
+                            "retry_count": MAX_PUBLISH_RETRIES,
                             "iteration": cls._iteration_count,
                         },
                     )
@@ -362,7 +268,7 @@ class BlueskyScheduler:
                             "bluesky",
                             {
                                 "post_id": str(post_id),
-                                "retry_count": _MAX_RETRIES,
+                                "retry_count": MAX_PUBLISH_RETRIES,
                             },
                         )
                         sentry_sdk.capture_exception(exc)
@@ -538,7 +444,7 @@ class BlueskyScheduler:
 
             # Check if we should collect at this interval
             should_collect = False
-            for delay in _METRICS_COLLECT_DELAYS:
+            for delay in METRICS_COLLECT_DELAYS:
                 window_start = delay - config["interval"]
                 window_end = delay + config["interval"]
                 if window_start <= elapsed <= window_end:
@@ -574,6 +480,3 @@ class BlueskyScheduler:
                 )
 
 
-def _parse_bool(value: str) -> bool:
-    """Parse a string as a boolean."""
-    return str(value).lower().strip('"') not in ("false", "0", "no", "")
