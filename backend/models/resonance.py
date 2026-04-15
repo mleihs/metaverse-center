@@ -56,20 +56,10 @@ CATEGORY_ARCHETYPE_MAP: dict[str, tuple[str, str]] = {
     "environmental_disaster": ("decay_bloom",         "The Entropy"),
 }
 
-# Default event types spawned per signature (primary = weight 3)
-DEFAULT_EVENT_TYPE_MAP: dict[str, list[str]] = {
-    "economic_tremor":     ["trade", "crisis", "social"],
-    "conflict_wave":       ["military", "intrigue", "social"],
-    "biological_tide":     ["social", "crisis", "eldritch"],
-    "elemental_surge":     ["crisis", "nautical", "discovery"],
-    "authority_fracture":  ["intrigue", "military", "social"],
-    "innovation_spark":    ["discovery", "trade", "intrigue"],
-    "consciousness_drift": ["social", "religious", "discovery"],
-    "decay_bloom":         ["crisis", "eldritch", "social"],
-}
-
-# Extended event type pool per signature: secondary types (weight 1)
-# Used for weighted random selection to add variance
+# Secondary event types per signature (weight 1 in weighted selection).
+# Primary types come from Postgres fn_get_resonance_event_types() (migration 076)
+# and are configurable per simulation via resonance_event_type_map setting.
+# These secondary types add variance — lower probability but thematic fit.
 SECONDARY_EVENT_TYPE_MAP: dict[str, list[str]] = {
     "economic_tremor":     ["intrigue", "discovery"],
     "conflict_wave":       ["crisis", "eldritch"],
