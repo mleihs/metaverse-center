@@ -47,47 +47,23 @@ from datetime import datetime, timedelta, UTC
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# ── Constants (derived from canonical model) ─────────────────────────────────
 
-VALID_ARCHETYPES = [
-    "The Tower", "The Shadow", "The Devouring Mother", "The Deluge",
-    "The Overthrow", "The Prometheus", "The Awakening", "The Entropy",
-]
+from backend.models.resonance import (  # noqa: E402
+    ARCHETYPES,
+    ARCHETYPE_DESCRIPTIONS,
+    CATEGORY_ARCHETYPE_MAP,
+)
 
-# Archetype -> resonance_signature (CHECK constraint: valid_resonance_signature)
-ARCHETYPE_SIGNATURES: dict[str, str] = {
-    "The Tower": "economic_tremor",
-    "The Shadow": "consciousness_drift",
-    "The Devouring Mother": "biological_tide",
-    "The Deluge": "elemental_surge",
-    "The Overthrow": "authority_fracture",
-    "The Prometheus": "innovation_spark",
-    "The Awakening": "consciousness_drift",
-    "The Entropy": "decay_bloom",
+VALID_ARCHETYPES = list(ARCHETYPES)
+
+# Invert CATEGORY_ARCHETYPE_MAP: archetype → (source_category, signature)
+_ARCHETYPE_INVERSE = {
+    archetype: (source, sig)
+    for source, (sig, archetype) in CATEGORY_ARCHETYPE_MAP.items()
 }
-
-# Archetype -> source_category (CHECK constraint: valid_source_category)
-ARCHETYPE_SOURCES: dict[str, str] = {
-    "The Tower": "economic_crisis",
-    "The Shadow": "cultural_shift",
-    "The Devouring Mother": "pandemic",
-    "The Deluge": "natural_disaster",
-    "The Overthrow": "political_upheaval",
-    "The Prometheus": "tech_breakthrough",
-    "The Awakening": "cultural_shift",
-    "The Entropy": "environmental_disaster",
-}
-
-ARCHETYPE_DESCRIPTIONS: dict[str, str] = {
-    "The Tower": "Economic foundations crack. The marketplace trembles as invisible hands withdraw.",
-    "The Shadow": "Shadow resonance converges in the substrate. The darkness between worlds grows restless.",
-    "The Devouring Mother": "Biological tides shift. Something ancient stirs in the organic substrate.",
-    "The Deluge": "Elemental forces surge beyond containment. Water remembers what stone forgets.",
-    "The Overthrow": "Authority fractures along fault lines long ignored. The old order trembles.",
-    "The Prometheus": "Innovation cascades through the substrate. Prometheus reaches for new fire.",
-    "The Awakening": "Consciousness drifts toward new patterns. The dreamers begin to wake.",
-    "The Entropy": "Decay blooms at the edges of order. Entropy finds beauty in dissolution.",
-}
+ARCHETYPE_SOURCES: dict[str, str] = {a: _ARCHETYPE_INVERSE[a][0] for a in ARCHETYPES}
+ARCHETYPE_SIGNATURES: dict[str, str] = {a: _ARCHETYPE_INVERSE[a][1] for a in ARCHETYPES}
 
 # Deterministic test UUIDs (a0/a1 prefix for easy identification + cleanup)
 _RES_PREFIX = "a0000000-0000-0000-0000-00000000"

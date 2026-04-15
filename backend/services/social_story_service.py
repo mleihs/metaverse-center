@@ -28,6 +28,7 @@ from backend.services.base_service import serialize_for_json
 from backend.services.instagram_image_service import InstagramImageService
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.settings import parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,6 @@ _CLASSIFICATION_DELAY = 15
 _IMPACT_BASE_DELAY = 30
 _IMPACT_STAGGER = 10  # +10 min per additional simulation
 _ADVISORY_DELAY = 60
-_MAX_RETRIES = 3
 
 
 class SocialStoryService:
@@ -1202,8 +1202,8 @@ class SocialStoryService:
 
             m: dict[str, str] = {r["setting_key"]: r["setting_value"] for r in rows}
 
-            config["enabled"] = _parse_bool(m.get("resonance_stories_enabled", "false"))
-            config["advisory_in_epochs_only"] = _parse_bool(
+            config["enabled"] = parse_setting_bool(m.get("resonance_stories_enabled", "false"))
+            config["advisory_in_epochs_only"] = parse_setting_bool(
                 m.get("resonance_stories_advisory_in_epochs_only", "true"),
             )
 
@@ -1286,6 +1286,3 @@ class SocialStoryService:
             return None
 
 
-def _parse_bool(value: str) -> bool:
-    """Parse a string as a boolean."""
-    return str(value).lower().strip('"') not in ("false", "0", "no", "")

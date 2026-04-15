@@ -13,7 +13,6 @@ Loop:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from datetime import UTC, datetime
@@ -21,10 +20,8 @@ from uuid import UUID
 
 import httpx
 import sentry_sdk
-import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.dependencies import get_admin_supabase
 from backend.services.external.instagram import (
     InstagramAPIError,
     InstagramContainerError,
@@ -33,90 +30,45 @@ from backend.services.external.instagram import (
     InstagramTokenExpiredError,
 )
 from backend.services.instagram_content_service import InstagramContentService
+from backend.services.social.constants import (
+    DEFAULT_CHECK_INTERVAL,
+    MAX_PUBLISH_RETRIES,
+    METRICS_COLLECT_DELAYS,
+)
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.services.social_story_service import SocialStoryService
 from backend.utils.responses import extract_list
+from backend.utils.settings import decrypt_setting, load_platform_settings, parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
 # Defaults (overridable via platform_settings)
-_DEFAULT_CHECK_INTERVAL = 300  # 5 minutes
 _DEFAULT_ENABLED = False  # Off by default — must be explicitly enabled
-_MAX_RETRIES = 3
-_METRICS_COLLECT_DELAYS = [3600, 21600, 86400, 172800]  # +1h, +6h, +24h, +48h
 
 
-class InstagramScheduler:
+class InstagramScheduler(BaseSchedulerMixin):
     """Periodic background task that publishes scheduled Instagram posts."""
 
-    _task: asyncio.Task | None = None
+    _scheduler_name = "instagram"
     _last_token_refresh: datetime | None = None
     _TOKEN_REFRESH_INTERVAL_DAYS = 50  # Refresh every 50 days (tokens last 60)
-    _iteration_count: int = 0
 
     @classmethod
-    async def start(cls) -> asyncio.Task:
-        """Launch the scheduler loop. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_loop())
-        logger.info("Instagram scheduler started")
-        return cls._task
-
-    @classmethod
-    async def _run_loop(cls) -> None:
-        """Infinite loop: sleep → check for due posts → publish."""
-        while True:
-            interval = _DEFAULT_CHECK_INTERVAL
-            cls._iteration_count += 1
-            try:
-                structlog.contextvars.bind_contextvars(
-                    scheduler="instagram",
-                    iteration=cls._iteration_count,
-                )
-                admin = await get_admin_supabase()
-                config = await cls._load_config(admin)
-                interval = config["interval"]
-
-                if config["enabled"]:
-                    await cls._maybe_refresh_token(admin, config)
-                    await cls._process_due_posts(admin, config)
-                    await cls._compose_pending_stories(admin)
-                    await cls._process_due_stories(admin, config)
-                    await cls._collect_pending_metrics(admin, config)
-            except asyncio.CancelledError:
-                logger.info("Instagram scheduler shutting down")
-                raise
-            except (httpx.ConnectError, httpx.ConnectTimeout):
-                logger.warning(
-                    "Instagram scheduler: database unavailable, retrying",
-                    extra={
-                        "iteration": cls._iteration_count,
-                        "retry_in_s": interval,
-                    },
-                )
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception(
-                    "Instagram scheduler loop error",
-                    extra={
-                        "iteration": cls._iteration_count,
-                    },
-                )
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("instagram_phase", "scheduler_loop")
-                    scope.set_context(
-                        "instagram",
-                        {
-                            "iteration": cls._iteration_count,
-                        },
-                    )
-                    sentry_sdk.capture_exception(exc)
-            await asyncio.sleep(interval)
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One tick: refresh token, publish posts/stories, collect metrics."""
+        await cls._maybe_refresh_token(admin, config)
+        await cls._process_due_posts(admin, config)
+        await cls._compose_pending_stories(admin)
+        await cls._process_due_stories(admin, config)
+        await cls._collect_pending_metrics(admin, config)
 
     @classmethod
     async def _load_config(cls, admin: Client) -> dict:
         """Read Instagram scheduler config from platform_settings."""
-        config = {
+        config: dict = {
             "enabled": _DEFAULT_ENABLED,
-            "interval": _DEFAULT_CHECK_INTERVAL,
+            "interval": DEFAULT_CHECK_INTERVAL,
             "posting_enabled": False,
             "access_token": "",
             "ig_user_id": "",
@@ -126,68 +78,34 @@ class InstagramScheduler:
         }
 
         try:
-            _resp = await (
-                admin.table("platform_settings")
-                .select("setting_key, setting_value")
-                .in_(
-                    "setting_key",
-                    [
-                        "instagram_enabled",
-                        "instagram_posting_enabled",
-                        "instagram_access_token",
-                        "instagram_ig_user_id",
-                        "instagram_approval_required",
-                        "instagram_posts_per_day",
-                        "instagram_posting_hours",
-                        "instagram_scheduler_interval_seconds",
-                    ],
-                )
-                .execute()
-            )
-            rows = extract_list(_resp)
+            sm = await load_platform_settings(admin, [
+                "instagram_enabled",
+                "instagram_posting_enabled",
+                "instagram_access_token",
+                "instagram_ig_user_id",
+                "instagram_approval_required",
+                "instagram_posts_per_day",
+                "instagram_posting_hours",
+                "instagram_scheduler_interval_seconds",
+            ])
 
-            settings_map: dict[str, str] = {}
-            for row in rows:
-                settings_map[row["setting_key"]] = row["setting_value"]
+            config["enabled"] = parse_setting_bool(sm.get("instagram_enabled", "false"))
+            config["posting_enabled"] = parse_setting_bool(sm.get("instagram_posting_enabled", "false"))
+            config["approval_required"] = parse_setting_bool(sm.get("instagram_approval_required", "true"))
+            config["ig_user_id"] = sm.get("instagram_ig_user_id", "")
+            config["access_token"] = decrypt_setting(sm.get("instagram_access_token", ""))
 
-            # Parse settings
-            config["enabled"] = _parse_bool(settings_map.get("instagram_enabled", "false"))
-            config["posting_enabled"] = _parse_bool(settings_map.get("instagram_posting_enabled", "false"))
-            config["approval_required"] = _parse_bool(settings_map.get("instagram_approval_required", "true"))
-            config["ig_user_id"] = settings_map.get("instagram_ig_user_id", "")
-
-            # Access token — may be encrypted
-            raw_token = settings_map.get("instagram_access_token", "")
-            if raw_token and raw_token.startswith("gAAAAA"):
-                try:
-                    from backend.utils.encryption import decrypt
-
-                    config["access_token"] = decrypt(raw_token)
-                except (ValueError, Exception):
-                    logger.warning(
-                        "Failed to decrypt Instagram access token",
-                        extra={
-                            "iteration": cls._iteration_count,
-                            "token_status": "decrypt_failed",
-                        },
-                    )
-                    config["access_token"] = ""
-            else:
-                config["access_token"] = raw_token
-
-            # Numeric settings
             try:
-                config["posts_per_day"] = max(1, int(settings_map.get("instagram_posts_per_day", "3")))
+                config["posts_per_day"] = max(1, int(sm.get("instagram_posts_per_day", "3")))
             except (ValueError, TypeError):
                 pass
 
             try:
-                config["interval"] = max(60, int(settings_map.get("instagram_scheduler_interval_seconds", "300")))
+                config["interval"] = max(60, int(sm.get("instagram_scheduler_interval_seconds", "300")))
             except (ValueError, TypeError):
                 pass
 
-            # Posting hours (JSON array)
-            hours_raw = settings_map.get("instagram_posting_hours", "[9, 13, 18]")
+            hours_raw = sm.get("instagram_posting_hours", "[9, 13, 18]")
             try:
                 config["posting_hours"] = json.loads(hours_raw)
             except (json.JSONDecodeError, TypeError):
@@ -196,9 +114,7 @@ class InstagramScheduler:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to load Instagram scheduler config, using defaults",
-                extra={
-                    "iteration": cls._iteration_count,
-                },
+                extra={"iteration": cls._iteration_count},
             )
 
         return config
@@ -311,7 +227,7 @@ class InstagramScheduler:
                 return
             except InstagramContainerError as exc:
                 retry_count = post.get("retry_count", 0)
-                if retry_count < _MAX_RETRIES:
+                if retry_count < MAX_PUBLISH_RETRIES:
                     await (
                         admin.table("instagram_posts")
                         .update(
@@ -328,7 +244,7 @@ class InstagramScheduler:
                         extra={
                             "post_id": str(post_id),
                             "retry_count": retry_count + 1,
-                            "max_retries": _MAX_RETRIES,
+                            "max_retries": MAX_PUBLISH_RETRIES,
                             "iteration": cls._iteration_count,
                         },
                     )
@@ -348,7 +264,7 @@ class InstagramScheduler:
                         "Post failed after max retries",
                         extra={
                             "post_id": str(post_id),
-                            "retry_count": _MAX_RETRIES,
+                            "retry_count": MAX_PUBLISH_RETRIES,
                             "iteration": cls._iteration_count,
                         },
                     )
@@ -358,7 +274,7 @@ class InstagramScheduler:
                             "instagram",
                             {
                                 "post_id": str(post_id),
-                                "retry_count": _MAX_RETRIES,
+                                "retry_count": MAX_PUBLISH_RETRIES,
                             },
                         )
                         sentry_sdk.capture_exception(exc)
@@ -685,7 +601,7 @@ class InstagramScheduler:
                 return
             except (InstagramContainerError, InstagramAPIError) as exc:
                 retry_count = story.get("retry_count", 0)
-                if retry_count < _MAX_RETRIES:
+                if retry_count < MAX_PUBLISH_RETRIES:
                     await (
                         admin.table("social_stories")
                         .update(
@@ -886,7 +802,7 @@ class InstagramScheduler:
 
             # Check if we should collect at this interval
             should_collect = False
-            for delay in _METRICS_COLLECT_DELAYS:
+            for delay in METRICS_COLLECT_DELAYS:
                 window_start = delay - config["interval"]
                 window_end = delay + config["interval"]
                 if window_start <= elapsed <= window_end:
@@ -922,6 +838,3 @@ class InstagramScheduler:
                 )
 
 
-def _parse_bool(value: str) -> bool:
-    """Parse a string as a boolean."""
-    return str(value).lower() not in ("false", "0", "no", "")

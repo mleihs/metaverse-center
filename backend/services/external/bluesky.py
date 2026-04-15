@@ -82,6 +82,8 @@ class _BlueskySession:
 class BlueskyService:
     """AT Protocol client for Bluesky. Hardened: retry, backoff, circuit breaker."""
 
+    _BOT_LABEL = True  # Set to False if running as human-operated account
+
     def __init__(self, handle: str, app_password: str, pds_url: str = "https://bsky.social"):
         self._handle = handle
         self._app_password = app_password
@@ -195,6 +197,7 @@ class BlueskyService:
             "$type": "app.bsky.feed.post",
             "text": post_text,
             "createdAt": datetime.now(UTC).isoformat(),
+            "langs": ["en", "de"],
         }
 
         # Facets (rich text — hashtags, links)
@@ -206,11 +209,20 @@ class BlueskyService:
         if media:
             images = []
             for m in media[:4]:
-                img: dict = {"alt": content.alt_text or "", "image": m.ref}
-                images.append(img)
+                img_entry: dict = {"alt": content.alt_text or "", "image": m.ref}
+                if m.width and m.height:
+                    img_entry["aspectRatio"] = {"width": m.width, "height": m.height}
+                images.append(img_entry)
             record["embed"] = {
                 "$type": "app.bsky.embed.images",
                 "images": images,
+            }
+
+        # Bot self-label (AT Protocol bot disclosure)
+        if self._BOT_LABEL:
+            record["labels"] = {
+                "$type": "com.atproto.label.defs#selfLabels",
+                "values": [{"val": "bot"}],
             }
 
         t0 = time.monotonic()
@@ -256,23 +268,60 @@ class BlueskyService:
     async def upload_media(self, data: bytes, mime_type: str = "image/jpeg") -> UploadedMedia:
         """Upload blob via com.atproto.repo.uploadBlob.
 
-        Pre-validates size, recompresses JPEG if > 950 KB.
+        Pre-validates size, resizes oversized images, recompresses JPEG if > 950 KB.
+        Reads image dimensions for aspectRatio metadata.
         """
+        from PIL import Image as PILImage
+
         await self.ensure_session()
 
         original_size = len(data)
+        img_width = 0
+        img_height = 0
 
-        # Recompress if needed
-        if original_size > BLOB_RECOMPRESS_THRESHOLD and mime_type == "image/jpeg":
-            data = self._recompress_jpeg(data, quality=80)
+        # Resize + recompress pipeline for JPEG images
+        if mime_type == "image/jpeg" and original_size > BLOB_RECOMPRESS_THRESHOLD:
+            img = PILImage.open(io.BytesIO(data))
+
+            # Resize oversized images (>2000px on longest side) to save bandwidth
+            if max(img.size) > 2000:
+                img.thumbnail((2000, 2000), PILImage.LANCZOS)
+                logger.info(
+                    "Resized oversized image for Bluesky upload",
+                    extra={
+                        "original_bytes": original_size,
+                        "resized_to": img.size,
+                    },
+                )
+
+            # Handle non-RGB modes before JPEG save
+            if img.mode == "RGBA":
+                bg = PILImage.new("RGB", img.size, (0, 0, 0))
+                bg.paste(img, mask=img.split()[3])
+                img = bg
+            elif img.mode != "RGB":
+                img = img.convert("RGB")
+
+            img_width, img_height = img.size
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=80, optimize=True, progressive=True)
+            data = buf.getvalue()
             logger.info(
                 "Recompressed JPEG for Bluesky upload",
                 extra={
                     "original_bytes": original_size,
                     "compressed_bytes": len(data),
                     "quality": 80,
+                    "dimensions": f"{img_width}x{img_height}",
                 },
             )
+        elif mime_type.startswith("image/"):
+            # Read dimensions without recompression for smaller images
+            try:
+                img = PILImage.open(io.BytesIO(data))
+                img_width, img_height = img.size
+            except Exception:
+                logger.debug("Could not read image dimensions for aspectRatio", exc_info=True)
 
         if len(data) > BLOB_MAX_BYTES:
             raise BlueskyBlobTooLargeError(
@@ -303,6 +352,8 @@ class BlueskyService:
             ref=blob,
             mime_type=mime_type,
             size_bytes=len(data),
+            width=img_width,
+            height=img_height,
         )
 
     async def get_post_metrics(self, post_uri: str) -> dict:
@@ -610,6 +661,10 @@ class BlueskyService:
 
         img = Image.open(io.BytesIO(data))
         if img.mode == "RGBA":
+            bg = Image.new("RGB", img.size, (0, 0, 0))
+            bg.paste(img, mask=img.split()[3])
+            img = bg
+        elif img.mode != "RGB":
             img = img.convert("RGB")
         buf = io.BytesIO()
         img.save(buf, format="JPEG", quality=quality, optimize=True)

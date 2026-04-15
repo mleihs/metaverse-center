@@ -28,6 +28,8 @@ class UploadedMedia:
     ref: dict  # platform-specific (blob ref for Bluesky, URL for Instagram)
     mime_type: str = "image/jpeg"
     size_bytes: int = 0
+    width: int = 0
+    height: int = 0
 
 
 @dataclass
