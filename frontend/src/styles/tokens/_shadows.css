@@ -1,4 +1,10 @@
-/* === Shadow Tokens === */
+/* === Shadow Tokens ===
+ *
+ * Platform-chrome defaults (header, admin, forge, dungeon terminal).
+ * ThemeService.computeShadows() overrides these for themed simulation views
+ * with blur/glow/offset variants based on the preset's shadow_style setting.
+ * Keep scale values in sync with SHADOW_SCALES in ThemeService.ts.
+ */
 
 :root {
   /* === BRUTALIST SHADOWS (Offset-based) === */

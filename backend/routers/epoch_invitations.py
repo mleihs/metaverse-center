@@ -28,7 +28,7 @@ async def _audit(
 ) -> None:
     """Best-effort audit logging for epoch invitations (platform-level, no simulation_id)."""
     try:
-        await AuditService.log_action(
+        await AuditService.safe_log(
             supabase,
             None,
             user_id,

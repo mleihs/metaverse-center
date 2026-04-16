@@ -95,7 +95,7 @@ async def create_event(
 ) -> SuccessResponse[EventResponse]:
     """Create a new event."""
     event = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
-    await AuditService.log_action(supabase, simulation_id, user.id, "events", event["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "events", event["id"], "create")
     await _service._post_event_mutation(supabase, simulation_id)
     return SuccessResponse(data=event)
 
@@ -118,7 +118,7 @@ async def update_event(
         body.model_dump(exclude_none=True),
         if_updated_at=if_updated_at,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "events", event_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "events", event_id, "update")
     await _service._post_event_mutation(supabase, simulation_id)
     return SuccessResponse(data=event)
 
@@ -133,7 +133,7 @@ async def delete_event(
 ) -> SuccessResponse[EventResponse]:
     """Soft-delete an event."""
     event = await _service.soft_delete(supabase, simulation_id, event_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "events", event_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "events", event_id, "delete")
     await _service._post_event_mutation(supabase, simulation_id)
     return SuccessResponse(data=event)
 
@@ -175,7 +175,7 @@ async def add_reaction(
             "confidence_score": confidence_score,
         },
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "event_reactions", reaction["id"], "create")
     return SuccessResponse(data=reaction)
 
 
@@ -190,7 +190,7 @@ async def delete_event_reaction(
 ) -> SuccessResponse[MessageResponse]:
     """Delete a single reaction from an event."""
     await _service.delete_reaction(supabase, simulation_id, reaction_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "event_reactions", reaction_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "event_reactions", reaction_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Reaction deleted."))
 
 
@@ -241,7 +241,7 @@ async def update_event_status(
 ) -> SuccessResponse[EventResponse]:
     """Transition an event to a new lifecycle status."""
     event = await _service.update_status(supabase, simulation_id, event_id, event_status)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,
@@ -286,7 +286,7 @@ async def create_event_chain(
             "chain_type": body.chain_type,
         },
     )
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,

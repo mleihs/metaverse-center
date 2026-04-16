@@ -40,6 +40,8 @@
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
   --tracking-brutalist: 0.08em; /* Relative — scales with font size (was 1px fixed, too tight at large sizes) */
+  --tracking-display: 0.15em;  /* Hero subtitles, display typography */
+  --tracking-hero: 0.3em;      /* Landing page hero headings, dramatic effect */
 
   /* === SEMANTIC TOKENS (analogous to --heading-font for headings) === */
   --font-body: var(--font-sans);    /* UI text — themed per simulation */

@@ -49,7 +49,7 @@ async def add_member(
         member_role=body.member_role,
         invited_by_id=user.id,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", data["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "simulation_members", data["id"], "create")
     return SuccessResponse(data=data)
 
 
@@ -71,7 +71,7 @@ async def change_role(
             detail="Cannot change role: this is the last owner of the simulation.",
         ) from e
 
-    await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", member_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "simulation_members", member_id, "update")
     return SuccessResponse(data=data)
 
 
@@ -92,5 +92,5 @@ async def remove_member(
             detail="Cannot remove the last owner of a simulation.",
         ) from e
 
-    await AuditService.log_action(supabase, simulation_id, user.id, "simulation_members", member_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "simulation_members", member_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Member removed."))

@@ -128,7 +128,7 @@ async def trigger_echo(
         echo_strength=computed_strength,
         echo_depth=1,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", result["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "event_echoes", result["id"], "create")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -177,7 +177,7 @@ async def approve_echo(
             game_context=game_context,
         )
 
-        await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
+        await AuditService.safe_log(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
         ConnectionService._map_data_cache.clear()
         return SuccessResponse(data=result)
 
@@ -207,6 +207,6 @@ async def reject_echo(
 ) -> SuccessResponse[EchoResponse]:
     """Reject a pending echo."""
     result = await EchoService.reject_echo(admin_supabase, echo_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "event_echoes", echo_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)

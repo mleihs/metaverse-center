@@ -49,7 +49,7 @@ async def add_profession(
 ) -> SuccessResponse[AgentProfessionResponse]:
     """Add a profession to an agent. Primary-profession uniqueness enforced by DB trigger."""
     result = await AgentProfessionService.add(supabase, simulation_id, agent_id, body.model_dump(exclude_none=True))
-    await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", result["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agent_professions", result["id"], "create")
     return SuccessResponse(data=result)
 
 
@@ -71,7 +71,7 @@ async def update_profession(
         body.model_dump(exclude_none=True),
         extra_filters={"agent_id": agent_id},
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", profession_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agent_professions", profession_id, "update")
     return SuccessResponse(data=result)
 
 
@@ -86,5 +86,5 @@ async def delete_profession(
 ) -> SuccessResponse[MessageResponse]:
     """Remove a profession from an agent."""
     await AgentProfessionService.remove(supabase, simulation_id, agent_id, profession_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "agent_professions", profession_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agent_professions", profession_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Profession removed."))

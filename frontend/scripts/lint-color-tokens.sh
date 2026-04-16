@@ -4,6 +4,11 @@
 #
 # Documented exceptions are filtered out.
 # Exit code: 0 = pass, 1 = violations found.
+#
+# Convention (enforced by code review, not this script):
+#   Component-local custom properties MUST use the --_ prefix (e.g. --_accent, --_phosphor-dim).
+#   Define only in :host blocks. Derive from Tier 1/2 tokens via color-mix().
+#   See docs/guides/design-tokens.md for the full 3-tier architecture.
 
 set -euo pipefail
 
@@ -19,21 +24,27 @@ if [ -n "$RESULT" ]; then
   VIOLATIONS=1
 fi
 
-# --- Check 2: Raw rgba()/rgb() in epoch components ---
-# Scoped to epoch/ (fully tokenized). Expand to other dirs as they're migrated.
-EPOCH_DIR="$COMPONENTS_DIR/epoch"
-RESULT=$(grep -rnE 'rgba?\(' \
-  --include='*.ts' \
-  "$EPOCH_DIR" 2>/dev/null | \
-  grep -v 'lint-color-ok' | \
-  grep -v 'color-mix' || true)
+# --- Check 2: Raw rgba()/rgb() in tokenized components ---
+# Enforced on directories/files that have been fully migrated to color-mix tokens.
+# Add dirs here as they're cleaned. Use "lint-color-ok" comment for intentional overlays.
+RGBA_ENFORCED_DIRS=(
+  "$COMPONENTS_DIR/epoch"
+  "$COMPONENTS_DIR/forge/VelgForgeCeremony.ts"
+)
+for TARGET in "${RGBA_ENFORCED_DIRS[@]}"; do
+  RESULT=$(grep -rnE 'rgba?\(' \
+    --include='*.ts' \
+    "$TARGET" 2>/dev/null | \
+    grep -v 'lint-color-ok' | \
+    grep -v 'color-mix' || true)
 
-if [ -n "$RESULT" ]; then
-  echo "ERROR: Raw rgba()/rgb() found in epoch components (use color-mix tokens):"
-  echo "$RESULT"
-  echo ""
-  VIOLATIONS=1
-fi
+  if [ -n "$RESULT" ]; then
+    echo "ERROR: Raw rgba()/rgb() found in tokenized component (use color-mix or lint-color-ok):"
+    echo "$RESULT"
+    echo ""
+    VIOLATIONS=1
+  fi
+done
 
 # --- Check 3: Raw #hex in component CSS ---
 # Exceptions are filtered AFTER grep to support subdirectory paths.

@@ -63,7 +63,7 @@ async def set_aptitudes(
 ) -> SuccessResponse[list[AptitudeResponse]]:
     """Set all 6 aptitude scores for an agent (budget must equal 36)."""
     data = await AptitudeService.set_aptitudes(supabase, simulation_id, agent_id, body)
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,

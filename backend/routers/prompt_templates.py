@@ -77,7 +77,7 @@ async def create_prompt_template(
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Create a new prompt template for this simulation."""
     data = await PromptTemplateService.create(supabase, simulation_id, user.id, body.model_dump())
-    await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", data["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "prompt_templates", data["id"], "create")
     return SuccessResponse(data=data)
 
 
@@ -92,7 +92,7 @@ async def update_prompt_template(
 ) -> SuccessResponse[PromptTemplateResponse]:
     """Update a prompt template."""
     data = await PromptTemplateService.update(supabase, simulation_id, template_id, body.model_dump(exclude_none=True))
-    await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", template_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "prompt_templates", template_id, "update")
     return SuccessResponse(data=data)
 
 
@@ -106,7 +106,7 @@ async def delete_prompt_template(
 ) -> SuccessResponse[DeleteResponse]:
     """Soft-delete a prompt template (set is_active=False)."""
     await PromptTemplateService.deactivate(supabase, simulation_id, template_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "prompt_templates", template_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "prompt_templates", template_id, "delete")
     return SuccessResponse(data=DeleteResponse(id=str(template_id)))
 
 

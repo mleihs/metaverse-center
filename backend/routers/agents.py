@@ -83,7 +83,7 @@ async def create_agent(
 ) -> SuccessResponse[AgentResponse]:
     """Create a new agent."""
     agent = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
-    await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent["id"], "create")
     # Auto-translate in background (best-effort)
     sim = await SimulationService.get_simulation_context(supabase, simulation_id)
     if sim:
@@ -122,7 +122,7 @@ async def update_agent(
         update_data,
         if_updated_at=if_updated_at,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent_id, "update")
     # Re-translate in background (best-effort)
     if de_nulls:
         sim = await SimulationService.get_simulation_context(supabase, simulation_id)
@@ -149,7 +149,7 @@ async def delete_agent(
 ) -> SuccessResponse[AgentResponse]:
     """Soft-delete an agent."""
     agent = await _service.soft_delete(supabase, simulation_id, agent_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "agents", agent_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent_id, "delete")
     return SuccessResponse(data=agent)
 
 

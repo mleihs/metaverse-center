@@ -83,7 +83,7 @@ async def create_campaign(
         user_id=user.id,
         data=body.model_dump(exclude_none=True),
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "campaigns", campaign["id"], "create")
     return SuccessResponse(data=campaign)
 
 
@@ -103,7 +103,7 @@ async def update_campaign(
         campaign_id,
         body.model_dump(exclude_none=True),
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "campaigns", campaign_id, "update")
     return SuccessResponse(data=campaign)
 
 
@@ -117,7 +117,7 @@ async def delete_campaign(
 ) -> SuccessResponse[MessageResponse]:
     """Delete a campaign. Requires admin role."""
     await CampaignService.hard_delete(supabase, simulation_id, campaign_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "campaigns", campaign_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "campaigns", campaign_id, "delete")
     return SuccessResponse(data=MessageResponse(message="Campaign deleted."))
 
 
