@@ -331,7 +331,7 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
     color_border_light: '#CCCCCC',
     color_danger: '#FF0000',
     color_success: '#00FF00',
-    font_heading: "'Comic Sans MS', cursive",
+    font_heading: "'Comic Neue', 'Comic Sans MS', cursive",
     font_body: "'Courier New', Courier, monospace",
     font_mono: "SF Mono, Monaco, Inconsolata, 'Roboto Mono', monospace",
     heading_weight: '900',
