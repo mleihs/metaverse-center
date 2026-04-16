@@ -17,6 +17,7 @@ import type {
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
+import { t } from '../../utils/locale-fields.js';
 import type { FilterConfig } from '../shared/SharedFilterBar.js';
 import { VelgToast } from '../shared/Toast.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
@@ -204,8 +205,8 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
-        name: `${sim.name} \u2013 Agents`,
-        description: `All agents in the ${sim.name} simulation.`,
+        name: `${t(sim, 'name')} \u2013 Agents`,
+        description: `All agents in the ${t(sim, 'name')} simulation.`,
         url: `https://metaverse.center/simulations/${sim.slug}/agents`,
         numberOfItems: this._total,
       });
@@ -462,8 +463,8 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
-        name: `${sim.name} \u2013 Agents`,
-        description: `All agents in the ${sim.name} simulation.`,
+        name: `${t(sim, 'name')} \u2013 Agents`,
+        description: `All agents in the ${t(sim, 'name')} simulation.`,
         url: `https://metaverse.center/simulations/${sim.slug}/agents`,
         numberOfItems: this._total,
       });
@@ -480,7 +481,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
       ...(agent.character ? { description: agent.character.substring(0, 200) } : {}),
       ...(agent.portrait_image_url ? { image: agent.portrait_image_url } : {}),
       ...(agent.primary_profession ? { jobTitle: agent.primary_profession } : {}),
-      ...(sim ? { affiliation: { '@type': 'Organization', name: sim.name } } : {}),
+      ...(sim ? { affiliation: { '@type': 'Organization', name: t(sim, 'name') } } : {}),
       url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/agents/${agent.slug ?? ''}`,
     });
   }

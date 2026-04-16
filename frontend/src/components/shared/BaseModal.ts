@@ -151,6 +151,15 @@ export class VelgBaseModal extends LitElement {
 
   @property({ type: Boolean, reflect: true }) open = false;
 
+  /**
+   * Analytics identifier for this modal instance. Sent as `modalName` in
+   * the `modal-close` event detail for GA4 tracking.
+   *
+   * If not set, auto-derived from the parent custom element's tag name
+   * (e.g. `velg-agent-edit-modal` → `agent-edit-modal`).
+   */
+  @property({ type: String, attribute: 'modal-name' }) modalName = '';
+
   connectedCallback(): void {
     super.connectedCallback();
     this._handleKeyDown = this._handleKeyDown.bind(this);
@@ -200,8 +209,27 @@ export class VelgBaseModal extends LitElement {
       new CustomEvent('modal-close', {
         bubbles: true,
         composed: true,
+        detail: { modalName: this._resolveModalName() },
       }),
     );
+  }
+
+  /**
+   * Resolve the modal identity: explicit `modalName` property takes precedence,
+   * otherwise auto-derived from the parent custom element's tag name.
+   *
+   * BaseModal always lives inside another component's Shadow DOM, so
+   * `getRootNode().host` gives the meaningful parent (e.g. `velg-agent-edit-modal`
+   * → `agent-edit-modal`). This lets analytics identify WHICH modal was closed
+   * without requiring every parent to set the property explicitly.
+   */
+  private _resolveModalName(): string {
+    if (this.modalName) return this.modalName;
+    const root = this.getRootNode();
+    if (root instanceof ShadowRoot && root.host) {
+      return root.host.tagName.toLowerCase().replace('velg-', '');
+    }
+    return 'unknown';
   }
 
   private _focusFirstElement(): void {
