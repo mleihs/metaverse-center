@@ -396,6 +396,7 @@ def _compose_feed_images(
                     color_background=sim_cfg.color_background,
                     classification=classif,
                     cipher_hint=cipher,
+                    crop_gravity="smart",
                 )
                 slug = agent_name.lower().replace(" ", "_").replace("'", "")
                 results.append(ImageResult(
@@ -429,6 +430,7 @@ def _compose_feed_images(
                     color_background=sim_cfg.color_background,
                     classification=classif,
                     cipher_hint=cipher,
+                    crop_gravity="smart_building",
                 )
                 slug = bld_name.lower().replace(" ", "_").replace("'", "").replace("-", "_")
                 results.append(ImageResult(
