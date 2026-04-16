@@ -359,7 +359,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 ## Features
 
 ### Worldbuilding
-- **Simulation Forge** – 4-phase AI pipeline: Astrolabe (research) → Drafting Table (entities) → Darkroom (theme) → Ignition (materialization). BYOK API key support.
+- **Simulation Forge** – 4-phase AI pipeline: Astrolabe (research) → Drafting Table (entities) → Darkroom (theme) → Ignition (materialization). BYOK API key support with standalone key management panel (test, save, revoke per provider).
 - **TCG card system** – Unified collectible card component with 3D tilt, holographic foil, rarity tiers, stat gems, aptitude pips, card-deal animations
 - **Classified Dossier** – 6-section Bureau dossier (ALPHA–ZETA) with theatrical reveal ceremony, tabbed Case File viewer, prophetic fragments, threat level badges
 - **The Chronicle** – AI-generated per-simulation broadsheet newspaper with multi-column layout, drop cap, theme-responsive masthead
@@ -402,7 +402,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Public-first browsing** – Full read access without authentication
 - **SEO** – Slug URLs, JSON-LD, dynamic sitemap (1500+ URLs), server-side crawler enrichment
 - **Admin panel** – User management, cache TTLs, resonance scheduler, forge clearance, model configuration, social media pipeline
-- **Forge token economy** – Token bundles, BYOK bypass (3 control levels), feature purchases
+- **Forge token economy** – Token bundles, BYOK bypass (3 control levels), per-key test/revoke, feature purchases
 - **GA4 analytics** – 44 custom events, consent mode v2, GDPR cookie banner
 - **Sentry error tracking** – Backend + frontend with request context enrichment
 

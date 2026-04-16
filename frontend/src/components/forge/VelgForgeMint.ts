@@ -9,10 +9,10 @@ import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { TokenBundle } from '../../services/api/ForgeApiService.js';
-import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { formatDate } from '../../utils/date-format.js';
 import { forgeButtonStyles } from '../shared/forge-console-styles.js';
+import './VelgByokPanel.js';
 
 @localized()
 @customElement('velg-forge-mint')
@@ -342,178 +342,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         text-align: center;
       }
 
-      /* ── BYOK Banner ─────────────────────────────────── */
-
-      .mint__byok-banner {
-        width: 100%;
-        padding: var(--space-6, 24px);
-        border: 2px solid var(--color-accent-amber);
-        background: rgba(245, 158, 11, 0.06);
-        text-align: center;
-        margin-bottom: var(--space-8, 32px);
-      }
-
-      .mint__byok-title {
-        font-family: var(--font-brutalist, system-ui);
-        font-weight: 900;
-        font-size: var(--text-lg, 18px);
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: var(--color-accent-amber);
-        margin-bottom: var(--space-2, 8px);
-      }
-
-      .mint__byok-subtitle {
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-sm, 14px);
-        color: var(--color-text-secondary);
-      }
-
-      .mint__byok-keys {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-6, 24px);
-        margin-top: var(--space-4, 16px);
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-sm, 14px);
-      }
-
-      .mint__byok-key {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2, 8px);
-      }
-
-      .mint__byok-key--active {
-        color: var(--color-success);
-      }
-
-      .mint__byok-key--missing {
-        color: var(--color-text-muted);
-      }
-
-      /* ── BYOK Key Management ─────────────────────────── */
-
-      .mint__keys-section {
-        width: 100%;
-        border: 1px solid var(--color-border-light);
-        background: var(--color-surface-raised);
-        padding: var(--space-6, 24px);
-        margin-bottom: var(--space-6, 24px);
-      }
-
-      .mint__keys-header {
-        font-family: var(--font-brutalist, system-ui);
-        font-weight: 900;
-        font-size: var(--text-base, 16px);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--color-text-primary);
-        margin: 0 0 var(--space-1, 4px);
-      }
-
-      .mint__keys-desc {
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-xs, 12px);
-        color: var(--color-text-muted);
-        margin: 0 0 var(--space-4, 16px);
-      }
-
-      .mint__key-field {
-        margin-bottom: var(--space-4, 16px);
-      }
-
-      .mint__key-label {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2, 8px);
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-sm, 14px);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--space-1-5, 6px);
-      }
-
-      .mint__key-status {
-        font-size: 12px;
-      }
-
-      .mint__key-status--set {
-        color: var(--color-success);
-      }
-
-      .mint__key-status--unset {
-        color: var(--color-text-muted);
-      }
-
-      .mint__key-input {
-        width: 100%;
-        padding: var(--space-2-5, 10px) var(--space-3, 12px);
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        color: var(--color-text-primary);
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-sm, 14px);
-        box-sizing: border-box;
-        transition: border-color 0.2s;
-      }
-
-      @media (max-width: 768px) {
-        .mint__key-input {
-          font-size: 16px;
-        }
-      }
-
-      .mint__key-input::placeholder {
-        color: var(--color-text-muted);
-      }
-
-      .mint__key-input:focus {
-        outline: none;
-        border-color: var(--color-accent-amber);
-      }
-
-      .mint__keys-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3, 12px);
-      }
-
-      .btn--save-keys {
-        background: transparent;
-        border: 1px solid var(--color-accent-amber);
-        color: var(--color-accent-amber);
-        font-family: var(--font-brutalist, system-ui);
-        font-weight: 900;
-        font-size: var(--text-sm, 14px);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        padding: var(--space-2, 8px) var(--space-5, 20px);
-        cursor: pointer;
-        min-height: 44px;
-        transition: background 0.2s, color 0.2s;
-      }
-
-      .btn--save-keys:hover:not(:disabled) {
-        background: var(--color-accent-amber);
-        color: var(--color-surface-sunken);
-      }
-
-      .btn--save-keys:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn--save-keys:focus-visible {
-        outline: 2px solid var(--color-accent-amber);
-        outline-offset: 2px;
-      }
-
-      .mint__keys-hint {
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-xs, 12px);
-        color: var(--color-text-muted);
-      }
-
       /* ── First-shard callout ──────────────────────────── */
 
       .mint__callout {
@@ -582,9 +410,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
   @state() private _isPurchasing = false;
   @state() private _historyOpen = false;
   @state() private _toast: { message: string; type: 'success' | 'error' } | null = null;
-  @state() private _orKey = '';
-  @state() private _repKey = '';
-  @state() private _isSavingKeys = false;
   private _toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   private _firstFocusable: HTMLElement | null = null;
@@ -704,35 +529,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     }
   }
 
-  private async _saveKeys(): Promise<void> {
-    if (this._isSavingKeys) return;
-    if (!this._orKey && !this._repKey) return;
-
-    this._isSavingKeys = true;
-    try {
-      const payload: { openrouter_key?: string; replicate_key?: string } = {};
-      if (this._orKey) payload.openrouter_key = this._orKey;
-      if (this._repKey) payload.replicate_key = this._repKey;
-
-      const resp = await forgeApi.updateBYOK(payload);
-      if (resp.success) {
-        this._orKey = '';
-        this._repKey = '';
-        await forgeStateManager.loadWallet();
-        this._showToast(msg('API keys saved and encrypted.'), 'success');
-      } else {
-        this._showToast(
-          (resp.error as { message?: string } | undefined)?.message ?? msg('Failed to save keys'),
-          'error',
-        );
-      }
-    } catch {
-      this._showToast(msg('Failed to save keys'), 'error');
-    } finally {
-      this._isSavingKeys = false;
-    }
-  }
-
   private _formatPrice(cents: number): string {
     return `$${(cents / 100).toFixed(2)}`;
   }
@@ -805,72 +601,6 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
     `;
   }
 
-  private _renderKeyManagement() {
-    const byok = forgeStateManager.byokStatus.value;
-
-    return html`
-      <div class="mint__keys-section">
-        <h3 class="mint__keys-header">${msg('Your API Keys')}</h3>
-        <p class="mint__keys-desc">
-          ${msg('Bring your own keys to bypass token costs. Keys are AES-256 encrypted at rest.')}
-        </p>
-
-        <div class="mint__key-field">
-          <label class="mint__key-label">
-            OpenRouter
-            <span class="mint__key-status ${byok.has_openrouter_key ? 'mint__key-status--set' : 'mint__key-status--unset'}">
-              ${byok.has_openrouter_key ? `\u2713 ${msg('configured')}` : `\u2717 ${msg('not set')}`}
-            </span>
-          </label>
-          <input
-            type="password"
-            class="mint__key-input"
-            placeholder="sk-or-v1-..."
-            .value=${this._orKey}
-            @input=${(e: InputEvent) => {
-              this._orKey = (e.target as HTMLInputElement).value;
-            }}
-          />
-        </div>
-
-        <div class="mint__key-field">
-          <label class="mint__key-label">
-            Replicate
-            <span class="mint__key-status ${byok.has_replicate_key ? 'mint__key-status--set' : 'mint__key-status--unset'}">
-              ${byok.has_replicate_key ? `\u2713 ${msg('configured')}` : `\u2717 ${msg('not set')}`}
-            </span>
-          </label>
-          <input
-            type="password"
-            class="mint__key-input"
-            placeholder="r8_..."
-            .value=${this._repKey}
-            @input=${(e: InputEvent) => {
-              this._repKey = (e.target as HTMLInputElement).value;
-            }}
-          />
-        </div>
-
-        <div class="mint__keys-actions">
-          <button
-            class="btn--save-keys"
-            ?disabled=${this._isSavingKeys || (!this._orKey && !this._repKey)}
-            @click=${this._saveKeys}
-          >
-            ${this._isSavingKeys ? msg('Saving...') : msg('Save Keys')}
-          </button>
-          <span class="mint__keys-hint">
-            ${
-              byok.has_openrouter_key && byok.has_replicate_key
-                ? msg('Both keys configured – enter new values to update.')
-                : msg('Set both keys to enable BYOK access.')
-            }
-          </span>
-        </div>
-      </div>
-    `;
-  }
-
   protected render() {
     if (!forgeStateManager.mintOpen.value) return nothing;
 
@@ -911,41 +641,10 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
         <div class="mint__body">
           ${
-            byok.effective_bypass
+            !byok.effective_bypass
               ? html`
-              <div class="mint__byok-banner">
-                <div class="mint__byok-title">${msg('CLEARANCE: UNLIMITED')}</div>
-                <div class="mint__byok-subtitle">${msg('Your Bureau-issued keys grant unrestricted materialization access.')}</div>
-                <div class="mint__byok-keys">
-                  <span class="mint__byok-key ${byok.has_openrouter_key ? 'mint__byok-key--active' : 'mint__byok-key--missing'}">
-                    ${byok.has_openrouter_key ? '\u2713' : '\u2717'} OpenRouter
-                  </span>
-                  <span class="mint__byok-key ${byok.has_replicate_key ? 'mint__byok-key--active' : 'mint__byok-key--missing'}">
-                    ${byok.has_replicate_key ? '\u2713' : '\u2717'} Replicate
-                  </span>
-                </div>
-              </div>
-            `
-              : html`
               <div class="mint__grid" role="radiogroup" aria-label=${msg('Token bundles')}>
                 ${bundles.map((b) => this._renderBundle(b))}
-              </div>
-            `
-          }
-
-          ${
-            !byok.effective_bypass && (byok.has_openrouter_key || byok.has_replicate_key)
-              ? html`
-              <div class="mint__callout" style="margin-bottom: var(--space-4, 16px)">
-                ${msg('Configure both API keys to enable unlimited access.')}
-                <div class="mint__byok-keys" style="margin-top: var(--space-2, 8px)">
-                  <span class="mint__byok-key ${byok.has_openrouter_key ? 'mint__byok-key--active' : 'mint__byok-key--missing'}">
-                    ${byok.has_openrouter_key ? '\u2713' : '\u2717'} OpenRouter
-                  </span>
-                  <span class="mint__byok-key ${byok.has_replicate_key ? 'mint__byok-key--active' : 'mint__byok-key--missing'}">
-                    ${byok.has_replicate_key ? '\u2713' : '\u2717'} Replicate
-                  </span>
-                </div>
               </div>
             `
               : nothing
@@ -977,7 +676,9 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
               : nothing
           }
 
-          ${byok.byok_allowed ? this._renderKeyManagement() : nothing}
+          ${byok.effective_bypass || byok.byok_allowed
+            ? html`<velg-byok-panel></velg-byok-panel>`
+            : nothing}
 
           ${this._renderHistory()}
         </div>

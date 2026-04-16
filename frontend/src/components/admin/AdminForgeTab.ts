@@ -18,6 +18,7 @@ import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../forge/ClearanceQueue.js';
+import '../forge/VelgByokPanel.js';
 import '../shared/VelgMetricCard.js';
 
 /**
@@ -378,9 +379,6 @@ export class VelgAdminForgeTab extends LitElement {
   @state() private _totalMaterialized = 0;
 
   // ── BYOK state ──
-  @state() private _openrouterKey = '';
-  @state() private _replicateKey = '';
-  @state() private _savingBYOK = false;
   @state() private _byokSystemEnabled = false;
   @state() private _byokAccessPolicy: 'none' | 'all' | 'per_user' = 'per_user';
 
@@ -605,27 +603,6 @@ export class VelgAdminForgeTab extends LitElement {
     this._loadPurchases();
   }
 
-  private async _saveBYOK() {
-    this._savingBYOK = true;
-    try {
-      const resp = await forgeApi.updateBYOK({
-        openrouter_key: this._openrouterKey || undefined,
-        replicate_key: this._replicateKey || undefined,
-      });
-      if (resp.success) {
-        VelgToast.success(msg('Personal API keys updated securely.'));
-        this._openrouterKey = '';
-        this._replicateKey = '';
-      } else {
-        VelgToast.error(resp.error?.message ?? msg('Failed to save keys.'));
-      }
-    } catch (_err) {
-      VelgToast.error(msg('An unexpected error occurred.'));
-    } finally {
-      this._savingBYOK = false;
-    }
-  }
-
   private async _toggleBYOKSystem() {
     const newValue = !this._byokSystemEnabled;
     try {
@@ -814,51 +791,10 @@ export class VelgAdminForgeTab extends LitElement {
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-08</span>
             <h3 class="forge-section__title">${msg('Personal API Keys (BYOK)')}</h3>
-            ${renderInfoBubble(msg('Simulation-level API key override. When set, this simulation uses its own key instead of the platform default.'), 'tip-byok')}
+            ${renderInfoBubble(msg('Personal API key override. Your account uses these keys instead of consuming forge tokens.'), 'tip-byok')}
           </div>
-          <div class="forge-section__desc">${msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')}</div>
           <div class="forge-section__divider"></div>
-          <div class="byok-form">
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('OpenRouter API Key')}</div>
-                <div class="settings-item__description">${msg('Used for the Astrolabe and Drafting Table phases.')}</div>
-              </div>
-              <input
-                type="password"
-                class="form-control byok-input"
-                placeholder="sk-or-v1-..."
-                aria-label=${msg('OpenRouter API Key')}
-                aria-describedby="tip-byok"
-                .value=${this._openrouterKey}
-                @input=${(e: Event) => (this._openrouterKey = (e.target as HTMLInputElement).value)}
-              />
-            </div>
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('Replicate API Token')}</div>
-                <div class="settings-item__description">${msg('Used for the Darkroom and final image materialization.')}</div>
-              </div>
-              <input
-                type="password"
-                class="form-control byok-input"
-                placeholder="r8_..."
-                aria-label=${msg('Replicate API Token')}
-                aria-describedby="tip-byok"
-                .value=${this._replicateKey}
-                @input=${(e: Event) => (this._replicateKey = (e.target as HTMLInputElement).value)}
-              />
-            </div>
-            <button
-              class="btn-primary"
-              style="align-self: flex-start"
-              ?disabled=${this._savingBYOK}
-              aria-label=${msg('Save BYOK API keys')}
-              @click=${this._saveBYOK}
-            >
-              ${this._savingBYOK ? msg('Saving...') : msg('Save Keys')}
-            </button>
-          </div>
+          <velg-byok-panel mode="admin"></velg-byok-panel>
         </div>
 
         <!-- SEC-09: Maintenance -->

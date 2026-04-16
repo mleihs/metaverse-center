@@ -446,7 +446,7 @@ Landing Page → Featured Agent Spotlight (Neugier) → folge dem Drama
 - Epochs: mood/stress modifies operative success probability (+-0.03 to +-0.06)
 - Bleed: autonomous events evaluated for cross-sim echo propagation
 - Chronicle: autonomous events auto-included (data_source='autonomous')
-- BYOK: 3-tier gating (global admin → per-sim → owner BYOK key)
+- BYOK: 3-tier gating (global admin → per-user policy → owner BYOK key via `<velg-byok-panel>`)
 
 **LLM Cost:** ~$3.84/month per simulation (DeepSeek V3.2, 6 agents, 6 ticks/day)
 **Rule-based cost:** $0 (Utility AI, Boltzmann, needs/mood/opinions are pure computation)

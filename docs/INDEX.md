@@ -16,7 +16,7 @@ tags: [index, catalog, documentation]
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [AI Integration](specs/ai-integration.md) | 2.2 | 2026-03-16 | de | active |
-| [API Specification](specs/api-specification.md) | 2.7 | 2026-03-17 | de | active |
+| [API Specification](specs/api-specification.md) | 2.9 | 2026-04-16 | de | active |
 | [Auth and Security](specs/auth-and-security.md) | 1.6 | 2026-03-17 | de | active |
 | [Embassies & Ambassadors](specs/embassies.md) | 1.1 | 2026-02-27 | de | active |
 | [Epoch Auto-Resolve & Team PvP](specs/epoch-auto-resolve-team-pvp.md) | 1.0 | 2026-04-13 | de | draft |
@@ -39,11 +39,11 @@ tags: [index, catalog, documentation]
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 4.0 | 2026-04-09 | de | active |
+| [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md) | 4.1 | 2026-04-16 | de | active |
 | [Design System](references/design-system.md) | 1.4 | 2026-03-17 | de | active |
-| [Domain Models](references/domain-models.md) | 3.3 | 2026-03-13 | de | active |
-| [Feature Catalog](references/feature-catalog.md) | 3.6 | 2026-04-09 | de | active |
-| [Frontend Components](references/frontend-components.md) | 4.0 | 2026-04-09 | de | active |
+| [Domain Models](references/domain-models.md) | 3.4 | 2026-04-16 | de | active |
+| [Feature Catalog](references/feature-catalog.md) | 3.7 | 2026-04-16 | de | active |
+| [Frontend Components](references/frontend-components.md) | 4.1 | 2026-04-16 | de | active |
 
 ## Guides (16)
 

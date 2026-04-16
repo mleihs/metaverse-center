@@ -13,6 +13,7 @@ The entire forge flow (7 components) was audited for mobile. Every fixed overlay
 | `frontend/src/components/forge/VelgForgeCeremony.ts` | Safe-area insets, overflow/landscape fix, will-change/contain hints, Wake Lock, CSS @property, vibrate |
 | `frontend/src/components/forge/ClearanceQueue.ts` | Full mobile breakpoint pass, touch targets, 16px font |
 | `frontend/src/components/forge/VelgForgeMint.ts` | Safe-area insets, 16px font, overscroll-behavior |
+| `frontend/src/components/forge/VelgByokPanel.ts` | 16px font on mobile inputs, responsive key cards (flex-wrap), 44px touch targets on remove button, stacked actions on small screens |
 | `frontend/src/components/forge/VelgBureauDispatch.ts` | Safe-area insets, touch targets, overscroll-behavior |
 | `frontend/src/components/forge/VelgDarkroomStudio.ts` | Safe-area insets, touch targets, 16px font, overscroll-behavior |
 | `frontend/src/components/forge/VelgForgeAstrolabe.ts` | Touch targets on seed suggestions |

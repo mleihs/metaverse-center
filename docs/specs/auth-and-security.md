@@ -611,9 +611,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 (Auth-Rate-Limiting wird von Supabase Auth direkt gehandhabt.)
 
-### BYOK Hardening (v1.6)
+### BYOK Hardening (v1.6, updated v1.7)
 
-- **BYOK-Key-Updates via SECURITY DEFINER RPC:** `fn_update_user_byok_keys()` (Migration 125) ersetzt den bisherigen `service_role`-Bypass fuer `user_wallets`-Updates. Validiert `auth.uid() = p_user_id` — kein fremder Wallet-Zugriff moeglich.
+- **BYOK-Key-Updates via SECURITY DEFINER RPC:** `fn_update_user_byok_keys()` (Migration 125, erweitert Migration 218) ersetzt den bisherigen `service_role`-Bypass fuer `user_wallets`-Updates. Validiert `auth.uid() = p_user_id` — kein fremder Wallet-Zugriff moeglich.
+- **BYOK-Key-Loeschung:** Migration 218 erweitert RPC um `p_clear_openrouter`/`p_clear_replicate` Boolean-Flags zum gezielten NULL-Setzen einzelner Keys. `DELETE /forge/wallet/keys/{provider}` Endpoint mit `check_byok_allowed()` Gate und Audit-Log.
+- **BYOK-Key-Validierung:** `POST /forge/wallet/keys/test` validiert Keys gegen hardcoded Provider-URLs (OpenRouter GET /api/v1/models, Replicate GET /v1/account) ohne Speicherung. 10s Timeout, kein SSRF-Risiko (URLs nicht user-supplied). `require_architect()` Gate.
 - **BYOK Access Check Hard-Fail:** `fn_user_byok_allowed()` gibt bei Fehler jetzt einen harten Fehler zurueck (zuvor: fail-open, d.h. bei Datenbankfehler wurde BYOK-Zugang erlaubt).
 - **Wallet RPC Failure → 503:** Wenn die Wallet-RPC fehlschlaegt, wird HTTP 503 zurueckgegeben (zuvor: Default-Wallet mit 0 Tokens, was den Fehler verschleierte).
 
