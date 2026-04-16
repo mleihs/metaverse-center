@@ -1,3 +1,5 @@
+import { appState } from './AppStateManager.js';
+
 declare global {
   interface Window {
     dataLayer: unknown[];
@@ -26,7 +28,7 @@ interface EventMapping {
 }
 
 const EVENT_MAP: EventMapping[] = [
-  // Entity detail views
+  // ── Entity detail views ───────────────────────────────────────────
   {
     domEvent: 'agent-click',
     gaEvent: 'view_agent',
@@ -53,7 +55,7 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ simulation_name: _s(d, 'name') }),
   },
 
-  // Entity CRUD
+  // ── Entity CRUD ───────────────────────────────────────────────────
   {
     domEvent: 'agent-saved',
     gaEvent: 'save_agent',
@@ -64,11 +66,15 @@ const EVENT_MAP: EventMapping[] = [
     gaEvent: 'save_building',
     params: (d) => ({ building_name: _s(d, 'name') }),
   },
-  { domEvent: 'event-saved', gaEvent: 'save_event' },
+  {
+    domEvent: 'event-saved',
+    gaEvent: 'save_event',
+    params: (d) => ({ event_title: _s(d, 'title') }),
+  },
   { domEvent: 'location-saved', gaEvent: 'save_location' },
   { domEvent: 'settings-saved', gaEvent: 'save_settings' },
 
-  // Entity delete intent
+  // ── Entity delete intent ──────────────────────────────────────────
   {
     domEvent: 'agent-delete',
     gaEvent: 'delete_agent',
@@ -79,9 +85,13 @@ const EVENT_MAP: EventMapping[] = [
     gaEvent: 'delete_building',
     params: (d) => ({ building_name: _s(d, 'name') }),
   },
-  { domEvent: 'event-delete', gaEvent: 'delete_event' },
+  {
+    domEvent: 'event-delete',
+    gaEvent: 'delete_event',
+    params: (d) => ({ event_title: _s(d, 'title') }),
+  },
 
-  // Edit modals
+  // ── Edit modals ───────────────────────────────────────────────────
   {
     domEvent: 'agent-edit',
     gaEvent: 'open_edit_modal',
@@ -98,8 +108,15 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ entity_type: 'event', entity_name: _s(d, 'title') }),
   },
 
-  // Chat
-  { domEvent: 'send-message', gaEvent: 'send_chat_message' },
+  // ── Modal close (generic lifecycle) ───────────────────────────────
+  { domEvent: 'modal-close', gaEvent: 'close_modal' },
+
+  // ── Chat ──────────────────────────────────────────────────────────
+  {
+    domEvent: 'send-message',
+    gaEvent: 'send_chat_message',
+    params: (d) => ({ message_length: _s(d, 'content').length }),
+  },
   {
     domEvent: 'agents-selected',
     gaEvent: 'select_chat_agents',
@@ -107,7 +124,7 @@ const EVENT_MAP: EventMapping[] = [
   },
   { domEvent: 'conversation-select', gaEvent: 'select_conversation' },
 
-  // Social / Trends
+  // ── Social / Trends ───────────────────────────────────────────────
   {
     domEvent: 'trend-transform',
     gaEvent: 'transform_trend',
@@ -122,7 +139,7 @@ const EVENT_MAP: EventMapping[] = [
   { domEvent: 'post-analyze', gaEvent: 'analyze_post' },
   { domEvent: 'transform-complete', gaEvent: 'transform_complete' },
 
-  // Location drill-down
+  // ── Location drill-down ───────────────────────────────────────────
   {
     domEvent: 'city-select',
     gaEvent: 'select_city',
@@ -134,7 +151,7 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ zone_name: _s(d, 'name') }),
   },
 
-  // Search / Filter
+  // ── Search / Filter ───────────────────────────────────────────────
   {
     domEvent: 'filter-change',
     gaEvent: 'apply_filter',
@@ -144,17 +161,17 @@ const EVENT_MAP: EventMapping[] = [
     }),
   },
 
-  // Media
+  // ── Media ─────────────────────────────────────────────────────────
   {
     domEvent: 'lightbox-open',
     gaEvent: 'view_lightbox_image',
     params: (d) => ({ alt: _s(d, 'alt'), caption: _s(d, 'caption') }),
   },
 
-  // Auth UI
+  // ── Auth UI ───────────────────────────────────────────────────────
   { domEvent: 'login-panel-open', gaEvent: 'open_login_panel' },
 
-  // Landing page
+  // ── Landing page ──────────────────────────────────────────────────
   {
     domEvent: 'landing-cta-click',
     gaEvent: 'landing_cta_click',
@@ -166,7 +183,7 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ section: _s(d, 'section') }),
   },
 
-  // Funnel events
+  // ── Funnel events ─────────────────────────────────────────────────
   { domEvent: 'onboarding-complete', gaEvent: 'tutorial_complete' },
   {
     domEvent: 'simulation-created',
@@ -175,6 +192,50 @@ const EVENT_MAP: EventMapping[] = [
   },
   { domEvent: 'invitation-accepted', gaEvent: 'accept_invitation' },
   { domEvent: 'epoch-joined', gaEvent: 'join_epoch' },
+
+  // ── Epoch gameplay ────────────────────────────────────────────────
+  {
+    domEvent: 'epoch-created',
+    gaEvent: 'create_epoch',
+    params: (d) => ({ epoch_name: _s(d, 'name') }),
+  },
+  {
+    domEvent: 'operative-deployed',
+    gaEvent: 'deploy_operative',
+    params: (d) => ({ operative_name: _s(d, 'agent_name') }),
+  },
+  { domEvent: 'start-epoch', gaEvent: 'start_epoch' },
+  { domEvent: 'leave-epoch', gaEvent: 'leave_epoch' },
+  { domEvent: 'advance-phase', gaEvent: 'advance_epoch_phase' },
+  { domEvent: 'resolve-cycle', gaEvent: 'resolve_epoch_cycle' },
+  { domEvent: 'cancel-epoch', gaEvent: 'cancel_epoch' },
+  {
+    domEvent: 'draft-complete',
+    gaEvent: 'complete_epoch_draft',
+    params: (d) => {
+      const ids = (d as Record<string, unknown>)?.agentIds;
+      return { agent_count: Array.isArray(ids) ? ids.length : 0 };
+    },
+  },
+  { domEvent: 'draft-cancel', gaEvent: 'cancel_epoch_draft' },
+  {
+    domEvent: 'create-team',
+    gaEvent: 'create_team',
+    params: (d) => ({ team_name: _s(d, 'name') }),
+  },
+  { domEvent: 'join-team', gaEvent: 'join_team' },
+  {
+    domEvent: 'vote-proposal',
+    gaEvent: 'vote_proposal',
+    params: (d) => ({ vote: _s(d, 'vote') }),
+  },
+  { domEvent: 'start-academy', gaEvent: 'start_academy' },
+  { domEvent: 'invite-players', gaEvent: 'invite_epoch_players' },
+
+  // ── Forge ─────────────────────────────────────────────────────────
+  { domEvent: 'ceremony-enter', gaEvent: 'forge_ceremony_enter' },
+  { domEvent: 'open-mint', gaEvent: 'forge_open_mint' },
+  { domEvent: 'darkroom-close', gaEvent: 'forge_darkroom_close' },
 ];
 
 class AnalyticsService {
@@ -251,10 +312,11 @@ class AnalyticsService {
     window.gtag('set', 'user_properties', props);
   }
 
-  /** Send a custom GA4 event. */
+  /** Send a custom GA4 event with auto-injected simulation context. */
   trackEvent(name: string, params?: Record<string, string | number | boolean>): void {
     if (!this._initialized) return;
-    window.gtag('event', name, params);
+    const ctx = this._getGlobalContext();
+    window.gtag('event', name, { ...ctx, ...params });
   }
 
   /** Send a manual page_view event (called on SPA route changes). */
@@ -296,6 +358,22 @@ class AnalyticsService {
     }
     this._listeners = [];
     this._initialized = false;
+  }
+
+  /**
+   * Build global context params auto-injected into every trackEvent() call.
+   * Provides simulation_id + page_section for GA4 segmentation without
+   * requiring each event dispatch site to include context manually.
+   */
+  private _getGlobalContext(): Record<string, string> {
+    const sim = appState.currentSimulation.value;
+    const segments = window.location.pathname.split('/');
+    // /simulations/slug/agents → "agents", /dashboard → "dashboard", / → "landing"
+    const section = segments[3] || segments[1] || 'landing';
+    return {
+      ...(sim ? { simulation_id: sim.id, simulation_name: sim.name } : {}),
+      page_section: section,
+    };
   }
 
   private _initWebVitals(): void {

@@ -34,6 +34,7 @@ import {
 import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
+import { analyticsService } from './AnalyticsService.js';
 import { captureError } from './SentryService.js';
 import { terminalState } from './TerminalStateManager.js';
 
@@ -194,9 +195,17 @@ class DungeonStateManager {
    * returns a new state which fully replaces the previous one.
    */
   applyState(state: DungeonClientState): void {
+    const wasNull = this.runId.value === null;
     this.clientState.value = state;
     this.runId.value = String(state.run_id);
     this.error.value = null;
+
+    // Track session start when transitioning from no run → active run
+    if (wasNull) {
+      analyticsService.trackEvent('dungeon_session_started', {
+        archetype: state.archetype ?? '',
+      });
+    }
     // NOTE: _autoSubmitFired is NOT reset here. It's only reset when
     // _startTimer detects a fresh (non-expired) timer, preventing the
     // recursive auto-submit loop.
@@ -249,6 +258,15 @@ class DungeonStateManager {
    * Clear all dungeon state. Called after completion, wipe, or retreat.
    */
   clear(): void {
+    // Track session end before clearing state
+    const state = this.clientState.value;
+    if (state) {
+      analyticsService.trackEvent('dungeon_session_ended', {
+        archetype: state.archetype ?? '',
+        phase: state.phase ?? '',
+      });
+    }
+
     this.clientState.value = null;
     this.runId.value = null;
     this.selectedActions.value = new Map();
