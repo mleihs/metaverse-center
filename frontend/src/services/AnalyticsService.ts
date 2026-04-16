@@ -198,9 +198,13 @@ class AnalyticsService {
     this._initialized = true;
 
     // Set up dataLayer queue immediately — events are buffered until gtag.js loads.
+    // CRITICAL: push `arguments` (Arguments object), not `...args` (Array).
+    // gtag.js expects Arguments objects in the backlog — Arrays are silently ignored,
+    // which breaks consent commands and config queued before script load.
     window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => {
-      window.dataLayer.push(args);
+    window.gtag = function () {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer.push(arguments);
     };
 
     // TEMPORARY: default granted to verify GA4 data flow (revert after confirmed)

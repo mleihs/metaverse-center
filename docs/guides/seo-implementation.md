@@ -122,7 +122,7 @@ Lore chapters and chronicle editions could follow the same pattern using natural
 
 ## GA4
 
-- Measurement ID: `G-WB8BSJ08KP`
+- Measurement ID: `G-GP0Y16L51G`
 - Set in `.env` (local), Railway env vars (production)
 - **Dockerfile** must declare `ARG VITE_GA4_MEASUREMENT_ID` (added alongside `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`) — Vite inlines env vars at build time, so missing ARG = empty measurement ID = no gtag.js in production
 - Cookie consent stored in `localStorage('analytics-consent')` as 'granted' or 'denied'
