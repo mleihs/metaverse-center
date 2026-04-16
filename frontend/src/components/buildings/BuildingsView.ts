@@ -146,6 +146,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
       if (building) {
         this._selectedBuilding = building;
         this._showDetails = true;
+        this._setBuildingStructuredData(building);
         return;
       }
       // Building not in current page — fetch by slug from API
@@ -154,6 +155,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
         if (resp.success && resp.data) {
           this._selectedBuilding = resp.data as Building;
           this._showDetails = true;
+          this._setBuildingStructuredData(resp.data as Building);
           return;
         }
       } catch {
@@ -176,6 +178,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     this._selectedBuilding = e.detail;
     this._showDetails = true;
     this._pushEntityUrl(e.detail);
+    this._setBuildingStructuredData(e.detail);
   }
 
   private _pushEntityUrl(building: Building): void {
@@ -252,6 +255,31 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     this._showDetails = false;
     this._selectedBuilding = null;
     this._pushListUrl();
+    // Revert to CollectionPage schema when detail panel closes
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      seoService.setCollectionPage({
+        name: `${sim.name} \u2013 Buildings`,
+        description: `All buildings in the ${sim.name} simulation.`,
+        url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
+        numberOfItems: this._total,
+      });
+    }
+  }
+
+  /** Set Place schema.org structured data for the currently viewed building. */
+  private _setBuildingStructuredData(building: Building): void {
+    const sim = appState.currentSimulation.value;
+    seoService.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Place',
+      name: building.name,
+      ...(building.description ? { description: building.description.substring(0, 200) } : {}),
+      ...(building.image_url ? { image: building.image_url } : {}),
+      ...(building.building_type ? { additionalType: building.building_type } : {}),
+      ...(sim ? { containedInPlace: { '@type': 'VirtualLocation', name: sim.name } } : {}),
+      url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/buildings/${building.slug ?? ''}`,
+    });
   }
 
   private _handleLightboxPrev(): void {

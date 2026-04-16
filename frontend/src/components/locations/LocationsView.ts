@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { seoService } from '../../services/SeoService.js';
 import { healthApi, heartbeatApi, locationsApi } from '../../services/api/index.js';
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
@@ -140,6 +141,11 @@ export class VelgLocationsView extends LitElement {
     }
   }
 
+  disconnectedCallback(): void {
+    seoService.removeStructuredData();
+    super.disconnectedCallback();
+  }
+
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
     if (changedProperties.has('simulationId') && this.simulationId) {
       this._level = 'cities';
@@ -158,6 +164,15 @@ export class VelgLocationsView extends LitElement {
 
       if (response.success && response.data) {
         this._cities = response.data ?? [];
+        const sim = appState.currentSimulation.value;
+        if (sim) {
+          seoService.setCollectionPage({
+            name: `${sim.name} \u2013 Locations`,
+            description: `Cities, zones, and streets in the ${sim.name} simulation.`,
+            url: `https://metaverse.center/simulations/${sim.slug}/locations`,
+            numberOfItems: this._cities.length,
+          });
+        }
       } else {
         this._error = response.error?.message ?? msg('Failed to load cities');
       }

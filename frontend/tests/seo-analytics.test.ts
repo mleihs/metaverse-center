@@ -320,12 +320,13 @@ describe('AnalyticsService — Event Hub', () => {
     expect(testCalls).toHaveLength(0);
   });
 
-  it('trackEvent sends gtag event with params when initialized', () => {
+  it('trackEvent sends gtag event with params + global context when initialized', () => {
     initForTest();
     analyticsService.trackEvent('test_event', { key: 'value' });
     const testCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'test_event');
     expect(testCalls).toHaveLength(1);
-    expect(testCalls[0][2]).toEqual({ key: 'value' });
+    // Global context injects page_section; explicit params override context
+    expect(testCalls[0][2]).toMatchObject({ key: 'value', page_section: expect.any(String) });
   });
 
   it('registers document listeners on init', () => {
@@ -344,14 +345,15 @@ describe('AnalyticsService — Event Hub', () => {
     expect(msgCalls).toHaveLength(1);
   });
 
-  it('extracts params from event detail', () => {
+  it('extracts params from event detail + injects global context', () => {
     initForTest();
     document.dispatchEvent(
       new CustomEvent('agent-click', { detail: { name: 'Viktor' } }),
     );
     const agentCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'view_agent');
     expect(agentCalls).toHaveLength(1);
-    expect(agentCalls[0][2]).toEqual({ agent_name: 'Viktor' });
+    // Event-specific params + global context (page_section always present)
+    expect(agentCalls[0][2]).toMatchObject({ agent_name: 'Viktor', page_section: expect.any(String) });
   });
 
   it('dispose removes all listeners', () => {

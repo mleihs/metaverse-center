@@ -265,6 +265,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
       if (agent) {
         this._selectedAgent = agent;
         this._showDetails = true;
+        this._setAgentStructuredData(agent);
         return;
       }
       // Agent not in current page — fetch by slug from API
@@ -273,6 +274,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
         if (resp.success && resp.data) {
           this._selectedAgent = resp.data as Agent;
           this._showDetails = true;
+          this._setAgentStructuredData(resp.data as Agent);
           return;
         }
       } catch {
@@ -376,6 +378,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     this._selectedAgent = e.detail;
     this._showDetails = true;
     this._pushEntityUrl(e.detail);
+    this._setAgentStructuredData(e.detail);
   }
 
   private _pushEntityUrl(agent: Agent): void {
@@ -455,6 +458,31 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     this._showDetails = false;
     this._selectedAgent = null;
     this._pushListUrl();
+    // Revert to CollectionPage schema when detail panel closes
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      seoService.setCollectionPage({
+        name: `${sim.name} \u2013 Agents`,
+        description: `All agents in the ${sim.name} simulation.`,
+        url: `https://metaverse.center/simulations/${sim.slug}/agents`,
+        numberOfItems: this._total,
+      });
+    }
+  }
+
+  /** Set Person schema.org structured data for the currently viewed agent. */
+  private _setAgentStructuredData(agent: Agent): void {
+    const sim = appState.currentSimulation.value;
+    seoService.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: agent.name,
+      ...(agent.character ? { description: agent.character.substring(0, 200) } : {}),
+      ...(agent.portrait_image_url ? { image: agent.portrait_image_url } : {}),
+      ...(agent.primary_profession ? { jobTitle: agent.primary_profession } : {}),
+      ...(sim ? { affiliation: { '@type': 'Organization', name: sim.name } } : {}),
+      url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/agents/${agent.slug ?? ''}`,
+    });
   }
 
   private _handleLightboxPrev(): void {
