@@ -177,6 +177,13 @@ export class VelgBaseModal extends LitElement {
       if (this.open) {
         document.body.style.overflow = 'hidden';
         this._focusFirstElement();
+        this.dispatchEvent(
+          new CustomEvent('modal-open', {
+            bubbles: true,
+            composed: true,
+            detail: { modalName: this._resolveModalName() },
+          }),
+        );
       } else {
         document.body.style.overflow = '';
       }
