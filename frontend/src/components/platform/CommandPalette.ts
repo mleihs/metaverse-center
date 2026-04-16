@@ -20,6 +20,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 
 interface PaletteItem {
   id: string;
@@ -341,7 +342,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
   private get _simItems(): PaletteItem[] {
     return appState.simulations.value.map((sim: Simulation) => ({
       id: `sim-${sim.id}`,
-      label: sim.name,
+      label: t(sim, 'name'),
       category: 'shards' as const,
       hint: sim.theme,
       path: `/simulations/${sim.slug}/agents`,

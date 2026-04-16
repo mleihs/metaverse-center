@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Embassy } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
 
@@ -204,7 +205,7 @@ export class VelgEmbassyLink extends LitElement {
             class="embassy__sim-dot"
             style="background: ${this._getThemeColor(partner.simulation.theme)}"
           ></span>
-          <span class="embassy__sim-name">${partner.simulation.name}</span>
+          <span class="embassy__sim-name">${t(partner.simulation, 'name')}</span>
           <velg-badge variant=${statusVariant}>${this.embassy.status}</velg-badge>
         </div>
 
@@ -221,7 +222,7 @@ export class VelgEmbassyLink extends LitElement {
           }
           <div class="embassy__info">
             <div class="embassy__name">${partner.building.name}</div>
-            <div class="embassy__type">${partner.building.building_type}</div>
+            <div class="embassy__type">${t(partner.building, 'building_type')}</div>
           </div>
         </button>
 

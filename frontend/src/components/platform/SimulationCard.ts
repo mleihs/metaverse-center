@@ -267,14 +267,14 @@ export class VelgSimulationCard extends LitElement {
       >
         ${
           sim.banner_url
-            ? html`<div class="shard__image" style="background-image: url(${sim.banner_url})" role="img" aria-label="${sim.name} – ${sim.description ?? sim.theme}"></div>`
+            ? html`<div class="shard__image" style="background-image: url(${sim.banner_url})" role="img" aria-label="${t(sim, 'name')} – ${t(sim, 'description') || sim.theme}"></div>`
             : html`<div class="shard__placeholder"></div>`
         }
         <div class="shard__overlay"></div>
 
         <div class="shard__content">
           <div class="shard__header">
-            <h3 class="shard__name">${sim.name}</h3>
+            <h3 class="shard__name">${t(sim, 'name')}</h3>
             <velg-badge variant=${getThemeVariant(sim.theme)}>
               ${sim.theme}
             </velg-badge>

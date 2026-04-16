@@ -18,6 +18,7 @@ import { dungeonApi } from '../../services/api/index.js';
 import { ARCHETYPE_BY_SLUG, type AvailableDungeonResponse } from '../../types/dungeon.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import '../shared/BaseModal.js';
 
@@ -300,7 +301,7 @@ export class VelgDungeonSimPicker extends LitElement {
              aria-hidden="true"></div>
 
         <div class="sim-card__body">
-          <div class="sim-card__name">${sim.simulation.name}</div>
+          <div class="sim-card__name">${t(sim.simulation, 'name')}</div>
           ${this._renderMeta(sim)}
         </div>
 

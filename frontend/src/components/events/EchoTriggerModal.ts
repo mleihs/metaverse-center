@@ -8,6 +8,7 @@ import type {
   Simulation,
   SimulationConnection,
 } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -334,7 +335,7 @@ export class VelgEchoTriggerModal extends LitElement {
               <option value="">${msg('-- Select Target --')}</option>
               ${connectedSims.map(
                 (sim) => html`
-                  <option value=${sim.id}>${sim.name}</option>
+                  <option value=${sim.id}>${t(sim, 'name')}</option>
                 `,
               )}
             </select>

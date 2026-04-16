@@ -751,7 +751,7 @@ export class VelgLandingAgentShowcase extends LitElement {
                   ></velg-agent-card>
                   <div class="showcase__origin">
                     <span class="showcase__origin-dot" aria-hidden="true"></span>
-                    <span class="showcase__origin-name">${entry.simulation.name}</span>
+                    <span class="showcase__origin-name">${t(entry.simulation, 'name')}</span>
                   </div>
                 </div>
               `;

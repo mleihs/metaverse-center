@@ -19,6 +19,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import './DungeonShowcase.js';
@@ -2063,7 +2064,7 @@ export class VelgLandingPage extends LitElement {
                         ? html`<img
                           class="monitor-card__img"
                           src=${sim.banner_url}
-                          alt=${sim.name}
+                          alt=${t(sim, 'name')}
                           loading="lazy"
                           decoding="async"
                         />`
@@ -2077,8 +2078,8 @@ export class VelgLandingPage extends LitElement {
                     </span>
                   </div>
                   <div class="monitor-card__body">
-                    <h3 class="monitor-card__name">${sim.name}</h3>
-                    <p class="monitor-card__desc">${sim.description ?? ''}</p>
+                    <h3 class="monitor-card__name">${t(sim, 'name')}</h3>
+                    <p class="monitor-card__desc">${t(sim, 'description')}</p>
                     <div class="monitor-card__stats">
                       <span>${sim.agent_count ?? 0} ${msg('agents')}</span>
                       <span>${sim.building_count ?? 0} ${msg('buildings')}</span>

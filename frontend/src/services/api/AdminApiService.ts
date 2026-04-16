@@ -409,6 +409,7 @@ export interface HealthEffectsData {
 export interface HealthEffectsSimulation {
   id: string;
   name: string;
+  name_de?: string;
   slug: string;
   overall_health: number;
   threshold_state: 'normal' | 'critical' | 'ascendant';
@@ -418,6 +419,7 @@ export interface HealthEffectsSimulation {
 export interface AdminSimulation {
   id: string;
   name: string;
+  name_de?: string;
   slug: string;
   status: string;
   theme: string;
@@ -684,6 +686,7 @@ export interface DungeonOverrideConfig {
 export interface DungeonOverrideSimulation {
   id: string;
   name: string;
+  name_de?: string;
   slug: string;
   mode: 'off' | 'supplement' | 'override';
   archetypes: string[];

@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import type { HealthEffectsSimulation } from '../../services/api/AdminApiService.js';
 import { adminApi } from '../../services/api/index.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {
@@ -409,7 +410,7 @@ export class VelgAdminHealthTab extends LitElement {
       <div class="sim-card ${ts === 'critical' ? 'sim-card--critical' : ts === 'ascendant' ? 'sim-card--ascendant' : ''}">
         <div class="sim-card__header">
           <div>
-            <p class="sim-card__name">${sim.name}</p>
+            <p class="sim-card__name">${t(sim, 'name')}</p>
             <p class="sim-card__slug">/${sim.slug}</p>
           </div>
         </div>

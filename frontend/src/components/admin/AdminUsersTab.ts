@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi, simulationsApi } from '../../services/api/index.js';
 import type { AdminMembership, AdminUser, AdminUserDetail, Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -643,7 +644,7 @@ export class VelgAdminUsersTab extends LitElement {
             }}
           >
             <option value="">${msg('-- Add to simulation --')}</option>
-            ${this._simulations.map((sim) => html`<option value=${sim.id}>${sim.name}</option>`)}
+            ${this._simulations.map((sim) => html`<option value=${sim.id}>${t(sim, 'name')}</option>`)}
           </select>
           <select
             aria-label=${msg('Select role for new membership')}

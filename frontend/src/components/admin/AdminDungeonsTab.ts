@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { DungeonGlobalConfig } from '../../services/api/AdminApiService.js';
 import { adminApi } from '../../services/api/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {
@@ -918,14 +919,14 @@ export class VelgAdminDungeonsTab extends LitElement {
       <div class=${cardClass} style="animation-delay: ${index * 40}ms">
         <div class="sim-card__header">
           <div>
-            <h3 class="sim-card__name">${sim.name}</h3>
+            <h3 class="sim-card__name">${t(sim, 'name')}</h3>
             <p class="sim-card__slug">${sim.slug}</p>
           </div>
           ${this._renderProvenance(sim)}
         </div>
 
         <!-- Mode selector -->
-        <div class="seg" role="group" aria-label=${`${msg('Override mode for')} ${sim.name}`}>
+        <div class="seg" role="group" aria-label=${`${msg('Override mode for')} ${t(sim, 'name')}`}>
           ${this._renderSegBtn('off', sim.mode, () => this._setMode(sim.id, 'off'), msg('Off'))}
           ${this._renderSegBtn('supplement', sim.mode, () => this._setMode(sim.id, 'supplement'), msg('Supplement'))}
           ${this._renderSegBtn('override', sim.mode, () => this._setMode(sim.id, 'override'), msg('Override'))}

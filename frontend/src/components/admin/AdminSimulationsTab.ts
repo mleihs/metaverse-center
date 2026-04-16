@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AdminSimulation, adminApi } from '../../services/api/AdminApiService.js';
 import { formatDate } from '../../utils/date-format.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -365,7 +366,7 @@ export class VelgAdminSimulationsTab extends LitElement {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Soft Delete Simulation'),
       message: msg(
-        str`Archive "${sim.name}"? It will be hidden from users but can be restored later.`,
+        str`Archive "${t(sim, 'name')}"? It will be hidden from users but can be restored later.`,
       ),
       confirmLabel: msg('Archive'),
       variant: 'danger',
@@ -392,7 +393,7 @@ export class VelgAdminSimulationsTab extends LitElement {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Permanently Delete Simulation'),
       message: msg(
-        str`This will permanently destroy "${sim.name}" and ALL related data (agents, buildings, epochs, lore, images). This cannot be undone.`,
+        str`This will permanently destroy "${t(sim, 'name')}" and ALL related data (agents, buildings, epochs, lore, images). This cannot be undone.`,
       ),
       confirmLabel: msg('Destroy Permanently'),
       variant: 'danger',
@@ -519,7 +520,7 @@ export class VelgAdminSimulationsTab extends LitElement {
           (sim) => html`
             <div class="sim-row">
               <div class="sim-info">
-                <span class="sim-name">${sim.name}</span>
+                <span class="sim-name">${t(sim, 'name')}</span>
                 <span class="sim-slug">/${sim.slug}</span>
               </div>
               <span class=${this._getStatusBadgeClass(sim)}>${this._getStatusLabel(sim)}</span>
@@ -528,7 +529,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <button
                   class="action-btn"
                   ?disabled=${this._actionInProgress === sim.id}
-                  aria-label=${msg(str`Archive ${sim.name}`)}
+                  aria-label=${msg(str`Archive ${t(sim, 'name')}`)}
                   @click=${() => this._handleSoftDelete(sim)}
                 >
                   ${msg('Archive')}
@@ -536,7 +537,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <button
                   class="action-btn action-btn--danger"
                   ?disabled=${this._actionInProgress === sim.id}
-                  aria-label=${msg(str`Permanently destroy ${sim.name}`)}
+                  aria-label=${msg(str`Permanently destroy ${t(sim, 'name')}`)}
                   @click=${() => this._handleHardDelete(sim)}
                 >
                   ${msg('Destroy')}
@@ -561,7 +562,7 @@ export class VelgAdminSimulationsTab extends LitElement {
           (sim) => html`
             <div class="sim-row sim-row--deleted">
               <div class="sim-info">
-                <span class="sim-name">${sim.name}</span>
+                <span class="sim-name">${t(sim, 'name')}</span>
                 <span class="sim-slug">/${sim.slug}</span>
               </div>
               <span class="badge badge--deleted">${msg('Deleted')}</span>
@@ -570,7 +571,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <button
                   class="action-btn action-btn--restore"
                   ?disabled=${this._actionInProgress === sim.id}
-                  aria-label=${msg(str`Restore ${sim.name}`)}
+                  aria-label=${msg(str`Restore ${t(sim, 'name')}`)}
                   @click=${() => this._handleRestore(sim)}
                 >
                   ${msg('Restore')}
@@ -578,7 +579,7 @@ export class VelgAdminSimulationsTab extends LitElement {
                 <button
                   class="action-btn action-btn--danger"
                   ?disabled=${this._actionInProgress === sim.id}
-                  aria-label=${msg(str`Permanently purge ${sim.name}`)}
+                  aria-label=${msg(str`Permanently purge ${t(sim, 'name')}`)}
                   @click=${() => this._handleHardDelete(sim)}
                 >
                   ${msg('Purge')}

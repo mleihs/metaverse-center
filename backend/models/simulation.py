@@ -19,6 +19,7 @@ class SimulationUpdate(BaseModel):
     """Schema for updating a simulation."""
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    name_de: str | None = Field(default=None, max_length=255)
     description: str | None = None
     theme: str | None = None
     content_locale: str | None = None
@@ -30,6 +31,7 @@ class SimulationResponse(BaseModel):
 
     id: UUID
     name: str
+    name_de: str | None = None
     slug: str
     description: str | None = None
     description_de: str | None = None
@@ -58,6 +60,7 @@ class SimulationDashboardResponse(BaseModel):
 
     simulation_id: UUID
     name: str
+    name_de: str | None = None
     slug: str
     description: str | None = None
     description_de: str | None = None

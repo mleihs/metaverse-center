@@ -91,6 +91,7 @@ export type PromptCategory =
 export interface Simulation {
   id: UUID;
   name: string;
+  name_de?: string;
   slug: string;
   description: string;
   description_de?: string;
