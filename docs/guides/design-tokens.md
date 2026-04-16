@@ -104,6 +104,7 @@ Rules:
 - Only define `--_*` variables in `:host` blocks
 - Always derive from Tier 1/2 tokens via `color-mix()`
 - Never use raw hex in `--_*` definitions
+- **Naming convention**: Always use the `--_` prefix (e.g. `--_accent`, `--_phosphor-dim`). Do not use `--card-*`, `--green-*`, or other unprefixed names for component-local tokens — these are reserved for global token categories
 
 ### Chat Component Tokens (Phase 1-6)
 
@@ -163,9 +164,47 @@ Uses `color-mix()` with Tier 1 token — no raw hex values.
 
 ---
 
+## Token Architecture: Platform Chrome vs Simulation Theming
+
+The token system serves two distinct visual contexts:
+
+**Platform chrome** (header, admin panels, forge, dungeon terminal): Always dark. Reads `:root` token defaults directly. Never themed. Platform accent tokens (`--color-accent-amber-*`, `--color-accent-green`, `--color-mint-brass`) are intentionally non-themeable.
+
+**Simulation views** (`<velg-simulation-shell>`): Themed via ThemeService. Overrides Tier 1 tokens as inline styles on the shell element. Tier 2 tokens auto-re-derive via `color-mix()` at theme time. Child components inherit themed tokens automatically.
+
+### Shadow/Animation Dual Source
+
+Token files (`_shadows.css`, `_animation.css`) define platform-chrome defaults. `ThemeService.computeShadows()` and `computeAnimationDurations()` override these for themed views based on the preset's `shadow_style`, `shadow_color`, and `animation_speed` settings. Both sources must stay in sync — see comments in the token files.
+
+### Non-Themeable Tokens
+
+These tokens are defined in `_features.css` and `_colors.css` but are NOT in `THEME_TOKEN_MAP`. They represent game mechanics or platform chrome that must look the same across all simulation themes.
+
+| Category | Tokens | Reason |
+|----------|--------|--------|
+| **Platform accent** | `--color-accent-amber-*`, `--color-accent-green`, `--color-mint-brass` | Chrome identity |
+| **Epoch influence** | `--color-epoch-influence` | Game mechanic |
+| **Bleed contamination** | `--color-bleed-*`, `--color-ascendant-gold`, `--duration-bleed-drift` | Game mechanic |
+| **Entropy** | `--color-entropy-*`, `--duration-entropy-*` | Game mechanic |
+| **Document classification** | `--color-stamp-red` | Game mechanic |
+
+### Tier 2 Derivation Ratios
+
+All status colors (primary, danger, success, warning, info) use these consistent ratios:
+
+| Variant | Formula | Ratio |
+|---------|---------|-------|
+| `-hover` | `color-mix(base 80%, text-primary)` | 80/20 |
+| `-bg` | `color-mix(base 8%, surface)` | 8/92 |
+| `-border` | `color-mix(base 30%, transparent)` | 30/70 |
+| `-glow` | `color-mix(base 15%, transparent)` | 15/85 |
+| `-active` (primary only) | `color-mix(base 70%, text-primary)` | 70/30 |
+
+---
+
 ## Theme Presets
 
-9 presets in `theme-presets.ts`. Each preset defines only Tier 1 base tokens — all derived tokens are computed automatically by ThemeService.
+10 presets in `theme-presets.ts`. Each preset defines only Tier 1 base tokens (31 settings) — all derived tokens are computed automatically by ThemeService.
 
 ### WCAG AA Compliance
 

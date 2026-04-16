@@ -9,6 +9,7 @@
 @import './tokens/_z-index.css';
 @import './tokens/_animation.css';
 @import './tokens/_layout.css';
+@import './tokens/_features.css';
 
 /* Base */
 @import './base/_reset.css';

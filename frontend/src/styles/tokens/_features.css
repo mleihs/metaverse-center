@@ -1,0 +1,32 @@
+/* === Feature-Specific Tokens ===
+ *
+ * Game mechanic tokens for entropy, bleed contamination, epoch influence,
+ * and document classification. These are NOT user-themeable — each feature
+ * owns its visual language so players recognize mechanics consistently
+ * regardless of simulation theme.
+ *
+ * Do NOT add these to THEME_TOKEN_MAP in ThemeService.ts.
+ */
+
+:root {
+  /* === EPOCH INFLUENCE === */
+  --color-epoch-influence: #a78bfa;
+
+  /* === BLEED CONTAMINATION === */
+  --color-bleed-ghost: rgba(229, 229, 229, 0.06);
+  --color-bleed-ghost-intense: rgba(229, 229, 229, 0.12);
+  --color-ascendant-gold: rgba(245, 158, 11, 0.04);
+  --duration-bleed-drift: 20s;
+
+  /* === ENTROPY (critical threshold) === */
+  --color-entropy-vignette: rgba(0, 0, 0, 0.5);
+  --color-entropy-timer-bg: rgba(10, 0, 0, 0.9);
+  --color-entropy-timer-border: rgba(239, 68, 68, 0.4);
+  --color-entropy-timer-glow: rgba(239, 68, 68, 0.15);
+  --duration-entropy-pulse: 12s;
+  --duration-entropy-transition: 3s;
+  --duration-entropy-digit-flash: 200ms;
+
+  /* === DOCUMENT CLASSIFICATION === */
+  --color-stamp-red: rgba(220, 38, 38, 0.7);
+}

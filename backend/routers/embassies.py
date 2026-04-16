@@ -94,7 +94,7 @@ async def create_embassy(
         body.model_dump(exclude_none=True),
         created_by_id=user.id,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", result["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", result["id"], "create")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -115,7 +115,7 @@ async def update_embassy(
         embassy_id,
         body.model_dump(exclude_none=True),
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -131,7 +131,7 @@ async def activate_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Activate a proposed or suspended embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "active")
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -147,7 +147,7 @@ async def suspend_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Suspend an active embassy."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "suspended")
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -163,7 +163,7 @@ async def dissolve_embassy(
 ) -> SuccessResponse[EmbassyResponse]:
     """Dissolve an embassy (clears building special attributes)."""
     result = await EmbassyService.transition_status(admin_supabase, embassy_id, "dissolved")
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     ConnectionService._map_data_cache.clear()
     return SuccessResponse(data=result)
 
@@ -188,7 +188,7 @@ async def set_embassy_ward(
     one ward_vector per embassy; setting a new one replaces the old.
     """
     result = await EmbassyService.set_ward(supabase, embassy_id, ward_vector, ward_strength)
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     return SuccessResponse(data=result)
 
 
@@ -202,5 +202,5 @@ async def remove_embassy_ward(
 ) -> SuccessResponse[EmbassyResponse]:
     """Remove the bleed ward from an embassy."""
     result = await EmbassyService.remove_ward(supabase, embassy_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "embassies", embassy_id, "update")
     return SuccessResponse(data=result)

@@ -60,7 +60,9 @@ let preconnectInjected = false;
  * are handled separately.
  */
 const THEME_TOKEN_MAP: Record<string, string> = {
-  // Colors
+  // Colors — setting key names are stored in DB, do not rename without migration.
+  // color_secondary → --color-info: info is the secondary status color in the UI hierarchy.
+  // color_accent → --color-warning: the theme's accent tone doubles as the warning/attention color.
   color_primary: '--color-primary',
   color_secondary: '--color-info',
   color_accent: '--color-warning',

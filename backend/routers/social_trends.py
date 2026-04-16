@@ -232,14 +232,14 @@ async def integrate_trend(
         logger.warning("Failed to mark trend as processed", extra={"trend_id": body.trend_id}, exc_info=True)
 
     try:
-        await AuditService.log_action(
+        await AuditService.safe_log(
             supabase,
             simulation_id=simulation_id,
             user_id=user.id,
             entity_type="events",
             entity_id=UUID(event["id"]),
             action="create",
-            changes={"source": "social_trend", "trend_id": body.trend_id},
+            details={"source": "social_trend", "trend_id": body.trend_id},
         )
     except Exception:
         logger.warning("Audit log failed for trend integration", extra={"trend_id": body.trend_id}, exc_info=True)
@@ -416,14 +416,14 @@ async def integrate_article(
         ) from exc
 
     try:
-        await AuditService.log_action(
+        await AuditService.safe_log(
             supabase,
             simulation_id=simulation_id,
             user_id=user.id,
             entity_type="events",
             entity_id=UUID(event["id"]),
             action="create",
-            changes={"source": "article_browse"},
+            details={"source": "article_browse"},
         )
     except Exception:
         logger.warning("Audit log failed for article integration", exc_info=True)
@@ -560,14 +560,14 @@ async def batch_integrate_articles(
             event = await EventService.create(supabase, simulation_id, user.id, event_data)
             created_events.append(event)
 
-            await AuditService.log_action(
+            await AuditService.safe_log(
                 supabase,
                 simulation_id=simulation_id,
                 user_id=user.id,
                 entity_type="events",
                 entity_id=UUID(event["id"]),
                 action="create",
-                changes={"source": "batch_import"},
+                details={"source": "batch_import"},
             )
         except Exception:
             logger.warning(

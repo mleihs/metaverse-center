@@ -95,7 +95,7 @@ async def compute_scores(
     cycle_number = cycle or epoch.get("current_cycle", 1)
     data = await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
     try:
-        await AuditService.log_action(
+        await AuditService.safe_log(
             supabase,
             None,
             user.id,

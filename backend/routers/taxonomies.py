@@ -20,9 +20,6 @@ router = APIRouter(
     tags=["taxonomies"],
 )
 
-_service = TaxonomyService()
-
-
 @router.get("")
 async def list_taxonomies(
     simulation_id: UUID,
@@ -33,7 +30,7 @@ async def list_taxonomies(
     include_inactive: Annotated[bool, Query()] = False,
 ) -> SuccessResponse[list[TaxonomyResponse]]:
     """List all taxonomy values, optionally filtered by type."""
-    data = await _service.list_taxonomies(
+    data = await TaxonomyService.list_taxonomies(
         supabase,
         simulation_id,
         taxonomy_type=taxonomy_type,
@@ -51,7 +48,7 @@ async def get_by_type(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[list[TaxonomyResponse]]:
     """Get all taxonomy values of a specific type."""
-    data = await _service.list_taxonomies(supabase, simulation_id, taxonomy_type=taxonomy_type)
+    data = await TaxonomyService.list_taxonomies(supabase, simulation_id, taxonomy_type=taxonomy_type)
     return SuccessResponse(data=data)
 
 
@@ -64,7 +61,7 @@ async def create_taxonomy(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TaxonomyResponse]:
     """Create a new taxonomy value. Requires admin role."""
-    taxonomy = await _service.create_taxonomy(supabase, simulation_id, body.model_dump(exclude_none=True))
+    taxonomy = await TaxonomyService.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(
         supabase,
         simulation_id,
@@ -87,7 +84,7 @@ async def update_taxonomy(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TaxonomyResponse]:
     """Update a taxonomy value. Requires admin role."""
-    taxonomy = await _service.update_taxonomy(
+    taxonomy = await TaxonomyService.update(
         supabase,
         simulation_id,
         taxonomy_id,
@@ -113,7 +110,7 @@ async def deactivate_taxonomy(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[TaxonomyResponse]:
     """Soft-delete (deactivate) a taxonomy value."""
-    taxonomy = await _service.deactivate_taxonomy(supabase, simulation_id, taxonomy_id)
+    taxonomy = await TaxonomyService.deactivate_taxonomy(supabase, simulation_id, taxonomy_id)
     await AuditService.safe_log(
         supabase,
         simulation_id,

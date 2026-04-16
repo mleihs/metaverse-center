@@ -89,7 +89,7 @@ async def create_building(
 ) -> SuccessResponse[BuildingResponse]:
     """Create a new building."""
     building = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
-    await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building["id"], "create")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building["id"], "create")
     sim = await SimulationService.get_simulation_context(supabase, simulation_id)
     if sim:
         schedule_auto_translation(
@@ -126,7 +126,7 @@ async def update_building(
         update_data,
         if_updated_at=if_updated_at,
     )
-    await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "update")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building_id, "update")
     if de_nulls:
         sim = await SimulationService.get_simulation_context(supabase, simulation_id)
         if sim:
@@ -152,7 +152,7 @@ async def delete_building(
 ) -> SuccessResponse[BuildingResponse]:
     """Soft-delete a building."""
     building = await _service.soft_delete(supabase, simulation_id, building_id)
-    await AuditService.log_action(supabase, simulation_id, user.id, "buildings", building_id, "delete")
+    await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building_id, "delete")
     return SuccessResponse(data=building)
 
 

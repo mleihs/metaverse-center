@@ -12,7 +12,7 @@ export abstract class CrudApiService<T> extends BaseApiService {
   /** Resource segment appended to `/simulations/${id}/` (e.g. "agents"). */
   protected abstract readonly resource: string;
 
-  private basePath(simulationId: string): string {
+  protected basePath(simulationId: string): string {
     return `/simulations/${simulationId}/${this.resource}`;
   }
 

@@ -51,7 +51,7 @@ async def create_zone_action(
         body.action_type,
         user.id,
     )
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,
@@ -79,7 +79,7 @@ async def cancel_zone_action(
         zone_id,
         action_id,
     )
-    await AuditService.log_action(
+    await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,

@@ -1,4 +1,9 @@
-/* === Animation Tokens === */
+/* === Animation Tokens ===
+ *
+ * Platform-chrome defaults. ThemeService.computeAnimationDurations() scales
+ * these by the preset's animation_speed factor for themed simulation views.
+ * Keep base durations in sync with BASE_DURATIONS in ThemeService.ts.
+ */
 
 :root {
   /* === DURATION === */
@@ -18,24 +23,9 @@
   --ease-in: ease-in;
   --ease-out: ease-out;
   --ease-in-out: ease-in-out;
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-dramatic: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-snap: cubic-bezier(0.5, 0, 0, 1);
-  --ease-slam: cubic-bezier(0.36, 0.07, 0.19, 0.97);
-  --ease-settle: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* === BLEED & THRESHOLD DURATIONS === */
-  --duration-bleed-drift: 20s;
-  --duration-redaction-reveal: 6s;
-  --duration-map-draw: 5s;
-  --duration-stamp-drop: 200ms;
-
-  /* === ENTROPY (critical threshold) === */
-  --duration-entropy-pulse: 12s;
-  --duration-entropy-transition: 3s;
-  --duration-entropy-digit-flash: 200ms;
-  --ease-entropy: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* === COMPOSED TRANSITIONS === */
   --transition-fast: var(--duration-fast) var(--ease-default);
