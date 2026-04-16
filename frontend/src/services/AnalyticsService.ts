@@ -108,6 +108,13 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ entity_type: 'event', entity_name: _s(d, 'title') }),
   },
 
+  // ── Modal close (auto-derived modal name from parent custom element) ─
+  {
+    domEvent: 'modal-close',
+    gaEvent: 'close_modal',
+    params: (d) => ({ modal_name: _s(d, 'modalName') || 'unknown' }),
+  },
+
   // ── Chat ──────────────────────────────────────────────────────────
   { domEvent: 'send-message', gaEvent: 'send_chat_message' },
   {
