@@ -51,6 +51,8 @@ const TIMER_TICK_MS = 250;
 class DungeonStateManager {
   /** Guard flag: prevents concurrent validateActiveRun calls (e.g. rapid tab switches). */
   private _validating = false;
+  /** Set during tryRecover() to distinguish recovery from fresh session start in analytics. */
+  private _recovering = false;
 
   constructor() {
     // Detect externally-abandoned runs when the user returns to the tab.
@@ -200,11 +202,13 @@ class DungeonStateManager {
     this.runId.value = String(state.run_id);
     this.error.value = null;
 
-    // Track session start when transitioning from no run → active run
+    // Track session start when transitioning from no run → active run.
+    // Distinguish fresh starts from page-refresh recovery to avoid inflating session counts.
     if (wasNull) {
-      analyticsService.trackEvent('dungeon_session_started', {
-        archetype: state.archetype ?? '',
-      });
+      analyticsService.trackEvent(
+        this._recovering ? 'dungeon_session_recovered' : 'dungeon_session_started',
+        { archetype: state.archetype ?? '' },
+      );
     }
     // NOTE: _autoSubmitFired is NOT reset here. It's only reset when
     // _startTimer detects a fresh (non-expired) timer, preventing the
@@ -290,6 +294,7 @@ class DungeonStateManager {
     if (!storedId) return false;
 
     this.loading.value = true;
+    this._recovering = true;
     try {
       const resp = await dungeonApi.getState(storedId);
       if (resp.success && resp.data) {
@@ -304,6 +309,7 @@ class DungeonStateManager {
       this._clearPersistedRunId();
       return false;
     } finally {
+      this._recovering = false;
       this.loading.value = false;
     }
   }
