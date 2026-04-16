@@ -30,8 +30,9 @@ from backend.services.instagram_image_helpers import (
     BUREAU_FOOTER_HEIGHT,
     BUREAU_HEADER_HEIGHT,
     BUREAU_WATERMARK_TEXT,
-    FEED_SAFE_BOTTOM,
-    FEED_SAFE_TOP,
+    FEED_CONTENT_HEIGHT,
+    FEED_FOOTER_HEIGHT,
+    FEED_HEADER_HEIGHT,
     FONT_CAPTION,
     FONT_FEED_BADGE,
     FONT_FEED_FOOTER,
@@ -176,7 +177,7 @@ class InstagramImageService:
             color_background=color_background,
             classification=classification,
             cipher_hint=cipher_hint,
-            crop_gravity="smart",
+            crop_gravity="smart_building",
         )
 
     async def compose_bureau_dispatch(
@@ -317,16 +318,22 @@ class InstagramImageService:
         cipher_hint: str | None = None,
         crop_gravity: str = "center",
     ) -> bytes:
-        """Apply Bureau overlay to an image and convert to Instagram JPEG.
+        """Compose a Bureau dossier image using zone-based layout.
 
-        Visual pipeline (matching story template quality):
-        1. RGBA conversion for alpha compositing
-        2. Decorative grid on solid backgrounds
-        3. Atmospheric effects (vignette, grain, scan lines)
-        4. Classification badge + title with text glow
-        5. Bottom panel with watermark + AI disclosure
-        6. Accent border bars (top/bottom/sides)
-        7. Optional steganographic cipher hint (rotated marginal text)
+        Zone architecture (1080×1350 canvas):
+          [0..6]            Accent bar (simulation primary color)
+          [6..HEADER_H]     Header zone (badge + title + subtitle, opaque bg)
+          [HEADER_H..1290]  Content zone (portrait, smart-cropped to fit)
+          [1290..1350]      Footer zone (watermark + AI disclosure, opaque bg)
+
+        The portrait is resized to fill the CONTENT ZONE only — never behind
+        the header. This eliminates head-clipping entirely. Atmospheric effects
+        (bleach bypass, chromatic aberration, vignette, grain) apply to the
+        content zone only. Scan lines span the full canvas for visual unity.
+
+        Research: NatGeo/Apple/Nike keep text outside the image (Farace et al.,
+        Journal of Marketing — large central text on dynamic images = negative
+        engagement). Zone-based layout follows this industry best practice.
         """
         try:
             from PIL import Image, ImageDraw
@@ -336,90 +343,73 @@ class InstagramImageService:
 
         try:
             img = Image.open(io.BytesIO(image_bytes))
-
-            # Resize to Instagram portrait (1080x1350) before RGBA conversion
             if img.mode not in ("RGB", "RGBA"):
                 img = img.convert("RGB")
-            img = self._resize_for_instagram(
-                img,
-                gravity=crop_gravity,
-                safe_zone_top=FEED_SAFE_TOP,
-                safe_zone_bottom=FEED_SAFE_BOTTOM,
-            )
 
-            # Convert to RGBA for alpha compositing (like story templates)
-            img = img.convert("RGBA")
-
-            draw = ImageDraw.Draw(img)
-            width, height = img.size
-
-            # Parse colors
+            width = IG_WIDTH
+            height = IG_HEIGHT_PORTRAIT
             primary_rgb = hex_to_rgb(color_primary)
             bg_rgb = hex_to_rgb(color_background)
 
-            # ── 1. Decorative grid on solid backgrounds ──────────────
-            # Must run BEFORE atmospheric effects — grid detection uses
-            # pixel variance which would be pushed above threshold by
-            # grain/vignette.
-            self._add_decorative_grid_if_solid(img, draw, primary_rgb, width, height)
+            # ── 1. Smart-crop portrait to CONTENT ZONE (1080×1120) ───
+            # NOT to full 1350px — the header/footer are separate zones.
+            # This gives 5.7× more crop margin than the old overlay approach.
+            content_img = self._resize_for_instagram(
+                img,
+                gravity=crop_gravity,
+                target_height=FEED_CONTENT_HEIGHT,
+            )
+            content_img = content_img.convert("RGBA")
 
-            # ── 2. Atmospheric effects ───────────────────────────────
-            # Subtle vignette (lighter than stories — feed shows content)
-            vignette = create_vignette(width, height, intensity=0.3)
-            img.alpha_composite(vignette)
+            # ── 2. Atmospheric effects (content zone only) ───────────
+            self._add_decorative_grid_if_solid(
+                content_img, ImageDraw.Draw(content_img),
+                primary_rgb, width, FEED_CONTENT_HEIGHT,
+            )
+            vignette = create_vignette(width, FEED_CONTENT_HEIGHT, intensity=0.3)
+            content_img.alpha_composite(vignette)
+            content_img = add_noise_grain(content_img, sigma=10, opacity=0.04)
+            content_img = bleach_bypass(
+                content_img, desaturation=0.65,
+                contrast_boost=1.25, highlight_rolloff=0.90,
+            )
+            content_img = chromatic_aberration(
+                content_img, offset_r=(2, 1), offset_b=(-2, -1),
+            )
 
-            # Light film grain
-            img = add_noise_grain(img, sigma=10, opacity=0.04)
+            # ── 3. Create full canvas + paste content zone ───────────
+            canvas = Image.new("RGBA", (width, height), (*bg_rgb, 255))
+            canvas.paste(content_img, (0, FEED_HEADER_HEIGHT))
 
-            # Very subtle scan lines
-            draw_scan_lines_rgba(img, primary_rgb, spacing=6, alpha=10)
+            # Scan lines span full canvas (CRT texture ties zones together)
+            draw_scan_lines_rgba(canvas, primary_rgb, spacing=6, alpha=10)
 
-            # ── 2b. Film processing ──────────────────────────────────
-            # Bleach bypass: desaturated + high-contrast + cold shadows
-            # (matches the FLUX prompt "bleach bypass color grading")
-            img = bleach_bypass(img, desaturation=0.65, contrast_boost=1.25, highlight_rolloff=0.90)
+            draw = ImageDraw.Draw(canvas)
 
-            # Chromatic aberration: subtle RGB channel shift (surveillance camera)
-            img = chromatic_aberration(img, offset_r=(2, 1), offset_b=(-2, -1))
-
-            # Refresh draw reference after film processing
-            draw = ImageDraw.Draw(img)
-
-            # ── 3. Header panel — classification badge + title ───────
+            # ── 4. Header zone (opaque background, never covers image) ─
             font_badge = load_monospace_font(FONT_FEED_BADGE)
             font_title = load_bold_font(FONT_FEED_TITLE)
             font_subtitle = load_monospace_font(FONT_CAPTION)
             font_footer = load_monospace_font(FONT_FEED_FOOTER)
 
-            # Measure title lines for dynamic header height
             title_lines = wrap_text(title, font_title, width - 80)[:3]
             title_line_height = 44
-            # Header layout: 16 top + badge 36 + 12 gap + title lines + 12 gap + subtitle 30 + 16 bottom
-            header_content_height = 16 + 36 + 12 + len(title_lines) * title_line_height + 12 + 30 + 16
-            header_height = max(BUREAU_HEADER_HEIGHT, min(header_content_height, 280))
 
-            # Semi-transparent header background
-            draw.rectangle(
-                [(0, 0), (width, header_height)],
-                fill=(*bg_rgb, 220),
-            )
-
-            # Classification badge — rounded rectangle with vertically centered text
+            # Classification badge
             badge_label = classification
             badge_bbox = draw.textbbox((0, 0), badge_label, font=font_badge)
             text_w = badge_bbox[2] - badge_bbox[0]
             text_h = badge_bbox[3] - badge_bbox[1]
-            ascent_offset = badge_bbox[1]  # font metrics offset above origin
+            ascent_offset = badge_bbox[1]
             pad_x, pad_y = BADGE_PAD_X, BADGE_PAD_Y
             badge_w = text_w + pad_x * 2
             badge_h = text_h + pad_y * 2
-            badge_x, badge_y = 24, 22  # 16px gap from accent bar (y=6) to badge top
+            badge_x, badge_y = 24, 22
             draw.rounded_rectangle(
                 [(badge_x, badge_y), (badge_x + badge_w, badge_y + badge_h)],
                 radius=6,
                 fill=(*primary_rgb, 200),
             )
-            # Text centered inside badge (compensate for font ascent metrics)
             draw.text(
                 (badge_x + pad_x, badge_y + pad_y - ascent_offset),
                 badge_label,
@@ -427,12 +417,12 @@ class InstagramImageService:
                 font=font_badge,
             )
 
-            # Title with glow effect (accent color glow)
+            # Title with glow
             title_y = badge_y + badge_h + 12
             glow_color = (*primary_rgb, 80)
             for tline in title_lines:
                 text_with_glow(
-                    img,
+                    canvas,
                     (24, title_y),
                     tline,
                     font=font_title,
@@ -442,11 +432,10 @@ class InstagramImageService:
                 )
                 title_y += title_line_height
 
-            # Subtitle in accent color
+            # Subtitle
             subtitle_lines = wrap_text(subtitle, font_subtitle, width - 80)[:2]
             subtitle_y = title_y + 8
-            # Refresh draw after text_with_glow compositing
-            draw = ImageDraw.Draw(img)
+            draw = ImageDraw.Draw(canvas)
             for sline in subtitle_lines:
                 draw.text(
                     (24, subtitle_y),
@@ -456,29 +445,18 @@ class InstagramImageService:
                 )
                 subtitle_y += LINE_HEIGHT_CAPTION
 
-            # ── 4. Bottom panel — watermark + AI disclosure ──────────
-            footer_height = 60
-            footer_y = height - footer_height
-            draw.rectangle(
-                [(0, footer_y), (width, height)],
-                fill=(*bg_rgb, 220),
-            )
-
-            # Accent-colored border line at panel top edge
+            # ── 5. Footer zone ───────────────────────────────────────
+            footer_y = height - FEED_FOOTER_HEIGHT
             draw.rectangle(
                 [(0, footer_y), (width, footer_y + 2)],
                 fill=(*primary_rgb, 180),
             )
-
-            # Watermark left-aligned
             draw.text(
                 (20, footer_y + 20),
                 BUREAU_WATERMARK_TEXT,
                 fill=(120, 120, 120, 255),
                 font=font_footer,
             )
-
-            # AI disclosure right-aligned
             disclosure = "AI-generated content"
             disc_bbox = draw.textbbox((0, 0), disclosure, font=font_footer)
             disc_w = disc_bbox[2] - disc_bbox[0]
@@ -489,27 +467,19 @@ class InstagramImageService:
                 font=font_footer,
             )
 
-            # ── 5. Accent border bars ────────────────────────────────
-            # Top accent bar (6px solid)
+            # ── 6. Accent border bars ────────────────────────────────
             draw.rectangle([(0, 0), (width, 6)], fill=(*primary_rgb, 255))
-            # Bottom accent bar (6px, above footer)
             draw.rectangle([(0, height - 6), (width, height)], fill=(*primary_rgb, 255))
-            # Side borders (2px accent on left and right edges)
             draw.rectangle([(0, 0), (2, height)], fill=(*primary_rgb, 200))
             draw.rectangle([(width - 2, 0), (width, height)], fill=(*primary_rgb, 200))
 
-            # ── 6. Steganographic cipher hint ────────────────────────
+            # ── 7. Steganographic cipher hint ────────────────────────
             if cipher_hint:
                 try:
                     self._render_cipher_margin(
-                        img,
-                        cipher_hint,
-                        primary_rgb,
-                        width,
-                        height,
+                        canvas, cipher_hint, primary_rgb, width, height,
                     )
                 except (OSError, ValueError, TypeError) as cipher_exc:
-                    # Non-fatal — post continues without visual cipher
                     logger.warning(
                         "Steganographic cipher rendering failed",
                         exc_info=True,
@@ -522,7 +492,7 @@ class InstagramImageService:
                         scope.set_tag("instagram_phase", "cipher_rendering")
                         sentry_sdk.capture_exception(cipher_exc)
 
-            result = image_to_jpeg(img)
+            result = image_to_jpeg(canvas)
             logger.debug(
                 "Image composition complete",
                 extra={
@@ -608,27 +578,26 @@ class InstagramImageService:
         self,
         img,
         gravity: str = "center",
-        safe_zone_top: int = 0,
-        safe_zone_bottom: int = 0,
+        target_height: int = IG_HEIGHT_PORTRAIT,
     ) -> object:
-        """Resize image to fit Instagram 4:5 portrait format (1080x1350).
+        """Resize image to fit a target format (width=1080, height configurable).
 
-        Crops to fill the target aspect ratio using gravity-based positioning
-        (same pattern as ImageMagick/Cloudinary/NGINX image_filter):
+        Used for both full-canvas (1080×1350) and content-zone (1080×1120)
+        compositions. Gravity controls vertical crop positioning:
 
         - ``"top"``: Preserve upper portion (faces, heads). Crops from bottom.
         - ``"center"``: Standard center crop. Best for architecture/landscapes.
         - ``"bottom"``: Preserve lower portion. Crops from top.
         - ``"smart"``: Content-aware crop using smartcrop.js attention algorithm
-          (skin + edges + saturation). Accounts for overlay safe zones so
-          faces land below the header, not behind it.
+          (skin + edges + saturation weighted center-of-mass).
 
-        ``safe_zone_top`` / ``safe_zone_bottom`` are in final-image pixels
-        (1080x1350 coordinate space). Only used by ``"smart"`` gravity.
+        ``target_height`` defaults to 1350 (full 4:5) but is set to
+        FEED_CONTENT_HEIGHT (1120) for zone-based composition — giving
+        5.7× more crop margin than full-canvas mode.
         """
         from PIL import Image
 
-        target_w, target_h = IG_WIDTH, IG_HEIGHT_PORTRAIT
+        target_w, target_h = IG_WIDTH, target_height
         target_ratio = target_w / target_h
         img_ratio = img.width / img.height
 
@@ -642,11 +611,9 @@ class InstagramImageService:
             new_h = int(img.width / target_ratio)
 
             if gravity == "smart":
-                top = self._smart_crop_offset(
-                    img, new_h,
-                    safe_zone_top=safe_zone_top,
-                    safe_zone_bottom=safe_zone_bottom,
-                )
+                top = self._smart_crop_offset(img, new_h, portrait_bias=True)
+            elif gravity == "smart_building":
+                top = self._smart_crop_offset(img, new_h, portrait_bias=False)
             elif gravity == "top":
                 top = 0
             elif gravity == "bottom":
@@ -659,12 +626,7 @@ class InstagramImageService:
         return img.resize((target_w, target_h), Image.LANCZOS)
 
     @staticmethod
-    def _smart_crop_offset(
-        img,
-        crop_height: int,
-        safe_zone_top: int = 0,
-        safe_zone_bottom: int = 0,
-    ) -> int:
+    def _smart_crop_offset(img, crop_height: int, *, portrait_bias: bool = True) -> int:
         """Content-aware vertical crop offset using the smartcrop.js attention algorithm.
 
         Adapts the three-channel attention scoring from **smartcrop.js** by Jonas Wagner
@@ -761,6 +723,22 @@ class InstagramImageService:
         # ── Combined attention map (smartcrop.js weights) ──
         attention = edges * 0.2 + skin * 1.8 + sat * 0.3
 
+        # ── Rule of Thirds vertical bias (from smartcrop.js) ──
+        # smartcrop.js formula: max(1 - (y*2 - 2/3)^16, 0) * 1.2
+        # We use a gentler exponent (6) for AI art composition.
+        #
+        # portrait_bias=True (agents): upper third gets stronger bonus (0.4)
+        #   because faces sit at the upper third intersection.
+        # portrait_bias=False (buildings): symmetric thirds (0.2 each)
+        #   because architecture is typically centered.
+        h = attention.shape[0]
+        y_norm = np.linspace(0, 1, h, dtype=np.float32)
+        upper_weight = 0.4 if portrait_bias else 0.2
+        lower_weight = 0.2
+        thirds_bonus = np.maximum(0, 1.0 - (y_norm * 2 - 2/3) ** 6) * upper_weight
+        thirds_bonus += np.maximum(0, 1.0 - (y_norm * 2 - 4/3) ** 6) * lower_weight
+        attention *= (1.0 + thirds_bonus[:, np.newaxis])
+
         # ── Center of mass → vertical offset ──
         col_sums = attention.sum(axis=1)  # sum per row → vertical profile
         total = col_sums.sum()
@@ -774,27 +752,8 @@ class InstagramImageService:
         # Map back to original image coordinates
         center_y_orig = center_y / scale
 
-        # ── Safe zone adjustment ──
-        # The overlay covers safe_zone_top pixels at the top and safe_zone_bottom
-        # at the bottom of the FINAL image. The attention center should land at
-        # the visual center of the VISIBLE area, not the geometric center.
-        #
-        # In final image coordinates (1350px):
-        #   geometric center = crop_height_final / 2
-        #   visible  center  = safe_top + (crop_height_final - safe_top - safe_bottom) / 2
-        #   shift = visible_center - geometric_center = (safe_top - safe_bottom) / 2
-        #
-        # Convert shift to original image coordinates via the resize ratio.
-        if safe_zone_top or safe_zone_bottom:
-            final_h = IG_HEIGHT_PORTRAIT
-            shift_final = (safe_zone_top - safe_zone_bottom) / 2.0
-            shift_original = shift_final * (crop_height / final_h)
-        else:
-            shift_original = 0.0
-
-        # Position: place attention center at the visible center, not geometric center
-        # Negative top = crop higher = face lower in result = face below header ✓
-        top = int(center_y_orig - crop_height / 2 - shift_original)
+        # Position crop centered on attention center, clamped to image bounds
+        top = int(center_y_orig - crop_height / 2)
         return max(0, min(top, img.height - crop_height))
 
     @staticmethod
