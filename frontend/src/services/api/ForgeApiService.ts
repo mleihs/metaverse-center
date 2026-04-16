@@ -167,6 +167,12 @@ export interface WalletResponse {
   byok_status: BYOKStatus;
 }
 
+export interface TestBYOKResult {
+  valid: boolean;
+  detail: string;
+  response_ms: number;
+}
+
 export interface FeaturePurchase {
   id: string;
   user_id: string;
@@ -265,6 +271,14 @@ export class ForgeApiService extends BaseApiService {
     replicate_key?: string;
   }): Promise<ApiResponse<unknown>> {
     return this.put('/forge/wallet/keys', data);
+  }
+
+  deleteBYOK(provider: 'openrouter' | 'replicate'): Promise<ApiResponse<unknown>> {
+    return this.delete(`/forge/wallet/keys/${provider}`);
+  }
+
+  testBYOK(provider: 'openrouter' | 'replicate', key: string): Promise<ApiResponse<TestBYOKResult>> {
+    return this.post('/forge/wallet/keys/test', { provider, key });
   }
 
   // --- Feature Purchases ---

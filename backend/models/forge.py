@@ -329,6 +329,21 @@ class UpdateBYOKRequest(BaseModel):
     replicate_key: str | None = None
 
 
+class TestBYOKRequest(BaseModel):
+    """Schema for testing a BYOK key against a provider."""
+
+    provider: Literal["openrouter", "replicate"]
+    key: str
+
+
+class TestBYOKResult(BaseModel):
+    """Result of a BYOK key test."""
+
+    valid: bool
+    detail: str
+    response_ms: int = 0
+
+
 class BYOKStatus(BaseModel):
     """BYOK bypass status for a user."""
 

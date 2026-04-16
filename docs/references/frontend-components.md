@@ -1,8 +1,8 @@
 ---
 title: "Frontend Components"
 id: frontend-components
-version: "4.0"
-date: 2026-04-09
+version: "4.1"
+date: 2026-04-16
 lang: de
 type: reference
 status: active
@@ -604,7 +604,7 @@ frontend/src/services/api/
 ├── EmbassiesApiService.ts          # Embassy buildings + ambassador management
 ├── EpochsApiService.ts             # Competitive epochs, operatives, scoring
 ├── EpochChatApiService.ts          # Epoch chat messages (REST catch-up) + ready signals
-├── ForgeApiService.ts              # Simulation Forge CRUD, BYOK keys, access requests + admin review
+├── ForgeApiService.ts              # Simulation Forge CRUD, BYOK keys (update/delete/test), access requests + admin review
 ├── HealthApiService.ts             # Simulation health + game mechanics + bleed status + threshold actions
 ├── BotApiService.ts                # Bot player preset CRUD + add/remove bot from epoch
 ├── NotificationPreferencesApiService.ts  # Notification preferences (GET + POST /users/me/notification-preferences)
@@ -723,7 +723,7 @@ class BaseApiService {
 | Epoch Chat (REST catch-up) | EpochChatApiService | FastAPI |
 | Bot Players (presets, add/remove from epoch) | BotApiService | FastAPI |
 | Notification Preferences (get + upsert) | NotificationPreferencesApiService | FastAPI |
-| Forge (drafts, BYOK, access requests, admin review) | ForgeApiService | FastAPI |
+| Forge (drafts, BYOK keys update/delete/test, access requests, admin review) | ForgeApiService | FastAPI |
 | Epoch Realtime (live messages, presence, ready) | RealtimeService | Supabase Realtime |
 
 ---
@@ -1673,7 +1673,7 @@ Platform admin dashboard with 10 tabs (consolidated from 13). Hero section with 
 | Heartbeat | `velg-admin-heartbeat-tab` | Tick engine config, cascade rules, sim status |
 | Resonances | `velg-admin-resonances-tab` | Substrate resonance CRUD + impact processing |
 | Scanner | `velg-admin-scanner-tab` | Content scanner dashboard, candidates, log |
-| Forge | `velg-admin-forge-tab` | Forge stats, BYOK keys, clearance queue |
+| Forge | `velg-admin-forge-tab` | Forge stats, BYOK keys (via `velg-byok-panel`), clearance queue |
 | Platform Config | `velg-admin-platform-config-tab` | Sub-tabs: API Keys, Models, Research, Caching |
 | Social Media | `velg-admin-social-tab` | Sub-tabs: Instagram, Bluesky |
 | Data Cleanup | `velg-admin-cleanup-tab` | 6-category data purge with preview |
@@ -1756,7 +1756,7 @@ Modal form for creating/editing substrate resonances. Source category selection 
 
 ### AdminForgeTab (`velg-admin-forge-tab`)
 
-Global Simulation Forge settings panel with BYOK key management, forge statistics, and clearance request administration.
+Global Simulation Forge settings panel with forge statistics, BYOK key management (delegated to `<velg-byok-panel>`), and clearance request administration.
 
 **Tag:** `<velg-admin-forge-tab>`
 
@@ -1773,7 +1773,7 @@ Global Simulation Forge settings panel with BYOK key management, forge statistic
 **Sections:**
 
 1. **Forge Statistics:** Grid of stat cards (active drafts, total tokens, total materialized)
-2. **BYOK Keys:** Personal OpenRouter + Replicate API key inputs with save action
+2. **BYOK Keys:** Delegates to `<velg-byok-panel mode="admin">` (key input, test, save, revoke)
 3. **Clearance Requests:** Pending request cards with:
    - Requester email + submission date
    - Optional justification message (dashed border, italic)
@@ -1782,7 +1782,7 @@ Global Simulation Forge settings panel with BYOK key management, forge statistic
    - Both actions show `ConfirmDialog` before executing
    - Pending count badge (propagated to AdminPanel tab via `appState.setPendingForgeRequestCount()`)
 
-**API:** `forgeApi.getAdminStats()`, `forgeApi.listPendingRequests()`, `forgeApi.reviewRequest(id, action, adminNotes)`, `forgeApi.updateBYOK()`
+**API:** `forgeApi.getAdminStats()`, `forgeApi.listPendingRequests()`, `forgeApi.reviewRequest(id, action, adminNotes)`
 
 ### AdminResearchTab (`velg-admin-research-tab`)
 
@@ -1809,6 +1809,49 @@ Platform-level Tavily research domain configuration panel. Allows admin to confi
 **Data Source:** `platform_settings` table (Migration 124 seeds default values)
 
 **API:** `adminApi.getPlatformSettings()`, `adminApi.updatePlatformSetting(key, value)`
+
+---
+
+## BYOK Key Management
+
+### VelgByokPanel (`velg-byok-panel`)
+
+Standalone BYOK (Bring Your Own Key) management component. Replaces duplicated key management that was previously inline in `VelgForgeMint` and `AdminForgeTab`. Handles all BYOK states internally: bypass active (CLEARANCE: UNLIMITED banner + benefit grid), awareness (onboarding callout when allowed but no keys), key management (input, reveal, validate, test, save, remove).
+
+**Tag:** `<velg-byok-panel>`
+
+**Properties:**
+| Name | Typ | Default | Beschreibung |
+|------|-----|---------|-------------|
+| `mode` | `'user' \| 'admin'` | `'user'` | Reflected. `user` = Bureau-themed key-card aesthetic (inside Mint), `admin` = settings-panel layout (inside AdminForgeTab SEC-08) |
+
+**State:**
+| Name | Typ | Beschreibung |
+|------|-----|-------------|
+| `_orKey` / `_repKey` | `string` | Input buffer for OpenRouter / Replicate key |
+| `_isSaving` | `boolean` | Save operation in progress |
+| `_isRemoving` | `boolean` | Key removal in progress |
+| `_showOrKey` / `_showRepKey` | `boolean` | Password reveal toggle per input |
+| `_orTestState` / `_repTestState` | `TestState` | `'idle' \| 'testing' \| 'success' \| 'error'` per provider |
+| `_orTestResult` / `_repTestResult` | `TestBYOKResult \| null` | Last test result per provider |
+
+**Key Features:**
+- **Bypass Banner:** "CLEARANCE: UNLIMITED" with 4-item benefit grid when `effective_bypass` is true
+- **Awareness Banner:** "Clearance Available" onboarding when BYOK is allowed but no keys configured
+- **Key Cards:** Per-provider card (OpenRouter, Replicate) with status badge, description, signup link, input with reveal toggle, format validation (`sk-or-` / `r8_` prefix), "Verify Clearance" test button, "Revoke" button (with `VelgConfirmDialog`)
+- **Format Validation:** Client-side prefix check, non-blocking warning via `VelgConfirmDialog` on save
+- **Key Test:** Calls `forgeApi.testBYOK()` for live provider verification with response time display
+- **Key Removal:** `forgeApi.deleteBYOK()` with confirmation dialog, reloads wallet state
+
+**Events:**
+| Event | Detail | Beschreibung |
+|-------|--------|-------------|
+| `byok-saved` | - | Keys successfully saved |
+| `byok-removed` | `{ provider: string }` | Key successfully removed |
+
+**API:** `forgeApi.updateBYOK()`, `forgeApi.deleteBYOK()`, `forgeApi.testBYOK()`, `forgeStateManager.loadWallet()`
+
+**Used by:** `VelgForgeMint` (user mode), `AdminForgeTab` (admin mode)
 
 ---
 
@@ -1965,7 +2008,7 @@ Singleton API service for zone action management (`zoneActionsApi`).
 
 ### ForgeApiService
 
-Singleton API service for Simulation Forge draft lifecycle, BYOK key management, and clearance access requests (`forgeApi`).
+Singleton API service for Simulation Forge draft lifecycle, BYOK key management (update/delete/test), and clearance access requests (`forgeApi`).
 
 **Methods:**
 | Method | HTTP | Path | Auth |
@@ -1983,6 +2026,8 @@ Singleton API service for Simulation Forge draft lifecycle, BYOK key management,
 | `getSimulationLore(simId)` | GET | `/simulations/{simId}/lore` | Public |
 | `getWallet()` | GET | `/forge/wallet` | Auth |
 | `updateBYOK(data)` | PUT | `/forge/wallet/keys` | Auth |
+| `deleteBYOK(provider)` | DELETE | `/forge/wallet/keys/{provider}` | Auth |
+| `testBYOK(provider, key)` | POST | `/forge/wallet/keys/test` | Auth |
 | `requestAccess(message?)` | POST | `/forge/access-requests` | Auth |
 | `getMyAccessRequest()` | GET | `/forge/access-requests/me` | Auth |
 | `listPendingRequests()` | GET | `/forge/access-requests/pending` | Platform Admin |

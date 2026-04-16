@@ -1,10 +1,12 @@
 """API router for the Simulation Forge."""
 
 import logging
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
@@ -39,6 +41,8 @@ from backend.models.forge import (
     PurchaseRequest,
     PurgeResult,
     RecruitmentRequest,
+    TestBYOKRequest,
+    TestBYOKResult,
     TokenBundle,
     TokenEconomyStats,
     TokenPurchaseHistory,
@@ -388,6 +392,89 @@ async def update_byok(
         "update_keys",
         {"openrouter": body.openrouter_key is not None, "replicate": body.replicate_key is not None},
     )
+    return SuccessResponse(data=result)
+
+
+@router.delete("/wallet/keys/{provider}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def delete_byok_key(
+    request: Request,
+    provider: str,
+    user: Annotated[CurrentUser, Depends(require_architect())],
+    supabase=Depends(get_effective_supabase),
+) -> SuccessResponse[MessageResponse]:
+    """Remove a single BYOK API key (openrouter or replicate)."""
+    if provider not in ("openrouter", "replicate"):
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}. Use 'openrouter' or 'replicate'.")
+
+    try:
+        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id)
+        if not allowed:
+            raise HTTPException(status_code=403, detail="BYOK access not granted.")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("BYOK allowance check failed — denying access")
+        raise HTTPException(status_code=500, detail="Unable to verify BYOK access.") from None
+
+    result = await _draft_service.clear_user_key(supabase, user.id, provider)
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "forge_wallet",
+        str(user.id),
+        "delete_key",
+        {"provider": provider},
+    )
+    return SuccessResponse(data=result)
+
+
+@router.post("/wallet/keys/test")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def test_byok_key(
+    request: Request,
+    body: TestBYOKRequest,
+    user: Annotated[CurrentUser, Depends(require_architect())],
+) -> SuccessResponse[TestBYOKResult]:
+    """Test a BYOK API key against its provider without storing it.
+
+    Makes a lightweight API call to verify the key is valid:
+    - OpenRouter: GET /api/v1/models (model list)
+    - Replicate: GET /v1/account (account info)
+    """
+    provider_urls = {
+        "openrouter": "https://openrouter.ai/api/v1/models",
+        "replicate": "https://api.replicate.com/v1/account",
+    }
+    url = provider_urls[body.provider]
+
+    start = time.monotonic()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url, headers={"Authorization": f"Bearer {body.key}"})
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+
+        if resp.status_code == 200:
+            result = TestBYOKResult(valid=True, detail="Key verified successfully.", response_ms=elapsed_ms)
+        elif resp.status_code == 401:
+            result = TestBYOKResult(valid=False, detail="Invalid or expired API key.", response_ms=elapsed_ms)
+        elif resp.status_code == 403:
+            result = TestBYOKResult(valid=False, detail="Key lacks required permissions.", response_ms=elapsed_ms)
+        else:
+            result = TestBYOKResult(
+                valid=False,
+                detail=f"Provider returned status {resp.status_code}.",
+                response_ms=elapsed_ms,
+            )
+    except httpx.TimeoutException:
+        result = TestBYOKResult(valid=False, detail="Provider did not respond within 10 seconds.")
+    except httpx.ConnectError:
+        result = TestBYOKResult(valid=False, detail="Could not connect to provider.")
+    except Exception:
+        logger.exception("Unexpected error testing BYOK key for provider=%s", body.provider)
+        result = TestBYOKResult(valid=False, detail="Unexpected error during key verification.")
+
     return SuccessResponse(data=result)
 
 

@@ -222,11 +222,11 @@ class ForgeDraftService:
     ) -> dict:
         """Update a user's BYOK encrypted keys.
 
-        Uses ``fn_update_user_byok_keys`` RPC (migration 125) which runs as
-        SECURITY DEFINER, validating ownership inside the function.  This
-        avoids the previous service_role bypass.
+        Uses ``fn_update_user_byok_keys`` RPC (migration 125, updated 218)
+        which runs as SECURITY DEFINER, validating ownership inside the
+        function.  This avoids the previous service_role bypass.
         """
-        params: dict[str, str | None] = {"p_user_id": str(user_id)}
+        params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
         has_update = False
 
         if openrouter_key is not None:
@@ -249,6 +249,35 @@ class ForgeDraftService:
             )
 
         return {"message": "Keys updated successfully."}
+
+    @staticmethod
+    async def clear_user_key(
+        supabase: Client,
+        user_id: UUID,
+        provider: str,
+    ) -> dict:
+        """Remove a single BYOK key (set to NULL).
+
+        Uses the ``p_clear_*`` flags added in migration 218.
+        """
+        params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
+        if provider == "openrouter":
+            params["p_clear_openrouter"] = True
+        elif provider == "replicate":
+            params["p_clear_replicate"] = True
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+
+        resp = await supabase.rpc("fn_update_user_byok_keys", params).execute()
+        result = resp.data or {}
+
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=result.get("error", "User wallet not found. Must be an architect first."),
+            )
+
+        return {"message": f"{provider} key removed successfully."}
 
     @staticmethod
     async def get_wallet(supabase: Client, user_id: UUID) -> dict:

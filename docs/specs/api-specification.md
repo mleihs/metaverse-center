@@ -1,8 +1,8 @@
 ---
 title: "API Specification"
 id: api-specification
-version: "2.8"
-date: 2026-03-27
+version: "2.9"
+date: 2026-04-16
 lang: de
 type: spec
 status: active
@@ -2248,6 +2248,8 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | POST | `/api/v1/forge/wallet/purchase` | Mock-Token-Kauf (Bundle-Slug im Body) | Architect+ |
 | GET | `/api/v1/forge/wallet/history` | Token-Kauf-Verlauf (Ledger) | Architect+ |
 | PUT | `/api/v1/forge/wallet/keys` | BYOK-Schluessel aktualisieren (OpenRouter/Replicate) | Architect+ |
+| DELETE | `/api/v1/forge/wallet/keys/{provider}` | Einzelnen BYOK-Schluessel entfernen (openrouter oder replicate) | Architect+ |
+| POST | `/api/v1/forge/wallet/keys/test` | BYOK-Schluessel gegen Provider-API validieren ohne Speicherung | Architect+ |
 | GET | `/api/v1/forge/feature-purchases` | Feature-Kaeufe fuer Simulation auflisten | Member |
 | POST | `/api/v1/forge/purchase/darkroom-pass` | Darkroom Pass kaufen (2 FT, 10 Regen-Budget) | Editor+ |
 | POST | `/api/v1/forge/purchase/classified-dossier` | Classified Dossier kaufen (2 FT, AI-Lore-Generation) | Editor+ |
@@ -2312,7 +2314,7 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | Resonances | 9 | CRUD + ProcessImpact + Impacts + Status + Restore |
 | Resonance Dungeons | 12 | Available + CreateRun + GetRun + State + Move + Action + Combat + Scout + Rest + Retreat + Events + History |
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
-| Forge Token Economy | 20 | Bundles (1) + Wallet (3) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
+| Forge Token Economy | 22 | Bundles (1) + Wallet (3) + BYOK Keys (2) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
 | Public | 49 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **307** | **38 Router** |
+| **Gesamt** | **309** | **38 Router** |

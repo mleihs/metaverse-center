@@ -51,6 +51,33 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         line-height: 1.5;
       }
 
+      .byok-link-btn {
+        display: inline-block;
+        margin-top: var(--space-2);
+        padding: var(--space-1-5) var(--space-3);
+        background: transparent;
+        border: 1px solid var(--color-accent-amber);
+        color: var(--color-accent-amber);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-black);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        cursor: pointer;
+        transition: background var(--transition-fast), color var(--transition-fast);
+        min-height: 36px;
+      }
+
+      .byok-link-btn:hover {
+        background: var(--color-accent-amber);
+        color: var(--color-surface-sunken);
+      }
+
+      .byok-link-btn:focus-visible {
+        outline: 2px solid var(--color-accent-amber);
+        outline-offset: 2px;
+      }
+
       .range-row {
         display: flex;
         align-items: center;
@@ -221,7 +248,11 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
           `
               : html`
             <div class="disabled-notice">
-              ${msg('Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). You can add your personal key in your profile settings under "API Keys". Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.')}
+              ${msg('Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.')}
+              <button
+                class="byok-link-btn"
+                @click=${() => { forgeStateManager.mintOpen.value = true; }}
+              >${msg('Open The Mint to configure your API keys')}</button>
               ${renderInfoBubble(msg('The platform admin can also activate autonomy globally, which covers AI costs with the platform key. Contact your admin to request activation for this simulation.'))}
             </div>
           `

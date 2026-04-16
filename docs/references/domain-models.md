@@ -1,8 +1,8 @@
 ---
 title: "Domain Models"
 id: domain-models
-version: "3.3"
-date: 2026-03-13
+version: "3.4"
+date: 2026-04-16
 lang: de
 type: reference
 status: active
@@ -1514,6 +1514,17 @@ interface FeaturePurchase {
 
 interface UpdateBYOKRequest {
   openrouter_key?: string;
-  replicate_token?: string;
+  replicate_key?: string;
+}
+
+interface TestBYOKRequest {
+  provider: 'openrouter' | 'replicate';
+  key: string;
+}
+
+interface TestBYOKResult {
+  valid: boolean;
+  detail: string;
+  response_ms: number;                  // 0 on timeout/connection error
 }
 ```

@@ -1,8 +1,8 @@
 ---
 title: "Database Schema: Neues Multi-Simulations-Schema"
 id: database-schema
-version: "4.0"
-date: 2026-04-09
+version: "4.1"
+date: 2026-04-16
 lang: de
 type: reference
 status: active
@@ -1197,11 +1197,13 @@ CREATE OR REPLACE FUNCTION retrieve_agent_memories(
 ### Security & Wallet RPC Functions (Migrationen 125/126)
 
 ```sql
--- SECURITY DEFINER: Aktualisiert verschluesselte BYOK-Keys fuer den aufrufenden User.
+-- SECURITY DEFINER: Aktualisiert/loescht verschluesselte BYOK-Keys fuer den aufrufenden User.
 -- Ersetzt service_role-Bypass (user_wallets RLS erlaubt nur SELECT fuer Owner).
 -- Validiert auth.uid() = p_user_id.
+-- Migration 218: p_clear_openrouter/p_clear_replicate Boolean-Flags zum gezielten Loeschen einzelner Keys.
 CREATE OR REPLACE FUNCTION public.fn_update_user_byok_keys(
-    p_user_id uuid, p_encrypted_openrouter_key text DEFAULT NULL, p_encrypted_replicate_key text DEFAULT NULL
+    p_user_id uuid, p_encrypted_openrouter_key text DEFAULT NULL, p_encrypted_replicate_key text DEFAULT NULL,
+    p_clear_openrouter boolean DEFAULT false, p_clear_replicate boolean DEFAULT false
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Single UPDATE fuer RP-Grants an alle Epoch-Teilnehmer.
@@ -3471,7 +3473,7 @@ Zuvor waren Domains in `tavily_search.py` hartcodiert. AdminResearchTab-Komponen
 
 ### Migration 125: BYOK Key Update RPC
 
-`fn_update_user_byok_keys(p_user_id, p_encrypted_openrouter_key, p_encrypted_replicate_key)` — SECURITY DEFINER. Ersetzt service_role-Bypass fuer verschluesselte BYOK-Key-Updates. Validiert `auth.uid() = p_user_id`. Nur `authenticated` darf ausfuehren.
+`fn_update_user_byok_keys(p_user_id, p_encrypted_openrouter_key, p_encrypted_replicate_key, p_clear_openrouter, p_clear_replicate)` — SECURITY DEFINER. Ersetzt service_role-Bypass fuer verschluesselte BYOK-Key-Updates. Validiert `auth.uid() = p_user_id`. Nur `authenticated` darf ausfuehren. Erweitert in Migration 218 um `p_clear_*` Boolean-Flags.
 
 ### Migration 126: Batch RP Grant RPC
 
@@ -3623,3 +3625,7 @@ Leichtgewichtiges Auszeichnungssystem mit 35 Badges in 7 Kategorien und 5 Selten
 | `trg_ach_operative_deploy` | `operative_missions` | `iron_guardian`, `shadow_operative` |
 
 Alle Trigger `SECURITY DEFINER`. `fn_award_achievement` nur fuer `service_role` (Migration 195: REVOKE von `authenticated`).
+
+### Migration 218: BYOK Key Clear Support
+
+`CREATE OR REPLACE` auf `fn_update_user_byok_keys` — erweitert um `p_clear_openrouter BOOLEAN DEFAULT FALSE` und `p_clear_replicate BOOLEAN DEFAULT FALSE`. Wenn ein Clear-Flag TRUE ist, wird die entsprechende Key-Spalte auf NULL gesetzt (CASE-Branch uebersteuert COALESCE). Ermoeglicht gezieltes Loeschen einzelner BYOK-Keys ueber `DELETE /forge/wallet/keys/{provider}` ohne den anderen Key zu beruehren. Berechtigungen unveraendert (REVOKE anon, GRANT authenticated).

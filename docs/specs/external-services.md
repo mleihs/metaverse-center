@@ -405,7 +405,7 @@ Alle Tavily-Fehlschlaege werden ueber `sentry_sdk.capture_message()` mit `push_s
 
 ## 7. Platform API Key Management
 
-Platform-level API keys provide defaults for all simulations. Individual simulations can override these via BYOK (Bring Your Own Key) in their settings.
+Platform-level API keys provide defaults for all simulations. Individual users can override OpenRouter/Replicate keys via BYOK (Bring Your Own Key) in their personal forge wallet. Keys are AES-256 encrypted at rest. Users can test keys against provider APIs before saving, and revoke individual keys without affecting the other.
 
 ### Key Hierarchy
 
