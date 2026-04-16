@@ -490,6 +490,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     if (idx > 0) {
       this._selectedAgent = this._agents[idx - 1];
       this._pushEntityUrl(this._selectedAgent);
+      this._setAgentStructuredData(this._selectedAgent);
     }
   }
 
@@ -498,6 +499,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     if (idx >= 0 && idx < this._agents.length - 1) {
       this._selectedAgent = this._agents[idx + 1];
       this._pushEntityUrl(this._selectedAgent);
+      this._setAgentStructuredData(this._selectedAgent);
     }
   }
 

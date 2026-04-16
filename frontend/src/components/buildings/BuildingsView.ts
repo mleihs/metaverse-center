@@ -8,6 +8,7 @@ import { buildingsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
 import type { ApiResponse, Building } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
@@ -83,8 +84,8 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
-        name: `${sim.name} \u2013 Buildings`,
-        description: `All buildings in the ${sim.name} simulation.`,
+        name: `${t(sim, 'name')} \u2013 Buildings`,
+        description: `All buildings in the ${t(sim, 'name')} simulation.`,
         url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
         numberOfItems: this._total,
       });
@@ -259,8 +260,8 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
-        name: `${sim.name} \u2013 Buildings`,
-        description: `All buildings in the ${sim.name} simulation.`,
+        name: `${t(sim, 'name')} \u2013 Buildings`,
+        description: `All buildings in the ${t(sim, 'name')} simulation.`,
         url: `https://metaverse.center/simulations/${sim.slug}/buildings`,
         numberOfItems: this._total,
       });
@@ -274,10 +275,10 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
       '@context': 'https://schema.org',
       '@type': 'Place',
       name: building.name,
-      ...(building.description ? { description: building.description.substring(0, 200) } : {}),
+      ...(t(building, 'description') ? { description: t(building, 'description').substring(0, 200) } : {}),
       ...(building.image_url ? { image: building.image_url } : {}),
-      ...(building.building_type ? { additionalType: building.building_type } : {}),
-      ...(sim ? { containedInPlace: { '@type': 'VirtualLocation', name: sim.name } } : {}),
+      ...(t(building, 'building_type') ? { additionalType: t(building, 'building_type') } : {}),
+      ...(sim ? { containedInPlace: { '@type': 'VirtualLocation', name: t(sim, 'name') } } : {}),
       url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/buildings/${building.slug ?? ''}`,
     });
   }
@@ -287,6 +288,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     if (idx > 0) {
       this._selectedBuilding = this._buildings[idx - 1];
       this._pushEntityUrl(this._selectedBuilding);
+      this._setBuildingStructuredData(this._selectedBuilding);
     }
   }
 
@@ -295,6 +297,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     if (idx >= 0 && idx < this._buildings.length - 1) {
       this._selectedBuilding = this._buildings[idx + 1];
       this._pushEntityUrl(this._selectedBuilding);
+      this._setBuildingStructuredData(this._selectedBuilding);
     }
   }
 

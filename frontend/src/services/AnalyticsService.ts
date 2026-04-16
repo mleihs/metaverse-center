@@ -108,15 +108,8 @@ const EVENT_MAP: EventMapping[] = [
     params: (d) => ({ entity_type: 'event', entity_name: _s(d, 'title') }),
   },
 
-  // ── Modal close (generic lifecycle) ───────────────────────────────
-  { domEvent: 'modal-close', gaEvent: 'close_modal' },
-
   // ── Chat ──────────────────────────────────────────────────────────
-  {
-    domEvent: 'send-message',
-    gaEvent: 'send_chat_message',
-    params: (d) => ({ message_length: _s(d, 'content').length }),
-  },
+  { domEvent: 'send-message', gaEvent: 'send_chat_message' },
   {
     domEvent: 'agents-selected',
     gaEvent: 'select_chat_agents',
@@ -268,7 +261,8 @@ class AnalyticsService {
       window.dataLayer.push(arguments);
     };
 
-    // TEMPORARY: default granted to verify GA4 data flow (revert after confirmed)
+    // Default granted — site uses IP anonymization and no ad tracking.
+    // Cookie consent banner allows users to opt out (revoke → denied).
     window.gtag('consent', 'default', {
       analytics_storage: 'granted',
       ad_storage: 'denied',
@@ -322,7 +316,9 @@ class AnalyticsService {
   /** Send a manual page_view event (called on SPA route changes). */
   trackPageView(path: string, title: string): void {
     if (!this._initialized) return;
+    const ctx = this._getGlobalContext();
     window.gtag('event', 'page_view', {
+      ...ctx,
       page_path: path,
       page_title: title,
     });

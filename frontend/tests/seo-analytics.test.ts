@@ -356,6 +356,54 @@ describe('AnalyticsService — Event Hub', () => {
     expect(agentCalls[0][2]).toMatchObject({ agent_name: 'Viktor', page_section: expect.any(String) });
   });
 
+  it('global context includes page_section and excludes simulation_id when no simulation active', () => {
+    initForTest();
+    analyticsService.trackEvent('test_event');
+    const calls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'test_event');
+    expect(calls).toHaveLength(1);
+    const params = calls[0][2] as Record<string, unknown>;
+    expect(params.page_section).toBeDefined();
+    expect(typeof params.page_section).toBe('string');
+    // No simulation active in test environment → simulation_id must be absent
+    expect(params.simulation_id).toBeUndefined();
+    expect(params.simulation_name).toBeUndefined();
+  });
+
+  it('trackPageView includes global context', () => {
+    initForTest();
+    analyticsService.trackPageView('/test', 'Test Page');
+    const calls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'page_view');
+    expect(calls).toHaveLength(1);
+    const params = calls[0][2] as Record<string, unknown>;
+    expect(params.page_path).toBe('/test');
+    expect(params.page_title).toBe('Test Page');
+    expect(params.page_section).toBeDefined();
+  });
+
+  it('maps epoch gameplay events from EVENT_MAP', () => {
+    initForTest();
+    document.dispatchEvent(new CustomEvent('epoch-created', { detail: { name: 'Test Epoch' } }));
+    document.dispatchEvent(new CustomEvent('start-epoch'));
+    document.dispatchEvent(new CustomEvent('advance-phase'));
+    const createCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'create_epoch');
+    const startCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'start_epoch');
+    const phaseCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'advance_epoch_phase');
+    expect(createCalls).toHaveLength(1);
+    expect(startCalls).toHaveLength(1);
+    expect(phaseCalls).toHaveLength(1);
+    expect((createCalls[0][2] as Record<string, unknown>).epoch_name).toBe('Test Epoch');
+  });
+
+  it('maps forge events from EVENT_MAP', () => {
+    initForTest();
+    document.dispatchEvent(new CustomEvent('ceremony-enter'));
+    document.dispatchEvent(new CustomEvent('open-mint'));
+    const ceremonyCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'forge_ceremony_enter');
+    const mintCalls = gtagCalls.filter((c) => c[0] === 'event' && c[1] === 'forge_open_mint');
+    expect(ceremonyCalls).toHaveLength(1);
+    expect(mintCalls).toHaveLength(1);
+  });
+
   it('dispose removes all listeners', () => {
     const removeSpy = vi.spyOn(document, 'removeEventListener');
     initForTest();
