@@ -19,6 +19,7 @@ import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import type { Epoch, EpochParticipant, Simulation } from '../../types/index.js';
 import { computeTotalCycles } from '../../utils/epoch.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import './EpochChatPanel.js';
 
 @localized()
@@ -1503,7 +1504,7 @@ export class VelgEpochOpsBoard extends LitElement {
                       ev.stopPropagation();
                       this._onJoinEpoch(epoch.id, sim.id);
                     }}
-                  >+ ${msg(str`Join as ${sim.name}`)}</button>
+                  >+ ${msg(str`Join as ${t(sim, 'name')}`)}</button>
                 `,
                 )
               : nothing

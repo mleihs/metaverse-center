@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi, buildingsApi, embassiesApi, simulationsApi } from '../../services/api/index.js';
 import type { Agent, Building, EchoVector, Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -446,7 +447,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         }
         <div class="building-preview__info">
           <span class="building-preview__name">${building.name}</span>
-          <span class="building-preview__type">${building.building_type}</span>
+          <span class="building-preview__type">${t(building, 'building_type')}</span>
         </div>
       </div>
     `;

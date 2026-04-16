@@ -5,6 +5,7 @@ import { analyticsService } from '../../services/AnalyticsService.js';
 import { connectionsApi } from '../../services/api/index.js';
 import { seoService } from '../../services/SeoService.js';
 import type { MapData, Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from './map-data.js';
 import type { MapEdgeData, MapEmbassyEdge, MapNodeData } from './map-types.js';
 
@@ -367,10 +368,10 @@ export class VelgCartographerMap extends LitElement {
 
     this._nodes = sims.map((sim) => ({
       id: sim.id,
-      name: sim.name,
+      name: t(sim, 'name'),
       slug: sim.slug,
       theme: sim.theme,
-      description: sim.description,
+      description: t(sim, 'description'),
       bannerUrl: sim.banner_url,
       agentCount: sim.agent_count ?? 0,
       buildingCount: sim.building_count ?? 0,

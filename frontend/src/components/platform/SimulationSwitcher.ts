@@ -16,6 +16,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 
 const LAST_TAB_PREFIX = 'velg-sim-tab-';
 
@@ -492,7 +493,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
         aria-selected=${isActive}
         @click=${() => this._onSimClick(sim)}
       >
-        <span class="sim-card__name">${sim.name}</span>
+        <span class="sim-card__name">${t(sim, 'name')}</span>
         <span class="sim-card__stats">${agents}A / ${buildings}B</span>
         <div class="sim-card__meta">
           <span class="sim-card__theme" style="color:${themeColor};border-color:${themeColor}">${sim.theme}</span>
@@ -507,7 +508,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
 
   protected render() {
     const sim = this._currentSim;
-    const label = sim ? sim.name : msg('Select Shard');
+    const label = sim ? t(sim, 'name') : msg('Select Shard');
     const showSearch = this._allSims.length > 6;
 
     return html`

@@ -17,6 +17,7 @@ import { chronicleApi } from '../../services/api/ChronicleApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import '../shared/VelgDispatchMasthead.js';
@@ -278,7 +279,7 @@ export class VelgChronicleFeed extends LitElement {
             headline: c.title ?? `Edition #${c.edition_number}`,
             datePublished: c.created_at,
             ...(c.simulation
-              ? { author: { '@type': 'Organization', name: c.simulation.name } }
+              ? { author: { '@type': 'Organization', name: t(c.simulation, 'name') } }
               : {}),
           },
         })),

@@ -19,6 +19,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 
 import '../forge/VelgForgeWalletBadge.js';
 import '../forge/VelgForgeMint.js';
@@ -858,7 +859,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
                   ${this._simulations.map(
                     (sim) => html`
                       <option value=${sim.id} ?selected=${currentSim?.id === sim.id}>
-                        ${sim.name}
+                        ${t(sim, 'name')}
                       </option>
                     `,
                   )}

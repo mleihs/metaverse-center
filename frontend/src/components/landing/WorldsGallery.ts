@@ -16,6 +16,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 
@@ -509,8 +510,8 @@ export class VelgWorldsGallery extends LitElement {
     if (!this._search) return this._simulations;
     return this._simulations.filter(
       (s) =>
-        s.name.toLowerCase().includes(this._search) ||
-        (s.description ?? '').toLowerCase().includes(this._search) ||
+        t(s, 'name').toLowerCase().includes(this._search) ||
+        t(s, 'description').toLowerCase().includes(this._search) ||
         (s.theme ?? '').toLowerCase().includes(this._search),
     );
   }
@@ -531,8 +532,8 @@ export class VelgWorldsGallery extends LitElement {
         itemListElement: this._simulations.map((sim, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          name: sim.name,
-          description: sim.description ?? '',
+          name: t(sim, 'name'),
+          description: t(sim, 'description'),
           url: `https://metaverse.center/simulations/${sim.slug || sim.id}/lore`,
           ...(sim.banner_url ? { image: sim.banner_url } : {}),
         })),
@@ -633,7 +634,7 @@ export class VelgWorldsGallery extends LitElement {
                             ? html`<img
                               class="world-card__banner-img"
                               src=${sim.banner_url}
-                              alt=${sim.name}
+                              alt=${t(sim, 'name')}
                               loading="lazy"
                               decoding="async"
                             />`
@@ -652,10 +653,10 @@ export class VelgWorldsGallery extends LitElement {
                         class="world-card__body"
                         style="--portal-color: ${getThemeColor(sim.theme ?? 'custom')}"
                       >
-                        <h2 class="world-card__name">${sim.name}</h2>
+                        <h2 class="world-card__name">${t(sim, 'name')}</h2>
                         ${
-                          sim.description
-                            ? html`<p class="world-card__tagline">${sim.description}</p>`
+                          t(sim, 'description')
+                            ? html`<p class="world-card__tagline">${t(sim, 'description')}</p>`
                             : nothing
                         }
                         <div class="world-card__stats">

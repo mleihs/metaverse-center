@@ -22,6 +22,7 @@ import { seoService } from '../../services/SeoService.js';
 import type { ApiResponse, Broadsheet, BroadsheetArticle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
@@ -308,7 +309,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
       const sim = appState.currentSimulation.value;
       if (sim) {
         seoService.setArticle({
-          headline: latest.title ?? sim.name,
+          headline: latest.title ?? t(sim, 'name'),
           articleBody: (latest.articles?.[0]?.content ?? '').slice(0, 500),
           url: `https://metaverse.center/simulations/${sim.slug}/broadsheet`,
           datePublished: latest.published_at ?? undefined,

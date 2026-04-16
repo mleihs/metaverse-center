@@ -102,8 +102,8 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
-        name: `${sim.name} \u2013 Events`,
-        description: `Recent events in the ${sim.name} simulation.`,
+        name: `${t(sim, 'name')} \u2013 Events`,
+        description: `Recent events in the ${t(sim, 'name')} simulation.`,
         url: `https://metaverse.center/simulations/${sim.slug}/events`,
         numberOfItems: this._total,
       });

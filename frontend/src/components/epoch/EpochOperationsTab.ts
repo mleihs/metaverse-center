@@ -9,6 +9,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { BattleLogEntry, EpochParticipant, OperativeMission } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { getOperativeIcon } from '../../utils/operative-icons.js';
 
 @localized()
@@ -386,7 +387,7 @@ export class VelgEpochOperationsTab extends LitElement {
           <div class="mission__type">
             ${m.operative_type}
             ${m.agents?.name ? html` &middot; ${m.agents.name}` : nothing}
-            ${m.target_sim?.name ? html` &rarr; ${m.target_sim.name}` : nothing}
+            ${m.target_sim ? html` &rarr; ${t(m.target_sim, 'name')}` : nothing}
           </div>
           <div class="mission__detail">
             ${

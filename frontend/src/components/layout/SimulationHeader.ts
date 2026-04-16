@@ -5,6 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import type { ThreatLevel } from '../lore/lore-content.js';
 import {
   extractThreatLevel,
@@ -270,7 +271,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
     return html`
       <div class="header">
-        <h2 class="header__name">${sim.name}</h2>
+        <h2 class="header__name">${t(sim, 'name')}</h2>
         <span class="header__badge ${this._getBadgeClass(sim.status)}">${this._getStatusLabel(sim.status)}</span>
         ${
           this._threatLevel

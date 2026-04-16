@@ -5,6 +5,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { seoService } from '../../services/SeoService.js';
 import { healthApi, heartbeatApi, locationsApi } from '../../services/api/index.js';
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import type { ZoneWeather } from './ZoneList.js';
 import '../shared/LoadingState.js';
@@ -167,8 +168,8 @@ export class VelgLocationsView extends LitElement {
         const sim = appState.currentSimulation.value;
         if (sim) {
           seoService.setCollectionPage({
-            name: `${sim.name} \u2013 Locations`,
-            description: `Cities, zones, and streets in the ${sim.name} simulation.`,
+            name: `${t(sim, 'name')} \u2013 Locations`,
+            description: `Cities, zones, and streets in the ${t(sim, 'name')} simulation.`,
             url: `https://metaverse.center/simulations/${sim.slug}/locations`,
             numberOfItems: this._cities.length,
           });

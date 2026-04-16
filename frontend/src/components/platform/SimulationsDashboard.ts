@@ -2142,7 +2142,7 @@ export class VelgSimulationsDashboard extends LitElement {
       <div
         class="shard-grid__featured"
         role="link"
-        aria-label="${sim.name} – ${desc || sim.theme}"
+        aria-label="${t(sim, 'name')} – ${desc || sim.theme}"
         @click=${() => {
           appState.setCurrentSimulation(sim);
           this._navigateTo(`/simulations/${sim.slug}/lore`);
@@ -2150,13 +2150,13 @@ export class VelgSimulationsDashboard extends LitElement {
       >
         ${
           bannerUrl
-            ? html`<img class="featured__bg" src=${bannerUrl} alt="${sim.name} – ${desc || sim.theme}" loading="lazy" />`
+            ? html`<img class="featured__bg" src=${bannerUrl} alt="${t(sim, 'name')} – ${desc || sim.theme}" loading="lazy" />`
             : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-surface), var(--color-border-light));"></div>`
         }
         <div class="featured__gradient"></div>
         <div class="featured__content" style="border-left: 3px solid ${themeColor}">
           <div class="featured__header">
-            <h3 class="featured__name">${sim.name}</h3>
+            <h3 class="featured__name">${t(sim, 'name')}</h3>
             <velg-badge variant=${getThemeVariant(sim.theme)}>${sim.theme}</velg-badge>
           </div>
           ${desc ? html`<p class="featured__desc">${desc}</p>` : nothing}

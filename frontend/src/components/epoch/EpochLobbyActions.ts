@@ -11,6 +11,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import type { BotPersonality, Epoch, EpochParticipant, Simulation } from '../../types/index.js';
 import { PERSONALITY_COLORS } from '../../utils/bot-colors.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 
 /** Personality abbreviations for roster badges */
 const PERSONALITY_ABBR: Record<BotPersonality, string> = {
@@ -816,9 +817,9 @@ export class VelgEpochLobbyActions extends LitElement {
             class="faction-card"
             style="--i:${i}"
             ?disabled=${this.actionLoading}
-            aria-label=${msg(str`Join as ${sim.name}`)}
+            aria-label=${msg(str`Join as ${t(sim, 'name')}`)}
             @click=${() => this._onJoinEpoch(sim.id)}
-          ><span class="faction-card__plus" aria-hidden="true">+</span> ${sim.name}</button>
+          ><span class="faction-card__plus" aria-hidden="true">+</span> ${t(sim, 'name')}</button>
         `,
         )}
       </div>

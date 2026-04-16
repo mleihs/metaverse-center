@@ -13,6 +13,7 @@ import { loreApi } from '../../services/api/LoreApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import {
@@ -168,13 +169,15 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
 
   private _injectProfileSchema(sim: {
     name: string;
+    name_de?: string;
     description: string;
+    description_de?: string;
     slug: string;
     banner_url?: string;
   }): void {
     seoService.setCreativeWork({
-      name: sim.name,
-      description: sim.description,
+      name: t(sim, 'name'),
+      description: t(sim, 'description'),
       url: `https://metaverse.center/simulations/${sim.slug}/lore`,
       image: sim.banner_url,
     });

@@ -18,6 +18,7 @@ import type {
   SourceCategory,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -1483,7 +1484,7 @@ export class VelgSocialTrendsView extends LitElement {
             class="embassy-card__sim-dot"
             style="background: ${themeColor}"
           ></span>
-          <span class="embassy-card__sim-name">${partner.simulation.name}</span>
+          <span class="embassy-card__sim-name">${t(partner.simulation, 'name')}</span>
           <velg-badge variant=${statusVariant}>${humanizeEnum(embassy.status)}</velg-badge>
         </div>
 
@@ -1502,7 +1503,7 @@ export class VelgSocialTrendsView extends LitElement {
             <div class="embassy-card__building-name">${partner.building.name}</div>
             ${
               partner.building.building_type
-                ? html`<div class="embassy-card__building-type">${humanizeEnum(partner.building.building_type)}</div>`
+                ? html`<div class="embassy-card__building-type">${humanizeEnum(t(partner.building, 'building_type'))}</div>`
                 : nothing
             }
           </div>

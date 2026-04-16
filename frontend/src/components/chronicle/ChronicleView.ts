@@ -576,7 +576,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       const sim = appState.currentSimulation.value;
       if (sim) {
         seoService.setArticle({
-          headline: featured.title ?? sim.name,
+          headline: featured.title ?? t(sim, 'name'),
           articleBody: (featured.content ?? '').slice(0, 500),
           url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
           datePublished: featured.published_at ?? undefined,
@@ -722,11 +722,12 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
   private get _publicationName(): string {
     const sim = appState.currentSimulation.value;
     if (!sim) return msg('The Chronicle');
-    return `${msg('The')} ${sim.name} ${msg('Chronicle')}`;
+    return `${msg('The')} ${t(sim, 'name')} ${msg('Chronicle')}`;
   }
 
   private _renderMasthead() {
-    const simName = appState.currentSimulation.value?.name ?? '';
+    const sim = appState.currentSimulation.value;
+    const simName = sim ? t(sim, 'name') : '';
     const today = new Date().toLocaleDateString(getDateLocale(), {
       weekday: 'long',
       year: 'numeric',

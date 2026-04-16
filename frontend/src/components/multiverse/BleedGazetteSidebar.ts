@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { connectionsApi } from '../../services/api/index.js';
 import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import '../shared/LoadingState.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
 
@@ -349,13 +350,13 @@ export class VelgBleedGazetteSidebar extends LitElement {
           <span class="dispatch__icon" aria-hidden="true">${icons.antenna(14)}</span>
           ${
             entry.source_simulation
-              ? html`<span class="dispatch__sim-name">${entry.source_simulation.name}</span>`
+              ? html`<span class="dispatch__sim-name">${t(entry.source_simulation, 'name')}</span>`
               : nothing
           }
           <span class="dispatch__arrow" aria-hidden="true">&#10142;</span>
           ${
             entry.target_simulation
-              ? html`<span class="dispatch__sim-name">${entry.target_simulation.name}</span>`
+              ? html`<span class="dispatch__sim-name">${t(entry.target_simulation, 'name')}</span>`
               : nothing
           }
         </div>
