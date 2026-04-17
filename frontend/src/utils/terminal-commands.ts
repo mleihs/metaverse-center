@@ -8,6 +8,7 @@ import { msg } from '@lit/localize';
 import { appState } from '../services/AppStateManager.js';
 import { agentAutonomyApi } from '../services/api/AgentAutonomyApiService.js';
 import { epochsApi } from '../services/api/EpochsApiService.js';
+import { captureError } from '../services/SentryService.js';
 import {
   agentsApi,
   buildingsApi,
@@ -317,8 +318,10 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
         );
         lookOutput.push(hintLine(msg("Use 'intercept' to attempt identification and capture.")));
       }
-    } catch {
-      // Silently degrade — threat detection is supplementary
+    } catch (err) {
+      // Supplementary lookup — absence of threat line in look output is
+      // acceptable; don't fail the whole command.
+      captureError(err, { source: 'terminal-commands.handleLook.threatLookup' });
     }
   }
 
@@ -582,8 +585,10 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
           };
         }
       }
-    } catch {
-      // Silently degrade — epoch status is supplementary
+    } catch (err) {
+      // Supplementary enrichment — the status output still renders without
+      // the epoch cycle number patched in.
+      captureError(err, { source: 'terminal-commands.handleStatus.epochLookup' });
     }
   }
 
