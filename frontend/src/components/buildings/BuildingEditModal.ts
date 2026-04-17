@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi, generationApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { ApiResponse, Building } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
@@ -198,7 +199,8 @@ export class VelgBuildingEditModal extends LitElement {
           VelgToast.error(response.error?.message ?? msg('Failed to generate description.'));
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'BuildingEditModal._handleGenerateDescription' });
       VelgToast.error(msg('An error occurred during generation.'));
     } finally {
       this._generating = false;
@@ -248,7 +250,8 @@ export class VelgBuildingEditModal extends LitElement {
           VelgToast.error(response.error?.message ?? msg('Failed to generate image.'));
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'BuildingEditModal._handleGenerateImage' });
       VelgToast.error(msg('An error occurred during image generation.'));
     } finally {
       this._generating = false;
@@ -298,7 +301,8 @@ export class VelgBuildingEditModal extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to save building'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'BuildingEditModal._handleSubmit' });
       VelgToast.error(msg('An unexpected error occurred'));
     } finally {
       this._saving = false;
