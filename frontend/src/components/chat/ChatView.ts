@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Agent,
   ChatConversation,
@@ -237,7 +238,8 @@ export class VelgChatView extends LitElement {
       } else {
         this._error = response.error?.message ?? msg('Failed to load conversations.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._loadConversations' });
       this._error = msg('An unexpected error occurred while loading conversations.');
     } finally {
       this._loading = false;
@@ -269,7 +271,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to archive conversation.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleConversationArchive' });
       VelgToast.error(msg('An unexpected error occurred while archiving the conversation.'));
     }
   }
@@ -293,7 +296,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to rename conversation.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleConversationRename' });
       VelgToast.error(msg('An unexpected error occurred while renaming the conversation.'));
     }
   }
@@ -328,7 +332,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete conversation.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleConversationDelete' });
       VelgToast.error(msg('An unexpected error occurred while deleting the conversation.'));
     }
   }
@@ -383,7 +388,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to create conversation.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleAgentsSelected' });
       VelgToast.error(msg('An unexpected error occurred while creating the conversation.'));
     }
   }
@@ -401,7 +407,11 @@ export class VelgChatView extends LitElement {
         if (!response.success) {
           VelgToast.error(response.error?.message ?? msg(str`Failed to add ${agent.name}.`));
         }
-      } catch {
+      } catch (err) {
+        captureError(err, {
+          source: 'ChatView._addAgentsToConversation',
+          agentName: agent.name,
+        });
         VelgToast.error(msg(str`Failed to add ${agent.name}.`));
       }
     }
@@ -449,7 +459,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to reference event.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleEventSelected' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -475,7 +486,8 @@ export class VelgChatView extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to remove event reference.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleRemoveEventRef' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
