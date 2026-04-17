@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { MembershipInfo } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { navigate } from '../../utils/navigation.js';
@@ -272,7 +273,8 @@ export class VelgUserProfileView extends LitElement {
       } else {
         this._membershipsError = response.error?.message ?? msg('Failed to load memberships.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgUserProfileView._loadMemberships' });
       this._membershipsError = msg('An unexpected error occurred while loading memberships.');
     } finally {
       this._loadingMemberships = false;
@@ -298,7 +300,8 @@ export class VelgUserProfileView extends LitElement {
         this._apiError = response.error?.message ?? msg('Failed to update profile.');
         VelgToast.error(this._apiError);
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgUserProfileView._handleSave' });
       this._apiError = msg('An unexpected error occurred.');
       VelgToast.error(this._apiError);
     } finally {

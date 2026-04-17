@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { SimulationTheme } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -459,7 +460,8 @@ export class VelgCreateSimulationWizard extends LitElement {
         this._apiError = response.error?.message ?? msg('Failed to create simulation.');
         VelgToast.error(this._apiError);
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgCreateSimulationWizard._handleCreate' });
       this._apiError = msg('An unexpected error occurred.');
       VelgToast.error(this._apiError);
     } finally {

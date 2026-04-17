@@ -17,6 +17,7 @@ import type {
 } from '../../services/api/AchievementsApiService.js';
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { captureError } from '../../services/SentryService.js';
 import './VelgAchievementBadge.js';
 
 type FilterMode = 'all' | 'earned' | 'locked';
@@ -191,7 +192,8 @@ export class VelgAchievementGrid extends LitElement {
       if (defsRes.data) this._definitions = defsRes.data;
       if (earnedRes.data) this._earned = earnedRes.data;
       if (progressRes.data) this._progress = progressRes.data;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgAchievementGrid._load' });
       this._error = 'Failed to load achievements';
     } finally {
       this._loading = false;

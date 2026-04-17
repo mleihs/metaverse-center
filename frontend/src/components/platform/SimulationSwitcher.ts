@@ -14,6 +14,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
@@ -34,7 +35,8 @@ const THEME_COLORS: Record<string, string> = {
 function getLastTab(simId: string): string {
   try {
     return localStorage.getItem(`${LAST_TAB_PREFIX}${simId}`) || 'agents';
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'simulation-switcher.getLastTab' });
     return 'agents';
   }
 }

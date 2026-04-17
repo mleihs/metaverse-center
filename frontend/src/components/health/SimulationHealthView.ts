@@ -5,6 +5,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { zoneActionsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   BuildingReadiness,
   EmbassyEffectiveness,
@@ -993,8 +994,9 @@ export class VelgSimulationHealthView extends LitElement {
       await zoneActionsApi.create(this.simulationId, zoneId, { action_type: actionType });
       this._selectedZoneForAction = null;
       await this._load();
-    } catch {
-      // Toast will be handled by API layer
+    } catch (err) {
+      // API layer surfaces the user-facing toast — capture here for Sentry visibility.
+      captureError(err, { source: 'VelgSimulationHealthView._handleZoneAction' });
     } finally {
       this._actionLoading = false;
     }
@@ -1015,8 +1017,9 @@ export class VelgSimulationHealthView extends LitElement {
       }
       this._selectedZoneForAction = null;
       await this._load();
-    } catch {
-      // Toast will be handled by API layer
+    } catch (err) {
+      // API layer surfaces the user-facing toast — capture here for Sentry visibility.
+      captureError(err, { source: 'VelgSimulationHealthView._handleCancelAction' });
     } finally {
       this._actionLoading = false;
     }
