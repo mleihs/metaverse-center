@@ -449,97 +449,101 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/lore/:entitySlug',
         render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'lore', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'lore'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'lore', entitySlug),
       },
       {
         path: '/simulations/:id/lore',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'lore'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'lore'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'lore', entitySlug),
       },
       {
         path: '/simulations/:id/broadsheet',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'broadsheet'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'broadsheet'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'broadsheet', entitySlug),
       },
       {
         path: '/simulations/:id/chronicle',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chronicle'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'chronicle'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'chronicle', entitySlug),
       },
       {
         path: '/simulations/:id/health',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'health'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'health'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'health', entitySlug),
       },
       {
         path: '/simulations/:id/pulse',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'pulse'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'pulse'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'pulse', entitySlug),
       },
       // Entity slug routes BEFORE list routes (first-match routing)
       {
         path: '/simulations/:id/agents/:entitySlug',
         render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'agents', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'agents', entitySlug),
       },
       {
         path: '/simulations/:id/buildings/:entitySlug',
         render: ({ id, entitySlug }) =>
           this._renderSimulationView(id ?? '', 'buildings', entitySlug),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'buildings'),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'buildings', entitySlug),
       },
       {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'agents', entitySlug),
       },
       {
         path: '/simulations/:id/bonds',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'bonds'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'bonds'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'bonds', entitySlug),
       },
       {
         path: '/simulations/:id/buildings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'buildings'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'buildings'),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'buildings', entitySlug),
       },
       {
         path: '/simulations/:id/events',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'events'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'events'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'events', entitySlug),
       },
       {
         path: '/simulations/:id/chat',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chat'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'chat'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'chat', entitySlug),
       },
       {
         path: '/simulations/:id/social',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'social'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'social', entitySlug),
       },
       {
         path: '/simulations/:id/locations',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'locations'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'locations'),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'locations', entitySlug),
       },
       {
         path: '/simulations/:id/terminal',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'terminal'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'terminal'),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'terminal', entitySlug),
       },
       {
         path: '/simulations/:id/dungeon',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'dungeon'),
-        enter: async ({ id }) => this._enterSimulationRoute(id, 'dungeon'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'dungeon', entitySlug),
       },
       {
         path: '/simulations/:id/settings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'settings'),
-        enter: async ({ id }) => {
+        enter: async ({ id, entitySlug }) => {
           const ok = await this._guardAuth();
           if (!ok) return false;
-          return this._enterSimulationRoute(id, 'settings');
+          return this._enterSimulationRoute(id, 'settings', entitySlug);
         },
       },
       {
@@ -814,23 +818,49 @@ export class VelgApp extends LitElement {
 
   /**
    * Shared enter guard for simulation routes.
-   * Awaits auth, resolves slug/UUID to a simulation, and determines membership
-   * BEFORE render runs. This ensures API services route correctly (public vs
-   * authenticated) based on `currentRole` being set.
+   *
+   * Runs the full pre-render pipeline:
+   *   1. Await auth → 2. Resolve slug/UUID → 3. Check membership (sets currentRole
+   *   for API routing) → 4. Lazy-load view → 5. Fire context load (taxonomies +
+   *   public settings) → 6. Apply route-level meta (SEO + breadcrumbs + GA4).
+   *
+   * By completing all side effects here, `_renderSimulationView` remains a pure
+   * switch with no API calls, no SEO writes, no analytics emissions.
+   *
+   * `entitySlug` is forwarded to `applySimulationRouteMeta` so the canonical
+   * URL points at the entity for deep-links like `/simulations/:id/agents/:slug`.
    */
-  private async _enterSimulationRoute(id: string | undefined, view?: string): Promise<boolean> {
+  private async _enterSimulationRoute(
+    id: string | undefined,
+    view?: string,
+    entitySlug?: string,
+  ): Promise<boolean> {
     await this._authReady;
+
+    let resolved: string | null = null;
     if (id) {
-      const resolved = await this._resolveSimulation(id);
+      resolved = await this._resolveSimulation(id);
       if (!resolved) {
         // Simulation not found — the fallback route will render velg-not-found
         return false;
       }
       await this._checkMembership(resolved);
     }
+
     if (view) {
       const importFn = getSimViewImport(view);
       if (importFn && !(await this._lazy(importFn))) return false;
+
+      if (resolved) {
+        // Fire-and-forget: child components react to signals when context lands.
+        // Keeping this non-blocking preserves the pre-refactor route-transition feel.
+        // `void` makes the unhandled-promise intent explicit.
+        void this._loadSimulationContext(resolved);
+
+        // Apply route-level meta in one composition — see seo-patterns.ts.
+        const sim = appState.currentSimulation.value ?? undefined;
+        applySimulationRouteMeta(sim, view, entitySlug, id ?? '');
+      }
     }
     return true;
   }
@@ -1056,24 +1086,17 @@ export class VelgApp extends LitElement {
   }
 
   private _renderSimulationView(idOrSlug: string, view: string, entitySlug?: string) {
-    // Slug resolution already completed in enter() callback.
-    // Use resolved UUID for child components (API calls need UUIDs).
+    // All side effects (slug resolution, membership check, context load, SEO,
+    // analytics) run in `_enterSimulationRoute` BEFORE render. Render is now a
+    // pure switch on `view` — no API calls, no SEO writes, no analytics.
     const resolvedId = appState.currentSimulation.value?.id ?? idOrSlug;
 
-    // Safety: if slug resolution hasn't propagated yet, show spinner and
-    // don't fire any background tasks (prevents 422s from non-UUID API calls).
+    // Defensive: if enter hasn't populated currentSimulation yet (edge case on
+    // direct URL entry mid-transition), show spinner rather than pass a slug to
+    // child components that expect UUIDs.
     if (!VelgApp._UUID_RE.test(resolvedId)) {
       return html`<div class="loading-container">${msg('Loading...')}</div>`;
     }
-
-    // Fire context loading (taxonomies, settings) as background task with resolved UUID.
-    // No requestUpdate() needed — child components read signals directly.
-    this._loadSimulationContext(resolvedId);
-
-    // Route-level meta (SEO + breadcrumbs + analytics). Child components may
-    // override entity-level SEO after data fetch (e.g. AgentsView._openAgentDetail).
-    const sim = appState.currentSimulation.value ?? undefined;
-    applySimulationRouteMeta(sim, view, entitySlug, idOrSlug);
 
     let content: TemplateResult;
     switch (view) {
