@@ -189,12 +189,27 @@ Breadcrumb → TL;DR box (3-4 bullets) → "How it works" → "Tips" → "Relate
 3. **Update** SEO pre-rendering config for new routes
 4. **Update** structured data (per-topic FAQPage schemas instead of one giant FAQ)
 5. **Create** `frontend/src/components/shared/HelpTip.ts`:
+
+   > **STATUS (2026-04-17) — INTEGRATION COMPLETE.** Component created in
+   > commit `5285459` (Phase 5 monolith deletion). Real integration landed
+   > in commits `e9d5821` (7 simulation views) and `4843984` (BYOK topic +
+   > 3 BYOK-adjacent call-sites). Ten total call-sites: AgentsView,
+   > BuildingsView, EventsView, BondsView, LocationsView,
+   > SimulationHealthView, SocialTrendsView, VelgForgeMint, VelgByokPanel,
+   > IntegrationSettingsPanel (`ai_providers` section only, data-driven via
+   > optional `helpTip?: { topic; label }` field on `IntegrationSection`).
+   > The `topic` property is typed as `TopicSlug | ''` — typos fail at
+   > compile time via lit-analyzer. Empty-topic render guard returns
+   > `nothing` instead of producing a broken `/guide/` link. Navigate
+   > event contract aligned to the rest of the platform in commit
+   > `138b363` (`detail: <path>` as string, not `{ path }`).
+
    ```typescript
    // <velg-help-tip topic="operatives" label="What are operatives?">
    // Renders: ? icon linking to /how-to-play/guide/operatives
    @customElement('velg-help-tip')
    export class VelgHelpTip extends LitElement {
-     @property() topic = '';
+     @property() topic: TopicSlug | '' = '';
      @property() label = '';
    }
    ```

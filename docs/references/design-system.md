@@ -1326,6 +1326,7 @@ Wiederverwendbare CSS-Module in `components/shared/` und `components/how-to-play
 | `panelCascadeStyles` | `panel-cascade-styles.ts` | Staggered Detail-Panel Eingangs-Animationen | AgentDetailsPanel, BuildingDetailsPanel, EventDetailsPanel |
 | `typographyStyles` | `typography-styles.ts` | `.label-brutalist` Uppercase Brutalist-Labels | Diverse Komponenten |
 | `gridLayoutStyles` | `grid-layout-styles.ts` | `.entity-grid` mit `--grid-min-width` Custom Property, responsive Breakpoints | AgentsView, BuildingsView, EventsView, SocialMediaView |
+| `titleGroupStyles` | `title-group-styles.ts` | `.title-group` inline-flex Wrapper für Heading + adjazentes `<velg-help-tip>` (oder ähnliches), damit Flex-`justify-content: space-between` im Eltern-Header Titel und trailing Button sauber trennt | AgentsView, BuildingsView, EventsView, BondsView, LocationsView, SimulationHealthView, SocialTrendsView, VelgForgeMint, IntegrationSettingsPanel |
 | `htpStyles` | `how-to-play/htp-styles.ts` | Komplett-CSS fuer HowToPlayView (~1100 Zeilen), extrahiert fuer Uebersichtlichkeit | HowToPlayView |
 
 **grid-layout-styles.ts** — dedupliziert identische Grid-CSS aus 4 Views. Konfigurierbar via `--grid-min-width` Custom Property (default 240px, SocialMediaView: 260px). Responsive Breakpoints: 640px (2 Spalten), 400px (1 Spalte).
