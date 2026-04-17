@@ -4,6 +4,12 @@
 -- impossible to set a key column back to NULL (i.e. delete a key).
 -- This adds boolean clear flags: when true, the corresponding column
 -- is explicitly set to NULL regardless of the encrypted key parameter.
+--
+-- Drop the old 3-param signature first to prevent function overloading.
+-- CREATE OR REPLACE with a different signature creates a NEW function
+-- alongside the old one, causing "function name is not unique" errors
+-- on subsequent REVOKE/GRANT statements.
+DROP FUNCTION IF EXISTS public.fn_update_user_byok_keys(uuid, text, text);
 
 CREATE OR REPLACE FUNCTION public.fn_update_user_byok_keys(
     p_user_id uuid,
