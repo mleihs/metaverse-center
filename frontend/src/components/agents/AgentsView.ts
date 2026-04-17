@@ -6,6 +6,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyAgentDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type {
@@ -189,7 +190,11 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
   }
 
   protected async _fetchData(): Promise<ApiResponse<Agent[]>> {
-    return agentsApi.list(this.simulationId, appState.currentSimulationMode.value, this._buildParams());
+    return agentsApi.list(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+      this._buildParams(),
+    );
   }
 
   protected _getLoadingMessage(): string {
@@ -279,8 +284,9 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
           this._openAgentDetail(resp.data as Agent);
           return;
         }
-      } catch {
-        // Fall through
+      } catch (err) {
+        // Fall through — fallback to legacy name-based deep link below.
+        captureError(err, { source: 'VelgAgentsView._checkDeepLink.slugFetch' });
       }
     }
     // Legacy name-based deep link (backward compat)
@@ -331,8 +337,8 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
         }
         this._aptitudeMap = map;
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'VelgAgentsView._loadAllAptitudes' });
     }
   }
 

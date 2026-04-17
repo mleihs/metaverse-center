@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentMemoryApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { AgentMemory } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
@@ -312,8 +313,8 @@ export class VelgAgentMemorySection extends LitElement {
         this._memories = resp.data;
         this._total = resp.meta?.total ?? resp.data.length;
       }
-    } catch {
-      // Silent — section degrades gracefully
+    } catch (err) {
+      captureError(err, { source: 'VelgAgentMemorySection._load' });
     } finally {
       this._loading = false;
     }
@@ -330,8 +331,8 @@ export class VelgAgentMemorySection extends LitElement {
     try {
       await agentMemoryApi.reflect(this.simulationId, this.agentId);
       await this._load();
-    } catch {
-      // Silent
+    } catch (err) {
+      captureError(err, { source: 'VelgAgentMemorySection._reflect' });
     } finally {
       this._reflecting = false;
     }

@@ -16,6 +16,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { dungeonApi } from '../../services/api/DungeonApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { AgentLootEffect } from '../../types/dungeon.js';
 import { LOOT_TIER_MARKERS } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
@@ -220,7 +221,8 @@ export class VelgAgentDungeonRewards extends LitElement {
     try {
       const resp = await dungeonApi.getAgentLootEffects(this.agentId, this.simulationId);
       this._effects = resp.data ?? [];
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgAgentDungeonRewards._loadEffects' });
       this._effects = [];
     }
     this._loading = false;
