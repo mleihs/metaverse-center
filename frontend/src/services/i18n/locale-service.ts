@@ -54,6 +54,7 @@ class LocaleService {
       try {
         await this.setLocale(locale);
       } catch (err) {
+        // setLocale never succeeded — sourceLocale (set at module init) remains active.
         captureError(err, { source: 'LocaleService.initLocale', locale });
         if (import.meta.env.DEV) {
           console.warn(`Failed to load locale "${locale}", falling back to "${sourceLocale}"`);
