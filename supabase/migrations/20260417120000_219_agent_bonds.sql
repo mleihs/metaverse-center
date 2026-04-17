@@ -62,7 +62,7 @@ CREATE TABLE bond_memories (
 CREATE INDEX idx_bonds_user_sim ON agent_bonds(user_id, simulation_id);
 -- agent_bonds: simulation-scoped queries (heartbeat, public)
 CREATE INDEX idx_bonds_sim ON agent_bonds(simulation_id);
--- agent_bonds: farewell lookup when agent is deleted (CASCADE fires, but queries need this)
+-- agent_bonds: farewell query on agent soft-delete (CASCADE does NOT fire on soft-delete)
 CREATE INDEX idx_bonds_agent ON agent_bonds(agent_id);
 -- agent_bonds: active/forming bonds for slot counting + heartbeat
 CREATE INDEX idx_bonds_active ON agent_bonds(simulation_id, status)
@@ -283,10 +283,6 @@ CREATE POLICY whispers_service_all ON bond_whispers
 -- bond_memories: bond owner can insert; service_role has full access
 ALTER TABLE bond_memories ENABLE ROW LEVEL SECURITY;
 
--- Bond owner can INSERT memories for their own bonds (depth progression,
--- action tracking). No SELECT/UPDATE/DELETE for authenticated users —
--- memories are write-only from the user perspective (read by service_role
--- for whisper generation context).
 -- Bond owner can SELECT + INSERT their own memories.
 -- SELECT needed for: _check_engagement (depth progression counts memories),
 -- recover_from_strain (reads neglect memory for strain start time).
