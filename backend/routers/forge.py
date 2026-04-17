@@ -1,12 +1,10 @@
 """API router for the Simulation Forge."""
 
 import logging
-import time
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 from uuid import UUID
 
-import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
@@ -53,7 +51,12 @@ from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
 from backend.services.codex_export_service import CodexExportService
 from backend.services.dossier_evolution_service import DossierEvolutionService
-from backend.services.forge_draft_service import ForgeDraftService
+from backend.services.forge_draft_service import (
+    ForgeDraftService,
+    InvalidProviderError,
+    WalletNotFoundError,
+    WalletUnavailableError,
+)
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
@@ -67,6 +70,22 @@ router = APIRouter(prefix="/api/v1/forge", tags=["forge"])
 
 _draft_service = ForgeDraftService()
 _orchestrator_service = ForgeOrchestratorService()
+
+
+async def _check_byok_access(supabase, user_id: UUID) -> None:
+    """Verify BYOK access — shared guard for update/delete/test endpoints.
+
+    Raises HTTPException(403) if denied, HTTPException(500) on check failure.
+    """
+    try:
+        allowed = await ForgeDraftService.check_byok_allowed(supabase, user_id)
+        if not allowed:
+            raise HTTPException(status_code=403, detail="BYOK access not granted.")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("BYOK allowance check failed — denying access")
+        raise HTTPException(status_code=500, detail="Unable to verify BYOK access.") from None
 
 
 @router.get("/drafts")
@@ -313,7 +332,10 @@ async def get_wallet(
     supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[WalletSummary]:
     """Get the current user's forge wallet."""
-    data = await _draft_service.get_wallet(supabase, user.id)
+    try:
+        data = await _draft_service.get_wallet(supabase, user.id)
+    except WalletUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=exc.detail) from exc
     return SuccessResponse(data=data)
 
 
@@ -365,24 +387,12 @@ async def update_byok(
     supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Update personal API keys (BYOK) for the Simulation Forge."""
-    # Check if user is allowed to use BYOK
-    try:
-        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id)
-        if not allowed:
-            raise HTTPException(
-                status_code=403,
-                detail="BYOK access not granted. Contact your platform administrator.",
-            )
-    except HTTPException:
-        raise
-    except Exception:
-        logger.exception("BYOK allowance check failed — denying access")
-        raise HTTPException(
-            status_code=500,
-            detail="Unable to verify BYOK access. Please try again later.",
-        ) from None
+    await _check_byok_access(supabase, user.id)
 
-    result = await _draft_service.update_user_keys(supabase, user.id, body.openrouter_key, body.replicate_key)
+    try:
+        result = await _draft_service.update_user_keys(supabase, user.id, body.openrouter_key, body.replicate_key)
+    except WalletNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=exc.detail) from exc
     await AuditService.safe_log(
         supabase,
         None,
@@ -404,20 +414,15 @@ async def delete_byok_key(
     supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[MessageResponse]:
     """Remove a single BYOK API key (openrouter or replicate)."""
-    if provider not in ("openrouter", "replicate"):
-        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}. Use 'openrouter' or 'replicate'.")
+    await _check_byok_access(supabase, user.id)
 
     try:
-        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id)
-        if not allowed:
-            raise HTTPException(status_code=403, detail="BYOK access not granted.")
-    except HTTPException:
-        raise
-    except Exception:
-        logger.exception("BYOK allowance check failed — denying access")
-        raise HTTPException(status_code=500, detail="Unable to verify BYOK access.") from None
+        result = await _draft_service.clear_user_key(supabase, user.id, provider)
+    except InvalidProviderError as exc:
+        raise HTTPException(status_code=400, detail=exc.detail) from exc
+    except WalletNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=exc.detail) from exc
 
-    result = await _draft_service.clear_user_key(supabase, user.id, provider)
     await AuditService.safe_log(
         supabase,
         None,
@@ -436,6 +441,7 @@ async def test_byok_key(
     request: Request,
     body: TestBYOKRequest,
     user: Annotated[CurrentUser, Depends(require_architect())],
+    supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[TestBYOKResult]:
     """Test a BYOK API key against its provider without storing it.
 
@@ -443,38 +449,18 @@ async def test_byok_key(
     - OpenRouter: GET /api/v1/auth/key (key info, requires valid auth)
     - Replicate: GET /v1/account (account info)
     """
-    provider_urls = {
-        "openrouter": "https://openrouter.ai/api/v1/auth/key",
-        "replicate": "https://api.replicate.com/v1/account",
-    }
-    url = provider_urls[body.provider]
+    await _check_byok_access(supabase, user.id)
 
-    start = time.monotonic()
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(url, headers={"Authorization": f"Bearer {body.key}"})
-        elapsed_ms = int((time.monotonic() - start) * 1000)
-
-        if resp.status_code == 200:
-            result = TestBYOKResult(valid=True, detail="Key verified successfully.", response_ms=elapsed_ms)
-        elif resp.status_code == 401:
-            result = TestBYOKResult(valid=False, detail="Invalid or expired API key.", response_ms=elapsed_ms)
-        elif resp.status_code == 403:
-            result = TestBYOKResult(valid=False, detail="Key lacks required permissions.", response_ms=elapsed_ms)
-        else:
-            result = TestBYOKResult(
-                valid=False,
-                detail=f"Provider returned status {resp.status_code}.",
-                response_ms=elapsed_ms,
-            )
-    except httpx.TimeoutException:
-        result = TestBYOKResult(valid=False, detail="Provider did not respond within 10 seconds.")
-    except httpx.ConnectError:
-        result = TestBYOKResult(valid=False, detail="Could not connect to provider.")
-    except Exception:
-        logger.exception("Unexpected error testing BYOK key for provider=%s", body.provider)
-        result = TestBYOKResult(valid=False, detail="Unexpected error during key verification.")
-
+    result = await _draft_service.test_provider_key(body.provider, body.key)
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "forge_wallet",
+        str(user.id),
+        "test_key",
+        {"provider": body.provider, "valid": result.valid},
+    )
     return SuccessResponse(data=result)
 
 

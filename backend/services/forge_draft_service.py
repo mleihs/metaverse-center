@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from uuid import UUID
 
 import httpx
@@ -10,7 +11,7 @@ import sentry_sdk
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
+from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate, TestBYOKResult
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt, encrypt
 from backend.utils.errors import not_found, server_error
@@ -18,6 +19,35 @@ from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
+
+
+# ── Domain Exceptions ────────────────────────────────────────────────
+# Services raise these; routers catch and translate to HTTP status codes.
+# Keeps business logic free of FastAPI/HTTP coupling.
+
+
+class WalletNotFoundError(Exception):
+    """Raised when a user wallet does not exist (user must be an architect)."""
+
+    def __init__(self, detail: str = "User wallet not found. Must be an architect first."):
+        self.detail = detail
+        super().__init__(detail)
+
+
+class InvalidProviderError(Exception):
+    """Raised when an unknown BYOK provider is specified."""
+
+    def __init__(self, provider: str):
+        self.detail = f"Unknown provider: {provider}. Use 'openrouter' or 'replicate'."
+        super().__init__(self.detail)
+
+
+class WalletUnavailableError(Exception):
+    """Raised when the wallet RPC fails (database/network issue)."""
+
+    def __init__(self, detail: str = "Unable to retrieve wallet data. Please try again later."):
+        self.detail = detail
+        super().__init__(detail)
 
 
 class ForgeDraftService:
@@ -243,9 +273,8 @@ class ForgeDraftService:
         result = resp.data or {}
 
         if not result.get("success"):
-            raise HTTPException(
-                status_code=404,
-                detail=result.get("error", "User wallet not found. Must be an architect first."),
+            raise WalletNotFoundError(
+                result.get("error", "User wallet not found. Must be an architect first."),
             )
 
         return {"message": "Keys updated successfully."}
@@ -266,18 +295,58 @@ class ForgeDraftService:
         elif provider == "replicate":
             params["p_clear_replicate"] = True
         else:
-            raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+            raise InvalidProviderError(provider)
 
         resp = await supabase.rpc("fn_update_user_byok_keys", params).execute()
         result = resp.data or {}
 
         if not result.get("success"):
-            raise HTTPException(
-                status_code=404,
-                detail=result.get("error", "User wallet not found. Must be an architect first."),
+            raise WalletNotFoundError(
+                result.get("error", "User wallet not found. Must be an architect first."),
             )
 
         return {"message": f"{provider} key removed successfully."}
+
+    @staticmethod
+    async def test_provider_key(provider: str, key: str) -> TestBYOKResult:
+        """Test a BYOK API key against its provider without storing it.
+
+        Makes a lightweight authenticated GET to verify the key:
+        - OpenRouter: GET /api/v1/auth/key (returns key metadata on 200)
+        - Replicate: GET /v1/account (returns account info on 200)
+        """
+        provider_urls = {
+            "openrouter": "https://openrouter.ai/api/v1/auth/key",
+            "replicate": "https://api.replicate.com/v1/account",
+        }
+        url = provider_urls.get(provider)
+        if url is None:
+            raise InvalidProviderError(provider)
+
+        start = time.monotonic()
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, headers={"Authorization": f"Bearer {key}"})
+            elapsed_ms = int((time.monotonic() - start) * 1000)
+
+            if resp.status_code == 200:
+                return TestBYOKResult(valid=True, detail="Key verified successfully.", response_ms=elapsed_ms)
+            if resp.status_code == 401:
+                return TestBYOKResult(valid=False, detail="Invalid or expired API key.", response_ms=elapsed_ms)
+            if resp.status_code == 403:
+                return TestBYOKResult(valid=False, detail="Key lacks required permissions.", response_ms=elapsed_ms)
+            return TestBYOKResult(
+                valid=False,
+                detail=f"Provider returned status {resp.status_code}.",
+                response_ms=elapsed_ms,
+            )
+        except httpx.TimeoutException:
+            return TestBYOKResult(valid=False, detail="Provider did not respond within 10 seconds.")
+        except httpx.ConnectError:
+            return TestBYOKResult(valid=False, detail="Could not connect to provider.")
+        except Exception:
+            logger.exception("Unexpected error testing BYOK key for provider=%s", provider)
+            return TestBYOKResult(valid=False, detail="Unexpected error during key verification.")
 
     @staticmethod
     async def get_wallet(supabase: Client, user_id: UUID) -> dict:
@@ -307,10 +376,7 @@ class ForgeDraftService:
         except (PostgrestAPIError, httpx.HTTPError) as exc:
             logger.exception("fn_get_wallet_summary RPC failed")
             sentry_sdk.capture_exception(exc)
-            raise HTTPException(
-                status_code=503,
-                detail="Unable to retrieve wallet data. Please try again later.",
-            ) from None
+            raise WalletUnavailableError() from exc
 
     @staticmethod
     async def list_bundles(supabase: Client) -> list[dict]:
