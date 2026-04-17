@@ -22,6 +22,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/VelgHelpTip.js';
 
 type KeyValidation = 'valid' | 'invalid' | 'empty';
 type TestState = 'idle' | 'testing' | 'success' | 'error';
@@ -669,6 +670,10 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
         <h3 class="byok__title">
           ${this.mode === 'admin' ? msg('Personal API Keys') : msg('Bureau Clearance Protocol')}
         </h3>
+        <velg-help-tip
+          topic="byok"
+          label=${msg('What is BYOK?')}
+        ></velg-help-tip>
       </div>
       <p class="byok__subtitle">
         ${this.mode === 'admin'

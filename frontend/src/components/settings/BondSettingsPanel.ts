@@ -9,7 +9,7 @@
  * range inputs, info bubbles.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
@@ -201,7 +201,7 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
             ${whisperBudget === 0
               ? msg('Templates only \u2013 zero AI cost')
               : msg(
-                  `Up to ${whisperBudget * 6} LLM whispers/day across all bonds`,
+                  str`Up to ${whisperBudget * 6} LLM whispers/day across all bonds`,
                 )}
           </div>
         </div>

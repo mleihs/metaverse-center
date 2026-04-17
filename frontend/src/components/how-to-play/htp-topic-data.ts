@@ -175,7 +175,109 @@ export const TOPICS: TopicDefinition[] = [
       msg('Ignition is permanent and consumes 1 Forge Token'),
     ],
     sections: () => [{ kind: 'steps', title: msg('The Forge Process'), steps: getForgeGuideSteps }],
-    related: ['world', 'agents', 'living-world'],
+    related: ['world', 'agents', 'living-world', 'byok'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 02b: BRING YOUR OWN KEY (BYOK)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'byok',
+    title: msg('Bring Your Own Key'),
+    icon: 'key',
+    description: msg(
+      'Supply your own OpenRouter + Replicate keys to bypass the platform forge-token quota and unlock unlimited AI generation.',
+    ),
+    accent: '--color-primary',
+    readTime: msg('4 min'),
+    tldr: () => [
+      msg('Two optional keys: OpenRouter (language + agents) and Replicate (imagery)'),
+      msg('AES-256 encrypted at rest, never echoed back in plain text after registration'),
+      msg('Bypass the platform forge-token quota as soon as both keys are configured'),
+      msg('Costs are billed directly to your OpenRouter and Replicate accounts'),
+      msg('Configure inside the Forge Mint panel or under Settings \u2192 Integrations'),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'Every AI operation on the platform \u2013 narrative generation, agent dialogue, image materialization \u2013 consumes either a Forge Token from the platform quota or routes directly to an AI provider using your personal key. BYOK (Bring Your Own Key) lets you attach your own OpenRouter and Replicate accounts so the platform runs every request through your credentials instead of the shared pool.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('OpenRouter \u2013 Language Relay'),
+            text: msg(
+              'Powers narrative generation, agent conversation, Astrolabe research, chat responses, and bureau terminal agent replies. An OpenRouter account gives you routed access to Claude, GPT, Gemini, Llama, and dozens of other models under a single key.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Replicate \u2013 Visual Array'),
+            text: msg(
+              'Powers Darkroom rendering, agent portraits, building imagery, and simulation lore visuals. Replicate hosts the FLUX and Stable Diffusion image pipelines that the platform calls for every visual generation.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'Both keys are encrypted with AES-256 at rest. After registration they are never echoed back in plain text \u2013 the panel only shows a masked preview and a revoke button. Keys can be replaced or revoked at any time, which invalidates the encrypted copy immediately.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'tip',
+            label: msg('When to register keys'),
+            text: msg(
+              'If you plan to mint many shards, generate agent portraits in bulk, or run long narrative sessions, BYOK removes the forge-token friction and reduces cost per run. If you are just exploring, the platform quota (or an Architect-granted bypass) is usually enough.',
+            ),
+          },
+          {
+            type: 'warn',
+            label: msg('Cost responsibility'),
+            text: msg(
+              'When BYOK is active, every AI call is billed directly to your OpenRouter and Replicate accounts. The platform does not cap, proxy, or throttle those charges. Review your usage dashboards on both providers after heavy sessions.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'readout',
+        title: msg('Where to register keys'),
+        data: () => [
+          {
+            label: msg('Forge Mint'),
+            value: msg(
+              'Open the Mint panel from the Forge \u2013 the BYOK card appears below the token bundles.',
+            ),
+          },
+          {
+            label: msg('Settings \u2192 Integrations'),
+            value: msg(
+              'Owners and architects can register per-simulation AI Provider Overrides here.',
+            ),
+          },
+          {
+            label: msg('Admin \u2192 Forge'),
+            value: msg('Platform admins manage their own personal keys in SEC-08.'),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'Get your keys at openrouter.ai/keys and replicate.com/account/api-tokens. Paste them into the Forge Mint panel (or Settings \u2192 Integrations), use the Verify Clearance button to confirm a live round-trip, and hit Register. The platform switches to BYOK routing immediately \u2013 the "CLEARANCE: UNLIMITED" banner confirms the bypass is active.',
+        ),
+      },
+    ],
+    related: ['forge', 'world'],
   },
 
   // ────────────────────────────────────────────────────────────────────────

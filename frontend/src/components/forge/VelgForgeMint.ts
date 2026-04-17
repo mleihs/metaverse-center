@@ -12,6 +12,7 @@ import type { TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { formatDate } from '../../utils/date-format.js';
 import { forgeButtonStyles } from '../shared/forge-console-styles.js';
+import '../shared/VelgHelpTip.js';
 import './VelgByokPanel.js';
 
 @localized()
@@ -46,6 +47,12 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         justify-content: space-between;
         padding: var(--space-6, 24px) var(--space-8, 32px);
         border-bottom: 2px solid var(--color-mint-brass);
+      }
+
+      .mint__title-group {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2, 8px);
       }
 
       .mint__title {
@@ -621,7 +628,13 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         @keydown=${this._handleFocusTrap}
       >
         <div class="mint__header">
-          <h2 class="mint__title" id="mint-title">${msg('The Mint')}</h2>
+          <div class="mint__title-group">
+            <h2 class="mint__title" id="mint-title">${msg('The Mint')}</h2>
+            <velg-help-tip
+              topic="byok"
+              label=${msg('How does the Mint work?')}
+            ></velg-help-tip>
+          </div>
           <div class="mint__balance">
             ${
               byok.effective_bypass
