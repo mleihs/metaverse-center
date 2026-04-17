@@ -7,6 +7,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
+import { applyAgentDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type {
   Agent,
   AgentAptitude,
@@ -14,10 +15,10 @@ import type {
   AptitudeSet,
   OperativeType,
 } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
-import { t } from '../../utils/locale-fields.js';
 import type { FilterConfig } from '../shared/SharedFilterBar.js';
 import { VelgToast } from '../shared/Toast.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
@@ -264,18 +265,14 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     if (this.entitySlug) {
       const agent = this._agents.find((a) => a.slug === this.entitySlug);
       if (agent) {
-        this._selectedAgent = agent;
-        this._showDetails = true;
-        this._setAgentStructuredData(agent);
+        this._openAgentDetail(agent);
         return;
       }
       // Agent not in current page — fetch by slug from API
       try {
         const resp = await agentsApi.getBySlug(this.simulationId, this.entitySlug);
         if (resp.success && resp.data) {
-          this._selectedAgent = resp.data as Agent;
-          this._showDetails = true;
-          this._setAgentStructuredData(resp.data as Agent);
+          this._openAgentDetail(resp.data as Agent);
           return;
         }
       } catch {
@@ -289,8 +286,18 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
 
     const agent = this._agents.find((a) => a.name === agentName);
     if (agent) {
-      this._selectedAgent = agent;
-      this._showDetails = true;
+      this._openAgentDetail(agent);
+    }
+  }
+
+  /** Open the agent detail panel and apply entity-specific SEO. Consolidates
+   *  the five places that used to set _selectedAgent + _showDetails manually. */
+  private _openAgentDetail(agent: Agent): void {
+    this._selectedAgent = agent;
+    this._showDetails = true;
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      applyAgentDetailSeo(sim, agent);
     }
   }
 
@@ -340,10 +347,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
               <div
                 class="lineup__card"
                 style="--i: ${i}"
-                @click=${() => {
-                  this._selectedAgent = agent;
-                  this._showDetails = true;
-                }}
+                @click=${() => this._openAgentDetail(agent)}
               >
                 <velg-avatar
                   .src=${agent.portrait_image_url ?? ''}
@@ -376,10 +380,8 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
   }
 
   private _handleAgentClick(e: CustomEvent<Agent>): void {
-    this._selectedAgent = e.detail;
-    this._showDetails = true;
     this._pushEntityUrl(e.detail);
-    this._setAgentStructuredData(e.detail);
+    this._openAgentDetail(e.detail);
   }
 
   private _pushEntityUrl(agent: Agent): void {
@@ -459,9 +461,10 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     this._showDetails = false;
     this._selectedAgent = null;
     this._pushListUrl();
-    // Revert to CollectionPage schema when detail panel closes
+    // Revert to list-view meta (title, og:type, og:image) + CollectionPage JSON-LD
     const sim = appState.currentSimulation.value;
     if (sim) {
+      applySimulationViewSeo(sim, 'agents');
       seoService.setCollectionPage({
         name: `${t(sim, 'name')} \u2013 Agents`,
         description: `All agents in the ${t(sim, 'name')} simulation.`,
@@ -471,36 +474,21 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     }
   }
 
-  /** Set Person schema.org structured data for the currently viewed agent. */
-  private _setAgentStructuredData(agent: Agent): void {
-    const sim = appState.currentSimulation.value;
-    seoService.setStructuredData({
-      '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: agent.name,
-      ...(agent.character ? { description: agent.character.substring(0, 200) } : {}),
-      ...(agent.portrait_image_url ? { image: agent.portrait_image_url } : {}),
-      ...(agent.primary_profession ? { jobTitle: agent.primary_profession } : {}),
-      ...(sim ? { affiliation: { '@type': 'Organization', name: t(sim, 'name') } } : {}),
-      url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/agents/${agent.slug ?? ''}`,
-    });
-  }
-
   private _handleLightboxPrev(): void {
     const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
     if (idx > 0) {
-      this._selectedAgent = this._agents[idx - 1];
-      this._pushEntityUrl(this._selectedAgent);
-      this._setAgentStructuredData(this._selectedAgent);
+      const next = this._agents[idx - 1];
+      this._pushEntityUrl(next);
+      this._openAgentDetail(next);
     }
   }
 
   private _handleLightboxNext(): void {
     const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
     if (idx >= 0 && idx < this._agents.length - 1) {
-      this._selectedAgent = this._agents[idx + 1];
-      this._pushEntityUrl(this._selectedAgent);
-      this._setAgentStructuredData(this._selectedAgent);
+      const next = this._agents[idx + 1];
+      this._pushEntityUrl(next);
+      this._openAgentDetail(next);
     }
   }
 

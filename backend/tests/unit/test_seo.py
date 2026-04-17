@@ -304,6 +304,136 @@ class TestEnrichHtmlForCrawler:
         assert "CreativeWork" in result
 
 
+class TestEntityMetaOverride:
+    """When a URL carries an entity slug/UUID, the detail builder's EntityMeta
+    must override the simulation-level title / description / og:image / og:type."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_cache(self):
+        import backend.middleware.seo as seo_module
+        seo_module._index_html_cache = None
+        seo_module._sim_meta_cache.clear()
+        seo_module._entity_cache.clear()
+        seo_module._anon_client = None
+        yield
+        seo_module._index_html_cache = None
+        seo_module._sim_meta_cache.clear()
+        seo_module._entity_cache.clear()
+        seo_module._anon_client = None
+
+    @pytest.mark.anyio
+    async def test_agent_detail_overrides_title_and_description(self, tmp_path):
+        from backend.seo.models import EntityDetailResult, EntityMeta
+
+        index = tmp_path / "index.html"
+        index.write_text(
+            '<html><head>'
+            '<title>default</title>'
+            '<meta name="description" content="default">'
+            '<meta property="og:title" content="default">'
+            '<meta property="og:description" content="default">'
+            '<meta property="og:url" content="default">'
+            '<meta property="og:type" content="website">'
+            '<meta property="og:image" content="default">'
+            '<meta property="og:image:alt" content="default">'
+            '<meta name="twitter:title" content="default">'
+            '<meta name="twitter:description" content="default">'
+            '<meta name="twitter:image" content="default">'
+            '<meta name="twitter:image:alt" content="default">'
+            '<link rel="canonical" href="default">'
+            '</head><body></body></html>'
+        )
+
+        sim_response = MagicMock()
+        sim_response.data = [{
+            "id": "10000000-0000-0000-0000-000000000001",
+            "slug": "station-null",
+            "name": "Station Null",
+            "description": "An orbital outpost.",
+            "banner_url": "https://example.com/banner.jpg",
+        }]
+
+        entity_detail = EntityDetailResult(
+            html="<h2>Alice Smith</h2>",
+            jsonld='{"@type":"Person"}',
+            meta=EntityMeta(
+                title="Alice Smith — Station Null | metaverse.center",
+                description="A brilliant inventor driven by cosmic curiosity.",
+                og_image="https://example.com/alice.jpg",
+                og_image_alt="Alice Smith — portrait",
+                og_type="profile",
+            ),
+        )
+
+        with patch("backend.middleware.seo.create_client") as mock_create, \
+             patch("backend.middleware.seo.build_entity_detail_content") as mock_detail:
+            mock_client = MagicMock()
+            mock_create.return_value = mock_client
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
+            mock_detail.return_value = entity_detail
+
+            result = await enrich_html_for_crawler(
+                index,
+                "/simulations/station-null/agents/alice-smith",
+            )
+
+        assert result is not None
+        assert "<title>Alice Smith — Station Null | metaverse.center</title>" in result
+        assert 'content="A brilliant inventor driven by cosmic curiosity."' in result
+        assert 'content="https://example.com/alice.jpg"' in result
+        assert 'content="Alice Smith — portrait"' in result
+        assert '<meta property="og:type" content="profile"' in result
+        # Entity content + JSON-LD are also injected
+        assert "Alice Smith" in result
+        assert '"@type":"Person"' in result
+
+    @pytest.mark.anyio
+    async def test_list_view_uses_sim_level_meta(self, tmp_path):
+        """Without an entity slug, the URL is a list view — sim-level meta stays."""
+        index = tmp_path / "index.html"
+        index.write_text(
+            '<html><head>'
+            '<title>default</title>'
+            '<meta name="description" content="default">'
+            '<meta property="og:title" content="default">'
+            '<meta property="og:description" content="default">'
+            '<meta property="og:url" content="default">'
+            '<meta property="og:type" content="website">'
+            '<meta property="og:image" content="default">'
+            '<meta name="twitter:title" content="default">'
+            '<meta name="twitter:description" content="default">'
+            '<meta name="twitter:image" content="default">'
+            '<link rel="canonical" href="default">'
+            '</head><body></body></html>'
+        )
+
+        sim_response = MagicMock()
+        sim_response.data = [{
+            "id": "10000000-0000-0000-0000-000000000001",
+            "slug": "station-null",
+            "name": "Station Null",
+            "description": "An orbital outpost.",
+            "banner_url": "",
+        }]
+
+        with patch("backend.middleware.seo.create_client") as mock_create, \
+             patch("backend.middleware.seo.build_view_content") as mock_view:
+            mock_client = MagicMock()
+            mock_create.return_value = mock_client
+            mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
+            mock_view.return_value = ("<article>list</article>", '{"@type":"ItemList"}')
+
+            result = await enrich_html_for_crawler(
+                index,
+                "/simulations/station-null/agents",
+            )
+
+        assert result is not None
+        assert "<title>Agents — Station Null | metaverse.center</title>" in result
+        # og:type remains 'website' (no entity override)
+        assert '<meta property="og:type" content="website"' in result
+
+
 class TestInjectEntityContent:
     @pytest.fixture(autouse=True)
     def _reset_cache(self):

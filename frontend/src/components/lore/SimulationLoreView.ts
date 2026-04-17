@@ -12,6 +12,7 @@ import type {
 import { loreApi } from '../../services/api/LoreApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
+import { applyLoreDetailSeo } from '../../services/seo-patterns.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -139,9 +140,21 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       this._rawSections = await fetchRawLoreSections(simId);
       if (this.entitySlug && this._rawSections) {
         this._scrollToSection(this.entitySlug);
+        this._applyEntitySeo();
       }
     } finally {
       this._loading = false;
+    }
+  }
+
+  /** Override sim-level lore SEO with section-specific article meta when the
+   *  URL carries an /:entitySlug. Called after sections load. */
+  private _applyEntitySeo(): void {
+    const sim = appState.currentSimulation.value;
+    if (!sim || !this._rawSections || !this.entitySlug) return;
+    const section = this._rawSections.find((s) => s.slug === this.entitySlug);
+    if (section) {
+      applyLoreDetailSeo(sim, section);
     }
   }
 

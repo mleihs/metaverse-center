@@ -210,3 +210,89 @@ class TestBuildViewContent:
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "agents")
         assert html == ""
         assert jsonld == ""
+
+
+class TestEntityDetailMeta:
+    """Entity detail builders must return title/description overrides so crawler
+    responses for /agents/:slug render entity-specific meta tags."""
+
+    def _mock_client_for(self, table: str, rows: list[dict]) -> MagicMock:
+        client = MagicMock()
+        mock_chain = MagicMock()
+        mock_chain.execute.return_value = MagicMock(data=rows)
+        mock_chain.limit.return_value = mock_chain
+        mock_chain.order.return_value = mock_chain
+        mock_chain.eq.return_value = mock_chain
+        mock_chain.is_.return_value = mock_chain
+        mock_table = MagicMock()
+        mock_table.select.return_value = mock_chain
+        client.table.return_value = mock_table
+        del table  # same mock serves any table lookup
+        return client
+
+    def test_agent_detail_returns_entity_meta(self):
+        from backend.middleware.seo_content import build_agent_detail
+        client = self._mock_client_for("agents", [{
+            "name": "Alice Smith",
+            "slug": "alice-smith",
+            "character": "A brilliant inventor driven by cosmic curiosity.",
+            "primary_profession": "Engineer",
+            "portrait_image_url": "https://example.com/alice.jpg",
+            "gender": "female",
+        }])
+        result = build_agent_detail(client, "sim-1", "Station Null", "station-null", "alice-smith")
+        assert result.html != ""
+        assert result.jsonld != ""
+        assert result.meta is not None
+        assert result.meta.title == "Alice Smith — Station Null | metaverse.center"
+        assert result.meta.description is not None
+        assert "brilliant inventor" in result.meta.description
+        assert result.meta.og_image == "https://example.com/alice.jpg"
+        assert result.meta.og_image_alt == "Alice Smith — portrait"
+        assert result.meta.og_type == "profile"
+
+    def test_agent_detail_not_found_is_empty_result(self):
+        from backend.middleware.seo_content import build_agent_detail
+        client = self._mock_client_for("agents", [])
+        result = build_agent_detail(client, "sim-1", "Station Null", "station-null", "missing")
+        assert result.html == ""
+        assert result.jsonld == ""
+        assert result.meta is None
+
+    def test_building_detail_returns_place_meta(self):
+        from backend.middleware.seo_content import build_building_detail
+        client = self._mock_client_for("buildings", [{
+            "name": "The Observatory",
+            "slug": "the-observatory",
+            "description": "A towering brass-and-copper astrolabe that charts the resonance.",
+            "building_type": "research",
+            "image_url": "https://example.com/obs.jpg",
+        }])
+        result = build_building_detail(client, "sim-1", "Station Null", "station-null", "the-observatory")
+        assert result.meta is not None
+        assert result.meta.title == "The Observatory — Station Null | metaverse.center"
+        assert "astrolabe" in (result.meta.description or "")
+        assert result.meta.og_image == "https://example.com/obs.jpg"
+        assert "Observatory" in result.meta.og_image_alt
+        assert "research" in result.meta.og_image_alt
+        # Open Graph has no "place" type — meta.og_type stays empty
+        # (sim-level 'website' default applies)
+        assert result.meta.og_type == ""
+
+    def test_lore_detail_returns_article_meta(self):
+        from backend.middleware.seo_content import build_lore_detail
+        client = self._mock_client_for("simulation_lore", [{
+            "title": "The Fracture",
+            "slug": "the-fracture",
+            "chapter": "Chapter One",
+            "arcanum": "I",
+            "body": "Before the fracture, there was a single world. Its name is lost.",
+            "epigraph": "A prophet spoke in the last hour.",
+            "created_at": "2026-01-01T00:00:00Z",
+        }])
+        result = build_lore_detail(client, "sim-1", "Station Null", "station-null", "the-fracture")
+        assert result.meta is not None
+        assert "Chapter One: The Fracture" in result.meta.title
+        assert "Station Null" in result.meta.title
+        assert result.meta.og_type == "article"
+        assert result.meta.description is not None

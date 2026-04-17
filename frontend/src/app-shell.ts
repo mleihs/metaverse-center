@@ -11,6 +11,7 @@ import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './servic
 import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { seoService } from './services/SeoService.js';
+import { applySimulationViewSeo } from './services/seo-patterns.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 import type { Simulation } from './types/index.js';
 
@@ -1065,7 +1066,9 @@ export class VelgApp extends LitElement {
     // No requestUpdate() needed — child components read signals directly.
     this._loadSimulationContext(resolvedId);
 
-    // SEO + analytics
+    // SEO + analytics — entity-specific overrides are applied by the view
+    // component itself (AgentsView._openAgentDetail, etc.) once the entity
+    // data is loaded. Here we always set the list-level meta first.
     const sim = appState.currentSimulation.value;
     const simName = sim?.name ?? '';
     const slug = sim?.slug ?? idOrSlug;
@@ -1073,13 +1076,17 @@ export class VelgApp extends LitElement {
     const canonicalPath = entitySlug
       ? `/simulations/${slug}/${view}/${entitySlug}`
       : `/simulations/${slug}/${view}`;
-    seoService.setTitle(simName ? [viewLabel, simName] : [viewLabel]);
-    seoService.setCanonical(canonicalPath);
-    if (sim?.description) {
-      seoService.setDescription(sim.description);
-    }
-    if (sim?.banner_url) {
-      seoService.setOgImage(sim.banner_url);
+    if (sim) {
+      applySimulationViewSeo(sim, view);
+      // Canonical points to the entity URL when present — override after
+      // applySimulationViewSeo (which points at the list URL).
+      if (entitySlug) {
+        seoService.setCanonical(canonicalPath);
+      }
+    } else {
+      // Pre-resolution fallback (slug→UUID) — set a minimal title
+      seoService.setTitle(simName ? [viewLabel, simName] : [viewLabel]);
+      seoService.setCanonical(canonicalPath);
     }
     // Breadcrumbs: Home > Dashboard > SimName > View
     const breadcrumbs = [

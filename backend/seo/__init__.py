@@ -9,6 +9,7 @@ Private/member-only views (chat, settings, bonds, terminal) and dashboard-only v
 nothing more.
 """
 
+from backend.seo.models import EntityDetailResult, EntityMeta
 from backend.seo.registry import (
     PUBLIC_SIMULATION_VIEWS,
     PublicSimulationView,
@@ -19,6 +20,8 @@ from backend.seo.registry import (
 
 __all__ = [
     "PUBLIC_SIMULATION_VIEWS",
+    "EntityDetailResult",
+    "EntityMeta",
     "PublicSimulationView",
     "build_entity_detail_content",
     "build_view_content",
