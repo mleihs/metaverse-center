@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi, generationApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
@@ -222,7 +223,8 @@ export class VelgAgentEditModal extends LitElement {
           VelgToast.error(response.error?.message ?? msg('Failed to generate character.'));
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentEditModal._handleGenerateCharacter' });
       VelgToast.error(msg('An error occurred during generation.'));
     } finally {
       this._generating = false;
@@ -269,7 +271,8 @@ export class VelgAgentEditModal extends LitElement {
           VelgToast.error(response.error?.message ?? msg('Failed to generate description.'));
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentEditModal._handleGenerateDescription' });
       VelgToast.error(msg('An error occurred during generation.'));
     } finally {
       this._generating = false;
@@ -317,7 +320,8 @@ export class VelgAgentEditModal extends LitElement {
           VelgToast.error(response.error?.message ?? msg('Failed to generate portrait.'));
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentEditModal._handleGeneratePortrait' });
       VelgToast.error(msg('An error occurred during portrait generation.'));
     } finally {
       this._generating = false;

@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
+import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -194,7 +195,8 @@ export class VelgRegisterView extends LitElement {
         this._password = '';
         this._confirmPassword = '';
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'RegisterView._handleSubmit' });
       this._error = msg('An unexpected error occurred. Please try again.');
     } finally {
       this._loading = false;
@@ -216,7 +218,8 @@ export class VelgRegisterView extends LitElement {
   private async _handleGoogleLogin(): Promise<void> {
     try {
       await authService.signInWithGoogle();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'RegisterView._handleGoogleLogin' });
       this._error = msg('Failed to initiate Google sign-up.');
     }
   }
@@ -224,7 +227,8 @@ export class VelgRegisterView extends LitElement {
   private async _handleDiscordLogin(): Promise<void> {
     try {
       await authService.signInWithDiscord();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'RegisterView._handleDiscordLogin' });
       this._error = msg('Failed to initiate Discord sign-up.');
     }
   }

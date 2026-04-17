@@ -19,6 +19,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { forgeApi, type TestBYOKResult } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -629,9 +630,14 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       <div class="byok">
         ${this._renderHeader()}
         ${byok.effective_bypass ? this._renderBypassBanner() : nothing}
-        ${byok.byok_allowed && !byok.effective_bypass && !byok.has_openrouter_key && !byok.has_replicate_key
-          ? this._renderAwarenessBanner()
-          : nothing}
+        ${
+          byok.byok_allowed &&
+          !byok.effective_bypass &&
+          !byok.has_openrouter_key &&
+          !byok.has_replicate_key
+            ? this._renderAwarenessBanner()
+            : nothing
+        }
         <div class="byok__keys">
           ${this._renderKeyCard(
             'openrouter',
@@ -676,9 +682,11 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
         ></velg-help-tip>
       </div>
       <p class="byok__subtitle">
-        ${this.mode === 'admin'
-          ? msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')
-          : msg('Operative key-card assignment. Keys are AES-256 encrypted at rest.')}
+        ${
+          this.mode === 'admin'
+            ? msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')
+            : msg('Operative key-card assignment. Keys are AES-256 encrypted at rest.')
+        }
       </p>
     `;
   }
@@ -758,9 +766,9 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
           <span class="byok__key-provider">${providerName}</span>
           <span class="byok__key-codename">${codename}</span>
           <span class="byok__key-status ${hasKey ? 'byok__key-status--set' : 'byok__key-status--unset'}">
-            ${hasKey
-              ? html`${icons.checkCircle(11)} ${msg('configured')}`
-              : html`${msg('not set')}`}
+            ${
+              hasKey ? html`${icons.checkCircle(11)} ${msg('configured')}` : html`${msg('not set')}`
+            }
           </span>
         </div>
 
@@ -794,8 +802,9 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
               <span class="visually-hidden">${showKey ? msg('Hide key') : msg('Show key')}</span>
             </button>
           </div>
-          ${hasKey
-            ? html`
+          ${
+            hasKey
+              ? html`
               <button
                 class="byok__remove-btn"
                 type="button"
@@ -806,19 +815,25 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
                 ${msg('Revoke')}
               </button>
             `
-            : nothing}
+              : nothing
+          }
         </div>
 
-        ${validation === 'invalid'
-          ? html`<div class="byok__validation">
-              ${provider === 'openrouter'
-                ? msg('Expected format: sk-or-...')
-                : msg('Expected format: r8_...')}
+        ${
+          validation === 'invalid'
+            ? html`<div class="byok__validation">
+              ${
+                provider === 'openrouter'
+                  ? msg('Expected format: sk-or-...')
+                  : msg('Expected format: r8_...')
+              }
             </div>`
-          : nothing}
+            : nothing
+        }
 
-        ${keyValue || testState !== 'idle'
-          ? html`
+        ${
+          keyValue || testState !== 'idle'
+            ? html`
             <div class="byok__test-row">
               <button
                 class="byok__test-btn"
@@ -831,7 +846,8 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
               ${this._renderTestBadge(testState, testResult)}
             </div>
           `
-          : nothing}
+            : nothing
+        }
       </div>
     `;
   }
@@ -872,14 +888,20 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
           ?disabled=${this._isSaving || !hasInput}
           @click=${this._handleSave}
         >
-          ${this._isSaving
-            ? msg('Registering...')
-            : this.mode === 'admin' ? msg('Save Keys') : msg('Register Keys')}
+          ${
+            this._isSaving
+              ? msg('Registering...')
+              : this.mode === 'admin'
+                ? msg('Save Keys')
+                : msg('Register Keys')
+          }
         </button>
         <span class="byok__hint">
-          ${bothConfigured
-            ? msg('Both keys configured. Enter new values to update.')
-            : msg('Configure both keys to enable unlimited access.')}
+          ${
+            bothConfigured
+              ? msg('Both keys configured. Enter new values to update.')
+              : msg('Configure both keys to enable unlimited access.')
+          }
         </span>
       </div>
     `;
@@ -926,7 +948,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
 
     try {
       const resp = await forgeApi.testBYOK(provider, key);
-      const result = resp.success && resp.data ? resp.data as TestBYOKResult : null;
+      const result = resp.success && resp.data ? (resp.data as TestBYOKResult) : null;
       if (provider === 'openrouter') {
         this._orTestResult = result;
         this._orTestState = result?.valid ? 'success' : 'error';
@@ -934,7 +956,8 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
         this._repTestResult = result;
         this._repTestState = result?.valid ? 'success' : 'error';
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgByokPanel._handleTestKey', provider });
       const fallback: TestBYOKResult = { valid: false, detail: 'Network error', response_ms: 0 };
       if (provider === 'openrouter') {
         this._orTestResult = fallback;
@@ -983,7 +1006,8 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
           (resp.error as { message?: string } | undefined)?.message ?? msg('Failed to save keys'),
         );
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgByokPanel._handleSave' });
       VelgToast.error(msg('Failed to save keys'));
     } finally {
       this._isSaving = false;
@@ -1008,17 +1032,20 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       if (resp.success) {
         await forgeStateManager.loadWallet();
         VelgToast.success(msg(str`${displayName} key revoked.`));
-        this.dispatchEvent(new CustomEvent('byok-removed', {
-          bubbles: true,
-          composed: true,
-          detail: { provider },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('byok-removed', {
+            bubbles: true,
+            composed: true,
+            detail: { provider },
+          }),
+        );
       } else {
         VelgToast.error(
           (resp.error as { message?: string } | undefined)?.message ?? msg('Failed to remove key'),
         );
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgByokPanel._handleRemoveKey' });
       VelgToast.error(msg('Failed to remove key'));
     } finally {
       this._isRemoving = false;

@@ -26,6 +26,7 @@ import type {
 } from '../../services/api/AchievementsApiService.js';
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { captureError } from '../../services/SentryService.js';
 import { supabase } from '../../services/supabase/client.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -54,8 +55,10 @@ export class VelgAchievementToast extends LitElement {
     this._unsubscribe();
     try {
       this._disposeAuthWatch?.();
-    } catch {
-      /* best-effort cleanup */
+    } catch (err) {
+      // Best-effort teardown during element removal — proceed with
+      // cleanup even if the signal subscriber already unsubscribed.
+      captureError(err, { source: 'VelgAchievementToast.disconnectedCallback' });
     }
     this._disposeAuthWatch = null;
   }
@@ -114,8 +117,10 @@ export class VelgAchievementToast extends LitElement {
       for (const def of defs) {
         this._definitionCache.set(def.id, def);
       }
-    } catch {
-      // Non-critical — toast will show generic text if cache miss
+    } catch (err) {
+      // Toast will fall back to generic text on cache miss — the
+      // unlock is still announced, just without the definition prose.
+      captureError(err, { source: 'VelgAchievementToast._loadDefinitions' });
     }
   }
 
