@@ -8,6 +8,7 @@ import { appState } from './services/AppStateManager.js';
 import { epochsApi } from './services/api/EpochsApiService.js';
 import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './services/api/index.js';
 import { localeService } from './services/i18n/locale-service.js';
+import { captureError } from './services/SentryService.js';
 import { seoService } from './services/SeoService.js';
 import { applySimulationRouteMeta } from './services/seo-patterns.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
@@ -936,8 +937,9 @@ export class VelgApp extends LitElement {
           appState.setSimulations(resp.data as Simulation[]);
         }
       }
-    } catch {
-      // Non-critical — dashboard fetches its own copy
+    } catch (err) {
+      // Non-critical — dashboard fetches its own copy.
+      captureError(err, { source: 'VelgApp._loadSimulations' });
     }
   }
 
@@ -948,8 +950,9 @@ export class VelgApp extends LitElement {
         const data = await res.json();
         appState.setMockMode(data.mock_mode === true);
       }
-    } catch {
-      // Health check failure is non-critical
+    } catch (err) {
+      // Health check failure is non-critical.
+      captureError(err, { source: 'VelgApp._fetchMockMode' });
     }
   }
 

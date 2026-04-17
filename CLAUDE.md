@@ -129,6 +129,20 @@ Write operations require:
 - Never apply CSS `filter`, `transform`, `will-change`, `contain: paint`, or `perspective` on layout containers (shells, views, panels). These create new containing blocks that break `position: fixed` modals/lightboxes. Use `backdrop-filter` on a `::after` overlay or apply filters to leaf elements only.
 - Never read **routing signals** (`appState.isAuthenticated`, `appState.currentRole`) inside `src/services/api/`. API-service methods must accept `mode: 'public' | 'member'` as an explicit parameter and forward it to `BaseApiService.getSimulationData(path, mode, params?)`. Callers pass `appState.currentSimulationMode.value` for simulation-scoped reads or `isAuthenticated.value ? 'member' : 'public'` for auth-gated global reads (Epochs, Simulations list, Resonance, Connections). `appState.accessToken` is **allowed** in the API layer — it is the Authorization-header source, not a routing decision. Enforced by `frontend/scripts/lint-no-appstate-access-reads.sh` in CI. Reason: routing must be visible at the call site and independent of route-entry timing; an API call that fires before `_checkMembership` resolves used to silently hit the wrong endpoint.
 
+### Error Observability (MANDATORY)
+
+Never silently swallow an exception. Every failure path must be observed via `captureError(err, { source: 'ClassName.methodName' })` from `services/SentryService.ts`. User-visible operations additionally show a toast (`captureError` runs first, then `VelgToast.error`). Module-level functions use `file-slug.functionName` as the source tag (e.g. `'simulation-switcher.getLastTab'`).
+
+Forbidden:
+- `catch {}` / `catch { /* comment */ }` / `catch { return fallback; }` — no binding, observation unreachable
+- `.catch(() => {})` / `.catch(() => { fallback })` — Promise-chain rejection without binding
+
+Allowed:
+- `catch (err) { captureError(err, { source: '...' }); /* optional body */ }`
+- `.catch((err) => captureError(err, { source: '...' }))` — Promise-chain equivalent
+
+Run `frontend/scripts/lint-no-empty-catch.sh` to verify. CI will reject violations.
+
 ### Color Tokens (MANDATORY)
 
 Never use raw `#hex` or `rgba()` in component CSS. All colors must reference:

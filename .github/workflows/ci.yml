@@ -53,6 +53,10 @@ jobs:
         run: bash frontend/scripts/lint-no-appstate-access-reads.sh
         working-directory: .
 
+      - name: Error-handling lint (no empty-var catch)
+        run: bash frontend/scripts/lint-no-empty-catch.sh
+        working-directory: .
+
       - name: Backend lint (GenerationService._generate privacy)
         run: bash scripts/lint-no-private-generate.sh
         working-directory: .
