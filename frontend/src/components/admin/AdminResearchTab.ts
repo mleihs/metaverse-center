@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import {
@@ -301,8 +302,12 @@ export class VelgAdminResearchTab extends LitElement {
           if (Array.isArray(parsed)) {
             domains[s.setting_key] = parsed;
           }
-        } catch {
-          // Keep default on parse failure
+        } catch (err) {
+          // Malformed DB value — keep hardcoded default for this domain.
+          captureError(err, {
+            source: 'AdminResearchTab._loadSettings.parse',
+            settingKey: s.setting_key,
+          });
         }
       }
 
