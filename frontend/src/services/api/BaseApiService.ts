@@ -114,18 +114,50 @@ export class BaseApiService {
   }
 
   /**
-   * GET for simulation-scoped reads. Uses public endpoint when user is
-   * not authenticated OR not a member of the current simulation.
-   * This ensures authenticated non-members can still browse all sims.
+   * GET for simulation-scoped reads.
+   *
+   * Two overloads:
+   *
+   * 1. `(path, mode, params?)` — the target signature. `mode` is chosen by the
+   *    caller (typically from `appState.currentSimulationMode.value` for
+   *    sim-scoped reads, or `isAuthenticated ? 'member' : 'public'` for
+   *    auth-only reads). Routing is explicit; no appState read in the API
+   *    layer.
+   *
+   * 2. `(path, params?)` — **deprecated** transitional overload that reads
+   *    `appState.isAuthenticated` + `appState.currentRole` to choose the
+   *    endpoint. Exists only to allow incremental migration of callers. Will
+   *    be removed once every callsite has adopted signature (1).
    */
   protected getSimulationData<T>(
     path: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
+  ): Promise<ApiResponse<T>>;
+  /** @deprecated Pass `mode` explicitly; this overload reads appState implicitly. */
+  protected getSimulationData<T>(
+    path: string,
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<T>>;
+  protected getSimulationData<T>(
+    path: string,
+    modeOrParams?: 'public' | 'member' | Record<string, string>,
+    maybeParams?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
-    if (!appState.isAuthenticated.value || !appState.currentRole.value) {
-      return this.getPublic(path, params);
+    // Target signature — caller passed `mode` explicitly.
+    if (modeOrParams === 'member') {
+      return this.get<T>(path, maybeParams);
     }
-    return this.get(path, params);
+    if (modeOrParams === 'public') {
+      return this.getPublic<T>(path, maybeParams);
+    }
+    // Deprecated signature (`mode` absent) — fall back to the canonical mode
+    // signal on appState. This is the single source of truth both branches
+    // share; the branch is removed once every callsite passes mode explicitly.
+    const params = modeOrParams;
+    return appState.currentSimulationMode.value === 'member'
+      ? this.get<T>(path, params)
+      : this.getPublic<T>(path, params);
   }
 
   /**
