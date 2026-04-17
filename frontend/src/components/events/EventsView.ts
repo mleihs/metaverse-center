@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { ApiResponse, Event as SimEvent } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
@@ -176,7 +177,8 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete event'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEventsView._handleEventDelete' });
       VelgToast.error(msg('An unexpected error occurred'));
     }
   }
@@ -219,8 +221,9 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
       if (response.success && response.data) {
         this._seismographEvents = Array.isArray(response.data) ? response.data : [];
       }
-    } catch {
-      // Seismograph is supplemental — silent fail
+    } catch (err) {
+      // Seismograph is supplemental — degrades gracefully if the fetch fails.
+      captureError(err, { source: 'VelgEventsView._loadSeismographEvents' });
     }
   }
 

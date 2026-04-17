@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { echoesApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   EchoVector,
   Event as SimEvent,
@@ -259,7 +260,8 @@ export class VelgEchoTriggerModal extends LitElement {
         this._error = response.error?.message ?? msg('Failed to trigger echo');
         VelgToast.error(this._error);
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEchoTriggerModal._handleSubmit' });
       this._error = msg('An unexpected error occurred');
       VelgToast.error(this._error);
     } finally {
