@@ -5,18 +5,42 @@ const DEFAULT_DESCRIPTION =
 const BASE_URL = 'https://metaverse.center';
 const DEFAULT_OG_IMAGE =
   'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg';
+const DEFAULT_OG_IMAGE_ALT = 'metaverse.center platform preview';
 
 type RobotsPolicy = 'index, follow' | 'noindex' | 'noindex, nofollow';
+type OgType = 'website' | 'article' | 'profile';
 
 const DEFAULT_ROBOTS: RobotsPolicy = 'index, follow';
+const DEFAULT_OG_TYPE: OgType = 'website';
+
+export interface ArticleMeta {
+  /** ISO 8601 publication timestamp. */
+  publishedTime?: string;
+  /** ISO 8601 modification timestamp. */
+  modifiedTime?: string;
+  /** Canonical author name (not a URL). */
+  author?: string;
+  /** Section name (e.g. "Chronicle", "Broadsheet", "Lore", "Resonance Dungeons"). */
+  section?: string;
+  /** Topic tags; emitted as multiple `article:tag` meta tags. */
+  tags?: string[];
+}
 
 class SeoService {
   /** Set page title from parts: ['Agents', 'Station Null'] → "Agents – Station Null | metaverse.center".
    *
-   * Implicitly resets the robots policy to 'index, follow'. Every route starts from a clean
-   * slate — routes that require noindex (auth flows, invitation tokens) must call
-   * {@link setRobots} explicitly AFTER setTitle. This guarantees that stale noindex state
-   * from a previous route can never leak into the next. */
+   * Must be called FIRST in every route's SEO block. Implicitly resets all
+   * route-ephemeral meta tags to platform defaults:
+   *   - robots           → 'index, follow'
+   *   - og:type          → 'website'
+   *   - og:image / alt   → platform og-image + platform alt
+   *   - article:*        → cleared
+   *
+   * Every route opts in to non-defaults AFTER setTitle via the corresponding
+   * setter (setRobots, setOgType, setOgImage, setOgImageAlt, setArticleMeta).
+   * This guarantees stale state from a previous route can never leak between
+   * SPA navigations — the fix for the bureau-dispatch noindex leak generalised
+   * to every social/SEO tag. */
   setTitle(parts: string[]): void {
     if (parts.length === 0) {
       document.title = DEFAULT_TITLE;
@@ -25,13 +49,58 @@ class SeoService {
     }
     this._setMetaProperty('og:title', document.title);
     this._setMeta('twitter:title', document.title);
+    // Route-ephemeral defaults — overrides layer on top
     this._setMeta('robots', DEFAULT_ROBOTS);
+    this._setMetaProperty('og:type', DEFAULT_OG_TYPE);
+    this._setMetaProperty('og:image', DEFAULT_OG_IMAGE);
+    this._setMeta('twitter:image', DEFAULT_OG_IMAGE);
+    this._setMetaProperty('og:image:alt', DEFAULT_OG_IMAGE_ALT);
+    this._setMeta('twitter:image:alt', DEFAULT_OG_IMAGE_ALT);
+    this.clearArticleMeta();
   }
 
-  /** Override the robots policy for the current route. Call AFTER setTitle(), otherwise the
-   *  implicit title-side reset would overwrite the override. */
+  /** Override the robots policy for the current route. Call AFTER setTitle(). */
   setRobots(policy: RobotsPolicy): void {
     this._setMeta('robots', policy);
+  }
+
+  /** Set the Open Graph content type — 'article' for narrative pages (lore, chronicle,
+   *  broadsheet, archetype), 'profile' for agents, 'website' for everything else. */
+  setOgType(type: OgType): void {
+    this._setMetaProperty('og:type', type);
+  }
+
+  /** Set og:image:alt + twitter:image:alt. Required for WCAG compliance and richer
+   *  social previews. Call alongside setOgImage whenever a non-default image is set. */
+  setOgImageAlt(alt: string): void {
+    this._setMetaProperty('og:image:alt', alt);
+    this._setMeta('twitter:image:alt', alt);
+  }
+
+  /** Set article-specific Open Graph meta tags (published/modified time, author, section,
+   *  tags). Call together with setOgType('article'). Replaces any existing article:* tags. */
+  setArticleMeta(meta: ArticleMeta): void {
+    this.clearArticleMeta();
+    const addArticle = (property: string, content: string): void => {
+      const el = document.createElement('meta');
+      el.setAttribute('property', property);
+      el.content = content;
+      document.head.appendChild(el);
+    };
+    if (meta.publishedTime) addArticle('article:published_time', meta.publishedTime);
+    if (meta.modifiedTime) addArticle('article:modified_time', meta.modifiedTime);
+    if (meta.author) addArticle('article:author', meta.author);
+    if (meta.section) addArticle('article:section', meta.section);
+    for (const tag of meta.tags ?? []) {
+      addArticle('article:tag', tag);
+    }
+  }
+
+  /** Remove all article:* meta tags. Called implicitly by setTitle and setArticleMeta. */
+  clearArticleMeta(): void {
+    for (const el of document.querySelectorAll('meta[property^="article:"]')) {
+      el.remove();
+    }
   }
 
   setDescription(text: string): void {
@@ -180,7 +249,7 @@ class SeoService {
     document.getElementById('seo-content')?.remove();
   }
 
-  /** Reset all SEO tags to defaults (for dashboard/homepage). */
+  /** Reset all SEO tags to platform defaults (for dashboard/homepage fallback paths). */
   reset(): void {
     document.title = DEFAULT_TITLE;
     this._setMeta('description', DEFAULT_DESCRIPTION);
@@ -188,9 +257,12 @@ class SeoService {
     this._setMetaProperty('og:description', DEFAULT_DESCRIPTION);
     this._setMetaProperty('og:url', `${BASE_URL}/`);
     this._setMetaProperty('og:image', DEFAULT_OG_IMAGE);
+    this._setMetaProperty('og:image:alt', DEFAULT_OG_IMAGE_ALT);
+    this._setMetaProperty('og:type', DEFAULT_OG_TYPE);
     this._setMeta('twitter:title', DEFAULT_TITLE);
     this._setMeta('twitter:description', DEFAULT_DESCRIPTION);
     this._setMeta('twitter:image', DEFAULT_OG_IMAGE);
+    this._setMeta('twitter:image:alt', DEFAULT_OG_IMAGE_ALT);
     this._setMeta('robots', DEFAULT_ROBOTS);
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (canonical) {
@@ -198,6 +270,7 @@ class SeoService {
     }
     this.removeStructuredData();
     this.removeBreadcrumbs();
+    this.clearArticleMeta();
   }
 
   private _setMeta(name: string, content: string): void {
