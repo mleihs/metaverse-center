@@ -6,7 +6,7 @@
  * have a subtle amber left-border glow that fades on read.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -94,7 +94,7 @@ export class VelgWhisperCard extends LitElement {
       cursor: pointer;
       transition: color var(--transition-fast),
         border-color var(--transition-fast);
-      min-height: 32px;
+      min-height: 44px;
     }
 
     .whisper__action:hover {
@@ -151,10 +151,10 @@ export class VelgWhisperCard extends LitElement {
     const diff = now.getTime() - d.getTime();
     const hours = Math.floor(diff / 3600000);
     if (hours < 1) return msg('just now');
-    if (hours < 24) return msg(`${hours}h ago`);
+    if (hours < 24) return msg(str`${hours}h ago`);
     const days = Math.floor(hours / 24);
     if (days === 1) return msg('yesterday');
-    return msg(`${days}d ago`);
+    return msg(str`${days}d ago`);
   }
 
   protected render() {

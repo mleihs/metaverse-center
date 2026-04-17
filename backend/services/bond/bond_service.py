@@ -13,6 +13,8 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import sentry_sdk
+
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, not_found
 from backend.utils.responses import extract_list
@@ -194,12 +196,16 @@ class BondService:
         except Exception as exc:
             err_msg = str(exc)
             if "Maximum 5 active bonds" in err_msg:
+                logger.info("Bond slot limit reached", extra={
+                    "user_id": str(user_id), "simulation_id": str(simulation_id),
+                })
                 raise conflict(
                     f"Maximum {MAX_BONDS_PER_SIMULATION} active bonds "
                     f"per simulation reached."
                 ) from exc
             if "Invalid bond status transition" in err_msg:
                 raise conflict("Bond was modified concurrently.") from exc
+            sentry_sdk.capture_exception(exc)
             raise
         updated = extract_list(update_resp)
         if not updated:
@@ -213,6 +219,15 @@ class BondService:
             "context": {"formed_at": datetime.now(UTC).isoformat()},
         }).execute()
 
+        logger.info(
+            "Bond formed",
+            extra={
+                "bond_id": str(bond["id"]),
+                "user_id": str(user_id),
+                "agent_id": str(agent_id),
+                "simulation_id": str(simulation_id),
+            },
+        )
         return _enrich_bond(updated[0])
 
     # ── Read operations ────────────────────────────────────────────────
@@ -561,6 +576,10 @@ class BondService:
             "context": {"strained_at": datetime.now(UTC).isoformat()},
         }).execute()
 
+        logger.info(
+            "Bond entered strain",
+            extra={"bond_id": str(bond_id), "reason": reason},
+        )
         return data[0]
 
     @classmethod

@@ -491,6 +491,11 @@ export class VelgApp extends LitElement {
         enter: async ({ id }) => this._enterSimulationRoute(id, 'agents'),
       },
       {
+        path: '/simulations/:id/bonds',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'bonds'),
+        enter: async ({ id }) => this._enterSimulationRoute(id, 'bonds'),
+      },
+      {
         path: '/simulations/:id/buildings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'buildings'),
         enter: async ({ id }) => this._enterSimulationRoute(id, 'buildings'),
@@ -1108,6 +1113,9 @@ export class VelgApp extends LitElement {
         break;
       case 'agents':
         content = html`<velg-agents-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-agents-view>`;
+        break;
+      case 'bonds':
+        content = html`<velg-bonds-view .simulationId=${resolvedId}></velg-bonds-view>`;
         break;
       case 'buildings':
         content = html`<velg-buildings-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-buildings-view>`;

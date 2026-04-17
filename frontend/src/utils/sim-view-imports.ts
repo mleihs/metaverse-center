@@ -9,6 +9,7 @@ const viewImports: Record<string, () => Promise<unknown>> = {
   health: () => import('../components/health/SimulationHealthView.js'),
   pulse: () => import('../components/heartbeat/SimulationPulse.js'),
   agents: () => import('../components/agents/AgentsView.js'),
+  bonds: () => import('../components/bonds/BondsView.js'),
   buildings: () => import('../components/buildings/BuildingsView.js'),
   events: () => import('../components/events/EventsView.js'),
   chat: () => import('../components/chat/ChatView.js'),
