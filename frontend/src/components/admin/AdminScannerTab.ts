@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { scannerApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   AdapterInfo,
   ScanCandidate,
@@ -1215,7 +1216,8 @@ export class VelgAdminScannerTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to load candidates'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._loadCandidates' });
       VelgToast.error(msg('Failed to load candidates'));
     } finally {
       this._loading = false;
@@ -1231,7 +1233,8 @@ export class VelgAdminScannerTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to load scan log'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._loadScanLog' });
       VelgToast.error(msg('Failed to load scan log'));
     } finally {
       this._loading = false;
@@ -1253,7 +1256,8 @@ export class VelgAdminScannerTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Scan failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._triggerScan' });
       VelgToast.error(msg('Scan failed'));
     } finally {
       this._scanning = false;
@@ -1277,7 +1281,8 @@ export class VelgAdminScannerTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to approve'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._approveCandidate', candidateId: candidate.id });
       VelgToast.error(msg('Failed to approve'));
     } finally {
       this._actionInProgress = null;
@@ -1302,7 +1307,8 @@ export class VelgAdminScannerTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to reject'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._rejectCandidate', candidateId: candidate.id });
       VelgToast.error(msg('Failed to reject'));
     } finally {
       this._actionInProgress = null;

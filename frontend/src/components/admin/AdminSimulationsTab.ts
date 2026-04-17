@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AdminSimulation, adminApi } from '../../services/api/AdminApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { formatDate } from '../../utils/date-format.js';
 import { t } from '../../utils/locale-fields.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -382,7 +383,8 @@ export class VelgAdminSimulationsTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to archive simulation'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminSimulationsTab._handleSoftDelete', simulationId: sim.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -409,7 +411,8 @@ export class VelgAdminSimulationsTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to delete simulation'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminSimulationsTab._handleHardDelete', simulationId: sim.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -426,7 +429,8 @@ export class VelgAdminSimulationsTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to restore simulation'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminSimulationsTab._handleRestore', simulationId: sim.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
