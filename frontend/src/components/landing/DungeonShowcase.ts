@@ -97,6 +97,7 @@ export class VelgDungeonShowcase extends LitElement {
   private _touchStartX = 0;
   private _touchStartY = 0;
   private _animCleanup: (() => void) | null = null;
+  private _paused = false;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -104,6 +105,10 @@ export class VelgDungeonShowcase extends LitElement {
     super.connectedCallback();
     this.setAttribute('tabindex', '0');
     this.addEventListener('keydown', this._onKeydown);
+    this.addEventListener('mouseenter', this._onHoverPause);
+    this.addEventListener('mouseleave', this._onHoverResume);
+    this.addEventListener('focusin', this._onHoverPause);
+    this.addEventListener('focusout', this._onHoverResume);
     this._setupVisibilityObserver();
   }
 
@@ -113,6 +118,10 @@ export class VelgDungeonShowcase extends LitElement {
     this._observer?.disconnect();
     this._observer = null;
     this.removeEventListener('keydown', this._onKeydown);
+    this.removeEventListener('mouseenter', this._onHoverPause);
+    this.removeEventListener('mouseleave', this._onHoverResume);
+    this.removeEventListener('focusin', this._onHoverPause);
+    this.removeEventListener('focusout', this._onHoverResume);
   }
 
   // ── Visibility (IntersectionObserver) ─────────────────────────────────────
@@ -142,11 +151,28 @@ export class VelgDungeonShowcase extends LitElement {
     this._observer.observe(this);
   }
 
+  // ── Hover/Focus pause (WCAG 2.2.2: Pause, Stop, Hide) ────────────────────
+
+  private _onHoverPause = (): void => {
+    if (this._paused) return;
+    this._paused = true;
+    this._cancelTimer();
+  };
+
+  private _onHoverResume = (): void => {
+    if (!this._paused || !this._visible) return;
+    this._paused = false;
+    // Resume from the current slide state (don't skip ahead)
+    this._beginSlide();
+  };
+
   // ── Timer (generation-guarded) ────────────────────────────────────────────
 
   /** Schedule a callback after `ms` milliseconds. Only one timer at a time;
-   *  calling `_after()` again cancels the previous one. Generation-guarded. */
+   *  calling `_after()` again cancels the previous one. Generation-guarded.
+   *  No-op while paused (hover/focus). */
   private _after(ms: number, fn: () => void): void {
+    if (this._paused) return;
     this._cancelTimer();
     const gen = this._gen;
     this._timer = setTimeout(() => {
