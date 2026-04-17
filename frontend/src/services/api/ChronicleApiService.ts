@@ -26,10 +26,7 @@ export class ChronicleApiService extends BaseApiService {
     chronicleId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Chronicle>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/chronicles/${chronicleId}`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/chronicles/${chronicleId}`, mode);
   }
 
   generate(

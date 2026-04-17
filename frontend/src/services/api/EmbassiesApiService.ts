@@ -15,10 +15,7 @@ export class EmbassiesApiService extends BaseApiService {
     embassyId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Embassy>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/embassies/${embassyId}`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/embassies/${embassyId}`, mode);
   }
 
   getForBuilding(

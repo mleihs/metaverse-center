@@ -5,7 +5,6 @@
  */
 
 import { computed, signal } from '@preact/signals-core';
-import { captureError } from './SentryService.js';
 import type {
   Agent,
   Building,
@@ -21,6 +20,7 @@ import type {
   TerminalLine,
   TerminalPersistedState,
 } from '../types/terminal.js';
+import { captureError } from './SentryService.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 

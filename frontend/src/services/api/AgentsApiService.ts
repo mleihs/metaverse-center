@@ -38,10 +38,7 @@ export class AgentsApiService extends CrudApiService<Agent> {
     agentId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<AgentAptitude[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/agents/${agentId}/aptitudes`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/aptitudes`, mode);
   }
 
   setAptitudes(

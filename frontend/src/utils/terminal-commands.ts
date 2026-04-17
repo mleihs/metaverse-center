@@ -8,7 +8,6 @@ import { msg } from '@lit/localize';
 import { appState } from '../services/AppStateManager.js';
 import { agentAutonomyApi } from '../services/api/AgentAutonomyApiService.js';
 import { epochsApi } from '../services/api/EpochsApiService.js';
-import { captureError } from '../services/SentryService.js';
 import {
   agentsApi,
   buildingsApi,
@@ -18,6 +17,7 @@ import {
   heartbeatApi,
   zoneActionsApi,
 } from '../services/api/index.js';
+import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { Agent, BuildingReadiness } from '../types/index.js';
 import type { CommandContext, TerminalCommand, TerminalLine } from '../types/terminal.js';

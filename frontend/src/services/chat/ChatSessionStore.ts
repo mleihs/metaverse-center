@@ -16,9 +16,8 @@
  */
 
 import { batch, type Signal, signal } from '@preact/signals-core';
-
-import { captureError } from '../SentryService.js';
 import type { ChatMessage, ChatReactionSummary } from '../../types/index.js';
+import { captureError } from '../SentryService.js';
 
 // ---------------------------------------------------------------------------
 // Types

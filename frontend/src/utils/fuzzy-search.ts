@@ -60,7 +60,10 @@ export function fuzzyMatch<T extends NamedEntity>(
 
   // 3. Word-start match — "awak" matches word "Awakening" in "The Awakening"
   const wordStart = entities.filter((e) =>
-    e.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q)),
+    e.name
+      .toLowerCase()
+      .split(/\s+/)
+      .some((w) => w.startsWith(q)),
   );
   if (wordStart.length > 0) return wordStart;
 

@@ -1,17 +1,16 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { resonanceApi } from '../../services/api/ResonanceApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { resonanceApi } from '../../services/api/ResonanceApiService.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
+import { SIGNATURE_KEYS, signatureLabel } from '../../utils/resonance-labels.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-
-import { SIGNATURE_KEYS, signatureLabel } from '../../utils/resonance-labels.js';
 import '../shared/ConfirmDialog.js';
 import './AdminResonanceFormModal.js';
 
@@ -970,9 +969,7 @@ export class VelgAdminResonancesTab extends LitElement {
           }}
         >
           <option value="">${msg('All signatures')}</option>
-          ${SIGNATURE_KEYS.map(
-            (key) => html`<option value=${key}>${signatureLabel(key)}</option>`,
-          )}
+          ${SIGNATURE_KEYS.map((key) => html`<option value=${key}>${signatureLabel(key)}</option>`)}
         </select>
 
         <span class="result-count">

@@ -40,11 +40,7 @@ export class SettingsApiService extends BaseApiService {
     if (category === 'design' || category === 'features') {
       return this.getPublic(`/simulations/${simulationId}/settings`, { category });
     }
-    return this.getSimulationData(
-      `/simulations/${simulationId}/settings`,
-      mode,
-      { category },
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/settings`, mode, { category });
   }
 
   getById(simulationId: string, settingId: string): Promise<ApiResponse<SimulationSetting>> {

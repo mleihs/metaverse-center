@@ -3,8 +3,8 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { HealthEffectsSimulation } from '../../services/api/AdminApiService.js';
 import { adminApi } from '../../services/api/index.js';
-import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { t } from '../../utils/locale-fields.js';
+import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
 import {

@@ -19,10 +19,7 @@ export class ResonanceApiService extends BaseApiService {
   }
 
   /** Get a single resonance by ID. See `list` for the mode convention. */
-  getById(
-    resonanceId: string,
-    mode: 'public' | 'member',
-  ): Promise<ApiResponse<Resonance>> {
+  getById(resonanceId: string, mode: 'public' | 'member'): Promise<ApiResponse<Resonance>> {
     return mode === 'public'
       ? this.getPublic(`/resonances/${resonanceId}`)
       : this.get(`/resonances/${resonanceId}`);

@@ -19,9 +19,9 @@ export function t<T extends object>(entity: T, field: string): string {
   const deKey = `${field}_de`;
   const record = entity as Record<string, unknown>;
   if (useDe) {
-    return ((record[deKey] as string) || (record[field] as string) || '');
+    return (record[deKey] as string) || (record[field] as string) || '';
   }
-  return ((record[field] as string) || (record[deKey] as string) || '');
+  return (record[field] as string) || (record[deKey] as string) || '';
 }
 
 /**

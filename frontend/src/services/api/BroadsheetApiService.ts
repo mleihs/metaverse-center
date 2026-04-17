@@ -20,10 +20,7 @@ export class BroadsheetApiService extends BaseApiService {
     simulationId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Broadsheet | null>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/broadsheets/latest`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/broadsheets/latest`, mode);
   }
 
   getOne(
@@ -31,10 +28,7 @@ export class BroadsheetApiService extends BaseApiService {
     broadsheetId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Broadsheet>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/broadsheets/${broadsheetId}`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/broadsheets/${broadsheetId}`, mode);
   }
 
   generate(

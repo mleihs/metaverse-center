@@ -20,11 +20,7 @@ export class HealthApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<BuildingReadiness[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/health/buildings`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/health/buildings`, mode, params);
   }
 
   listZoneStability(

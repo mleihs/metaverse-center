@@ -32,10 +32,10 @@ import {
   formatPartyWipe,
 } from '../utils/dungeon-formatters.js';
 import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
-import { agentsApi } from './api/AgentsApiService.js';
-import { dungeonApi } from './api/DungeonApiService.js';
 import { analyticsService } from './AnalyticsService.js';
 import { appState } from './AppStateManager.js';
+import { agentsApi } from './api/AgentsApiService.js';
+import { dungeonApi } from './api/DungeonApiService.js';
 import { captureError } from './SentryService.js';
 import { terminalState } from './TerminalStateManager.js';
 

@@ -1,8 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { adminApi, simulationsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { adminApi, simulationsApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import type { AdminMembership, AdminUser, AdminUserDetail, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
