@@ -23,6 +23,7 @@ export type SettingCategory =
   | 'world'
   | 'bleed'
   | 'autonomy'
+  | 'bonds'
   | 'ai'
   | 'integration'
   | 'design'
