@@ -1,26 +1,31 @@
 import type { ApiResponse, Resonance, ResonanceImpact, SourceCategory } from '../../types/index.js';
-import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class ResonanceApiService extends BaseApiService {
   /**
-   * List all resonances — public or authenticated based on auth state.
+   * List all resonances. Mode determines routing:
+   *  - `'public'` → `/api/v1/public/resonances` (anon-safe)
+   *  - `'member'` → `/api/v1/resonances` (authenticated)
+   * Resonances are a global collection (not sim-scoped), so the typical
+   * caller computes mode as `isAuthenticated ? 'member' : 'public'`.
    */
-  list(params?: Record<string, string>): Promise<ApiResponse<Resonance[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic('/resonances', params);
-    }
-    return this.get('/resonances', params);
+  list(
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<Resonance[]>> {
+    return mode === 'public'
+      ? this.getPublic('/resonances', params)
+      : this.get('/resonances', params);
   }
 
-  /**
-   * Get a single resonance by ID.
-   */
-  getById(resonanceId: string): Promise<ApiResponse<Resonance>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/resonances/${resonanceId}`);
-    }
-    return this.get(`/resonances/${resonanceId}`);
+  /** Get a single resonance by ID. See `list` for the mode convention. */
+  getById(
+    resonanceId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Resonance>> {
+    return mode === 'public'
+      ? this.getPublic(`/resonances/${resonanceId}`)
+      : this.get(`/resonances/${resonanceId}`);
   }
 
   /**
@@ -59,14 +64,14 @@ export class ResonanceApiService extends BaseApiService {
     return this.post(`/resonances/${resonanceId}/process-impact`, data ?? {});
   }
 
-  /**
-   * List impact records for a resonance.
-   */
-  listImpacts(resonanceId: string): Promise<ApiResponse<ResonanceImpact[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/resonances/${resonanceId}/impacts`);
-    }
-    return this.get(`/resonances/${resonanceId}/impacts`);
+  /** List impact records for a resonance. See `list` for the mode convention. */
+  listImpacts(
+    resonanceId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<ResonanceImpact[]>> {
+    return mode === 'public'
+      ? this.getPublic(`/resonances/${resonanceId}/impacts`)
+      : this.get(`/resonances/${resonanceId}/impacts`);
   }
 
   /**

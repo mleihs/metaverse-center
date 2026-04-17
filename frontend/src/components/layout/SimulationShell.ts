@@ -434,9 +434,11 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     // Ensure simulations list is populated for the breadcrumb switcher.
     // On direct navigation / page refresh, the dashboard hasn't mounted
     // yet, so appState.simulations may be empty. Works for guests too
-    // (simulationsApi.list() uses public endpoint when unauthenticated).
+    // (simulationsApi.list('public') uses the anon-safe endpoint).
     if (appState.simulations.value.length === 0) {
-      const result = await simulationsApi.list();
+      const result = await simulationsApi.list(
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       if (result.success && result.data) {
         appState.setSimulations(result.data);
       }

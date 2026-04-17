@@ -1,20 +1,28 @@
 import type { ApiResponse, Simulation } from '../../types/index.js';
-import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class SimulationsApiService extends BaseApiService {
-  list(params?: Record<string, string>): Promise<ApiResponse<Simulation[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic('/simulations', params);
-    }
-    return this.get('/simulations', params);
+  /**
+   * List simulations.
+   *  - `'public'` → `/api/v1/public/simulations` (curated community list)
+   *  - `'member'` → `/api/v1/simulations` (includes drafts / owner-only sims)
+   * The typical caller computes mode as
+   * `isAuthenticated ? 'member' : 'public'`.
+   */
+  list(
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<Simulation[]>> {
+    return mode === 'public'
+      ? this.getPublic('/simulations', params)
+      : this.get('/simulations', params);
   }
 
-  getById(id: string): Promise<ApiResponse<Simulation>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/simulations/${id}`);
-    }
-    return this.get(`/simulations/${id}`);
+  /** Get a simulation by id. See `list` for the mode convention. */
+  getById(id: string, mode: 'public' | 'member'): Promise<ApiResponse<Simulation>> {
+    return mode === 'public'
+      ? this.getPublic(`/simulations/${id}`)
+      : this.get(`/simulations/${id}`);
   }
 
   getBySlug(slug: string): Promise<ApiResponse<Simulation>> {

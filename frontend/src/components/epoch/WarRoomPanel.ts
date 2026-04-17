@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { BattleLogEntry, BattleSummary, Sitrep } from '../../types/index.js';
 import { formatTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -519,7 +520,11 @@ export class VelgWarRoomPanel extends LitElement {
   private async _loadBattleLog(): Promise<void> {
     const params: Record<string, string> = { limit: '100' };
     if (this.simulationId) params.simulation_id = this.simulationId;
-    const res = await epochsApi.getBattleLog(this.epochId, params);
+    const res = await epochsApi.getBattleLog(
+      this.epochId,
+      appState.isAuthenticated.value ? 'member' : 'public',
+      params,
+    );
     if (res.success && res.data) {
       this._entries = (Array.isArray(res.data) ? res.data : []) as BattleLogEntry[];
     }

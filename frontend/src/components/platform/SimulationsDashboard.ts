@@ -1508,7 +1508,9 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private async _loadSimulations(): Promise<void> {
     try {
-      const response = await simulationsApi.list();
+      const response = await simulationsApi.list(
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       const items = Array.isArray(response.data) ? response.data : [];
       if (response.success) {
         this._simulations = items;
@@ -1541,7 +1543,10 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private async _loadActiveResonances(): Promise<void> {
     try {
-      const res = await resonanceApi.list({ limit: '10' });
+      const res = await resonanceApi.list(
+        appState.isAuthenticated.value ? 'member' : 'public',
+        { limit: '10' },
+      );
       if (res.success && res.data) {
         this._activeResonances = (res.data as Resonance[]).filter(
           (r) => r.status === 'detected' || r.status === 'impacting' || r.status === 'subsiding',

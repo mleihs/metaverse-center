@@ -839,7 +839,10 @@ export class ResonanceCard extends LitElement {
   private async _loadImpacts(): Promise<void> {
     this._impactsLoading = true;
     try {
-      const res = await resonanceApi.listImpacts(this.resonance.id);
+      const res = await resonanceApi.listImpacts(
+        this.resonance.id,
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       if (res.success && res.data) {
         const sims = appState.simulations.value;
         this._impacts = res.data.map((impact) => {

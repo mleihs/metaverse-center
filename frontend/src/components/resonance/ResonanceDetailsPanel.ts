@@ -707,7 +707,10 @@ export class VelgResonanceDetailsPanel extends LitElement {
     this._impactsLoading = true;
     this._loadedResonanceId = this.resonance.id;
     try {
-      const res = await resonanceApi.listImpacts(this.resonance.id);
+      const res = await resonanceApi.listImpacts(
+        this.resonance.id,
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       if (res.success && res.data) {
         this._impacts = res.data
           .map((impact) => ({

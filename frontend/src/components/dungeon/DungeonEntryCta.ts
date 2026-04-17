@@ -129,10 +129,10 @@ export class VelgDungeonEntryCta extends SignalWatcher(LitElement) {
       return;
     }
 
-    // 2. Ensure simulations are loaded
+    // 2. Ensure simulations are loaded (user is authenticated — use member route)
     let sims = appState.simulations.value;
     if (sims.length === 0) {
-      const res = await simulationsApi.list();
+      const res = await simulationsApi.list('member');
       if (res.success && res.data) {
         appState.setSimulations(res.data);
         sims = res.data;

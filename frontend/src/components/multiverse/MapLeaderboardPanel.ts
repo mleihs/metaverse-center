@@ -9,6 +9,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { LeaderboardEntry } from '../../types/index.js';
 import { SCORE_DIMENSION_COLORS } from './map-data.js';
 
@@ -142,7 +143,10 @@ export class VelgMapLeaderboardPanel extends LitElement {
   private async _loadLeaderboard() {
     if (!this.epochId) return;
     this._loading = true;
-    const resp = await epochsApi.getLeaderboard(this.epochId);
+    const resp = await epochsApi.getLeaderboard(
+      this.epochId,
+      appState.isAuthenticated.value ? 'member' : 'public',
+    );
     if (resp.success && resp.data) {
       this._entries = resp.data as LeaderboardEntry[];
     }
