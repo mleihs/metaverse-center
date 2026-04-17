@@ -228,7 +228,10 @@ export class VelgChatView extends LitElement {
     this._error = null;
 
     try {
-      const response = await chatApi.listConversations(this.simulationId);
+      const response = await chatApi.listConversations(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         this._conversations = response.data;
       } else {

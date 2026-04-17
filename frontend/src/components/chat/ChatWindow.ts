@@ -527,9 +527,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     chatStore.setMessages(conversationId, []);
 
     try {
-      const response = await chatApi.getMessages(this.simulationId, conversationId, {
-        page_size: '100',
-      });
+      const response = await chatApi.getMessages(
+        this.simulationId,
+        conversationId,
+        appState.currentSimulationMode.value,
+        { page_size: '100' },
+      );
 
       if (response.success && response.data) {
         const messages = Array.isArray(response.data) ? response.data : [];
@@ -756,10 +759,12 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     if (!this.conversation || !this.simulationId) return;
     const convId = this.conversation.id;
     await chatStore.loadOlder(convId, async (before) => {
-      const response = await chatApi.getMessages(this.simulationId, convId, {
-        page_size: '50',
-        before,
-      });
+      const response = await chatApi.getMessages(
+        this.simulationId,
+        convId,
+        appState.currentSimulationMode.value,
+        { page_size: '50', before },
+      );
       if (response.success && Array.isArray(response.data)) {
         return response.data;
       }

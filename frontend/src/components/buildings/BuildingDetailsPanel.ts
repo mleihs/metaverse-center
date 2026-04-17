@@ -402,7 +402,11 @@ export class VelgBuildingDetailsPanel extends LitElement {
       return;
     }
     try {
-      const response = await embassiesApi.getForBuilding(this.simulationId, this.building.id);
+      const response = await embassiesApi.getForBuilding(
+        this.simulationId,
+        this.building.id,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         this._embassy = response.data;
       }
@@ -414,7 +418,10 @@ export class VelgBuildingDetailsPanel extends LitElement {
   private async _loadReadiness(): Promise<void> {
     if (!this.building || !this.simulationId) return;
     try {
-      const response = await healthApi.listBuildingReadiness(this.simulationId);
+      const response = await healthApi.listBuildingReadiness(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         const buildings = response.data as BuildingReadiness[];
         this._readiness =

@@ -2,15 +2,27 @@ import type { AgentRelationship, ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class RelationshipsApiService extends BaseApiService {
-  listForAgent(simulationId: string, agentId: string): Promise<ApiResponse<AgentRelationship[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/relationships`);
+  listForAgent(
+    simulationId: string,
+    agentId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentRelationship[]>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/agents/${agentId}/relationships`,
+      mode,
+    );
   }
 
   listForSimulation(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<AgentRelationship[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/relationships`, params);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/relationships`,
+      mode,
+      params,
+    );
   }
 
   create(

@@ -9,8 +9,16 @@ export interface BrowseArticle {
 }
 
 export class SocialTrendsApiService extends BaseApiService {
-  list(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<SocialTrend[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/social-trends`, params);
+  list(
+    simulationId: string,
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<SocialTrend[]>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/social-trends`,
+      mode,
+      params,
+    );
   }
 
   fetch(

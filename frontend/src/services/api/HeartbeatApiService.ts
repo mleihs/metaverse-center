@@ -15,26 +15,45 @@ import { BaseApiService } from './BaseApiService.js';
 export class HeartbeatApiService extends BaseApiService {
   // ── Heartbeat Data ──────────────────────────────────────────
 
-  getOverview(simulationId: string): Promise<ApiResponse<HeartbeatOverview>> {
-    return this.getSimulationData(`/simulations/${simulationId}/heartbeat`);
+  getOverview(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<HeartbeatOverview>> {
+    return this.getSimulationData(`/simulations/${simulationId}/heartbeat`, mode);
   }
 
-  getDailyBriefing(simulationId: string): Promise<ApiResponse<Record<string, unknown>>> {
-    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/briefing`);
+  getDailyBriefing(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Record<string, unknown>>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/heartbeat/briefing`,
+      mode,
+    );
   }
 
   listEntries(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<HeartbeatEntry[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/entries`, params);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/heartbeat/entries`,
+      mode,
+      params,
+    );
   }
 
   listArcs(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<NarrativeArc[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/arcs`, params);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/heartbeat/arcs`,
+      mode,
+      params,
+    );
   }
 
   // ── Bureau Responses ────────────────────────────────────────

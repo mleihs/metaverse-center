@@ -4,6 +4,7 @@ import { BaseApiService } from './BaseApiService.js';
 export class BroadsheetApiService extends BaseApiService {
   list(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: { limit?: number; offset?: number } | Record<string, string>,
   ): Promise<ApiResponse<Broadsheet[]>> {
     const p: Record<string, string> = {};
@@ -12,15 +13,28 @@ export class BroadsheetApiService extends BaseApiService {
         if (v != null) p[k] = String(v);
       }
     }
-    return this.getSimulationData(`/simulations/${simulationId}/broadsheets`, p);
+    return this.getSimulationData(`/simulations/${simulationId}/broadsheets`, mode, p);
   }
 
-  getLatest(simulationId: string): Promise<ApiResponse<Broadsheet | null>> {
-    return this.getSimulationData(`/simulations/${simulationId}/broadsheets/latest`);
+  getLatest(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Broadsheet | null>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/broadsheets/latest`,
+      mode,
+    );
   }
 
-  getOne(simulationId: string, broadsheetId: string): Promise<ApiResponse<Broadsheet>> {
-    return this.getSimulationData(`/simulations/${simulationId}/broadsheets/${broadsheetId}`);
+  getOne(
+    simulationId: string,
+    broadsheetId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Broadsheet>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/broadsheets/${broadsheetId}`,
+      mode,
+    );
   }
 
   generate(

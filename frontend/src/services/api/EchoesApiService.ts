@@ -4,13 +4,21 @@ import { BaseApiService } from './BaseApiService.js';
 export class EchoesApiService extends BaseApiService {
   listForSimulation(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<EventEcho[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/echoes`, params);
+    return this.getSimulationData(`/simulations/${simulationId}/echoes`, mode, params);
   }
 
-  listForEvent(simulationId: string, eventId: string): Promise<ApiResponse<EventEcho[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/events/${eventId}/echoes`);
+  listForEvent(
+    simulationId: string,
+    eventId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<EventEcho[]>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/events/${eventId}/echoes`,
+      mode,
+    );
   }
 
   triggerEcho(

@@ -224,11 +224,12 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
   if (!zone) return [systemLine(msg('Zone data unavailable.'))];
 
   // Parallel API calls
+  const mode = appState.currentSimulationMode.value;
   const [stabResp, eventsResp, weatherResp, readinessResp] = await Promise.all([
-    healthApi.listZoneStability(sid),
-    eventsApi.list(sid, appState.currentSimulationMode.value, { event_status: 'active' }),
-    heartbeatApi.listEntries(sid, { entry_type: 'ambient_weather', limit: '1' }),
-    healthApi.listBuildingReadiness(sid, { zone_id: zoneId }),
+    healthApi.listZoneStability(sid, mode),
+    eventsApi.list(sid, mode, { event_status: 'active' }),
+    heartbeatApi.listEntries(sid, mode, { entry_type: 'ambient_weather', limit: '1' }),
+    healthApi.listBuildingReadiness(sid, mode, { zone_id: zoneId }),
   ]);
 
   const stability =
@@ -390,7 +391,9 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
   if (buildingMatches.length === 1) {
     const building = buildingMatches[0];
     const [readinessResp, agentsResp] = await Promise.all([
-      healthApi.listBuildingReadiness(sid, { zone_id: zoneId }),
+      healthApi.listBuildingReadiness(sid, appState.currentSimulationMode.value, {
+        zone_id: zoneId,
+      }),
       buildingsApi.getAgents(sid, building.id),
     ]);
     const readiness =
@@ -479,7 +482,7 @@ async function handleWeather(_ctx: CommandContext): Promise<TerminalLine[]> {
   const sid = simId();
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
-  const resp = await heartbeatApi.listEntries(sid, {
+  const resp = await heartbeatApi.listEntries(sid, appState.currentSimulationMode.value, {
     entry_type: 'ambient_weather',
     limit: '1',
   });
@@ -492,7 +495,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
   const sid = simId();
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
-  const resp = await healthApi.getDashboard(sid);
+  const resp = await healthApi.getDashboard(sid, appState.currentSimulationMode.value);
   if (!resp.success || !resp.data) {
     return [systemLine(msg('Failed to retrieve situation report.'))];
   }
@@ -575,7 +578,7 @@ async function handleMap(_ctx: CommandContext): Promise<TerminalLine[]> {
   let stabilities = terminalState.zoneStabilities.value;
 
   if (stabilities.length === 0) {
-    const resp = await healthApi.listZoneStability(sid);
+    const resp = await healthApi.listZoneStability(sid, appState.currentSimulationMode.value);
     if (resp.success && resp.data) {
       stabilities = resp.data;
       terminalState.zoneStabilities.value = stabilities;
@@ -865,7 +868,7 @@ async function handleScan(_ctx: CommandContext): Promise<TerminalLine[]> {
     return formatInsufficientPoints(msg('intel points'), terminalState.intelPoints.value, 1);
   }
 
-  const resp = await healthApi.listZoneStability(sid);
+  const resp = await healthApi.listZoneStability(sid, appState.currentSimulationMode.value);
   if (!resp.success || !resp.data) {
     terminalState.intelPoints.value += 1; // Refund on failure
     return [errorLine(msg('Scan failed. Points refunded.'))];

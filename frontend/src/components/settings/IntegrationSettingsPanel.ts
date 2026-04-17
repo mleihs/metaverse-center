@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -172,7 +173,11 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
     this._error = null;
 
     try {
-      const response = await settingsApi.list(this.simulationId, 'integration');
+      const response = await settingsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        'integration',
+      );
 
       if (response.success && response.data) {
         const settings = response.data as import('../../types/index.js').SimulationSetting[];

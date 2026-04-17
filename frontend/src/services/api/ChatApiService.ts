@@ -8,8 +8,14 @@ import type {
 import { BaseApiService } from './BaseApiService.js';
 
 export class ChatApiService extends BaseApiService {
-  listConversations(simulationId: string): Promise<ApiResponse<ChatConversation[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/chat/conversations`);
+  listConversations(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<ChatConversation[]>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/chat/conversations`,
+      mode,
+    );
   }
 
   createConversation(
@@ -22,10 +28,12 @@ export class ChatApiService extends BaseApiService {
   getMessages(
     simulationId: string,
     conversationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<ChatMessage[]>> {
     return this.getSimulationData(
       `/simulations/${simulationId}/chat/conversations/${conversationId}/messages`,
+      mode,
       params,
     );
   }

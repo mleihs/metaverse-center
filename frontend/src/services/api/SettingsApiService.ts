@@ -2,12 +2,20 @@ import type { ApiResponse, SettingCategory, SimulationSetting } from '../../type
 import { BaseApiService } from './BaseApiService.js';
 
 export class SettingsApiService extends BaseApiService {
+  /**
+   * List settings, optionally filtered by category.
+   *
+   * `mode` routes via `/api/v1/public/*` ('public') or `/api/v1/*` ('member').
+   * Categories `'design'` and `'features'` are always readable via `anon` RLS
+   * (migrations 020 + 187), so they short-circuit to the public endpoint
+   * irrespective of caller mode — otherwise authenticated non-members would
+   * receive 403 on member-scoped gated categories. See `docs/guides/design-tokens.md`.
+   */
   list(
     simulationId: string,
+    mode: 'public' | 'member',
     category?: SettingCategory,
   ): Promise<ApiResponse<SimulationSetting[]>> {
-    // Design, anchor, and features are publicly readable (anon RLS, migrations 020+187).
-    // Always use public endpoint for these to avoid 403 for authenticated non-members.
     if (category === 'design' || category === 'features') {
       return this.getPublic(
         `/simulations/${simulationId}/settings`,
@@ -16,6 +24,7 @@ export class SettingsApiService extends BaseApiService {
     }
     return this.getSimulationData(
       `/simulations/${simulationId}/settings`,
+      mode,
       category ? { category } : undefined,
     );
   }
@@ -23,11 +32,16 @@ export class SettingsApiService extends BaseApiService {
   getByCategory(
     simulationId: string,
     category: SettingCategory,
+    mode: 'public' | 'member',
   ): Promise<ApiResponse<SimulationSetting[]>> {
     if (category === 'design') {
       return this.getPublic(`/simulations/${simulationId}/settings`);
     }
-    return this.getSimulationData(`/simulations/${simulationId}/settings`, { category });
+    return this.getSimulationData(
+      `/simulations/${simulationId}/settings`,
+      mode,
+      { category },
+    );
   }
 
   getById(simulationId: string, settingId: string): Promise<ApiResponse<SimulationSetting>> {

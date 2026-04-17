@@ -998,9 +998,10 @@ export class VelgSocialTrendsView extends LitElement {
     if (!this.simulationId) return;
     this._embassyLoading = true;
 
+    const mode = appState.currentSimulationMode.value;
     const [embassyResult, healthResult] = await Promise.all([
-      embassiesApi.listForSimulation(this.simulationId),
-      healthApi.getDashboard(this.simulationId),
+      embassiesApi.listForSimulation(this.simulationId, mode),
+      healthApi.getDashboard(this.simulationId, mode),
     ]);
 
     if (embassyResult.success && embassyResult.data) {

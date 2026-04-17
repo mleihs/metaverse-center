@@ -4,9 +4,14 @@ import { BaseApiService } from './BaseApiService.js';
 export class TaxonomiesApiService extends BaseApiService {
   list(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<SimulationTaxonomy[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/taxonomies`, params);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/taxonomies`,
+      mode,
+      params,
+    );
   }
 
   getByType(simulationId: string, type: TaxonomyType): Promise<ApiResponse<SimulationTaxonomy[]>> {

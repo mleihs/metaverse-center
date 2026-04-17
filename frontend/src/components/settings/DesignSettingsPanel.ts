@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PRESET_NAMES, THEME_PRESETS, type ThemePresetName } from '../../services/theme-presets.js';
 import type { SimulationSetting } from '../../types/index.js';
@@ -664,7 +665,11 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     this._error = null;
 
     try {
-      const response = await settingsApi.list(this.simulationId, 'design');
+      const response = await settingsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        'design',
+      );
 
       if (response.success && response.data) {
         const settings = response.data as SimulationSetting[];

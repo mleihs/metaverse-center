@@ -340,7 +340,10 @@ export class VelgWorldSettingsPanel extends LitElement {
     this._error = null;
 
     try {
-      const response = await taxonomiesApi.list(this.simulationId);
+      const response = await taxonomiesApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
 
       if (response.success && response.data) {
         // The response data may be paginated or a direct array

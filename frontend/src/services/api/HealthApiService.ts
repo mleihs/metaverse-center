@@ -8,19 +8,30 @@ import type {
 import { BaseApiService } from './BaseApiService.js';
 
 export class HealthApiService extends BaseApiService {
-  getDashboard(simulationId: string): Promise<ApiResponse<SimulationHealthDashboard>> {
-    return this.getSimulationData(`/simulations/${simulationId}/health`);
+  getDashboard(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<SimulationHealthDashboard>> {
+    return this.getSimulationData(`/simulations/${simulationId}/health`, mode);
   }
 
   listBuildingReadiness(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<BuildingReadiness[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/health/buildings`, params);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/health/buildings`,
+      mode,
+      params,
+    );
   }
 
-  listZoneStability(simulationId: string): Promise<ApiResponse<ZoneStability[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/health/zones`);
+  listZoneStability(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<ZoneStability[]>> {
+    return this.getSimulationData(`/simulations/${simulationId}/health/zones`, mode);
   }
 
   getBleedStatus(simulationId: string): Promise<ApiResponse<BleedStatus>> {

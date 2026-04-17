@@ -302,9 +302,12 @@ export class VelgAgentMemorySection extends LitElement {
     if (!this.simulationId || !this.agentId) return;
     this._loading = true;
     try {
-      const resp = await agentMemoryApi.list(this.simulationId, this.agentId, {
-        limit: this._limit,
-      });
+      const resp = await agentMemoryApi.list(
+        this.simulationId,
+        this.agentId,
+        appState.currentSimulationMode.value,
+        { limit: this._limit },
+      );
       if (resp.success && resp.data) {
         this._memories = resp.data;
         this._total = resp.meta?.total ?? resp.data.length;

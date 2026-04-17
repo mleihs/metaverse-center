@@ -12,16 +12,24 @@ export class ChronicleApiService extends BaseApiService {
 
   list(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: { limit?: number; offset?: number },
   ): Promise<ApiResponse<Chronicle[]>> {
     const p: Record<string, string> = {};
     if (params?.limit != null) p.limit = String(params.limit);
     if (params?.offset != null) p.offset = String(params.offset);
-    return this.getSimulationData(`/simulations/${simulationId}/chronicles`, p);
+    return this.getSimulationData(`/simulations/${simulationId}/chronicles`, mode, p);
   }
 
-  getOne(simulationId: string, chronicleId: string): Promise<ApiResponse<Chronicle>> {
-    return this.getSimulationData(`/simulations/${simulationId}/chronicles/${chronicleId}`);
+  getOne(
+    simulationId: string,
+    chronicleId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Chronicle>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/chronicles/${chronicleId}`,
+      mode,
+    );
   }
 
   generate(
