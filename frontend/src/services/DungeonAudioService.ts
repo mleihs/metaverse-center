@@ -23,6 +23,8 @@
 import { computed, signal } from '@preact/signals-core';
 import { Howl } from 'howler';
 
+import { captureError } from './SentryService.js';
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 /** SFX identifiers matching the sprite map. */
@@ -497,8 +499,8 @@ class DungeonAudioService {
         this.ambientVolume.value = clamp01(saved.ambientVolume);
       if (saved.sfxMuted !== undefined) this.sfxMuted.value = saved.sfxMuted;
       if (saved.ambientMuted !== undefined) this.ambientMuted.value = saved.ambientMuted;
-    } catch {
-      // Non-critical — use defaults
+    } catch (err) {
+      captureError(err, { source: 'DungeonAudioService._loadSettings' });
     }
   }
 
@@ -519,8 +521,8 @@ class DungeonAudioService {
         ambientMuted: this.ambientMuted.value,
       };
       globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch {
-      // Quota exceeded or private browsing — non-critical
+    } catch (err) {
+      captureError(err, { source: 'DungeonAudioService._persist' });
     }
   }
 }

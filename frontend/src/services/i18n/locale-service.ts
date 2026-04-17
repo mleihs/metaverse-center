@@ -1,6 +1,7 @@
 import { configureLocalization } from '@lit/localize';
 import { sourceLocale, targetLocales } from '../../locales/generated/locale-codes.js';
 import { analyticsService } from '../AnalyticsService.js';
+import { captureError } from '../SentryService.js';
 
 // Load locale modules via static imports so Vite can resolve .js → .ts
 function loadLocale(locale: string) {
@@ -52,8 +53,8 @@ class LocaleService {
     if (locale !== sourceLocale) {
       try {
         await this.setLocale(locale);
-      } catch {
-        // Fallback to source locale if loading fails
+      } catch (err) {
+        captureError(err, { source: 'LocaleService.initLocale', locale });
         if (import.meta.env.DEV) {
           console.warn(`Failed to load locale "${locale}", falling back to "${sourceLocale}"`);
         }

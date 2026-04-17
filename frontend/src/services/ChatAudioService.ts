@@ -16,6 +16,8 @@
 
 import { computed, type Signal, signal } from '@preact/signals-core';
 
+import { captureError } from './SentryService.js';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -204,8 +206,8 @@ class ChatAudioService {
         const parsed = JSON.parse(raw) as Partial<ChatAudioSettings>;
         return { ...DEFAULT_SETTINGS, ...parsed };
       }
-    } catch {
-      // Corrupt or unavailable — use defaults
+    } catch (err) {
+      captureError(err, { source: 'ChatAudioService._loadSettings' });
     }
     return { ...DEFAULT_SETTINGS };
   }
@@ -222,8 +224,8 @@ class ChatAudioService {
             muted: this.muted.value,
           }),
         );
-      } catch {
-        // localStorage full or unavailable — non-critical
+      } catch (err) {
+        captureError(err, { source: 'ChatAudioService._saveDebounced' });
       }
     }, SAVE_DEBOUNCE_MS);
   }
