@@ -164,7 +164,10 @@ export class VelgLocationsView extends LitElement {
     this._error = null;
 
     try {
-      const response = await locationsApi.listCities(this.simulationId);
+      const response = await locationsApi.listCities(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
 
       if (response.success && response.data) {
         this._cities = response.data ?? [];
@@ -192,7 +195,11 @@ export class VelgLocationsView extends LitElement {
     this._error = null;
 
     try {
-      const response = await locationsApi.listZones(this.simulationId, { city_id: cityId });
+      const response = await locationsApi.listZones(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { city_id: cityId },
+      );
 
       if (response.success && response.data) {
         this._zones = response.data ?? [];
@@ -213,7 +220,11 @@ export class VelgLocationsView extends LitElement {
     this._error = null;
 
     try {
-      const response = await locationsApi.listStreets(this.simulationId, { zone_id: zoneId });
+      const response = await locationsApi.listStreets(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { zone_id: zoneId },
+      );
 
       if (response.success && response.data) {
         this._streets = response.data ?? [];
@@ -229,7 +240,10 @@ export class VelgLocationsView extends LitElement {
 
   private async _loadZoneStability(): Promise<void> {
     try {
-      const response = await healthApi.listZoneStability(this.simulationId);
+      const response = await healthApi.listZoneStability(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         const zones = response.data as ZoneStability[];
         const map = new Map<string, ZoneStability>();
@@ -245,11 +259,15 @@ export class VelgLocationsView extends LitElement {
 
   private async _loadWeatherData(): Promise<void> {
     try {
-      const response = await heartbeatApi.listEntries(this.simulationId, {
-        entry_type: 'ambient_weather',
-        limit: '20',
-        order: 'created_at.desc',
-      });
+      const response = await heartbeatApi.listEntries(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        {
+          entry_type: 'ambient_weather',
+          limit: '20',
+          order: 'created_at.desc',
+        },
+      );
       if (response.success && response.data) {
         const map = new Map<string, ZoneWeather>();
         for (const entry of response.data) {

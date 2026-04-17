@@ -287,7 +287,11 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
   }
 
   protected async _fetchData(): Promise<ApiResponse<Broadsheet[]>> {
-    return broadsheetApi.list(this.simulationId, this._buildParams());
+    return broadsheetApi.list(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+      this._buildParams(),
+    );
   }
 
   protected _getLoadingMessage(): string {

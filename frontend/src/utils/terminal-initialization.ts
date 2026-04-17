@@ -13,10 +13,14 @@
 
 import { msg } from '@lit/localize';
 import { locationsApi } from '../services/api/index.js';
+import { appState } from '../services/AppStateManager.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 
 export async function initializeTerminalZones(simulationId: string): Promise<void> {
-  const zonesResp = await locationsApi.listZones(simulationId);
+  const zonesResp = await locationsApi.listZones(
+    simulationId,
+    appState.currentSimulationMode.value,
+  );
   if (!zonesResp.success || !zonesResp.data || zonesResp.data.length === 0) {
     throw new Error(msg('No zones found in this simulation.'));
   }

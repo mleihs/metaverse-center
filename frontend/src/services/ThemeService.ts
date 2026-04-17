@@ -188,7 +188,10 @@ class ThemeService {
    * as CSS custom property overrides on the provided host element.
    */
   async applySimulationTheme(simulationId: string, hostElement: HTMLElement): Promise<void> {
-    const response = await settingsApi.getByCategory(simulationId, 'design');
+    // Design category is publicly readable by anon RLS and is also fetched
+    // during route entry (_loadSimulationContext) for signed-out browsers;
+    // use `'public'` so the theme loads regardless of membership state.
+    const response = await settingsApi.getByCategory(simulationId, 'design', 'public');
 
     if (!response.success || !response.data) {
       if (import.meta.env.DEV) {

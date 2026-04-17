@@ -2,6 +2,7 @@ import { msg, str } from '@lit/localize';
 import { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { SettingCategory, SimulationSetting } from '../../types/index.js';
 import { VelgToast } from './Toast.js';
 
@@ -76,7 +77,11 @@ export abstract class BaseSettingsPanel extends LitElement {
     this._error = null;
 
     try {
-      const response = await settingsApi.list(this.simulationId, this.category);
+      const response = await settingsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        this.category,
+      );
 
       if (response.success && response.data) {
         const settings = response.data as SimulationSetting[];

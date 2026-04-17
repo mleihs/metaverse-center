@@ -820,7 +820,11 @@ export class VelgEventDetailsPanel extends LitElement {
     if (!this.event || !this.simulationId) return;
 
     try {
-      const response = await echoesApi.listForEvent(this.simulationId, this.event.id);
+      const response = await echoesApi.listForEvent(
+        this.simulationId,
+        this.event.id,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         this._echoes = response.data;
       } else {

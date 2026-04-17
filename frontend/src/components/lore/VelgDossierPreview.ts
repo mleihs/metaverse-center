@@ -168,10 +168,13 @@ export class VelgDossierPreview extends LitElement {
     if (!this.simulationId) return;
 
     try {
+      // Dossier preview is public-facing (redacted teaser) — use public
+      // endpoints throughout so signed-out and non-member visitors both see
+      // the same preview without 403s on the authenticated endpoint.
       const [agentsResp, buildingsResp, zonesResp] = await Promise.allSettled([
         agentsApi.listPublic(this.simulationId),
         buildingsApi.listPublic(this.simulationId),
-        locationsApi.listZones(this.simulationId),
+        locationsApi.listZones(this.simulationId, 'public'),
       ]);
 
       if (agentsResp.status === 'fulfilled' && agentsResp.value.data) {

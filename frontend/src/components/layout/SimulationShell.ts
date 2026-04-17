@@ -449,7 +449,10 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     const key = `briefing_dismissed_${today}`;
     if (localStorage.getItem(key)) return;
 
-    const result = await heartbeatApi.getDailyBriefing(this.simulationId);
+    const result = await heartbeatApi.getDailyBriefing(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+    );
     if (result.success && result.data) {
       const data = result.data as Record<string, unknown>;
       if ((data.entries_24h as number) > 0) {

@@ -551,7 +551,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
   }
 
   protected async _fetchData(): Promise<ApiResponse<Chronicle[]>> {
-    return chronicleApi.list(this.simulationId, {
+    return chronicleApi.list(this.simulationId, appState.currentSimulationMode.value, {
       limit: this._limit,
       offset: this._offset,
     });

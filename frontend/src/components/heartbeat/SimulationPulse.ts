@@ -22,6 +22,7 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
+import { appState } from '../../services/AppStateManager.js';
 import './AgentLifeTimeline.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
@@ -874,9 +875,10 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       params.entry_type = filterTypes[0];
     }
 
+    const mode = appState.currentSimulationMode.value;
     const [overviewRes, entriesRes] = await Promise.all([
-      heartbeatApi.getOverview(this.simulationId),
-      heartbeatApi.listEntries(this.simulationId, params),
+      heartbeatApi.getOverview(this.simulationId, mode),
+      heartbeatApi.listEntries(this.simulationId, mode, params),
     ]);
 
     if (overviewRes.success && overviewRes.data) {
@@ -1272,7 +1274,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       limit: '100',
       offset: String(this._entries.length),
     };
-    const res = await heartbeatApi.listEntries(this.simulationId, params);
+    const res = await heartbeatApi.listEntries(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+      params,
+    );
     if (res.success && res.data) {
       this._entries = [...this._entries, ...(res.data as HeartbeatEntry[])];
     }

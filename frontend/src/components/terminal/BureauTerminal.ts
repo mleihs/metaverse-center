@@ -768,7 +768,11 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
     try {
       const params: Record<string, string> = { limit: '10' };
 
-      const resp = await heartbeatApi.listEntries(sid, params);
+      const resp = await heartbeatApi.listEntries(
+        sid,
+        appState.currentSimulationMode.value,
+        params,
+      );
       if (!resp.success || !resp.data || resp.data.length === 0) return;
 
       const currentZoneId = terminalState.currentZoneId.value;

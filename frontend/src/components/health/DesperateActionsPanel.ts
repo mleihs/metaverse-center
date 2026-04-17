@@ -392,7 +392,10 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
   }
 
   private async _loadHealthData(): Promise<void> {
-    const result = await healthApi.getDashboard(this.simulationId);
+    const result = await healthApi.getDashboard(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+    );
     if (result.success && result.data) {
       this._healthData = result.data;
     }

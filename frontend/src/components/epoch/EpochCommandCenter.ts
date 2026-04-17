@@ -1681,7 +1681,10 @@ export class VelgEpochCommandCenter extends LitElement {
       if (this._epoch.status === 'foundation') {
         try {
           const { locationsApi } = await import('../../services/api/LocationsApiService.js');
-          const zonesResult = await locationsApi.listZones(this._myParticipant.simulation_id);
+          const zonesResult = await locationsApi.listZones(
+            this._myParticipant.simulation_id,
+            appState.currentSimulationMode.value,
+          );
           if (zonesResult.success && zonesResult.data) {
             this._zones = zonesResult.data as Array<{
               id: string;

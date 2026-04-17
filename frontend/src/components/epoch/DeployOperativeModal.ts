@@ -248,7 +248,10 @@ export class VelgDeployOperativeModal extends LitElement {
   private async _loadEmbassies(): Promise<void> {
     if (!this.simulationId) return;
     try {
-      const resp = await embassiesApi.listForSimulation(this.simulationId);
+      const resp = await embassiesApi.listForSimulation(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
       if (resp.success && resp.data) {
         this._embassies = (resp.data as Embassy[]).filter((e) => e.status === 'active');
       }
@@ -259,8 +262,10 @@ export class VelgDeployOperativeModal extends LitElement {
 
   private async _loadTargetData(targetSimId: string): Promise<void> {
     try {
+      // Target sim — the user is not guaranteed to be a member, so fetch
+      // everything via the public endpoints.
       const [zonesResp, buildingsResp, agentsResp] = await Promise.all([
-        locationsApi.listZones(targetSimId),
+        locationsApi.listZones(targetSimId, 'public'),
         buildingsApi.listPublic(targetSimId, { limit: '100' }),
         agentsApi.listPublic(targetSimId, { limit: '100' }),
       ]);

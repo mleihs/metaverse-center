@@ -4,17 +4,32 @@ import { BaseApiService } from './BaseApiService.js';
 export class EmbassiesApiService extends BaseApiService {
   listForSimulation(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<Embassy[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/embassies`, params);
+    return this.getSimulationData(`/simulations/${simulationId}/embassies`, mode, params);
   }
 
-  getById(simulationId: string, embassyId: string): Promise<ApiResponse<Embassy>> {
-    return this.getSimulationData(`/simulations/${simulationId}/embassies/${embassyId}`);
+  getById(
+    simulationId: string,
+    embassyId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Embassy>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/embassies/${embassyId}`,
+      mode,
+    );
   }
 
-  getForBuilding(simulationId: string, buildingId: string): Promise<ApiResponse<Embassy | null>> {
-    return this.getSimulationData(`/simulations/${simulationId}/buildings/${buildingId}/embassy`);
+  getForBuilding(
+    simulationId: string,
+    buildingId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<Embassy | null>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/buildings/${buildingId}/embassy`,
+      mode,
+    );
   }
 
   create(

@@ -694,7 +694,11 @@ export class VelgAgentDetailsPanel extends LitElement {
     if (!this.agent || !this.simulationId) return;
 
     try {
-      const response = await relationshipsApi.listForAgent(this.simulationId, this.agent.id);
+      const response = await relationshipsApi.listForAgent(
+        this.simulationId,
+        this.agent.id,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         this._relationships = response.data;
       } else {
@@ -753,7 +757,11 @@ export class VelgAgentDetailsPanel extends LitElement {
     if (!this.agent || !this.simulationId) return;
 
     try {
-      const response = await embassiesApi.listForSimulation(this.simulationId, { limit: '50' });
+      const response = await embassiesApi.listForSimulation(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { limit: '50' },
+      );
       if (!response.success || !response.data) return;
 
       const embassies = response.data;

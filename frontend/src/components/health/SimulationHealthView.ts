@@ -842,7 +842,7 @@ export class VelgSimulationHealthView extends LitElement {
     this._error = null;
     try {
       const [healthResult, attResult, anchorResult] = await Promise.all([
-        healthApi.getDashboard(this.simulationId),
+        healthApi.getDashboard(this.simulationId, appState.currentSimulationMode.value),
         heartbeatApi
           .listAttunements(this.simulationId)
           .catch(() => ({ success: false, data: null })),

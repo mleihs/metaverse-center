@@ -1064,11 +1064,14 @@ export class VelgApp extends LitElement {
     this._lastLoadedSimulationId = simulationId;
 
     // Membership already determined in _enterSimulationRoute().
-    // Load taxonomies + public settings (design + features use public endpoints via anon RLS).
+    // Load taxonomies (honors membership) + public settings (design + features
+    // use public endpoints via anon RLS — settingsApi short-circuits to public
+    // irrespective of mode for those categories, see SettingsApiService.list).
+    const mode = appState.currentSimulationMode.value;
     const [taxResponse, designResponse, featuresResponse] = await Promise.all([
-      taxonomiesApi.list(simulationId, { limit: '500' }),
-      settingsApi.list(simulationId, 'design'),
-      settingsApi.list(simulationId, 'features'),
+      taxonomiesApi.list(simulationId, mode, { limit: '500' }),
+      settingsApi.list(simulationId, mode, 'design'),
+      settingsApi.list(simulationId, mode, 'features'),
     ]);
 
     if (taxResponse.success && taxResponse.data) {

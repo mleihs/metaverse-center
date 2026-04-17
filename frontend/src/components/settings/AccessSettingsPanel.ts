@@ -497,7 +497,11 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
     this._error = null;
 
     try {
-      const response = await settingsApi.list(this.simulationId, 'access');
+      const response = await settingsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        'access',
+      );
 
       if (response.success && response.data) {
         const settings = response.data as SimulationSetting[];

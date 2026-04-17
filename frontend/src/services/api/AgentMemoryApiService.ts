@@ -5,13 +5,18 @@ export class AgentMemoryApiService extends BaseApiService {
   list(
     simulationId: string,
     agentId: string,
+    mode: 'public' | 'member',
     params?: { memory_type?: string; limit?: number; offset?: number },
   ): Promise<ApiResponse<AgentMemory[]>> {
     const p: Record<string, string> = {};
     if (params?.memory_type) p.memory_type = params.memory_type;
     if (params?.limit != null) p.limit = String(params.limit);
     if (params?.offset != null) p.offset = String(params.offset);
-    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/memories`, p);
+    return this.getSimulationData(
+      `/simulations/${simulationId}/agents/${agentId}/memories`,
+      mode,
+      p,
+    );
   }
 
   reflect(
