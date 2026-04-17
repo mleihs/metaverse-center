@@ -17,6 +17,7 @@ from backend.models.common import (
 from backend.models.event import ReactionResponse
 from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
+from backend.services.bond.bond_service import BondService
 from backend.services.event_service import EventService
 from backend.services.simulation_service import SimulationService
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
@@ -147,8 +148,9 @@ async def delete_agent(
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[AgentResponse]:
-    """Soft-delete an agent."""
+    """Soft-delete an agent. Farewells any active bonds."""
     agent = await _service.soft_delete(supabase, simulation_id, agent_id)
+    await BondService.farewell_agent_bonds(supabase, agent_id)
     await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent_id, "delete")
     return SuccessResponse(data=agent)
 
