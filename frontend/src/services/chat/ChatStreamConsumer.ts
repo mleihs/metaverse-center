@@ -8,6 +8,7 @@
 
 import type { ChatMessage } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
+import { captureError } from '../SentryService.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -169,7 +170,11 @@ function _dispatchSSEBlock(block: string, callbacks: StreamCallbacks): void {
   let data: Record<string, unknown>;
   try {
     data = JSON.parse(dataStr);
-  } catch {
+  } catch (err) {
+    captureError(err, {
+      source: 'ChatStreamConsumer.parseSSEFrame',
+      eventType: eventType ?? 'unknown',
+    });
     console.warn('[ChatStream] Malformed SSE JSON, skipping:', dataStr.slice(0, 120));
     return;
   }
