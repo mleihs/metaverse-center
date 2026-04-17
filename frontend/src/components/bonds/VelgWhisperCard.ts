@@ -1,17 +1,18 @@
 /**
- * VelgWhisperCard — displays a single whisper from a bonded agent.
+ * VelgWhisperCard — a single whisper from a bonded agent.
  *
- * Aesthetic: intercepted signal on faded paper. Prose font for the
- * whisper body, brutalist label for the type badge. Unread whispers
- * have a subtle amber left-border glow that fades on read.
+ * Redesigned with depth: surface-raised background, accent left bar,
+ * brutalist type badge, prose body, shadow on hover.
+ * Unread whispers have an amber glow that transitions on read.
  */
 
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { Whisper } from '../../services/api/BondsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { formatRelativeTime } from '../../utils/date-format.js';
 
 const TYPE_LABELS: Record<string, () => string> = {
   state: () => msg('State'),
@@ -26,8 +27,8 @@ const TYPE_LABELS: Record<string, () => string> = {
 export class VelgWhisperCard extends LitElement {
   static styles = css`
     :host {
-      --_glow: color-mix(in srgb, var(--color-primary) 25%, transparent);
-      --_border-read: var(--color-border-light);
+      --_glow: color-mix(in srgb, var(--color-primary) 20%, transparent);
+      --_border-read: var(--color-border);
       --_border-unread: var(--color-primary);
       display: block;
     }
@@ -35,24 +36,35 @@ export class VelgWhisperCard extends LitElement {
     .whisper {
       padding: var(--space-4) var(--space-5);
       border-left: 3px solid var(--_border-read);
-      background: var(--color-surface);
-      transition: border-color var(--transition-slow),
-        box-shadow var(--transition-slow);
+      background: var(--color-surface-raised);
+      box-shadow: var(--shadow-xs);
+      transition:
+        border-color var(--transition-slow),
+        box-shadow var(--transition-slow),
+        background var(--transition-slow);
       opacity: 0;
       animation: whisper-in var(--duration-entrance) var(--ease-dramatic)
         calc(var(--i, 0) * var(--duration-stagger)) forwards;
     }
 
+    .whisper:hover {
+      box-shadow: var(--shadow-sm);
+    }
+
     .whisper--unread {
       border-left-color: var(--_border-unread);
-      box-shadow: inset 4px 0 8px -4px var(--_glow);
+      box-shadow: var(--shadow-xs), inset 4px 0 12px -4px var(--_glow);
+    }
+
+    .whisper--unread:hover {
+      box-shadow: var(--shadow-sm), inset 4px 0 12px -4px var(--_glow);
     }
 
     .whisper__header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: var(--space-2);
+      margin-bottom: var(--space-2-5);
     }
 
     .whisper__type {
@@ -61,6 +73,14 @@ export class VelgWhisperCard extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
+      padding: var(--space-0-5) var(--space-2);
+      border: 1px solid var(--color-border-light);
+      line-height: 1;
+    }
+
+    .whisper__type--reflection {
+      color: var(--color-primary);
+      border-color: var(--color-primary-border);
     }
 
     .whisper__time {
@@ -80,6 +100,8 @@ export class VelgWhisperCard extends LitElement {
       display: flex;
       gap: var(--space-3);
       margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px dashed var(--color-border-light);
     }
 
     .whisper__action {
@@ -90,16 +112,19 @@ export class VelgWhisperCard extends LitElement {
       color: var(--color-text-muted);
       background: none;
       border: 1px dashed var(--color-border);
-      padding: var(--space-1) var(--space-3);
+      padding: var(--space-1-5) var(--space-4);
       cursor: pointer;
-      transition: color var(--transition-fast),
-        border-color var(--transition-fast);
+      transition:
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        background var(--transition-fast);
       min-height: 44px;
     }
 
     .whisper__action:hover {
       color: var(--color-primary);
       border-color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
     }
 
     .whisper__action:focus-visible {
@@ -109,16 +134,17 @@ export class VelgWhisperCard extends LitElement {
     .whisper__action--acted {
       color: var(--color-success);
       border-color: var(--color-success-border);
+      border-style: solid;
       cursor: default;
     }
 
+    .whisper__action--acted:hover {
+      background: none;
+    }
+
     @keyframes whisper-in {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -145,21 +171,10 @@ export class VelgWhisperCard extends LitElement {
     return !this.whisper.read_at;
   }
 
-  private _formatTime(iso: string): string {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const hours = Math.floor(diff / 3600000);
-    if (hours < 1) return msg('just now');
-    if (hours < 24) return msg(str`${hours}h ago`);
-    const days = Math.floor(hours / 24);
-    if (days === 1) return msg('yesterday');
-    return msg(str`${days}d ago`);
-  }
-
   protected render() {
     const w = this.whisper;
     const typeLabel = TYPE_LABELS[w.whisper_type]?.() ?? w.whisper_type;
+    const isReflection = w.whisper_type === 'reflection';
 
     return html`
       <article
@@ -168,9 +183,11 @@ export class VelgWhisperCard extends LitElement {
         aria-label="${typeLabel}"
       >
         <div class="whisper__header">
-          <span class="whisper__type">${typeLabel}</span>
+          <span class="whisper__type ${isReflection ? 'whisper__type--reflection' : ''}">
+            ${typeLabel}
+          </span>
           <time class="whisper__time" datetime="${w.created_at}">
-            ${this._formatTime(w.created_at)}
+            ${formatRelativeTime(w.created_at)}
           </time>
         </div>
         <p class="whisper__body">${this._content}</p>
