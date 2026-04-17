@@ -491,13 +491,13 @@ The `200ms` delay means the button appears after the page title, reinforcing the
 
 **Files:** `SharedFilterBar.ts`
 
-#### T3.5 — Social/Campaign Card Stagger
+#### T3.5 — Social Card Stagger
 
-**What:** SocialTrendsView article cards and CampaignDashboard cards get the same `--i` stagger treatment as entity cards.
+**What:** SocialTrendsView article cards get the same `--i` stagger treatment as entity cards.
 
-**How:** SocialTrendsView adds `card-enter` keyframe to `.article-card` styles and threads index via `_renderArticleCard(article, index)`. CampaignDashboard threads `style="--i: ${i}"` on `<velg-campaign-card>` (already uses `cardStyles`).
+**How:** SocialTrendsView adds `card-enter` keyframe to `.article-card` styles and threads index via `_renderArticleCard(article, index)`.
 
-**Files:** `SocialTrendsView.ts`, `CampaignDashboard.ts`
+**Files:** `SocialTrendsView.ts`
 
 #### T3.6 — Location Level Crossfade (`LocationsView.ts`)
 
@@ -599,8 +599,7 @@ The `!important` on `animation-duration` overrides all inline and Shadow DOM ani
 | 20 | `components/chat/MessageList.ts` | Directional message entrance + date separator line expand |
 | 21 | `components/layout/SimulationHeader.ts` | Name letter-spacing collapse + badge pop |
 | 22 | `components/social/SocialTrendsView.ts` | `card-enter` + `--i` stagger on article cards |
-| 23 | `components/social/CampaignDashboard.ts` | `--i` stagger on campaign cards |
-| 24 | `components/locations/LocationsView.ts` | Level transition crossfade |
+| 23 | `components/locations/LocationsView.ts` | Level transition crossfade |
 | 25 | `tests/theme-service.test.ts` | Updated token count assertion (4 → 7) |
 | 26 | `components/shared/VelgGameCard.ts` | `generating` prop, shimmer placeholder (`card-shimmer`), reveal animation (`card-image-reveal`), `aria-busy` |
 | 27 | `components/agents/AgentCard.ts` | `generating` prop passthrough to VelgGameCard |

@@ -222,8 +222,7 @@ Features die innerhalb einer Simulation existieren. Benutzer können beliebig vi
 | S31 | Trends abrufen | ✅ IMPL | Von Guardian, NewsAPI. Rate-Limit 5/min. Anon-Guard (Sign-in Message für unauthentifizierte User). |
 | S32 | Trend transformieren (AI) | ✅ IMPL | In Simulations-Kontext per AI. TransformationModal. |
 | S33 | Als Kampagne integrieren | ✅ IMPL | Mit Event-Erstellung. CampaignService extends BaseService. |
-| S34 | Kampagnen-Dashboard | ✅ IMPL | Übersicht, Metriken. CampaignCard mit gridLayoutStyles. campaign_performance Materialized View. |
-| S35 | Workflow (Fetch→Transform→Integrate) | ✅ IMPL | Einschritt-Prozess. PostTransformModal. |
+| S35 | Workflow (Fetch→Transform→Integrate) | ✅ IMPL | Einschritt-Prozess via TransformationModal in SocialTrendsView. |
 
 #### B8. Social Media Integration
 

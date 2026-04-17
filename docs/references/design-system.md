@@ -1317,7 +1317,7 @@ Wiederverwendbare CSS-Module in `components/shared/` und `components/how-to-play
 
 | Modul | Datei | Inhalt | Verwendet von |
 |-------|-------|--------|---------------|
-| `cardStyles` | `card-styles.ts` | `.card` hover/active + `.card--embassy` pulsing ring + gradient hover | AgentCard, BuildingCard, EventCard, CampaignCard, TrendCard |
+| `cardStyles` | `card-styles.ts` | `.card` hover/active + `.card--embassy` pulsing ring + gradient hover | AgentCard, BuildingCard, EventCard, TrendCard |
 | `formStyles` | `form-styles.ts` | `.form`, `.form__group`, `.form__input/.form__textarea/.form__select`, `.footer` | Alle EditModals (Agent, Building, Event, etc.) |
 | `viewHeaderStyles` | `view-header-styles.ts` | `.view`, `.view__header`, `.view__title`, `.view__create-btn` | AgentsView, BuildingsView, EventsView |
 | `panelButtonStyles` | `panel-button-styles.ts` | `.panel__btn` base + `--edit`, `--danger`, `--generate` Varianten | Alle DetailsPanel-Komponenten |
@@ -1325,10 +1325,10 @@ Wiederverwendbare CSS-Module in `components/shared/` und `components/how-to-play
 | `infoBubbleStyles` | `info-bubble-styles.ts` | `renderInfoBubble(title, text)` Shared Render-Funktion | Alle EditModals mit Game-Mechanics-Tooltips |
 | `panelCascadeStyles` | `panel-cascade-styles.ts` | Staggered Detail-Panel Eingangs-Animationen | AgentDetailsPanel, BuildingDetailsPanel, EventDetailsPanel |
 | `typographyStyles` | `typography-styles.ts` | `.label-brutalist` Uppercase Brutalist-Labels | Diverse Komponenten |
-| `gridLayoutStyles` | `grid-layout-styles.ts` | `.entity-grid` mit `--grid-min-width` Custom Property, responsive Breakpoints | AgentsView, BuildingsView, EventsView, SocialMediaView, CampaignDashboard |
+| `gridLayoutStyles` | `grid-layout-styles.ts` | `.entity-grid` mit `--grid-min-width` Custom Property, responsive Breakpoints | AgentsView, BuildingsView, EventsView, SocialMediaView |
 | `htpStyles` | `how-to-play/htp-styles.ts` | Komplett-CSS fuer HowToPlayView (~1100 Zeilen), extrahiert fuer Uebersichtlichkeit | HowToPlayView |
 
-**grid-layout-styles.ts** — dedupliziert identische Grid-CSS aus 5 Views. Konfigurierbar via `--grid-min-width` Custom Property (default 240px, SocialMediaView/CampaignDashboard: 260px). Responsive Breakpoints: 640px (2 Spalten), 400px (1 Spalte).
+**grid-layout-styles.ts** — dedupliziert identische Grid-CSS aus 4 Views. Konfigurierbar via `--grid-min-width` Custom Property (default 240px, SocialMediaView: 260px). Responsive Breakpoints: 640px (2 Spalten), 400px (1 Spalte).
 
 ### Info Bubble Pattern
 
