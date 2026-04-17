@@ -2,8 +2,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { seoService } from '../../services/SeoService.js';
 import { healthApi, heartbeatApi, locationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
+import { seoService } from '../../services/SeoService.js';
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
@@ -183,7 +184,8 @@ export class VelgLocationsView extends LitElement {
       } else {
         this._error = response.error?.message ?? msg('Failed to load cities');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LocationsView._loadCities' });
       this._error = msg('An unexpected error occurred while loading cities');
     } finally {
       this._loading = false;
@@ -208,7 +210,8 @@ export class VelgLocationsView extends LitElement {
       } else {
         this._error = response.error?.message ?? msg('Failed to load zones');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LocationsView._loadZones' });
       this._error = msg('An unexpected error occurred while loading zones');
     } finally {
       this._loading = false;
@@ -231,7 +234,8 @@ export class VelgLocationsView extends LitElement {
       } else {
         this._error = response.error?.message ?? msg('Failed to load streets');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LocationsView._loadStreets' });
       this._error = msg('An unexpected error occurred while loading streets');
     } finally {
       this._loading = false;
@@ -252,8 +256,8 @@ export class VelgLocationsView extends LitElement {
         }
         this._stabilityMap = map;
       }
-    } catch {
-      // Stability data not critical
+    } catch (err) {
+      captureError(err, { source: 'LocationsView._loadZoneStability' });
     }
   }
 
@@ -285,8 +289,10 @@ export class VelgLocationsView extends LitElement {
         }
         this._weatherMap = map;
       }
-    } catch {
-      // Weather data not critical — graceful degradation
+    } catch (err) {
+      // Weather overlays zones independently of the primary _loadZones
+      // fetch — degrade gracefully rather than surfacing a load error.
+      captureError(err, { source: 'LocationsView._loadWeatherData' });
     }
   }
 

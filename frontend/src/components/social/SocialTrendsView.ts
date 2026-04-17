@@ -11,6 +11,7 @@ import {
 } from '../../services/api/index.js';
 import type { BrowseArticle } from '../../services/api/SocialTrendsApiService.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Embassy,
   EmbassyEffectiveness,
@@ -1059,8 +1060,8 @@ export class VelgSocialTrendsView extends LitElement {
           e.title.toLowerCase(),
         );
       }
-    } catch {
-      // Dedup is best-effort
+    } catch (err) {
+      captureError(err, { source: 'SocialTrendsView._loadExistingEventTitles' });
     }
   }
 
@@ -1175,8 +1176,10 @@ export class VelgSocialTrendsView extends LitElement {
           }
         },
       );
-    } catch {
-      // Error shown by GenerationProgressService
+    } catch (err) {
+      // User-visible toast is already shown by GenerationProgressService's
+      // progress.setError(); captureError routes the raw cause to Sentry.
+      captureError(err, { source: 'SocialTrendsView._handleBatchTransform' });
     } finally {
       this._batchTransforming = false;
     }
@@ -1246,8 +1249,10 @@ export class VelgSocialTrendsView extends LitElement {
           }
         },
       );
-    } catch {
-      // Error shown by GenerationProgressService
+    } catch (err) {
+      // User-visible toast is already shown by GenerationProgressService's
+      // progress.setError(); captureError routes the raw cause to Sentry.
+      captureError(err, { source: 'SocialTrendsView._handleBatchIntegrate' });
     } finally {
       this._batchTransforming = false;
     }
@@ -1302,7 +1307,8 @@ export class VelgSocialTrendsView extends LitElement {
       } else {
         VelgToast.error(response.error?.message || msg('Failed to create resonance'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'SocialTrendsView._handleCreateResonance' });
       VelgToast.error(msg('Failed to create resonance'));
     }
   }
@@ -1332,7 +1338,8 @@ export class VelgSocialTrendsView extends LitElement {
     if (!dateStr) return '';
     try {
       return new Date(dateStr).toLocaleDateString();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'SocialTrendsView._getDate' });
       return '';
     }
   }
