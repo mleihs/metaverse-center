@@ -84,8 +84,17 @@ class TestSitemapXml:
     def test_contains_simulation_views(self, client: TestClient):
         r = client.get("/sitemap.xml")
         text = r.text
-        for view in ["lore", "agents", "buildings", "events", "locations", "social", "chat"]:
+        # Public views enumerated in backend/seo/registry.py — chat/trends removed
+        # (private / legacy URL). /social and /broadsheet land in commit 4.
+        for view in ["lore", "agents", "buildings", "events", "locations", "chronicle", "health"]:
             assert f"/simulations/{SIM_VELGARIEN_SLUG}/{view}" in text
+
+    def test_omits_private_views(self, client: TestClient):
+        r = client.get("/sitemap.xml")
+        text = r.text
+        # Private/dashboard-only views must NOT appear in the sitemap.
+        for view in ["chat", "settings", "terminal", "bonds", "pulse", "trends"]:
+            assert f"/simulations/{SIM_VELGARIEN_SLUG}/{view}" not in text
 
     def test_homepage_has_highest_priority(self, client: TestClient):
         r = client.get("/sitemap.xml")

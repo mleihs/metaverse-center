@@ -8,6 +8,7 @@ from fastapi.responses import PlainTextResponse
 
 from backend.config import settings
 from backend.dependencies import get_anon_supabase
+from backend.seo.registry import PUBLIC_SIMULATION_VIEWS
 from backend.services.seo_service import SeoService
 from backend.services.simulation_service import SimulationService
 from supabase import AsyncClient as Client
@@ -42,7 +43,8 @@ Disallow: /api/
 Sitemap: https://metaverse.center/sitemap.xml
 """
 
-SIMULATION_VIEWS = ["lore", "agents", "buildings", "events", "locations", "social", "chat", "trends", "health"]
+# Public simulation views are enumerated centrally in backend/seo/registry.py.
+# Adding a view (with sitemap + crawler SSR) is a single registry entry.
 
 
 @router.get("/robots.txt", response_class=PlainTextResponse)
@@ -103,13 +105,13 @@ async def sitemap_xml(supabase: Annotated[Client, Depends(get_anon_supabase)]) -
         if isinstance(sim_updated, str) and "T" in sim_updated:
             sim_updated = sim_updated[:10]
 
-        for view in SIMULATION_VIEWS:
+        for view_key, view_entry in PUBLIC_SIMULATION_VIEWS.items():
             _add_url(
                 urlset,
-                f"https://metaverse.center/simulations/{slug}/{view}",
+                f"https://metaverse.center/simulations/{slug}/{view_key}",
                 sim_updated,
-                "0.7",
-                "weekly",
+                view_entry.priority,
+                view_entry.changefreq,
             )
 
         # Individual lore chapters (long-form narrative content)

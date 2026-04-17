@@ -7,8 +7,8 @@ from backend.middleware.seo_content import (
     _esc,
     _safe_jsonld,
     _truncate,
-    build_view_content,
 )
+from backend.seo.registry import build_view_content
 
 
 class TestHelpers:

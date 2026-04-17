@@ -5,7 +5,11 @@ from pathlib import Path
 from cachetools import TTLCache
 
 from backend.config import settings
-from backend.middleware import seo_content
+from backend.seo.registry import (
+    PUBLIC_SIMULATION_VIEWS,
+    build_entity_detail_content,
+    build_view_content,
+)
 from backend.services.cache_config import get_ttl
 from supabase import Client, create_client
 
@@ -76,16 +80,12 @@ _sim_meta_cache: TTLCache = TTLCache(maxsize=64, ttl=get_ttl("cache_seo_metadata
 # TTL cache for entity content (per view per simulation)
 _entity_cache: TTLCache = TTLCache(maxsize=128, ttl=get_ttl("cache_seo_metadata_ttl"))
 
-VIEW_LABELS: dict[str, str] = {
-    "lore": "Lore",
-    "agents": "Agents",
-    "buildings": "Buildings",
-    "events": "Events",
-    "chat": "Chat",
-    "social": "Social",
-    "locations": "Locations",
-    "settings": "Settings",
-}
+# Human labels for crawler <title> / breadcrumbs. Public views pull the label from
+# the registry; unregistered paths that still match the URL regex (rare — would need
+# a malformed request) fall back to title-cased view key.
+def _view_label(view: str) -> str:
+    entry = PUBLIC_SIMULATION_VIEWS.get(view)
+    return entry.label if entry else view.capitalize()
 
 
 def is_crawler(user_agent: str) -> bool:
@@ -316,7 +316,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     id_or_slug = match.group(1)  # type: ignore[union-attr]
     view = match.group(2)  # type: ignore[union-attr]
     entity_id_or_slug = match.group(3) if match.lastindex and match.lastindex >= 3 else None  # type: ignore[union-attr]
-    view_label = VIEW_LABELS.get(view, view.capitalize())
+    view_label = _view_label(view)
     is_uuid = uuid_match is not None
 
     # Read and cache index.html
@@ -429,11 +429,11 @@ def _inject_entity_content(
         client = _get_anon_client()
         entity_og_image = ""
         if entity_id:
-            entity_html, entity_jsonld, entity_og_image = seo_content.build_entity_detail_content(
+            entity_html, entity_jsonld, entity_og_image = build_entity_detail_content(
                 client, sim_id, sim_name, slug, view, entity_id,
             )
         else:
-            entity_html, entity_jsonld = seo_content.build_view_content(
+            entity_html, entity_jsonld = build_view_content(
                 client, sim_id, sim_name, slug, view,
             )
         _entity_cache[cache_key] = (entity_html, entity_jsonld, entity_og_image)

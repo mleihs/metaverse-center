@@ -35,73 +35,12 @@ def _safe_jsonld(data: dict) -> str:
     return raw.replace("<", "\\u003c").replace(">", "\\u003e")
 
 
-def build_view_content(
-    client: Client, sim_id: str, sim_name: str, slug: str, view: str,
-) -> tuple[str, str]:
-    """Build entity HTML and JSON-LD for a simulation view.
-
-    Returns (entity_html, jsonld_script_content).
-    Either may be empty string if the view is unsupported or has no data.
-    """
-    builders = {
-        "agents": _build_agents,
-        "buildings": _build_buildings,
-        "lore": _build_lore,
-        "chronicle": _build_chronicle,
-        "locations": _build_locations,
-        "events": _build_events,
-        "trends": _build_trends,
-        "health": _build_health,
-    }
-
-    builder = builders.get(view)
-    if not builder:
-        return "", ""
-
-    try:
-        return builder(client, sim_id, sim_name, slug)
-    except Exception:
-        logger.warning(
-            "Failed to build entity content for %s/%s",
-            slug, view, exc_info=True,
-        )
-        return "", ""
+# Dispatch moved to backend/seo/registry.py — this module only exports builders.
+# Private helpers keep their underscore prefix; builders consumed by the registry
+# are named build_<key>_view / build_<key>_detail to match the registry key.
 
 
-def build_entity_detail_content(
-    client: Client, sim_id: str, sim_name: str, slug: str,
-    view: str, entity_id: str,
-) -> tuple[str, str, str]:
-    """Build HTML and JSON-LD for an individual entity detail page.
-
-    Returns (entity_html, jsonld_script_content, entity_image_url).
-    The image_url can be used for og:image to override the simulation banner.
-    """
-    detail_builders: dict[str, callable] = {
-        "agents": _build_agent_detail,
-        "buildings": _build_building_detail,
-        "lore": _build_lore_detail,
-    }
-
-    builder = detail_builders.get(view)
-    if not builder:
-        return "", "", ""
-
-    try:
-        result = builder(client, sim_id, sim_name, slug, entity_id)
-        # Detail builders return (html, jsonld) — extend with image from JSON-LD
-        if len(result) == 3:
-            return result
-        return result[0], result[1], ""
-    except Exception:
-        logger.warning(
-            "Failed to build entity detail for %s/%s/%s",
-            slug, view, entity_id, exc_info=True,
-        )
-        return "", "", ""
-
-
-def _build_agent_detail(
+def build_agent_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
 ) -> tuple[str, str, str]:
@@ -154,7 +93,7 @@ def _build_agent_detail(
     return entity_html, _safe_jsonld(person), portrait
 
 
-def _build_building_detail(
+def build_building_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
 ) -> tuple[str, str, str]:
@@ -202,7 +141,7 @@ def _build_building_detail(
     return entity_html, _safe_jsonld(place), image
 
 
-def _build_lore_detail(
+def build_lore_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
 ) -> tuple[str, str]:
@@ -255,7 +194,7 @@ def _build_lore_detail(
     return entity_html, _safe_jsonld(article)
 
 
-def _build_agents(
+def build_agents_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     response = (
@@ -312,7 +251,7 @@ def _build_agents(
     return entity_html, jsonld
 
 
-def _build_buildings(
+def build_buildings_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     response = (
@@ -365,7 +304,7 @@ def _build_buildings(
     return entity_html, jsonld
 
 
-def _build_lore(
+def build_lore_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     sim_resp = (
@@ -431,7 +370,7 @@ def _build_lore(
     return entity_html, jsonld
 
 
-def _build_chronicle(
+def build_chronicle_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     response = (
@@ -482,7 +421,7 @@ def _build_chronicle(
     return entity_html, jsonld
 
 
-def _build_locations(
+def build_locations_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     zones_resp = (
@@ -529,7 +468,7 @@ def _build_locations(
     return entity_html, jsonld
 
 
-def _build_events(
+def build_events_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     response = (
@@ -566,29 +505,7 @@ def _build_events(
     return entity_html, jsonld
 
 
-def _build_trends(
-    client: Client, sim_id: str, sim_name: str, slug: str,
-) -> tuple[str, str]:
-    entity_html = (
-        f"<h2>{_esc(sim_name)} — Social Trends</h2>\n"
-        f"<p>Real-world news transformed into simulation events."
-        f" AI-driven narrative integration for {_esc(sim_name)}.</p>"
-    )
-
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": f"{sim_name} — Social Trends",
-        "url": f"{BASE_URL}/simulations/{slug}/trends",
-        "description": (
-            f"Real-world news transformed into simulation events in {sim_name}."
-        ),
-    })
-
-    return entity_html, jsonld
-
-
-def _build_health(
+def build_health_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     entity_html = (
