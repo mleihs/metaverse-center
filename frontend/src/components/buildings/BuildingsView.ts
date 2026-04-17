@@ -12,6 +12,7 @@ import type { ApiResponse, Building } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
 import '../shared/SharedFilterBar.js';
@@ -28,6 +29,7 @@ import './EmbassyCreateModal.js';
 export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitElement)) {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     gridLayoutStyles,
     css`
     :host {
@@ -313,7 +315,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     return html`
       <section class="view" aria-label=${msg('Buildings')}>
         <header class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h1 class="view__title">${msg('Buildings')}</h1>
             <velg-help-tip
               topic="world"

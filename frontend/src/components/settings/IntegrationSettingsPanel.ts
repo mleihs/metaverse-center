@@ -2,17 +2,21 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { settingsApi } from '../../services/api/index.js';
+import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgToggle.js';
 import '../shared/VelgHelpTip.js';
 import { settingsStyles } from '../shared/settings-styles.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 
 interface IntegrationSection {
   id: string;
   title: string;
   fields: IntegrationField[];
+  /** Optional contextual help link rendered next to the section header. */
+  helpTip?: { topic: TopicSlug; label: string };
 }
 
 interface IntegrationField {
@@ -82,6 +86,7 @@ function getSections(): IntegrationSection[] {
     {
       id: 'ai_providers',
       title: msg('AI Provider Overrides'),
+      helpTip: { topic: 'byok', label: msg('What is BYOK?') },
       fields: [
         {
           key: 'openrouter_api_key',
@@ -107,6 +112,7 @@ function getSections(): IntegrationSection[] {
 export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
   static styles = [
     settingsStyles,
+    titleGroupStyles,
     css`
       .int-section {
         display: flex;
@@ -122,13 +128,6 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
         align-items: center;
         justify-content: space-between;
         gap: var(--space-3);
-      }
-
-      .int-section__title-group {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        min-width: 0;
       }
 
       @media (max-width: 640px) {
@@ -318,13 +317,13 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
           (section) => html`
             <div class="int-section">
               <div class="int-section__header">
-                <div class="int-section__title-group">
+                <div class="title-group">
                   <velg-section-header variant="large">${section.title}</velg-section-header>
                   ${
-                    section.id === 'ai_providers'
+                    section.helpTip
                       ? html`<velg-help-tip
-                          topic="byok"
-                          label=${msg('What is BYOK?')}
+                          topic=${section.helpTip.topic}
+                          label=${section.helpTip.label}
                         ></velg-help-tip>`
                       : nothing
                   }

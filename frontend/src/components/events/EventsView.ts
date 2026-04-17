@@ -13,6 +13,7 @@ import { VelgToast } from '../shared/Toast.js';
 import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
 import './EventCard.js';
@@ -25,6 +26,7 @@ import './EventSeismograph.js';
 export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     gridLayoutStyles,
     css`
     :host {
@@ -254,7 +256,7 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
     return html`
       <section class="view" aria-label=${msg('Events')}>
         <header class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h1 class="view__title">${msg('Events')}</h1>
             <velg-help-tip
               topic="events"

@@ -13,6 +13,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import type { RecognitionCandidate } from '../../services/api/BondsApiService.js';
 import { bondsApi } from '../../services/api/BondsApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
 
@@ -24,6 +25,7 @@ import './VelgBondFormation.js';
 export class VelgBondsView extends LitElement {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     css`
       :host {
         display: block;
@@ -64,7 +66,7 @@ export class VelgBondsView extends LitElement {
     return html`
       <div class="view">
         <div class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h2 class="view__title">${msg('Agent Bonds')}</h2>
             <velg-help-tip
               topic="bonds"

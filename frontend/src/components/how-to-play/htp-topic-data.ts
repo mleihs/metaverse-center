@@ -53,6 +53,29 @@ import type { DemoStep } from './htp-types.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * All valid HTP topic slugs. Adding a new topic requires adding its slug here
+ * AND adding the full entry to the TOPICS array below — the compiler enforces both.
+ * Every call-site that references a slug (VelgHelpTip `topic` property, `related`
+ * cross-links, router params) narrows against this union.
+ */
+export type TopicSlug =
+  | 'world'
+  | 'forge'
+  | 'byok'
+  | 'agents'
+  | 'bonds'
+  | 'events'
+  | 'living-world'
+  | 'map'
+  | 'epochs'
+  | 'operatives'
+  | 'scoring'
+  | 'diplomacy'
+  | 'advanced'
+  | 'terminal'
+  | 'dungeons';
+
 export type CalloutType = 'info' | 'tip' | 'warn' | 'danger';
 
 export interface TopicCallout {
@@ -84,7 +107,7 @@ export type TopicSection =
 
 export interface TopicDefinition {
   /** URL slug — used as :topic param */
-  slug: string;
+  slug: TopicSlug;
   /** Display title */
   title: string;
   /** Icon key from utils/icons.ts (compile-time validated) */
@@ -100,7 +123,7 @@ export interface TopicDefinition {
   /** Content sections rendered in order */
   sections: () => TopicSection[];
   /** Related topic slugs for cross-linking */
-  related: string[];
+  related: TopicSlug[];
 }
 
 // Re-export for consumer convenience
