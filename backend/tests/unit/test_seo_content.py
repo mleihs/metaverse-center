@@ -149,6 +149,45 @@ class TestBuildViewContent:
         parsed = json.loads(jsonld)
         assert parsed["numberOfItems"] == 0
 
+    def test_social_produces_webpage(self):
+        client = self._mock_client({})
+        html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "social")
+        assert "TestSim" in html
+        assert "Social Trends" in html
+        parsed = json.loads(jsonld)
+        assert parsed["@type"] == "WebPage"
+        assert parsed["url"] == "https://metaverse.center/simulations/test-sim/social"
+
+    def test_broadsheet_produces_article(self):
+        client = self._mock_client({
+            "simulation_broadsheets": [
+                {
+                    "title": "The Bleed Times",
+                    "subtitle": "Chronicles of the Fracture",
+                    "edition_number": 5,
+                    "published_at": "2026-04-14T00:00:00Z",
+                    "articles": [
+                        {"headline": "Zone collapse", "content": "The old quarter has fallen"},
+                    ],
+                    "editorial_voice": "alarmed",
+                },
+            ],
+        })
+        html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "broadsheet")
+        assert "The Bleed Times" in html
+        assert "Edition 5" in html
+        assert "Zone collapse" in html
+        parsed = json.loads(jsonld)
+        assert parsed["@type"] == "Article"
+        assert parsed["datePublished"] == "2026-04-14T00:00:00Z"
+        assert parsed["url"] == "https://metaverse.center/simulations/test-sim/broadsheet"
+
+    def test_broadsheet_empty(self):
+        client = self._mock_client({"simulation_broadsheets": []})
+        html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "broadsheet")
+        assert "No editions published yet" in html
+        assert jsonld == ""
+
     def test_unsupported_view_returns_empty(self):
         client = self._mock_client({})
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "settings")

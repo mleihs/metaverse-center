@@ -24,10 +24,9 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
 # View labels mirror backend/seo/registry.py — keep keys in sync when adding a view.
-# Excluded vs. the registry (historical reasons):
-#   social      — registered in commit 4; builder exists locally but label kept out
-#                 until the backend builder also exists
-#   chronicle   — requires chronicle table fetch; not yet wired in this script
+# Not wired in this script (runtime middleware still covers them on request):
+#   chronicle   — requires chronicle table fetch via REST
+#   broadsheet  — requires simulation_broadsheets table fetch via REST
 # Deliberately NOT included:
 #   chat        — member-only route, never indexable
 #   trends      — legacy URL, no frontend route

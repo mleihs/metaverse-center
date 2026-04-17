@@ -105,6 +105,20 @@ PUBLIC_SIMULATION_VIEWS: dict[str, PublicSimulationView] = {
         changefreq="weekly",
         list_builder=seo_content.build_chronicle_view,
     ),
+    "broadsheet": PublicSimulationView(
+        key="broadsheet",
+        label="Broadsheet",
+        priority="0.7",
+        changefreq="weekly",
+        list_builder=seo_content.build_broadsheet_view,
+    ),
+    "social": PublicSimulationView(
+        key="social",
+        label="Social Trends",
+        priority="0.6",
+        changefreq="weekly",
+        list_builder=seo_content.build_social_view,
+    ),
     "health": PublicSimulationView(
         key="health",
         label="Health",
