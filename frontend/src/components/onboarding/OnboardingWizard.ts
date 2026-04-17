@@ -17,6 +17,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 
 type WizardStep = 0 | 1 | 2 | 3;
@@ -738,7 +739,9 @@ export class VelgOnboardingWizard extends LitElement {
 
   private async _complete(action: 'academy' | 'explore'): Promise<void> {
     appState.setOnboardingCompleted(true);
-    usersApi.completeOnboarding().catch(() => {});
+    usersApi
+      .completeOnboarding()
+      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._complete' }));
 
     this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
 
@@ -766,7 +769,9 @@ export class VelgOnboardingWizard extends LitElement {
 
   private async _skipAll(): Promise<void> {
     appState.setOnboardingCompleted(true);
-    usersApi.completeOnboarding().catch(() => {});
+    usersApi
+      .completeOnboarding()
+      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._skipAll' }));
     this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
   }
 

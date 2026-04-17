@@ -1171,7 +1171,7 @@ export class VelgApp extends LitElement {
           navigate(`/epochs/${resp.data.id}`);
         }
       })
-      .catch(() => {});
+      .catch((err) => captureError(err, { source: 'VelgApp._handleOnboardingAcademy' }));
   }
 
   private _handleOnboardingCreateSim(): void {

@@ -103,7 +103,11 @@ async function _authenticatedPost(
   });
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error');
+    const text = await response.text().catch((err) => {
+      // Body read failures are rare but legitimate (stream aborted, malformed chunked response).
+      captureError(err, { source: 'chat-stream-consumer._authenticatedPost.readBody' });
+      return 'Unknown error';
+    });
     throw new Error(`${opts.errorLabel} request failed (${response.status}): ${text}`);
   }
 

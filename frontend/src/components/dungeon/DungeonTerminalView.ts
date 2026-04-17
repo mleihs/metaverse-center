@@ -537,7 +537,9 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
 
   private _releaseWakeLock(): void {
     if (this._wakeLock) {
-      this._wakeLock.release().catch(() => {});
+      this._wakeLock
+        .release()
+        .catch((err) => captureError(err, { source: 'VelgDungeonTerminalView._releaseWakeLock' }));
       this._wakeLock = null;
     }
   }

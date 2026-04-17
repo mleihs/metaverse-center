@@ -294,7 +294,9 @@ export class VelgForgeWizard extends LitElement {
 
   private async _releaseWakeLock(): Promise<void> {
     if (this._wakeLock) {
-      await this._wakeLock.release().catch(() => {});
+      await this._wakeLock
+        .release()
+        .catch((err) => captureError(err, { source: 'VelgForgeWizard._releaseWakeLock' }));
       this._wakeLock = null;
     }
   }
