@@ -6,6 +6,7 @@ import { connectionsApi } from '../../services/api/index.js';
 import { seoService } from '../../services/SeoService.js';
 import type { MapData, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from './map-data.js';
 import type { MapEdgeData, MapEmbassyEdge, MapNodeData } from './map-types.js';
 
@@ -455,11 +456,7 @@ export class VelgCartographerMap extends LitElement {
       this._leaderboardOpen = true;
       return;
     }
-    const path = `/simulations/${node.slug}/lore`;
-    window.history.pushState({}, '', path);
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: path, bubbles: true, composed: true }),
-    );
+    navigate(`/simulations/${node.slug}/lore`);
   }
 
   private _handleEdgeClick(e: CustomEvent<MapEdgeData>): void {
@@ -514,11 +511,7 @@ export class VelgCartographerMap extends LitElement {
   }
 
   private _handleMobileCardClick(node: MapNodeData): void {
-    const path = `/simulations/${node.slug}/lore`;
-    window.history.pushState({}, '', path);
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: path, bubbles: true, composed: true }),
-    );
+    navigate(`/simulations/${node.slug}/lore`);
   }
 
   private _renderGraphView() {

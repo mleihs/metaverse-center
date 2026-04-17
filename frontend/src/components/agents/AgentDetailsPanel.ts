@@ -21,6 +21,7 @@ import type {
 import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { agentAltText } from '../../utils/text.js';
 import './AgentDungeonRewards.js';
 import '../buildings/EmbassyLink.js';
@@ -843,8 +844,7 @@ export class VelgAgentDetailsPanel extends LitElement {
   private _handleNavigateEmbassy(e: CustomEvent): void {
     const { simulationSlug, buildingId } = e.detail;
     appState.pendingOpenBuildingId.value = buildingId;
-    window.history.pushState({}, '', `/simulations/${simulationSlug}/buildings`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${simulationSlug}/buildings`);
   }
 
   private _handleNavigateLocalBuilding(buildingId: string): void {
@@ -852,8 +852,7 @@ export class VelgAgentDetailsPanel extends LitElement {
     const sim = appState.currentSimulation.value;
     const slug = sim?.slug ?? sim?.id ?? this.simulationId;
     appState.pendingOpenBuildingId.value = buildingId;
-    window.history.pushState({}, '', `/simulations/${slug}/buildings`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${slug}/buildings`);
   }
 
   private _handleRelationshipClick(e: CustomEvent<{ agentId: string }>): void {

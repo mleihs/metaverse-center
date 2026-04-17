@@ -8,6 +8,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { navigate } from '../../utils/navigation.js';
 
 const STORAGE_KEY = 'guest-banner-dismissed';
 
@@ -177,8 +178,7 @@ export class VelgGuestBanner extends LitElement {
 
   private _navigate(e: Event): void {
     e.preventDefault();
-    window.history.pushState({}, '', '/register');
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate('/register');
   }
 
   protected render() {

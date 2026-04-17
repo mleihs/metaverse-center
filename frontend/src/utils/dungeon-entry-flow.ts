@@ -26,6 +26,7 @@ import {
 } from './dungeon-formatters.js';
 import { resolveToken } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
+import { navigate } from './navigation.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
 import { errorLine, hintLine, systemLine } from './terminal-formatters.js';
 
@@ -131,8 +132,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
       if (ctx.args.length > 0) {
         appState.pendingDungeonArchetype.value = ctx.args[0];
       }
-      window.history.pushState({}, '', `/simulations/${slug}/dungeon`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      navigate(`/simulations/${slug}/dungeon`);
       return [systemLine(msg('Entering dungeon terminal\u2026'))];
     }
   }
@@ -235,11 +235,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   dungeonState.pendingArchetypeForPicker.value = null;
 
   // Party composition warning — non-blocking, informational only
-  const warnings = checkPartyComposition(
-    selectedDungeon.archetype,
-    partyIds,
-    aptMap,
-  );
+  const warnings = checkPartyComposition(selectedDungeon.archetype, partyIds, aptMap);
 
   const runResult = await startDungeonRun(sid, {
     archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
@@ -269,12 +265,12 @@ function checkPartyComposition(
 
   if (hasCoverage) return [];
 
-  const aptLabel = OPERATIVE_LABEL[criticalApt as import('../types/index.js').OperativeType] ?? criticalApt.toUpperCase();
+  const aptLabel =
+    OPERATIVE_LABEL[criticalApt as import('../types/index.js').OperativeType] ??
+    criticalApt.toUpperCase();
   const ability = ABILITY_BY_APTITUDE[criticalApt];
   const abilityNote = ability ? ` ${ability} ${msg('will be unavailable')}.` : '';
-  return [
-    hintLine(`\u26A0 ${msg('No agent has')} ${aptLabel} ${MIN_THRESHOLD}+.${abilityNote}`),
-  ];
+  return [hintLine(`\u26A0 ${msg('No agent has')} ${aptLabel} ${MIN_THRESHOLD}+.${abilityNote}`)];
 }
 
 // ── Run Creation ────────────────────────────────────────────────────────────
@@ -315,10 +311,7 @@ export async function startDungeonRun(
 // ── Private Helpers ─────────────────────────────────────────────────────────
 
 /** Resolve a 1-based numeric index to an archetype name from the available list. */
-function _resolveByIndex(
-  index: number,
-  available: AvailableDungeonResponse[],
-): string | null {
+function _resolveByIndex(index: number, available: AvailableDungeonResponse[]): string | null {
   if (index < 1 || index > available.length) return null;
   return available[index - 1].archetype;
 }

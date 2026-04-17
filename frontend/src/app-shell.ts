@@ -16,6 +16,7 @@ import { authService } from './services/supabase/SupabaseAuthService.js';
 import type { Simulation } from './types/index.js';
 
 import { lazyRoute } from './utils/lazy-route.js';
+import { navigate, updateUrl } from './utils/navigation.js';
 import { getSimViewImport } from './utils/sim-view-imports.js';
 
 // Always-loaded: auth, layout, overlays, SEO-critical landing
@@ -459,12 +460,14 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/broadsheet',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'broadsheet'),
-        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'broadsheet', entitySlug),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'broadsheet', entitySlug),
       },
       {
         path: '/simulations/:id/chronicle',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'chronicle'),
-        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'chronicle', entitySlug),
+        enter: async ({ id, entitySlug }) =>
+          this._enterSimulationRoute(id, 'chronicle', entitySlug),
       },
       {
         path: '/simulations/:id/health',
@@ -529,8 +532,7 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/terminal',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'terminal'),
-        enter: async ({ id, entitySlug }) =>
-          this._enterSimulationRoute(id, 'terminal', entitySlug),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'terminal', entitySlug),
       },
       {
         path: '/simulations/:id/dungeon',
@@ -782,11 +784,9 @@ export class VelgApp extends LitElement {
   private _handleNavigate = (e: CustomEvent<string>): void => {
     const fullPath = e.detail;
     seoService.removeServerContent();
-    // Push the full path (with query/hash) into the browser URL
-    const currentFull = window.location.pathname + window.location.search;
-    if (fullPath !== currentFull) {
-      window.history.pushState({}, '', fullPath);
-    }
+    // Push the full path (with query/hash) into the browser URL. Same seam
+    // as updateUrl — keeps navigation.ts the sole caller of pushState.
+    updateUrl(fullPath);
     // Lit Router matches on pathname only — strip query params and hash.
     // Target components read query params from window.location.search.
     const url = new URL(fullPath, window.location.origin);
@@ -1208,8 +1208,7 @@ export class VelgApp extends LitElement {
       .createQuickAcademy()
       .then((resp) => {
         if (resp.success && resp.data) {
-          window.history.pushState({}, '', `/epochs/${resp.data.id}`);
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          navigate(`/epochs/${resp.data.id}`);
         }
       })
       .catch(() => {});
@@ -1217,15 +1216,13 @@ export class VelgApp extends LitElement {
 
   private _handleOnboardingCreateSim(): void {
     this._showOnboarding = false;
-    window.history.pushState({}, '', '/dashboard');
-    window.dispatchEvent(new PopStateEvent('popstate'));
     // CreateSimulationWizard is opened from the dashboard
+    navigate('/dashboard');
   }
 
   private _handleOnboardingBrowse(): void {
     this._showOnboarding = false;
-    window.history.pushState({}, '', '/dashboard');
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate('/dashboard');
   }
 }
 

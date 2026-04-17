@@ -6,6 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import { archetypeLabel } from '../../utils/resonance-labels.js';
 
 /** Resolved impact with simulation metadata. */
@@ -863,8 +864,7 @@ export class ResonanceCard extends LitElement {
   private _navigateToSim(e: Event, slug: string): void {
     e.stopPropagation();
     if (!slug) return;
-    window.history.pushState({}, '', `/simulations/${slug}/events`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${slug}/events`);
   }
 
   private _getMagnitudeClass(mag?: number): string {

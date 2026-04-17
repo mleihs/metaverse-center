@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   getPlatformLoreSections,
   getPlatformPullQuotes,
@@ -570,8 +571,7 @@ export class VelgBureauArchives extends LitElement {
         class="substrate-ticker"
         aria-hidden="true"
         @click=${() => {
-          window.history.pushState({}, '', '/dashboard');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          navigate('/dashboard');
         }}
       >
         <span class="substrate-ticker__text">

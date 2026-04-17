@@ -17,6 +17,7 @@ import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import type { Agent, AgentAptitude, AptitudeSet, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../agents/AgentCard.js';
 
@@ -699,14 +700,9 @@ export class VelgLandingAgentShowcase extends LitElement {
 
   /* ── Navigation ────────────────────────────── */
 
-  private _navigate(path: string): void {
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }
-
   private _handleAgentClick(entry: ShowcaseAgent): void {
     const slug = entry.simulation.slug || entry.simulation.id;
-    this._navigate(`/simulations/${slug}/agents`);
+    navigate(`/simulations/${slug}/agents`);
   }
 
   /* ── Render ────────────────────────────────── */
@@ -769,7 +765,7 @@ export class VelgLandingAgentShowcase extends LitElement {
                 href="/worlds"
                 @click=${(e: Event) => {
                   e.preventDefault();
-                  this._navigate('/worlds');
+                  navigate('/worlds');
                 }}
               >
                 ${msg('Meet more characters')}

@@ -7,6 +7,7 @@ import { resonanceApi } from '../../services/api/index.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDateTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import { archetypeLabel } from '../../utils/resonance-labels.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
@@ -750,8 +751,7 @@ export class VelgResonanceDetailsPanel extends LitElement {
 
   private _navigateToSim(slug: string): void {
     if (!slug) return;
-    window.history.pushState({}, '', `/simulations/${slug}/events`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${slug}/events`);
   }
 
   private _handleProcess(): void {

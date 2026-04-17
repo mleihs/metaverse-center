@@ -3,6 +3,7 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
@@ -239,9 +240,7 @@ export class VelgForgeIgnition extends LitElement {
   private _handleFinish() {
     if (this._materializedSlug) {
       forgeStateManager.startImageTracking(this._materializedSlug);
-      const path = `/simulations/${this._materializedSlug}/lore`;
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      navigate(`/simulations/${this._materializedSlug}/lore`);
     }
   }
 

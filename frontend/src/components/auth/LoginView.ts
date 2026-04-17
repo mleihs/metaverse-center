@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   terminalAnimations,
   terminalFormStyles,
@@ -167,8 +168,7 @@ export class VelgLoginView extends LitElement {
       if (error) {
         this._error = error.message;
       } else {
-        window.history.pushState({}, '', '/dashboard');
-        window.dispatchEvent(new PopStateEvent('popstate'));
+        navigate('/dashboard');
       }
     } catch {
       this._error = msg('An unexpected error occurred. Please try again.');
@@ -203,8 +203,7 @@ export class VelgLoginView extends LitElement {
 
   private _handleRegisterClick(e: Event): void {
     e.preventDefault();
-    window.history.pushState({}, '', '/register');
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate('/register');
   }
 
   protected render() {
