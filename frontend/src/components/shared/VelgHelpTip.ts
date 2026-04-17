@@ -13,8 +13,9 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { icons } from '../../utils/icons.js';
 import './VelgTooltip.js';
 
@@ -57,13 +58,23 @@ export class VelgHelpTip extends LitElement {
     }
   `;
 
-  /** Topic slug matching htp-topic-data.ts (e.g. "operatives", "epochs", "terminal"). */
-  @property() topic = '';
+  /**
+   * Topic slug matching htp-topic-data.ts. Typed against the TopicSlug union so
+   * typos fail at compile time instead of producing a broken /guide/<typo> link.
+   * Empty string renders nothing — use when the topic is bound dynamically and
+   * may be absent.
+   */
+  @property() topic: TopicSlug | '' = '';
 
   /** Accessible label shown as tooltip and aria-label (e.g. "What are operatives?"). */
   @property() label = '';
 
   protected render() {
+    // Guard: render nothing if topic is unset. Prevents a link to /guide/ with
+    // no slug — which would silently redirect to the hub page and erode trust
+    // that every help-tip leads somewhere specific.
+    if (!this.topic) return nothing;
+
     const href = `/how-to-play/guide/${this.topic}`;
     const ariaLabel = this.label || msg('Learn more');
 
@@ -81,6 +92,7 @@ export class VelgHelpTip extends LitElement {
 
   private _navigate(e: Event) {
     e.preventDefault();
+    if (!this.topic) return;
     const href = `/how-to-play/guide/${this.topic}`;
     this.dispatchEvent(
       new CustomEvent('navigate', {

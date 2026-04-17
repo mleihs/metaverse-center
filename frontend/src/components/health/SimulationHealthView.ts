@@ -15,6 +15,7 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
 
@@ -61,6 +62,7 @@ function staffingColor(status: string): string {
 export class VelgSimulationHealthView extends LitElement {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     infoBubbleStyles,
     css`
       :host {
@@ -891,7 +893,7 @@ export class VelgSimulationHealthView extends LitElement {
     return html`
       <div class="view">
         <div class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h1 class="view__title">${msg('Simulation Health')}</h1>
             <velg-help-tip
               topic="world"

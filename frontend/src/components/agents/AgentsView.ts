@@ -21,6 +21,7 @@ import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import type { FilterConfig } from '../shared/SharedFilterBar.js';
 import { VelgToast } from '../shared/Toast.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 
 import '../shared/SharedFilterBar.js';
@@ -38,6 +39,7 @@ import './VelgRecruitmentOffice.js';
 export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElement)) {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     gridLayoutStyles,
     css`
     :host {
@@ -511,7 +513,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     return html`
       <section class="view" aria-label=${msg('Agents')}>
         <header class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h1 class="view__title">${msg('Agents')}</h1>
             <velg-help-tip
               topic="agents"

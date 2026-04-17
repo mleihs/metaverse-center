@@ -81,3 +81,7 @@ scripts/screenshot-*.mjs
 
 # Playwright MCP browser automation logs
 .playwright-mcp/
+
+# Script-generated image gallery + A/B test outputs
+# (populated by scripts/generate_ab_*_gallery.py, generate_real_instagram_gallery.py, etc.)
+_test_output/

@@ -6,6 +6,7 @@ import { seoService } from '../../services/SeoService.js';
 import { healthApi, heartbeatApi, locationsApi } from '../../services/api/index.js';
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
 import type { ZoneWeather } from './ZoneList.js';
@@ -26,6 +27,7 @@ type ViewMode = 'list' | 'map';
 export class VelgLocationsView extends LitElement {
   static styles = [
     viewHeaderStyles,
+    titleGroupStyles,
     css`
     :host {
       display: block;
@@ -480,7 +482,7 @@ export class VelgLocationsView extends LitElement {
     return html`
       <section class="view" aria-label=${msg('Locations')}>
         <header class="view__header">
-          <div class="view__title-group">
+          <div class="title-group">
             <h1 class="view__title">${msg('Locations')}</h1>
             <velg-help-tip
               topic="world"

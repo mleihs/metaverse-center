@@ -23,6 +23,7 @@ import { humanizeEnum } from '../../utils/text.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import { titleGroupStyles } from '../shared/title-group-styles.js';
 import '../shared/VelgBadge.js';
 import '../shared/Lightbox.js';
 import '../shared/LoadingState.js';
@@ -66,7 +67,7 @@ interface BatchTransformResult {
 @localized()
 @customElement('velg-social-trends-view')
 export class VelgSocialTrendsView extends LitElement {
-  static styles = css`
+  static styles = [titleGroupStyles, css`
     :host { display: block; }
 
     .trends { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -74,10 +75,6 @@ export class VelgSocialTrendsView extends LitElement {
     .trends__header {
       display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
       flex-wrap: wrap;
-    }
-
-    .trends__title-group {
-      display: inline-flex; align-items: center; gap: var(--space-2);
     }
 
     .trends__title {
@@ -945,7 +942,7 @@ export class VelgSocialTrendsView extends LitElement {
         flex-wrap: wrap;
       }
     }
-  `;
+  `];
 
   @property({ type: String }) simulationId = '';
 
@@ -1891,7 +1888,7 @@ export class VelgSocialTrendsView extends LitElement {
         ${this._renderEmbassyOverview()}
 
         <header class="trends__header">
-          <div class="trends__title-group">
+          <div class="title-group">
             <h1 class="trends__title">${msg('Browse News')}</h1>
             <velg-help-tip
               topic="events"
