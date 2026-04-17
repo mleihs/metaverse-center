@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { eventsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { EventStatus, Event as SimEvent } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
@@ -207,7 +208,8 @@ export class VelgEventEditModal extends LitElement {
     try {
       const date = new Date(dateStr);
       return date.toISOString().slice(0, 16);
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEventEditModal._toDateInputValue' });
       return '';
     }
   }
@@ -282,7 +284,8 @@ export class VelgEventEditModal extends LitElement {
         this._error = response.error?.message ?? msg('Failed to save event');
         VelgToast.error(this._error);
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEventEditModal._handleSubmit' });
       this._error = msg('An unexpected error occurred');
       VelgToast.error(this._error);
     } finally {
