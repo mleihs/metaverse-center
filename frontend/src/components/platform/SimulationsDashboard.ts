@@ -7,6 +7,7 @@ import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { resonanceApi } from '../../services/api/index.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   ActiveEpochParticipation,
   Agent,
@@ -1518,7 +1519,8 @@ export class VelgSimulationsDashboard extends LitElement {
       } else {
         this._error = response.error?.message || msg('Failed to load simulations.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'SimulationsDashboard._loadSimulations' });
       this._error = msg('An unexpected error occurred while loading simulations.');
     }
   }
@@ -1536,24 +1538,25 @@ export class VelgSimulationsDashboard extends LitElement {
         const memberSims = appState.simulations.value.filter((s) => memberIds.has(s.id));
         appState.setSimulations([...memberSims, ...community]);
       }
-    } catch {
-      // Non-critical – community shards just won't show
+    } catch (err) {
+      // Community shards just won't show — the member list loaded above
+      // is the primary data for this view.
+      captureError(err, { source: 'SimulationsDashboard._loadAllSimulations' });
     }
   }
 
   private async _loadActiveResonances(): Promise<void> {
     try {
-      const res = await resonanceApi.list(
-        appState.isAuthenticated.value ? 'member' : 'public',
-        { limit: '10' },
-      );
+      const res = await resonanceApi.list(appState.isAuthenticated.value ? 'member' : 'public', {
+        limit: '10',
+      });
       if (res.success && res.data) {
         this._activeResonances = (res.data as Resonance[]).filter(
           (r) => r.status === 'detected' || r.status === 'impacting' || r.status === 'subsiding',
         );
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'SimulationsDashboard._loadActiveResonances' });
     }
   }
 
@@ -1563,8 +1566,10 @@ export class VelgSimulationsDashboard extends LitElement {
       if (res.success && res.data) {
         this._dashboardData = res.data as DashboardData;
       }
-    } catch {
-      // Non-critical – dashboard works without this
+    } catch (err) {
+      // Dashboard still renders without this — the summary card shows
+      // an empty/placeholder state when _dashboardData stays null.
+      captureError(err, { source: 'SimulationsDashboard._loadDashboard' });
     }
   }
 
@@ -1583,8 +1588,10 @@ export class VelgSimulationsDashboard extends LitElement {
 
       this._spotlightAgent = agents[Math.floor(Math.random() * agents.length)];
       this._spotlightSimSlug = sim.slug;
-    } catch {
-      // Non-critical – placeholder remains
+    } catch (err) {
+      // Placeholder remains — the spotlight card gracefully renders its
+      // empty state when _spotlightAgent stays null.
+      captureError(err, { source: 'SimulationsDashboard._loadSpotlightAgent' });
     }
   }
 
@@ -1630,7 +1637,8 @@ export class VelgSimulationsDashboard extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to create academy epoch.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'SimulationsDashboard._handleStartAcademy' });
       VelgToast.error(msg('Failed to create academy epoch.'));
     }
   }
