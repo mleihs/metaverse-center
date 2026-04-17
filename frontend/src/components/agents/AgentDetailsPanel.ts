@@ -9,6 +9,7 @@ import {
   generationApi,
   relationshipsApi,
 } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Agent,
   AgentRelationship,
@@ -683,7 +684,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       } else {
         this._reactions = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadReactions' });
       this._reactions = [];
     } finally {
       this._reactionsLoading = false;
@@ -704,7 +706,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       } else {
         this._relationships = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadRelationships' });
       this._relationships = [];
     }
   }
@@ -729,8 +732,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       if (!beta) return;
 
       this._agentIntel = parseAgentIntel(beta.body, this.agent.name);
-    } catch {
-      // Non-critical – intel card simply won't show
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadAgentIntel' });
     }
   }
 
@@ -748,7 +751,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       } else {
         this._allAgents = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadAllAgents' });
       this._allAgents = [];
     }
   }
@@ -785,8 +789,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       }
 
       this._embassyAssignments = assignments;
-    } catch {
-      // Embassy data not critical
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadEmbassy' });
     }
   }
 
@@ -814,8 +818,8 @@ export class VelgAgentDetailsPanel extends LitElement {
         }
         this._aptitudes = set;
       }
-    } catch {
-      // Aptitudes not critical – leave null
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._loadAptitudes' });
     } finally {
       this._aptitudesLoading = false;
     }
@@ -850,7 +854,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to save aptitudes'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._saveAptitudes' });
       VelgToast.error(msg('Failed to save aptitudes'));
     } finally {
       this._aptitudesSaving = false;
@@ -947,7 +952,8 @@ export class VelgAgentDetailsPanel extends LitElement {
       } else {
         VelgToast.info(msg('No suggestions generated'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._handleGenerateRelationships' });
       VelgToast.error(msg('Generation failed'));
     } finally {
       this._generating = false;
@@ -990,7 +996,8 @@ export class VelgAgentDetailsPanel extends LitElement {
         VelgToast.success(msg(str`${saved} relationships saved`));
         this._loadRelationships();
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentDetailsPanel._saveSuggestions' });
       VelgToast.error(msg('Failed to save relationships'));
     } finally {
       this._savingSuggestions = false;
