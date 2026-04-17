@@ -10,18 +10,17 @@ vi.mock('../src/services/supabase/client.js', () => ({
 }));
 
 const { BaseApiService } = await import('../src/services/api/BaseApiService.js');
-const { appState } = await import('../src/services/AppStateManager.js');
 
 /**
- * Contract test for `BaseApiService.getSimulationData` overload dispatch.
+ * Contract test for `BaseApiService.getSimulationData(path, mode, params?)`.
  *
- * Pins the behavior of the two-overload surface introduced in W2.1 C2:
- *  - `(path, 'member', params)`     → routes through `get()`    (authenticated)
- *  - `(path, 'public', params)`     → routes through `getPublic()`
- *  - `(path, params?)` (deprecated) → falls back to `appState.currentSimulationMode`
+ * Pins the explicit-mode dispatch table:
+ *  - `(path, 'member', params?)` → routes through `get()` (authenticated)
+ *  - `(path, 'public', params?)` → routes through `getPublic()`
  *
- * This test must stay green through C3/C4/C5 (callers migrate) and protect
- * against regression until C6 deletes the deprecated overload.
+ * The API layer does not read `appState` for routing — this is enforced at
+ * compile time by requiring `mode`, at runtime by the pure dispatch here,
+ * and at review time by `scripts/lint-no-appstate-access-reads.sh`.
  */
 
 type Call = { path: string; params?: Record<string, string> };
@@ -46,28 +45,21 @@ class ProbeApiService extends BaseApiService {
     return { success: true, data: null as unknown as T };
   }
 
-  /** Public probe for the protected overloaded method. */
+  /** Public probe for the protected method. */
   public async probe(
     path: string,
-    arg2?: 'public' | 'member' | Record<string, string>,
-    arg3?: Record<string, string>,
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
   ): Promise<ApiResponse<unknown>> {
-    // Dispatch to both overload shapes depending on arg2 type.
-    if (arg2 === 'public' || arg2 === 'member') {
-      return this.getSimulationData(path, arg2, arg3);
-    }
-    return this.getSimulationData(path, arg2);
+    return this.getSimulationData(path, mode, params);
   }
 }
 
-describe("BaseApiService.getSimulationData — explicit 'mode' overload", () => {
+describe('BaseApiService.getSimulationData', () => {
   let service: ProbeApiService;
 
   beforeEach(() => {
     service = new ProbeApiService();
-    // Reset appState to a clean baseline for the deprecated-path tests.
-    appState.setUser(null);
-    appState.setCurrentRole(null);
   });
 
   it("routes 'member' mode through the authenticated get()", async () => {
@@ -86,58 +78,14 @@ describe("BaseApiService.getSimulationData — explicit 'mode' overload", () => 
     expect(service.getCalls).toEqual([]);
   });
 
-  it('routes explicit mode even when params are omitted', async () => {
+  it('routes correctly when params are omitted', async () => {
     await service.probe('/simulations/abc/agents', 'public');
     expect(service.getPublicCalls).toEqual([
       { path: '/simulations/abc/agents', params: undefined },
     ]);
     expect(service.getCalls).toEqual([]);
-  });
-});
 
-describe("BaseApiService.getSimulationData — deprecated signature (no 'mode')", () => {
-  let service: ProbeApiService;
-
-  beforeEach(() => {
-    service = new ProbeApiService();
-    appState.setUser(null);
-    appState.setCurrentRole(null);
-  });
-
-  it('falls through to getPublic() when appState is guest (mode: public)', async () => {
-    expect(appState.currentSimulationMode.value).toBe('public');
-
-    await service.probe('/simulations/abc/agents', { limit: '10' });
-    expect(service.getPublicCalls).toEqual([
-      { path: '/simulations/abc/agents', params: { limit: '10' } },
-    ]);
-    expect(service.getCalls).toEqual([]);
-  });
-
-  it('falls through to get() when appState indicates member (mode: member)', async () => {
-    appState.setUser({ id: 'u-1' } as Parameters<typeof appState.setUser>[0]);
-    appState.setCurrentRole('owner');
-    expect(appState.currentSimulationMode.value).toBe('member');
-
-    await service.probe('/simulations/abc/agents');
-    expect(service.getCalls).toEqual([
-      { path: '/simulations/abc/agents', params: undefined },
-    ]);
-    expect(service.getPublicCalls).toEqual([]);
-  });
-
-  it('tracks runtime mode flips via the shared signal', async () => {
-    // Start as guest.
-    await service.probe('/path1');
-    // Become member.
-    appState.setUser({ id: 'u-1' } as Parameters<typeof appState.setUser>[0]);
-    appState.setCurrentRole('editor');
-    await service.probe('/path2');
-    // Sign out.
-    appState.setUser(null);
-    await service.probe('/path3');
-
-    expect(service.getPublicCalls.map((c) => c.path)).toEqual(['/path1', '/path3']);
-    expect(service.getCalls.map((c) => c.path)).toEqual(['/path2']);
+    await service.probe('/simulations/abc/agents', 'member');
+    expect(service.getCalls).toEqual([{ path: '/simulations/abc/agents', params: undefined }]);
   });
 });
