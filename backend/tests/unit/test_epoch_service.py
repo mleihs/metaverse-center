@@ -324,54 +324,48 @@ class TestCancelEpoch:
 
 
 class TestParticipants:
+    # join_epoch now uses fn_join_epoch_atomic RPC (migration 214).
+    # Flow: get epoch → check sim type → RPC join → fetch participant.
+
     @pytest.mark.asyncio
     async def test_join_epoch_in_lobby(self):
         sb = MagicMock()
-
-        # get epoch (lobby)
-        epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
-
-        # check simulation is template
-        sim_chain = _make_chain()
-        sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "template"}]
-        ))
-
-        # check not already joined (sim check + user check)
-        existing_chain = _make_chain()
-        existing_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
-
-        # insert participant
-        insert_chain = _make_chain()
+        participant_id = str(uuid4())
         participant = {
-            "id": str(uuid4()),
+            "id": participant_id,
             "epoch_id": str(EPOCH_ID),
             "simulation_id": str(SIM_ID),
         }
-        insert_chain.execute = AsyncMock(return_value=MagicMock(data=[participant]))
 
-        call_counts: dict[str, int] = {}
+        # get epoch (lobby) + sim type check + fetch participant after join
+        epoch_chain = _make_chain()
+        sim_chain = _make_chain()
+        fetch_chain = _make_chain()
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
+        ))
+        sim_chain.execute = AsyncMock(return_value=MagicMock(
+            data=[{"simulation_type": "template"}],
+        ))
+        fetch_chain.execute = AsyncMock(return_value=MagicMock(data=participant))
 
         def table_router(name):
-            call_counts[name] = call_counts.get(name, 0) + 1
             if name == "game_epochs":
                 return epoch_chain
             if name == "simulations":
                 return sim_chain
             if name == "epoch_participants":
-                count = call_counts[name]
-                if count <= 2:
-                    return existing_chain  # sim check + user check
-                return insert_chain  # insert
+                return fetch_chain
             return _make_chain()
 
         sb.table.side_effect = table_router
 
-        result = await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
+        # RPC returns the participant ID
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=participant_id))
+        sb.rpc.return_value = rpc_chain
 
+        result = await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
         assert result["epoch_id"] == str(EPOCH_ID)
 
     @pytest.mark.asyncio
@@ -422,36 +416,29 @@ class TestParticipants:
 
     @pytest.mark.asyncio
     async def test_join_rejects_duplicate_simulation(self):
+        """RPC returns None on duplicate sim (ON CONFLICT DO NOTHING)."""
         sb = MagicMock()
 
         epoch_chain = _make_chain()
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
+            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
         ))
 
         sim_chain = _make_chain()
         sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "template"}]
+            data=[{"simulation_type": "template"}],
         ))
 
-        existing_chain = _make_chain()
-        existing_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(uuid4())}]
-        ))
+        sb.table.side_effect = lambda name: (
+            epoch_chain if name == "game_epochs"
+            else sim_chain if name == "simulations"
+            else _make_chain()
+        )
 
-        call_counts: dict[str, int] = {}
-
-        def table_router(name):
-            call_counts[name] = call_counts.get(name, 0) + 1
-            if name == "game_epochs":
-                return epoch_chain
-            if name == "simulations":
-                return sim_chain
-            if name == "epoch_participants":
-                return existing_chain
-            return _make_chain()
-
-        sb.table.side_effect = table_router
+        # RPC returns None = duplicate
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
+        sb.rpc.return_value = rpc_chain
 
         with pytest.raises(HTTPException) as exc:
             await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
@@ -459,12 +446,12 @@ class TestParticipants:
 
     @pytest.mark.asyncio
     async def test_join_rejects_duplicate_user(self):
-        """Same user cannot join the same epoch with a different simulation."""
+        """RPC returns None on duplicate user (checked inside RPC)."""
         sb = MagicMock()
 
         epoch_chain = _make_chain()
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
+            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
         ))
 
         sim_chain = _make_chain()
@@ -472,32 +459,16 @@ class TestParticipants:
             data=[{"simulation_type": "template"}]
         ))
 
-        # sim not already in epoch
-        sim_existing_chain = _make_chain()
-        sim_existing_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        sb.table.side_effect = lambda name: (
+            epoch_chain if name == "game_epochs"
+            else sim_chain if name == "simulations"
+            else _make_chain()
+        )
 
-        # user already in epoch
-        user_existing_chain = _make_chain()
-        user_existing_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(uuid4())}]
-        ))
-
-        call_counts: dict[str, int] = {}
-
-        def table_router(name):
-            call_counts[name] = call_counts.get(name, 0) + 1
-            if name == "game_epochs":
-                return epoch_chain
-            if name == "simulations":
-                return sim_chain
-            if name == "epoch_participants":
-                count = call_counts[name]
-                if count == 1:
-                    return sim_existing_chain  # sim check passes
-                return user_existing_chain  # user check fails
-            return _make_chain()
-
-        sb.table.side_effect = table_router
+        # RPC returns None = duplicate user
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
+        sb.rpc.return_value = rpc_chain
 
         with pytest.raises(HTTPException) as exc:
             await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
@@ -725,34 +696,27 @@ class TestBotParticipants:
 
 
 class TestRPManagement:
-    # grant_rp_batch and resolve_cycle tests moved to integration tests
-    # (backend/tests/integration/test_cycle_resolution.py) which run against
-    # real Supabase with real RPCs. Only mock-stable spend_rp edge cases remain.
+    # grant_rp_batch and resolve_cycle tests moved to integration tests.
+    # spend_rp now uses fn_spend_rp_atomic RPC (migration 214).
+    # Tests mock the RPC response (int = new balance, None = insufficient).
 
     @pytest.mark.asyncio
     async def test_spend_rp_success(self):
         sb = MagicMock()
-        chain = _make_chain()
-        # select: current_rp=20
-        # update: success
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": "p1", "current_rp": 20}),
-            MagicMock(data=[{"id": "p1", "current_rp": 15}]),
-        ])
-        sb.table.return_value = chain
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=15))
+        sb.rpc.return_value = rpc_chain
 
         result = await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
-
         assert result == 15
 
     @pytest.mark.asyncio
     async def test_spend_rp_insufficient_balance(self):
         sb = MagicMock()
-        chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": "p1", "current_rp": 3}
-        ))
-        sb.table.return_value = chain
+        rpc_chain = MagicMock()
+        # RPC returns None when WHERE current_rp >= amount doesn't match
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
+        sb.rpc.return_value = rpc_chain
 
         with pytest.raises(HTTPException) as exc:
             await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
@@ -762,28 +726,21 @@ class TestRPManagement:
     @pytest.mark.asyncio
     async def test_spend_rp_not_a_participant(self):
         sb = MagicMock()
-        chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(data=None))
-        sb.table.return_value = chain
+        rpc_chain = MagicMock()
+        # RPC returns None for non-existent participant too
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
+        sb.rpc.return_value = rpc_chain
 
         with pytest.raises(HTTPException) as exc:
             await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
-        assert exc.value.status_code == 404
+        assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_spend_rp_optimistic_lock_conflict(self):
+    async def test_spend_rp_rejects_zero_amount(self):
         sb = MagicMock()
-        chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": "p1", "current_rp": 20}),
-            MagicMock(data=[]),  # optimistic lock failed (empty update response)
-        ])
-        sb.table.return_value = chain
-
         with pytest.raises(HTTPException) as exc:
-            await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
-        assert exc.value.status_code == 409
-        assert "concurrently" in exc.value.detail.lower()
+            await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 0)
+        assert exc.value.status_code == 400
 
 
 # ── Resolve Cycle ──────────────────────────────────────────────

@@ -391,7 +391,7 @@ class TestSuccessProbability:
         chain.in_.return_value = chain
         chain.single.return_value = chain
         chain.maybe_single.return_value = chain
-        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         sb.table.return_value = chain
 
@@ -417,7 +417,7 @@ class TestSuccessProbability:
         chain.single.return_value = chain
         chain.maybe_single.return_value = chain
         # No professions
-        chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         sb.table.side_effect = lambda name: chain
 
@@ -457,7 +457,7 @@ class TestSuccessProbability:
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
-        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
@@ -501,7 +501,7 @@ class TestSuccessProbability:
         aptitude_chain = MagicMock()
         aptitude_chain.select.return_value = aptitude_chain
         aptitude_chain.eq.return_value = aptitude_chain
-        aptitude_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        aptitude_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         # 5 guardians -> 5 * 0.06 = 0.30, but capped at 0.15
         guardian_chain = MagicMock()
@@ -509,7 +509,8 @@ class TestSuccessProbability:
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
         guardian_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(uuid4())} for _ in range(5)]
+            data=[{"id": str(uuid4())} for _ in range(5)],
+            count=5,
         ))
 
         embassy_chain = MagicMock()
@@ -562,7 +563,7 @@ class TestSuccessProbability:
         guardian_chain.select.return_value = guardian_chain
         guardian_chain.eq.return_value = guardian_chain
         guardian_chain.in_.return_value = guardian_chain
-        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        guardian_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         embassy_chain = MagicMock()
         embassy_chain.select.return_value = embassy_chain
@@ -691,7 +692,7 @@ class TestSaboteurEffect:
         zones_chain = MagicMock()
         zones_chain.select.return_value = zones_chain
         zones_chain.eq.return_value = zones_chain
-        zones_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        zones_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
         sb.table.return_value = zones_chain
 
         mission = {
@@ -820,7 +821,7 @@ class TestAssassinEffect:
         agents_chain = MagicMock()
         agents_chain.update.return_value = agents_chain
         agents_chain.eq.return_value = agents_chain
-        agents_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        agents_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         def table_router(name):
             if name == "game_epochs":
@@ -883,7 +884,7 @@ class TestInfiltratorEffect:
         embassy_chain = MagicMock()
         embassy_chain.update.return_value = embassy_chain
         embassy_chain.eq.return_value = embassy_chain
-        embassy_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        embassy_chain.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         def table_router(name):
             if name == "game_epochs":

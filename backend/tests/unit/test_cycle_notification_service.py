@@ -232,25 +232,32 @@ class TestBuildPlayerBriefing:
             {"narrative": "An operative was detected.", "event_type": "detection"},
         ]))
 
-        call_count = {"scores": 0, "operative_missions": 0, "simulations": 0, "battle_log": 0}
+        # Participation counts (for _participation_counts query)
+        participants_chain = _make_chain()
+        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
+            {"has_acted_this_cycle": True, "is_bot": False, "consecutive_afk_cycles": 0, "afk_replaced_by_ai": False},
+        ]))
+
+        call_count = {"scores": 0, "operative_missions": 0, "simulations": 0, "battle_log": 0, "epoch_participants": 0}
 
         def table_side_effect(name):
             if name == "epoch_scores":
                 call_count["scores"] += 1
-                # First 2 calls: current scores (ordered + prev ordered)
-                # Then prev detail
                 if call_count["scores"] <= 2:
                     return current_chain
                 return prev_chain
             if name == "operative_missions":
                 call_count["operative_missions"] += 1
                 if call_count["operative_missions"] == 1:
-                    return ops_chain  # Own missions
-                return threat_chain  # Threat detection
+                    return ops_chain
+                return threat_chain
             if name == "simulations":
                 return names_chain
             if name == "epoch_participants":
-                return rp_chain
+                call_count["epoch_participants"] += 1
+                if call_count["epoch_participants"] == 1:
+                    return rp_chain
+                return participants_chain
             if name == "battle_log":
                 call_count["battle_log"] += 1
                 if call_count["battle_log"] == 1:
@@ -315,12 +322,19 @@ class TestBuildPlayerBriefing:
         names_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": SIM_B, "name": "Target"}]))
 
         rp_chain = _make_chain()
-        rp_chain.execute = AsyncMock(return_value=MagicMock(data={"current_rp": 10, "team_id": None}))
+        rp_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"current_rp": 10, "team_id": None},
+        ))
+
+        participants_chain = _make_chain()
+        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
+            {"has_acted_this_cycle": True, "is_bot": False, "consecutive_afk_cycles": 0, "afk_replaced_by_ai": False},
+        ]))
 
         empty_chain = _make_chain()
         empty_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
-        call_count = {"operative_missions": 0, "battle_log": 0}
+        call_count = {"operative_missions": 0, "battle_log": 0, "epoch_participants": 0}
 
         def table_side_effect(name):
             if name == "epoch_scores":
@@ -333,7 +347,10 @@ class TestBuildPlayerBriefing:
             if name == "simulations":
                 return names_chain
             if name == "epoch_participants":
-                return rp_chain
+                call_count["epoch_participants"] += 1
+                if call_count["epoch_participants"] == 1:
+                    return rp_chain  # single participant (rp + team)
+                return participants_chain  # participation counts
             if name == "battle_log":
                 call_count["battle_log"] += 1
                 return empty_chain
