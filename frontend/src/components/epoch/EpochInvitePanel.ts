@@ -11,6 +11,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { appState } from '../../services/AppStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { EpochInvitation } from '../../types/index.js';
 import { formatDateTimeShort } from '../../utils/date-format.js';
@@ -355,7 +356,7 @@ export class VelgEpochInvitePanel extends LitElement {
   private async _loadData(): Promise<void> {
     const [invResult, loreResult] = await Promise.all([
       epochsApi.listInvitations(this.epochId),
-      epochsApi.getEpoch(this.epochId),
+      epochsApi.getEpoch(this.epochId, appState.isAuthenticated.value ? 'member' : 'public'),
     ]);
 
     if (invResult.success && invResult.data) {

@@ -156,7 +156,10 @@ export class VelgGeneralSettingsPanel extends LitElement {
         this._populateFromSimulation(sim);
       } else {
         // Fallback: fetch directly
-        const response = await simulationsApi.getById(this.simulationId);
+        const response = await simulationsApi.getById(
+          this.simulationId,
+          appState.isAuthenticated.value ? 'member' : 'public',
+        );
         if (response.success && response.data) {
           this._populateFromSimulation(response.data as Simulation);
         } else {

@@ -838,7 +838,10 @@ export class VelgEventDetailsPanel extends LitElement {
   private async _loadSimulations(): Promise<void> {
     if (this._simulations.length > 0) return;
     try {
-      const response = await simulationsApi.list();
+      const authMode: 'public' | 'member' = appState.isAuthenticated.value
+        ? 'member'
+        : 'public';
+      const response = await simulationsApi.list(authMode);
       if (response.success && response.data) {
         this._simulations = response.data;
       }
@@ -850,7 +853,9 @@ export class VelgEventDetailsPanel extends LitElement {
   private async _loadConnections(): Promise<void> {
     if (this._connections.length > 0) return;
     try {
-      const response = await connectionsApi.listAll();
+      const response = await connectionsApi.listAll(
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       if (response.success && response.data) {
         this._connections = response.data;
       }

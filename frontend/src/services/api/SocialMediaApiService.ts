@@ -4,18 +4,27 @@ import type {
   SocialMediaComment,
   SocialMediaPost,
 } from '../../types/index.js';
-import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class SocialMediaApiService extends BaseApiService {
+  /**
+   * List social-media posts for a simulation.
+   *
+   * Note: the public and member routes use DIFFERENT paths — public serves
+   * `/simulations/{id}/social-media` while member serves
+   * `/simulations/{id}/social-media/posts`. This is an intentional
+   * backend split (public returns curated subset; member returns full
+   * post stream including drafts), so the routing cannot go through
+   * `getSimulationData` (which assumes same path for both modes).
+   */
   listPosts(
     simulationId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<SocialMediaPost[]>> {
-    if (!appState.isAuthenticated.value || !appState.currentRole.value) {
-      return this.getPublic(`/simulations/${simulationId}/social-media`, params);
-    }
-    return this.get(`/simulations/${simulationId}/social-media/posts`, params);
+    return mode === 'public'
+      ? this.getPublic(`/simulations/${simulationId}/social-media`, params)
+      : this.get(`/simulations/${simulationId}/social-media/posts`, params);
   }
 
   syncPosts(simulationId: string): Promise<ApiResponse<Record<string, unknown>>> {

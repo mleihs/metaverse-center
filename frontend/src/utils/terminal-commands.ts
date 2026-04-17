@@ -511,8 +511,12 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
     const epochId = terminalState.epochId.value!;
     const participant = terminalState.epochParticipant.value!;
     try {
+      // Terminal runs inside an authenticated simulation — use member routes.
+      const authMode: 'public' | 'member' = appState.isAuthenticated.value
+        ? 'member'
+        : 'public';
       const [leaderResp, missionsResp] = await Promise.all([
-        epochsApi.getLeaderboard(epochId),
+        epochsApi.getLeaderboard(epochId, authMode),
         epochsApi.listMissions(epochId, { simulation_id: participant.simulation_id }),
       ]);
 
@@ -528,7 +532,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
       ).length;
 
       // Refresh RP from participant data
-      const pResp = await epochsApi.listParticipants(epochId);
+      const pResp = await epochsApi.listParticipants(epochId, authMode);
       if (pResp.success && pResp.data) {
         const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
           (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,
@@ -547,7 +551,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
       );
 
       // Get current cycle from epoch data
-      const epochResp = await epochsApi.getEpoch(epochId);
+      const epochResp = await epochsApi.getEpoch(epochId, authMode);
       if (epochResp.success && epochResp.data) {
         // Replace the placeholder cycle with actual value
         const cycleIdx = statusOutput.findIndex((l) => l.content.includes(`${msg('Cycle')}: 0`));
@@ -1054,7 +1058,10 @@ async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Fetch the epoch to get current_cycle
-  const epochResp = await epochsApi.getEpoch(epochId);
+  const epochResp = await epochsApi.getEpoch(
+    epochId,
+    appState.isAuthenticated.value ? 'member' : 'public',
+  );
   if (!epochResp.success) {
     return [errorLine(msg('Failed to retrieve epoch data.'))];
   }
@@ -1164,7 +1171,10 @@ async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Refresh participant data (RP may have changed)
-  const pResp = await epochsApi.listParticipants(epochId);
+  const pResp = await epochsApi.listParticipants(
+    epochId,
+    appState.isAuthenticated.value ? 'member' : 'public',
+  );
   if (pResp.success && pResp.data) {
     const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
       (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,

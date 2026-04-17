@@ -915,7 +915,7 @@ export class VelgApp extends LitElement {
     try {
       if (appState.isAuthenticated.value) {
         const [memberResp, publicResp] = await Promise.all([
-          simulationsApi.list(),
+          simulationsApi.list('member'),
           simulationsApi.listPublic(),
         ]);
         const memberSims =
@@ -1018,7 +1018,10 @@ export class VelgApp extends LitElement {
     if (isUuid) {
       // Fetch if we don't already have this simulation
       if (appState.currentSimulation.value?.id !== idOrSlug) {
-        const simResponse = await simulationsApi.getById(idOrSlug);
+        const simResponse = await simulationsApi.getById(
+          idOrSlug,
+          appState.isAuthenticated.value ? 'member' : 'public',
+        );
         if (simResponse.success && simResponse.data) {
           appState.setCurrentSimulation(simResponse.data as Simulation);
         } else {

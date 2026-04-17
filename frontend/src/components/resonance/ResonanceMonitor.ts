@@ -341,7 +341,10 @@ export class ResonanceMonitor extends LitElement {
         params.signature = this._signatureFilter;
       }
 
-      const res = await resonanceApi.list(params);
+      const res = await resonanceApi.list(
+        appState.isAuthenticated.value ? 'member' : 'public',
+        params,
+      );
       if (res.success && res.data) {
         this._resonances = res.data;
         this._error = '';

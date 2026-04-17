@@ -20,31 +20,35 @@ import type {
   ResultsSummary,
   Sitrep,
 } from '../../types/index.js';
-import { appState } from '../AppStateManager.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class EpochsApiService extends BaseApiService {
   // ── Epochs ──────────────────────────────────────────
 
-  listEpochs(params?: Record<string, string>): Promise<ApiResponse<Epoch[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic('/epochs', params);
-    }
-    return this.get('/epochs', params);
+  /**
+   * List epochs.
+   *  - `'public'` → `/api/v1/public/epochs`
+   *  - `'member'` → `/api/v1/epochs`
+   * Epochs are a global collection, not sim-scoped; the typical caller
+   * computes mode as `isAuthenticated ? 'member' : 'public'`.
+   */
+  listEpochs(
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<Epoch[]>> {
+    return mode === 'public' ? this.getPublic('/epochs', params) : this.get('/epochs', params);
   }
 
-  getActiveEpochs(): Promise<ApiResponse<Epoch[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic('/epochs/active');
-    }
-    return this.get('/epochs/active');
+  /** See `listEpochs` for the mode convention. */
+  getActiveEpochs(mode: 'public' | 'member'): Promise<ApiResponse<Epoch[]>> {
+    return mode === 'public' ? this.getPublic('/epochs/active') : this.get('/epochs/active');
   }
 
-  getEpoch(epochId: string): Promise<ApiResponse<Epoch>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}`);
-    }
-    return this.get(`/epochs/${epochId}`);
+  /** See `listEpochs` for the mode convention. */
+  getEpoch(epochId: string, mode: 'public' | 'member'): Promise<ApiResponse<Epoch>> {
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}`)
+      : this.get(`/epochs/${epochId}`);
   }
 
   createEpoch(data: {
@@ -96,11 +100,14 @@ export class EpochsApiService extends BaseApiService {
 
   // ── Participants ────────────────────────────────────
 
-  listParticipants(epochId: string): Promise<ApiResponse<EpochParticipant[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}/participants`);
-    }
-    return this.get(`/epochs/${epochId}/participants`);
+  /** See `listEpochs` for the mode convention. */
+  listParticipants(
+    epochId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<EpochParticipant[]>> {
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/participants`)
+      : this.get(`/epochs/${epochId}/participants`);
   }
 
   joinEpoch(epochId: string, simulationId: string): Promise<ApiResponse<EpochParticipant>> {
@@ -125,11 +132,11 @@ export class EpochsApiService extends BaseApiService {
 
   // ── Teams ───────────────────────────────────────────
 
-  listTeams(epochId: string): Promise<ApiResponse<EpochTeam[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}/teams`);
-    }
-    return this.get(`/epochs/${epochId}/teams`);
+  /** See `listEpochs` for the mode convention. */
+  listTeams(epochId: string, mode: 'public' | 'member'): Promise<ApiResponse<EpochTeam[]>> {
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/teams`)
+      : this.get(`/epochs/${epochId}/teams`);
   }
 
   createTeam(epochId: string, simulationId: string, name: string): Promise<ApiResponse<EpochTeam>> {
@@ -247,21 +254,31 @@ export class EpochsApiService extends BaseApiService {
 
   // ── Scores ──────────────────────────────────────────
 
-  getLeaderboard(epochId: string, cycle?: number): Promise<ApiResponse<LeaderboardEntry[]>> {
+  /**
+   * Leaderboard. Public and member routes use DIFFERENT paths — public
+   * serves `/epochs/{id}/leaderboard` (curated), member serves
+   * `/epochs/{id}/scores/leaderboard` (full). See the inline split.
+   */
+  getLeaderboard(
+    epochId: string,
+    mode: 'public' | 'member',
+    cycle?: number,
+  ): Promise<ApiResponse<LeaderboardEntry[]>> {
     const params: Record<string, string> = {};
     if (cycle !== undefined) params.cycle = String(cycle);
-
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}/leaderboard`, params);
-    }
-    return this.get(`/epochs/${epochId}/scores/leaderboard`, params);
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/leaderboard`, params)
+      : this.get(`/epochs/${epochId}/scores/leaderboard`, params);
   }
 
-  getFinalStandings(epochId: string): Promise<ApiResponse<LeaderboardEntry[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}/standings`);
-    }
-    return this.get(`/epochs/${epochId}/scores/standings`);
+  /** See `getLeaderboard` — public and member use different paths. */
+  getFinalStandings(
+    epochId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<LeaderboardEntry[]>> {
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/standings`)
+      : this.get(`/epochs/${epochId}/scores/standings`);
   }
 
   getScoreHistory(epochId: string, simulationId: string): Promise<ApiResponse<EpochScore[]>> {
@@ -300,14 +317,15 @@ export class EpochsApiService extends BaseApiService {
 
   // ── Battle Log ──────────────────────────────────────
 
+  /** See `listEpochs` for the mode convention. */
   getBattleLog(
     epochId: string,
+    mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<BattleLogEntry[]>> {
-    if (!appState.isAuthenticated.value) {
-      return this.getPublic(`/epochs/${epochId}/battle-log`, params);
-    }
-    return this.get(`/epochs/${epochId}/battle-log`, params);
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/battle-log`, params)
+      : this.get(`/epochs/${epochId}/battle-log`, params);
   }
 
   getBattleLogPublic(

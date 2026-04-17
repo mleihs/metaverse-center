@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { resonanceApi } from '../../services/api/ResonanceApiService.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -639,7 +640,10 @@ export class VelgAdminResonancesTab extends LitElement {
         params.include_deleted = 'true';
       }
 
-      const resp = await resonanceApi.list(params);
+      const resp = await resonanceApi.list(
+        appState.isAuthenticated.value ? 'member' : 'public',
+        params,
+      );
       if (resp.success && resp.data) {
         this._resonances = resp.data;
       } else {
@@ -654,7 +658,10 @@ export class VelgAdminResonancesTab extends LitElement {
 
   private async _loadImpacts(resonanceId: string): Promise<void> {
     try {
-      const resp = await resonanceApi.listImpacts(resonanceId);
+      const resp = await resonanceApi.listImpacts(
+        resonanceId,
+        appState.isAuthenticated.value ? 'member' : 'public',
+      );
       if (resp.success && resp.data) {
         this._impacts = new Map(this._impacts);
         this._impacts.set(resonanceId, resp.data);
