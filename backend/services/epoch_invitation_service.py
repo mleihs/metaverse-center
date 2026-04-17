@@ -5,14 +5,12 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.config import settings
 from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import OpenRouterService
 from backend.services.prompt_service import PromptResolver
-from backend.utils.errors import not_found, server_error
+from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -183,10 +181,7 @@ class EpochInvitationService:
         # Check expiry
         expires_at = datetime.fromisoformat(invitation["expires_at"].replace("Z", "+00:00"))
         if expires_at < datetime.now(UTC):
-            raise HTTPException(
-                status_code=status.HTTP_410_GONE,
-                detail="This invitation has expired.",
-            )
+            raise gone("This invitation has expired.")
 
         # Mark accepted
         update_response = await (

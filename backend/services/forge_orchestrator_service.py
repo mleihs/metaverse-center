@@ -10,7 +10,7 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 import structlog
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
@@ -35,7 +35,7 @@ from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
 from backend.utils.db import maybe_single_data
-from backend.utils.errors import bad_request, server_error
+from backend.utils.errors import bad_gateway, bad_request, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -445,10 +445,7 @@ class ForgeOrchestratorService:
                 result = await run_ai(dynamic_agent, prompt, "chunk", output_type=ForgeGeographyDraft)
                 geo_data = result.output.model_dump()
                 if not geo_data.get("zones"):
-                    raise HTTPException(
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                        detail="AI model returned no zones. Please try again.",
-                    )
+                    raise bad_gateway("AI model returned no zones. Please try again.")
                 validate_bilingual_output(
                     geo_data.get("zones", []),
                     ["zone_type_de", "description_de"],
@@ -466,10 +463,7 @@ class ForgeOrchestratorService:
                 result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
                 agents_list = [a.model_dump() for a in result.output]
                 if not agents_list:
-                    raise HTTPException(
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                        detail="AI model returned no agents. Please try again.",
-                    )
+                    raise bad_gateway("AI model returned no agents. Please try again.")
                 validate_bilingual_output(
                     agents_list,
                     ["character_de", "background_de", "primary_profession_de"],
@@ -482,10 +476,7 @@ class ForgeOrchestratorService:
                 result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeBuildingDraft])
                 buildings_list = [b.model_dump() for b in result.output]
                 if not buildings_list:
-                    raise HTTPException(
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                        detail="AI model returned no buildings. Please try again.",
-                    )
+                    raise bad_gateway("AI model returned no buildings. Please try again.")
                 validate_bilingual_output(
                     buildings_list,
                     ["description_de", "building_type_de", "building_condition_de"],
@@ -510,10 +501,7 @@ class ForgeOrchestratorService:
                 extra={"chunk_type": chunk_type, "draft_id": str(draft_id)},
                 exc_info=exc,
             )
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI model returned invalid output after retries. Please try again.",
-            ) from exc
+            raise bad_gateway("AI model returned invalid output after retries. Please try again.") from exc
 
     @staticmethod
     async def generate_single_entity(
@@ -579,10 +567,7 @@ class ForgeOrchestratorService:
                     extra={"entity_type": entity_type, "draft_id": str(draft_id), "index": entity_index},
                     exc_info=exc,
                 )
-                raise HTTPException(
-                    status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail="AI model returned invalid output after retries. Please try again.",
-                ) from exc
+                raise bad_gateway("AI model returned invalid output after retries. Please try again.") from exc
 
             # Validate bilingual output
             de_fields = (
@@ -765,10 +750,7 @@ class ForgeOrchestratorService:
                     "Theme generation failed",
                     extra={"draft_id": str(draft_id)},
                 )
-                raise HTTPException(
-                    status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail="Theme generation failed. Please try again.",
-                ) from exc
+                raise bad_gateway("Theme generation failed. Please try again.") from exc
 
         # Store in draft
         await ForgeDraftService.update_draft(

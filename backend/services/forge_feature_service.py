@@ -6,11 +6,10 @@ import logging
 from uuid import UUID
 
 import httpx
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.db import maybe_single_data
-from backend.utils.errors import bad_request, server_error
+from backend.utils.errors import bad_request, payment_required, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -63,10 +62,7 @@ class ForgeFeatureService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             error_msg = str(exc).lower()
             if "insufficient tokens" in error_msg:
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail=str(exc),
-                ) from exc
+                raise payment_required(str(exc)) from exc
             raise server_error(f"Feature purchase failed: {exc}") from exc
 
         purchase_id = resp.data

@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 import sentry_sdk
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.models.openai import OpenAIModel
@@ -17,6 +17,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 
 from backend.config import settings
 from backend.services.platform_model_config import get_platform_model
+from backend.utils.errors import bad_gateway, payment_required, service_unavailable, too_many_requests
 
 logger = logging.getLogger(__name__)
 
@@ -60,24 +61,14 @@ def ai_error_to_http(exc: ModelHTTPError) -> HTTPException:
     """Map Pydantic AI HTTP errors to actionable user-facing HTTPExceptions."""
     code = exc.status_code
     if code == 402:
-        return HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="AI credit balance insufficient. Please top up your OpenRouter account or add a BYOK key.",
+        return payment_required(
+            "AI credit balance insufficient. Please top up your OpenRouter account or add a BYOK key.",
         )
     if code == 429:
-        return HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="AI rate limit reached. Please wait a moment and try again.",
-        )
+        return too_many_requests("AI rate limit reached. Please wait a moment and try again.")
     if code == 503:
-        return HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI model temporarily unavailable. Please try again shortly.",
-        )
-    return HTTPException(
-        status_code=status.HTTP_502_BAD_GATEWAY,
-        detail=f"AI service error (HTTP {code}). Please try again.",
-    )
+        return service_unavailable("AI model temporarily unavailable. Please try again shortly.")
+    return bad_gateway(f"AI service error (HTTP {code}). Please try again.")
 
 
 def get_openrouter_model(

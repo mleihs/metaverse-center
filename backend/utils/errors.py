@@ -69,8 +69,33 @@ def conflict(detail: str) -> HTTPException:
     return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
+def payment_required(detail: str = "Insufficient funds.") -> HTTPException:
+    """Create a 402 Payment Required error."""
+    return HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=detail)
+
+
+def gone(detail: str = "Resource is no longer available.") -> HTTPException:
+    """Create a 410 Gone error (e.g. expired invitations)."""
+    return HTTPException(status_code=status.HTTP_410_GONE, detail=detail)
+
+
+def too_many_requests(detail: str = "Too many requests.") -> HTTPException:
+    """Create a 429 Too Many Requests error (e.g. cooldowns)."""
+    return HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=detail)
+
+
 def server_error(detail: str = "Internal server error.") -> HTTPException:
     """Create a 500 Internal Server Error."""
     return HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail,
     )
+
+
+def bad_gateway(detail: str = "Upstream service error.") -> HTTPException:
+    """Create a 502 Bad Gateway error (e.g. AI model failures)."""
+    return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=detail)
+
+
+def service_unavailable(detail: str = "Service temporarily unavailable.") -> HTTPException:
+    """Create a 503 Service Unavailable error."""
+    return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)

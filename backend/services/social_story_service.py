@@ -26,7 +26,7 @@ from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
 from backend.services.base_service import serialize_for_json
 from backend.services.instagram_image_service import InstagramImageService
-from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.errors import bad_gateway, bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.settings import parse_setting_bool
 from supabase import AsyncClient as Client
@@ -206,10 +206,7 @@ class SocialStoryService:
                 scope.set_tag("instagram_phase", "force_publish_story")
                 scope.set_context("story", {"story_id": str(story_id)})
                 sentry_sdk.capture_exception(exc)
-            raise HTTPException(
-                status_code=502,
-                detail=f"Force-publish failed: {exc!s}"[:200],
-            ) from exc
+            raise bad_gateway(f"Force-publish failed: {exc!s}"[:200]) from exc
 
     @classmethod
     async def regenerate_story(
@@ -295,10 +292,7 @@ class SocialStoryService:
                 scope.set_tag("instagram_phase", "regenerate_publish")
                 scope.set_context("story", {"story_id": str(story_id)})
                 sentry_sdk.capture_exception(exc)
-            raise HTTPException(
-                status_code=502,
-                detail=f"Recomposition succeeded but publish failed: {exc!s}"[:200],
-            ) from exc
+            raise bad_gateway(f"Recomposition succeeded but publish failed: {exc!s}"[:200]) from exc
 
     # ── Story Sequence Creation ────────────────────────────────────────────
 
