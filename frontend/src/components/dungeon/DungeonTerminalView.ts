@@ -529,8 +529,9 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           }
         ).wakeLock.request('screen');
       }
-    } catch {
-      // Non-critical — silently fail (battery saver, permissions, etc.)
+    } catch (err) {
+      // Wake lock unavailable (battery saver, permissions, Safari/Firefox) — degrades gracefully.
+      captureError(err, { source: 'VelgDungeonTerminalView._acquireWakeLock' });
     }
   }
 
@@ -740,9 +741,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
               role=${d.available ? 'button' : 'listitem'}
               tabindex=${d.available ? '0' : '-1'}
               aria-label=${d.available ? msg('Enter') + ' ' + getArchetypeDisplayName(d.archetype) : ''}
-              @click=${() => d.available && this._handleTerminalCommand(
-                new CustomEvent('terminal-command', { detail: `dungeon ${d.archetype}` }),
-              )}
+              @click=${() =>
+                d.available &&
+                this._handleTerminalCommand(
+                  new CustomEvent('terminal-command', { detail: `dungeon ${d.archetype}` }),
+                )}
               @keydown=${(e: KeyboardEvent) => {
                 if (d.available && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();

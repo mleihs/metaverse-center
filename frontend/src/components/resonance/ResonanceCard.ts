@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -857,8 +858,8 @@ export class ResonanceCard extends LitElement {
         this._impacts.sort((a, b) => b.effective_magnitude - a.effective_magnitude);
         this._impactsLoaded = true;
       }
-    } catch {
-      // Silently handle – panel just stays empty
+    } catch (err) {
+      captureError(err, { source: 'ResonanceCard._loadImpacts' });
     } finally {
       this._impactsLoading = false;
     }

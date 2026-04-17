@@ -20,6 +20,7 @@ import {
   type AgentActivity,
   agentAutonomyApi,
 } from '../../services/api/AgentAutonomyApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { formatTimestamp } from '../../utils/date-format.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
@@ -700,7 +701,8 @@ export class AgentLifeTimeline extends LitElement {
       requestAnimationFrame(() => {
         this._spineDrawn = true;
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentLifeTimeline._fetchActivities' });
       this._loading = false;
       this._loadingMore = false;
     }
