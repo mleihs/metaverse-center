@@ -2322,9 +2322,10 @@ export class VelgEpochCommandCenter extends LitElement {
     const simId = this._myParticipant.simulation_id;
     try {
       // Load agents and aptitudes for the participant's simulation
+      const mode = appState.currentSimulationMode.value;
       const [agentsResp, aptResp] = await Promise.all([
-        agentsApi.list(simId, { limit: '100' }),
-        agentsApi.getAllAptitudes(simId),
+        agentsApi.list(simId, mode, { limit: '100' }),
+        agentsApi.getAllAptitudes(simId, mode),
       ]);
 
       if (agentsResp.success && agentsResp.data) {

@@ -493,9 +493,12 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       await Promise.all(
         sims.map(async (sim) => {
+          // Landing page is a guest-visible community showcase; fetch via
+          // public endpoints unconditionally so it works for signed-out users
+          // and signed-in users browsing simulations they are not a member of.
           const [agentResp, aptResp] = await Promise.all([
             agentsApi.listPublic(sim.id, { limit: '6' }),
-            agentsApi.getAllAptitudes(sim.id),
+            agentsApi.getAllAptitudes(sim.id, 'public'),
           ]);
 
           if (!agentResp.success || !Array.isArray(agentResp.data)) return;

@@ -855,7 +855,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   private async _openAgentDetails(agentId: string): Promise<void> {
     if (!this.simulationId) return;
     try {
-      const response = await agentsApi.getById(this.simulationId, agentId);
+      const response = await agentsApi.getById(
+        this.simulationId,
+        agentId,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         this._detailAgent = response.data;
       }

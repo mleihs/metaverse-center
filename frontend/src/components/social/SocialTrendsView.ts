@@ -1048,7 +1048,11 @@ export class VelgSocialTrendsView extends LitElement {
   private async _loadExistingEventTitles(): Promise<void> {
     if (!this.simulationId) return;
     try {
-      const response = await eventsApi.list(this.simulationId, { limit: '100', offset: '0' });
+      const response = await eventsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { limit: '100', offset: '0' },
+      );
       if (response.success && response.data && Array.isArray(response.data)) {
         this._existingEventTitles = response.data.map((e: { title: string }) =>
           e.title.toLowerCase(),

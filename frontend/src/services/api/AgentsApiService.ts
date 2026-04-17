@@ -33,8 +33,15 @@ export class AgentsApiService extends CrudApiService<Agent> {
     return this.delete(`/simulations/${simulationId}/agents/${agentId}/reactions/${reactionId}`);
   }
 
-  getAptitudes(simulationId: string, agentId: string): Promise<ApiResponse<AgentAptitude[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/aptitudes`);
+  getAptitudes(
+    simulationId: string,
+    agentId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentAptitude[]>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/agents/${agentId}/aptitudes`,
+      mode,
+    );
   }
 
   setAptitudes(
@@ -45,8 +52,11 @@ export class AgentsApiService extends CrudApiService<Agent> {
     return this.put(`/simulations/${simulationId}/agents/${agentId}/aptitudes`, aptitudes);
   }
 
-  getAllAptitudes(simulationId: string): Promise<ApiResponse<AgentAptitude[]>> {
-    return this.getSimulationData(`/simulations/${simulationId}/aptitudes`);
+  getAllAptitudes(
+    simulationId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentAptitude[]>> {
+    return this.getSimulationData(`/simulations/${simulationId}/aptitudes`, mode);
   }
 }
 

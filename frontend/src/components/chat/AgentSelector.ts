@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { Agent } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -280,7 +281,11 @@ export class VelgAgentSelector extends LitElement {
 
     this._loading = true;
     try {
-      const response = await agentsApi.list(this.simulationId, { page_size: '100' });
+      const response = await agentsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { page_size: '100' },
+      );
       if (response.success && response.data) {
         this._agents = Array.isArray(response.data) ? response.data : [];
       } else {

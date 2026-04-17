@@ -69,7 +69,11 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
   }
 
   protected async _fetchData(): Promise<ApiResponse<Building[]>> {
-    return buildingsApi.list(this.simulationId, this._buildParams());
+    return buildingsApi.list(
+      this.simulationId,
+      appState.currentSimulationMode.value,
+      this._buildParams(),
+    );
   }
 
   protected _getLoadingMessage(): string {

@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { promptTemplatesApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type { PromptCategory, PromptTemplate, PromptTemplateType } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -273,7 +274,11 @@ export class VelgPromptsSettingsPanel extends LitElement {
     this._loading = true;
     this._error = null;
     try {
-      const response = await promptTemplatesApi.list(this.simulationId, { limit: '100' });
+      const response = await promptTemplatesApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { limit: '100' },
+      );
       if (response.success && response.data) {
         this._templates = Array.isArray(response.data) ? response.data : [];
       } else {

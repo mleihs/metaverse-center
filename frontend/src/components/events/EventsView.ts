@@ -86,7 +86,7 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
     if (this._bleedOnly) params.data_source = 'bleed';
     if (this._dateFrom) params.date_from = this._dateFrom;
     if (this._dateTo) params.date_to = this._dateTo;
-    return eventsApi.list(this.simulationId, params);
+    return eventsApi.list(this.simulationId, appState.currentSimulationMode.value, params);
   }
 
   protected _getLoadingMessage(): string {
@@ -211,7 +211,11 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   private async _loadSeismographEvents(): Promise<void> {
     if (!this.simulationId) return;
     try {
-      const response = await eventsApi.list(this.simulationId, { limit: '100', offset: '0' });
+      const response = await eventsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { limit: '100', offset: '0' },
+      );
       if (response.success && response.data) {
         this._seismographEvents = Array.isArray(response.data) ? response.data : [];
       }

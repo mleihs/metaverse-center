@@ -35,6 +35,7 @@ import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { agentsApi } from './api/AgentsApiService.js';
 import { dungeonApi } from './api/DungeonApiService.js';
 import { analyticsService } from './AnalyticsService.js';
+import { appState } from './AppStateManager.js';
 import { captureError } from './SentryService.js';
 import { terminalState } from './TerminalStateManager.js';
 
@@ -387,9 +388,10 @@ class DungeonStateManager {
     this.loading.value = true;
     this.error.value = null;
     try {
+      const mode = appState.currentSimulationMode.value;
       const [agentsResp, aptResp] = await Promise.all([
-        agentsApi.list(simulationId, { limit: '100' }),
-        agentsApi.getAllAptitudes(simulationId),
+        agentsApi.list(simulationId, mode, { limit: '100' }),
+        agentsApi.getAllAptitudes(simulationId, mode),
       ]);
 
       if (!agentsResp.success) {
