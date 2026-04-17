@@ -20,6 +20,7 @@ import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 
 import '../forge/VelgForgeWalletBadge.js';
 import '../forge/VelgForgeMint.js';
@@ -622,9 +623,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
   private _navigate(path: string, e?: Event): void {
     e?.preventDefault();
     this._closeMenu();
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: path, bubbles: true, composed: true }),
-    );
+    navigate(path);
   }
 
   private _toggleMenu(): void {

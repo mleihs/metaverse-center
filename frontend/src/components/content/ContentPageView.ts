@@ -15,6 +15,7 @@ import { html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import { navigate } from '../../utils/navigation.js';
 import { loadContentPage } from './content-registry.js';
 import { contentStyles } from './content-styles.js';
 import type { ContentPageData } from './content-types.js';
@@ -339,13 +340,7 @@ export class VelgContentPage extends LitElement {
               href=${cta.href}
               @click=${(e: Event) => {
                 e.preventDefault();
-                this.dispatchEvent(
-                  new CustomEvent('navigate', {
-                    detail: cta.href,
-                    bubbles: true,
-                    composed: true,
-                  }),
-                );
+                navigate(cta.href);
               }}
             >${cta.label}</a>
           `,

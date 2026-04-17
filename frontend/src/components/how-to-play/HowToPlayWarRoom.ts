@@ -19,6 +19,7 @@ import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import { navigate } from '../../utils/navigation.js';
 import '../shared/Lightbox.js';
 import '../shared/VelgTabs.js';
 import type { TabDef } from '../shared/VelgTabs.js';
@@ -1345,9 +1346,7 @@ export class HowToPlayWarRoom extends LitElement {
     e.preventDefault();
     const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
     if (href) {
-      this.dispatchEvent(
-        new CustomEvent('navigate', { detail: href, bubbles: true, composed: true }),
-      );
+      navigate(href);
     }
   }
 }

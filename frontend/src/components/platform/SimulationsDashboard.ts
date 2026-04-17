@@ -1602,9 +1602,7 @@ export class VelgSimulationsDashboard extends LitElement {
   }
 
   private _handleCreateClick(): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: '/forge', bubbles: true, composed: true }),
-    );
+    navigate('/forge');
   }
 
   private async _handleStartAcademy(): Promise<void> {

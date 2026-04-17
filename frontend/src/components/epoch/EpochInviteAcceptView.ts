@@ -14,6 +14,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import type { EpochInvitationPublicInfo } from '../../types/index.js';
+import { navigate } from '../../utils/navigation.js';
 
 type AuthMode = 'login' | 'register';
 
@@ -522,13 +523,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
 
   private _handleEnter(): void {
     document.dispatchEvent(new CustomEvent('epoch-joined', { bubbles: true }));
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: '/epoch',
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate('/epoch');
   }
 
   private _handleKeydown(e: KeyboardEvent): void {
@@ -537,13 +532,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
 
   private _handleBackClick(e: Event): void {
     e.preventDefault();
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: '/epoch',
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate('/epoch');
   }
 
   protected render() {

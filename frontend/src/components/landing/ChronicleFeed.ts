@@ -18,6 +18,7 @@ import { seoService } from '../../services/SeoService.js';
 import type { Chronicle } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import '../shared/VelgDispatchMasthead.js';
@@ -287,12 +288,6 @@ export class VelgChronicleFeed extends LitElement {
     });
   }
 
-  private _navigate(path: string): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate', { bubbles: true, composed: true, detail: path }),
-    );
-  }
-
   private _prevPage(): void {
     this._offset = Math.max(0, this._offset - this._limit);
     this._fetchChronicles();
@@ -375,7 +370,7 @@ export class VelgChronicleFeed extends LitElement {
             href="/simulations/${simSlug}/lore"
             @click=${(e: Event) => {
               e.preventDefault();
-              if (simSlug) this._navigate(`/simulations/${simSlug}/lore`);
+              if (simSlug) navigate(`/simulations/${simSlug}/lore`);
             }}
           >
             <span class="dispatch__source-name">${simName}</span>
@@ -402,7 +397,7 @@ export class VelgChronicleFeed extends LitElement {
           href=${readMoreHref}
           @click=${(e: Event) => {
             e.preventDefault();
-            if (simSlug) this._navigate(`/simulations/${simSlug}/chronicle`);
+            if (simSlug) navigate(`/simulations/${simSlug}/chronicle`);
           }}
         >
           ${msg('Read Full Edition')}
@@ -487,7 +482,7 @@ export class VelgChronicleFeed extends LitElement {
                 href="/register"
                 @click=${(e: Event) => {
                   e.preventDefault();
-                  this._navigate('/register');
+                  navigate('/register');
                 }}
               >
                 ${msg('Build Your World')}

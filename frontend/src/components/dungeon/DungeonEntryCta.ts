@@ -21,6 +21,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/index.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import './DungeonSimPicker.js';
@@ -158,15 +159,7 @@ export class VelgDungeonEntryCta extends SignalWatcher(LitElement) {
   private _navigateToDungeon(slugOrId: string): void {
     // Set deep-link signal (consumed by DungeonTerminalView on init)
     appState.pendingDungeonArchetype.value = this.archetype;
-
-    // SPA navigation via app-shell handler
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        detail: `/simulations/${slugOrId}/dungeon`,
-      }),
-    );
+    navigate(`/simulations/${slugOrId}/dungeon`);
   }
 
   // ── Picker Events ────────────────────────────────────────────────────────

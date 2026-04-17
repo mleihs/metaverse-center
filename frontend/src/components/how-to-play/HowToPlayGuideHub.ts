@@ -27,6 +27,7 @@ import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { IconKey } from '../../utils/icons.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   clearSearchIndex,
   debounce,
@@ -642,19 +643,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
 
   // ── Navigation ─────────────────────────────────────────────────────────
 
-  private _navigate(path: string) {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: path,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
   private _navigateToTopic(slug: string) {
     this._showDropdown = false;
-    this._navigate(`/how-to-play/guide/${slug}`);
+    navigate(`/how-to-play/guide/${slug}`);
   }
 
   private _handleCardClick(e: Event, slug: string) {
@@ -671,7 +662,7 @@ export class VelgHowToPlayGuideHub extends LitElement {
 
   private _handleLinkClick(e: Event, href: string) {
     e.preventDefault();
-    this._navigate(href);
+    navigate(href);
   }
 
   // ── Icon Resolver ──────────────────────────────────────────────────────

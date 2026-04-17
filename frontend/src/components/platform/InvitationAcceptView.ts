@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { invitationsApi } from '../../services/api/index.js';
 import type { InvitationPublicInfo } from '../../types/index.js';
+import { navigate } from '../../utils/navigation.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
@@ -228,13 +229,7 @@ export class VelgInvitationAcceptView extends LitElement {
       if (response.success && response.data) {
         VelgToast.success(msg('Invitation accepted successfully.'));
         document.dispatchEvent(new CustomEvent('invitation-accepted', { bubbles: true }));
-        this.dispatchEvent(
-          new CustomEvent('navigate', {
-            detail: `/simulations/${response.data.simulation_id}/agents`,
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        navigate(`/simulations/${response.data.simulation_id}/agents`);
       } else {
         this._error = response.error?.message ?? msg('Failed to accept the invitation.');
         VelgToast.error(this._error);
@@ -249,13 +244,7 @@ export class VelgInvitationAcceptView extends LitElement {
 
   private _handleLoginClick(e: Event): void {
     e.preventDefault();
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: '/login',
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate('/login');
   }
 
   private _renderStatus() {

@@ -17,6 +17,7 @@ import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 
@@ -541,12 +542,6 @@ export class VelgWorldsGallery extends LitElement {
     });
   }
 
-  private _navigate(path: string): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate', { bubbles: true, composed: true, detail: path }),
-    );
-  }
-
   private _prevPage(): void {
     this._offset = Math.max(0, this._offset - this._limit);
     this._fetchSimulations();
@@ -619,7 +614,7 @@ export class VelgWorldsGallery extends LitElement {
                       href="/simulations/${sim.slug || sim.id}/lore"
                       @click=${(e: Event) => {
                         e.preventDefault();
-                        this._navigate(`/simulations/${sim.slug || sim.id}/lore`);
+                        navigate(`/simulations/${sim.slug || sim.id}/lore`);
                       }}
                     >
                       <div
@@ -713,7 +708,7 @@ export class VelgWorldsGallery extends LitElement {
                 href="/register"
                 @click=${(e: Event) => {
                   e.preventDefault();
-                  this._navigate('/register');
+                  navigate('/register');
                 }}
               >
                 ${msg('Build Your World')}

@@ -32,6 +32,7 @@ import { localized, msg } from '@lit/localize';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { navigate } from '../../utils/navigation.js';
 
 import { ARCHETYPES, type ArchetypeQuote } from './dungeon-showcase-data.js';
 import {
@@ -363,13 +364,7 @@ export class VelgDungeonShowcase extends LitElement {
   /** SPA navigation — crawlable `<a href>` with client-side routing. */
   private _onCtaNavigate(e: Event, id: string): void {
     e.preventDefault();
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        detail: `/archetypes/${id}`,
-      }),
-    );
+    navigate(`/archetypes/${id}`);
   }
 
   /** Localized CTA labels. Each call to msg() is a distinct extraction point.
