@@ -234,15 +234,11 @@ class BondService:
         # The fn_bond_lifecycle_guard trigger enforces structural invariants.
         # If the trigger rejects, Supabase raises an API error.
         try:
-            update_resp = await (
+            await (
                 supabase.table("agent_bonds")
-                .update({
-                    "status": "active",
-                    "depth": 1,
-                })
+                .update({"status": "active", "depth": 1})
                 .eq("id", str(bond["id"]))
                 .eq("status", "forming")
-                .select(_BOND_SELECT)
                 .execute()
             )
         except Exception as exc:
@@ -258,8 +254,14 @@ class BondService:
                 raise conflict("Bond was modified concurrently.") from exc
             sentry_sdk.capture_exception(exc)
             raise
-        updated = extract_list(update_resp)
-        if not updated:
+        # Refetch (update without select doesn't return data)
+        updated_bond = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select(_BOND_SELECT)
+            .eq("id", str(bond["id"]))
+            .maybe_single()
+        )
+        if not updated_bond or updated_bond.get("status") != "active":
             raise conflict("Bond was modified concurrently.")
 
         # 4. Create milestone memory
@@ -279,7 +281,7 @@ class BondService:
                 "simulation_id": str(simulation_id),
             },
         )
-        return _enrich_bond(updated[0])
+        return _enrich_bond(updated_bond)
 
     # ── Read operations ────────────────────────────────────────────────
 
@@ -435,21 +437,24 @@ class BondService:
         whisper_id: UUID,
     ) -> dict:
         """Mark a whisper as acted upon. Creates an 'action' memory."""
-        resp = await (
+        # Update without .select() — postgrest-py can't chain select after eq on update
+        await (
             supabase.table("bond_whispers")
-            .update({
-                "acted_on": True,
-            })
+            .update({"acted_on": True})
             .eq("id", str(whisper_id))
             .eq("bond_id", str(bond_id))
-            .select("*")
             .execute()
         )
-        data = extract_list(resp)
-        if not data:
+        # Refetch to return current state
+        whisper = await maybe_single_data(
+            supabase.table("bond_whispers")
+            .select("*")
+            .eq("id", str(whisper_id))
+            .eq("bond_id", str(bond_id))
+            .maybe_single()
+        )
+        if not whisper:
             raise not_found("Whisper", whisper_id)
-
-        whisper = data[0]
 
         # Create action memory
         await supabase.table("bond_memories").insert({
@@ -511,14 +516,18 @@ class BondService:
         # The fn_bond_lifecycle_guard trigger enforces:
         #   - Depth monotonicity (can only increase by 1)
         #   - depth_N_at timestamp auto-set
-        resp = await (
+        await (
             supabase.table("agent_bonds")
             .update({"depth": next_depth})
             .eq("id", str(bond_id))
-            .select("*")
             .execute()
         )
-        updated = extract_list(resp)
+        updated = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select("*")
+            .eq("id", str(bond_id))
+            .maybe_single()
+        )
         if not updated:
             return None
 
@@ -605,16 +614,20 @@ class BondService:
 
         The fn_bond_lifecycle_guard trigger validates the transition.
         """
-        resp = await (
+        await (
             supabase.table("agent_bonds")
             .update({"status": "strained"})
             .eq("id", str(bond_id))
             .eq("status", "active")
-            .select("*")
             .execute()
         )
-        data = extract_list(resp)
-        if not data:
+        data = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select("*")
+            .eq("id", str(bond_id))
+            .maybe_single()
+        )
+        if not data or data.get("status") != "strained":
             raise not_found("Bond", bond_id, context="or not in active status")
 
         await supabase.table("bond_memories").insert({
@@ -683,14 +696,18 @@ class BondService:
             return None
 
         # Recover (set_updated_at trigger handles timestamp automatically)
-        resp = await (
+        await (
             supabase.table("agent_bonds")
             .update({"status": "active"})
             .eq("id", str(bond_id))
-            .select("*")
             .execute()
         )
-        recovered = extract_list(resp)
+        recovered = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select("*")
+            .eq("id", str(bond_id))
+            .maybe_single()
+        )
         if not recovered:
             return None
 
@@ -718,16 +735,20 @@ class BondService:
           - Status transition validity (active/strained→farewell only)
           - farewell_at timestamp auto-set
         """
-        resp = await (
+        await (
             supabase.table("agent_bonds")
             .update({"status": "farewell"})
             .eq("id", str(bond_id))
             .in_("status", ["active", "strained"])
-            .select("*")
             .execute()
         )
-        data = extract_list(resp)
-        if not data:
+        data = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select("*")
+            .eq("id", str(bond_id))
+            .maybe_single()
+        )
+        if not data or data.get("status") != "farewell":
             raise not_found("Bond", bond_id, context="or already farewelled")
 
         await supabase.table("bond_memories").insert({
@@ -753,15 +774,23 @@ class BondService:
         to avoid N+1 queries. The lifecycle trigger handles farewell_at.
         """
         # Batch transition all active/strained bonds to farewell
-        resp = await (
+        # First get the IDs of bonds to farewell, then update
+        pre_resp = await (
             supabase.table("agent_bonds")
-            .update({"status": "farewell"})
+            .select("id")
             .eq("agent_id", str(agent_id))
             .in_("status", ["active", "strained"])
-            .select("id")
             .execute()
         )
-        farewelled = extract_list(resp)
+        farewelled = extract_list(pre_resp)
+        if farewelled:
+            bond_ids = [b["id"] for b in farewelled]
+            await (
+                supabase.table("agent_bonds")
+                .update({"status": "farewell"})
+                .in_("id", bond_ids)
+                .execute()
+            )
 
         # Create farewell memories for each bond
         if farewelled:
