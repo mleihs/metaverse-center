@@ -76,6 +76,21 @@ export class AppStateManager {
     return role === 'owner' || role === 'admin' || role === 'editor';
   });
 
+  /**
+   * Access mode for simulation-scoped API reads.
+   *
+   * `'member'` iff the user is authenticated AND has a role in the current
+   * simulation. Otherwise `'public'` (guests, signed-out sessions, and
+   * authenticated non-members browsing someone else's simulation).
+   *
+   * Read this at the call site and pass it explicitly to
+   * `BaseApiService.getSimulationData` so the routing decision is visible at
+   * the callsite and `services/api/` stays free of implicit appState reads.
+   */
+  readonly currentSimulationMode = computed<'public' | 'member'>(() =>
+    this.isAuthenticated.value && this.currentRole.value !== null ? 'member' : 'public',
+  );
+
   private readonly _isPlatformAdmin = signal<boolean>(false);
   readonly isPlatformAdmin: ReadonlySignal<boolean> = this._isPlatformAdmin;
 
