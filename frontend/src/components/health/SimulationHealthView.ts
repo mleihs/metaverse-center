@@ -16,6 +16,7 @@ import type {
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../shared/VelgHelpTip.js';
 
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -890,7 +891,13 @@ export class VelgSimulationHealthView extends LitElement {
     return html`
       <div class="view">
         <div class="view__header">
-          <h1 class="view__title">${msg('Simulation Health')}</h1>
+          <div class="view__title-group">
+            <h1 class="view__title">${msg('Simulation Health')}</h1>
+            <velg-help-tip
+              topic="world"
+              label=${msg('What drives simulation health?')}
+            ></velg-help-tip>
+          </div>
           ${
             appState.canAdmin.value
               ? html`

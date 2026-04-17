@@ -27,6 +27,7 @@ import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
 import '../shared/VelgAptitudeBars.js';
 import '../shared/VelgAvatar.js';
+import '../shared/VelgHelpTip.js';
 import './AgentCard.js';
 import './AgentEditModal.js';
 import './AgentDetailsPanel.js';
@@ -510,7 +511,13 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     return html`
       <section class="view" aria-label=${msg('Agents')}>
         <header class="view__header">
-          <h1 class="view__title">${msg('Agents')}</h1>
+          <div class="view__title-group">
+            <h1 class="view__title">${msg('Agents')}</h1>
+            <velg-help-tip
+              topic="agents"
+              label=${msg('What are agents?')}
+            ></velg-help-tip>
+          </div>
           ${
             this._canEdit
               ? html`

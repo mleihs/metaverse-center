@@ -14,6 +14,7 @@ import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../shared/VelgHelpTip.js';
 import './EventCard.js';
 import './EventEditModal.js';
 import './EventDetailsPanel.js';
@@ -253,7 +254,13 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
     return html`
       <section class="view" aria-label=${msg('Events')}>
         <header class="view__header">
-          <h1 class="view__title">${msg('Events')}</h1>
+          <div class="view__title-group">
+            <h1 class="view__title">${msg('Events')}</h1>
+            <velg-help-tip
+              topic="events"
+              label=${msg('How do events work?')}
+            ></velg-help-tip>
+          </div>
           ${
             this._canEdit
               ? html`

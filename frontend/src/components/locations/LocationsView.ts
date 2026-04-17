@@ -7,6 +7,7 @@ import { healthApi, heartbeatApi, locationsApi } from '../../services/api/index.
 import type { City, CityStreet, Zone, ZoneStability } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../shared/VelgHelpTip.js';
 import type { ZoneWeather } from './ZoneList.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -479,7 +480,13 @@ export class VelgLocationsView extends LitElement {
     return html`
       <section class="view" aria-label=${msg('Locations')}>
         <header class="view__header">
-          <h1 class="view__title">${msg('Locations')}</h1>
+          <div class="view__title-group">
+            <h1 class="view__title">${msg('Locations')}</h1>
+            <velg-help-tip
+              topic="world"
+              label=${msg('What are locations?')}
+            ></velg-help-tip>
+          </div>
           <div style="display: flex; align-items: center; gap: var(--space-3, 12px);">
             ${this._renderViewToggle()}
             ${

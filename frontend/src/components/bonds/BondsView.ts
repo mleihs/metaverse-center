@@ -14,6 +14,7 @@ import type { RecognitionCandidate } from '../../services/api/BondsApiService.js
 import { bondsApi } from '../../services/api/BondsApiService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../shared/VelgHelpTip.js';
 
 import './VelgBondPanel.js';
 import './VelgBondFormation.js';
@@ -63,7 +64,13 @@ export class VelgBondsView extends LitElement {
     return html`
       <div class="view">
         <div class="view__header">
-          <h2 class="view__title">${msg('Agent Bonds')}</h2>
+          <div class="view__title-group">
+            <h2 class="view__title">${msg('Agent Bonds')}</h2>
+            <velg-help-tip
+              topic="bonds"
+              label=${msg('How do bonds work?')}
+            ></velg-help-tip>
+          </div>
         </div>
 
         <div class="bonds-layout">
