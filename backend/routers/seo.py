@@ -8,6 +8,7 @@ from fastapi.responses import PlainTextResponse
 
 from backend.config import settings
 from backend.dependencies import get_anon_supabase
+from backend.seo.archetypes import ARCHETYPES
 from backend.seo.registry import PUBLIC_SIMULATION_VIEWS
 from backend.services.seo_service import SeoService
 from backend.services.simulation_service import SimulationService
@@ -96,6 +97,16 @@ async def sitemap_xml(supabase: Annotated[Client, Depends(get_anon_supabase)]) -
     _add_url(urlset, "https://metaverse.center/perspectives/digital-sovereignty", now, "0.8", "monthly")
     _add_url(urlset, "https://metaverse.center/perspectives/virtual-civilizations", now, "0.8", "monthly")
     _add_url(urlset, "https://metaverse.center/perspectives/competitive-strategy", now, "0.8", "monthly")
+
+    # Resonance Dungeon archetype detail pages — 8 literary dossiers, stable slugs
+    for archetype in ARCHETYPES:
+        _add_url(
+            urlset,
+            f"https://metaverse.center/archetypes/{archetype.id}",
+            now,
+            "0.7",
+            "monthly",
+        )
 
     # Per-simulation views + individual entities
     for sim in simulations:
