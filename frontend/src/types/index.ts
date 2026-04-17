@@ -772,6 +772,8 @@ export interface UserProfile {
   display_name?: string;
   avatar_url?: string;
   is_platform_admin?: boolean;
+  /** Whether the user has completed post-signup onboarding. Absent on legacy rows. */
+  onboarding_completed?: boolean;
   created_at: string;
   updated_at: string;
 }
