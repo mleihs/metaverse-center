@@ -5,6 +5,7 @@ import logging
 import httpx
 
 from backend.config import settings
+from backend.seo.registry import PUBLIC_SIMULATION_VIEWS
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -12,8 +13,6 @@ logger = logging.getLogger(__name__)
 
 SITE_HOST = "metaverse.center"
 SITE_URL = f"https://{SITE_HOST}"
-
-SIMULATION_VIEWS = ["lore", "agents", "buildings", "events", "locations", "social", "chat", "trends", "health"]
 
 
 class SeoService:
@@ -71,7 +70,7 @@ async def notify_search_engines(slug: str) -> None:
         logger.debug("IndexNow skipped: INDEXNOW_KEY not configured")
         return
 
-    urls = [f"{SITE_URL}/simulations/{slug}/{view}" for view in SIMULATION_VIEWS]
+    urls = [f"{SITE_URL}/simulations/{slug}/{view}" for view in PUBLIC_SIMULATION_VIEWS]
     urls.append(f"{SITE_URL}/worlds")
 
     payload = {

@@ -23,15 +23,21 @@ OUT_DIR = DIST_DIR / "prerendered"
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
+# View labels mirror backend/seo/registry.py — keep keys in sync when adding a view.
+# Excluded vs. the registry (historical reasons):
+#   social      — registered in commit 4; builder exists locally but label kept out
+#                 until the backend builder also exists
+#   chronicle   — requires chronicle table fetch; not yet wired in this script
+# Deliberately NOT included:
+#   chat        — member-only route, never indexable
+#   trends      — legacy URL, no frontend route
 VIEW_LABELS: dict[str, str] = {
     "lore": "Lore",
     "agents": "Agents",
     "buildings": "Buildings",
     "events": "Events",
-    "chat": "Chat",
     "social": "Social",
     "locations": "Locations",
-    "trends": "Social Trends",
     "health": "Simulation Health",
 }
 
@@ -311,15 +317,6 @@ def _build_social_content(sim_name: str) -> str:
     )
 
 
-def _build_trends_content(sim_name: str) -> str:
-    """Build minimal HTML for social trends view."""
-    return (
-        f"<h1>{_esc_content(sim_name)} — Social Trends</h1>\n"
-        f"<p>Real-world news transformed into simulation events in"
-        f" {_esc_content(sim_name)}. AI-driven narrative integration.</p>"
-    )
-
-
 def _build_health_content(sim_name: str) -> str:
     """Build minimal HTML for simulation health view."""
     return (
@@ -327,11 +324,6 @@ def _build_health_content(sim_name: str) -> str:
         f"<p>Building Readiness, Zone Stability, Embassy Effectiveness,"
         f" and overall health metrics for {_esc_content(sim_name)}.</p>"
     )
-
-
-def _build_chat_content(sim_name: str) -> str:
-    """Build minimal HTML for chat view."""
-    return f"<h1>{_esc_content(sim_name)} — Chat</h1>\n<p>Community chat for {_esc_content(sim_name)}.</p>"
 
 
 def main() -> None:
@@ -372,8 +364,6 @@ def main() -> None:
         "locations": lambda sim: _build_locations_content(sim["id"], sim["name"]),
         "events": lambda sim: _build_events_content(sim["name"]),
         "social": lambda sim: _build_social_content(sim["name"]),
-        "chat": lambda sim: _build_chat_content(sim["name"]),
-        "trends": lambda sim: _build_trends_content(sim["name"]),
         "health": lambda sim: _build_health_content(sim["name"]),
     }
 

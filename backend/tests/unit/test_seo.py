@@ -243,7 +243,7 @@ class TestEnrichHtmlForCrawler:
         }]
 
         with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
+             patch("backend.middleware.seo.build_view_content") as mock_build:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
@@ -289,7 +289,7 @@ class TestEnrichHtmlForCrawler:
         }]
 
         with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.seo_content.build_view_content") as mock_build:
+             patch("backend.middleware.seo.build_view_content") as mock_build:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
@@ -316,7 +316,7 @@ class TestInjectEntityContent:
 
     def test_injects_seo_content_div(self):
         base_html = "<html><head></head><body><app></app></body></html>"
-        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+        with patch("backend.middleware.seo.build_view_content") as mock_build, \
              patch("backend.middleware.seo._get_anon_client"):
             mock_build.return_value = ("<article>Test</article>", "")
             result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
@@ -326,7 +326,7 @@ class TestInjectEntityContent:
 
     def test_injects_jsonld(self):
         base_html = "<html><head></head><body></body></html>"
-        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+        with patch("backend.middleware.seo.build_view_content") as mock_build, \
              patch("backend.middleware.seo._get_anon_client"):
             mock_build.return_value = ("", '{"@type":"CollectionPage"}')
             result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
@@ -336,7 +336,7 @@ class TestInjectEntityContent:
 
     def test_empty_content_unchanged(self):
         base_html = "<html><head></head><body></body></html>"
-        with patch("backend.middleware.seo.seo_content.build_view_content") as mock_build, \
+        with patch("backend.middleware.seo.build_view_content") as mock_build, \
              patch("backend.middleware.seo._get_anon_client"):
             mock_build.return_value = ("", "")
             result = _inject_entity_content(base_html, "settings", "id", "Sim", "slug")
