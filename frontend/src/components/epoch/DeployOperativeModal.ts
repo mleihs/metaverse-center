@@ -15,6 +15,7 @@ import { html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { appState } from '../../services/AppStateManager.js';
 import {
   agentsApi,
   buildingsApi,
@@ -22,7 +23,7 @@ import {
   epochsApi,
   locationsApi,
 } from '../../services/api/index.js';
-import { appState } from '../../services/AppStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Agent,
   AgentAptitude,
@@ -240,7 +241,8 @@ export class VelgDeployOperativeModal extends LitElement {
         }
         this._aptitudeMap = map;
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'DeployOperativeModal._loadAgents' });
       this._agents = [];
     }
   }
@@ -255,7 +257,8 @@ export class VelgDeployOperativeModal extends LitElement {
       if (resp.success && resp.data) {
         this._embassies = (resp.data as Embassy[]).filter((e) => e.status === 'active');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'DeployOperativeModal._loadEmbassies' });
       this._embassies = [];
     }
   }
@@ -279,8 +282,8 @@ export class VelgDeployOperativeModal extends LitElement {
       if (agentsResp.success && agentsResp.data) {
         this._targetAgents = agentsResp.data as Agent[];
       }
-    } catch {
-      // fail silently
+    } catch (err) {
+      captureError(err, { source: 'DeployOperativeModal._loadTargetData' });
     }
   }
 
@@ -672,7 +675,8 @@ export class VelgDeployOperativeModal extends LitElement {
         this._deployPhase = 'idle';
         this._error = (resp.error as { message?: string })?.message ?? msg('Deployment failed.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'DeployOperativeModal._handleDeploy' });
       this._deployPhase = 'idle';
       this._error = msg('Deployment failed.');
     } finally {

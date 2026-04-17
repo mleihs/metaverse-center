@@ -20,6 +20,7 @@ import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type {
   Agent,
@@ -1708,8 +1709,8 @@ export class VelgEpochCommandCenter extends LitElement {
               security_level: string;
             }>;
           }
-        } catch {
-          /* non-critical */
+        } catch (err) {
+          captureError(err, { source: 'EpochCommandCenter._loadEpochDetails.zonesFetch' });
         }
       } else {
         this._zones = [];
@@ -2065,7 +2066,8 @@ export class VelgEpochCommandCenter extends LitElement {
           (result.error as { message?: string })?.message ?? msg('Failed to join epoch.'),
         );
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EpochCommandCenter._onJoinFromBoard' });
       VelgToast.error(msg('Failed to join epoch.'));
     } finally {
       this._actionLoading = false;
@@ -2371,7 +2373,8 @@ export class VelgEpochCommandCenter extends LitElement {
       }
 
       this._showDraftPanel = true;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EpochCommandCenter._onOpenDraftPanel' });
       VelgToast.error(msg('Failed to load agents for draft.'));
     }
   }
@@ -2394,7 +2397,8 @@ export class VelgEpochCommandCenter extends LitElement {
       } else {
         VelgToast.error(result.error?.message ?? msg('Failed to save draft.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EpochCommandCenter._onDraftComplete' });
       VelgToast.error(msg('Failed to save draft.'));
     } finally {
       this._actionLoading = false;
