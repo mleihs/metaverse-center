@@ -17,7 +17,6 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import sentry_sdk
-from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -37,7 +36,7 @@ from backend.services.combat.stress_system import stress_threshold
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id
 from backend.services.dungeon_instance_store import store as _store
 from backend.services.dungeon_shared import AUTO_APPLY_EFFECT_TYPES, CLIENT_TIMER_BUFFER_MS, log_extra
-from backend.utils.errors import forbidden, not_found
+from backend.utils.errors import forbidden, not_found, service_unavailable
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -84,10 +83,7 @@ class DungeonCheckpointService:
                     extra={"run_id": str(run_id)},
                 )
                 _store.remove(run_id)
-                raise HTTPException(
-                    status.HTTP_503_SERVICE_UNAVAILABLE,
-                    "Dungeon state recovery failed. Please retry.",
-                ) from exc
+                raise service_unavailable("Dungeon state recovery failed. Please retry.") from exc
 
         _store.touch(run_id)
         return instance

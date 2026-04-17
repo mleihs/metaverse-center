@@ -6,10 +6,8 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
 from backend.services.game_mechanics_service import GameMechanicsService
-from backend.utils.errors import bad_request, conflict, not_found, server_error
+from backend.utils.errors import bad_request, conflict, not_found, server_error, too_many_requests
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -85,10 +83,7 @@ class ZoneActionService:
             cooldown_until = datetime.fromisoformat(cooldown_check.data[0]["cooldown_until"].replace("Z", "+00:00"))
             if cooldown_until > now:
                 remaining = cooldown_until - now
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail=f"Action on cooldown. {remaining.days} days remaining.",
-                )
+                raise too_many_requests(f"Action on cooldown. {remaining.days} days remaining.")
 
         expires_at = now + timedelta(days=config["duration_days"])
         cooldown_until = expires_at + timedelta(days=config["cooldown_days"])

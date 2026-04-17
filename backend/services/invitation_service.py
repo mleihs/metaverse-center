@@ -5,9 +5,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import HTTPException, status
-
-from backend.utils.errors import not_found, server_error
+from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -92,10 +90,7 @@ class InvitationService:
         expires_at = datetime.fromisoformat(invitation["expires_at"].replace("Z", "+00:00"))
         if expires_at < datetime.now(UTC):
             logger.info("Expired invitation rejected", extra={"simulation_id": invitation["simulation_id"]})
-            raise HTTPException(
-                status_code=status.HTTP_410_GONE,
-                detail="This invitation has expired.",
-            )
+            raise gone("This invitation has expired.")
 
         # Create member
         member_response = await (
