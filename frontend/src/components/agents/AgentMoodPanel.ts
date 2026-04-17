@@ -26,6 +26,7 @@ import {
   type AgentNeeds,
   agentAutonomyApi,
 } from '../../services/api/AgentAutonomyApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { panelCascadeStyles } from '../shared/panel-cascade-styles.js';
 
@@ -834,7 +835,8 @@ export class AgentMoodPanel extends LitElement {
       requestAnimationFrame(() => {
         this._animated = true;
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AgentMoodPanel._fetchData' });
       this._loading = false;
     }
   }
