@@ -674,6 +674,50 @@ class BondService:
         logger.info("Bond farewell", extra={"bond_id": str(bond_id)})
         return data[0]
 
+    @classmethod
+    async def farewell_agent_bonds(
+        cls,
+        supabase: Client,
+        agent_id: UUID,
+    ) -> int:
+        """Farewell all active/strained bonds for a deleted agent.
+
+        Called from the agent soft-delete endpoint. Returns count of
+        farewelled bonds. Uses batch UPDATE (not per-bond farewell())
+        to avoid N+1 queries. The lifecycle trigger handles farewell_at.
+        """
+        # Batch transition all active/strained bonds to farewell
+        resp = await (
+            supabase.table("agent_bonds")
+            .update({"status": "farewell"})
+            .eq("agent_id", str(agent_id))
+            .in_("status", ["active", "strained"])
+            .select("id")
+            .execute()
+        )
+        farewelled = extract_list(resp)
+
+        # Create farewell memories for each bond
+        if farewelled:
+            memories = [
+                {
+                    "bond_id": bond["id"],
+                    "memory_type": "farewell",
+                    "description": "Agent was removed from the simulation",
+                    "context": {"farewell_at": datetime.now(UTC).isoformat()},
+                }
+                for bond in farewelled
+            ]
+            await supabase.table("bond_memories").insert(memories).execute()
+
+        if farewelled:
+            logger.info(
+                "Farewelled %d bonds for deleted agent",
+                len(farewelled),
+                extra={"agent_id": str(agent_id)},
+            )
+        return len(farewelled)
+
     # ── Public endpoint ────────────────────────────────────────────────
 
     @classmethod
