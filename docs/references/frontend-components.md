@@ -134,12 +134,8 @@ SimulationShell (Layout mit Navigation + Breadcrumb Simulation-Switcher, always-
 ├── SocialTrendsView
 │   ├── TrendFilterBar
 │   ├── TrendCard
-│   ├── TransformationModal (extends BaseModal)
-│   └── CampaignDashboard
-│       └── CampaignCard
+│   └── TransformationModal (extends BaseModal)
 ├── SocialMediaView
-│   ├── PostCard
-│   └── PostTransformModal (extends BaseModal)
 ├── LocationsView (Cities/Zones/Streets)
 │   ├── CityList
 │   ├── ZoneList
@@ -531,7 +527,6 @@ export class AppShell extends LitElement {
 /simulations/:slug/bonds            → BondsView
 /simulations/:slug/chat/:convId     → ChatWindow
 /simulations/:slug/trends           → SocialTrendsView
-/simulations/:slug/campaigns        → CampaignDashboard
 /simulations/:slug/social           → SocialMediaView
 /simulations/:slug/locations        → LocationsView
 /simulations/:slug/health           → SimulationHealthView
@@ -834,7 +829,7 @@ Alle Änderungen zeigen eine Live-Preview innerhalb der Shell. Preset-Auswahl f�
 | dungeon/ | 8 | 8 | DungeonTerminalView (route entry, 3-column grid at 1440px+ Terminal/Party/Map 1fr 300px 260px, FAB + dialog for map at <1200px, native dialog with showModal() for overlay, Wake Lock, dungeon recovery passes archetype label to terminal), DungeonHeader (depth gauge, archetype-specific badge color Shadow=violet/Tower=orange, room counter 'N visited', depth label 'D2/6', Tower stability FAILURE blink at 0, audio toggle button dispatches toggle-audio-settings), DungeonQuickActions (phase-driven, shares terminalActionStyles), DungeonMap (persistent property for sidebar/column mode, boss room red pulse 3s, room reveal radar-blip 300ms via state-diffing willUpdate/updated, depth-transition sonar-ping 500ms, all behind prefers-reduced-motion: no-preference, responsive: always-visible in 3-column layout 1440px+, collapsible in sidebar 1200-1440px, dialog overlay <1200px), DungeonPartyPanel, DungeonEnemyPanel, DungeonCombatBar, DungeonAudioSettings (VU meter control panel: enable toggle, 3 fader channels master/SFX/ambient, per-channel mute, native dialog showModal) |
 | bonds/ | 4 | 1 | BondsView (route wrapper), VelgBondPanel (dossier-aesthetic bond overview, VelgAvatar mood rings, corner brackets, whisper feed), VelgWhisperCard (prose-font, type badges, unread glow, ADDRESSED action), VelgBondFormation (recognition + form bond) + BondsApiService (9 methods, query-param pattern) |
 | chat/ | 7 | 9 | View, Window, ConversationList (search/pinned/date groups/inline rename), MessageList/Input (legacy), AgentSelector, EventPicker + core/: ChatFeed, ChatComposer (draft auto-save), ChatBubble, ChatMessage, ChatHeader, TypingIndicator, MessageActions (hover toolbar: Copy/ThumbsUp/Down/Regenerate/Edit), ReactionBar (emoji pills + Popover API picker, 8 presets) + services/: ChatSessionStore, ChatStreamConsumer, ChatExporter (Markdown+JSON export), ScrollController |
-| social/ | 9 | 9 | TrendsView, MediaView, CampaignDashboard, Cards, Modals, TrendFilterBar |
+| social/ | 3 | 3 | SocialTrendsView, SocialMediaView, TransformationModal |
 | locations/ | 5 | 5 | View, CityList, ZoneList, StreetList, LocationEditModal |
 | lore/ | 7 | 1 | SimulationLoreView + lore-content dispatcher + 5 content files (per-simulation) |
 | multiverse/ | 12 | 8 | CartographerMap, MapGraph, MapGraph3D, MapTooltip, MapConnectionPanel, MapBattleFeed, MapLeaderboardPanel, MapMinimap + 4 utilities (map-force, map-data, map-types, map-three-render) |

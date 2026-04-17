@@ -65,7 +65,7 @@ test.describe('Social Features', () => {
   });
 
   test('navigates between social sub-views', async ({ page }) => {
-    // The social section may have sub-navigation for Trends, Media, and Campaigns
+    // The social section may have sub-navigation for Trends and Media.
     // Check if the simulation nav or a social sub-nav exists
 
     // First, verify the Social Trends view is displayed
@@ -86,14 +86,6 @@ test.describe('Social Features', () => {
         await expect(mediaView).toBeVisible({ timeout: 10_000 });
       }
 
-      // Navigate to Campaigns sub-view
-      const campaignsTab = socialNav.locator('[data-testid="social-nav-campaigns"]');
-      if (await campaignsTab.isVisible().catch(() => false)) {
-        await campaignsTab.click();
-        const campaignDashboard = page.locator('velg-campaign-dashboard');
-        await expect(campaignDashboard).toBeVisible({ timeout: 10_000 });
-      }
-
       // Navigate back to Trends
       const trendsTab = socialNav.locator('[data-testid="social-nav-trends"]');
       if (await trendsTab.isVisible().catch(() => false)) {
@@ -101,82 +93,11 @@ test.describe('Social Features', () => {
         await expect(trendsView).toBeVisible({ timeout: 10_000 });
       }
     } else {
-      // Social sub-views may be accessible via URL routing instead
-      // Try navigating to the campaigns route directly
+      // Sub-routing is not set up; verify the trends view is the main social view
       const currentUrl = page.url();
       const socialBaseUrl = currentUrl.replace(/\/social.*/, '/social');
-
-      // Navigate to campaigns view via URL
-      await page.goto(`${socialBaseUrl}/campaigns`);
-      const campaignDashboard = page.locator('velg-campaign-dashboard');
-      const hasCampaigns = await campaignDashboard.isVisible({ timeout: 5_000 }).catch(() => false);
-
-      if (hasCampaigns) {
-        await expect(campaignDashboard).toBeVisible();
-
-        // Navigate back to trends
-        await page.goto(`${socialBaseUrl}/trends`);
-        await expect(trendsView).toBeVisible({ timeout: 10_000 });
-      } else {
-        // If sub-routing is not set up, verify the trends view is the main social view
-        await page.goto(socialBaseUrl);
-        await expect(trendsView).toBeVisible({ timeout: 10_000 });
-      }
-    }
-  });
-
-  test('displays campaign dashboard', async ({ page }) => {
-    // Navigate to the campaign dashboard
-    // This may be accessible via a sub-route or sub-navigation
-    const currentUrl = page.url();
-    const socialBaseUrl = currentUrl.replace(/\/social.*/, '/social');
-
-    // Try navigating to campaigns directly
-    await page.goto(`${socialBaseUrl}/campaigns`);
-
-    const campaignDashboard = page.locator('velg-campaign-dashboard');
-    const hasCampaignRoute = await campaignDashboard.isVisible({ timeout: 5_000 }).catch(() => false);
-
-    if (hasCampaignRoute) {
-      // Verify the campaigns dashboard renders correctly
-      await expect(campaignDashboard).toBeVisible();
-
-      const title = campaignDashboard.locator('.campaigns__title');
-      await expect(title).toBeVisible();
-      await expect(title).toHaveText('Campaigns');
-
-      // Wait for loading to complete
-      const loadingState = campaignDashboard.locator('velg-loading-state');
-      await expect(loadingState).not.toBeVisible({ timeout: 10_000 });
-
-      // Should show either campaign cards or an empty state
-      const campaignGrid = campaignDashboard.locator('.campaigns__grid');
-      const emptyState = campaignDashboard.locator('velg-empty-state');
-
-      const hasGrid = await campaignGrid.isVisible().catch(() => false);
-      const hasEmpty = await emptyState.isVisible().catch(() => false);
-
-      expect(hasGrid || hasEmpty).toBe(true);
-
-      if (hasGrid) {
-        const campaignCards = campaignDashboard.locator('velg-campaign-card');
-        const count = await campaignCards.count();
-        expect(count).toBeGreaterThan(0);
-      }
-
-      if (hasEmpty) {
-        await expect(emptyState).toContainText(/no campaigns/i);
-      }
-    } else {
-      // Campaign dashboard may not have its own route; check within the social trends view
-      // Navigate back to the main social view
       await page.goto(socialBaseUrl);
-      const trendsView = page.locator('velg-social-trends-view');
       await expect(trendsView).toBeVisible({ timeout: 10_000 });
-
-      // The social trends view is the primary social view
-      // Verify it loaded successfully as the campaign dashboard may be behind a sub-nav
-      await expect(trendsView).toBeVisible();
     }
   });
 });
