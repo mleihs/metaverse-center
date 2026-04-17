@@ -2315,6 +2315,7 @@ Token-Kaufsystem (Mock-Monetarisierung), Wallet-Verwaltung, BYOK-Schluessel, Fea
 | Resonance Dungeons | 12 | Available + CreateRun + GetRun + State + Move + Action + Combat + Scout + Rest + Retreat + Events + History |
 | Forge Access | 5 | Create + Me + Pending + PendingCount + Review |
 | Forge Token Economy | 22 | Bundles (1) + Wallet (3) + BYOK Keys (2) + Feature Purchases (7) + Darkroom Regen (1) + Admin Bundles (2) + Admin Purchases (1) + Admin Grant (1) + Admin BYOK (2) + Admin Stats (2) |
+| Agent Bonds | 8 | List + Detail + TrackAttention + RecognitionCandidates + FormBond + Whispers + MarkRead + MarkActed |
 | Admin | 11 | Settings (2) + Users (3) + Memberships (3) + Cleanup (3) |
-| Public | 49 | Anonymer Lesezugriff (alle GET-only) |
-| **Gesamt** | **309** | **38 Router** |
+| Public | 50 | Anonymer Lesezugriff (alle GET-only, inkl. Public Bonds) |
+| **Gesamt** | **318** | **39 Router** |
