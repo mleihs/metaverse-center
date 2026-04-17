@@ -409,7 +409,7 @@ async def update_byok(
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def delete_byok_key(
     request: Request,
-    provider: str,
+    provider: Literal["openrouter", "replicate"],
     user: Annotated[CurrentUser, Depends(require_architect())],
     supabase=Depends(get_effective_supabase),
 ) -> SuccessResponse[MessageResponse]:

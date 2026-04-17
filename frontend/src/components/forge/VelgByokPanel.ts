@@ -354,6 +354,11 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       color: var(--color-text-primary);
     }
 
+    .byok__reveal-btn:focus-visible {
+      outline: 2px solid var(--_accent);
+      outline-offset: -2px;
+    }
+
     .byok__remove-btn {
       background: none;
       border: 1px solid var(--color-border-light);
@@ -413,13 +418,18 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       letter-spacing: var(--tracking-wide, 0.025em);
       padding: var(--space-1, 4px) var(--space-3, 12px);
       cursor: pointer;
-      min-height: 32px;
+      min-height: 44px;
       transition: border-color var(--transition-fast), color var(--transition-fast);
     }
 
     .byok__test-btn:hover:not(:disabled) {
       border-color: var(--_accent);
       color: var(--_accent);
+    }
+
+    .byok__test-btn:focus-visible {
+      outline: 2px solid var(--_accent);
+      outline-offset: 2px;
     }
 
     .byok__test-btn:disabled {
