@@ -5,6 +5,7 @@ from pathlib import Path
 from cachetools import TTLCache
 
 from backend.config import settings
+from backend.seo.archetypes import build_archetype_platform_meta
 from backend.seo.models import EntityDetailResult, EntityMeta
 from backend.seo.registry import (
     PUBLIC_SIMULATION_VIEWS,
@@ -290,6 +291,11 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "canonical": "https://metaverse.center/perspectives/competitive-strategy",
     },
 }
+
+# Eight Resonance Dungeon archetype pages — title/description/og:image/og:type/
+# CreativeWork JSON-LD computed from backend/seo/archetypes.py. Merged into the
+# platform meta dict so archetype URLs flow through the same static-path handler.
+_PLATFORM_META.update(build_archetype_platform_meta())
 
 
 async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None:

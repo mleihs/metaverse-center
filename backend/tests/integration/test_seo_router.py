@@ -98,6 +98,16 @@ class TestSitemapXml:
         for view in ["chat", "settings", "terminal", "bonds", "pulse", "trends"]:
             assert f"/simulations/{SIM_VELGARIEN_SLUG}/{view}" not in text
 
+    def test_contains_archetype_detail_pages(self, client: TestClient):
+        r = client.get("/sitemap.xml")
+        text = r.text
+        # Eight Resonance Dungeon archetype literary detail pages
+        for slug in [
+            "shadow", "tower", "mother", "entropy",
+            "prometheus", "deluge", "awakening", "overthrow",
+        ]:
+            assert f"https://metaverse.center/archetypes/{slug}" in text
+
     def test_homepage_has_highest_priority(self, client: TestClient):
         r = client.get("/sitemap.xml")
         # Find the homepage entry — it should have priority 1.0

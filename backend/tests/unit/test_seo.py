@@ -304,6 +304,54 @@ class TestEnrichHtmlForCrawler:
         assert "CreativeWork" in result
 
 
+class TestArchetypeEnrichment:
+    """Eight Resonance Dungeon archetype pages (/archetypes/:id) have
+    static, stable SEO metadata — no DB lookup — delivered via the
+    _PLATFORM_META merge path."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_cache(self):
+        import backend.middleware.seo as seo_module
+        seo_module._index_html_cache = None
+        yield
+        seo_module._index_html_cache = None
+
+    @pytest.mark.anyio
+    async def test_all_eight_archetypes_enrich(self, tmp_path):
+        from backend.seo.archetypes import ARCHETYPES
+
+        index = tmp_path / "index.html"
+        index.write_text(
+            '<html><head>'
+            '<title>default</title>'
+            '<meta name="description" content="default">'
+            '<meta property="og:title" content="default">'
+            '<meta property="og:description" content="default">'
+            '<meta property="og:url" content="default">'
+            '<meta property="og:type" content="website">'
+            '<meta property="og:image" content="default">'
+            '<meta property="og:image:alt" content="default">'
+            '<meta name="twitter:title" content="default">'
+            '<meta name="twitter:description" content="default">'
+            '<meta name="twitter:image" content="default">'
+            '<meta name="twitter:image:alt" content="default">'
+            '<link rel="canonical" href="default">'
+            '</head><body></body></html>'
+        )
+
+        for archetype in ARCHETYPES:
+            result = await enrich_html_for_crawler(
+                index, f"/archetypes/{archetype.id}",
+            )
+            assert result is not None, f"no enrichment for {archetype.id}"
+            assert archetype.name in result, f"name missing for {archetype.id}"
+            assert archetype.subtitle in result, f"subtitle missing for {archetype.id}"
+            assert archetype.tagline in result, f"tagline missing for {archetype.id}"
+            assert '<meta property="og:type" content="article"' in result
+            # CreativeWork JSON-LD for crawler consumption
+            assert '"@type": "CreativeWork"' in result or '"@type":"CreativeWork"' in result
+
+
 class TestEntityMetaOverride:
     """When a URL carries an entity slug/UUID, the detail builder's EntityMeta
     must override the simulation-level title / description / og:image / og:type."""
