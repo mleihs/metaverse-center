@@ -440,11 +440,11 @@ async def test_byok_key(
     """Test a BYOK API key against its provider without storing it.
 
     Makes a lightweight API call to verify the key is valid:
-    - OpenRouter: GET /api/v1/models (model list)
+    - OpenRouter: GET /api/v1/auth/key (key info, requires valid auth)
     - Replicate: GET /v1/account (account info)
     """
     provider_urls = {
-        "openrouter": "https://openrouter.ai/api/v1/models",
+        "openrouter": "https://openrouter.ai/api/v1/auth/key",
         "replicate": "https://api.replicate.com/v1/account",
     }
     url = provider_urls[body.provider]
