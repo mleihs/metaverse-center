@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi, buildingsApi } from '../../services/api/index.js';
 import { locationsApi } from '../../services/api/LocationsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 
 interface PreviewSlot {
@@ -195,8 +196,9 @@ export class VelgDossierPreview extends LitElement {
           .map((z) => z.name)
           .filter(Boolean);
       }
-    } catch {
-      // Non-critical – preview works with fallback text
+    } catch (err) {
+      // Preview renders with redacted fallback text when names can't be fetched.
+      captureError(err, { source: 'VelgDossierPreview._loadEntityNames' });
     }
 
     this._loaded = true;

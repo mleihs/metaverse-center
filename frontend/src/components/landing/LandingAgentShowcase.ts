@@ -15,6 +15,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentAptitude, AptitudeSet, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
@@ -539,8 +540,8 @@ export class VelgLandingAgentShowcase extends LitElement {
 
       this._agents = allShowcase.slice(0, layout.maxTotal);
       this._injectStructuredData();
-    } catch {
-      // Non-critical marketing section — fail silently
+    } catch (err) {
+      captureError(err, { source: 'VelgLandingAgentShowcase._fetchShowcaseAgents' });
     } finally {
       this._loading = false;
     }

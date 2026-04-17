@@ -17,6 +17,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
@@ -1654,8 +1655,9 @@ export class VelgLandingPage extends LitElement {
       if (response.success && response.data) {
         this._stats = response.data;
       }
-    } catch {
-      // Stats are non-critical — show fallback
+    } catch (err) {
+      // Stats are non-critical — show fallback.
+      captureError(err, { source: 'VelgLandingPage._fetchStats' });
     }
   }
 
@@ -1667,8 +1669,8 @@ export class VelgLandingPage extends LitElement {
       if (resp.success && Array.isArray(resp.data)) {
         this._worlds = resp.data as Simulation[];
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'VelgLandingPage._fetchWorlds' });
     }
   }
 
