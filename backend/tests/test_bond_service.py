@@ -9,7 +9,7 @@ from fastapi import HTTPException
 
 from backend.services.bond.bond_service import (
     OBSERVATION_PERIOD_DAYS,
-    RECOGNITION_THRESHOLD,
+    _DEFAULT_RECOGNITION_THRESHOLD as RECOGNITION_THRESHOLD,
     BondService,
 )
 from backend.services.bond.whisper_template_service import WhisperTemplateService
@@ -168,7 +168,14 @@ class TestFormBond:
 class TestMarkWhisperRead:
     async def test_returns_whisper_on_success(self):
         whisper = {"id": str(uuid4()), "bond_id": str(MOCK_BOND), "read_at": "2026-01-01"}
-        sb = _mock_supabase(table_data=[whisper])
+        sb = MagicMock()
+        chain = _make_bond_chain()
+        sb.table.return_value = chain
+        # First call: update (void), second call: maybe_single refetch
+        chain.execute = AsyncMock(side_effect=[
+            MagicMock(data=[]),        # update (we ignore the result)
+            MagicMock(data=whisper),   # maybe_single refetch
+        ])
 
         result = await BondService.mark_whisper_read(sb, MOCK_USER, MOCK_BOND, uuid4())
         assert result["id"] == whisper["id"]

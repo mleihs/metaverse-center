@@ -30,6 +30,7 @@ function getTabs(): NavTab[] {
     { label: msg('Health'), path: 'health', icon: () => icons.heartbeat(14) },
     { label: msg('Pulse'), path: 'pulse', icon: () => icons.radar(14) },
     { label: msg('Events'), path: 'events', icon: () => icons.bolt(14) },
+    { label: msg('Bonds'), path: 'bonds', icon: () => icons.handshake(14) },
     { label: msg('Chat'), path: 'chat', icon: () => icons.messageCircle(14) },
     { label: msg('Social'), path: 'social', icon: () => icons.megaphone(14) },
     { label: msg('Locations'), path: 'locations', icon: () => icons.mapPin(14) },

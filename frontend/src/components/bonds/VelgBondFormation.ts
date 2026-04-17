@@ -10,6 +10,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import { analyticsService } from '../../services/AnalyticsService.js';
 import type { RecognitionCandidate } from '../../services/api/BondsApiService.js';
 import { bondsApi } from '../../services/api/BondsApiService.js';
 import { buttonStyles } from '../shared/button-styles.js';
@@ -141,6 +142,10 @@ export class VelgBondFormation extends LitElement {
     this._forming = false;
 
     if (resp.success) {
+      analyticsService.trackEvent('bond_formed', {
+        simulation_id: this.simulationId,
+        agent_id: agentId,
+      });
       VelgToast.success(msg('Bond formed'));
       this.dispatchEvent(
         new CustomEvent('bond-formed', {
