@@ -16,6 +16,7 @@ import type {
   OperativeType,
 } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { updateUrl } from '../../utils/navigation.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
@@ -390,19 +391,13 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
   private _pushEntityUrl(agent: Agent): void {
     const sim = appState.currentSimulation.value;
     if (!sim?.slug || !agent.slug) return;
-    const entityPath = `/simulations/${sim.slug}/agents/${agent.slug}`;
-    if (window.location.pathname !== entityPath) {
-      window.history.pushState({}, '', entityPath);
-    }
+    updateUrl(`/simulations/${sim.slug}/agents/${agent.slug}`);
   }
 
   private _pushListUrl(): void {
     const sim = appState.currentSimulation.value;
     if (!sim?.slug) return;
-    const listPath = `/simulations/${sim.slug}/agents`;
-    if (window.location.pathname !== listPath) {
-      window.history.pushState({}, '', listPath);
-    }
+    updateUrl(`/simulations/${sim.slug}/agents`);
   }
 
   private _handleAgentEdit(e: CustomEvent<Agent>): void {

@@ -10,6 +10,7 @@ import { seoService } from '../../services/SeoService.js';
 import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type { ApiResponse, Building } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { updateUrl } from '../../utils/navigation.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
@@ -192,19 +193,13 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
   private _pushEntityUrl(building: Building): void {
     const sim = appState.currentSimulation.value;
     if (!sim?.slug || !building.slug) return;
-    const entityPath = `/simulations/${sim.slug}/buildings/${building.slug}`;
-    if (window.location.pathname !== entityPath) {
-      window.history.pushState({}, '', entityPath);
-    }
+    updateUrl(`/simulations/${sim.slug}/buildings/${building.slug}`);
   }
 
   private _pushListUrl(): void {
     const sim = appState.currentSimulation.value;
     if (!sim?.slug) return;
-    const listPath = `/simulations/${sim.slug}/buildings`;
-    if (window.location.pathname !== listPath) {
-      window.history.pushState({}, '', listPath);
-    }
+    updateUrl(`/simulations/${sim.slug}/buildings`);
   }
 
   private _handleBuildingEdit(e: CustomEvent<Building>): void {
