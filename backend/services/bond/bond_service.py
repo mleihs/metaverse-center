@@ -354,29 +354,26 @@ class BondService:
         whisper_id: UUID,
     ) -> dict:
         """Mark a whisper as read. RLS ensures ownership."""
-        resp = await (
+        # Update (no .select() — postgrest-py can't chain select after is_)
+        await (
             supabase.table("bond_whispers")
             .update({"read_at": datetime.now(UTC).isoformat()})
             .eq("id", str(whisper_id))
             .eq("bond_id", str(bond_id))
             .is_("read_at", "null")
-            .select("*")
             .execute()
         )
-        data = extract_list(resp)
-        if not data:
-            # Either already read or doesn't exist -- try to fetch it
-            existing = await maybe_single_data(
-                supabase.table("bond_whispers")
-                .select("*")
-                .eq("id", str(whisper_id))
-                .eq("bond_id", str(bond_id))
-                .maybe_single()
-            )
-            if not existing:
-                raise not_found("Whisper", whisper_id)
-            return existing
-        return data[0]
+        # Refetch to return current state (handles both fresh-read and already-read)
+        existing = await maybe_single_data(
+            supabase.table("bond_whispers")
+            .select("*")
+            .eq("id", str(whisper_id))
+            .eq("bond_id", str(bond_id))
+            .maybe_single()
+        )
+        if not existing:
+            raise not_found("Whisper", whisper_id)
+        return existing
 
     @classmethod
     async def mark_whisper_acted(
