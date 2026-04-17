@@ -152,6 +152,10 @@ export function applyLoreDetailSeo(sim: Simulation, section: ForgeLoreSection): 
     seoService.setOgImage(sim.banner_url);
     seoService.setOgImageAlt(`${name} — lore`);
   }
+  seoService.setArticleMeta({
+    author: name,
+    section: chapter || 'Lore',
+  });
   seoService.setStructuredData({
     '@context': 'https://schema.org',
     '@type': 'Article',

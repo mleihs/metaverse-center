@@ -571,18 +571,23 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
 
   protected _onDataLoaded(): void {
     const chronicles = this._chronicles;
-    if (chronicles.length > 0) {
-      const featured = chronicles[0];
-      const sim = appState.currentSimulation.value;
-      if (sim) {
-        seoService.setArticle({
-          headline: featured.title ?? t(sim, 'name'),
-          articleBody: (featured.content ?? '').slice(0, 500),
-          url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
-          datePublished: featured.published_at ?? undefined,
-        });
-      }
-    }
+    if (chronicles.length === 0) return;
+    const featured = chronicles[0];
+    const sim = appState.currentSimulation.value;
+    if (!sim) return;
+
+    seoService.setOgType('article');
+    seoService.setArticleMeta({
+      publishedTime: featured.published_at ?? undefined,
+      author: t(sim, 'name'),
+      section: 'Chronicle',
+    });
+    seoService.setArticle({
+      headline: featured.title ?? t(sim, 'name'),
+      articleBody: (featured.content ?? '').slice(0, 500),
+      url: `https://metaverse.center/simulations/${sim.slug}/chronicle`,
+      datePublished: featured.published_at ?? undefined,
+    });
   }
 
   private get _canEdit(): boolean {
