@@ -5,6 +5,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { socialTrendsApi } from '../../services/api/index.js';
 import type { BrowseArticle } from '../../services/api/SocialTrendsApiService.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { SocialTrend } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
@@ -601,7 +602,8 @@ export class VelgTransformationModal extends LitElement {
           this._transforming = false;
         }
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgTransformationModal._handleTransform' });
       this._transforming = false;
     }
   }

@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { resonanceApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDateTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -720,8 +721,8 @@ export class VelgResonanceDetailsPanel extends LitElement {
           }))
           .sort((a, b) => b.effective_magnitude - a.effective_magnitude);
       }
-    } catch {
-      // Impact data not critical
+    } catch (err) {
+      captureError(err, { source: 'VelgResonanceDetailsPanel._loadImpacts' });
     } finally {
       this._impactsLoading = false;
     }

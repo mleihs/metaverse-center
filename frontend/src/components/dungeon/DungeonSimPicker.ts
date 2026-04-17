@@ -15,6 +15,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { appState } from '../../services/AppStateManager.js';
 import { dungeonApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { ARCHETYPE_BY_SLUG, type AvailableDungeonResponse } from '../../types/dungeon.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
@@ -220,7 +221,8 @@ export class VelgDungeonSimPicker extends LitElement {
               dungeonData: match,
             });
           }
-        } catch {
+        } catch (err) {
+          captureError(err, { source: 'VelgDungeonSimPicker._loadAvailability.perSim' });
           this._updateSim(index, {
             status: 'unavailable',
             reason: msg('Connection error'),

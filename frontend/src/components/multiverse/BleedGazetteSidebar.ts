@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { connectionsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
@@ -322,7 +323,8 @@ export class VelgBleedGazetteSidebar extends LitElement {
       const h = String(d.getUTCHours()).padStart(2, '0');
       const m = String(d.getUTCMinutes()).padStart(2, '0');
       return `FILED: ${h}:${m} UTC`;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgBleedGazetteSidebar._formatFiled' });
       return '';
     }
   }

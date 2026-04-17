@@ -22,6 +22,7 @@ import {
   type MorningBriefing,
   type SimulationMoodSummary,
 } from '../../services/api/AgentAutonomyApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
 import '../shared/VelgAvatar.js';
 
@@ -273,7 +274,8 @@ export class VelgAutonomyBriefing extends LitElement {
     try {
       const resp = await agentAutonomyApi.getMorningBriefing(this.simulationId);
       this._briefing = resp.data ?? null;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgAutonomyBriefing._fetchBriefing' });
       this._briefing = null;
     }
     this._loading = false;

@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 
 /**
@@ -377,7 +378,8 @@ export class VelgStyleReferenceUpload extends LitElement {
     this._error = '';
     try {
       new URL(url);
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgStyleReferenceUpload._handleUrlSubmit' });
       this._error = msg('Invalid URL.');
       this._flash('error');
       return;

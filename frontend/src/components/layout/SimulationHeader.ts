@@ -4,6 +4,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import type { ThreatLevel } from '../lore/lore-content.js';
@@ -214,8 +215,8 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
       this._threatLevel = extractThreatLevel(zeta.body);
       forgeStateManager.threatLevel.value = this._threatLevel;
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'VelgSimulationHeader._loadThreatLevel' });
     }
   }
 
