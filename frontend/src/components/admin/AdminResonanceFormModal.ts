@@ -14,8 +14,14 @@ import {
 import '../shared/BaseModal.js';
 
 const SOURCE_CATEGORY_KEYS: SourceCategory[] = [
-  'economic_crisis', 'military_conflict', 'pandemic', 'natural_disaster',
-  'political_upheaval', 'tech_breakthrough', 'cultural_shift', 'environmental_disaster',
+  'economic_crisis',
+  'military_conflict',
+  'pandemic',
+  'natural_disaster',
+  'political_upheaval',
+  'tech_breakthrough',
+  'cultural_shift',
+  'environmental_disaster',
 ];
 
 @localized()

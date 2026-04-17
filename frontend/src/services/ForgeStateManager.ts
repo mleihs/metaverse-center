@@ -1,6 +1,5 @@
 import { computed, type Signal, signal } from '@preact/signals-core';
 import { appState } from './AppStateManager.js';
-import { captureError } from './SentryService.js';
 import type {
   BYOKStatus,
   FeaturePurchase,
@@ -15,6 +14,7 @@ import type {
   WalletResponse,
 } from './api/ForgeApiService.js';
 import { forgeApi } from './api/ForgeApiService.js';
+import { captureError } from './SentryService.js';
 
 const DEFAULT_GENERATION_CONFIG: ForgeGenerationConfig = {
   agent_count: 6,

@@ -5,8 +5,8 @@
  * Used by ChatWindow's export action button.
  */
 
-import { captureError } from '../SentryService.js';
 import type { AgentBrief, ChatConversation, ChatMessage } from '../../types/index.js';
+import { captureError } from '../SentryService.js';
 
 export class ChatExporter {
   /**

@@ -12,10 +12,7 @@ export class ChatApiService extends BaseApiService {
     simulationId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<ChatConversation[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/chat/conversations`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/chat/conversations`, mode);
   }
 
   createConversation(

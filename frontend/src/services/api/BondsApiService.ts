@@ -67,42 +67,26 @@ export class BondsApiService extends BaseApiService {
   }
 
   /** Track that the user viewed an agent's detail page. */
-  trackAttention(
-    simulationId: string,
-    agentId: string,
-  ): Promise<ApiResponse<Bond>> {
-    return this.post(
-      `${this.base}/track-attention?simulation_id=${simulationId}`,
-      { agent_id: agentId },
-    );
+  trackAttention(simulationId: string, agentId: string): Promise<ApiResponse<Bond>> {
+    return this.post(`${this.base}/track-attention?simulation_id=${simulationId}`, {
+      agent_id: agentId,
+    });
   }
 
   /** Check for agents that crossed the recognition threshold. */
-  getRecognitionCandidates(
-    simulationId: string,
-  ): Promise<ApiResponse<RecognitionCandidate[]>> {
+  getRecognitionCandidates(simulationId: string): Promise<ApiResponse<RecognitionCandidate[]>> {
     return this.get(`${this.base}/recognition-candidates`, {
       simulation_id: simulationId,
     });
   }
 
   /** Accept a bond with an agent after recognition. */
-  formBond(
-    simulationId: string,
-    agentId: string,
-  ): Promise<ApiResponse<Bond>> {
-    return this.post(
-      `${this.base}/form?simulation_id=${simulationId}`,
-      { agent_id: agentId },
-    );
+  formBond(simulationId: string, agentId: string): Promise<ApiResponse<Bond>> {
+    return this.post(`${this.base}/form?simulation_id=${simulationId}`, { agent_id: agentId });
   }
 
   /** Get paginated whispers for a bond. */
-  listWhispers(
-    bondId: string,
-    limit = 25,
-    offset = 0,
-  ): Promise<ApiResponse<Whisper[]>> {
+  listWhispers(bondId: string, limit = 25, offset = 0): Promise<ApiResponse<Whisper[]>> {
     return this.get(`${this.base}/${bondId}/whispers`, {
       limit: String(limit),
       offset: String(offset),
@@ -110,23 +94,13 @@ export class BondsApiService extends BaseApiService {
   }
 
   /** Mark a whisper as read. */
-  markWhisperRead(
-    bondId: string,
-    whisperId: string,
-  ): Promise<ApiResponse<Whisper>> {
-    return this.post(
-      `${this.base}/${bondId}/whispers/${whisperId}/read`,
-    );
+  markWhisperRead(bondId: string, whisperId: string): Promise<ApiResponse<Whisper>> {
+    return this.post(`${this.base}/${bondId}/whispers/${whisperId}/read`);
   }
 
   /** Mark a whisper as acted upon. */
-  markWhisperActed(
-    bondId: string,
-    whisperId: string,
-  ): Promise<ApiResponse<Whisper>> {
-    return this.post(
-      `${this.base}/${bondId}/whispers/${whisperId}/acted`,
-    );
+  markWhisperActed(bondId: string, whisperId: string): Promise<ApiResponse<Whisper>> {
+    return this.post(`${this.base}/${bondId}/whispers/${whisperId}/acted`);
   }
 }
 

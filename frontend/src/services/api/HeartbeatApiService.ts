@@ -26,10 +26,7 @@ export class HeartbeatApiService extends BaseApiService {
     simulationId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Record<string, unknown>>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/heartbeat/briefing`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/briefing`, mode);
   }
 
   listEntries(
@@ -37,11 +34,7 @@ export class HeartbeatApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<HeartbeatEntry[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/heartbeat/entries`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/entries`, mode, params);
   }
 
   listArcs(
@@ -49,11 +42,7 @@ export class HeartbeatApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<NarrativeArc[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/heartbeat/arcs`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/heartbeat/arcs`, mode, params);
   }
 
   // ── Bureau Responses ────────────────────────────────────────

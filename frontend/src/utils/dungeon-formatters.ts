@@ -143,7 +143,8 @@ const ARCHETYPE_AMBIENT_FACTORIES: Record<string, AmbientFactory> = {
 /** Get ambient text for an archetype, falling back to Shadow defaults.
  *  msg() is called at invocation time (not module scope) for correct i18n. */
 function getAmbient(archetype: string): AmbientTexts {
-  const factory = ARCHETYPE_AMBIENT_FACTORIES[archetype] ?? ARCHETYPE_AMBIENT_FACTORIES[ARCHETYPE_SHADOW];
+  const factory =
+    ARCHETYPE_AMBIENT_FACTORIES[archetype] ?? ARCHETYPE_AMBIENT_FACTORIES[ARCHETYPE_SHADOW];
   return factory();
 }
 
@@ -212,28 +213,56 @@ export function getArchetypeGaugeInfo(
   archetypeState: ArchetypeState,
 ): { label: string; value: number; max: number } | null {
   if (isShadowState(archetypeState)) {
-    return { label: msg('VISIBILITY'), value: archetypeState.visibility, max: archetypeState.max_visibility };
+    return {
+      label: msg('VISIBILITY'),
+      value: archetypeState.visibility,
+      max: archetypeState.max_visibility,
+    };
   }
   if (isTowerState(archetypeState)) {
-    return { label: msg('STRUCTURAL INTEGRITY'), value: archetypeState.stability, max: archetypeState.max_stability };
+    return {
+      label: msg('STRUCTURAL INTEGRITY'),
+      value: archetypeState.stability,
+      max: archetypeState.max_stability,
+    };
   }
   if (isEntropyState(archetypeState)) {
     return { label: msg('DECAY'), value: archetypeState.decay, max: archetypeState.max_decay };
   }
   if (isMotherState(archetypeState)) {
-    return { label: msg('PARASITIC ATTACHMENT'), value: archetypeState.attachment, max: archetypeState.max_attachment };
+    return {
+      label: msg('PARASITIC ATTACHMENT'),
+      value: archetypeState.attachment,
+      max: archetypeState.max_attachment,
+    };
   }
   if (isPrometheusState(archetypeState)) {
-    return { label: msg('INSIGHT'), value: archetypeState.insight, max: archetypeState.max_insight };
+    return {
+      label: msg('INSIGHT'),
+      value: archetypeState.insight,
+      max: archetypeState.max_insight,
+    };
   }
   if (isDelugeState(archetypeState)) {
-    return { label: msg('WATER LEVEL'), value: archetypeState.water_level, max: archetypeState.max_water_level };
+    return {
+      label: msg('WATER LEVEL'),
+      value: archetypeState.water_level,
+      max: archetypeState.max_water_level,
+    };
   }
   if (isAwakeningState(archetypeState)) {
-    return { label: msg('AWARENESS'), value: archetypeState.awareness, max: archetypeState.max_awareness };
+    return {
+      label: msg('AWARENESS'),
+      value: archetypeState.awareness,
+      max: archetypeState.max_awareness,
+    };
   }
   if (isOverthrowState(archetypeState)) {
-    return { label: msg('FRACTURE'), value: archetypeState.fracture, max: archetypeState.max_fracture };
+    return {
+      label: msg('FRACTURE'),
+      value: archetypeState.fracture,
+      max: archetypeState.max_fracture,
+    };
   }
   return null;
 }
@@ -249,8 +278,7 @@ export function formatArchetypeGaugeBar(archetypeState: ArchetypeState): string 
   const barWidth = gauge.max <= 10 ? gauge.max : Math.round(gauge.max / 5);
   const filled = gauge.max <= 10 ? gauge.value : Math.round(gauge.value / 5);
   const empty = barWidth - filled;
-  const bar =
-    '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
+  const bar = '\u2588'.repeat(Math.max(0, filled)) + '\u2591'.repeat(Math.max(0, empty));
   return `${gauge.label}: ${bar} [${gauge.value}/${gauge.max}]`;
 }
 
@@ -725,7 +753,9 @@ export function formatRoomEntry(
       break;
     case 'entrance':
       lines.push(systemLine(`[${msg('ENTRANCE')}]`));
-      lines.push(hintLine(msg('Type "map" to view the dungeon layout, "move <number>" to advance.')));
+      lines.push(
+        hintLine(msg('Type "map" to view the dungeon layout, "move <number>" to advance.')),
+      );
       break;
     default:
       lines.push(systemLine(`[${room.room_type.toUpperCase()}]`));
@@ -799,7 +829,9 @@ export function formatCombatPlanning(party: AgentCombatStateClient[]): TerminalL
   lines.push(systemLine(`${msg('SELECT ACTIONS')}: ${names}`));
   lines.push(
     hintLine(
-      msg('Select abilities in the combat bar below. Type "attack <agent> <ability> [target]" for commands.'),
+      msg(
+        'Select abilities in the combat bar below. Type "attack <agent> <ability> [target]" for commands.',
+      ),
     ),
   );
 
@@ -1087,9 +1119,7 @@ export function formatSkillCheckResult(
   const adjustment = check.breakdown?.adjustment ?? 0;
   const modifierStr = adjustment >= 0 ? `+${adjustment}` : `${adjustment}`;
   lines.push(
-    systemLine(
-      `[${check.aptitude.toUpperCase()} CHECK \u2013 ${msg('Modifier')}: ${modifierStr}]`,
-    ),
+    systemLine(`[${check.aptitude.toUpperCase()} CHECK \u2013 ${msg('Modifier')}: ${modifierStr}]`),
   );
   lines.push(systemLine(''));
 
@@ -1610,7 +1640,9 @@ export function formatAgentPicker(
   }
 
   lines.push(systemLine(`${msg('AVAILABLE AGENTS FOR')} ${archetype.toUpperCase()}:`));
-  lines.push(hintLine('SPY=Spy GRD=Guardian SAB=Saboteur PRP=Propagandist INF=Infiltrator ASN=Assassin'));
+  lines.push(
+    hintLine('SPY=Spy GRD=Guardian SAB=Saboteur PRP=Propagandist INF=Infiltrator ASN=Assassin'),
+  );
   lines.push(systemLine(''));
 
   for (let i = 0; i < agents.length; i++) {
@@ -1619,7 +1651,14 @@ export function formatAgentPicker(
 
     // Build aptitude string: top 3 by level
     // Generalist agents without explicit aptitudes default to 6 across the board
-    const effectiveApts = apts ?? { spy: 6, guardian: 6, saboteur: 6, propagandist: 6, infiltrator: 6, assassin: 6 };
+    const effectiveApts = apts ?? {
+      spy: 6,
+      guardian: 6,
+      saboteur: 6,
+      propagandist: 6,
+      infiltrator: 6,
+      assassin: 6,
+    };
     const sorted = Object.entries(effectiveApts)
       .filter(([, v]) => v > 0)
       .sort(([, a], [, b]) => b - a)
@@ -1693,9 +1732,7 @@ export function formatRallyResult(
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
   lines.push(combatSystemLine(msg('RALLY')));
-  lines.push(
-    responseLine(`${agentName} ${msg('speaks. The factions listen \u2013 briefly.')}`),
-  );
+  lines.push(responseLine(`${agentName} ${msg('speaks. The factions listen \u2013 briefly.')}`));
   lines.push(
     systemLine(`  \u2192 ${msg('Fracture')}: ${fracture} | ${msg('Stress')}: +${stressCost}`),
   );

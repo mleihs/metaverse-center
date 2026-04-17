@@ -9,11 +9,7 @@ export class LocationsApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<City[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/locations/cities`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/locations/cities`, mode, params);
   }
 
   getCity(
@@ -21,10 +17,7 @@ export class LocationsApiService extends BaseApiService {
     cityId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<City>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/locations/cities/${cityId}`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/locations/cities/${cityId}`, mode);
   }
 
   createCity(simulationId: string, data: Partial<City>): Promise<ApiResponse<City>> {
@@ -46,11 +39,7 @@ export class LocationsApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<Zone[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/locations/zones`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/locations/zones`, mode, params);
   }
 
   getZone(
@@ -58,10 +47,7 @@ export class LocationsApiService extends BaseApiService {
     zoneId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<Zone>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/locations/zones/${zoneId}`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/locations/zones/${zoneId}`, mode);
   }
 
   createZone(simulationId: string, data: Partial<Zone>): Promise<ApiResponse<Zone>> {
@@ -83,11 +69,7 @@ export class LocationsApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<CityStreet[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/locations/streets`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/locations/streets`, mode, params);
   }
 
   createStreet(simulationId: string, data: Partial<CityStreet>): Promise<ApiResponse<CityStreet>> {

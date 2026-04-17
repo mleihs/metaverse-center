@@ -15,10 +15,7 @@ export class EchoesApiService extends BaseApiService {
     eventId: string,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<EventEcho[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/events/${eventId}/echoes`,
-      mode,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/events/${eventId}/echoes`, mode);
   }
 
   triggerEcho(

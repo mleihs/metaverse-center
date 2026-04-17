@@ -2,7 +2,6 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { scannerApi } from '../../services/api/index.js';
-import { captureError } from '../../services/SentryService.js';
 import type {
   AdapterInfo,
   ScanCandidate,
@@ -11,6 +10,7 @@ import type {
   ScannerDashboard,
   ScannerMetrics,
 } from '../../services/api/ScannerApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';

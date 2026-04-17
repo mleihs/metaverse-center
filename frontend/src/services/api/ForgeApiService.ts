@@ -277,7 +277,10 @@ export class ForgeApiService extends BaseApiService {
     return this.delete(`/forge/wallet/keys/${provider}`);
   }
 
-  testBYOK(provider: 'openrouter' | 'replicate', key: string): Promise<ApiResponse<TestBYOKResult>> {
+  testBYOK(
+    provider: 'openrouter' | 'replicate',
+    key: string,
+  ): Promise<ApiResponse<TestBYOKResult>> {
     return this.post('/forge/wallet/keys/test', { provider, key });
   }
 

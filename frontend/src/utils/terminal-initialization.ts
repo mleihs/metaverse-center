@@ -12,8 +12,8 @@
  */
 
 import { msg } from '@lit/localize';
-import { locationsApi } from '../services/api/index.js';
 import { appState } from '../services/AppStateManager.js';
+import { locationsApi } from '../services/api/index.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 
 export async function initializeTerminalZones(simulationId: string): Promise<void> {

@@ -20,6 +20,7 @@ import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { CombatEvent, CombatSubmission } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
+import { handleDungeonEnter } from './dungeon-entry-flow.js';
 import {
   AUTO_APPLY_EFFECTS,
   formatArchetypeBriefing,
@@ -32,22 +33,21 @@ import {
   formatDungeonMap,
   formatDungeonStatus,
   formatEncounterChoices,
+  formatGroundResult,
   formatLootDistribution,
   formatLootDrop,
   formatPartyWipe,
+  formatRallyResult,
   formatRestResult,
   formatRetreatResult,
   formatRoomEntry,
   formatRoundTransition,
   formatSalvageResult,
   formatScoutResult,
-  formatGroundResult,
-  formatRallyResult,
   formatSealResult,
   formatSkillCheckResult,
   formatThresholdEntry,
 } from './dungeon-formatters.js';
-import { handleDungeonEnter } from './dungeon-entry-flow.js';
 import { fuzzyName, resolveToken } from './fuzzy-search.js';
 import { localized } from './locale-fields.js';
 import {
@@ -596,8 +596,11 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
   // Big Five dimensions — mirrors BIG_FIVE_DIMENSIONS in
   // backend/models/resonance_dungeon.py:310.  Stable set since 1961.
   const BIG_FIVE = new Set([
-    'openness', 'conscientiousness', 'extraversion',
-    'agreeableness', 'neuroticism',
+    'openness',
+    'conscientiousness',
+    'extraversion',
+    'agreeableness',
+    'neuroticism',
   ]);
 
   const restArgs = ctx.args.slice(1);
@@ -637,7 +640,11 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
     } else {
       return [
         errorLine(msg('This item modifies personality. Specify a Big Five dimension:')),
-        hintLine(msg('assign <#> <agent> openness|conscientiousness|extraversion|agreeableness|neuroticism')),
+        hintLine(
+          msg(
+            'assign <#> <agent> openness|conscientiousness|extraversion|agreeableness|neuroticism',
+          ),
+        ),
       ];
     }
   }
@@ -865,7 +872,9 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   if (!abilityResult.match) {
     return [errorLine(`${msg('Unknown or unavailable ability')}: ${agentResult.rest.join(' ')}`)];
   }
-  const ability = agent.available_abilities.find((a) => localized(a, 'name') === abilityResult.match)!;
+  const ability = agent.available_abilities.find(
+    (a) => localized(a, 'name') === abilityResult.match,
+  )!;
 
   // Step 3: target (remainder — already multi-word via resolveToken)
   let targetId: string | undefined;
@@ -897,7 +906,9 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   dungeonState.selectAction(agent.agent_id, ability.id, targetId);
 
   const lines: TerminalLine[] = [
-    systemLine(`${agentResult.match} \u2192 ${abilityResult.match}${resolvedTargetName ? ` \u2192 ${resolvedTargetName}` : ''}`),
+    systemLine(
+      `${agentResult.match} \u2192 ${abilityResult.match}${resolvedTargetName ? ` \u2192 ${resolvedTargetName}` : ''}`,
+    ),
   ];
 
   // Show selection summary

@@ -18,11 +18,7 @@ export class RelationshipsApiService extends BaseApiService {
     mode: 'public' | 'member',
     params?: Record<string, string>,
   ): Promise<ApiResponse<AgentRelationship[]>> {
-    return this.getSimulationData(
-      `/simulations/${simulationId}/relationships`,
-      mode,
-      params,
-    );
+    return this.getSimulationData(`/simulations/${simulationId}/relationships`, mode, params);
   }
 
   create(
