@@ -16,6 +16,7 @@ import './FeaturesSettingsPanel.js';
 import './AccessSettingsPanel.js';
 import './PromptsSettingsPanel.js';
 import './AutonomySettingsPanel.js';
+import './BondSettingsPanel.js';
 import './WeatherSettingsPanel.js';
 import './NotificationsSettingsPanel.js';
 
@@ -29,6 +30,7 @@ function getTabs(): SettingsTabDef[] {
     { key: 'world', label: msg('World') },
     { key: 'bleed', label: msg('Bleed') },
     { key: 'autonomy', label: msg('Autonomy') },
+    { key: 'bonds', label: msg('Bonds') },
     { key: 'weather', label: msg('Weather') },
     { key: 'ai', label: msg('AI') },
     { key: 'prompts', label: msg('Prompts') },
@@ -207,6 +209,14 @@ export class VelgSettingsView extends LitElement {
             @unsaved-change=${this._handleUnsavedChange}
             @settings-saved=${this._handleSettingsSaved}
           ></velg-autonomy-settings-panel>
+        `;
+      case 'bonds':
+        return html`
+          <velg-bond-settings-panel
+            .simulationId=${this.simulationId}
+            @unsaved-change=${this._handleUnsavedChange}
+            @settings-saved=${this._handleSettingsSaved}
+          ></velg-bond-settings-panel>
         `;
       case 'weather':
         return html`
