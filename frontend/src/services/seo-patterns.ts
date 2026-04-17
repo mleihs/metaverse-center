@@ -1,21 +1,25 @@
 /**
- * Declarative SEO patterns for simulation views and entity detail pages.
+ * Declarative SEO patterns + route-entry composition for simulation pages.
  *
- * Every route / detail handler calls the appropriate `apply*Seo` helper to
- * set title + description + canonical + og:image + og:image:alt + og:type +
- * JSON-LD structured data in one consistent step. The helpers build on top
- * of SeoService.setTitle — which implicitly resets all route-ephemeral meta
- * to platform defaults before the overrides land, so no state leaks between
- * SPA navigations.
+ * The `apply*Seo` helpers set title + description + canonical + og:image +
+ * og:image:alt + og:type + JSON-LD structured data in one consistent step.
+ * They build on top of SeoService.setTitle — which implicitly resets all
+ * route-ephemeral meta to platform defaults before the overrides land, so no
+ * state leaks between SPA navigations.
+ *
+ * The `applySimulationRouteMeta` composition helper encapsulates the entire
+ * pre-render side effect of landing on a simulation route: SEO + breadcrumbs
+ * + analytics page_view. Callers invoke it once in the router `enter` callback
+ * and have nothing to do downstream.
  *
  * Backend parallel (for crawlers with no JS): detail builders in
  * backend/middleware/seo_content.py return EntityDetailResult with matching
  * EntityMeta fields. Frontend and backend emit the same title/description
- * for the same URL — the audit's entity-detail complaint resolved on both
- * ends.
+ * for the same URL.
  */
 import type { Agent, Building, Simulation } from '../types/index.js';
 import { t } from '../utils/locale-fields.js';
+import { analyticsService } from './AnalyticsService.js';
 import type { ForgeLoreSection } from './api/ForgeApiService.js';
 import { seoService } from './SeoService.js';
 
@@ -58,6 +62,62 @@ export function applySimulationViewSeo(sim: Simulation, view: string): void {
     seoService.setOgImage(sim.banner_url);
     seoService.setOgImageAlt(`${name} — simulation banner`);
   }
+}
+
+/**
+ * Apply the complete pre-render side effect for a simulation route.
+ *
+ * Covers everything a simulation-page route entry needs to emit:
+ * - Title + description + og:image via applySimulationViewSeo (when sim resolved).
+ * - Canonical URL: list path by default, entity path when entitySlug provided.
+ * - JSON-LD BreadcrumbList: Home > Dashboard > [Sim] > View.
+ * - GA4 page_view via analyticsService.
+ * - Pre-resolution fallback: if sim is undefined (slug not yet resolved to UUID),
+ *   emits minimal title + canonical using fallbackSlug.
+ *
+ * This is the single seam for simulation-route side effects. Callers invoke
+ * it once in the router `enter` callback — no downstream work needed.
+ *
+ * Child components (AgentsView._openAgentDetail, etc.) may override entity-
+ * level SEO after data fetch — this function sets the route-level baseline.
+ */
+export function applySimulationRouteMeta(
+  sim: Simulation | undefined,
+  view: string,
+  entitySlug: string | undefined,
+  fallbackSlug: string,
+): void {
+  const name = sim ? simName(sim) : '';
+  const slug = sim ? simSlug(sim) : fallbackSlug;
+  const viewLabel = titleCase(view);
+  const canonicalPath = entitySlug
+    ? `/simulations/${slug}/${view}/${entitySlug}`
+    : `/simulations/${slug}/${view}`;
+
+  if (sim) {
+    applySimulationViewSeo(sim, view);
+    if (entitySlug) {
+      seoService.setCanonical(canonicalPath);
+    }
+  } else {
+    seoService.setTitle(name ? [viewLabel, name] : [viewLabel]);
+    seoService.setCanonical(canonicalPath);
+  }
+
+  const breadcrumbs: Array<{ name: string; url: string }> = [
+    { name: 'Home', url: `${BASE_URL}/` },
+    { name: 'Dashboard', url: `${BASE_URL}/dashboard` },
+  ];
+  if (name) {
+    breadcrumbs.push({ name, url: `${BASE_URL}/simulations/${slug}/lore` });
+  }
+  breadcrumbs.push({
+    name: viewLabel,
+    url: `${BASE_URL}/simulations/${slug}/${view}`,
+  });
+  seoService.setBreadcrumbs(breadcrumbs);
+
+  analyticsService.trackPageView(canonicalPath, document.title);
 }
 
 /**
