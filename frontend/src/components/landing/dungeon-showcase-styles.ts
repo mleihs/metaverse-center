@@ -581,16 +581,16 @@ export const showcaseTransitionStyles = css`
      ──────────────────────────────────────────────────────────────────── */
 
   /* I · SHADOW — sweep from left + one-shot glitch on enter.
-     Uses animation-name/duration/etc. longhand to avoid clobbering
-     the cta-enter animation-fill-mode (which holds opacity: 1). */
+     Glitch animation targets .slide__cta-text (inner span), not .slide__cta
+     itself, to avoid clobbering the cta-enter animation (fill-mode: both
+     holds opacity: 1). Animating the parent would also re-trigger cta-enter
+     on un-hover when animation-name switches back. */
   .slide--shadow .slide__cta { --_sweep-origin: left; }
   .slide--shadow .slide__cta:hover {
     text-shadow: 0 0 6px var(--_accent);
-    animation-name: cta-glitch-burst;
-    animation-duration: 0.15s;
-    animation-timing-function: steps(2);
-    animation-iteration-count: 1;
-    animation-fill-mode: both;
+  }
+  .slide--shadow .slide__cta:hover .slide__cta-text {
+    animation: cta-glitch-burst 0.15s steps(2) 1;
   }
   @keyframes cta-glitch-burst {
     0%   { transform: translate(0, -2px); }
@@ -664,12 +664,8 @@ export const showcaseTransitionStyles = css`
   .slide--overthrow .slide__cta:hover::before {
     transform: scaleX(1) skewX(-12deg);
   }
-  .slide--overthrow .slide__cta:hover {
-    animation-name: cta-glitch-burst;
-    animation-duration: 0.12s;
-    animation-timing-function: steps(3);
-    animation-iteration-count: 1;
-    animation-fill-mode: both;
+  .slide--overthrow .slide__cta:hover .slide__cta-text {
+    animation: cta-glitch-burst 0.12s steps(3) 1;
   }
 
   /* ── Per-archetype quote transitions ──────────────────────────────────── */

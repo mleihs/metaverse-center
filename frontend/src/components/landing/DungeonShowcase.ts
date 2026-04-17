@@ -161,9 +161,13 @@ export class VelgDungeonShowcase extends LitElement {
 
   private _onHoverResume = (): void => {
     if (!this._paused || !this._visible) return;
-    this._paused = false;
-    // Resume from the current slide state (don't skip ahead)
-    this._beginSlide();
+    // Defer: focusout fires before focusin on internal focus moves.
+    // Check on next microtask whether focus actually left the carousel.
+    requestAnimationFrame(() => {
+      if (this.matches(':hover') || this.contains(document.activeElement)) return;
+      this._paused = false;
+      this._beginSlide();
+    });
   };
 
   // ── Timer (generation-guarded) ────────────────────────────────────────────
