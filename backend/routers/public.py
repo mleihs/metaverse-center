@@ -22,6 +22,7 @@ from backend.services.agent_service import AgentService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.bleed_gazette_service import BleedGazetteService
+from backend.services.bond.bond_service import BondService
 from backend.services.broadsheet_service import BroadsheetService
 from backend.services.building_service import BuildingService
 from backend.services.cache_config import get_ttl
@@ -1047,3 +1048,22 @@ async def public_dungeon_clearance_config(
     """
     config = await PlatformSettingsService.get_dungeon_clearance_config(admin_supabase)
     return SuccessResponse(data=dict(config))
+
+
+# ── Agent Bonds ──────────────────────────────────────────────────────────
+
+
+@router.get("/bonds")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_public_bonds(
+    request: Request,
+    simulation_id: SimId,
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse:
+    """Public: list bonds for a simulation (no whisper content)."""
+    data, total = await BondService.get_public_bonds(
+        anon, simulation_id, limit=limit, offset=offset,
+    )
+    return paginated(data, total, limit, offset)

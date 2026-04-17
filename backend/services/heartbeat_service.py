@@ -35,6 +35,7 @@ from backend.services.ambient_weather_service import AmbientWeatherService
 from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
 from backend.services.autonomous_event_service import AutonomousEventService
+from backend.services.bond.whisper_service import WhisperService
 from backend.services.bureau_response_service import BureauResponseService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
@@ -593,6 +594,42 @@ class HeartbeatService:
                     tick_stats["weather_events"] = len(weather_entries)
                     tick_stats["weather"] = weather_summary
 
+            # Phase 9.6: Bond whisper generation
+            # Runs after all agent state updates (mood, needs, opinions,
+            # activities, events) so whispers reflect current state.
+            # _run_phase handles error isolation; key resolution is separate
+            # so template whispers work even without a BYOK key.
+            bw_key, bw_has_key = await cls._resolve_autonomy_key(
+                admin, sim_id, autonomy_admin_override,
+            )
+            bond_result = await _run_phase(
+                "bond_whispers",
+                WhisperService.generate_for_simulation(
+                    admin, sim_id,
+                    llm_budget=int(overrides.get("bond_whisper_budget", 3)),
+                    openrouter_api_key=bw_key if bw_has_key else None,
+                ),
+                **_ctx,
+            )
+            bond_whispers_generated = 0
+            if bond_result is not None:
+                bond_whispers_generated = len(bond_result)
+                for bw in bond_result:
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id, sim_id, tick_number,
+                            "bond_whisper",
+                            f"Whisper for {bw.get('agent_name', '?')[:20]}",
+                            f"Flüstern für {bw.get('agent_name', '?')[:20]}",
+                            severity="info",
+                            metadata={
+                                "bond_id": bw.get("bond_id"),
+                                "whisper_type": bw.get("whisper_type"),
+                            },
+                        )
+                    )
+            tick_stats["bond_whispers"] = bond_whispers_generated
+
             # Phase 10: Refresh materialized views
             await _run_phase(
                 "mv_refresh",
@@ -639,6 +676,7 @@ class HeartbeatService:
                 "resonance_moodlets_applied": tick_stats.pop("resonance_moodlets_applied", 0),
                 "weather_events": tick_stats.pop("weather_events", 0),
                 "weather": tick_stats.pop("weather", {}),
+                "bond_whispers": tick_stats.pop("bond_whispers", 0),
             }
             await (
                 admin.table("simulation_heartbeats")
