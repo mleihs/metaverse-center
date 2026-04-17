@@ -12,6 +12,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import type { EpochInvitationPublicInfo } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
@@ -480,7 +481,8 @@ export class VelgEpochInviteAcceptView extends LitElement {
       } else {
         this._error = msg('Invalid or expired invitation token.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEpochInviteAcceptView._loadInvitation' });
       this._error = msg('Failed to load invitation.');
     } finally {
       this._loading = false;
@@ -514,7 +516,8 @@ export class VelgEpochInviteAcceptView extends LitElement {
       } else {
         this._authenticated = true;
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEpochInviteAcceptView._handleAuth' });
       this._authError = msg('Authentication failed. Please try again.');
     } finally {
       this._authLoading = false;
