@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi, simulationsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import type { AdminMembership, AdminUser, AdminUserDetail, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -407,7 +408,8 @@ export class VelgAdminUsersTab extends LitElement {
       } else {
         VelgToast.error(result.error?.message ?? msg('Failed to load simulations.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminUsersTab._loadSimulations' });
       VelgToast.error(msg('Failed to load simulations.'));
     }
   }
@@ -421,7 +423,8 @@ export class VelgAdminUsersTab extends LitElement {
       } else {
         VelgToast.error(result.error?.message ?? msg('Failed to load users.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminUsersTab._loadUsers', page: String(this._page) });
       VelgToast.error(msg('Failed to load users.'));
     } finally {
       this._loading = false;

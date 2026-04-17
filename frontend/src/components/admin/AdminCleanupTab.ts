@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   CleanupPreviewItem,
   CleanupPreviewResult,
@@ -467,7 +468,8 @@ export class VelgAdminCleanupTab extends LitElement {
       } else {
         VelgToast.error(result.error?.message ?? msg('Scan failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminCleanupTab._scan', cleanupType: type });
       VelgToast.error(msg('Scan failed.'));
     } finally {
       this._scanning = null;
@@ -495,7 +497,8 @@ export class VelgAdminCleanupTab extends LitElement {
       } else {
         VelgToast.error(result.error?.message ?? msg('Purge failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminCleanupTab._executePurge', cleanupType: type });
       VelgToast.error(msg('Purge failed.'));
     } finally {
       this._executing = null;
