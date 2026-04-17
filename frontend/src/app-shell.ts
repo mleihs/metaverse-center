@@ -11,7 +11,7 @@ import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './servic
 import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { seoService } from './services/SeoService.js';
-import { applySimulationViewSeo } from './services/seo-patterns.js';
+import { applySimulationRouteMeta } from './services/seo-patterns.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 import type { Simulation } from './types/index.js';
 
@@ -1066,42 +1066,10 @@ export class VelgApp extends LitElement {
     // No requestUpdate() needed — child components read signals directly.
     this._loadSimulationContext(resolvedId);
 
-    // SEO + analytics — entity-specific overrides are applied by the view
-    // component itself (AgentsView._openAgentDetail, etc.) once the entity
-    // data is loaded. Here we always set the list-level meta first.
-    const sim = appState.currentSimulation.value;
-    const simName = sim?.name ?? '';
-    const slug = sim?.slug ?? idOrSlug;
-    const viewLabel = view.charAt(0).toUpperCase() + view.slice(1);
-    const canonicalPath = entitySlug
-      ? `/simulations/${slug}/${view}/${entitySlug}`
-      : `/simulations/${slug}/${view}`;
-    if (sim) {
-      applySimulationViewSeo(sim, view);
-      // Canonical points to the entity URL when present — override after
-      // applySimulationViewSeo (which points at the list URL).
-      if (entitySlug) {
-        seoService.setCanonical(canonicalPath);
-      }
-    } else {
-      // Pre-resolution fallback (slug→UUID) — set a minimal title
-      seoService.setTitle(simName ? [viewLabel, simName] : [viewLabel]);
-      seoService.setCanonical(canonicalPath);
-    }
-    // Breadcrumbs: Home > Dashboard > SimName > View
-    const breadcrumbs = [
-      { name: 'Home', url: 'https://metaverse.center/' },
-      { name: 'Dashboard', url: 'https://metaverse.center/dashboard' },
-    ];
-    if (simName) {
-      breadcrumbs.push({ name: simName, url: `https://metaverse.center/simulations/${slug}/lore` });
-    }
-    breadcrumbs.push({
-      name: viewLabel,
-      url: `https://metaverse.center/simulations/${slug}/${view}`,
-    });
-    seoService.setBreadcrumbs(breadcrumbs);
-    analyticsService.trackPageView(canonicalPath, document.title);
+    // Route-level meta (SEO + breadcrumbs + analytics). Child components may
+    // override entity-level SEO after data fetch (e.g. AgentsView._openAgentDetail).
+    const sim = appState.currentSimulation.value ?? undefined;
+    applySimulationRouteMeta(sim, view, entitySlug, idOrSlug);
 
     let content: TemplateResult;
     switch (view) {
