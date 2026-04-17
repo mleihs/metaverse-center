@@ -174,8 +174,8 @@ function _dispatchSSEBlock(block: string, callbacks: StreamCallbacks): void {
     captureError(err, {
       source: 'ChatStreamConsumer.parseSSEFrame',
       eventType: eventType ?? 'unknown',
+      dataStrPreview: dataStr.slice(0, 120),
     });
-    console.warn('[ChatStream] Malformed SSE JSON, skipping:', dataStr.slice(0, 120));
     return;
   }
 

@@ -353,6 +353,9 @@ class DungeonStateManager {
       this.clear();
       return false;
     } catch (err) {
+      // Retain state conservatively — an unexpected error here likely means
+      // a transient fault, not a confirmed-dead run (server-confirmed 4xx
+      // paths above already cleared state).
       captureError(err, { source: 'DungeonStateManager.validateActiveRun', runId });
       return false;
     } finally {
@@ -529,6 +532,8 @@ class DungeonStateManager {
         return;
       }
     } catch (err) {
+      // Timer-race: backend may have already resolved the run. Fall through
+      // to the getState poll below for authoritative state.
       captureError(err, {
         source: 'DungeonStateManager._autoSubmitOnExpiry.submit',
         runId,
