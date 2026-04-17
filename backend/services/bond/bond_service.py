@@ -70,14 +70,21 @@ class BondService:
 
         Creates a 'forming' bond if none exists. Idempotent for active bonds.
         """
-        resp = await supabase.rpc(
-            "fn_increment_attention",
-            {
-                "p_user_id": str(user_id),
-                "p_agent_id": str(agent_id),
-                "p_simulation_id": str(simulation_id),
-            },
-        ).execute()
+        try:
+            resp = await supabase.rpc(
+                "fn_increment_attention",
+                {
+                    "p_user_id": str(user_id),
+                    "p_agent_id": str(agent_id),
+                    "p_simulation_id": str(simulation_id),
+                },
+            ).execute()
+        except Exception as exc:
+            if "Agent does not belong to simulation" in str(exc):
+                raise bad_request(
+                    "Agent does not belong to this simulation."
+                ) from exc
+            raise
 
         data = extract_list(resp)
         if not data:
@@ -298,7 +305,18 @@ class BondService:
         limit: int = 25,
         offset: int = 0,
     ) -> tuple[list[dict], int]:
-        """Get paginated whispers for a bond. RLS enforces ownership."""
+        """Get paginated whispers for a bond."""
+        # Verify bond exists and belongs to user (RLS + explicit check).
+        # Without this, a wrong bond_id silently returns empty instead of 404.
+        bond = await maybe_single_data(
+            supabase.table("agent_bonds")
+            .select("id")
+            .eq("id", str(bond_id))
+            .maybe_single()
+        )
+        if not bond:
+            raise not_found("Bond", bond_id)
+
         resp = await (
             supabase.table("bond_whispers")
             .select("*", count="exact")
