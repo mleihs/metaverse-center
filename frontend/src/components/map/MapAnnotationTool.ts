@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 
 interface MapAnnotation {
   id: string;
@@ -90,7 +91,8 @@ export class MapAnnotationTool extends LitElement {
     try {
       const raw = localStorage.getItem(this._storageKey);
       this._annotations = raw ? JSON.parse(raw) : [];
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'MapAnnotationTool._loadAnnotations' });
       this._annotations = [];
     }
   }
