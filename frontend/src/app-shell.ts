@@ -371,6 +371,7 @@ export class VelgApp extends LitElement {
             'Decode classified Bureau transmissions. Enter your cipher code to unlock declassified dispatches.',
           );
           seoService.setCanonical('/bureau/dispatch');
+          seoService.setRobots('noindex, nofollow');
           analyticsService.trackPageView('/bureau/dispatch', document.title);
           return true;
         },
@@ -386,6 +387,7 @@ export class VelgApp extends LitElement {
             'Accept your invitation to join a simulation on metaverse.center.',
           );
           seoService.setCanonical('/invitations');
+          seoService.setRobots('noindex, nofollow');
           analyticsService.trackPageView('/invitations', document.title);
           return true;
         },
