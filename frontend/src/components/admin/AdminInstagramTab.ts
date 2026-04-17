@@ -12,6 +12,7 @@ import {
   type InstagramRateLimit,
   type SocialStoryItem,
 } from '../../services/api/AdminApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -1329,7 +1330,8 @@ export class VelgAdminInstagramTab extends LitElement {
     if (!raw) return fallback;
     try {
       return JSON.parse(raw);
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._parseJson' });
       return fallback;
     }
   }
@@ -1368,7 +1370,8 @@ export class VelgAdminInstagramTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to save setting'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._saveSetting', settingKey: key });
       VelgToast.error(msg('Failed to save setting'));
     } finally {
       this._savingKey = null;
@@ -1443,7 +1446,8 @@ export class VelgAdminInstagramTab extends LitElement {
           VelgToast.error(msg('Instagram credentials not configured.'));
         }
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleTestConnection' });
       VelgToast.error(msg('Connection test failed'));
     } finally {
       this._testingConnection = false;
@@ -1464,7 +1468,8 @@ export class VelgAdminInstagramTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Generation failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleGenerate' });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._generating = false;
@@ -1481,7 +1486,8 @@ export class VelgAdminInstagramTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Approval failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleApprove', postId: post.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -1514,7 +1520,11 @@ export class VelgAdminInstagramTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Rejection failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, {
+        source: 'AdminInstagramTab._handleReject',
+        postId: this._rejectTarget?.id ?? '',
+      });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -1538,7 +1548,8 @@ export class VelgAdminInstagramTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Publishing failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleForcePublish', postId: post.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -2131,7 +2142,8 @@ export class VelgAdminInstagramTab extends LitElement {
       await adminApi.skipSocialStory(story.id);
       VelgToast.success(msg('Story skipped'));
       await this._loadAll();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleSkipStory', storyId: story.id });
       VelgToast.error(msg('Failed to skip story'));
     } finally {
       this._storyActionInProgress = null;
@@ -2144,7 +2156,8 @@ export class VelgAdminInstagramTab extends LitElement {
       await adminApi.unskipSocialStory(story.id);
       VelgToast.success(msg('Story restored'));
       await this._loadAll();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleUnskipStory', storyId: story.id });
       VelgToast.error(msg('Failed to unskip story'));
     } finally {
       this._storyActionInProgress = null;
@@ -2157,7 +2170,8 @@ export class VelgAdminInstagramTab extends LitElement {
       await adminApi.forceComposeSocialStory(story.id);
       VelgToast.success(msg('Story image composed'));
       await this._loadAll();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handleComposeStory', storyId: story.id });
       VelgToast.error(msg('Failed to compose story'));
     } finally {
       this._storyActionInProgress = null;
@@ -2170,7 +2184,8 @@ export class VelgAdminInstagramTab extends LitElement {
       await adminApi.forcePublishSocialStory(story.id);
       VelgToast.success(msg('Story published'));
       await this._loadAll();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._handlePublishStory', storyId: story.id });
       VelgToast.error(msg('Failed to publish story'));
     } finally {
       this._storyActionInProgress = null;
