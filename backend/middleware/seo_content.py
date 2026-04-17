@@ -421,6 +421,102 @@ def build_chronicle_view(
     return entity_html, jsonld
 
 
+def build_broadsheet_view(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+) -> tuple[str, str]:
+    """Build HTML + JSON-LD for the latest broadsheet edition.
+
+    simulation_broadsheets is a "finishable" newspaper (title, subtitle, up to
+    seven articles per edition). The latest edition's masthead + top article
+    previews surface as rich crawler content and an Article schema.
+    """
+    response = (
+        client.table("simulation_broadsheets")
+        .select("title,subtitle,articles,edition_number,published_at,editorial_voice")
+        .eq("simulation_id", sim_id)
+        .order("edition_number", desc=True)
+        .limit(1)
+        .execute()
+    )
+    editions = response.data or []
+
+    if not editions:
+        entity_html = (
+            f"<h2>{_esc(sim_name)} — Broadsheet</h2>\n"
+            f"<p>No editions published yet.</p>"
+        )
+        return entity_html, ""
+
+    latest = editions[0]
+    title = _esc(latest.get("title") or "")
+    subtitle = _esc(latest.get("subtitle") or "")
+    edition = latest.get("edition_number") or 0
+    articles = latest.get("articles") or []
+
+    parts = [
+        f"<h2>{_esc(sim_name)} — {title}</h2>",
+        f'<p class="edition">Edition {edition}</p>',
+    ]
+    if subtitle:
+        parts.append(f'<p class="subtitle"><em>{subtitle}</em></p>')
+    for a in articles[:3]:
+        headline = _esc(a.get("headline") or "")
+        preview = _esc(_truncate(a.get("content") or "", 300))
+        parts.append(f"<article><h3>{headline}</h3><p>{preview}</p></article>")
+
+    entity_html = "\n".join(parts)
+
+    article_body = "\n\n".join(
+        (a.get("content") or "")[:500] for a in articles[:3]
+    )
+    data: dict = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": latest.get("title") or sim_name,
+        "url": f"{BASE_URL}/simulations/{slug}/broadsheet",
+        "articleBody": article_body,
+        "author": {"@type": "Organization", "name": sim_name},
+        "publisher": {
+            "@type": "Organization",
+            "name": "metaverse.center",
+            "url": BASE_URL,
+        },
+    }
+    if latest.get("published_at"):
+        data["datePublished"] = latest["published_at"]
+    if subtitle:
+        data["description"] = latest.get("subtitle") or ""
+
+    return entity_html, _safe_jsonld(data)
+
+
+def build_social_view(
+    client: Client, sim_id: str, sim_name: str, slug: str,
+) -> tuple[str, str]:
+    """Build HTML + JSON-LD for the /social view (AI-integrated real-world trends).
+
+    The social trends view is driven by live AI integration and has no stable
+    per-row content — the crawler snapshot is a descriptive WebPage pointer,
+    not an ItemList. Canonical URL is /social (the frontend route).
+    """
+    del client, sim_id  # no DB fetch — this view has no persistent rows to surface
+    entity_html = (
+        f"<h2>{_esc(sim_name)} — Social Trends</h2>\n"
+        f"<p>Real-world news transformed into simulation events."
+        f" AI-driven narrative integration for {_esc(sim_name)}.</p>"
+    )
+    jsonld = _safe_jsonld({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": f"{sim_name} — Social Trends",
+        "url": f"{BASE_URL}/simulations/{slug}/social",
+        "description": (
+            f"Real-world news transformed into simulation events in {sim_name}."
+        ),
+    })
+    return entity_html, jsonld
+
+
 def build_locations_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:

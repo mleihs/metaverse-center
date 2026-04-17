@@ -84,9 +84,11 @@ class TestSitemapXml:
     def test_contains_simulation_views(self, client: TestClient):
         r = client.get("/sitemap.xml")
         text = r.text
-        # Public views enumerated in backend/seo/registry.py — chat/trends removed
-        # (private / legacy URL). /social and /broadsheet land in commit 4.
-        for view in ["lore", "agents", "buildings", "events", "locations", "chronicle", "health"]:
+        # Public views enumerated in backend/seo/registry.py — full set.
+        for view in [
+            "lore", "agents", "buildings", "events", "locations",
+            "chronicle", "broadsheet", "social", "health",
+        ]:
             assert f"/simulations/{SIM_VELGARIEN_SLUG}/{view}" in text
 
     def test_omits_private_views(self, client: TestClient):
