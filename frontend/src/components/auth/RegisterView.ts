@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   terminalAnimations,
   terminalFormStyles,
@@ -230,8 +231,7 @@ export class VelgRegisterView extends LitElement {
 
   private _handleLoginClick(e: Event): void {
     e.preventDefault();
-    window.history.pushState({}, '', '/login');
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate('/login');
   }
 
   protected render() {

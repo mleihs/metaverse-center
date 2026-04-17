@@ -20,6 +20,7 @@ import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import './DungeonShowcase.js';
@@ -1696,11 +1697,6 @@ export class VelgLandingPage extends LitElement {
     }
   }
 
-  private _navigate(path: string): void {
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }
-
   private _getStorageUrl(path: string): string {
     return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/${path}`;
   }
@@ -1808,7 +1804,7 @@ export class VelgLandingPage extends LitElement {
                   @click=${(e: Event) => {
                     e.preventDefault();
                     this._trackCta('hero-dashboard');
-                    this._navigate('/dashboard');
+                    navigate('/dashboard');
                   }}
                   aria-label=${msg('Go to Dashboard')}
                 >
@@ -1823,7 +1819,7 @@ export class VelgLandingPage extends LitElement {
                   @click=${(e: Event) => {
                     e.preventDefault();
                     this._trackCta('hero');
-                    this._navigate('/register');
+                    navigate('/register');
                   }}
                   aria-label=${msg('Build Your World \u2013 Create your account')}
                 >
@@ -1838,7 +1834,7 @@ export class VelgLandingPage extends LitElement {
               @click=${(e: Event) => {
                 e.preventDefault();
                 this._trackCta('hero-explore');
-                this._navigate('/worlds');
+                navigate('/worlds');
               }}
               aria-label=${msg('Explore Worlds \u2013 Browse player-created civilizations')}
             >
@@ -2054,7 +2050,7 @@ export class VelgLandingPage extends LitElement {
                   @click=${(e: Event) => {
                     e.preventDefault();
                     this._trackCta('worlds-preview');
-                    this._navigate(`/simulations/${sim.slug || sim.id}/lore`);
+                    navigate(`/simulations/${sim.slug || sim.id}/lore`);
                   }}
                 >
                   <div class="monitor-card__strip"></div>
@@ -2096,7 +2092,7 @@ export class VelgLandingPage extends LitElement {
               @click=${(e: Event) => {
                 e.preventDefault();
                 this._trackCta('worlds-preview-explore');
-                this._navigate('/worlds');
+                navigate('/worlds');
               }}
             >
               <div class="monitor-card__strip" style="background: var(--color-accent-amber)"></div>
@@ -2253,7 +2249,7 @@ export class VelgLandingPage extends LitElement {
                     @click=${(e: Event) => {
                       e.preventDefault();
                       this._trackCta('footer-dashboard');
-                      this._navigate('/dashboard');
+                      navigate('/dashboard');
                     }}
                     aria-label=${msg('Go to Dashboard')}
                   >
@@ -2267,7 +2263,7 @@ export class VelgLandingPage extends LitElement {
                     @click=${(e: Event) => {
                       e.preventDefault();
                       this._trackCta('footer-create');
-                      this._navigate('/register');
+                      navigate('/register');
                     }}
                     aria-label=${msg('Create your world \u2013 Sign up')}
                   >
@@ -2281,7 +2277,7 @@ export class VelgLandingPage extends LitElement {
                 @click=${(e: Event) => {
                   e.preventDefault();
                   this._trackCta('footer-explore');
-                  this._navigate('/worlds');
+                  navigate('/worlds');
                 }}
                 aria-label=${msg('Explore existing worlds')}
               >

@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/index.js';
 import type { Simulation, SimulationTheme } from '../../types/index.js';
+import { navigate } from '../../utils/navigation.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
@@ -272,8 +273,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
       }
 
       VelgToast.success(msg('Simulation deleted.'));
-      window.history.pushState({}, '', '/');
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      navigate('/');
     } catch (err) {
       VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred'));
     } finally {

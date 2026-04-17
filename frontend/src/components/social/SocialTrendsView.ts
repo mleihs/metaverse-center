@@ -19,6 +19,7 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { humanizeEnum } from '../../utils/text.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -67,7 +68,9 @@ interface BatchTransformResult {
 @localized()
 @customElement('velg-social-trends-view')
 export class VelgSocialTrendsView extends LitElement {
-  static styles = [titleGroupStyles, css`
+  static styles = [
+    titleGroupStyles,
+    css`
     :host { display: block; }
 
     .trends { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -942,7 +945,8 @@ export class VelgSocialTrendsView extends LitElement {
         flex-wrap: wrap;
       }
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) simulationId = '';
 
@@ -1381,8 +1385,7 @@ export class VelgSocialTrendsView extends LitElement {
     if (!partner?.simulation || !partner?.building) return;
     const slug = partner.simulation.slug ?? partner.simulation.id;
     appState.pendingOpenBuildingId.value = partner.building.id;
-    window.history.pushState({}, '', `/simulations/${slug}/buildings`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${slug}/buildings`);
   }
 
   // -- Embassy render --

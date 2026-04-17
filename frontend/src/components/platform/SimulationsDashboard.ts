@@ -17,6 +17,7 @@ import type {
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { agentAltText, humanizeEnum, pluralCount } from '../../utils/text.js';
 import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -1612,8 +1613,7 @@ export class VelgSimulationsDashboard extends LitElement {
       (ep) => ep.epoch_type === 'academy',
     );
     if (activeAcademy) {
-      window.history.pushState({}, '', `/epochs/${activeAcademy.epoch_id}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      navigate(`/epochs/${activeAcademy.epoch_id}`);
       return;
     }
 
@@ -1623,8 +1623,7 @@ export class VelgSimulationsDashboard extends LitElement {
         VelgToast.success(msg('Academy epoch created. Preparing training simulation.'));
         // Refresh dashboard data so "Your Epochs" updates
         this._loadDashboard();
-        window.history.pushState({}, '', `/epochs/${resp.data.id}`);
-        window.dispatchEvent(new PopStateEvent('popstate'));
+        navigate(`/epochs/${resp.data.id}`);
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to create academy epoch.'));
       }
@@ -1636,19 +1635,13 @@ export class VelgSimulationsDashboard extends LitElement {
   private _handleSimulationClick(e: CustomEvent<Simulation>): void {
     const simulation = e.detail;
     appState.setCurrentSimulation(simulation);
-    window.history.pushState({}, '', `/simulations/${simulation.slug}/lore`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }
-
-  private _navigateTo(path: string): void {
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${simulation.slug}/lore`);
   }
 
   private _handleTickerClick(): void {
     const quote = this._pullQuotes[this._tickerIndex];
     if (quote) {
-      this._navigateTo(`/archives#section-${quote.afterSectionId}`);
+      navigate(`/archives#section-${quote.afterSectionId}`);
     }
   }
 
@@ -1763,7 +1756,7 @@ export class VelgSimulationsDashboard extends LitElement {
         <div class="command-strip__right">
           ${
             isGuest
-              ? html`<button class="command-strip__cta" @click=${() => this._navigateTo('/register')}>${msg('SIGN UP')}</button>`
+              ? html`<button class="command-strip__cta" @click=${() => navigate('/register')}>${msg('SIGN UP')}</button>`
               : this._clockText
           }
         </div>
@@ -1788,18 +1781,18 @@ export class VelgSimulationsDashboard extends LitElement {
         ${
           appState.isPlatformAdmin.value
             ? html`
-          <button class="admin-bar__btn" @click=${() => this._navigateTo('/admin')}>${msg('Admin Panel')}</button>
+          <button class="admin-bar__btn" @click=${() => navigate('/admin')}>${msg('Admin Panel')}</button>
         `
             : nothing
         }
         ${
           appState.canForge.value
             ? html`
-          <button class="admin-bar__btn" @click=${() => this._navigateTo('/forge')}>${msg('Forge')}</button>
+          <button class="admin-bar__btn" @click=${() => navigate('/forge')}>${msg('Forge')}</button>
         `
             : nothing
         }
-        <button class="admin-bar__btn" @click=${() => this._navigateTo('/epoch')}>${msg('Create Epoch')}</button>
+        <button class="admin-bar__btn" @click=${() => navigate('/epoch')}>${msg('Create Epoch')}</button>
       </div>
     `;
   }
@@ -1886,7 +1879,7 @@ export class VelgSimulationsDashboard extends LitElement {
             </div>
             ${
               remaining > 0
-                ? html`<button class="ops-more" @click=${() => this._navigateTo('/epoch')}>+${remaining} ${msg('more')}</button>`
+                ? html`<button class="ops-more" @click=${() => navigate('/epoch')}>+${remaining} ${msg('more')}</button>`
                 : nothing
             }
           `
@@ -1905,7 +1898,7 @@ export class VelgSimulationsDashboard extends LitElement {
       <div
         class="dossier-card dossier-card--${ep.epoch_status}"
         style="--i: ${index}"
-        @click=${() => this._navigateTo(`/epoch`)}
+        @click=${() => navigate(`/epoch`)}
       >
         <div class="dossier-card__header">
           <span class="dossier-card__name">${ep.epoch_name}</span>
@@ -1957,12 +1950,12 @@ export class VelgSimulationsDashboard extends LitElement {
 
   private _renderMyWorldItem(m: MembershipInfo) {
     return html`
-      <div class="my-world-item" role="button" tabindex="0" @click=${() => this._navigateTo(`/simulations/${m.simulation_slug}/lore`)} @keydown=${(
+      <div class="my-world-item" role="button" tabindex="0" @click=${() => navigate(`/simulations/${m.simulation_slug}/lore`)} @keydown=${(
         e: KeyboardEvent,
       ) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          this._navigateTo(`/simulations/${m.simulation_slug}/lore`);
+          navigate(`/simulations/${m.simulation_slug}/lore`);
         }
       }}>
         <span class="my-world-item__name">${m.simulation_name}</span>
@@ -2145,7 +2138,7 @@ export class VelgSimulationsDashboard extends LitElement {
         aria-label="${t(sim, 'name')} – ${desc || sim.theme}"
         @click=${() => {
           appState.setCurrentSimulation(sim);
-          this._navigateTo(`/simulations/${sim.slug}/lore`);
+          navigate(`/simulations/${sim.slug}/lore`);
         }}
       >
         ${
@@ -2180,11 +2173,11 @@ export class VelgSimulationsDashboard extends LitElement {
               role="link"
               tabindex="0"
               aria-label="${agentAltText(agent)}"
-              @click=${() => this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents`)}
+              @click=${() => navigate(`/simulations/${this._spotlightSimSlug}/agents`)}
               @keydown=${(e: KeyboardEvent) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  this._navigateTo(`/simulations/${this._spotlightSimSlug}/agents`);
+                  navigate(`/simulations/${this._spotlightSimSlug}/agents`);
                 }
               }}
             >
@@ -2238,12 +2231,12 @@ export class VelgSimulationsDashboard extends LitElement {
           resonances.length > 0
             ? resonances.map(
                 (r) => html`
-            <div class="resonance-item" role="button" tabindex="0" @click=${() => this._navigateTo('/dashboard')} @keydown=${(
+            <div class="resonance-item" role="button" tabindex="0" @click=${() => navigate('/dashboard')} @keydown=${(
               e: KeyboardEvent,
             ) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                this._navigateTo('/dashboard');
+                navigate('/dashboard');
               }
             }}>
               <span class="resonance-item__pip resonance-item__pip--${r.status}"></span>

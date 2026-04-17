@@ -12,6 +12,7 @@ import type {
 import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { buildingAltText, humanizeEnum } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
@@ -426,11 +427,9 @@ export class VelgBuildingDetailsPanel extends LitElement {
 
   private _handleNavigateEmbassy(e: CustomEvent): void {
     const { simulationSlug, buildingId } = e.detail;
-    // Navigate to partner building in partner simulation
-    window.history.pushState({}, '', `/simulations/${simulationSlug}/buildings`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-    // Store building ID to open after navigation
+    // Store building ID first so navigation target can open it after mount.
     appState.pendingOpenBuildingId.value = buildingId;
+    navigate(`/simulations/${simulationSlug}/buildings`);
   }
 
   private _getConditionVariant(condition: string | undefined): string {
@@ -494,8 +493,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     const sim = appState.currentSimulation.value;
     const slug = sim?.slug ?? sim?.id ?? this.simulationId;
     appState.pendingOpenAgentName.value = amb.name;
-    window.history.pushState({}, '', `/simulations/${slug}/agents`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    navigate(`/simulations/${slug}/agents`);
   }
 
   private _renderAmbassador() {
