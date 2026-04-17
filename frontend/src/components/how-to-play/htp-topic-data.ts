@@ -198,7 +198,37 @@ export const TOPICS: TopicDefinition[] = [
       { kind: 'steps', title: msg('Agent Chat'), steps: getAgentChatGuideSteps },
       { kind: 'steps', title: msg('Agent Memory'), steps: getAgentMemoryGuideSteps },
     ],
-    related: ['world', 'living-world', 'terminal'],
+    related: ['world', 'living-world', 'bonds', 'terminal'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 03b: AGENT BONDS
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'bonds',
+    title: msg('Agent Bonds'),
+    icon: 'handshake',
+    description: msg(
+      'Form emotional bonds with agents who notice your attention and begin sharing their inner thoughts.',
+    ),
+    accent: '--color-primary',
+    readTime: msg('4 min'),
+    tldr: () => [
+      msg('Bonds form through accumulated attention \u2013 visit agent detail pages over 14+ days'),
+      msg('Bonded agents generate whispers \u2013 short, mood-dependent first-person messages'),
+      msg('5 bond depths from Acquaintance to Resonance, each unlocking deeper whisper types'),
+      msg('Max 5 bonds per simulation \u2013 who you choose matters'),
+      msg('No loss aversion: bonds never decay from absence, agents wait patiently'),
+    ],
+    sections: () => [
+      {
+        kind: 'text' as const,
+        content: msg(
+          'Visit an agent\u2019s detail page regularly. After enough attention (configurable, default 10 visits over at least 14 days), the agent notices your presence and offers a bond. Accept to begin receiving whispers \u2013 short, mood-dependent first-person messages that reflect the agent\u2019s inner life. Whispers come in 5 types: state (mood reflection), event (nearby happenings), memory (your past actions), question (implicit requests for help), and reflection (the agent observing your patterns). Bonds deepen through engagement \u2013 reading whispers, acting on requests, and time. Depth 1 (Acquaintance) unlocks state and event whispers. By Depth 5 (Resonance), the agent writes directly into your Resonance Journal.',
+        ),
+      },
+    ],
+    related: ['agents', 'living-world'],
   },
 
   // ────────────────────────────────────────────────────────────────────────

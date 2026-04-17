@@ -3629,3 +3629,76 @@ Alle Trigger `SECURITY DEFINER`. `fn_award_achievement` nur fuer `service_role` 
 ### Migration 218: BYOK Key Clear Support
 
 `CREATE OR REPLACE` auf `fn_update_user_byok_keys` — erweitert um `p_clear_openrouter BOOLEAN DEFAULT FALSE` und `p_clear_replicate BOOLEAN DEFAULT FALSE`. Wenn ein Clear-Flag TRUE ist, wird die entsprechende Key-Spalte auf NULL gesetzt (CASE-Branch uebersteuert COALESCE). Ermoeglicht gezieltes Loeschen einzelner BYOK-Keys ueber `DELETE /forge/wallet/keys/{provider}` ohne den anderen Key zu beruehren. Berechtigungen unveraendert (REVOKE anon, GRANT authenticated).
+
+## Agent Bonds (Migration 219)
+
+Tamagotchi-artiges Care-System: Spieler bilden Bindungen mit Agenten, die Whispers generieren — kurze, stimmungsabhaengige First-Person-Nachrichten.
+
+### `agent_bonds`
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| `id` | `uuid PK` | |
+| `user_id` | `uuid FK → auth.users` | Spieler |
+| `agent_id` | `uuid FK → agents ON DELETE CASCADE` | Gebundener Agent |
+| `simulation_id` | `uuid FK → simulations ON DELETE CASCADE` | Simulation |
+| `depth` | `integer CHECK 1-5` | Bindungstiefe (1=Bekanntschaft, 5=Resonanz) |
+| `status` | `text CHECK (forming\|active\|strained\|farewell)` | Lifecycle-Status |
+| `attention_score` | `integer DEFAULT 0` | Pre-Bond Aufmerksamkeitszaehler |
+| `formed_at` | `timestamptz` | Zeitpunkt der Bond-Formation |
+| `depth_2_at..depth_5_at` | `timestamptz` | Zeitpunkte der Tiefenfortschritte |
+| `farewell_at` | `timestamptz` | Zeitpunkt des Abschieds |
+| `created_at`, `updated_at` | `timestamptz` | Standard-Timestamps |
+
+**Constraints:** `UNIQUE(user_id, agent_id)` — ein Bond pro User-Agent-Paar, auch nach Farewell.
+
+### `bond_whispers`
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| `id` | `uuid PK` | |
+| `bond_id` | `uuid FK → agent_bonds ON DELETE CASCADE` | |
+| `whisper_type` | `text CHECK (state\|event\|memory\|question\|reflection)` | Whisper-Typ |
+| `content_de`, `content_en` | `text NOT NULL` | Bilingualer Inhalt |
+| `trigger_context` | `jsonb DEFAULT '{}'` | Ausloese-Kontext (mood_score, stress etc.) |
+| `read_at` | `timestamptz` | Gelesen-Zeitstempel |
+| `acted_on` | `boolean DEFAULT false` | Spieler hat auf Question-Whisper reagiert |
+| `action_acknowledged` | `boolean DEFAULT false` | Follow-up-Whisper hat Aktion referenziert |
+| `created_at` | `timestamptz` | |
+
+### `bond_memories`
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| `id` | `uuid PK` | |
+| `bond_id` | `uuid FK → agent_bonds ON DELETE CASCADE` | |
+| `memory_type` | `text CHECK (action\|neglect\|milestone\|farewell)` | |
+| `description` | `text NOT NULL` | Interne Beschreibung (nicht user-facing) |
+| `context` | `jsonb DEFAULT '{}'` | Zusaetzlicher Kontext |
+| `created_at` | `timestamptz` | |
+
+### Trigger: `fn_bond_lifecycle_guard`
+
+BEFORE UPDATE Trigger auf `agent_bonds`, erzwingt 6 Invarianten:
+1. **Status-Transitionen**: Nur forming→active, active→strained, strained→active, active→farewell, strained→farewell
+2. **Slot-Limit**: Max 5 active/strained Bonds pro user+simulation (atomischer Count im Trigger)
+3. **Tiefe-Monotonie**: Depth kann nur um genau 1 steigen
+4. **formed_at** automatisch gesetzt bei forming→active
+5. **farewell_at** automatisch gesetzt bei →farewell
+6. **depth_N_at** automatisch gesetzt bei Tiefenfortschritt
+
+### RPC: `fn_increment_attention`
+
+SECURITY DEFINER, REVOKE FROM PUBLIC/anon/authenticated. Atomisches Upsert fuer Attention-Tracking. Validiert Agent gehoert zur angegebenen Simulation.
+
+### RLS
+
+- **agent_bonds**: Owner-Select, Public-Select (Bond-Existenz fuer aktive Sims), Owner-Insert (requires simulation_access), Owner-Update, Service-All
+- **bond_whispers**: Owner-Select/Update via Subquery-Join zu agent_bonds, Service-All
+- **bond_memories**: Owner-Select (fuer Depth-Progression), Owner-Insert (fuer Action-Tracking), Service-All
+
+### Indexes
+
+- `idx_bonds_user_sim(user_id, simulation_id)`, `idx_bonds_agent(agent_id)`, `idx_bonds_active(simulation_id, status) WHERE status IN (...)`
+- `idx_whispers_bond_created(bond_id, created_at DESC)`, `idx_whispers_unread(bond_id) WHERE read_at IS NULL`
+- `idx_memories_bond_created(bond_id, created_at DESC)`, `idx_memories_bond_type(bond_id, memory_type)`

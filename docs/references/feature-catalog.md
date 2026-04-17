@@ -625,3 +625,12 @@ Alle 6 Phasen + Post-Phase Living World abgeschlossen. 170+ Tasks implementiert.
 - M1-M5 (Agent Autonomy Bootstrap, Influence → Readiness, Stability → Events, Resonance → Mood, Info Bubbles B1-B3)
 - M10-M13 (Bureau Terminal MUD Stages 1-3: Observation, Field Ops, Intelligence Network, CRT Palette)
 - i18n: 452 new German translations (100% coverage, 5789 total strings)
+
+### Agent Bonds (Migration 219)
+- N1: Bond Formation Flow (attention tracking → recognition → bond offer → acceptance)
+- N2: Whisper Generation Pipeline (LLM + 60 hand-authored bilingual templates, heartbeat Phase 9.6)
+- N3: Whisper Feed UI (VelgBondPanel dossier aesthetic, VelgWhisperCard, VelgBondFormation)
+- N4: Bond Lifecycle (depth progression 1-5, strain, recovery, farewell on agent delete)
+- N5: Bond Settings Panel (toggle, LLM budget, max bonds, recognition threshold)
+- N6: Configurable Settings from DB (simulation_settings category='bonds')
+- N7: Navigation + Analytics (SimulationNav link with activity badge, GA4 events)

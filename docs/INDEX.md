@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 106 documents, 10 categories + 10 ADRs.
+> Auto-generated from frontmatter. 108 documents, 10 categories + 10 ADRs.
 
 ## Specifications (16)
 
@@ -66,10 +66,12 @@ tags: [index, catalog, documentation]
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
 
-## Concepts (13)
+## Concepts (15)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
+| [Resonance Journal & Agent Bonds](concepts/resonance-journal-agent-bonds-concept.md) | 1.0 | 2026-04-16 | en | Agent Bonds implemented (Migration 219), Resonance Journal next |
+| [Agent Bonds — Implementation Notes](concepts/agent-bonds-implementation-notes.md) | 1.0 | 2026-04-16 | en | implemented |
 | [Bureau Social Media Presence](concepts/social-media-bureau-presence.md) | 2.1 | 2026-03-20 | en | active |
 | [Feature Discovery Proposals](concepts/feature-discovery-proposals.md) | 1.0 | 2026-03-20 | en | active |
 | [Post-Generation Engagement Proposals (8 Features)](concepts/post-generation-engagement-proposals.md) | 1.0 | 2026-03-22 | de/en | active |
