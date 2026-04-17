@@ -5,6 +5,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 
 interface NavTab {
   label: string;
@@ -443,13 +444,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
     e.preventDefault();
     this._activeTab = tab.path;
     this._menuOpen = false;
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: `/simulations/${this._slug}/${tab.path}`,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate(`/simulations/${this._slug}/${tab.path}`);
   }
 
   private _toggleMenu(e: Event): void {

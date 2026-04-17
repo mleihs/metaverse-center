@@ -20,6 +20,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import { htpHeroStyles } from './htp-shared-styles.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -431,25 +432,15 @@ export class VelgHowToPlayLanding extends LitElement {
 
   // ── Navigation ─────────────────────────────────────────────────────────
 
-  private _navigate(path: string) {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: path,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
   private _handleDoorClick(e: Event, href: string) {
     e.preventDefault();
-    this._navigate(href);
+    navigate(href);
   }
 
   private _handleDoorKeydown(e: KeyboardEvent, href: string) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      this._navigate(href);
+      navigate(href);
     }
   }
 
@@ -457,14 +448,14 @@ export class VelgHowToPlayLanding extends LitElement {
     if (e.key === 'Enter') {
       const q = this._searchInput?.value?.trim();
       if (q) {
-        this._navigate(`/how-to-play/guide?q=${encodeURIComponent(q)}`);
+        navigate(`/how-to-play/guide?q=${encodeURIComponent(q)}`);
       }
     }
   }
 
   private _handleTopicClick(e: Event, slug: string) {
     e.preventDefault();
-    this._navigate(`/how-to-play/guide/${slug}`);
+    navigate(`/how-to-play/guide/${slug}`);
   }
 
   // ── Render ─────────────────────────────────────────────────────────────

@@ -15,8 +15,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
+import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import './VelgTooltip.js';
 
 @localized()
@@ -93,18 +94,7 @@ export class VelgHelpTip extends LitElement {
   private _navigate(e: Event) {
     e.preventDefault();
     if (!this.topic) return;
-    const href = `/how-to-play/guide/${this.topic}`;
-    // app-shell's _handleNavigate reads `e.detail` as the path string directly,
-    // matching the contract used by HowToPlayGuideHub, HowToPlayTopic,
-    // HowToPlayQuickstart, SimulationShell. Previously wrapped in `{ path }`
-    // which serialised to `[object Object]` in window.history.pushState.
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        detail: href,
-      }),
-    );
+    navigate(`/how-to-play/guide/${this.topic}`);
   }
 }
 

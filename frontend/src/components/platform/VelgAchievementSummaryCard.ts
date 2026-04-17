@@ -22,6 +22,7 @@ import type {
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 
 @localized()
 @customElement('velg-achievement-summary-card')
@@ -281,16 +282,6 @@ export class VelgAchievementSummaryCard extends LitElement {
     }
   }
 
-  private _navigate() {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        detail: '/commendations',
-      }),
-    );
-  }
-
   private _renderMiniHex(achievement: UserAchievement) {
     const def = achievement.definition;
     if (!def) return nothing;
@@ -322,11 +313,11 @@ export class VelgAchievementSummaryCard extends LitElement {
         class="card"
         role="link"
         tabindex="0"
-        @click=${this._navigate}
+        @click=${() => navigate('/commendations')}
         @keydown=${(e: KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            this._navigate();
+            navigate('/commendations');
           }
         }}
       >

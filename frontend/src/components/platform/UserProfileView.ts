@@ -5,6 +5,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/index.js';
 import type { MembershipInfo } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
+import { navigate } from '../../utils/navigation.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
@@ -306,13 +307,7 @@ export class VelgUserProfileView extends LitElement {
   }
 
   private _handleMembershipClick(membership: MembershipInfo): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: `/simulations/${membership.simulation_slug || membership.simulation_id}/agents`,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate(`/simulations/${membership.simulation_slug || membership.simulation_id}/agents`);
   }
 
   private _renderProfileForm() {

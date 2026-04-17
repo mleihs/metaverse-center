@@ -30,6 +30,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
 import { type IconKey, icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import type { ForgeStep } from './htp-content-features.js';
 import { htpBackStyles, htpHeroStyles, htpReducedMotionBase } from './htp-shared-styles.js';
 import {
@@ -1210,19 +1211,9 @@ export class VelgHowToPlayTopic extends LitElement {
       .replace(/(^-|-$)/g, '');
   }
 
-  private _navigate(path: string) {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: path,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
   private _handleLinkClick(e: Event, href: string) {
     e.preventDefault();
-    this._navigate(href);
+    navigate(href);
   }
 
   private _scrollToSection(id: string) {

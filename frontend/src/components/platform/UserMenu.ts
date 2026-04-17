@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import { navigate } from '../../utils/navigation.js';
 
 @localized()
 @customElement('velg-user-menu')
@@ -103,9 +104,7 @@ export class VelgUserMenu extends LitElement {
   private async _handleSignOut(): Promise<void> {
     this._open = false;
     await authService.signOut();
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: '/login', bubbles: true, composed: true }),
-    );
+    navigate('/login');
   }
 
   protected render() {

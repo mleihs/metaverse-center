@@ -21,6 +21,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 
 interface PaletteItem {
   id: string;
@@ -416,9 +417,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
     if (item.action) {
       item.action();
     } else if (item.path) {
-      this.dispatchEvent(
-        new CustomEvent('navigate', { detail: item.path, bubbles: true, composed: true }),
-      );
+      navigate(item.path);
     }
   }
 

@@ -17,6 +17,7 @@ import { appState } from '../../services/AppStateManager.js';
 import type { Simulation } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 
 const LAST_TAB_PREFIX = 'velg-sim-tab-';
 
@@ -442,26 +443,12 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     appState.setCurrentSimulation(sim);
     this._close();
     const tab = getLastTab(sim.id);
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: `/simulations/${sim.slug}/${tab}`,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate(`/simulations/${sim.slug}/${tab}`);
   };
 
   private _onNewShard = (): void => {
     this._close();
-    if (appState.canForge.value) {
-      this.dispatchEvent(
-        new CustomEvent('navigate', { detail: '/forge', bubbles: true, composed: true }),
-      );
-    } else {
-      this.dispatchEvent(
-        new CustomEvent('navigate', { detail: '/new-simulation', bubbles: true, composed: true }),
-      );
-    }
+    navigate(appState.canForge.value ? '/forge' : '/new-simulation');
   };
 
   disconnectedCallback(): void {

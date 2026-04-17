@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { simulationsApi } from '../../services/api/index.js';
 import type { SimulationTheme } from '../../types/index.js';
+import { navigate } from '../../utils/navigation.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/BaseModal.js';
@@ -453,13 +454,7 @@ export class VelgCreateSimulationWizard extends LitElement {
             bubbles: true,
           }),
         );
-        this.dispatchEvent(
-          new CustomEvent('navigate', {
-            detail: `/simulations/${response.data.slug}/agents`,
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        navigate(`/simulations/${response.data.slug}/agents`);
       } else {
         this._apiError = response.error?.message ?? msg('Failed to create simulation.');
         VelgToast.error(this._apiError);
@@ -473,13 +468,7 @@ export class VelgCreateSimulationWizard extends LitElement {
   }
 
   private _handleClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: '/dashboard',
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate('/dashboard');
   }
 
   private _getStepState(step: WizardStep): string {

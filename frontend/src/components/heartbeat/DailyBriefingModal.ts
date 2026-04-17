@@ -15,6 +15,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import '../shared/VelgDispatchStamp.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
@@ -715,13 +716,7 @@ export class VelgDailyBriefing extends LitElement {
       this._exiting = false;
       document.body.style.overflow = '';
       this.dispatchEvent(new CustomEvent('briefing-dismissed', { bubbles: true, composed: true }));
-      this.dispatchEvent(
-        new CustomEvent('navigate', {
-          detail: `/simulations/${slug}/pulse`,
-          bubbles: true,
-          composed: true,
-        }),
-      );
+      navigate(`/simulations/${slug}/pulse`);
     }, EXIT_DURATION_MS);
   }
 

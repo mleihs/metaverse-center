@@ -21,6 +21,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { seoService } from '../../services/SeoService.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   htpBackStyles,
   htpFooterNavStyles,
@@ -370,19 +371,9 @@ export class VelgHowToPlayQuickstart extends LitElement {
 
   // ── Navigation ─────────────────────────────────────────────────────────
 
-  private _navigate(path: string) {
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: path,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
   private _handleLinkClick(e: Event, href: string) {
     e.preventDefault();
-    this._navigate(href);
+    navigate(href);
   }
 
   // ── Render ─────────────────────────────────────────────────────────────

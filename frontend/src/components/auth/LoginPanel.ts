@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import {
   terminalAnimations,
   terminalFormStyles,
@@ -178,9 +179,7 @@ export class VelgLoginPanel extends LitElement {
   private _handleRegisterClick(e: Event): void {
     e.preventDefault();
     this._close();
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: '/register', bubbles: true, composed: true }),
-    );
+    navigate('/register');
   }
 
   private _close(): void {

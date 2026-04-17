@@ -6,6 +6,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import type { SimulationHealthDashboard, ZoneStability } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 
 interface PanelAction {
@@ -506,13 +507,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     if (action.navigateTo) {
       // Diagnostic action → navigate to the relevant tab
       const slug = appState.currentSimulation.value?.slug ?? this.simulationId;
-      this.dispatchEvent(
-        new CustomEvent('navigate', {
-          detail: `/simulations/${slug}/${action.navigateTo}`,
-          bubbles: true,
-          composed: true,
-        }),
-      );
+      navigate(`/simulations/${slug}/${action.navigateTo}`);
       this._dismiss();
     } else {
       // Epoch action → execute threshold API call

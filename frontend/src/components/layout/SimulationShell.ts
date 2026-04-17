@@ -12,6 +12,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { themeService } from '../../services/ThemeService.js';
 import type { BleedStatus, ThresholdState } from '../../types/health.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 
 import '../bleed/BleedPalimpsestOverlay.js';
 import '../forge/VelgBureauDispatch.js';
@@ -500,13 +501,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     const key = `bureau_dispatch_seen_${this.simulationId}`;
     localStorage.setItem(key, '1');
     const slug = appState.currentSimulation.value?.slug ?? this.simulationId;
-    this.dispatchEvent(
-      new CustomEvent('navigate', {
-        detail: `/simulations/${slug}/${e.detail.tab}`,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    navigate(`/simulations/${slug}/${e.detail.tab}`);
     // Sync nav highlight after route change (URL updated synchronously by router)
     queueMicrotask(() => {
       this.shadowRoot
@@ -849,9 +844,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   private _navigate(path: string, e: Event): void {
     e.preventDefault();
-    this.dispatchEvent(
-      new CustomEvent('navigate', { detail: path, bubbles: true, composed: true }),
-    );
+    navigate(path);
   }
 
   /* ── Dropdown lifecycle ── */
