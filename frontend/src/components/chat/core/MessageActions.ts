@@ -23,6 +23,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../../services/SentryService.js';
 
 import { icons } from '../../../utils/icons.js';
 
@@ -136,8 +137,9 @@ export class MessageActions extends LitElement {
       this._copyTimeout = window.setTimeout(() => {
         this._copied = false;
       }, 1500);
-    } catch {
-      // Fallback: textarea select + copy for insecure contexts
+    } catch (err) {
+      // Fallback: textarea select + copy for insecure contexts.
+      captureError(err, { source: 'MessageActions._handleCopy' });
       const ta = document.createElement('textarea');
       ta.value = this.content;
       ta.style.position = 'fixed';

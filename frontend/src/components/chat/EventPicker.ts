@@ -1,8 +1,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { eventsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { eventsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Event as SimEvent } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -227,7 +228,8 @@ export class VelgEventPicker extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load events.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEventPicker._loadEvents' });
       VelgToast.error(msg('An unexpected error occurred while loading events.'));
     } finally {
       this._loading = false;

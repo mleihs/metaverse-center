@@ -24,6 +24,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import type { TypingUser } from '../../../services/chat/ChatSessionStore.js';
 import type { Participant, TimelineItem } from '../../../services/chat/chat-types.js';
 import { ScrollController } from '../../../services/chat/ScrollController.js';
+import { captureError } from '../../../services/SentryService.js';
 import type { ChatEventReference, ChatMessage } from '../../../types/index.js';
 import { formatDate, formatDateLabel } from '../../../utils/date-format.js';
 import { icons } from '../../../utils/icons.js';
@@ -45,7 +46,8 @@ const _dayFormatter = new Intl.DateTimeFormat(undefined, {
 function isSameDay(a: string, b: string): boolean {
   try {
     return _dayFormatter.format(new Date(a)) === _dayFormatter.format(new Date(b));
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'chat-feed.isSameDay' });
     return false;
   }
 }

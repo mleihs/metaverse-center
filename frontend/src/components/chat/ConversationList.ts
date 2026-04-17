@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import { formatRelativeTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -471,16 +472,18 @@ export class VelgConversationList extends LitElement {
         const ids = JSON.parse(stored) as string[];
         this._pinnedIds = new Set(ids.slice(0, MAX_PINNED));
       }
-    } catch {
-      // Corrupted or unavailable — start fresh
+    } catch (err) {
+      // Corrupted or unavailable — start fresh.
+      captureError(err, { source: 'VelgConversationList._loadPinnedIds' });
     }
   }
 
   private _savePinnedIds(): void {
     try {
       localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify([...this._pinnedIds]));
-    } catch {
-      // localStorage full — non-critical
+    } catch (err) {
+      // localStorage full or unavailable.
+      captureError(err, { source: 'VelgConversationList._savePinnedIds' });
     }
   }
 

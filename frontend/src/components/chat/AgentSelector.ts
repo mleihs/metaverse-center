@@ -1,8 +1,9 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { agentsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { agentsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent } from '../../types/index.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -291,7 +292,8 @@ export class VelgAgentSelector extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load agents.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgAgentSelector._loadAgents' });
       VelgToast.error(msg('An unexpected error occurred while loading agents.'));
     } finally {
       this._loading = false;
