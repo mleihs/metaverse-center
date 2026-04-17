@@ -101,7 +101,12 @@ class BondService:
         """Increment attention score via atomic RPC.
 
         Creates a 'forming' bond if none exists. Idempotent for active bonds.
+        No-op if bonds are disabled for this simulation.
         """
+        settings = await _load_bond_settings(supabase, simulation_id)
+        if not settings["enabled"]:
+            return {"status": "disabled", "attention_score": 0}
+
         try:
             resp = await supabase.rpc(
                 "fn_increment_attention",
@@ -137,6 +142,8 @@ class BondService:
         Threshold is configurable via simulation_settings (category='bonds').
         """
         settings = await _load_bond_settings(supabase, simulation_id)
+        if not settings["enabled"]:
+            return []
         threshold = settings["recognition_threshold"]
         cutoff = (datetime.now(UTC) - timedelta(days=OBSERVATION_PERIOD_DAYS)).isoformat()
 
@@ -179,6 +186,8 @@ class BondService:
         The lifecycle trigger enforces the slot limit atomically.
         """
         settings = await _load_bond_settings(supabase, simulation_id)
+        if not settings["enabled"]:
+            raise bad_request("Agent bonds are disabled for this simulation.")
         threshold = settings["recognition_threshold"]
 
         # 1. Verify forming bond exists and meets threshold
@@ -673,11 +682,10 @@ class BondService:
         if (acted_resp.count or 0) < 3:
             return None
 
-        # Recover
-        now = datetime.now(UTC).isoformat()
+        # Recover (set_updated_at trigger handles timestamp automatically)
         resp = await (
             supabase.table("agent_bonds")
-            .update({"status": "active", "updated_at": now})
+            .update({"status": "active"})
             .eq("id", str(bond_id))
             .select("*")
             .execute()
@@ -690,7 +698,7 @@ class BondService:
             "bond_id": str(bond_id),
             "memory_type": "milestone",
             "description": "Bond recovered from strain",
-            "context": {"recovered_at": now},
+            "context": {"recovered_at": datetime.now(UTC).isoformat()},
         }).execute()
 
         logger.info("Bond recovered from strain", extra={"bond_id": str(bond_id)})
