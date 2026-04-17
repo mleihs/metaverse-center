@@ -34,8 +34,11 @@ export class SettingsApiService extends BaseApiService {
     category: SettingCategory,
     mode: 'public' | 'member',
   ): Promise<ApiResponse<SimulationSetting[]>> {
-    if (category === 'design') {
-      return this.getPublic(`/simulations/${simulationId}/settings`);
+    // Design and features are anon-readable via RLS (migrations 020 + 187);
+    // short-circuit to the public endpoint irrespective of caller mode.
+    // Same rule as `list()` — keep both entry points in parity.
+    if (category === 'design' || category === 'features') {
+      return this.getPublic(`/simulations/${simulationId}/settings`, { category });
     }
     return this.getSimulationData(
       `/simulations/${simulationId}/settings`,
