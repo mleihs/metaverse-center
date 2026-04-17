@@ -15,6 +15,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { adminApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   HeartbeatDashboard,
   HeartbeatSimulationStatus,
@@ -1143,7 +1144,13 @@ export class VelgAdminHeartbeatTab extends LitElement {
     let rules: Record<string, number>;
     try {
       rules = JSON.parse(this._configValues.heartbeat_event_aging_rules);
-    } catch {
+    } catch (err) {
+      // Config value missing or malformed — render defaults. Editing the
+      // field will overwrite this on save.
+      captureError(err, {
+        source: 'AdminHeartbeatTab._renderEventAgingRules',
+        field: 'heartbeat_event_aging_rules',
+      });
       rules = {
         active_to_escalating: 5,
         escalating_to_resolving: 8,

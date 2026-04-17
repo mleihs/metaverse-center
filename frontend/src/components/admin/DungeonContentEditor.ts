@@ -17,6 +17,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import { adminAnimationStyles } from '../shared/admin-shared-styles.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import './DungeonTerminalPreview.js';
@@ -446,7 +447,11 @@ export class DungeonContentEditor extends LitElement {
       this._draft = { ...this._draft, [key]: parsed };
       this._jsonErrors.delete(key);
       this._dirty = true;
-    } catch {
+    } catch (err) {
+      // Validation-time error: user is editing JSON textarea. UI renders
+      // the error via _jsonErrors state. captureError is diagnostic only —
+      // the user sees it immediately in the editor.
+      captureError(err, { source: 'DungeonContentEditor._updateJsonField', field: key });
       this._jsonErrors = new Set([...this._jsonErrors, key]);
     }
     this.requestUpdate();
