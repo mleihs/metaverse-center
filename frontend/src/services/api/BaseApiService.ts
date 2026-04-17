@@ -53,8 +53,11 @@ export class BaseApiService {
         } else {
           errorMessage = json.message || json.detail || errorMessage;
         }
-      } catch {
-        // Response body is not JSON — use statusText
+      } catch (err) {
+        captureError(err, {
+          source: 'BaseApiService.handleResponse.parseError',
+          status: String(response.status),
+        });
       }
 
       if (signOutOn401 && response.status === 401) {
