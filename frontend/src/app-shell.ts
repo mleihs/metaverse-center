@@ -1021,11 +1021,15 @@ export class VelgApp extends LitElement {
     return null;
   }
 
-  private async _loadSimulationContext(idOrSlug: string): Promise<void> {
-    const simulationId = await this._resolveSimulation(idOrSlug);
-    if (!simulationId) return;
-
-    // Allow re-load on re-entry (theme needs to reapply after switching sims)
+  /**
+   * Load taxonomies + public settings for the already-resolved simulation.
+   * The caller (router enter callback via _enterSimulationRoute, or render
+   * fallback) is responsible for slug resolution. This keeps the method a
+   * pure context loader and eliminates the redundant getBySlug round-trip
+   * that previously happened when both enter and render triggered a resolve.
+   */
+  private async _loadSimulationContext(simulationId: string): Promise<void> {
+    // Dedupe re-entry into the same simulation
     if (this._lastLoadedSimulationId === simulationId) return;
     this._lastLoadedSimulationId = simulationId;
 
