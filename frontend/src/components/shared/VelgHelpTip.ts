@@ -16,6 +16,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
+import './VelgTooltip.js';
 
 @localized()
 @customElement('velg-help-tip')

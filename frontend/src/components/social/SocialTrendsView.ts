@@ -28,6 +28,7 @@ import '../shared/Lightbox.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
 import '../shared/EmptyState.js';
+import '../shared/VelgHelpTip.js';
 import './TransformationModal.js';
 
 const GUARDIAN_SECTIONS = [
@@ -73,6 +74,10 @@ export class VelgSocialTrendsView extends LitElement {
     .trends__header {
       display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
       flex-wrap: wrap;
+    }
+
+    .trends__title-group {
+      display: inline-flex; align-items: center; gap: var(--space-2);
     }
 
     .trends__title {
@@ -1886,7 +1891,13 @@ export class VelgSocialTrendsView extends LitElement {
         ${this._renderEmbassyOverview()}
 
         <header class="trends__header">
-          <h1 class="trends__title">${msg('Browse News')}</h1>
+          <div class="trends__title-group">
+            <h1 class="trends__title">${msg('Browse News')}</h1>
+            <velg-help-tip
+              topic="events"
+              label=${msg('How do social trends work?')}
+            ></velg-help-tip>
+          </div>
           ${
             appState.isPlatformAdmin.value
               ? html`<button class="btn--resonance" @click=${this._handleCreateResonance}

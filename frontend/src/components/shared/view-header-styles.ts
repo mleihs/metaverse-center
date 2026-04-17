@@ -19,6 +19,13 @@ export const viewHeaderStyles = css`
     gap: var(--space-4);
   }
 
+  .view__title-group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
   .view__title {
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);

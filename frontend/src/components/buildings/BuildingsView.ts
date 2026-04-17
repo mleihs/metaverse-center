@@ -13,6 +13,7 @@ import { t } from '../../utils/locale-fields.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../shared/VelgHelpTip.js';
 import '../shared/SharedFilterBar.js';
 import '../shared/Pagination.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -312,7 +313,13 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     return html`
       <section class="view" aria-label=${msg('Buildings')}>
         <header class="view__header">
-          <h1 class="view__title">${msg('Buildings')}</h1>
+          <div class="view__title-group">
+            <h1 class="view__title">${msg('Buildings')}</h1>
+            <velg-help-tip
+              topic="world"
+              label=${msg('How do buildings work?')}
+            ></velg-help-tip>
+          </div>
           ${
             this._canEdit
               ? html`
