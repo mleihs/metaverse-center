@@ -252,7 +252,9 @@ class DungeonAudioService {
     }
 
     if (this._ctx && this._ctx.state === 'running') {
-      this._ctx.suspend().catch(() => {});
+      this._ctx
+        .suspend()
+        .catch((err) => captureError(err, { source: 'DungeonAudioService.disable' }));
     }
   }
 
@@ -317,7 +319,9 @@ class DungeonAudioService {
     }
 
     if (this._ctx) {
-      this._ctx.close().catch(() => {});
+      this._ctx
+        .close()
+        .catch((err) => captureError(err, { source: 'DungeonAudioService.dispose' }));
       this._ctx = null;
       this._masterGain = null;
       this._sfxGain = null;
@@ -464,7 +468,11 @@ class DungeonAudioService {
       if (document.hidden) {
         // Suspend audio when tab hidden
         if (this._ctx.state === 'running') {
-          this._ctx.suspend().catch(() => {});
+          this._ctx
+            .suspend()
+            .catch((err) =>
+              captureError(err, { source: 'DungeonAudioService._initVisibilityHandler.suspend' }),
+            );
         }
         if (this._sfxSprite) {
           this._sfxSprite.mute(true);
@@ -472,7 +480,11 @@ class DungeonAudioService {
       } else {
         // Resume audio when tab visible (if enabled)
         if (this._ctx.state === 'suspended') {
-          this._ctx.resume().catch(() => {});
+          this._ctx
+            .resume()
+            .catch((err) =>
+              captureError(err, { source: 'DungeonAudioService._initVisibilityHandler.resume' }),
+            );
         }
         if (this._sfxSprite) {
           this._sfxSprite.mute(false);

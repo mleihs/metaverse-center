@@ -667,8 +667,9 @@ export class VelgAgentDetailsPanel extends LitElement {
     this._lastAttentionAgentId = agentId;
     if (this._attentionTimer) clearTimeout(this._attentionTimer);
     this._attentionTimer = setTimeout(() => {
-      bondsApi.trackAttention(this.simulationId, agentId).catch(() => {
-        /* best-effort, never block the UI */
+      bondsApi.trackAttention(this.simulationId, agentId).catch((err) => {
+        // Best-effort telemetry — never block the UI, but capture for Sentry.
+        captureError(err, { source: 'AgentDetailsPanel._trackBondAttention' });
       });
     }, 2000);
   }

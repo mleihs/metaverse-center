@@ -844,12 +844,14 @@ export class VelgSimulationHealthView extends LitElement {
     try {
       const [healthResult, attResult, anchorResult] = await Promise.all([
         healthApi.getDashboard(this.simulationId, appState.currentSimulationMode.value),
-        heartbeatApi
-          .listAttunements(this.simulationId)
-          .catch(() => ({ success: false, data: null })),
-        heartbeatApi
-          .listAnchors({ simulation_id: this.simulationId })
-          .catch(() => ({ success: false, data: null })),
+        heartbeatApi.listAttunements(this.simulationId).catch((err) => {
+          captureError(err, { source: 'VelgSimulationHealthView._load.listAttunements' });
+          return { success: false, data: null };
+        }),
+        heartbeatApi.listAnchors({ simulation_id: this.simulationId }).catch((err) => {
+          captureError(err, { source: 'VelgSimulationHealthView._load.listAnchors' });
+          return { success: false, data: null };
+        }),
       ]);
       if (healthResult.success && healthResult.data) {
         this._dashboard = healthResult.data;
