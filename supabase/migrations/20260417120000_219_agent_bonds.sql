@@ -287,6 +287,17 @@ ALTER TABLE bond_memories ENABLE ROW LEVEL SECURITY;
 -- action tracking). No SELECT/UPDATE/DELETE for authenticated users —
 -- memories are write-only from the user perspective (read by service_role
 -- for whisper generation context).
+-- Bond owner can SELECT + INSERT their own memories.
+-- SELECT needed for: _check_engagement (depth progression counts memories),
+-- recover_from_strain (reads neglect memory for strain start time).
+-- Without SELECT, depth 4+ is permanently unreachable for non-admin users.
+CREATE POLICY memories_owner_select ON bond_memories
+    FOR SELECT USING (
+        (SELECT auth.uid()) = (
+            SELECT ab.user_id FROM agent_bonds ab WHERE ab.id = bond_memories.bond_id
+        )
+    );
+
 CREATE POLICY memories_owner_insert ON bond_memories
     FOR INSERT WITH CHECK (
         (SELECT auth.uid()) = (
