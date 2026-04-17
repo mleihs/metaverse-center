@@ -22,16 +22,15 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# ── Constants ──────────────────────────────────────────────────────────────
+# ── Defaults (overridable via simulation_settings category='bonds') ────────
 
-RECOGNITION_THRESHOLD = 10
+_DEFAULT_RECOGNITION_THRESHOLD = 10
+_DEFAULT_MAX_BONDS = 5
+
 OBSERVATION_PERIOD_DAYS = 14
-MAX_BONDS_PER_SIMULATION = 5
 
-# Minimum real-time days between depth transitions
 DEPTH_MIN_DAYS: dict[int, int] = {2: 7, 3: 14, 4: 21, 5: 28}
 
-# Engagement requirements per depth transition
 DEPTH_REQUIREMENTS: dict[int, dict] = {
     2: {"whispers_read": 5},
     3: {"whispers_acted_on": 3},
@@ -40,6 +39,37 @@ DEPTH_REQUIREMENTS: dict[int, dict] = {
 }
 
 STRAIN_RECOVERY_DAYS = 14
+
+
+async def _load_bond_settings(supabase: Client, simulation_id: UUID) -> dict:
+    """Load bond settings from simulation_settings (category='bonds').
+
+    Returns dict with resolved values, falling back to defaults.
+    """
+    settings: dict = {}
+    try:
+        resp = await (
+            supabase.table("simulation_settings")
+            .select("setting_key, setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("category", "bonds")
+            .execute()
+        )
+        for row in extract_list(resp):
+            settings[row["setting_key"]] = row["setting_value"]
+    except Exception:  # noqa: BLE001
+        logger.warning("Failed to load bond settings", exc_info=True)
+
+    return {
+        "recognition_threshold": int(
+            settings.get("bond_recognition_threshold", _DEFAULT_RECOGNITION_THRESHOLD),
+        ),
+        "max_bonds": int(
+            settings.get("bond_max_per_simulation", _DEFAULT_MAX_BONDS),
+        ),
+        "enabled": str(settings.get("bonds_enabled", "true")).lower()
+        not in ("false", "0"),
+    }
 
 # ── Agent enrichment select ───────────────────────────────────────────────
 
@@ -104,11 +134,10 @@ class BondService:
     ) -> list[dict]:
         """Find agents that crossed the attention threshold.
 
-        Returns forming bonds where:
-          - attention_score >= RECOGNITION_THRESHOLD
-          - created_at is OBSERVATION_PERIOD_DAYS+ days ago
-          - status is still 'forming'
+        Threshold is configurable via simulation_settings (category='bonds').
         """
+        settings = await _load_bond_settings(supabase, simulation_id)
+        threshold = settings["recognition_threshold"]
         cutoff = (datetime.now(UTC) - timedelta(days=OBSERVATION_PERIOD_DAYS)).isoformat()
 
         resp = await (
@@ -117,7 +146,7 @@ class BondService:
             .eq("user_id", str(user_id))
             .eq("simulation_id", str(simulation_id))
             .eq("status", "forming")
-            .gte("attention_score", RECOGNITION_THRESHOLD)
+            .gte("attention_score", threshold)
             .lte("created_at", cutoff)
             .execute()
         )
@@ -146,11 +175,12 @@ class BondService:
     ) -> dict:
         """Accept a bond with an agent after recognition.
 
-        Preconditions:
-          - A 'forming' bond exists with attention >= threshold
-          - User has < MAX_BONDS_PER_SIMULATION active bonds
-          - Bond is old enough (observation period met)
+        Thresholds and slot limits are configurable via simulation_settings.
+        The lifecycle trigger enforces the slot limit atomically.
         """
+        settings = await _load_bond_settings(supabase, simulation_id)
+        threshold = settings["recognition_threshold"]
+
         # 1. Verify forming bond exists and meets threshold
         bond = await maybe_single_data(
             supabase.table("agent_bonds")
@@ -163,10 +193,10 @@ class BondService:
         if not bond:
             raise not_found("Bond", context="no forming bond found for this agent")
 
-        if bond["attention_score"] < RECOGNITION_THRESHOLD:
+        if bond["attention_score"] < threshold:
             raise bad_request(
                 f"Agent has not reached recognition threshold "
-                f"({bond['attention_score']}/{RECOGNITION_THRESHOLD})."
+                f"({bond['attention_score']}/{threshold})."
             )
 
         cutoff = datetime.now(UTC) - timedelta(days=OBSERVATION_PERIOD_DAYS)
@@ -175,11 +205,24 @@ class BondService:
                 f"Bond must be at least {OBSERVATION_PERIOD_DAYS} days old before formation."
             )
 
-        # 2. Transition to active.
-        # The fn_bond_lifecycle_guard trigger enforces:
-        #   - Status transition validity (forming→active only)
-        #   - Slot limit (max 5 active/strained per user+simulation)
-        #   - formed_at timestamp auto-set
+        # 2. Pre-check configurable slot limit (trigger enforces hard max of 5)
+        max_bonds = settings["max_bonds"]
+        count_resp = await (
+            supabase.table("agent_bonds")
+            .select("id", count="exact")
+            .eq("user_id", str(user_id))
+            .eq("simulation_id", str(simulation_id))
+            .in_("status", ["active", "strained"])
+            .execute()
+        )
+        active_count = count_resp.count if count_resp.count is not None else 0
+        if active_count >= max_bonds:
+            raise conflict(
+                f"Maximum {max_bonds} active bonds per simulation reached."
+            )
+
+        # 3. Transition to active.
+        # The fn_bond_lifecycle_guard trigger enforces structural invariants.
         # If the trigger rejects, Supabase raises an API error.
         try:
             update_resp = await (
@@ -200,8 +243,7 @@ class BondService:
                     "user_id": str(user_id), "simulation_id": str(simulation_id),
                 })
                 raise conflict(
-                    f"Maximum {MAX_BONDS_PER_SIMULATION} active bonds "
-                    f"per simulation reached."
+                    "Maximum active bonds per simulation reached."
                 ) from exc
             if "Invalid bond status transition" in err_msg:
                 raise conflict("Bond was modified concurrently.") from exc

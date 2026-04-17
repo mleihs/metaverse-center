@@ -13,6 +13,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import { analyticsService } from '../../services/AnalyticsService.js';
 import type { Bond, BondDetail, Whisper } from '../../services/api/BondsApiService.js';
 import { bondsApi } from '../../services/api/BondsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
@@ -423,6 +424,10 @@ export class VelgBondPanel extends LitElement {
     const { whisperId, bondId } = e.detail;
     const resp = await bondsApi.markWhisperActed(bondId, whisperId);
     if (resp.success) {
+      analyticsService.trackEvent('bond_whisper_acted', {
+        bond_id: bondId,
+        whisper_id: whisperId,
+      });
       VelgToast.success(msg('Action acknowledged'));
       this._selectBond(bondId);
     }
