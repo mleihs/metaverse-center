@@ -282,7 +282,7 @@ export class VelgBondPanel extends LitElement {
         this._selectBond(this._bonds[0].id);
       }
     } else {
-      this._error = resp.error?.message ?? 'Failed to load bonds';
+      this._error = resp.error?.message ?? msg('Failed to load bonds');
     }
     this._loading = false;
   }
@@ -303,14 +303,21 @@ export class VelgBondPanel extends LitElement {
     const unread = this._detail.recent_whispers.filter(
       (w: Whisper) => !w.read_at,
     );
-    for (const w of unread) {
-      await bondsApi.markWhisperRead(this._detail.id, w.id);
-      w.read_at = new Date().toISOString();
-    }
-    if (unread.length) {
-      this._detail = { ...this._detail };
-      this._loadBonds();
-    }
+    if (!unread.length) return;
+
+    const now = new Date().toISOString();
+    await Promise.all(
+      unread.map((w) => bondsApi.markWhisperRead(this._detail!.id, w.id)),
+    );
+    // Update local state after all reads confirmed
+    this._detail = {
+      ...this._detail,
+      recent_whispers: this._detail.recent_whispers.map((w) =>
+        w.read_at ? w : { ...w, read_at: now },
+      ),
+      unread_count: 0,
+    };
+    this._loadBonds();
   }
 
   private async _handleWhisperActed(e: CustomEvent) {
@@ -332,10 +339,13 @@ export class VelgBondPanel extends LitElement {
       : DEPTH_NAMES_EN[depth] ?? '';
   }
 
-  private _moodColor(bond: Bond): string {
-    if (!('agent_mood_score' in bond)) return 'var(--color-text-muted)';
-    const detail = bond as unknown as BondDetail;
-    const mood = detail.agent_mood_score;
+  private _moodColor(bondId: string): string {
+    // Mood data only available for the selected bond (from detail endpoint).
+    // Non-selected bonds show neutral indicator.
+    if (bondId !== this._selectedBondId || !this._detail) {
+      return 'var(--color-text-muted)';
+    }
+    const mood = this._detail.agent_mood_score;
     if (mood == null) return 'var(--color-text-muted)';
     if (mood > 20) return 'var(--_mood-good)';
     if (mood > -20) return 'var(--_mood-mid)';
@@ -414,7 +424,7 @@ export class VelgBondPanel extends LitElement {
       >
         <span
           class="bond-slot__mood"
-          style="background: ${this._moodColor(bond)}"
+          style="background: ${this._moodColor(bond.id)}"
         ></span>
         <span class="bond-slot__name">
           ${bond.agent_name ?? msg('Unknown')}

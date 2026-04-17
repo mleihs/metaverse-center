@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import {
   agentsApi,
+  bondsApi,
   embassiesApi,
   generationApi,
   relationshipsApi,
@@ -617,12 +618,18 @@ export class VelgAgentDetailsPanel extends LitElement {
   @state() private _agentIntel: AgentIntelData | null = null;
 
   private _aptitudeSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private _lastAttentionAgentId: string | null = null;
+  private _attentionTimer: ReturnType<typeof setTimeout> | null = null;
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     if (this._aptitudeSaveTimer) {
       clearTimeout(this._aptitudeSaveTimer);
       this._aptitudeSaveTimer = null;
+    }
+    if (this._attentionTimer) {
+      clearTimeout(this._attentionTimer);
+      this._attentionTimer = null;
     }
   }
 
@@ -646,8 +653,22 @@ export class VelgAgentDetailsPanel extends LitElement {
         if (this.agent.is_ambassador) {
           this._loadEmbassy();
         }
+        // Track attention for bond formation (debounced: max 1 per agent per 5 min)
+        this._trackBondAttention(this.agent.id);
       }
     }
+  }
+
+  private _trackBondAttention(agentId: string): void {
+    if (!appState.isAuthenticated.value) return;
+    if (agentId === this._lastAttentionAgentId) return;
+    this._lastAttentionAgentId = agentId;
+    if (this._attentionTimer) clearTimeout(this._attentionTimer);
+    this._attentionTimer = setTimeout(() => {
+      bondsApi.trackAttention(this.simulationId, agentId).catch(() => {
+        /* best-effort, never block the UI */
+      });
+    }, 2000);
   }
 
   private async _loadReactions(): Promise<void> {
