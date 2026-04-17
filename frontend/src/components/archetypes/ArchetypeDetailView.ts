@@ -1353,6 +1353,13 @@ export class VelgArchetypeDetail extends LitElement {
       seoService.setDescription(data.tagline);
       seoService.setCanonical(`/archetypes/${data.id}`);
       seoService.setOgImage(imageUrl);
+      seoService.setOgImageAlt(`${data.name} \u2013 ${data.subtitle}`);
+      seoService.setOgType('article');
+      seoService.setArticleMeta({
+        author: 'metaverse.center',
+        section: 'Resonance Dungeons',
+        tags: ['Resonance Dungeon', data.name, data.mechanicName],
+      });
       seoService.setCreativeWork({
         name: `${data.name} \u2013 ${data.subtitle}`,
         description: data.loreIntro[0] ?? data.tagline,

@@ -304,18 +304,23 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
 
   protected _onDataLoaded(): void {
     const editions = this._broadsheets;
-    if (editions.length > 0) {
-      const latest = editions[0];
-      const sim = appState.currentSimulation.value;
-      if (sim) {
-        seoService.setArticle({
-          headline: latest.title ?? t(sim, 'name'),
-          articleBody: (latest.articles?.[0]?.content ?? '').slice(0, 500),
-          url: `https://metaverse.center/simulations/${sim.slug}/broadsheet`,
-          datePublished: latest.published_at ?? undefined,
-        });
-      }
-    }
+    if (editions.length === 0) return;
+    const latest = editions[0];
+    const sim = appState.currentSimulation.value;
+    if (!sim) return;
+
+    seoService.setOgType('article');
+    seoService.setArticleMeta({
+      publishedTime: latest.published_at ?? undefined,
+      author: t(sim, 'name'),
+      section: 'Broadsheet',
+    });
+    seoService.setArticle({
+      headline: latest.title ?? t(sim, 'name'),
+      articleBody: (latest.articles?.[0]?.content ?? '').slice(0, 500),
+      url: `https://metaverse.center/simulations/${sim.slug}/broadsheet`,
+      datePublished: latest.published_at ?? undefined,
+    });
   }
 
   /* ── Computed ─────────────────────────────────── */
