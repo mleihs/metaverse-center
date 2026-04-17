@@ -6,8 +6,17 @@ const BASE_URL = 'https://metaverse.center';
 const DEFAULT_OG_IMAGE =
   'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg';
 
+type RobotsPolicy = 'index, follow' | 'noindex' | 'noindex, nofollow';
+
+const DEFAULT_ROBOTS: RobotsPolicy = 'index, follow';
+
 class SeoService {
-  /** Set page title from parts: ['Agents', 'Station Null'] → "Agents – Station Null | metaverse.center" */
+  /** Set page title from parts: ['Agents', 'Station Null'] → "Agents – Station Null | metaverse.center".
+   *
+   * Implicitly resets the robots policy to 'index, follow'. Every route starts from a clean
+   * slate — routes that require noindex (auth flows, invitation tokens) must call
+   * {@link setRobots} explicitly AFTER setTitle. This guarantees that stale noindex state
+   * from a previous route can never leak into the next. */
   setTitle(parts: string[]): void {
     if (parts.length === 0) {
       document.title = DEFAULT_TITLE;
@@ -16,6 +25,13 @@ class SeoService {
     }
     this._setMetaProperty('og:title', document.title);
     this._setMeta('twitter:title', document.title);
+    this._setMeta('robots', DEFAULT_ROBOTS);
+  }
+
+  /** Override the robots policy for the current route. Call AFTER setTitle(), otherwise the
+   *  implicit title-side reset would overwrite the override. */
+  setRobots(policy: RobotsPolicy): void {
+    this._setMeta('robots', policy);
   }
 
   setDescription(text: string): void {
@@ -175,6 +191,7 @@ class SeoService {
     this._setMeta('twitter:title', DEFAULT_TITLE);
     this._setMeta('twitter:description', DEFAULT_DESCRIPTION);
     this._setMeta('twitter:image', DEFAULT_OG_IMAGE);
+    this._setMeta('robots', DEFAULT_ROBOTS);
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (canonical) {
       canonical.href = `${BASE_URL}/`;

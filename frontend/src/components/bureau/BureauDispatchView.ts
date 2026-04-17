@@ -26,18 +26,9 @@ export class VelgBureauDispatch extends LitElement {
   private _countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    // noindex — don't index the unlock page
-    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'robots';
-      document.head.appendChild(meta);
-    }
-    meta.content = 'noindex';
-  }
+  // Robots policy (noindex) is declared at the route level in app-shell.ts —
+  // not here. Components must not touch <meta name="robots"> directly, otherwise
+  // SPA navigation will leak the policy into the next route.
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
