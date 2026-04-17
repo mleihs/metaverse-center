@@ -14,6 +14,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { formatDateTime } from '../../utils/date-format.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -367,8 +368,9 @@ export class VelgClearanceQueue extends LitElement {
       if (resp.success && resp.data) {
         this._requests = resp.data;
       }
-    } catch {
-      // Non-critical — admin panel has other ways to surface this
+    } catch (err) {
+      // Non-critical — admin panel has other ways to surface this.
+      captureError(err, { source: 'VelgClearanceQueue._loadPendingRequests' });
     } finally {
       this._loading = false;
     }
@@ -419,7 +421,8 @@ export class VelgClearanceQueue extends LitElement {
       } else {
         VelgToast.error(msg('Review failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgClearanceQueue._reviewRequest' });
       VelgToast.error(msg('An unexpected error occurred.'));
     } finally {
       this._reviewingId = null;

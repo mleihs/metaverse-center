@@ -15,6 +15,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/BaseModal.js';
 
@@ -349,7 +350,8 @@ export class VelgForgeAccessModal extends LitElement {
         const errMsg = (resp as { error?: { message?: string } }).error?.message;
         VelgToast.error(errMsg ?? msg('Failed to submit application'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgForgeAccessModal._handleSubmit' });
       VelgToast.error(msg('An unexpected error occurred'));
     } finally {
       this._submitting = false;

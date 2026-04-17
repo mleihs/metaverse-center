@@ -9,6 +9,7 @@ import type {
   LorePhaseProgress,
 } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
 
 import '../shared/VelgGameCard.js';
@@ -1777,8 +1778,9 @@ export class VelgForgeCeremony extends LitElement {
         // Victory haptic pattern (Android)
         if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
       }
-    } catch {
-      // Silently ignore — polling is best-effort
+    } catch (err) {
+      // Polling is best-effort — a failed tick doesn't block the ceremony.
+      captureError(err, { source: 'VelgForgeCeremony._pollProgress' });
     }
   }
 
