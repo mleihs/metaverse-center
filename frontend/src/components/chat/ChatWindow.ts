@@ -11,6 +11,7 @@ import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentBrief, ChatConversation, ChatEventReference } from '../../types/index.js';
 import { agentAccentColor } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
@@ -473,8 +474,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       if (response.success && Array.isArray(response.data)) {
         this._starters = response.data;
       }
-    } catch {
-      // Non-critical — empty state still works without starters
+    } catch (err) {
+      captureError(err, { source: 'ChatWindow._fetchStarters' });
     }
   }
 
@@ -514,8 +515,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       if (response.success && response.data) {
         chatStore.updateMessageReactions(conversationId, messageId, response.data);
       }
-    } catch {
-      // Non-critical — reaction display will catch up on next interaction
+    } catch (err) {
+      // Reaction display will catch up on next interaction — fetch is
+      // fire-and-forget from a realtime broadcast.
+      captureError(err, { source: 'ChatWindow._handleRealtimeReactionChanged' });
     }
   }
 
@@ -540,7 +543,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load messages.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatWindow._loadMessages' });
       VelgToast.error(msg('An unexpected error occurred while loading messages.'));
     } finally {
       this._loading = false;
@@ -636,7 +640,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
           } else {
             VelgToast.error(response.error?.message ?? msg('Failed to send message.'));
           }
-        } catch {
+        } catch (fallbackErr) {
+          captureError(fallbackErr, { source: 'ChatWindow._handleSendMessage.nonStreamFallback' });
           VelgToast.error(msg('An unexpected error occurred while sending the message.'));
         }
       }
@@ -868,7 +873,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       if (response.success && response.data) {
         this._detailAgent = response.data;
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatWindow._openAgentDetails' });
       VelgToast.error(msg('Failed to load agent details.'));
     }
   }
