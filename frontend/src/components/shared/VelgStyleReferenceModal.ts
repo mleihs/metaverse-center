@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi, buildingsApi, styleReferenceApi } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import { forgeButtonStyles, forgeFieldStyles, forgeRangeStyles } from './forge-console-styles.js';
 import { VelgToast } from './Toast.js';
 
@@ -151,8 +152,9 @@ export class VelgStyleReferenceModal extends LitElement {
     this._entities = [];
     this._entityId = '';
 
+    const mode = appState.currentSimulationMode.value;
     if (this._entityType === 'portrait') {
-      const result = await agentsApi.list(this.simulationId);
+      const result = await agentsApi.list(this.simulationId, mode);
       if (result.success && result.data) {
         this._entities = (result.data as { id: string; name: string }[]).map((a) => ({
           id: a.id,
@@ -160,7 +162,7 @@ export class VelgStyleReferenceModal extends LitElement {
         }));
       }
     } else {
-      const result = await buildingsApi.list(this.simulationId);
+      const result = await buildingsApi.list(this.simulationId, mode);
       if (result.success && result.data) {
         this._entities = (result.data as { id: string; name: string }[]).map((b) => ({
           id: b.id,

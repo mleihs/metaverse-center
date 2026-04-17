@@ -297,7 +297,9 @@ export class VelgEmbassyCreateModal extends LitElement {
     const simId = appState.simulationId.value;
     if (!simId) return;
     try {
-      const resp = await agentsApi.list(simId, { limit: '100' });
+      const resp = await agentsApi.list(simId, appState.currentSimulationMode.value, {
+        limit: '100',
+      });
       if (resp.success && resp.data) {
         this._localAgents = resp.data as Agent[];
       }

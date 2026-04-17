@@ -26,8 +26,15 @@ export class CampaignsApiService extends CrudApiService<Campaign> {
     return this.get(`/simulations/${simulationId}/campaigns/${campaignId}/metrics`);
   }
 
-  getAnalytics(simulationId: string, campaignId: string): Promise<ApiResponse<CampaignAnalytics>> {
-    return this.getSimulationData(`/simulations/${simulationId}/campaigns/${campaignId}/analytics`);
+  getAnalytics(
+    simulationId: string,
+    campaignId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<CampaignAnalytics>> {
+    return this.getSimulationData(
+      `/simulations/${simulationId}/campaigns/${campaignId}/analytics`,
+      mode,
+    );
   }
 }
 

@@ -193,8 +193,9 @@ async function ensureZoneData(zoneId: string): Promise<void> {
   if (!sid || !zoneId) return;
 
   // Load agents for zone if not cached
+  const mode = appState.currentSimulationMode.value;
   if (!terminalState.agentsByZone.value.has(zoneId)) {
-    const resp = await agentsApi.list(sid);
+    const resp = await agentsApi.list(sid, mode);
     if (resp.success && resp.data) {
       const zoneAgents = resp.data.filter((a) => a.current_zone_id === zoneId);
       terminalState.cacheAgentsForZone(zoneId, zoneAgents);
@@ -203,7 +204,7 @@ async function ensureZoneData(zoneId: string): Promise<void> {
 
   // Load buildings for zone if not cached
   if (!terminalState.buildingsByZone.value.has(zoneId)) {
-    const resp = await buildingsApi.list(sid, { zone_id: zoneId });
+    const resp = await buildingsApi.list(sid, mode, { zone_id: zoneId });
     if (resp.success && resp.data) {
       terminalState.cacheBuildingsForZone(zoneId, resp.data);
     }
@@ -225,7 +226,7 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
   // Parallel API calls
   const [stabResp, eventsResp, weatherResp, readinessResp] = await Promise.all([
     healthApi.listZoneStability(sid),
-    eventsApi.list(sid, { event_status: 'active' }),
+    eventsApi.list(sid, appState.currentSimulationMode.value, { event_status: 'active' }),
     heartbeatApi.listEntries(sid, { entry_type: 'ambient_weather', limit: '1' }),
     healthApi.listBuildingReadiness(sid, { zone_id: zoneId }),
   ]);
@@ -366,7 +367,7 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
     const agent = agentMatches[0];
     // Fetch detailed data in parallel
     const [detailResp, moodResp, needsResp, moodletsResp] = await Promise.all([
-      agentsApi.getById(sid, agent.id),
+      agentsApi.getById(sid, agent.id, appState.currentSimulationMode.value),
       agentAutonomyApi.getAgentMood(sid, agent.id),
       agentAutonomyApi.getAgentNeeds(sid, agent.id),
       agentAutonomyApi.getAgentMoodlets(sid, agent.id),
@@ -731,7 +732,7 @@ async function handleAssign(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Resolve agent (all agents in simulation, not just current zone)
-  const agentsResp = await agentsApi.list(sid);
+  const agentsResp = await agentsApi.list(sid, appState.currentSimulationMode.value);
   const allAgents: Agent[] = agentsResp.success && agentsResp.data ? agentsResp.data : [];
   const agentMatches = fuzzyMatch(agentQuery, allAgents);
   if (agentMatches.length === 0) return formatUnknownCommand(agentQuery);
@@ -888,7 +889,8 @@ async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Fetch recent events and fuzzy-match by title
-  const listResp = await eventsApi.list(sid, { limit: '50' });
+  const mode = appState.currentSimulationMode.value;
+  const listResp = await eventsApi.list(sid, mode, { limit: '50' });
   if (!listResp.success || !listResp.data) {
     terminalState.intelPoints.value += 1;
     return [errorLine(msg('Investigation failed. Points refunded.'))];
@@ -908,7 +910,7 @@ async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Fetch full event detail with reactions
-  const eventResp = await eventsApi.getById(sid, matches[0].id);
+  const eventResp = await eventsApi.getById(sid, matches[0].id, mode);
   if (!eventResp.success || !eventResp.data) {
     terminalState.intelPoints.value += 1;
     return [errorLine(msg('Investigation failed. Points refunded.'))];

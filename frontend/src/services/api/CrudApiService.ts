@@ -16,12 +16,20 @@ export abstract class CrudApiService<T> extends BaseApiService {
     return `/simulations/${simulationId}/${this.resource}`;
   }
 
-  list(simulationId: string, params?: Record<string, string>): Promise<ApiResponse<T[]>> {
-    return this.getSimulationData(this.basePath(simulationId), params);
+  list(
+    simulationId: string,
+    mode: 'public' | 'member',
+    params?: Record<string, string>,
+  ): Promise<ApiResponse<T[]>> {
+    return this.getSimulationData(this.basePath(simulationId), mode, params);
   }
 
-  getById(simulationId: string, entityId: string): Promise<ApiResponse<T>> {
-    return this.getSimulationData(`${this.basePath(simulationId)}/${entityId}`);
+  getById(
+    simulationId: string,
+    entityId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<T>> {
+    return this.getSimulationData(`${this.basePath(simulationId)}/${entityId}`, mode);
   }
 
   create(simulationId: string, data: Partial<T>): Promise<ApiResponse<T>> {

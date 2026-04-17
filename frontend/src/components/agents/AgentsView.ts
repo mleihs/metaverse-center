@@ -189,7 +189,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
   }
 
   protected async _fetchData(): Promise<ApiResponse<Agent[]>> {
-    return agentsApi.list(this.simulationId, this._buildParams());
+    return agentsApi.list(this.simulationId, appState.currentSimulationMode.value, this._buildParams());
   }
 
   protected _getLoadingMessage(): string {
@@ -309,7 +309,10 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     if (!this.simulationId) return;
 
     try {
-      const response = await agentsApi.getAllAptitudes(this.simulationId);
+      const response = await agentsApi.getAllAptitudes(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         const map = new Map<string, AptitudeSet>();
         for (const row of response.data as AgentAptitude[]) {

@@ -734,7 +734,11 @@ export class VelgAgentDetailsPanel extends LitElement {
     if (!this.simulationId) return;
 
     try {
-      const response = await agentsApi.list(this.simulationId, { limit: '100' });
+      const response = await agentsApi.list(
+        this.simulationId,
+        appState.currentSimulationMode.value,
+        { limit: '100' },
+      );
       if (response.success && response.data) {
         this._allAgents = response.data;
       } else {
@@ -783,7 +787,11 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     this._aptitudesLoading = true;
     try {
-      const response = await agentsApi.getAptitudes(this.simulationId, this.agent.id);
+      const response = await agentsApi.getAptitudes(
+        this.simulationId,
+        this.agent.id,
+        appState.currentSimulationMode.value,
+      );
       if (response.success && response.data) {
         const set: AptitudeSet = {
           spy: 6,

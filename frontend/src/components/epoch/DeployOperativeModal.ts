@@ -22,6 +22,7 @@ import {
   epochsApi,
   locationsApi,
 } from '../../services/api/index.js';
+import { appState } from '../../services/AppStateManager.js';
 import type {
   Agent,
   AgentAptitude,
@@ -211,9 +212,10 @@ export class VelgDeployOperativeModal extends LitElement {
   private async _loadAgents(): Promise<void> {
     if (!this.simulationId) return;
     try {
+      const mode = appState.currentSimulationMode.value;
       const [agentResp, aptResp] = await Promise.all([
-        agentsApi.list(this.simulationId, { limit: '100' }),
-        agentsApi.getAllAptitudes(this.simulationId),
+        agentsApi.list(this.simulationId, mode, { limit: '100' }),
+        agentsApi.getAllAptitudes(this.simulationId, mode),
       ]);
 
       if (agentResp.success && agentResp.data) {
