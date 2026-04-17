@@ -562,19 +562,6 @@ def _replace_meta(html: str, attr: str, key: str, value: str) -> str:
     return re.sub(pattern, replacement, html)
 
 
-def get_prerendered_html(static_dir: Path, url_path: str) -> Path | None:
-    """Check if a prerendered HTML file exists for this URL path."""
-    prerendered_dir = static_dir / "prerendered"
-    clean = url_path.strip("/")
-    if not clean:
-        clean = "index"
-    if ".." in clean:
-        return None
-    candidate = prerendered_dir / f"{clean}.html"
-    if candidate.is_file():
-        return candidate
-    return None
-
 
 def _escape(text: str) -> str:
     """Escape text for safe HTML attribute insertion."""

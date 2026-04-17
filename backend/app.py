@@ -38,7 +38,6 @@ from backend.middleware.seo import (
     enrich_html_for_crawler,
     get_crawler_redirect,
     get_legacy_redirect,
-    get_prerendered_html,
     is_crawler,
 )
 from backend.routers import (
@@ -273,19 +272,18 @@ if _static_dir.is_dir():
         legacy_target = get_legacy_redirect(request.url.path)
         if legacy_target:
             return RedirectResponse(url=legacy_target, status_code=301)
-        # For crawlers: serve prerendered HTML or enriched meta tags
+        # For crawlers: serve enriched HTML with meta tags + semantic content.
+        # Cloudflare caches these at the edge via Cache-Control header.
         if is_crawler(request.headers.get("user-agent", "")):
             redirect_path = get_crawler_redirect(request.url.path)
             if redirect_path:
                 return RedirectResponse(url=redirect_path, status_code=301)
-            # Check for prerendered static HTML first
-            prerendered = get_prerendered_html(_static_dir, request.url.path)
-            if prerendered:
-                return FileResponse(prerendered, media_type="text/html")
-            # Fallback: dynamic meta enrichment
             enriched = await enrich_html_for_crawler(_static_dir / "index.html", request.url.path)
             if enriched:
-                return HTMLResponse(content=enriched)
+                return HTMLResponse(
+                    content=enriched,
+                    headers={"Cache-Control": "public, max-age=3600, stale-while-revalidate=86400"},
+                )
         return FileResponse(
             _static_dir / "index.html",
             headers={"Cache-Control": "no-cache, must-revalidate"},

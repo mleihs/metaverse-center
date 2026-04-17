@@ -22,19 +22,7 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-# Stage 2: Prerender static HTML for crawlers
-FROM python:3.13-slim AS prerender
-WORKDIR /app
-COPY scripts/prerender.py ./scripts/
-COPY --from=frontend-build /app/static/dist ./static/dist
-RUN pip install --no-cache-dir httpx
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
-ENV SUPABASE_URL=${VITE_SUPABASE_URL}
-ENV SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-RUN python scripts/prerender.py
-
-# Stage 3: Python runtime with built frontend
+# Stage 2: Python runtime with built frontend
 FROM python:3.13-slim
 
 # Non-root user for runtime (H9: container escape mitigation)
@@ -51,8 +39,8 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY pyproject.toml ./
 COPY backend/ ./backend/
 
-# Copy built frontend assets + prerendered HTML
-COPY --from=prerender /app/static/dist ./static/dist
+# Copy built frontend assets
+COPY --from=frontend-build /app/static/dist ./static/dist
 
 # Ensure appuser owns app files
 RUN chown -R appuser:appuser /app
