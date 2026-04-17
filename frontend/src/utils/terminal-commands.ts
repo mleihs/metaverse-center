@@ -186,6 +186,26 @@ function simId(): string {
   return appState.simulationId.value ?? '';
 }
 
+/**
+ * Mode for simulation-scoped API reads made from terminal commands. The
+ * terminal only runs inside an authenticated simulation a user is a member
+ * of, so this is effectively always `'member'` in normal use — but reading
+ * the canonical signal preserves correctness if a caller ever invokes
+ * terminal logic from an unmounted / signed-out state.
+ */
+function simMode(): 'public' | 'member' {
+  return appState.currentSimulationMode.value;
+}
+
+/**
+ * Mode for auth-gated global API reads (Epochs, Simulations) made from
+ * terminal commands. Gated on authentication only, not on sim membership —
+ * so it asks `isAuthenticated`, not `currentSimulationMode`.
+ */
+function authMode(): 'public' | 'member' {
+  return appState.isAuthenticated.value ? 'member' : 'public';
+}
+
 // ── Helper: Ensure zone data loaded ────────────────────────────────────────
 
 async function ensureZoneData(zoneId: string): Promise<void> {
@@ -193,7 +213,7 @@ async function ensureZoneData(zoneId: string): Promise<void> {
   if (!sid || !zoneId) return;
 
   // Load agents for zone if not cached
-  const mode = appState.currentSimulationMode.value;
+  const mode = simMode();
   if (!terminalState.agentsByZone.value.has(zoneId)) {
     const resp = await agentsApi.list(sid, mode);
     if (resp.success && resp.data) {
@@ -224,7 +244,7 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
   if (!zone) return [systemLine(msg('Zone data unavailable.'))];
 
   // Parallel API calls
-  const mode = appState.currentSimulationMode.value;
+  const mode = simMode();
   const [stabResp, eventsResp, weatherResp, readinessResp] = await Promise.all([
     healthApi.listZoneStability(sid, mode),
     eventsApi.list(sid, mode, { event_status: 'active' }),
@@ -368,7 +388,7 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
     const agent = agentMatches[0];
     // Fetch detailed data in parallel
     const [detailResp, moodResp, needsResp, moodletsResp] = await Promise.all([
-      agentsApi.getById(sid, agent.id, appState.currentSimulationMode.value),
+      agentsApi.getById(sid, agent.id, simMode()),
       agentAutonomyApi.getAgentMood(sid, agent.id),
       agentAutonomyApi.getAgentNeeds(sid, agent.id),
       agentAutonomyApi.getAgentMoodlets(sid, agent.id),
@@ -391,9 +411,7 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
   if (buildingMatches.length === 1) {
     const building = buildingMatches[0];
     const [readinessResp, agentsResp] = await Promise.all([
-      healthApi.listBuildingReadiness(sid, appState.currentSimulationMode.value, {
-        zone_id: zoneId,
-      }),
+      healthApi.listBuildingReadiness(sid, simMode(), { zone_id: zoneId }),
       buildingsApi.getAgents(sid, building.id),
     ]);
     const readiness =
@@ -482,7 +500,7 @@ async function handleWeather(_ctx: CommandContext): Promise<TerminalLine[]> {
   const sid = simId();
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
-  const resp = await heartbeatApi.listEntries(sid, appState.currentSimulationMode.value, {
+  const resp = await heartbeatApi.listEntries(sid, simMode(), {
     entry_type: 'ambient_weather',
     limit: '1',
   });
@@ -495,7 +513,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
   const sid = simId();
   if (!sid) return [systemLine(msg('No simulation context.'))];
 
-  const resp = await healthApi.getDashboard(sid, appState.currentSimulationMode.value);
+  const resp = await healthApi.getDashboard(sid, simMode());
   if (!resp.success || !resp.data) {
     return [systemLine(msg('Failed to retrieve situation report.'))];
   }
@@ -512,11 +530,9 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
     const participant = terminalState.epochParticipant.value!;
     try {
       // Terminal runs inside an authenticated simulation — use member routes.
-      const authMode: 'public' | 'member' = appState.isAuthenticated.value
-        ? 'member'
-        : 'public';
+      const am = authMode();
       const [leaderResp, missionsResp] = await Promise.all([
-        epochsApi.getLeaderboard(epochId, authMode),
+        epochsApi.getLeaderboard(epochId, am),
         epochsApi.listMissions(epochId, { simulation_id: participant.simulation_id }),
       ]);
 
@@ -532,7 +548,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
       ).length;
 
       // Refresh RP from participant data
-      const pResp = await epochsApi.listParticipants(epochId, authMode);
+      const pResp = await epochsApi.listParticipants(epochId, am);
       if (pResp.success && pResp.data) {
         const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
           (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,
@@ -551,7 +567,7 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
       );
 
       // Get current cycle from epoch data
-      const epochResp = await epochsApi.getEpoch(epochId, authMode);
+      const epochResp = await epochsApi.getEpoch(epochId, am);
       if (epochResp.success && epochResp.data) {
         // Replace the placeholder cycle with actual value
         const cycleIdx = statusOutput.findIndex((l) => l.content.includes(`${msg('Cycle')}: 0`));
@@ -582,7 +598,7 @@ async function handleMap(_ctx: CommandContext): Promise<TerminalLine[]> {
   let stabilities = terminalState.zoneStabilities.value;
 
   if (stabilities.length === 0) {
-    const resp = await healthApi.listZoneStability(sid, appState.currentSimulationMode.value);
+    const resp = await healthApi.listZoneStability(sid, simMode());
     if (resp.success && resp.data) {
       stabilities = resp.data;
       terminalState.zoneStabilities.value = stabilities;
@@ -739,7 +755,7 @@ async function handleAssign(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Resolve agent (all agents in simulation, not just current zone)
-  const agentsResp = await agentsApi.list(sid, appState.currentSimulationMode.value);
+  const agentsResp = await agentsApi.list(sid, simMode());
   const allAgents: Agent[] = agentsResp.success && agentsResp.data ? agentsResp.data : [];
   const agentMatches = fuzzyMatch(agentQuery, allAgents);
   if (agentMatches.length === 0) return formatUnknownCommand(agentQuery);
@@ -872,7 +888,7 @@ async function handleScan(_ctx: CommandContext): Promise<TerminalLine[]> {
     return formatInsufficientPoints(msg('intel points'), terminalState.intelPoints.value, 1);
   }
 
-  const resp = await healthApi.listZoneStability(sid, appState.currentSimulationMode.value);
+  const resp = await healthApi.listZoneStability(sid, simMode());
   if (!resp.success || !resp.data) {
     terminalState.intelPoints.value += 1; // Refund on failure
     return [errorLine(msg('Scan failed. Points refunded.'))];
@@ -896,7 +912,7 @@ async function handleInvestigate(ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Fetch recent events and fuzzy-match by title
-  const mode = appState.currentSimulationMode.value;
+  const mode = simMode();
   const listResp = await eventsApi.list(sid, mode, { limit: '50' });
   if (!listResp.success || !listResp.data) {
     terminalState.intelPoints.value += 1;
@@ -1058,10 +1074,7 @@ async function handleSitrep(_ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Fetch the epoch to get current_cycle
-  const epochResp = await epochsApi.getEpoch(
-    epochId,
-    appState.isAuthenticated.value ? 'member' : 'public',
-  );
+  const epochResp = await epochsApi.getEpoch(epochId, authMode());
   if (!epochResp.success) {
     return [errorLine(msg('Failed to retrieve epoch data.'))];
   }
@@ -1171,10 +1184,7 @@ async function handleIntercept(_ctx: CommandContext): Promise<TerminalLine[]> {
   }
 
   // Refresh participant data (RP may have changed)
-  const pResp = await epochsApi.listParticipants(
-    epochId,
-    appState.isAuthenticated.value ? 'member' : 'public',
-  );
+  const pResp = await epochsApi.listParticipants(epochId, authMode());
   if (pResp.success && pResp.data) {
     const me = (Array.isArray(pResp.data) ? pResp.data : []).find(
       (p: { simulation_id: string }) => p.simulation_id === participant.simulation_id,
