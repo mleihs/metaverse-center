@@ -318,10 +318,10 @@ describe('formatOnboardingHint', () => {
 // ── Boot sequence ────────────────────────────────────────────────────────────
 
 describe('formatBootSequence', () => {
-  it('produces multiple system lines', () => {
+  it('emits only system and art line types', () => {
     const lines = formatBootSequence('Speranza', 'dystopian');
     assertTerminalLines(lines, 5);
-    expect(lines.every((l) => l.type === 'system' || l.type === 'hint')).toBe(true);
+    expect(lines.every((l) => l.type === 'system' || l.type === 'art')).toBe(true);
   });
 
   it('includes simulation name', () => {
