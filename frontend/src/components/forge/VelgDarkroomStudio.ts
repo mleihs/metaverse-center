@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -728,7 +729,8 @@ export class VelgDarkroomStudio extends LitElement {
       } else {
         VelgToast.error(msg('Regeneration failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgDarkroomStudio._regenerateEntity' });
       VelgToast.error(msg('Regeneration failed.'));
     } finally {
       this._regenerating = false;

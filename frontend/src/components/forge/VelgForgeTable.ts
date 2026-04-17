@@ -8,6 +8,7 @@ import type {
   ForgeDraft,
 } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
 import {
   forgeBackButtonStyles,
@@ -1173,8 +1174,9 @@ export class VelgForgeTable extends LitElement {
       } else {
         forgeStateManager.acceptEntity('building', index);
       }
-    } catch {
-      /* ignore */
+    } catch (err) {
+      // Malformed drag payload — ignore; drop is a no-op when parsing fails.
+      captureError(err, { source: 'VelgForgeTable._handleDrop' });
     }
   }
 

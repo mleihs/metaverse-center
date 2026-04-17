@@ -3,6 +3,7 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 
 import './VelgForgeAstrolabe.js';
 import './VelgForgeTable.js';
@@ -285,8 +286,9 @@ export class VelgForgeWizard extends LitElement {
       if ('wakeLock' in navigator) {
         this._wakeLock = await navigator.wakeLock.request('screen');
       }
-    } catch {
-      // Wake lock denied or unsupported — non-critical
+    } catch (err) {
+      // Wake lock denied or unsupported — degrades gracefully; not all browsers implement the API.
+      captureError(err, { source: 'VelgForgeWizard._requestWakeLock' });
     }
   }
 
