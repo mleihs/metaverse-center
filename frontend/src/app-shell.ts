@@ -1,4 +1,4 @@
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { Router } from '@lit-labs/router';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
@@ -6,9 +6,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from './services/AnalyticsService.js';
 import { appState } from './services/AppStateManager.js';
 import { epochsApi } from './services/api/EpochsApiService.js';
-import { forgeApi } from './services/api/ForgeApiService.js';
 import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './services/api/index.js';
-import { usersApi } from './services/api/UsersApiService.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { seoService } from './services/SeoService.js';
 import { applySimulationRouteMeta } from './services/seo-patterns.js';
@@ -896,11 +894,13 @@ export class VelgApp extends LitElement {
 
   private async _initAuth(): Promise<void> {
     try {
+      // `authService.initialize()` awaits the initial bootstrap — by the time
+      // it resolves, `appState.isPlatformAdmin`, `onboardingCompleted`,
+      // `isArchitect`, and `forgeRequestStatus` are all final. Route guards
+      // for /admin and /forge can safely read the signals immediately after.
       await Promise.all([authService.initialize(), this._fetchMockMode()]);
-      // After auth is ready, fetch /me (admin status + onboarding) before resolving
-      // _authReady — route guards for /admin and /forge depend on isPlatformAdmin.
-      if (appState.isAuthenticated.value) {
-        await this._fetchOnboardingState();
+      if (appState.isAuthenticated.value && !appState.onboardingCompleted.value) {
+        this._showOnboarding = true;
       }
       // Load simulations for all users (public-first: guests browse too)
       this._loadSimulations();
@@ -938,55 +938,6 @@ export class VelgApp extends LitElement {
       }
     } catch {
       // Non-critical — dashboard fetches its own copy
-    }
-  }
-
-  private async _fetchOnboardingState(): Promise<void> {
-    try {
-      const resp = await usersApi.getMe();
-      if (resp.success && resp.data) {
-        const data = resp.data as unknown as Record<string, unknown>;
-        const completed = data.onboarding_completed !== false;
-        appState.setOnboardingCompleted(completed);
-        appState.setPlatformAdmin(data.is_platform_admin === true);
-        if (!completed) {
-          this._showOnboarding = true;
-        }
-        // Update GA4 with correct admin status now that /me has resolved
-        const userType = appState.isPlatformAdmin.value
-          ? 'admin'
-          : appState.isArchitect.value
-            ? 'architect'
-            : 'member';
-        analyticsService.setUserProperties({
-          user_type: userType,
-          has_forge_access: appState.canForge.value,
-          locale: localeService.currentLocale,
-        });
-        // Admin: check pending clearance requests
-        if (appState.isPlatformAdmin.value) {
-          this._checkPendingForgeRequests();
-        }
-      }
-    } catch {
-      // Non-critical — default to onboarding completed
-    }
-  }
-
-  private async _checkPendingForgeRequests(): Promise<void> {
-    try {
-      const countResp = await forgeApi.getPendingRequestCount();
-      if (countResp.success && typeof countResp.data === 'number') {
-        appState.setPendingForgeRequestCount(countResp.data);
-        const toastKey = 'velg_admin_pending_toast_shown';
-        if (countResp.data > 0 && !sessionStorage.getItem(toastKey)) {
-          const { VelgToast } = await import('./components/shared/Toast.js');
-          VelgToast.info(msg(str`${countResp.data} pending clearance request(s)`));
-          sessionStorage.setItem(toastKey, '1');
-        }
-      }
-    } catch {
-      // Non-critical
     }
   }
 

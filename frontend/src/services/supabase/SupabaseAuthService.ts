@@ -3,6 +3,7 @@ import type { AuthError, RealtimeChannel, Session, User } from '@supabase/supaba
 import { analyticsService } from '../AnalyticsService.js';
 import { appState } from '../AppStateManager.js';
 import { forgeApi } from '../api/ForgeApiService.js';
+import { usersApi } from '../api/UsersApiService.js';
 import { forgeStateManager } from '../ForgeStateManager.js';
 import { localeService } from '../i18n/locale-service.js';
 import { captureError } from '../SentryService.js';
@@ -14,11 +15,16 @@ const ADMIN_PENDING_TOAST_KEY = 'velg_admin_pending_toast_shown';
 export class SupabaseAuthService {
   private _initialized = false;
   private _previouslyAuthenticated = false;
+  private _subscription: { unsubscribe: () => void } | null = null;
+  private _clearanceChannel: RealtimeChannel | null = null;
 
   /**
-   * Initialize auth: restore session from storage and set up the
-   * persistent auth state listener. Must be called once at app startup.
-   * Returns the restored session (or null).
+   * Initialize auth: restore session from storage, bootstrap appState, set up
+   * the persistent auth listener. Must be called once at app startup.
+   *
+   * Returns only after the initial bootstrap completes — callers can rely on
+   * `appState.isAuthenticated`, `isPlatformAdmin`, `isArchitect`,
+   * `onboardingCompleted`, and `forgeRequestStatus` being fully populated.
    */
   async initialize(): Promise<Session | null> {
     if (this._initialized) {
@@ -26,33 +32,51 @@ export class SupabaseAuthService {
       return data.session;
     }
 
-    // Wait for the INITIAL_SESSION event which fires once the session
-    // has been loaded from localStorage (or confirmed as absent).
-    const session = await new Promise<Session | null>((resolve) => {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event, s) => {
-        if (event === 'INITIAL_SESSION') {
-          resolve(s);
-        }
-        // Keep the listener alive for all future auth events
-        // (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, etc.)
-        this._syncAppState(s);
-      });
-      // Safety: if INITIAL_SESSION never fires (shouldn't happen), resolve after 2s
-      setTimeout(() => {
-        resolve(null);
-      }, 2000);
-      // Store subscription so we don't double-subscribe
-      this._subscription = subscription;
+    let initialResolved = false;
+    let resolveInitial!: (session: Session | null) => void;
+    const initialPromise = new Promise<Session | null>((r) => {
+      resolveInitial = r;
     });
 
-    this._initialized = true;
-    return session;
-  }
+    // Safety net: if INITIAL_SESSION never fires (shouldn't happen), resolve
+    // with null after 2s so app startup doesn't hang.
+    const timeout = setTimeout(() => {
+      if (!initialResolved) {
+        initialResolved = true;
+        resolveInitial(null);
+      }
+    }, 2000);
 
-  private _subscription: { unsubscribe: () => void } | null = null;
-  private _clearanceChannel: RealtimeChannel | null = null;
+    // Single listener handles INITIAL_SESSION (awaited for bootstrap completion)
+    // + all subsequent auth events (bootstrap/clear in background).
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'INITIAL_SESSION') {
+        if (initialResolved) return;
+        initialResolved = true;
+        clearTimeout(timeout);
+        if (session) {
+          await this.bootstrapSession(session);
+        } else {
+          await this.clearSession();
+        }
+        resolveInitial(session);
+        return;
+      }
+      // SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED / USER_UPDATED / PASSWORD_RECOVERY
+      if (session) {
+        await this.bootstrapSession(session);
+      } else {
+        await this.clearSession();
+      }
+    });
+    this._subscription = subscription;
+
+    const initialSession = await initialPromise;
+    this._initialized = true;
+    return initialSession;
+  }
 
   dispose(): void {
     this._subscription?.unsubscribe();
@@ -122,111 +146,129 @@ export class SupabaseAuthService {
       });
   }
 
-  private async _syncAppState(session: Session | null): Promise<void> {
-    if (session) {
-      if (!this._previouslyAuthenticated) {
-        const provider = session.user?.app_metadata?.provider ?? 'email';
-        analyticsService.trackEvent('login', { method: provider });
-      }
-      this._previouslyAuthenticated = true;
-      appState.setUser(session.user);
-      appState.setAccessToken(session.access_token);
+  /**
+   * Bootstrap appState from a signed-in session. Runs on INITIAL_SESSION with
+   * a non-null session and on SIGNED_IN / TOKEN_REFRESHED / USER_UPDATED.
+   *
+   * Invariant: every `appState` field that depends on the signed-in user's
+   * identity is populated exactly once per invocation, and GA4 user_properties
+   * fires exactly once per invocation. No race window where `isPlatformAdmin`
+   * lags behind `isArchitect` (see W1 audit F4).
+   */
+  async bootstrapSession(session: Session): Promise<void> {
+    // 1. Primary auth state — set immediately so route guards / API layer
+    //    see `isAuthenticated = true` while the parallel fetches are in flight.
+    if (!this._previouslyAuthenticated) {
+      const provider = session.user?.app_metadata?.provider ?? 'email';
+      analyticsService.trackEvent('login', { method: provider });
+    }
+    this._previouslyAuthenticated = true;
+    appState.setUser(session.user);
+    appState.setAccessToken(session.access_token);
 
-      // Fetch forge wallet status
+    // 2. Parallel-fetch every endpoint this bootstrap depends on.
+    //    /me is authoritative for `is_platform_admin` + `onboarding_completed`.
+    //    wallet is authoritative for `is_architect`.
+    //    access-request gives the clearance status (pending/approved/rejected).
+    const [meResp, walletResp, requestResp] = await Promise.all([
+      usersApi.getMe().catch((err: unknown) => {
+        captureError(err, { source: 'auth_bootstrap_me' });
+        return null;
+      }),
+      forgeApi.getWallet().catch((err: unknown) => {
+        captureError(err, { source: 'auth_bootstrap_wallet' });
+        return null;
+      }),
+      forgeApi.getMyAccessRequest().catch((err: unknown) => {
+        captureError(err, { source: 'auth_bootstrap_access_request' });
+        return null;
+      }),
+    ]);
+
+    // 3. Derive canonical values. /me wins for admin status; wallet wins for
+    //    architect. For architects, forgeRequestStatus is always 'none' — the
+    //    architect flag trumps any lingering request row.
+    const meData = meResp?.success && meResp.data ? meResp.data : null;
+    const walletData = walletResp?.success && walletResp.data ? walletResp.data : null;
+    const requestData = requestResp?.success && requestResp.data ? requestResp.data : null;
+
+    const isPlatformAdmin = meData?.is_platform_admin === true;
+    const onboardingCompleted = meData?.onboarding_completed !== false;
+    const isArchitect = walletData?.is_architect === true;
+    const requestStatus = requestData?.status ?? 'none';
+    const effectiveRequestStatus = isArchitect ? 'none' : requestStatus;
+
+    // 4. Single write pass into appState.
+    appState.setPlatformAdmin(isPlatformAdmin);
+    appState.setOnboardingCompleted(onboardingCompleted);
+    appState.setArchitectStatus(isArchitect);
+    appState.setForgeRequestStatus(effectiveRequestStatus);
+
+    // 5. Realtime subscription for a pending clearance request.
+    if (effectiveRequestStatus === 'pending' && session.user?.id) {
+      this._subscribeClearanceStatus(session.user.id);
+    }
+
+    // 6. GA4 user properties — fired once with the FINAL derived values.
+    const userType: 'admin' | 'architect' | 'member' = isPlatformAdmin
+      ? 'admin'
+      : isArchitect
+        ? 'architect'
+        : 'member';
+    analyticsService.setUserProperties({
+      user_type: userType,
+      has_forge_access: appState.canForge.value,
+      locale: localeService.currentLocale,
+    });
+
+    // 7. Toasts — each guarded by a sessionStorage key so they fire at most
+    //    once per browser session.
+    if (
+      isArchitect &&
+      requestStatus === 'approved' &&
+      !sessionStorage.getItem(CLEARANCE_TOAST_KEY)
+    ) {
+      const { VelgToast } = await import('../../components/shared/Toast.js');
+      VelgToast.success(msg('Clearance granted \u2013 welcome to the Forge, Architect'));
+      sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
+    }
+
+    if (isPlatformAdmin) {
       try {
-        const walletResp = await forgeApi.getWallet();
-        if (walletResp.success && walletResp.data) {
-          appState.setArchitectStatus(walletResp.data.is_architect);
-
-          // If not architect, check for pending/approved clearance request
-          if (!walletResp.data.is_architect) {
-            try {
-              const reqResp = await forgeApi.getMyAccessRequest();
-              if (reqResp.success && reqResp.data) {
-                appState.setForgeRequestStatus(reqResp.data.status);
-                // Subscribe to realtime updates while request is pending
-                if (reqResp.data.status === 'pending' && session.user?.id) {
-                  this._subscribeClearanceStatus(session.user.id);
-                }
-              } else {
-                appState.setForgeRequestStatus('none');
-              }
-            } catch (err) {
-              captureError(err, { source: 'forge_status_check' });
-            }
-          } else {
-            // Check if the user was just approved (has an approved request)
-            if (
-              appState.forgeRequestStatus.value === 'pending' ||
-              !sessionStorage.getItem(CLEARANCE_TOAST_KEY)
-            ) {
-              try {
-                const reqResp = await forgeApi.getMyAccessRequest();
-                if (reqResp.success && reqResp.data?.status === 'approved') {
-                  // Show toast only once per session for newly approved architects
-                  if (!sessionStorage.getItem(CLEARANCE_TOAST_KEY)) {
-                    const { VelgToast } = await import('../../components/shared/Toast.js');
-                    VelgToast.success(
-                      msg('Clearance granted \u2014 welcome to the Forge, Architect'),
-                    );
-                    sessionStorage.setItem(CLEARANCE_TOAST_KEY, '1');
-                  }
-                }
-              } catch (err) {
-                captureError(err, { source: 'forge_status_check' });
-              }
-            }
-            appState.setForgeRequestStatus('none');
+        const countResp = await forgeApi.getPendingRequestCount();
+        if (countResp.success && typeof countResp.data === 'number') {
+          appState.setPendingForgeRequestCount(countResp.data);
+          if (countResp.data > 0 && !sessionStorage.getItem(ADMIN_PENDING_TOAST_KEY)) {
+            const { VelgToast } = await import('../../components/shared/Toast.js');
+            VelgToast.info(msg(str`${countResp.data} pending clearance request(s)`));
+            sessionStorage.setItem(ADMIN_PENDING_TOAST_KEY, '1');
           }
         }
       } catch (err) {
-        captureError(err, { source: 'forge_wallet_fetch' });
+        captureError(err, { source: 'pending_forge_requests' });
       }
-
-      // Set GA4 user properties for segmentation
-      const userType = appState.isPlatformAdmin.value
-        ? 'admin'
-        : appState.isArchitect.value
-          ? 'architect'
-          : 'member';
-      analyticsService.setUserProperties({
-        user_type: userType,
-        has_forge_access: appState.canForge.value,
-        locale: localeService.currentLocale,
-      });
-
-      // Admin: check pending clearance requests
-      if (appState.isPlatformAdmin.value) {
-        try {
-          const countResp = await forgeApi.getPendingRequestCount();
-          if (countResp.success && typeof countResp.data === 'number') {
-            appState.setPendingForgeRequestCount(countResp.data);
-            if (countResp.data > 0 && !sessionStorage.getItem(ADMIN_PENDING_TOAST_KEY)) {
-              const { VelgToast } = await import('../../components/shared/Toast.js');
-              VelgToast.info(msg(str`${countResp.data} pending clearance request(s)`));
-              sessionStorage.setItem(ADMIN_PENDING_TOAST_KEY, '1');
-            }
-          }
-        } catch (err) {
-          captureError(err, { source: 'pending_forge_requests' });
-        }
-      }
-    } else {
-      if (this._previouslyAuthenticated) {
-        analyticsService.trackEvent('logout');
-        analyticsService.setUserProperties({ user_type: 'visitor' });
-      }
-      this._previouslyAuthenticated = false;
-      this._unsubscribeClearance();
-      appState.setUser(null);
-      appState.setAccessToken(null);
-      appState.setArchitectStatus(false);
-      appState.setPlatformAdmin(false);
-      appState.setForgeRequestStatus('none');
-      appState.setPendingForgeRequestCount(0);
-      sessionStorage.removeItem(CLEARANCE_TOAST_KEY);
-      sessionStorage.removeItem(ADMIN_PENDING_TOAST_KEY);
     }
+  }
+
+  /**
+   * Clear all user-derived appState on sign-out / INITIAL_SESSION with null.
+   */
+  async clearSession(): Promise<void> {
+    if (this._previouslyAuthenticated) {
+      analyticsService.trackEvent('logout');
+      analyticsService.setUserProperties({ user_type: 'visitor' });
+    }
+    this._previouslyAuthenticated = false;
+    this._unsubscribeClearance();
+    appState.setUser(null);
+    appState.setAccessToken(null);
+    appState.setArchitectStatus(false);
+    appState.setPlatformAdmin(false);
+    appState.setForgeRequestStatus('none');
+    appState.setPendingForgeRequestCount(0);
+    appState.setOnboardingCompleted(true);
+    sessionStorage.removeItem(CLEARANCE_TOAST_KEY);
+    sessionStorage.removeItem(ADMIN_PENDING_TOAST_KEY);
   }
 
   async signUp(
