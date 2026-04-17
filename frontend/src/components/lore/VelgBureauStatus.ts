@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { VelgToast } from '../shared/Toast.js';
 
 interface ArcanumMeta {
@@ -521,7 +522,8 @@ export class VelgBureauStatus extends LitElement {
         month: 'short',
         year: 'numeric',
       });
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgBureauStatus._getLastAssessment' });
       return msg('Initial assessment');
     }
   }
@@ -571,7 +573,8 @@ export class VelgBureauStatus extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Bureau update request failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgBureauStatus._submitEvolution' });
       VelgToast.error(msg('Bureau update request failed.'));
     } finally {
       this._submitting = false;

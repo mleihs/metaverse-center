@@ -1,6 +1,7 @@
 import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { captureError } from '../../services/SentryService.js';
 import type { LoreSection } from '../platform/LoreScroll.js';
 
 /**
@@ -16,7 +17,8 @@ export async function fetchRawLoreSections(
       return null;
     }
     return resp.data;
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'lore-content.fetchRawLoreSections' });
     return null;
   }
 }
