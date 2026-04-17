@@ -88,3 +88,61 @@ class ImageGenerationResponse(BaseModel):
     """URL of an AI-generated image (portraits, banners, lore, buildings)."""
 
     image_url: str
+
+
+# --- Internal façade DTOs (GenerationService public methods) ---
+#
+# These DTOs are the typed return of the five GenerationService façade
+# methods that wrap `_generate`. They replace the untyped `dict` returns
+# that callers previously parsed by hand (see W2.4 F6 remediation).
+
+
+class MemoryObservation(BaseModel):
+    """A single observation extracted from an agent-user chat exchange."""
+
+    content: str = Field(..., min_length=1)
+    importance: int = Field(default=5, ge=1, le=10)
+
+
+class MemoryObservationBatch(BaseModel):
+    """Observations extracted by the memory-extraction LLM pass."""
+
+    observations: list[MemoryObservation]
+    model_used: str
+
+
+class MemoryReflection(BaseModel):
+    """A higher-level reflection synthesized from recent observations."""
+
+    content: str = Field(..., min_length=1)
+    importance: int = Field(default=5, ge=1, le=10)
+
+
+class MemoryReflectionBatch(BaseModel):
+    """Reflections synthesized by the reflection LLM pass."""
+
+    reflections: list[MemoryReflection]
+    model_used: str
+
+
+class ChronicleEntryDraft(BaseModel):
+    """A parsed chronicle entry ready for DB persistence."""
+
+    title: str
+    headline: str | None = None
+    content: str
+    model_used: str
+
+
+class CycleSitrepDraft(BaseModel):
+    """A generated tactical situation report for a single epoch cycle."""
+
+    sitrep: str
+    model_used: str
+
+
+class InstagramCaptionDraft(BaseModel):
+    """A generated Instagram caption (pre-footer, pre-truncation)."""
+
+    caption: str
+    model_used: str

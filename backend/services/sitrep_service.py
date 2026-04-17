@@ -1,6 +1,5 @@
 """Service for generating AI tactical situation reports (SITREPs)."""
 
-import json
 import logging
 
 from backend.config import settings
@@ -106,19 +105,14 @@ class SitrepService:
             gen_sim_id,
             settings.openrouter_api_key,
         )
-        result = await gen._generate(
-            template_type="cycle_sitrep_generation",
-            model_purpose="event_generation",
-            variables={
-                "cycle_number": str(cycle_number),
-                "battle_stats": json.dumps(summary, default=str),
-            },
-            locale="en",
+        draft = await gen.generate_cycle_sitrep(
+            cycle_number=cycle_number,
+            battle_stats=summary,
         )
 
         return {
             "cycle_number": cycle_number,
-            "sitrep": result.get("content", ""),
+            "sitrep": draft.sitrep,
             "summary": summary,
-            "model_used": result.get("model_used", "unknown"),
+            "model_used": draft.model_used,
         }

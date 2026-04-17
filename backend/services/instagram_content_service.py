@@ -751,20 +751,16 @@ class InstagramContentService:
                 # Build context from candidate data
                 entity_context = cls._build_entity_context(candidate)
 
-                result = await gen._generate(
-                    template_type=f"instagram_{content_type}_caption",
-                    model_purpose="social_trends",
-                    variables={
-                        "simulation_name": simulation_name,
-                        "dispatch_number": str(dispatch_number),
-                        "date": date_str,
-                        "entity_name": candidate.get("name", "Unknown"),
-                        "entity_context": entity_context,
-                    },
-                    locale="en",
+                draft = await gen.generate_instagram_caption(
+                    content_type=content_type,
+                    simulation_name=simulation_name,
+                    dispatch_number=dispatch_number,
+                    date=date_str,
+                    entity_name=candidate.get("name", "Unknown"),
+                    entity_context=entity_context,
                 )
 
-                caption = result.get("content", "")
+                caption = draft.caption
                 if caption and len(caption) > 50:
                     # Append AI disclosure footer
                     caption = caption.strip() + _AI_DISCLOSURE_FOOTER
