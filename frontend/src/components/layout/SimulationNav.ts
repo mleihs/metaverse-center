@@ -501,12 +501,12 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       }
     }
 
-    // Heartbeat activity badges — show on pulse/events/health if new ticks since last visit
+    // Heartbeat activity badges — show on pulse/events/health/bonds if new ticks since last visit
     if (this.simulationId) {
       const sim = appState.currentSimulation.value;
       const lastHeartbeat = sim?.last_heartbeat_at;
       if (lastHeartbeat) {
-        const heartbeatTabs = ['pulse', 'events', 'health'];
+        const heartbeatTabs = ['pulse', 'events', 'health', 'bonds'];
         for (const tab of heartbeatTabs) {
           if (tab === this._activeTab) {
             // Currently viewing — mark as visited
