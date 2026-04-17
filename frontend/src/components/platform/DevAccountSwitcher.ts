@@ -12,6 +12,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { adminApi } from '../../services/api/AdminApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { supabase } from '../../services/supabase/client.js';
 import type { AdminUser } from '../../types/index.js';
 
@@ -619,8 +620,9 @@ export class VelgDevAccountSwitcher extends LitElement {
           return;
         }
       }
-    } catch {
-      // Impersonation unavailable (not admin, network error) — fall through
+    } catch (err) {
+      // Impersonation unavailable (not admin, network error) — fall through to password fallback.
+      captureError(err, { source: 'VelgDevAccountSwitcher._switchTo.impersonateTry' });
     }
 
     // Fallback: password sign-in (works for seed accounts with dev password)

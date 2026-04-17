@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { invitationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { InvitationPublicInfo } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -213,7 +214,8 @@ export class VelgInvitationAcceptView extends LitElement {
       } else {
         this._error = response.error?.message ?? msg('Failed to load invitation details.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgInvitationAcceptView._loadInvitation' });
       this._error = msg('An unexpected error occurred while loading the invitation.');
     } finally {
       this._loading = false;
@@ -234,7 +236,8 @@ export class VelgInvitationAcceptView extends LitElement {
         this._error = response.error?.message ?? msg('Failed to accept the invitation.');
         VelgToast.error(this._error);
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgInvitationAcceptView._handleAccept' });
       this._error = msg('An unexpected error occurred while accepting the invitation.');
       VelgToast.error(this._error);
     } finally {
