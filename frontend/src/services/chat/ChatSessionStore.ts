@@ -17,6 +17,7 @@
 
 import { batch, type Signal, signal } from '@preact/signals-core';
 
+import { captureError } from '../SentryService.js';
 import type { ChatMessage, ChatReactionSummary } from '../../types/index.js';
 
 // ---------------------------------------------------------------------------
@@ -190,8 +191,8 @@ export class ChatSessionStore {
     session.draft.value = text;
     try {
       localStorage.setItem(`${DRAFT_KEY_PREFIX}${sessionId}`, text);
-    } catch {
-      // localStorage full or unavailable — signal still holds the value
+    } catch (err) {
+      captureError(err, { source: 'ChatSessionStore.saveDraft' });
     }
   }
 
@@ -199,7 +200,8 @@ export class ChatSessionStore {
   restoreDraft(sessionId: string): string {
     try {
       return localStorage.getItem(`${DRAFT_KEY_PREFIX}${sessionId}`) ?? '';
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatSessionStore.restoreDraft' });
       return '';
     }
   }
@@ -210,8 +212,8 @@ export class ChatSessionStore {
     session.draft.value = '';
     try {
       localStorage.removeItem(`${DRAFT_KEY_PREFIX}${sessionId}`);
-    } catch {
-      // ignore — non-critical
+    } catch (err) {
+      captureError(err, { source: 'ChatSessionStore.clearDraft' });
     }
   }
 

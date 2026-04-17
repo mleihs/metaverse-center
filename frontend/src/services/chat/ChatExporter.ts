@@ -5,6 +5,7 @@
  * Used by ChatWindow's export action button.
  */
 
+import { captureError } from '../SentryService.js';
 import type { AgentBrief, ChatConversation, ChatMessage } from '../../types/index.js';
 
 export class ChatExporter {
@@ -135,7 +136,8 @@ export class ChatExporter {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(dateStr));
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ChatExporter._formatDate' });
       return dateStr;
     }
   }

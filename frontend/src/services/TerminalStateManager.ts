@@ -5,6 +5,7 @@
  */
 
 import { computed, signal } from '@preact/signals-core';
+import { captureError } from './SentryService.js';
 import type {
   Agent,
   Building,
@@ -321,8 +322,8 @@ class TerminalStateManager {
           this.dungeonClearanceThreshold.value = null;
         }
       }
-    } catch {
-      // Silently use defaults — dungeon clearance is non-critical
+    } catch (err) {
+      captureError(err, { source: 'TerminalStateManager.loadDungeonClearanceConfig' });
     }
   }
 
@@ -473,7 +474,8 @@ class TerminalStateManager {
       const raw = localStorage.getItem(this._storageKey());
       if (!raw) return null;
       return JSON.parse(raw) as TerminalPersistedState;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'TerminalStateManager._loadFromStorage' });
       return null;
     }
   }
@@ -499,8 +501,8 @@ class TerminalStateManager {
     };
     try {
       localStorage.setItem(this._storageKey(), JSON.stringify(state));
-    } catch {
-      // localStorage full or unavailable — silently degrade
+    } catch (err) {
+      captureError(err, { source: 'TerminalStateManager._persist' });
     }
   }
 

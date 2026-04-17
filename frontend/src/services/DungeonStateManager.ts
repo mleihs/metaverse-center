@@ -352,8 +352,8 @@ class DungeonStateManager {
       terminalState.clearDungeon();
       this.clear();
       return false;
-    } catch {
-      // Unexpected error — retain state (conservative)
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager.validateActiveRun', runId });
       return false;
     } finally {
       this._validating = false;
@@ -528,8 +528,12 @@ class DungeonStateManager {
         }
         return;
       }
-    } catch {
-      // Backend may have already resolved (timer race). Fall back to getState.
+    } catch (err) {
+      captureError(err, {
+        source: 'DungeonStateManager._autoSubmitOnExpiry.submit',
+        runId,
+        kind: 'timer_race',
+      });
     }
 
     // Fallback: poll for updated state
@@ -558,15 +562,16 @@ class DungeonStateManager {
   private _persistRunId(runId: string): void {
     try {
       localStorage.setItem(STORAGE_KEY, runId);
-    } catch {
-      // Quota exceeded or private browsing — non-critical
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._persistRunId' });
     }
   }
 
   private _getPersistedRunId(): string | null {
     try {
       return localStorage.getItem(STORAGE_KEY);
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._getPersistedRunId' });
       return null;
     }
   }
@@ -574,8 +579,8 @@ class DungeonStateManager {
   private _clearPersistedRunId(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._clearPersistedRunId' });
     }
   }
 }
