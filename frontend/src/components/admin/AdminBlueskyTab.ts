@@ -8,6 +8,7 @@ import {
   type BlueskyPipelineSettings,
   type BlueskyQueueItem,
 } from '../../services/api/AdminApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import {
@@ -366,7 +367,8 @@ export class VelgAdminBlueskyTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Skip failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._handleSkip', postId: post.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -383,7 +385,8 @@ export class VelgAdminBlueskyTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Unskip failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._handleUnskip', postId: post.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -407,7 +410,8 @@ export class VelgAdminBlueskyTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Publishing failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._handleForcePublish', postId: post.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -428,7 +432,8 @@ export class VelgAdminBlueskyTab extends LitElement {
           VelgToast.error(msg('Bluesky credentials not configured.'));
         }
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._handleTestConnection' });
       VelgToast.error(msg('Connection test failed'));
     } finally {
       this._testingConnection = false;
@@ -462,7 +467,8 @@ export class VelgAdminBlueskyTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to save setting'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._saveSetting', settingKey: key });
       VelgToast.error(msg('Failed to save setting'));
     } finally {
       this._savingKey = null;

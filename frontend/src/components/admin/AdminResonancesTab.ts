@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { resonanceApi } from '../../services/api/ResonanceApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Resonance, ResonanceImpact } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -666,8 +667,10 @@ export class VelgAdminResonancesTab extends LitElement {
         this._impacts = new Map(this._impacts);
         this._impacts.set(resonanceId, resp.data);
       }
-    } catch {
-      // Silently fail — impacts panel shows empty
+    } catch (err) {
+      // Silent fallback — impacts panel renders empty. Panel is secondary
+      // UI; not showing impacts shouldn't block resonance admin work.
+      captureError(err, { source: 'AdminResonancesTab._loadImpacts', resonanceId });
     }
   }
 
@@ -730,7 +733,8 @@ export class VelgAdminResonancesTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Transition failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminResonancesTab._handleTransition', resonanceId: res.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -761,7 +765,8 @@ export class VelgAdminResonancesTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Impact processing failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminResonancesTab._handleProcessImpact', resonanceId: res.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -786,7 +791,8 @@ export class VelgAdminResonancesTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to delete'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminResonancesTab._handleDelete', resonanceId: res.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -803,7 +809,8 @@ export class VelgAdminResonancesTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to restore'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminResonancesTab._handleRestore', resonanceId: res.id });
       VelgToast.error(msg('An error occurred'));
     } finally {
       this._actionInProgress = null;
@@ -836,7 +843,11 @@ export class VelgAdminResonancesTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Save failed'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, {
+        source: 'AdminResonancesTab._handleFormSave',
+        resonanceId: detail.resonanceId ?? 'new',
+      });
       VelgToast.error(msg('An error occurred'));
     }
   }
