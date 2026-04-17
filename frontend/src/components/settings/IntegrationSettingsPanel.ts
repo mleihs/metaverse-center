@@ -6,6 +6,7 @@ import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgToggle.js';
+import '../shared/VelgHelpTip.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
 interface IntegrationSection {
@@ -121,6 +122,13 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
         align-items: center;
         justify-content: space-between;
         gap: var(--space-3);
+      }
+
+      .int-section__title-group {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-width: 0;
       }
 
       @media (max-width: 640px) {
@@ -310,7 +318,17 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
           (section) => html`
             <div class="int-section">
               <div class="int-section__header">
-                <velg-section-header variant="large">${section.title}</velg-section-header>
+                <div class="int-section__title-group">
+                  <velg-section-header variant="large">${section.title}</velg-section-header>
+                  ${
+                    section.id === 'ai_providers'
+                      ? html`<velg-help-tip
+                          topic="byok"
+                          label=${msg('What is BYOK?')}
+                        ></velg-help-tip>`
+                      : nothing
+                  }
+                </div>
                 <button
                   class="settings-btn settings-btn--primary settings-btn--sm"
                   @click=${() => this._handleSaveSection(section)}
