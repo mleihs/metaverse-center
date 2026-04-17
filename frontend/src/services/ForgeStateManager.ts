@@ -430,6 +430,9 @@ class ForgeStateManager {
               break;
             }
           } catch (err) {
+            // Inside MAX_RETRIES loop — transient network/timeout is
+            // expected; the loop falls through to the next attempt after
+            // a 2s backoff. `attempt` tag groups by retry iteration.
             captureError(err, {
               source: 'ForgeStateManager._generateEntitiesIncremental.retry',
               entityType,
@@ -765,6 +768,8 @@ class ForgeStateManager {
       }
       return null;
     } catch (err) {
+      // High-frequency polling (2s tick) — `kind: 'poll'` lets Sentry-side
+      // rules dedup the retry-loop transient failures.
       captureError(err, { source: 'ForgeStateManager.pollFeaturePurchase', kind: 'poll' });
       return null;
     }
@@ -810,6 +815,8 @@ class ForgeStateManager {
           this.stopImageTracking();
         }
       } catch (err) {
+        // 5s polling interval — `kind: 'poll'` lets Sentry-side rules
+        // collapse image-generation transient failures by slug.
         captureError(err, {
           source: 'ForgeStateManager.startImageTracking.poll',
           kind: 'poll',
@@ -883,6 +890,9 @@ class ForgeStateManager {
       try {
         await this.loadDraft(draftId);
       } catch (err) {
+        // Inside recovery-attempt loop — transient loadDraft failure
+        // is expected while the Railway proxy is still propagating.
+        // `continue` falls through to the next attempt.
         captureError(err, {
           source: 'ForgeStateManager._tryRecoverChunk',
           chunkType,
@@ -923,6 +933,8 @@ class ForgeStateManager {
       try {
         await this.loadDraft(draftId);
       } catch (err) {
+        // Inside recovery-attempt loop — same pattern as _tryRecoverChunk.
+        // Transient loadDraft failure → next attempt via `continue`.
         captureError(err, {
           source: 'ForgeStateManager._tryRecoverResearch',
           attempt: String(attempt),
