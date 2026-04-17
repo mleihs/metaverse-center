@@ -7,6 +7,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { seoService } from '../../services/SeoService.js';
+import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type { ApiResponse, Building } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
@@ -145,18 +146,14 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     if (this.entitySlug) {
       const building = this._buildings.find((b) => b.slug === this.entitySlug);
       if (building) {
-        this._selectedBuilding = building;
-        this._showDetails = true;
-        this._setBuildingStructuredData(building);
+        this._openBuildingDetail(building);
         return;
       }
       // Building not in current page — fetch by slug from API
       try {
         const resp = await buildingsApi.getBySlug(this.simulationId, this.entitySlug);
         if (resp.success && resp.data) {
-          this._selectedBuilding = resp.data as Building;
-          this._showDetails = true;
-          this._setBuildingStructuredData(resp.data as Building);
+          this._openBuildingDetail(resp.data as Building);
           return;
         }
       } catch {
@@ -170,16 +167,23 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
 
     const building = this._buildings.find((b) => b.id === buildingId);
     if (building) {
-      this._selectedBuilding = building;
-      this._showDetails = true;
+      this._openBuildingDetail(building);
+    }
+  }
+
+  /** Open the building detail panel and apply entity-specific SEO. */
+  private _openBuildingDetail(building: Building): void {
+    this._selectedBuilding = building;
+    this._showDetails = true;
+    const sim = appState.currentSimulation.value;
+    if (sim) {
+      applyBuildingDetailSeo(sim, building);
     }
   }
 
   private _handleBuildingClick(e: CustomEvent<Building>): void {
-    this._selectedBuilding = e.detail;
-    this._showDetails = true;
     this._pushEntityUrl(e.detail);
-    this._setBuildingStructuredData(e.detail);
+    this._openBuildingDetail(e.detail);
   }
 
   private _pushEntityUrl(building: Building): void {
@@ -256,9 +260,10 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     this._showDetails = false;
     this._selectedBuilding = null;
     this._pushListUrl();
-    // Revert to CollectionPage schema when detail panel closes
+    // Revert to list-view meta + CollectionPage JSON-LD
     const sim = appState.currentSimulation.value;
     if (sim) {
+      applySimulationViewSeo(sim, 'buildings');
       seoService.setCollectionPage({
         name: `${t(sim, 'name')} \u2013 Buildings`,
         description: `All buildings in the ${t(sim, 'name')} simulation.`,
@@ -268,36 +273,21 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     }
   }
 
-  /** Set Place schema.org structured data for the currently viewed building. */
-  private _setBuildingStructuredData(building: Building): void {
-    const sim = appState.currentSimulation.value;
-    seoService.setStructuredData({
-      '@context': 'https://schema.org',
-      '@type': 'Place',
-      name: building.name,
-      ...(t(building, 'description') ? { description: t(building, 'description').substring(0, 200) } : {}),
-      ...(building.image_url ? { image: building.image_url } : {}),
-      ...(t(building, 'building_type') ? { additionalType: t(building, 'building_type') } : {}),
-      ...(sim ? { containedInPlace: { '@type': 'VirtualLocation', name: t(sim, 'name') } } : {}),
-      url: `https://metaverse.center/simulations/${sim?.slug ?? ''}/buildings/${building.slug ?? ''}`,
-    });
-  }
-
   private _handleLightboxPrev(): void {
     const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
     if (idx > 0) {
-      this._selectedBuilding = this._buildings[idx - 1];
-      this._pushEntityUrl(this._selectedBuilding);
-      this._setBuildingStructuredData(this._selectedBuilding);
+      const next = this._buildings[idx - 1];
+      this._pushEntityUrl(next);
+      this._openBuildingDetail(next);
     }
   }
 
   private _handleLightboxNext(): void {
     const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
     if (idx >= 0 && idx < this._buildings.length - 1) {
-      this._selectedBuilding = this._buildings[idx + 1];
-      this._pushEntityUrl(this._selectedBuilding);
-      this._setBuildingStructuredData(this._selectedBuilding);
+      const next = this._buildings[idx + 1];
+      this._pushEntityUrl(next);
+      this._openBuildingDetail(next);
     }
   }
 

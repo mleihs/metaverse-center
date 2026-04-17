@@ -5,6 +5,7 @@ from pathlib import Path
 from cachetools import TTLCache
 
 from backend.config import settings
+from backend.seo.models import EntityDetailResult, EntityMeta
 from backend.seo.registry import (
     PUBLIC_SIMULATION_VIEWS,
     build_entity_detail_content,
@@ -355,6 +356,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     sim_desc = sim.get("description", "")
     banner_url = sim.get("banner_url", "")
 
+    # Sim-level defaults — overridden below if the detail builder declares entity meta
     title = f"{view_label} — {sim_name} | metaverse.center" if sim_name else f"{view_label} | metaverse.center"
     theme = sim.get("theme", "")
     if sim_desc:
@@ -369,16 +371,41 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
     if entity_id_or_slug:
         canonical = f"{canonical}/{entity_id_or_slug}"
+    og_image = banner_url
+    og_image_alt = f"{sim_name} — simulation banner" if banner_url and sim_name else ""
+    og_type = "website"
 
-    # Build breadcrumb JSON-LD for simulation pages
+    # Fetch entity detail up-front so its meta can override sim-level meta. The
+    # cache is shared with _inject_entity_content below, so this is a single fetch.
+    entity_meta: EntityMeta | None = None
+    if entity_id_or_slug:
+        detail = _fetch_entity_detail_cached(
+            view, sim.get("id", id_or_slug), sim_name, slug, entity_id_or_slug,
+        )
+        entity_meta = detail.meta
+
+    if entity_meta is not None:
+        if entity_meta.title:
+            title = entity_meta.title
+        if entity_meta.description:
+            description = entity_meta.description
+        if entity_meta.og_image:
+            og_image = entity_meta.og_image
+        if entity_meta.og_image_alt:
+            og_image_alt = entity_meta.og_image_alt
+        if entity_meta.og_type:
+            og_type = entity_meta.og_type
+
     breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
 
     enriched = _inject_meta(
-        _index_html_cache, title=title, description=description, canonical=canonical,
-        og_image=banner_url, extra_jsonld=breadcrumb_json,
+        _index_html_cache,
+        title=title, description=description, canonical=canonical,
+        og_image=og_image, og_image_alt=og_image_alt, og_type=og_type,
+        extra_jsonld=breadcrumb_json,
     )
 
-    # Inject entity content for supported views (and entity detail pages)
+    # Inject body/head content (HTML snippet + entity JSON-LD). Cache hits now.
     enriched = _inject_entity_content(
         enriched, view, sim.get("id", id_or_slug), sim_name, slug,
         entity_id=entity_id_or_slug,
@@ -414,29 +441,57 @@ def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str)
     return raw.replace("<", "\\u003c").replace(">", "\\u003e")
 
 
+def _fetch_entity_detail_cached(
+    view: str, sim_id: str, sim_name: str, slug: str, entity_id: str,
+) -> EntityDetailResult:
+    """Fetch entity detail via the registry dispatcher, with TTL caching.
+
+    The EntityDetailResult carries both content (html + jsonld) and optional
+    meta overrides (title, description, og:*). Meta is consumed by
+    enrich_html_for_crawler; content is injected by _inject_entity_content.
+    Cache hits are shared between both callers.
+    """
+    cache_key = f"{slug}:{view}:{entity_id}"
+    cached = _entity_cache.get(cache_key)
+    if isinstance(cached, EntityDetailResult):
+        return cached
+    client = _get_anon_client()
+    result = build_entity_detail_content(
+        client, sim_id, sim_name, slug, view, entity_id,
+    )
+    _entity_cache[cache_key] = result
+    return result
+
+
+def _fetch_view_content_cached(
+    view: str, sim_id: str, sim_name: str, slug: str,
+) -> tuple[str, str]:
+    """Fetch list-view content via the registry dispatcher, with TTL caching."""
+    cache_key = f"{slug}:{view}"
+    cached = _entity_cache.get(cache_key)
+    if isinstance(cached, tuple) and len(cached) == 2:
+        return cached
+    client = _get_anon_client()
+    result = build_view_content(client, sim_id, sim_name, slug, view)
+    _entity_cache[cache_key] = result
+    return result
+
+
 def _inject_entity_content(
     html_str: str, view: str, sim_id: str, sim_name: str, slug: str,
     entity_id: str | None = None,
 ) -> str:
-    """Inject entity content HTML and JSON-LD into crawler response."""
-    cache_key = f"{slug}:{view}:{entity_id}" if entity_id else f"{slug}:{view}"
-    cached = _entity_cache.get(cache_key)
-    entity_og_image = ""
-    if cached is not None:
-        entity_html, entity_jsonld, *rest = cached
-        entity_og_image = rest[0] if rest else ""
+    """Inject entity HTML + JSON-LD into crawler response.
+
+    Meta-tag overrides (title, description, og:image, og:image:alt, og:type)
+    are applied in enrich_html_for_crawler, not here — this function is only
+    responsible for body/head content injection.
+    """
+    if entity_id:
+        detail = _fetch_entity_detail_cached(view, sim_id, sim_name, slug, entity_id)
+        entity_html, entity_jsonld = detail.html, detail.jsonld
     else:
-        client = _get_anon_client()
-        entity_og_image = ""
-        if entity_id:
-            entity_html, entity_jsonld, entity_og_image = build_entity_detail_content(
-                client, sim_id, sim_name, slug, view, entity_id,
-            )
-        else:
-            entity_html, entity_jsonld = build_view_content(
-                client, sim_id, sim_name, slug, view,
-            )
-        _entity_cache[cache_key] = (entity_html, entity_jsonld, entity_og_image)
+        entity_html, entity_jsonld = _fetch_view_content_cached(view, sim_id, sim_name, slug)
 
     if entity_html:
         seo_div = f'<div id="seo-content" style="display:none">{entity_html}</div>'
@@ -445,11 +500,6 @@ def _inject_entity_content(
     if entity_jsonld:
         jsonld_tag = f'<script type="application/ld+json">{entity_jsonld}</script>'
         html_str = html_str.replace("</head>", f"    {jsonld_tag}\n  </head>")
-
-    # Override og:image with entity-specific image (agent portrait, building image)
-    if entity_og_image:
-        html_str = _replace_meta(html_str, 'property', 'og:image', _escape(entity_og_image))
-        html_str = _replace_meta(html_str, 'name', 'twitter:image', _escape(entity_og_image))
 
     return html_str
 
@@ -461,9 +511,15 @@ def _inject_meta(
     description: str,
     canonical: str,
     og_image: str = "",
+    og_image_alt: str = "",
+    og_type: str = "",
     extra_jsonld: str = "",
 ) -> str:
-    """Inject meta tags into cached index.html."""
+    """Inject meta tags into cached index.html.
+
+    og_type and og_image_alt default to empty strings — when empty, the
+    placeholder values from index.html are left unchanged (platform defaults).
+    """
     html = base_html
     html = re.sub(r"<title>[^<]*</title>", f"<title>{_escape(title)}</title>", html)
     html = re.sub(
@@ -474,8 +530,13 @@ def _inject_meta(
     html = _replace_meta(html, 'property', 'og:title', _escape(title))
     html = _replace_meta(html, 'property', 'og:description', _escape(description))
     html = _replace_meta(html, 'property', 'og:url', _escape(canonical))
+    if og_type:
+        html = _replace_meta(html, 'property', 'og:type', _escape(og_type))
     if og_image:
         html = _replace_meta(html, 'property', 'og:image', _escape(og_image))
+    if og_image_alt:
+        html = _replace_meta(html, 'property', 'og:image:alt', _escape(og_image_alt))
+        html = _replace_meta(html, 'name', 'twitter:image:alt', _escape(og_image_alt))
     html = _replace_meta(html, 'name', 'twitter:title', _escape(title))
     html = _replace_meta(html, 'name', 'twitter:description', _escape(description))
     if og_image:

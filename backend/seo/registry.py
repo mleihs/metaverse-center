@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from backend.middleware import seo_content
+from backend.seo.models import EntityDetailResult
 
 if TYPE_CHECKING:
     from supabase import Client
@@ -32,10 +33,12 @@ logger = logging.getLogger(__name__)
 ListBuilder = Callable[..., tuple[str, str]]
 """Signature: (client, sim_id, sim_name, slug) -> (entity_html, jsonld_script)."""
 
-DetailBuilder = Callable[..., tuple[str, ...]]
-"""Signature: (client, sim_id, sim_name, slug, entity_id) -> (html, jsonld)
-or (html, jsonld, og_image). 2-tuple returns get an empty og_image appended
-by build_entity_detail_content."""
+DetailBuilder = Callable[..., EntityDetailResult]
+"""Signature: (client, sim_id, sim_name, slug, entity_id) -> EntityDetailResult.
+
+The builder owns both the semantic content (html + jsonld) and the optional
+meta overrides (title, description, og_image, og_image_alt, og_type) that the
+middleware injects when an entity is resolved."""
 
 
 @dataclass(frozen=True)
@@ -157,24 +160,21 @@ def build_view_content(
 def build_entity_detail_content(
     client: Client, sim_id: str, sim_name: str, slug: str,
     view: str, entity_id: str,
-) -> tuple[str, str, str]:
+) -> EntityDetailResult:
     """Dispatch to the registered detail builder for `view` / `entity_id`.
 
-    Returns ("", "", "") if the view has no detail builder or the builder raises.
-    Normalises 2-tuple returns (legacy lore_detail shape) to 3-tuple by appending
-    an empty og_image.
+    Returns an empty EntityDetailResult if the view has no detail builder,
+    the entity isn't found, or the builder raises — crawlers always get a
+    valid response with sim-level meta (entity overrides are opt-in).
     """
     entry = PUBLIC_SIMULATION_VIEWS.get(view)
     if entry is None or entry.detail_builder is None:
-        return "", "", ""
+        return EntityDetailResult()
     try:
-        result = entry.detail_builder(client, sim_id, sim_name, slug, entity_id)
-        if len(result) == 3:
-            return result  # type: ignore[return-value]
-        return result[0], result[1], ""
+        return entry.detail_builder(client, sim_id, sim_name, slug, entity_id)
     except Exception:
         logger.warning(
             "Failed to build entity detail for %s/%s/%s",
             slug, view, entity_id, exc_info=True,
         )
-        return "", "", ""
+        return EntityDetailResult()

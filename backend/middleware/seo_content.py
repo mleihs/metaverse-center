@@ -10,6 +10,7 @@ import json
 import logging
 import re
 
+from backend.seo.models import EntityDetailResult, EntityMeta
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -43,8 +44,8 @@ def _safe_jsonld(data: dict) -> str:
 def build_agent_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
-) -> tuple[str, str, str]:
-    """Build Person schema for an individual agent."""
+) -> EntityDetailResult:
+    """Build Person schema + entity-specific meta for an individual agent."""
     query = (
         client.table("agents")
         .select("name,slug,character,primary_profession,portrait_image_url,gender")
@@ -58,7 +59,7 @@ def build_agent_detail(
 
     agents = (query.limit(1).execute()).data or []
     if not agents:
-        return "", "", ""
+        return EntityDetailResult()
 
     a = agents[0]
     name = a.get("name", "")
@@ -90,14 +91,32 @@ def build_agent_detail(
     if gender:
         person["gender"] = gender
 
-    return entity_html, _safe_jsonld(person), portrait
+    meta = EntityMeta(
+        title=(
+            f"{name} — {sim_name} | metaverse.center" if name and sim_name
+            else f"{name} | metaverse.center" if name
+            else None
+        ),
+        description=_truncate(character, 160) or (
+            f"Operative in {sim_name}" if sim_name else None
+        ),
+        og_image=portrait,
+        og_image_alt=f"{name} — portrait" if portrait and name else "",
+        og_type="profile",
+    )
+
+    return EntityDetailResult(
+        html=entity_html,
+        jsonld=_safe_jsonld(person),
+        meta=meta,
+    )
 
 
 def build_building_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
-) -> tuple[str, str, str]:
-    """Build Place schema for an individual building."""
+) -> EntityDetailResult:
+    """Build Place schema + entity-specific meta for an individual building."""
     query = (
         client.table("buildings")
         .select("name,slug,description,building_type,image_url")
@@ -111,7 +130,7 @@ def build_building_detail(
 
     buildings = (query.limit(1).execute()).data or []
     if not buildings:
-        return "", "", ""
+        return EntityDetailResult()
 
     b = buildings[0]
     name = b.get("name", "")
@@ -138,14 +157,37 @@ def build_building_detail(
     if image:
         place["image"] = image
 
-    return entity_html, _safe_jsonld(place), image
+    # Open Graph has no "Place" type — stick with website. JSON-LD carries the
+    # schema.org Place semantics for Google Knowledge Graph consumers.
+    meta_description = _truncate(desc, 160) or (
+        f"{btype} in {sim_name}" if btype and sim_name
+        else f"Building in {sim_name}" if sim_name
+        else None
+    )
+    og_image_alt_parts = [name, btype] if name and btype else [name] if name else []
+    meta = EntityMeta(
+        title=(
+            f"{name} — {sim_name} | metaverse.center" if name and sim_name
+            else f"{name} | metaverse.center" if name
+            else None
+        ),
+        description=meta_description,
+        og_image=image,
+        og_image_alt=" — ".join(og_image_alt_parts) if image and og_image_alt_parts else "",
+    )
+
+    return EntityDetailResult(
+        html=entity_html,
+        jsonld=_safe_jsonld(place),
+        meta=meta,
+    )
 
 
 def build_lore_detail(
     client: Client, sim_id: str, sim_name: str, slug: str,
     entity_id: str,
-) -> tuple[str, str]:
-    """Build Article schema for an individual lore section."""
+) -> EntityDetailResult:
+    """Build Article schema + entity-specific meta for an individual lore section."""
     query = (
         client.table("simulation_lore")
         .select("title,slug,chapter,arcanum,body,epigraph,image_slug,image_caption,created_at")
@@ -158,7 +200,7 @@ def build_lore_detail(
 
     sections = (query.limit(1).execute()).data or []
     if not sections:
-        return "", ""
+        return EntityDetailResult()
 
     s = sections[0]
     title = s.get("title", "")
@@ -174,10 +216,11 @@ def build_lore_detail(
     parts.append(f"<p>From the lore of <em>{_esc(sim_name)}</em>.</p>")
     entity_html = "\n".join(parts)
 
+    headline = f"{chapter}: {title}" if chapter and title else title or chapter
     article: dict = {
         "@context": "https://schema.org",
         "@type": "Article",
-        "headline": f"{chapter}: {title}",
+        "headline": headline,
         "description": _truncate(body, 300),
         "url": f"{BASE_URL}/simulations/{slug}/lore/{entity_slug}",
         "author": {"@type": "Organization", "name": sim_name},
@@ -191,7 +234,21 @@ def build_lore_detail(
     if s.get("created_at"):
         article["datePublished"] = s["created_at"]
 
-    return entity_html, _safe_jsonld(article)
+    meta = EntityMeta(
+        title=(
+            f"{headline} — {sim_name} | metaverse.center" if headline and sim_name
+            else f"{headline} | metaverse.center" if headline
+            else None
+        ),
+        description=_truncate(body, 160) or epigraph or None,
+        og_type="article",
+    )
+
+    return EntityDetailResult(
+        html=entity_html,
+        jsonld=_safe_jsonld(article),
+        meta=meta,
+    )
 
 
 def build_agents_view(
