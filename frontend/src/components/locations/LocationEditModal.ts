@@ -2,6 +2,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { locationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { ApiResponse, City, CityStreet, Zone } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
@@ -131,7 +132,8 @@ export class VelgLocationEditModal extends LitElement {
       } else {
         VelgToast.error(response.error?.message ?? msg(str`Failed to save ${this.type}`));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgLocationEditModal._handleSubmit', locationType: this.type });
       VelgToast.error(msg('An unexpected error occurred'));
     } finally {
       this._saving = false;

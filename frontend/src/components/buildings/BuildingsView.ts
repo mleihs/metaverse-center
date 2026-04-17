@@ -6,6 +6,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type { ApiResponse, Building } from '../../types/index.js';
@@ -164,8 +165,9 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
           this._openBuildingDetail(resp.data as Building);
           return;
         }
-      } catch {
-        // Fall through
+      } catch (err) {
+        // Fall through — fallback to legacy ID-based deep link below.
+        captureError(err, { source: 'VelgBuildingsView._checkDeepLink.slugFetch' });
       }
     }
     // Legacy ID-based deep link (backward compat)
@@ -237,7 +239,8 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to delete building'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgBuildingsView._handleBuildingDelete' });
       VelgToast.error(msg('An unexpected error occurred while deleting'));
     }
   }
