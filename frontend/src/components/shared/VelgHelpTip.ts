@@ -94,11 +94,15 @@ export class VelgHelpTip extends LitElement {
     e.preventDefault();
     if (!this.topic) return;
     const href = `/how-to-play/guide/${this.topic}`;
+    // app-shell's _handleNavigate reads `e.detail` as the path string directly,
+    // matching the contract used by HowToPlayGuideHub, HowToPlayTopic,
+    // HowToPlayQuickstart, SimulationShell. Previously wrapped in `{ path }`
+    // which serialised to `[object Object]` in window.history.pushState.
     this.dispatchEvent(
       new CustomEvent('navigate', {
         bubbles: true,
         composed: true,
-        detail: { path: href },
+        detail: href,
       }),
     );
   }
