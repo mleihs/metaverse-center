@@ -3,6 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { invitationsApi, membersApi, settingsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Invitation,
   SimulationMember,
@@ -634,8 +635,10 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       if (response.success && response.data) {
         this._members = response.data as SimulationMember[];
       }
-    } catch {
-      // Silently fail — members section is supplementary
+    } catch (err) {
+      // Members section is supplementary — the main settings form
+      // still works without it.
+      captureError(err, { source: 'AccessSettingsPanel._loadMembers' });
     } finally {
       this._loadingMembers = false;
     }
@@ -648,8 +651,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       if (response.success && response.data) {
         this._invitations = response.data as Invitation[];
       }
-    } catch {
-      // Silently fail
+    } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._loadInvitations' });
     }
   }
 
@@ -666,7 +669,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to change role.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._handleRoleChange' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -691,7 +695,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to remove member.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._handleRemoveMember' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -717,7 +722,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to create invitation.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._handleCreateInvitation' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -727,7 +733,8 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
     try {
       await navigator.clipboard.writeText(this._createdInviteLink);
       VelgToast.success(msg('Link copied to clipboard.'));
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._handleCopyInviteLink' });
       VelgToast.error(msg('Failed to copy link.'));
     }
   }

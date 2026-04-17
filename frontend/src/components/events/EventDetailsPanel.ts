@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { connectionsApi, echoesApi, eventsApi, simulationsApi } from '../../services/api/index.js';
 import { generationProgress } from '../../services/GenerationProgressService.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   EventChain,
   EventEcho,
@@ -711,7 +712,8 @@ export class VelgEventDetailsPanel extends LitElement {
       } else {
         this._reactions = this.event.reactions ?? [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadReactions' });
       this._reactions = this.event.reactions ?? [];
     } finally {
       this._reactionsLoading = false;
@@ -728,7 +730,8 @@ export class VelgEventDetailsPanel extends LitElement {
       } else {
         this._chains = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadChains' });
       this._chains = [];
     }
   }
@@ -775,7 +778,8 @@ export class VelgEventDetailsPanel extends LitElement {
       } else {
         this._zoneLinks = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadZoneLinks' });
       this._zoneLinks = [];
     }
   }
@@ -830,7 +834,8 @@ export class VelgEventDetailsPanel extends LitElement {
       } else {
         this._echoes = [];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadEchoes' });
       this._echoes = [];
     }
   }
@@ -838,15 +843,13 @@ export class VelgEventDetailsPanel extends LitElement {
   private async _loadSimulations(): Promise<void> {
     if (this._simulations.length > 0) return;
     try {
-      const authMode: 'public' | 'member' = appState.isAuthenticated.value
-        ? 'member'
-        : 'public';
+      const authMode: 'public' | 'member' = appState.isAuthenticated.value ? 'member' : 'public';
       const response = await simulationsApi.list(authMode);
       if (response.success && response.data) {
         this._simulations = response.data;
       }
-    } catch {
-      // Simulations list is optional context
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadSimulations' });
     }
   }
 
@@ -859,8 +862,8 @@ export class VelgEventDetailsPanel extends LitElement {
       if (response.success && response.data) {
         this._connections = response.data;
       }
-    } catch {
-      // Connections list is optional context
+    } catch (err) {
+      captureError(err, { source: 'EventDetailsPanel._loadConnections' });
     }
   }
 
@@ -961,8 +964,10 @@ export class VelgEventDetailsPanel extends LitElement {
           VelgToast.error(errMsg);
         }
       });
-    } catch {
-      // handled by GenerationProgressService
+    } catch (err) {
+      // User-visible toast is already shown by GenerationProgressService's
+      // progress.setError(); captureError routes the raw cause to Sentry.
+      captureError(err, { source: 'EventDetailsPanel._handleGenerateReactions' });
     } finally {
       this._generatingReactions = false;
     }
