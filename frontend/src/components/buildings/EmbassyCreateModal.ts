@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi, buildingsApi, embassiesApi, simulationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent, Building, EchoVector, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import '../shared/BaseModal.js';
@@ -288,8 +289,8 @@ export class VelgEmbassyCreateModal extends LitElement {
           (s) => s.id !== appState.simulationId.value,
         );
       }
-    } catch {
-      // fail silently
+    } catch (err) {
+      captureError(err, { source: 'EmbassyCreateModal._loadSimulations' });
     }
   }
 
@@ -303,7 +304,8 @@ export class VelgEmbassyCreateModal extends LitElement {
       if (resp.success && resp.data) {
         this._localAgents = resp.data as Agent[];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EmbassyCreateModal._loadLocalAgents' });
       this._localAgents = [];
     }
   }
@@ -318,7 +320,8 @@ export class VelgEmbassyCreateModal extends LitElement {
           (b) => b.special_type !== 'embassy',
         );
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EmbassyCreateModal._loadTargetBuildings' });
       this._targetBuildings = [];
     }
   }
@@ -330,7 +333,8 @@ export class VelgEmbassyCreateModal extends LitElement {
       if (resp.success && resp.data) {
         this._partnerAgents = resp.data as Agent[];
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EmbassyCreateModal._loadPartnerAgents' });
       this._partnerAgents = [];
     }
   }
@@ -415,7 +419,8 @@ export class VelgEmbassyCreateModal extends LitElement {
       } else {
         VelgToast.error(msg('Failed to establish embassy.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'EmbassyCreateModal._handleCreate' });
       VelgToast.error(msg('Failed to establish embassy.'));
     } finally {
       this._loading = false;
