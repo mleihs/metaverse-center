@@ -112,30 +112,19 @@ class ChronicleService:
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
         sim_theme = sim_resp.data[0].get("theme", "dystopian") if sim_resp.data else "dystopian"
 
-        # Generate via GenerationService
+        # Generate via GenerationService façade
         gen = GenerationService(supabase, simulation_id, settings.openrouter_api_key)
-        result = await gen._generate(
-            template_type="chronicle_generation",
-            model_purpose="event_generation",
-            variables={
-                "edition_number": str(next_edition),
-                "simulation_name": sim_name,
-                "period_start": period_start.strftime("%Y-%m-%d"),
-                "period_end": period_end.strftime("%Y-%m-%d"),
-                "event_summary": json.dumps(source.get("events", []), default=str),
-                "echo_summary": json.dumps(source.get("echoes", []), default=str),
-                "battle_summary": json.dumps(source.get("battle_entries", []), default=str),
-                "reaction_summary": json.dumps(source.get("reactions", []), default=str),
-            },
+        entry = await gen.generate_chronicle_entry(
+            edition_number=next_edition,
+            simulation_name=sim_name,
+            period_start=period_start.strftime("%Y-%m-%d"),
+            period_end=period_end.strftime("%Y-%m-%d"),
+            event_summary=json.dumps(source.get("events", []), default=str),
+            echo_summary=json.dumps(source.get("echoes", []), default=str),
+            battle_summary=json.dumps(source.get("battle_entries", []), default=str),
+            reaction_summary=json.dumps(source.get("reactions", []), default=str),
             locale=locale,
         )
-
-        # Parse JSON response
-        parsed = GenerationService._parse_json_content(result.get("content", ""))
-        default_title = f"Chronicle Edition #{next_edition}"
-        title = parsed.get("title", default_title) if parsed else default_title
-        headline = parsed.get("headline") if parsed else None
-        content = parsed.get("content", result.get("content", "")) if parsed else result.get("content", "")
 
         # Persist
         record = {
@@ -144,10 +133,10 @@ class ChronicleService:
             "edition_number": next_edition,
             "period_start": period_start.isoformat(),
             "period_end": period_end.isoformat(),
-            "title": title,
-            "headline": headline,
-            "content": content,
-            "model_used": result.get("model_used"),
+            "title": entry.title,
+            "headline": entry.headline,
+            "content": entry.content,
+            "model_used": entry.model_used,
         }
         resp = await supabase.table("simulation_chronicles").insert(record).execute()
         saved = resp.data[0]
@@ -157,7 +146,7 @@ class ChronicleService:
             supabase,
             "simulation_chronicles",
             saved["id"],
-            {"title": title, "headline": headline or "", "content": content},
+            {"title": entry.title, "headline": entry.headline or "", "content": entry.content},
             sim_name,
             sim_theme,
             entity_type="chronicle",

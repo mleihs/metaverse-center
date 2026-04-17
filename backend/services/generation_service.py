@@ -12,6 +12,15 @@ import httpx
 import sentry_sdk
 
 from backend.config import settings
+from backend.models.generation import (
+    ChronicleEntryDraft,
+    CycleSitrepDraft,
+    InstagramCaptionDraft,
+    MemoryObservation,
+    MemoryObservationBatch,
+    MemoryReflection,
+    MemoryReflectionBatch,
+)
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.embassy_prompts import (
@@ -680,6 +689,213 @@ class GenerationService:
             logger.warning("Story closing line generation failed", exc_info=True)
             sentry_sdk.capture_exception(exc)
             return None
+
+    # --- Narrative façades (memory, chronicle, sitrep, instagram) ---
+    #
+    # The five methods below are the public entry points for narrative
+    # generation outside `GenerationService`. They own their template type /
+    # model purpose / variable mapping and return typed DTOs, so callers
+    # never need to know the internal `_generate(...)` contract.
+    #
+    # `_generate` stays private. A CI lint gate
+    # (`scripts/lint-no-private-generate.sh`) rejects any `_generate(` call
+    # in `backend/services/` outside this file — see W2.4 remediation.
+
+    async def extract_memory_observations(
+        self,
+        *,
+        agent_name: str,
+        simulation_name: str,
+        user_message: str,
+        agent_response: str,
+    ) -> MemoryObservationBatch:
+        """Extract salient observations from an agent-user chat exchange.
+
+        Runs the `memory_extraction` prompt through the `chat_response` model
+        tier; the LLM returns JSON ``{"observations": [{"content", "importance"}]}``.
+        Returns a typed batch — callers persist observations via
+        ``AgentMemoryService.record_observation`` one at a time.
+        """
+        result = await self._generate(
+            template_type="memory_extraction",
+            model_purpose="chat_response",
+            variables={
+                "agent_name": agent_name,
+                "simulation_name": simulation_name,
+                # Match pre-refactor behavior: clip user + agent text to 2 kB
+                # each so prompt stays within context window.
+                "user_message": user_message[:2000],
+                "agent_response": agent_response[:2000],
+            },
+            locale="en",
+        )
+        parsed = GenerationService._parse_json_content(result.get("content", ""))
+        raw = parsed.get("observations", []) if parsed else []
+        observations: list[MemoryObservation] = []
+        for obs in raw:
+            content = obs.get("content") if isinstance(obs, dict) else None
+            if not content:
+                continue
+            importance = obs.get("importance", 5) if isinstance(obs, dict) else 5
+            observations.append(MemoryObservation(content=content, importance=importance))
+        return MemoryObservationBatch(
+            observations=observations,
+            model_used=result.get("model_used", "unknown"),
+        )
+
+    async def reflect_on_memories(
+        self,
+        *,
+        agent_name: str,
+        simulation_name: str,
+        observations_text: str,
+        locale: str = "en",
+    ) -> MemoryReflectionBatch:
+        """Synthesize higher-level reflections from recent observations.
+
+        Expects `observations_text` to be a preformatted multi-line list
+        (e.g. ``"- [8/10] ...\\n- [5/10] ..."``); building that string is the
+        caller's concern, not the façade's.
+        """
+        result = await self._generate(
+            template_type="memory_reflection",
+            model_purpose="chat_response",
+            variables={
+                "agent_name": agent_name,
+                "simulation_name": simulation_name,
+                "observations_text": observations_text,
+            },
+            locale=locale,
+        )
+        parsed = GenerationService._parse_json_content(result.get("content", ""))
+        raw = parsed.get("reflections", []) if parsed else []
+        reflections: list[MemoryReflection] = []
+        for ref in raw:
+            content = ref.get("content") if isinstance(ref, dict) else None
+            if not content:
+                continue
+            importance = ref.get("importance", 5) if isinstance(ref, dict) else 5
+            reflections.append(MemoryReflection(content=content, importance=importance))
+        return MemoryReflectionBatch(
+            reflections=reflections,
+            model_used=result.get("model_used", "unknown"),
+        )
+
+    async def generate_chronicle_entry(
+        self,
+        *,
+        edition_number: int,
+        simulation_name: str,
+        period_start: str,
+        period_end: str,
+        event_summary: str,
+        echo_summary: str,
+        battle_summary: str,
+        reaction_summary: str,
+        locale: str = "en",
+    ) -> ChronicleEntryDraft:
+        """Generate a chronicle edition from pre-serialized period summaries.
+
+        Dates are passed as ``YYYY-MM-DD`` strings (not ``datetime``) so the
+        caller controls formatting. The `*_summary` inputs are expected to be
+        JSON-serialized lists of records — the prompt embeds them verbatim.
+        Parses the LLM's JSON response into ``{title, headline, content}``
+        with a sensible fallback when parsing fails.
+        """
+        result = await self._generate(
+            template_type="chronicle_generation",
+            model_purpose="event_generation",
+            variables={
+                "edition_number": str(edition_number),
+                "simulation_name": simulation_name,
+                "period_start": period_start,
+                "period_end": period_end,
+                "event_summary": event_summary,
+                "echo_summary": echo_summary,
+                "battle_summary": battle_summary,
+                "reaction_summary": reaction_summary,
+            },
+            locale=locale,
+        )
+        raw_content = result.get("content", "")
+        parsed = GenerationService._parse_json_content(raw_content)
+        default_title = f"Chronicle Edition #{edition_number}"
+        if parsed:
+            title = parsed.get("title") or default_title
+            headline = parsed.get("headline")
+            content = parsed.get("content") or raw_content
+        else:
+            title = default_title
+            headline = None
+            content = raw_content
+        return ChronicleEntryDraft(
+            title=title,
+            headline=headline,
+            content=content,
+            model_used=result.get("model_used", "unknown"),
+        )
+
+    async def generate_cycle_sitrep(
+        self,
+        *,
+        cycle_number: int,
+        battle_stats: dict,
+    ) -> CycleSitrepDraft:
+        """Generate a tactical situation report for one epoch cycle.
+
+        `battle_stats` is the shape returned by the
+        ``get_cycle_battle_summary`` RPC (migration 065b); it is serialized
+        to JSON and embedded in the prompt as ``battle_stats``.
+        """
+        result = await self._generate(
+            template_type="cycle_sitrep_generation",
+            model_purpose="event_generation",
+            variables={
+                "cycle_number": str(cycle_number),
+                "battle_stats": json.dumps(battle_stats, default=str),
+            },
+            locale="en",
+        )
+        return CycleSitrepDraft(
+            sitrep=result.get("content", ""),
+            model_used=result.get("model_used", "unknown"),
+        )
+
+    async def generate_instagram_caption(
+        self,
+        *,
+        content_type: str,
+        simulation_name: str,
+        dispatch_number: int,
+        date: str,
+        entity_name: str,
+        entity_context: str,
+        locale: str = "en",
+    ) -> InstagramCaptionDraft:
+        """Generate the raw body of an Instagram caption (pre-footer).
+
+        Template id is derived as ``instagram_{content_type}_caption``;
+        `content_type` must match a prompt-template row the simulation has
+        (validation happens inside `_generate` → `PromptResolver`). The AI
+        disclosure footer and Instagram length-limit truncation are the
+        caller's concern — the façade returns the raw LLM output.
+        """
+        result = await self._generate(
+            template_type=f"instagram_{content_type}_caption",
+            model_purpose="social_trends",
+            variables={
+                "simulation_name": simulation_name,
+                "dispatch_number": str(dispatch_number),
+                "date": date,
+                "entity_name": entity_name,
+                "entity_context": entity_context,
+            },
+            locale=locale,
+        )
+        return InstagramCaptionDraft(
+            caption=result.get("content", ""),
+            model_used=result.get("model_used", "unknown"),
+        )
 
     # --- JSON parsing ---
 

@@ -123,31 +123,21 @@ class AgentMemoryService:
         agent_name = agent_resp.data[0]["name"] if agent_resp.data else "Agent"
 
         gen = GenerationService(admin, simulation_id, api_key or settings.openrouter_api_key)
-        result = await gen._generate(
-            template_type="memory_extraction",
-            model_purpose="chat_response",
-            variables={
-                "agent_name": agent_name,
-                "simulation_name": sim_name,
-                "user_message": user_message[:2000],
-                "agent_response": agent_response[:2000],
-            },
-            locale="en",
+        batch = await gen.extract_memory_observations(
+            agent_name=agent_name,
+            simulation_name=sim_name,
+            user_message=user_message,
+            agent_response=agent_response,
         )
 
-        parsed = GenerationService._parse_json_content(result.get("content", ""))
-        observations = parsed.get("observations", []) if parsed else []
-
         saved = []
-        for obs in observations:
-            if not obs.get("content"):
-                continue
+        for obs in batch.observations:
             record = await cls.record_observation(
                 admin,
                 agent_id,
                 simulation_id,
-                obs["content"],
-                obs.get("importance", 5),
+                obs.content,
+                obs.importance,
                 source_type="chat",
                 api_key=api_key,
             )
@@ -248,30 +238,21 @@ class AgentMemoryService:
         obs_text = "\n".join(f"- [{o['importance']}/10] {o['content']}" for o in observations)
 
         gen = GenerationService(supabase, simulation_id, api_key or settings.openrouter_api_key)
-        result = await gen._generate(
-            template_type="memory_reflection",
-            model_purpose="chat_response",
-            variables={
-                "agent_name": agent_name,
-                "simulation_name": sim_name,
-                "observations_text": obs_text,
-            },
+        batch = await gen.reflect_on_memories(
+            agent_name=agent_name,
+            simulation_name=sim_name,
+            observations_text=obs_text,
             locale=locale,
         )
 
-        parsed = GenerationService._parse_json_content(result.get("content", ""))
-        reflections = parsed.get("reflections", []) if parsed else []
-
         saved = []
-        for ref in reflections:
-            if not ref.get("content"):
-                continue
+        for ref in batch.reflections:
             record = await cls.record_observation(
                 supabase,
                 agent_id,
                 simulation_id,
-                ref["content"],
-                ref.get("importance", 7),
+                ref.content,
+                ref.importance,
                 source_type="reflection",
                 memory_type="reflection",
                 api_key=api_key,
