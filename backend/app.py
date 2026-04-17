@@ -50,6 +50,7 @@ from backend.routers import (
     agents,
     aptitudes,
     bluesky,
+    bonds,
     bot_players,
     broadsheets,
     buildings,
@@ -232,6 +233,7 @@ app.include_router(agent_autonomy.router)
 app.include_router(agent_memories.router)
 app.include_router(game_mechanics.router)
 app.include_router(epochs.router)
+app.include_router(bonds.router)
 app.include_router(bot_players.router)
 app.include_router(epoch_chat.router)
 app.include_router(epoch_invitations.router)
