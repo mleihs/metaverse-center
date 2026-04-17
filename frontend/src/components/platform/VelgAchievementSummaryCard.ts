@@ -21,6 +21,7 @@ import type {
 } from '../../services/api/AchievementsApiService.js';
 import { achievementsApi } from '../../services/api/AchievementsApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
 
@@ -243,8 +244,10 @@ export class VelgAchievementSummaryCard extends LitElement {
     super.disconnectedCallback();
     try {
       this._disposeUnlockWatch?.();
-    } catch {
-      /* best-effort cleanup */
+    } catch (err) {
+      // Best-effort teardown during element removal — proceed with
+      // cleanup even if the signal subscriber already unsubscribed.
+      captureError(err, { source: 'VelgAchievementSummaryCard.disconnectedCallback' });
     }
     this._disposeUnlockWatch = null;
   }
@@ -263,8 +266,8 @@ export class VelgAchievementSummaryCard extends LitElement {
         this._summary = res.data;
         appState.setAchievementSummary(res.data);
       }
-    } catch {
-      // Non-critical — card simply doesn't render
+    } catch (err) {
+      captureError(err, { source: 'VelgAchievementSummaryCard._load' });
     } finally {
       this._loading = false;
     }
@@ -277,8 +280,10 @@ export class VelgAchievementSummaryCard extends LitElement {
         this._summary = res.data;
         appState.setAchievementSummary(res.data);
       }
-    } catch {
-      // Non-critical — card keeps stale data
+    } catch (err) {
+      // Card keeps stale data — refetch is triggered by an unlock
+      // broadcast, and the next one will retry.
+      captureError(err, { source: 'VelgAchievementSummaryCard._refetchSummary' });
     }
   }
 

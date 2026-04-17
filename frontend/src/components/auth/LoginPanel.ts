@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -145,7 +146,8 @@ export class VelgLoginPanel extends LitElement {
         // Reload the current page to re-fetch data as authenticated user
         window.location.reload();
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginPanel._handleSubmit' });
       this._error = msg('An unexpected error occurred. Please try again.');
     } finally {
       this._loading = false;
@@ -163,7 +165,8 @@ export class VelgLoginPanel extends LitElement {
   private async _handleGoogleLogin(): Promise<void> {
     try {
       await authService.signInWithGoogle();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginPanel._handleGoogleLogin' });
       this._error = msg('Failed to initiate Google sign-in.');
     }
   }
@@ -171,7 +174,8 @@ export class VelgLoginPanel extends LitElement {
   private async _handleDiscordLogin(): Promise<void> {
     try {
       await authService.signInWithDiscord();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginPanel._handleDiscordLogin' });
       this._error = msg('Failed to initiate Discord sign-in.');
     }
   }

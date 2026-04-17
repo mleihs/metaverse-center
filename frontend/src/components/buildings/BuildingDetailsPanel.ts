@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { buildingsApi, embassiesApi, healthApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type {
   Building,
   BuildingAgentRelation,
@@ -388,8 +389,8 @@ export class VelgBuildingDetailsPanel extends LitElement {
       if (response.success && response.data) {
         this._agents = response.data;
       }
-    } catch {
-      // Silently fail for agents list
+    } catch (err) {
+      captureError(err, { source: 'BuildingDetailsPanel._loadAgents' });
     } finally {
       this._loadingAgents = false;
     }
@@ -410,8 +411,8 @@ export class VelgBuildingDetailsPanel extends LitElement {
       if (response.success && response.data) {
         this._embassy = response.data;
       }
-    } catch {
-      // Embassy data not critical — fail silently
+    } catch (err) {
+      captureError(err, { source: 'BuildingDetailsPanel._loadEmbassy' });
     }
   }
 
@@ -427,8 +428,8 @@ export class VelgBuildingDetailsPanel extends LitElement {
         this._readiness =
           buildings.find((b: BuildingReadiness) => b.building_id === this.building?.id) ?? null;
       }
-    } catch {
-      // Readiness data not critical — fail silently
+    } catch (err) {
+      captureError(err, { source: 'BuildingDetailsPanel._loadReadiness' });
     }
   }
 

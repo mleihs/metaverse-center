@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -170,7 +171,8 @@ export class VelgLoginView extends LitElement {
       } else {
         navigate('/dashboard');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginView._handleSubmit' });
       this._error = msg('An unexpected error occurred. Please try again.');
     } finally {
       this._loading = false;
@@ -188,7 +190,8 @@ export class VelgLoginView extends LitElement {
   private async _handleGoogleLogin(): Promise<void> {
     try {
       await authService.signInWithGoogle();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginView._handleGoogleLogin' });
       this._error = msg('Failed to initiate Google sign-in.');
     }
   }
@@ -196,7 +199,8 @@ export class VelgLoginView extends LitElement {
   private async _handleDiscordLogin(): Promise<void> {
     try {
       await authService.signInWithDiscord();
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'LoginView._handleDiscordLogin' });
       this._error = msg('Failed to initiate Discord sign-in.');
     }
   }
