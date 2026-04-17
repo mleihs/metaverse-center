@@ -14,6 +14,7 @@
 
 import { msg, str } from '@lit/localize';
 import { localeService } from '../services/i18n/locale-service.js';
+import { captureError } from '../services/SentryService.js';
 
 // ── Locale helper ─────────────────────────────────────────────────────
 
@@ -43,7 +44,8 @@ export function formatDate(
       month: 'short',
       day: 'numeric',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatDate' });
     return fallback || dateStr;
   }
 }
@@ -66,7 +68,8 @@ export function formatDateTime(
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatDateTime' });
     return fallback || dateStr;
   }
 }
@@ -88,7 +91,8 @@ export function formatDateTimeShort(
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatDateTimeShort' });
     return fallback || dateStr;
   }
 }
@@ -112,7 +116,8 @@ export function formatDateFull(
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatDateFull' });
     return fallback || dateStr;
   }
 }
@@ -132,7 +137,8 @@ export function formatTime(
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatTime' });
     return fallback || dateStr;
   }
 }
@@ -181,7 +187,8 @@ export function formatRelativeTime(
       day: 'numeric',
       ...(includeYear && { year: 'numeric' }),
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatRelativeTime' });
     return '';
   }
 }
@@ -214,7 +221,8 @@ export function formatRelativeTimeVerbose(
       hour: '2-digit',
       minute: '2-digit',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatRelativeTimeVerbose' });
     return '';
   }
 }
@@ -239,7 +247,8 @@ export function formatDateLabel(dateStr: string): string {
       month: 'short',
       day: 'numeric',
     });
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'date-format.formatDateLabel' });
     return '';
   }
 }
