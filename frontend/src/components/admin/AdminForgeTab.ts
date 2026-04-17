@@ -8,6 +8,7 @@ import {
   type TokenEconomyStats,
 } from '../../services/api/AdminApiService.js';
 import { forgeApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { formatDateTime } from '../../utils/date-format.js';
 import {
   adminAnimationStyles,
@@ -421,7 +422,8 @@ export class VelgAdminForgeTab extends LitElement {
         this._totalTokens = resp.data.total_tokens;
         this._totalMaterialized = resp.data.total_materialized;
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadStats' });
       VelgToast.error(msg('Failed to load forge stats.'));
     }
   }
@@ -432,8 +434,8 @@ export class VelgAdminForgeTab extends LitElement {
       if (resp.success && resp.data) {
         this._economyStats = resp.data;
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadEconomyStats' });
     }
   }
 
@@ -443,8 +445,8 @@ export class VelgAdminForgeTab extends LitElement {
       if (resp.success && resp.data) {
         this._bundles = resp.data;
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadBundles' });
     }
   }
 
@@ -459,8 +461,8 @@ export class VelgAdminForgeTab extends LitElement {
         this._purchases = resp.data;
         this._purchaseTotal = (resp.meta as { total?: number })?.total ?? resp.data.length;
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadPurchases' });
     }
   }
 
@@ -472,8 +474,8 @@ export class VelgAdminForgeTab extends LitElement {
         this._byokAccessPolicy =
           (resp.data.byok_access_policy as 'none' | 'all' | 'per_user') ?? 'per_user';
       }
-    } catch {
-      // Non-critical
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadBYOKSetting' });
     }
   }
 
@@ -499,7 +501,8 @@ export class VelgAdminForgeTab extends LitElement {
         );
         VelgToast.error(resp.error?.message ?? msg('Failed to update bundle.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._toggleBundleActive', bundleId: bundle.id });
       this._bundles = this._bundles.map((b) =>
         b.id === bundle.id ? { ...b, is_active: !newActive } : b,
       );
@@ -539,7 +542,11 @@ export class VelgAdminForgeTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to update bundle.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, {
+        source: 'AdminForgeTab._saveEditBundle',
+        bundleId: this._editingBundleId ?? '',
+      });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -578,7 +585,8 @@ export class VelgAdminForgeTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Grant failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._submitGrant' });
       VelgToast.error(msg('An unexpected error occurred.'));
     } finally {
       this._granting = false;
@@ -617,7 +625,8 @@ export class VelgAdminForgeTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to update BYOK setting.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._toggleBYOKSystem' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -637,7 +646,8 @@ export class VelgAdminForgeTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Failed to update access policy.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._changeBYOKAccessPolicy' });
       VelgToast.error(msg('An unexpected error occurred.'));
     }
   }
@@ -660,7 +670,8 @@ export class VelgAdminForgeTab extends LitElement {
       } else {
         VelgToast.error(resp.error?.message ?? msg('Purge failed.'));
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._purgeStaleDrafts' });
       VelgToast.error(msg('Purge failed.'));
     }
   }
