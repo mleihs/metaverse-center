@@ -411,11 +411,11 @@ class TestEpochBattleLog:
         mock_list.return_value = ([], 0)
 
         client = TestClient(app)
-        resp = client.get(f"/api/v1/epochs/{EPOCH_ID}/battle-log?event_type=mission_result")
+        resp = client.get(f"/api/v1/epochs/{EPOCH_ID}/battle-log?event_type=mission_success")
         assert resp.status_code == 200
         mock_list.assert_called_once()
         call_kwargs = mock_list.call_args
-        assert call_kwargs.kwargs.get("event_type") == "mission_result" or call_kwargs[1].get("event_type") == "mission_result"
+        assert call_kwargs.kwargs.get("event_type") == "mission_success" or call_kwargs[1].get("event_type") == "mission_success"
 
     @patch("backend.routers.epochs.BattleLogService.list_entries_for_player", new_callable=AsyncMock)
     def test_battle_log_allied_intel_tagging(self, mock_list):
