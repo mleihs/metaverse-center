@@ -1,5 +1,6 @@
 import { computed, type Signal, signal } from '@preact/signals-core';
 import { appState } from './AppStateManager.js';
+import { captureError } from './SentryService.js';
 import type {
   BYOKStatus,
   FeaturePurchase,
@@ -428,8 +429,12 @@ class ForgeStateManager {
               success = true;
               break;
             }
-          } catch {
-            // Retry on network/timeout errors
+          } catch (err) {
+            captureError(err, {
+              source: 'ForgeStateManager._generateEntitiesIncremental.retry',
+              entityType,
+              attempt: String(retry),
+            });
           }
           if (retry < MAX_RETRIES - 1) await new Promise((r) => setTimeout(r, 2000));
         }
@@ -580,8 +585,8 @@ class ForgeStateManager {
         return resp.data;
       }
       return null;
-    } catch {
-      // Best-effort — wallet display is non-critical
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.loadWallet' });
       return null;
     } finally {
       this.isLoadingWallet.value = false;
@@ -594,8 +599,8 @@ class ForgeStateManager {
       if (resp.success && resp.data) {
         this.bundles.value = resp.data;
       }
-    } catch {
-      // Best-effort
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.loadBundles' });
     }
   }
 
@@ -628,8 +633,8 @@ class ForgeStateManager {
           : ((resp.data as unknown as { data: TokenPurchase[] }).data ?? []);
         this.purchaseHistory.value = items;
       }
-    } catch {
-      // Best-effort
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.loadPurchaseHistory' });
     }
   }
 
@@ -759,7 +764,8 @@ class ForgeStateManager {
         return resp.data;
       }
       return null;
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.pollFeaturePurchase', kind: 'poll' });
       return null;
     }
   }
@@ -803,8 +809,12 @@ class ForgeStateManager {
         if (Date.now() - this._imageTrackingStart > 5 * 60 * 1000) {
           this.stopImageTracking();
         }
-      } catch {
-        // Best-effort polling — ignore transient errors
+      } catch (err) {
+        captureError(err, {
+          source: 'ForgeStateManager.startImageTracking.poll',
+          kind: 'poll',
+          slug,
+        });
       }
     };
 
@@ -872,7 +882,12 @@ class ForgeStateManager {
       }
       try {
         await this.loadDraft(draftId);
-      } catch {
+      } catch (err) {
+        captureError(err, {
+          source: 'ForgeStateManager._tryRecoverChunk',
+          chunkType,
+          attempt: String(attempt),
+        });
         continue;
       }
       if (!this.draft.value) continue;
@@ -907,7 +922,11 @@ class ForgeStateManager {
       }
       try {
         await this.loadDraft(draftId);
-      } catch {
+      } catch (err) {
+        captureError(err, {
+          source: 'ForgeStateManager._tryRecoverResearch',
+          attempt: String(attempt),
+        });
         continue;
       }
       if (!this.draft.value) continue;
@@ -936,7 +955,8 @@ class ForgeStateManager {
       if (matching.length === 0) return DEFAULT_ESTIMATES[type] ?? 60_000;
       const sum = matching.reduce((acc, r) => acc + r.durationMs, 0);
       return Math.round(sum / matching.length);
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.getEstimatedDuration', type });
       return DEFAULT_ESTIMATES[type] ?? 60_000;
     }
   }
@@ -955,8 +975,8 @@ class ForgeStateManager {
         records.shift();
       }
       localStorage.setItem(TIMING_STORAGE_KEY, JSON.stringify(records));
-    } catch {
-      // Private browsing or quota exceeded — silently ignore
+    } catch (err) {
+      captureError(err, { source: 'ForgeStateManager._recordTiming', type });
     }
   }
 
