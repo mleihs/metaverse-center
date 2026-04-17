@@ -1453,6 +1453,15 @@ export class VelgEpochCommandCenter extends LitElement {
     super.disconnectedCallback();
   }
 
+  /**
+   * Mode for auth-gated epoch-API reads. Epochs are a global collection
+   * (not sim-scoped), so routing is gated on authentication only — guests
+   * see the curated public leaderboard, members see full scores.
+   */
+  private get _authMode(): 'public' | 'member' {
+    return appState.isAuthenticated.value ? 'member' : 'public';
+  }
+
   private _injectEpochSchema(epoch: Epoch): void {
     const statusMap: Record<string, string> = {
       lobby: 'https://schema.org/EventScheduled',
@@ -1481,8 +1490,8 @@ export class VelgEpochCommandCenter extends LitElement {
   private async _loadData() {
     this._loading = true;
 
-    // Epochs data is gated on authentication, not sim membership — compute once.
-    const authMode: 'public' | 'member' = appState.isAuthenticated.value ? 'member' : 'public';
+    // Epochs data is gated on authentication, not sim membership — hoist once.
+    const authMode = this._authMode;
 
     // Ensure simulations are loaded (may be empty if user navigated directly here)
     if (appState.isAuthenticated.value && appState.simulations.value.length === 0) {
@@ -1588,9 +1597,10 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     // Check active epochs for one where user is a participant
-    // (user is authenticated here — comms is gated on userId above)
+    // (user is authenticated here — comms is gated on userId above, so
+    // `_authMode` always resolves to 'member' on this branch)
     for (const epoch of this._activeEpochs) {
-      const resp = await epochsApi.listParticipants(epoch.id, 'member');
+      const resp = await epochsApi.listParticipants(epoch.id, this._authMode);
       if (!resp.success) continue;
       const participants = (resp.data as EpochParticipant[]) || [];
       const myPart = participants.find((p) => !p.is_bot && p.user_id === userId);
@@ -1624,7 +1634,7 @@ export class VelgEpochCommandCenter extends LitElement {
   }
 
   private async _loadEpochDetails(epochId: string) {
-    const authMode: 'public' | 'member' = appState.isAuthenticated.value ? 'member' : 'public';
+    const authMode = this._authMode;
     const [participants, teams, leaderboard, proposals] = await Promise.all([
       epochsApi.listParticipants(epochId, authMode),
       epochsApi.listTeams(epochId, authMode),
@@ -1728,10 +1738,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
   private async _refreshParticipants() {
     if (!this._epoch) return;
-    const resp = await epochsApi.listParticipants(
-      this._epoch.id,
-      appState.isAuthenticated.value ? 'member' : 'public',
-    );
+    const resp = await epochsApi.listParticipants(this._epoch.id, this._authMode);
     if (resp.success) {
       this._participants = (resp.data as EpochParticipant[]) || [];
       const userId = appState.user.value?.id;
