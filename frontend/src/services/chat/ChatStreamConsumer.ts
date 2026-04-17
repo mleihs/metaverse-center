@@ -131,8 +131,12 @@ async function _consumeSSEStream(response: Response, callbacks: StreamCallbacks)
       // SSE events are separated by double newlines
       const parts = buffer.split('\n\n');
 
-      // Last element may be incomplete — keep it in the buffer
-      buffer = parts.pop()!;
+      // Last element may be incomplete — keep it in the buffer.
+      // `String.prototype.split(separator)` never returns an empty array
+      // (even ''.split('\n\n') → ['']), so pop() always yields a string;
+      // `?? ''` is a type-safety belt if a future refactor ever breaks
+      // that invariant (e.g. filtering parts before pop).
+      buffer = parts.pop() ?? '';
 
       for (const part of parts) {
         _dispatchSSEBlock(part, callbacks);
