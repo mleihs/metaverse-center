@@ -13,6 +13,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Epoch, EpochParticipant, IntelDossier } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 
@@ -456,7 +457,8 @@ export class VelgEpochIntelDossierTab extends LitElement {
         this.myParticipant.simulation_id,
       );
       this._dossiers = resp.data ?? [];
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEpochIntelDossierTab._loadDossiers' });
       this._dossiers = [];
     } finally {
       this._loading = false;

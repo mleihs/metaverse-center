@@ -15,6 +15,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { computePhaseCycles, DEFAULT_RECKONING_CYCLES } from '../../utils/epoch.js';
@@ -1075,7 +1076,8 @@ export class VelgEpochCreationWizard extends LitElement {
       } else {
         this._error = resp.error?.message ?? msg('Failed to create epoch.');
       }
-    } catch {
+    } catch (err) {
+      captureError(err, { source: 'VelgEpochCreationWizard._handleLaunch' });
       this._error = msg('Failed to create epoch.');
     } finally {
       this._loading = false;
