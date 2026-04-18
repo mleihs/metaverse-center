@@ -38,11 +38,11 @@ jobs:
         run: npm run lint:lit
 
       - name: Color token lint
-        run: bash scripts/lint-color-tokens.sh
+        run: bash frontend/scripts/lint-color-tokens.sh
         working-directory: .
 
       - name: Content quality lint
-        run: bash scripts/lint-llm-content.sh
+        run: bash frontend/scripts/lint-llm-content.sh
         working-directory: .
 
       - name: Navigation lint (no direct pushState)
