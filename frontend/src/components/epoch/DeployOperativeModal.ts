@@ -400,9 +400,10 @@ export class VelgDeployOperativeModal extends LitElement {
     }
 
     if (this._selectedEmbassyId) {
-      const emb = this._getSelectedEmbassy?.();
-      const embAny = emb as unknown as { effectiveness?: number } | undefined;
-      embBonus = embAny?.effectiveness != null ? embAny.effectiveness * 0.15 : 0.15;
+      // Embassy effectiveness is backend-hidden (fog of war) — surface only the
+      // flat presence bonus. When the deploy endpoint receives the embassy_id
+      // it applies the full effectiveness multiplier server-side.
+      embBonus = 0.15;
     }
 
     // Guardian + resonance modifiers intentionally hidden (fog of war)

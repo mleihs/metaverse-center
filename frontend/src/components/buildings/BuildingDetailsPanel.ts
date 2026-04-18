@@ -666,7 +666,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
           (rel) => html`
             <div class="panel__agent-item">
               <span class="panel__agent-name">
-                ${rel.agent?.name ?? msg(str`Agent ${rel.agent_id.slice(0, 8)}...`)}
+                ${rel.agents?.name ?? msg(str`Agent ${rel.agent_id.slice(0, 8)}...`)}
               </span>
               <span class="panel__agent-role">${rel.relation_type}</span>
             </div>

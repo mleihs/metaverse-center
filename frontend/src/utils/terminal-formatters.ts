@@ -237,7 +237,7 @@ export function formatExamineAgent(
   // Header
   const currentBuilding = relations.length > 0 ? relations[0] : null;
   const buildingStr = currentBuilding
-    ? ` \u2013 ${(currentBuilding as unknown as Record<string, string>).building_name ?? msg('Assigned')}`
+    ? ` \u2013 ${currentBuilding.buildings?.name ?? msg('Assigned')}`
     : '';
   lines.push(responseLine(`${agent.name.toUpperCase()}${buildingStr}`));
 
@@ -295,7 +295,7 @@ export function formatExamineAgent(
 export function formatExamineBuilding(
   building: Building,
   readiness: BuildingReadiness | null,
-  assignedAgents: Agent[],
+  assignedAgents: ReadonlyArray<{ name: string }>,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
@@ -425,9 +425,7 @@ export function formatStatus(
 
   // Embassies
   if (dashboard.embassies && dashboard.embassies.length > 0) {
-    const active = dashboard.embassies.filter(
-      (e) => (e as unknown as Record<string, unknown>).is_active,
-    );
+    const active = dashboard.embassies.filter((e) => e.status === 'active');
     lines.push(responseLine(`${msg('Embassies')}: ${active.length} ${msg('active')}`));
   }
 
@@ -984,14 +982,15 @@ export function formatReport(
  */
 export function formatDebrief(
   agent: Agent,
+  buildingName: string | null,
   responseText: string,
   remainingIntel: number,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  const buildingName =
-    (agent as unknown as Record<string, unknown>).current_building_name ?? msg('field position');
-  lines.push(systemLine(`[${msg('DEBRIEF')}] ${agent.name} – ${buildingName}`));
+  lines.push(
+    systemLine(`[${msg('DEBRIEF')}] ${agent.name} – ${buildingName ?? msg('field position')}`),
+  );
   lines.push(
     systemLine(`${msg('Intel cost')}: 1 ${msg('point')} (${remainingIntel} ${msg('remaining')})`),
   );
