@@ -56,6 +56,35 @@ interface InternalLink3D {
 // We use the base instance type and cast node/link in callbacks.
 type Graph3DInstance = ForceGraph3DInstance;
 
+// d3-force-3d force instances exposed by `graph.d3Force(name)` carry a
+// `[key: string]: any` index signature (see three-forcegraph's `ForceFn`),
+// which erases the specific setter signatures for `.strength()` and
+// `.distance()`. These narrow-interface guards restore type safety at the
+// call site without touching the vendor `.d.ts`.
+
+interface StrengthSetter {
+  strength(fn: (node: NodeObject) => number): unknown;
+}
+interface DistanceSetter {
+  distance(fn: (link: LinkObject) => number): unknown;
+}
+
+function hasStrengthSetter(force: unknown): force is StrengthSetter {
+  return (
+    force != null &&
+    typeof force === 'object' &&
+    typeof (force as { strength?: unknown }).strength === 'function'
+  );
+}
+
+function hasDistanceSetter(force: unknown): force is DistanceSetter {
+  return (
+    force != null &&
+    typeof force === 'object' &&
+    typeof (force as { distance?: unknown }).distance === 'function'
+  );
+}
+
 @customElement('velg-map-graph-3d')
 export class VelgMapGraph3D extends LitElement {
   static styles = css`
@@ -360,23 +389,20 @@ export class VelgMapGraph3D extends LitElement {
     if (!this._graph) return;
 
     const charge = this._graph.d3Force('charge');
-    if (charge && 'strength' in charge) {
-      (charge as unknown as { strength: (fn: (node: NodeObject) => number) => void }).strength(
-        (node: NodeObject) =>
-          (node as GraphNode3D).simulationType === 'game_instance' ? -80 : -300,
+    if (hasStrengthSetter(charge)) {
+      charge.strength((node: NodeObject) =>
+        (node as GraphNode3D).simulationType === 'game_instance' ? -80 : -300,
       );
     }
 
     const link = this._graph.d3Force('link');
-    if (link && 'distance' in link) {
-      (link as unknown as { distance: (fn: (link: LinkObject) => number) => void }).distance(
-        (l: LinkObject) => {
-          const ll = l as InternalLink3D;
-          if (ll.connectionType === 'template_link') return 100;
-          if (ll.isEmbassy) return 200;
-          return 180;
-        },
-      );
+    if (hasDistanceSetter(link)) {
+      link.distance((l: LinkObject) => {
+        const ll = l as InternalLink3D;
+        if (ll.connectionType === 'template_link') return 100;
+        if (ll.isEmbassy) return 200;
+        return 180;
+      });
     }
   }
 
@@ -547,16 +573,10 @@ export class VelgMapGraph3D extends LitElement {
     this._isFlattened = !this._isFlattened;
     if (!this._graph) return;
 
-    // numDimensions is not on the TypeScript types but exists on the runtime API
-    const graphAny = this._graph as unknown as {
-      numDimensions: (n: number) => Graph3DInstance;
-      d3ReheatSimulation: () => void;
-    };
-
     if (this._isFlattened) {
       // Collapse to 2D plane
-      graphAny.numDimensions(2);
-      graphAny.d3ReheatSimulation();
+      this._graph.numDimensions(2);
+      this._graph.d3ReheatSimulation();
 
       // Animate camera to top-down view after simulation settles
       setTimeout(() => {
@@ -575,8 +595,8 @@ export class VelgMapGraph3D extends LitElement {
       }, 800);
     } else {
       // Restore 3D layout
-      graphAny.numDimensions(3);
-      graphAny.d3ReheatSimulation();
+      this._graph.numDimensions(3);
+      this._graph.d3ReheatSimulation();
 
       setTimeout(() => {
         this._graph?.zoomToFit(800, 40);
