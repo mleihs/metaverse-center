@@ -8,8 +8,10 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.bond.bond_service import (
-    OBSERVATION_PERIOD_DAYS,
     _DEFAULT_RECOGNITION_THRESHOLD as RECOGNITION_THRESHOLD,
+)
+from backend.services.bond.bond_service import (
+    OBSERVATION_PERIOD_DAYS,
     BondService,
 )
 from backend.services.bond.whisper_template_service import WhisperTemplateService
