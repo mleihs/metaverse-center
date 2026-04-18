@@ -1033,9 +1033,13 @@ class ChatAIService:
         return extract_list(response)
 
     async def _load_conversation(self, conversation_id: UUID) -> dict:
-        """Load conversation details."""
+        """Load conversation details. Only `agent_id` is consumed by callers."""
         response = await (
-            self._supabase.table("chat_conversations").select("*").eq("id", str(conversation_id)).limit(1).execute()
+            self._supabase.table("chat_conversations")
+            .select("id, agent_id")
+            .eq("id", str(conversation_id))
+            .limit(1)
+            .execute()
         )
         if not response or not response.data:
             msg = f"Conversation {conversation_id} not found"

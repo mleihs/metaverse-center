@@ -532,7 +532,16 @@ class DungeonEngineService:
         """
         sim_id_str = str(simulation_id)
 
-        resp = await admin_supabase.table("available_dungeons").select("*").eq("simulation_id", sim_id_str).execute()
+        resp = await (
+            admin_supabase.table("available_dungeons")
+            .select(
+                "archetype, signature, resonance_id, magnitude, susceptibility, "
+                "effective_magnitude, suggested_difficulty, suggested_depth, "
+                "last_run_at, available"
+            )
+            .eq("simulation_id", sim_id_str)
+            .execute()
+        )
 
         results: list[AvailableDungeonResponse] = [
             AvailableDungeonResponse(
