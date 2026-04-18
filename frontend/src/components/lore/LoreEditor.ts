@@ -19,6 +19,11 @@ interface EditingState {
   image_caption: string;
 }
 
+/** Keys of `EditingState` that are edited via `<input>`/`<textarea>` — i.e.
+ *  every string field. `sectionId` is set once when an edit session starts
+ *  and never updated by user input, so it's excluded here. */
+type EditingStringField = Exclude<keyof EditingState, 'sectionId'>;
+
 @localized()
 @customElement('velg-lore-editor')
 export class VelgLoreEditor extends LitElement {
@@ -328,11 +333,13 @@ export class VelgLoreEditor extends LitElement {
     this._editing = null;
   }
 
-  private _handleInput(field: keyof EditingState, e: Event): void {
+  private _handleInput(field: EditingStringField, e: Event): void {
     if (!this._editing) return;
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-    (this._editing as unknown as Record<string, unknown>)[field] = target.value;
-    this.requestUpdate();
+    // Spread-reassignment (not in-place mutation) so Lit's @state reactivity
+    // picks up the change — mutation would bypass the setter and require a
+    // manual `requestUpdate()`.
+    this._editing = { ...this._editing, [field]: target.value };
   }
 
   private _submitEdit(): void {
