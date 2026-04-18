@@ -6,10 +6,11 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
-from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -122,20 +123,30 @@ class LoreService:
         simulation_id: UUID,
         section_id: UUID,
     ) -> dict:
-        """Delete a lore section and re-sort remaining sections."""
-        sim_id = str(simulation_id)
+        """Delete a lore section and re-sort remaining sections.
 
-        response = await supabase.table(TABLE).delete().eq("simulation_id", sim_id).eq("id", str(section_id)).execute()
+        Atomic via Postgres ``fn_delete_lore_section_atomic`` (migration 221).
+        The RPC locks the simulation's lore rows, deletes the target, and
+        rewrites remaining sort_order via ROW_NUMBER — all in one
+        transaction. Replaces the prior delete-then-loop pattern which
+        could produce sort_order gaps under concurrent edits.
+        """
+        rpc_resp = await supabase.rpc(
+            "fn_delete_lore_section_atomic",
+            {
+                "p_simulation_id": str(simulation_id),
+                "p_section_id": str(section_id),
+            },
+        ).execute()
 
-        if not response.data:
+        result = rpc_resp.data or {}
+        if result.get("error") == "section_not_found":
             raise not_found(detail=f"Lore section '{section_id}' not found.")
 
-        # Re-sort remaining sections
-        remaining = await supabase.table(TABLE).select("id").eq("simulation_id", sim_id).order("sort_order").execute()
-        for i, row in enumerate(extract_list(remaining)):
-            await supabase.table(TABLE).update({"sort_order": i}).eq("id", row["id"]).execute()
-
-        return response.data[0]
+        deleted_section = result.get("deleted_section")
+        if not isinstance(deleted_section, dict):
+            raise server_error("Lore section delete failed: unexpected RPC response.")
+        return deleted_section
 
     @staticmethod
     async def reorder_sections(
@@ -143,14 +154,31 @@ class LoreService:
         simulation_id: UUID,
         section_ids: list[UUID],
     ) -> list[dict]:
-        """Bulk reorder sections by updating sort_order based on list position."""
-        sim_id = str(simulation_id)
+        """Bulk reorder sections by updating sort_order based on list position.
 
-        for i, sid in enumerate(section_ids):
-            await (
-                supabase.table(TABLE).update({"sort_order": i}).eq("simulation_id", sim_id).eq("id", str(sid)).execute()
-            )
+        Atomic via Postgres ``fn_reorder_lore_sections_atomic`` (migration 221).
+        The RPC locks the provided rows via FOR UPDATE, validates each
+        section belongs to the given simulation, then bulk-writes
+        sort_order via UNNEST WITH ORDINALITY. Lenient semantics: updates
+        only the provided IDs; non-mentioned rows are left untouched.
+        Empty input is a no-op returning current state. Replaces the prior
+        serial N-UPDATE loop which could interleave under concurrent
+        reorders.
+        """
+        try:
+            rpc_resp = await supabase.rpc(
+                "fn_reorder_lore_sections_atomic",
+                {
+                    "p_simulation_id": str(simulation_id),
+                    "p_section_ids": [str(sid) for sid in section_ids],
+                },
+            ).execute()
+        except PostgrestAPIError as exc:
+            # RPC raises 22023 (invalid_parameter_value) when any provided
+            # section_id does not belong to the simulation or appears as a
+            # duplicate — caller errors.
+            if exc.code == "22023":
+                raise bad_request(exc.message) from exc
+            raise
 
-        # Return updated list
-        response = await supabase.table(TABLE).select("*").eq("simulation_id", sim_id).order("sort_order").execute()
-        return extract_list(response)
+        return rpc_resp.data or []
