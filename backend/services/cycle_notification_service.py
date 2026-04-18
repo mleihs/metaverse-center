@@ -171,7 +171,12 @@ class CycleNotificationService:
 
         async def _scores_current():
             resp = await (
-                admin_supabase.table("epoch_scores").select("*")
+                admin_supabase.table("epoch_scores")
+                .select(
+                    "simulation_id, composite_score,"
+                    " stability_score, influence_score, sovereignty_score,"
+                    " diplomatic_score, military_score"
+                )
                 .eq("epoch_id", epoch_id).eq("cycle_number", cycle_number)
                 .order("composite_score", desc=True).execute()
             )
