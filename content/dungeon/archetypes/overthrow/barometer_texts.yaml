@@ -1,0 +1,24 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The corridors are ordered. Signs point in consistent directions. The insignia on the walls
+    match. Someone is in charge here, and the architecture believes them.
+  text_de: Die Korridore sind geordnet. Schilder weisen in konsistente Richtungen. Die Abzeichen an
+    den Wänden stimmen überein. Jemand hat hier das Sagen, und die Architektur glaubt ihnen.
+- tier: 1
+  text_en: A sign has been corrected. The original direction is visible beneath the amendment. Two
+    versions of authority overlap – the first confident, the second insistent.
+  text_de: Ein Schild wurde korrigiert. Die ursprüngliche Richtung ist unter der Änderung sichtbar.
+    Zwei Versionen von Autorität überlagern sich – die erste zuversichtlich, die zweite bestimmt.
+- tier: 2
+  text_en: The signs contradict each other. Three factions have posted directions to the same corridor,
+    each claiming a different destination. The architecture has stopped choosing.
+  text_de: Die Schilder widersprechen einander. Drei Fraktionen haben Wegweiser zum selben Korridor
+    angebracht, jede mit einem anderen Ziel. Die Architektur hat aufgehört zu wählen.
+- tier: 3
+  text_en: No signs. The walls are bare. Every faction's insignia has been torn down, painted over,
+    torn down again. The corridors lead everywhere and nowhere. Authority is a rumor. The building
+    is listening for whoever speaks next.
+  text_de: Keine Schilder. Die Wände sind kahl. Die Abzeichen jeder Fraktion wurden heruntergerissen,
+    übermalt, erneut heruntergerissen. Die Korridore führen überallhin und nirgendwohin. Autorität
+    ist ein Gerücht. Das Gebäude hört zu, wer als Nächstes spricht.

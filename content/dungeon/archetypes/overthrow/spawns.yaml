@@ -1,0 +1,33 @@
+schema_version: 1
+spawns:
+  overthrow_informer_patrol_spawn:
+  - template_id: overthrow_faction_informer
+    count: 2
+  overthrow_propaganda_patrol_spawn:
+  - template_id: overthrow_propaganda_agent
+    count: 1
+  - template_id: overthrow_faction_informer
+    count: 1
+  overthrow_enforcer_squad_spawn:
+  - template_id: overthrow_regime_enforcer
+    count: 1
+  - template_id: overthrow_faction_informer
+    count: 1
+  overthrow_political_crisis_spawn:
+  - template_id: overthrow_propaganda_agent
+    count: 1
+  - template_id: overthrow_regime_enforcer
+    count: 1
+  overthrow_inquisition_spawn:
+  - template_id: overthrow_grand_inquisitor
+    count: 1
+  - template_id: overthrow_faction_informer
+    count: 1
+  overthrow_rest_ambush_spawn:
+  - template_id: overthrow_faction_informer
+    count: 1
+  overthrow_pretender_spawn:
+  - template_id: overthrow_the_pretender
+    count: 1
+  - template_id: overthrow_propaganda_agent
+    count: 1
