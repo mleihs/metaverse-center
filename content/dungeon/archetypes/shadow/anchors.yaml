@@ -1,0 +1,189 @@
+schema_version: 1
+anchors:
+- id: shadow_note
+  phases:
+    discovery:
+      text_en: 'A note, folded once, pressed into a crack in the wall. The handwriting is steady:
+        ''Visibility is not sight. It is permission.'' Unsigned.'
+      text_de: 'Eine Notiz, einmal gefaltet, in einen Riss in der Wand gepresst. Die Handschrift ist
+        ruhig: »Sichtbarkeit ist nicht Sehen. Es ist Erlaubnis.« Ohne Unterschrift.'
+    echo:
+      text_en: '{agent} finds another note. Same handwriting, less steady: ''The darkness learns faster
+        than I do.'''
+      text_de: '{agent} findet eine weitere Notiz. Dieselbe Handschrift, weniger ruhig: »Die Dunkelheit
+        lernt schneller als ich.«'
+    mutation:
+      text_en: The walls here are covered in notes. Dozens. The handwriting deteriorates from page
+        to page – steady, then hurried, then scratching, then shapes that are not letters. The last
+        note is blank.
+      text_de: Die Wände hier sind bedeckt mit Notizen. Dutzende. Die Handschrift verschlechtert sich
+        von Seite zu Seite – ruhig, dann hastig, dann kratzend, dann Formen, die keine Buchstaben
+        sind. Die letzte Notiz ist leer.
+    climax:
+      text_en: 'On the floor: a pen. Still warm. The ink is the same as the notes. Whoever wrote them
+        did not leave this room.'
+      text_de: 'Auf dem Boden: ein Stift. Noch warm. Die Tinte ist dieselbe wie auf den Notizen. Wer
+        sie geschrieben hat, hat diesen Raum nicht verlassen.'
+- id: shadow_mirror
+  phases:
+    discovery:
+      text_en: A mirror, face-down on the floor. Unbroken. Someone placed it deliberately – not dropped,
+        not discarded. Placed.
+      text_de: Ein Spiegel, mit der Fläche nach unten auf dem Boden. Unzerbrochen. Jemand hat ihn
+        absichtlich so hingelegt – nicht fallen gelassen, nicht weggeworfen. Hingelegt.
+    echo:
+      text_en: '{agent} passes another mirror. This one faces the wall. The glass is fogged, as if
+        something on the other side has been waiting.'
+      text_de: '{agent} passiert einen weiteren Spiegel. Dieser zeigt zur Wand. Das Glas ist beschlagen,
+        als hätte etwas auf der anderen Seite gewartet.'
+    mutation:
+      text_en: Mirrors. Everywhere. All facing away. The room is full of reflections that have nowhere
+        to go – light bouncing between reversed surfaces, dimming with each pass. The air is thick
+        with trapped images.
+      text_de: Spiegel. Überall. Alle abgewandt. Der Raum ist voller Reflexionen, die nirgendwo hinkönnen
+        – Licht, das zwischen umgedrehten Flächen springt, mit jedem Durchgang schwächer. Die Luft
+        ist schwer von gefangenen Bildern.
+    climax:
+      text_en: 'One mirror remains, facing outward. In it: not your reflection. Someone else''s. They
+        look exhausted. They look like they have been watching you since the first room.'
+      text_de: 'Ein Spiegel bleibt, nach außen gerichtet. Darin: nicht eure Reflexion. Die eines anderen.
+        Sie sehen erschöpft aus. Sie sehen aus, als hätten sie euch seit dem ersten Raum beobachtet.'
+- id: shadow_weapon
+  phases:
+    discovery:
+      text_en: A weapon on the floor. Still warm. Not dropped – placed. Arranged, as if someone wanted
+        it found. The arrangement is precise. Military. Recent.
+      text_de: Eine Waffe auf dem Boden. Noch warm. Nicht fallen gelassen – hingelegt. Arrangiert,
+        als wollte jemand, dass sie gefunden wird. Die Anordnung ist präzise. Militärisch. Frisch.
+    echo:
+      text_en: '{agent} spots the same weapon – or its twin. This one is cold. The arrangement is
+        identical, but the precision has softened. As if the darkness copied the placement from memory.'
+      text_de: '{agent} entdeckt dieselbe Waffe – oder ihren Zwilling. Diese ist kalt. Die Anordnung
+        ist identisch, aber die Präzision hat nachgelassen. Als hätte die Dunkelheit die Platzierung
+        aus der Erinnerung kopiert.'
+    mutation:
+      text_en: 'Three weapons now. The arrangement has become a pattern. The pattern has become a
+        message. The message reads: ''You are not the first. You are not the last. You are not even
+        the most interesting.'''
+      text_de: 'Drei Waffen jetzt. Die Anordnung ist ein Muster geworden. Das Muster ist eine Nachricht
+        geworden. Die Nachricht lautet: »Ihr seid nicht die Ersten. Ihr seid nicht die Letzten. Ihr
+        seid nicht einmal die Interessantesten.«'
+    climax:
+      text_en: Your weapons. On the floor. Arranged. You are still holding them. The darkness has
+        learned to copy more than placement.
+      text_de: Eure Waffen. Auf dem Boden. Arrangiert. Ihr haltet sie noch in der Hand. Die Dunkelheit
+        hat gelernt, mehr als Platzierung zu kopieren.
+- id: shadow_footprint
+  phases:
+    discovery:
+      text_en: A single set of footprints in the dust. Recent. Heading deeper. The stride is confident
+        – whoever walked here knew where they were going. The footprints end at a wall.
+      text_de: Eine einzelne Spur im Staub. Frisch. In die Tiefe führend. Der Schritt ist sicher –
+        wer hier ging, wusste wohin. Die Spur endet an einer Wand.
+    echo:
+      text_en: '{agent} spots footprints again. Two sets now. Same stride, same depth. One leads forward.
+        One leads back. Neither is yours.'
+      text_de: '{agent} entdeckt wieder Spuren. Zwei Sätze jetzt. Selber Schritt, selbe Tiefe. Einer
+        führt vorwärts. Einer zurück. Keiner ist eurer.'
+    mutation:
+      text_en: Footprints cover every surface. Walls. Ceiling. Floor. All heading inward. The darkness
+        has learned where everything walks.
+      text_de: Spuren auf jeder Fläche. Wände. Decke. Boden. Alle nach innen gerichtet. Die Dunkelheit
+        hat gelernt, wohin alles läuft.
+    climax:
+      text_en: Your footprints. Current position. Leading to where you have not been yet. The path
+        is already drawn.
+      text_de: Eure Spuren. Aktuelle Position. Führend dorthin, wo ihr noch nicht wart. Der Weg ist
+        bereits gezeichnet.
+- id: shadow_whisper
+  phases:
+    discovery:
+      text_en: A whisper. Not words – the shape of words. As if the darkness overheard conversations
+        and kept the rhythm but lost the meaning.
+      text_de: Ein Flüstern. Keine Worte – die Form von Worten. Als hätte die Dunkelheit Gespräche
+        belauscht und den Rhythmus behalten, aber die Bedeutung verloren.
+    echo:
+      text_en: '{agent} pauses. The whisper again. Closer. It has found vowels now. It is practicing.'
+      text_de: '{agent} hält inne. Das Flüstern wieder. Näher. Es hat jetzt Vokale gefunden. Es übt.'
+    mutation:
+      text_en: The whispers fill the corridors. They overlap. Fragments of sentences that sound familiar
+        – tactical briefings, status reports, names. The darkness has been listening since the first
+        room.
+      text_de: Das Flüstern füllt die Korridore. Es überlagert sich. Bruchstücke von Sätzen, die vertraut
+        klingen – taktische Briefings, Statusberichte, Namen. Die Dunkelheit hört zu seit dem ersten
+        Raum.
+    climax:
+      text_en: 'Silence. The whisper stops. And then, in perfect clarity, in the voice of your party:
+        the exact words spoken in the first room. Verbatim. The darkness remembers better than you
+        do.'
+      text_de: 'Stille. Das Flüstern verstummt. Und dann, in vollkommener Klarheit, in der Stimme
+        eurer Gruppe: die exakten Worte aus dem ersten Raum. Wörtlich. Die Dunkelheit erinnert sich
+        besser als ihr.'
+- id: shadow_candle
+  phases:
+    discovery:
+      text_en: A candle. Lit. The flame does not flicker – it points. Toward the interior. As if the
+        darkness were drawing breath.
+      text_de: Eine Kerze. Brennend. Die Flamme flackert nicht – sie zeigt. Nach innen. Als würde
+        die Dunkelheit Atem holen.
+    echo:
+      text_en: '{agent} counts the candles now. Seven. Each flame points in a different direction.
+        None of them point toward the exit.'
+      text_de: '{agent} zählt die Kerzen jetzt. Sieben. Jede Flamme zeigt in eine andere Richtung.
+        Keine von ihnen zeigt zum Ausgang.'
+    mutation:
+      text_en: Candles line every surface. Their flames are black now – not extinguished, inverted.
+        They cast shadow instead of light. The room is darker for their presence.
+      text_de: Kerzen säumen jede Fläche. Ihre Flammen sind schwarz jetzt – nicht erloschen, invertiert.
+        Sie werfen Schatten statt Licht. Der Raum ist dunkler durch ihre Gegenwart.
+    climax:
+      text_en: One candle. Its flame is your silhouette. It has been burning you this entire time
+        – not consuming, memorizing.
+      text_de: Eine Kerze. Ihre Flamme ist eure Silhouette. Sie hat euch die ganze Zeit verbrannt
+        – nicht verzehrend, memorierend.
+- id: shadow_map
+  phases:
+    discovery:
+      text_en: A map. Hand-drawn, meticulous. The corridors it describes do not match this place.
+        Or they match it as it was before you arrived – before the darkness rearranged itself to receive
+        you.
+      text_de: Eine Karte. Handgezeichnet, akribisch. Die Korridore, die sie beschreibt, passen nicht
+        zu diesem Ort. Oder sie passen zu ihm, wie er war, bevor ihr kamt – bevor die Dunkelheit sich
+        umordnete, um euch zu empfangen.
+    echo:
+      text_en: '{agent} finds the map again. Updated. Your position is marked. Your route is drawn.
+        In ink that is still wet.'
+      text_de: '{agent} findet die Karte wieder. Aktualisiert. Eure Position ist markiert. Eure Route
+        ist eingezeichnet. In Tinte, die noch feucht ist.'
+    mutation:
+      text_en: Maps on every wall. Dozens. Each shows the same dungeon from a different perspective.
+        One is drawn from above. One from below. One from inside the walls.
+      text_de: Karten an jeder Wand. Dutzende. Jede zeigt denselben Dungeon aus einer anderen Perspektive.
+        Eine von oben. Eine von unten. Eine von innerhalb der Wände.
+    climax:
+      text_en: The final map. It shows one room. This room. From inside it. You are on the map. Moving.
+        The map is watching you in real time.
+      text_de: Die letzte Karte. Sie zeigt einen Raum. Diesen Raum. Von innen. Ihr seid auf der Karte.
+        In Bewegung. Die Karte beobachtet euch in Echtzeit.
+- id: shadow_door
+  phases:
+    discovery:
+      text_en: A door in the wall. Locked. No keyhole. It does not lead anywhere – the wall behind
+        it is solid. Someone built a door that was never meant to open.
+      text_de: Eine Tür in der Wand. Verschlossen. Kein Schlüsselloch. Sie führt nirgendwo hin – die
+        Wand dahinter ist massiv. Jemand hat eine Tür gebaut, die nie geöffnet werden sollte.
+    echo:
+      text_en: '{agent} hears knocking. From the other side. There is no other side. The knocking
+        matches {agent}''s heartbeat. Then it matches something else''s.'
+      text_de: '{agent} hört Klopfen. Von der anderen Seite. Es gibt keine andere Seite. Das Klopfen
+        folgt {agent}s Puls. Dann dem Puls von etwas anderem.'
+    mutation:
+      text_en: Doors everywhere. All locked. All identical. The knocking comes from all of them now.
+        It is synchronized. Patient. Whatever is behind them has learned to wait.
+      text_de: Türen überall. Alle verschlossen. Alle identisch. Das Klopfen kommt jetzt von allen.
+        Es ist synchronisiert. Geduldig. Was auch immer dahinter ist, hat gelernt zu warten.
+    climax:
+      text_en: 'One door. Open. Beyond it: this room. Your party. Seen from behind. The door was never
+        locked from this side.'
+      text_de: 'Eine Tür. Offen. Dahinter: dieser Raum. Eure Gruppe. Von hinten gesehen. Die Tür war
+        nie von dieser Seite verschlossen.'

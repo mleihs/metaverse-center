@@ -1,0 +1,19 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The amber terminal glow pulses steadily. Warm. Present. It knows where you are.
+  text_de: Das Bernsteinleuchten des Terminals pulsiert gleichmäßig. Warm. Gegenwärtig. Es weiß, wo
+    ihr seid.
+- tier: 1
+  text_en: The amber glow flickers. For the first time, the terminal seems uncertain.
+  text_de: Das Bernsteinleuchten flackert. Zum ersten Mal wirkt das Terminal unsicher.
+- tier: 2
+  text_en: The amber is fading. The terminal light gutters like a candle in a draft that should not
+    exist in a digital space.
+  text_de: Das Bernstein verblasst. Das Terminallicht flackert wie eine Kerze im Durchzug, den es
+    in einem digitalen Raum nicht geben sollte.
+- tier: 3
+  text_en: The amber is gone. The terminal is dark. You are operating from memory now, and memory
+    is exactly what the darkness consumes first.
+  text_de: Das Bernstein ist erloschen. Das Terminal ist dunkel. Ihr operiert aus der Erinnerung,
+    und Erinnerung ist genau das, was die Dunkelheit zuerst verzehrt.

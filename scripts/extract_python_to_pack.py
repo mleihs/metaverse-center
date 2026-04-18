@@ -127,18 +127,29 @@ def extract_archetype_banter(archetype: str, out_path: Path) -> int:
     items = []
     seen_ids: set[str] = set()
     for b in banter:
-        if b["id"] in seen_ids:
-            # Legacy data has duplicate IDs papered over at generation time
-            # (`sb_30_dup0` etc.). Extraction refuses to emit duplicates —
-            # the validator will then surface the underlying data bug so an
-            # author fixes the source instead of preserving the workaround.
+        # Legacy data carries duplicate banter IDs — the extract-to-SQL
+        # script silently renamed them to `{id}_dup{idx}`. That's a real
+        # data bug: the duplicates are semantically distinct entries
+        # (different trigger + different prose) that happen to share a
+        # numeric stem. We rename with a letter suffix (b, c, d, ...) so
+        # the pack has stable, human-readable IDs and no content is lost.
+        original_id = b["id"]
+        candidate_id = original_id
+        suffix_ord = ord("b")
+        while candidate_id in seen_ids:
+            candidate_id = f"{original_id}{chr(suffix_ord)}"
+            suffix_ord += 1
+            if suffix_ord > ord("z"):
+                raise RuntimeError(
+                    f"exhausted alphabet renaming duplicates of '{original_id}'"
+                )
+        if candidate_id != original_id:
             print(
-                f"WARNING: duplicate banter id '{b['id']}' in {archetype}"
-                " — dropping later occurrence",
+                f"NOTE: renaming duplicate banter id '{original_id}'"
+                f" → '{candidate_id}' in {archetype}",
                 file=sys.stderr,
             )
-            continue
-        seen_ids.add(b["id"])
+        seen_ids.add(candidate_id)
 
         # Normalize personality_filter tuples → lists.
         pf = {
@@ -146,7 +157,7 @@ def extract_archetype_banter(archetype: str, out_path: Path) -> int:
             for k, v in (b.get("personality_filter") or {}).items()
         }
         cleaned: dict[str, Any] = {
-            "id": b["id"],
+            "id": candidate_id,
             "trigger": b["trigger"],
             "personality_filter": pf,
             "text_en": _as_literal_if_multiline(b["text_en"]),

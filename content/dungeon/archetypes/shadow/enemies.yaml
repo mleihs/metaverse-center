@@ -1,0 +1,158 @@
+schema_version: 1
+enemies:
+- id: shadow_wisp
+  name_en: Shadow Wisp
+  name_de: Schattenglimmer
+  condition_threshold: 1
+  stress_resistance: 50
+  threat_level: minion
+  attack_aptitude: infiltrator
+  attack_power: 2
+  stress_attack_power: 4
+  telegraphed_intent: true
+  evasion: 40
+  resistances:
+  - assassin
+  vulnerabilities:
+  - spy
+  action_weights:
+    stress_attack: 60
+    evade: 30
+    ambient: 10
+  special_abilities: []
+  description_en: A flickering presence at the edge of perception. It doesn't attack the body – it
+    erodes certainty.
+  description_de: Eine flackernde Präsenz am Rand der Wahrnehmung. Sie greift nicht den Körper an
+    – sie zersetzt Gewissheit.
+  ambient_text_en:
+  - The wisp drifts closer, then retreats. Testing.
+  - You feel it before you see it – a chill that starts behind the eyes.
+  ambient_text_de:
+  - Der Glimmer treibt näher, dann zurück. Testend.
+  - Ihr spürt es, bevor ihr es seht – eine Kälte, die hinter den Augen beginnt.
+- id: shadow_tendril
+  name_en: Shadow Tendril
+  name_de: Schattenfaden
+  condition_threshold: 2
+  stress_resistance: 0
+  threat_level: minion
+  attack_aptitude: guardian
+  attack_power: 4
+  stress_attack_power: 1
+  telegraphed_intent: true
+  evasion: 10
+  resistances: []
+  vulnerabilities:
+  - saboteur
+  - assassin
+  action_weights:
+    attack: 70
+    grapple: 30
+  special_abilities:
+  - grapple
+  description_en: A black appendage reaching from the walls. Patient. Methodical.
+  description_de: Ein schwarzer Fortsatz, der aus den Wanden greift. Geduldig. Methodisch.
+  ambient_text_en:
+  - The tendril extends, probing. It knows you're there.
+  ambient_text_de:
+  - Der Faden streckt sich, tastet. Er weiss, dass ihr da seid.
+- id: shadow_echo_violence
+  name_en: Echo of Violence
+  name_de: Gewaltecho
+  condition_threshold: 2
+  stress_resistance: 200
+  threat_level: standard
+  attack_aptitude: assassin
+  attack_power: 6
+  stress_attack_power: 3
+  telegraphed_intent: true
+  evasion: 20
+  resistances:
+  - propagandist
+  vulnerabilities:
+  - spy
+  - guardian
+  action_weights:
+    attack: 40
+    stress_attack: 30
+    ambush: 20
+    defend: 10
+  special_abilities: []
+  description_en: A replay of violence that once scarred this place. It moves with the precision of
+    memory – every strike has happened before.
+  description_de: Eine Wiederholung von Gewalt, die diesen Ort einst gezeichnet hat. Sie bewegt sich
+    mit der Prazision der Erinnerung – jeder Schlag ist schon geschehen.
+  ambient_text_en:
+  - The echo replays a death. Not yours. Not yet.
+  - Its movements are familiar. You've seen this fighting style in your simulation's history.
+  ambient_text_de:
+  - Das Echo spielt einen Tod nach. Nicht euren. Noch nicht.
+  - Seine Bewegungen sind vertraut. Ihr habt diesen Kampfstil in der Geschichte eurer Simulation gesehen.
+- id: shadow_paranoia_shade
+  name_en: Paranoia Shade
+  name_de: Paranoiaschatten
+  condition_threshold: 1
+  stress_resistance: 300
+  threat_level: standard
+  attack_aptitude: propagandist
+  attack_power: 2
+  stress_attack_power: 6
+  telegraphed_intent: false
+  evasion: 30
+  resistances:
+  - spy
+  vulnerabilities:
+  - propagandist
+  - guardian
+  action_weights:
+    stress_attack: 50
+    disinformation: 30
+    hide: 20
+  special_abilities:
+  - disinformation
+  description_en: It whispers. Not lies, exactly – plausible fears. Things your agents already suspect
+    about each other.
+  description_de: Es flüstert. Nicht Lügen, genau genommen – plausible Ängste. Dinge, die eure Agenten
+    bereits voneinander vermuten.
+  ambient_text_en:
+  - The shade whispers something to {agent}. Their expression changes.
+  - You can't tell if it's speaking or if the voice is in your head.
+  ambient_text_de:
+  - Der Schatten flüstert {agent} etwas zu. Ihr Ausdruck ändert sich.
+  - Ihr könnt nicht sagen, ob er spricht oder ob die Stimme in eurem Kopf ist.
+- id: shadow_remnant
+  name_en: The Remnant
+  name_de: Der Überrest
+  condition_threshold: 5
+  stress_resistance: 400
+  threat_level: elite
+  attack_aptitude: assassin
+  attack_power: 8
+  stress_attack_power: 7
+  telegraphed_intent: true
+  evasion: 25
+  resistances:
+  - infiltrator
+  - saboteur
+  vulnerabilities:
+  - spy
+  action_weights:
+    attack: 30
+    stress_attack: 25
+    summon_wisps: 20
+    aoe_fear: 15
+    defend: 10
+  special_abilities:
+  - summon_wisps
+  - aoe_fear
+  - wisp_shield
+  description_en: Formed from the simulation's strongest unresolved conflict. It remembers what your
+    agents have tried to forget.
+  description_de: Geformt aus dem stärksten ungelösten Konflikt der Simulation. Er erinnert sich an
+    das, was eure Agenten zu vergessen versucht haben.
+  ambient_text_en:
+  - The Remnant studies you. It has been waiting for someone to come this deep.
+  - Wisps orbit the Remnant like satellites. They pulse in unison.
+  ambient_text_de:
+  - Der Überrest beobachtet euch. Er hat darauf gewartet, dass jemand so tief kommt.
+  - Glimmer umkreisen den Überrest wie Satelliten. Sie pulsieren im Gleichklang.

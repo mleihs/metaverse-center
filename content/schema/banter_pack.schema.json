@@ -2,7 +2,7 @@
   "$defs": {
     "BanterItem": {
       "additionalProperties": false,
-      "description": "One between-encounter banter template.",
+      "description": "One between-encounter banter template.\n\n`personality_filter` is intentionally a loose dict: values can be\n`[min, max]` tuples for a Big-Five dimension (e.g.\n`neuroticism: [0.6, 1.0]`) OR `True`/`False` flags for non-trait\nmatchers like `opinion_positive_pair`. Runtime filter logic in\n`dungeon_banter.select_banter` dispatches on the value type.",
       "properties": {
         "attachment_tier": {
           "anyOf": [
@@ -76,6 +76,9 @@
                   "type": "number"
                 },
                 "type": "array"
+              },
+              {
+                "type": "boolean"
               },
               {
                 "type": "null"

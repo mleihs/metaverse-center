@@ -1,0 +1,26 @@
+schema_version: 1
+spawns:
+  shadow_whispers_spawn:
+  - template_id: shadow_wisp
+    count: 2
+  shadow_patrol_spawn:
+  - template_id: shadow_echo_violence
+    count: 1
+  - template_id: shadow_tendril
+    count: 1
+  shadow_ambush_spawn:
+  - template_id: shadow_echo_violence
+    count: 2
+  shadow_haunting_spawn:
+  - template_id: shadow_paranoia_shade
+    count: 1
+  - template_id: shadow_wisp
+    count: 2
+  shadow_remnant_spawn:
+  - template_id: shadow_remnant
+    count: 1
+  - template_id: shadow_wisp
+    count: 1
+  shadow_rest_ambush_spawn:
+  - template_id: shadow_tendril
+    count: 1

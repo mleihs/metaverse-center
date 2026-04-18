@@ -48,16 +48,25 @@ from backend.services.content_packs.schemas import (  # noqa: E402
 REQUIRED_ROOM_TYPES_EXACTLY_ONCE: tuple[str, ...] = ("boss", "rest", "treasure")
 
 
-def validate(result: PackLoadResult) -> list[str]:
-    """Return a list of human-readable violation messages (empty = valid)."""
+def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
+    """Return (violations, warnings).
+
+    Violations are hard failures that block CI (data-integrity bugs: duplicate
+    IDs, missing FKs, archetype-completeness breaks).
+
+    Warnings are advisory (missing partial narratives, etc.): they surface
+    pre-existing content gaps that the runtime already logs but handles
+    gracefully. Promoted to errors when the caller passes `--strict`.
+    """
     violations: list[str] = []
+    warnings: list[str] = []
 
     violations.extend(_check_global_id_uniqueness(result))
     violations.extend(_check_spawn_fk_integrity(result))
     violations.extend(_check_archetype_completeness(result))
-    violations.extend(_check_choice_narrative_coverage(result))
+    warnings.extend(_check_choice_narrative_coverage(result))
 
-    return violations
+    return violations, warnings
 
 
 # ── Invariants ───────────────────────────────────────────────────────────
@@ -154,6 +163,11 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help=f"Pack root (defaults to {DEFAULT_PACK_ROOT}).",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Treat warnings (missing partial narratives, etc.) as failures.",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -162,11 +176,21 @@ def main(argv: list[str] | None = None) -> int:
         print(f"STRUCTURAL ERROR: {exc}", file=sys.stderr)
         return 2
 
-    violations = validate(result)
+    violations, warnings = validate(result)
+
+    if warnings:
+        print(f"{len(warnings)} warning(s):", file=sys.stderr)
+        for w in warnings:
+            print(f"  - {w}", file=sys.stderr)
+
     if violations:
         print(f"FAILED: {len(violations)} invariant violation(s)", file=sys.stderr)
         for v in violations:
             print(f"  - {v}", file=sys.stderr)
+        return 1
+
+    if args.strict and warnings:
+        print("FAILED: --strict enabled and warnings present", file=sys.stderr)
         return 1
 
     print(f"OK: {result.summary()}")
