@@ -49,7 +49,7 @@ import {
   formatThresholdEntry,
 } from './dungeon-formatters.js';
 import { fuzzyName, resolveToken } from './fuzzy-search.js';
-import { localized } from './locale-fields.js';
+import { localized, localizedArray } from './locale-fields.js';
 import {
   combatSystemLine,
   errorLine,
@@ -775,10 +775,16 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
 
     // Skill check result
     if (resp.data.check) {
-      // Use backend-generated narrative effects (bilingual, proper separation of concerns)
+      // Use backend-generated narrative effects (bilingual, proper separation of concerns).
+      // `narrative_effects_en/_de` are `string[]` fields — use the array variant
+      // of the locale helper rather than casting the string-returning `localized()`.
+      const backendEffects = localizedArray(resp.data, 'narrative_effects');
       const effects: string[] =
-        (localized(resp.data, 'narrative_effects') as unknown as string[]) ??
-        Object.entries(resp.data.effects).map(([key, val]: [string, unknown]) => `${key}: ${val}`);
+        backendEffects.length > 0
+          ? backendEffects
+          : Object.entries(resp.data.effects).map(
+              ([key, val]: [string, unknown]) => `${key}: ${val}`,
+            );
       lines.push(
         ...formatSkillCheckResult(resp.data.check, localized(resp.data, 'narrative'), effects),
       );

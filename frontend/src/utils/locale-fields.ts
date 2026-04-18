@@ -47,3 +47,22 @@ export function localized(obj: any, key: string): string {
   const enVal = obj[`${key}_en`];
   return ((useDe && deVal) || enVal || '') as string;
 }
+
+/**
+ * Array variant of `localized()` for `${key}_en` / `${key}_de` fields that
+ * hold `string[]` instead of `string` (e.g. dungeon `narrative_effects_*`,
+ * encounter `options_*`). Returns `[]` if neither side is present or neither
+ * side is an array. Filters non-string entries defensively.
+ *
+ * Typed against `unknown` to avoid laundering `any` through the helper —
+ * runtime validates array-ness before returning.
+ */
+export function localizedArray(obj: unknown, key: string): string[] {
+  if (!obj || typeof obj !== 'object') return [];
+  const record = obj as Record<string, unknown>;
+  const useDe = localeService.currentLocale !== 'en';
+  const deVal = record[`${key}_de`];
+  const enVal = record[`${key}_en`];
+  const picked = useDe && Array.isArray(deVal) ? deVal : Array.isArray(enVal) ? enVal : [];
+  return picked.filter((v): v is string => typeof v === 'string');
+}
