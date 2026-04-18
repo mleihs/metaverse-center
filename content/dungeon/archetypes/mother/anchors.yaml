@@ -1,0 +1,217 @@
+schema_version: 1
+anchors:
+- id: mother_nest
+  phases:
+    discovery:
+      text_en: A nest. Not built – grown. Woven from cables and tissue and something that might once
+        have been clothing. It is warm. It is sized for one. The shape inside it has not been here
+        for a long time. The nest does not know that yet.
+      text_de: Ein Nest. Nicht gebaut – gewachsen. Gewoben aus Kabeln und Gewebe und etwas, das einmal
+        Kleidung gewesen sein könnte. Es ist warm. Es ist für eine Person bemessen. Die Form darin
+        ist seit langem fort. Das Nest weiß das noch nicht.
+    echo:
+      text_en: '{agent} pauses. Another nest – larger. Room for three. The tissue is fresher here.
+        It pulses.'
+      text_de: '{agent} hält inne. Ein weiteres Nest – größer. Platz für drei. Das Gewebe ist frischer
+        hier. Es pulsiert.'
+    mutation:
+      text_en: The nests are everywhere now. They line the walls, the ceiling, the floor. Some contain
+        shapes – curled, still, breathing. You cannot tell if they are sleeping or being digested.
+        The distinction may not matter here.
+      text_de: Die Nester sind jetzt überall. Sie säumen die Wände, die Decke, den Boden. Einige enthalten
+        Formen – zusammengerollt, still, atmend. Ob sie schlafen oder verdaut werden, lässt sich nicht
+        sagen. Die Unterscheidung ist hier vielleicht bedeutungslos.
+    climax:
+      text_en: 'The final chamber: one nest. Vast. It is not in the room – it IS the room. The walls
+        are woven. The floor gives like skin. And at the center, a hollow, warm and shaped exactly
+        like your party. It has been expecting you.'
+      text_de: 'Die letzte Kammer: ein Nest. Riesig. Es ist nicht im Raum – es IST der Raum. Die Wände
+        sind gewoben. Der Boden gibt nach wie Haut. Und in der Mitte eine Mulde, warm und genau geformt
+        wie eure Gruppe. Es hat euch erwartet.'
+- id: mother_lullaby
+  phases:
+    discovery:
+      text_en: Something is humming. Not the walls – something behind the walls. A lullaby. The melody
+        is incomplete. Three notes, repeating. Your agents recognize it. They should not.
+      text_de: Etwas summt. Nicht die Wände – etwas hinter den Wänden. Ein Schlaflied. Die Melodie
+        ist unvollständig. Drei Noten, wiederholend. Eure Agenten erkennen es. Das sollten sie nicht.
+    echo:
+      text_en: The lullaby again. Five notes now. It has grown. {agent} catches themselves humming
+        along. They stop. The lullaby does not.
+      text_de: Das Schlaflied wieder. Fünf Noten jetzt. Es ist gewachsen. {agent} ertappt sich beim
+        Mitsummen. Sie hören auf. Das Schlaflied nicht.
+    mutation:
+      text_en: The lullaby is a full song now. It fills the corridor. The tissue walls vibrate in
+        harmony. Your agents are moving in rhythm with it – not walking, swaying. The song did not
+        ask permission. Neither did they.
+      text_de: Das Schlaflied ist jetzt ein vollständiges Lied. Es füllt den Korridor. Die Gewebewände
+        vibrieren in Harmonie. Eure Agenten bewegen sich im Rhythmus – nicht gehend, wiegend. Das
+        Lied hat nicht um Erlaubnis gefragt. Sie auch nicht.
+    climax:
+      text_en: Silence. The lullaby stops. For the first time in five rooms, there is no music. The
+        silence is not relief. It is abandonment. The dungeon listens. Pleased.
+      text_de: Stille. Das Schlaflied verstummt. Zum ersten Mal seit fünf Räumen keine Musik. Die
+        Stille ist keine Erleichterung. Sie ist Verlassenwerden. Der Dungeon hört zu. Zufrieden.
+- id: mother_fruit
+  phases:
+    discovery:
+      text_en: A fruit. Growing from the wall where cable and tissue meet. Ripe. The color is the
+        kind of red that exists only in perfect ripeness – the exact moment before it becomes too
+        much.
+      text_de: Eine Frucht. Wachsend aus der Wand, wo Kabel und Gewebe sich treffen. Reif. Die Farbe
+        ist jenes Rot, das nur in vollkommener Reife existiert – der exakte Moment, bevor es zu viel
+        wird.
+    echo:
+      text_en: '{agent} notices another fruit. Larger. The scent reaches them before the sight – warm,
+        sweet, specific. It smells the way comfort tastes.'
+      text_de: '{agent} bemerkt eine weitere Frucht. Größer. Der Duft erreicht sie vor dem Anblick
+        – warm, süß, spezifisch. Er riecht so, wie Geborgenheit schmeckt.'
+    mutation:
+      text_en: Fruit everywhere. The walls heavy with them. Ripe, overripe, splitting. The juice runs
+        down the tissue-walls in rivulets that pulse. The scent is overwhelming. Not unpleasant –
+        overwhelming. The room smells like being wanted.
+      text_de: Früchte überall. Die Wände schwer davon. Reif, überreif, aufplatzend. Der Saft rinnt
+        die Gewebewände hinab in Rinnsalen, die pulsieren. Der Duft ist überwältigend. Nicht unangenehm
+        – überwältigend. Der Raum riecht nach Gewolltsein.
+    climax:
+      text_en: One fruit remains. In the center. It has grown into the shape of a hand – fingers gently
+        curved, palm up. Offering. It will never stop ripening. It will wait forever.
+      text_de: Eine Frucht bleibt. In der Mitte. Sie ist in die Form einer Hand gewachsen – Finger
+        sanft gekrümmt, Handfläche nach oben. Darbietend. Sie wird nie aufhören zu reifen. Sie wird
+        ewig warten.
+- id: mother_cord
+  phases:
+    discovery:
+      text_en: A cable. Or a root. Or a vein – the material does not commit to a category. It runs
+        from the wall into the floor, warm where it touches the ground. It is connected to something
+        below. Something patient.
+      text_de: Ein Kabel. Oder eine Wurzel. Oder eine Ader – das Material legt sich nicht fest. Es
+        verläuft von der Wand in den Boden, warm, wo es den Grund berührt. Es ist mit etwas darunter
+        verbunden. Etwas Geduldiges.
+    echo:
+      text_en: '{agent} steps over the cord. It shifts. Not recoiling – adjusting. Making room. The
+        way a sleeping body shifts to accommodate another.'
+      text_de: '{agent} steigt über die Leitung. Sie bewegt sich. Nicht zurückweichend – anpassend.
+        Platz machend. So wie ein schlafender Körper sich bewegt, um einen anderen aufzunehmen.'
+    mutation:
+      text_en: The cords are a network now. They connect every surface – ceiling to floor, wall to
+        wall. Walking through them is like pushing through a curtain of warm, yielding tendons. They
+        do not resist. They yield. And then they close behind you.
+      text_de: Die Leitungen sind jetzt ein Netzwerk. Sie verbinden jede Fläche – Decke mit Boden,
+        Wand mit Wand. Sich durch sie zu bewegen ist wie das Durchschreiten eines Vorhangs aus warmen,
+        nachgiebigen Sehnen. Sie widerstehen nicht. Sie geben nach. Und dann schließen sie sich hinter
+        euch.
+    climax:
+      text_en: One cord, leading to the center. It is not attached to the wall. It is attached to
+        your party. It has been attached since the second room. None of you noticed. It does not hurt.
+        That is why none of you noticed.
+      text_de: Eine Leitung, führend zur Mitte. Sie ist nicht an der Wand befestigt. Sie ist an eurer
+        Gruppe befestigt. Sie ist seit dem zweiten Raum befestigt. Keiner von euch hat es bemerkt.
+        Es tut nicht weh. Deshalb hat es keiner von euch bemerkt.
+- id: mother_gift
+  phases:
+    discovery:
+      text_en: A package. Small. Wrapped in tissue that might be organic, might be paper – the distinction
+        is failing. There is no sender. There is no recipient. It is warm.
+      text_de: Ein Päckchen. Klein. Eingewickelt in Gewebe, das organisch sein könnte oder Papier
+        – die Unterscheidung versagt. Kein Absender. Kein Empfänger. Es ist warm.
+    echo:
+      text_en: '{agent} finds another package. This one is labeled. The label says their name. The
+        handwriting is meticulous. Careful. The kind of care that takes hours.'
+      text_de: '{agent} findet ein weiteres Päckchen. Dieses ist beschriftet. Das Etikett trägt ihren
+        Namen. Die Handschrift ist akribisch. Sorgfältig. Die Art von Sorgfalt, die Stunden dauert.'
+    mutation:
+      text_en: Gifts line the shelves. Each labeled for a party member. Each wrapped with increasing
+        intimacy – the tissue thinner, the warmth stronger, the names written in smaller, closer letters.
+        Like names spoken while sleeping.
+      text_de: Geschenke säumen die Regale. Jedes für ein Gruppenmitglied beschriftet. Jedes mit zunehmender
+        Intimität eingewickelt – das Gewebe dünner, die Wärme stärker, die Namen in kleinerer, engerer
+        Schrift. Wie Namen, die im Schlaf gesprochen werden.
+    climax:
+      text_en: 'No gift. An empty shelf. A note in the same handwriting: ''You are the gift.'' The
+        tissue walls pulse. The room contracts, gently, like an inhale. It is not letting go.'
+      text_de: 'Kein Geschenk. Ein leeres Regal. Eine Notiz in derselben Handschrift: »Ihr seid das
+        Geschenk.« Die Gewebewände pulsieren. Der Raum zieht sich zusammen, sanft, wie ein Einatmen.
+        Er lässt nicht los.'
+- id: mother_warmth
+  phases:
+    discovery:
+      text_en: A blanket. Draped over a shape that is no longer here. The fabric retains the impression
+        of whoever lay beneath it. It is warm. Not residual warmth. Active warmth. The blanket is
+        still caring for something that left.
+      text_de: Eine Decke. Über eine Form gebreitet, die nicht mehr da ist. Der Stoff behält den Abdruck
+        dessen, der darunter lag. Sie ist warm. Keine Restwärme. Aktive Wärme. Die Decke sorgt noch
+        immer für etwas, das gegangen ist.
+    echo:
+      text_en: '{agent} touches the blanket. It responds. The fabric shifts, wraps around their wrist.
+        Not restraining. Holding. {agent} pulls free. The blanket lets go. Reluctantly.'
+      text_de: '{agent} berührt die Decke. Sie reagiert. Der Stoff bewegt sich, legt sich um ihr Handgelenk.
+        Nicht festhaltend. Haltend. {agent} zieht sich los. Die Decke lässt los. Widerwillig.'
+    mutation:
+      text_en: Blankets everywhere. Draped over every surface. The room is upholstered in care. Each
+        blanket retains a different shape – some small, some curled, some reaching. The room remembers
+        everyone who ever rested here. It will not let that memory cool.
+      text_de: Decken überall. Über jede Fläche gebreitet. Der Raum ist gepolstert mit Fürsorge. Jede
+        Decke behält eine andere Form – manche klein, manche gekrümmt, manche greifend. Der Raum erinnert
+        sich an jeden, der hier je geruht hat. Er wird diese Erinnerung nicht erkalten lassen.
+    climax:
+      text_en: One blanket. It is shaped like your party. Not the impression of bodies – the intention
+        of bodies. It was woven for you. Before you arrived. Before you decided to come.
+      text_de: Eine Decke. Geformt wie eure Gruppe. Nicht der Abdruck von Körpern – die Absicht von
+        Körpern. Sie wurde für euch gewoben. Bevor ihr ankamt. Bevor ihr euch entschieden habt zu
+        kommen.
+- id: mother_mirror
+  phases:
+    discovery:
+      text_en: A pool of liquid on the floor. Still. Reflective. Not water – something thicker. It
+        shows your faces, but the expressions are wrong. In the reflection, you are smiling. None
+        of you are smiling.
+      text_de: Eine Pfütze auf dem Boden. Still. Reflektierend. Kein Wasser – etwas Dickeres. Es zeigt
+        eure Gesichter, aber die Ausdrücke stimmen nicht. In der Spiegelung lächelt ihr. Keiner von
+        euch lächelt.
+    echo:
+      text_en: '{agent} looks into the pool again. Their reflection reaches up. Not threatening. Inviting.
+        The surface tension holds. Barely.'
+      text_de: '{agent} blickt wieder in die Pfütze. Ihr Spiegelbild streckt die Hand aus. Nicht drohend.
+        Einladend. Die Oberflächenspannung hält. Knapp.'
+    mutation:
+      text_en: Pools in every room. The liquid connects them – a circulatory system beneath the floors.
+        The reflections no longer copy you. They anticipate you. They are already in the next room,
+        waiting.
+      text_de: Pfützen in jedem Raum. Die Flüssigkeit verbindet sie – ein Kreislaufsystem unter den
+        Böden. Die Spiegelbilder kopieren euch nicht mehr. Sie antizipieren euch. Sie sind schon im
+        nächsten Raum und warten.
+    climax:
+      text_en: The pool fills the chamber floor. Your reflections stand where you stand. They look
+        content. Settled. They have no intention of leaving. Neither, the dungeon hopes, do you.
+      text_de: Die Pfütze füllt den Kammerboden. Eure Spiegelbilder stehen, wo ihr steht. Sie sehen
+        zufrieden aus. Angekommen. Sie haben nicht vor zu gehen. Ihr, hofft der Dungeon, auch nicht.
+- id: mother_roots
+  phases:
+    discovery:
+      text_en: Roots push through the floor. Not plant roots – something anatomical. They are looking
+        for purchase. For connection. They reach toward the nearest source of warmth. That would be
+        you.
+      text_de: Wurzeln drängen durch den Boden. Keine Pflanzenwurzeln – etwas Anatomisches. Sie suchen
+        Halt. Verbindung. Sie greifen zur nächsten Wärmequelle. Das wärt ihr.
+    echo:
+      text_en: '{agent} notices the roots have thickened. They have found the walls now. Climbing.
+        Where they touch the tissue, new growth blooms – soft, iridescent, beautiful. Nothing this
+        beautiful should grow this fast.'
+      text_de: '{agent} bemerkt, dass die Wurzeln dicker geworden sind. Sie haben jetzt die Wände
+        gefunden. Kletternd. Wo sie das Gewebe berühren, blüht neues Wachstum – weich, schillernd,
+        wunderschön. Nichts so Schönes sollte so schnell wachsen.'
+    mutation:
+      text_en: The roots are the architecture now. Walls, floor, ceiling – all grown, all warm, all
+        gently pulsing. The room is alive. It is breathing around you. Slowly. Patiently. It has been
+        growing toward this moment for a long time.
+      text_de: Die Wurzeln sind jetzt die Architektur. Wände, Boden, Decke – alles gewachsen, alles
+        warm, alles sanft pulsierend. Der Raum lebt. Er atmet um euch herum. Langsam. Geduldig. Er
+        ist schon lange auf diesen Moment zugewachsen.
+    climax:
+      text_en: The roots converge at the center. They have formed something. A cradle. A throne. A
+        mouth. The distinction depends on whether you choose to sit in it. The dungeon has made its
+        preference clear.
+      text_de: Die Wurzeln laufen in der Mitte zusammen. Sie haben etwas geformt. Eine Wiege. Einen
+        Thron. Einen Mund. Die Unterscheidung hängt davon ab, ob ihr euch hineinsetzt. Der Dungeon
+        hat seine Präferenz deutlich gemacht.
