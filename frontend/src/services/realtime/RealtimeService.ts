@@ -22,7 +22,28 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { ChatMessage, EpochChatMessage, PresenceUser } from '../../types/index.js';
 import { agentTypingPhrase } from '../../utils/agent-colors.js';
 import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
+import { captureError } from '../SentryService.js';
 import { supabase } from '../supabase/client.js';
+
+/**
+ * Runtime guard for `PresenceUser`. Supabase's `presenceState()` returns an
+ * unstructured `Record<string, Presence<T>[]>` where `Presence<T>` is an
+ * arbitrary object. The shape we care about is defined by what we send via
+ * `track()` — a shape contract the type system can't enforce across client
+ * boundaries. This guard validates each entry matches `PresenceUser` at the
+ * wire boundary; rejected entries are observed via `captureError` (never
+ * silently dropped) per the W2.3c observability invariant.
+ */
+function isPresenceUser(x: unknown): x is PresenceUser {
+  if (x == null || typeof x !== 'object') return false;
+  const r = x as Record<string, unknown>;
+  return (
+    typeof r.user_id === 'string' &&
+    typeof r.simulation_id === 'string' &&
+    typeof r.simulation_name === 'string' &&
+    typeof r.online_at === 'string'
+  );
+}
 
 class RealtimeServiceImpl {
   // ── Signals ──────────────────────────────────────────
@@ -89,8 +110,16 @@ class RealtimeServiceImpl {
         const state = this._presenceChannel?.presenceState() ?? {};
         const users: PresenceUser[] = [];
         for (const presences of Object.values(state)) {
-          for (const p of presences as unknown as PresenceUser[]) {
-            users.push(p);
+          for (const p of presences) {
+            if (isPresenceUser(p)) {
+              users.push(p);
+            } else {
+              captureError(new Error('Rejected malformed presence entry'), {
+                source: 'RealtimeService.presence.sync',
+                epoch_id: this._currentEpochId ?? 'unknown',
+                presence_keys: Object.keys((p ?? {}) as object).join(','),
+              });
+            }
           }
         }
         this.onlineUsers.value = users;
