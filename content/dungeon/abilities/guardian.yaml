@@ -1,0 +1,65 @@
+schema_version: 1
+abilities:
+- id: guardian_shield
+  name_en: Shield
+  name_de: Schild
+  school: guardian
+  description_en: Protect an ally. Absorb the next condition damage and 50% stress damage for them.
+  description_de: Einen Verbündeten schützen. Absorbiert den nächsten Zustandsschaden und 50% Stressschaden
+    für sie.
+  min_aptitude: 3
+  cooldown: 1
+  effect_type: buff
+  effect_params:
+    buff: shielded
+    absorb_condition: true
+    stress_reduction: 0.5
+    duration: 1
+  is_ultimate: false
+  targets: single_ally
+- id: guardian_reinforce
+  name_en: Reinforce
+  name_de: Verstärken
+  school: guardian
+  description_en: Reinforce the structure. +10 Stability (Tower archetype only).
+  description_de: Das Bauwerk verstärken. +10 Stabilität (nur Turm-Archetyp).
+  min_aptitude: 3
+  cooldown: 2
+  effect_type: utility
+  effect_params:
+    stability_restore: 10
+    archetype_required: The Tower
+  is_ultimate: false
+  targets: self
+- id: guardian_taunt
+  name_en: Taunt
+  name_de: Provokation
+  school: guardian
+  description_en: Force all enemies to target you this round. Gain +20% evasion.
+  description_de: Alle Feinde zwingen, dich in dieser Runde anzugreifen. +20% Ausweichen.
+  min_aptitude: 4
+  cooldown: 2
+  effect_type: buff
+  effect_params:
+    buff: taunting
+    force_target_self: true
+    evasion_bonus: 20
+    duration: 1
+  is_ultimate: false
+  targets: self
+- id: guardian_fortify
+  name_en: Fortify
+  name_de: Befestigen
+  school: guardian
+  description_en: Brace for impact. Reduce all incoming condition damage by 1 step for 2 rounds.
+  description_de: Auf Einschlag vorbereiten. Reduziert eingehenden Zustandsschaden um 1 Stufe für
+    2 Runden.
+  min_aptitude: 5
+  cooldown: 3
+  effect_type: buff
+  effect_params:
+    buff: fortified
+    damage_reduction: 1
+    duration: 2
+  is_ultimate: false
+  targets: self

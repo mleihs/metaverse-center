@@ -1,0 +1,46 @@
+schema_version: 1
+abilities:
+- id: propagandist_inspire
+  name_en: Inspire
+  name_de: Inspirieren
+  school: propagandist
+  description_en: Rally an ally. Heal 120 stress.
+  description_de: Einen Verbündeten aufmuntern. Heilt 120 Stress.
+  min_aptitude: 3
+  cooldown: 1
+  effect_type: heal_stress
+  effect_params:
+    stress_heal: 120
+  is_ultimate: false
+  targets: single_ally
+- id: propagandist_demoralize
+  name_en: Demoralize
+  name_de: Demoralisieren
+  school: propagandist
+  description_en: Shatter an enemy's confidence. Inflict stress damage and reduce their attack power
+    by 1 for 2 rounds.
+  description_de: Das Vertrauen eines Feindes erschüttern. Verursacht Stressschaden und reduziert
+    seine Angriffskraft um 1 für 2 Runden.
+  min_aptitude: 4
+  cooldown: 2
+  effect_type: stress_damage
+  effect_params:
+    stress_power: 5
+    debuff: demoralized
+    attack_reduction: 1
+    duration: 2
+  is_ultimate: false
+  targets: single_enemy
+- id: propagandist_rally
+  name_en: Rally
+  name_de: Sammeln
+  school: propagandist
+  description_en: Inspire the entire party. Heal 60 stress for all allies.
+  description_de: Die gesamte Gruppe inspirieren. Heilt 60 Stress für alle Verbündeten.
+  min_aptitude: 5
+  cooldown: 3
+  effect_type: heal_stress
+  effect_params:
+    stress_heal: 60
+  is_ultimate: false
+  targets: all_allies

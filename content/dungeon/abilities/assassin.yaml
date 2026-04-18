@@ -1,0 +1,46 @@
+schema_version: 1
+abilities:
+- id: assassin_precision_strike
+  name_en: Precision Strike
+  name_de: Präzisionsschlag
+  school: assassin
+  description_en: A targeted attack. Higher hit chance (+10%) than basic attack.
+  description_de: Ein gezielter Angriff. Höhere Trefferchance (+10%) als ein normaler Angriff.
+  min_aptitude: 3
+  cooldown: 0
+  effect_type: damage
+  effect_params:
+    hit_bonus: 10
+    power: 5
+  is_ultimate: false
+  targets: single_enemy
+- id: assassin_exploit
+  name_en: Exploit Weakness
+  name_de: Schwäche ausnutzen
+  school: assassin
+  description_en: Deal +1 damage step to an analyzed or debuffed enemy.
+  description_de: +1 Schadensstufe gegen einen analysierten oder geschwächten Feind.
+  min_aptitude: 4
+  cooldown: 1
+  effect_type: damage
+  effect_params:
+    power: 7
+    bonus_vs_debuffed: 1
+  is_ultimate: false
+  targets: single_enemy
+- id: assassin_ambush_strike
+  name_en: Ambush Strike
+  name_de: Hinterhaltschlag
+  school: assassin
+  description_en: Devastating attack from the shadows. Only usable in first round of combat or at
+    Visibility 0.
+  description_de: Verheerender Angriff aus dem Schatten. Nur in der ersten Kampfrunde oder bei Sicht
+    0 einsetzbar.
+  min_aptitude: 5
+  cooldown: 4
+  effect_type: damage
+  effect_params:
+    power: 9
+    requires_first_round_or_dark: true
+  is_ultimate: false
+  targets: single_enemy
