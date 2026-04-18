@@ -1,0 +1,182 @@
+schema_version: 1
+enemies:
+- id: awakening_echo_fragment
+  name_en: Echo Fragment
+  name_de: Echofragment
+  condition_threshold: 1
+  stress_resistance: 30
+  threat_level: minion
+  attack_aptitude: infiltrator
+  attack_power: 2
+  stress_attack_power: 4
+  telegraphed_intent: true
+  evasion: 45
+  resistances:
+  - assassin
+  vulnerabilities:
+  - spy
+  action_weights:
+    stress_attack: 50
+    evade: 30
+    resonate: 10
+    ambient: 10
+  special_abilities:
+  - resonate
+  description_en: A memory of a memory. It does not have content – it has the shape where content
+    was. {agent} recognizes the absence, not the thing.
+  description_de: Eine Erinnerung an eine Erinnerung. Sie hat keinen Inhalt – sie hat die Form, wo
+    Inhalt war. {agent} erkennt die Abwesenheit, nicht das Ding.
+  ambient_text_en:
+  - The fragment flickers. For a moment it wears {agent}'s posture.
+  - Something familiar in the echo. Not the memory – the act of remembering.
+  ambient_text_de:
+  - Das Fragment flackert. Einen Moment lang trägt es {agent}s Haltung.
+  - Etwas Vertrautes im Echo. Nicht die Erinnerung – der Akt des Erinnerns.
+- id: awakening_deja_vu_phantom
+  name_en: Déjà-vu Phantom
+  name_de: Déjà-vu-Phantom
+  condition_threshold: 2
+  stress_resistance: 80
+  threat_level: standard
+  attack_aptitude: propagandist
+  attack_power: 3
+  stress_attack_power: 6
+  telegraphed_intent: true
+  evasion: 20
+  resistances:
+  - saboteur
+  vulnerabilities:
+  - propagandist
+  - spy
+  action_weights:
+    stress_attack: 40
+    recognition: 30
+    attack: 20
+    ambient: 10
+  special_abilities:
+  - recognition
+  description_en: It is not here for the first time. It has always been in this room, waiting for
+    the party to arrive again. Its movements are half a second ahead of expectation – as if the party
+    remembers fighting it before the fight has begun.
+  description_de: Es ist nicht zum ersten Mal hier. Es war immer in diesem Raum und wartete darauf,
+    dass die Gruppe wieder ankommt. Seine Bewegungen sind eine halbe Sekunde vor der Erwartung – als
+    erinnerte sich die Gruppe an den Kampf, bevor er begonnen hat.
+  ambient_text_en:
+  - The phantom repeats a gesture {agent} has not yet made.
+  - Déjà vu. The phantom was already there. It was always already there.
+  ambient_text_de:
+  - Das Phantom wiederholt eine Geste, die {agent} noch nicht gemacht hat.
+  - Déjà vu. Das Phantom war bereits da. Es war immer bereits da.
+- id: awakening_consciousness_leech
+  name_en: Consciousness Leech
+  name_de: Bewusstseinsegel
+  condition_threshold: 2
+  stress_resistance: 60
+  threat_level: standard
+  attack_aptitude: spy
+  attack_power: 4
+  stress_attack_power: 5
+  telegraphed_intent: true
+  evasion: 15
+  resistances:
+  - propagandist
+  vulnerabilities:
+  - guardian
+  - assassin
+  action_weights:
+    attack: 40
+    drain_awareness: 25
+    stress_attack: 25
+    ambient: 10
+  special_abilities:
+  - drain_awareness
+  description_en: Watts was right about this one. It functions perfectly without self-awareness –
+    a philosophical zombie made operational. It does not think. It processes. And it is faster than
+    anything that pauses to reflect.
+  description_de: Watts hatte Recht, was dieses betrifft. Es funktioniert einwandfrei ohne Selbstbewusstsein
+    – ein philosophischer Zombie, operational. Es denkt nicht. Es verarbeitet. Und es ist schneller
+    als alles, was innehält, um nachzudenken.
+  ambient_text_en:
+  - The leech observes {agent}. Not with curiosity – with efficiency.
+  - It does not know it exists. This is its advantage.
+  ambient_text_de:
+  - Der Egel beobachtet {agent}. Nicht mit Neugier – mit Effizienz.
+  - Es weiß nicht, dass es existiert. Das ist sein Vorteil.
+- id: awakening_repressed_sentinel
+  name_en: Repressed Sentinel
+  name_de: Verdrängungs­wächter
+  condition_threshold: 4
+  stress_resistance: 100
+  threat_level: elite
+  attack_aptitude: guardian
+  attack_power: 5
+  stress_attack_power: 7
+  telegraphed_intent: true
+  evasion: 10
+  resistances:
+  - spy
+  - infiltrator
+  vulnerabilities:
+  - propagandist
+  action_weights:
+    attack: 35
+    suppress: 25
+    stress_attack: 20
+    defend: 10
+    ambient: 10
+  special_abilities:
+  - suppress
+  description_en: The sentinel guards the threshold between conscious and unconscious. Ishiguro's
+    mist made guardian – it exists to ensure the buried stays buried. It does not hate the party.
+    It pities their need to know.
+  description_de: Der Wächter hütet die Schwelle zwischen Bewusstem und Unbewusstem. Ishiguros Nebel,
+    zum Wächter geworden – er existiert, um sicherzustellen, dass das Vergrabene begraben bleibt.
+    Er hasst die Gruppe nicht. Er bedauert ihr Bedürfnis zu wissen.
+  ambient_text_en:
+  - The sentinel stands between {agent} and a memory {agent} cannot name.
+  - It makes no sound. Repression is always quiet.
+  ambient_text_de:
+  - Der Wächter steht zwischen {agent} und einer Erinnerung, die {agent} nicht benennen kann.
+  - Er gibt keinen Laut. Verdrängung ist immer still.
+- id: awakening_the_repressed
+  name_en: The Repressed
+  name_de: Das Verdrängte
+  condition_threshold: 6
+  stress_resistance: 120
+  threat_level: boss
+  attack_aptitude: guardian
+  attack_power: 6
+  stress_attack_power: 9
+  telegraphed_intent: false
+  evasion: 15
+  resistances:
+  - assassin
+  - saboteur
+  vulnerabilities:
+  - spy
+  - propagandist
+  action_weights:
+    attack: 30
+    resurface: 25
+    stress_attack: 25
+    suppress: 10
+    ambient: 10
+  special_abilities:
+  - resurface
+  - suppress
+  description_en: 'A memory so painful it was buried by consensus. Not by one agent – by all of them
+    simultaneously. It is not a monster. It is the truth that was too heavy to carry and too important
+    to destroy. Jung''s encounter with the Self, Tarkovsky''s Room: it grants your true desire, not
+    your stated one.'
+  description_de: 'Eine Erinnerung so schmerzhaft, dass sie durch Konsens begraben wurde. Nicht von
+    einem Agenten – von allen gleichzeitig. Es ist kein Monster. Es ist die Wahrheit, die zu schwer
+    war, um sie zu tragen, und zu wichtig, um sie zu zerstören. Jungs Begegnung mit dem Selbst, Tarkowskis
+    Raum: er gewährt den wahren Wunsch, nicht den ausgesprochenen.'
+  ambient_text_en:
+  - The Repressed does not attack. It surfaces. The damage is recognition.
+  - It has been here the entire dungeon. In every room, behind every memory.
+  - '{agent} realizes: they knew. They always knew. They chose not to know.'
+  ambient_text_de:
+  - Das Verdrängte greift nicht an. Es taucht auf. Der Schaden ist Wiedererkennung.
+  - Es war das gesamte Dungeon hier. In jedem Raum, hinter jeder Erinnerung.
+  - '{agent} erkennt: sie wussten es. Sie wussten es immer. Sie entschieden sich, es nicht zu wissen.'

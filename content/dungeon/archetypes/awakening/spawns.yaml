@@ -1,0 +1,28 @@
+schema_version: 1
+spawns:
+  awakening_echo_drift_spawn:
+  - template_id: awakening_echo_fragment
+    count: 2
+  awakening_deja_vu_patrol_spawn:
+  - template_id: awakening_deja_vu_phantom
+    count: 1
+  - template_id: awakening_echo_fragment
+    count: 1
+  awakening_leech_hunt_spawn:
+  - template_id: awakening_consciousness_leech
+    count: 1
+  - template_id: awakening_echo_fragment
+    count: 1
+  awakening_deep_mind_spawn:
+  - template_id: awakening_consciousness_leech
+    count: 1
+  - template_id: awakening_deja_vu_phantom
+    count: 1
+  awakening_sentinel_spawn:
+  - template_id: awakening_repressed_sentinel
+    count: 1
+  - template_id: awakening_echo_fragment
+    count: 1
+  awakening_rest_ambush_spawn:
+  - template_id: awakening_echo_fragment
+    count: 1

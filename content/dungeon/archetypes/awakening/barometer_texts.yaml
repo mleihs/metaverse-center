@@ -1,0 +1,24 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The rooms are quiet in a way that suggests sleep – not absence but suspension. The walls
+    register the party's presence the way a dreamer registers a distant sound.
+  text_de: Die Räume sind still auf eine Art, die Schlaf nahelegt – nicht Abwesenheit, sondern Suspension.
+    Die Wände registrieren die Präsenz des Trupps wie ein Träumender ein fernes Geräusch registriert.
+- tier: 1
+  text_en: Something has shifted. The corridors respond a fraction faster now – lights adjust before
+    the party rounds a corner, doors settle into frames as if preparing. The dungeon is stirring.
+  text_de: Etwas hat sich verschoben. Die Korridore reagieren einen Bruchteil schneller jetzt – Lichter
+    passen sich an, bevor der Trupp um eine Ecke biegt, Türen fügen sich in Rahmen, als bereiteten
+    sie sich vor. Der Dungeon erwacht.
+- tier: 2
+  text_en: The dungeon is watching. Not with eyes – with attention. The geometry of each room seems
+    arranged for observation. The party is not exploring. The party is being perceived.
+  text_de: Der Dungeon beobachtet. Nicht mit Augen – mit Aufmerksamkeit. Die Geometrie jedes Raums
+    wirkt wie für Beobachtung arrangiert. Der Trupp erkundet nicht. Der Trupp wird wahrgenommen.
+- tier: 3
+  text_en: The dungeon remembers. Every room the party has entered, every choice they have made –
+    the walls hold it all, and they are no longer passive. What was asleep is awake. What is awake
+    is thinking.
+  text_de: Der Dungeon erinnert sich. Jeden Raum, den der Trupp betreten hat, jede Entscheidung –
+    die Wände halten alles, und sie sind nicht mehr passiv. Was schlief, ist wach. Was wach ist, denkt.
