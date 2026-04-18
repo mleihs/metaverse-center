@@ -1,0 +1,206 @@
+schema_version: 1
+anchors:
+- id: awakening_mirror_shard
+  phases:
+    discovery:
+      text_en: A shard of mirror, propped against the wall. It reflects the room – but the reflection
+        is a fraction of a second ahead. In the glass, the party has already moved to where they are
+        about to stand.
+      text_de: Eine Spiegelscherbe, an die Wand gelehnt. Sie reflektiert den Raum – aber die Spiegelung
+        ist einen Sekundenbruchteil voraus. Im Glas hat der Trupp sich bereits bewegt, dorthin, wo
+        er gleich stehen wird.
+    echo:
+      text_en: '{agent} looks into the shard. The shard looks back. The reflection is attentive –
+        not passive, not copying. Observing.'
+      text_de: '{agent} blickt in die Scherbe. Die Scherbe blickt zurück. Die Reflexion ist aufmerksam
+        – nicht passiv, nicht kopierend. Beobachtend.'
+    mutation:
+      text_en: The shard reflects a room that does not match this one. Same geometry, different contents.
+        The other room is furnished with choices the party did not make. It is more complete. It looks
+        inhabited.
+      text_de: Die Scherbe reflektiert einen Raum, der nicht mit diesem übereinstimmt. Selbe Geometrie,
+        anderer Inhalt. Der andere Raum ist eingerichtet mit Entscheidungen, die der Trupp nicht getroffen
+        hat. Er ist vollständiger. Er wirkt bewohnt.
+    climax:
+      text_en: The shard reflects everything. Every version of this room – visited, unvisited, imagined,
+        remembered. The party is in all of them. The party is all of them.
+      text_de: Die Scherbe reflektiert alles. Jede Version dieses Raums – besucht, unbesucht, vorgestellt,
+        erinnert. Der Trupp ist in allen. Der Trupp ist alle.
+- id: awakening_philemon_feather
+  phases:
+    discovery:
+      text_en: A feather. Iridescent, shifting between colors that have no names in any index. It
+        does not belong to any creature the party has catalogued. It belongs to something that has
+        not been observed yet – only dreamt.
+      text_de: Eine Feder. Schillernd, wechselnd zwischen Farben, die in keinem Index Namen haben.
+        Sie gehört keinem Wesen, das der Trupp katalogisiert hat. Sie gehört etwas, das noch nicht
+        beobachtet wurde – nur geträumt.
+    echo:
+      text_en: '{agent} picks up the feather. A thought arrives – unbidden, fully formed, in a voice
+        that is not {agent}''s own. The thought is a stranger in the room. It does not leave.'
+      text_de: '{agent} hebt die Feder auf. Ein Gedanke kommt – ungerufen, vollständig geformt, in
+        einer Stimme, die nicht {agent}s eigene ist. Der Gedanke ist ein Fremder im Raum. Er geht
+        nicht.'
+    mutation:
+      text_en: The feather writes. Not with ink – with attention. Where it rests, the surface remembers
+        things that have not happened yet. The writing is precise. The writing is in the party's hand.
+      text_de: Die Feder schreibt. Nicht mit Tinte – mit Aufmerksamkeit. Wo sie liegt, erinnert die
+        Fläche sich an Dinge, die noch nicht geschehen sind. Die Schrift ist präzise. Die Schrift
+        ist in der Hand des Trupps.
+    climax:
+      text_en: The feather is the party's own thought, wearing a body it borrowed from outside. The
+        voice was always theirs. The stranger was always home.
+      text_de: Die Feder ist der eigene Gedanke des Trupps, der einen Körper trägt, den er sich von
+        außen geliehen hat. Die Stimme war immer ihre. Der Fremde war immer zuhause.
+- id: awakening_madeleine
+  phases:
+    discovery:
+      text_en: 'A small object on a shelf. Unremarkable in form – but touching it triggers something
+        involuntary: a sensation that does not belong to this room, from a time the party has not
+        lived. The object is a key to a lock that is not here.'
+      text_de: 'Ein kleines Objekt auf einem Regal. Unscheinbar in der Form – aber es zu berühren
+        löst etwas Unwillkürliches aus: eine Empfindung, die nicht zu diesem Raum gehört, aus einer
+        Zeit, die der Trupp nicht gelebt hat. Das Objekt ist ein Schlüssel zu einem Schloss, das nicht
+        hier ist.'
+    echo:
+      text_en: '{agent} holds the object again. A memory surfaces – not from {agent}''s history. From
+        the dungeon''s. The memory is warm and specific and does not belong here.'
+      text_de: '{agent} hält das Objekt erneut. Eine Erinnerung taucht auf – nicht aus {agent}s Geschichte.
+        Aus der des Dungeons. Die Erinnerung ist warm und spezifisch und gehört nicht hierher.'
+    mutation:
+      text_en: The object has changed texture. It feels like every significant thing the party has
+        ever touched – simultaneously. The sensation accumulates. The memory is not playback. It is
+        reconstruction, and each touch rebuilds it differently.
+      text_de: Das Objekt hat seine Textur verändert. Es fühlt sich an wie jedes bedeutsame Ding,
+        das der Trupp je berührt hat – gleichzeitig. Die Empfindung akkumuliert. Die Erinnerung ist
+        keine Wiedergabe. Sie ist Rekonstruktion, und jede Berührung baut sie anders auf.
+    climax:
+      text_en: The object dissolves on contact. What it held was never inside it. It was inside the
+        party – waiting for a shape to give it permission to surface.
+      text_de: Das Objekt löst sich bei Berührung auf. Was es hielt, war nie in ihm. Es war im Trupp
+        – wartend auf eine Form, die ihm Erlaubnis gab aufzutauchen.
+- id: awakening_two_clocks
+  phases:
+    discovery:
+      text_en: Two clocks on the wall. They show different times. Both are running. Both are precise.
+        Neither is wrong. The room contains two versions of now, and they disagree.
+      text_de: Zwei Uhren an der Wand. Sie zeigen verschiedene Zeiten. Beide laufen. Beide sind präzise.
+        Keine ist falsch. Der Raum enthält zwei Versionen von Jetzt, und sie widersprechen sich.
+    echo:
+      text_en: '{agent} checks both clocks. The gap between them has widened. The left one runs at
+        the pace of observation. The right one runs at the pace of experience. They are separating.'
+      text_de: '{agent} prüft beide Uhren. Der Abstand zwischen ihnen hat sich vergrößert. Die linke
+        läuft im Tempo der Beobachtung. Die rechte im Tempo der Erfahrung. Sie trennen sich.'
+    mutation:
+      text_en: The outer clock has stopped. The inner clock accelerates – minutes condensing into
+        seconds, hours into moments. The room is experiencing itself faster than the party can observe
+        it.
+      text_de: Die äußere Uhr ist stehen geblieben. Die innere Uhr beschleunigt – Minuten verdichten
+        sich zu Sekunden, Stunden zu Momenten. Der Raum erlebt sich selbst schneller, als der Trupp
+        ihn beobachten kann.
+    climax:
+      text_en: 'Both clocks show the same time. The party cannot tell which one yielded. The two versions
+        of now have agreed. What they agreed on is: the party was always here.'
+      text_de: 'Beide Uhren zeigen dieselbe Zeit. Der Trupp kann nicht sagen, welche nachgegeben hat.
+        Die zwei Versionen von Jetzt haben sich geeinigt. Worauf sie sich geeinigt haben: der Trupp
+        war immer hier.'
+- id: awakening_cave_shadow
+  phases:
+    discovery:
+      text_en: A shadow on the wall. It moves independently of any light source – not flickering,
+        but gesturing. The shadow is describing something the party cannot see. It has been at this
+        for a long time.
+      text_de: Ein Schatten an der Wand. Er bewegt sich unabhängig von jeder Lichtquelle – nicht flackernd,
+        sondern gestikulierend. Der Schatten beschreibt etwas, das der Trupp nicht sehen kann. Er
+        tut das seit langem.
+    echo:
+      text_en: '{agent} steps between the shadow and the wall. The shadow does not change. {agent}
+        is not casting it. Something else is. Something behind the light.'
+      text_de: '{agent} tritt zwischen den Schatten und die Wand. Der Schatten verändert sich nicht.
+        {agent} wirft ihn nicht. Etwas anderes tut es. Etwas hinter dem Licht.'
+    mutation:
+      text_en: The shadow shows events from other rooms. Encounters the party has not yet reached,
+        doors they have not yet opened. The shadow knows the dungeon the way a dreamer knows the dream
+        – from above, all at once, without sequence.
+      text_de: Der Schatten zeigt Ereignisse aus anderen Räumen. Begegnungen, die der Trupp noch nicht
+        erreicht hat, Türen, die er noch nicht geöffnet hat. Der Schatten kennt den Dungeon, wie ein
+        Träumender den Traum kennt – von oben, alles gleichzeitig, ohne Reihenfolge.
+    climax:
+      text_en: The shadow is the party. Projected not by light but by awareness. The wall was never
+        a surface. It was always a mirror facing inward.
+      text_de: Der Schatten ist der Trupp. Projiziert nicht von Licht, sondern von Bewusstsein. Die
+        Wand war nie eine Fläche. Sie war immer ein Spiegel, der nach innen zeigt.
+- id: awakening_empathy_box
+  phases:
+    discovery:
+      text_en: A device with two handles, mounted on a pedestal. The handles are smooth from use.
+        A residue of warmth clings to the grips – not from heat but from contact. Someone held on.
+        Recently.
+      text_de: Ein Gerät mit zwei Griffen, auf einem Podest montiert. Die Griffe sind glatt vom Gebrauch.
+        Ein Rest von Wärme haftet an den Griffen – nicht von Hitze, sondern von Berührung. Jemand
+        hat sich festgehalten. Kürzlich.
+    echo:
+      text_en: '{agent} touches the handles. For a moment: every agent''s perception, simultaneously.
+        The room seen from four angles. The moment passes. The memory does not.'
+      text_de: '{agent} berührt die Griffe. Für einen Moment: die Wahrnehmung jedes Agenten, gleichzeitig.
+        Der Raum aus vier Blickwinkeln gesehen. Der Moment vergeht. Die Erinnerung nicht.'
+    mutation:
+      text_en: The handles are warm. Someone else is grasping them from the other side – from inside
+        the device, from inside the connection itself. The grip is patient. It has been waiting.
+      text_de: Die Griffe sind warm. Jemand anderes hält sie von der anderen Seite – aus dem Inneren
+        des Geräts, aus dem Inneren der Verbindung selbst. Der Griff ist geduldig. Er hat gewartet.
+    climax:
+      text_en: The device is empty. No mechanism inside. The shared perception no longer requires
+        hardware. It requires only the party. The connection was never in the box.
+      text_de: Das Gerät ist leer. Kein Mechanismus darin. Die geteilte Wahrnehmung benötigt keine
+        Apparatur mehr. Sie benötigt nur den Trupp. Die Verbindung war nie in der Box.
+- id: awakening_unicorn_skull
+  phases:
+    discovery:
+      text_en: A skull. Bone-white, smooth, from no creature in any catalogue. The cranium is shaped
+        for a brain larger than biology typically permits. It is heavy with something that is not
+        mass.
+      text_de: Ein Schädel. Knochenweiß, glatt, von keiner Kreatur in irgendeinem Katalog. Das Cranium
+        ist geformt für ein Gehirn größer als Biologie typischerweise erlaubt. Er ist schwer von etwas,
+        das nicht Masse ist.
+    echo:
+      text_en: '{agent} holds the skull. Images leak through – not memories but impressions. Scenes
+        without context, emotions without events. Old dreams, stored in bone.'
+      text_de: '{agent} hält den Schädel. Bilder sickern durch – keine Erinnerungen, sondern Eindrücke.
+        Szenen ohne Kontext, Emotionen ohne Ereignisse. Alte Träume, gespeichert in Knochen.'
+    mutation:
+      text_en: The skull is heavier. It has absorbed the party's own dreams – not by force but by
+        proximity. The bone is a medium. It stores what the waking mind discards.
+      text_de: Der Schädel ist schwerer. Er hat die Träume des Trupps absorbiert – nicht mit Gewalt,
+        sondern durch Nähe. Der Knochen ist ein Medium. Er speichert, was der wache Verstand verwirft.
+    climax:
+      text_en: The skull hums. Not with sound – with recognition. It knows the party. The party's
+        own unconscious, given a shape that outlasts forgetting.
+      text_de: Der Schädel summt. Nicht mit Klang – mit Wiedererkennung. Er kennt den Trupp. Das eigene
+        Unbewusste des Trupps, dem eine Form gegeben wurde, die das Vergessen überdauert.
+- id: awakening_doorkeeper
+  phases:
+    discovery:
+      text_en: A figure beside an open door. The figure does not block entry – it simply stands, patient,
+        as if arrival were the only purpose of waiting. The door was always open. The figure has never
+        closed it.
+      text_de: Eine Gestalt neben einer offenen Tür. Die Gestalt versperrt nicht den Eintritt – sie
+        steht einfach, geduldig, als wäre Ankunft der einzige Zweck des Wartens. Die Tür war immer
+        offen. Die Gestalt hat sie nie geschlossen.
+    echo:
+      text_en: '{agent} addresses the figure. It does not respond with words – it responds with stillness.
+        The kind of stillness that is itself an answer.'
+      text_de: '{agent} spricht die Gestalt an. Sie antwortet nicht mit Worten – sie antwortet mit
+        Stille. Die Art von Stille, die selbst eine Antwort ist.'
+    mutation:
+      text_en: The figure has aged. The door has not. The figure has been waiting for the party's
+        entire existence. The patience is not servitude. It is faith.
+      text_de: Die Gestalt ist gealtert. Die Tür nicht. Die Gestalt hat auf den Trupp gewartet für
+        dessen gesamte Existenz. Die Geduld ist keine Knechtschaft. Sie ist Glaube.
+    climax:
+      text_en: The figure steps aside. There was never a barrier. The door was made for the party
+        alone. The only thing between the party and the door was the belief that something stood between
+        them.
+      text_de: Die Gestalt tritt zur Seite. Es gab nie eine Barriere. Die Tür wurde nur für den Trupp
+        gemacht. Das Einzige zwischen dem Trupp und der Tür war der Glaube, dass etwas dazwischen
+        stand.

@@ -1,0 +1,209 @@
+schema_version: 1
+banter:
+- id: ab_01
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The room is slightly wrong. Not broken – shifted. As if it was assembled from a description,
+    not a blueprint.
+  text_de: Der Raum ist leicht falsch. Nicht kaputt – verschoben. Als wäre er aus einer Beschreibung
+    zusammengesetzt, nicht aus einem Bauplan.
+  awareness_tier: 0
+- id: ab_02
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Something in the architecture anticipates the party. The door was open before they reached
+    it.
+  text_de: Etwas in der Architektur nimmt die Gruppe vorweg. Die Tür war offen, bevor sie sie erreichten.
+  awareness_tier: 0
+- id: ab_03
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The corridor is familiar. {agent} has never been here. Both of these are true.
+  text_de: Der Korridor ist vertraut. {agent} war nie hier. Beides stimmt.
+  awareness_tier: 1
+- id: ab_04
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Déjà vu. The room adjusts as the party enters, settling into a configuration that almost
+    matches a memory.
+  text_de: Déjà vu. Der Raum justiert sich, als die Gruppe eintritt, und lässt sich in eine Konfiguration
+    fallen, die fast einer Erinnerung entspricht.
+  awareness_tier: 1
+- id: ab_05
+  trigger: room_entered
+  personality_filter: {}
+  text_en: '{agent} enters the room. The room recognizes {agent}. This is not a metaphor.'
+  text_de: '{agent} betritt den Raum. Der Raum erkennt {agent}. Das ist keine Metapher.'
+  awareness_tier: 2
+- id: ab_06
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The dungeon's consciousness is perceptible here. Not hostile. Not welcoming. Attentive.
+  text_de: Das Bewusstsein des Dungeons ist hier wahrnehmbar. Nicht feindlich. Nicht einladend. Aufmerksam.
+  awareness_tier: 2
+- id: ab_07
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The room turns – left, or the party turned, or the concept of turning shifted. Certainty
+    is expensive here.
+  text_de: Der Raum biegt ab – links, oder die Gruppe bog ab, oder der Begriff des Abbiegens verschob
+    sich. Gewissheit ist hier teuer.
+  awareness_tier: 3
+- id: ab_08
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Three agents. Three perceptions. None of them see the same room. All of them see the truth.
+  text_de: Drei Agenten. Drei Wahrnehmungen. Keiner sieht denselben Raum. Alle sehen die Wahrheit.
+  awareness_tier: 3
+- id: ab_09
+  trigger: combat_start
+  personality_filter: {}
+  text_en: Something surfaces. Not from the shadows – from the periphery of recognition.
+  text_de: Etwas taucht auf. Nicht aus den Schatten – aus der Peripherie der Wiedererkennung.
+  awareness_tier: 0
+- id: ab_10
+  trigger: combat_start
+  personality_filter: {}
+  text_en: The enemy is familiar. The enemy has always been familiar. The party fights a recognition
+    they cannot place.
+  text_de: Der Feind ist vertraut. Der Feind war immer vertraut. Die Gruppe bekämpft eine Wiedererkennung,
+    die sie nicht einordnen kann.
+  awareness_tier: 2
+- id: ab_11
+  trigger: combat_victory
+  personality_filter: {}
+  text_en: The memory disperses. Not destroyed – returned to the substrate. The dungeon absorbs what
+    the party released.
+  text_de: Die Erinnerung zerstreut sich. Nicht zerstört – zum Substrat zurückgekehrt. Das Dungeon
+    absorbiert, was die Gruppe freigesetzt hat.
+  awareness_tier: 0
+- id: ab_12
+  trigger: combat_victory
+  personality_filter: {}
+  text_en: Victory. But the gap where the enemy was? The gap is informative.
+  text_de: Sieg. Aber die Lücke, wo der Feind war? Die Lücke ist informativ.
+  awareness_tier: 2
+- id: ab_13
+  trigger: loot_found
+  personality_filter: {}
+  text_en: Consciousness, solidified. The artifact holds what the dungeon chose to preserve.
+  text_de: Bewusstsein, verfestigt. Das Artefakt bewahrt, was das Dungeon zu bewahren wählte.
+  awareness_tier: 0
+- id: ab_14
+  trigger: loot_found
+  personality_filter: {}
+  text_en: The object recognizes {agent} before {agent} recognizes the object. The transaction is
+    already complete.
+  text_de: Das Objekt erkennt {agent}, bevor {agent} das Objekt erkennt. Die Transaktion ist bereits
+    abgeschlossen.
+  awareness_tier: 2
+- id: ab_15
+  trigger: rest_start
+  personality_filter: {}
+  text_en: A pause in the consciousness. The dungeon rests when the party rests. The observer and
+    the observed share the silence.
+  text_de: Eine Pause im Bewusstsein. Das Dungeon ruht, wenn die Gruppe ruht. Der Beobachter und das
+    Beobachtete teilen die Stille.
+  awareness_tier: 0
+- id: ab_16
+  trigger: rest_start
+  personality_filter: {}
+  text_en: 'Rest. The awareness recedes like a tide. Lethe''s gift: to forget the surface is to see
+    the depth.'
+  text_de: 'Rast. Das Bewusstsein zieht sich zurück wie eine Gezeit. Lethes Gabe: die Oberfläche zu
+    vergessen heißt, die Tiefe zu sehen.'
+  awareness_tier: 2
+- id: ab_17
+  trigger: stirring
+  personality_filter: {}
+  text_en: Something shifts. Not the room. Not {agent}. The relationship between them.
+  text_de: Etwas verschiebt sich. Nicht der Raum. Nicht {agent}. Die Beziehung zwischen ihnen.
+  awareness_tier: 1
+- id: ab_18
+  trigger: liminal
+  personality_filter: {}
+  text_en: The threshold. The dungeon's consciousness is no longer background noise – it is a presence
+    with opinions about being perceived.
+  text_de: Die Schwelle. Das Bewusstsein des Dungeons ist nicht mehr Hintergrundrauschen – es ist
+    eine Anwesenheit mit Meinungen darüber, wahrgenommen zu werden.
+  awareness_tier: 2
+- id: ab_19
+  trigger: lucid
+  personality_filter: {}
+  text_en: Lucid. The party knows it is inside consciousness. The environment responds to thought.
+    The response is not always what was intended.
+  text_de: Luzid. Die Gruppe weiß, dass sie sich im Bewusstsein befindet. Die Umgebung reagiert auf
+    Gedanken. Die Reaktion ist nicht immer, was beabsichtigt war.
+  awareness_tier: 2
+- id: ab_20
+  trigger: dissolution
+  personality_filter: {}
+  text_en: Individual identity softens. The party perceives as one. Every agent sees through every
+    other agent's eyes. Sturgeon's bleshing. The moment will pass. The memory of it will not.
+  text_de: Individuelle Identität wird weich. Die Gruppe nimmt als Einheit wahr. Jeder Agent sieht
+    durch die Augen jedes anderen Agenten. Sturgeons Bleshing. Der Moment wird vergehen. Die Erinnerung
+    daran nicht.
+  awareness_tier: 3
+- id: ab_21
+  trigger: awakened
+  personality_filter: {}
+  text_en: Awareness 100. The dungeon is no longer a place. It is a state. The party is no longer
+    navigating – they are being thought.
+  text_de: Bewusstsein 100. Das Dungeon ist kein Ort mehr. Es ist ein Zustand. Die Gruppe navigiert
+    nicht mehr – sie wird gedacht.
+  awareness_tier: 3
+- id: ab_22
+  trigger: deja_vu
+  personality_filter: {}
+  text_en: The memory changes. Not dramatically – a detail. The window was on the left. Now it is
+    on the right. Neither is wrong.
+  text_de: Die Erinnerung ändert sich. Nicht dramatisch – ein Detail. Das Fenster war links. Jetzt
+    ist es rechts. Keines ist falsch.
+  awareness_tier: 1
+- id: ab_23
+  trigger: deja_vu
+  personality_filter: {}
+  text_en: The room is the same. {agent} is not the same. The difference narrates the room anew.
+  text_de: Der Raum ist derselbe. {agent} ist nicht derselbe. Die Differenz erzählt den Raum neu.
+  awareness_tier: 2
+- id: ab_24
+  trigger: retreat
+  personality_filter: {}
+  text_en: The party retreats. The consciousness lets them go. It was not a prison. It was an invitation
+    they declined.
+  text_de: Die Gruppe zieht sich zurück. Das Bewusstsein lässt sie gehen. Es war kein Gefängnis. Es
+    war eine Einladung, die sie ablehnten.
+  awareness_tier: 0
+- id: ab_25
+  trigger: rest_ambush
+  personality_filter: {}
+  text_en: The quiet was a surface. Something underneath was not resting. It was waiting for the party
+    to close their eyes.
+  text_de: Die Stille war eine Oberfläche. Etwas darunter ruhte nicht. Es wartete darauf, dass die
+    Gruppe die Augen schloss.
+  awareness_tier: 0
+- id: ab_26
+  trigger: rest_ambush
+  personality_filter: {}
+  text_en: 'A memory surfaces during rest. Not gently. Proust''s intermittences: the grief arrives
+    decades late, triggered by the act of resting.'
+  text_de: 'Eine Erinnerung taucht während der Rast auf. Nicht sanft. Prousts Intermittenzen: die
+    Trauer kommt Jahrzehnte zu spät, ausgelöst durch den Akt des Rastens.'
+  awareness_tier: 0
+- id: ab_27
+  trigger: room_entered
+  personality_filter:
+    conscientiousness_high: true
+  text_en: '{agent} asks: is it better not to have woken? The dungeon does not answer. The dungeon
+    does not need to.'
+  text_de: '{agent} fragt: Ist es besser, nicht erwacht zu sein? Das Dungeon antwortet nicht. Das
+    Dungeon muss nicht.'
+  awareness_tier: 2
+- id: ab_28
+  trigger: combat_start
+  personality_filter: {}
+  text_en: The enemy does not doubt. Does not reflect. Does not hesitate. Consciousness is overhead.
+    The enemy has no overhead.
+  text_de: Der Feind zweifelt nicht. Reflektiert nicht. Zögert nicht. Bewusstsein ist Overhead. Der
+    Feind hat keinen Overhead.
+  awareness_tier: 1
