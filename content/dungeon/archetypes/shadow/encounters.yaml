@@ -1,0 +1,599 @@
+schema_version: 1
+encounters:
+- id: shadow_whispers_in_dark
+  room_type: combat
+  min_depth: 1
+  max_depth: 2
+  min_difficulty: 1
+  description_en: The air thickens. Two points of cold light drift at the edges of your vision, circling
+    like predators testing prey. The whispers start – not words, but the memory of words, scraping
+    against certainty.
+  description_de: Die Luft wird dicker. Zwei Punkte kalten Lichts treiben am Rand eures Blickfelds,
+    kreisen wie Raubtiere, die Beute testen. Das Flüstern beginnt – keine Worte, sondern die Erinnerung
+    an Worte, die an der Gewissheit kratzen.
+  choices: []
+  combat_encounter_id: shadow_whispers_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_patrol
+  room_type: combat
+  min_depth: 2
+  max_depth: 3
+  min_difficulty: 1
+  requires_aptitude:
+    infiltrator: 5
+  description_en: Movement ahead – rhythmic, predictable. An echo of violence stalks this corridor
+    with mechanical precision, a tendril of shadow coiling behind it like a leash. They haven't noticed
+    you yet.
+  description_de: Bewegung voraus – rhythmisch, vorhersehbar. Ein Gewaltecho durchstreift diesen Korridor
+    mit mechanischer Präzision, ein Schattenfaden windet sich hinter ihm wie eine Leine. Sie haben
+    euch noch nicht bemerkt.
+  choices: []
+  combat_encounter_id: shadow_patrol_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_ambush
+  room_type: combat
+  min_depth: 2
+  max_depth: 4
+  min_difficulty: 2
+  description_en: CONTACT! They were waiting. The darkness erupts – two echoes of violence, already
+    moving, already striking. No time to plan. No time to think.
+  description_de: KONTAKT! Sie haben gewartet. Die Dunkelheit bricht aus – zwei Gewaltechos, bereits
+    in Bewegung, bereits zuschlagend. Keine Zeit zu planen. Keine Zeit zu denken.
+  choices: []
+  combat_encounter_id: shadow_ambush_spawn
+  is_ambush: true
+  ambush_stress: 100
+- id: shadow_the_haunting
+  room_type: combat
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 2
+  description_en: The whispers change. They become specific – names, fears, secrets your agents thought
+    were private. A paranoia shade drifts at the center, flanked by wisps whose movements no longer
+    match their telegraphed intents. Nothing here is honest.
+  description_de: Das Flüstern verändert sich. Es wird spezifisch – Namen, Ängste, Geheimnisse, die
+    eure Agenten für privat hielten. Ein Paranoiaschatten treibt im Zentrum, flankiert von Glimmern,
+    deren Bewegungen nicht mehr zu ihren angezeigten Absichten passen. Nichts hier ist ehrlich.
+  choices: []
+  combat_encounter_id: shadow_haunting_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_threshold
+  room_type: encounter
+  min_depth: 1
+  max_depth: 2
+  min_difficulty: 1
+  description_en: The corridor narrows. Ahead, a line of absolute dark cuts the floor like a border
+    crossing – everything on this side is dim; everything beyond is blind. The air carries the faint
+    chemical taste of dissolved certainty. Someone has been here before. The scratches on the walls
+    are not random.
+  description_de: Der Korridor verengt sich. Voraus schneidet eine Linie absoluter Dunkelheit den
+    Boden wie ein Grenzübergang – diesseits ist es dämmerig; jenseits ist es blind. Die Luft trägt
+    den schwachen chemischen Geschmack aufgelöster Gewissheit. Jemand war schon hier. Die Kratzer
+    an den Wänden sind nicht zufällig.
+  choices:
+  - id: investigate_scratches
+    label_en: Investigate the scratches (Spy)
+    label_de: Die Kratzer untersuchen (Spion)
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      reveal_rooms: 1
+      stress: 0
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 40
+    success_narrative_en: The scratches are a map – crude, desperate, but accurate. Whoever carved
+      them made it further than this.
+    success_narrative_de: Die Kratzer sind eine Karte – grob, verzweifelt, aber genau. Wer sie geritzt
+      hat, kam weiter als hierhin.
+    partial_narrative_en: Some scratches form patterns. Others are just scratches. Sorting them takes
+      longer than expected.
+    partial_narrative_de: Manche Kratzer bilden Muster. Andere sind nur Kratzer. Sie zu sortieren
+      dauert länger als erwartet.
+    fail_narrative_en: The scratches rearrange themselves as you study them. Your eyes ache from tracking
+      lines that refuse to hold still.
+    fail_narrative_de: Die Kratzer ordnen sich neu, während ihr sie studiert. Eure Augen schmerzen
+      vom Verfolgen von Linien, die sich weigern stillzuhalten.
+  - id: secure_perimeter
+    label_en: Secure the threshold (Guardian)
+    label_de: Die Schwelle sichern (Wächter)
+    check_aptitude: guardian
+    check_difficulty: 0
+    success_effects:
+      stress: -20
+      visibility: 1
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 50
+    success_narrative_en: You mark the threshold, set reference points, establish a fallback line.
+      The darkness hasn't changed – but your footing has.
+    success_narrative_de: Ihr markiert die Schwelle, setzt Bezugspunkte, legt eine Rückzugslinie fest.
+      Die Dunkelheit hat sich nicht verändert – aber euer Stand schon.
+    partial_narrative_en: The markers hold, but the reference points drift. Partial orientation is
+      better than none.
+    partial_narrative_de: Die Markierungen halten, aber die Bezugspunkte verschieben sich. Teilweise
+      Orientierung ist besser als keine.
+    fail_narrative_en: The darkness swallows every marker you place. The threshold is not a line –
+      it is a mouth.
+    fail_narrative_de: Die Dunkelheit verschluckt jede Markierung, die ihr setzt. Die Schwelle ist
+      keine Linie – sie ist ein Maul.
+  - id: cautious_crossing
+    label_en: Cross cautiously
+    label_de: Vorsichtig überqueren
+    check_difficulty: 0
+    success_effects:
+      stress: 15
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You step across the line. Nothing happens. The waiting is worse.
+    success_narrative_de: Ihr tretet über die Linie. Nichts geschieht. Das Warten ist schlimmer.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_convergence
+  room_type: encounter
+  min_depth: 4
+  max_depth: 5
+  min_difficulty: 2
+  description_en: The corridors converge here – not architecturally, but ontologically. Shadows from
+    earlier rooms pool on the floor like spilled ink, forming a map of everywhere you have been. The
+    air is dense with accumulated memory. Something in the walls is breathing in sync with your party.
+  description_de: Die Korridore konvergieren hier – nicht architektonisch, sondern ontologisch. Schatten
+    früherer Räume sammeln sich auf dem Boden wie verschüttete Tinte und bilden eine Karte überall,
+    wo ihr gewesen seid. Die Luft ist dicht von angesammelter Erinnerung. Etwas in den Wänden atmet
+    im Gleichklang mit eurer Gruppe.
+  choices:
+  - id: read_shadow_map
+    label_en: Read the shadow map (Spy)
+    label_de: Die Schattenkarte lesen (Spion)
+    check_aptitude: spy
+    check_difficulty: 10
+    success_effects:
+      reveal_rooms: 2
+      stress: 10
+    partial_effects:
+      reveal_rooms: 1
+      stress: 30
+    fail_effects:
+      stress: 70
+    success_narrative_en: The ink-map responds to your attention. It shows not just rooms – but what
+      waits inside them.
+    success_narrative_de: Die Tintenkarte reagiert auf eure Aufmerksamkeit. Sie zeigt nicht nur Räume
+      – sondern was darin wartet.
+    partial_narrative_en: Fragments of the map are legible. Others dissolve under scrutiny, as if
+      the shadow resents being read.
+    partial_narrative_de: Fragmente der Karte sind lesbar. Andere lösen sich unter Prüfung auf, als
+      ob der Schatten es übelnimmt, gelesen zu werden.
+    fail_narrative_en: The map surges upward. For a heartbeat, the accumulated shadow of every room
+      you crossed presses against your mind at once.
+    fail_narrative_de: Die Karte wogt empor. Für einen Herzschlag drückt der angesammelte Schatten
+      jedes Raums, den ihr durchquert habt, gleichzeitig gegen euren Verstand.
+  - id: strike_convergence
+    label_en: Strike the convergence (Assassin)
+    label_de: Die Konvergenz angreifen (Assassine)
+    check_aptitude: assassin
+    check_difficulty: 10
+    success_effects:
+      stress: -40
+      shadow_resonance: 0.05
+    partial_effects:
+      stress: 40
+    fail_effects:
+      stress: 90
+      ambush_trigger: true
+    success_narrative_en: A precise strike at the node where all shadows meet. The ink-map shatters.
+      The accumulated pressure bleeds away.
+    success_narrative_de: Ein präziser Schlag auf den Knoten, an dem alle Schatten sich treffen. Die
+      Tintenkarte zerbricht. Der angesammelte Druck entweicht.
+    partial_narrative_en: The strike lands, but the convergence absorbs part of it. The shadows recoil
+      but do not break.
+    partial_narrative_de: Der Schlag trifft, aber die Konvergenz absorbiert einen Teil davon. Die
+      Schatten weichen zurück, brechen aber nicht.
+    fail_narrative_en: The convergence fights back. Every shadow you ever passed through strikes at
+      once.
+    fail_narrative_de: Die Konvergenz schlägt zurück. Jeder Schatten, den ihr je durchquert habt,
+      schlägt gleichzeitig zu.
+  - id: cautious_convergence
+    label_en: Move through carefully
+    label_de: Vorsichtig hindurchgehen
+    check_difficulty: 0
+    success_effects:
+      stress: 25
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You navigate the pooled shadows without engaging them. They part reluctantly,
+      clinging to your boots like oil.
+    success_narrative_de: Ihr navigiert durch die gesammelten Schatten, ohne sie zu berühren. Sie
+      teilen sich widerwillig und kleben an euren Stiefeln wie Öl.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_prisoner
+  room_type: encounter
+  min_depth: 2
+  max_depth: 3
+  min_difficulty: 1
+  description_en: |-
+    A cage of solidified shadow. Inside, something that was once human curls in on itself, whimpering. It looks up with eyes that hold no light.
+
+    "Please," it says. "I've been here since the last resonance. I remember sunlight."
+  description_de: |-
+    Ein Käfig aus verfestigtem Schatten. Darin kauert etwas, das einmal menschlich war, und wimmert. Es blickt auf mit Augen, die kein Licht halten.
+
+    »Bitte«, sagt es. »Ich bin hier seit der letzten Resonanz. Ich erinnere mich an Sonnenlicht.«
+  choices:
+  - id: free_prisoner
+    label_en: Free the prisoner
+    label_de: Den Gefangenen befreien
+    check_aptitude: guardian
+    check_difficulty: 0
+    success_effects:
+      stress: -30
+      visibility: 1
+      discovery: true
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 80
+      ambush_trigger: true
+    success_narrative_en: The shadow cage dissolves. The prisoner fades with a grateful whisper, leaving
+      behind a faint glow that restores your sight.
+    success_narrative_de: Der Schattenkäfig löst sich auf. Der Gefangene verblasst mit einem dankbaren
+      Flüstern und hinterlässt ein schwaches Leuchten, das eure Sicht wiederherstellt.
+    partial_narrative_en: The cage cracks but doesn't break cleanly. The prisoner slips free but something
+      else slips out with it.
+    partial_narrative_de: Der Käfig bricht, aber nicht sauber. Der Gefangene entkommt, aber etwas
+      anderes entkommt mit ihm.
+    fail_narrative_en: The cage was a trap. The 'prisoner' dissolves into shadow tendrils that lash
+      out at the party.
+    fail_narrative_de: Der Käfig war eine Falle. Der 'Gefangene' löst sich in Schattenfäden auf, die
+      nach der Gruppe schlagen.
+  - id: interrogate_prisoner
+    label_en: Interrogate it first
+    label_de: Zuerst verhören
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      reveal_rooms: 2
+      stress: 10
+    partial_effects:
+      reveal_rooms: 1
+      stress: 30
+    fail_effects:
+      stress: 50
+    success_narrative_en: Your questions cut through its delirium. It reveals the layout of adjacent
+      rooms before fading.
+    success_narrative_de: Eure Fragen durchschneiden sein Delirium. Es enthüllt die Anordnung benachbarter
+      Räume, bevor es verblasst.
+    partial_narrative_en: It answers in fragments. Some of what it says is useful.
+    partial_narrative_de: Es antwortet in Fragmenten. Manches davon ist nützlich.
+    fail_narrative_en: It screams. The sound carries. Something in the next room stirs.
+    fail_narrative_de: Es schreit. Der Laut trägt. Etwas im nächsten Raum regt sich.
+  - id: leave_prisoner
+    label_en: Leave it
+    label_de: Zurücklassen
+    check_difficulty: 0
+    success_effects:
+      stress: 20
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You walk away. Behind you, the whimpering fades into silence. Some agents
+      look back. Others don't.
+    success_narrative_de: Ihr geht weiter. Hinter euch verblasst das Wimmern in Stille. Manche Agenten
+      blicken zurück. Andere nicht.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: destroy_prisoner
+    label_en: End its suffering
+    label_de: Sein Leiden beenden
+    requires_aptitude:
+      assassin: 3
+    check_difficulty: 0
+    success_effects:
+      stress: -10
+      shadow_resonance: 0.05
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: A clean strike. The shadow dissolves. The mercy of it echoes in the dark.
+    success_narrative_de: Ein sauberer Schlag. Der Schatten löst sich auf. Die Gnade hallt in der
+      Dunkelheit nach.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_mirror_room
+  room_type: encounter
+  min_depth: 2
+  max_depth: 4
+  min_difficulty: 1
+  description_en: The walls are mirrors – but wrong. Each agent sees themselves, distorted. Features
+    exaggerated, expressions twisted into something they fear they truly are. The reflections move
+    independently.
+  description_de: Die Wände sind Spiegel – aber falsch. Jeder Agent sieht sich selbst, verzerrt. Züge
+    übertrieben, Ausdrücke verdreht zu etwas, von dem sie fürchten, es wirklich zu sein. Die Spiegelbilder
+    bewegen sich unabhängig.
+  choices:
+  - id: confront_reflection
+    label_en: Confront the reflection
+    label_de: Dem Spiegelbild entgegentreten
+    check_aptitude: propagandist
+    check_difficulty: 5
+    success_effects:
+      resilience_bonus: 0.05
+      stress: -50
+    partial_effects:
+      stress: 50
+    fail_effects:
+      stress: 100
+    success_narrative_en: The agent stares their shadow-self down. The mirror cracks. In the silence
+      that follows, something fundamental settles.
+    success_narrative_de: Der Agent stellt sich seinem Schatten-Ich. Der Spiegel bricht. In der folgenden
+      Stille legt sich etwas Grundlegendes.
+    partial_narrative_en: The confrontation is painful but inconclusive. The reflection retreats,
+      but doesn't break.
+    partial_narrative_de: Die Konfrontation ist schmerzhaft, aber ergebnislos. Das Spiegelbild weicht
+      zurück, bricht aber nicht.
+    fail_narrative_en: The reflection speaks the agent's worst fear aloud. The words hang in the air,
+      impossible to unhear.
+    fail_narrative_de: Das Spiegelbild spricht die schlimmste Angst des Agenten laut aus. Die Worte
+      hängen in der Luft, unmöglich zu überhören.
+  - id: analyze_mirrors
+    label_en: Analyze the mirrors (Spy)
+    label_de: Spiegel analysieren (Spion)
+    check_aptitude: spy
+    check_difficulty: 0
+    success_effects:
+      reveal_rooms: 1
+      stress: 0
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 40
+    success_narrative_en: The mirrors aren't just reflecting – they're showing adjacent rooms. You
+      map what you see.
+    success_narrative_de: Die Spiegel reflektieren nicht nur – sie zeigen angrenzende Räume. Ihr kartiert,
+      was ihr seht.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: smash_mirrors
+    label_en: Smash the mirrors
+    label_de: Spiegel zerschlagen
+    requires_aptitude:
+      assassin: 3
+    check_difficulty: 0
+    success_effects:
+      stress: 30
+      visibility: -1
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: Glass shatters. The reflections scream. Darkness pours from the broken frames.
+    success_narrative_de: Glas zersplittert. Die Spiegelbilder schreien. Dunkelheit strömt aus den
+      zerbrochenen Rahmen.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_echoes_of_past
+  room_type: encounter
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 1
+  description_en: The room replays a scene from your simulation's history – a real event, distorted
+    by shadow. The agents involved are here, or echoes of them. The moment crystallizes, waiting for
+    a different choice.
+  description_de: Der Raum spielt eine Szene aus der Geschichte eurer Simulation nach – ein reales
+    Ereignis, verzerrt durch Schatten. Die beteiligten Agenten sind hier, oder Echos von ihnen. Der
+    Moment kristallisiert sich, wartend auf eine andere Entscheidung.
+  choices:
+  - id: choose_differently
+    label_en: Make a different choice
+    label_de: Anders entscheiden
+    check_aptitude: propagandist
+    check_difficulty: 5
+    success_effects:
+      memory_created: true
+      stress: -30
+      insight: true
+    partial_effects:
+      stress: 30
+      memory_created: true
+    fail_effects:
+      stress: 80
+    success_narrative_en: History shifts. The echo replays with your change, and something in the
+      fabric of the simulation relaxes.
+    success_narrative_de: Die Geschichte verschiebt sich. Das Echo spielt sich mit eurer Änderung
+      ab, und etwas im Gewebe der Simulation entspannt sich.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: observe_replay
+    label_en: Observe without intervening
+    label_de: Beobachten ohne einzugreifen
+    check_aptitude: spy
+    check_difficulty: -10
+    success_effects:
+      reveal_rooms: 1
+      stress: 10
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: Watching history repeat itself is painful, but instructive. You learn something
+      about the patterns at work here.
+    success_narrative_de: Zuzusehen, wie sich Geschichte wiederholt, ist schmerzhaft, aber lehrreich.
+      Ihr lernt etwas über die Muster, die hier am Werk sind.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_remnant
+  room_type: elite
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 2
+  description_en: 'The darkness coalesces. A shape forms – massive, deliberate, ancient. This is The
+    Remnant: formed from the simulation''s strongest unresolved conflict. It remembers what your agents
+    have tried to forget. Wisps orbit it like satellites.'
+  description_de: 'Die Dunkelheit verdichtet sich. Eine Gestalt formt sich – massiv, bedacht, uralt.
+    Das ist Der Überrest: geformt aus dem stärksten ungelösten Konflikt der Simulation. Er erinnert
+    sich an das, was eure Agenten zu vergessen versucht haben. Glimmer umkreisen ihn wie Satelliten.'
+  choices: []
+  combat_encounter_id: shadow_remnant_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_remnant_boss
+  room_type: boss
+  min_depth: 1
+  max_depth: 99
+  min_difficulty: 1
+  description_en: 'The corridor ends. The darkness ahead is absolute – not absence of light, but presence
+    of something vast. The Remnant awaits: an echo of every suppressed memory, every buried conflict,
+    given terrible form. The whispers fall silent. There is only the sound of your agents'' breathing.'
+  description_de: 'Der Korridor endet. Die Dunkelheit voraus ist absolut – nicht Abwesenheit von Licht,
+    sondern Anwesenheit von etwas Gewaltigem. Der Überrest wartet: ein Echo jeder unterdrückten Erinnerung,
+    jedes begrabenen Konflikts, in schrecklicher Gestalt. Das Flüstern verstummt. Nur noch das Atmen
+    eurer Agenten ist zu hören.'
+  choices: []
+  combat_encounter_id: shadow_remnant_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_the_hollow
+  room_type: rest
+  min_depth: 0
+  max_depth: 99
+  min_difficulty: 1
+  description_en: A gap in the darkness – not light, exactly, but the absence of active malice. The
+    walls here are smooth, untouched. The air is still. For the first time since entering, you can
+    hear your own breathing.
+  description_de: Eine Lücke in der Dunkelheit – kein Licht, genau genommen, aber die Abwesenheit
+    aktiver Bösartigkeit. Die Wände hier sind glatt, unberührt. Die Luft ist still. Zum ersten Mal
+    seit dem Eintritt könnt ihr euer eigenes Atmen hören.
+  choices:
+  - id: rest_full
+    label_en: Rest (heal stress, risk ambush)
+    label_de: Rasten (Stress heilen, Hinterhalt-Risiko)
+    check_difficulty: 0
+    success_effects:
+      stress_heal: 200
+      wounded_to_stressed: true
+      ambush_chance: 0.2
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The party rests. Stress fades. Wounds knit. For a while, the darkness forgets
+      you.
+    success_narrative_de: Die Gruppe rastet. Stress verblasst. Wunden schließen sich. Für eine Weile
+      vergisst die Dunkelheit euch.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: rest_guarded
+    label_en: Post a Guardian watch (safe, but Guardian doesn't heal)
+    label_de: Wächter aufstellen (sicher, aber Wächter heilt nicht)
+    requires_aptitude:
+      guardian: 3
+    check_difficulty: 0
+    success_effects:
+      stress_heal: 200
+      wounded_to_stressed: true
+      guardian_no_heal: true
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The Guardian stands watch while others rest. No ambush comes. But the Guardian's
+      own wounds remain.
+    success_narrative_de: Der Wächter hält Wache, während die anderen rasten. Kein Hinterhalt kommt.
+      Aber die eigenen Wunden des Wächters bleiben.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: shadow_cache
+  room_type: treasure
+  min_depth: 0
+  max_depth: 99
+  min_difficulty: 1
+  description_en: A shadow cache – a pocket of crystallized darkness containing something valuable.
+    The container is locked with mechanisms that respond to finesse, not force.
+  description_de: Ein Schattenversteck – eine Tasche aus kristallisierter Dunkelheit, die etwas Wertvolles
+    enthält. Der Behälter ist mit Mechanismen verschlossen, die auf Geschick reagieren, nicht auf
+    Gewalt.
+  choices:
+  - id: open_cache
+    label_en: Pick the lock (Infiltrator)
+    label_de: Schloss knacken (Infiltrator)
+    check_aptitude: infiltrator
+    check_difficulty: 0
+    success_effects:
+      loot: true
+      loot_bonus_at_vp0: true
+    partial_effects:
+      loot: true
+      loot_tier_penalty: 1
+    fail_effects:
+      stress: 75
+      trap_triggered: true
+    success_narrative_en: 'The mechanism clicks open. Inside: shadows that have hardened into something
+      useful.'
+    success_narrative_de: 'Der Mechanismus klickt auf. Darin: Schatten, die sich zu etwas Nützlichem
+      verhärtet haben.'
+    partial_narrative_en: Partially opened. Some contents spill and dissolve before you can grab them.
+    partial_narrative_de: Teilweise geöffnet. Einige Inhalte verschütten sich und lösen sich auf,
+      bevor ihr sie greifen könnt.
+    fail_narrative_en: A trap! Shadow energy lashes out, scoring the opener's psyche.
+    fail_narrative_de: Eine Falle! Schattenenergie peitscht hervor und zeichnet die Psyche des Öffnenden.
+  - id: force_cache
+    label_en: Force it open (Saboteur)
+    label_de: Aufbrechen (Saboteur)
+    check_aptitude: saboteur
+    check_difficulty: 5
+    success_effects:
+      loot: true
+    partial_effects:
+      loot: true
+      loot_tier_penalty: 1
+      stress: 30
+    fail_effects:
+      stress: 50
+    success_narrative_en: Controlled demolition. The container shatters on your terms.
+    success_narrative_de: Kontrollierte Sprengung. Der Behälter zerbricht nach euren Regeln.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: leave_cache
+    label_en: Leave it (no risk)
+    label_de: Liegenlassen (kein Risiko)
+    check_difficulty: 0
+    success_effects: {}
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: Sometimes the safest option is the wisest. You move on.
+    success_narrative_de: Manchmal ist die sicherste Option die klügste. Ihr geht weiter.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0

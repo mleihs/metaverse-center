@@ -1,0 +1,317 @@
+schema_version: 1
+banter:
+- id: sb_01
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} flinches at a sound only they can hear.'
+  text_de: '{agent} zuckt bei einem Geräusch zusammen, das nur sie hören.'
+- id: sb_02
+  trigger: room_entered
+  personality_filter:
+    extraversion:
+    - 0.0
+    - 0.3
+  text_en: '{agent} says nothing, but their hand hasn''t left their weapon.'
+  text_de: '{agent} sagt nichts, aber die Hand hat die Waffe nicht losgelassen.'
+- id: sb_03
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''The darkness isn''t empty. It''s... full of something.'''
+  text_de: '{agent}: »Die Dunkelheit ist nicht leer. Sie ist... voll von etwas.«'
+- id: sb_04
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} checks their equipment methodically. Everything in order. Again.'
+  text_de: '{agent} überprüft methodisch die Ausrüstung. Alles in Ordnung. Wieder.'
+- id: sb_05
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The terminal flickers. For a moment, the amber glow is the only light in the world.
+  text_de: Das Terminal flackert. Für einen Moment ist das Bernsteinleuchten das einzige Licht auf
+    der Welt.
+- id: sb_06
+  trigger: combat_won
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} moves through the formation, confirming each operative. Only then does the tension
+    release.'
+  text_de: '{agent} geht die Reihe ab, prüft jeden einzelnen. Erst danach lässt die Anspannung nach.'
+- id: sb_07
+  trigger: combat_won
+  personality_filter:
+    extraversion:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''That''s what happens. That''s what happens when you come at us.'''
+  text_de: '{agent}: »Das passiert. Das passiert, wenn man sich mit uns anlegt.«'
+- id: sb_08
+  trigger: combat_won
+  personality_filter:
+    neuroticism:
+    - 0.0
+    - 0.3
+  text_en: '{agent} wipes their blade clean. Professional. Done.'
+  text_de: '{agent} wischt die Klinge sauber. Professionell. Erledigt.'
+- id: sb_09
+  trigger: combat_won
+  personality_filter: {}
+  text_en: Silence returns. It's never comforting here.
+  text_de: Die Stille kehrt zurück. Hier ist sie nie tröstlich.
+- id: sb_10
+  trigger: visibility_zero
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''I can feel the walls. They''re closer than they should be.'''
+  text_de: '{agent}: »Ich kann die Wände spüren. Sie sind näher als sie sein sollten.«'
+- id: sb_11
+  trigger: visibility_zero
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent}''s composure fractures. They have begun counting the intervals between sounds
+    that are not there.'
+  text_de: '{agent}s Fassung bricht. Sie zählen die Abstände zwischen Geräuschen, die nicht da sind.'
+- id: sb_12
+  trigger: visibility_zero
+  personality_filter: {}
+  text_en: The instruments read nothing. Not zero – nothing. As if measurement itself has been consumed.
+  text_de: Die Instrumente zeigen nichts an. Nicht Null – nichts. Als wäre das Messen selbst verschlungen
+    worden.
+- id: sb_13
+  trigger: agent_stressed
+  personality_filter:
+    extraversion:
+    - 0.6
+    - 1.0
+  text_en: '{agent} mutters: ''I''m fine. I said I''m FINE.'''
+  text_de: '{agent} murmelt: »Mir geht''s gut. Ich SAGTE, mir geht''s gut.«'
+- id: sb_14
+  trigger: agent_stressed
+  personality_filter:
+    agreeableness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}''s expression hardens. They stop looking at the others.'
+  text_de: '{agent}s Ausdruck verhärtet sich. Sie hören auf, die anderen anzusehen.'
+- id: sb_15
+  trigger: combat_won
+  personality_filter:
+    opinion_positive_pair: true
+  text_en: '{agent_a} nods at {agent_b}. No words needed.'
+  text_de: '{agent_a} nickt {agent_b} zu. Keine Worte nötig.'
+- id: sb_16
+  trigger: room_entered
+  personality_filter:
+    opinion_positive_pair: true
+  text_en: '{agent_a} and {agent_b} move in practiced coordination, covering each other''s blind spots.'
+  text_de: '{agent_a} und {agent_b} bewegen sich in eingeübter Koordination und decken die toten Winkel
+    des anderen.'
+- id: sb_17
+  trigger: agent_stressed
+  personality_filter:
+    opinion_negative_pair: true
+  text_en: '{agent_a} glances at {agent_b} with something that isn''t concern.'
+  text_de: '{agent_a} blickt {agent_b} an mit etwas, das keine Sorge ist.'
+- id: sb_18
+  trigger: combat_won
+  personality_filter:
+    opinion_negative_pair: true
+  text_en: '{agent_a}: ''Next time, try not to be in my line of fire, {agent_b}.'''
+  text_de: '{agent_a}: »Nächstes Mal versuch nicht in meiner Schusslinie zu stehen, {agent_b}.«'
+- id: sb_19
+  trigger: loot_found
+  personality_filter:
+    conscientiousness:
+    - 0.0
+    - 0.4
+  text_en: '{agent} pockets something before anyone else notices. Old habits.'
+  text_de: '{agent} steckt etwas ein, bevor es jemand bemerkt. Alte Gewohnheiten.'
+- id: sb_20
+  trigger: loot_found
+  personality_filter: {}
+  text_en: The shadow residue is cold to the touch. It hums faintly, like a tuning fork struck in
+    the dark.
+  text_de: Der Schattenrückstand ist kalt bei Berührung. Er summt leise, wie eine Stimmgabel, die
+    im Dunkeln angeschlagen wurde.
+- id: sb_21
+  trigger: rest_start
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} can''t rest. They sit in the corner, watching the entrance.'
+  text_de: '{agent} kann nicht rasten. Sie sitzen in der Ecke und beobachten den Eingang.'
+- id: sb_22
+  trigger: rest_start
+  personality_filter:
+    extraversion:
+    - 0.6
+    - 1.0
+  text_en: '{agent} tries to lighten the mood: ''Anyone else feel like this is the worst holiday they''ve
+    ever been on?'''
+  text_de: '{agent} versucht die Stimmung aufzulockern: »Geht es noch jemandem so, dass das der schlimmste
+    Urlaub ist, auf dem sie je waren?«'
+- id: sb_23
+  trigger: rest_start
+  personality_filter: {}
+  text_en: The hollow is silent. For a few minutes, nothing pursues them.
+  text_de: Die Höhle schweigt. Für ein paar Minuten verfolgt sie nichts.
+- id: sb_24
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. The temperature drops. The silence becomes structural.
+  text_de: Tiefer. Die Temperatur sinkt. Die Stille wird baulich.
+- id: sb_25
+  trigger: depth_change
+  personality_filter:
+    openness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}: ''We should turn back.'' No one responds.'
+  text_de: '{agent}: »Wir sollten umkehren.« Niemand antwortet.'
+- id: sb_30
+  trigger: depth_change
+  personality_filter: {}
+  text_en: The passage narrows. Not physically – conceptually. There are fewer ways out.
+  text_de: Der Durchgang verengt sich. Nicht physisch – konzeptuell. Es gibt weniger Wege hinaus.
+- id: sb_31
+  trigger: depth_change
+  personality_filter:
+    neuroticism:
+    - 0.5
+    - 1.0
+  text_en: '{agent} counts the steps since the last rest. Stops counting.'
+  text_de: '{agent} zählt die Schritte seit der letzten Rast. Hört auf zu zählen.'
+- id: sb_32
+  trigger: depth_change
+  personality_filter: {}
+  text_en: The darkness here has weight. It presses down like accumulated intention.
+  text_de: Die Dunkelheit hier hat Gewicht. Sie drückt herab wie angesammelte Absicht.
+- id: sb_26
+  trigger: elite_spotted
+  personality_filter: {}
+  text_en: The darkness coalesces. Something massive. Something old. Something that knows your names.
+  text_de: Die Dunkelheit verdichtet sich. Etwas Massives. Etwas Altes. Etwas, das eure Namen kennt.
+- id: sb_27
+  trigger: elite_spotted
+  personality_filter:
+    neuroticism:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''No. No, no, no.'' But they don''t run.'
+  text_de: '{agent}: »Nein. Nein, nein, nein.« Aber sie rennen nicht.'
+- id: sb_28
+  trigger: boss_approach
+  personality_filter: {}
+  text_en: The air changes. The whispers stop. In the silence that follows, something enormous draws
+    breath.
+  text_de: Die Luft ändert sich. Das Flüstern verstummt. In der folgenden Stille holt etwas Enormes
+    Atem.
+- id: sb_29
+  trigger: boss_approach
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} reaches out and squeezes the nearest hand. ''Together.'''
+  text_de: '{agent} greift nach der nächsten Hand und drückt sie. »Zusammen.«'
+- id: sb_30b
+  trigger: boss_approach
+  personality_filter:
+    extraversion:
+    - 0.0
+    - 0.3
+  text_en: '{agent} is already moving before the others react. Quiet. Focused. Ready.'
+  text_de: '{agent} bewegt sich bereits, bevor die anderen reagieren. Ruhig. Fokussiert. Bereit.'
+- id: sb_31b
+  trigger: agent_afflicted
+  personality_filter: {}
+  text_en: '{agent}''s eyes go distant. When they speak again, the voice isn''t entirely theirs.'
+  text_de: '{agent}s Augen werden leer. Als sie wieder sprechen, ist die Stimme nicht ganz die ihre.'
+- id: sb_32b
+  trigger: agent_virtue
+  personality_filter: {}
+  text_en: Something snaps in {agent} – but it's the sound of chains breaking, not bone. They stand
+    straighter.
+  text_de: Etwas bricht in {agent} – aber es ist das Geräusch brechender Ketten, nicht von Knochen.
+    Sie stehen aufrechter.
+- id: sb_33
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The shadows move. Not with you. Not against you. Around you. Testing.
+  text_de: Die Schatten bewegen sich. Nicht mit euch. Nicht gegen euch. Um euch herum. Testend.
+- id: sb_34
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Somewhere above, a distant sound like stone grinding on stone. The dungeon shifts.
+  text_de: Irgendwo oben, ein fernes Geräusch wie Stein, der auf Stein mahlt. Der Dungeon verschiebt
+    sich.
+- id: sb_35
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.0
+    - 0.3
+  text_en: '{agent} kicks a loose stone. It falls into darkness. You don''t hear it land.'
+  text_de: '{agent} tritt gegen einen losen Stein. Er fällt in die Dunkelheit. Ihr hört ihn nicht
+    aufschlagen.'
+- id: sb_36
+  trigger: room_entered
+  personality_filter:
+    extraversion:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''You know what this place needs? Windows.'''
+  text_de: '{agent}: »Wisst ihr, was dieser Ort braucht? Fenster.«'
+- id: sb_37
+  trigger: combat_won
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} pauses to examine the dissolving shadow. ''Fascinating structure. Like frozen
+    smoke.'''
+  text_de: '{agent} hält inne, um den sich auflösenden Schatten zu untersuchen. »Faszinierende Struktur.
+    Wie gefrorener Rauch.«'
+- id: sb_38
+  trigger: retreat
+  personality_filter: {}
+  text_en: The darkness lets you leave. That's the most unsettling part.
+  text_de: Die Dunkelheit lässt euch gehen. Das ist der beunruhigendste Teil.
+- id: sb_39
+  trigger: retreat
+  personality_filter:
+    agreeableness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}: ''Smart call. Dead heroes don''t file reports.'''
+  text_de: '{agent}: »Kluge Entscheidung. Tote Helden schreiben keine Berichte.«'
+- id: sb_40
+  trigger: dungeon_completed
+  personality_filter: {}
+  text_en: Light. Actual light. The party shields their eyes. Behind them, the entrance seals shut.
+  text_de: Licht. Tatsächliches Licht. Die Gruppe schirmt die Augen ab. Hinter ihnen versiegelt sich
+    der Eingang.
+- id: sb_41
+  trigger: dungeon_completed
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} doesn''t celebrate. They keep checking the shadows. They''ll keep checking for
+    a long time.'
+  text_de: '{agent} feiert nicht. Sie prüfen weiter die Schatten. Sie werden das noch lange tun.'

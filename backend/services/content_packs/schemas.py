@@ -86,11 +86,18 @@ class _StrictModel(BaseModel):
 
 
 class BanterItem(_StrictModel):
-    """One between-encounter banter template."""
+    """One between-encounter banter template.
+
+    `personality_filter` is intentionally a loose dict: values can be
+    `[min, max]` tuples for a Big-Five dimension (e.g.
+    `neuroticism: [0.6, 1.0]`) OR `True`/`False` flags for non-trait
+    matchers like `opinion_positive_pair`. Runtime filter logic in
+    `dungeon_banter.select_banter` dispatches on the value type.
+    """
 
     id: str
     trigger: str
-    personality_filter: dict[str, list[float] | None] = Field(default_factory=dict)
+    personality_filter: dict[str, list[float] | bool | None] = Field(default_factory=dict)
     text_en: str
     text_de: str
     decay_tier: int | None = None

@@ -1,0 +1,206 @@
+schema_version: 1
+loot:
+- id: shadow_residue
+  name_en: Shadow Residue
+  name_de: Schattenrückstand
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 50
+    when: after_dungeon
+  description_en: Crystallized shadow. Absorbs stress when handled carefully.
+  description_de: Kristallisierter Schatten. Absorbiert Stress bei vorsichtiger Handhabung.
+  drop_weight: 40
+- id: dark_insight
+  name_en: Dark Insight
+  name_de: Dunkle Erkenntnis
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Learned to sense movement in darkness
+    content_de: Gelernt, Bewegung in der Dunkelheit zu spüren
+  description_en: A fragment of understanding gained in the dark.
+  description_de: Ein Fragment des Verständnisses, gewonnen in der Dunkelheit.
+  drop_weight: 30
+- id: silenced_step
+  name_en: Silenced Step
+  name_de: Lautloser Schritt
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: infiltrator
+    scope: this_dungeon
+  description_en: A technique of movement that the shadows themselves taught.
+  description_de: Eine Technik der Bewegung, die die Schatten selbst gelehrt haben.
+  drop_weight: 20
+- id: fear_extract
+  name_en: Fear Extract
+  name_de: Furchtextrakt
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    stress_damage_bonus: 0.5
+    aptitude: propagandist
+    scope: this_dungeon
+  description_en: Distilled dread in a vial. Not your fear – someone else's, concentrated until it
+    weighs something. Applied to words, they cut deeper.
+  description_de: Destillierter Schrecken in einer Phiole. Nicht eure Angst – die eines anderen, verdichtet
+    bis sie wiegt. Auf Worte aufgetragen, schneiden sie tiefer.
+  drop_weight: 10
+- id: shadow_whisper
+  name_en: Shadow Whisper
+  name_de: Schattengeflüster
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: infiltrator
+    scope: this_dungeon
+  description_en: A captured whisper that teaches movement without presence. Infiltrator checks +5%.
+  description_de: Ein eingefangenes Flüstern, das Bewegung ohne Präsenz lehrt. Infiltrator-Proben
+    +5%.
+  drop_weight: 20
+- id: dark_adaptation
+  name_en: Dark Adaptation
+  name_de: Dunkelanpassung
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: spy
+    scope: this_dungeon
+  description_en: Prolonged exposure to shadow – the eyes adjust, the mind follows. Spy checks +5%.
+  description_de: Längere Exposition gegenüber Schatten – die Augen passen sich an, der Geist folgt.
+    Spion-Proben +5%.
+  drop_weight: 20
+- id: echo_shard
+  name_en: Echo Shard
+  name_de: Echosplitter
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 30
+    when: immediate
+  description_en: A shard of resolved conflict. Holding it quiets the noise – briefly, but enough.
+  description_de: Ein Splitter gelösten Konflikts. Ihn zu halten beruhigt den Lärm – kurz, aber genug.
+  drop_weight: 25
+- id: void_shard
+  name_en: Void Shard
+  name_de: Leerensplitter
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: Crystallized emptiness. It absorbs impact before the body does. Guardian checks
+    +5%.
+  description_de: Kristallisierte Leere. Sie absorbiert Einschlag, bevor es der Körper tut. Wächter-Proben
+    +5%.
+  drop_weight: 15
+- id: shadow_attunement_shard
+  name_en: Shadow Attunement Shard
+  name_de: Schatteneinstimmungssplitter
+  tier: 2
+  effect_type: moodlet
+  effect_params:
+    moodlet_type: shadow_attuned
+    emotion: fascination
+    strength: 8
+    decay_type: permanent
+    description_en: Drawn to darkness. Stimulation need decays faster.
+    description_de: Angezogen von der Dunkelheit. Stimulationsbedarf sinkt schneller.
+  description_en: 'Permanent: agent gains ''shadow_attuned'' moodlet.'
+  description_de: 'Permanent: Agent erhält ''schatteneingestimmt'' Moodlet.'
+  drop_weight: 30
+- id: echo_fragment
+  name_en: Echo Fragment
+  name_de: Echofragment
+  tier: 2
+  effect_type: memory
+  effect_params:
+    importance: 7
+    content_en: Experienced the shadows of the simulation's unconscious. Gained perspective on unresolved
+      conflicts.
+    content_de: Die Schatten des Unbewussten der Simulation erfahren. Perspektive auf ungelöste Konflikte
+      gewonnen.
+  description_en: Creates a high-importance Reflection Memory about the dungeon experience.
+  description_de: Erzeugt eine hochbedeutende Reflexionserinnerung über die Dungeon-Erfahrung.
+  drop_weight: 25
+- id: darkened_lens
+  name_en: Darkened Lens
+  name_de: Verdunkelte Linse
+  tier: 2
+  effect_type: permanent_dungeon_bonus
+  effect_params:
+    aptitude: spy
+    bonus: 1
+    scope: shadow_dungeons_only
+  description_en: 'Permanent: +1 Spy aptitude passive in ALL future Shadow dungeons.'
+  description_de: 'Permanent: +1 Spion-Eignung passiv in ALLEN zukünftigen Schatten-Dungeons.'
+  drop_weight: 20
+- id: conflict_residue
+  name_en: Conflict Residue
+  name_de: Konfliktresiduums
+  tier: 2
+  effect_type: event_modifier
+  effect_params:
+    impact_level_reduction: 1
+    scope: one_event
+  description_en: Can reduce one Event's impact_level by 1.
+  description_de: Kann den Einflussgrad eines Ereignisses um 1 senken.
+  drop_weight: 15
+- id: shadow_map
+  name_en: Shadow Map
+  name_de: Schattenkarte
+  tier: 2
+  effect_type: next_dungeon_bonus
+  effect_params:
+    all_rooms_revealed: true
+    start_visibility: 3
+    scope: next_shadow_dungeon
+  description_en: 'Next Shadow dungeon: all rooms pre-revealed, Visibility starts at max.'
+  description_de: 'Nächster Schatten-Dungeon: AlleRäume vorher enthüllt, Sicht beginnt auf Maximum.'
+  drop_weight: 10
+- id: shadow_attunement
+  name_en: Shadow Attunement
+  name_de: Schatteneinstimmung
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude_choices:
+    - spy
+    - assassin
+    bonus: 1
+    max_total_bonus: 2
+  description_en: 'Permanent: one agent gains +1 Spy OR Assassin aptitude. Capped at +2 total.'
+  description_de: 'Permanent: Ein Agent erhält +1 Spion ODER Assassinen-Eignung. Maximal +2 gesamt.'
+  drop_weight: 100
+- id: shadow_memory
+  name_en: Shadow Memory
+  name_de: Schattenerinnerung
+  tier: 3
+  effect_type: memory
+  effect_params:
+    importance: 9
+    content_en: Confronted the darkness and prevailed. The experience fundamentally altered how they
+      perceive threat and fear.
+    content_de: Der Dunkelheit entgegengetreten und bestanden. Die Erfahrung veränderte grundlegend,
+      wie sie Bedrohung und Angst wahrnehmen.
+    behavior_effect: more_brave_less_avoidant
+  description_en: 'High-importance Memory: affects agent autonomous behavior (more brave, less avoidant).'
+  description_de: 'Hochbedeutende Erinnerung: beeinflusst autonomes Verhalten (mutiger, weniger vermeidend).'
+  drop_weight: 100
+- id: scar_tissue_reduction
+  name_en: Scar Tissue Reduction
+  name_de: Narbengewebe-Reduktion
+  tier: 3
+  effect_type: arc_modifier
+  effect_params:
+    pressure_reduction: 0.15
+    scope: matching_arc
+  description_en: 'If matching narrative arc exists: pressure reduced.'
+  description_de: 'Falls passender Erzählbogen existiert: Druck reduziert.'
+  drop_weight: 50
