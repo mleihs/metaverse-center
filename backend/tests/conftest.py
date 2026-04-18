@@ -21,55 +21,22 @@ PLATFORM_ADMIN_EMAILS.add(MOCK_ADMIN_EMAIL)
 
 
 def _seed_content_cache() -> None:
-    """Populate dungeon content cache from Python data for tests.
+    """Populate dungeon content cache from YAML packs for tests.
 
-    Called once at session start so all tests see content without DB.
-    Uses the same Python dicts that are still in the codebase (PR 1 fallback).
+    Called once at session start so all tests see content without touching
+    the DB. Reads from `content/dungeon/**/*.yaml` via the content-pack
+    loader — the canonical authoring source since A1.4. Runtime cache shape
+    is identical to what the DB-backed `load_all_content()` produces.
     """
     if _dcs._content is not None:
         return  # already seeded
 
-    from backend.services.combat.ability_schools import ALL_ABILITIES
-    from backend.services.dungeon.dungeon_banter import _BANTER_REGISTRIES
-    from backend.services.dungeon.dungeon_combat import _ENEMY_REGISTRIES, _SPAWN_REGISTRIES
-    from backend.services.dungeon.dungeon_encounters import _ENCOUNTER_REGISTRIES
-    from backend.services.dungeon.dungeon_loot import _LOOT_REGISTRIES
-    from backend.services.dungeon.dungeon_objektanker import (
-        ANCHOR_OBJECTS,
-        BAROMETER_TEXTS,
-        ENTRANCE_TEXTS,
-    )
+    # Local import: the content_packs module pulls in pyyaml + pydantic
+    # validators; keep this inside the function so `conftest.py` import
+    # stays fast when tests skip the content-cache path.
+    from backend.services.content_packs.loader import load_packs_for_tests
 
-    # Build encounter index
-    encounter_index = {}
-    for encounters in _ENCOUNTER_REGISTRIES.values():
-        for e in encounters:
-            encounter_index[e.id] = e
-
-    # Build entrance text dicts (strip to {text_en, text_de})
-    entrance = {
-        arch: [{"text_en": t["text_en"], "text_de": t["text_de"]} for t in texts]
-        for arch, texts in ENTRANCE_TEXTS.items()
-    }
-
-    # Build anchor object dicts (strip to {id, phases})
-    anchors = {
-        arch: [{"id": obj["id"], "phases": obj.get("phases", {})} for obj in objs]
-        for arch, objs in ANCHOR_OBJECTS.items()
-    }
-
-    _dcs._content = _dcs._ContentCache(
-        banter=dict(_BANTER_REGISTRIES),
-        encounters=dict(_ENCOUNTER_REGISTRIES),
-        encounter_index=encounter_index,
-        enemies=dict(_ENEMY_REGISTRIES),
-        spawns=dict(_SPAWN_REGISTRIES),
-        loot=dict(_LOOT_REGISTRIES),
-        anchors=anchors,
-        entrance_texts=entrance,
-        barometer_texts=dict(BAROMETER_TEXTS),
-        abilities=dict(ALL_ABILITIES),
-    )
+    load_packs_for_tests()
 
 
 # Auto-seed before any test collection
