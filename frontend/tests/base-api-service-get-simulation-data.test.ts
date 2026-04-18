@@ -25,6 +25,16 @@ const { BaseApiService } = await import('../src/services/api/BaseApiService.js')
 
 type Call = { path: string; params?: Record<string, string> };
 
+/**
+ * Canonical "empty-payload" stub for routing-only tests. The assertions below
+ * verify which underlying method (`get` vs `getPublic`) was invoked with which
+ * args — the response payload is irrelevant. `null as T` is the minimal
+ * type-seam for satisfying the generic return shape without fabricating a T.
+ */
+function emptySuccessStub<T>(): ApiResponse<T> {
+  return { success: true, data: null as T };
+}
+
 class ProbeApiService extends BaseApiService {
   public readonly getCalls: Call[] = [];
   public readonly getPublicCalls: Call[] = [];
@@ -34,7 +44,7 @@ class ProbeApiService extends BaseApiService {
     params?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     this.getCalls.push({ path, params });
-    return Promise.resolve({ success: true, data: null as unknown as T });
+    return Promise.resolve(emptySuccessStub<T>());
   }
 
   protected override async getPublic<T>(
@@ -42,7 +52,7 @@ class ProbeApiService extends BaseApiService {
     params?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     this.getPublicCalls.push({ path, params });
-    return { success: true, data: null as unknown as T };
+    return emptySuccessStub<T>();
   }
 
   /** Public probe for the protected method. */

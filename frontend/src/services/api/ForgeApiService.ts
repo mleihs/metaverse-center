@@ -259,10 +259,13 @@ export class ForgeApiService extends BaseApiService {
     return this.post('/forge/wallet/purchase', { bundle_slug: slug });
   }
 
-  getPurchaseHistory(
-    limit = 20,
-    offset = 0,
-  ): Promise<ApiResponse<PaginatedResponse<TokenPurchase>>> {
+  /**
+   * Backend returns `PaginatedResponse[TokenPurchaseHistory]`; after
+   * BaseApiService unwraps the envelope, `resp.data` is the `TokenPurchase[]`
+   * array directly (not a re-wrapped `PaginatedResponse<T>`). `resp.meta`
+   * carries the pagination metadata via the `ApiResponse<T>` shape.
+   */
+  getPurchaseHistory(limit = 20, offset = 0): Promise<ApiResponse<TokenPurchase[]>> {
     return this.get(`/forge/wallet/history?limit=${limit}&offset=${offset}`);
   }
 

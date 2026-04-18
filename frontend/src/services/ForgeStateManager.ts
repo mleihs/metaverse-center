@@ -630,11 +630,7 @@ class ForgeStateManager {
     try {
       const resp = await forgeApi.getPurchaseHistory();
       if (resp.success && resp.data) {
-        // PaginatedResponse wraps data in .data
-        const items = Array.isArray(resp.data)
-          ? resp.data
-          : ((resp.data as unknown as { data: TokenPurchase[] }).data ?? []);
-        this.purchaseHistory.value = items;
+        this.purchaseHistory.value = resp.data;
       }
     } catch (err) {
       captureError(err, { source: 'ForgeStateManager.loadPurchaseHistory' });
