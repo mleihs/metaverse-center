@@ -189,7 +189,13 @@ class TestMissionResolution:
 
         assert len(resolved) >= 1
 
-        # Mission should no longer be 'active'
+        # Mission should no longer be 'active'. The resolution path
+        # (operative_mission_service.py:565-599) produces three terminal
+        # outcomes: 'success', 'failed', or 'detected' (a failed mission
+        # the target's counter-intel rolled high enough to expose). All
+        # three satisfy "no longer active" — the original assertion
+        # omitted 'detected' and was probabilistically flaky (~11.25%
+        # failure rate at default success_prob=0.75 + detection=0.45).
         mission = (
             admin_client.table("operative_missions")
             .select("status")
@@ -197,4 +203,4 @@ class TestMissionResolution:
             .single()
             .execute()
         ).data
-        assert mission["status"] in ("success", "failed")
+        assert mission["status"] in ("success", "failed", "detected")
