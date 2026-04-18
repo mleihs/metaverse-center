@@ -306,9 +306,9 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
   );
 
   // Epoch mode: append threat detection for current zone
-  if (terminalState.isEpochMode.value) {
-    const epochId = terminalState.epochId.value!;
-    const participant = terminalState.epochParticipant.value!;
+  const epochSnap = terminalState.snapshotEpoch();
+  if (epochSnap !== null) {
+    const { epochId, participant } = epochSnap;
     try {
       const threatResp = await epochsApi.listThreats(epochId, participant.simulation_id);
       if (threatResp.success && Array.isArray(threatResp.data) && threatResp.data.length > 0) {
@@ -524,9 +524,9 @@ async function handleStatus(_ctx: CommandContext): Promise<TerminalLine[]> {
   );
 
   // Epoch mode: append epoch-specific intel
-  if (terminalState.isEpochMode.value) {
-    const epochId = terminalState.epochId.value!;
-    const participant = terminalState.epochParticipant.value!;
+  const epochSnap = terminalState.snapshotEpoch();
+  if (epochSnap !== null) {
+    const { epochId, participant } = epochSnap;
     try {
       // Terminal runs inside an authenticated simulation — use member routes.
       const am = authMode();

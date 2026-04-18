@@ -92,7 +92,16 @@ class TerminalStateManager {
 
   // --- Computed ---
   readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
-  readonly isEpochMode = computed(() => this.epochId.value !== null);
+  /**
+   * True when both epoch signals are populated. Checking both closes the race
+   * window in `initializeEpoch`, which sets `epochId` before `epochParticipant`
+   * — observers firing between those two writes previously saw
+   * `isEpochMode === true` with a null participant, which the downstream
+   * `value!` assertion in `handleLook` / `handleStatus` could crash on.
+   */
+  readonly isEpochMode = computed(
+    () => this.epochId.value !== null && this.epochParticipant.value !== null,
+  );
   readonly currentRP = computed(() => this.epochParticipant.value?.current_rp ?? 0);
   readonly myTeamId = computed(() => this.epochParticipant.value?.team_id ?? null);
 
@@ -238,6 +247,35 @@ class TerminalStateManager {
   /** Update participant data (e.g., after RP change from intercept). */
   updateParticipant(participant: EpochParticipant): void {
     this.epochParticipant.value = participant;
+  }
+
+  /**
+   * Type-safe snapshot of paired epoch state. Returns `{ epochId, participant }`
+   * when both signals are populated, or `null` otherwise. Collapses the two
+   * signal reads into one atomic-feeling access so consumers don't have to
+   * re-check `isEpochMode` AND null-check each signal individually.
+   *
+   * The inner null-check after `isEpochMode` passes is defensive: with the
+   * strengthened `isEpochMode` invariant it is unreachable, but signals can
+   * theoretically mutate between computed evaluation and raw reads. The
+   * `captureError` is a tripwire for any future drift in the invariant.
+   */
+  snapshotEpoch(): { epochId: string; participant: EpochParticipant } | null {
+    if (!this.isEpochMode.value) return null;
+    const epochId = this.epochId.value;
+    const participant = this.epochParticipant.value;
+    if (epochId === null || participant === null) {
+      captureError(
+        new Error(
+          `TerminalStateManager.snapshotEpoch invariant violation: epochId=${
+            epochId === null ? 'null' : 'set'
+          }, participant=${participant === null ? 'null' : 'set'}`,
+        ),
+        { source: 'TerminalStateManager.snapshotEpoch' },
+      );
+      return null;
+    }
+    return { epochId, participant };
   }
 
   // ── Dungeon Context ─────────────────────────────────────────────────────
