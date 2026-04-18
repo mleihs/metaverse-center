@@ -421,14 +421,10 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
       readinessResp.success && readinessResp.data
         ? (readinessResp.data.find((r) => r.building_id === building.id) ?? null)
         : null;
-    const assignedAgents: Agent[] = [];
-    if (agentsResp.success && agentsResp.data) {
-      // Building agents response may have agent data embedded
-      for (const rel of agentsResp.data) {
-        const agentData = (rel as unknown as Record<string, unknown>).agent as Agent | undefined;
-        if (agentData) assignedAgents.push(agentData);
-      }
-    }
+    const assignedAgents =
+      agentsResp.success && agentsResp.data
+        ? agentsResp.data.flatMap((rel) => (rel.agents ? [rel.agents] : []))
+        : [];
     return formatExamineBuilding(building, readiness, assignedAgents);
   }
 
@@ -1022,7 +1018,16 @@ async function handleDebrief(ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Debrief failed. Points refunded.'))];
   }
 
-  return formatDebrief(agent, responseText, terminalState.intelPoints.value);
+  const currentBuilding = agent.current_building_id
+    ? (terminalState.currentZoneBuildings.value.find((b) => b.id === agent.current_building_id) ??
+      null)
+    : null;
+  return formatDebrief(
+    agent,
+    currentBuilding?.name ?? null,
+    responseText,
+    terminalState.intelPoints.value,
+  );
 }
 
 async function handleAsk(ctx: CommandContext): Promise<TerminalLine[]> {

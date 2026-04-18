@@ -267,8 +267,12 @@ export interface BuildingAgentRelation {
   agent_id: UUID;
   relation_type: string;
   created_at: string;
-  building?: Building;
-  agent?: Agent;
+  // Supabase FK-join projections. Plural keys mirror the nested table name in
+  // `.select("*, buildings(...)")` / `.select("*, agents(...)")` queries. Only
+  // one side is populated per request, depending on which parent loaded the
+  // relation (agent-side vs building-side).
+  buildings?: { id: UUID; name: string; building_type?: string };
+  agents?: { id: UUID; name: string; primary_profession?: string; portrait_image_url?: string };
 }
 
 export interface BuildingEventRelation {
