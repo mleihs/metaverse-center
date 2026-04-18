@@ -1,0 +1,220 @@
+schema_version: 1
+loot:
+- id: entropy_residue
+  name_en: Entropy Residue
+  name_de: Entropierückstand
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 50
+    when: after_dungeon
+  description_en: Crystallized sameness. Holding it removes the anxiety of distinction. That should
+    worry you.
+  description_de: Kristallisierte Gleichheit. Sie zu halten nimmt die Angst der Unterscheidung. Das
+    sollte euch beunruhigen.
+  drop_weight: 40
+- id: dissolution_insight
+  name_en: Dissolution Insight
+  name_de: Auflösungserkenntnis
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Learned to read the rate at which things cease to be distinct
+    content_de: Gelernt, die Geschwindigkeit abzulesen, mit der Dinge aufhören, unterscheidbar zu
+      sein
+  description_en: 'A fragment of understanding: how systems equalize, and why equalization is the
+    default.'
+  description_de: 'Ein Fragment des Verständnisses: wie Systeme sich angleichen und warum Angleichung
+    der Normalzustand ist.'
+  drop_weight: 30
+- id: preservation_fragment
+  name_en: Preservation Fragment
+  name_de: Bewahrungsfragment
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: A shard that remembers how to keep things separate. Guardian checks +5%.
+  description_de: Ein Splitter, der sich erinnert, wie man Dinge getrennt hält. Wächter-Proben +5%.
+  drop_weight: 20
+- id: decay_redirect
+  name_en: Decay Redirect
+  name_de: Verfallsumleitung
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    stress_damage_bonus: 0.5
+    aptitude: saboteur
+    scope: this_dungeon
+  description_en: Redirected entropy in a stable container. Applied to sabotage, the dissolution cuts
+    both ways.
+  description_de: Umgeleitete Entropie in stabilem Behälter. Auf Sabotage angewendet schneidet die
+    Auflösung in beide Richtungen.
+  drop_weight: 10
+- id: equilibrium_shard
+  name_en: Equilibrium Shard
+  name_de: Gleichgewichtssplitter
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: spy
+    scope: this_dungeon
+  description_en: Understanding of how sameness spreads – and where the last differences hide. Spy
+    checks +5%.
+  description_de: Verständnis davon, wie Gleichheit sich ausbreitet – und wo die letzten Unterschiede
+    sich verbergen. Spion-Proben +5%.
+  drop_weight: 20
+- id: rust_inoculation
+  name_en: Rust Inoculation
+  name_de: Rostimpfung
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: Controlled exposure to decay builds resistance. Temporarily. Guardian checks +5%.
+  description_de: Kontrollierte Exposition gegenüber Verfall baut Widerstand auf. Vorübergehend. Wächter-Proben
+    +5%.
+  drop_weight: 15
+- id: vestige_of_purpose
+  name_en: Vestige of Purpose
+  name_de: Überrest des Zwecks
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Found an object that still knew what it was for. The memory of purpose persists longer
+      than purpose itself.
+    content_de: Einen Gegenstand gefunden, der noch wusste, wofür er war. Die Erinnerung an Zweck
+      überdauert den Zweck selbst.
+  description_en: A fragment of understanding gained from something that refused to forget.
+  description_de: Ein Fragment des Verständnisses, gewonnen von etwas, das sich weigerte zu vergessen.
+  drop_weight: 25
+- id: fading_resonance
+  name_en: Fading Resonance
+  name_de: Verblassende Resonanz
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 30
+    when: immediate
+  description_en: A vibration from when things were more. Holding it reminds you of difference. Briefly.
+  description_de: Eine Vibration aus der Zeit, als Dinge mehr waren. Sie zu halten erinnert an Unterschied.
+    Kurz.
+  drop_weight: 25
+- id: entropy_attunement_shard
+  name_en: Entropy Attunement Shard
+  name_de: Entropieeinstimmungssplitter
+  tier: 2
+  effect_type: moodlet
+  effect_params:
+    moodlet_type: entropy_attuned
+    emotion: calm
+    strength: 8
+    decay_type: permanent
+    description_en: Attuned to dissolution. Finds peace in equalization. Stress tolerance increases.
+    description_de: Eingestimmt auf Auflösung. Findet Frieden in der Angleichung. Stresstoleranz steigt.
+  description_en: 'Permanent: agent gains ''entropy_attuned'' moodlet. Calm in the face of sameness.'
+  description_de: 'Permanent: Agent erhält ''entropieeingestimmt'' Moodlet. Gelassenheit angesichts
+    der Gleichheit.'
+  drop_weight: 30
+- id: dissolution_fragment
+  name_en: Dissolution Fragment
+  name_de: Auflösungsfragment
+  tier: 2
+  effect_type: memory
+  effect_params:
+    importance: 7
+    content_en: Witnessed entropy firsthand. Understood that preservation is not the opposite of decay
+      – it is decay, slower.
+    content_de: Entropie aus erster Hand bezeugt. Verstanden, dass Bewahrung nicht das Gegenteil von
+      Verfall ist – sie ist Verfall, langsamer.
+  description_en: Creates a high-importance Reflection Memory about dissolution and persistence.
+  description_de: Erzeugt eine hochbedeutende Reflexionserinnerung über Auflösung und Beharrung.
+  drop_weight: 25
+- id: preservation_lens
+  name_en: Preservation Lens
+  name_de: Bewahrungslinse
+  tier: 2
+  effect_type: permanent_dungeon_bonus
+  effect_params:
+    aptitude: guardian
+    bonus: 1
+    scope: entropy_dungeons_only
+  description_en: 'Permanent: +1 Guardian aptitude passive in ALL future Entropy dungeons.'
+  description_de: 'Permanent: +1 Wächter-Eignung passiv in ALLEN zukünftigen Entropie-Dungeons.'
+  drop_weight: 20
+- id: entropy_catalyst
+  name_en: Entropy Catalyst
+  name_de: Entropiekatalysator
+  tier: 2
+  effect_type: event_modifier
+  effect_params:
+    impact_level_reduction: 1
+    scope: one_event
+  description_en: Can reduce one Event's impact_level by 1. What dissolves boundaries can also dissolve
+    consequences.
+  description_de: Kann den Einflussgrad eines Ereignisses um 1 senken. Was Grenzen auflöst, kann auch
+    Konsequenzen auflösen.
+  drop_weight: 15
+- id: restoration_blueprint
+  name_en: Restoration Blueprint
+  name_de: Restaurierungsbauplan
+  tier: 2
+  effect_type: next_dungeon_bonus
+  effect_params:
+    all_rooms_revealed: true
+    start_decay: 0
+    scope: next_entropy_dungeon
+  description_en: 'Next Entropy dungeon: all rooms pre-revealed. Knowledge persists where matter cannot.'
+  description_de: 'Nächster Entropie-Dungeon: Alle Räume vorher enthüllt. Wissen besteht, wo Materie
+    es nicht kann.'
+  drop_weight: 10
+- id: restoration_fragment
+  name_en: Restoration Fragment
+  name_de: Restaurierungsfragment
+  tier: 3
+  effect_type: building_repair
+  effect_params:
+    condition_improvement: 1
+    scope: one_building
+  description_en: Improves one building's condition by one tier. Salvaged from the Verfall-Garten
+    – proof that entropy can be reversed, once, at great cost.
+  description_de: Verbessert den Zustand eines Gebäudes um eine Stufe. Geborgen aus dem Verfall-Garten
+    – Beweis, dass Entropie umkehrbar ist, einmal, unter großen Kosten.
+  drop_weight: 100
+- id: garden_memory
+  name_en: Garden Memory
+  name_de: Gartenerinnerung
+  tier: 3
+  effect_type: memory
+  effect_params:
+    importance: 9
+    content_en: Walked through the Verfall-Garten and returned. Learned that patience is not passivity
+      – it is the disciplined refusal to accept the given rate of dissolution.
+    content_de: Durch den Verfall-Garten gegangen und zurückgekehrt. Gelernt, dass Geduld nicht Passivität
+      ist – sie ist die disziplinierte Weigerung, die gegebene Verfallsrate zu akzeptieren.
+    behavior_effect: more_patient_less_impulsive
+  description_en: 'High-importance Memory: affects agent autonomous behavior (more patient, less impulsive).'
+  description_de: 'Hochbedeutende Erinnerung: beeinflusst autonomes Verhalten (geduldiger, weniger
+    impulsiv).'
+  drop_weight: 100
+- id: entropy_attunement
+  name_en: Entropy Attunement
+  name_de: Entropieeinstimmung
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude_choices:
+    - guardian
+    - saboteur
+    bonus: 1
+    max_total_bonus: 2
+  description_en: 'Permanent: one agent gains +1 Guardian OR Saboteur aptitude. Capped at +2 total.'
+  description_de: 'Permanent: Ein Agent erhält +1 Wächter ODER Saboteur-Eignung. Maximal +2 gesamt.'
+  drop_weight: 50

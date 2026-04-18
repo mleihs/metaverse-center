@@ -1,0 +1,18 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The walls retain color. Faded, but distinguishable. This room was green once. Or blue.
+    The difference still matters.
+  text_de: Die Wände haben noch Farbe. Verblasst, aber unterscheidbar. Dieser Raum war einmal grün.
+    Oder blau. Der Unterschied zählt noch.
+- tier: 1
+  text_en: The color is retreating. Not fading – redistributing. Every surface is approaching the
+    same shade.
+  text_de: Die Farbe weicht zurück. Nicht verblassend – umverteilend. Jede Oberfläche nähert sich
+    demselben Ton.
+- tier: 2
+  text_en: Grey. Not the grey of concrete or ash – the grey of averaged everything.
+  text_de: Grau. Nicht das Grau von Beton oder Asche – das Grau des Durchschnitts von allem.
+- tier: 3
+  text_en: Same.
+  text_de: Gleich.

@@ -1,0 +1,351 @@
+schema_version: 1
+banter:
+- id: eb_01
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''The corridor was here yesterday. Today it is mostly here. The distinction is
+    the first thing to go.'''
+  text_de: '{agent}: »Der Korridor war gestern hier. Heute ist er größtenteils hier. Die Unterscheidung
+    ist das Erste, das schwindet.«'
+  decay_tier: 0
+- id: eb_02
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} checks the instruments. The readings are accurate. They are also indistinguishable
+    from the last room''s readings.'
+  text_de: '{agent} prüft die Instrumente. Die Werte sind genau. Sie sind auch nicht von den Werten
+    des letzten Raums zu unterscheiden.'
+  decay_tier: 0
+- id: eb_03
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The air is the temperature of resignation. The instruments confirm it precisely.
+  text_de: Die Luft hat die Temperatur der Resignation. Die Instrumente bestätigen es präzise.
+  decay_tier: 0
+- id: eb_04
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} catalogs the room''s features. Wall. Floor. Ceiling. Door. The same four features
+    as the last room. And the one before.'
+  text_de: '{agent} katalogisiert die Merkmale des Raums. Wand. Boden. Decke. Tür. Dieselben vier
+    Merkmale wie im letzten Raum. Und dem davor.'
+  decay_tier: 0
+- id: eb_05
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''Room. Another one.'''
+  text_de: '{agent}: »Raum. Noch einer.«'
+  decay_tier: 1
+- id: eb_06
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The instruments still work. The information they provide has stopped mattering.
+  text_de: Die Instrumente funktionieren noch. Die Information, die sie liefern, hat aufgehört, relevant
+    zu sein.
+  decay_tier: 1
+- id: eb_07
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Room. Walls.
+  text_de: Raum. Wände.
+  decay_tier: 2
+- id: eb_08
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} starts to speak. Doesn''t.'
+  text_de: '{agent} setzt zum Sprechen an. Tut es nicht.'
+  decay_tier: 2
+- id: eb_09
+  trigger: room_entered
+  personality_filter: {}
+  text_en: .
+  text_de: .
+  decay_tier: 3
+- id: eb_10
+  trigger: combat_won
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''It stopped. Not because we won. Because it ran out of reasons to continue.'''
+  text_de: '{agent}: »Es hat aufgehört. Nicht weil wir gewonnen haben. Weil ihm die Gründe ausgingen
+    weiterzumachen.«'
+  decay_tier: 0
+- id: eb_11
+  trigger: combat_won
+  personality_filter: {}
+  text_en: Victory. Though the word means less here than it did a floor ago.
+  text_de: Sieg. Obwohl das Wort hier weniger bedeutet als noch ein Stockwerk zuvor.
+  decay_tier: 0
+- id: eb_12
+  trigger: combat_won
+  personality_filter: {}
+  text_en: The enemy dissipates. The party remains. For now, that distinction holds.
+  text_de: Der Feind vergeht. Die Gruppe bleibt. Vorerst hält diese Unterscheidung.
+  decay_tier: 1
+- id: eb_13
+  trigger: combat_won
+  personality_filter: {}
+  text_en: Resolved. The word feels generous.
+  text_de: Erledigt. Das Wort fühlt sich großzügig an.
+  decay_tier: 2
+- id: eb_14
+  trigger: decay_degraded
+  personality_filter: {}
+  text_en: The decay counter passes 40. Somewhere, a distinction that existed no longer does.
+  text_de: Der Verfallszähler überschreitet 40. Irgendwo existiert eine Unterscheidung nicht mehr,
+    die es gab.
+  decay_tier: 1
+- id: eb_15
+  trigger: decay_degraded
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} notices the edges of things blurring. Not visually. Categorically.'
+  text_de: '{agent} bemerkt, dass die Ränder der Dinge verschwimmen. Nicht visuell. Kategorial.'
+  decay_tier: 1
+- id: eb_16
+  trigger: decay_degraded
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} speaks. The words arrive, but they arrive quieter than they left.'
+  text_de: '{agent} spricht. Die Worte kommen an, aber sie kommen leiser an, als sie aufgebrochen
+    sind.'
+  decay_tier: 1
+- id: eb_17
+  trigger: decay_critical
+  personality_filter: {}
+  text_en: 'DISSOLUTION INDEX: CRITICAL. The instruments still function. The readings have converged.'
+  text_de: 'AUFLÖSUNGSINDEX: KRITISCH. Die Instrumente funktionieren noch. Die Werte sind konvergiert.'
+  decay_tier: 2
+- id: eb_18
+  trigger: decay_critical
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} tries to remember the entrance. The memory has the quality of a rumor.'
+  text_de: '{agent} versucht, sich an den Eingang zu erinnern. Die Erinnerung hat die Qualität eines
+    Gerüchts.'
+  decay_tier: 2
+- id: eb_19
+  trigger: decay_critical
+  personality_filter: {}
+  text_en: Less. Of everything. Less.
+  text_de: Weniger. Von allem. Weniger.
+  decay_tier: 2
+- id: eb_20
+  trigger: dissolution
+  personality_filter: {}
+  text_en: The decay counter reads 100. The instruments agree with the walls agree with the floor
+    agree with the silence. Agreement is total. Agreement is final.
+  text_de: Der Verfallszähler zeigt 100. Die Instrumente stimmen den Wänden zu, die dem Boden zustimmen,
+    der der Stille zustimmt. Übereinstimmung ist vollständig. Übereinstimmung ist endgültig.
+  decay_tier: 3
+- id: eb_21
+  trigger: dissolution
+  personality_filter: {}
+  text_en: Equilibrium.
+  text_de: Gleichgewicht.
+  decay_tier: 3
+- id: eb_22
+  trigger: agent_stressed
+  personality_filter: {}
+  text_en: '{agent} falters. Not from fear – from the effort of maintaining a self that the environment
+    considers redundant.'
+  text_de: '{agent} stockt. Nicht vor Angst – vor der Anstrengung, ein Selbst aufrechtzuerhalten,
+    das die Umgebung für überflüssig hält.'
+  decay_tier: 0
+- id: eb_23
+  trigger: agent_stressed
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent}''s composure fragments. They have begun counting differences. The count is shortening.'
+  text_de: '{agent}s Fassung splittert. Sie haben begonnen, Unterschiede zu zählen. Die Zählung wird
+    kürzer.'
+  decay_tier: 0
+- id: eb_24
+  trigger: agent_stressed
+  personality_filter: {}
+  text_en: '{agent} falters. The reason is becoming general.'
+  text_de: '{agent} stockt. Der Grund wird allgemein.'
+  decay_tier: 1
+- id: eb_25
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. The word implies a direction. Direction implies difference. The difference is becoming
+    theoretical.
+  text_de: Tiefer. Das Wort impliziert eine Richtung. Richtung impliziert Unterschied. Der Unterschied
+    wird theoretisch.
+  decay_tier: 0
+- id: eb_26
+  trigger: depth_change
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} notes the depth change in the log. The log is beginning to repeat itself. The
+    log does not notice.'
+  text_de: '{agent} notiert die Tiefenänderung im Protokoll. Das Protokoll beginnt sich zu wiederholen.
+    Das Protokoll bemerkt es nicht.'
+  decay_tier: 0
+- id: eb_27
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. Probably.
+  text_de: Tiefer. Wahrscheinlich.
+  decay_tier: 1
+- id: eb_28
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Down.
+  text_de: Runter.
+  decay_tier: 2
+- id: eb_29
+  trigger: rest_start
+  personality_filter: {}
+  text_en: A space where the decay is marginally slower. The instruments call it a sanctuary. The
+    instruments are optimistic.
+  text_de: Ein Raum, in dem der Verfall geringfügig langsamer ist. Die Instrumente nennen es ein Refugium.
+    Die Instrumente sind optimistisch.
+  decay_tier: 0
+- id: eb_30
+  trigger: rest_start
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''Rest here. The walls still have texture. That is more than we deserve.'''
+  text_de: '{agent}: »Rastet hier. Die Wände haben noch Textur. Das ist mehr, als wir verdienen.«'
+  decay_tier: 0
+- id: eb_31
+  trigger: rest_start
+  personality_filter: {}
+  text_en: Rest. The concept erodes even as you practice it.
+  text_de: Rast. Das Konzept erodiert, selbst während ihr es praktiziert.
+  decay_tier: 2
+- id: eb_32
+  trigger: loot_found
+  personality_filter: {}
+  text_en: Something here has resisted the dissolution. Not for long, but long enough.
+  text_de: Etwas hier hat der Auflösung widerstanden. Nicht lange, aber lang genug.
+  decay_tier: 0
+- id: eb_33
+  trigger: loot_found
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} examines the find with the reverence of an archaeologist. In the Verfall-Garten,
+    anything that remains itself is a museum piece.'
+  text_de: '{agent} untersucht den Fund mit der Ehrfurcht eines Archäologen. Im Verfall-Garten ist
+    alles, was noch es selbst ist, ein Museumsstück.'
+  decay_tier: 0
+- id: eb_34
+  trigger: loot_found
+  personality_filter: {}
+  text_en: A remnant. Take it before it isn't.
+  text_de: Ein Überrest. Nehmt ihn, bevor er keiner mehr ist.
+  decay_tier: 1
+- id: eb_35
+  trigger: boss_approach
+  personality_filter: {}
+  text_en: Something ahead retains more definition than its surroundings. This passes for remarkable.
+  text_de: Etwas voraus behält mehr Definition als seine Umgebung. Das gilt hier als bemerkenswert.
+  decay_tier: 0
+- id: eb_36
+  trigger: boss_approach
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent}: ''It''s still trying to be something. That makes it the most dangerous thing
+    here.'''
+  text_de: '{agent}: »Es versucht noch, etwas zu sein. Das macht es zum Gefährlichsten hier.«'
+  decay_tier: 0
+- id: eb_37
+  trigger: retreat
+  personality_filter: {}
+  text_en: The party retreats. The dungeon does not pursue. It does not need to. It is patient. It
+    is also everywhere.
+  text_de: Die Gruppe zieht sich zurück. Der Dungeon verfolgt nicht. Er muss nicht. Er ist geduldig.
+    Er ist auch überall.
+  decay_tier: 0
+- id: eb_38
+  trigger: retreat
+  personality_filter: {}
+  text_en: Back. If 'back' still means anything.
+  text_de: Zurück. Falls 'zurück' noch etwas bedeutet.
+  decay_tier: 2
+- id: eb_39
+  trigger: dungeon_completed
+  personality_filter: {}
+  text_en: You leave. The garden remains. It is very patient. It has nothing but time. And less and
+    less of everything else.
+  text_de: Ihr geht. Der Garten bleibt. Er ist sehr geduldig. Er hat nichts als Zeit. Und immer weniger
+    von allem anderen.
+  decay_tier: 0
+- id: eb_40
+  trigger: party_wipe
+  personality_filter: {}
+  text_en: The party dissolves. Not violently. Gently. The way a word dissolves when you say it too
+    many times. The garden accepts them without ceremony.
+  text_de: Die Gruppe löst sich auf. Nicht gewaltsam. Sanft. So wie ein Wort sich auflöst, wenn man
+    es zu oft sagt. Der Garten nimmt sie auf, ohne Zeremonie.
+  decay_tier: 0
+- id: eb_41
+  trigger: party_wipe
+  personality_filter: {}
+  text_en: Dissolution complete. The instruments record this accurately. The instruments will be next.
+  text_de: Auflösung vollständig. Die Instrumente verzeichnen dies genau. Die Instrumente sind als
+    Nächstes dran.
+  decay_tier: 0
+- id: eb_42
+  trigger: rest_safe
+  personality_filter: {}
+  text_en: No ambush. The decay pauses. Not stops – pauses. The difference is everything. The difference
+    is also decaying.
+  text_de: Kein Hinterhalt. Der Verfall pausiert. Hält nicht an – pausiert. Der Unterschied ist alles.
+    Der Unterschied verfällt ebenfalls.
+  decay_tier: 0
+- id: eb_43
+  trigger: rest_safe
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''We''re still different from each other. That counts for something. I think.'''
+  text_de: '{agent}: »Wir sind noch verschieden voneinander. Das zählt für etwas. Glaube ich.«'
+  decay_tier: 0
+- id: eb_44
+  trigger: rest_ambush
+  personality_filter: {}
+  text_en: Something drifts through the walls. Even sanctuaries are temporary. Especially sanctuaries.
+  text_de: Etwas treibt durch die Wände. Auch Refugien sind vorübergehend. Besonders Refugien.
+  decay_tier: 0
+- id: eb_45
+  trigger: rest_ambush
+  personality_filter: {}
+  text_en: The decay found you resting. It did not hesitate. Hesitation requires purpose.
+  text_de: Der Verfall fand euch rastend. Er zögerte nicht. Zögern erfordert Absicht.
+  decay_tier: 0

@@ -1,0 +1,140 @@
+schema_version: 1
+enemies:
+- id: entropy_rust_phantom
+  name_en: Rust Phantom
+  name_de: Rostphantom
+  condition_threshold: 1
+  stress_resistance: 30
+  threat_level: minion
+  attack_aptitude: infiltrator
+  attack_power: 2
+  stress_attack_power: 4
+  telegraphed_intent: true
+  evasion: 35
+  resistances:
+  - assassin
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    stress_attack: 50
+    evade: 30
+    corrode: 10
+    ambient: 10
+  special_abilities:
+  - corrode
+  description_en: A shape that was something once. Now it is mostly the color of rust and the sound
+    of metal thinning. It does not approach – it persists.
+  description_de: Eine Form, die einst etwas war. Nun ist sie hauptsächlich die Farbe von Rost und
+    das Geräusch von dünner werdendem Metall. Sie nähert sich nicht – sie verharrt.
+  ambient_text_en:
+  - The phantom flickers. Not like light – like signal quality.
+  - You can see through it. You wish you couldn't.
+  ambient_text_de:
+  - Das Phantom flackert. Nicht wie Licht – wie Signalqualität.
+  - Ihr könnt hindurchsehen. Ihr wünscht, ihr könntet es nicht.
+- id: entropy_fade_echo
+  name_en: Fade Echo
+  name_de: Verblassecho
+  condition_threshold: 2
+  stress_resistance: 150
+  threat_level: standard
+  attack_aptitude: propagandist
+  attack_power: 2
+  stress_attack_power: 6
+  telegraphed_intent: true
+  evasion: 20
+  resistances:
+  - spy
+  vulnerabilities:
+  - propagandist
+  - guardian
+  action_weights:
+    stress_attack: 45
+    diminish: 35
+    ambient: 20
+  special_abilities:
+  - diminish
+  description_en: A sound that is almost a voice. A shape that is almost a figure. It repeats something
+    that was once important. The repetition has worn the meaning away.
+  description_de: Ein Klang, der beinahe eine Stimme ist. Eine Gestalt, die beinahe eine Figur ist.
+    Es wiederholt etwas, das einst wichtig war. Die Wiederholung hat die Bedeutung abgetragen.
+  ambient_text_en:
+  - The echo says your name. Approximately.
+  - '{agent}''s shadow and the echo''s shape briefly overlap. Neither notices.'
+  ambient_text_de:
+  - Das Echo sagt euren Namen. Ungefähr.
+  - '{agent}s Schatten und die Form des Echos überlappen sich kurz. Keiner bemerkt es.'
+- id: entropy_dissolution_swarm
+  name_en: Dissolution Swarm
+  name_de: Auflösungsschwarm
+  condition_threshold: 3
+  stress_resistance: 50
+  threat_level: standard
+  attack_aptitude: saboteur
+  attack_power: 4
+  stress_attack_power: 3
+  telegraphed_intent: true
+  evasion: 15
+  resistances:
+  - infiltrator
+  vulnerabilities:
+  - spy
+  - assassin
+  action_weights:
+    attack: 40
+    scatter: 30
+    corrode: 20
+    ambient: 10
+  special_abilities:
+  - scatter
+  - corrode
+  description_en: A cloud of particles that were once a wall, a floor, a ceiling. Now they are nothing
+    in particular, and they move with the purposelessness of dust in a closed room.
+  description_de: Eine Wolke aus Partikeln, die einst eine Wand waren, ein Boden, eine Decke. Nun
+    sind sie nichts Bestimmtes, und sie bewegen sich mit der Ziellosigkeit von Staub in einem geschlossenen
+    Raum.
+  ambient_text_en:
+  - The swarm drifts. Not toward you. Not away. Just… redistributing.
+  - Individual particles detach and reattach. The total mass remains constant.
+  ambient_text_de:
+  - Der Schwarm treibt. Nicht auf euch zu. Nicht weg. Nur… umverteilend.
+  - Einzelne Partikel lösen sich und heften sich wieder an. Die Gesamtmasse bleibt konstant.
+- id: entropy_warden
+  name_en: Entropy Warden
+  name_de: Entropiewächter
+  condition_threshold: 5
+  stress_resistance: 300
+  threat_level: elite
+  attack_aptitude: guardian
+  attack_power: 6
+  stress_attack_power: 4
+  telegraphed_intent: false
+  evasion: 10
+  resistances:
+  - propagandist
+  - spy
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    attack: 30
+    stress_attack: 20
+    entropy_pulse: 25
+    summon_phantoms: 15
+    ambient: 10
+  special_abilities:
+  - entropy_pulse
+  - summon_phantoms
+  description_en: It was a guardian once. The armor remembers. The purpose does not. It stands where
+    it has always stood, performing the motions of protection over nothing. When it notices you, the
+    motions do not change. You have simply become part of what it protects. Or what it dissolves.
+    There is no longer a difference.
+  description_de: Es war einst ein Wächter. Die Rüstung erinnert sich. Der Zweck nicht. Es steht,
+    wo es immer gestanden hat, und vollzieht die Gesten des Schutzes über das Nichts. Als es euch
+    bemerkt, ändern sich die Gesten nicht. Ihr seid einfach Teil dessen geworden, was es beschützt.
+    Oder was es auflöst. Es gibt keinen Unterschied mehr.
+  ambient_text_en:
+  - The Warden's armor flakes. Each flake contains a memory of structural integrity.
+  - It swings. Not at you. At the concept of distinction between you and it.
+  ambient_text_de:
+  - Die Rüstung des Wächters blättert. Jede Schuppe enthält eine Erinnerung an strukturelle Integrität.
+  - Es schlägt zu. Nicht nach euch. Nach dem Konzept der Unterscheidung zwischen euch und ihm.
