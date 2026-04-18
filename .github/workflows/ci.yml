@@ -100,27 +100,35 @@ jobs:
         with:
           version: latest
 
-      - name: Start Supabase containers (no migrations)
-        # `supabase start` applies migrations via an embedded SQL splitter
-        # that fails on certain valid PostgreSQL patterns (observed with
-        # migration 214: SQLSTATE 42601 "cannot insert multiple commands
-        # into a prepared statement", even though psql applies the same
-        # file cleanly). We start containers here, then apply migrations
-        # via psql in the next step — the canonical Postgres client
-        # handles every migration identically to local/prod.
+      - name: Start Supabase containers (no migrations, no seeds)
+        # `supabase start` applies migrations + seeds via an embedded SQL
+        # splitter that fails on certain valid PostgreSQL patterns
+        # (observed with migration 214: SQLSTATE 42601 "cannot insert
+        # multiple commands into a prepared statement", even though psql
+        # applies the same file cleanly). We stash migrations and seeds
+        # before start, bring up the containers, then apply both via
+        # psql in subsequent steps — psql is the canonical Postgres
+        # client and handles every file identically to local/prod.
         run: |
-          mkdir -p /tmp/migrations-stash
-          mv supabase/migrations/*.sql /tmp/migrations-stash/
+          mkdir -p /tmp/sql-stash/migrations /tmp/sql-stash/seed
+          mv supabase/migrations/*.sql /tmp/sql-stash/migrations/
+          mv supabase/seed/*.sql /tmp/sql-stash/seed/
           supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
-          mv /tmp/migrations-stash/*.sql supabase/migrations/
-          rmdir /tmp/migrations-stash
+          mv /tmp/sql-stash/migrations/*.sql supabase/migrations/
+          mv /tmp/sql-stash/seed/*.sql supabase/seed/
+          rm -rf /tmp/sql-stash
 
-      - name: Apply migrations via psql
+      - name: Apply migrations and seeds via psql
         env:
           PGPASSWORD: postgres
         run: |
           for f in $(ls supabase/migrations/*.sql | sort); do
-            echo "Applying $(basename "$f")..."
+            echo "[migrations] Applying $(basename "$f")..."
+            psql -h localhost -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+          # Seeds — config.toml pattern is ./seed/0*.sql (numeric-prefix only)
+          for f in $(ls supabase/seed/0*.sql 2>/dev/null | sort); do
+            echo "[seed] Applying $(basename "$f")..."
             psql -h localhost -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
