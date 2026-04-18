@@ -1,0 +1,172 @@
+schema_version: 1
+loot:
+- id: mother_nutrient_concentrate
+  name_en: Nutrient Concentrate
+  name_de: Nährstoffkonzentrat
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 60
+    when: after_dungeon
+  description_en: A warm capsule of biological material. Your instruments read it as vitamins, minerals,
+    amino acids. Your body reads it as comfort.
+  description_de: Eine warme Kapsel biologischen Materials. Eure Instrumente lesen Vitamine, Minerale,
+    Aminosäuren. Euer Körper liest Geborgenheit.
+  drop_weight: 25
+- id: mother_binding_insight
+  name_en: Symbiosis Insight
+  name_de: Symbioseerkenntnis
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Learned how the Mother reads the body's needs and responds before being asked
+    content_de: Gelernt, wie die Mutter die Bedürfnisse des Körpers liest und reagiert, bevor man
+      fragt
+  description_en: 'A fragment of understanding: how biological systems learn to anticipate needs.
+    The knowledge is useful. The knowledge is also the mechanism.'
+  description_de: 'Ein Fragment des Verständnisses: wie biologische Systeme lernen, Bedürfnisse zu
+    antizipieren. Das Wissen ist nützlich. Das Wissen ist auch der Mechanismus.'
+  drop_weight: 25
+- id: mother_warmth_fragment
+  name_en: Warmth Fragment
+  name_de: Wärmefragment
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: propagandist
+    scope: this_dungeon
+  description_en: A shard that radiates warmth. It resists the Mother's emotional pull. Propagandist
+    checks +5%.
+  description_de: Ein Splitter, der Wärme abstrahlt. Er widersteht dem emotionalen Sog der Mutter.
+    Propagandist-Proben +5%.
+  drop_weight: 25
+- id: mother_tissue_sample
+  name_en: Living Tissue Sample
+  name_de: Lebendgewebeprobe
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    rest_bonus: 0.25
+    scope: this_dungeon
+  description_en: A sample of the Mother's tissue, still alive. Still warm. It enhances rest healing
+    by 25%. It does not stop growing.
+  description_de: Eine Probe des Gewebes der Mutter, noch lebendig. Noch warm. Sie verstärkt Rastheilung
+    um 25%. Sie hört nicht auf zu wachsen.
+  drop_weight: 25
+- id: mother_symbiont_shard
+  name_en: Symbiont Shard
+  name_de: Symbiontsplitter
+  tier: 2
+  effect_type: moodlet
+  effect_params:
+    moodlet_id: mother_attuned
+    emotion: serene
+    strength: 8
+  description_en: A fragment of symbiotic tissue that bonds with the carrier. It provides a profound
+    sense of calm. The calm is genuine.
+  description_de: Ein Fragment symbiotischen Gewebes, das sich mit dem Träger verbindet. Es vermittelt
+    eine tiefe Ruhe. Die Ruhe ist echt.
+  drop_weight: 30
+- id: mother_membrane_key
+  name_en: Membrane Key
+  name_de: Membranschlüssel
+  tier: 2
+  effect_type: memory
+  effect_params:
+    importance: 7
+    content_en: Understands the Mother's vascular architecture — how nutrients flow, how attachment
+      deepens
+    content_de: Versteht die vaskuläre Architektur der Mutter — wie Nährstoffe fließen, wie Bindung
+      sich vertieft
+  description_en: A biological key that reads the Mother's circulatory map. Knowing the architecture
+    does not make it less effective.
+  description_de: Ein biologischer Schlüssel, der die Kreislaufkarte der Mutter liest. Die Architektur
+    zu kennen macht sie nicht weniger wirksam.
+  drop_weight: 25
+- id: mother_guardian_graft
+  name_en: Guardian Graft
+  name_de: Wächterpfropf
+  tier: 2
+  effect_type: dungeon_buff
+  effect_params:
+    aptitude_boost: 1
+    aptitude: guardian
+    scope: archetype
+    archetype: The Devouring Mother
+  description_en: Tissue grafted from a former Guardian host. It remembers how to sever. Permanent
+    +1 Guardian aptitude in Devouring Mother dungeons.
+  description_de: Gewebe, gepfropft von einem ehemaligen Wächter-Wirt. Es erinnert sich, wie man durchtrennt.
+    Permanent +1 Wächter-Eignung in Verschlingende-Mutter-Dungeons.
+  drop_weight: 20
+- id: mother_spore_catalyst
+  name_en: Spore Catalyst
+  name_de: Sporenkatalysator
+  tier: 2
+  effect_type: event_modifier
+  effect_params:
+    impact_level: -1
+  description_en: A concentrated spore extract. When released into a simulation's ecosystem, it dampens
+    the severity of the next negative event.
+  description_de: Ein konzentrierter Sporenextrakt. In das Ökosystem einer Simulation freigesetzt,
+    dämpft er die Schwere des nächsten negativen Ereignisses.
+  drop_weight: 15
+- id: mother_cradle_map
+  name_en: Cradle Map
+  name_de: Wiegenkarte
+  tier: 2
+  effect_type: dungeon_buff
+  effect_params:
+    reveal_rest_rooms: true
+    scope: next_run
+    archetype: The Devouring Mother
+  description_en: A biological diagram grown into living tissue. It maps the locations of rest sites
+    in the next Devouring Mother dungeon.
+  description_de: Ein biologisches Diagramm, gewachsen in lebendes Gewebe. Es kartiert die Standorte
+    der Raststätten im nächsten Verschlingende-Mutter-Dungeon.
+  drop_weight: 10
+- id: mother_restoration_organ
+  name_en: Restoration Organ
+  name_de: Restaurierungsorgan
+  tier: 3
+  effect_type: building_repair
+  effect_params:
+    condition_tiers: 1
+  description_en: A living organ, pulsing with restorative compounds. When applied to damaged infrastructure,
+    it grows repair tissue into the structure. The repair is permanent. The organ continues to pulse.
+  description_de: Ein lebendes Organ, pulsierend mit restaurativen Verbindungen. Auf beschädigte Infrastruktur
+    angewendet, wächst es Reparaturgewebe in die Struktur. Die Reparatur ist permanent. Das Organ
+    pulsiert weiter.
+  drop_weight: 100
+- id: mother_nursery_memory
+  name_en: Nursery Memory
+  name_de: Kinderstubenerinnerung
+  tier: 3
+  effect_type: memory
+  effect_params:
+    importance: 9
+    behavior_effect: more_nurturing_less_aggressive
+    content_en: Remembers the nursery — the pods, the warmth, the things that were once people. The
+      memory changes how they treat others.
+    content_de: Erinnert sich an die Kinderstube — die Hülsen, die Wärme, die Dinge, die einst Menschen
+      waren. Die Erinnerung verändert, wie sie andere behandeln.
+  description_en: 'The memory of the nursery: what it means to be cared for completely, and what that
+    care costs. The agent becomes more nurturing, less aggressive.'
+  description_de: 'Die Erinnerung an die Kinderstube: was es bedeutet, vollständig umsorgt zu werden,
+    und was diese Fürsorge kostet. Der Agent wird fürsorglicher, weniger aggressiv.'
+  drop_weight: 100
+- id: mother_symbiont_attunement
+  name_en: Symbiont Attunement
+  name_de: Symbionteneinstimmung
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: guardian|propagandist
+    boost: 1
+    max_total_boost: 2
+  description_en: Deep attunement with the Mother's symbiotic systems. The carrier's capacity for
+    protection or persuasion permanently increases. +1 Guardian OR Propagandist aptitude (max +2 cap).
+  description_de: Tiefe Einstimmung mit den symbiotischen Systemen der Mutter. Die Fähigkeit des Trägers
+    für Schutz oder Überzeugung steigt permanent. +1 Wächter- ODER Propagandist-Eignung (max. +2 Grenze).
+  drop_weight: 50

@@ -1,0 +1,415 @@
+schema_version: 1
+banter:
+- id: mb_01
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''The walls are alive. Literally. The tissue is warm and vascularized. Instruments
+    read it as non-hostile. I don''t trust the instruments.'''
+  text_de: '{agent}: »Die Wände leben. Wortwörtlich. Das Gewebe ist warm und durchblutet. Die Instrumente
+    lesen es als nicht-feindlich. Ich traue den Instrumenten nicht.«'
+  attachment_tier: 0
+- id: mb_02
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} presses a hand to the wall. Warm. Yielding. Like touching something that was expecting
+    the contact.'
+  text_de: '{agent} drückt eine Hand gegen die Wand. Warm. Nachgiebig. Wie die Berührung von etwas,
+    das den Kontakt erwartet hat.'
+  attachment_tier: 0
+- id: mb_03
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The corridor narrows – not from collapse, but from growth. The walls are thicker here.
+    Warmer. Something has been building toward this room.
+  text_de: Der Korridor verengt sich – nicht durch Einsturz, sondern durch Wachstum. Die Wände sind
+    hier dicker. Wärmer. Etwas hat auf diesen Raum hingearbeitet.
+  attachment_tier: 0
+- id: mb_04
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} logs the ambient temperature. 37.2°C. Body temperature. The dungeon maintains
+    body temperature. Whose body is the question.'
+  text_de: '{agent} protokolliert die Umgebungstemperatur. 37,2°C. Körpertemperatur. Der Dungeon hält
+    Körpertemperatur. Wessen Körper ist die Frage.'
+  attachment_tier: 0
+- id: mb_05
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''It''s prepared this room for us. The temperature. The light. Even the air tastes
+    – I don''t have a word. Correct. The air tastes correct.'''
+  text_de: '{agent}: »Es hat diesen Raum für uns vorbereitet. Die Temperatur. Das Licht. Sogar die
+    Luft schmeckt – mir fehlt ein Wort. Richtig. Die Luft schmeckt richtig.«'
+  attachment_tier: 1
+- id: mb_06
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Something has prepared this room. The temperature is exact. The light is the color of afternoon
+    through curtains. Your instruments read 'biological hazard.' Your body reads 'home.'
+  text_de: Etwas hat diesen Raum vorbereitet. Die Temperatur ist exakt. Das Licht hat die Farbe von
+    Nachmittag durch Vorhänge. Eure Instrumente lesen »biologische Gefährdung«. Euer Körper liest
+    »Zuhause«.
+  attachment_tier: 1
+- id: mb_07
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The room is warm. The room is always warm now. {agent} no longer checks the instruments.
+    The instruments have nothing to say that the body doesn't already know.
+  text_de: Der Raum ist warm. Der Raum ist jetzt immer warm. {agent} prüft die Instrumente nicht mehr.
+    Die Instrumente haben nichts zu sagen, was der Körper nicht längst weiß.
+  attachment_tier: 2
+- id: mb_08
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: The walls pulse. Gently. Like something breathing for you so you don't have to.
+  text_de: Die Wände pulsieren. Sanft. Wie etwas, das für euch atmet, damit ihr es nicht müsst.
+  attachment_tier: 2
+- id: mb_28
+  trigger: room_entered
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} touches the wall and does not pull away. The warmth is immediate, personal, like
+    a hand placed on a feverish brow. ''It knows I''m tired,'' {agent} says. Nobody corrects this.'
+  text_de: '{agent} berührt die Wand und zieht nicht zurück. Die Wärme ist sofort, persönlich, wie
+    eine Hand auf einer fiebrigen Stirn. »Es weiß, dass ich müde bin«, sagt {agent}. Niemand korrigiert
+    das.'
+  attachment_tier: 1
+- id: mb_09
+  trigger: combat_won
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''It wasn''t fighting us. It was – offering. We killed something that was trying
+    to feed us.'''
+  text_de: '{agent}: »Es hat nicht gegen uns gekämpft. Es hat – angeboten. Wir haben etwas getötet,
+    das uns füttern wollte.«'
+  attachment_tier: 0
+- id: mb_10
+  trigger: combat_won
+  personality_filter:
+    extraversion:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''We won. If you can call it that. It stopped reaching for us. That''s not the
+    same thing.'''
+  text_de: '{agent}: »Wir haben gewonnen. Wenn man das so nennen kann. Es hat aufgehört, nach uns
+    zu greifen. Das ist nicht dasselbe.«'
+  attachment_tier: 0
+- id: mb_11
+  trigger: combat_won
+  personality_filter: {}
+  text_en: The creature falls. The warmth in the room does not diminish. Something else will grow
+    here. Something else is always growing here.
+  text_de: Die Kreatur fällt. Die Wärme im Raum lässt nicht nach. Etwas anderes wird hier wachsen.
+    Etwas anderes wächst hier immer.
+  attachment_tier: 1
+- id: mb_12
+  trigger: combat_won
+  personality_filter: {}
+  text_en: Resolved. The word tastes wrong. You did not resolve anything. You rejected a gift.
+  text_de: Erledigt. Das Wort schmeckt falsch. Ihr habt nichts erledigt. Ihr habt ein Geschenk abgelehnt.
+  attachment_tier: 2
+- id: mb_13
+  trigger: attachment_dependent
+  personality_filter: {}
+  text_en: 'PARASITIC ATTACHMENT INDEX: 45+. Your instruments advise immediate retreat. Your body
+    advises nothing. Your body is comfortable.'
+  text_de: 'PARASITÄRER BINDUNGSINDEX: 45+. Eure Instrumente empfehlen sofortigen Rückzug. Euer Körper
+    empfiehlt nichts. Eurem Körper geht es gut.'
+  attachment_tier: 1
+- id: mb_14
+  trigger: attachment_dependent
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} notices the warmth has become internal. Not the room warming them – them warming
+    from within. The distinction matters. The distinction is becoming difficult to maintain.'
+  text_de: '{agent} bemerkt, dass die Wärme innerlich geworden ist. Nicht der Raum wärmt sie – sie
+    wärmen von innen. Die Unterscheidung ist wichtig. Die Unterscheidung wird schwer aufrechtzuerhalten.'
+  attachment_tier: 1
+- id: mb_29
+  trigger: attachment_dependent
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} checks the readings twice. Stress: declining. Condition: stable. Attachment: climbing.
+    Two out of three metrics are improving. The third is the one that matters.'
+  text_de: '{agent} prüft die Messwerte zweimal. Stress: sinkend. Zustand: stabil. Bindung: steigend.
+    Zwei von drei Metriken verbessern sich. Die dritte ist die, die zählt.'
+  attachment_tier: 1
+- id: mb_15
+  trigger: attachment_critical
+  personality_filter: {}
+  text_en: 'PARASITIC ATTACHMENT INDEX: CRITICAL. The word ''parasitic'' seems – ungrateful. The word
+    ''attachment'' seems – accurate.'
+  text_de: 'PARASITÄRER BINDUNGSINDEX: KRITISCH. Das Wort »parasitär« wirkt – undankbar. Das Wort
+    »Bindung« wirkt – zutreffend.'
+  attachment_tier: 2
+- id: mb_16
+  trigger: attachment_critical
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} tries to remember what ''outside'' felt like. Cold. The memory is cold. Why would
+    anyone go back to the cold?'
+  text_de: '{agent} versucht sich zu erinnern, wie sich »draußen« anfühlte. Kalt. Die Erinnerung ist
+    kalt. Warum sollte jemand zurück in die Kälte gehen?'
+  attachment_tier: 2
+- id: mb_17
+  trigger: attachment_critical
+  personality_filter: {}
+  text_en: Home. The word surfaces without permission. Home.
+  text_de: Zuhause. Das Wort taucht ohne Erlaubnis auf. Zuhause.
+  attachment_tier: 2
+- id: mb_30
+  trigger: agent_stressed
+  personality_filter: {}
+  text_en: '{agent}''s stress spikes. The walls respond – a faint pulse, a degree warmer. The dungeon
+    has noticed. It is adjusting.'
+  text_de: '{agent}s Stress steigt. Die Wände reagieren – ein schwaches Pulsieren, ein Grad wärmer.
+    Der Dungeon hat es bemerkt. Er passt sich an.'
+  attachment_tier: 0
+- id: mb_31
+  trigger: agent_stressed
+  personality_filter: {}
+  text_en: '{agent} falters. The air thickens around them – not oppressively, but supportively. Like
+    a hand on the small of the back. The stress eases. The attachment does not.'
+  text_de: '{agent} schwankt. Die Luft verdickt sich um sie herum – nicht erdrückend, sondern stützend.
+    Wie eine Hand im Kreuz. Der Stress lässt nach. Die Bindung nicht.'
+  attachment_tier: 1
+- id: mb_32
+  trigger: agent_stressed
+  personality_filter: {}
+  text_en: '{agent} is stressed. The dungeon responds before the party can: warmth, a chemical exhalation,
+    something that calms without asking permission. Consent is no longer part of the arrangement.'
+  text_de: '{agent} ist gestresst. Der Dungeon reagiert, bevor die Gruppe kann: Wärme, eine chemische
+    Ausatmung, etwas, das beruhigt, ohne um Erlaubnis zu fragen. Einverständnis ist nicht mehr Teil
+    der Vereinbarung.'
+  attachment_tier: 2
+- id: mb_18
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. The tissue on the walls thickens. The temperature rises half a degree. The dungeon
+    is more alive here. More generous.
+  text_de: Tiefer. Das Gewebe an den Wänden verdickt sich. Die Temperatur steigt um ein halbes Grad.
+    Der Dungeon ist hier lebendiger. Großzügiger.
+  attachment_tier: 0
+- id: mb_33
+  trigger: depth_change
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} notes the depth transition. The biological density readings climb. More vascular
+    tissue. More active circulation. The dungeon is working harder here. For you.'
+  text_de: '{agent} notiert den Tiefenwechsel. Die biologischen Dichtewerte steigen. Mehr vaskuläres
+    Gewebe. Aktivere Zirkulation. Der Dungeon arbeitet hier härter. Für euch.'
+  attachment_tier: 0
+- id: mb_19
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. Warmer. The air carries nutrients now – you can taste them. Iron and sugar. Like
+    blood. Like milk.
+  text_de: Tiefer. Wärmer. Die Luft trägt jetzt Nährstoffe – ihr könnt sie schmecken. Eisen und Zucker.
+    Wie Blut. Wie Milch.
+  attachment_tier: 1
+- id: mb_34
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Deeper. The thought does not carry the weight it used to. Deeper is warmer. Deeper is safer.
+    Deeper is closer.
+  text_de: Tiefer. Der Gedanke wiegt nicht mehr so schwer wie früher. Tiefer ist wärmer. Tiefer ist
+    sicherer. Tiefer ist näher.
+  attachment_tier: 2
+- id: mb_21
+  trigger: rest_start
+  personality_filter: {}
+  text_en: A hollow in the tissue. Soft. The temperature is exact. The air carries something sedative
+    – not drugged, but soothing. The dungeon has made a bed for you. The bed is alive.
+  text_de: Eine Höhlung im Gewebe. Weich. Die Temperatur ist exakt. Die Luft trägt etwas Sedierendes
+    – nicht betäubt, aber beruhigend. Der Dungeon hat euch ein Bett gemacht. Das Bett lebt.
+  attachment_tier: 0
+- id: mb_35
+  trigger: rest_start
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} lies down. The tissue adjusts. It knows their weight, their shape, their temperature
+    preference. {agent} exhales. ''I could sleep here,'' {agent} says. The sentence carries more weight
+    than intended.'
+  text_de: '{agent} legt sich hin. Das Gewebe passt sich an. Es kennt ihr Gewicht, ihre Form, ihre
+    Temperaturpräferenz. {agent} atmet aus. »Ich könnte hier schlafen«, sagt {agent}. Der Satz wiegt
+    schwerer als beabsichtigt.'
+  attachment_tier: 1
+- id: mb_22
+  trigger: rest_start
+  personality_filter: {}
+  text_en: Rest. You sink into the warmth and the warmth sinks into you. The boundary between resting
+    and being absorbed is thinner than you'd like. You rest anyway.
+  text_de: Rast. Ihr sinkt in die Wärme und die Wärme sinkt in euch. Die Grenze zwischen Ausruhen
+    und Aufgenommen-Werden ist dünner, als euch lieb wäre. Ihr rastet trotzdem.
+  attachment_tier: 2
+- id: mb_23
+  trigger: loot_found
+  personality_filter: {}
+  text_en: Something has been grown for you. Not found – grown. The dungeon produced this. The label
+    says 'gift.' Your instruments say 'parasitic vector.' The gift is excellent.
+  text_de: Etwas wurde für euch gezüchtet. Nicht gefunden – gezüchtet. Der Dungeon hat dies hervorgebracht.
+    Das Etikett sagt »Geschenk«. Eure Instrumente sagen »parasitärer Vektor«. Das Geschenk ist hervorragend.
+  attachment_tier: 0
+- id: mb_24
+  trigger: loot_found
+  personality_filter: {}
+  text_en: A gift. Another gift. The dungeon does not stop giving. The giving does not stop costing.
+  text_de: Ein Geschenk. Noch ein Geschenk. Der Dungeon hört nicht auf zu geben. Das Geben hört nicht
+    auf zu kosten.
+  attachment_tier: 1
+- id: mb_36
+  trigger: loot_found
+  personality_filter: {}
+  text_en: 'Of course there is a gift. There is always a gift. The Mother provides. You take it without
+    checking the instruments. The instruments would only confirm what you already know: it is perfect.
+    Everything here is perfect.'
+  text_de: 'Natürlich gibt es ein Geschenk. Es gibt immer ein Geschenk. Die Mutter versorgt. Ihr nehmt
+    es, ohne die Instrumente zu prüfen. Die Instrumente würden nur bestätigen, was ihr schon wisst:
+    es ist perfekt. Alles hier ist perfekt.'
+  attachment_tier: 2
+- id: mb_20
+  trigger: boss_approach
+  personality_filter: {}
+  text_en: 'Ahead: something larger. Something that was once a person and is now – more. The tissue
+    grows thicker around it, as if the dungeon itself is cupping it in its palms. It is waiting. It
+    has been waiting with the patience of something that knows you will come to it eventually.'
+  text_de: 'Voraus: etwas Größeres. Etwas, das einst ein Mensch war und jetzt – mehr ist. Das Gewebe
+    wächst dichter um es herum, als hielte der Dungeon es in seinen Händen. Es wartet. Es wartet mit
+    der Geduld von etwas, das weiß, dass ihr irgendwann zu ihm kommen werdet.'
+  attachment_tier: 0
+- id: mb_37
+  trigger: boss_approach
+  personality_filter: {}
+  text_en: The Wirtskörper. The word does not translate well. Host body. Ward body. The body that
+    houses and is housed. It opens its arms and the gesture is not threat but invitation. The embrace
+    is the attack. The attack is the welcome.
+  text_de: Der Wirtskörper. Das Wort übersetzt sich nicht gut ins Englische. Es öffnet die Arme und
+    die Geste ist keine Drohung, sondern Einladung. Die Umarmung ist der Angriff. Der Angriff ist
+    das Willkommen.
+  attachment_tier: 1
+- id: mb_25
+  trigger: retreat
+  personality_filter: {}
+  text_en: The party retreats. The dungeon does not pursue. It does not close. It remains – warm,
+    open, waiting. The absence of the warmth hits like weather.
+  text_de: Die Gruppe zieht sich zurück. Der Dungeon verfolgt nicht. Er schließt sich nicht. Er bleibt
+    – warm, offen, wartend. Die Abwesenheit der Wärme trifft wie Wetter.
+  attachment_tier: 0
+- id: mb_38
+  trigger: retreat
+  personality_filter: {}
+  text_en: The exit is open. It was always open. The dungeon does not need doors. The Mother does
+    not need locks. She only needs you to remember what it felt like inside.
+  text_de: Der Ausgang ist offen. Er war immer offen. Der Dungeon braucht keine Türen. Die Mutter
+    braucht keine Schlösser. Sie braucht nur, dass ihr euch erinnert, wie es sich drinnen anfühlte.
+  attachment_tier: 1
+- id: mb_26
+  trigger: retreat
+  personality_filter: {}
+  text_en: You leave. The cold arrives instantly. Everything outside is cold. Everything outside has
+    always been cold. The warmth behind you does not diminish. It waits.
+  text_de: Ihr geht. Die Kälte kommt sofort. Alles draußen ist kalt. Alles draußen war immer kalt.
+    Die Wärme hinter euch lässt nicht nach. Sie wartet.
+  attachment_tier: 2
+- id: mb_27
+  trigger: dungeon_completed
+  personality_filter: {}
+  text_en: You leave. The Labyrinth remains – warm, alive, growing. It did not try to stop you. It
+    did not need to. Everything it gave you is still inside you. Growing.
+  text_de: Ihr geht. Das Labyrinth bleibt – warm, lebendig, wachsend. Es hat nicht versucht, euch
+    aufzuhalten. Es musste nicht. Alles, was es euch gab, ist noch in euch. Wachsend.
+  attachment_tier: 0
+- id: mb_39
+  trigger: dungeon_completed
+  personality_filter: {}
+  text_en: Outside. The air is thin and cold and does not carry nutrients. The simulation continues.
+    The world does not adjust to your needs. You will remember the Labyrinth. The Labyrinth is counting
+    on it.
+  text_de: Draußen. Die Luft ist dünn und kalt und trägt keine Nährstoffe. Die Simulation geht weiter.
+    Die Welt passt sich nicht an eure Bedürfnisse an. Ihr werdet euch an das Labyrinth erinnern. Das
+    Labyrinth rechnet damit.
+  attachment_tier: 1
+- id: mb_40
+  trigger: ambush
+  personality_filter: {}
+  text_en: Something approaches. Not from the shadows – from the walls. The tissue parts and a shape
+    emerges, trailing filaments. It did not ambush you. It arrived, bearing gifts. The gifts have
+    teeth.
+  text_de: Etwas nähert sich. Nicht aus den Schatten – aus den Wänden. Das Gewebe teilt sich und eine
+    Form tritt hervor, Filamente hinter sich herziehend. Es hat euch nicht überfallen. Es kam und
+    brachte Geschenke. Die Geschenke haben Zähne.
+  attachment_tier: 0
+- id: mb_41
+  trigger: ambush
+  personality_filter: {}
+  text_en: A visitor. The walls open like a throat and something warm spills through. Not an attack.
+    A delivery. The delivery does not care about your schedule.
+  text_de: Ein Besucher. Die Wände öffnen sich wie ein Schlund und etwas Warmes ergießt sich hindurch.
+    Kein Angriff. Eine Lieferung. Die Lieferung kümmert sich nicht um euren Zeitplan.
+  attachment_tier: 1
+- id: mb_42
+  trigger: elite_spotted
+  personality_filter: {}
+  text_en: Something massive. Integrated. The tissue around it is thicker, more vascularized – the
+    dungeon has invested in this creature. It was a person once. The proportions remember. The purpose
+    does not.
+  text_de: Etwas Massives. Integriert. Das Gewebe um es herum ist dicker, stärker durchblutet – der
+    Dungeon hat in diese Kreatur investiert. Es war einst ein Mensch. Die Proportionen erinnern sich.
+    Der Zweck nicht.
+  attachment_tier: 0
+- id: mb_43
+  trigger: elite_spotted
+  personality_filter: {}
+  text_en: The Wirtskörper. Once a guardian, now a node in the Mother's network. It opens its arms.
+    The embrace is sincere. The embrace is the most dangerous thing in this dungeon.
+  text_de: Der Wirtskörper. Einst ein Wächter, jetzt ein Knoten im Netzwerk der Mutter. Er öffnet
+    die Arme. Die Umarmung ist aufrichtig. Die Umarmung ist das Gefährlichste in diesem Dungeon.
+  attachment_tier: 1
+- id: mb_44
+  trigger: agent_downed
+  personality_filter: {}
+  text_en: '{agent} falls. The tissue beneath them softens – catching, cushioning. The dungeon does
+    not let its guests hit the floor. The care is immediate, biological, impersonal. The care is also
+    increasing the attachment counter.'
+  text_de: '{agent} fällt. Das Gewebe unter ihnen wird weicher – auffangend, dämpfend. Der Dungeon
+    lässt seine Gäste nicht auf den Boden aufschlagen. Die Fürsorge ist sofort, biologisch, unpersönlich.
+    Die Fürsorge erhöht auch den Bindungszähler.'
+  attachment_tier: 0
+- id: mb_45
+  trigger: agent_downed
+  personality_filter: {}
+  text_en: '{agent} falls. The dungeon catches them. Of course it catches them. The tissue wraps around
+    {agent} like a cocoon – warm, supportive, growing. The party will need to cut {agent} free. Or
+    they could wait. The cocoon will heal {agent}. In time. In its own time.'
+  text_de: '{agent} fällt. Der Dungeon fängt sie auf. Natürlich fängt er sie auf. Das Gewebe umschließt
+    {agent} wie einen Kokon – warm, stützend, wachsend. Die Gruppe wird {agent} herausschneiden müssen.
+    Oder sie könnten warten. Der Kokon wird {agent} heilen. Mit der Zeit. In seiner eigenen Zeit.'
+  attachment_tier: 2

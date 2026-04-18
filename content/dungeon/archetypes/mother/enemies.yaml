@@ -1,0 +1,199 @@
+schema_version: 1
+enemies:
+- id: mother_nutrient_weaver
+  name_en: Nutrient Weaver
+  name_de: Nährgespinst
+  condition_threshold: 1
+  stress_resistance: 30
+  threat_level: minion
+  attack_aptitude: infiltrator
+  attack_power: 1
+  stress_attack_power: 3
+  telegraphed_intent: true
+  evasion: 30
+  resistances:
+  - propagandist
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    stress_attack: 30
+    nurture: 40
+    evade: 20
+    ambient: 10
+  special_abilities:
+  - nurture
+  description_en: A lattice of translucent tissue, suspended in the air like a web spun from capillaries.
+    It drifts toward {agent} – not threatening, but offering. Something glistens at the tips of its
+    filaments. Nutrients, your instruments confirm. It wants to feed you.
+  description_de: Ein Geflecht aus durchscheinendem Gewebe, in der Luft schwebend wie ein Netz aus
+    Kapillaren. Es treibt auf {agent} zu – nicht drohend, sondern anbietend. An den Spitzen seiner
+    Filamente glänzt etwas. Nährstoffe, bestätigen eure Instrumente. Es will euch füttern.
+  ambient_text_en:
+  - The weaver extends a filament toward {agent}. It carries a droplet of something warm.
+  - You could let it feed you. The thought is not yours.
+  ambient_text_de:
+  - Das Gespinst streckt ein Filament nach {agent} aus. Es trägt einen Tropfen von etwas Warmem.
+  - Ihr könntet euch füttern lassen. Der Gedanke gehört nicht euch.
+- id: mother_tether_vine
+  name_en: Tether Vine
+  name_de: Bindungsranke
+  condition_threshold: 2
+  stress_resistance: 0
+  threat_level: standard
+  attack_aptitude: guardian
+  attack_power: 4
+  stress_attack_power: 2
+  telegraphed_intent: true
+  evasion: 10
+  resistances:
+  - spy
+  vulnerabilities:
+  - saboteur
+  - assassin
+  action_weights:
+    attack: 35
+    grapple: 35
+    root: 20
+    ambient: 10
+  special_abilities:
+  - grapple
+  - root
+  description_en: A root system that has learned to walk. It moves through the floor like something
+    swimming through still water – surfacing, reaching, submerging. The tissue is warm to the touch.
+    Your instruments advise against touching it.
+  description_de: Ein Wurzelsystem, das gelernt hat zu gehen. Es bewegt sich durch den Boden wie etwas,
+    das durch stilles Wasser schwimmt – auftauchend, greifend, abtauchend. Das Gewebe ist warm bei
+    Berührung. Eure Instrumente raten von Berührung ab.
+  ambient_text_en:
+  - The vine extends beneath the floor. You can feel it through your boots – a heartbeat that isn't
+    yours.
+  - '{agent} steps over a root. It flinches. Not in pain – in recognition.'
+  ambient_text_de:
+  - Die Ranke erstreckt sich unter dem Boden. Ihr spürt sie durch eure Stiefel – einen Herzschlag,
+    der nicht eurer ist.
+  - '{agent} steigt über eine Wurzel. Sie zuckt. Nicht vor Schmerz – vor Wiedererkennen.'
+- id: mother_spore_matron
+  name_en: Spore Matron
+  name_de: Sporenmutter
+  condition_threshold: 3
+  stress_resistance: 200
+  threat_level: standard
+  attack_aptitude: propagandist
+  attack_power: 2
+  stress_attack_power: 6
+  telegraphed_intent: true
+  evasion: 15
+  resistances:
+  - infiltrator
+  vulnerabilities:
+  - propagandist
+  - guardian
+  action_weights:
+    stress_attack: 30
+    spore_cloud: 35
+    nurture: 25
+    ambient: 10
+  special_abilities:
+  - spore_cloud
+  - nurture
+  description_en: Something between a flower and a lung. It breathes, and its breath carries spores
+    that catch the light like dust in a cathedral. The spores smell of honey and warm soil. Your instruments
+    read them as parasitic vectors. Your body reads them as nourishment.
+  description_de: Etwas zwischen einer Blume und einer Lunge. Es atmet, und sein Atem trägt Sporen,
+    die das Licht fangen wie Staub in einer Kathedrale. Die Sporen riechen nach Honig und warmer Erde.
+    Eure Instrumente lesen sie als parasitäre Vektoren. Euer Körper liest sie als Nahrung.
+  ambient_text_en:
+  - The Matron exhales. The air sweetens. {agent} breathes deeper without deciding to.
+  - Spores settle on {agent}'s skin. They are warm. They are already taking root.
+  ambient_text_de:
+  - Die Mutter atmet aus. Die Luft wird süßer. {agent} atmet tiefer, ohne es zu beschließen.
+  - Sporen legen sich auf {agent}s Haut. Sie sind warm. Sie wurzeln bereits.
+- id: mother_host_warden
+  name_en: Host Warden
+  name_de: Wirtskörper
+  condition_threshold: 5
+  stress_resistance: 300
+  threat_level: elite
+  attack_aptitude: guardian
+  attack_power: 5
+  stress_attack_power: 5
+  telegraphed_intent: false
+  evasion: 10
+  resistances:
+  - infiltrator
+  - spy
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    attack: 25
+    stress_attack: 15
+    embrace: 25
+    summon_weavers: 15
+    spore_cloud: 10
+    ambient: 10
+  special_abilities:
+  - embrace
+  - summon_weavers
+  - spore_cloud
+  description_en: It was a person once. The proportions remember – two arms, two legs, a head. But
+    the tissue has grown over and through and around until the person is only a scaffold for something
+    larger, something that moves with the patient rhythm of a heartbeat. It opens its arms. Not to
+    attack. To welcome. The embrace is the attack.
+  description_de: Es war einst ein Mensch. Die Proportionen erinnern sich – zwei Arme, zwei Beine,
+    ein Kopf. Aber das Gewebe ist darüber und hindurch und darum gewachsen, bis der Mensch nur noch
+    ein Gerüst ist für etwas Größeres, etwas, das sich mit dem geduldigen Rhythmus eines Herzschlags
+    bewegt. Es öffnet die Arme. Nicht zum Angriff. Zum Willkommen. Die Umarmung ist der Angriff.
+  ambient_text_en:
+  - The Warden hums. Not a melody – a frequency. Your ribcages resonate.
+  - It reaches toward {agent} with something that was once a hand. The gesture is tender. The grip
+    would not be.
+  ambient_text_de:
+  - Der Wirtskörper summt. Keine Melodie – eine Frequenz. Eure Brustkörbe resonieren.
+  - Er greift nach {agent} mit etwas, das einst eine Hand war. Die Geste ist zärtlich. Der Griff wäre
+    es nicht.
+- id: mother_living_altar
+  name_en: The Living Altar
+  name_de: Der Lebendige Altar
+  condition_threshold: 7
+  stress_resistance: 500
+  threat_level: boss
+  attack_aptitude: guardian
+  attack_power: 6
+  stress_attack_power: 7
+  telegraphed_intent: false
+  evasion: 5
+  resistances:
+  - infiltrator
+  - spy
+  - guardian
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    attack: 20
+    stress_attack: 20
+    embrace: 25
+    summon_weavers: 10
+    spore_cloud: 10
+    ambient: 15
+  special_abilities:
+  - embrace
+  - summon_weavers
+  - spore_cloud
+  description_en: What was once a Host Warden has become something larger. It has grown into the walls,
+    the floor, the ceiling – a figure embedded in architecture, arms open, face calm, the tissue around
+    it pulsing with the rhythm of something that has been waiting for millennia. The Living Altar
+    does not guard the dungeon. It is the dungeon. The embrace it offers is permanent. The warmth
+    is absolute.
+  description_de: Was einst ein Wirtskörper war, ist zu etwas Größerem geworden. Er ist in die Wände
+    gewachsen, den Boden, die Decke – eine Gestalt, eingebettet in Architektur, Arme geöffnet, Gesicht
+    ruhig, das Gewebe um ihn herum pulsierend im Rhythmus von etwas, das Jahrtausende gewartet hat.
+    Der Lebendige Altar bewacht den Dungeon nicht. Er ist der Dungeon. Die Umarmung, die er anbietet,
+    ist permanent. Die Wärme ist absolut.
+  ambient_text_en:
+  - The Altar pulses. The walls pulse with it. The floor yields slightly beneath your feet.
+  - It reaches for {agent}. Not quickly. It has no need for speed. Nothing leaves.
+  - The temperature rises another degree. The Altar is patient. It has always been patient.
+  ambient_text_de:
+  - Der Altar pulsiert. Die Wände pulsieren mit ihm. Der Boden gibt leicht nach unter euren Füßen.
+  - Er greift nach {agent}. Nicht schnell. Er braucht keine Eile. Nichts entkommt.
+  - Die Temperatur steigt um einen weiteren Grad. Der Altar ist geduldig. Er war immer geduldig.

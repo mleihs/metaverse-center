@@ -1,0 +1,20 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The air is warm. Comfortable. The kind of warmth that asks nothing of you.
+  text_de: Die Luft ist warm. Behaglich. Die Art von Wärme, die nichts von euch verlangt.
+- tier: 1
+  text_en: The warmth has learned your names. It wraps around wounded agents first. Attentive. Helpful.
+    You did not ask for this.
+  text_de: Die Wärme hat eure Namen gelernt. Sie legt sich zuerst um verwundete Agenten. Aufmerksam.
+    Hilfsbereit. Ihr habt nicht darum gebeten.
+- tier: 2
+  text_en: The warmth is possessive now. It does not let go when you stand. Moving through it feels
+    like pulling free of an embrace that does not understand the word 'enough.'
+  text_de: Die Wärme ist besitzergreifend jetzt. Sie lässt nicht los, wenn ihr aufsteht. Sich durch
+    sie zu bewegen fühlt sich an wie das Lösen aus einer Umarmung, die das Wort »genug« nicht versteht.
+- tier: 3
+  text_en: The warmth is indistinguishable from you. Where it ends and you begin is a question that
+    no longer has a clear answer. It does not hurt. That is the worst part.
+  text_de: Die Wärme ist nicht mehr von euch zu unterscheiden. Wo sie aufhört und ihr beginnt, ist
+    eine Frage, die keine klare Antwort mehr hat. Es tut nicht weh. Das ist das Schlimmste.

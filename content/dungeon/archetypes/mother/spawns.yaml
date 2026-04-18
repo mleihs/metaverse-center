@@ -1,0 +1,35 @@
+schema_version: 1
+spawns:
+  mother_weaver_drift_spawn:
+  - template_id: mother_nutrient_weaver
+    count: 2
+  mother_vine_patrol_spawn:
+  - template_id: mother_tether_vine
+    count: 1
+  - template_id: mother_nutrient_weaver
+    count: 1
+  mother_spore_spawn:
+  - template_id: mother_spore_matron
+    count: 1
+  - template_id: mother_nutrient_weaver
+    count: 1
+  mother_garden_spawn:
+  - template_id: mother_spore_matron
+    count: 1
+  - template_id: mother_tether_vine
+    count: 1
+  mother_host_warden_spawn:
+  - template_id: mother_host_warden
+    count: 1
+  - template_id: mother_nutrient_weaver
+    count: 1
+  mother_living_altar_spawn:
+  - template_id: mother_living_altar
+    count: 1
+  - template_id: mother_spore_matron
+    count: 1
+  - template_id: mother_tether_vine
+    count: 1
+  mother_rest_ambush_spawn:
+  - template_id: mother_nutrient_weaver
+    count: 1
