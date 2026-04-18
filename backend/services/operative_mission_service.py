@@ -20,7 +20,6 @@ from backend.services.constants import (
     OPERATIVE_MISSION_CYCLES,
     OPERATIVE_RP_COSTS,
     SECURITY_LEVEL_MAP,
-    _upgrade_security,
 )
 from backend.services.epoch_service import EpochService
 from backend.utils.db import maybe_single_data
@@ -1204,42 +1203,25 @@ class OperativeMissionService:
     ) -> dict:
         """Fortify a zone during foundation phase (+1 security tier, hidden, 2 RP).
 
+        Atomic via Postgres ``fn_fortify_zone_atomic`` (migration 221). The RPC
+        locks the zone row, validates ownership, checks no existing fortification,
+        deducts RP (compare-and-swap), upgrades ``security_level`` one tier, and
+        inserts the ``zone_fortifications`` row in one transaction — closing the
+        two TOCTOU windows the prior Python sequence had (duplicate-check +
+        read-upgrade-write).
+
         - Foundation only
         - Zone must belong to the caller's simulation
-        - Max 1 fortification per zone (UNIQUE constraint)
-        - Hidden (is_public=False) -- only revealed by enemy spy intel
+        - Max 1 fortification per zone (enforced atomically inside the RPC)
+        - Hidden (is_public=False in battle_log) — only revealed by enemy spy intel
         """
         epoch = await EpochService.get(supabase, epoch_id)
 
         if epoch["status"] != "foundation":
             raise bad_request("Zone fortification is only available during foundation phase.")
 
-        # Verify zone belongs to this simulation
-        zone_resp = await (
-            supabase.table("zones")
-            .select("id, name, security_level, simulation_id")
-            .eq("id", str(zone_id))
-            .single()
-            .execute()
-        )
-        if not zone_resp.data or zone_resp.data["simulation_id"] != str(simulation_id):
-            raise bad_request("Zone does not belong to your simulation.")
-
-        # Duplicate check (UNIQUE constraint would also catch this)
-        existing = await (
-            supabase.table("zone_fortifications")
-            .select("id")
-            .eq("epoch_id", str(epoch_id))
-            .eq("zone_id", str(zone_id))
-            .execute()
-        )
-        if existing.data:
-            raise bad_request("This zone is already fortified.")
-
-        # Spend RP
-        await EpochService.spend_rp(supabase, epoch_id, simulation_id, FORTIFICATION_RP_COST)
-
-        # Compute expiry cycle
+        # Expiry cycle computation stays in the application layer — config
+        # interpretation depends on epoch.config shape which lives in Python.
         config = {**epoch.get("config", {})}
         if "foundation_cycles" in config:
             foundation_cycles = config["foundation_cycles"]
@@ -1248,24 +1230,45 @@ class OperativeMissionService:
             foundation_cycles = round(total_cycles * config.get("foundation_pct", 10) / 100)
         expires_at_cycle = foundation_cycles + FORTIFICATION_DURATION_CYCLES
 
-        # Upgrade zone security by 1 tier (admin client — zones RLS requires admin role)
+        # Atomic fortification — zone-admin mutations require admin client
+        # (zones RLS requires admin role for security_level writes).
         db = admin_supabase or supabase
-        old_level = zone_resp.data["security_level"]
-        new_level = _upgrade_security(old_level)
-        if old_level != new_level:
-            await db.table("zones").update({"security_level": new_level}).eq("id", str(zone_id)).execute()
+        rpc_resp = await db.rpc(
+            "fn_fortify_zone_atomic",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_zone_id": str(zone_id),
+                "p_rp_cost": FORTIFICATION_RP_COST,
+                "p_expires_at_cycle": expires_at_cycle,
+            },
+        ).execute()
 
-        # Insert fortification record (admin client — game state mutation)
-        fort_data = {
-            "epoch_id": str(epoch_id),
-            "zone_id": str(zone_id),
-            "source_simulation_id": str(simulation_id),
-            "security_bonus": 1,
-            "expires_at_cycle": expires_at_cycle,
-        }
-        fort_resp = await db.table("zone_fortifications").insert(fort_data).execute()
+        result = rpc_resp.data or {}
+        error = result.get("error")
+        if error == "zone_not_found":
+            raise not_found(detail="Zone not found.")
+        if error == "zone_wrong_simulation":
+            raise bad_request("Zone does not belong to your simulation.")
+        if error == "already_fortified":
+            raise bad_request("This zone is already fortified.")
+        if error == "participant_not_found":
+            raise forbidden("You are not a participant in this epoch.")
+        if error == "insufficient_rp":
+            raise bad_request(f"Not enough RP to fortify (need {FORTIFICATION_RP_COST}).")
 
-        # Log hidden battle_log event
+        fortification_id = result.get("fortification_id")
+        if not fortification_id:
+            raise server_error("Zone fortification failed: unexpected RPC response.")
+
+        # Hidden battle_log event — side-effect outside atomicity boundary.
+        # Fetch zone name for the narrative; best-effort logging (a failed
+        # log must not roll back the already-committed fortification state).
+        zone_resp = await (
+            supabase.table("zones").select("name").eq("id", str(zone_id)).single().execute()
+        )
+        zone_name = zone_resp.data.get("name") if zone_resp.data else ""
+
         cycle = epoch.get("current_cycle", 1)
         try:
             await BattleLogService.log_event(
@@ -1273,18 +1276,26 @@ class OperativeMissionService:
                 epoch_id,
                 cycle,
                 "zone_fortified",
-                f"Zone '{zone_resp.data['name']}' has been fortified.",
+                f"Zone '{zone_name}' has been fortified.",
                 source_simulation_id=simulation_id,
                 is_public=False,
                 metadata={
                     "zone_id": str(zone_id),
-                    "zone_name": zone_resp.data["name"],
-                    "old_level": old_level,
-                    "new_level": new_level,
+                    "zone_name": zone_name,
+                    "old_level": result.get("old_security_level"),
+                    "new_level": result.get("new_security_level"),
                     "expires_at_cycle": expires_at_cycle,
                 },
             )
         except (PostgrestAPIError, httpx.HTTPError):
             logger.debug("Battle log write failed for zone fortification", exc_info=True)
 
-        return fort_resp.data[0] if fort_resp.data else fort_data
+        return {
+            "id": fortification_id,
+            "epoch_id": str(epoch_id),
+            "zone_id": str(zone_id),
+            "source_simulation_id": str(simulation_id),
+            "security_bonus": 1,
+            "expires_at_cycle": expires_at_cycle,
+            "cost_rp": FORTIFICATION_RP_COST,
+        }
