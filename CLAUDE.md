@@ -143,6 +143,24 @@ Allowed:
 
 Run `frontend/scripts/lint-no-empty-catch.sh` to verify. CI will reject violations.
 
+### Type Safety (MANDATORY)
+
+Never use `as unknown as T` double-casts. They defeat TypeScript's structural check and hide shape drift at runtime — W3.2 found three latent bugs (broken "examine building" agent list, always-zero active-embassy count in sitrep, dead effectiveness multiplier in deploy modal) where the cast masked that the accessed field never existed in the actual response.
+
+Forbidden:
+- `as unknown as T` anywhere in `frontend/src/**/*.ts` outside the two Lit-mixin sites
+
+Allowed:
+- Extend the base type (if the field is genuinely on the entity)
+- Wrapper / projection type (for SQL-view or FK-join fields that aren't on the base table)
+- `function isFoo(x: unknown): x is Foo` type guard with runtime validation — route rejections through `captureError` per the Error Observability rule
+- Correct the upstream API service return type — `ApiResponse<T>` already carries `meta`; don't double-wrap with `PaginatedResponse<T>`
+- Narrow a dynamic key type via `Exclude<keyof State, 'immutableField'>` instead of widening to `Record<string, unknown>`
+
+Whitelist: `src/components/shared/DataLoaderMixin.ts` and `src/components/shared/PaginatedLoaderMixin.ts` — TypeScript cannot infer the Lit mixin constructor intersection (documented at https://lit.dev/docs/composition/mixins/#creating-a-mixin). Both files carry a block comment explaining the exception.
+
+Run `frontend/scripts/lint-no-cast-unknown.sh` to verify. CI will reject violations.
+
 ### Color Tokens (MANDATORY)
 
 Never use raw `#hex` or `rgba()` in component CSS. All colors must reference:
