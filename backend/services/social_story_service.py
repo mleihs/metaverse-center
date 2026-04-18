@@ -325,8 +325,14 @@ class SocialStoryService:
             )
             return []
 
-        # Fetch resonance record
-        res_resp = await admin.table("substrate_resonances").select("*").eq("id", str(resonance_id)).limit(1).execute()
+        # Fetch resonance record — only magnitude + archetype consumed.
+        res_resp = await (
+            admin.table("substrate_resonances")
+            .select("id, magnitude, archetype")
+            .eq("id", str(resonance_id))
+            .limit(1)
+            .execute()
+        )
         if not res_resp.data:
             logger.warning(
                 "Resonance not found for story creation",
@@ -610,7 +616,14 @@ class SocialStoryService:
         if not config["enabled"]:
             return None
 
-        res_resp = await admin.table("substrate_resonances").select("*").eq("id", str(resonance_id)).limit(1).execute()
+        # subsiding-story path only needs archetype.
+        res_resp = await (
+            admin.table("substrate_resonances")
+            .select("id, archetype")
+            .eq("id", str(resonance_id))
+            .limit(1)
+            .execute()
+        )
         if not res_resp.data:
             return None
         resonance = res_resp.data[0]

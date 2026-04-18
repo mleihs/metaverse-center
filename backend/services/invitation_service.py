@@ -71,10 +71,11 @@ class InvitationService:
         user_id: UUID,
     ) -> dict:
         """Accept an invitation — creates a member and marks invitation as accepted."""
-        # Fetch invitation
+        # Fetch invitation — consumer uses id, expires_at, simulation_id,
+        # invited_role, invited_by_id only.
         inv_response = await (
             supabase.table("simulation_invitations")
-            .select("*")
+            .select("id, expires_at, simulation_id, invited_role, invited_by_id")
             .eq("invite_token", token)
             .is_("accepted_at", "null")
             .limit(1)

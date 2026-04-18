@@ -158,7 +158,13 @@ class AnchorService:
         sim_id: UUID,
     ) -> dict:
         """Leave an anchor."""
-        _resp = await supabase.table("collaborative_anchors").select("*").eq("id", str(anchor_id)).limit(1).execute()
+        _resp = await (
+            supabase.table("collaborative_anchors")
+            .select("id, anchor_simulation_ids")
+            .eq("id", str(anchor_id))
+            .limit(1)
+            .execute()
+        )
         anchor = _resp.data
         if not anchor:
             raise not_found(detail="Anchor not found.")
