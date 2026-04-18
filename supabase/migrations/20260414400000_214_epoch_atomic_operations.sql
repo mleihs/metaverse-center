@@ -42,6 +42,9 @@ AS $$
     RETURNING current_rp;
 $$;
 
+COMMENT ON FUNCTION public.fn_spend_rp_atomic(UUID, UUID, INT) IS
+    'Atomic RP deduction with balance validation — replaces optimistic lock pattern in cycle_resolution_service.py. Returns new balance, or NULL if insufficient RP. See ADR-007.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 2. fn_join_epoch_atomic
 -- ═══════════════════════════════════════════════════════════════════
@@ -82,6 +85,9 @@ BEGIN
     RETURN v_id;  -- NULL if simulation already in epoch
 END;
 $$;
+
+COMMENT ON FUNCTION public.fn_join_epoch_atomic(UUID, UUID, UUID, INT) IS
+    'Atomic epoch participant insert via ON CONFLICT DO NOTHING — replaces TOCTOU check in epoch_participation_service.py. Returns new participant id, or NULL if user/sim already in epoch.';
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 3. fn_join_team_checked
@@ -128,6 +134,9 @@ BEGIN
     RETURN v_updated;
 END;
 $$;
+
+COMMENT ON FUNCTION public.fn_join_team_checked(UUID, UUID, UUID, INT) IS
+    'Atomic team join with size enforcement — replaces count-then-join race in epoch_participation_service.py. Returns TRUE if joined, FALSE if team full, NULL if team dissolved. Patched in migration 220 for FOR UPDATE semantics.';
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 4. fn_create_sabotage_capped
@@ -178,6 +187,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.fn_create_sabotage_capped(UUID, JSONB, INT) IS
+    'Atomic sabotage event insert with active-count cap — replaces count-then-insert race in operative_mission_service.py. Returns event id, or NULL if max_active reached.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 5. fn_increment_academy_counter
 -- ═══════════════════════════════════════════════════════════════════
@@ -195,6 +207,9 @@ AS $$
     WHERE id = p_user_id
     RETURNING academy_epochs_played;
 $$;
+
+COMMENT ON FUNCTION public.fn_increment_academy_counter(UUID) IS
+    'Atomic academy epoch counter increment — replaces read-then-write in epoch_lifecycle_service.py. Returns new counter value.';
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 6. fn_deploy_operative_atomic
@@ -260,6 +275,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.fn_deploy_operative_atomic(UUID, UUID, UUID, TEXT, INT, UUID, UUID, UUID, TEXT, UUID, FLOAT, TIMESTAMPTZ) IS
+    'Atomic operative deployment: validates RP, deducts, inserts mission in one transaction — replaces separate-step sequence in operative_mission_service.py. Returns JSONB with mission_id/new_rp/participant_id, or {"error":"insufficient_rp"}.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 7. fn_process_afk_batch
 -- ═══════════════════════════════════════════════════════════════════
@@ -316,6 +334,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.fn_process_afk_batch(UUID, INT, INT, FLOAT) IS
+    'Atomic batch AFK penalty processing — replaces N individual updates in epoch_cycle_scheduler.py. Single UPDATE with CASE for graduated penalties (p_penalty_rp base, p_rp_multiplier exponential after threshold 2). Returns TABLE of affected participants with new state for downstream handling.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 8. fn_replace_afk_with_bot
 -- ═══════════════════════════════════════════════════════════════════
@@ -349,6 +370,9 @@ BEGIN
     RETURN v_bot_id;
 END;
 $$;
+
+COMMENT ON FUNCTION public.fn_replace_afk_with_bot(UUID, TEXT, TEXT, TEXT, UUID) IS
+    'Atomic AFK-to-bot replacement: creates bot_players row + links to participant in one transaction — replaces non-atomic insert + update in epoch_cycle_scheduler.py. Returns new bot_player_id.';
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 9. fn_apply_betrayal
@@ -403,6 +427,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.fn_apply_betrayal(UUID, INT, UUID, UUID, FLOAT, BOOLEAN) IS
+    'Atomic betrayal workflow: clears betrayer team_id, applies penalty to victim scoring multiplier, logs battle_log event — replaces 3 separate writes in operative_mission_service.py. Returns TRUE on completion.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 10. fn_dissolve_alliance_atomic
 -- ═══════════════════════════════════════════════════════════════════
@@ -440,6 +467,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION public.fn_dissolve_alliance_atomic(UUID, UUID, TEXT) IS
+    'Atomic alliance dissolution: marks team dissolved + clears member team_ids — replaces 3 cascading writes in alliance_service.py. Returns count of members cleared.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 11. fn_detect_enemy_batch
 -- ═══════════════════════════════════════════════════════════════════
@@ -466,6 +496,9 @@ AS $$
     SELECT COUNT(*)::INT FROM detected;
 $$;
 
+COMMENT ON FUNCTION public.fn_detect_enemy_batch(UUID, UUID) IS
+    'Atomic batch enemy-mission detection — replaces N individual mission updates in counter-intel path of operative_mission_service.py. Single UPDATE on operative_missions, returns affected row count.';
+
 -- ═══════════════════════════════════════════════════════════════════
 -- 12. fn_advance_mission_timers
 -- ═══════════════════════════════════════════════════════════════════
@@ -490,3 +523,6 @@ AS $$
     )
     SELECT COUNT(*)::INT FROM advanced;
 $$;
+
+COMMENT ON FUNCTION public.fn_advance_mission_timers(UUID, INT) IS
+    'Atomic batch mission timer advancement — replaces read-group-batch-update in cycle_resolution_service.py. Single UPDATE advancing all active mission resolves_at by p_cycle_hours. Returns affected row count.';
