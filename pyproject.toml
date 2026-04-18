@@ -32,6 +32,10 @@ dev = [
     "pytest-asyncio>=0.23",
     "pytest-cov>=6.0",
     "ruff>=0.15.0",
+    # test_instagram_image.py uses numpy for pixel-array assertions on
+    # gradient/vignette/noise helpers. Production code uses only Pillow;
+    # numpy is test-only (not a runtime dependency).
+    "numpy>=2.0",
 ]
 
 [build-system]
