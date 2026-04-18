@@ -1,0 +1,28 @@
+schema_version: 1
+spawns:
+  deluge_trickle_spawn:
+  - template_id: deluge_riptide_tendril
+    count: 2
+  deluge_surge_patrol_spawn:
+  - template_id: deluge_pressure_surge
+    count: 1
+  - template_id: deluge_riptide_tendril
+    count: 1
+  deluge_sediment_spawn:
+  - template_id: deluge_silt_revenant
+    count: 1
+  - template_id: deluge_riptide_tendril
+    count: 1
+  deluge_deep_water_spawn:
+  - template_id: deluge_pressure_surge
+    count: 1
+  - template_id: deluge_silt_revenant
+    count: 1
+  deluge_warden_spawn:
+  - template_id: deluge_undertow_warden
+    count: 1
+  - template_id: deluge_riptide_tendril
+    count: 1
+  deluge_rest_ambush_spawn:
+  - template_id: deluge_riptide_tendril
+    count: 1

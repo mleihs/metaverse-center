@@ -1,0 +1,22 @@
+schema_version: 1
+entrance_texts:
+- text_en: The stairs descend. The last three steps are wet. Not splashed – saturated. The water has
+    been here before and left a mineral signature. It will return.
+  text_de: Die Treppe führt hinab. Die letzten drei Stufen sind nass. Nicht bespritzt – durchtränkt.
+    Das Wasser war schon hier und hinterließ eine mineralische Signatur. Es wird zurückkehren.
+- text_en: Dripping. Rhythmic. The sound precedes the dungeon – a metronome set by geology. {agent}
+    counts the interval. 3.2 seconds. The interval will shorten.
+  text_de: Tropfen. Rhythmisch. Das Geräusch geht dem Dungeon voraus – ein von der Geologie eingestelltes
+    Metronom. {agent} zählt das Intervall. 3,2 Sekunden. Das Intervall wird sich verkürzen.
+- text_en: The air is different here. Humid. Heavy. The kind of air that has passed through water
+    recently and carries its memory. Salt. Mineral. Patience.
+  text_de: Die Luft ist hier anders. Feucht. Schwer. Die Art Luft, die kürzlich durch Wasser ging
+    und seine Erinnerung trägt. Salz. Mineral. Geduld.
+- text_en: A watermark on the entrance arch. Faint. Mineral-white. Evidence of a previous visit by
+    something that does not knock.
+  text_de: Ein Wasserzeichen am Eingangsbogen. Schwach. Mineralweiß. Beweis für einen früheren Besuch
+    durch etwas, das nicht anklopft.
+- text_en: The threshold is damp. Beyond it, the floor slopes downward – gently, deliberately. The
+    architecture was designed for drainage. The drainage has failed.
+  text_de: Die Schwelle ist feucht. Dahinter fällt der Boden ab – sanft, absichtlich. Die Architektur
+    wurde für Entwässerung entworfen. Die Entwässerung hat versagt.
