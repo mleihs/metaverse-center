@@ -1,0 +1,24 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The forge is cold. Tools rest in their places. The workshop presents itself with clinical
+    patience. Materials await hands. The fire has not yet been stolen.
+  text_de: Die Schmiede ist kalt. Werkzeuge ruhen an ihren Plätzen. Die Werkstatt präsentiert sich
+    mit klinischer Geduld. Materialien warten auf Hände. Das Feuer wurde noch nicht gestohlen.
+- tier: 1
+  text_en: The forge warms. The first sparks have been struck. Components respond to proximity – not
+    yet with intent, but with interest. The workshop is watching what the party does.
+  text_de: Die Schmiede erwärmt sich. Die ersten Funken wurden geschlagen. Komponenten reagieren auf
+    Nähe – noch nicht mit Absicht, aber mit Interesse. Die Werkstatt beobachtet, was der Trupp tut.
+- tier: 2
+  text_en: The fire burns steady. The workshop has opened its deeper chambers. Materials levitate
+    briefly before settling. The air tastes of ambition. Every surface is warm to the touch.
+  text_de: Das Feuer brennt gleichmäßig. Die Werkstatt hat ihre tieferen Kammern geöffnet. Materialien
+    schweben kurz, bevor sie sich setzen. Die Luft schmeckt nach Ambition. Jede Oberfläche ist warm
+    bei Berührung.
+- tier: 3
+  text_en: White heat. The workshop is no longer subtle. Components arrange themselves without being
+    touched. The forge-glow pulses in time with the party's breathing. The fire knows. The fire burns.
+  text_de: Weißglut. Die Werkstatt ist nicht mehr subtil. Komponenten ordnen sich an, ohne berührt
+    zu werden. Das Schmiedeglühen pulsiert im Takt der Atmung des Trupps. Das Feuer weiß. Das Feuer
+    brennt.

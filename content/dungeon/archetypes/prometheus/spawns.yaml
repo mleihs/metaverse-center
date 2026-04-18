@@ -1,0 +1,38 @@
+schema_version: 1
+spawns:
+  prometheus_sparks_spawn:
+  - template_id: prometheus_spark_wisp
+    count: 3
+  prometheus_workshop_patrol_spawn:
+  - template_id: prometheus_alloy_sentinel
+    count: 1
+  - template_id: prometheus_spark_wisp
+    count: 1
+  prometheus_construct_pair_spawn:
+  - template_id: prometheus_crucible_drake
+    count: 1
+  - template_id: prometheus_automaton_shard
+    count: 1
+  prometheus_residue_spawn:
+  - template_id: prometheus_slag_golem
+    count: 1
+  - template_id: prometheus_spark_wisp
+    count: 2
+  prometheus_forge_elite_spawn:
+  - template_id: prometheus_forge_wraith
+    count: 1
+  - template_id: prometheus_spark_wisp
+    count: 1
+  prometheus_guardian_elite_spawn:
+  - template_id: prometheus_workshop_guardian
+    count: 1
+  - template_id: prometheus_alloy_sentinel
+    count: 1
+  prometheus_prototype_boss_spawn:
+  - template_id: prometheus_the_prototype
+    count: 1
+  - template_id: prometheus_spark_wisp
+    count: 2
+  prometheus_rest_ambush_spawn:
+  - template_id: prometheus_spark_wisp
+    count: 2

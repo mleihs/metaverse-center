@@ -1,0 +1,173 @@
+schema_version: 1
+loot:
+- id: prometheus_spark_residue
+  name_en: Spark Residue
+  name_de: Funkenrückstand
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 50
+    when: after_dungeon
+  description_en: Crystallized energy from a defeated construct. It hums at a frequency that calms
+    the nervous system.
+  description_de: Kristallisierte Energie eines besiegten Konstrukts. Sie summt auf einer Frequenz,
+    die das Nervensystem beruhigt.
+  drop_weight: 40
+- id: prometheus_workshop_insight
+  name_en: Workshop Insight
+  name_de: Werkstatterkenntnis
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 5
+    content_en: Observed the workshop's self-organizing principles. Matter has preferences.
+    content_de: Die Selbstorganisationsprinzipien der Werkstatt beobachtet. Materie hat Präferenzen.
+  description_en: 'A fragment of understanding: how the workshop thinks. How materials choose their
+    partners.'
+  description_de: 'Ein Fragment des Verständnisses: wie die Werkstatt denkt. Wie Materialien ihre
+    Partner wählen.'
+  drop_weight: 30
+- id: prometheus_calibration_shard
+  name_en: Calibration Shard
+  name_de: Kalibrierungssplitter
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: saboteur
+    scope: this_dungeon
+  description_en: A precisely fractured crystal. Saboteur checks +5% – the workshop approves of hands
+    that build.
+  description_de: Ein präzise gebrochener Kristall. Saboteur-Proben +5% – die Werkstatt billigt Hände,
+    die bauen.
+  drop_weight: 20
+- id: prometheus_forge_ember
+  name_en: Forge Ember
+  name_de: Schmiedeglut
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    stress_damage_bonus: 0.5
+    aptitude: infiltrator
+    scope: this_dungeon
+  description_en: A contained ember from the workshop's forge. It makes delicate work easier – and
+    more dangerous.
+  description_de: Eine eingedämmte Glut aus der Schmiede der Werkstatt. Sie macht feine Arbeit leichter
+    – und gefährlicher.
+  drop_weight: 10
+- id: prometheus_tempered_lens
+  name_en: Tempered Observation Lens
+  name_de: Gehärtete Beobachtungslinse
+  tier: 2
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: spy
+    boost: 1
+  description_en: A lens forged in the workshop's crucible. It reveals patterns invisible to the unaugmented
+    eye. Spy aptitude +1.
+  description_de: Eine in der Werkstattschmelze geschmiedete Linse. Sie enthüllt Muster, die für das
+    unverstärkte Auge unsichtbar sind. Spion-Aptitude +1.
+  drop_weight: 25
+- id: prometheus_catalytic_compound
+  name_en: Catalytic Compound
+  name_de: Katalytische Verbindung
+  tier: 2
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: saboteur
+    boost: 1
+  description_en: A compound that accelerates material reactions. The workshop's gift to hands that
+    dare to combine. Saboteur aptitude +1.
+  description_de: Eine Verbindung, die Materialreaktionen beschleunigt. Das Geschenk der Werkstatt
+    an Hände, die es wagen zu kombinieren. Saboteur-Aptitude +1.
+  drop_weight: 25
+- id: prometheus_resonance_tuner
+  name_en: Resonance Tuner
+  name_de: Resonanzstimmer
+  tier: 2
+  effect_type: moodlet
+  effect_params:
+    mood_delta: 15
+    description_en: The satisfaction of creation – something new exists because of what you did.
+    description_de: Die Befriedigung der Schöpfung – etwas Neues existiert wegen dem, was ihr getan
+      habt.
+  description_en: A device that harmonizes with the bearer's frequency. It provides comfort. It also
+    provides dependency.
+  description_de: Ein Gerät, das mit der Frequenz des Trägers harmoniert. Es bietet Trost. Es bietet
+    auch Abhängigkeit.
+  drop_weight: 20
+- id: prometheus_alloy_fragment
+  name_en: Experimental Alloy Fragment
+  name_de: Experimentelles Legierungsfragment
+  tier: 2
+  effect_type: next_dungeon_bonus
+  effect_params:
+    bonus_type: insight_start
+    value: 15
+    description_en: Next dungeon run starts with 15 insight.
+    description_de: Nächster Dungeon-Run beginnt mit 15 Insight.
+  description_en: A fragment of alloy that remembers being part of something larger. Carry it into
+    the next workshop – the fire will recognize it.
+  description_de: Ein Legierungsfragment, das sich erinnert, Teil von etwas Größerem gewesen zu sein.
+    Tragt es in die nächste Werkstatt – das Feuer wird es erkennen.
+  drop_weight: 15
+- id: prometheus_pharmakon_vial
+  name_en: Pharmakon Vial
+  name_de: Pharmakon-Phiole
+  tier: 2
+  effect_type: event_modifier
+  effect_params:
+    modifier: dual_effect
+    benefit:
+      stress_heal: 80
+    cost:
+      aptitude_penalty:
+        saboteur: -1
+        scope: temporary
+        duration_hours: 24
+  description_en: A vial containing a substance that is simultaneously remedy and poison. Heals 80
+    stress. Temporarily reduces Saboteur aptitude by 1 for 24h.
+  description_de: Eine Phiole mit einer Substanz, die gleichzeitig Heilmittel und Gift ist. Heilt
+    80 Stress. Reduziert Saboteur-Aptitude temporär um 1 für 24h.
+  drop_weight: 15
+- id: prometheus_innovation_blueprint
+  name_en: Innovation Blueprint
+  name_de: Innovationsblaupause
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: any
+    boost: 1
+  description_en: The workshop's final gift. A blueprint that imprints itself on the bearer – permanent
+    knowledge, paid for in fire. +1 to one aptitude of the bearer's highest.
+  description_de: Das letzte Geschenk der Werkstatt. Eine Blaupause, die sich dem Träger einprägt
+    – permanentes Wissen, bezahlt in Feuer. +1 auf eine Aptitude des höchsten Werts des Trägers.
+  drop_weight: 50
+- id: prometheus_prototype_core
+  name_en: Prototype Core
+  name_de: Prototyp-Kern
+  tier: 3
+  effect_type: permanent_dungeon_bonus
+  effect_params:
+    bonus_type: crafting_mastery
+    description_en: All future Prometheus dungeon crafting checks +10%.
+    description_de: Alle zukünftigen Prometheus-Dungeon-Crafting-Proben +10%.
+  description_en: The core of The Prototype. It pulses with unfinished potential. Whoever carries
+    this understands the workshop better than the workshop understands itself.
+  description_de: Der Kern des Prototypen. Er pulsiert mit unfertigem Potential. Wer dies trägt, versteht
+    die Werkstatt besser, als die Werkstatt sich selbst versteht.
+  drop_weight: 30
+- id: prometheus_stolen_fire
+  name_en: Stolen Fire
+  name_de: Gestohlenes Feuer
+  tier: 3
+  effect_type: arc_modifier
+  effect_params:
+    arc_effect: innovation_catalyst
+    description_en: The agent who carries this generates +0.15 Building Readiness per cycle.
+    description_de: Der Agent, der dies trägt, erzeugt +0,15 Gebäudebereitschaft pro Zyklus.
+  description_en: Fire from the gods. Not a metaphor – a substance. It does not burn the hand that
+    carries it. It burns everything the hand touches.
+  description_de: Feuer der Götter. Keine Metapher – eine Substanz. Es verbrennt nicht die Hand, die
+    es trägt. Es verbrennt alles, was die Hand berührt.
+  drop_weight: 20
