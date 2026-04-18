@@ -484,7 +484,7 @@ class BondService:
         """
         bond = await maybe_single_data(
             supabase.table("agent_bonds")
-            .select("*")
+            .select("id, depth, formed_at, depth_2_at, depth_3_at, depth_4_at, depth_5_at")
             .eq("id", str(bond_id))
             .eq("status", "active")
             .maybe_single()
@@ -524,7 +524,10 @@ class BondService:
         )
         updated = await maybe_single_data(
             supabase.table("agent_bonds")
-            .select("*")
+            .select(
+                "id, user_id, agent_id, simulation_id, depth, status, "
+                "attention_score, formed_at, created_at, updated_at"
+            )
             .eq("id", str(bond_id))
             .maybe_single()
         )
@@ -543,7 +546,7 @@ class BondService:
             "Bond depth advanced",
             extra={"bond_id": str(bond_id), "new_depth": next_depth},
         )
-        return updated[0]
+        return updated
 
     @classmethod
     async def _check_engagement(
@@ -641,7 +644,7 @@ class BondService:
             "Bond entered strain",
             extra={"bond_id": str(bond_id), "reason": reason},
         )
-        return data[0]
+        return data
 
     @classmethod
     async def recover_from_strain(
@@ -657,7 +660,7 @@ class BondService:
         """
         bond = await maybe_single_data(
             supabase.table("agent_bonds")
-            .select("*")
+            .select("id")
             .eq("id", str(bond_id))
             .eq("status", "strained")
             .maybe_single()
@@ -719,7 +722,7 @@ class BondService:
         }).execute()
 
         logger.info("Bond recovered from strain", extra={"bond_id": str(bond_id)})
-        return recovered[0]
+        return recovered
 
     # ── Farewell ───────────────────────────────────────────────────────
 
@@ -759,7 +762,7 @@ class BondService:
         }).execute()
 
         logger.info("Bond farewell", extra={"bond_id": str(bond_id)})
-        return data[0]
+        return data
 
     @classmethod
     async def farewell_agent_bonds(
