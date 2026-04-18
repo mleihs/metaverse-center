@@ -1,0 +1,26 @@
+schema_version: 1
+spawns:
+  entropy_drift_spawn:
+  - template_id: entropy_rust_phantom
+    count: 2
+  entropy_erosion_patrol_spawn:
+  - template_id: entropy_fade_echo
+    count: 1
+  - template_id: entropy_rust_phantom
+    count: 1
+  entropy_swarm_spawn:
+  - template_id: entropy_dissolution_swarm
+    count: 1
+  - template_id: entropy_rust_phantom
+    count: 1
+  entropy_dissolution_spawn:
+  - template_id: entropy_dissolution_swarm
+    count: 2
+  entropy_warden_spawn:
+  - template_id: entropy_warden
+    count: 1
+  - template_id: entropy_rust_phantom
+    count: 1
+  entropy_rest_ambush_spawn:
+  - template_id: entropy_rust_phantom
+    count: 1

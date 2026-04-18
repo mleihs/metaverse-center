@@ -1,0 +1,27 @@
+schema_version: 1
+entrance_texts:
+- text_en: The entrance is indistinct. Not ruined – reduced. The walls retain the memory of colour
+    without the colour itself. The air tastes of averaged everything. Somewhere ahead, a distinction
+    is being quietly dissolved.
+  text_de: Der Eingang ist unbestimmt. Nicht zerstört – reduziert. Die Wände bewahren die Erinnerung
+    an Farbe ohne die Farbe selbst. Die Luft schmeckt nach dem Durchschnitt von allem. Irgendwo voraus
+    wird eine Unterscheidung leise aufgelöst.
+- text_en: You enter. Or the room receives you. The distinction is already softer than it should be.
+    The threshold is the same material as the floor. The floor is the same temperature as the air.
+  text_de: Ihr tretet ein. Oder der Raum empfängt euch. Die Unterscheidung ist bereits weicher, als
+    sie sein sollte. Die Schwelle besteht aus demselben Material wie der Boden. Der Boden hat dieselbe
+    Temperatur wie die Luft.
+- text_en: The corridor ahead is visible. Featureless. Not stripped – equalized. Every surface approaches
+    the same shade. The instruments confirm what the instruments measure. They do not confirm what
+    the instruments mean.
+  text_de: Der Korridor voraus ist sichtbar. Merkmalslos. Nicht entblößt – angeglichen. Jede Fläche
+    nähert sich demselben Farbton. Die Instrumente bestätigen, was die Instrumente messen. Sie bestätigen
+    nicht, was die Instrumente bedeuten.
+- text_en: A room. Probably the first. The ordinal is already uncertain. There are walls. There is
+    a floor. The ceiling is the same distance from both.
+  text_de: Ein Raum. Wahrscheinlich der erste. Die Ordnungszahl ist bereits unsicher. Es gibt Wände.
+    Es gibt einen Boden. Die Decke hat von beiden denselben Abstand.
+- text_en: 'The information here is precise. Temperature: ambient. Humidity: ambient. Threat level:
+    ambient. Everything is ambient. That is the threat.'
+  text_de: 'Die Informationen hier sind präzise. Temperatur: Umgebung. Luftfeuchtigkeit: Umgebung.
+    Bedrohungsstufe: Umgebung. Alles ist Umgebung. Das ist die Bedrohung.'

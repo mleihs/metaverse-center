@@ -1,0 +1,160 @@
+schema_version: 1
+anchors:
+- id: entropy_clock
+  phases:
+    discovery:
+      text_en: A clock. No hands. The face is intact – numbers present, glass uncracked. But the mechanism
+        has been removed with surgical precision. Not broken. Emptied. The clock does not tell time.
+        Time does not apply here.
+      text_de: Eine Uhr. Keine Zeiger. Das Zifferblatt ist intakt – Zahlen vorhanden, Glas unversehrt.
+        Aber das Uhrwerk wurde mit chirurgischer Präzision entfernt. Nicht zerbrochen. Entleert. Die
+        Uhr zeigt keine Zeit. Zeit gilt hier nicht.
+    echo:
+      text_en: '{agent} finds the clock again. Or a clock. They are becoming difficult to distinguish.'
+      text_de: '{agent} findet die Uhr wieder. Oder eine Uhr. Sie werden schwer zu unterscheiden.'
+    mutation:
+      text_en: Clocks. Faces. No hands. Same.
+      text_de: Uhren. Zifferblätter. Keine Zeiger. Gleich.
+    climax:
+      text_en: Clock.
+      text_de: Uhr.
+- id: entropy_word
+  phases:
+    discovery:
+      text_en: 'On the wall, etched in something that was once a distinct material: ''REMEMBER.''
+        The letters are precise. The word is clear. The medium is already uncertain.'
+      text_de: 'An der Wand, geritzt in etwas, das einmal ein bestimmtes Material war: »ERINNERN.«
+        Die Buchstaben sind präzise. Das Wort ist klar. Das Medium ist bereits unsicher.'
+    echo:
+      text_en: '{agent} reads the wall. ''RMMBER.'' Same etching. The vowels have equalized into the
+        surrounding stone.'
+      text_de: '{agent} liest die Wand. »ERNNRN.« Dieselbe Ritzung. Die Vokale haben sich in den umgebenden
+        Stein angeglichen.'
+    mutation:
+      text_en: Scratches. Were they letters? The wall is the same texture as the scratches. The message
+        is the medium. The medium is the wall. The wall is grey.
+      text_de: Kratzer. Waren es Buchstaben? Die Wand hat dieselbe Textur wie die Kratzer. Die Nachricht
+        ist das Medium. Das Medium ist die Wand. Die Wand ist grau.
+    climax:
+      text_en: Wall.
+      text_de: Wand.
+- id: entropy_scale
+  phases:
+    discovery:
+      text_en: A balance scale. Both pans empty. Both pans level. The mechanism is precise – machined,
+        calibrated, recently oiled. It measures nothing with extraordinary accuracy.
+      text_de: Eine Balkenwaage. Beide Schalen leer. Beide Schalen waagerecht. Der Mechanismus ist
+        präzise – gefräst, kalibriert, frisch geölt. Sie misst nichts mit außergewöhnlicher Genauigkeit.
+    echo:
+      text_en: '{agent} finds the scale again. Something sits in each pan. Different objects. The
+        scale reads equal. It is not wrong. The objects are becoming the same weight.'
+      text_de: '{agent} findet die Waage wieder. In jeder Schale liegt etwas. Verschiedene Gegenstände.
+        Die Waage zeigt gleich. Sie irrt nicht. Die Gegenstände nehmen dasselbe Gewicht an.'
+    mutation:
+      text_en: Scale. Pans. Equal. The objects in them are the same color now. Same texture. Same.
+      text_de: Waage. Schalen. Gleich. Die Gegenstände darin haben jetzt dieselbe Farbe. Dieselbe
+        Textur. Gleich.
+    climax:
+      text_en: Level.
+      text_de: Waagerecht.
+- id: entropy_photo
+  phases:
+    discovery:
+      text_en: A photograph. A group – four figures, distinct faces, distinct postures. The background
+        is a place that mattered once. The exposure is perfect. Every detail preserved.
+      text_de: Eine Fotografie. Eine Gruppe – vier Gestalten, deutliche Gesichter, deutliche Haltungen.
+        Der Hintergrund ist ein Ort, der einmal wichtig war. Die Belichtung ist perfekt. Jedes Detail
+        erhalten.
+    echo:
+      text_en: '{agent} picks up the photograph. Same one. The figures are still there but the faces
+        have softened. Not blurred – equalized. They look like everyone. They look like no one.'
+      text_de: '{agent} nimmt die Fotografie auf. Dieselbe. Die Gestalten sind noch da, aber die Gesichter
+        haben sich angenähert. Nicht verschwommen – angeglichen. Sie sehen aus wie alle. Sie sehen
+        aus wie niemand.'
+    mutation:
+      text_en: Photo. Figures. Grey. Same height, same width. Background same grey as figures.
+      text_de: Foto. Gestalten. Grau. Selbe Höhe, selbe Breite. Hintergrund selbes Grau wie Gestalten.
+    climax:
+      text_en: Grey.
+      text_de: Grau.
+- id: entropy_key
+  phases:
+    discovery:
+      text_en: A key. Heavy. The teeth are intricate – machine-cut, precise, purposeful. It was made
+        for one lock. One door. One distinction between inside and outside.
+      text_de: Ein Schlüssel. Schwer. Die Zähne sind filigran – maschinengefräst, präzise, zweckvoll.
+        Er wurde für ein Schloss gemacht. Eine Tür. Eine Unterscheidung zwischen Innen und Außen.
+    echo:
+      text_en: '{agent} tries the key. It fits. It fits this lock. It would fit any lock. The teeth
+        have rounded – not worn, just averaged. The key no longer distinguishes between doors.'
+      text_de: '{agent} probiert den Schlüssel. Er passt. Er passt in dieses Schloss. Er würde in
+        jedes passen. Die Zähne haben sich abgerundet – nicht abgenutzt, angeglichen. Der Schlüssel
+        unterscheidet nicht mehr zwischen Türen.'
+    mutation:
+      text_en: Key. Cylinder. Teeth gone. Shaft. Metal. Same metal as the door. Same metal as the
+        lock.
+      text_de: Schlüssel. Zylinder. Zähne weg. Schaft. Metall. Selbes Metall wie die Tür. Selbes Metall
+        wie das Schloss.
+    climax:
+      text_en: Metal.
+      text_de: Metall.
+- id: entropy_name
+  phases:
+    discovery:
+      text_en: A name tag. Clipped to a uniform that is no longer worn. The name is eight letters.
+        Specific. The font is authoritative. Someone was someone here.
+      text_de: Ein Namensschild. An einer Uniform befestigt, die nicht mehr getragen wird. Der Name
+        hat acht Buchstaben. Spezifisch. Die Schrift ist autoritär. Jemand war jemand hier.
+    echo:
+      text_en: '{agent} reads the name tag. Six letters now. Two have merged with their neighbors.
+        The name is still a name. Probably.'
+      text_de: '{agent} liest das Schild. Sechs Buchstaben jetzt. Zwei sind mit ihren Nachbarn verschmolzen.
+        Der Name ist noch ein Name. Wahrscheinlich.'
+    mutation:
+      text_en: Tag. Letters. Three. Could be any name. Could be no name. The uniform is the same color
+        as the wall.
+      text_de: Schild. Buchstaben. Drei. Könnte jeder Name sein. Könnte kein Name sein. Die Uniform
+        hat dieselbe Farbe wie die Wand.
+    climax:
+      text_en: Name.
+      text_de: Name.
+- id: entropy_compass
+  phases:
+    discovery:
+      text_en: A compass. The needle points north. North is a direction. North is a distinction. The
+        glass is clean. The markings are crisp. Someone still believes in orientation.
+      text_de: Ein Kompass. Die Nadel zeigt nach Norden. Norden ist eine Richtung. Norden ist eine
+        Unterscheidung. Das Glas ist sauber. Die Markierungen sind scharf. Jemand glaubt noch an Orientierung.
+    echo:
+      text_en: '{agent} checks the compass. The needle spins slowly. Not searching – surrendering.
+        North, east, south, west. All the same distance from here.'
+      text_de: '{agent} prüft den Kompass. Die Nadel dreht sich langsam. Nicht suchend – aufgebend.
+        Norden, Osten, Süden, Westen. Alle gleich weit von hier.'
+    mutation:
+      text_en: Compass. Needle still. Not pointing. Not spinning. The markings have faded into the
+        dial.
+      text_de: Kompass. Nadel still. Nicht zeigend. Nicht drehend. Die Markierungen sind ins Zifferblatt
+        verblasst.
+    climax:
+      text_en: Circle.
+      text_de: Kreis.
+- id: entropy_mirror
+  phases:
+    discovery:
+      text_en: A mirror. Your reflection is sharp. Detailed. Every line, every shadow, every distinction
+        between you and the background. It remembers what you look like. For now.
+      text_de: Ein Spiegel. Euer Spiegelbild ist scharf. Detailliert. Jede Linie, jeder Schatten,
+        jede Unterscheidung zwischen euch und dem Hintergrund. Er erinnert sich, wie ihr aussieht.
+        Noch.
+    echo:
+      text_en: '{agent} looks into the mirror. The reflection is softer. The edges between figure
+        and background are negotiating. The mirror is losing its opinion about what is what.'
+      text_de: '{agent} blickt in den Spiegel. Das Spiegelbild ist weicher. Die Kanten zwischen Gestalt
+        und Hintergrund verhandeln. Der Spiegel verliert seine Meinung darüber, was was ist.'
+    mutation:
+      text_en: Mirror. Surface. Grey. It reflects the room. It reflects you. There is no difference.
+      text_de: Spiegel. Fläche. Grau. Er reflektiert den Raum. Er reflektiert euch. Es gibt keinen
+        Unterschied.
+    climax:
+      text_en: Same.
+      text_de: Gleich.
