@@ -113,9 +113,7 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
 
     return html`
       <div class="settings-panel">
-        ${this._error
-          ? html`<div class="settings-panel__error">${this._error}</div>`
-          : nothing}
+        ${this._error ? html`<div class="settings-panel__error">${this._error}</div>` : nothing}
 
         <!-- Master Toggle -->
         <div class="settings-section">
@@ -161,12 +159,9 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
   }
 
   private _renderOptions() {
-    const whisperBudget =
-      Number(this._values.bond_whisper_budget) || 3;
-    const maxBonds =
-      Number(this._values.bond_max_per_simulation) || 5;
-    const recognitionThreshold =
-      Number(this._values.bond_recognition_threshold) || 10;
+    const whisperBudget = Number(this._values.bond_whisper_budget) || 3;
+    const maxBonds = Number(this._values.bond_max_per_simulation) || 5;
+    const recognitionThreshold = Number(this._values.bond_recognition_threshold) || 10;
 
     return html`
       <!-- Whisper Generation -->
@@ -192,29 +187,30 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
               max="10"
               step="1"
               .value=${String(whisperBudget)}
-              @input=${(e: Event) =>
-                this._handleRange('bond_whisper_budget', e)}
+              @input=${(e: Event) => this._handleRange('bond_whisper_budget', e)}
             />
             <span class="range-row__value">${whisperBudget}</span>
           </div>
           <div class="cost-note">
-            ${whisperBudget === 0
-              ? msg('Templates only \u2013 zero AI cost')
-              : msg(
-                  str`Up to ${whisperBudget * 6} LLM whispers/day across all bonds`,
-                )}
+            ${
+              whisperBudget === 0
+                ? msg('Templates only \u2013 zero AI cost')
+                : msg(str`Up to ${whisperBudget * 6} LLM whispers/day across all bonds`)
+            }
           </div>
         </div>
 
-        ${!this._hasKey
-          ? html`
+        ${
+          !this._hasKey
+            ? html`
               <div class="cost-note" style="color: var(--color-warning)">
                 ${msg(
                   'No OpenRouter key configured. Whispers will use hand-authored templates only. Add a key in The Mint to enable AI-generated whispers.',
                 )}
               </div>
             `
-          : nothing}
+            : nothing
+        }
       </div>
 
       <!-- Bond Mechanics -->
@@ -240,8 +236,7 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
               max="10"
               step="1"
               .value=${String(maxBonds)}
-              @input=${(e: Event) =>
-                this._handleRange('bond_max_per_simulation', e)}
+              @input=${(e: Event) => this._handleRange('bond_max_per_simulation', e)}
             />
             <span class="range-row__value">${maxBonds}</span>
           </div>
@@ -264,8 +259,7 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
               max="30"
               step="1"
               .value=${String(recognitionThreshold)}
-              @input=${(e: Event) =>
-                this._handleRange('bond_recognition_threshold', e)}
+              @input=${(e: Event) => this._handleRange('bond_recognition_threshold', e)}
             />
             <span class="range-row__value">${recognitionThreshold}</span>
           </div>

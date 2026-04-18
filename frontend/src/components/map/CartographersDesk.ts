@@ -365,10 +365,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     if (!simId) return;
 
     this._loading = true;
-    const result = await healthApi.listZoneStability(
-      simId,
-      appState.currentSimulationMode.value,
-    );
+    const result = await healthApi.listZoneStability(simId, appState.currentSimulationMode.value);
     if (result.success && result.data) {
       this._zones = this._transformZones(result.data);
       this._centerOnZones();

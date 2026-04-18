@@ -251,7 +251,9 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
               ${msg('Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.')}
               <button
                 class="byok-link-btn"
-                @click=${() => { forgeStateManager.mintOpen.value = true; }}
+                @click=${() => {
+                  forgeStateManager.mintOpen.value = true;
+                }}
               >${msg('Open The Mint to configure your API keys')}</button>
               ${renderInfoBubble(msg('The platform admin can also activate autonomy globally, which covers AI costs with the platform key. Contact your admin to request activation for this simulation.'))}
             </div>

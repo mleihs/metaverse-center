@@ -8,8 +8,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type { LeaderboardEntry } from '../../types/index.js';
 import { SCORE_DIMENSION_COLORS } from './map-data.js';
 

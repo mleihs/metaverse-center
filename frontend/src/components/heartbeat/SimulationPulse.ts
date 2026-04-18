@@ -20,9 +20,8 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
-import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { appState } from '../../services/AppStateManager.js';
+import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import './AgentLifeTimeline.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';

@@ -9,10 +9,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
+import { appState } from '../../services/AppStateManager.js';
 import type { RecognitionCandidate } from '../../services/api/BondsApiService.js';
 import { bondsApi } from '../../services/api/BondsApiService.js';
-import { appState } from '../../services/AppStateManager.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
 import '../shared/VelgHelpTip.js';
@@ -76,15 +75,17 @@ export class VelgBondsView extends LitElement {
         </div>
 
         <div class="bonds-layout">
-          ${this._candidates.length
-            ? html`
+          ${
+            this._candidates.length
+              ? html`
                 <velg-bond-formation
                   .candidates=${this._candidates}
                   .simulationId=${this.simulationId}
                   @bond-formed=${this._handleBondFormed}
                 ></velg-bond-formation>
               `
-            : nothing}
+              : nothing
+          }
 
           <velg-bond-panel
             .simulationId=${this.simulationId}

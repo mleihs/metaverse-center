@@ -155,9 +155,7 @@ export class VelgBondFormation extends LitElement {
         }),
       );
     } else {
-      VelgToast.error(
-        resp.error?.message ?? msg('Failed to form bond'),
-      );
+      VelgToast.error(resp.error?.message ?? msg('Failed to form bond'));
     }
   }
 
@@ -176,9 +174,7 @@ export class VelgBondFormation extends LitElement {
                 <div class="candidate__info">
                   <span class="candidate__name">${c.agent_name}</span>
                   <span class="candidate__whisper">
-                    ${msg(
-                      'This agent has noticed your attention. A bond can be formed.',
-                    )}
+                    ${msg('This agent has noticed your attention. A bond can be formed.')}
                   </span>
                 </div>
                 <div class="candidate__action">

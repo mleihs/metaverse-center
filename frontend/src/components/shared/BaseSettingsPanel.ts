@@ -1,8 +1,8 @@
 import { msg, str } from '@lit/localize';
 import { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { settingsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { settingsApi } from '../../services/api/index.js';
 import type { SettingCategory, SimulationSetting } from '../../types/index.js';
 import { VelgToast } from './Toast.js';
 

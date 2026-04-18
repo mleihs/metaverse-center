@@ -616,9 +616,11 @@ export class VelgEpochReadyPanel extends LitElement {
         <div class="participant">
           <span class="participant__icon participant__icon--waiting">\u2014</span>
           <span class="participant__name"
-            >${name}${afkReplaced
-              ? html`<span class="participant__tag participant__tag--afk">${msg('AI')}</span>`
-              : html`<span class="participant__bot-tag">${msg('BOT')}</span>`}</span
+            >${name}${
+              afkReplaced
+                ? html`<span class="participant__tag participant__tag--afk">${msg('AI')}</span>`
+                : html`<span class="participant__bot-tag">${msg('BOT')}</span>`
+            }</span
           >
           <span class="participant__tag participant__tag--auto">${msg('Auto')}</span>
         </div>
@@ -633,9 +635,11 @@ export class VelgEpochReadyPanel extends LitElement {
           ${ready ? '\u2713' : '\u2014'}
         </span>
         <span class="participant__name">${name}</span>
-        ${acted && !ready
-          ? html`<span class="participant__tag participant__tag--acted">${msg('Acted')}</span>`
-          : nothing}
+        ${
+          acted && !ready
+            ? html`<span class="participant__tag participant__tag--acted">${msg('Acted')}</span>`
+            : nothing
+        }
         <span class="participant__tag ${ready ? 'participant__tag--ready' : 'participant__tag--waiting'}">
           ${ready ? msg('Ready') : msg('Waiting')}
         </span>
@@ -648,8 +652,9 @@ export class VelgEpochReadyPanel extends LitElement {
 
     return html`
       <div class="actions">
-        ${showPass
-          ? html`
+        ${
+          showPass
+            ? html`
               <button
                 class="action-btn action-btn--pass"
                 @click=${this._passCycle}
@@ -659,7 +664,8 @@ export class VelgEpochReadyPanel extends LitElement {
                 ${this._passing ? msg('Passing...') : msg('Pass')}
               </button>
             `
-          : nothing}
+            : nothing
+        }
         <button
           class="action-btn ${myReady ? 'action-btn--revoke' : 'action-btn--signal'}"
           @click=${this._toggleReady}
@@ -669,9 +675,11 @@ export class VelgEpochReadyPanel extends LitElement {
           ${myReady ? msg('Revoke Ready') : msg('Signal Ready')}
         </button>
       </div>
-      ${readyGated && !myReady
-        ? html`<div class="gate-hint">${msg('Act or pass before signalling ready')}</div>`
-        : nothing}
+      ${
+        readyGated && !myReady
+          ? html`<div class="gate-hint">${msg('Act or pass before signalling ready')}</div>`
+          : nothing
+      }
     `;
   }
 }

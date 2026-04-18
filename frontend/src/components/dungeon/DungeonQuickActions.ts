@@ -40,18 +40,25 @@ import '../shared/VelgHoldButton.js';
 // which the shared .action-btn rule reads via fallback values.
 
 const _ROOM_TYPE_STYLES: Record<string, string> = {
-  combat:    '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 60%, transparent)',
-  elite:     '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 80%, transparent)',
-  boss:      '--_btn-color: var(--color-danger); --_btn-border: var(--color-danger); --_btn-weight: 700',
-  encounter: '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 60%, transparent)',
-  treasure:  '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
-  rest:      '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
-  exit:      '--_btn-color: var(--_phosphor); --_btn-border: color-mix(in srgb, var(--_phosphor) 60%, transparent)',
+  combat:
+    '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 60%, transparent)',
+  elite:
+    '--_btn-color: var(--color-danger); --_btn-border: color-mix(in srgb, var(--color-danger) 80%, transparent)',
+  boss: '--_btn-color: var(--color-danger); --_btn-border: var(--color-danger); --_btn-weight: 700',
+  encounter:
+    '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 60%, transparent)',
+  treasure:
+    '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
+  rest: '--_btn-color: var(--color-success); --_btn-border: color-mix(in srgb, var(--color-success) 60%, transparent)',
+  exit: '--_btn-color: var(--_phosphor); --_btn-border: color-mix(in srgb, var(--_phosphor) 60%, transparent)',
 };
 
-const _RISK_UNKNOWN_STYLE = '--_btn-color: var(--_phosphor-dim); --_btn-border: color-mix(in srgb, var(--_phosphor-dim) 40%, transparent)';
-const _RISK_HIGH_STYLE = '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 50%, transparent)';
-const _RISK_EXTREME_STYLE = '--_btn-color: color-mix(in srgb, var(--color-danger) 80%, var(--color-warning)); --_btn-border: color-mix(in srgb, var(--color-danger) 40%, transparent)';
+const _RISK_UNKNOWN_STYLE =
+  '--_btn-color: var(--_phosphor-dim); --_btn-border: color-mix(in srgb, var(--_phosphor-dim) 40%, transparent)';
+const _RISK_HIGH_STYLE =
+  '--_btn-color: var(--color-warning); --_btn-border: color-mix(in srgb, var(--color-warning) 50%, transparent)';
+const _RISK_EXTREME_STYLE =
+  '--_btn-color: color-mix(in srgb, var(--color-danger) 80%, var(--color-warning)); --_btn-border: color-mix(in srgb, var(--color-danger) 40%, transparent)';
 
 function _roomTypeStyle(roomType: string): string {
   return _ROOM_TYPE_STYLES[roomType] ?? _RISK_UNKNOWN_STYLE;

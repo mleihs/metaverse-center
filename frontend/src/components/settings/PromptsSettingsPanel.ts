@@ -1,8 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { promptTemplatesApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { promptTemplatesApi } from '../../services/api/index.js';
 import type { PromptCategory, PromptTemplate, PromptTemplateType } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
