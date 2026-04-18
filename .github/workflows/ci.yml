@@ -98,7 +98,15 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: CLI v2.90.0 (released 2026-04-13) upgraded pgdelta to
+          # "alpha 11" (#5075), which regressed multi-statement migration
+          # parsing. Files with multiple CREATE OR REPLACE FUNCTION blocks
+          # (e.g. supabase/migrations/20260414400000_214_epoch_atomic_operations.sql)
+          # are sent as a single prepared statement and fail with
+          # SQLSTATE 42601 "cannot insert multiple commands into a prepared
+          # statement". v2.84.2 is the last stable before the pgdelta alpha
+          # upgrade. Revisit once a later stable release ships a fixed pgdelta.
+          version: 2.84.2
 
       - name: Start Supabase
         run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
