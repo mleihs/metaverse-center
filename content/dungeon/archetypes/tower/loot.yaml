@@ -1,0 +1,209 @@
+schema_version: 1
+loot:
+- id: structural_dust
+  name_en: Structural Dust
+  name_de: Strukturstaub
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 50
+    when: after_dungeon
+  description_en: Pulverized load-bearing material. Inhaling it settles something fundamental.
+  description_de: Pulverisiertes Tragwerk. Das Einatmen beruhigt etwas Grundlegendes.
+  drop_weight: 40
+- id: market_insight
+  name_en: Market Insight
+  name_de: Markterkenntnis
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Learned to read the mathematics of failing structures
+    content_de: Gelernt, die Mathematik versagender Strukturen zu lesen
+  description_en: 'A fragment of understanding: how markets fall, and why the fall is always overdue.'
+  description_de: 'Ein Fragment des Verständnisses: wie Märkte fallen und warum der Fall immer überfällig
+    ist.'
+  drop_weight: 30
+- id: load_bearing_fragment
+  name_en: Load-Bearing Fragment
+  name_de: Tragwerkfragment
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: A shard that remembers how to hold things together. Guardian checks +5%.
+  description_de: Ein Splitter, der sich erinnert, wie man Dinge zusammenhält. Wächter-Proben +5%.
+  drop_weight: 20
+- id: leverage_extract
+  name_en: Leverage Extract
+  name_de: Hebelextrakt
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    stress_damage_bonus: 0.5
+    aptitude: saboteur
+    scope: this_dungeon
+  description_en: 'Consumable: one Saboteur ability deals +50% stress damage this dungeon.'
+  description_de: 'Verbrauchsgegenstand: Eine Saboteur-Fähigkeit verursacht +50% Stressschaden in
+    diesem Dungeon.'
+  drop_weight: 10
+- id: structural_insight
+  name_en: Structural Insight
+  name_de: Strukturelle Einsicht
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: spy
+    scope: this_dungeon
+  description_en: Understanding of load paths and hidden passages. Spy checks +5%.
+  description_de: Verständnis von Lastpfaden und verborgenen Durchgängen. Spion-Proben +5%.
+  drop_weight: 20
+- id: load_bearing_knowledge
+  name_en: Load-Bearing Knowledge
+  name_de: Tragendes Wissen
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: Intuition for what holds and what breaks – and how to be on the right side. Guardian
+    checks +5%.
+  description_de: Intuition für das, was hält, und das, was bricht – und wie man auf der richtigen
+    Seite steht. Wächter-Proben +5%.
+  drop_weight: 15
+- id: collapse_resonance
+  name_en: Collapse Resonance
+  name_de: Einsturzresonanz
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 30
+    when: immediate
+  description_en: A frequency captured from a controlled demolition. Hearing it resets the nervous
+    system – the body forgets its fear of falling.
+  description_de: Eine Frequenz, eingefangen bei einem kontrollierten Abriss. Sie zu hören setzt das
+    Nervensystem zurück – der Körper vergisst seine Angst vor dem Fallen.
+  drop_weight: 25
+- id: demolition_echo
+  name_en: Demolition Echo
+  name_de: Abrissecho
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: saboteur
+    scope: this_dungeon
+  description_en: The resonance of a perfectly placed charge. Saboteur checks +5%.
+  description_de: Die Resonanz einer perfekt platzierten Ladung. Saboteur-Proben +5%.
+  drop_weight: 20
+- id: foundation_attunement_shard
+  name_en: Foundation Attunement Shard
+  name_de: Fundamenteinstimmungssplitter
+  tier: 2
+  effect_type: moodlet
+  effect_params:
+    moodlet_type: structurally_attuned
+    emotion: determination
+    strength: 8
+    decay_type: permanent
+    description_en: Attuned to structural stress. Senses instability before instruments do.
+    description_de: Eingestimmt auf strukturellen Stress. Spürt Instabilität vor den Instrumenten.
+  description_en: 'Permanent: agent gains ''structurally_attuned'' moodlet.'
+  description_de: 'Permanent: Agent erhält ''strukturell_eingestimmt'' Moodlet.'
+  drop_weight: 30
+- id: collapse_fragment
+  name_en: Collapse Fragment
+  name_de: Einsturzfragment
+  tier: 2
+  effect_type: memory
+  effect_params:
+    importance: 7
+    content_en: Witnessed the mathematics of structural failure. Gained intuition for when systems
+      are past the point of rescue.
+    content_de: Die Mathematik des Strukturversagens bezeugt. Intuition gewonnen für den Moment, ab
+      dem Systeme nicht mehr zu retten sind.
+  description_en: Creates a high-importance Reflection Memory about structural collapse.
+  description_de: Erzeugt eine hochbedeutende Reflexionserinnerung über strukturellen Zusammenbruch.
+  drop_weight: 25
+- id: reinforced_lens
+  name_en: Reinforced Lens
+  name_de: Verstärkte Linse
+  tier: 2
+  effect_type: permanent_dungeon_bonus
+  effect_params:
+    aptitude: guardian
+    bonus: 1
+    scope: tower_dungeons_only
+  description_en: 'Permanent: +1 Guardian aptitude passive in ALL future Tower dungeons.'
+  description_de: 'Permanent: +1 Wächter-Eignung passiv in ALLEN zukünftigen Turm-Dungeons.'
+  drop_weight: 20
+- id: stability_residue
+  name_en: Stability Residue
+  name_de: Stabilitätsrückstand
+  tier: 2
+  effect_type: event_modifier
+  effect_params:
+    impact_level_reduction: 1
+    scope: one_event
+  description_en: Can reduce one Event's impact_level by 1.
+  description_de: Kann den Einflussgrad eines Ereignisses um 1 senken.
+  drop_weight: 15
+- id: structural_blueprint
+  name_en: Structural Blueprint
+  name_de: Struktureller Bauplan
+  tier: 2
+  effect_type: next_dungeon_bonus
+  effect_params:
+    all_rooms_revealed: true
+    start_stability: 100
+    scope: next_tower_dungeon
+  description_en: 'Next Tower dungeon: all rooms pre-revealed, Stability starts at max.'
+  description_de: 'Nächster Turm-Dungeon: Alle Räume vorher enthüllt, Stabilität beginnt auf Maximum.'
+  drop_weight: 10
+- id: stability_catalyst
+  name_en: Stability Catalyst
+  name_de: Stabilitätskatalysator
+  tier: 3
+  effect_type: simulation_modifier
+  effect_params:
+    overall_health_bonus: 0.05
+    scope: permanent
+  description_en: 'Permanent: +0.05 simulation Overall Health. The tower''s sacrifice stabilizes reality.'
+  description_de: 'Permanent: +0.05 Gesamtgesundheit der Simulation. Das Opfer des Turms stabilisiert
+    die Realität.'
+  drop_weight: 100
+- id: tower_memory
+  name_en: Tower Memory
+  name_de: Turmerinnerung
+  tier: 3
+  effect_type: memory
+  effect_params:
+    importance: 9
+    content_en: Witnessed a structure let go of itself. Understood that permanence is a confidence
+      game, and collapse is not failure but release.
+    content_de: Ein Bauwerk beobachtet, das sich selbst losließ. Verstanden, dass Beständigkeit ein
+      Vertrauensspiel ist und Einsturz nicht Versagen, sondern Loslassen.
+    behavior_effect: more_pragmatic_less_rigid
+  description_en: 'High-importance Memory: affects agent autonomous behavior (more pragmatic, less
+    rigid).'
+  description_de: 'Hochbedeutende Erinnerung: beeinflusst autonomes Verhalten (pragmatischer, weniger
+    starr).'
+  drop_weight: 100
+- id: foundation_attunement
+  name_en: Foundation Attunement
+  name_de: Fundamenteinstimmung
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude_choices:
+    - guardian
+    - saboteur
+    bonus: 1
+    max_total_bonus: 2
+  description_en: 'Permanent: one agent gains +1 Guardian OR Saboteur aptitude. Capped at +2 total.'
+  description_de: 'Permanent: Ein Agent erhält +1 Wächter ODER Saboteur-Eignung. Maximal +2 gesamt.'
+  drop_weight: 100

@@ -1,0 +1,711 @@
+schema_version: 1
+encounters:
+- id: tower_liquidity_crisis
+  room_type: combat
+  min_depth: 1
+  max_depth: 2
+  min_difficulty: 1
+  description_en: Numbers cascade from the ceiling like failed projections. Two figures huddle in
+    the margins, nervous, twitching – Brokers trapped in their own recursive calculations. They have
+    noticed you. The figures begin reciting.
+  description_de: Zahlen stürzen von der Decke wie gescheiterte Projektionen. Zwei Gestalten kauern
+    in den Randbereichen, nervös, zuckend – Makler, gefangen in ihren eigenen rekursiven Berechnungen.
+    Sie haben euch bemerkt. Die Gestalten beginnen zu rezitieren.
+  choices: []
+  combat_encounter_id: tower_tremor_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_assessment
+  room_type: combat
+  min_depth: 2
+  max_depth: 3
+  min_difficulty: 1
+  requires_aptitude:
+    infiltrator: 5
+  description_en: A crowned figure patrols this floor with proprietary confidence, a worm grinding
+    through the foundations behind it. The assessment is mutual – they measure you for structural
+    tolerance, and you measure them for weakness.
+  description_de: Eine gekrönte Gestalt patrouilliert dieses Stockwerk mit herrschaftlicher Selbstgewissheit,
+    ein Wurm mahlt hinter ihr durch die Fundamente. Die Prüfung ist gegenseitig – sie messen euch
+    auf strukturelle Belastbarkeit, und ihr messt sie auf Schwächen.
+  choices: []
+  combat_encounter_id: tower_patrol_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_interest_compounding
+  room_type: combat
+  min_depth: 2
+  max_depth: 4
+  min_difficulty: 2
+  description_en: CONTACT. The ledger was a trap. Two shapes materialize from the margins of an open
+    account book – Debt Shades, their forms growing denser with each heartbeat. The interest has been
+    compounding since before you entered.
+  description_de: KONTAKT. Das Hauptbuch war eine Falle. Zwei Gestalten materialisieren sich aus den
+    Rändern eines offenen Kontobuchs – Schuldgespenster, deren Formen mit jedem Herzschlag dichter
+    werden. Die Zinsen liefen schon, bevor ihr diesen Raum betreten habt.
+  choices: []
+  combat_encounter_id: tower_ambush_spawn
+  is_ambush: true
+  ambush_stress: 80
+- id: tower_reckoning_hour
+  room_type: combat
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 2
+  description_en: The hour arrives when all deferred costs come due simultaneously. A Debt Shade presides
+    over two Brokers whose recitations have synchronized into something like a hymn. The floor vibrates
+    at the frequency of imminent default.
+  description_de: Die Stunde kommt, in der alle aufgeschobenen Kosten gleichzeitig fällig werden.
+    Ein Schuldgespenst präsidiert über zwei Maklern, deren Rezitationen sich zu etwas wie einem Hymnus
+    synchronisiert haben. Der Boden vibriert mit der Frequenz eines bevorstehenden Ausfalls.
+  choices: []
+  combat_encounter_id: tower_compound_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_the_lobby
+  room_type: encounter
+  min_depth: 1
+  max_depth: 2
+  min_difficulty: 1
+  description_en: The lobby is cavernous and wrong. Reception desks curve into themselves. Departure
+    boards list floors that do not exist – negative numbers, imaginary levels, a floor called 'solvency'
+    with no arrival time. The marble underfoot is cracked along load-bearing lines. Someone left in
+    a hurry.
+  description_de: Die Lobby ist riesig und falsch. Empfangsschalter krümmen sich in sich selbst. Abfahrtstafeln
+    listen Stockwerke, die nicht existieren – negative Zahlen, imaginäre Ebenen, ein Stockwerk namens
+    'Solvenz' ohne Ankunftszeit. Der Marmor unter euren Füßen ist entlang tragender Linien gerissen.
+    Jemand ist in Eile gegangen.
+  choices:
+  - id: check_departure_boards
+    label_en: Check the departure boards (Spy)
+    label_de: Die Abfahrtstafeln prüfen (Spion)
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      reveal_rooms: 1
+      stress: 0
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 40
+    success_narrative_en: The imaginary floors encode real information. You map the first level from
+      the contradictions.
+    success_narrative_de: Die imaginären Stockwerke verschlüsseln echte Information. Ihr kartiert
+      die erste Ebene aus den Widersprüchen.
+    partial_narrative_en: Some boards flicker with useful data. Others display only debt.
+    partial_narrative_de: Einige Tafeln flimmern mit nützlichen Daten. Andere zeigen nur Schulden.
+    fail_narrative_en: The boards reset as you read them. The only consistent number is the one counting
+      down.
+    fail_narrative_de: Die Tafeln setzen sich zurück, während ihr sie lest. Die einzige beständige
+      Zahl ist die, die herunterzählt.
+  - id: reinforce_lobby
+    label_en: Reinforce the cracked marble (Guardian)
+    label_de: Den gerissenen Marmor verstärken (Wächter)
+    check_aptitude: guardian
+    check_difficulty: 0
+    success_effects:
+      stability: 5
+      stress: -15
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 50
+      stability: -5
+    success_narrative_en: You brace the load-bearing fractures with improvised supports. The lobby
+      stops shuddering. For now.
+    success_narrative_de: Ihr stützt die tragenden Brüche mit improvisierten Stützen ab. Die Lobby
+      hört auf zu beben. Vorerst.
+    partial_narrative_en: Some cracks hold. Others widen under the correction, as if the building
+      resists being helped.
+    partial_narrative_de: Einige Risse halten. Andere weiten sich unter der Korrektur, als widersetze
+      sich das Gebäude der Hilfe.
+    fail_narrative_en: The marble shifts under your hands. The load-bearing lines are deeper than
+      you thought – the damage is foundational.
+    fail_narrative_de: Der Marmor verschiebt sich unter euren Händen. Die tragenden Linien sind tiefer
+      als gedacht – der Schaden ist fundamental.
+  - id: cautious_lobby
+    label_en: Move through quickly
+    label_de: Schnell hindurchgehen
+    check_difficulty: 0
+    success_effects:
+      stress: 15
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You cross the lobby without engaging it. The departure boards flicker in
+      your peripheral vision. You try not to read them.
+    success_narrative_de: Ihr durchquert die Lobby, ohne euch auf sie einzulassen. Die Abfahrtstafeln
+      flimmern in eurem peripheren Blickfeld. Ihr versucht, sie nicht zu lesen.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_final_audit
+  room_type: encounter
+  min_depth: 4
+  max_depth: 5
+  min_difficulty: 2
+  description_en: The penultimate floor. Every structural failure in the building below resonates
+    here – the cracks sing, the tilted floors hum, the bent rebar conducts a frequency that makes
+    vision blur. In the center of the room, a single desk holds a final audit report. The pages are
+    blank. The pen is waiting.
+  description_de: Das vorletzte Stockwerk. Jedes Strukturversagen im Gebäude darunter resoniert hier
+    – die Risse singen, die geneigten Böden summen, der verbogene Bewehrungsstahl leitet eine Frequenz,
+    die das Sehen verschwimmen lässt. In der Mitte des Raums hält ein einzelner Schreibtisch einen
+    letzten Prüfbericht. Die Seiten sind leer. Der Stift wartet.
+  choices:
+  - id: write_true_audit
+    label_en: Write the true audit (Spy)
+    label_de: Den wahren Bericht schreiben (Spion)
+    check_aptitude: spy
+    check_difficulty: 10
+    success_effects:
+      reveal_rooms: 2
+      stress: 10
+      stability: 5
+    partial_effects:
+      reveal_rooms: 1
+      stress: 30
+    fail_effects:
+      stress: 70
+    success_narrative_en: The pen knows what you know. The audit writes itself – every flaw, every
+      overloaded column, every deferred repair. The tower shudders at its own truth.
+    success_narrative_de: Der Stift weiß, was ihr wisst. Der Bericht schreibt sich selbst – jeder
+      Fehler, jede überladene Säule, jede aufgeschobene Reparatur. Der Turm erschauert vor seiner
+      eigenen Wahrheit.
+    partial_narrative_en: The report is half-complete. Some columns resist documentation, as if the
+      tower censors its own failures.
+    partial_narrative_de: Der Bericht ist halbfertig. Einige Säulen widersetzen sich der Dokumentation,
+      als zensiere der Turm seine eigenen Fehler.
+    fail_narrative_en: The pen breaks. The audit report fills itself with numbers that don't add up.
+      The desk vibrates with fraudulent energy.
+    fail_narrative_de: Der Stift bricht. Der Prüfbericht füllt sich mit Zahlen, die nicht aufgehen.
+      Der Schreibtisch vibriert mit betrügerischer Energie.
+  - id: sabotage_last_column
+    label_en: Sabotage the last load-bearing column (Saboteur)
+    label_de: Die letzte tragende Säule sabotieren (Saboteur)
+    check_aptitude: saboteur
+    check_difficulty: 10
+    success_effects:
+      stability: -10
+      discovery: true
+      stress: -20
+    partial_effects:
+      stability: -15
+      stress: 40
+    fail_effects:
+      stability: -20
+      stress: 80
+    success_narrative_en: Controlled structural failure. The column buckles precisely, opening a direct
+      route to the summit. The tower groans but accepts.
+    success_narrative_de: Kontrolliertes Strukturversagen. Die Säule knickt präzise ein und öffnet
+      einen direkten Weg zum Gipfel. Der Turm stöhnt, akzeptiert aber.
+    partial_narrative_en: The column weakens but holds. The path opens partially. The building remembers
+      this insult.
+    partial_narrative_de: Die Säule schwächt sich, hält aber. Der Weg öffnet sich teilweise. Das Gebäude
+      erinnert sich an diese Beleidigung.
+    fail_narrative_en: The charge propagates. Three columns fail instead of one. The ceiling drops
+      a meter. The route is open, but so is the abyss.
+    fail_narrative_de: Die Ladung pflanzt sich fort. Drei Säulen versagen statt einer. Die Decke sinkt
+      einen Meter. Der Weg ist offen, aber auch der Abgrund.
+  - id: cautious_audit
+    label_en: Leave the desk untouched
+    label_de: Den Schreibtisch unberührt lassen
+    check_difficulty: 0
+    success_effects:
+      stress: 20
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The pen remains. The blank pages remain. The audit that never happened is
+      perhaps the most honest one.
+    success_narrative_de: Der Stift bleibt. Die leeren Seiten bleiben. Der Bericht, der nie geschrieben
+      wurde, ist vielleicht der ehrlichste.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_confidence_game
+  room_type: encounter
+  min_depth: 2
+  max_depth: 3
+  min_difficulty: 1
+  description_en: 'A room of impossible architecture: staircases that climb into themselves, columns
+    supporting nothing. In the center, a mechanism produces certificates of structural integrity –
+    for a building that is visibly crumbling. Someone has been maintaining this fiction.'
+  description_de: 'Ein Raum unmöglicher Architektur: Treppen, die in sich selbst hinaufsteigen, Säulen,
+    die nichts tragen. In der Mitte produziert ein Mechanismus Bescheinigungen der Gebäudeintegrität
+    – für ein Bauwerk, das sichtbar zerfällt. Jemand hat diese Fiktion aufrechterhalten.'
+  choices:
+  - id: expose_fraud
+    label_en: Expose the fraud
+    label_de: Den Betrug aufdecken
+    check_aptitude: propagandist
+    check_difficulty: 5
+    success_effects:
+      stress: -30
+      stability: 5
+    partial_effects:
+      stress: 30
+    fail_effects:
+      stress: 80
+    success_narrative_en: The mechanism grinds to a halt. The certificates dissolve. For a moment
+      the building shudders, then settles on honest foundations.
+    success_narrative_de: Der Mechanismus kommt zum Stillstand. Die Bescheinigungen lösen sich auf.
+      Einen Moment lang bebt das Gebäude, dann setzt es sich auf ehrlichen Fundamenten ab.
+    partial_narrative_en: The certificates tear, but the mechanism keeps printing. The fiction is
+      dented, not broken.
+    partial_narrative_de: Die Bescheinigungen reißen, aber der Mechanismus druckt weiter. Die Fiktion
+      ist verbeult, nicht gebrochen.
+    fail_narrative_en: The mechanism accelerates. More certificates. More lies. The building believes
+      them even if you don't.
+    fail_narrative_de: Der Mechanismus beschleunigt. Mehr Bescheinigungen. Mehr Lügen. Das Gebäude
+      glaubt ihnen, selbst wenn ihr es nicht tut.
+  - id: analyze_architecture
+    label_en: Analyze the architecture
+    label_de: Die Architektur analysieren
+    check_aptitude: spy
+    check_difficulty: 0
+    success_effects:
+      reveal_rooms: 2
+      stress: 10
+    partial_effects:
+      reveal_rooms: 1
+      stress: 30
+    fail_effects:
+      stress: 50
+    success_narrative_en: The impossible geometry has a logic. You trace it, mapping two adjacent
+      floors from the contradictions.
+    success_narrative_de: Die unmögliche Geometrie hat eine Logik. Ihr verfolgt sie und kartiert zwei
+      angrenzende Stockwerke aus den Widersprüchen.
+    partial_narrative_en: Fragments of the layout reveal themselves. One floor, partially mapped.
+    partial_narrative_de: Fragmente des Grundrisses offenbaren sich. Ein Stockwerk, teilweise kartiert.
+    fail_narrative_en: The contradictions multiply faster than you can process them. The headache
+      lingers.
+    fail_narrative_de: Die Widersprüche vermehren sich schneller, als ihr sie verarbeiten könnt. Die
+      Kopfschmerzen bleiben.
+  - id: profit_from_fraud
+    label_en: Profit from the system
+    label_de: Vom System profitieren
+    requires_aptitude:
+      infiltrator: 3
+    check_difficulty: 0
+    success_effects:
+      stress: -10
+      stability: -5
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You issue yourself a certificate. The tower accepts it, briefly. The structural
+      cost is someone else's problem.
+    success_narrative_de: Ihr stellt euch selbst eine Bescheinigung aus. Der Turm akzeptiert sie,
+      kurz. Die strukturellen Kosten sind das Problem eines anderen.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: walk_away_confidence
+    label_en: Walk away
+    label_de: Weitergehen
+    check_difficulty: 0
+    success_effects:
+      stress: 20
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: You leave the mechanism running. Behind you, the certificates pile up. The
+      fiction persists.
+    success_narrative_de: Ihr lasst den Mechanismus laufen. Hinter euch häufen sich die Bescheinigungen.
+      Die Fiktion besteht fort.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_the_ledger
+  room_type: encounter
+  min_depth: 2
+  max_depth: 4
+  min_difficulty: 1
+  description_en: 'The room is dominated by a single object: a ledger the size of a desk, open to
+    a page of debts so vast they curve the air around them. The columns do not balance. They have
+    not balanced in a long time. The ledger hums with structural resonance.'
+  description_de: 'Der Raum wird beherrscht von einem einzigen Objekt: einem Hauptbuch, so groß wie
+    ein Schreibtisch, aufgeschlagen auf einer Seite von Schulden so gewaltig, dass sie die Luft um
+    sich krümmen. Die Spalten gleichen sich nicht aus. Das tun sie schon lange nicht mehr. Das Hauptbuch
+    summt mit struktureller Resonanz.'
+  choices:
+  - id: balance_books
+    label_en: Balance the books
+    label_de: Die Bücher ausgleichen
+    check_aptitude: guardian
+    check_difficulty: 5
+    success_effects:
+      stability: 10
+      stress: -20
+    partial_effects:
+      stability: 5
+      stress: 20
+    fail_effects:
+      stress: 60
+      stability: -5
+    success_narrative_en: Column by column, you reconcile the accounts. The ledger stops humming.
+      The floor beneath it settles.
+    success_narrative_de: Spalte für Spalte gleicht ihr die Konten aus. Das Hauptbuch hört auf zu
+      summen. Der Boden darunter beruhigt sich.
+    partial_narrative_en: Some columns balance. Others resist. The resonance dims but doesn't stop.
+    partial_narrative_de: Einige Spalten gleichen sich aus. Andere widersetzen sich. Die Resonanz
+      wird schwächer, hört aber nicht auf.
+    fail_narrative_en: The numbers rearrange themselves faster than you can correct them. The debt
+      grows. The floor groans.
+    fail_narrative_de: Die Zahlen ordnen sich schneller um, als ihr sie korrigieren könnt. Die Schulden
+      wachsen. Der Boden ächzt.
+  - id: tear_pages
+    label_en: Tear the pages
+    label_de: Die Seiten herausreißen
+    check_aptitude: saboteur
+    check_difficulty: 0
+    success_effects:
+      stability: -5
+      discovery: true
+    partial_effects:
+      stress: 40
+      stability: -10
+    fail_effects:
+      stress: 80
+      stability: -10
+    success_narrative_en: The pages come free with a sound like breaking ribs. The debt is erased,
+      but so is whatever was holding this floor together.
+    success_narrative_de: Die Seiten lösen sich mit einem Geräusch wie brechender Rippen. Die Schulden
+      sind gelöscht, aber auch was immer dieses Stockwerk zusammenhielt.
+    partial_narrative_en: Half the pages tear. The rest grip the binding with unnatural strength.
+    partial_narrative_de: Die Hälfte der Seiten reißt. Der Rest klammert sich mit unnatürlicher Kraft
+      an die Bindung.
+    fail_narrative_en: The ledger bites back. The pages slice skin and the debt compounds on contact.
+    fail_narrative_de: Das Hauptbuch beißt zurück. Die Seiten schneiden Haut und die Schulden wachsen
+      bei Kontakt.
+  - id: read_margins
+    label_en: Read the margins
+    label_de: Die Randbemerkungen lesen
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      reveal_rooms: 2
+      stress: 10
+    partial_effects:
+      stress: 30
+    fail_effects:
+      stress: 50
+    success_narrative_en: The margins contain annotations – floor plans, load calculations, access
+      routes. Someone was auditing this tower from the inside.
+    success_narrative_de: Die Ränder enthalten Anmerkungen – Grundrisse, Lastberechnungen, Zugangswege.
+      Jemand hat diesen Turm von innen geprüft.
+    partial_narrative_en: The handwriting dissolves as you read it. You catch fragments before they
+      fade.
+    partial_narrative_de: Die Handschrift löst sich auf, während ihr sie lest. Ihr fangt Fragmente
+      auf, bevor sie verblassen.
+    fail_narrative_en: The numbers in the margins are not calculations. They are names. Reading them
+      aloud was a mistake.
+    fail_narrative_de: Die Zahlen in den Rändern sind keine Berechnungen. Es sind Namen. Sie laut
+      zu lesen war ein Fehler.
+  - id: close_book
+    label_en: Close the book
+    label_de: Das Buch schließen
+    check_difficulty: 0
+    success_effects:
+      stress: 15
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The cover closes with a sound like a vault door. The debt remains. It always
+      does.
+    success_narrative_de: Der Deckel schließt sich mit einem Geräusch wie eine Tresortür. Die Schulden
+      bleiben. Das tun sie immer.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_fallen_assets
+  room_type: encounter
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 1
+  description_en: A gallery of broken authority. Statues of former owners, their faces ground smooth
+    by vibration. Each one held this tower when it was still ascending. Now they lean at angles that
+    defy the remaining geometry. Something in their arrangement is load-bearing.
+  description_de: Eine Galerie gebrochener Autorität. Statuen ehemaliger Eigentümer, ihre Gesichter
+    glattgeschliffen durch Vibration. Jeder von ihnen hielt diesen Turm, als er noch aufstieg. Nun
+    lehnen sie sich in Winkeln, die der verbliebenen Geometrie trotzen. Etwas in ihrer Anordnung ist
+    tragend.
+  choices:
+  - id: reinforce_statues
+    label_en: Reinforce the arrangement
+    label_de: Die Anordnung verstärken
+    check_aptitude: guardian
+    check_difficulty: 5
+    success_effects:
+      stability: 15
+      stress: -30
+    partial_effects:
+      stability: 5
+      stress: 20
+    fail_effects:
+      stress: 60
+      stability: -10
+    success_narrative_en: You brace the statues against each other. The arrangement holds. The tower
+      remembers what support felt like.
+    success_narrative_de: Ihr stützt die Statuen gegeneinander ab. Die Anordnung hält. Der Turm erinnert
+      sich, wie sich Stützung anfühlte.
+    partial_narrative_en: Some statues stabilize. Others shift under your hands, settling into new
+      angles of precariousness.
+    partial_narrative_de: Einige Statuen stabilisieren sich. Andere verschieben sich unter euren Händen
+      und nehmen neue Winkel der Unsicherheit ein.
+    fail_narrative_en: A statue topples. The chain reaction shakes the floor and costs you more than
+      you gained.
+    fail_narrative_de: Eine Statue stürzt. Die Kettenreaktion erschüttert den Boden und kostet euch
+      mehr, als ihr gewonnen habt.
+  - id: topple_statues
+    label_en: Topple the arrangement
+    label_de: Die Anordnung umstürzen
+    check_aptitude: saboteur
+    check_difficulty: 5
+    success_effects:
+      discovery: true
+      stress: 10
+      stability: -5
+    partial_effects:
+      stress: 40
+      stability: -10
+    fail_effects:
+      stress: 80
+      stability: -15
+    success_narrative_en: 'The statues crash in controlled sequence. Behind the last one: a passage
+      the tower was hiding from itself.'
+    success_narrative_de: 'Die Statuen stürzen in kontrollierter Folge. Hinter der letzten: ein Durchgang,
+      den der Turm vor sich selbst versteckt hat.'
+    partial_narrative_en: Half the statues fall. The passage is visible but partially blocked. The
+      structure protests.
+    partial_narrative_de: Die Hälfte der Statuen fällt. Der Durchgang ist sichtbar, aber teilweise
+      blockiert. Die Struktur protestiert.
+    fail_narrative_en: Uncontrolled demolition. The statues collapse inward and the ceiling follows
+      their example.
+    fail_narrative_de: Unkontrollierter Abriss. Die Statuen kollabieren nach innen und die Decke folgt
+      ihrem Beispiel.
+  - id: study_statues
+    label_en: Study the arrangement
+    label_de: Die Anordnung studieren
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      reveal_rooms: 1
+      stress: 0
+      insight: true
+    partial_effects:
+      stress: 20
+    fail_effects:
+      stress: 40
+    success_narrative_en: The angles are a language. The statues point to where the tower is weakest
+      – and strongest. You read both.
+    success_narrative_de: Die Winkel sind eine Sprache. Die Statuen zeigen, wo der Turm am schwächsten
+      ist – und am stärksten. Ihr lest beides.
+    partial_narrative_en: You catch patterns but lose them when the vibration shifts. Partial data
+      is better than none.
+    partial_narrative_de: Ihr erkennt Muster, verliert sie aber, wenn die Vibration sich verschiebt.
+      Teilweise Daten sind besser als keine.
+    fail_narrative_en: The arrangement is too complex. The patterns dissolve into noise. Your head
+      aches with unused insight.
+    fail_narrative_de: Die Anordnung ist zu komplex. Die Muster lösen sich in Rauschen auf. Euer Kopf
+      schmerzt von ungenutzter Erkenntnis.
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_remnant_commerce_encounter
+  room_type: elite
+  min_depth: 3
+  max_depth: 4
+  min_difficulty: 2
+  description_en: The trading floor. Or what remains of it. The boards are cracked, the displays shattered,
+    but the Remnant of Commerce still operates – buying, selling, collapsing, in an endless loop of
+    proprietary destruction. A lone broker orbits it, feeding it data from markets that no longer
+    exist.
+  description_de: Das Handelsparkett. Oder was davon übrig ist. Die Bretter sind geborsten, die Anzeigen
+    zerschmettert, aber das Relikt des Handels operiert noch – kaufend, verkaufend, einstürzend, in
+    einer endlosen Schleife endloser Selbstliquidation. Ein einsamer Makler umkreist es und füttert
+    es mit Daten von Märkten, die nicht mehr existieren.
+  choices: []
+  combat_encounter_id: tower_collapse_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_the_collapse
+  room_type: boss
+  min_depth: 1
+  max_depth: 99
+  min_difficulty: 1
+  description_en: The Tower screams. Not metaphorically – the structural frequency shifts to something
+    your teeth interpret as sound, something your bones read as countdown. The highest floor begins
+    to compress. The Remnant of Commerce waits at the center, adjusting its ledgers while the ceiling
+    descends. You did not come to save the tower. The tower saved itself by letting go.
+  description_de: Der Turm schreit. Nicht metaphorisch – die Strukturfrequenz verschiebt sich zu etwas,
+    das eure Zähne als Klang interpretieren, etwas, das eure Knochen als Countdown lesen. Das oberste
+    Stockwerk beginnt sich zu komprimieren. Das Relikt des Handels wartet im Zentrum und korrigiert
+    seine Hauptbücher, während die Decke herabsinkt. Ihr seid nicht gekommen, den Turm zu retten.
+    Der Turm rettete sich selbst, indem er losließ.
+  choices: []
+  combat_encounter_id: tower_collapse_spawn
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_the_vault
+  room_type: rest
+  min_depth: 0
+  max_depth: 99
+  min_difficulty: 1
+  description_en: A reinforced room. The walls here are thicker, the ceiling braced with steel that
+    has not yet learned to fail. The structural readings stabilize. For the first time since entering,
+    the building is not actively trying to kill you. Probably.
+  description_de: Ein verstärkter Raum. Die Wände hier sind dicker, die Decke mit Stahl verstärkt,
+    der noch nicht gelernt hat zu versagen. Die Strukturwerte stabilisieren sich. Zum ersten Mal seit
+    dem Eintritt versucht das Gebäude nicht aktiv, euch umzubringen. Wahrscheinlich.
+  choices:
+  - id: tower_rest_full
+    label_en: Rest (heal stress, risk ambush)
+    label_de: Rasten (Stress heilen, Hinterhalt-Risiko)
+    check_difficulty: 0
+    success_effects:
+      stress_heal: 200
+      wounded_to_stressed: true
+      ambush_chance: 0.2
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The party rests against reinforced walls. The tremors subside. For a few
+      minutes, the numbers stop.
+    success_narrative_de: Die Gruppe rastet an verstärkten Wänden. Die Erschütterungen lassen nach.
+      Für ein paar Minuten hören die Zahlen auf.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: tower_rest_guarded
+    label_en: Post a Guardian watch (safe, but Guardian doesn't heal)
+    label_de: Wächter aufstellen (sicher, aber Wächter heilt nicht)
+    requires_aptitude:
+      guardian: 3
+    check_difficulty: 0
+    success_effects:
+      stress_heal: 200
+      wounded_to_stressed: true
+      guardian_no_heal: true
+      stability: 10
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The Guardian monitors the structural readings while others rest. No tremor
+      comes unseen. The tower stabilizes locally.
+    success_narrative_de: Der Wächter überwacht die Strukturwerte, während die anderen rasten. Keine
+      Erschütterung kommt unbemerkt. Der Turm stabilisiert sich lokal.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  - id: tower_rest_assess
+    label_en: Saboteur assessment (stability boost, reveal room)
+    label_de: Saboteur-Bewertung (Stabilitätsschub, Raum aufdecken)
+    requires_aptitude:
+      saboteur: 3
+    check_difficulty: 0
+    success_effects:
+      stability: 5
+      reveal_rooms: 1
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The Saboteur maps the load-bearing walls, identifying stress fractures and
+      hidden passages. Knowledge is structural power.
+    success_narrative_de: Der Saboteur kartiert die tragenden Wände und identifiziert Spannungsrisse
+      und verborgene Durchgänge. Wissen ist strukturelle Macht.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0
+- id: tower_cache
+  room_type: treasure
+  min_depth: 0
+  max_depth: 99
+  min_difficulty: 1
+  description_en: A strongbox embedded in a load-bearing column. The contents are valuable – you can
+    feel the weight of accumulated capital through the metal. Extracting it without weakening the
+    column requires precision or acceptable risk tolerance.
+  description_de: Ein Tresor, eingelassen in eine tragende Säule. Der Inhalt ist wertvoll – ihr spürt
+    das Gewicht akkumulierten Kapitals durch das Metall. Ihn zu bergen, ohne die Säule zu schwächen,
+    erfordert Präzision oder akzeptable Risikotoleranz.
+  choices:
+  - id: tower_careful_extract
+    label_en: Careful extraction (Spy)
+    label_de: Vorsichtige Bergung (Spion)
+    check_aptitude: spy
+    check_difficulty: -5
+    success_effects:
+      loot: true
+    partial_effects:
+      loot: true
+      loot_tier_penalty: 1
+    fail_effects:
+      stress: 75
+      stability: -10
+      trap_triggered: true
+    success_narrative_en: Millimeter by millimeter, the strongbox slides free. The column holds. The
+      capital is yours.
+    success_narrative_de: Millimeter für Millimeter gleitet der Tresor heraus. Die Säule hält. Das
+      Kapital gehört euch.
+    partial_narrative_en: The extraction is imperfect. Some contents scatter and devalue on contact
+      with the floor.
+    partial_narrative_de: Die Bergung ist unvollkommen. Einige Inhalte zerstreuen sich und verlieren
+      an Wert bei Bodenkontakt.
+    fail_narrative_en: The column cracks. The strongbox contents scatter as the ceiling settles three
+      centimeters lower.
+    fail_narrative_de: Die Säule bricht. Die Tresorinhalte zerstreuen sich, während die Decke drei
+      Zentimeter tiefer sinkt.
+  - id: tower_demolish_extract
+    label_en: Controlled demolition (Saboteur)
+    label_de: Kontrollierter Abriss (Saboteur)
+    check_aptitude: saboteur
+    check_difficulty: 5
+    success_effects:
+      loot: true
+    partial_effects:
+      loot: true
+      loot_tier_penalty: 1
+      stress: 30
+      stability: -5
+    fail_effects:
+      stress: 50
+      stability: -10
+    success_narrative_en: The charge is precise. The column redistributes its load. The strongbox
+      contents are intact.
+    success_narrative_de: Die Ladung ist präzise. Die Säule verteilt ihre Last um. Die Tresorinhalte
+      sind intakt.
+    partial_narrative_en: The blast is slightly off. The loot survives, but the floor shudders in
+      protest.
+    partial_narrative_de: Die Detonation ist leicht daneben. Die Beute überlebt, aber der Boden bebt
+      im Protest.
+    fail_narrative_en: Miscalculated. The blast propagates through the column into the floor. Structural
+      damage compounds.
+    fail_narrative_de: Fehlberechnet. Die Detonation pflanzt sich durch die Säule in den Boden fort.
+      Strukturschäden kumulieren.
+  - id: tower_leave_cache
+    label_en: Leave it (no risk)
+    label_de: Liegenlassen (kein Risiko)
+    check_difficulty: 0
+    success_effects: {}
+    partial_effects: {}
+    fail_effects: {}
+    success_narrative_en: The column keeps its secret. The ceiling stays where it is. Some capital
+      is best left embedded.
+    success_narrative_de: Die Säule behält ihr Geheimnis. Die Decke bleibt, wo sie ist. Manches Kapital
+      lässt man besser eingebettet.
+    partial_narrative_en: ''
+    partial_narrative_de: ''
+    fail_narrative_en: ''
+    fail_narrative_de: ''
+  is_ambush: false
+  ambush_stress: 0

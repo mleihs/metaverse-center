@@ -1,0 +1,416 @@
+schema_version: 1
+banter:
+- id: tb_01
+  trigger: room_entered
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} counts the cracks in the load-bearing wall. The number has increased since the
+    last room.'
+  text_de: '{agent} zählt die Risse in der tragenden Wand. Die Zahl ist seit dem letzten Raum gestiegen.'
+- id: tb_02
+  trigger: room_entered
+  personality_filter:
+    extraversion:
+    - 0.0
+    - 0.3
+  text_en: '{agent} places a hand against the wall. Feels the frequency. Says nothing.'
+  text_de: '{agent} legt eine Hand an die Wand. Spürt die Frequenz. Sagt nichts.'
+- id: tb_03
+  trigger: room_entered
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''The geometry here is wrong. Not broken – bankrupt.'''
+  text_de: '{agent}: »Die Geometrie hier ist falsch. Nicht zerbrochen – bankrott.«'
+- id: tb_04
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} runs a finger along the baseboard. Measures the deviation from plumb. Records
+    it mentally.'
+  text_de: '{agent} fährt mit dem Finger am Sockel entlang. Misst die Abweichung vom Lot. Notiert
+    es im Kopf.'
+- id: tb_05
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The floor tilts two degrees. The instruments confirm what the structure already warned.
+  text_de: Der Boden neigt sich um zwei Grad. Die Instrumente bestätigen, was das Gebäude längst angekündigt
+    hat.
+- id: tb_06
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Somewhere above, concrete dust sifts down like snow. The tower is shedding.
+  text_de: Irgendwo oben rieselt Betonstaub herab wie Schnee. Der Turm häutet sich.
+- id: tb_07
+  trigger: room_entered
+  personality_filter:
+    extraversion:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''Another floor. Still standing. That''s optimistic of it.'''
+  text_de: '{agent}: »Noch ein Stockwerk. Steht noch. Optimistisch von ihm.«'
+- id: tb_08
+  trigger: room_entered
+  personality_filter:
+    conscientiousness:
+    - 0.0
+    - 0.3
+  text_en: '{agent} steps over a crack in the floor without looking down. Ignorance as strategy.'
+  text_de: '{agent} tritt über einen Riss im Boden, ohne hinunterzuschauen. Unwissenheit als Strategie.'
+- id: tb_09
+  trigger: combat_won
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} checks on the party. ''Everyone still solvent?'''
+  text_de: '{agent} sieht nach der Gruppe. »Alle noch zahlungsfähig?«'
+- id: tb_10
+  trigger: combat_won
+  personality_filter:
+    extraversion:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''Account settled. Next.'''
+  text_de: '{agent}: »Konto beglichen. Nächstes.«'
+- id: tb_11
+  trigger: combat_won
+  personality_filter:
+    neuroticism:
+    - 0.0
+    - 0.3
+  text_en: '{agent} catalogues the remains with professional detachment. Data for the post-mortem.'
+  text_de: '{agent} katalogisiert die Überreste mit professioneller Distanz. Daten für die Nachbesprechung.'
+- id: tb_12
+  trigger: combat_won
+  personality_filter: {}
+  text_en: The numbers stop cascading. The structural readout ticks back toward green. Briefly.
+  text_de: Die Zahlen hören auf zu stürzen. Die Strukturanzeige tickt zurück Richtung grün. Kurz.
+- id: tb_13
+  trigger: stability_critical
+  personality_filter: {}
+  text_en: 'STRUCTURAL INTEGRITY: CRITICAL. The instruments display readings they were not calibrated
+    to show.'
+  text_de: 'STRUKTURELLE INTEGRITÄT: KRITISCH. Die Instrumente zeigen Werte an, für die sie nicht
+    kalibriert wurden.'
+- id: tb_14
+  trigger: stability_critical
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent}: ''The ceiling. Is the ceiling lower than before?'''
+  text_de: '{agent}: »Die Decke. Ist die Decke niedriger als vorher?«'
+- id: tb_15
+  trigger: stability_critical
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''Listen. The frequency has changed. The tower is counting down.'''
+  text_de: '{agent}: »Hört zu. Die Frequenz hat sich verändert. Der Turm zählt herunter.«'
+- id: tb_16
+  trigger: stability_critical
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} recalculates the remaining load capacity. The margins are no longer margins.'
+  text_de: '{agent} berechnet die verbleibende Tragfähigkeit neu. Die Reserven sind keine Reserven
+    mehr.'
+- id: tb_49
+  trigger: stability_collapse
+  personality_filter: {}
+  text_en: STRUCTURAL FAILURE. The load-bearing walls have given up the pretence. The building no
+    longer pretends it was designed to be lived in.
+  text_de: STRUKTURVERSAGEN. Die Tragwände haben die Fassade aufgegeben. Das Gebäude tut nicht länger
+    so, als wäre es zum Bewohnen gebaut.
+- id: tb_50
+  trigger: stability_collapse
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent}: ''The readings are at zero. ZERO. That''s not a number – that''s a countdown
+    that''s already finished.'''
+  text_de: '{agent}: »Die Werte sind auf null. NULL. Das ist keine Zahl – das ist ein Countdown, der
+    schon vorbei ist.«'
+- id: tb_51
+  trigger: stability_collapse
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: The tower has crossed from architecture into archaeology. Every step forward is a step
+    through what this building used to be.
+  text_de: Der Turm ist von Architektur zu Archäologie übergegangen. Jeder Schritt vorwärts ist ein
+    Schritt durch das, was dieses Gebäude einmal war.
+- id: tb_52
+  trigger: stability_collapse
+  personality_filter:
+    conscientiousness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} stops recording structural data. There is no structure left to record. Only momentum
+    and gravity, negotiating terms.'
+  text_de: '{agent} hört auf, Strukturdaten aufzuzeichnen. Es gibt keine Struktur mehr, die man erfassen
+    könnte. Nur noch Schwerkraft und Trägheit, die Bedingungen aushandeln.'
+- id: tb_17
+  trigger: depth_change
+  personality_filter: {}
+  text_en: Higher. The structure protests. Each floor carries the memory of every floor beneath it.
+  text_de: Höher. Das Gebäude wehrt sich. Jedes Stockwerk trägt die Erinnerung an jedes Stockwerk
+    darunter.
+- id: tb_18
+  trigger: depth_change
+  personality_filter:
+    openness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}: ''Every floor we climb is a floor that can collapse beneath us.'' No one argues.'
+  text_de: '{agent}: »Jedes Stockwerk, das wir erklimmen, ist ein Stockwerk, das unter uns einstürzen
+    kann.« Niemand widerspricht.'
+- id: tb_46
+  trigger: depth_change
+  personality_filter: {}
+  text_en: The stairwell narrows. Not the walls – the sense that return is possible.
+  text_de: Das Treppenhaus verengt sich. Nicht die Wände – das Gefühl, dass Umkehr noch möglich ist.
+- id: tb_47
+  trigger: depth_change
+  personality_filter:
+    conscientiousness:
+    - 0.6
+    - 1.0
+  text_en: '{agent} notes the load-bearing walls thinning. Structural integrity is a promise the building
+    may not keep.'
+  text_de: '{agent} registriert die dünner werdenden Tragwände. Statische Integrität ist ein Versprechen,
+    das das Gebäude möglicherweise nicht hält.'
+- id: tb_48
+  trigger: depth_change
+  personality_filter:
+    neuroticism:
+    - 0.5
+    - 1.0
+  text_en: '{agent} pauses on the landing. Listens to the floor below settle into a position it was
+    not designed to hold.'
+  text_de: '{agent} verharrt auf dem Absatz. Lauscht, wie sich das Stockwerk darunter in eine Lage
+    senkt, für die es nicht vorgesehen war.'
+- id: tb_19
+  trigger: boss_approach
+  personality_filter: {}
+  text_en: The vibration changes from tremor to harmonic. The tower is resonating at its failure frequency.
+    Something at the top is conducting.
+  text_de: Die Vibration wechselt von Tremor zu Harmonik. Der Turm resoniert auf seiner Versagensfrequenz.
+    Etwas an der Spitze dirigiert.
+- id: tb_20
+  trigger: boss_approach
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} grips {agent_b}''s arm. ''Whatever the cost, we pay it together.'''
+  text_de: '{agent} greift nach {agent_b}s Arm. »Was auch immer der Preis, wir zahlen ihn gemeinsam.«'
+- id: tb_21
+  trigger: boss_approach
+  personality_filter:
+    extraversion:
+    - 0.0
+    - 0.3
+  text_en: '{agent} is already calculating exit routes. Three options. All of them involve structural
+    failure.'
+  text_de: '{agent} berechnet bereits Fluchtwege. Drei Optionen. Alle beinhalten Strukturversagen.'
+- id: tb_22
+  trigger: agent_stressed
+  personality_filter:
+    extraversion:
+    - 0.6
+    - 1.0
+  text_en: '{agent} laughs. It sounds like rebar bending. ''I''m fine. The building isn''t, but I''m
+    fine.'''
+  text_de: '{agent} lacht. Es klingt wie sich biegender Bewehrungsstahl. »Mir geht''s gut. Dem Gebäude
+    nicht, aber mir geht''s gut.«'
+- id: tb_23
+  trigger: agent_stressed
+  personality_filter:
+    agreeableness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}''s jaw tightens. Their stress is load-bearing. Remove it and something collapses.'
+  text_de: '{agent}s Kiefer spannt sich an. Ihr Stress ist tragend. Entfernt ihn und etwas kollabiert.'
+- id: tb_24
+  trigger: agent_afflicted
+  personality_filter: {}
+  text_en: '{agent}''s posture shifts. They begin reciting numbers under their breath – debts that
+    are not theirs. Not yet.'
+  text_de: '{agent}s Haltung verändert sich. Sie beginnen leise Zahlen zu rezitieren – Schulden, die
+    nicht ihre sind. Noch nicht.'
+- id: tb_25
+  trigger: agent_virtue
+  personality_filter: {}
+  text_en: Something hardens in {agent} – not brittle, but load-bearing. They plant their feet as
+    if they are the column this floor needs.
+  text_de: Etwas verhärtet sich in {agent} – nicht spröde, sondern tragend. Sie stellen sich hin,
+    als wären sie die Säule, die dieses Stockwerk braucht.
+- id: tb_26
+  trigger: elite_spotted
+  personality_filter: {}
+  text_en: The trading boards flicker. Something massive operates at the center of the floor, buying
+    and selling in a dead market.
+  text_de: Die Handelsbretter flackern. Etwas Massives operiert im Zentrum des Stockwerks, kauft und
+    verkauft auf einem toten Markt.
+- id: tb_27
+  trigger: elite_spotted
+  personality_filter:
+    neuroticism:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''That thing is still trading. The market crashed and it''s still trading.'''
+  text_de: '{agent}: »Das Ding handelt immer noch. Der Markt ist abgestürzt und es handelt immer noch.«'
+- id: tb_28
+  trigger: loot_found
+  personality_filter:
+    conscientiousness:
+    - 0.0
+    - 0.4
+  text_en: '{agent} palms the most portable asset before inventory is taken. Old accounting habits.'
+  text_de: '{agent} steckt den handlichsten Vermögenswert ein, bevor inventarisiert wird. Alte Buchhaltungsgewohnheiten.'
+- id: tb_29
+  trigger: loot_found
+  personality_filter: {}
+  text_en: The salvage is cold. Condensation forms on the metal as if the tower's climate is rejecting
+    the withdrawal.
+  text_de: Die Bergung ist kalt. Kondenswasser bildet sich auf dem Metall, als würde das Klima des
+    Turms die Entnahme ablehnen.
+- id: tb_30
+  trigger: loot_found
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} turns the artifact over in their hands. ''This was currency once. Before the tower
+    redefined value.'''
+  text_de: '{agent} dreht das Artefakt in den Händen. »Das war einmal Währung. Bevor der Turm den
+    Wert neu definiert hat.«'
+- id: tb_31
+  trigger: rest_start
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} cannot rest. They sit with their back against the reinforced wall, counting the
+    interval between tremors.'
+  text_de: '{agent} kann nicht rasten. Sie sitzen mit dem Rücken an der verstärkten Wand und zählen
+    die Intervalle zwischen den Erschütterungen.'
+- id: tb_32
+  trigger: rest_start
+  personality_filter:
+    extraversion:
+    - 0.6
+    - 1.0
+  text_en: '{agent}: ''You know what this vault needs? A window. And a bar. Mostly a bar.'''
+  text_de: '{agent}: »Wisst ihr, was dieser Tresorraum braucht? Ein Fenster. Und eine Bar. Vor allem
+    eine Bar.«'
+- id: tb_33
+  trigger: rest_start
+  personality_filter: {}
+  text_en: The vault hums at a frequency that almost sounds like quiet. For a moment, the ledger balances.
+  text_de: Der Tresorraum summt auf einer Frequenz, die fast nach Stille klingt. Für einen Moment
+    geht die Rechnung auf.
+- id: tb_34
+  trigger: retreat
+  personality_filter: {}
+  text_en: The stairwell down is still intact. The tower permits the withdrawal. The interest, however,
+    continues to accrue.
+  text_de: Das Treppenhaus nach unten ist noch intakt. Der Turm gestattet den Rückzug. Die Zinsen
+    allerdings laufen weiter.
+- id: tb_35
+  trigger: retreat
+  personality_filter:
+    agreeableness:
+    - 0.0
+    - 0.3
+  text_en: '{agent}: ''Strategic divestment. Not retreat. There''s a difference. On paper.'''
+  text_de: '{agent}: »Strategische Desinvestition. Kein Rückzug. Es gibt einen Unterschied. Auf dem
+    Papier.«'
+- id: tb_36
+  trigger: dungeon_completed
+  personality_filter: {}
+  text_en: Ground floor. The exit is open. Behind you, the tower settles into its new equilibrium
+    – lower, quieter, diminished but still standing.
+  text_de: Erdgeschoss. Der Ausgang ist offen. Hinter euch findet der Turm sein neues Gleichgewicht
+    – niedriger, leiser, vermindert aber noch stehend.
+- id: tb_37
+  trigger: dungeon_completed
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} keeps checking the structural readings. The numbers are stable. They don''t trust
+    stable.'
+  text_de: '{agent} prüft weiter die Strukturwerte. Die Zahlen sind stabil. Sie trauen stabil nicht.'
+- id: tb_38
+  trigger: combat_won
+  personality_filter:
+    opinion_positive_pair: true
+  text_en: '{agent_a} and {agent_b} move through the aftermath in efficient tandem. Shared risk, shared
+    dividends.'
+  text_de: '{agent_a} und {agent_b} bewegen sich in effizientem Tandem durch die Nachwehen. Geteiltes
+    Risiko, geteilte Dividenden.'
+- id: tb_39
+  trigger: room_entered
+  personality_filter:
+    opinion_positive_pair: true
+  text_en: '{agent_a} glances at {agent_b}. A nod. The structural assessment is shared without words.'
+  text_de: '{agent_a} blickt zu {agent_b}. Ein Nicken. Die Strukturbewertung wird wortlos geteilt.'
+- id: tb_40
+  trigger: agent_stressed
+  personality_filter:
+    opinion_negative_pair: true
+  text_en: '{agent_a} watches {agent_b} struggle. Calculates the liability. Offers nothing.'
+  text_de: '{agent_a} beobachtet wie {agent_b} kämpft. Berechnet die Verbindlichkeit. Bietet nichts
+    an.'
+- id: tb_41
+  trigger: combat_won
+  personality_filter:
+    opinion_negative_pair: true
+  text_en: '{agent_a}: ''Your position was exposed, {agent_b}. Structurally and tactically.'''
+  text_de: '{agent_a}: »Deine Position war exponiert, {agent_b}. Strukturell und taktisch.«'
+- id: tb_42
+  trigger: room_entered
+  personality_filter: {}
+  text_en: A clock on the wall runs backward. The hands move with the confidence of a market correction.
+  text_de: Eine Uhr an der Wand läuft rückwärts. Die Zeiger bewegen sich mit der Zuversicht einer
+    Marktkorrektur.
+- id: tb_43
+  trigger: combat_won
+  personality_filter:
+    openness:
+    - 0.7
+    - 1.0
+  text_en: '{agent} examines the dissipating broker. ''Fascinating. Even in death, it''s trying to
+    close the deal.'''
+  text_de: '{agent} untersucht den sich auflösenden Makler. »Faszinierend. Selbst im Tod versucht
+    er den Abschluss.«'
+- id: tb_44
+  trigger: stability_critical
+  personality_filter:
+    agreeableness:
+    - 0.7
+    - 1.0
+  text_en: '{agent}: ''We need to move. Together. Now.'' The floor confirms the urgency with a groan.'
+  text_de: '{agent}: »Wir müssen weiter. Zusammen. Jetzt.« Der Boden bestätigt die Dringlichkeit mit
+    einem Ächzen.'
+- id: tb_45
+  trigger: depth_change
+  personality_filter:
+    neuroticism:
+    - 0.6
+    - 1.0
+  text_en: '{agent} grips the railing. It shifts under their hand. They grip harder. It shifts more.'
+  text_de: '{agent} greift nach dem Geländer. Es verschiebt sich unter der Hand. Sie greifen fester.
+    Es verschiebt sich mehr.'

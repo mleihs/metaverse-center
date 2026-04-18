@@ -1,0 +1,168 @@
+schema_version: 1
+enemies:
+- id: tower_tremor_broker
+  name_en: Tremor Broker
+  name_de: Bebenmakler
+  condition_threshold: 1
+  stress_resistance: 80
+  threat_level: minion
+  attack_aptitude: propagandist
+  attack_power: 1
+  stress_attack_power: 5
+  telegraphed_intent: true
+  evasion: 30
+  resistances:
+  - guardian
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    stress_attack: 65
+    evade: 25
+    ambient: 10
+  special_abilities: []
+  description_en: A nervous figure wreathed in scrolling numbers. It doesn't fight – it recites. Market
+    figures, compound rates, the precise mathematics of structures that can't hold.
+  description_de: Eine nervöse Gestalt, umweht von laufenden Zahlen. Sie kämpft nicht – sie rezitiert.
+    Marktkurse, Zinseszinsen, die präzise Mathematik von Strukturen, die nicht halten können.
+  ambient_text_en:
+  - The broker whispers a number. The floor shudders.
+  - Digits cascade down the walls like rain. None of them add up.
+  ambient_text_de:
+  - Der Makler flüstert eine Zahl. Der Boden bebt.
+  - Ziffern rinnen die Wände herab wie Regen. Keine davon geht auf.
+- id: tower_foundation_worm
+  name_en: Foundation Worm
+  name_de: Grundwurm
+  condition_threshold: 2
+  stress_resistance: 0
+  threat_level: minion
+  attack_aptitude: guardian
+  attack_power: 4
+  stress_attack_power: 1
+  telegraphed_intent: true
+  evasion: 10
+  resistances: []
+  vulnerabilities:
+  - assassin
+  - saboteur
+  action_weights:
+    attack: 40
+    burrow: 50
+    ambient: 10
+  special_abilities:
+  - burrow
+  description_en: Patient. Eyeless. It navigates by stress fractures in the load-bearing walls, widening
+    them with each pass. The building groans where it has been.
+  description_de: Geduldig. Augenlos. Er orientiert sich an Spannungsrissen in den tragenden Wänden
+    und weitet sie bei jedem Durchgang. Das Gebäude stöhnt, wo er gewesen ist.
+  ambient_text_en:
+  - The floor vibrates. Something is chewing through the foundation.
+  ambient_text_de:
+  - Der Boden vibriert. Etwas frisst sich durch das Fundament.
+- id: tower_crown_keeper
+  name_en: The Crowned
+  name_de: Der Gekrönte
+  condition_threshold: 2
+  stress_resistance: 250
+  threat_level: standard
+  attack_aptitude: guardian
+  attack_power: 5
+  stress_attack_power: 2
+  telegraphed_intent: true
+  evasion: 15
+  resistances:
+  - propagandist
+  - infiltrator
+  vulnerabilities:
+  - spy
+  - saboteur
+  action_weights:
+    attack: 30
+    stability_drain: 35
+    defend: 25
+    ambient: 10
+  special_abilities:
+  - stability_drain
+  description_en: It wears the crown of a structure that believed it would last forever. The crown
+    is cracked. The keeper does not acknowledge this.
+  description_de: Er trägt die Krone eines Bauwerks, das glaubte, ewig zu bestehen. Die Krone ist
+    geborsten. Der Träger nimmt dies nicht zur Kenntnis.
+  ambient_text_en:
+  - The Crowned raises one hand. A support beam splinters.
+  - Its crown emits a low frequency that makes your teeth ache.
+  ambient_text_de:
+  - Der Gekrönte hebt eine Hand. Ein Stützbalken splittert.
+  - Seine Krone sendet eine tiefe Frequenz, die in den Zähnen schmerzt.
+- id: tower_debt_shade
+  name_en: Debt Shade
+  name_de: Schuldgespenst
+  condition_threshold: 1
+  stress_resistance: 300
+  threat_level: standard
+  attack_aptitude: propagandist
+  attack_power: 2
+  stress_attack_power: 4
+  telegraphed_intent: false
+  evasion: 25
+  resistances:
+  - spy
+  vulnerabilities:
+  - propagandist
+  - guardian
+  action_weights:
+    stress_attack: 45
+    compound: 30
+    disinformation: 15
+    ambient: 10
+  special_abilities:
+  - compound
+  - disinformation
+  description_en: It speaks in promises that were never kept. Each round it grows, fed by the compound
+    interest of unresolved obligations. It lies about its intentions – not from malice, but because
+    the ledger demands it.
+  description_de: Es spricht in Versprechen, die nie gehalten wurden. Jede Runde wächst es, genährt
+    vom Zinseszins ungelöster Verpflichtungen. Es lügt über seine Absichten – nicht aus Bosheit, sondern
+    weil das Hauptbuch es verlangt.
+  ambient_text_en:
+  - The shade presents a contract. The terms are always worsening.
+  - You can hear it counting. The numbers only go up.
+  ambient_text_de:
+  - Das Gespenst legt einen Vertrag vor. Die Konditionen verschlechtern sich stets.
+  - Ihr hört es zählen. Die Zahlen steigen nur.
+- id: tower_remnant_commerce
+  name_en: Remnant of Commerce
+  name_de: Relikt des Handels
+  condition_threshold: 5
+  stress_resistance: 400
+  threat_level: elite
+  attack_aptitude: propagandist
+  attack_power: 7
+  stress_attack_power: 8
+  telegraphed_intent: true
+  evasion: 20
+  resistances:
+  - infiltrator
+  - propagandist
+  vulnerabilities:
+  - saboteur
+  action_weights:
+    attack: 20
+    stress_attack: 20
+    summon_brokers: 25
+    market_crash: 20
+    defend: 15
+  special_abilities:
+  - summon_brokers
+  - market_crash
+  description_en: What remains when a trading floor collapses. It moves through the ruin with proprietary
+    efficiency, summoning lesser brokers from the rubble. Its market crash ability strips all pretense
+    of stability.
+  description_de: Was bleibt, wenn ein Handelsparkett einbricht. Es bewegt sich durch die Ruine mit
+    der Effizienz eines Insolvenzverwalters, ruft geringere Makler aus dem Schutt. Seine Marktcrash-Fähigkeit
+    reisst jedes Stabilitätsversprechen ein.
+  ambient_text_en:
+  - The Remnant adjusts invisible ledgers. Something in the building responds.
+  - Trading signals flicker across its surface. Buy. Sell. Collapse.
+  ambient_text_de:
+  - Das Relikt korrigiert unsichtbare Hauptbücher. Etwas im Gebäude antwortet.
+  - Handelssignale flackern über seine Oberflaeche. Kaufen. Verkaufen. Einsturz.
