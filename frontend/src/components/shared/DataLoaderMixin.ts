@@ -191,6 +191,11 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
     }
   }
 
+  // Canonical Lit mixin idiom: TypeScript cannot infer the intersection of the
+  // concrete `typeof DataLoaderHost` with the dynamic `TBase` constructor
+  // signature. See the Lit mixin guide (https://lit.dev/docs/composition/mixins/
+  // #creating-a-mixin). This `as unknown as` cast is the documented escape
+  // hatch and is whitelisted in `scripts/lint-no-cast-unknown.sh`.
   return DataLoaderHost as unknown as TBase &
     (abstract new (
       ...args: any[]
