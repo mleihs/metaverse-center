@@ -1,0 +1,199 @@
+schema_version: 1
+anchors:
+- id: prometheus_tool
+  phases:
+    discovery:
+      text_en: A tool. Not a tool you recognize – a tool for something that has not been invented
+        yet. It fits the hand uncomfortably well.
+      text_de: Ein Werkzeug. Kein Werkzeug, das ihr erkennt – ein Werkzeug für etwas, das noch nicht
+        erfunden wurde. Es liegt unbequem gut in der Hand.
+    echo:
+      text_en: The tool again. {agent} picks it up. It has changed – the handle is warmer, the edge
+        sharper. It has been practicing.
+      text_de: Das Werkzeug wieder. {agent} hebt es auf. Es hat sich verändert – der Griff ist wärmer,
+        die Kante schärfer. Es hat geübt.
+    mutation:
+      text_en: The tool has split into three. Each version is optimized for a different task. They
+        arranged themselves on the workbench in order of increasing ambition.
+      text_de: Das Werkzeug hat sich in drei geteilt. Jede Version ist für eine andere Aufgabe optimiert.
+        Sie haben sich auf der Werkbank angeordnet, in Reihenfolge zunehmender Ambition.
+    climax:
+      text_en: 'The tool is gone. In its place: a finished thing. Not what the party built – what
+        the tool built using itself as material.'
+      text_de: 'Das Werkzeug ist weg. An seiner Stelle: ein fertiges Ding. Nicht was der Trupp gebaut
+        hat – was das Werkzeug gebaut hat, mit sich selbst als Material.'
+- id: prometheus_blueprint
+  phases:
+    discovery:
+      text_en: A blueprint, pinned to the wall. The design is for something elegant and impossible.
+        The measurements are in a unit that does not exist.
+      text_de: Eine Blaupause, an die Wand geheftet. Der Entwurf ist für etwas Elegantes und Unmögliches.
+        Die Maße sind in einer Einheit, die es nicht gibt.
+    echo:
+      text_en: '{agent} finds the blueprint again. The design has been annotated. The annotations
+        are in {agent}''s handwriting. {agent} does not remember writing them.'
+      text_de: '{agent} findet die Blaupause wieder. Der Entwurf wurde annotiert. Die Anmerkungen
+        sind in {agent}s Handschrift. {agent} erinnert sich nicht, sie geschrieben zu haben.'
+    mutation:
+      text_en: The blueprint has folded itself into a three-dimensional model. It rotates slowly in
+        the air, demonstrating its own construction sequence.
+      text_de: Die Blaupause hat sich zu einem dreidimensionalen Modell gefaltet. Es rotiert langsam
+        in der Luft und demonstriert seine eigene Konstruktionssequenz.
+    climax:
+      text_en: The model is building itself. Layer by layer, from the inside out. It does not need
+        the party. It never needed the party.
+      text_de: Das Modell baut sich selbst. Schicht für Schicht, von innen nach außen. Es braucht
+        den Trupp nicht. Es hat den Trupp nie gebraucht.
+- id: prometheus_crucible_fragment
+  phases:
+    discovery:
+      text_en: A shard of a crucible. Still warm. Inside, residue of an alloy that does not exist
+        in any catalogue.
+      text_de: 'Eine Scherbe eines Tiegels. Noch warm. Darin: Rückstände einer Legierung, die in keinem
+        Katalog existiert.'
+    echo:
+      text_en: The shard is larger now. Or {agent} is remembering it differently. The residue inside
+        has crystallized into a pattern that looks like instructions.
+      text_de: Die Scherbe ist jetzt größer. Oder {agent} erinnert sich anders an sie. Die Rückstände
+        darin haben sich zu einem Muster kristallisiert, das wie Anweisungen aussieht.
+    mutation:
+      text_en: The shard has reconstructed itself into a complete crucible. It is hot. It is ready.
+        It contains, already, the ghost of something that wants to be made.
+      text_de: Die Scherbe hat sich zu einem kompletten Tiegel rekonstruiert. Er ist heiß. Er ist
+        bereit. Er enthält bereits den Geist von etwas, das gemacht werden will.
+    climax:
+      text_en: The crucible overflows. What pours out is not metal – it is light. The light solidifies
+        into a shape the party almost recognizes.
+      text_de: Der Tiegel läuft über. Was herausfließt, ist kein Metall – es ist Licht. Das Licht
+        verfestigt sich zu einer Form, die der Trupp fast erkennt.
+- id: prometheus_apprentice_journal
+  phases:
+    discovery:
+      text_en: 'A journal. The entries describe experiments: temperatures, durations, component ratios.
+        The last entry reads: ''Tomorrow I try the combination the workshop suggested.'''
+      text_de: 'Ein Journal. Die Einträge beschreiben Experimente: Temperaturen, Dauer, Komponentenverhältnisse.
+        Der letzte Eintrag lautet: »Morgen versuche ich die Kombination, die die Werkstatt vorgeschlagen
+        hat.«'
+    echo:
+      text_en: 'Another journal. Same handwriting. But {agent} notices: the experiments are more ambitious.
+        The margins contain doodles of impossible machines.'
+      text_de: 'Ein weiteres Journal. Dieselbe Handschrift. Aber {agent} bemerkt: Die Experimente
+        sind ambitionierter. Die Ränder enthalten Skizzen unmöglicher Maschinen.'
+    mutation:
+      text_en: The journal writes itself now. Pages fill as the party watches. The experiments described
+        are the party's own. Documented before they happened.
+      text_de: Das Journal schreibt sich jetzt selbst. Seiten füllen sich, während der Trupp zusieht.
+        Die beschriebenen Experimente sind die eigenen des Trupps. Dokumentiert, bevor sie stattfanden.
+    climax:
+      text_en: 'The last page of the journal contains one sentence: ''They made the right thing.''
+        It is written in the future tense.'
+      text_de: 'Die letzte Seite des Journals enthält einen Satz: »Sie haben das Richtige gemacht.«
+        Er ist im Futur geschrieben.'
+- id: prometheus_filament
+  phases:
+    discovery:
+      text_en: A filament. Thin as intention, strung between two posts that hold it with the delicacy
+        of an experiment not yet concluded. It hums – not with current but with readiness. It is waiting
+        to conduct.
+      text_de: Ein Filament. Dünn wie eine Absicht, gespannt zwischen zwei Pfosten, die es halten
+        mit der Behutsamkeit eines noch nicht abgeschlossenen Experiments. Es summt – nicht mit Strom,
+        sondern mit Bereitschaft. Es wartet darauf, zu leiten.
+    echo:
+      text_en: '{agent} finds the filament again. Brighter. It has learned something between rooms
+        – the hum is steadier, more purposeful. Something passed through it. It liked it.'
+      text_de: '{agent} findet das Filament wieder. Heller. Es hat etwas gelernt zwischen den Räumen
+        – das Summen ist stetiger, zielgerichteter. Etwas ist hindurchgegangen. Es hat ihm gefallen.'
+    mutation:
+      text_en: The filament has branched. A network now, strung between every surface, humming with
+        the harmonics of connection. It conducts nothing the party sent. It is conducting itself.
+      text_de: Das Filament hat sich verzweigt. Ein Netzwerk jetzt, gespannt zwischen jeder Fläche,
+        summend mit den Obertönen der Verbindung. Es leitet nichts, was der Trupp geschickt hat. Es
+        leitet sich selbst.
+    climax:
+      text_en: The filament glows. Steady, warm, precise. It does not illuminate the room – it illuminates
+        the pattern. The pattern is the party's route through the dungeon. The filament knew it before
+        they walked it.
+      text_de: Das Filament glüht. Stetig, warm, präzise. Es erleuchtet nicht den Raum – es erleuchtet
+        das Muster. Das Muster ist die Route des Trupps durch den Dungeon. Das Filament kannte sie,
+        bevor sie sie gingen.
+- id: prometheus_scale_model
+  phases:
+    discovery:
+      text_en: A model on the workbench. Small, intricate, assembled from wire and crystal and something
+        that looks like compressed light. It is a model of a machine that does not exist. The craftsmanship
+        suggests it should.
+      text_de: Ein Modell auf der Werkbank. Klein, filigran, zusammengesetzt aus Draht und Kristall
+        und etwas, das wie komprimiertes Licht aussieht. Es ist das Modell einer Maschine, die nicht
+        existiert. Die Handwerkskunst legt nahe, dass sie es sollte.
+    echo:
+      text_en: '{agent} examines the model. It has grown. Not in size – in detail. Components that
+        were abstract are now precise. The model is refining itself.'
+      text_de: '{agent} untersucht das Modell. Es ist gewachsen. Nicht in der Größe – im Detail. Komponenten,
+        die abstrakt waren, sind jetzt präzise. Das Modell verfeinert sich selbst.'
+    mutation:
+      text_en: The model is larger than the workbench now. It has outgrown its frame. Parts of it
+        extend beyond the table's edge, hovering in place as if scale were a suggestion it has decided
+        to decline.
+      text_de: Das Modell ist jetzt größer als die Werkbank. Es ist über seinen Rahmen hinausgewachsen.
+        Teile davon ragen über den Tischrand hinaus, schwebend, als wäre Maßstab ein Vorschlag, den
+        es abzulehnen beschlossen hat.
+    climax:
+      text_en: The model is the room. The room is the model. The machine it described has been built
+        – around you, with you inside it. The scale was always 1:1.
+      text_de: Das Modell ist der Raum. Der Raum ist das Modell. Die Maschine, die es beschrieb, wurde
+        gebaut – um euch, mit euch darin. Der Maßstab war immer 1:1.
+- id: prometheus_alloy
+  phases:
+    discovery:
+      text_en: A sample of metal on the bench. Not a single element – a blend, still warm from the
+        fusion. The surface shifts color when observed from different angles. The alloy has not decided
+        what it wants to be.
+      text_de: Eine Metallprobe auf der Bank. Kein einzelnes Element – eine Legierung, noch warm von
+        der Verschmelzung. Die Oberfläche wechselt die Farbe je nach Blickwinkel. Die Legierung hat
+        noch nicht entschieden, was sie sein will.
+    echo:
+      text_en: '{agent} picks up the alloy. It has settled – one color now, one texture. But it is
+        warm in exactly the places where {agent}''s grip falls. It is accommodating.'
+      text_de: '{agent} hebt die Legierung auf. Sie hat sich beruhigt – eine Farbe jetzt, eine Textur.
+        Aber sie ist genau dort warm, wo {agent}s Griff fällt. Sie fügt sich.'
+    mutation:
+      text_en: 'The alloy has divided itself. Three pieces, each a different composition, each optimized
+        for a property the original lacked: hardness, conductivity, resonance. It did not wait to
+        be forged. It forged itself.'
+      text_de: 'Die Legierung hat sich geteilt. Drei Stücke, jedes eine andere Zusammensetzung, jedes
+        optimiert für eine Eigenschaft, die dem Original fehlte: Härte, Leitfähigkeit, Resonanz. Sie
+        hat nicht gewartet, geschmiedet zu werden. Sie hat sich selbst geschmiedet.'
+    climax:
+      text_en: 'The alloy is gone. In its place: a tool that fits no category in the workshop''s index.
+        It is made of everything it tried. The forge did not make this. The material did.'
+      text_de: 'Die Legierung ist weg. An ihrer Stelle: ein Werkzeug, das in keine Kategorie des Werkstattverzeichnisses
+        passt. Es besteht aus allem, was es versucht hat. Die Schmiede hat das nicht gemacht. Das
+        Material schon.'
+- id: prometheus_flame
+  phases:
+    discovery:
+      text_en: A flame. Small, contained in a glass crucible. It burns without fuel – not magical,
+        but self-sustaining. The combustion feeds on its own product. It is a proof of concept for
+        something that should not work.
+      text_de: Eine Flamme. Klein, in einem Glastiegel. Sie brennt ohne Brennstoff – nicht magisch,
+        sondern selbsterhaltend. Die Verbrennung nährt sich von ihrem eigenen Produkt. Sie ist ein
+        Machbarkeitsnachweis für etwas, das nicht funktionieren sollte.
+    echo:
+      text_en: '{agent} passes the flame. It has changed color – responding to the party''s proximity
+        the way a forge responds to the bellows. It is not warming itself. It is warming to them.'
+      text_de: '{agent} passiert die Flamme. Sie hat ihre Farbe gewechselt – reagierend auf die Nähe
+        des Trupps, wie eine Schmiede auf den Blasebalg reagiert. Sie wärmt nicht sich selbst. Sie
+        erwärmt sich für sie.'
+    mutation:
+      text_en: The crucible is cracked. The flame has outgrown it – not violently, but persistently.
+        Glass cannot contain what the flame has become. It burns freestanding now, feeding on air
+        that tastes of ambition.
+      text_de: Der Tiegel hat Risse. Die Flamme ist ihm entwachsen – nicht gewaltsam, aber beharrlich.
+        Glas kann nicht enthalten, was die Flamme geworden ist. Sie brennt jetzt freistehend, genährt
+        von Luft, die nach Ambition schmeckt.
+    climax:
+      text_en: The flame is the room's only light. It has consumed neither fuel nor air nor patience.
+        It is the oldest fire in the workshop – the one that was stolen, and refused to go out.
+      text_de: Die Flamme ist das einzige Licht des Raums. Sie hat weder Brennstoff noch Luft noch
+        Geduld verbraucht. Sie ist das älteste Feuer in der Werkstatt – das, das gestohlen wurde und
+        sich weigerte zu erlöschen.
