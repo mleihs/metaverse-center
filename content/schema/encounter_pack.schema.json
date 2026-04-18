@@ -1,0 +1,230 @@
+{
+  "$defs": {
+    "EncounterChoice": {
+      "description": "A choice within an encounter.",
+      "properties": {
+        "check_aptitude": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Check Aptitude"
+        },
+        "check_difficulty": {
+          "default": 0,
+          "title": "Check Difficulty",
+          "type": "integer"
+        },
+        "fail_effects": {
+          "additionalProperties": true,
+          "title": "Fail Effects",
+          "type": "object"
+        },
+        "fail_narrative_de": {
+          "default": "",
+          "title": "Fail Narrative De",
+          "type": "string"
+        },
+        "fail_narrative_en": {
+          "default": "",
+          "title": "Fail Narrative En",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label_de": {
+          "title": "Label De",
+          "type": "string"
+        },
+        "label_en": {
+          "title": "Label En",
+          "type": "string"
+        },
+        "partial_effects": {
+          "additionalProperties": true,
+          "title": "Partial Effects",
+          "type": "object"
+        },
+        "partial_narrative_de": {
+          "default": "",
+          "title": "Partial Narrative De",
+          "type": "string"
+        },
+        "partial_narrative_en": {
+          "default": "",
+          "title": "Partial Narrative En",
+          "type": "string"
+        },
+        "requires_aptitude": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Aptitude"
+        },
+        "requires_profession": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Profession"
+        },
+        "success_effects": {
+          "additionalProperties": true,
+          "title": "Success Effects",
+          "type": "object"
+        },
+        "success_narrative_de": {
+          "default": "",
+          "title": "Success Narrative De",
+          "type": "string"
+        },
+        "success_narrative_en": {
+          "default": "",
+          "title": "Success Narrative En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label_en",
+        "label_de"
+      ],
+      "title": "EncounterChoice",
+      "type": "object"
+    },
+    "EncounterTemplate": {
+      "description": "A self-contained encounter definition (Sunless Sea storylet pattern).",
+      "properties": {
+        "ambush_stress": {
+          "default": 0,
+          "title": "Ambush Stress",
+          "type": "integer"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/EncounterChoice"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "combat_encounter_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Combat Encounter Id"
+        },
+        "description_de": {
+          "default": "",
+          "title": "Description De",
+          "type": "string"
+        },
+        "description_en": {
+          "default": "",
+          "title": "Description En",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "is_ambush": {
+          "default": false,
+          "title": "Is Ambush",
+          "type": "boolean"
+        },
+        "max_depth": {
+          "default": 99,
+          "title": "Max Depth",
+          "type": "integer"
+        },
+        "min_depth": {
+          "default": 0,
+          "title": "Min Depth",
+          "type": "integer"
+        },
+        "min_difficulty": {
+          "default": 1,
+          "title": "Min Difficulty",
+          "type": "integer"
+        },
+        "requires_aptitude": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Aptitude"
+        },
+        "room_type": {
+          "title": "Room Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "archetype",
+        "room_type"
+      ],
+      "title": "EncounterTemplate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "encounters": {
+      "items": {
+        "$ref": "#/$defs/EncounterTemplate"
+      },
+      "title": "Encounters",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "encounters"
+  ],
+  "title": "EncounterPack",
+  "type": "object"
+}

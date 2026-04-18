@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "AbilityItem": {
+      "additionalProperties": false,
+      "description": "A combat ability. Mirrors the Ability @dataclass in\n`backend.services.combat.ability_schools`; the loader constructs the\nruntime dataclass instance.",
+      "properties": {
+        "cooldown": {
+          "default": 0,
+          "title": "Cooldown",
+          "type": "integer"
+        },
+        "description_de": {
+          "title": "Description De",
+          "type": "string"
+        },
+        "description_en": {
+          "title": "Description En",
+          "type": "string"
+        },
+        "effect_params": {
+          "additionalProperties": true,
+          "title": "Effect Params",
+          "type": "object"
+        },
+        "effect_type": {
+          "default": "damage",
+          "title": "Effect Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "is_ultimate": {
+          "default": false,
+          "title": "Is Ultimate",
+          "type": "boolean"
+        },
+        "min_aptitude": {
+          "default": 3,
+          "title": "Min Aptitude",
+          "type": "integer"
+        },
+        "name_de": {
+          "title": "Name De",
+          "type": "string"
+        },
+        "name_en": {
+          "title": "Name En",
+          "type": "string"
+        },
+        "school": {
+          "title": "School",
+          "type": "string"
+        },
+        "targets": {
+          "default": "single_enemy",
+          "enum": [
+            "single_enemy",
+            "all_enemies",
+            "single_ally",
+            "all_allies",
+            "self"
+          ],
+          "title": "Targets",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name_en",
+        "name_de",
+        "school",
+        "description_en",
+        "description_de"
+      ],
+      "title": "AbilityItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "abilities": {
+      "items": {
+        "$ref": "#/$defs/AbilityItem"
+      },
+      "title": "Abilities",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "abilities"
+  ],
+  "title": "AbilityPack",
+  "type": "object"
+}
