@@ -57,6 +57,10 @@ jobs:
         run: bash frontend/scripts/lint-no-empty-catch.sh
         working-directory: .
 
+      - name: Type-safety lint (no `as unknown as T` casts)
+        run: bash frontend/scripts/lint-no-cast-unknown.sh
+        working-directory: .
+
       - name: Backend lint (GenerationService._generate privacy)
         run: bash scripts/lint-no-private-generate.sh
         working-directory: .
