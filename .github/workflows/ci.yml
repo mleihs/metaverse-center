@@ -109,14 +109,18 @@ jobs:
         # before start, bring up the containers, then apply both via
         # psql in subsequent steps — psql is the canonical Postgres
         # client and handles every file identically to local/prod.
+        #
+        # The `trap ... EXIT` ensures stashed files return to their
+        # working-tree locations even if `supabase start` fails — without
+        # it, a failed start would orphan every *.sql under /tmp/sql-stash
+        # and subsequent debugging steps (or retries in the same runner)
+        # would see an empty supabase/migrations directory.
         run: |
           mkdir -p /tmp/sql-stash/migrations /tmp/sql-stash/seed
+          trap 'mv /tmp/sql-stash/migrations/*.sql supabase/migrations/ 2>/dev/null || true; mv /tmp/sql-stash/seed/*.sql supabase/seed/ 2>/dev/null || true; rm -rf /tmp/sql-stash' EXIT
           mv supabase/migrations/*.sql /tmp/sql-stash/migrations/
           mv supabase/seed/*.sql /tmp/sql-stash/seed/
           supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
-          mv /tmp/sql-stash/migrations/*.sql supabase/migrations/
-          mv /tmp/sql-stash/seed/*.sql supabase/seed/
-          rm -rf /tmp/sql-stash
 
       - name: Apply migrations and seeds via psql
         env:
