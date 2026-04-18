@@ -100,8 +100,29 @@ jobs:
         with:
           version: latest
 
-      - name: Start Supabase
-        run: supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
+      - name: Start Supabase containers (no migrations)
+        # `supabase start` applies migrations via an embedded SQL splitter
+        # that fails on certain valid PostgreSQL patterns (observed with
+        # migration 214: SQLSTATE 42601 "cannot insert multiple commands
+        # into a prepared statement", even though psql applies the same
+        # file cleanly). We start containers here, then apply migrations
+        # via psql in the next step — the canonical Postgres client
+        # handles every migration identically to local/prod.
+        run: |
+          mkdir -p /tmp/migrations-stash
+          mv supabase/migrations/*.sql /tmp/migrations-stash/
+          supabase start -x realtime,storage,imgproxy,edge-runtime,logflare,vector,supavisor
+          mv /tmp/migrations-stash/*.sql supabase/migrations/
+          rmdir /tmp/migrations-stash
+
+      - name: Apply migrations via psql
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "Applying $(basename "$f")..."
+            psql -h localhost -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 -q -f "$f"
+          done
 
       - uses: actions/setup-python@v5
         with:
