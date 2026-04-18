@@ -17,6 +17,7 @@ import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import { adminApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import type {
+  CascadeRule,
   HeartbeatDashboard,
   HeartbeatSimulationStatus,
   PlatformSetting,
@@ -41,7 +42,14 @@ interface SimulationOverride {
   enabled: boolean;
 }
 
-interface CascadeRule {
+/**
+ * UI-table row shape for cascade rules — a subset projection of the full
+ * `CascadeRule` domain type from `src/types/index.ts`. The field rename
+ * `pressure_threshold` → `threshold` is UI-local (the admin table header
+ * reads "Threshold"); narratives / depth_cap / timestamps are not displayed
+ * in the row and are dropped from this projection.
+ */
+interface CascadeRuleRow {
   id: string;
   source_signature: string;
   target_signature: string;
@@ -664,7 +672,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
   @state() private _savingOverride = false;
 
   /* Cascade rules */
-  @state() private _cascadeRules: CascadeRule[] = [];
+  @state() private _cascadeRules: CascadeRuleRow[] = [];
   @state() private _togglingRuleId: string | null = null;
 
   /* ── Lifecycle ─────────────────────────── */
@@ -723,20 +731,25 @@ export class VelgAdminHeartbeatTab extends LitElement {
   }
 
   private async _loadCascadeRules(): Promise<void> {
-    /* Load cascade rules from the resonance_cascade_rules DB table. */
+    /* Load cascade rules from the resonance_cascade_rules DB table.
+     * The API returns the full `CascadeRule` domain shape; project it to
+     * `CascadeRuleRow` for the UI table. Field rename: `pressure_threshold`
+     * → `threshold`. Narratives / depth_cap / created/updated_at are dropped
+     * (not displayed in this admin row). */
     const res = await heartbeatApi.listCascadeRules();
     if (res.success && res.data) {
-      const rules = res.data as unknown as Array<Record<string, unknown>>;
-      this._cascadeRules = rules.map((r) => ({
-        id: String(r.id ?? ''),
-        source_signature: String(r.source_signature ?? ''),
-        target_signature: String(r.target_signature ?? ''),
-        threshold: Number(r.pressure_threshold ?? 0),
-        transfer_rate: Number(r.transfer_rate ?? 0),
-        cooldown_hours: Number(r.cooldown_hours ?? 72),
-        is_active: Boolean(r.is_active ?? true),
-        last_triggered_at: r.last_triggered_at ? String(r.last_triggered_at) : null,
-      }));
+      this._cascadeRules = res.data.map(
+        (r: CascadeRule): CascadeRuleRow => ({
+          id: r.id,
+          source_signature: r.source_signature,
+          target_signature: r.target_signature,
+          threshold: r.pressure_threshold,
+          transfer_rate: r.transfer_rate,
+          cooldown_hours: r.cooldown_hours,
+          is_active: r.is_active,
+          last_triggered_at: r.last_triggered_at ?? null,
+        }),
+      );
     }
   }
 
@@ -1372,7 +1385,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
     `;
   }
 
-  private _renderCascadeRow(rule: CascadeRule) {
+  private _renderCascadeRow(rule: CascadeRuleRow) {
     const isToggling = this._togglingRuleId === rule.id;
 
     return html`
