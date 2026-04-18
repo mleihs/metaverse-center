@@ -163,10 +163,10 @@ class EpochInvitationService:
         user_id: UUID,
     ) -> dict:
         """Mark an invitation as accepted."""
-        # Fetch the invitation first
+        # Fetch the invitation first — only expires_at + epoch_id consumed
         inv_response = await (
             supabase.table("epoch_invitations")
-            .select("*")
+            .select("id, expires_at, epoch_id")
             .eq("invite_token", token)
             .eq("status", "pending")
             .limit(1)

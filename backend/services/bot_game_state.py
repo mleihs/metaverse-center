@@ -159,10 +159,12 @@ class BotGameState:
 
     async def _load_own_data(self, supabase: Client, epoch_id: str, sim_id: str) -> None:
         """Load data the bot has full visibility over (own simulation)."""
-        # Own missions (all statuses)
+        # Own missions (all statuses). Consumer reads operative_type + status for
+        # guardian tallies, agent_id for deployment filtering. source_simulation_id
+        # + id are kept for test assertions (fog-of-war integration tests).
         missions_resp = await (
             supabase.table("operative_missions")
-            .select("*")
+            .select("id, agent_id, operative_type, status, source_simulation_id")
             .eq("epoch_id", epoch_id)
             .eq("source_simulation_id", sim_id)
             .execute()
@@ -228,7 +230,7 @@ class BotGameState:
         # Detected enemy operations targeting us
         detected_resp = await (
             supabase.table("operative_missions")
-            .select("*")
+            .select("id, source_simulation_id, operative_type")
             .eq("epoch_id", epoch_id)
             .eq("target_simulation_id", sim_id)
             .in_("status", ["detected", "captured"])
@@ -236,11 +238,13 @@ class BotGameState:
         )
         self.detected_enemy_ops = extract_list(detected_resp)
 
-        # Spy intel: own + allied reports (alliance = shared fog-of-war)
+        # Spy intel: own + allied reports (alliance = shared fog-of-war).
+        # Consumer reads only target_simulation_id + metadata (JSONB) — narrative
+        # text is irrelevant for bot decisions.
         intel_sources = [sim_id] + self.allies
         intel_resp = await (
             supabase.table("battle_log")
-            .select("*")
+            .select("id, target_simulation_id, metadata")
             .eq("epoch_id", epoch_id)
             .in_("source_simulation_id", intel_sources)
             .eq("event_type", "intel_report")
@@ -261,10 +265,11 @@ class BotGameState:
 
     async def _load_public_data(self, supabase: Client, epoch_id: str) -> None:
         """Load publicly visible data (all players see this)."""
-        # Public battle log
+        # Public battle log — get_dominant_strategy reads only source_simulation_id
+        # + event_type for tallying (no narrative consumed).
         blog_resp = await (
             supabase.table("battle_log")
-            .select("*")
+            .select("source_simulation_id, event_type")
             .eq("epoch_id", epoch_id)
             .eq("is_public", True)
             .order("created_at", desc=True)
@@ -273,19 +278,24 @@ class BotGameState:
         )
         self.battle_log = extract_list(blog_resp)
 
-        # Current scores/standings
+        # Current scores/standings — iteration uses simulation_id; ordering uses
+        # composite_score server-side (kept in select for clarity).
         scores_resp = await (
             supabase.table("epoch_scores")
-            .select("*")
+            .select("simulation_id, composite_score")
             .eq("epoch_id", epoch_id)
             .order("composite_score", desc=True)
             .execute()
         )
         self.scores = extract_list(scores_resp)
 
-        # Teams/alliances
+        # Teams/alliances — personality logic reads team["name"] only.
         teams_resp = await (
-            supabase.table("epoch_teams").select("*").eq("epoch_id", epoch_id).is_("dissolved_at", "null").execute()
+            supabase.table("epoch_teams")
+            .select("id, name, epoch_id")
+            .eq("epoch_id", epoch_id)
+            .is_("dissolved_at", "null")
+            .execute()
         )
         self.teams = extract_list(teams_resp)
 
