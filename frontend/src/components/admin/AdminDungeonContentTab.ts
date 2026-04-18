@@ -131,14 +131,8 @@ export class AdminDungeonContentTab extends LitElement {
     });
 
     if (result.success && result.data) {
-      // BaseApiService extracts json.data → result.data is the array directly
-      // json.meta → result.meta is the pagination metadata
-      const rawResult = result as unknown as {
-        data: Record<string, unknown>[];
-        meta?: { total: number };
-      };
-      this._items = Array.isArray(rawResult.data) ? rawResult.data : [];
-      this._total = rawResult.meta?.total ?? this._items.length;
+      this._items = result.data;
+      this._total = result.meta?.total ?? this._items.length;
     } else {
       this._items = [];
       this._total = 0;

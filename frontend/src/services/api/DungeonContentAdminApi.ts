@@ -13,23 +13,19 @@ export type DungeonContentType =
   | 'barometer_texts'
   | 'abilities';
 
-export interface ContentListResponse {
-  data: Record<string, unknown>[];
-  meta: {
-    count: number;
-    total: number;
-    limit: number;
-    offset: number;
-  };
-}
-
 export class DungeonContentAdminApi extends BaseApiService {
   private base = '/admin/dungeon-content';
 
+  /**
+   * Backend returns `PaginatedResponse[dict]`; BaseApiService unwraps the
+   * envelope so `result.data` is the raw item array and `result.meta` carries
+   * the pagination metadata via the `ApiResponse<T>` shape. No ContentListResponse
+   * wrapper — that would double-wrap the already-unwrapped envelope.
+   */
   async listContent(
     contentType: DungeonContentType,
     params?: { archetype?: string; search?: string; page?: number; per_page?: number },
-  ): Promise<ApiResponse<ContentListResponse>> {
+  ): Promise<ApiResponse<Record<string, unknown>[]>> {
     const query: Record<string, string> = {};
     if (params?.archetype) query.archetype = params.archetype;
     if (params?.search) query.search = params.search;
