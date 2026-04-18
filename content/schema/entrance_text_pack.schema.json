@@ -1,0 +1,44 @@
+{
+  "$defs": {
+    "BilingualText": {
+      "additionalProperties": false,
+      "description": "A pair of bilingual strings (entrance atmosphere, etc.).",
+      "properties": {
+        "text_de": {
+          "title": "Text De",
+          "type": "string"
+        },
+        "text_en": {
+          "title": "Text En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text_en",
+        "text_de"
+      ],
+      "title": "BilingualText",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entrance_texts": {
+      "items": {
+        "$ref": "#/$defs/BilingualText"
+      },
+      "title": "Entrance Texts",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "entrance_texts"
+  ],
+  "title": "EntranceTextPack",
+  "type": "object"
+}

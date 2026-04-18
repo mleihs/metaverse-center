@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "AnchorObject": {
+      "additionalProperties": false,
+      "description": "An objektanker \u2014 a named object migrating through a dungeon in phases.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "phases": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AnchorPhase"
+          },
+          "propertyNames": {
+            "enum": [
+              "discovery",
+              "echo",
+              "mutation",
+              "climax"
+            ]
+          },
+          "title": "Phases",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "phases"
+      ],
+      "title": "AnchorObject",
+      "type": "object"
+    },
+    "AnchorPhase": {
+      "additionalProperties": false,
+      "description": "One phase of an objektanker (discovery / echo / mutation / climax).",
+      "properties": {
+        "state_effect": {
+          "additionalProperties": true,
+          "title": "State Effect",
+          "type": "object"
+        },
+        "text_de": {
+          "title": "Text De",
+          "type": "string"
+        },
+        "text_en": {
+          "title": "Text En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text_en",
+        "text_de"
+      ],
+      "title": "AnchorPhase",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "anchors": {
+      "items": {
+        "$ref": "#/$defs/AnchorObject"
+      },
+      "title": "Anchors",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "anchors"
+  ],
+  "title": "AnchorPack",
+  "type": "object"
+}

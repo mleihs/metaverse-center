@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "LootItem": {
+      "description": "A single loot drop.",
+      "properties": {
+        "description_de": {
+          "default": "",
+          "title": "Description De",
+          "type": "string"
+        },
+        "description_en": {
+          "default": "",
+          "title": "Description En",
+          "type": "string"
+        },
+        "drop_weight": {
+          "default": 10,
+          "title": "Drop Weight",
+          "type": "integer"
+        },
+        "effect_params": {
+          "additionalProperties": true,
+          "title": "Effect Params",
+          "type": "object"
+        },
+        "effect_type": {
+          "title": "Effect Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name_de": {
+          "title": "Name De",
+          "type": "string"
+        },
+        "name_en": {
+          "title": "Name En",
+          "type": "string"
+        },
+        "tier": {
+          "title": "Tier",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "name_en",
+        "name_de",
+        "tier",
+        "effect_type"
+      ],
+      "title": "LootItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "loot": {
+      "items": {
+        "$ref": "#/$defs/LootItem"
+      },
+      "title": "Loot",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "loot"
+  ],
+  "title": "LootPack",
+  "type": "object"
+}

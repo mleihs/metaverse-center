@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "SpawnEntry": {
+      "additionalProperties": false,
+      "description": "One enemy placement within a spawn config.",
+      "properties": {
+        "count": {
+          "default": 1,
+          "title": "Count",
+          "type": "integer"
+        },
+        "template_id": {
+          "title": "Template Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "template_id"
+      ],
+      "title": "SpawnEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Spawn configs keyed by combat_encounter_id.\n\nYAML shape:\n    spawns:\n      shadow_whispers_spawn:\n        - {template_id: shadow_wisp, count: 2}\n        - {template_id: shadow_tendril, count: 1}",
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "spawns": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/SpawnEntry"
+        },
+        "type": "array"
+      },
+      "title": "Spawns",
+      "type": "object"
+    }
+  },
+  "required": [
+    "spawns"
+  ],
+  "title": "SpawnPack",
+  "type": "object"
+}

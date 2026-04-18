@@ -1,0 +1,363 @@
+"""YAML content-pack loader.
+
+Walks `content/dungeon/` and produces a `PackLoadResult` whose shape is
+byte-compatible with `backend.services.dungeon_content_service._ContentCache`.
+This means test seeding (`load_packs_for_tests`) and the runtime
+cache-populate path both consume the same in-memory structure.
+
+Directory layout expected:
+
+    content/
+      dungeon/
+        archetypes/
+          shadow/
+            encounters.yaml
+            banter.yaml
+            loot.yaml
+            enemies.yaml
+            spawns.yaml
+            anchors.yaml
+            entrance_texts.yaml
+            barometer_texts.yaml
+          tower/
+          mother/
+          entropy/
+          prometheus/
+          deluge/
+          awakening/
+          overthrow/
+        abilities/
+          {school}.yaml
+
+Files are individually optional during A1.1-A1.3: if a pack for an
+archetype-slot does not exist yet, the loader silently skips it. This lets
+the pilot (A1.2 Shadow) land before the other seven archetypes are
+externalized.
+
+Unknown YAML keys trigger a `pydantic.ValidationError` (pack models carry
+`extra="forbid"`) so author typos surface at load time, not at runtime.
+"""
+
+from __future__ import annotations
+
+import logging
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+import yaml
+
+from backend.services.content_packs.schemas import (
+    ABILITY_PACK_CLASS,
+    ARCHETYPE_NAME_TO_SLUG,
+    ARCHETYPE_SLUG_TO_NAME,
+    PACK_KIND_FOR_FILENAME,
+    AbilityItem,
+    AnchorPack,
+    BanterPack,
+    BarometerTextPack,
+    EncounterPack,
+    EnemyPack,
+    EntranceTextPack,
+    LootPack,
+    SpawnPack,
+)
+
+if TYPE_CHECKING:
+    from backend.services.combat.ability_schools import Ability
+
+logger = logging.getLogger(__name__)
+
+# ── Canonical on-disk root ────────────────────────────────────────────────
+
+DEFAULT_PACK_ROOT: Path = Path(__file__).resolve().parents[3] / "content" / "dungeon"
+
+
+# ── Load result (shape mirrors dungeon_content_service._ContentCache) ─────
+
+
+@dataclass
+class PackLoadResult:
+    """In-memory snapshot of all content packs.
+
+    Fields mirror `dungeon_content_service._ContentCache` so that the test
+    harness can populate the runtime cache directly without shape
+    translation.
+    """
+
+    banter: dict[str, list[dict]] = field(default_factory=dict)
+    encounters: dict[str, list[Any]] = field(default_factory=dict)
+    encounter_index: dict[str, Any] = field(default_factory=dict)
+    enemies: dict[str, dict[str, Any]] = field(default_factory=dict)
+    spawns: dict[str, dict[str, list[dict]]] = field(default_factory=dict)
+    loot: dict[str, dict[int, list[Any]]] = field(default_factory=dict)
+    anchors: dict[str, list[dict]] = field(default_factory=dict)
+    entrance_texts: dict[str, list[dict]] = field(default_factory=dict)
+    barometer_texts: dict[str, list[dict]] = field(default_factory=dict)
+    abilities: dict[str, list[Any]] = field(default_factory=dict)
+
+    def summary(self) -> str:
+        return (
+            f"banter={sum(len(v) for v in self.banter.values())} "
+            f"enemies={sum(len(v) for v in self.enemies.values())} "
+            f"encounters={sum(len(v) for v in self.encounters.values())} "
+            f"choices={sum(len(e.choices) for lst in self.encounters.values() for e in lst)} "
+            f"loot={sum(len(items) for tiers in self.loot.values() for items in tiers.values())} "
+            f"anchors={sum(len(v) for v in self.anchors.values())} "
+            f"entrance={sum(len(v) for v in self.entrance_texts.values())} "
+            f"barometer={sum(len(v) for v in self.barometer_texts.values())} "
+            f"abilities={sum(len(v) for v in self.abilities.values())}"
+        )
+
+
+# ── Public API ────────────────────────────────────────────────────────────
+
+
+def load_packs(root: Path | None = None) -> PackLoadResult:
+    """Load every YAML pack under `root` and return a validated result.
+
+    Raises `pydantic.ValidationError` on structural problems. Does not
+    perform cross-file invariant checks (FK integrity, global ID dedup,
+    archetype completeness) — those live in
+    `scripts/validate_content_packs.py`.
+    """
+    root = (root or DEFAULT_PACK_ROOT).resolve()
+    result = PackLoadResult()
+
+    _load_archetype_trees(root / "archetypes", result)
+    _load_abilities_tree(root / "abilities", result)
+    _index_encounters(result)
+
+    logger.info("content packs loaded from %s: %s", root, result.summary())
+    return result
+
+
+def load_packs_for_tests(root: Path | None = None) -> None:
+    """Populate the dungeon_content_service cache from YAML packs.
+
+    Used by `backend/tests/conftest.py` (A1.4+). After this call, the
+    existing runtime getters (`get_encounter_registry()`, etc.) return
+    pack-derived data without touching the DB.
+
+    In A1.1-A1.3 this coexists with the Python-dict-backed test seeder;
+    A1.4 switches conftest to call this exclusively.
+    """
+    from backend.services import dungeon_content_service as _dcs
+
+    result = load_packs(root)
+    _dcs._content = _dcs._ContentCache(  # noqa: SLF001 - deliberate cache swap
+        banter=result.banter,
+        encounters=result.encounters,
+        encounter_index=result.encounter_index,
+        enemies=result.enemies,
+        spawns=result.spawns,
+        loot=result.loot,
+        anchors=result.anchors,
+        entrance_texts=result.entrance_texts,
+        barometer_texts=result.barometer_texts,
+        abilities=result.abilities,
+    )
+
+
+# ── Internals: archetype tree ─────────────────────────────────────────────
+
+
+def _load_archetype_trees(archetypes_root: Path, result: PackLoadResult) -> None:
+    if not archetypes_root.is_dir():
+        logger.debug("no archetypes directory at %s — skipping", archetypes_root)
+        return
+
+    for child in sorted(archetypes_root.iterdir()):
+        if not child.is_dir():
+            continue
+        slug = child.name
+        archetype = ARCHETYPE_SLUG_TO_NAME.get(slug)
+        if archetype is None:
+            logger.warning("unknown archetype slug '%s' under %s — skipping", slug, archetypes_root)
+            continue
+        _load_one_archetype(child, archetype, result)
+
+
+def _load_one_archetype(folder: Path, archetype: str, result: PackLoadResult) -> None:
+    for file in sorted(folder.iterdir()):
+        if file.suffix not in {".yaml", ".yml"}:
+            continue
+        stem = file.stem
+        pack_cls = PACK_KIND_FOR_FILENAME.get(stem)
+        if pack_cls is None:
+            logger.warning("unknown pack file '%s' in %s — skipping", file.name, folder)
+            continue
+        _ingest_file(file, archetype, pack_cls, result)
+
+
+def _ingest_file(
+    path: Path,
+    archetype: str,
+    pack_cls: type,
+    result: PackLoadResult,
+) -> None:
+    raw = _read_yaml(path)
+
+    if pack_cls is EncounterPack:
+        _ingest_encounters(raw, archetype, result, path)
+    elif pack_cls is BanterPack:
+        _ingest_banter(raw, archetype, result)
+    elif pack_cls is LootPack:
+        _ingest_loot(raw, archetype, result, path)
+    elif pack_cls is EnemyPack:
+        _ingest_enemies(raw, archetype, result, path)
+    elif pack_cls is SpawnPack:
+        _ingest_spawns(raw, archetype, result)
+    elif pack_cls is AnchorPack:
+        _ingest_anchors(raw, archetype, result)
+    elif pack_cls is EntranceTextPack:
+        _ingest_entrance_texts(raw, archetype, result)
+    elif pack_cls is BarometerTextPack:
+        _ingest_barometer_texts(raw, archetype, result)
+
+
+# ── Internals: per-pack ingestion ─────────────────────────────────────────
+
+
+def _ingest_encounters(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
+    # Inject archetype on each encounter — saves author repetition.
+    for item in raw.get("encounters", []):
+        item.setdefault("archetype", archetype)
+        for choice in item.get("choices", []) or []:
+            # no archetype on choices; just ensure nested dict integrity
+            _ = choice
+    pack = EncounterPack.model_validate(raw)
+    result.encounters.setdefault(archetype, []).extend(pack.encounters)
+
+
+def _ingest_banter(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    pack = BanterPack.model_validate(raw)
+    # Runtime cache stores banter as list[dict], not list[BanterItem], so
+    # mirror that directly. The Pydantic step was the validation gate.
+    result.banter.setdefault(archetype, []).extend(
+        item.model_dump() for item in pack.banter
+    )
+
+
+def _ingest_loot(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
+    pack = LootPack.model_validate(raw)
+    tiers: dict[int, list] = defaultdict(list)
+    for item in pack.loot:
+        tiers[item.tier].append(item)
+    per_archetype = result.loot.setdefault(archetype, {})
+    for tier, items in tiers.items():
+        per_archetype.setdefault(tier, []).extend(items)
+
+
+def _ingest_enemies(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
+    for item in raw.get("enemies", []):
+        item.setdefault("archetype", archetype)
+    pack = EnemyPack.model_validate(raw)
+    per_archetype = result.enemies.setdefault(archetype, {})
+    for enemy in pack.enemies:
+        per_archetype[enemy.id] = enemy
+
+
+def _ingest_spawns(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    pack = SpawnPack.model_validate(raw)
+    per_archetype = result.spawns.setdefault(archetype, {})
+    for spawn_id, entries in pack.spawns.items():
+        per_archetype[spawn_id] = [e.model_dump() for e in entries]
+
+
+def _ingest_anchors(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    pack = AnchorPack.model_validate(raw)
+    result.anchors.setdefault(archetype, []).extend(
+        {
+            "id": obj.id,
+            "phases": {name: phase.model_dump() for name, phase in obj.phases.items()},
+        }
+        for obj in pack.anchors
+    )
+
+
+def _ingest_entrance_texts(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    pack = EntranceTextPack.model_validate(raw)
+    result.entrance_texts.setdefault(archetype, []).extend(
+        {"text_en": t.text_en, "text_de": t.text_de} for t in pack.entrance_texts
+    )
+
+
+def _ingest_barometer_texts(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    pack = BarometerTextPack.model_validate(raw)
+    result.barometer_texts.setdefault(archetype, []).extend(
+        {"tier": t.tier, "text_en": t.text_en, "text_de": t.text_de} for t in pack.barometer_texts
+    )
+
+
+# ── Internals: ability tree ───────────────────────────────────────────────
+
+
+def _load_abilities_tree(abilities_root: Path, result: PackLoadResult) -> None:
+    if not abilities_root.is_dir():
+        logger.debug("no abilities directory at %s — skipping", abilities_root)
+        return
+
+    # Import here so non-test callers don't pay the combat-module import cost.
+    from backend.services.combat.ability_schools import Ability
+
+    for file in sorted(abilities_root.iterdir()):
+        if file.suffix not in {".yaml", ".yml"}:
+            continue
+        raw = _read_yaml(file)
+        pack = ABILITY_PACK_CLASS.model_validate(raw)
+        for item in pack.abilities:
+            runtime_ability = _ability_item_to_runtime(item, Ability)
+            result.abilities.setdefault(item.school, []).append(runtime_ability)
+
+
+def _ability_item_to_runtime(item: AbilityItem, ability_cls: type[Ability]) -> Ability:
+    """Convert a Pydantic `AbilityItem` to the runtime `Ability` dataclass.
+
+    The runtime dataclass is the contract that combat code depends on;
+    packs validate through Pydantic then flow through this adapter.
+    """
+    return ability_cls(
+        id=item.id,
+        name_en=item.name_en,
+        name_de=item.name_de,
+        school=item.school,
+        description_en=item.description_en,
+        description_de=item.description_de,
+        min_aptitude=item.min_aptitude,
+        cooldown=item.cooldown,
+        effect_type=item.effect_type,
+        effect_params=dict(item.effect_params),
+        is_ultimate=item.is_ultimate,
+        targets=item.targets,
+    )
+
+
+# ── Internals: shared helpers ─────────────────────────────────────────────
+
+
+def _index_encounters(result: PackLoadResult) -> None:
+    """Build `encounter_index` (id → template) for O(1) lookup."""
+    for encounters in result.encounters.values():
+        for enc in encounters:
+            result.encounter_index[enc.id] = enc
+
+
+def _read_yaml(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as fh:
+        data = yaml.safe_load(fh)
+    if not isinstance(data, dict):
+        msg = f"{path}: expected a top-level YAML mapping, got {type(data).__name__}"
+        raise ValueError(msg)
+    return data
+
+
+__all__ = [
+    "ARCHETYPE_NAME_TO_SLUG",
+    "ARCHETYPE_SLUG_TO_NAME",
+    "DEFAULT_PACK_ROOT",
+    "PackLoadResult",
+    "load_packs",
+    "load_packs_for_tests",
+]

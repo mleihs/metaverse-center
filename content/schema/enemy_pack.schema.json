@@ -1,0 +1,151 @@
+{
+  "$defs": {
+    "EnemyTemplate": {
+      "description": "Definition of an enemy type.",
+      "properties": {
+        "action_weights": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Action Weights",
+          "type": "object"
+        },
+        "ambient_text_de": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Ambient Text De",
+          "type": "array"
+        },
+        "ambient_text_en": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Ambient Text En",
+          "type": "array"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "attack_aptitude": {
+          "title": "Attack Aptitude",
+          "type": "string"
+        },
+        "attack_power": {
+          "title": "Attack Power",
+          "type": "integer"
+        },
+        "condition_threshold": {
+          "title": "Condition Threshold",
+          "type": "integer"
+        },
+        "description_de": {
+          "default": "",
+          "title": "Description De",
+          "type": "string"
+        },
+        "description_en": {
+          "default": "",
+          "title": "Description En",
+          "type": "string"
+        },
+        "evasion": {
+          "default": 0,
+          "title": "Evasion",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name_de": {
+          "title": "Name De",
+          "type": "string"
+        },
+        "name_en": {
+          "title": "Name En",
+          "type": "string"
+        },
+        "resistances": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Resistances",
+          "type": "array"
+        },
+        "special_abilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Special Abilities",
+          "type": "array"
+        },
+        "stress_attack_power": {
+          "title": "Stress Attack Power",
+          "type": "integer"
+        },
+        "stress_resistance": {
+          "default": 0,
+          "title": "Stress Resistance",
+          "type": "integer"
+        },
+        "telegraphed_intent": {
+          "default": true,
+          "title": "Telegraphed Intent",
+          "type": "boolean"
+        },
+        "threat_level": {
+          "default": "standard",
+          "enum": [
+            "minion",
+            "standard",
+            "elite",
+            "boss"
+          ],
+          "title": "Threat Level",
+          "type": "string"
+        },
+        "vulnerabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Vulnerabilities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name_en",
+        "name_de",
+        "archetype",
+        "condition_threshold",
+        "attack_aptitude",
+        "attack_power",
+        "stress_attack_power"
+      ],
+      "title": "EnemyTemplate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "enemies": {
+      "items": {
+        "$ref": "#/$defs/EnemyTemplate"
+      },
+      "title": "Enemies",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "enemies"
+  ],
+  "title": "EnemyPack",
+  "type": "object"
+}
