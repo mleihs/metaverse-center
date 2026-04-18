@@ -1,0 +1,35 @@
+schema_version: 1
+abilities:
+- id: infiltrator_evade
+  name_en: Evade
+  name_de: Ausweichen
+  school: infiltrator
+  description_en: Become elusive. +30% evasion for this round, can't be targeted by attacks.
+  description_de: Ausweichend werden. +30% Ausweichen für diese Runde, kann nicht angegriffen werden.
+  min_aptitude: 3
+  cooldown: 1
+  effect_type: buff
+  effect_params:
+    buff: evasive
+    evasion_bonus: 30
+    untargetable: true
+    duration: 1
+  is_ultimate: false
+  targets: self
+- id: infiltrator_backstab
+  name_en: Backstab
+  name_de: Hinterrücksangriff
+  school: infiltrator
+  description_en: Strike from an unexpected angle. +20% hit chance. If enemy is targeting someone
+    else, +1 damage step.
+  description_de: Aus unerwarteter Richtung angreifen. +20% Trefferchance. +1 Schadensstufe wenn Feind
+    jemand anderen angreift.
+  min_aptitude: 4
+  cooldown: 1
+  effect_type: damage
+  effect_params:
+    hit_bonus: 20
+    power: 5
+    bonus_if_enemy_targeting_other: 1
+  is_ultimate: false
+  targets: single_enemy

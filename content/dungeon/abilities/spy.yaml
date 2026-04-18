@@ -1,0 +1,48 @@
+schema_version: 1
+abilities:
+- id: spy_observe
+  name_en: Observe
+  name_de: Beobachten
+  school: spy
+  description_en: Analyze the battlefield. Reveals enemy intents. Restores Visibility (Shadow) or
+    Stability (Tower).
+  description_de: Das Schlachtfeld analysieren. Enthüllt Feindabsichten. Stellt Sicht (Schatten) oder
+    Stabilität (Turm) her.
+  min_aptitude: 3
+  cooldown: 1
+  effect_type: utility
+  effect_params:
+    reveal_intents: true
+    visibility_restore: 1
+    stability_restore: 5
+  is_ultimate: false
+  targets: self
+- id: spy_analyze_weakness
+  name_en: Analyze Weakness
+  name_de: Schwachstelle analysieren
+  school: spy
+  description_en: Study an enemy. Next attack against this enemy by any agent deals +1 damage step.
+  description_de: Einen Feind studieren. Der nächste Angriff eines Agenten gegen diesen Feind verursacht
+    +1 Schadensstufe.
+  min_aptitude: 4
+  cooldown: 2
+  effect_type: debuff
+  effect_params:
+    debuff: analyzed
+    damage_bonus: 1
+    duration: 1
+  is_ultimate: false
+  targets: single_enemy
+- id: spy_counter_intel
+  name_en: Counter-Intelligence
+  name_de: Spionageabwehr
+  school: spy
+  description_en: Negate one enemy's telegraphed action this round.
+  description_de: Die angezeigte Aktion eines Feindes in dieser Runde verhindern.
+  min_aptitude: 5
+  cooldown: 3
+  effect_type: utility
+  effect_params:
+    cancel_telegraphed: true
+  is_ultimate: false
+  targets: single_enemy

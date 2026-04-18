@@ -1,0 +1,48 @@
+schema_version: 1
+abilities:
+- id: saboteur_trap
+  name_en: Deploy Trap
+  name_de: Falle legen
+  school: saboteur
+  description_en: Set a trap. Next enemy to act takes 1 condition step damage automatically.
+  description_de: Eine Falle setzen. Der nächste agierende Feind erleidet automatisch 1 Stufe Zustandsschaden.
+  min_aptitude: 3
+  cooldown: 2
+  effect_type: utility
+  effect_params:
+    trap: true
+    auto_damage_steps: 1
+  is_ultimate: false
+  targets: self
+- id: saboteur_disrupt
+  name_en: Disrupt
+  name_de: Stören
+  school: saboteur
+  description_en: Sabotage an enemy's defenses. -15 evasion for 2 rounds.
+  description_de: Die Verteidigung eines Feindes sabotieren. -15 Ausweichen für 2 Runden.
+  min_aptitude: 4
+  cooldown: 2
+  effect_type: debuff
+  effect_params:
+    debuff: disrupted
+    evasion_penalty: 15
+    duration: 2
+  is_ultimate: false
+  targets: single_enemy
+- id: saboteur_detonate
+  name_en: Detonate
+  name_de: Detonieren
+  school: saboteur
+  description_en: Trigger an explosion. Deals 1 condition step to all enemies. High stress to all
+    enemies.
+  description_de: Eine Explosion auslösen. Verursacht 1 Zustandsstufe bei allen Feinden. Hoher Stress
+    für alle Feinde.
+  min_aptitude: 5
+  cooldown: 4
+  effect_type: damage
+  effect_params:
+    power: 6
+    aoe: true
+    stress_power: 4
+  is_ultimate: false
+  targets: all_enemies
