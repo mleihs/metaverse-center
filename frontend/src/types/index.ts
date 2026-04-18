@@ -1174,7 +1174,12 @@ export interface EpochConfig {
   referee_mode: boolean;
   // Auto-resolve (defaults to "manual" for backward compat)
   // Only 'manual' and 'activity_gated' are implemented. Others are spec stubs.
-  auto_resolve_mode?: 'manual' | 'hard_deadline' | 'deadline_or_ready' | 'activity_gated' | 'fixed_schedule';
+  auto_resolve_mode?:
+    | 'manual'
+    | 'hard_deadline'
+    | 'deadline_or_ready'
+    | 'activity_gated'
+    | 'fixed_schedule';
   cycle_deadline_minutes?: number;
   min_cycle_duration_minutes?: number;
   require_action_for_ready?: boolean;

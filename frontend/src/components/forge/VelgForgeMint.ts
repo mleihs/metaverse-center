@@ -685,9 +685,11 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
               : nothing
           }
 
-          ${byok.effective_bypass || byok.byok_allowed
-            ? html`<velg-byok-panel></velg-byok-panel>`
-            : nothing}
+          ${
+            byok.effective_bypass || byok.byok_allowed
+              ? html`<velg-byok-panel></velg-byok-panel>`
+              : nothing
+          }
 
           ${this._renderHistory()}
         </div>

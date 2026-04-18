@@ -162,9 +162,7 @@ export class VelgWhisperCard extends LitElement {
   }
 
   private get _content(): string {
-    return this._locale === 'de'
-      ? this.whisper.content_de
-      : this.whisper.content_en;
+    return this._locale === 'de' ? this.whisper.content_de : this.whisper.content_en;
   }
 
   private get _isUnread(): boolean {
@@ -191,8 +189,9 @@ export class VelgWhisperCard extends LitElement {
           </time>
         </div>
         <p class="whisper__body">${this._content}</p>
-        ${w.whisper_type === 'question' && !w.acted_on
-          ? html`
+        ${
+          w.whisper_type === 'question' && !w.acted_on
+            ? html`
               <div class="whisper__actions">
                 <button
                   class="whisper__action"
@@ -203,15 +202,16 @@ export class VelgWhisperCard extends LitElement {
                 </button>
               </div>
             `
-          : w.acted_on
-            ? html`
+            : w.acted_on
+              ? html`
                 <div class="whisper__actions">
                   <span class="whisper__action whisper__action--acted">
                     ${msg('Addressed')}
                   </span>
                 </div>
               `
-            : ''}
+              : ''
+        }
       </article>
     `;
   }

@@ -1,8 +1,8 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { epochsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { epochsApi } from '../../services/api/index.js';
 import type { BattleLogEntry, BattleSummary, Sitrep } from '../../types/index.js';
 import { formatTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -506,11 +506,7 @@ export class VelgWarRoomPanel extends LitElement {
 
   private async _loadSummary(): Promise<void> {
     // Cycle 0 = aggregate across all cycles (migration 212)
-    const res = await epochsApi.getCycleSummary(
-      this.epochId,
-      0,
-      this.simulationId || undefined,
-    );
+    const res = await epochsApi.getCycleSummary(this.epochId, 0, this.simulationId || undefined);
     if (res.success && res.data) {
       this._summary = res.data as BattleSummary;
       this._animateCounters();

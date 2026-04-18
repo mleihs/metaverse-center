@@ -1,8 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { settingsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { settingsApi } from '../../services/api/index.js';
 import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';

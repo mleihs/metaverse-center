@@ -1,8 +1,8 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { settingsApi } from '../../services/api/index.js';
 import { appState } from '../../services/AppStateManager.js';
+import { settingsApi } from '../../services/api/index.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PRESET_NAMES, THEME_PRESETS, type ThemePresetName } from '../../services/theme-presets.js';
 import type { SimulationSetting } from '../../types/index.js';

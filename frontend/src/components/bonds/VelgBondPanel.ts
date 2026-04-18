@@ -407,9 +407,7 @@ export class VelgBondPanel extends LitElement {
     if (!unread.length) return;
 
     const now = new Date().toISOString();
-    await Promise.all(
-      unread.map((w) => bondsApi.markWhisperRead(this._detail!.id, w.id)),
-    );
+    await Promise.all(unread.map((w) => bondsApi.markWhisperRead(this._detail!.id, w.id)));
     this._detail = {
       ...this._detail,
       recent_whispers: this._detail.recent_whispers.map((w) =>
@@ -438,9 +436,7 @@ export class VelgBondPanel extends LitElement {
   }
 
   private _depthName(depth: number): string {
-    return this._locale === 'de'
-      ? DEPTH_NAMES_DE[depth] ?? ''
-      : DEPTH_NAMES_EN[depth] ?? '';
+    return this._locale === 'de' ? (DEPTH_NAMES_DE[depth] ?? '') : (DEPTH_NAMES_EN[depth] ?? '');
   }
 
   private _getMoodColor(): string {
@@ -473,9 +469,7 @@ export class VelgBondPanel extends LitElement {
   }
 
   private _renderPanel() {
-    const activeBonds = this._bonds.filter(
-      (b) => b.status === 'active' || b.status === 'strained',
-    );
+    const activeBonds = this._bonds.filter((b) => b.status === 'active' || b.status === 'strained');
     const emptySlots = Math.max(0, 5 - activeBonds.length);
 
     return html`
@@ -517,9 +511,7 @@ export class VelgBondPanel extends LitElement {
         ></velg-avatar>
         <span class="slot__name">${bond.agent_name ?? msg('Unknown')}</span>
         <span class="slot__depth">${this._depthName(bond.depth)}</span>
-        ${unread > 0
-          ? html`<span class="slot__badge">${unread}</span>`
-          : nothing}
+        ${unread > 0 ? html`<span class="slot__badge">${unread}</span>` : nothing}
       </button>
     `;
   }
@@ -570,18 +562,20 @@ export class VelgBondPanel extends LitElement {
         </div>
 
         <div class="dossier__whispers">
-          ${whispers.length
-            ? whispers.map(
-                (w: Whisper, i: number) => html`
+          ${
+            whispers.length
+              ? whispers.map(
+                  (w: Whisper, i: number) => html`
                   <velg-whisper-card
                     .whisper=${w}
                     style="--i: ${i}"
                   ></velg-whisper-card>
                 `,
-              )
-            : html`<p class="dossier__empty">
+                )
+              : html`<p class="dossier__empty">
                 ${msg('No whispers yet. They will come with time.')}
-              </p>`}
+              </p>`
+          }
         </div>
       </div>
     `;
