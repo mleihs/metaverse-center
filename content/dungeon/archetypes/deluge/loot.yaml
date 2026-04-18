@@ -1,0 +1,152 @@
+schema_version: 1
+loot:
+- id: deluge_brine_residue
+  name_en: Brine Residue
+  name_de: Salzrückstand
+  tier: 1
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 50
+    when: after_dungeon
+  description_en: Crystallized from evaporated floodwater. Holding it steadies the pulse. A mineral
+    memory of when the water was calm.
+  description_de: Kristallisiert aus verdunstetem Flutwasser. Es in der Hand zu halten beruhigt den
+    Puls. Eine mineralische Erinnerung daran, als das Wasser ruhig war.
+  drop_weight: 30
+- id: deluge_tide_reading
+  name_en: Tide Reading
+  name_de: Gezeitenablesung
+  tier: 1
+  effect_type: memory
+  effect_params:
+    importance: 4
+    content_en: Learned to read the intervals between surges. Not prediction – recognition.
+    content_de: Gelernt, die Intervalle zwischen den Fluten zu lesen. Keine Vorhersage – Wiedererkennung.
+  description_en: Learned to read the intervals between surges. Not prediction – recognition.
+  description_de: Gelernt, die Intervalle zwischen den Fluten zu lesen. Keine Vorhersage – Wiedererkennung.
+  drop_weight: 25
+- id: deluge_seal_fragment
+  name_en: Seal Fragment
+  name_de: Dichtungsfragment
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: guardian
+    scope: this_dungeon
+  description_en: A piece of whatever held the water back before the party arrived. Guardian checks
+    +5%.
+  description_de: Ein Stück dessen, was das Wasser zurückhielt, bevor die Gruppe ankam. Wächter-Proben
+    +5%.
+  drop_weight: 25
+- id: deluge_current_map
+  name_en: Current Map
+  name_de: Strömungskarte
+  tier: 1
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 5
+    aptitude: spy
+    scope: this_dungeon
+  description_en: A trace of the water's preferred paths. Spy checks +5%.
+  description_de: Eine Spur der bevorzugten Wege des Wassers. Spion-Proben +5%.
+  drop_weight: 20
+- id: deluge_pressure_ward
+  name_en: Pressure Ward
+  name_de: Druckschutz
+  tier: 2
+  effect_type: stress_heal
+  effect_params:
+    stress_heal: 120
+    when: after_dungeon
+  description_en: Equalized pressure from a sealed chamber. The relief is physical – the tension in
+    the chest that was always there, gone.
+  description_de: Ausgeglichener Druck aus einer versiegelten Kammer. Die Erleichterung ist physisch
+    – die Spannung in der Brust, die immer da war, weg.
+  drop_weight: 30
+- id: deluge_salvage_record
+  name_en: Salvage Record
+  name_de: Bergungsprotokoll
+  tier: 2
+  effect_type: memory
+  effect_params:
+    importance: 7
+    content_en: A complete record of what the flood carried and where it deposited. Understanding
+      the flood's logic changes the agent's relationship to loss.
+    content_de: Ein vollständiges Protokoll dessen, was die Flut trug und wo sie es ablagerte. Das
+      Verständnis der Logik der Flut verändert die Beziehung des Agenten zum Verlust.
+  description_en: A complete record of what the flood carried and where it deposited. Understanding
+    the flood's logic changes the agent's relationship to loss.
+  description_de: Ein vollständiges Protokoll dessen, was die Flut trug und wo sie es ablagerte. Das
+    Verständnis der Logik der Flut verändert die Beziehung des Agenten zum Verlust.
+  drop_weight: 25
+- id: deluge_flood_barrier_shard
+  name_en: Flood Barrier Shard
+  name_de: Flutsperrensplitter
+  tier: 2
+  effect_type: dungeon_buff
+  effect_params:
+    stress_damage_bonus: 0.5
+    aptitude: saboteur
+    scope: this_dungeon
+  description_en: A fragment of the barrier that held for 200 years. Applied to sabotage, the particle
+    physics of resistance.
+  description_de: Ein Fragment der Sperre, die 200 Jahre hielt. Auf Sabotage angewandt, die Teilchenphysik
+    des Widerstands.
+  drop_weight: 25
+- id: deluge_tidal_insight
+  name_en: Tidal Insight
+  name_de: Gezeiteneinsicht
+  tier: 2
+  effect_type: dungeon_buff
+  effect_params:
+    check_bonus: 10
+    aptitude: spy
+    scope: this_dungeon
+  description_en: The tide's pattern, internalized. Spy checks +10%.
+  description_de: Das Muster der Gezeiten, verinnerlicht. Spion-Proben +10%.
+  drop_weight: 20
+- id: deluge_covenant_fragment
+  name_en: Covenant Fragment
+  name_de: Bundesfragment
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: guardian
+    boost: 1
+  description_en: 'A fragment of the promise the water made: to recede, eventually. Carrying it changes
+    how {agent} relates to protection. Guardian aptitude +1.'
+  description_de: 'Ein Fragment des Versprechens, das das Wasser gab: sich zurückzuziehen, irgendwann.
+    Es zu tragen verändert, wie {agent} sich zu Schutz verhält. Wächter-Aptitude +1.'
+  drop_weight: 40
+- id: deluge_deep_time_core
+  name_en: Deep-Time Core
+  name_de: Tiefzeitkern
+  tier: 3
+  effect_type: aptitude_boost
+  effect_params:
+    aptitude: spy
+    boost: 1
+  description_en: Compressed sediment from the lowest floor. It contains the memory of every room
+    the water passed through. Perception sharpened. Spy aptitude +1.
+  description_de: Komprimiertes Sediment vom tiefsten Stockwerk. Es enthält die Erinnerung an jeden
+    Raum, den das Wasser durchquerte. Wahrnehmung geschärft. Spion-Aptitude +1.
+  drop_weight: 35
+- id: deluge_elemental_warding
+  name_en: Elemental Warding
+  name_de: Elementarschutz
+  tier: 3
+  effect_type: simulation_modifier
+  effect_params:
+    building_protection: true
+    duration_ticks: 10
+    min_condition: moderate
+    description_en: 'One building becomes immune to condition degradation below ''moderate'' for 10
+      heartbeat ticks. The flood''s inverse: preservation.'
+    description_de: 'Ein Gebäude wird immun gegen Zustandsverschlechterung unter ''moderat'' für 10
+      Herzschlag-Ticks. Das Inverse der Flut: Bewahrung.'
+  description_en: 'One building in the simulation becomes immune to condition degradation below ''moderate''
+    for 10 heartbeat ticks. The flood''s inverse: preservation.'
+  description_de: 'Ein Gebäude in der Simulation wird immun gegen Zustandsverschlechterung unter »moderat«
+    für 10 Herzschlag-Ticks. Das Inverse der Flut: Bewahrung.'
+  drop_weight: 25

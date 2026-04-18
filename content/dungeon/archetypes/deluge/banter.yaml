@@ -1,0 +1,183 @@
+schema_version: 1
+banter:
+- id: db_01
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The floor is damp. Not wet – damp. The kind of moisture that precedes a statement.
+  text_de: Der Boden ist feucht. Nicht nass – feucht. Die Art Feuchtigkeit, die einer Aussage vorausgeht.
+  water_tier: 0
+- id: db_02
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Water at 12cm. Clear. The room is legible through it. That will change.
+  text_de: Wasser bei 12cm. Klar. Der Raum ist hindurch lesbar. Das wird sich ändern.
+  water_tier: 0
+- id: db_03
+  trigger: room_entered
+  personality_filter: {}
+  text_en: 12cm now. The sound of movement has changed – each action announces itself.
+  text_de: 12cm jetzt. Das Geräusch der Bewegung hat sich verändert – jede Aktion kündigt sich an.
+  water_tier: 1
+- id: db_04
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The waterline on the wall is 7cm higher than when the party entered this floor. The arithmetic
+    is not complicated.
+  text_de: Die Wasserlinie an der Wand ist 7cm höher als beim Betreten dieser Etage. Die Arithmetik
+    ist nicht kompliziert.
+  water_tier: 1
+- id: db_05
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Half-submerged. The water is cold and has opinions about which direction the party should
+    move.
+  text_de: Halb überflutet. Das Wasser ist kalt und hat Meinungen darüber, in welche Richtung sich
+    die Gruppe bewegen sollte.
+  water_tier: 2
+- id: db_06
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The current carries debris from rooms below. Fragments of encounters that are now depths.
+  text_de: Die Strömung trägt Trümmer aus Räumen darunter. Fragmente von Begegnungen, die jetzt Tiefen
+    sind.
+  water_tier: 2
+- id: db_07
+  trigger: room_entered
+  personality_filter: {}
+  text_en: The surface is close. {agent} keeps the instruments above the waterline. Everything below
+    is concession.
+  text_de: Die Oberfläche ist nah. {agent} hält die Instrumente über der Wasserlinie. Alles darunter
+    ist Zugeständnis.
+  water_tier: 3
+- id: db_08
+  trigger: room_entered
+  personality_filter: {}
+  text_en: Three rooms above the waterline. Two hours ago there were five. The mathematics has not
+    changed, only the denominator.
+  text_de: Drei Räume über der Wasserlinie. Vor zwei Stunden waren es fünf. Die Mathematik hat sich
+    nicht geändert, nur der Nenner.
+  water_tier: 3
+- id: db_09
+  trigger: combat_start
+  personality_filter: {}
+  text_en: The water shifts. Something in the current organizes itself into opposition.
+  text_de: Das Wasser verlagert sich. Etwas in der Strömung ordnet sich zum Widerstand.
+  water_tier: 0
+- id: db_10
+  trigger: combat_start
+  personality_filter: {}
+  text_en: Combat in water. Every action costs twice – once for the act, once for the medium.
+  text_de: Kampf im Wasser. Jede Aktion kostet doppelt – einmal für die Tat, einmal für das Medium.
+  water_tier: 1
+- id: db_11
+  trigger: combat_victory
+  personality_filter: {}
+  text_en: The current relents. Not defeated – redirected. It will find another path.
+  text_de: Die Strömung gibt nach. Nicht besiegt – umgelenkt. Sie wird einen anderen Weg finden.
+  water_tier: 0
+- id: db_12
+  trigger: combat_victory
+  personality_filter: {}
+  text_en: Quiet. The water level drops 2cm. The flood acknowledges the party's right to this room.
+    Temporarily.
+  text_de: Stille. Der Pegel sinkt um 2cm. Die Flut erkennt das Recht der Gruppe auf diesen Raum an.
+    Vorübergehend.
+  water_tier: 1
+- id: db_13
+  trigger: loot_found
+  personality_filter: {}
+  text_en: The current brought this. From below. From a room that is no longer a room – it is a depth.
+  text_de: Die Strömung brachte dies. Von unten. Aus einem Raum, der kein Raum mehr ist – er ist eine
+    Tiefe.
+  water_tier: 0
+- id: db_14
+  trigger: loot_found
+  personality_filter: {}
+  text_en: Salvaged. The water will want it back.
+  text_de: Geborgen. Das Wasser wird es zurückverlangen.
+  water_tier: 1
+- id: db_15
+  trigger: rest_start
+  personality_filter: {}
+  text_en: Dry. The word has become a luxury. {agent} remains above the waterline and measures the
+    silence.
+  text_de: Trocken. Das Wort ist zum Luxus geworden. {agent} verharrt über der Wasserlinie und misst
+    die Stille.
+  water_tier: 0
+- id: db_16
+  trigger: rest_start
+  personality_filter: {}
+  text_en: For a moment the water level stabilizes. Not recedes – stabilizes. In the Deluge, that
+    is rest.
+  text_de: Für einen Moment stabilisiert sich der Pegel. Sinkt nicht – stabilisiert sich. In der Flut
+    ist das Ruhe.
+  water_tier: 1
+- id: db_17
+  trigger: tidal_recession
+  personality_filter: {}
+  text_en: The water pulls back. 8cm. A breath. Not generosity – mechanics. The tide returns.
+  text_de: Das Wasser zieht sich zurück. 8cm. Ein Atemzug. Keine Großzügigkeit – Mechanik. Die Flut
+    kommt wieder.
+  water_tier: 0
+- id: db_18
+  trigger: tidal_recession
+  personality_filter: {}
+  text_en: 'Recession. The watermarks on the wall tell two stories: how high the water was, and how
+    high it will be.'
+  text_de: 'Rückgang. Die Wasserzeichen an der Wand erzählen zwei Geschichten: wie hoch das Wasser
+    war und wie hoch es sein wird.'
+  water_tier: 1
+- id: db_19
+  trigger: tidal_surge
+  personality_filter: {}
+  text_en: The tide returns. Higher. It always returns higher.
+  text_de: Die Flut kehrt zurück. Höher. Sie kehrt immer höher zurück.
+  water_tier: 2
+- id: db_20
+  trigger: ankle_threshold
+  personality_filter: {}
+  text_en: The water has reached the third step. It does not rush. It has been doing this for longer
+    than the stairwell has existed.
+  text_de: Das Wasser hat die dritte Stufe erreicht. Es eilt nicht. Es tut dies seit länger als das
+    Treppenhaus existiert.
+  water_tier: 1
+- id: db_21
+  trigger: waist_threshold
+  personality_filter: {}
+  text_en: Half-submerged. The operational vocabulary contracts. Salvage. Seal. Ascend.
+  text_de: Halb überflutet. Das operative Vokabular schrumpft. Bergen. Abdichten. Aufsteigen.
+  water_tier: 2
+- id: db_22
+  trigger: chest_threshold
+  personality_filter: {}
+  text_en: »Der Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.«
+  text_de: »Der Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.«
+  water_tier: 3
+- id: db_23
+  trigger: flood_imminent
+  personality_filter: {}
+  text_en: Cold. Rising. {agent} adjusts. There is nothing else to adjust.
+  text_de: Kalt. Steigend. {agent} passt sich an. Es gibt nichts anderes anzupassen.
+  water_tier: 3
+- id: db_24
+  trigger: retreat
+  personality_filter: {}
+  text_en: The party ascends. Behind them, the water fills what they leave. No sound of pursuit –
+    only the sound of level.
+  text_de: Die Gruppe steigt auf. Hinter ihnen füllt das Wasser, was sie verlassen. Kein Geräusch
+    der Verfolgung – nur das Geräusch des Pegels.
+  water_tier: 0
+- id: db_25
+  trigger: submerged_room_entered
+  personality_filter: {}
+  text_en: The submerged corridor is beautiful. {agent} was not prepared for that.
+  text_de: Der überflutete Korridor ist schön. {agent} war darauf nicht vorbereitet.
+  water_tier: 2
+- id: db_26
+  trigger: submerged_room_entered
+  personality_filter: {}
+  text_en: Under the surface, the room has reorganized itself. What was ceiling is now a mirror. What
+    was door is now a passage to somewhere the map does not name.
+  text_de: Unter der Oberfläche hat sich der Raum neu geordnet. Was Decke war, ist jetzt ein Spiegel.
+    Was Tür war, ist jetzt ein Durchgang zu etwas, das die Karte nicht benennt.
+  water_tier: 3

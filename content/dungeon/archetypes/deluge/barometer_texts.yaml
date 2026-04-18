@@ -1,0 +1,23 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: The water is present but patient. It laps at the lowest edges of the corridor with the
+    rhythm of something that has not yet decided to rise. The sound is almost gentle.
+  text_de: Das Wasser ist da, aber geduldig. Es leckt an den niedrigsten Kanten des Korridors im Rhythmus
+    von etwas, das sich noch nicht entschieden hat zu steigen. Das Geräusch ist beinahe sanft.
+- tier: 1
+  text_en: The water has risen. Not gradually – in the time between noticing and measuring, it gained
+    another centimeter. The current has found a direction. It is moving inward.
+  text_de: Das Wasser ist gestiegen. Nicht allmählich – in der Zeit zwischen Bemerken und Messen hat
+    es einen weiteren Zentimeter gewonnen. Die Strömung hat eine Richtung gefunden. Sie bewegt sich
+    nach innen.
+- tier: 2
+  text_en: The water is no longer patient. It pushes. The sound has changed from lapping to pressure
+    – the low, constant hum of volume looking for somewhere to go. It is finding places.
+  text_de: Das Wasser ist nicht mehr geduldig. Es drängt. Das Geräusch hat sich von Plätschern zu
+    Druck verändert – das tiefe, gleichmäßige Summen von Volumen, das einen Ort sucht. Es findet welche.
+- tier: 3
+  text_en: 'The water is here. Not rising – arrived. It fills the space the way an answer fills a
+    question: completely, and with the weight of having always been inevitable.'
+  text_de: 'Das Wasser ist da. Nicht steigend – angekommen. Es füllt den Raum wie eine Antwort eine
+    Frage füllt: vollständig, und mit dem Gewicht, immer unvermeidlich gewesen zu sein.'

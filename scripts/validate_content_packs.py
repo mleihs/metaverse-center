@@ -45,7 +45,7 @@ from backend.services.content_packs.schemas import (  # noqa: E402
 )
 
 
-REQUIRED_ROOM_TYPES_EXACTLY_ONCE: tuple[str, ...] = ("boss", "rest", "treasure")
+REQUIRED_ROOM_TYPES_AT_LEAST_ONCE: tuple[str, ...] = ("boss", "rest", "treasure")
 
 
 def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
@@ -123,6 +123,12 @@ def _check_spawn_fk_integrity(result: PackLoadResult) -> list[str]:
 
 
 def _check_archetype_completeness(result: PackLoadResult) -> list[str]:
+    """Every archetype must carry at least one boss / rest / treasure encounter.
+
+    Boss is the run-end trigger, rest gates healing, treasure gates tier-2
+    loot. Archetypes may have more (Deluge ships 2 rest + 2 treasure rooms
+    because its 17-encounter layout calls for it) but never fewer.
+    """
     violations: list[str] = []
     for archetype in ARCHETYPE_SLUG_TO_NAME.values():
         encounters = result.encounters.get(archetype, [])
@@ -130,11 +136,11 @@ def _check_archetype_completeness(result: PackLoadResult) -> list[str]:
             # Archetype not yet externalized (A1.2-A1.3 in progress) — skip.
             continue
         by_type = Counter(enc.room_type for enc in encounters)
-        for required in REQUIRED_ROOM_TYPES_EXACTLY_ONCE:
+        for required in REQUIRED_ROOM_TYPES_AT_LEAST_ONCE:
             count = by_type.get(required, 0)
-            if count != 1:
+            if count < 1:
                 violations.append(
-                    f"archetype '{archetype}' has {count} {required} encounter(s); exactly 1 required"
+                    f"archetype '{archetype}' has no {required} encounter; at least 1 required"
                 )
     return violations
 

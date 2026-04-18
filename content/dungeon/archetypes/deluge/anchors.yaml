@@ -1,0 +1,217 @@
+schema_version: 1
+anchors:
+- id: deluge_watermark
+  phases:
+    discovery:
+      text_en: A line on the wall. Mineral-white, ruler-straight, deposited by water that rose to
+        this exact height and held there long enough to leave a record. The line is old. The precision
+        is not. Something measured this room before you entered it.
+      text_de: Eine Linie an der Wand. Mineralweiß, linealgrade, hinterlassen von Wasser, das bis
+        zu genau dieser Höhe stieg und lang genug dort verharrte, um eine Aufzeichnung zu hinterlassen.
+        Die Linie ist alt. Die Präzision nicht. Etwas hat diesen Raum vermessen, bevor ihr ihn betreten
+        habt.
+    echo:
+      text_en: '{agent} finds another watermark. Higher. Same mineral deposit, same precision. The
+        water has been here before – more than once. Each visit, it stayed longer.'
+      text_de: '{agent} findet ein weiteres Wasserzeichen. Höher. Selbe Mineralablagerung, selbe Präzision.
+        Das Wasser war schon hier – mehr als einmal. Bei jedem Besuch blieb es länger.'
+    mutation:
+      text_en: The wall is a chronicle. Dozens of lines, each higher than the last, each a record
+        of a flood that rose and receded and rose again. The intervals between them are shrinking.
+        The most recent line is still damp.
+      text_de: Die Wand ist eine Chronik. Dutzende Linien, jede höher als die vorige, jede eine Aufzeichnung
+        einer Flut, die stieg und wich und wieder stieg. Die Abstände zwischen ihnen werden kleiner.
+        Die jüngste Linie ist noch feucht.
+    climax:
+      text_en: One line remains. At the ceiling. The mineral deposit is fresh – still crystallizing.
+        The water that made this mark has not yet receded. It is here.
+      text_de: Eine Linie bleibt. An der Decke. Die Mineralablagerung ist frisch – kristallisiert
+        noch. Das Wasser, das dieses Zeichen hinterließ, ist noch nicht zurückgewichen. Es ist hier.
+- id: deluge_seal
+  phases:
+    discovery:
+      text_en: 'A seal in the floor. Wax over iron, stamped with a symbol that might be a warning
+        or a promise – the distinction depends on which side of the seal you are standing on. Beneath
+        it: the sound of pressure.'
+      text_de: 'Ein Siegel im Boden. Wachs über Eisen, geprägt mit einem Symbol, das eine Warnung
+        oder ein Versprechen sein könnte – die Unterscheidung hängt davon ab, auf welcher Seite des
+        Siegels man steht. Darunter: das Geräusch von Druck.'
+    echo:
+      text_en: '{agent} examines the seal. Hairline fractures run through the wax like veins. Moisture
+        beads along each crack. The seal is not breaking – it is perspiring.'
+      text_de: '{agent} untersucht das Siegel. Haarrisse durchziehen das Wachs wie Adern. Feuchtigkeit
+        perlt entlang jedes Risses. Das Siegel bricht nicht – es schwitzt.'
+    mutation:
+      text_en: The seal weeps. The wax has softened – not from heat but from patience. Water seeps
+        through the iron beneath in a film so thin it seems like condensation. The boundary is not
+        failing. It is dissolving.
+      text_de: Das Siegel weint. Das Wachs ist weich geworden – nicht durch Hitze, sondern durch Geduld.
+        Wasser sickert durch das Eisen darunter in einem Film so dünn, dass er wie Kondenswasser wirkt.
+        Die Grenze versagt nicht. Sie löst sich auf.
+    climax:
+      text_en: No seal. No hatch. No distinction between above and below. The water is here not because
+        it broke through – because 'through' stopped meaning anything.
+      text_de: Kein Siegel. Keine Luke. Keine Unterscheidung zwischen oben und unten. Das Wasser ist
+        hier, nicht weil es durchbrach – weil »durch« aufgehört hat, etwas zu bedeuten.
+- id: deluge_raft
+  phases:
+    discovery:
+      text_en: 'Planks lashed together with cable. Not debris – construction. Someone built this deliberately:
+        the knots are tight, the measurements careful. A raft, intended for escape. It is still here.
+        The builder is not.'
+      text_de: 'Planken, mit Kabel zusammengebunden. Kein Treibgut – Konstruktion. Jemand hat das
+        absichtlich gebaut: die Knoten sind fest, die Maße sorgfältig. Ein Floß, gedacht für die Flucht.
+        Es ist noch hier. Der Erbauer nicht.'
+    echo:
+      text_en: '{agent} finds another fragment. Same cable, same knots. The raft was not broken by
+        the water – it was distributed. The current carried each piece in a different direction.'
+      text_de: '{agent} findet ein weiteres Fragment. Selbes Kabel, selbe Knoten. Das Floß wurde nicht
+        vom Wasser zerbrochen – es wurde verteilt. Die Strömung trug jedes Stück in eine andere Richtung.'
+    mutation:
+      text_en: Fragments in every corner. The water has rearranged them – not into a vessel but into
+        a nest. Something the flood assembled from the wreckage of someone else's escape plan. It
+        floats gently. It is not meant for leaving.
+      text_de: Fragmente in jeder Ecke. Das Wasser hat sie neu angeordnet – nicht zu einem Boot, sondern
+        zu einem Nest. Etwas, das die Flut zusammensetzte aus den Trümmern eines fremden Fluchtplans.
+        Es treibt sanft. Es ist nicht zum Verlassen gedacht.
+    climax:
+      text_en: The raft is whole. Floating in the center of the chamber, riding the surface with the
+        patience of something that belongs here. It was never meant to escape the water. It was meant
+        to join it.
+      text_de: Das Floß ist ganz. Treibend in der Mitte der Kammer, auf der Oberfläche reitend mit
+        der Geduld von etwas, das hierher gehört. Es war nie zur Flucht vor dem Wasser gedacht. Es
+        war gedacht, sich ihm anzuschließen.
+- id: deluge_compass
+  phases:
+    discovery:
+      text_en: A compass, cased in brass. The glass is intact. The needle does not point north – it
+        points down. Straight down, as if the deepest point were the only bearing that still matters.
+      text_de: Ein Kompass, in Messing gefasst. Das Glas ist intakt. Die Nadel zeigt nicht nach Norden
+        – sie zeigt nach unten. Senkrecht, als wäre der tiefste Punkt die einzige Peilung, die noch
+        zählt.
+    echo:
+      text_en: '{agent} checks the compass again. The needle still points down, but it trembles now.
+        The thing it is tracking is closer.'
+      text_de: '{agent} prüft den Kompass erneut. Die Nadel zeigt immer noch nach unten, aber sie
+        zittert jetzt. Das, was sie verfolgt, ist näher.'
+    mutation:
+      text_en: The compass glass is fogged from inside. Condensation – the air within the casing has
+        surrendered to moisture. The needle has stopped trembling. It is certain. Whatever lies below
+        has stopped moving.
+      text_de: Das Kompassglas ist von innen beschlagen. Kondenswasser – die Luft im Gehäuse hat sich
+        der Feuchtigkeit ergeben. Die Nadel hat aufgehört zu zittern. Sie ist sicher. Was auch immer
+        darunter liegt, hat aufgehört, sich zu bewegen.
+    climax:
+      text_en: The compass is submerged. Underwater, the needle drifts free – pointing everywhere,
+        pointing nowhere. North was always an agreement. The water has withdrawn its consent.
+      text_de: Der Kompass ist unter Wasser. Untergetaucht treibt die Nadel frei – zeigt überallhin,
+        zeigt nirgendwohin. Norden war immer eine Vereinbarung. Das Wasser hat seine Zustimmung zurückgezogen.
+- id: deluge_bottle
+  phases:
+    discovery:
+      text_en: 'A bottle. Glass, sealed with wax. Inside: air. Not a message – the medium is the message.
+        Someone preserved the last breath of a dry room.'
+      text_de: 'Eine Flasche. Glas, mit Wachs versiegelt. Darin: Luft. Keine Botschaft – das Medium
+        ist die Botschaft. Jemand hat den letzten Atemzug eines trockenen Raums konserviert.'
+    echo:
+      text_en: '{agent} spots the bottle again. The current has carried it to the far wall, where
+        it bobs against the surface with the patience of something that has learned to float.'
+      text_de: '{agent} entdeckt die Flasche wieder. Die Strömung hat sie zur gegenüberliegenden Wand
+        getragen, wo sie gegen die Oberfläche wippt mit der Geduld von etwas, das schwimmen gelernt
+        hat.'
+    mutation:
+      text_en: The seal is failing. Air escapes in silver beads that rise through the water and break
+        at the surface without sound. Each bubble smaller than the last. The room is inheriting the
+        bottle's contents.
+      text_de: Das Siegel versagt. Luft entweicht in silbernen Perlen, die durch das Wasser aufsteigen
+        und an der Oberfläche lautlos zerplatzen. Jede Blase kleiner als die vorige. Der Raum erbt
+        den Inhalt der Flasche.
+    climax:
+      text_en: Empty. The glass is full of water now. The air it held is in the room – in the ceiling
+        pocket where the party still stands dry. The bottle kept its promise. It delivered.
+      text_de: Leer. Das Glas ist jetzt voll Wasser. Die Luft, die es hielt, ist im Raum – in der
+        Deckentasche, wo der Trupp noch trocken steht. Die Flasche hat ihr Versprechen gehalten. Sie
+        hat geliefert.
+- id: deluge_depth_gauge
+  phases:
+    discovery:
+      text_en: 'A gauge, mounted to the wall. Brass, glass-fronted, calibrated in meters. The scale
+        runs from zero to thirty. The current reading: 0.2. The water in this room is dry. The gauge
+        disagrees.'
+      text_de: 'Eine Anzeige, an der Wand montiert. Messing, glasverkleidet, kalibriert in Metern.
+        Die Skala reicht von null bis dreißig. Die aktuelle Anzeige: 0,2. Das Wasser in diesem Raum
+        ist trocken. Die Anzeige widerspricht.'
+    echo:
+      text_en: '{agent} passes the gauge again. It reads 4.7. The room is dry here. The reading is
+        not wrong – it is premature.'
+      text_de: '{agent} passiert die Anzeige erneut. Sie zeigt 4,7. Der Raum ist hier trocken. Die
+        Anzeige ist nicht falsch – sie ist verfrüht.'
+    mutation:
+      text_en: The gauge reads the exact depth of the current room. To the centimeter. It was calibrated
+        for this moment, in this room, long before either existed. The precision is not mechanical.
+        It is patient.
+      text_de: Die Anzeige zeigt die exakte Tiefe des aktuellen Raums. Auf den Zentimeter. Sie wurde
+        für diesen Moment kalibriert, in diesem Raum, lange bevor es beide gab. Die Präzision ist
+        nicht mechanisch. Sie ist geduldig.
+    climax:
+      text_en: The gauge reads zero. Not because the water has receded. Because the gauge is submerged,
+        and underwater, depth is not a number. It is a condition.
+      text_de: Die Anzeige zeigt null. Nicht weil das Wasser gewichen ist. Weil die Anzeige unter
+        Wasser steht, und unter Wasser ist Tiefe keine Zahl. Sie ist ein Zustand.
+- id: deluge_photograph
+  phases:
+    discovery:
+      text_en: A photograph, curled at the edges from moisture. It shows this room – or one that shares
+        its geometry. In the photograph, the room is dry. Sunlight enters from a window that does
+        not exist here. The photograph remembers what the water has not yet reached.
+      text_de: Eine Fotografie, an den Rändern gewellt von Feuchtigkeit. Sie zeigt diesen Raum – oder
+        einen, der seine Geometrie teilt. In der Fotografie ist der Raum trocken. Sonnenlicht fällt
+        durch ein Fenster, das hier nicht existiert. Die Fotografie erinnert, was das Wasser noch
+        nicht erreicht hat.
+    echo:
+      text_en: '{agent} looks at the photograph again. It has changed. Water on the floor now – ankle-deep,
+        the color of weak tea. The photograph is not aging. It is documenting.'
+      text_de: '{agent} betrachtet die Fotografie erneut. Sie hat sich verändert. Wasser auf dem Boden
+        jetzt – knöcheltief, von der Farbe dünnen Tees. Die Fotografie altert nicht. Sie dokumentiert.'
+    mutation:
+      text_en: 'The photograph and the room are converging. Water level in the image matches the water
+        around the party. The light matches. The geometry matches. The only difference: in the photograph,
+        someone stands where the party stands now. They are looking at a photograph.'
+      text_de: 'Die Fotografie und der Raum nähern sich an. Der Wasserstand im Bild entspricht dem
+        Wasser um den Trupp. Das Licht stimmt. Die Geometrie stimmt. Der einzige Unterschied: in der
+        Fotografie steht jemand dort, wo der Trupp jetzt steht. Sie betrachten eine Fotografie.'
+    climax:
+      text_en: The photograph is saturated. The image has dissolved into the water, and the water
+        has absorbed the image. There is no photograph. There is no room that was ever dry. The water
+        remembers. The water has revised.
+      text_de: Die Fotografie ist gesättigt. Das Bild hat sich im Wasser aufgelöst, und das Wasser
+        hat das Bild absorbiert. Es gibt keine Fotografie. Es gibt keinen Raum, der jemals trocken
+        war. Das Wasser erinnert sich. Das Wasser hat revidiert.
+- id: deluge_stone
+  phases:
+    discovery:
+      text_en: A stone. Smooth, the way centuries of current make things smooth. It rests on a dry
+        shelf as if placed there with care. The polish is uniform – no single hand held this. A river
+        did. A river that is not here yet.
+      text_de: Ein Stein. Glatt, so wie Jahrhunderte der Strömung Dinge glatt machen. Er ruht auf
+        einem trockenen Sims, als wäre er mit Bedacht platziert worden. Die Politur ist gleichmäßig
+        – keine einzelne Hand hielt ihn. Ein Fluss tat es. Ein Fluss, der noch nicht hier ist.
+    echo:
+      text_en: '{agent} picks up the stone. Heavier. Not because it grew – because the air around
+        it is denser, saturated. The stone accrues the weight of what approaches.'
+      text_de: '{agent} hebt den Stein auf. Schwerer. Nicht weil er gewachsen ist – weil die Luft
+        um ihn dichter ist, gesättigt. Der Stein sammelt das Gewicht dessen, was sich nähert.'
+    mutation:
+      text_en: The stone is wet. Not because the waterline has reached its shelf – the shelf is dry.
+        The stone is wet from within. It remembers the river that shaped it, and the memory is leaking
+        through.
+      text_de: Der Stein ist nass. Nicht weil die Wasserlinie sein Sims erreicht hat – das Sims ist
+        trocken. Der Stein ist nass von innen. Er erinnert sich an den Fluss, der ihn formte, und
+        die Erinnerung sickert durch.
+    climax:
+      text_en: The stone rests on the surface of the water. Not floating – resting. As if the surface
+        were solid, or the stone weightless, or the distinction between sinking and floating were
+        another agreement the water has revoked.
+      text_de: Der Stein ruht auf der Wasseroberfläche. Nicht schwimmend – ruhend. Als wäre die Oberfläche
+        fest, oder der Stein schwerelos, oder die Unterscheidung zwischen Sinken und Schwimmen eine
+        weitere Vereinbarung, die das Wasser widerrufen hat.
