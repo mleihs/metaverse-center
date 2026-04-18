@@ -1,0 +1,192 @@
+schema_version: 1
+anchors:
+- id: tower_blueprint
+  phases:
+    discovery:
+      text_en: A blueprint pinned to the reception desk. Floor plans for a building that does not
+        match this one – or rather, matches it as it was designed, before the floors began to disagree
+        with each other.
+      text_de: 'Ein Bauplan, auf den Empfangstresen geheftet. Grundrisse eines Gebäudes, das nicht
+        zu diesem passt – oder vielmehr: das zu diesem passt, wie es entworfen war, bevor die Stockwerke
+        anfingen, einander zu widersprechen.'
+    echo:
+      text_en: '{agent} finds the same blueprint, updated. New floors have been added in a different
+        hand. The new floors have no exits.'
+      text_de: '{agent} findet denselben Bauplan, aktualisiert. Neue Stockwerke wurden von einer anderen
+        Hand ergänzt. Die neuen Stockwerke haben keine Ausgänge.'
+    mutation:
+      text_en: The blueprint is here again. It has been corrected – every room you have entered is
+        now marked. Your route is drawn in red. The red line continues beyond your current position.
+        It ends in the room above this one.
+      text_de: Der Bauplan ist wieder hier. Er wurde korrigiert – jeder Raum, den ihr betreten habt,
+        ist jetzt markiert. Eure Route ist rot eingezeichnet. Die rote Linie geht über eure aktuelle
+        Position hinaus. Sie endet im Raum über diesem.
+    climax:
+      text_en: 'The Crown Keeper''s desk: the original blueprint. Architect''s signature at the bottom.
+        The name is yours.'
+      text_de: 'Das Pult des Crown Keepers: der Original-Bauplan. Architektenunterschrift am unteren
+        Rand. Der Name ist eurer.'
+- id: tower_receipt
+  phases:
+    discovery:
+      text_en: 'A receipt, pressed under a paperweight. The transaction: one structural guarantee,
+        purchased at a price that has been redacted. The guarantee expired three floors ago.'
+      text_de: 'Eine Quittung, unter einem Briefbeschwerer. Die Transaktion: eine Strukturgarantie,
+        erworben zu einem Preis, der geschwärzt wurde. Die Garantie ist drei Stockwerke zuvor abgelaufen.'
+    echo:
+      text_en: '{agent} reads another receipt. Same format, different transaction. This one purchases
+        time. The amount: ''remaining.'''
+      text_de: '{agent} liest eine weitere Quittung. Dasselbe Format, andere Transaktion. Diese kauft
+        Zeit. Der Betrag: »verbleibend«.'
+    mutation:
+      text_en: Receipts cover the floor like snow. Each one a guarantee – structural, temporal, existential.
+        All expired. The dates are sequential. The last date is today.
+      text_de: Quittungen bedecken den Boden wie Schnee. Jede eine Garantie – strukturell, temporal,
+        existenziell. Alle abgelaufen. Die Daten sind fortlaufend. Das letzte Datum ist heute.
+    climax:
+      text_en: The Crown Keeper extends a blank receipt. 'The final transaction', they say. 'Sign
+        here. The building accepts all forms of collateral.'
+      text_de: Der Crown Keeper reicht eine leere Quittung. »Die letzte Transaktion«, sagt er. »Hier
+        unterschreiben. Das Gebäude akzeptiert alle Formen von Sicherheit.«
+- id: tower_elevator
+  phases:
+    discovery:
+      text_en: An elevator button. Floor −1. Pressed so many times the brass is worn concave. The
+        elevator never came.
+      text_de: Ein Fahrstuhlknopf. Stockwerk −1. So oft gedrückt, dass das Messing konkav geschliffen
+        ist. Der Fahrstuhl kam nie.
+    echo:
+      text_en: '{agent} passes the same button, three floors higher. The brass is pristine now – unworn,
+        as if this version has never been pressed. It is warm to the touch. Expectant.'
+      text_de: '{agent} passiert denselben Knopf, drei Stockwerke höher. Das Messing ist jetzt makellos
+        – unbenutzt, als wäre diese Version nie gedrückt worden. Er ist warm. Erwartungsvoll.'
+    mutation:
+      text_en: Floor −1 again. The button is pressed in. Permanently. It will not release. The floor
+        indicator above it reads your current floor. It has been following you.
+      text_de: Stockwerk −1, wieder. Der Knopf ist eingedrückt. Permanent. Er lässt sich nicht lösen.
+        Die Stockwerksanzeige darüber zeigt euer aktuelles Stockwerk. Er ist euch gefolgt.
+    climax:
+      text_en: The Crown Keeper's room has no elevator. The button is here anyway. Floor 0. The brass
+        is worn by a hand that is not human. The elevator arrived. It is empty.
+      text_de: Der Raum des Crown Keepers hat keinen Fahrstuhl. Der Knopf ist trotzdem hier. Stockwerk
+        0. Das Messing ist abgegriffen von einer Hand, die nicht menschlich ist. Der Fahrstuhl ist
+        angekommen. Er ist leer.
+- id: tower_level
+  phases:
+    discovery:
+      text_en: A spirit level mounted on the reception desk. The bubble sits dead center. The building
+        tells itself it is straight. The building is lying.
+      text_de: Eine Wasserwaage, auf dem Empfangstresen montiert. Die Blase sitzt exakt in der Mitte.
+        Das Gebäude sagt sich, es sei gerade. Das Gebäude lügt.
+    echo:
+      text_en: '{agent} passes the spirit level again. The bubble has moved – not to one side but
+        to both. Two bubbles now. The building is negotiating with gravity.'
+      text_de: '{agent} passiert die Wasserwaage erneut. Die Blase hat sich bewegt – nicht zur Seite,
+        sondern zu beiden. Zwei Blasen jetzt. Das Gebäude verhandelt mit der Schwerkraft.'
+    mutation:
+      text_en: Spirit levels on every surface. Walls, ceiling, shelves. Every bubble reads center.
+        The building has achieved equilibrium – not by being level, but by redefining what level means.
+      text_de: Wasserwaagen auf jeder Fläche. Wände, Decke, Regale. Jede Blase zeigt Mitte. Das Gebäude
+        hat ein Gleichgewicht erreicht – nicht durch Geradheit, sondern durch Neudefinition von Geradheit.
+    climax:
+      text_en: The spirit level on the Crown Keeper's desk. The bubble is missing. The liquid inside
+        is still. There is no gravity here. There is only the building's opinion.
+      text_de: Die Wasserwaage auf dem Pult des Crown Keepers. Die Blase fehlt. Die Flüssigkeit darin
+        ist still. Es gibt hier keine Schwerkraft. Es gibt nur die Meinung des Gebäudes.
+- id: tower_nameplate
+  phases:
+    discovery:
+      text_en: A nameplate on an empty desk. The name has been scratched out and replaced. Scratched
+        out and replaced. Seven times. The desk has outlasted all of them.
+      text_de: Ein Namensschild auf einem leeren Schreibtisch. Der Name wurde ausgekratzt und ersetzt.
+        Ausgekratzt und ersetzt. Sieben Mal. Der Schreibtisch hat sie alle überdauert.
+    echo:
+      text_en: '{agent} reads another nameplate. The name is legible this time. It is a number. A
+        floor count. The desk belongs to whoever reaches it.'
+      text_de: '{agent} liest ein weiteres Namensschild. Der Name ist diesmal lesbar. Es ist eine
+        Zahl. Eine Stockwerkzählung. Der Schreibtisch gehört dem, der ihn erreicht.'
+    mutation:
+      text_en: 'Nameplates on every desk. The names are sequential: Floor 1, Floor 2 – up to a number
+        higher than the building has floors. The desks are for tenants who have not arrived yet. Or
+        for floors not yet built.'
+      text_de: 'Namensschilder auf jedem Schreibtisch. Die Namen sind fortlaufend: Stockwerk 1, Stockwerk
+        2 – bis zu einer Zahl, die höher ist, als das Gebäude Stockwerke hat. Die Schreibtische sind
+        für Mieter, die noch nicht angekommen sind. Oder für Stockwerke, die noch nicht gebaut wurden.'
+    climax:
+      text_en: 'The Crown Keeper''s nameplate. No name. Just a title: ''Last Tenant.'' Below it, in
+        smaller text: ''Permanent.'''
+      text_de: 'Das Namensschild des Crown Keepers. Kein Name. Nur ein Titel: »Letzter Mieter.« Darunter,
+        in kleinerer Schrift: »Permanent.«'
+- id: tower_clock
+  phases:
+    discovery:
+      text_en: A wall clock. The hour hand moves. The minute hand does not. The second hand ticks
+        backward at irregular intervals. The building keeps its own time.
+      text_de: Eine Wanduhr. Der Stundenzeiger bewegt sich. Der Minutenzeiger nicht. Der Sekundenzeiger
+        tickt rückwärts in unregelmäßigen Abständen. Das Gebäude führt seine eigene Zeit.
+    echo:
+      text_en: '{agent} checks the clock. All three hands move now – forward, but at different speeds.
+        The hour hand is fastest. The building is in a hurry to finish something.'
+      text_de: '{agent} prüft die Uhr. Alle drei Zeiger bewegen sich jetzt – vorwärts, aber mit verschiedenen
+        Geschwindigkeiten. Der Stundenzeiger ist am schnellsten. Das Gebäude hat es eilig, etwas zu
+        beenden.'
+    mutation:
+      text_en: Clocks on every wall. None agree. But each is internally consistent – they do not lie,
+        they simply occupy different versions of now. The building has more than one present tense.
+      text_de: Uhren an jeder Wand. Keine stimmt überein. Aber jede ist in sich konsistent – sie lügen
+        nicht, sie bewohnen verschiedene Versionen von Jetzt. Das Gebäude hat mehr als eine Gegenwartsform.
+    climax:
+      text_en: The Crown Keeper's clock. One hand. It points at you. It has always pointed at you.
+      text_de: Die Uhr des Crown Keepers. Ein Zeiger. Er zeigt auf euch. Er hat immer auf euch gezeigt.
+- id: tower_memo
+  phases:
+    discovery:
+      text_en: 'A memo pinned to the noticeboard. Subject: ''Re: Unauthorized Ascent (ref. 4471-B).''
+        The text is a single sentence: ''Access is granted retroactively to those who survive the
+        audit.'''
+      text_de: 'Ein Memo, an die Pinnwand geheftet. Betreff: »Re: Unautorisierter Aufstieg (Az. 4471-B).«
+        Der Text ist ein einziger Satz: »Zugang wird rückwirkend jenen gewährt, die die Prüfung überstehen.«'
+    echo:
+      text_en: '{agent} finds the same memo, stamped and countersigned. A handwritten note in the
+        margin: ''See also: structural liability, Appendix C.'' There is no Appendix C.'
+      text_de: '{agent} findet dasselbe Memo, gestempelt und gegengezeichnet. Eine handschriftliche
+        Notiz am Rand: »Siehe auch: Strukturhaftung, Anhang C.« Es gibt keinen Anhang C.'
+    mutation:
+      text_en: Memos on every surface. A correspondence thread spanning decades. The subject line
+        never changes. The urgency escalates. The last memo is marked 'FINAL NOTICE' in a hand that
+        shakes.
+      text_de: Memos auf jeder Fläche. Ein Schriftverkehr über Jahrzehnte. Die Betreffzeile ändert
+        sich nie. Die Dringlichkeit eskaliert. Das letzte Memo trägt den Vermerk »LETZTE MAHNUNG«
+        in zitternder Handschrift.
+    climax:
+      text_en: 'On the Crown Keeper''s desk: your file. Every room you entered. Every choice documented.
+        The last page is blank except for a single word: ''Approved.'''
+      text_de: 'Auf dem Pult des Crown Keepers: eure Akte. Jeder Raum, den ihr betreten habt. Jede
+        Entscheidung dokumentiert. Die letzte Seite ist leer bis auf ein einzelnes Wort: »Genehmigt.«'
+- id: tower_scale_model
+  phases:
+    discovery:
+      text_en: A scale model of the building. Under glass. The proportions are wrong – the top floors
+        are larger than the bottom. The model insists this is correct. The glass is warm.
+      text_de: Ein Maßstabsmodell des Gebäudes. Unter Glas. Die Proportionen stimmen nicht – die oberen
+        Stockwerke sind größer als die unteren. Das Modell besteht darauf, dass das korrekt ist. Das
+        Glas ist warm.
+    echo:
+      text_en: '{agent} examines the model again. It has grown. New floors, added since your last
+        visit. Tiny figures climb the stairwells. One group matches your party''s size exactly.'
+      text_de: '{agent} betrachtet das Modell erneut. Es ist gewachsen. Neue Stockwerke, hinzugefügt
+        seit eurem letzten Besuch. Winzige Figuren steigen in den Treppenhäusern. Eine Gruppe entspricht
+        exakt eurer Gruppenstärke.'
+    mutation:
+      text_en: The model fills the room now. It is no longer a representation – it is a proposal.
+        The floors extend upward past the ceiling. The building is planning additions that reality
+        has not yet approved.
+      text_de: Das Modell füllt jetzt den Raum. Es ist keine Darstellung mehr – es ist ein Entwurf.
+        Die Stockwerke ragen über die Decke hinaus. Das Gebäude plant Erweiterungen, die die Realität
+        noch nicht genehmigt hat.
+    climax:
+      text_en: 'The scale model on the Crown Keeper''s desk. It shows one room. This room. Inside
+        it: a smaller model. Inside that: another. The building contains itself. It always has.'
+      text_de: 'Das Maßstabsmodell auf dem Pult des Crown Keepers. Es zeigt einen Raum. Diesen Raum.
+        Darin: ein kleineres Modell. Darin: ein weiteres. Das Gebäude enthält sich selbst. Das tat
+        es immer.'

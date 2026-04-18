@@ -1,0 +1,26 @@
+schema_version: 1
+spawns:
+  tower_tremor_spawn:
+  - template_id: tower_tremor_broker
+    count: 2
+  tower_patrol_spawn:
+  - template_id: tower_crown_keeper
+    count: 1
+  - template_id: tower_foundation_worm
+    count: 1
+  tower_ambush_spawn:
+  - template_id: tower_debt_shade
+    count: 2
+  tower_compound_spawn:
+  - template_id: tower_debt_shade
+    count: 1
+  - template_id: tower_tremor_broker
+    count: 2
+  tower_collapse_spawn:
+  - template_id: tower_remnant_commerce
+    count: 1
+  - template_id: tower_tremor_broker
+    count: 1
+  tower_rest_ambush_spawn:
+  - template_id: tower_foundation_worm
+    count: 1

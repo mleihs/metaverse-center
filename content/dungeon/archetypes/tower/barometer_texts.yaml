@@ -1,0 +1,18 @@
+schema_version: 1
+barometer_texts:
+- tier: 0
+  text_en: A hairline crack in the east wall. Cosmetic. The building compensates.
+  text_de: Ein Haarriss in der Ostwand. Kosmetisch. Das Gebäude kompensiert.
+- tier: 1
+  text_en: The crack has branched. The building no longer compensates – it negotiates.
+  text_de: Der Riss hat sich verzweigt. Das Gebäude kompensiert nicht mehr – es verhandelt.
+- tier: 2
+  text_en: The crack network spans the room. Through it, you can see the floor below. Through that,
+    another floor. The building is becoming transparent in its failure.
+  text_de: Das Rissnetzwerk durchzieht den Raum. Durch ihn seht ihr das Stockwerk darunter. Durch
+    jenes ein weiteres. Das Gebäude wird transparent in seinem Versagen.
+- tier: 3
+  text_en: The crack is the room. The walls are suggestions. The floor is a theory. The building has
+    stopped pretending.
+  text_de: Der Riss ist der Raum. Die Wände sind Vorschläge. Der Boden ist eine Theorie. Das Gebäude
+    hat aufgehört, so zu tun als ob.

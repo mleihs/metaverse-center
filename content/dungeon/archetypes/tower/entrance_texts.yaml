@@ -1,0 +1,26 @@
+schema_version: 1
+entrance_texts:
+- text_en: The lobby is pristine. Too pristine. The reception desk is unmanned, the ledger open to
+    today's date. Someone has been expected. The elevator indicators read floors that should not exist.
+  text_de: Die Lobby ist makellos. Zu makellos. Der Empfangstresen ist unbesetzt, das Hauptbuch auf
+    dem heutigen Datum aufgeschlagen. Jemand wurde erwartet. Die Fahrstuhlanzeigen zeigen Stockwerke,
+    die nicht existieren sollten.
+- text_en: The revolving door deposits you into a foyer that smells of floor wax and compounding interest.
+    A clock on the wall runs backward. The building does not acknowledge this as unusual.
+  text_de: Die Drehtür setzt euch in einem Foyer ab, das nach Bodenwachs und Zinseszins riecht. Eine
+    Uhr an der Wand läuft rückwärts. Das Gebäude erkennt daran nichts Ungewöhnliches.
+- text_en: Ground floor. The architecture is reasonable here – load-bearing walls where they should
+    be, exits where regulation demands them. This will not last. The building is only polite on the
+    ground floor.
+  text_de: Erdgeschoss. Die Architektur ist hier vernünftig – Tragwände, wo sie sein sollten, Ausgänge,
+    wo die Vorschrift sie verlangt. Das wird nicht anhalten. Das Gebäude ist nur im Erdgeschoss höflich.
+- text_en: 'A placard by the entrance reads: ''This building has been inspected and found structurally
+    sound.'' The date has been scratched out. The inspector''s name has been replaced with a floor
+    number.'
+  text_de: 'Ein Schild am Eingang lautet: »Dieses Gebäude wurde geprüft und für strukturell einwandfrei
+    befunden.« Das Datum wurde ausgekratzt. Der Name des Prüfers durch eine Stockwerknummer ersetzt.'
+- text_en: The foundation hums. A low, structural vibration that travels upward through the soles.
+    Not mechanical. Organic. The building is aware that you have entered. It adjusts.
+  text_de: Das Fundament brummt. Eine tiefe, strukturelle Vibration, die durch die Sohlen nach oben
+    wandert. Nicht mechanisch. Organisch. Das Gebäude weiß, dass ihr eingetreten seid. Es passt sich
+    an.
