@@ -106,6 +106,66 @@ async def list_content_drafts(
     return paginated(drafts, total, limit, offset)
 
 
+# Placed before `/{draft_id}` so FastAPI does not attempt to parse
+# "open-for-resource" as a UUID.
+@router.get("/open-for-resource")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def list_open_drafts_for_resource(
+    request: Request,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+    pack_slug: Annotated[
+        str,
+        Query(
+            min_length=1,
+            max_length=128,
+            pattern=r"^[a-z][a-z0-9_]{0,127}$",
+            description="Pack identifier (same regex as ContentDraftCreate).",
+        ),
+    ],
+    resource_path: Annotated[
+        str,
+        Query(
+            min_length=1,
+            max_length=512,
+            pattern=r"^[a-zA-Z0-9_./\[\]]{1,512}$",
+            description="Addressable path within the pack (same regex as ContentDraftCreate).",
+        ),
+    ],
+) -> SuccessResponse[list[ContentDraftSummary]]:
+    """Open drafts (draft|conflict) on a given resource.
+
+    Used at editor-open time to warn the admin if another session has an open
+    draft on the same resource. Returns `[]` when no other open drafts exist.
+    """
+    drafts = await ContentDraftsService.list_open_for_resource(
+        supabase,
+        pack_slug=pack_slug,
+        resource_path=resource_path,
+    )
+    return SuccessResponse(data=drafts)
+
+
+@router.get("/by-pr/{pr_number}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def list_drafts_by_pr(
+    request: Request,
+    pr_number: int,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[list[ContentDraft]]:
+    """All drafts attached to a given PR.
+
+    Used by the admin UI to render drafts sharing a batch-publish PR as a
+    grouped row.
+    """
+    drafts = await ContentDraftsService.list_by_pr_number(
+        supabase,
+        pr_number=pr_number,
+    )
+    return SuccessResponse(data=drafts)
+
+
 @router.get("/{draft_id}")
 @limiter.limit(RATE_LIMIT_STANDARD)
 async def get_content_draft(
