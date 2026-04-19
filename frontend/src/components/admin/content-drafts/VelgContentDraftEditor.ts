@@ -30,11 +30,12 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { contentDraftsApi } from '../../../services/api/index.js';
+import { contentDraftsApi, contentPacksApi } from '../../../services/api/index.js';
 import type {
   ContentDraft,
   ContentDraftSummary,
 } from '../../../services/api/ContentDraftsApiService.js';
+import type { PackResourceManifest } from '../../../services/api/ContentPacksApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/LoadingState.js';
@@ -42,31 +43,10 @@ import '../../shared/ErrorState.js';
 import '../../shared/VelgBadge.js';
 import { VelgToast } from '../../shared/Toast.js';
 
-/** Pack slugs for the create-form dropdown. Must match `pack_slug` regex. */
-const PACK_SLUGS = [
-  'shadow',
-  'tower',
-  'mother',
-  'entropy',
-  'prometheus',
-  'deluge',
-  'awakening',
-  'overthrow',
-] as const;
-
-/** Common resource paths — non-exhaustive, just placeholder suggestions. */
-const RESOURCE_PATH_HINTS = [
-  'banter',
-  'encounters',
-  'enemies',
-  'loot',
-  'spawns',
-  'anchors',
-  'entrance_texts',
-  'barometer_texts',
-];
-
-/** Initial content when creating a blank draft on a known resource. */
+/** Initial content for a blank-start draft (admin chose a resource that
+ *  has no on-disk YAML yet OR explicitly opted for empty). Derives the
+ *  collection-key from resource_path so the editor's _collection() lookup
+ *  immediately finds an empty array to iterate. */
 function seedContentFor(resourcePath: string): Record<string, unknown> {
   const key = resourcePath.split(/[.\[]/)[0];
   if (!key) return { schema_version: 1 };
@@ -415,8 +395,12 @@ export class VelgContentDraftEditor extends LitElement {
   @state() private _sameResourceOthers: ContentDraftSummary[] = [];
 
   // Create-form state
-  @state() private _newPackSlug: (typeof PACK_SLUGS)[number] = PACK_SLUGS[0];
+  @state() private _manifest: PackResourceManifest[] | null = null;
+  @state() private _manifestLoading = false;
+  @state() private _manifestError: string | null = null;
+  @state() private _newPackSlug = '';
   @state() private _newResourcePath = '';
+  @state() private _newPreloadFromDisk = true;
   @state() private _creating = false;
 
   willUpdate(changed: Map<PropertyKey, unknown>): void {
@@ -425,6 +409,7 @@ export class VelgContentDraftEditor extends LitElement {
     }
     if (changed.has('createMode') && this.createMode) {
       this._resetForCreate();
+      void this._loadManifest();
     }
   }
 
@@ -437,7 +422,59 @@ export class VelgContentDraftEditor extends LitElement {
     this._staleVersion = false;
     this._sameResourceOthers = [];
     this._error = null;
+    this._newPackSlug = '';
     this._newResourcePath = '';
+    this._newPreloadFromDisk = true;
+  }
+
+  /** Fetch the pack-resource manifest for the cascading create-form selector. */
+  private async _loadManifest(): Promise<void> {
+    if (this._manifest || this._manifestLoading) return;
+    this._manifestLoading = true;
+    this._manifestError = null;
+    try {
+      const response = await contentPacksApi.listManifest();
+      if (response.success) {
+        this._manifest = response.data;
+      } else {
+        this._manifestError =
+          response.error?.message ?? msg('Failed to load content-pack catalog.');
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgContentDraftEditor._loadManifest' });
+      this._manifestError =
+        err instanceof Error ? err.message : msg('Failed to load content-pack catalog.');
+    } finally {
+      this._manifestLoading = false;
+    }
+  }
+
+  /** Ordered unique pack slugs from the manifest. */
+  private _manifestPackSlugs(): string[] {
+    if (!this._manifest) return [];
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const row of this._manifest) {
+      if (!seen.has(row.pack_slug)) {
+        seen.add(row.pack_slug);
+        out.push(row.pack_slug);
+      }
+    }
+    return out;
+  }
+
+  /** Resources for the selected pack (empty when no pack picked). */
+  private _manifestResourcesForPack(packSlug: string): PackResourceManifest[] {
+    if (!this._manifest || !packSlug) return [];
+    return this._manifest.filter((r) => r.pack_slug === packSlug);
+  }
+
+  /** Manifest entry for the currently-selected (pack, resource) tuple, or undefined. */
+  private _selectedResourceRow(): PackResourceManifest | undefined {
+    if (!this._manifest || !this._newPackSlug || !this._newResourcePath) return undefined;
+    return this._manifest.find(
+      (r) => r.pack_slug === this._newPackSlug && r.resource_path === this._newResourcePath,
+    );
   }
 
   private async _loadDraft(id: string): Promise<void> {
@@ -745,19 +782,38 @@ export class VelgContentDraftEditor extends LitElement {
 
   private async _handleCreate(): Promise<void> {
     const packSlug = this._newPackSlug;
-    const resourcePath = this._newResourcePath.trim();
-    if (!resourcePath) {
-      VelgToast.error(msg('Resource path is required.'));
+    const resourcePath = this._newResourcePath;
+    if (!packSlug || !resourcePath) {
+      VelgToast.error(msg('Select a pack and resource first.'));
       return;
     }
     this._creating = true;
     try {
-      const seed = seedContentFor(resourcePath);
+      // Seed preference: current on-disk YAML when the resource exists and
+      // preload is checked; otherwise fall back to an empty collection
+      // scaffold so the editor can still open with a usable shape.
+      let baseContent: Record<string, unknown>;
+      if (this._newPreloadFromDisk && this._selectedResourceRow()) {
+        const readResp = await contentPacksApi.getResource(packSlug, resourcePath);
+        if (!readResp.success) {
+          VelgToast.error(
+            readResp.error?.message ?? msg('Failed to read existing pack content.'),
+          );
+          this._creating = false;
+          return;
+        }
+        baseContent = readResp.data.content;
+      } else {
+        baseContent = seedContentFor(resourcePath);
+      }
+
       const response = await contentDraftsApi.createDraft({
         pack_slug: packSlug,
         resource_path: resourcePath,
-        base_content: seed,
-        working_content: structuredClone(seed),
+        base_content: baseContent,
+        // Start working_content as an identical deep-copy so the first
+        // render has the same structure; edits diverge from there.
+        working_content: structuredClone(baseContent),
       });
       if (response.success) {
         VelgToast.success(msg('Draft created.'));
@@ -941,7 +997,12 @@ export class VelgContentDraftEditor extends LitElement {
   }
 
   private _renderCreateForm(): TemplateResult {
-    const datalistId = 'resource-path-suggestions';
+    const packSlugs = this._manifestPackSlugs();
+    const resourceRows = this._manifestResourcesForPack(this._newPackSlug);
+    const selectedRow = this._selectedResourceRow();
+    const createDisabled =
+      this._creating || !this._newPackSlug || !this._newResourcePath;
+
     return html`
       <div class="head">
         <div>
@@ -957,63 +1018,145 @@ export class VelgContentDraftEditor extends LitElement {
         </button>
       </div>
 
-      <div class="create-form">
-        <div class="field">
-          <label class="field__label" for="pack-slug-select">${msg('Pack slug')}</label>
-          <select
-            id="pack-slug-select"
-            class="field__control"
-            .value=${this._newPackSlug}
-            @change=${(e: Event) => {
-              this._newPackSlug = (e.target as HTMLSelectElement).value as (typeof PACK_SLUGS)[number];
-            }}
-          >
-            ${PACK_SLUGS.map((slug) => html`<option value=${slug}>${slug}</option>`)}
-          </select>
-          <div class="field__hint">${msg('Identifies the content pack under content/dungeon/.')}</div>
-        </div>
+      ${this._manifestLoading
+        ? html`<velg-loading-state
+            message=${msg('Loading content-pack catalog...')}
+          ></velg-loading-state>`
+        : this._manifestError
+          ? html`
+              <velg-error-state
+                message=${this._manifestError}
+                show-retry
+                @retry=${this._loadManifest}
+              ></velg-error-state>
+            `
+          : html`
+              <div class="create-form">
+                <div class="field">
+                  <label class="field__label" for="pack-slug-select">
+                    ${msg('Pack')}
+                  </label>
+                  <select
+                    id="pack-slug-select"
+                    class="field__control"
+                    .value=${this._newPackSlug}
+                    @change=${(e: Event) => {
+                      this._newPackSlug = (e.target as HTMLSelectElement).value;
+                      this._newResourcePath = '';
+                    }}
+                  >
+                    <option value="" disabled>
+                      ${msg('Select a pack...')}
+                    </option>
+                    ${packSlugs.map(
+                      (slug) => html`<option value=${slug}>${slug}</option>`,
+                    )}
+                  </select>
+                  <div class="field__hint">
+                    ${msg('Content pack directory under content/dungeon/archetypes/.')}
+                  </div>
+                </div>
 
-        <div class="field">
-          <label class="field__label" for="resource-path-input">${msg('Resource path')}</label>
-          <input
-            id="resource-path-input"
-            type="text"
-            class="field__control"
-            list=${datalistId}
-            placeholder="banter"
-            .value=${this._newResourcePath}
-            @input=${(e: Event) => {
-              this._newResourcePath = (e.target as HTMLInputElement).value;
-            }}
-          />
-          <datalist id=${datalistId}>
-            ${RESOURCE_PATH_HINTS.map((r) => html`<option value=${r}></option>`)}
-          </datalist>
-          <div class="field__hint">
-            ${msg(
-              'Collection name — typically banter, encounters, enemies, loot, spawns, anchors, entrance_texts or barometer_texts.',
-            )}
-          </div>
-        </div>
+                <div class="field">
+                  <label class="field__label" for="resource-path-select">
+                    ${msg('Resource')}
+                  </label>
+                  <select
+                    id="resource-path-select"
+                    class="field__control"
+                    .value=${this._newResourcePath}
+                    ?disabled=${!this._newPackSlug}
+                    @change=${(e: Event) => {
+                      this._newResourcePath = (e.target as HTMLSelectElement).value;
+                    }}
+                  >
+                    <option value="" disabled>
+                      ${this._newPackSlug
+                        ? msg('Select a resource...')
+                        : msg('Pick a pack first')}
+                    </option>
+                    ${resourceRows.map(
+                      (row) => html`
+                        <option value=${row.resource_path}>
+                          ${row.resource_path}
+                          ${row.entry_count >= 0
+                            ? ` (${row.entry_count})`
+                            : ''}
+                        </option>
+                      `,
+                    )}
+                  </select>
+                  <div class="field__hint">
+                    ${msg(
+                      'YAML file under the selected pack. Count shows current entry total.',
+                    )}
+                  </div>
+                </div>
 
-        <div class="footer" style="margin-top:0;padding-top:var(--space-3);">
-          <span class="footer__hint">
-            ${msg('An empty draft is created; edit the JSON next.')}
-          </span>
-          <div class="footer__actions">
-            <button class="btn" @click=${this._handleClose} ?disabled=${this._creating}>
-              ${msg('Cancel')}
-            </button>
-            <button
-              class="btn btn--primary"
-              @click=${this._handleCreate}
-              ?disabled=${this._creating || !this._newResourcePath.trim()}
-            >
-              ${this._creating ? msg('Creating...') : msg('Create draft')}
-            </button>
-          </div>
-        </div>
-      </div>
+                ${selectedRow
+                  ? html`
+                      <div class="banner banner--warn">
+                        <p class="banner__title">${msg('Selected')}</p>
+                        ${msg(
+                          str`${selectedRow.file_path} — ${selectedRow.entry_count >= 0 ? selectedRow.entry_count : '?'} entries on disk.`,
+                        )}
+                      </div>
+                      <div class="field">
+                        <label
+                          class="field__label"
+                          style="display:flex;align-items:center;gap:var(--space-2);cursor:pointer;"
+                          for="preload-checkbox"
+                        >
+                          <input
+                            id="preload-checkbox"
+                            type="checkbox"
+                            .checked=${this._newPreloadFromDisk}
+                            @change=${(e: Event) => {
+                              this._newPreloadFromDisk = (
+                                e.target as HTMLInputElement
+                              ).checked;
+                            }}
+                          />
+                          ${msg('Load current disk content into the draft')}
+                        </label>
+                        <div class="field__hint">
+                          ${msg(
+                            'Recommended. Unchecked means the draft starts empty — use only when adding a brand-new resource.',
+                          )}
+                        </div>
+                      </div>
+                    `
+                  : nothing}
+
+                <div class="footer" style="margin-top:0;padding-top:var(--space-3);">
+                  <span class="footer__hint">
+                    ${this._newPreloadFromDisk && selectedRow
+                      ? msg('Draft seeded with current on-disk content; edit away.')
+                      : msg('Draft starts empty; populate JSON in the editor.')}
+                  </span>
+                  <div class="footer__actions">
+                    <button
+                      class="btn"
+                      @click=${this._handleClose}
+                      ?disabled=${this._creating}
+                    >
+                      ${msg('Cancel')}
+                    </button>
+                    <button
+                      class="btn btn--primary"
+                      @click=${this._handleCreate}
+                      ?disabled=${createDisabled}
+                    >
+                      ${this._creating
+                        ? msg('Creating...')
+                        : this._newPreloadFromDisk && selectedRow
+                          ? msg('Load & Edit')
+                          : msg('Create empty draft')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `}
     `;
   }
 
