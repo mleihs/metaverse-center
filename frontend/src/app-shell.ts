@@ -30,6 +30,9 @@ import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
 import './components/shared/CookieConsent.js';
 import './components/shared/GuestBanner.js';
+// Alpha suite — entire tree tree-shakes to nothing when VITE_IS_ALPHA !== 'true'
+// because the render branch is a const-evaluated `false` in that case.
+import './components/alpha/VelgAlphaSuite.js';
 import './components/landing/LandingPage.js';
 import './components/onboarding/OnboardingWizard.js';
 import './components/content/ContentPageView.js';
@@ -1155,6 +1158,11 @@ export class VelgApp extends LitElement {
       }
       <velg-cookie-consent></velg-cookie-consent>
       <velg-achievement-toast></velg-achievement-toast>
+      ${
+        import.meta.env.VITE_IS_ALPHA === 'true'
+          ? html`<velg-alpha-suite></velg-alpha-suite>`
+          : nothing
+      }
     `;
   }
 

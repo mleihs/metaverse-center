@@ -178,6 +178,18 @@ No em dashes (U+2014) in user-facing `msg()` strings — use en dashes (U+2013).
 
 Run `frontend/scripts/lint-llm-content.sh` to verify. CI will reject violations.
 
+### Alpha Suite (pre-release only)
+
+Four Bureau-flavored indicators are active while Velgarien is in alpha: `<velg-alpha-stamp>`, `<velg-build-strip>`, `<velg-first-contact-modal>` (all under `frontend/src/components/alpha/`, wrapped by `<velg-alpha-suite>`), and the persistent `<velg-redacted>` inline marker under `frontend/src/components/shared/`.
+
+- Gate: `import.meta.env.VITE_IS_ALPHA === 'true'` (a build-time constant injected by `vite.config.ts` via `loadEnv`). The render branch in `app-shell.ts` is const-evaluated — setting the flag to `false` tree-shakes the entire suite out of the bundle. Do not add runtime kill-switches for the stamp or build-strip.
+- State: `services/AlphaStatusService.ts` singleton owns four signals + the `shouldShowFirstContact` computed. Kept **separate from `AppStateManager`** so release-cut deletion is a single-file operation.
+- Runtime config: two `platform_settings` keys drive the first-contact modal (`alpha_first_contact_modal_enabled` bool, `alpha_first_contact_modal_version` text). Public read via `GET /api/v1/public/alpha-state` (narrow DTO; `platform_settings` stays `service_role` only).
+- Admin control: sub-tab **Admin → Platform → Announcements** (`AdminAnnouncementsTab`). Bumping the version retriggers the modal for every user who dismissed an older version. Preview mode opens the modal without touching `localStorage`.
+- Cross-shadow-DOM `url(#filter-id)` does not work — each alpha component inlines its own `<svg><defs><filter>` with a unique ID.
+- Scramble/animation entry points tie to the open transition (via `updated()`), not `connectedCallback`, so the async `alpha-state` fetch never races the animation off-screen.
+- Full reference: `docs/guides/alpha-suite.md`.
+
 ---
 
 ## i18n (MANDATORY)

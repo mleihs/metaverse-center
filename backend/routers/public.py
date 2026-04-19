@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 
 from backend.dependencies import get_admin_supabase, get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
+from backend.models.alpha_state import AlphaStatePublic, FirstContactPublic
 from backend.models.broadsheet import BroadsheetResponse
 from backend.models.common import PaginatedResponse, SuccessResponse
 from backend.models.gazette import GazetteEntry
@@ -1048,6 +1049,28 @@ async def public_dungeon_clearance_config(
     """
     config = await PlatformSettingsService.get_dungeon_clearance_config(admin_supabase)
     return SuccessResponse(data=dict(config))
+
+
+# ── Alpha State (Bureau-Dispatch Modal) ──────────────────────────────────
+
+
+@router.get("/alpha-state")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_alpha_state(
+    request: Request, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
+) -> SuccessResponse[AlphaStatePublic]:
+    """Public alpha-status snapshot for the frontend alpha suite.
+
+    Returns a narrow projection of the alpha_first_contact_modal_* keys from
+    platform_settings. Uses admin_supabase because platform_settings has no
+    anon RLS policy; the DTO drops every field except ``enabled`` and
+    ``version`` so nothing sensitive crosses the boundary.
+    """
+    config = await PlatformSettingsService.get_alpha_first_contact_config(admin_supabase)
+    payload = AlphaStatePublic(
+        first_contact=FirstContactPublic(enabled=config["enabled"], version=config["version"]),
+    )
+    return SuccessResponse(data=payload)
 
 
 # ── Agent Bonds ──────────────────────────────────────────────────────────

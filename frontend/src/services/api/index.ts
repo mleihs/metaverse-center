@@ -2,6 +2,7 @@ export { AdminApiService, adminApi } from './AdminApiService.js';
 export { AgentAutonomyApiService, agentAutonomyApi } from './AgentAutonomyApiService.js';
 export { AgentMemoryApiService, agentMemoryApi } from './AgentMemoryApiService.js';
 export { AgentsApiService, agentsApi } from './AgentsApiService.js';
+export { AlphaStateApiService, alphaStateApi } from './AlphaStateApiService.js';
 export { BaseApiService } from './BaseApiService.js';
 export { BondsApiService, bondsApi } from './BondsApiService.js';
 export { BroadsheetApiService, broadsheetApi } from './BroadsheetApiService.js';
