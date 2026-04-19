@@ -55,7 +55,10 @@ def build_banter_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
             # Pydantic BanterItem validation gate ran during load. YAML has
             # no tuple concept, so personality_filter values are already
             # list/bool — no further normalization needed.
-            archetype_tier = raw.get(tier_field, 0) if tier_field else 0
+            # dict.get(key, default) only returns `default` when the key is
+            # missing; an explicit `None` passes through. Coerce to 0 to
+            # match the DB column (INTEGER NOT NULL DEFAULT 0).
+            archetype_tier = (raw.get(tier_field) or 0) if tier_field else 0
             rows.append({
                 "id": DollarQuoted(raw["id"]),
                 "archetype": DollarQuoted(archetype),
