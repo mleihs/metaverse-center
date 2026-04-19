@@ -20,6 +20,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi import HTTPException, status
+from pydantic import ValidationError
 
 from backend.models.content_drafts import (
     ContentDraft,
@@ -91,7 +92,7 @@ def _mock_supabase(execute_results: list[MagicMock]) -> MagicMock:
     chain = MagicMock()
     for method in (
         "select", "insert", "update", "delete",
-        "eq", "in_", "order", "range", "limit",
+        "eq", "in_", "is_", "order", "range", "limit",
     ):
         getattr(chain, method).return_value = chain
     chain.execute = AsyncMock(side_effect=execute_results)
@@ -104,6 +105,68 @@ def _exec_result(*, data: list[dict] | None, count: int | None = None) -> MagicM
     result.data = data
     result.count = count
     return result
+
+
+# ── ContentDraftCreate validation (pack_slug / resource_path) ─────────────
+
+
+class TestContentDraftCreateValidation:
+    """Regex + field-validator coverage on the path-bearing fields.
+
+    These values feed into `content/dungeon/{pack_slug}/{resource_path}.yaml`
+    in the publish flow. Defense-in-depth against accidental or malicious
+    path-traversal / case-mismatched slugs — admins are trusted, but the
+    YAML layer can't recover from a bad slug after publish.
+    """
+
+    _MINIMAL_CONTENT = {"base_content": {"x": 1}, "working_content": {"x": 2}}
+
+    def test_accepts_well_formed_values(self):
+        draft = ContentDraftCreate(
+            pack_slug="awakening_banter",
+            resource_path="banter[ab_01]",
+            **self._MINIMAL_CONTENT,
+        )
+        assert draft.pack_slug == "awakening_banter"
+        assert draft.resource_path == "banter[ab_01]"
+
+    @pytest.mark.parametrize(
+        "bad_slug",
+        [
+            "Uppercase",         # uppercase not allowed
+            "1leading_digit",    # must start with letter
+            "has-dash",          # hyphen not allowed
+            "has.dot",           # dot not allowed in slug
+            "has space",         # whitespace
+            "",                  # empty rejected by min_length
+        ],
+    )
+    def test_rejects_malformed_pack_slug(self, bad_slug: str):
+        with pytest.raises(ValidationError):
+            ContentDraftCreate(
+                pack_slug=bad_slug,
+                resource_path="ok",
+                **self._MINIMAL_CONTENT,
+            )
+
+    @pytest.mark.parametrize(
+        "bad_path",
+        [
+            "../etc/passwd",         # parent traversal
+            "foo/../bar",            # embedded traversal
+            "/absolute/path",        # leading slash
+            "has space",             # whitespace disallowed by regex
+            "weird;chars",           # semicolon disallowed by regex
+            "",                      # empty rejected by min_length
+        ],
+    )
+    def test_rejects_malformed_resource_path(self, bad_path: str):
+        with pytest.raises(ValidationError):
+            ContentDraftCreate(
+                pack_slug="shadow",
+                resource_path=bad_path,
+                **self._MINIMAL_CONTENT,
+            )
 
 
 # ── create ────────────────────────────────────────────────────────────────
@@ -321,11 +384,44 @@ class TestStatusTransitions:
         assert result.status == ContentDraftStatus.PUBLISHED
         assert result.pr_number == 42
 
-        update_payload = supabase.table.return_value.update.call_args.args[0]
+        chain = supabase.table.return_value
+        update_payload = chain.update.call_args.args[0]
         assert update_payload["status"] == "published"
         assert update_payload["expected_head_oid"] == "abc123"
         assert update_payload["commit_sha"] == "def456"
         assert "published_at" in update_payload  # ISO timestamp present
+        # Idempotency gate: update filtered on published_at IS NULL.
+        assert any(
+            c.args == ("published_at", "null") for c in chain.is_.call_args_list
+        ), f"is_('published_at', 'null') missing in {chain.is_.call_args_list}"
+
+    async def test_mark_published_idempotent_on_retry(self):
+        """Re-calling mark_published on an already-published draft returns
+        the existing row (via get()) and does NOT overwrite published_at.
+        """
+        draft_id = uuid4()
+        existing_row = _row(
+            draft_id=draft_id,
+            status=ContentDraftStatus.PUBLISHED,
+            pr_number=42,
+        )
+        existing_row["published_at"] = datetime.now(UTC).isoformat()
+        # 1st execute: update returns 0 rows (gate `published_at IS NULL` fails).
+        # 2nd execute: get() SELECT returns the existing row.
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=[existing_row])]
+        )
+
+        result = await ContentDraftsService.mark_published(
+            supabase,
+            draft_id=draft_id,
+            expected_head_oid="abc",
+            commit_sha="def",
+            pr_number=42,
+            pr_url="https://example/pr/42",
+        )
+        assert result.status == ContentDraftStatus.PUBLISHED
+        assert result.published_at is not None
 
     async def test_mark_merged_sets_merged_at(self):
         draft_id = uuid4()
@@ -337,9 +433,31 @@ class TestStatusTransitions:
         )
         assert result.status == ContentDraftStatus.MERGED
 
-        update_payload = supabase.table.return_value.update.call_args.args[0]
+        chain = supabase.table.return_value
+        update_payload = chain.update.call_args.args[0]
         assert update_payload["status"] == "merged"
         assert "merged_at" in update_payload
+        # Idempotency gate: update filtered on merged_at IS NULL.
+        assert any(
+            c.args == ("merged_at", "null") for c in chain.is_.call_args_list
+        ), f"is_('merged_at', 'null') missing in {chain.is_.call_args_list}"
+
+    async def test_mark_merged_idempotent_on_webhook_redelivery(self):
+        """GitHub retries webhook deliveries on timeout. The 2nd delivery
+        must NOT overwrite merged_at (that would corrupt audit timing).
+        """
+        draft_id = uuid4()
+        existing_row = _row(draft_id=draft_id, status=ContentDraftStatus.MERGED)
+        existing_row["merged_at"] = datetime.now(UTC).isoformat()
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=[existing_row])]
+        )
+
+        result = await ContentDraftsService.mark_merged(
+            supabase, draft_id=draft_id,
+        )
+        assert result.status == ContentDraftStatus.MERGED
+        assert result.merged_at is not None
 
     async def test_mark_conflict_only_touches_status(self):
         draft_id = uuid4()
@@ -361,10 +479,20 @@ class TestStatusTransitions:
         result = await ContentDraftsService.abandon(supabase, draft_id=draft_id)
         assert result.status == ContentDraftStatus.ABANDONED
 
-    async def test_status_transition_on_missing_row_raises_404(self):
-        supabase = _mock_supabase([_exec_result(data=[])])
+    async def test_mark_merged_on_missing_row_raises_404(self):
+        """Idempotent path: update returns 0 rows → fallback get() → 404."""
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=[])]
+        )
         with pytest.raises(HTTPException) as exc_info:
             await ContentDraftsService.mark_merged(supabase, draft_id=uuid4())
+        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+
+    async def test_abandon_on_missing_row_raises_404(self):
+        """Non-idempotent transition path still uses direct 404 check."""
+        supabase = _mock_supabase([_exec_result(data=[])])
+        with pytest.raises(HTTPException) as exc_info:
+            await ContentDraftsService.abandon(supabase, draft_id=uuid4())
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
 
 

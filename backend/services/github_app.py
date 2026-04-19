@@ -45,19 +45,19 @@ logger = logging.getLogger(__name__)
 
 # Installation tokens expire after 1h; refresh at the 55-minute mark
 # to leave a comfortable retry buffer for in-flight calls.
-_INSTALLATION_TOKEN_TTL_SECONDS = 55 * 60
+INSTALLATION_TOKEN_TTL_SECONDS = 55 * 60
 
 # Safety margin when reading the cached expiry: if the token has < 30s
 # left, treat it as already expired to avoid handing out a token that
 # dies mid-request.
-_TOKEN_STALE_THRESHOLD_SECONDS = 30
+TOKEN_STALE_THRESHOLD_SECONDS = 30
 
 # App JWT lifetime (GitHub's spec maximum is 10 minutes).
-_APP_JWT_LIFETIME_SECONDS = 600
+APP_JWT_LIFETIME_SECONDS = 600
 
 # Leeway on `iat` to absorb modest clock skew between this host and
 # GitHub's auth servers. 60s is the common convention.
-_APP_JWT_IAT_LEEWAY_SECONDS = 60
+APP_JWT_IAT_LEEWAY_SECONDS = 60
 
 _GITHUB_API_BASE = "https://api.github.com"
 
@@ -116,6 +116,36 @@ class GitHubAppClient:
         self._private_key_pem = private_key_pem or self._load_private_key()
         self._cached_token: _CachedToken | None = None
         self._token_lock = asyncio.Lock()
+        # Persistent HTTP client — created lazily on first use so that
+        # instantiation in a sync context (e.g. test fixture) does not
+        # require a running event loop. Closed from the FastAPI lifespan
+        # shutdown hook via `close_github_app_client()` below.
+        self._http: httpx.AsyncClient | None = None
+
+    async def _get_http(self) -> httpx.AsyncClient:
+        """Return the shared httpx client, instantiating on first use.
+
+        All API calls share one client so TCP+TLS handshakes are amortized
+        (publish flow makes 3-5 GraphQL calls per batch; without pooling
+        each one would open a fresh connection to api.github.com).
+
+        Per-call timeouts are passed at the `.request()` / `.post()` site,
+        which overrides the client-level default — this keeps the existing
+        10s token-exchange and 15s/30s REST/GraphQL budgets intact.
+        """
+        if self._http is None:
+            self._http = httpx.AsyncClient()
+        return self._http
+
+    async def aclose(self) -> None:
+        """Close the persistent httpx client.
+
+        Idempotent. Called from the FastAPI lifespan shutdown hook; tests
+        may also call it explicitly.
+        """
+        if self._http is not None:
+            await self._http.aclose()
+            self._http = None
 
     # ── Config helpers ────────────────────────────────────────────────
 
@@ -161,8 +191,8 @@ class GitHubAppClient:
         """
         now_ts = now if now is not None else int(time.time())
         payload = {
-            "iat": now_ts - _APP_JWT_IAT_LEEWAY_SECONDS,
-            "exp": now_ts + _APP_JWT_LIFETIME_SECONDS,
+            "iat": now_ts - APP_JWT_IAT_LEEWAY_SECONDS,
+            "exp": now_ts + APP_JWT_LIFETIME_SECONDS,
             "iss": self._app_id,
         }
         return jwt.encode(payload, self._private_key_pem, algorithm="RS256")
@@ -182,7 +212,7 @@ class GitHubAppClient:
                 not force_refresh
                 and self._cached_token is not None
                 and self._cached_token.expires_at_monotonic
-                > now + _TOKEN_STALE_THRESHOLD_SECONDS
+                > now + TOKEN_STALE_THRESHOLD_SECONDS
             ):
                 return self._cached_token.value
 
@@ -191,15 +221,15 @@ class GitHubAppClient:
                 f"{_GITHUB_API_BASE}/app/installations/"
                 f"{self._installation_id}/access_tokens"
             )
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    url,
-                    headers={
-                        **_COMMON_HEADERS,
-                        "Authorization": f"Bearer {app_jwt}",
-                    },
-                    timeout=httpx.Timeout(10.0),
-                )
+            client = await self._get_http()
+            resp = await client.post(
+                url,
+                headers={
+                    **_COMMON_HEADERS,
+                    "Authorization": f"Bearer {app_jwt}",
+                },
+                timeout=httpx.Timeout(10.0),
+            )
 
             if resp.status_code != 201:
                 raise GitHubAPIError(resp.status_code, resp.text, url)
@@ -208,7 +238,7 @@ class GitHubAppClient:
             token = data["token"]
             self._cached_token = _CachedToken(
                 value=token,
-                expires_at_monotonic=now + _INSTALLATION_TOKEN_TTL_SECONDS,
+                expires_at_monotonic=now + INSTALLATION_TOKEN_TTL_SECONDS,
             )
             logger.info(
                 "Refreshed GitHub App installation token (installation=%s, github_expires_at=%s)",
@@ -238,17 +268,17 @@ class GitHubAppClient:
             token = await self.get_installation_token(
                 force_refresh=(attempt == 1),
             )
-            async with httpx.AsyncClient() as client:
-                resp = await client.request(
-                    method,
-                    url,
-                    json=json_body,
-                    headers={
-                        **_COMMON_HEADERS,
-                        "Authorization": f"Bearer {token}",
-                    },
-                    timeout=httpx.Timeout(timeout_seconds),
-                )
+            client = await self._get_http()
+            resp = await client.request(
+                method,
+                url,
+                json=json_body,
+                headers={
+                    **_COMMON_HEADERS,
+                    "Authorization": f"Bearer {token}",
+                },
+                timeout=httpx.Timeout(timeout_seconds),
+            )
             last_response = resp
             if resp.status_code == 401 and attempt == 0:
                 logger.warning(
@@ -334,7 +364,43 @@ def get_github_app_client() -> GitHubAppClient:
     return _client
 
 
+async def close_github_app_client() -> None:
+    """Close the module-level singleton's persistent httpx connection.
+
+    Called from the FastAPI lifespan shutdown hook. Safe to call when the
+    singleton is uninitialized (no-op).
+    """
+    global _client
+    if _client is not None:
+        await _client.aclose()
+        _client = None
+
+
 def reset_client_for_tests() -> None:
-    """Clear the module-level singleton. Test-only helper."""
+    """Clear the module-level singleton. Test-only helper.
+
+    Does NOT await `aclose()` — tests use AsyncMock-patched httpx, so the
+    underlying client was never opened. For real-code cleanup use
+    `close_github_app_client()` from the lifespan hook instead.
+    """
     global _client
     _client = None
+
+
+def check_env_config() -> list[str]:
+    """Return a list of missing required GITHUB_APP_* env vars.
+
+    Used by the FastAPI lifespan startup hook to log a loud-but-non-fatal
+    warning if the publish path is effectively unavailable. Empty list =
+    config is complete; any entries = publishing will fail at runtime.
+    """
+    missing: list[str] = []
+    for var in ("GITHUB_APP_ID", "GITHUB_APP_INSTALLATION_ID"):
+        if not os.environ.get(var):
+            missing.append(var)
+    if not (
+        os.environ.get("GITHUB_APP_PRIVATE_KEY_B64")
+        or os.environ.get("GITHUB_APP_PRIVATE_KEY")
+    ):
+        missing.append("GITHUB_APP_PRIVATE_KEY_B64 (or GITHUB_APP_PRIVATE_KEY)")
+    return missing

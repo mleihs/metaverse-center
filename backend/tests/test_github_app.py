@@ -24,17 +24,33 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from backend.services.github_app import (
-    _APP_JWT_IAT_LEEWAY_SECONDS,
-    _APP_JWT_LIFETIME_SECONDS,
-    _INSTALLATION_TOKEN_TTL_SECONDS,
+    APP_JWT_IAT_LEEWAY_SECONDS,
+    APP_JWT_LIFETIME_SECONDS,
+    INSTALLATION_TOKEN_TTL_SECONDS,
     GitHubAPIError,
     GitHubAppClient,
     GitHubAppConfigError,
+    check_env_config,
     get_github_app_client,
     reset_client_for_tests,
 )
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
+
+
+@pytest.fixture(autouse=True)
+def _reset_github_app_singleton():
+    """Guarantee module-level singleton isolation between tests.
+
+    Some tests build their own GitHubAppClient via `make_client`; others
+    exercise `get_github_app_client()`. Without this autouse fixture a
+    prior test's cached singleton could leak into a later one, producing
+    order-dependent flakiness that only reproduces in specific test-module
+    permutations.
+    """
+    reset_client_for_tests()
+    yield
+    reset_client_for_tests()
 
 
 @pytest.fixture(scope="module")
@@ -113,8 +129,8 @@ class TestAppJwt:
             options={"verify_exp": False},  # deterministic timestamp
         )
         assert decoded["iss"] == "42"
-        assert decoded["iat"] == 1_700_000_000 - _APP_JWT_IAT_LEEWAY_SECONDS
-        assert decoded["exp"] == 1_700_000_000 + _APP_JWT_LIFETIME_SECONDS
+        assert decoded["iat"] == 1_700_000_000 - APP_JWT_IAT_LEEWAY_SECONDS
+        assert decoded["exp"] == 1_700_000_000 + APP_JWT_LIFETIME_SECONDS
 
     def test_jwt_header_uses_rs256(self, make_client):
         client = make_client()
@@ -426,9 +442,110 @@ class TestSingleton:
         assert c3 is not c1
 
 
+# ── Persistent httpx client ───────────────────────────────────────────────
+
+
+class TestPersistentHttpClient:
+    """Verify that the httpx.AsyncClient is instantiated once per
+    GitHubAppClient instance (not per call) and can be explicitly closed.
+    """
+
+    async def test_http_client_reused_across_calls(
+        self, make_client, mock_httpx_client,
+    ):
+        mock_cls, mock_instance = mock_httpx_client
+        mock_instance.post.return_value = _mock_response(
+            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+        )
+        mock_instance.request.return_value = _mock_response(
+            status=200, json_data={"full_name": "mleihs/metaverse-center"},
+        )
+        client = make_client()
+
+        await client.get_installation_token()
+        # Cache hit — still the same http client underneath.
+        await client.get_installation_token()
+        # REST path — still the same http client.
+        await client.rest("GET", "/repos/mleihs/metaverse-center")
+
+        assert mock_cls.call_count == 1, (
+            f"httpx.AsyncClient() should be called exactly once, got {mock_cls.call_count}"
+        )
+
+    async def test_aclose_releases_client(
+        self, make_client, mock_httpx_client,
+    ):
+        _, mock_instance = mock_httpx_client
+        mock_instance.post.return_value = _mock_response(
+            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+        )
+        mock_instance.aclose = AsyncMock()
+        client = make_client()
+
+        # Force the persistent client into existence.
+        await client.get_installation_token()
+        assert client._http is mock_instance
+
+        await client.aclose()
+        assert client._http is None
+        mock_instance.aclose.assert_awaited_once()
+
+    async def test_aclose_is_idempotent(
+        self, make_client, mock_httpx_client,
+    ):
+        _, mock_instance = mock_httpx_client
+        mock_instance.aclose = AsyncMock()
+        client = make_client()
+
+        # Never touched → nothing to close.
+        await client.aclose()
+        mock_instance.aclose.assert_not_awaited()
+
+        # Second close is also a no-op.
+        await client.aclose()
+        mock_instance.aclose.assert_not_awaited()
+
+
+# ── Startup env-config check (F7c) ────────────────────────────────────────
+
+
+class TestCheckEnvConfig:
+    def test_returns_empty_when_all_set(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_APP_ID", "1")
+        monkeypatch.setenv("GITHUB_APP_INSTALLATION_ID", "2")
+        monkeypatch.setenv("GITHUB_APP_PRIVATE_KEY_B64", "xxxx")
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY", raising=False)
+        assert check_env_config() == []
+
+    def test_accepts_pem_instead_of_b64(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_APP_ID", "1")
+        monkeypatch.setenv("GITHUB_APP_INSTALLATION_ID", "2")
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY_B64", raising=False)
+        monkeypatch.setenv("GITHUB_APP_PRIVATE_KEY", "---BEGIN---")
+        assert check_env_config() == []
+
+    def test_reports_all_missing(self, monkeypatch):
+        monkeypatch.delenv("GITHUB_APP_ID", raising=False)
+        monkeypatch.delenv("GITHUB_APP_INSTALLATION_ID", raising=False)
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY_B64", raising=False)
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY", raising=False)
+        missing = check_env_config()
+        assert "GITHUB_APP_ID" in missing
+        assert "GITHUB_APP_INSTALLATION_ID" in missing
+        assert any("PRIVATE_KEY" in m for m in missing)
+
+    def test_reports_only_key_when_ids_present(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_APP_ID", "1")
+        monkeypatch.setenv("GITHUB_APP_INSTALLATION_ID", "2")
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY_B64", raising=False)
+        monkeypatch.delenv("GITHUB_APP_PRIVATE_KEY", raising=False)
+        missing = check_env_config()
+        assert missing == ["GITHUB_APP_PRIVATE_KEY_B64 (or GITHUB_APP_PRIVATE_KEY)"]
+
+
 # ── Module constants sanity ───────────────────────────────────────────────
 
 
 def test_token_ttl_shorter_than_github_1h():
     """Safety margin: refresh before GitHub's 1h hard expiry."""
-    assert _INSTALLATION_TOKEN_TTL_SECONDS < 3600
+    assert INSTALLATION_TOKEN_TTL_SECONDS < 3600

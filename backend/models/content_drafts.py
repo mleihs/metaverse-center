@@ -17,7 +17,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ContentDraftStatus(StrEnum):
@@ -48,10 +48,34 @@ class ContentDraftCreate(BaseModel):
     `base_content` is the snapshot of the resource's current state (captured
     by the admin UI when the editor opens). The backend records it verbatim
     as the merge base for later 3-way merges.
+
+    `pack_slug` and `resource_path` are validated with tight regexes + a
+    path-traversal guard: these values are later composed into YAML file
+    paths (`content/dungeon/{pack_slug}/{resource_path}.yaml`) by the
+    publish flow, so defense-in-depth is warranted even though admins
+    are trusted.
     """
 
-    pack_slug: str = Field(..., min_length=1, max_length=128)
-    resource_path: str = Field(..., min_length=1, max_length=512)
+    pack_slug: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+        pattern=r"^[a-z][a-z0-9_]{0,127}$",
+        description=(
+            "Lowercase pack identifier. Must start with a letter; allows "
+            "letters, digits, and underscores."
+        ),
+    )
+    resource_path: str = Field(
+        ...,
+        min_length=1,
+        max_length=512,
+        pattern=r"^[a-zA-Z0-9_./\[\]]{1,512}$",
+        description=(
+            "Addressable path within the pack (e.g. `banter[ab_01]`). "
+            "Must not contain `..` or start with `/`."
+        ),
+    )
     base_content: dict[str, Any]
     working_content: dict[str, Any]
     base_sha: str | None = Field(
@@ -59,6 +83,15 @@ class ContentDraftCreate(BaseModel):
         description="Main-branch SHA at draft-open time. Populated once GitHub "
         "integration goes live; nullable for local-dev paths.",
     )
+
+    @field_validator("resource_path")
+    @classmethod
+    def _reject_path_traversal(cls, v: str) -> str:
+        if ".." in v:
+            raise ValueError("resource_path must not contain '..'")
+        if v.startswith("/"):
+            raise ValueError("resource_path must not start with '/'")
+        return v
 
 
 class ContentDraftUpdate(BaseModel):

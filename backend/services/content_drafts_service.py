@@ -215,8 +215,13 @@ class ContentDraftsService:
         pr_number: int,
         pr_url: str,
     ) -> ContentDraft:
-        """Transition draft → published after the GraphQL commit lands."""
-        return await cls._apply_status_update(
+        """Transition draft → published after the GraphQL commit lands.
+
+        Idempotent on `published_at IS NULL`: a repeat call on an already-
+        published draft preserves the original timestamp + GitHub metadata
+        and returns the existing row.
+        """
+        return await cls._apply_idempotent_status_update(
             supabase,
             draft_id=draft_id,
             updates={
@@ -227,6 +232,7 @@ class ContentDraftsService:
                 "pr_url": pr_url,
                 "published_at": datetime.now(UTC).isoformat(),
             },
+            gate_column="published_at",
         )
 
     @classmethod
@@ -238,15 +244,18 @@ class ContentDraftsService:
     ) -> ContentDraft:
         """Transition draft → merged on PR-close webhook.
 
-        Idempotent: repeated webhook deliveries simply re-stamp merged_at.
+        Idempotent on `merged_at IS NULL`: GitHub retries webhook deliveries
+        on timeout (up to 3×); the second delivery is a no-op and preserves
+        the first merged_at timestamp.
         """
-        return await cls._apply_status_update(
+        return await cls._apply_idempotent_status_update(
             supabase,
             draft_id=draft_id,
             updates={
                 "status": ContentDraftStatus.MERGED.value,
                 "merged_at": datetime.now(UTC).isoformat(),
             },
+            gate_column="merged_at",
         )
 
     @classmethod
@@ -313,6 +322,39 @@ class ContentDraftsService:
         if not response.data:
             raise not_found(_TABLE, draft_id)
         return ContentDraft.model_validate(response.data[0])
+
+    @classmethod
+    async def _apply_idempotent_status_update(
+        cls,
+        supabase: Client,
+        *,
+        draft_id: UUID,
+        updates: dict[str, Any],
+        gate_column: str,
+    ) -> ContentDraft:
+        """Apply a status update guarded on `<gate_column> IS NULL`.
+
+        If the UPDATE affects 0 rows, the draft is either already past this
+        transition (idempotent re-delivery) or doesn't exist. Falls back to
+        `get()` to disambiguate: returns the existing (already-transitioned)
+        row if present, raises 404 otherwise.
+
+        Used by `mark_published` and `mark_merged` — both of which can be
+        invoked multiple times for the same draft (publish retries, webhook
+        re-deliveries) and must not clobber the original timestamp.
+        """
+        response = await (
+            supabase.table(_TABLE)
+            .update(updates)
+            .eq("id", str(draft_id))
+            .is_(gate_column, "null")
+            .execute()
+        )
+        if response.data:
+            return ContentDraft.model_validate(response.data[0])
+        # Gate predicate failed (already past) OR row missing.
+        # `get()` distinguishes them: returns the existing row or raises 404.
+        return await cls.get(supabase, draft_id)
 
     @classmethod
     async def _raise_conflict_or_not_found(
