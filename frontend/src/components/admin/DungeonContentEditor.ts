@@ -353,8 +353,29 @@ export class DungeonContentEditor extends LitElement {
         border-color: var(--color-text-muted);
       }
 
-      .btn-delete {
+      .btn-source {
         margin-left: auto;
+        padding: var(--space-2) var(--space-4);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold, 700);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: transparent;
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+      }
+
+      .btn-source:hover {
+        color: var(--color-text-primary);
+        border-color: var(--color-text-muted);
+      }
+
+      .btn-delete {
         padding: var(--space-2) var(--space-4);
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
@@ -401,6 +422,10 @@ export class DungeonContentEditor extends LitElement {
   @property() contentType = '';
   @property({ type: Boolean }) open = false;
   @property({ type: Boolean }) saving = false;
+  // GitHub URL to the YAML pack file that owns this item (A1.6). `null`
+  // when the path cannot be computed (e.g. encounter_choices — nested in
+  // the parent encounter, no direct file).
+  @property({ type: String, attribute: false }) githubUrl: string | null = null;
 
   @state() private _draft: Record<string, unknown> = {};
   @state() private _dirty = false;
@@ -549,6 +574,19 @@ export class DungeonContentEditor extends LitElement {
             ?disabled=${!this._dirty}
             @click=${this._revert}
           >${msg('Revert')}</button>
+          ${
+            this.githubUrl
+              ? html`
+            <a
+              class="btn-source"
+              href=${this.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title=${msg('Open the YAML source for this content on GitHub')}
+            >${msg('Source')} &rarr;</a>
+          `
+              : nothing
+          }
           <button
             class="btn-delete"
             @click=${this._delete}
