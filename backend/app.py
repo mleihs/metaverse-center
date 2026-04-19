@@ -98,6 +98,7 @@ from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.dungeon_content_service import load_all_content as load_dungeon_content
 from backend.services.dungeon_engine_service import start_instance_cleanup
 from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
+from backend.services.github_app import check_env_config, close_github_app_client
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
@@ -114,6 +115,16 @@ async def lifespan(app: FastAPI):
     await ensure_research_domains(admin_sb)
     await load_dungeon_content(admin_sb)
 
+    # GitHub App config sanity check — non-fatal. If the admin-publish
+    # path is mis-configured, the public/member traffic still serves.
+    missing_github_app_env = check_env_config()
+    if missing_github_app_env:
+        logging.getLogger(__name__).error(
+            "GitHub App env vars incomplete: %s. "
+            "Content-draft publishing will fail at runtime until resolved.",
+            ", ".join(missing_github_app_env),
+        )
+
     resonance_task = await ResonanceScheduler.start()
     scanner_task = await ScannerService.start()
     heartbeat_task = await HeartbeatService.start()
@@ -129,6 +140,8 @@ async def lifespan(app: FastAPI):
     heartbeat_task.cancel()
     scanner_task.cancel()
     resonance_task.cancel()
+    # Release the persistent GitHub App httpx client pool.
+    await close_github_app_client()
 
 
 app = FastAPI(

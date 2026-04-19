@@ -86,8 +86,14 @@ def _section(title: str) -> None:
     print(f"\n\033[1m{title}\033[0m")
 
 
-async def _check_read_path(client: GitHubAppClient, owner: str, repo: str) -> None:
-    """Token exchange + REST + GraphQL round-trip, read-only."""
+async def _check_read_path(
+    client: GitHubAppClient, owner: str, repo: str,
+) -> str:
+    """Token exchange + REST + GraphQL round-trip, read-only.
+
+    Returns the repository's default branch name so the write-path test
+    can target it without hardcoding 'main' (F12 from self-audit).
+    """
     _section("1. Installation-token exchange")
     token = await client.get_installation_token()
     _ok(f"Token acquired: {token[:12]}… ({len(token)} chars)")
@@ -95,7 +101,8 @@ async def _check_read_path(client: GitHubAppClient, owner: str, repo: str) -> No
     _section(f"2. REST: /repos/{owner}/{repo}")
     repo_data = await client.rest("GET", f"/repos/{owner}/{repo}")
     _ok(f"Repo full_name = {repo_data.get('full_name')}")
-    _info(f"default_branch = {repo_data.get('default_branch')}")
+    default_branch = repo_data.get("default_branch") or "main"
+    _info(f"default_branch = {default_branch}")
     _info(f"private = {repo_data.get('private')}")
     if repo_data.get("full_name") != f"{owner}/{repo}":
         raise AssertionError(
@@ -124,14 +131,24 @@ async def _check_read_path(client: GitHubAppClient, owner: str, repo: str) -> No
         f"rateLimit: {rate['remaining']}/{rate['limit']} "
         f"remaining (resets at {rate['resetAt']})",
     )
+    return default_branch
 
 
-async def _check_write_path(client: GitHubAppClient, owner: str, repo: str) -> None:
+async def _check_write_path(
+    client: GitHubAppClient,
+    owner: str,
+    repo: str,
+    default_branch: str,
+) -> None:
     """Create a throwaway branch + commit via createCommitOnBranch, verify
     the Verified badge, then delete the branch.
 
     Uses a smoke-test file at `.github/smoke-tests/<timestamp>.txt`
     that wouldn't conflict with any real content.
+
+    Cleanup runs in a `finally` block so the throwaway branch is deleted
+    even when the signature assertion fails — otherwise repeat runs
+    accumulated `smoke-test/github-app-<ts>` branches indefinitely.
     """
     import time
 
@@ -142,10 +159,14 @@ async def _check_write_path(client: GitHubAppClient, owner: str, repo: str) -> N
 
     _section(f"4. Write-path smoke: create branch {branch_name}")
 
-    # Step 1: fetch main's latest commit SHA (needed as base for new branch).
-    main_ref = await client.rest("GET", f"/repos/{owner}/{repo}/git/ref/heads/main")
-    base_sha = main_ref["object"]["sha"]
-    _info(f"main @ {base_sha[:10]}")
+    # Step 1: fetch the default branch's latest commit SHA (base for the new branch).
+    # `default_branch` is discovered in _check_read_path so we don't hardcode 'main' —
+    # relevant if someone renames `main` to `trunk` or similar.
+    default_ref = await client.rest(
+        "GET", f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
+    )
+    base_sha = default_ref["object"]["sha"]
+    _info(f"{default_branch} @ {base_sha[:10]}")
 
     # Step 2: create the branch.
     await client.rest(
@@ -158,66 +179,79 @@ async def _check_write_path(client: GitHubAppClient, owner: str, repo: str) -> N
     )
     _ok(f"Branch {branch_name} created")
 
-    # Step 3: createCommitOnBranch — THE call that produces a Verified commit.
-    # Uses `repositoryNameWithOwner` rather than node ID so we skip a query.
-    b64_content = base64.b64encode(file_content.encode("utf-8")).decode("ascii")
-    mutation = """
-    mutation($input: CreateCommitOnBranchInput!) {
-        createCommitOnBranch(input: $input) {
-            commit {
-                url
-                oid
-                signature {
-                    isValid
-                    state
-                    wasSignedByGitHub
+    # Steps 3-5 may raise (network glitch, signature assertion failure).
+    # Cleanup in `finally` keeps the remote repo tidy across re-runs.
+    commit_oid: str | None = None
+    try:
+        # Step 3: createCommitOnBranch — THE call that produces a Verified commit.
+        # Uses `repositoryNameWithOwner` rather than node ID so we skip a query.
+        b64_content = base64.b64encode(file_content.encode("utf-8")).decode("ascii")
+        mutation = """
+        mutation($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) {
+                commit {
+                    url
+                    oid
+                    signature {
+                        isValid
+                        state
+                        wasSignedByGitHub
+                    }
                 }
             }
         }
-    }
-    """
-    variables = {
-        "input": {
-            "branch": {
-                "repositoryNameWithOwner": f"{owner}/{repo}",
-                "branchName": branch_name,
+        """
+        variables = {
+            "input": {
+                "branch": {
+                    "repositoryNameWithOwner": f"{owner}/{repo}",
+                    "branchName": branch_name,
+                },
+                "message": {
+                    "headline": f"smoke: github-app verification ({ts})",
+                },
+                "fileChanges": {
+                    "additions": [
+                        {"path": file_path, "contents": b64_content},
+                    ],
+                },
+                "expectedHeadOid": base_sha,
             },
-            "message": {
-                "headline": f"smoke: github-app verification ({ts})",
-            },
-            "fileChanges": {
-                "additions": [
-                    {"path": file_path, "contents": b64_content},
-                ],
-            },
-            "expectedHeadOid": base_sha,
-        },
-    }
-    commit_result = await client.graphql(mutation, variables=variables)
-    commit = commit_result["data"]["createCommitOnBranch"]["commit"]
-    _ok(f"Commit created: {commit['oid'][:10]}")
-    _info(f"URL: {commit['url']}")
+        }
+        commit_result = await client.graphql(mutation, variables=variables)
+        commit = commit_result["data"]["createCommitOnBranch"]["commit"]
+        commit_oid = commit["oid"]
+        _ok(f"Commit created: {commit_oid[:10]}")
+        _info(f"URL: {commit['url']}")
 
-    sig = commit.get("signature") or {}
-    _section("5. Verified badge check")
-    if sig.get("isValid") and sig.get("wasSignedByGitHub"):
-        _ok(f"Signature isValid = True, state = {sig.get('state')}")
-    else:
-        _fail(f"Signature did NOT get the Verified badge: {sig}")
-        raise AssertionError("Verified badge missing on App-authored commit.")
-
-    # Step 6: clean up the branch.
-    _section("6. Cleanup: delete branch")
-    await client.rest(
-        "DELETE",
-        f"/repos/{owner}/{repo}/git/refs/heads/{branch_name}",
-    )
-    _ok(f"Branch {branch_name} deleted")
-    _info(
-        f"Note: commit {commit['oid'][:10]} is now orphaned; GitHub will "
-        "garbage-collect it eventually. The smoke-test file never landed "
-        "on main.",
-    )
+        sig = commit.get("signature") or {}
+        _section("5. Verified badge check")
+        if sig.get("isValid") and sig.get("wasSignedByGitHub"):
+            _ok(f"Signature isValid = True, state = {sig.get('state')}")
+        else:
+            _fail(f"Signature did NOT get the Verified badge: {sig}")
+            raise AssertionError("Verified badge missing on App-authored commit.")
+    finally:
+        # Step 6: clean up the branch. Swallow cleanup errors — we want
+        # the primary failure to surface, not a cascading delete failure.
+        _section("6. Cleanup: delete branch")
+        try:
+            await client.rest(
+                "DELETE",
+                f"/repos/{owner}/{repo}/git/refs/heads/{branch_name}",
+            )
+            _ok(f"Branch {branch_name} deleted")
+        except GitHubAPIError as exc:
+            _fail(
+                f"Branch cleanup failed ({exc}); manual delete may be needed: "
+                f"{branch_name}",
+            )
+        if commit_oid:
+            _info(
+                f"Note: commit {commit_oid[:10]} is now orphaned; GitHub will "
+                f"garbage-collect it eventually. The smoke-test file never landed "
+                f"on {default_branch}.",
+            )
 
 
 async def _main(with_write: bool) -> int:
@@ -237,9 +271,9 @@ async def _main(with_write: bool) -> int:
         return 2
 
     try:
-        await _check_read_path(client, owner, repo)
+        default_branch = await _check_read_path(client, owner, repo)
         if with_write:
-            await _check_write_path(client, owner, repo)
+            await _check_write_path(client, owner, repo, default_branch)
     except GitHubAPIError as exc:
         print(f"\n\033[31mGitHub API failure:\033[0m {exc}")
         return 1
