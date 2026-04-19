@@ -862,6 +862,10 @@ export class VelgContentDraftEditor extends LitElement {
   private _renderEditor(): TemplateResult {
     const draft = this._draft;
     if (!draft) return html``;
+    // No close button in the head — the side-panel provides the canonical
+    // close affordance (X top-right), and the footer carries an explicit
+    // Cancel. Two redundant close buttons only cluttered the head row
+    // (see playtest bug #5).
     return html`
       <div class="head">
         <div>
@@ -874,13 +878,6 @@ export class VelgContentDraftEditor extends LitElement {
           <velg-badge variant=${this._badgeVariant(draft.status)}>
             ${draft.status}
           </velg-badge>
-          <button
-            class="btn"
-            aria-label=${msg('Close editor')}
-            @click=${this._handleClose}
-          >
-            ${icons.close(10)} ${msg('Close')}
-          </button>
         </div>
       </div>
 
@@ -1003,19 +1000,15 @@ export class VelgContentDraftEditor extends LitElement {
     const createDisabled =
       this._creating || !this._newPackSlug || !this._newResourcePath;
 
+    // Drop the H2 title — the side-panel header already reads "New
+    // Content Draft", duplicating it here was playtest bug #2. Keep the
+    // sub text as a lead-in instruction. Close button also removed: the
+    // side-panel X + footer Cancel both close already (bug #5).
     return html`
       <div class="head">
-        <div>
-          <h2 class="head__title">${msg('New Content Draft')}</h2>
-          <div class="head__sub">${msg('Pick a pack and resource to start editing.')}</div>
+        <div class="head__sub">
+          ${msg('Pick a pack and resource to start editing.')}
         </div>
-        <button
-          class="btn"
-          aria-label=${msg('Close editor')}
-          @click=${this._handleClose}
-        >
-          ${icons.close(10)} ${msg('Close')}
-        </button>
       </div>
 
       ${this._manifestLoading
