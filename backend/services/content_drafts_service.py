@@ -11,7 +11,7 @@ Optimistic-concurrency model:
       session wrote to the same draft in the meantime, the update
       affects 0 rows and we raise 409 Conflict.
     - At publish time a separate GitHub-side OID check guards against
-      main-branch drift (handled in a later phase).
+      main-branch drift (handled by content_packs.publish).
 
 See `docs/concepts/a1-7-ui-research-findings.md` §2 for the full design.
 """
@@ -171,6 +171,49 @@ class ContentDraftsService:
             ContentDraftSummary.model_validate(r) for r in extract_list(response)
         ]
 
+    @classmethod
+    async def list_by_ids(
+        cls,
+        supabase: Client,
+        *,
+        draft_ids: list[UUID],
+    ) -> list[ContentDraft]:
+        """Fetch N drafts by ID. Returns whatever exists; no error on missing.
+
+        Caller decides how to handle missing IDs (publish.py raises 404;
+        future bulk-export endpoint may tolerate gaps). Returns full rows
+        including JSONB blobs (publish.py needs working_content).
+        """
+        if not draft_ids:
+            return []
+        ids = [str(d) for d in draft_ids]
+        response = await (
+            supabase.table(_TABLE).select("*").in_("id", ids).execute()
+        )
+        return [ContentDraft.model_validate(r) for r in extract_list(response)]
+
+    @classmethod
+    async def list_by_pr_number(
+        cls,
+        supabase: Client,
+        *,
+        pr_number: int,
+    ) -> list[ContentDraft]:
+        """Find all drafts attached to a given PR.
+
+        Used by the GitHub webhook handler to map `pull_request.{merged|closed}`
+        events back to the batch of drafts they represent. Index
+        `idx_content_drafts_pr_number` (partial: WHERE pr_number IS NOT NULL)
+        serves this lookup.
+        """
+        response = await (
+            supabase.table(_TABLE)
+            .select("*")
+            .eq("pr_number", pr_number)
+            .execute()
+        )
+        return [ContentDraft.model_validate(r) for r in extract_list(response)]
+
     # ── Update — working content (with optimistic lock) ───────────────
 
     @classmethod
@@ -205,9 +248,10 @@ class ContentDraftsService:
             await cls._raise_conflict_or_not_found(supabase, draft_id)
         return ContentDraft.model_validate(response.data[0])
 
-    # ── Update — status transitions (no version guard) ────────────────
-    # These are triggered by single server-side paths (publish workflow,
-    # webhook handler), so concurrent admin writes cannot race them.
+    # ── Update — single-draft status transitions ──────────────────────
+    # No version guard: triggered by single server-side paths (publish
+    # workflow, webhook handler, admin abandon), which cannot race each
+    # other on the same draft.
 
     @classmethod
     async def mark_published(
@@ -277,7 +321,24 @@ class ContentDraftsService:
             updates={"status": ContentDraftStatus.CONFLICT.value},
         )
 
-    # ── Bulk transitions (used by batch-publish + webhook handler) ────
+    @classmethod
+    async def abandon(
+        cls,
+        supabase: Client,
+        *,
+        draft_id: UUID,
+    ) -> ContentDraft:
+        """Soft-abandon. Draft remains in DB for audit."""
+        return await cls._apply_status_update(
+            supabase,
+            draft_id=draft_id,
+            updates={"status": ContentDraftStatus.ABANDONED.value},
+        )
+
+    # ── Update — bulk status transitions ──────────────────────────────
+    # Used by batch publish (mark_published_bulk on success, mark_conflict_bulk
+    # on drift) and the webhook handler (mark_merged_bulk on PR merge,
+    # revert_to_draft_bulk on PR-closed-without-merge per decision A).
 
     @classmethod
     async def mark_published_bulk(
@@ -292,41 +353,27 @@ class ContentDraftsService:
     ) -> list[ContentDraft]:
         """Atomically mark N drafts as published — all share one PR.
 
-        Single SQL UPDATE = atomic. Idempotent on `published_at IS NULL`:
-        a re-call (e.g. publish retry after partial network failure) leaves
-        already-published rows untouched and returns the full set as it
-        currently stands in the DB.
+        Idempotent on `published_at IS NULL`: a re-call (e.g. publish retry
+        after partial network failure) leaves already-published rows
+        untouched and returns the full set as it currently stands in the DB.
 
         All drafts in `draft_ids` must currently be in 'draft' status. The
         caller (publish flow) gates on that before calling — this method
         does not re-validate.
         """
-        if not draft_ids:
-            return []
-        ids = [str(d) for d in draft_ids]
-        now = datetime.now(UTC).isoformat()
-        await (
-            supabase.table(_TABLE)
-            .update(
-                {
-                    "status": ContentDraftStatus.PUBLISHED.value,
-                    "expected_head_oid": expected_head_oid,
-                    "commit_sha": commit_sha,
-                    "pr_number": pr_number,
-                    "pr_url": pr_url,
-                    "published_at": now,
-                }
-            )
-            .in_("id", ids)
-            .is_("published_at", "null")
-            .execute()
+        return await cls._bulk_status_update(
+            supabase,
+            draft_ids=draft_ids,
+            updates={
+                "status": ContentDraftStatus.PUBLISHED.value,
+                "expected_head_oid": expected_head_oid,
+                "commit_sha": commit_sha,
+                "pr_number": pr_number,
+                "pr_url": pr_url,
+                "published_at": datetime.now(UTC).isoformat(),
+            },
+            null_gate_column="published_at",
         )
-        # Re-fetch to return a consistent view (idempotent re-calls leave
-        # already-published rows alone; the SELECT picks them up unchanged).
-        full = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
-        return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
     async def mark_merged_bulk(
@@ -337,35 +384,19 @@ class ContentDraftsService:
     ) -> list[ContentDraft]:
         """Atomically mark N drafts as merged on PR-merge webhook delivery.
 
-        Single SQL UPDATE = atomic. Idempotent on `merged_at IS NULL`: if
-        GitHub re-delivers the same `pull_request.closed&merged=true` event,
-        the second call leaves already-merged rows untouched (preserves
-        original merged_at for audit timing).
-
-        Caller (webhook handler) discovers the draft set via
-        `list_by_pr_number()` and passes the IDs verbatim — this method
-        does not re-validate the PR association.
+        Idempotent on `merged_at IS NULL`: GitHub retries webhook deliveries
+        on timeout; the second delivery leaves already-merged rows untouched
+        (preserves original merged_at for audit timing).
         """
-        if not draft_ids:
-            return []
-        ids = [str(d) for d in draft_ids]
-        now = datetime.now(UTC).isoformat()
-        await (
-            supabase.table(_TABLE)
-            .update(
-                {
-                    "status": ContentDraftStatus.MERGED.value,
-                    "merged_at": now,
-                }
-            )
-            .in_("id", ids)
-            .is_("merged_at", "null")
-            .execute()
+        return await cls._bulk_status_update(
+            supabase,
+            draft_ids=draft_ids,
+            updates={
+                "status": ContentDraftStatus.MERGED.value,
+                "merged_at": datetime.now(UTC).isoformat(),
+            },
+            null_gate_column="merged_at",
         )
-        full = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
-        return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
     async def mark_conflict_bulk(
@@ -374,20 +405,16 @@ class ContentDraftsService:
         *,
         draft_ids: list[UUID],
     ) -> list[ContentDraft]:
-        """Flag N drafts as conflict in one UPDATE (e.g. on batch drift)."""
-        if not draft_ids:
-            return []
-        ids = [str(d) for d in draft_ids]
-        await (
-            supabase.table(_TABLE)
-            .update({"status": ContentDraftStatus.CONFLICT.value})
-            .in_("id", ids)
-            .execute()
+        """Flag N drafts as conflict in one UPDATE (e.g. on batch drift).
+
+        No idempotency gate: marking conflict is repeatable (the row's
+        status is the only thing that changes; no timestamp to clobber).
+        """
+        return await cls._bulk_status_update(
+            supabase,
+            draft_ids=draft_ids,
+            updates={"status": ContentDraftStatus.CONFLICT.value},
         )
-        full = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
-        return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
     async def revert_to_draft_bulk(
@@ -401,70 +428,24 @@ class ContentDraftsService:
         Decision A: when a PR is closed without merging, the admin's work is
         not wasted — the drafts return to 'draft' so the admin can re-publish
         (possibly after edits). This method is idempotent: rows already in
-        'draft' (or any non-'published' state) are left untouched.
+        a non-'published' state are left untouched (gated on status='published').
 
         Resets: status, published_at, expected_head_oid, commit_sha, pr_number,
         pr_url. Keeps: base_content, working_content, version (admin can
         continue editing).
         """
-        if not draft_ids:
-            return []
-        ids = [str(d) for d in draft_ids]
-        await (
-            supabase.table(_TABLE)
-            .update(
-                {
-                    "status": ContentDraftStatus.DRAFT.value,
-                    "published_at": None,
-                    "expected_head_oid": None,
-                    "commit_sha": None,
-                    "pr_number": None,
-                    "pr_url": None,
-                }
-            )
-            .in_("id", ids)
-            .eq("status", ContentDraftStatus.PUBLISHED.value)
-            .execute()
-        )
-        full = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
-        return [ContentDraft.model_validate(r) for r in extract_list(full)]
-
-    @classmethod
-    async def list_by_pr_number(
-        cls,
-        supabase: Client,
-        *,
-        pr_number: int,
-    ) -> list[ContentDraft]:
-        """Find all drafts attached to a given PR.
-
-        Used by the GitHub webhook handler to map `pull_request.{merged|closed}`
-        events back to the batch of drafts they represent. Index
-        `idx_content_drafts_pr_number` (partial: WHERE pr_number IS NOT NULL)
-        serves this lookup.
-        """
-        response = await (
-            supabase.table(_TABLE)
-            .select("*")
-            .eq("pr_number", pr_number)
-            .execute()
-        )
-        return [ContentDraft.model_validate(r) for r in extract_list(response)]
-
-    @classmethod
-    async def abandon(
-        cls,
-        supabase: Client,
-        *,
-        draft_id: UUID,
-    ) -> ContentDraft:
-        """Soft-abandon. Draft remains in DB for audit."""
-        return await cls._apply_status_update(
+        return await cls._bulk_status_update(
             supabase,
-            draft_id=draft_id,
-            updates={"status": ContentDraftStatus.ABANDONED.value},
+            draft_ids=draft_ids,
+            updates={
+                "status": ContentDraftStatus.DRAFT.value,
+                "published_at": None,
+                "expected_head_oid": None,
+                "commit_sha": None,
+                "pr_number": None,
+                "pr_url": None,
+            },
+            equals_gate=("status", ContentDraftStatus.PUBLISHED.value),
         )
 
     # ── Delete ────────────────────────────────────────────────────────
@@ -536,6 +517,52 @@ class ContentDraftsService:
         # Gate predicate failed (already past) OR row missing.
         # `get()` distinguishes them: returns the existing row or raises 404.
         return await cls.get(supabase, draft_id)
+
+    @classmethod
+    async def _bulk_status_update(
+        cls,
+        supabase: Client,
+        *,
+        draft_ids: list[UUID],
+        updates: dict[str, Any],
+        null_gate_column: str | None = None,
+        equals_gate: tuple[str, str] | None = None,
+    ) -> list[ContentDraft]:
+        """Apply an UPDATE to N drafts; always re-fetch for consistent view.
+
+        Empty `draft_ids` short-circuits to `[]` with no DB call.
+
+        Filters (mutually exclusive — at most one):
+          - `null_gate_column='X'` → adds `is_('X', 'null')` for idempotency
+            on transitions where the target state is signaled by a non-null
+            timestamp (e.g. `published_at`, `merged_at`).
+          - `equals_gate=('col', 'value')` → adds `eq('col', 'value')` for
+            transitions gated on a current state (e.g. status='published'
+            for revert_to_draft_bulk).
+
+        The follow-up SELECT returns ALL drafts in `draft_ids` (gate-filtered
+        rows included), so callers see a complete consistent view even when
+        some rows fell through the gate (idempotent re-call).
+        """
+        if not draft_ids:
+            return []
+        if null_gate_column is not None and equals_gate is not None:
+            msg = "_bulk_status_update accepts at most one gate predicate"
+            raise ValueError(msg)
+
+        ids = [str(d) for d in draft_ids]
+        update_query = supabase.table(_TABLE).update(updates).in_("id", ids)
+        if null_gate_column is not None:
+            update_query = update_query.is_(null_gate_column, "null")
+        elif equals_gate is not None:
+            col, val = equals_gate
+            update_query = update_query.eq(col, val)
+        await update_query.execute()
+
+        full = await (
+            supabase.table(_TABLE).select("*").in_("id", ids).execute()
+        )
+        return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
     async def _raise_conflict_or_not_found(

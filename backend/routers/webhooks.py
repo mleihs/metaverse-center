@@ -54,6 +54,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
 
 _SIGNATURE_PREFIX = "sha256="
+_EVENTS_TABLE = "github_webhook_events"
 _PROCESSING_RESULT_SUCCESS = "success"
 _PROCESSING_RESULT_IGNORED = "ignored"
 _PROCESSING_RESULT_ERROR = "error"
@@ -99,7 +100,7 @@ async def receive_github_webhook(
     # we've already seen this delivery (GitHub retried) — short-circuit 200.
     try:
         await (
-            admin_supabase.table("github_webhook_events")
+            admin_supabase.table(_EVENTS_TABLE)
             .insert(
                 {
                     "delivery_id": x_github_delivery,
@@ -143,7 +144,7 @@ async def receive_github_webhook(
         error_message = str(exc)[:500]
 
     await (
-        admin_supabase.table("github_webhook_events")
+        admin_supabase.table(_EVENTS_TABLE)
         .update(
             {
                 "processed_at": datetime.now(UTC).isoformat(),
