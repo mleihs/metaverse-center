@@ -42,6 +42,14 @@ export class VelgAdminContentDraftsTab extends LitElement {
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
     }
+
+    /* Widen the side panel for this editor. VelgSidePanel's default 520px
+       only leaves ~200px for the JSON textarea after the entries sidebar —
+       unusable for editing. Cap at 90vw so small laptops still see the list
+       peeking on the left. */
+    velg-side-panel {
+      --side-panel-width: min(1100px, 90vw);
+    }
   `;
 
   /** Editor visibility / mode. */

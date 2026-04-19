@@ -301,7 +301,9 @@ export class VelgPublishBatchModal extends LitElement {
                 >
                   ${this._submitting
                     ? msg('Publishing...')
-                    : msg(str`Publish ${this.drafts.length} drafts`)}
+                    : this.drafts.length === 1
+                      ? msg('Publish 1 draft')
+                      : msg(str`Publish ${this.drafts.length} drafts`)}
                 </button>
               `}
         </div>
@@ -315,7 +317,9 @@ export class VelgPublishBatchModal extends LitElement {
 
     return html`
       <p class="count">
-        ${msg(str`${count} drafts in this batch. One PR covers all of them.`)}
+        ${count === 1
+          ? msg('1 draft in this batch. One PR will carry it.')
+          : msg(str`${count} drafts in this batch. One PR covers all of them.`)}
       </p>
 
       <div class="banner banner--warn">
