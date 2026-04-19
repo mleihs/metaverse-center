@@ -92,6 +92,7 @@ from backend.routers import (
     style_references,
     taxonomies,
     users,
+    webhooks,
     zone_actions,
 )
 from backend.services.bluesky_scheduler import BlueskyScheduler
@@ -264,6 +265,7 @@ app.include_router(cipher.public_router)
 app.include_router(cipher.admin_router)
 app.include_router(public.router)
 app.include_router(seo.router)
+app.include_router(webhooks.router)
 
 # --- Static Files (Production SPA) ---
 # Serves the built frontend from static/dist/ if available.
