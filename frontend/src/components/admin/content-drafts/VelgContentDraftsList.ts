@@ -642,13 +642,16 @@ export class VelgContentDraftsList extends LitElement {
           </button>
         </div>
 
-        <div class="tab-bar">
+        <div
+          class="tab-bar"
+          role="group"
+          aria-label=${msg('Filter drafts by status and author scope')}
+        >
           ${STATUS_TABS.map(
             (t) => html`
               <button
                 class="tab ${this._statusTab === t.key ? 'tab--active' : ''}"
-                role="tab"
-                aria-selected=${this._statusTab === t.key ? 'true' : 'false'}
+                aria-pressed=${this._statusTab === t.key ? 'true' : 'false'}
                 @click=${() => this._setStatusTab(t.key)}
               >
                 ${t.label()}
@@ -656,16 +659,22 @@ export class VelgContentDraftsList extends LitElement {
             `,
           )}
           <span class="scope-switch">
-            <span class="scope-switch__label">${msg('Author')}</span>
-            <span class="scope-switch__buttons">
+            <span class="scope-switch__label" id="scope-switch-label">${msg('Author')}</span>
+            <span
+              class="scope-switch__buttons"
+              role="group"
+              aria-labelledby="scope-switch-label"
+            >
               <button
                 class="scope-btn ${this._authorScope === 'all' ? 'scope-btn--active' : ''}"
+                aria-pressed=${this._authorScope === 'all' ? 'true' : 'false'}
                 @click=${() => this._setAuthorScope('all')}
               >
                 ${msg('All')}
               </button>
               <button
                 class="scope-btn ${this._authorScope === 'mine' ? 'scope-btn--active' : ''}"
+                aria-pressed=${this._authorScope === 'mine' ? 'true' : 'false'}
                 @click=${() => this._setAuthorScope('mine')}
               >
                 ${msg('Mine')}
