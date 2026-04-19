@@ -110,6 +110,14 @@ class PackLoadResult:
         )
 
 
+# ── Overlay type alias ────────────────────────────────────────────────────
+
+# Maps (pack_slug, resource_path) → raw YAML dict. Entries in an overlay
+# take precedence over on-disk files for the same key; entries whose key
+# has no on-disk counterpart are ingested as if the file existed.
+OverlayMap = dict[tuple[str, str], dict[str, Any]]
+
+
 # ── Public API ────────────────────────────────────────────────────────────
 
 
@@ -121,14 +129,46 @@ def load_packs(root: Path | None = None) -> PackLoadResult:
     archetype completeness) — those live in
     `scripts/validate_content_packs.py`.
     """
+    return load_packs_with_overlay(root, overlay={})
+
+
+def load_packs_with_overlay(
+    root: Path | None = None,
+    *,
+    overlay: OverlayMap,
+) -> PackLoadResult:
+    """Load packs from disk, substituting `overlay` entries before ingestion.
+
+    For each `(pack_slug, resource_path)` key in `overlay`, the mapped
+    dict replaces what would have been read from
+    `content/dungeon/archetypes/{pack_slug}/{resource_path}.yaml`.
+    Keys whose file does NOT exist on disk are still ingested (the overlay
+    can introduce new pack files that haven't been written yet).
+
+    Used by A1.7 publish flow to regenerate the dungeon_content_seed
+    migration in the same PR as the YAML change — without writing the
+    draft's working_content to disk first.
+
+    Note: ingestors mutate the passed-in raw dict in-place (e.g.
+    `_ingest_encounters` injects `archetype` via `setdefault`). Mutation
+    is idempotent (setdefault no-ops on subsequent calls), but callers
+    should not rely on overlay dict identity after this call.
+    """
     root = (root or DEFAULT_PACK_ROOT).resolve()
     result = PackLoadResult()
+    consumed: set[tuple[str, str]] = set()
 
-    _load_archetype_trees(root / "archetypes", result)
+    _load_archetype_trees(
+        root / "archetypes", result, overlay=overlay, consumed=consumed,
+    )
+    _ingest_overlay_orphans(overlay, consumed, result)
     _load_abilities_tree(root / "abilities", result)
     _index_encounters(result)
 
-    logger.info("content packs loaded from %s: %s", root, result.summary())
+    logger.info(
+        "content packs loaded from %s (overlay=%d): %s",
+        root, len(overlay), result.summary(),
+    )
     return result
 
 
@@ -162,7 +202,13 @@ def load_packs_for_tests(root: Path | None = None) -> None:
 # ── Internals: archetype tree ─────────────────────────────────────────────
 
 
-def _load_archetype_trees(archetypes_root: Path, result: PackLoadResult) -> None:
+def _load_archetype_trees(
+    archetypes_root: Path,
+    result: PackLoadResult,
+    *,
+    overlay: OverlayMap,
+    consumed: set[tuple[str, str]],
+) -> None:
     if not archetypes_root.is_dir():
         logger.debug("no archetypes directory at %s — skipping", archetypes_root)
         return
@@ -175,10 +221,20 @@ def _load_archetype_trees(archetypes_root: Path, result: PackLoadResult) -> None
         if archetype is None:
             logger.warning("unknown archetype slug '%s' under %s — skipping", slug, archetypes_root)
             continue
-        _load_one_archetype(child, archetype, result)
+        _load_one_archetype(
+            child, slug, archetype, result, overlay=overlay, consumed=consumed,
+        )
 
 
-def _load_one_archetype(folder: Path, archetype: str, result: PackLoadResult) -> None:
+def _load_one_archetype(
+    folder: Path,
+    slug: str,
+    archetype: str,
+    result: PackLoadResult,
+    *,
+    overlay: OverlayMap,
+    consumed: set[tuple[str, str]],
+) -> None:
     for file in sorted(folder.iterdir()):
         if file.suffix not in {".yaml", ".yml"}:
             continue
@@ -193,7 +249,42 @@ def _load_one_archetype(folder: Path, archetype: str, result: PackLoadResult) ->
             # matching ingestor would silently no-op. Fail loudly instead.
             msg = f"no ingestor registered for pack class {pack_cls.__name__}"
             raise RuntimeError(msg)
-        ingest(_read_yaml(file), archetype, result)
+        overlay_key = (slug, stem)
+        if overlay_key in overlay:
+            raw = overlay[overlay_key]
+            consumed.add(overlay_key)
+        else:
+            raw = _read_yaml(file)
+        ingest(raw, archetype, result)
+
+
+def _ingest_overlay_orphans(
+    overlay: OverlayMap,
+    consumed: set[tuple[str, str]],
+    result: PackLoadResult,
+) -> None:
+    """Ingest overlay entries that had no on-disk file counterpart.
+
+    This handles the "new pack file" case — an overlay can introduce a
+    (slug, resource_path) pair that has not been written to disk yet.
+    Orphan entries are validated through the same ingestor pipeline as
+    on-disk files, so Pydantic schema errors surface identically.
+    """
+    for key in sorted(set(overlay) - consumed):
+        slug, stem = key
+        archetype = ARCHETYPE_SLUG_TO_NAME.get(slug)
+        if archetype is None:
+            msg = f"overlay references unknown archetype slug: {slug!r}"
+            raise ValueError(msg)
+        pack_cls = PACK_KIND_FOR_FILENAME.get(stem)
+        if pack_cls is None:
+            msg = f"overlay references unknown pack kind: {stem!r}"
+            raise ValueError(msg)
+        ingest = _INGEST_DISPATCH.get(pack_cls)
+        if ingest is None:
+            msg = f"no ingestor for overlay pack class {pack_cls.__name__}"
+            raise RuntimeError(msg)
+        ingest(overlay[key], archetype, result)
 
 
 # ── Internals: per-pack ingestion ─────────────────────────────────────────
@@ -346,7 +437,9 @@ __all__ = [
     "ARCHETYPE_NAME_TO_SLUG",
     "ARCHETYPE_SLUG_TO_NAME",
     "DEFAULT_PACK_ROOT",
+    "OverlayMap",
     "PackLoadResult",
     "load_packs",
     "load_packs_for_tests",
+    "load_packs_with_overlay",
 ]
