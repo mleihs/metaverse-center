@@ -65,6 +65,10 @@ jobs:
         run: bash scripts/lint-no-private-generate.sh
         working-directory: .
 
+      - name: Backend lint (no bilingual content in dungeon Python files)
+        run: bash scripts/lint-no-content-in-python.sh
+        working-directory: .
+
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
@@ -144,6 +148,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+
+      - name: Content packs validation
+        run: python scripts/validate_content_packs.py
 
       - name: Run tests with coverage
         run: python -m pytest --cov

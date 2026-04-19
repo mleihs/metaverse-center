@@ -10,18 +10,19 @@ Covers:
 import pytest
 
 from backend.services.combat.ability_schools import (
-    ALL_ABILITIES,
-    ASSASSIN_ABILITIES,
-    GUARDIAN_ABILITIES,
-    INFILTRATOR_ABILITIES,
-    PROPAGANDIST_ABILITIES,
-    SABOTEUR_ABILITIES,
-    SPY_ABILITIES,
     Ability,
     get_ability_by_id,
     get_agent_all_abilities,
     get_available_abilities,
 )
+from backend.services.dungeon_content_service import get_ability_registry
+
+# Pack-backed ability registry (A1.4+). Tests now read via this accessor
+# instead of the deleted per-school Python constants + get_ability_registry().
+
+
+def _school(name: str) -> list[Ability]:
+    return get_ability_registry().get(name, [])
 
 # ── Data integrity ─────────────────────────────────────────────────────────
 
@@ -31,45 +32,45 @@ class TestAbilityDataIntegrity:
 
     def test_seven_schools_registered(self):
         expected = {"spy", "guardian", "assassin", "propagandist", "infiltrator", "saboteur", "universal"}
-        assert set(ALL_ABILITIES.keys()) == expected
+        assert set(get_ability_registry().keys()) == expected
 
     def test_spy_has_three_abilities(self):
-        assert len(SPY_ABILITIES) == 3
+        assert len(_school("spy")) == 3
 
     def test_guardian_has_four_abilities(self):
         """3 base + Reinforce (Tower Phase E)."""
-        assert len(GUARDIAN_ABILITIES) == 4
+        assert len(_school("guardian")) == 4
 
     def test_assassin_has_three_abilities(self):
-        assert len(ASSASSIN_ABILITIES) == 3
+        assert len(_school("assassin")) == 3
 
     def test_propagandist_has_three_abilities(self):
-        assert len(PROPAGANDIST_ABILITIES) == 3
+        assert len(_school("propagandist")) == 3
 
     def test_infiltrator_has_two_abilities(self):
-        assert len(INFILTRATOR_ABILITIES) == 2
+        assert len(_school("infiltrator")) == 2
 
     def test_saboteur_has_three_abilities(self):
-        assert len(SABOTEUR_ABILITIES) == 3
+        assert len(_school("saboteur")) == 3
 
     def test_total_ability_count(self):
-        total = sum(len(v) for v in ALL_ABILITIES.values())
+        total = sum(len(v) for v in get_ability_registry().values())
         assert total == 19  # 3+4+3+3+2+3+1 (Guardian: +Reinforce, Universal: basic_attack)
 
     def test_all_abilities_are_frozen_dataclass(self):
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 assert isinstance(ability, Ability)
 
     def test_all_ids_unique(self):
         ids = []
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 ids.append(ability.id)
         assert len(ids) == len(set(ids)), f"Duplicate IDs found: {[x for x in ids if ids.count(x) > 1]}"
 
     def test_all_abilities_have_bilingual_names(self):
-        for _school, abilities in ALL_ABILITIES.items():
+        for _school, abilities in get_ability_registry().items():
             for ability in abilities:
                 assert ability.name_en, f"{ability.id} missing name_en"
                 assert ability.name_de, f"{ability.id} missing name_de"
@@ -77,30 +78,30 @@ class TestAbilityDataIntegrity:
                 assert ability.description_de, f"{ability.id} missing description_de"
 
     def test_all_abilities_have_correct_school(self):
-        for school, abilities in ALL_ABILITIES.items():
+        for school, abilities in get_ability_registry().items():
             for ability in abilities:
                 assert ability.school == school, f"{ability.id} school mismatch: {ability.school} != {school}"
 
     def test_min_aptitude_within_range(self):
         """Phase 0 abilities should require aptitude 0-9 (universal basic_attack uses 0)."""
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 assert 0 <= ability.min_aptitude <= 9, f"{ability.id} min_aptitude out of range"
 
     def test_cooldowns_non_negative(self):
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 assert ability.cooldown >= 0, f"{ability.id} has negative cooldown"
 
     def test_effect_type_valid(self):
         valid_types = {"damage", "stress_damage", "heal_stress", "buff", "debuff", "utility"}
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 assert ability.effect_type in valid_types, f"{ability.id} has invalid effect_type: {ability.effect_type}"
 
     def test_targets_valid(self):
         valid = {"single_enemy", "all_enemies", "single_ally", "all_allies", "self"}
-        for abilities in ALL_ABILITIES.values():
+        for abilities in get_ability_registry().values():
             for ability in abilities:
                 assert ability.targets in valid, f"{ability.id} has invalid targets: {ability.targets}"
 
@@ -185,17 +186,17 @@ class TestGetAvailableAbilities:
         abilities = get_available_abilities("nonexistent", 9)
         assert len(abilities) == 0
 
-    @pytest.mark.parametrize("school", ALL_ABILITIES.keys())
+    @pytest.mark.parametrize("school", get_ability_registry().keys())
     def test_level_9_gets_all_non_gated_abilities(self, school):
         """At level 9, all abilities without archetype_required are available."""
-        non_gated = [a for a in ALL_ABILITIES[school] if not a.effect_params.get("archetype_required")]
+        non_gated = [a for a in get_ability_registry()[school] if not a.effect_params.get("archetype_required")]
         available = get_available_abilities(school, 9)
         assert len(available) == len(non_gated)
 
-    @pytest.mark.parametrize("school", ALL_ABILITIES.keys())
+    @pytest.mark.parametrize("school", get_ability_registry().keys())
     def test_abilities_sorted_by_min_aptitude(self, school):
         """Abilities within a school should be ordered by ascending min_aptitude."""
-        abilities = ALL_ABILITIES[school]
+        abilities = get_ability_registry()[school]
         for i in range(len(abilities) - 1):
             assert abilities[i].min_aptitude <= abilities[i + 1].min_aptitude, (
                 f"{school}: {abilities[i].id} (min {abilities[i].min_aptitude}) "
@@ -267,9 +268,9 @@ class TestGetAgentAllAbilities:
 
     def test_all_schools_at_max(self):
         """All 6 schools at level 9."""
-        aptitudes = dict.fromkeys(ALL_ABILITIES, 9)
+        aptitudes = dict.fromkeys(get_ability_registry(), 9)
         abilities = get_agent_all_abilities(aptitudes)
-        total = sum(len(v) for v in ALL_ABILITIES.values())
+        total = sum(len(v) for v in get_ability_registry().values())
         assert len(abilities) == total
 
     def test_mixed_levels(self):
