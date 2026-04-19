@@ -25,11 +25,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# Re-use runtime models where possible: EncounterTemplate / EncounterChoice /
-# EnemyTemplate / LootItem already exist in backend.models.resonance_dungeon.
-# Changes to those models flow automatically into the pack schema.
+# Re-use runtime models where possible: `EncounterTemplate`, `EnemyTemplate`
+# and `LootItem` already exist in backend.models.resonance_dungeon. They're
+# imported here so pack-root classes (EncounterPack et al.) can reference
+# them. `EncounterChoice` is nested inside EncounterTemplate.choices — no
+# direct import needed here; importers pull it from backend.models.
 from backend.models.resonance_dungeon import (
-    EncounterChoice,
     EncounterTemplate,
     EnemyTemplate,
     LootItem,
@@ -173,11 +174,11 @@ class AbilityItem(_StrictModel):
 # incompatible schemas explicitly. Increment on breaking changes; migrate
 # old packs in-place or write a one-shot upgrade script.
 
-_CURRENT_SCHEMA_VERSION: int = 1
+CONTENT_PACK_SCHEMA_VERSION: int = 1
 
 
 class _VersionedPack(_StrictModel):
-    schema_version: int = _CURRENT_SCHEMA_VERSION
+    schema_version: int = CONTENT_PACK_SCHEMA_VERSION
 
 
 class EncounterPack(_VersionedPack):
@@ -241,18 +242,25 @@ PACK_KIND_FOR_FILENAME: dict[str, type[_VersionedPack]] = {
     "barometer_texts": BarometerTextPack,
 }
 
-# Abilities live under content/dungeon/abilities/<school>.yaml and are NOT
-# per-archetype. Separate registry so the loader can dispatch correctly.
-ABILITY_PACK_CLASS: type[AbilityPack] = AbilityPack
+# Abilities live under `content/dungeon/abilities/<school>.yaml` and are NOT
+# per-archetype, so they're absent from PACK_KIND_FOR_FILENAME (which is
+# strictly the archetype-scoped lookup). The loader dispatches on them via
+# `_load_abilities_tree` directly.
 
 
-# ── Re-exports (for loader / generator / validator convenience) ───────────
+# ── Re-exports ───────────────────────────────────────────────────────────
+#
+# Only pack-specific symbols are re-exported. Runtime models
+# (EncounterTemplate, EncounterChoice, EnemyTemplate, LootItem) remain
+# imported from `backend.models.resonance_dungeon` at their callers — no
+# double-source-of-truth through this module.
 
 __all__ = [
     "ARCHETYPE_NAME_TO_SLUG",
     "ARCHETYPE_SLUG_TO_NAME",
+    "CONTENT_PACK_SCHEMA_VERSION",
+    "PACK_KIND_FOR_FILENAME",
     "TIER_FIELD_FOR_ARCHETYPE",
-    "ABILITY_PACK_CLASS",
     "AbilityItem",
     "AbilityPack",
     "AnchorObject",
@@ -263,15 +271,10 @@ __all__ = [
     "BarometerEntry",
     "BarometerTextPack",
     "BilingualText",
-    "EncounterChoice",
     "EncounterPack",
-    "EncounterTemplate",
     "EnemyPack",
-    "EnemyTemplate",
     "EntranceTextPack",
-    "LootItem",
     "LootPack",
-    "PACK_KIND_FOR_FILENAME",
     "SpawnEntry",
     "SpawnPack",
 ]

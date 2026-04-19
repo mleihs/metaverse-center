@@ -1125,6 +1125,16 @@ export const icons = {
     </svg>
   `,
 
+  /** External link (open-in-new) — Platform Chrome Tier 1. Tabler-derived. */
+  externalLink: (size = 14) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" />
+      <path d="M11 13l9 -9" />
+      <path d="M15 4h5v5" />
+    </svg>
+  `,
+
   /** Smile/emoji — Platform Chrome Tier 1. */
   smile: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"

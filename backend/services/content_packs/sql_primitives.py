@@ -27,7 +27,7 @@ from typing import Any
 
 # ── Escape-safe dollar-quote tags ─────────────────────────────────────────
 
-_TAG_CANDIDATES = ("DQ", "DQA", "DQB", "DQC", "DQD", "DQE", "DQF", "DQG")
+_FALLBACK_TAGS = ("DQA", "DQB", "DQC", "DQD", "DQE", "DQF", "DQG")
 
 
 def _safe_tag(body: str, preferred: str = "DQ") -> str:
@@ -37,7 +37,7 @@ def _safe_tag(body: str, preferred: str = "DQ") -> str:
     `$DQ$`, we fall through to `$DQA$`, `$DQB$`, ... — deterministic order,
     never random, so the generator output stays diff-stable.
     """
-    for tag in (preferred, *_TAG_CANDIDATES):
+    for tag in (preferred, *_FALLBACK_TAGS):
         if f"${tag}$" not in body:
             return tag
     # Exhausting 8 tags requires pathological content. Raise loudly so a
@@ -112,7 +112,13 @@ class TextArray(SqlValue):
 
 @dataclass(frozen=True)
 class Numeric(SqlValue):
-    """An integer or float literal."""
+    """An integer or float literal.
+
+    Floats render via `repr()` rather than `str()` to preserve Python's
+    full-precision round-trip representation (str truncates at 12 digits
+    for some values, repr keeps all significant bits). Integers use
+    `str()` — repr would add an `int` suffix on PyPy.
+    """
 
     value: int | float
 
