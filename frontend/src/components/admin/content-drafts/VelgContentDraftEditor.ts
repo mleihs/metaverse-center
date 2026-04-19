@@ -268,6 +268,11 @@ export class VelgContentDraftEditor extends LitElement {
       border-color: var(--color-danger);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 30%, transparent);
     }
+    .editor__textarea[readonly] {
+      background: color-mix(in srgb, var(--color-surface-sunken) 70%, transparent);
+      color: var(--color-text-secondary);
+      cursor: default;
+    }
 
     .editor__parse-error {
       font-family: var(--font-mono);
@@ -402,6 +407,22 @@ export class VelgContentDraftEditor extends LitElement {
   @state() private _newResourcePath = '';
   @state() private _newPreloadFromDisk = true;
   @state() private _creating = false;
+
+  /**
+   * Terminal statuses (abandoned / published / merged) lock the editor
+   * into view-only mode. Admins can still open these rows for audit but
+   * cannot mutate working_content — publishing is a no-op (state machine
+   * would reject transition) and edits would be wasted effort.
+   *
+   * Active statuses (draft / conflict) remain fully editable — conflict
+   * still accepts working edits because the next publish attempt surfaces
+   * whichever resolution the admin saves.
+   */
+  private get _readOnly(): boolean {
+    if (!this._draft) return false;
+    const s = this._draft.status;
+    return s === 'abandoned' || s === 'published' || s === 'merged';
+  }
 
   willUpdate(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('draftId') && this.draftId && !this.createMode) {
@@ -682,6 +703,10 @@ export class VelgContentDraftEditor extends LitElement {
 
   private async _handleSave(): Promise<void> {
     if (!this._draft || !this._working) return;
+    // Defensive: read-only state should have hidden the Save button
+    // already, but guard against programmatic triggers (Realtime-driven
+    // status flip during editing, devtools console, etc.).
+    if (this._readOnly) return;
     if (!this._commitTextareaIfValid()) {
       VelgToast.error(msg('Fix JSON parse error before saving.'));
       return;
@@ -881,6 +906,14 @@ export class VelgContentDraftEditor extends LitElement {
         </div>
       </div>
 
+      ${this._readOnly
+        ? html`
+            <div class="banner banner--warn">
+              <p class="banner__title">${msg('View-only draft')}</p>
+              ${this._readOnlyReason(draft.status)}
+            </div>
+          `
+        : nothing}
       ${this._staleVersion
         ? html`
             <div class="banner banner--error">
@@ -907,7 +940,7 @@ export class VelgContentDraftEditor extends LitElement {
         <aside class="sidebar" aria-label=${msg('Entries')}>
           <div class="sidebar__header">
             <span>${this._collectionKey() ?? msg('Entries')}</span>
-            ${this._collectionKey()
+            ${this._collectionKey() && !this._readOnly
               ? html`
                   <button
                     class="add-btn"
@@ -936,13 +969,17 @@ export class VelgContentDraftEditor extends LitElement {
                   aria-label=${msg(str`Edit entry ${this._labelFor(k)}`)}
                 >
                   <span class="entry-row__label">${this._labelFor(k)}</span>
-                  <button
-                    class="entry-row__remove"
-                    @click=${(e: Event) => this._handleRemoveEntry(k, e)}
-                    aria-label=${msg(str`Remove entry ${this._labelFor(k)}`)}
-                  >
-                    ${icons.close(12)}
-                  </button>
+                  ${this._readOnly
+                    ? nothing
+                    : html`
+                        <button
+                          class="entry-row__remove"
+                          @click=${(e: Event) => this._handleRemoveEntry(k, e)}
+                          aria-label=${msg(str`Remove entry ${this._labelFor(k)}`)}
+                        >
+                          ${icons.close(12)}
+                        </button>
+                      `}
                 </li>
               `,
             )}
@@ -961,8 +998,10 @@ export class VelgContentDraftEditor extends LitElement {
                   data-invalid=${this._parseError !== null ? 'true' : 'false'}
                   .value=${this._textareaValue}
                   spellcheck="false"
+                  ?readonly=${this._readOnly}
                   aria-label=${msg('Entry JSON editor')}
                   aria-invalid=${this._parseError !== null ? 'true' : 'false'}
+                  aria-readonly=${this._readOnly ? 'true' : 'false'}
                   aria-describedby=${this._parseError !== null ? 'entry-parse-error' : nothing}
                   @input=${this._handleTextareaInput}
                 ></textarea>
@@ -975,22 +1014,42 @@ export class VelgContentDraftEditor extends LitElement {
 
       <div class="footer">
         <span class="footer__hint">
-          ${msg('Saves working copy only. Publish a batch to open a PR.')}
+          ${this._readOnly
+            ? msg('Read-only. This draft cannot be mutated from its current status.')
+            : msg('Saves working copy only. Publish a batch to open a PR.')}
         </span>
         <div class="footer__actions">
           <button class="btn" @click=${this._handleClose} ?disabled=${this._saving}>
-            ${msg('Cancel')}
+            ${this._readOnly ? msg('Close') : msg('Cancel')}
           </button>
-          <button
-            class="btn btn--primary"
-            @click=${this._handleSave}
-            ?disabled=${this._saving || this._staleVersion}
-          >
-            ${this._saving ? msg('Saving...') : msg('Save draft')}
-          </button>
+          ${this._readOnly
+            ? nothing
+            : html`
+                <button
+                  class="btn btn--primary"
+                  @click=${this._handleSave}
+                  ?disabled=${this._saving || this._staleVersion}
+                >
+                  ${this._saving ? msg('Saving...') : msg('Save draft')}
+                </button>
+              `}
         </div>
       </div>
     `;
+  }
+
+  /** Localized reason banner for the read-only lock. */
+  private _readOnlyReason(status: string) {
+    switch (status) {
+      case 'abandoned':
+        return msg('This draft was abandoned. View-only for audit – create a fresh draft to continue work.');
+      case 'published':
+        return msg('This draft is attached to an open PR. Edits must happen either via closing the PR (reverts to draft) or through a new draft.');
+      case 'merged':
+        return msg('This draft has been merged into main. Edit the resource through a new draft.');
+      default:
+        return msg('This draft is not currently editable.');
+    }
   }
 
   private _renderCreateForm(): TemplateResult {
