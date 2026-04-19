@@ -604,7 +604,6 @@ export class VelgContentDraftEditor extends LitElement {
       this._textareaValue = JSON.stringify({}, null, 2);
       this._parseError = null;
     }
-    this.requestUpdate();
   }
 
   private _handleRemoveEntry(key: string | number, e: Event): void {
@@ -615,16 +614,33 @@ export class VelgContentDraftEditor extends LitElement {
     const collection = this._working[ck];
     if (Array.isArray(collection)) {
       collection.splice(key as number, 1);
+      // Re-index selection for the array case: if we removed the selected
+      // entry, or an index BEFORE it, the current _selectedEntryKey is
+      // either out of bounds or points to the wrong logical entry.
+      const removedIndex = key as number;
+      const selected = this._selectedEntryKey;
+      if (typeof selected === 'number') {
+        if (selected === removedIndex) {
+          this._selectedEntryKey = this._firstEntryKey();
+          this._textareaValue = this._serializeSelected();
+          this._parseError = null;
+        } else if (selected > removedIndex) {
+          // Shift the selection index down by 1 so it still points at the
+          // same logical entry as before the splice.
+          this._selectedEntryKey = selected - 1;
+          this._textareaValue = this._serializeSelected();
+          this._parseError = null;
+        }
+      }
     } else if (collection && typeof collection === 'object') {
       delete (collection as Record<string, unknown>)[key as string];
+      if (this._selectedEntryKey === key) {
+        this._selectedEntryKey = this._firstEntryKey();
+        this._textareaValue = this._serializeSelected();
+        this._parseError = null;
+      }
     }
     this._working = { ...this._working };
-    if (this._selectedEntryKey === key) {
-      this._selectedEntryKey = this._firstEntryKey();
-      this._textareaValue = this._serializeSelected();
-      this._parseError = null;
-    }
-    this.requestUpdate();
   }
 
   private async _handleSave(): Promise<void> {
@@ -673,6 +689,52 @@ export class VelgContentDraftEditor extends LitElement {
     await this._loadDraft(this._draft.id);
   }
 
+  /**
+   * Compare the in-memory working copy (with staged textarea content folded
+   * in when it parses) against the last-known server state.
+   *
+   * Public so the wrapper can gate BOTH close paths — the editor's own
+   * Cancel button AND the side-panel backdrop/Esc close — through the same
+   * dirty-check prompt.
+   */
+  hasUnsavedChanges(): boolean {
+    if (!this._draft || !this._working) return false;
+    // Build a hypothetical "working if textarea committed" snapshot so the
+    // dirty check reflects what the user sees, not just what's been committed
+    // on entry-switch.
+    let snapshot = this._working;
+    if (this._selectedEntryKey !== null) {
+      try {
+        const parsed = JSON.parse(this._textareaValue);
+        const key = this._collectionKey();
+        if (key) {
+          const cloned = structuredClone(this._working);
+          const coll = cloned[key];
+          if (Array.isArray(coll)) {
+            coll[this._selectedEntryKey as number] = parsed;
+          } else if (coll && typeof coll === 'object') {
+            (coll as Record<string, unknown>)[this._selectedEntryKey as string] = parsed;
+          }
+          snapshot = cloned;
+        }
+      } catch (err) {
+        captureError(err, {
+          source: 'VelgContentDraftEditor._hasUnsavedChanges',
+        });
+        // Parse failure means dirty (or the textarea is garbage, but either
+        // way the user has an active unsaved edit).
+        return true;
+      }
+    }
+    return JSON.stringify(snapshot) !== JSON.stringify(this._draft.working_content);
+  }
+
+  /**
+   * Emit editor-close; the parent wrapper is responsible for running the
+   * dirty-check prompt (see `hasUnsavedChanges()`). Keeping the prompt at
+   * the wrapper layer unifies the Cancel-button path with the side-panel
+   * backdrop/Esc path — both now flow through a single confirmation.
+   */
   private _handleClose(): void {
     this.dispatchEvent(
       new CustomEvent('editor-close', { bubbles: true, composed: true }),
@@ -847,10 +909,12 @@ export class VelgContentDraftEditor extends LitElement {
                   .value=${this._textareaValue}
                   spellcheck="false"
                   aria-label=${msg('Entry JSON editor')}
+                  aria-invalid=${this._parseError !== null ? 'true' : 'false'}
+                  aria-describedby=${this._parseError !== null ? 'entry-parse-error' : nothing}
                   @input=${this._handleTextareaInput}
                 ></textarea>
                 ${this._parseError
-                  ? html`<div class="editor__parse-error" role="alert">${this._parseError}</div>`
+                  ? html`<div id="entry-parse-error" class="editor__parse-error" role="alert">${this._parseError}</div>`
                   : nothing}
               `}
         </div>
@@ -927,7 +991,7 @@ export class VelgContentDraftEditor extends LitElement {
           </datalist>
           <div class="field__hint">
             ${msg(
-              'Collection name (e.g. banter, encounters, enemies) or specific entry (banter[ab_01]).',
+              'Collection name — typically banter, encounters, enemies, loot, spawns, anchors, entrance_texts or barometer_texts.',
             )}
           </div>
         </div>

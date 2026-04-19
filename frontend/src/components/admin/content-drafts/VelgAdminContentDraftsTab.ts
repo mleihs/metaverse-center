@@ -25,10 +25,12 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { ContentDraftSummary } from '../../../services/api/ContentDraftsApiService.js';
+import { VelgConfirmDialog } from '../../shared/ConfirmDialog.js';
 import '../../shared/VelgSidePanel.js';
 import './VelgContentDraftsList.js';
 import './VelgContentDraftEditor.js';
 import './VelgPublishBatchModal.js';
+import type { VelgContentDraftEditor } from './VelgContentDraftEditor.js';
 import type { VelgContentDraftsList } from './VelgContentDraftsList.js';
 
 @localized()
@@ -59,6 +61,14 @@ export class VelgAdminContentDraftsTab extends LitElement {
     );
   }
 
+  private _getEditor(): VelgContentDraftEditor | null {
+    return (
+      this.renderRoot?.querySelector('velg-content-draft-editor') as
+        | VelgContentDraftEditor
+        | null
+    );
+  }
+
   private _handleNewDraft(): void {
     this._editorDraftId = null;
     this._editorCreateMode = true;
@@ -78,7 +88,28 @@ export class VelgAdminContentDraftsTab extends LitElement {
     this._publishOpen = true;
   }
 
-  private _handleEditorClose(): void {
+  /**
+   * Single close path for BOTH the editor's Cancel button and the side-panel
+   * backdrop/Esc. Runs the dirty-check here so neither path can bypass it.
+   *
+   * Clears draftId + createMode so a subsequent open of the SAME draft still
+   * triggers willUpdate → _loadDraft — picks up edits another admin made
+   * since we last opened the row.
+   */
+  private async _handleEditorClose(): Promise<void> {
+    const editor = this._getEditor();
+    if (editor?.hasUnsavedChanges()) {
+      const confirmed = await VelgConfirmDialog.show({
+        title: msg('Discard unsaved changes?'),
+        message: msg(
+          'This draft has unsaved edits. Closing now discards them. Save the draft first to keep your changes.',
+        ),
+        confirmLabel: msg('Discard'),
+        cancelLabel: msg('Keep editing'),
+        variant: 'danger',
+      });
+      if (!confirmed) return;
+    }
     this._editorOpen = false;
     this._editorDraftId = null;
     this._editorCreateMode = false;
@@ -107,9 +138,6 @@ export class VelgAdminContentDraftsTab extends LitElement {
     this._publishOpen = false;
   }
 
-  private _handleSidePanelClose(): void {
-    this._handleEditorClose();
-  }
 
   protected render(): TemplateResult {
     const sidePanelTitle = this._editorCreateMode
@@ -126,7 +154,7 @@ export class VelgAdminContentDraftsTab extends LitElement {
       <velg-side-panel
         ?open=${this._editorOpen}
         panelTitle=${sidePanelTitle}
-        @panel-close=${this._handleSidePanelClose}
+        @panel-close=${this._handleEditorClose}
       >
         <velg-content-draft-editor
           draft-id=${this._editorDraftId ?? ''}
