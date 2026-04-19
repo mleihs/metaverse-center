@@ -496,6 +496,146 @@ class TestStatusTransitions:
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
 
 
+# ── Bulk transitions ──────────────────────────────────────────────────────
+
+
+class TestBulkTransitions:
+    """Coverage for the publish-flow + webhook-handler bulk methods.
+
+    All three (mark_published_bulk / mark_conflict_bulk / revert_to_draft_bulk)
+    follow the same pattern: one UPDATE filtered by `id IN (...)` + a SELECT
+    re-fetch. Each test exercises the full chain to guarantee the SQL shape.
+    """
+
+    async def test_mark_published_bulk_sets_metadata_on_all(self):
+        d1, d2 = uuid4(), uuid4()
+        published_rows = [
+            _row(draft_id=d1, status=ContentDraftStatus.PUBLISHED, pr_number=7),
+            _row(draft_id=d2, status=ContentDraftStatus.PUBLISHED, pr_number=7),
+        ]
+        # 1) UPDATE (no .data needed); 2) SELECT re-fetch.
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=published_rows)]
+        )
+
+        result = await ContentDraftsService.mark_published_bulk(
+            supabase,
+            draft_ids=[d1, d2],
+            expected_head_oid="aaaaaaaaa",
+            commit_sha="bbbbbbbbb",
+            pr_number=7,
+            pr_url="https://github.com/x/y/pull/7",
+        )
+        assert len(result) == 2
+        assert {d.id for d in result} == {d1, d2}
+
+        chain = supabase.table.return_value
+        update_payload = chain.update.call_args.args[0]
+        assert update_payload["status"] == "published"
+        assert update_payload["pr_number"] == 7
+        assert "published_at" in update_payload
+        # Idempotency gate.
+        assert any(
+            c.args == ("published_at", "null") for c in chain.is_.call_args_list
+        )
+        # Bulk filter.
+        assert any(
+            c.args == ("id", [str(d1), str(d2)]) for c in chain.in_.call_args_list
+        )
+
+    async def test_mark_published_bulk_empty_input_no_calls(self):
+        supabase = _mock_supabase([])
+        result = await ContentDraftsService.mark_published_bulk(
+            supabase,
+            draft_ids=[],
+            expected_head_oid="x", commit_sha="y", pr_number=1, pr_url="z",
+        )
+        assert result == []
+        supabase.table.return_value.execute.assert_not_called()
+
+    async def test_mark_conflict_bulk_transitions_all(self):
+        d1, d2 = uuid4(), uuid4()
+        conflict_rows = [
+            _row(draft_id=d1, status=ContentDraftStatus.CONFLICT),
+            _row(draft_id=d2, status=ContentDraftStatus.CONFLICT),
+        ]
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=conflict_rows)]
+        )
+
+        result = await ContentDraftsService.mark_conflict_bulk(
+            supabase, draft_ids=[d1, d2],
+        )
+        assert len(result) == 2
+        update_payload = supabase.table.return_value.update.call_args.args[0]
+        assert update_payload == {"status": "conflict"}
+
+    async def test_revert_to_draft_bulk_resets_github_metadata(self):
+        d1 = uuid4()
+        reverted_row = _row(
+            draft_id=d1,
+            status=ContentDraftStatus.DRAFT,
+            pr_number=None,
+        )
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=[reverted_row])]
+        )
+
+        result = await ContentDraftsService.revert_to_draft_bulk(
+            supabase, draft_ids=[d1],
+        )
+        assert len(result) == 1
+        chain = supabase.table.return_value
+        update_payload = chain.update.call_args.args[0]
+        assert update_payload["status"] == "draft"
+        # All GitHub metadata reset.
+        assert update_payload["published_at"] is None
+        assert update_payload["expected_head_oid"] is None
+        assert update_payload["commit_sha"] is None
+        assert update_payload["pr_number"] is None
+        assert update_payload["pr_url"] is None
+        # Gated to status='published' (only published drafts revert).
+        assert any(
+            c.args == ("status", "published") for c in chain.eq.call_args_list
+        )
+
+    async def test_revert_to_draft_bulk_empty_input_no_calls(self):
+        supabase = _mock_supabase([])
+        result = await ContentDraftsService.revert_to_draft_bulk(
+            supabase, draft_ids=[],
+        )
+        assert result == []
+        supabase.table.return_value.execute.assert_not_called()
+
+
+# ── list_by_pr_number ─────────────────────────────────────────────────────
+
+
+class TestListByPrNumber:
+    async def test_returns_drafts_attached_to_pr(self):
+        rows = [
+            _row(pr_number=42, status=ContentDraftStatus.PUBLISHED),
+            _row(pr_number=42, status=ContentDraftStatus.PUBLISHED),
+        ]
+        supabase = _mock_supabase([_exec_result(data=rows)])
+
+        result = await ContentDraftsService.list_by_pr_number(
+            supabase, pr_number=42,
+        )
+        assert len(result) == 2
+        chain = supabase.table.return_value
+        assert any(
+            c.args == ("pr_number", 42) for c in chain.eq.call_args_list
+        )
+
+    async def test_empty_when_pr_unknown(self):
+        supabase = _mock_supabase([_exec_result(data=[])])
+        result = await ContentDraftsService.list_by_pr_number(
+            supabase, pr_number=99999,
+        )
+        assert result == []
+
+
 # ── hard_delete ───────────────────────────────────────────────────────────
 
 
