@@ -7,6 +7,7 @@ single `createCommitOnBranch` GraphQL mutation that opens a PR against main.
 See:
   - supabase/migrations/..._224_content_drafts_and_webhooks.sql
   - backend/services/content_drafts_service.py (commit 3 of this phase)
+  - backend/services/content_packs/publish.py (Phase 2 batch publish)
   - docs/concepts/a1-7-ui-research-findings.md §2 (concurrency model)
 """
 
@@ -18,6 +19,11 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
+
+# Maximum drafts per batch publish. The createCommitOnBranch GraphQL mutation
+# accepts arbitrary file changes, but we cap to keep PR review surfaces sane
+# and to bound rate-limit cost (each batch is one mutation regardless of N).
+MAX_BATCH_PUBLISH_SIZE = 25
 
 
 class ContentDraftStatus(StrEnum):
@@ -160,6 +166,48 @@ class ContentDraftSummary(BaseModel):
     updated_at: datetime
     published_at: datetime | None
     merged_at: datetime | None
+
+
+# ── Batch publish ─────────────────────────────────────────────────────────
+
+
+class BatchPublishRequest(BaseModel):
+    """Admin batch-publish input.
+
+    `draft_ids` is bounded by `MAX_BATCH_PUBLISH_SIZE`; non-empty enforces
+    that the caller actually selected something to publish.
+
+    `commit_message` overrides the auto-derived headline when set; otherwise
+    publish.py derives a sensible default from the draft list.
+    """
+
+    draft_ids: list[UUID] = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_BATCH_PUBLISH_SIZE,
+        description="Drafts to include in this PR. All must currently be in 'draft' status.",
+    )
+    commit_message: str | None = Field(
+        default=None,
+        max_length=72,
+        description="Optional commit headline override (Git convention: ≤72 chars).",
+    )
+
+
+class BatchPublishResult(BaseModel):
+    """Outcome of a successful batch publish.
+
+    Returned to the admin UI so it can link to the PR + display landed-state
+    for the affected drafts. `drafts` are slim summaries (no JSONB blobs) to
+    keep the response payload tight.
+    """
+
+    commit_sha: str
+    pr_number: int
+    pr_url: str
+    branch_name: str
+    draft_count: int
+    drafts: list[ContentDraftSummary]
 
 
 # ── Internal models (not exposed via API) ─────────────────────────────────
