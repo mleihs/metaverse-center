@@ -108,8 +108,19 @@ def emit_section(spec: TableSpec, result: PackLoadResult) -> tuple[list[str], in
     return lines, len(rows)
 
 
-def generate_sql(result: PackLoadResult) -> tuple[str, dict[str, int]]:
-    """Produce the full seed SQL string plus a per-table row count map."""
+def generate_sql(result: PackLoadResult, *, truncate: bool = True) -> tuple[str, dict[str, int]]:
+    """Produce the full seed SQL string plus a per-table row count map.
+
+    `truncate=True` (default): emit a TRUNCATE ... RESTART IDENTITY CASCADE
+    prefix so the migration fully replaces any existing seed content. This
+    is the correct default for A1.5 because the legacy seed carries drift
+    (e.g. `sb_30_dup0` banter IDs renamed to `sb_30b` in the pack) that
+    plain UPSERT cannot resolve — stale rows would survive.
+
+    `truncate=False`: pure additive mode for hypothetical future
+    incremental migrations where ID-stability is guaranteed. Not used by
+    A1.5 but preserved so the primitive exists.
+    """
     counts: dict[str, int] = {}
     lines: list[str] = [
         "-- ============================================================================",
@@ -121,6 +132,15 @@ def generate_sql(result: PackLoadResult) -> tuple[str, dict[str, int]]:
         "BEGIN;",
         "",
     ]
+    if truncate:
+        truncate_targets = ", ".join(spec.name for spec in EMISSION_ORDER)
+        lines.extend([
+            "-- Clean slate: pack is the single source of truth, so drop any",
+            "-- existing rows (including legacy `_dup{idx}` renames from the",
+            "-- old extract script) before re-inserting from packs.",
+            f"TRUNCATE TABLE {truncate_targets} RESTART IDENTITY CASCADE;",
+            "",
+        ])
     for spec in EMISSION_ORDER:
         section_lines, count = emit_section(spec, result)
         lines.extend(section_lines)
@@ -160,10 +180,15 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Load packs and count rows, but emit no SQL.",
     )
+    parser.add_argument(
+        "--no-truncate",
+        action="store_true",
+        help="Skip the TRUNCATE prefix (additive migration, ID-stability required).",
+    )
     args = parser.parse_args(argv)
 
     result = load_packs(args.root)
-    sql, counts = generate_sql(result)
+    sql, counts = generate_sql(result, truncate=not args.no_truncate)
 
     if args.dry_run or (not args.output and not args.stdout):
         _print_counts(counts)
