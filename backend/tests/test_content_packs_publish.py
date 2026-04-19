@@ -109,25 +109,38 @@ def _mock_github_client(
     commit_oid: str = "def456commit",
     pr_number: int = 42,
     pr_url: str = "https://github.com/mleihs/metaverse-center/pull/42",
+    migrations_listing: list | None = None,
     rest_side_effects: list | None = None,
     graphql_side_effects: list | None = None,
 ) -> MagicMock:
     """Mock GitHubAppClient with rest() + graphql() coroutines.
 
-    Default behavior:
-      - GET /repos/.../<repo>           → {"default_branch": <name>}
-      - GET /repos/.../git/ref/heads/X → {"object": {"sha": <head_oid>}}
-      - POST /repos/.../git/refs        → {"ref": ..., "object": {...}}
-      - POST /repos/.../pulls           → {"number": ..., "html_url": ...}
-      - graphql(createCommit, ...)      → {"data": {"createCommitOnBranch":
-                                                    {"commit": {"oid": ...}}}}
-    Override via *_side_effects to inject errors mid-flow.
+    Default behavior (Phase 2.5 REST sequence):
+      1. GET /repos/.../<repo>              → {"default_branch": <name>}
+      2. GET /repos/.../git/ref/heads/X     → {"object": {"sha": <head_oid>}}
+      3. GET /repos/.../contents/supabase/migrations?ref=X → migrations listing
+      4. POST /repos/.../git/refs           → {"ref": ..., "object": {...}}
+      5. POST /repos/.../pulls              → {"number": ..., "html_url": ...}
+
+    GraphQL:
+      - createCommitOnBranch mutation → {"data": {...commit.oid ...}}
+
+    Override via `migrations_listing` (just the listing), or by passing a full
+    `rest_side_effects` list to inject arbitrary mid-flow behavior.
     """
     client = MagicMock()
+    if migrations_listing is None:
+        migrations_listing = [
+            {"type": "file", "name": "20260419100000_222_dungeon_content.sql"},
+            {"type": "file", "name": "20260419300000_224_content_drafts.sql"},
+            {"type": "file", "name": "20260419310000_225_invariants.sql"},
+            {"type": "file", "name": "20260419400000_226_trigger.sql"},
+        ]
     if rest_side_effects is None:
         rest_side_effects = [
             {"default_branch": default_branch},
             {"object": {"sha": head_oid}},
+            migrations_listing,
             {"ref": f"refs/heads/{default_branch}", "object": {"sha": head_oid}},
             {"number": pr_number, "html_url": pr_url},
         ]
@@ -144,6 +157,18 @@ def _mock_github_client(
     client.rest = AsyncMock(side_effect=rest_side_effects)
     client.graphql = AsyncMock(side_effect=graphql_side_effects)
     return client
+
+
+def _stub_migration_sql(monkeypatch) -> None:
+    """Replace _generate_migration_sql with a stub returning inert SQL.
+
+    Unit tests for publish_batch orchestration don't exercise real packs;
+    the end-to-end test in TestMigrationAttachment covers real generation.
+    """
+    from backend.services.content_packs import publish as _pub
+    monkeypatch.setattr(
+        _pub, "_generate_migration_sql", lambda drafts: "-- stub migration\n",
+    )
 
 
 # ── Pure helpers ──────────────────────────────────────────────────────────
@@ -280,6 +305,7 @@ class TestPublishBatch:
     async def test_happy_path_two_drafts(self, monkeypatch):
         monkeypatch.setenv("GITHUB_REPO_OWNER", "mleihs")
         monkeypatch.setenv("GITHUB_REPO_NAME", "metaverse-center")
+        _stub_migration_sql(monkeypatch)
 
         d1_id, d2_id = uuid4(), uuid4()
         d1 = _draft_row(draft_id=d1_id, pack_slug="shadow", resource_path="banter")
@@ -312,13 +338,21 @@ class TestPublishBatch:
         assert result.pr_number == 42
         assert result.draft_count == 2
         assert result.branch_name.startswith("content/drafts-batch-")
-        # Verify createCommitOnBranch fileChanges had two additions in order.
+        # Verify createCommitOnBranch fileChanges had THREE additions in order:
+        # two YAML files + one auto-generated migration.
         graphql_call = client.graphql.call_args
         additions = graphql_call.args[1]["input"]["fileChanges"]["additions"]
-        assert len(additions) == 2
+        assert len(additions) == 3
         assert additions[0]["path"] == "content/dungeon/archetypes/shadow/banter.yaml"
         assert additions[1]["path"] == "content/dungeon/archetypes/tower/encounters.yaml"
-        # Contents are base64 of YAML bytes.
+        # Migration file name follows {timestamp}_{NNN}_dungeon_content_seed_auto.sql.
+        # Max in default mock listing is 226, so next is 227.
+        assert additions[2]["path"].startswith("supabase/migrations/")
+        assert additions[2]["path"].endswith("_227_dungeon_content_seed_auto.sql")
+        # Migration content is the stub SQL (monkeypatched above).
+        decoded_migration = base64.b64decode(additions[2]["contents"]).decode("utf-8")
+        assert decoded_migration == "-- stub migration\n"
+        # YAML Contents are base64 of YAML bytes.
         decoded_0 = base64.b64decode(additions[0]["contents"]).decode("utf-8")
         assert "schema_version: 1" in decoded_0
         assert "banter:" in decoded_0
@@ -378,6 +412,7 @@ class TestPublishBatch:
     async def test_drift_marks_conflict_and_raises_409(self, monkeypatch):
         monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
         monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        _stub_migration_sql(monkeypatch)
         d_id = uuid4()
         draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
         conflict_row = _draft_row(
@@ -395,14 +430,15 @@ class TestPublishBatch:
             _exec_result(data=[conflict_row]),
         ])
 
-        # GitHub: head + ref + branch creation succeed; createCommitOnBranch
-        # raises a drift error.
+        # GitHub: head + ref + migrations-listing + branch creation succeed;
+        # createCommitOnBranch raises a drift error.
         drift_exc = GitHubAPIError(
             200, "expected head oid did not match", "https://api.github.com/graphql",
         )
         rest_side = [
             {"default_branch": "main"},
             {"object": {"sha": "headsha"}},
+            [{"type": "file", "name": "20260419400000_226_x.sql"}],
             {"ref": "refs/heads/x", "object": {"sha": "headsha"}},
         ]
         client = _mock_github_client(
@@ -415,12 +451,14 @@ class TestPublishBatch:
                 supabase, draft_ids=[d_id], github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_409_CONFLICT
-        # PR creation MUST NOT have been attempted (only 3 REST calls before error).
-        assert client.rest.call_count == 3
+        # PR creation MUST NOT have been attempted
+        # (head + head_oid + migrations listing + branch creation = 4 REST calls).
+        assert client.rest.call_count == 4
 
     async def test_non_drift_github_error_bubbles(self, monkeypatch):
         monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
         monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        _stub_migration_sql(monkeypatch)
         d_id = uuid4()
         draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
         supabase = _mock_supabase([_exec_result(data=[draft])])
@@ -431,6 +469,7 @@ class TestPublishBatch:
         rest_side = [
             {"default_branch": "main"},
             {"object": {"sha": "headsha"}},
+            [{"type": "file", "name": "20260419400000_226_x.sql"}],
             {"ref": "refs/heads/x", "object": {"sha": "headsha"}},
         ]
         client = _mock_github_client(
@@ -468,5 +507,127 @@ class TestPublishBatch:
             )
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
         # No branch creation, no commit, no PR.
+        # yaml_changes runs first (Phase-2 regex fires) BEFORE migration
+        # listing, so only 2 REST calls: default-branch + head-oid.
         assert client.rest.call_count == 2
         assert client.graphql.call_count == 0
+
+
+class TestPhase25MigrationAttachment:
+    """Phase-2.5-specific coverage: auto-generated migration in the commit."""
+
+    async def test_duplicate_resource_rejects_400(self, monkeypatch):
+        """Two drafts for the same (slug, path) in a batch → 400 before any GitHub call."""
+        monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
+        monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        d1_id, d2_id = uuid4(), uuid4()
+        # Both drafts target (shadow, banter) — duplicate.
+        d1 = _draft_row(draft_id=d1_id, pack_slug="shadow", resource_path="banter")
+        d2 = _draft_row(draft_id=d2_id, pack_slug="shadow", resource_path="banter")
+        supabase = _mock_supabase([_exec_result(data=[d1, d2])])
+        client = _mock_github_client()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await ContentPacksPublishService.publish_batch(
+                supabase, draft_ids=[d1_id, d2_id], github_client=client,
+            )
+        assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+        # Duplicate check runs BEFORE any REST call.
+        assert client.rest.call_count == 0
+        assert client.graphql.call_count == 0
+
+    async def test_pack_schema_error_returns_400_with_field_errors(
+        self, monkeypatch,
+    ):
+        """A draft with invalid working_content fails Pydantic → 400 pre-branch.
+
+        Real _generate_migration_sql runs; the default _draft_row fixture
+        produces a BanterPack-invalid payload (missing text_en), so Pydantic
+        rejects it. We assert 400 AND that no branch creation happened.
+        """
+        monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
+        monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        d_id = uuid4()
+        # Default working_content is BanterPack-invalid (missing text_en).
+        draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
+        supabase = _mock_supabase([_exec_result(data=[draft])])
+        client = _mock_github_client()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await ContentPacksPublishService.publish_batch(
+                supabase, draft_ids=[d_id], github_client=client,
+            )
+        assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+        assert "pack validation" in str(exc_info.value.detail).lower()
+        # Migration-gen runs AFTER yaml_changes but BEFORE the listing REST call;
+        # so head + head_oid only, no branch creation.
+        assert client.rest.call_count == 2
+        assert client.graphql.call_count == 0
+
+    async def test_migration_number_increments_from_listing(self, monkeypatch):
+        """Migration filename uses max(existing NNN) + 1 from the listing."""
+        monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
+        monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        _stub_migration_sql(monkeypatch)
+        d_id = uuid4()
+        draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
+        published = _draft_row(
+            draft_id=d_id, pack_slug="shadow", resource_path="banter",
+            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+        )
+        supabase = _mock_supabase([
+            _exec_result(data=[draft]),
+            _exec_result(data=[]),
+            _exec_result(data=[published]),
+        ])
+
+        # Listing with max NNN = 311 (unusual filename forms mixed in to
+        # verify the parser picks the 3-digit sequence reliably).
+        listing = [
+            {"type": "file", "name": "20260301000000_101_old.sql"},
+            {"type": "file", "name": "20260401000000_311_recent.sql"},
+            {"type": "file", "name": "20260402000000_305_back_in_time.sql"},
+            {"type": "dir", "name": "subdir_should_be_ignored"},
+            {"type": "file", "name": "README.md"},  # no NNN, ignored
+        ]
+        client = _mock_github_client(migrations_listing=listing)
+        await ContentPacksPublishService.publish_batch(
+            supabase, draft_ids=[d_id], github_client=client,
+        )
+
+        additions = client.graphql.call_args.args[1]["input"]["fileChanges"]["additions"]
+        # Last addition is the migration. Expect NNN = max(311) + 1 = 312.
+        migration_path = additions[-1]["path"]
+        assert migration_path.endswith("_312_dungeon_content_seed_auto.sql")
+        assert migration_path.startswith("supabase/migrations/")
+
+    async def test_migration_filename_is_timestamped(self, monkeypatch):
+        """Migration filename carries a YYYYMMDDHHMMSS prefix for sortability."""
+        monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
+        monkeypatch.setenv("GITHUB_REPO_NAME", "y")
+        _stub_migration_sql(monkeypatch)
+        d_id = uuid4()
+        draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
+        published = _draft_row(
+            draft_id=d_id, pack_slug="shadow", resource_path="banter",
+            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+        )
+        supabase = _mock_supabase([
+            _exec_result(data=[draft]),
+            _exec_result(data=[]),
+            _exec_result(data=[published]),
+        ])
+        client = _mock_github_client()
+        await ContentPacksPublishService.publish_batch(
+            supabase, draft_ids=[d_id], github_client=client,
+        )
+
+        additions = client.graphql.call_args.args[1]["input"]["fileChanges"]["additions"]
+        migration_path = additions[-1]["path"]
+        # Strip the "supabase/migrations/" prefix, then verify the 14-digit
+        # timestamp + 3-digit sequence format.
+        import re
+        basename = migration_path.removeprefix("supabase/migrations/")
+        assert re.match(
+            r"^\d{14}_\d{3}_dungeon_content_seed_auto\.sql$", basename,
+        ), f"unexpected filename format: {basename}"
