@@ -27,6 +27,54 @@ interface ContentTypeConfig {
   icon: string;
 }
 
+// Authoring-source deep-link helpers. Since A1.5, content lives in YAML
+// packs under `content/dungeon/`. These helpers produce GitHub blob URLs
+// so admins can jump straight to the canonical source.
+
+const PACKS_ROOT_URL = 'https://github.com/mleihs/velgarien-rebuild/blob/main/content/dungeon';
+
+const ARCHETYPE_NAME_TO_SLUG: Record<string, string> = {
+  'The Shadow': 'shadow',
+  'The Tower': 'tower',
+  'The Devouring Mother': 'mother',
+  'The Entropy': 'entropy',
+  'The Prometheus': 'prometheus',
+  'The Deluge': 'deluge',
+  'The Awakening': 'awakening',
+  'The Overthrow': 'overthrow',
+};
+
+const CONTENT_TYPE_TO_FILE: Record<string, string> = {
+  banter: 'banter.yaml',
+  encounters: 'encounters.yaml',
+  enemies: 'enemies.yaml',
+  spawns: 'spawns.yaml',
+  choices: 'encounters.yaml',
+  loot: 'loot.yaml',
+  anchors: 'anchors.yaml',
+  entrance_texts: 'entrance_texts.yaml',
+  barometer_texts: 'barometer_texts.yaml',
+};
+
+export function packsRootUrl(): string {
+  return PACKS_ROOT_URL;
+}
+
+export function githubUrlForItem(
+  contentType: DungeonContentType,
+  item: Record<string, unknown>,
+): string | null {
+  if (contentType === 'abilities') {
+    const school = typeof item.school === 'string' ? item.school : null;
+    return school ? `${PACKS_ROOT_URL}/abilities/${school}.yaml` : null;
+  }
+  const archetype = typeof item.archetype === 'string' ? item.archetype : null;
+  const slug = archetype ? ARCHETYPE_NAME_TO_SLUG[archetype] : null;
+  const file = CONTENT_TYPE_TO_FILE[contentType];
+  if (!slug || !file) return null;
+  return `${PACKS_ROOT_URL}/archetypes/${slug}/${file}`;
+}
+
 @localized()
 @customElement('velg-admin-dungeon-content-tab')
 export class AdminDungeonContentTab extends LitElement {
@@ -72,6 +120,77 @@ export class AdminDungeonContentTab extends LitElement {
       .reload-btn:disabled {
         opacity: 0.4;
         cursor: default;
+      }
+
+      /* ── Authoring-source notice (A1.6) ── */
+
+      .source-notice {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        margin-bottom: var(--space-4);
+        border: 1px dashed var(--color-border);
+        background: color-mix(in srgb, var(--color-info) 4%, transparent);
+      }
+
+      .source-notice__body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        max-width: 80ch;
+      }
+
+      .source-notice__title {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold, 700);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist, 0.08em);
+        color: var(--color-text-primary);
+      }
+
+      .source-notice__text {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-sm);
+        line-height: var(--leading-snug, 1.375);
+        color: var(--color-text-secondary);
+      }
+
+      .source-notice__text code {
+        font-family: var(--font-mono, monospace);
+        color: var(--_admin-accent);
+      }
+
+      .source-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) var(--space-3);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold, 700);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: transparent;
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+        text-decoration: none;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+      }
+
+      .source-link:hover {
+        color: var(--_admin-accent);
+        border-color: var(--_admin-accent);
+      }
+
+      @media (max-width: 768px) {
+        .source-notice {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
 
       .content-area {
@@ -243,6 +362,26 @@ export class AdminDungeonContentTab extends LitElement {
         >${this._reloading ? msg('Reloading...') : msg('Reload Cache')}</button>
       </div>
 
+      <!-- Authoring-source notice -->
+      <div class="source-notice" role="note">
+        <div class="source-notice__body">
+          <div class="source-notice__title">${msg('Authoring source')}</div>
+          <div class="source-notice__text">
+            ${msg(
+              'Content is authored as versioned YAML packs under',
+            )} <code>content/dungeon/</code>${msg(
+              '. The rows below mirror the current main branch. Direct edits here mutate the database only and will be overwritten on the next pack-backed migration – open a pull request on the source YAML for permanent changes.',
+            )}
+          </div>
+        </div>
+        <a
+          class="source-link"
+          href=${packsRootUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+        >${msg('View packs on GitHub')} &rarr;</a>
+      </div>
+
       <!-- Sub-navigation -->
       <div class="subnav" role="tablist" aria-label=${msg('Content type navigation')}>
         ${this._contentTypes.map(
@@ -283,6 +422,7 @@ export class AdminDungeonContentTab extends LitElement {
         .contentType=${this._activeType}
         .open=${this._editorOpen}
         .saving=${this._editorSaving}
+        .githubUrl=${this._editorItem ? githubUrlForItem(this._activeType, this._editorItem) : null}
         @editor-close=${this._handleEditorClose}
         @editor-save=${this._handleEditorSave}
         @editor-delete=${this._handleEditorDelete}
