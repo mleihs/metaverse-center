@@ -8,18 +8,22 @@ Pydantic schema-validation alone cannot catch:
     here we fail loudly.
   - FK integrity: every `combat_encounter_id` on an encounter must exist
     in the same archetype's `spawns.yaml`.
-  - Archetype completeness: each of the 8 archetypes must provide exactly
-    1 boss encounter, 1 rest, 1 treasure (hard game-design invariant).
-  - Choice integrity: a choice with `check_aptitude` must have
-    `partial_narrative_en` (check can resolve to partial).
+  - Archetype completeness: each of the 8 archetypes must provide at
+    least one boss, rest, and treasure encounter (Deluge ships two rest
+    + two treasure because of its deeper layout; strict "exactly one"
+    was loosened in A1.3e).
+  - Choice integrity (advisory): a choice with `check_aptitude` should
+    have `partial_narrative_en` because the check can resolve to
+    partial. Warning-level; promoted to failure via --strict.
 
 Exit codes:
   0 — valid
-  1 — one or more invariants violated (message printed per violation)
-  2 — structural error (YAML parse, schema validation)
+  1 — one or more invariants violated (hard failure)
+  2 — structural error (YAML parse, Pydantic schema validation)
 
 Usage:
     python scripts/validate_content_packs.py
+    python scripts/validate_content_packs.py --strict
     python scripts/validate_content_packs.py --root /path/to/content/dungeon
 """
 
@@ -41,6 +45,7 @@ from backend.services.content_packs.loader import (  # noqa: E402
     load_packs,
 )
 from backend.services.content_packs.schemas import (  # noqa: E402
+    ARCHETYPE_NAME_TO_SLUG,
     ARCHETYPE_SLUG_TO_NAME,
 )
 
@@ -112,12 +117,13 @@ def _check_spawn_fk_integrity(result: PackLoadResult) -> list[str]:
     violations: list[str] = []
     for archetype, encounters in result.encounters.items():
         spawns_for_archetype = set(result.spawns.get(archetype, {}))
+        slug = ARCHETYPE_NAME_TO_SLUG.get(archetype, archetype)
         for enc in encounters:
             if enc.combat_encounter_id and enc.combat_encounter_id not in spawns_for_archetype:
                 violations.append(
                     f"encounter '{enc.id}' ({archetype}) references combat_encounter_id="
                     f"'{enc.combat_encounter_id}' but no matching spawn config exists "
-                    f"under archetypes/{archetype.replace('The ', '').lower()}/spawns.yaml"
+                    f"under archetypes/{slug}/spawns.yaml"
                 )
     return violations
 

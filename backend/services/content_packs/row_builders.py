@@ -20,17 +20,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from backend.services.content_packs.schemas import (
-    TIER_FIELD_FOR_ARCHETYPE,
-    AnchorObject,
-    BarometerEntry,
-    BilingualText,
+from backend.models.resonance_dungeon import (
     EncounterChoice,
     EncounterTemplate,
     EnemyTemplate,
     LootItem,
-    SpawnEntry,
 )
+from backend.services.content_packs.schemas import TIER_FIELD_FOR_ARCHETYPE
 from backend.services.content_packs.sql_primitives import (
     BoolLiteral,
     DollarQuoted,
@@ -39,6 +35,7 @@ from backend.services.content_packs.sql_primitives import (
     SqlValue,
     TextArray,
     optional_jsonb,
+    optional_numeric,
     optional_text,
 )
 
@@ -54,27 +51,24 @@ def build_banter_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     for archetype in sorted(result.banter):
         tier_field = TIER_FIELD_FOR_ARCHETYPE.get(archetype)
         for idx, raw in enumerate(result.banter[archetype]):
-            # banter is kept as dict (matches runtime cache shape);
-            # the Pydantic BanterItem was used during load for validation.
+            # banter is stored as dict (matches runtime cache shape); the
+            # Pydantic BanterItem validation gate ran during load. YAML has
+            # no tuple concept, so personality_filter values are already
+            # list/bool — no further normalization needed.
             archetype_tier = raw.get(tier_field, 0) if tier_field else 0
             rows.append({
                 "id": DollarQuoted(raw["id"]),
                 "archetype": DollarQuoted(archetype),
                 "trigger": DollarQuoted(raw["trigger"]),
-                "personality_filter": JsonbLiteral(_normalize_personality_filter(raw.get("personality_filter") or {})),
+                "personality_filter": JsonbLiteral(raw.get("personality_filter") or {}),
                 "text_en": DollarQuoted(raw["text_en"]),
                 "text_de": DollarQuoted(raw["text_de"]),
-                "decay_tier": _int_or_null(raw.get("decay_tier")),
-                "attachment_tier": _int_or_null(raw.get("attachment_tier")),
+                "decay_tier": optional_numeric(raw.get("decay_tier")),
+                "attachment_tier": optional_numeric(raw.get("attachment_tier")),
                 "archetype_tier": Numeric(archetype_tier),
                 "sort_order": Numeric(idx),
             })
     return rows
-
-
-def _normalize_personality_filter(pf: dict) -> dict:
-    """Tuples → lists for JSON serialization."""
-    return {k: (list(v) if isinstance(v, tuple) else v) for k, v in pf.items()}
 
 
 # ── Enemy Templates ──────────────────────────────────────────────────────
@@ -119,18 +113,15 @@ def _enemy_row(archetype: str, tmpl: EnemyTemplate, idx: int) -> dict[str, SqlVa
 
 def build_spawn_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     rows: list[dict[str, SqlValue]] = []
+    # Spawn entries land from the loader already-dict-normalized
+    # (loader._ingest_spawns calls `e.model_dump()`). No sort_order column in
+    # dungeon_spawn_configs, so the outer enumerate is dropped.
     for archetype in sorted(result.spawns):
-        for _idx, spawn_id in enumerate(result.spawns[archetype]):
-            entries_raw = result.spawns[archetype][spawn_id]
-            # entries may be list[dict] or list[SpawnEntry]; normalize to dict
-            entries = [
-                e.model_dump() if isinstance(e, SpawnEntry) else dict(e)
-                for e in entries_raw
-            ]
+        for spawn_id, entries in result.spawns[archetype].items():
             rows.append({
                 "id": DollarQuoted(spawn_id),
                 "archetype": DollarQuoted(archetype),
-                "entries": JsonbLiteral(entries),
+                "entries": JsonbLiteral(list(entries)),
             })
     return rows
 
@@ -239,20 +230,13 @@ def build_anchor_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     return rows
 
 
-def _anchor_row(archetype: str, obj: dict | AnchorObject, idx: int) -> dict[str, SqlValue]:
-    obj_id = obj["id"] if isinstance(obj, dict) else obj.id
-    phases_raw = obj["phases"] if isinstance(obj, dict) else obj.phases
-    # phases may carry nested AnchorPhase Pydantic models or plain dicts
-    phases_json: dict = {}
-    for phase_name, phase in phases_raw.items():
-        if hasattr(phase, "model_dump"):
-            phases_json[phase_name] = phase.model_dump()
-        else:
-            phases_json[phase_name] = dict(phase)
+def _anchor_row(archetype: str, obj: dict, idx: int) -> dict[str, SqlValue]:
+    # Loader stores anchors as plain dicts after model_dump; phases dict
+    # already carries dict-form entries too, so no nested conversion needed.
     return {
-        "id": DollarQuoted(obj_id),
+        "id": DollarQuoted(obj["id"]),
         "archetype": DollarQuoted(archetype),
-        "phases": JsonbLiteral(phases_json),
+        "phases": JsonbLiteral(obj["phases"]),
         "sort_order": Numeric(idx),
     }
 
@@ -264,19 +248,13 @@ def build_entrance_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     rows: list[dict[str, SqlValue]] = []
     for archetype in sorted(result.entrance_texts):
         for idx, entry in enumerate(result.entrance_texts[archetype]):
-            rows.append(_entrance_row(archetype, entry, idx))
+            rows.append({
+                "archetype": DollarQuoted(archetype),
+                "text_en": DollarQuoted(entry["text_en"]),
+                "text_de": DollarQuoted(entry["text_de"]),
+                "sort_order": Numeric(idx),
+            })
     return rows
-
-
-def _entrance_row(archetype: str, entry: dict | BilingualText, idx: int) -> dict[str, SqlValue]:
-    text_en = entry["text_en"] if isinstance(entry, dict) else entry.text_en
-    text_de = entry["text_de"] if isinstance(entry, dict) else entry.text_de
-    return {
-        "archetype": DollarQuoted(archetype),
-        "text_en": DollarQuoted(text_en),
-        "text_de": DollarQuoted(text_de),
-        "sort_order": Numeric(idx),
-    }
 
 
 # ── Barometer Texts ──────────────────────────────────────────────────────
@@ -286,21 +264,13 @@ def build_barometer_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     rows: list[dict[str, SqlValue]] = []
     for archetype in sorted(result.barometer_texts):
         for entry in result.barometer_texts[archetype]:
-            rows.append(_barometer_row(archetype, entry))
+            rows.append({
+                "archetype": DollarQuoted(archetype),
+                "tier": Numeric(entry["tier"]),
+                "text_en": DollarQuoted(entry["text_en"]),
+                "text_de": DollarQuoted(entry["text_de"]),
+            })
     return rows
-
-
-def _barometer_row(archetype: str, entry: dict | BarometerEntry) -> dict[str, SqlValue]:
-    if isinstance(entry, dict):
-        tier, text_en, text_de = entry["tier"], entry["text_en"], entry["text_de"]
-    else:
-        tier, text_en, text_de = entry.tier, entry.text_en, entry.text_de
-    return {
-        "archetype": DollarQuoted(archetype),
-        "tier": Numeric(tier),
-        "text_en": DollarQuoted(text_en),
-        "text_de": DollarQuoted(text_de),
-    }
 
 
 # ── Combat Abilities ─────────────────────────────────────────────────────
@@ -317,8 +287,10 @@ def build_ability_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
 
 
 def _ability_row(ability, idx: int) -> dict[str, SqlValue]:  # noqa: ANN001
-    """Accepts either AbilityItem (pydantic) or Ability (dataclass) — both
-    share the same attribute surface for the fields we need."""
+    """Accepts either the Pydantic `AbilityItem` or the runtime `Ability`
+    dataclass — both share the attribute surface we need. Duck-typed to
+    avoid a runtime import cycle and because the row fields are identical.
+    """
     params = dict(ability.effect_params) if ability.effect_params else {}
     return {
         "id": DollarQuoted(ability.id),
@@ -335,16 +307,6 @@ def _ability_row(ability, idx: int) -> dict[str, SqlValue]:  # noqa: ANN001
         "targets": DollarQuoted(ability.targets),
         "sort_order": Numeric(idx),
     }
-
-
-# ── Shared helpers ───────────────────────────────────────────────────────
-
-
-def _int_or_null(v: int | None) -> SqlValue:
-    if v is None:
-        from backend.services.content_packs.sql_primitives import NULL
-        return NULL
-    return Numeric(v)
 
 
 __all__ = [

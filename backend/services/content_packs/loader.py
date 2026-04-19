@@ -42,18 +42,20 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import yaml
 
+from backend.services.combat.ability_schools import Ability
 from backend.services.content_packs.schemas import (
-    ABILITY_PACK_CLASS,
     ARCHETYPE_NAME_TO_SLUG,
     ARCHETYPE_SLUG_TO_NAME,
     PACK_KIND_FOR_FILENAME,
     AbilityItem,
+    AbilityPack,
     AnchorPack,
     BanterPack,
     BarometerTextPack,
@@ -63,9 +65,6 @@ from backend.services.content_packs.schemas import (
     LootPack,
     SpawnPack,
 )
-
-if TYPE_CHECKING:
-    from backend.services.combat.ability_schools import Ability
 
 logger = logging.getLogger(__name__)
 
@@ -188,45 +187,22 @@ def _load_one_archetype(folder: Path, archetype: str, result: PackLoadResult) ->
         if pack_cls is None:
             logger.warning("unknown pack file '%s' in %s — skipping", file.name, folder)
             continue
-        _ingest_file(file, archetype, pack_cls, result)
-
-
-def _ingest_file(
-    path: Path,
-    archetype: str,
-    pack_cls: type,
-    result: PackLoadResult,
-) -> None:
-    raw = _read_yaml(path)
-
-    if pack_cls is EncounterPack:
-        _ingest_encounters(raw, archetype, result, path)
-    elif pack_cls is BanterPack:
-        _ingest_banter(raw, archetype, result)
-    elif pack_cls is LootPack:
-        _ingest_loot(raw, archetype, result, path)
-    elif pack_cls is EnemyPack:
-        _ingest_enemies(raw, archetype, result, path)
-    elif pack_cls is SpawnPack:
-        _ingest_spawns(raw, archetype, result)
-    elif pack_cls is AnchorPack:
-        _ingest_anchors(raw, archetype, result)
-    elif pack_cls is EntranceTextPack:
-        _ingest_entrance_texts(raw, archetype, result)
-    elif pack_cls is BarometerTextPack:
-        _ingest_barometer_texts(raw, archetype, result)
+        ingest = _INGEST_DISPATCH.get(pack_cls)
+        if ingest is None:
+            # Defensive: a schema added to PACK_KIND_FOR_FILENAME without a
+            # matching ingestor would silently no-op. Fail loudly instead.
+            msg = f"no ingestor registered for pack class {pack_cls.__name__}"
+            raise RuntimeError(msg)
+        ingest(_read_yaml(file), archetype, result)
 
 
 # ── Internals: per-pack ingestion ─────────────────────────────────────────
 
 
-def _ingest_encounters(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
-    # Inject archetype on each encounter — saves author repetition.
+def _ingest_encounters(raw: dict, archetype: str, result: PackLoadResult) -> None:
+    # Inject archetype on each encounter — saves author repetition in YAML.
     for item in raw.get("encounters", []):
         item.setdefault("archetype", archetype)
-        for choice in item.get("choices", []) or []:
-            # no archetype on choices; just ensure nested dict integrity
-            _ = choice
     pack = EncounterPack.model_validate(raw)
     result.encounters.setdefault(archetype, []).extend(pack.encounters)
 
@@ -240,7 +216,7 @@ def _ingest_banter(raw: dict, archetype: str, result: PackLoadResult) -> None:
     )
 
 
-def _ingest_loot(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
+def _ingest_loot(raw: dict, archetype: str, result: PackLoadResult) -> None:
     pack = LootPack.model_validate(raw)
     tiers: dict[int, list] = defaultdict(list)
     for item in pack.loot:
@@ -250,7 +226,7 @@ def _ingest_loot(raw: dict, archetype: str, result: PackLoadResult, path: Path) 
         per_archetype.setdefault(tier, []).extend(items)
 
 
-def _ingest_enemies(raw: dict, archetype: str, result: PackLoadResult, path: Path) -> None:
+def _ingest_enemies(raw: dict, archetype: str, result: PackLoadResult) -> None:
     for item in raw.get("enemies", []):
         item.setdefault("archetype", archetype)
     pack = EnemyPack.model_validate(raw)
@@ -291,6 +267,24 @@ def _ingest_barometer_texts(raw: dict, archetype: str, result: PackLoadResult) -
     )
 
 
+# Dispatch table: pack class → (raw_dict, archetype, result) ingestor. One
+# source of truth for "which pack type uses which ingestion routine" — adding
+# a new pack type is a two-line change (schema + dispatch row).
+
+_Ingestor = Callable[[dict, str, "PackLoadResult"], None]
+
+_INGEST_DISPATCH: dict[type, _Ingestor] = {
+    EncounterPack: _ingest_encounters,
+    BanterPack: _ingest_banter,
+    LootPack: _ingest_loot,
+    EnemyPack: _ingest_enemies,
+    SpawnPack: _ingest_spawns,
+    AnchorPack: _ingest_anchors,
+    EntranceTextPack: _ingest_entrance_texts,
+    BarometerTextPack: _ingest_barometer_texts,
+}
+
+
 # ── Internals: ability tree ───────────────────────────────────────────────
 
 
@@ -299,26 +293,21 @@ def _load_abilities_tree(abilities_root: Path, result: PackLoadResult) -> None:
         logger.debug("no abilities directory at %s — skipping", abilities_root)
         return
 
-    # Import here so non-test callers don't pay the combat-module import cost.
-    from backend.services.combat.ability_schools import Ability
-
     for file in sorted(abilities_root.iterdir()):
         if file.suffix not in {".yaml", ".yml"}:
             continue
-        raw = _read_yaml(file)
-        pack = ABILITY_PACK_CLASS.model_validate(raw)
+        pack = AbilityPack.model_validate(_read_yaml(file))
         for item in pack.abilities:
-            runtime_ability = _ability_item_to_runtime(item, Ability)
-            result.abilities.setdefault(item.school, []).append(runtime_ability)
+            result.abilities.setdefault(item.school, []).append(_to_runtime_ability(item))
 
 
-def _ability_item_to_runtime(item: AbilityItem, ability_cls: type[Ability]) -> Ability:
+def _to_runtime_ability(item: AbilityItem) -> Ability:
     """Convert a Pydantic `AbilityItem` to the runtime `Ability` dataclass.
 
     The runtime dataclass is the contract that combat code depends on;
     packs validate through Pydantic then flow through this adapter.
     """
-    return ability_cls(
+    return Ability(
         id=item.id,
         name_en=item.name_en,
         name_de=item.name_de,

@@ -18,7 +18,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { captureError } from '../../services/SentryService.js';
+import { icons } from '../../utils/icons.js';
 import { adminAnimationStyles } from '../shared/admin-shared-styles.js';
+import { buttonStyles } from '../shared/button-styles.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import './DungeonTerminalPreview.js';
 
@@ -27,6 +29,7 @@ import './DungeonTerminalPreview.js';
 export class DungeonContentEditor extends LitElement {
   static styles = [
     adminAnimationStyles,
+    buttonStyles,
     css`
       :host {
         display: block;
@@ -353,26 +356,12 @@ export class DungeonContentEditor extends LitElement {
         border-color: var(--color-text-muted);
       }
 
-      .btn-source {
-        margin-left: auto;
-        padding: var(--space-2) var(--space-4);
-        font-family: var(--font-brutalist);
-        font-size: var(--text-xs);
-        font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        background: transparent;
-        color: var(--color-text-secondary);
-        border: 1px solid var(--color-border);
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        white-space: nowrap;
-      }
+      /* The Source button uses the shared .btn .btn--ghost .btn--sm from
+       * button-styles.ts; the only footer-local override is the left-auto
+       * margin that pushes it (alongside Delete) to the trailing edge. */
 
-      .btn-source:hover {
-        color: var(--color-text-primary);
-        border-color: var(--color-text-muted);
+      .btn.btn--source {
+        margin-left: auto;
       }
 
       .btn-delete {
@@ -578,12 +567,12 @@ export class DungeonContentEditor extends LitElement {
             this.githubUrl
               ? html`
             <a
-              class="btn-source"
+              class="btn btn--ghost btn--sm btn--source"
               href=${this.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
               title=${msg('Open the YAML source for this content on GitHub')}
-            >${msg('Source')} &rarr;</a>
+            >${msg('Source')} ${icons.externalLink()}</a>
           `
               : nothing
           }

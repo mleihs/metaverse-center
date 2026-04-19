@@ -10,12 +10,14 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { DungeonContentType } from '../../services/api/DungeonContentAdminApi.js';
 import { dungeonContentApi } from '../../services/api/DungeonContentAdminApi.js';
+import { icons } from '../../utils/icons.js';
 import {
   adminAnimationStyles,
   adminLoadingStyles,
   adminSectionHeaderStyles,
   adminSubNavStyles,
 } from '../shared/admin-shared-styles.js';
+import { buttonStyles } from '../shared/button-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import './DungeonContentTable.js';
@@ -83,6 +85,7 @@ export class AdminDungeonContentTab extends LitElement {
     adminSectionHeaderStyles,
     adminLoadingStyles,
     adminSubNavStyles,
+    buttonStyles,
     css`
       :host {
         display: block;
@@ -122,7 +125,10 @@ export class AdminDungeonContentTab extends LitElement {
         cursor: default;
       }
 
-      /* ── Authoring-source notice (A1.6) ── */
+      /* ── Authoring-source notice (A1.6) ──────────────────────────────
+       * Context-specific layout for the top-of-tab banner; the action
+       * button itself uses the shared .btn .btn--ghost .btn--sm pattern
+       * from button-styles.ts (imported above). */
 
       .source-notice {
         display: flex;
@@ -145,45 +151,22 @@ export class AdminDungeonContentTab extends LitElement {
       .source-notice__title {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        font-weight: var(--font-bold, 700);
+        font-weight: var(--font-bold);
         text-transform: uppercase;
-        letter-spacing: var(--tracking-brutalist, 0.08em);
+        letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
       }
 
       .source-notice__text {
-        font-family: var(--font-mono, monospace);
+        font-family: var(--font-mono);
         font-size: var(--text-sm);
-        line-height: var(--leading-snug, 1.375);
+        line-height: var(--leading-snug);
         color: var(--color-text-secondary);
       }
 
       .source-notice__text code {
-        font-family: var(--font-mono, monospace);
+        font-family: var(--font-mono);
         color: var(--_admin-accent);
-      }
-
-      .source-link {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        padding: var(--space-1) var(--space-3);
-        font-family: var(--font-brutalist);
-        font-size: var(--text-xs);
-        font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        background: transparent;
-        color: var(--color-text-primary);
-        border: 1px solid var(--color-border);
-        text-decoration: none;
-        transition: all 0.15s ease;
-        white-space: nowrap;
-      }
-
-      .source-link:hover {
-        color: var(--_admin-accent);
-        border-color: var(--_admin-accent);
       }
 
       @media (max-width: 768px) {
@@ -375,11 +358,11 @@ export class AdminDungeonContentTab extends LitElement {
           </div>
         </div>
         <a
-          class="source-link"
+          class="btn btn--ghost btn--sm"
           href=${packsRootUrl()}
           target="_blank"
           rel="noopener noreferrer"
-        >${msg('View packs on GitHub')} &rarr;</a>
+        >${msg('View packs on GitHub')} ${icons.externalLink()}</a>
       </div>
 
       <!-- Sub-navigation -->
