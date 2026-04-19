@@ -224,10 +224,10 @@ class TestGet:
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
 
 
-# ── list_by_author ────────────────────────────────────────────────────────
+# ── list_drafts ───────────────────────────────────────────────────────────
 
 
-class TestListByAuthor:
+class TestListDrafts:
     async def test_no_filter_returns_summaries(self):
         author_id = uuid4()
         rows = [
@@ -236,7 +236,7 @@ class TestListByAuthor:
         ]
         supabase = _mock_supabase([_exec_result(data=rows, count=2)])
 
-        drafts, total = await ContentDraftsService.list_by_author(
+        drafts, total = await ContentDraftsService.list_drafts(
             supabase, author_id=author_id,
         )
         assert len(drafts) == 2
@@ -247,7 +247,7 @@ class TestListByAuthor:
         author_id = uuid4()
         supabase = _mock_supabase([_exec_result(data=[], count=0)])
 
-        drafts, total = await ContentDraftsService.list_by_author(
+        drafts, total = await ContentDraftsService.list_drafts(
             supabase,
             author_id=author_id,
             status_filter=[
@@ -268,11 +268,28 @@ class TestListByAuthor:
         # count=None → fallback path inside service.
         supabase = _mock_supabase([_exec_result(data=rows, count=None)])
 
-        drafts, total = await ContentDraftsService.list_by_author(
+        drafts, total = await ContentDraftsService.list_drafts(
             supabase, author_id=author_id,
         )
         assert total == 1
         assert len(drafts) == 1
+
+    async def test_no_author_filter_lists_all_drafts(self):
+        """Admin 'All drafts' view: author_id=None → no eq() on author_id."""
+        rows = [
+            _summary_row(author_id=uuid4()),
+            _summary_row(author_id=uuid4()),
+        ]
+        supabase = _mock_supabase([_exec_result(data=rows, count=2)])
+
+        drafts, total = await ContentDraftsService.list_drafts(supabase)
+        assert len(drafts) == 2
+        assert total == 2
+        # Critical: no eq('author_id', ...) call when author_id is None.
+        chain = supabase.table.return_value
+        assert not any(
+            c.args[0] == "author_id" for c in chain.eq.call_args_list
+        )
 
 
 # ── list_open_for_resource ────────────────────────────────────────────────
