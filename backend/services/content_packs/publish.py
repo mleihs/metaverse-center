@@ -6,8 +6,10 @@ single PR via the GitHub App. One PR per batch (decision B), even for N=1.
 Pipeline:
     1. Fetch drafts by ID; reject if any is not in 'draft' status (409).
     2. Discover repo's default branch + its current HEAD SHA.
-    3. Create a working branch off the default branch via REST.
-    4. Build YAML file paths + serialize each draft's working_content.
+    3. Build YAML file paths + serialize each draft's working_content.
+       (Runs BEFORE branch creation so an invalid path can never leave
+       an orphan branch on the repo.)
+    4. Create a working branch off the default branch via REST.
     5. Single createCommitOnBranch GraphQL mutation with all file changes.
        expectedHeadOid prevents drift; on mismatch we mark all drafts as
        conflict and surface 409 to the admin.
@@ -58,7 +60,6 @@ from backend.services.github_app import (
     get_github_app_client,
 )
 from backend.utils.errors import bad_request, conflict, not_found
-from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -122,8 +123,6 @@ class ContentPacksPublishService:
         draft_ids: list[UUID],
         github_client: GitHubAppClient | None = None,
         commit_message: str | None = None,
-        repo_owner: str | None = None,
-        repo_name: str | None = None,
     ) -> BatchPublishResult:
         """Publish N drafts as a single PR.
 
@@ -136,37 +135,35 @@ class ContentPacksPublishService:
                 singleton (`get_github_app_client()`).
             commit_message: Optional headline override (≤72 chars by model
                 validation). When None, headline derives from the draft list.
-            repo_owner / repo_name: Optional overrides; defaults from the
-                GITHUB_REPO_OWNER and GITHUB_REPO_NAME env vars (Railway).
+
+        Reads `GITHUB_REPO_OWNER` + `GITHUB_REPO_NAME` from the environment.
 
         Raises:
-            HTTPException 400: empty `draft_ids`, or env vars missing.
+            HTTPException 400: empty `draft_ids`, env vars missing, or a
+                draft's resource_path uses sub-resource notation (Phase 5+).
             HTTPException 404: a draft_id doesn't exist.
             HTTPException 409: some drafts are not in 'draft' status, OR
                 default-branch drift detected at commit time.
-            HTTPException 422: a draft's resource_path uses sub-resource
-                notation (Phase 5+ feature, not yet supported).
             GitHubAPIError: an underlying GitHub API call failed.
         """
         if not draft_ids:
             raise bad_request("draft_ids must be non-empty.")
 
         client = github_client or get_github_app_client()
-        owner = repo_owner or os.environ.get("GITHUB_REPO_OWNER")
-        name = repo_name or os.environ.get("GITHUB_REPO_NAME")
-        if not owner or not name:
+        owner = os.environ.get("GITHUB_REPO_OWNER")
+        repo = os.environ.get("GITHUB_REPO_NAME")
+        if not owner or not repo:
             raise bad_request(
                 "GITHUB_REPO_OWNER / GITHUB_REPO_NAME must be configured.",
             )
 
-        drafts = await cls._fetch_and_validate_drafts(supabase, draft_ids)
+        drafts = await cls._fetch_publishable_drafts(supabase, draft_ids)
         default_branch, head_oid = await cls._discover_default_head(
-            client, owner, name,
+            client, owner, repo,
         )
         # Build file changes BEFORE the branch — keeps invalid-path failures
-        # from leaving an orphan branch on the repo. The check runs in
-        # _build_file_change → build_file_path → 400 if Phase-5 sub-resource
-        # notation is used.
+        # from leaving an orphan branch on the repo. Validation happens in
+        # build_file_path → 400 if Phase-5 sub-resource notation is used.
         file_changes = [_build_file_change(d) for d in drafts]
         branch_name = _make_branch_name()
         logger.info(
@@ -174,13 +171,13 @@ class ContentPacksPublishService:
             len(drafts), branch_name, head_oid[:8],
         )
 
-        await cls._create_branch(client, owner, name, branch_name, head_oid)
+        await cls._create_branch(client, owner, repo, branch_name, head_oid)
 
         try:
             commit_data = await cls._create_commit(
                 client,
                 owner=owner,
-                repo=name,
+                repo=repo,
                 branch_name=branch_name,
                 head_oid=head_oid,
                 file_changes=file_changes,
@@ -207,7 +204,7 @@ class ContentPacksPublishService:
         pr_data = await cls._open_pull_request(
             client,
             owner=owner,
-            repo=name,
+            repo=repo,
             branch_name=branch_name,
             base_branch=default_branch,
             drafts=drafts,
@@ -238,27 +235,26 @@ class ContentPacksPublishService:
     # ── Internals ─────────────────────────────────────────────────────
 
     @classmethod
-    async def _fetch_and_validate_drafts(
+    async def _fetch_publishable_drafts(
         cls,
         supabase: Client,
         draft_ids: list[UUID],
     ) -> list[ContentDraft]:
-        """Load drafts and assert all are in 'draft' status.
+        """Load drafts via the service and assert all are publishable.
 
-        Returns drafts in the same order as `draft_ids` (caller may rely on
+        Returns drafts in the same order as `draft_ids` (callers rely on
         order for deterministic commit-message construction).
-        """
-        ids = [str(d) for d in draft_ids]
-        response = await (
-            supabase.table("content_drafts")
-            .select("*")
-            .in_("id", ids)
-            .execute()
-        )
-        rows = extract_list(response)
-        by_id = {r["id"]: r for r in rows}
 
-        missing = [d for d in draft_ids if str(d) not in by_id]
+        Raises:
+            HTTPException 404: any requested ID is missing.
+            HTTPException 409: any draft is not in 'draft' status.
+        """
+        rows = await ContentDraftsService.list_by_ids(
+            supabase, draft_ids=draft_ids,
+        )
+        by_id = {d.id: d for d in rows}
+
+        missing = [d for d in draft_ids if d not in by_id]
         if missing:
             raise not_found(
                 "ContentDraft",
@@ -266,7 +262,7 @@ class ContentPacksPublishService:
                 context=f"({len(missing)} of {len(draft_ids)} draft IDs not found)",
             )
 
-        drafts = [ContentDraft.model_validate(by_id[str(d)]) for d in draft_ids]
+        drafts = [by_id[d] for d in draft_ids]
         not_publishable = [
             d for d in drafts if d.status != ContentDraftStatus.DRAFT
         ]
@@ -367,8 +363,12 @@ class ContentPacksPublishService:
         drafts: list[ContentDraft],
         custom_headline: str | None,
     ) -> dict:
-        """REST: POST /repos/.../pulls. Returns the PR data dict."""
-        title, body = _make_pr_message(drafts, custom_headline)
+        """REST: POST /repos/.../pulls. Returns the PR data dict.
+
+        PR title + body reuse the commit-message helper — same content
+        because the publish unit IS the commit (one batch, one commit, one PR).
+        """
+        title, body = _make_commit_message(drafts, custom_headline)
         return await client.rest(
             "POST",
             f"/repos/{owner}/{repo}/pulls",
@@ -392,7 +392,7 @@ def build_file_path(pack_slug: str, resource_path: str) -> str:
     publish time even though the model regex allows it.
 
     Raises:
-        HTTPException 422: resource_path uses sub-resource notation.
+        HTTPException 400: resource_path uses sub-resource notation.
     """
     if not _PHASE2_RESOURCE_PATH_RE.match(resource_path):
         raise bad_request(
@@ -442,7 +442,7 @@ def _make_commit_message(
     drafts: list[ContentDraft],
     custom_headline: str | None,
 ) -> tuple[str, str]:
-    """Build (headline, body) for the publish commit.
+    """Build (headline, body) for the publish commit (also reused as PR text).
 
     Headline default:
         - 1 draft:  `content({pack_slug}): update {resource_path}`
@@ -463,14 +463,6 @@ def _make_commit_message(
         )
         body_lines.append(f"- {path} (draft {d.id})")
     return headline, "\n".join(body_lines)
-
-
-def _make_pr_message(
-    drafts: list[ContentDraft],
-    custom_headline: str | None,
-) -> tuple[str, str]:
-    """Build (title, body) for the publish PR — same shape as commit msg."""
-    return _make_commit_message(drafts, custom_headline)
 
 
 def _is_drift_error(exc: GitHubAPIError) -> bool:
