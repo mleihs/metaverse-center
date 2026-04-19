@@ -43,6 +43,7 @@ from backend.middleware.seo import (
 from backend.routers import (
     achievements,
     admin,
+    admin_content_packs,
     admin_drafts,
     agent_autonomy,
     agent_memories,
@@ -217,6 +218,7 @@ app.include_router(health.router)
 app.include_router(achievements.router)
 app.include_router(admin.router)
 app.include_router(admin_drafts.router)
+app.include_router(admin_content_packs.router)
 app.include_router(dungeon_content_admin.router)
 app.include_router(users.router)
 app.include_router(simulations.router)
