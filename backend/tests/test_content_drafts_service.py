@@ -553,6 +553,38 @@ class TestBulkTransitions:
         assert result == []
         supabase.table.return_value.execute.assert_not_called()
 
+    async def test_mark_merged_bulk_sets_merged_at_on_all(self):
+        d1, d2 = uuid4(), uuid4()
+        merged_rows = [
+            _row(draft_id=d1, status=ContentDraftStatus.MERGED),
+            _row(draft_id=d2, status=ContentDraftStatus.MERGED),
+        ]
+        supabase = _mock_supabase(
+            [_exec_result(data=[]), _exec_result(data=merged_rows)]
+        )
+
+        result = await ContentDraftsService.mark_merged_bulk(
+            supabase, draft_ids=[d1, d2],
+        )
+        assert len(result) == 2
+
+        chain = supabase.table.return_value
+        update_payload = chain.update.call_args.args[0]
+        assert update_payload["status"] == "merged"
+        assert "merged_at" in update_payload
+        # Idempotency gate.
+        assert any(
+            c.args == ("merged_at", "null") for c in chain.is_.call_args_list
+        )
+
+    async def test_mark_merged_bulk_empty_input_no_calls(self):
+        supabase = _mock_supabase([])
+        result = await ContentDraftsService.mark_merged_bulk(
+            supabase, draft_ids=[],
+        )
+        assert result == []
+        supabase.table.return_value.execute.assert_not_called()
+
     async def test_mark_conflict_bulk_transitions_all(self):
         d1, d2 = uuid4(), uuid4()
         conflict_rows = [

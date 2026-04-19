@@ -324,6 +324,45 @@ class ContentDraftsService:
         return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
+    async def mark_merged_bulk(
+        cls,
+        supabase: Client,
+        *,
+        draft_ids: list[UUID],
+    ) -> list[ContentDraft]:
+        """Atomically mark N drafts as merged on PR-merge webhook delivery.
+
+        Single SQL UPDATE = atomic. Idempotent on `merged_at IS NULL`: if
+        GitHub re-delivers the same `pull_request.closed&merged=true` event,
+        the second call leaves already-merged rows untouched (preserves
+        original merged_at for audit timing).
+
+        Caller (webhook handler) discovers the draft set via
+        `list_by_pr_number()` and passes the IDs verbatim — this method
+        does not re-validate the PR association.
+        """
+        if not draft_ids:
+            return []
+        ids = [str(d) for d in draft_ids]
+        now = datetime.now(UTC).isoformat()
+        await (
+            supabase.table(_TABLE)
+            .update(
+                {
+                    "status": ContentDraftStatus.MERGED.value,
+                    "merged_at": now,
+                }
+            )
+            .in_("id", ids)
+            .is_("merged_at", "null")
+            .execute()
+        )
+        full = await (
+            supabase.table(_TABLE).select("*").in_("id", ids).execute()
+        )
+        return [ContentDraft.model_validate(r) for r in extract_list(full)]
+
+    @classmethod
     async def mark_conflict_bulk(
         cls,
         supabase: Client,
