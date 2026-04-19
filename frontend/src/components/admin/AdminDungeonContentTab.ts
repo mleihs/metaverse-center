@@ -90,7 +90,7 @@ export class AdminDungeonContentTab extends LitElement {
       :host {
         display: block;
         color: var(--color-text-primary);
-        font-family: var(--font-mono, monospace);
+        font-family: var(--font-mono);
         --_admin-accent: var(--color-accent-gold, var(--color-accent-amber));
       }
 
@@ -162,11 +162,6 @@ export class AdminDungeonContentTab extends LitElement {
         font-size: var(--text-sm);
         line-height: var(--leading-snug);
         color: var(--color-text-secondary);
-      }
-
-      .source-notice__text code {
-        font-family: var(--font-mono);
-        color: var(--_admin-accent);
       }
 
       @media (max-width: 768px) {
@@ -351,17 +346,16 @@ export class AdminDungeonContentTab extends LitElement {
           <div class="source-notice__title">${msg('Authoring source')}</div>
           <div class="source-notice__text">
             ${msg(
-              'Content is authored as versioned YAML packs under',
-            )} <code>content/dungeon/</code>${msg(
-              '. The rows below mirror the current main branch. Direct edits here mutate the database only and will be overwritten on the next pack-backed migration – open a pull request on the source YAML for permanent changes.',
+              'Content is authored as versioned YAML packs under content/dungeon/. The rows below mirror the current main branch. Direct edits here mutate the database only and will be overwritten on the next pack-backed migration – open a pull request on the source YAML for permanent changes.',
             )}
           </div>
         </div>
         <a
-          class="btn btn--ghost btn--sm"
+          class="btn btn--info btn--sm"
           href=${packsRootUrl()}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label=${msg('View packs on GitHub (opens in new tab)')}
         >${msg('View packs on GitHub')} ${icons.externalLink()}</a>
       </div>
 
