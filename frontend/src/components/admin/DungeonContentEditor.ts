@@ -567,11 +567,11 @@ export class DungeonContentEditor extends LitElement {
             this.githubUrl
               ? html`
             <a
-              class="btn btn--ghost btn--sm btn--source"
+              class="btn btn--info btn--sm btn--source"
               href=${this.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              title=${msg('Open the YAML source for this content on GitHub')}
+              aria-label=${msg('Open this item\u2019s YAML source on GitHub (opens in new tab)')}
             >${msg('Source')} ${icons.externalLink()}</a>
           `
               : nothing
