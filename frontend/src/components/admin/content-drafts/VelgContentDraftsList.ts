@@ -534,13 +534,20 @@ export class VelgContentDraftsList extends LitElement {
 
   private _handlePublishSelected(): void {
     if (this._selected.size === 0) return;
+    const selectedIds = Array.from(this._selected);
+    const selectedDrafts = this._drafts.filter((d) => this._selected.has(d.id));
     this.dispatchEvent(
       new CustomEvent('publish-batch', {
-        detail: { ids: Array.from(this._selected) },
+        detail: { ids: selectedIds, drafts: selectedDrafts },
         bubbles: true,
         composed: true,
       }),
     );
+  }
+
+  /** Clear selection (called by parent after successful publish). */
+  clearSelection(): void {
+    this._selected = new Set();
   }
 
   private _badgeVariant(status: ContentDraftStatus) {

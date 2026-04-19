@@ -18,12 +18,14 @@ import './AdminPlatformConfigTab.js';
 import './AdminAIUsageTab.js';
 import './AdminDungeonsTab.js';
 import './AdminDungeonContentTab.js';
+import './content-drafts/VelgAdminContentDraftsTab.js';
 
 type AdminTab =
   | 'users'
   | 'simulations'
   | 'dungeons'
   | 'dungeon_content'
+  | 'content_drafts'
   | 'health'
   | 'heartbeat'
   | 'resonances'
@@ -161,6 +163,7 @@ export class VelgAdminPanel extends LitElement {
       { key: 'resonances', label: msg('Resonances'), group: msg('Systems') },
       { key: 'dungeons', label: msg('Dungeons'), group: msg('Systems') },
       { key: 'dungeon_content', label: msg('Dungeon Content'), group: msg('Systems') },
+      { key: 'content_drafts', label: msg('Content Drafts'), group: msg('Systems') },
       // AI & Generation
       {
         key: 'forge',
@@ -222,6 +225,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-dungeons-tab></velg-admin-dungeons-tab>`;
       case 'dungeon_content':
         return html`<velg-admin-dungeon-content-tab></velg-admin-dungeon-content-tab>`;
+      case 'content_drafts':
+        return html`<velg-admin-content-drafts-tab></velg-admin-content-drafts-tab>`;
       case 'scanner':
         return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
       case 'forge':
