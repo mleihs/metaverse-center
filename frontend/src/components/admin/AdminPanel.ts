@@ -123,14 +123,17 @@ export class VelgAdminPanel extends LitElement {
       animation: admin-fade-in var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1));
     }
 
+    /* NOTE: the "to" state intentionally omits translateY(0).
+       Without a closing transform, the element reverts to its base style
+       (no transform) once the animation ends. A persistent transform on
+       a layout container creates a new containing block, which scopes
+       descendants' position:fixed to this element instead of the viewport
+       and clips child side-panels/modals on the right edge. See CLAUDE.md
+       Frontend Rules, "layout container effects". */
     @keyframes admin-fade-in {
       from {
         opacity: 0;
         transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
       }
     }
 

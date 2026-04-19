@@ -798,11 +798,13 @@ export class VelgContentDraftsList extends LitElement {
 
   private _renderBatchBar() {
     const count = this._selected.size;
+    const summary =
+      count === 1
+        ? msg(str`1 of ${MAX_BATCH} selected for publish`)
+        : msg(str`${count} of ${MAX_BATCH} selected for publish`);
     return html`
       <div class="batch-bar" role="region" aria-label=${msg('Batch publish controls')}>
-        <span class="batch-bar__count">
-          ${msg(str`${count} of ${MAX_BATCH} selected for publish`)}
-        </span>
+        <span class="batch-bar__count">${summary}</span>
         <button class="btn btn--primary" @click=${this._handlePublishSelected}>
           ${icons.upload(12)} ${msg('Publish selected')}
         </button>
