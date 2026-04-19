@@ -7,8 +7,9 @@ import './AdminApiKeysTab.js';
 import './AdminModelsTab.js';
 import './AdminResearchTab.js';
 import './AdminCachingTab.js';
+import './AdminAnnouncementsTab.js';
 
-type PlatformSection = 'apikeys' | 'models' | 'research' | 'caching';
+type PlatformSection = 'apikeys' | 'models' | 'research' | 'caching' | 'announcements';
 
 @localized()
 @customElement('velg-admin-platform-config-tab')
@@ -59,6 +60,14 @@ export class VelgAdminPlatformConfigTab extends LitElement {
             this._section = 'caching';
           }}
         >${msg('Caching')}</button>
+        <button
+          class="subnav__btn ${this._section === 'announcements' ? 'subnav__btn--active' : ''}"
+          role="tab"
+          aria-selected=${this._section === 'announcements'}
+          @click=${() => {
+            this._section = 'announcements';
+          }}
+        >${msg('Announcements')}</button>
       </div>
 
       <div class="subnav__content" role="tabpanel">
@@ -77,6 +86,8 @@ export class VelgAdminPlatformConfigTab extends LitElement {
         return html`<velg-admin-research-tab></velg-admin-research-tab>`;
       case 'caching':
         return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
+      case 'announcements':
+        return html`<velg-admin-announcements-tab></velg-admin-announcements-tab>`;
     }
   }
 }

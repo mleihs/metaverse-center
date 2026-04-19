@@ -1,15 +1,18 @@
 # metaverse.center
 
-> Multiplayer worldbuilding platform with AI-driven simulations, competitive PvP epochs, and procedural Resonance Dungeons.
-> 90+ database tables, 165+ PostgreSQL functions, 450+ API endpoints, 256 web components. 6593 i18n strings (100% EN/DE). 188 SQL migrations. 104 documentation files.
+> Multiplayer worldbuilding platform with AI-driven simulations and competitive PvP epochs.
+> 60+ database tables, ~65 PostgreSQL functions, 310+ API endpoints, 150+ web components.
 > Stack: FastAPI + Lit 3 + Supabase + OpenRouter. Bilingual EN/DE.
 
-## Specifications (17)
+## Specifications
 - [AI Integration](specs/ai-integration.md)
 - [API Specification](specs/api-specification.md)
 - [Auth and Security](specs/auth-and-security.md)
-- [Dungeon Map Vertical Redesign](specs/dungeon-map-vertical-redesign.md)
+- [Dungeon Archetype Detail Pages — Implementation Spec](specs/dungeon-detail-pages.md)
+- [Dungeon Map — Vertical Sidebar Redesign](specs/dungeon-map-vertical-redesign.md)
+- [Dungeon Navigation Bridge — Detail Pages to Gameplay](specs/dungeon-navigation-bridge.md)
 - [Embassies & Ambassadors](specs/embassies.md)
+- [Epoch Auto-Resolve & Team PvP](specs/epoch-auto-resolve-team-pvp.md)
 - [Epochs & Competitive Layer](specs/epochs-competitive-layer.md)
 - [External Services](specs/external-services.md)
 - [Game Systems Design](specs/game-systems.md)
@@ -21,76 +24,56 @@
 - [Substrate Resonances: Platform-Level Event Propagation](specs/substrate-resonances.md)
 - [Substrate Scanner — Automated Real-World Event Detection](specs/substrate-scanner.md)
 - [Theming System](specs/theming-system.md)
-- [TikTok Integration](specs/tiktok-integration.md)
 
-## References (5)
+## References
+- [Database Schema Legacy: Komplettes Alt-Schema](archive/database-schema-legacy.md)
 - [Database Schema: Neues Multi-Simulations-Schema](references/database-schema.md)
 - [Design System](references/design-system.md)
 - [Domain Models](references/domain-models.md)
 - [Feature Catalog](references/feature-catalog.md)
 - [Frontend Components](references/frontend-components.md)
 
-## Guides (16)
+## Guides
+- [Implementation Plan](archive/implementation-plan.md)
+- [Alpha Suite — Bureau-Dispatch Indicators for Pre-Release Builds](guides/alpha-suite.md)
 - [Deployment Infrastructure](guides/deployment-infrastructure.md)
 - [Production Deployment Procedures](guides/deployment-procedures.md)
-- [Design Tokens Architecture](guides/design-tokens.md)
 - [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md)
-- [Forge Mobile UX Plan](guides/forge-mobile-ux.md)
-- [How to Play Restructure](guides/how-to-play-restructure.md)
 - [Local DB Reset & Storage Recovery Guide](guides/local-db-reset.md)
 - [Migration Strategy](guides/migration-strategy.md)
-- [Pillow Story Template Techniques](guides/pillow-story-templates.md)
+- [Pillow Story Template Design Guide](guides/pillow-story-templates.md)
 - [Epoch Playtest Methodology](guides/playtest-methodology.md)
 - [Public-First Architecture — Implementation Reference](guides/public-access.md)
+- [Sentry CI/CD Integration — Release Tracking, Source Maps & Post-Deploy Verification](guides/sentry-cicd-integration.md)
 - [SEO, GA4 & Deep Linking Implementation](guides/seo-implementation.md)
-- [Sentry CI/CD Integration](guides/sentry-cicd-integration.md)
 - [Simulation Blueprint](guides/simulation-blueprint.md)
 - [Simulation Creation Guide](guides/simulation-creation.md)
 - [Testing Strategy](guides/testing-strategy.md)
 
-## Explanations (5)
+## Explanations
 - [The Velgarien Multiverse — Game Design Proposal](explanations/concept-lore.md)
 - [Game Design Document](explanations/game-design-document.md)
 - [Project Overview: metaverse.center Multi-Simulations-Plattform](explanations/project-overview.md)
 - [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md)
 - [Techstack Recommendation](explanations/techstack-recommendation.md)
 
-## Research (15)
-- [AI Image Prompt Engineering](research/ai-image-prompt-engineering-research.md)
-- [The Awakening — Literary Research](research/awakening-literary-research.md)
-- [The Deluge — Literary Research](research/deluge-literary-research.md)
-- [The Deluge — Full Archetype Design](research/deluge-archetype-full-design.md)
-- [The Devouring Mother — Literary Research](research/devouring-mother-literary-research.md)
-- [The Devouring Mother — Game Mechanics Research](research/devouring-mother-game-mechanics-research.md)
-- [The Devouring Mother — Full Design Document](research/devouring-mother-full-design.md)
-- [The Devouring Mother — Implementation Plan](research/devouring-mother-implementation-plan.md)
-- [Dungeon Visual Art Direction](research/dungeon-visual-art-direction-research.md)
-- [Entropy, Decay & Degradation Mechanics in Games](research/entropy-decay-game-mechanics-research.md)
-- [The Entropy — Full Archetype Design Document](research/entropy-archetype-full-design.md)
-- [Resonance Dungeons Frontend — Research Brief](research/dungeon-frontend-deep-dive.md)
-- [The Overthrow — Literary Research](research/overthrow-literary-research.md)
-- [The Prometheus — Literary Research](research/prometheus-literary-research.md)
-- [Psychoacoustics & Dungeon Audio](research/psychoacoustics-dungeon-audio-research.md)
-
-## Analysis (12)
+## Analysis
+- [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md)
 - [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
-- [Chat Playtest Report (2026-04-04)](analysis/chat-playtest-2026-04-04.md)
-- [Dungeon Playtest Report #1 (2026-03-29)](analysis/dungeon-playtest-report-2026-03-29.md)
-- [Dungeon Playtest Report #2 (2026-03-30)](analysis/dungeon-playtest-2-report-2026-03-30.md)
 - [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md)
 - [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md)
 - [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md)
 - [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md)
 - [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md)
 - [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md)
-- [Epoch Simulation Failure — Root Cause Deepdive](analysis/epoch-simulation-failure-deepdive.md)
 
-## Audits (3)
-- [Epoch Gameplay Audit](audits/audit-epoch-gameplay-2026-03-09.md)
+## Audits
 - [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md)
-- [Resonance Dungeons Audit (2026-04-01)](audits/resonance-dungeons-audit-2026-04-01.md)
 
-## Architecture Decision Records (10)
+## Other
+- [A1.7 UI Research Findings & Architecture Plan](concepts/a1-7-ui-research-findings.md)
+
+## Architecture Decision Records
 - [ADR-001: Simulation als Row-Level Tenant](adr/001-simulation-row-level-tenant.md)
 - [ADR-002: Settings als Key-Value Store](adr/002-settings-key-value-store.md)
 - [ADR-003: Taxonomien als dynamische Tabellen](adr/003-taxonomies-dynamic-tables.md)
@@ -100,30 +83,3 @@
 - [ADR-007: Datenbank-Logik in der Datenbank](adr/007-database-logic-in-database.md)
 - [ADR-008: Resonance Function Caps Hardcoded vs. Settings](adr/008-resonance-settings-hardcoded.md)
 - [ADR-009: admin_supabase Usage Policy](adr/009-admin-supabase-usage-policy.md)
-- [ADR-010: ADR Index](adr/README.md)
-
-## Concepts (15)
-- [10 Proposals zur Tamagotchisierung](concepts/tamagotchi-proposals.md)
-- [Bureau Social Media Presence](concepts/social-media-bureau-presence.md)
-- [Dungeon Audio System](concepts/dungeon-audio-system.md)
-- [Dungeon Literary Additions](concepts/dungeon-literary-additions.md)
-- [Dungeon Multiplayer Roadmap](concepts/dungeon-multiplayer-roadmap.md)
-- [Dungeon Objektanker — Detailed Design](concepts/dungeon-objektanker-detailed.md)
-- [Dungeon Objektanker — Implementation Brief](concepts/dungeon-objektanker-implementation-brief.md)
-- [Dungeon Threshold Room](concepts/dungeon-threshold-room.md)
-- [Feature Discovery Proposals](concepts/feature-discovery-proposals.md)
-- [Game Systems Integration — Connecting the Living World](concepts/game-systems-integration.md)
-- [Icon System Audit — Three-Tier Taxonomy](concepts/icon-system-audit.md)
-- [MUD Combat & Gameplay Feasibility Analysis](concepts/mud-combat-feasibility-analysis.md)
-- [MUD/Terminal Adventure Concepts](concepts/mud-terminal-adventure-concepts.md)
-- [Post-Generation Engagement Proposals](concepts/post-generation-engagement-proposals.md)
-- [Resonance Dungeons — Full Technical Spec](concepts/resonance-dungeons-spec.md)
-
-## Plans (3)
-- [Chat System Redesign — Phase 0-7B (COMPLETE)](plans/chat-redesign-plan.md)
-- [Chat Phase 3: SSE Streaming (COMPLETE)](plans/chat-phase3-sse-streaming-plan.md)
-- [Pydantic Response Typing Refactor (COMPLETE)](plans/pydantic-response-typing-plan.md)
-
-## Archive (2)
-- [Database Schema Legacy](archive/database-schema-legacy.md)
-- [Implementation Plan (superseded)](archive/implementation-plan.md)

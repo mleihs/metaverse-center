@@ -34,6 +34,10 @@ DEFAULT_SETTINGS: dict[str, int] = {
 }
 
 
+_ALPHA_FC_ENABLED = "alpha_first_contact_modal_enabled"
+_ALPHA_FC_VERSION = "alpha_first_contact_modal_version"
+
+
 class PlatformSettingsService:
     """CRUD for platform_settings table (admin-only)."""
 
@@ -223,6 +227,35 @@ class PlatformSettingsService:
         parsed = cls._parse_dungeon_global(by_key)
         return (parsed["override_mode"], set(parsed["override_archetypes"]))
 
+    # ── Alpha First-Contact Modal ──────────────────────────────────────
+
+    @classmethod
+    async def get_alpha_first_contact_config(
+        cls,
+        admin_supabase: Client,
+    ) -> AlphaFirstContactConfig:
+        """Read the two alpha-first-contact keys as a typed public config.
+
+        Falls back to ``enabled=False`` + empty version when the rows are
+        missing so public clients never crash on a fresh database. Uses
+        admin_supabase because platform_settings has no anon RLS policy.
+        """
+        response = await (
+            admin_supabase.table(cls.table_name)
+            .select("setting_key, setting_value")
+            .in_("setting_key", [_ALPHA_FC_ENABLED, _ALPHA_FC_VERSION])
+            .execute()
+        )
+        by_key = {
+            row["setting_key"]: str(row.get("setting_value", "")).strip('"')
+            for row in (response.data or [])
+        }
+        enabled_raw = by_key.get(_ALPHA_FC_ENABLED, "false").lower()
+        return AlphaFirstContactConfig(
+            enabled=enabled_raw in ("true", "1", "yes"),
+            version=by_key.get(_ALPHA_FC_VERSION, ""),
+        )
+
     @classmethod
     async def update_dungeon_global_config(
         cls,
@@ -275,3 +308,10 @@ class DungeonClearanceConfig(TypedDict):
 
     clearance_mode: str
     clearance_threshold: int
+
+
+class AlphaFirstContactConfig(TypedDict):
+    """Projection of the alpha-first-contact-modal settings (public API)."""
+
+    enabled: bool
+    version: str

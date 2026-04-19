@@ -1,7 +1,7 @@
 """Pydantic models for epochs, operatives, scoring, and battle log."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from types import MappingProxyType
 from typing import Literal
 from uuid import UUID
@@ -272,7 +272,7 @@ class AllianceVoteResponse(BaseModel):
 OperativeType = Literal["spy", "saboteur", "propagandist", "assassin", "guardian", "infiltrator"]
 
 
-class ResonanceOpType(str, Enum):
+class ResonanceOpType(StrEnum):
     """Resonance Operation types for substrate exploitation during epochs."""
 
     SURGE_RIDING = "surge_riding"      # Aligned operative bonus (+0.08), risk: double pressure on own zones

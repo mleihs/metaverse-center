@@ -12924,10 +12924,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Admin notes</source>
   <target>Admin-Notizen</target>
 </trans-unit>
-<trans-unit id="s8c35a8053ee30a52">
-  <source>Clearance granted – welcome to the Forge, Architect</source>
-  <target>Freigabe erteilt – willkommen in der Forge, Architekt</target>
-</trans-unit>
 <trans-unit id="s6d52fcde73fadba7">
   <source>Clearance granted. <x id="0" equiv-text="${tokens}"/> starter tokens credited.</source>
   <target>Freigabe erteilt. <x id="0" equiv-text="${tokens}"/> Starter-Tokens gutgeschrieben.</target>
@@ -25474,6 +25470,114 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>more commands to unlock.</source>
         <target>weitere Befehle zum Freischalten.</target>
       
+</trans-unit>
+<trans-unit id="s9b2162e1d83c3438">
+  <source>First-contact modal setting saved.</source>
+</trans-unit>
+<trans-unit id="s7c3f206914d78b3f">
+  <source>Version bumped to <x id="0" equiv-text="${next}"/>.</source>
+</trans-unit>
+<trans-unit id="sca622f30ca076b9c">
+  <source>Bump failed.</source>
+</trans-unit>
+<trans-unit id="s8ea8b19d5fedd7e7">
+  <source>Loading announcements...</source>
+</trans-unit>
+<trans-unit id="s67e07988d679e33d">
+  <source>Alpha First-Contact Modal</source>
+</trans-unit>
+<trans-unit id="s09dc8725ce366741">
+  <source>Shown to non-member visitors once per version. Bump the version to re-announce to everyone who already dismissed it.</source>
+</trans-unit>
+<trans-unit id="sd9cea675af3b7834">
+  <source>Enable first-contact modal</source>
+</trans-unit>
+<trans-unit id="s3336be4e0b502af9">
+  <source>HIDDEN</source>
+</trans-unit>
+<trans-unit id="sf4122b220926be97">
+  <source>Version</source>
+</trans-unit>
+<trans-unit id="s2b50cce9554e2943">
+  <source>(unset)</source>
+</trans-unit>
+<trans-unit id="sa49cc6e3102c18c8">
+  <source>Bump modal version to today</source>
+</trans-unit>
+<trans-unit id="s656469d174589a51">
+  <source>Bump version</source>
+</trans-unit>
+<trans-unit id="sbc181fc05b0a16be">
+  <source>Open modal in preview mode</source>
+</trans-unit>
+<trans-unit id="sf67d6982bddc88ec">
+  <source>Open modal</source>
+</trans-unit>
+<trans-unit id="sb4b7b51b02c9d344">
+  <source>Preview does not write localStorage.</source>
+</trans-unit>
+<trans-unit id="s764b59e444d8fa03">
+  <source>Authoring source</source>
+</trans-unit>
+<trans-unit id="sf9ae79adacb6a39c">
+  <source>Content is authored as versioned YAML packs under</source>
+</trans-unit>
+<trans-unit id="scc819451667c2a7a">
+  <source>. The rows below mirror the current main branch. Direct edits here mutate the database only and will be overwritten on the next pack-backed migration – open a pull request on the source YAML for permanent changes.</source>
+</trans-unit>
+<trans-unit id="sc22bbbae62a3616e">
+  <source>View packs on GitHub</source>
+</trans-unit>
+<trans-unit id="sa999eca251c005cb">
+  <source>Announcements</source>
+</trans-unit>
+<trans-unit id="s278e6db41f2a42de">
+  <source>Open the YAML source for this content on GitHub</source>
+</trans-unit>
+<trans-unit id="s4f7a03b58834923f">
+  <source>Vorabübertragung · Fragment 42 von ???</source>
+</trans-unit>
+<trans-unit id="sbeb29fec3bdbe6d3">
+  <source>Bureau-Dossier · nicht freigegeben</source>
+</trans-unit>
+<trans-unit id="sbf3b0fe649e292c7">
+  <source>Spezimen · Signatur unvollständig</source>
+</trans-unit>
+<trans-unit id="s0557ee16099cd18c">
+  <source>Alpha-Manifest · Störungen erwartet</source>
+</trans-unit>
+<trans-unit id="s46be6e90f361c456">
+  <source>Velgarien alpha build</source>
+</trans-unit>
+<trans-unit id="sab7df23b6ca99c77">
+  <source>transmission noise detected</source>
+</trans-unit>
+<trans-unit id="s4592850c14d1d82b">
+  <source>dispatch</source>
+</trans-unit>
+<trans-unit id="s61425b6ecdc4589d">
+  <source>Bureau · Dispatch · Alpha</source>
+</trans-unit>
+<trans-unit id="s1c93959e564f18a7">
+  <source>Erstkontakt</source>
+</trans-unit>
+<trans-unit id="s6d99845533937339">
+  <source>Velgarien ist eine Vorausschau. Welten, Agenten, Epochen – manches ist endgültig, vieles wird sich verschieben. Spielstände können zurückgesetzt werden, Routen brechen, Signaturen wandern.</source>
+</trans-unit>
+<trans-unit id="sbea05eca99abdb2d">
+  <source>Wenn du das trägst: willkommen im Vorlauf. Wenn nicht: komm später wieder, wenn die Übertragung stabiler ist.</source>
+</trans-unit>
+<trans-unit id="s08038220c77521ee">
+  <source>Dispatch öffnen</source>
+</trans-unit>
+<trans-unit id="s249d2b243fff9d06">
+  <source>Verstanden – weiter zur Übertragung</source>
+</trans-unit>
+<trans-unit id="sf6faa5d805f8a53e">
+  <source>classified</source>
+</trans-unit>
+<trans-unit id="s1ca92e4b0a029c4f">
+  <source>redacted: <x id="0" equiv-text="${labelText}"/></source>
 </trans-unit>
 
 </body>
