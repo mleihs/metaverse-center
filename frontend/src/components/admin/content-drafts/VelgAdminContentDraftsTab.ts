@@ -157,6 +157,7 @@ export class VelgAdminContentDraftsTab extends LitElement {
         @panel-close=${this._handleEditorClose}
       >
         <velg-content-draft-editor
+          slot="content"
           draft-id=${this._editorDraftId ?? ''}
           ?create-mode=${this._editorCreateMode}
           @editor-close=${this._handleEditorClose}
