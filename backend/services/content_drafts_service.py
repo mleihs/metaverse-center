@@ -104,27 +104,32 @@ class ContentDraftsService:
         return ContentDraft.model_validate(data)
 
     @classmethod
-    async def list_by_author(
+    async def list_drafts(
         cls,
         supabase: Client,
         *,
-        author_id: UUID,
+        author_id: UUID | None = None,
         status_filter: list[ContentDraftStatus] | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[ContentDraftSummary], int]:
-        """List drafts for a single author (most recent first).
+        """List drafts (most recent first), optionally filtered by author.
 
-        Returns (drafts, total_count). The default `status_filter` is
-        None = all statuses; callers typically filter to
-        [DRAFT, CONFLICT] for the "in-progress" view.
+        Returns (drafts, total_count). When `author_id` is None, returns ALL
+        drafts in the system — meant for the platform-admin "All drafts"
+        view (RLS already restricts table access to platform admins). Pass
+        `author_id` for the "My drafts" view.
+
+        The default `status_filter` is None = all statuses; UI typically
+        filters to [DRAFT, CONFLICT] for the "in-progress" tab.
         """
         query = (
             supabase.table(_TABLE)
             .select(_SUMMARY_COLUMNS, count="exact")
-            .eq("author_id", str(author_id))
             .order("updated_at", desc=True)
         )
+        if author_id is not None:
+            query = query.eq("author_id", str(author_id))
         if status_filter:
             query = query.in_("status", [s.value for s in status_filter])
         query = query.range(offset, offset + limit - 1)

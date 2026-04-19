@@ -1,0 +1,253 @@
+"""Admin CRUD + publish endpoints for content drafts (A1.7 Phase 2/4 step 3).
+
+All endpoints gated by `require_platform_admin()`. Drafts are platform-level
+(not per-simulation), so audit-log entries always carry `simulation_id=None`.
+
+Endpoints:
+    GET    /api/v1/admin/content-drafts                 — list (paginated, filtered)
+    GET    /api/v1/admin/content-drafts/{draft_id}      — single
+    POST   /api/v1/admin/content-drafts                 — create
+    PATCH  /api/v1/admin/content-drafts/{draft_id}      — update working content (version-aware)
+    DELETE /api/v1/admin/content-drafts/{draft_id}      — abandon (decision C: state-gated)
+    POST   /api/v1/admin/content-drafts/publish         — batch publish via GitHub App
+
+Decision C (DELETE semantics, "die sauberste Lösung"):
+    - draft / conflict → abandon (transition to 'abandoned')
+    - published → 409 (revert via PR close or wait for webhook)
+    - merged → 409 (terminal, cannot delete)
+    - abandoned → 409 (already abandoned)
+    Hard-delete remains a service-only operation (`ContentDraftsService.hard_delete`)
+    accessible via direct SQL/console only — no route exposes it.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query, Request
+
+from backend.dependencies import (
+    get_effective_supabase,
+    require_platform_admin,
+)
+from backend.middleware.rate_limit import (
+    RATE_LIMIT_ADMIN_MUTATION,
+    RATE_LIMIT_EXTERNAL_API,
+    RATE_LIMIT_STANDARD,
+    limiter,
+)
+from backend.models.common import (
+    CurrentUser,
+    DeleteResponse,
+    PaginatedResponse,
+    SuccessResponse,
+)
+from backend.models.content_drafts import (
+    BatchPublishRequest,
+    BatchPublishResult,
+    ContentDraft,
+    ContentDraftCreate,
+    ContentDraftStatus,
+    ContentDraftSummary,
+    ContentDraftUpdate,
+)
+from backend.services.audit_service import AuditService
+from backend.services.content_drafts_service import ContentDraftsService
+from backend.services.content_packs.publish import ContentPacksPublishService
+from backend.utils.errors import conflict
+from backend.utils.responses import paginated
+from supabase import AsyncClient as Client
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(
+    prefix="/api/v1/admin/content-drafts",
+    tags=["Admin / Content Drafts"],
+)
+
+# Statuses for which DELETE is allowed. The state machine in migration 226
+# also enforces this at the DB level, but the route surfaces a friendly 409
+# instead of the raw trigger error.
+_DELETABLE_STATUSES = frozenset(
+    {ContentDraftStatus.DRAFT, ContentDraftStatus.CONFLICT}
+)
+
+
+# ── Read ──────────────────────────────────────────────────────────────────
+
+
+@router.get("")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def list_content_drafts(
+    request: Request,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+    author_id: Annotated[
+        UUID | None,
+        Query(description="Filter to a specific author. Omit for all drafts."),
+    ] = None,
+    status: Annotated[
+        list[ContentDraftStatus] | None,
+        Query(description="Repeat to filter by multiple statuses (e.g. ?status=draft&status=conflict)."),
+    ] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> PaginatedResponse[ContentDraftSummary]:
+    """List content drafts (admin-only)."""
+    drafts, total = await ContentDraftsService.list_drafts(
+        supabase,
+        author_id=author_id,
+        status_filter=status,
+        limit=limit,
+        offset=offset,
+    )
+    return paginated(drafts, total, limit, offset)
+
+
+@router.get("/{draft_id}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def get_content_draft(
+    request: Request,
+    draft_id: UUID,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ContentDraft]:
+    """Fetch a single draft (full row, including base_content + working_content)."""
+    draft = await ContentDraftsService.get(supabase, draft_id)
+    return SuccessResponse(data=draft)
+
+
+# ── Mutate ────────────────────────────────────────────────────────────────
+
+
+@router.post("", status_code=201)
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def create_content_draft(
+    request: Request,
+    body: ContentDraftCreate,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ContentDraft]:
+    """Open a new draft on a resource."""
+    draft = await ContentDraftsService.create(
+        supabase, author_id=user.id, payload=body,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,  # platform-level — no simulation
+        user.id,
+        "content_drafts",
+        draft.id,
+        "create",
+        details={
+            "pack_slug": draft.pack_slug,
+            "resource_path": draft.resource_path,
+        },
+    )
+    return SuccessResponse(data=draft)
+
+
+@router.patch("/{draft_id}")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def update_content_draft(
+    request: Request,
+    draft_id: UUID,
+    body: ContentDraftUpdate,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ContentDraft]:
+    """Save working_content. Optimistic-concurrency: pass current `version`."""
+    draft = await ContentDraftsService.update_working(
+        supabase,
+        draft_id=draft_id,
+        working_content=body.working_content,
+        expected_version=body.version,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        draft_id,
+        "update",
+        details={"version": draft.version},
+    )
+    return SuccessResponse(data=draft)
+
+
+@router.delete("/{draft_id}")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def delete_content_draft(
+    request: Request,
+    draft_id: UUID,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[DeleteResponse]:
+    """Abandon a draft (decision C: state-gated, no hard delete from API).
+
+    - draft / conflict → 'abandoned'
+    - published → 409 (close the PR or wait for webhook revert first)
+    - merged / abandoned → 409 (terminal)
+    """
+    current = await ContentDraftsService.get(supabase, draft_id)
+    if current.status not in _DELETABLE_STATUSES:
+        raise conflict(
+            f"Cannot delete draft in status '{current.status.value}'. "
+            f"Only 'draft' or 'conflict' drafts can be abandoned via this endpoint. "
+            f"For published drafts, close the PR (webhook reverts to draft) or wait for merge.",
+        )
+    await ContentDraftsService.abandon(supabase, draft_id=draft_id)
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        draft_id,
+        "abandon",
+        details={"prior_status": current.status.value},
+    )
+    return SuccessResponse(data=DeleteResponse(deleted=True, id=str(draft_id)))
+
+
+# ── Publish ───────────────────────────────────────────────────────────────
+
+
+@router.post("/publish")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def publish_content_drafts(
+    request: Request,
+    body: BatchPublishRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[BatchPublishResult]:
+    """Batch-publish N drafts as a single PR (decision B: one PR per batch).
+
+    Hits GitHub via the App: createCommitOnBranch + open PR. Drafts must be
+    in 'draft' status; mismatches surface 409. Default-branch drift surfaces
+    409 + auto-marks all drafts in the batch as 'conflict'. See
+    `backend/services/content_packs/publish.py` for the full pipeline.
+    """
+    result = await ContentPacksPublishService.publish_batch(
+        supabase,
+        draft_ids=body.draft_ids,
+        commit_message=body.commit_message,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        None,  # batch op — no single entity_id
+        "publish",
+        details={
+            "draft_ids": [str(d) for d in body.draft_ids],
+            "draft_count": result.draft_count,
+            "pr_number": result.pr_number,
+            "pr_url": result.pr_url,
+            "commit_sha": result.commit_sha,
+            "branch_name": result.branch_name,
+        },
+    )
+    return SuccessResponse(data=result)
