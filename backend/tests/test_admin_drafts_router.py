@@ -177,6 +177,119 @@ class TestListDrafts:
         ), f"Expected eq('author_id', '{author}') in {eq_calls}"
 
 
+# ── List by PR ────────────────────────────────────────────────────────────
+
+
+class TestListByPr:
+    def test_returns_full_drafts(self, client):
+        d1, d2 = uuid4(), uuid4()
+        rows = [
+            _draft_row(draft_id=d1, pr_number=42),
+            _draft_row(draft_id=d2, pr_number=42),
+        ]
+        supabase = _mock_supabase([_exec_result(data=rows)])
+        _override_admin(supabase)
+
+        r = client.get("/api/v1/admin/content-drafts/by-pr/42")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert len(body["data"]) == 2
+        # Full rows include JSONB blobs (matches service return type).
+        assert body["data"][0]["working_content"]
+        assert body["data"][0]["base_content"]
+        # Service was queried with eq("pr_number", 42).
+        chain = supabase.table.return_value
+        assert any(
+            c.args == ("pr_number", 42) for c in chain.eq.call_args_list
+        ), f"Expected eq('pr_number', 42) in {chain.eq.call_args_list}"
+
+    def test_empty_when_no_matches(self, client):
+        supabase = _mock_supabase([_exec_result(data=[])])
+        _override_admin(supabase)
+
+        r = client.get("/api/v1/admin/content-drafts/by-pr/9999")
+        assert r.status_code == 200
+        assert r.json()["data"] == []
+
+    def test_non_integer_pr_returns_422(self, client):
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.get("/api/v1/admin/content-drafts/by-pr/not-a-number")
+        assert r.status_code == 422
+
+
+# ── List open for resource ────────────────────────────────────────────────
+
+
+class TestListOpenForResource:
+    def test_returns_summaries(self, client):
+        rows = [_summary_row(pack_slug="shadow", resource_path="banter")]
+        supabase = _mock_supabase([_exec_result(data=rows)])
+        _override_admin(supabase)
+
+        r = client.get(
+            "/api/v1/admin/content-drafts/open-for-resource"
+            "?pack_slug=shadow&resource_path=banter"
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert len(body["data"]) == 1
+        assert body["data"][0]["pack_slug"] == "shadow"
+        # Summary projection — no JSONB blobs.
+        assert "working_content" not in body["data"][0]
+        assert "base_content" not in body["data"][0]
+        # Service filtered to open states via in_('status', ['draft','conflict']).
+        chain = supabase.table.return_value
+        in_calls = chain.in_.call_args_list
+        assert any(
+            c.args[0] == "status" and set(c.args[1]) == {"draft", "conflict"}
+            for c in in_calls
+        ), f"Expected in_('status', ['draft','conflict']) in {in_calls}"
+
+    def test_empty_when_no_open_drafts(self, client):
+        supabase = _mock_supabase([_exec_result(data=[])])
+        _override_admin(supabase)
+
+        r = client.get(
+            "/api/v1/admin/content-drafts/open-for-resource"
+            "?pack_slug=shadow&resource_path=banter"
+        )
+        assert r.status_code == 200
+        assert r.json()["data"] == []
+
+    def test_missing_query_params_returns_422(self, client):
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.get("/api/v1/admin/content-drafts/open-for-resource")
+        assert r.status_code == 422
+
+    def test_invalid_pack_slug_returns_422(self, client):
+        """pack_slug query param enforces same regex as ContentDraftCreate."""
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.get(
+            "/api/v1/admin/content-drafts/open-for-resource"
+            "?pack_slug=Bad-Slug&resource_path=banter"
+        )
+        assert r.status_code == 422
+
+    def test_path_traversal_pack_slug_rejected(self, client):
+        """Defense in depth: query regex matches ContentDraftCreate's guard."""
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.get(
+            "/api/v1/admin/content-drafts/open-for-resource"
+            "?pack_slug=../secret&resource_path=banter"
+        )
+        assert r.status_code == 422
+
+
 # ── Get single ────────────────────────────────────────────────────────────
 
 
