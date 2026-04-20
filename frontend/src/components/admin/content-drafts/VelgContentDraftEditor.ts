@@ -45,7 +45,7 @@ import '../../shared/VelgBadge.js';
 import { VelgToast } from '../../shared/Toast.js';
 import './VelgContentDraftConflictView.js';
 import { type JsonEditorHandle, mountJsonEditor } from './codemirror-json-editor.js';
-import { getSchemaForResource } from './content-schemas.js';
+import { ABILITY_PACK_SLUG, getSchemaForResource } from './content-schemas.js';
 
 /** Initial content for a blank-start draft (admin chose a resource that
  *  has no on-disk YAML yet OR explicitly opted for empty). Derives the
@@ -446,10 +446,16 @@ export class VelgContentDraftEditor extends LitElement {
   protected updated(changed: Map<PropertyKey, unknown>): void {
     const host = this.shadowRoot?.querySelector<HTMLElement>('.editor__host');
 
-    // Rebuild CM when the schema changes (draft switched to a different
-    // resource_path). Teardown + re-mount because jsonSchema() is wired as
-    // a static extension; swapping schemas mid-session isn't supported.
-    const schemaKey = this._draft?.resource_path ?? null;
+    // Rebuild CM only when the EFFECTIVE schema changes. For archetype
+    // drafts the schema is keyed by resource_path (banter, encounters, …);
+    // for ability drafts every school (spy, assassin, …) resolves to the
+    // same ABILITY_ITEM schema, so collapsing ability drafts under the
+    // single sentinel `abilities:` avoids a wasteful teardown+remount
+    // when the admin flicks between schools. jsonSchema() is wired as a
+    // static extension and can't be swapped in place.
+    const packSlug = this._draft?.pack_slug ?? null;
+    const resourcePath = this._draft?.resource_path ?? null;
+    const schemaKey = packSlug === ABILITY_PACK_SLUG ? 'abilities:' : (resourcePath ?? null);
     if (this._cmEditor && this._cmSchemaKey !== schemaKey) {
       this._cmEditor.destroy();
       this._cmEditor = null;
@@ -458,7 +464,9 @@ export class VelgContentDraftEditor extends LitElement {
     if (host && !this._cmEditor) {
       this._cmEditor = mountJsonEditor(host, {
         initialDoc: this._textareaValue,
-        schema: schemaKey ? getSchemaForResource(schemaKey) : undefined,
+        schema: resourcePath
+          ? getSchemaForResource(resourcePath, packSlug ?? undefined)
+          : undefined,
         readonly: this._readOnly,
         rootNode: this.shadowRoot ?? undefined,
         onChange: (doc) => {
