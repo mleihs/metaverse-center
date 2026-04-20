@@ -137,8 +137,53 @@ class ContentDraftsService:
 
         rows = extract_list(response)
         total = response.count if response.count is not None else len(rows)
+        await cls._attach_author_emails(supabase, rows)
         summaries = [ContentDraftSummary.model_validate(r) for r in rows]
         return summaries, total
+
+    @classmethod
+    async def _attach_author_emails(
+        cls, supabase: Client, rows: list[dict[str, Any]],
+    ) -> None:
+        """Enrich rows with `author_email` via the `get_user_emails_batch` RPC.
+
+        Mutates `rows` in place. Uses the SECURITY DEFINER RPC from migration
+        044 rather than a direct `auth.users` join because PostgREST does not
+        expose the `auth` schema for embedding. The admin-only caller chain
+        uses `get_effective_supabase` which elevates to service_role for
+        platform admins — a prerequisite for the RPC's GRANT.
+
+        Silent failure by design: a failed email lookup leaves
+        `author_email` unset (null), the drafts list still renders with the
+        short-UUID fallback in the UI. Observability goes through
+        `captureError` via the caller's own error handling if needed — here
+        we just log at warning.
+        """
+        if not rows:
+            return
+        author_ids = sorted(
+            {r["author_id"] for r in rows if r.get("author_id")}
+        )
+        if not author_ids:
+            return
+        try:
+            email_resp = await supabase.rpc(
+                "get_user_emails_batch", {"user_ids": author_ids},
+            ).execute()
+            email_map: dict[str, str] = {
+                row["id"]: row["email"]
+                for row in (extract_list(email_resp) or [])
+            }
+        except Exception:  # noqa: BLE001 — non-fatal enrichment
+            logger.warning(
+                "get_user_emails_batch failed for %d author(s); "
+                "drafts list will render without email",
+                len(author_ids),
+                exc_info=True,
+            )
+            return
+        for row in rows:
+            row["author_email"] = email_map.get(row.get("author_id"))
 
     @classmethod
     async def list_open_for_resource(
@@ -334,6 +379,62 @@ class ContentDraftsService:
             draft_id=draft_id,
             updates={"status": ContentDraftStatus.ABANDONED.value},
         )
+
+    @classmethod
+    async def resolve_conflict(
+        cls,
+        supabase: Client,
+        *,
+        draft_id: UUID,
+        merged_working_content: dict[str, Any],
+        expected_version: int,
+    ) -> ContentDraft:
+        """Transition conflict → draft with admin-approved merged content (A1.7 Phase 5).
+
+        Writes `merged_working_content` as the new `working_content`, bumps
+        `version`, and clears the stale publish metadata (commit_sha,
+        pr_number, pr_url, published_at, expected_head_oid).
+
+        The state-machine trigger (migration 226) enforces the conflict→draft
+        edge; the `.eq("status", "conflict")` filter here surfaces a clean
+        409 if the draft has raced to another state since preview.
+
+        `expected_version` gates the update optimistically: if the draft was
+        modified in another session between preview and resolve, the update
+        affects 0 rows and we raise 409.
+
+        `base_sha` is deliberately NOT updated here. publish.py re-fetches
+        main's HEAD fresh at every publish (see `discover_default_head` in
+        publish.py), so `expected_head_oid` is derived per-publish and the
+        stored `base_sha` has no effect on drift detection. A future
+        field-level merge path might use it as the common-ancestor pin,
+        but for MVP we keep the column frozen at its draft-open value.
+        """
+        new_version = expected_version + 1
+        updates: dict[str, Any] = {
+            "status": ContentDraftStatus.DRAFT.value,
+            "working_content": merged_working_content,
+            "version": new_version,
+            # Clear the stale publish-era metadata; the admin may re-publish,
+            # which starts the GitHub dance from scratch.
+            "expected_head_oid": None,
+            "commit_sha": None,
+            "pr_number": None,
+            "pr_url": None,
+            "published_at": None,
+        }
+
+        response = await (
+            supabase.table(_TABLE)
+            .update(updates)
+            .eq("id", str(draft_id))
+            .eq("status", ContentDraftStatus.CONFLICT.value)
+            .eq("version", expected_version)
+            .execute()
+        )
+        if not response.data:
+            await cls._raise_conflict_or_not_found_detail(supabase, draft_id)
+        return ContentDraft.model_validate(response.data[0])
 
     # ── Update — bulk status transitions ──────────────────────────────
     # Used by batch publish (mark_published_bulk on success, mark_conflict_bulk
@@ -587,3 +688,44 @@ class ContentDraftsService:
                 "Draft was modified by another session. Please refresh and retry.",
             )
         raise not_found(_TABLE, draft_id)
+
+    @classmethod
+    async def _raise_conflict_or_not_found_detail(
+        cls,
+        supabase: Client,
+        draft_id: UUID,
+    ) -> None:
+        """Like `_raise_conflict_or_not_found`, but also checks status='conflict'.
+
+        Used by `resolve_conflict` which has three possible failure modes
+        (missing, status-mismatch, version-mismatch) and benefits from a
+        status-specific 409 message.
+        """
+        response = await (
+            supabase.table(_TABLE)
+            .select("status, version")
+            .eq("id", str(draft_id))
+            .limit(1)
+            .execute()
+        )
+        row = extract_one(response)
+        if not row:
+            raise not_found(_TABLE, draft_id)
+        current_status = row.get("status")
+        if current_status != ContentDraftStatus.CONFLICT.value:
+            logger.warning(
+                "Resolve called on draft %s in status %s (expected 'conflict')",
+                draft_id, current_status,
+            )
+            raise conflict(
+                f"Draft is in status '{current_status}' — resolve is only "
+                f"allowed for drafts in 'conflict' status.",
+            )
+        logger.warning(
+            "Content-draft resolve optimistic-lock conflict (id=%s, db_version=%s)",
+            draft_id, row.get("version"),
+        )
+        raise conflict(
+            "Draft was modified by another session. Please refresh the "
+            "conflict preview and retry.",
+        )

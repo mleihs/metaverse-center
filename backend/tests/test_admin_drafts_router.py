@@ -28,8 +28,11 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser
 from backend.models.content_drafts import (
     BatchPublishResult,
+    ConflictPreview,
+    ContentDraft,
     ContentDraftStatus,
     ContentDraftSummary,
+    EntryConflictDTO,
 )
 
 # ── Test helpers ──────────────────────────────────────────────────────────
@@ -535,3 +538,252 @@ class TestPublishDrafts:
             json={"draft_ids": too_many},
         )
         assert r.status_code == 422
+
+
+# ── Conflict preview (Phase 5) ────────────────────────────────────────────
+
+
+class TestConflictPreview:
+    def test_calls_service_and_returns_preview(self, client):
+        d_id = uuid4()
+        supabase = _mock_supabase([])  # service is fully mocked
+        _override_admin(supabase)
+
+        fake_preview = ConflictPreview(
+            draft_id=d_id,
+            version=3,
+            base={"banter": [{"id": "a", "text": "x"}]},
+            ours={"banter": [{"id": "a", "text": "x-ours"}]},
+            theirs={"banter": [{"id": "a", "text": "x-theirs"}]},
+            merged={"banter": [{"id": "a", "text": "x-ours"}]},
+            conflicts=[
+                EntryConflictDTO(
+                    path=".banter[id=a]",
+                    kind="modify_modify",
+                    base={"id": "a", "text": "x"},
+                    ours={"id": "a", "text": "x-ours"},
+                    theirs={"id": "a", "text": "x-theirs"},
+                )
+            ],
+            auto_resolved_count=0,
+            main_base_sha="abcdef1234",
+        )
+
+        with patch(
+            "backend.routers.admin_drafts.ContentPacksConflictService.generate_preview",
+            new=AsyncMock(return_value=fake_preview),
+        ) as mock_preview:
+            r = client.get(f"/api/v1/admin/content-drafts/{d_id}/conflict-preview")
+
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["data"]["draft_id"] == str(d_id)
+        assert body["data"]["auto_resolved_count"] == 0
+        assert len(body["data"]["conflicts"]) == 1
+        assert body["data"]["conflicts"][0]["kind"] == "modify_modify"
+        assert body["data"]["main_base_sha"] == "abcdef1234"
+        call_kwargs = mock_preview.call_args.kwargs
+        assert call_kwargs["draft_id"] == d_id
+
+    def test_non_uuid_draft_id_returns_422(self, client):
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.get("/api/v1/admin/content-drafts/not-a-uuid/conflict-preview")
+        assert r.status_code == 422
+
+
+# ── Resolve conflict (Phase 5) ────────────────────────────────────────────
+
+
+class TestResolveConflict:
+    def test_transitions_conflict_to_draft_and_audits(self, client):
+        d_id = uuid4()
+        # DB sequence: (1) UPDATE returns updated row, (2) audit_log INSERT.
+        updated_row = _draft_row(
+            draft_id=d_id,
+            status=ContentDraftStatus.DRAFT,
+            version=4,
+        )
+        updated_row["working_content"] = {
+            "banter": [{"id": "a", "text": "merged"}]
+        }
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[updated_row]),  # resolve UPDATE
+                _exec_result(data=[]),              # audit insert
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {
+                    "banter": [{"id": "a", "text": "merged"}]
+                },
+                "version": 3,
+                "acknowledged_conflict_paths": [".banter[id=a]"],
+            },
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["data"]["status"] == "draft"
+        assert body["data"]["version"] == 4
+
+        # Verify the UPDATE was gated on status='conflict' + version=3.
+        chain = supabase.table.return_value
+        eq_calls = chain.eq.call_args_list
+        assert any(c.args == ("status", "conflict") for c in eq_calls)
+        assert any(c.args == ("version", 3) for c in eq_calls)
+
+    def test_version_mismatch_returns_409(self, client):
+        d_id = uuid4()
+        # UPDATE returns empty (gate miss) → service re-reads the row for
+        # status disambiguation. We return the row at status='conflict' so
+        # the error message specifies version-mismatch, not status-mismatch.
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[]),             # resolve UPDATE misses
+                _exec_result(
+                    data=[{"status": "conflict", "version": 7}]
+                ),  # re-read
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {"banter": []},
+                "version": 3,
+                "acknowledged_conflict_paths": [],
+            },
+        )
+        assert r.status_code == 409
+        assert "modified by another session" in r.json()["detail"].lower()
+
+    def test_status_mismatch_returns_409(self, client):
+        d_id = uuid4()
+        # Draft raced to 'published' after the admin opened the preview.
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[]),            # UPDATE misses
+                _exec_result(
+                    data=[{"status": "published", "version": 7}]
+                ),  # re-read
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {},
+                "version": 7,
+                "acknowledged_conflict_paths": [],
+            },
+        )
+        assert r.status_code == 409
+        detail = r.json()["detail"].lower()
+        assert "'published'" in detail
+        assert "only allowed for drafts in 'conflict'" in detail
+
+    def test_draft_not_found_returns_404(self, client):
+        d_id = uuid4()
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[]),  # UPDATE misses
+                _exec_result(data=[]),  # re-read finds nothing
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {},
+                "version": 1,
+                "acknowledged_conflict_paths": [],
+            },
+        )
+        assert r.status_code == 404
+
+    def test_empty_acknowledged_paths_is_valid(self, client):
+        """Admin may resolve without acknowledging any conflict paths
+        (e.g. accepting the auto-merge output as-is)."""
+        d_id = uuid4()
+        updated_row = _draft_row(
+            draft_id=d_id,
+            status=ContentDraftStatus.DRAFT,
+            version=2,
+        )
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[updated_row]),
+                _exec_result(data=[]),
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {"banter": []},
+                "version": 1,
+                # acknowledged_conflict_paths omitted → defaults to []
+            },
+        )
+        assert r.status_code == 200
+
+    def test_version_below_one_returns_422(self, client):
+        """Model enforces ge=1 on version."""
+        d_id = uuid4()
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {},
+                "version": 0,
+                "acknowledged_conflict_paths": [],
+            },
+        )
+        assert r.status_code == 422
+
+    def test_also_captures_draft_model_content(self, client):
+        """Response carries the full ContentDraft projection."""
+        d_id = uuid4()
+        updated_row = _draft_row(
+            draft_id=d_id,
+            status=ContentDraftStatus.DRAFT,
+            version=2,
+        )
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[updated_row]),
+                _exec_result(data=[]),
+            ]
+        )
+        _override_admin(supabase)
+
+        r = client.post(
+            f"/api/v1/admin/content-drafts/{d_id}/resolve",
+            json={
+                "merged_working_content": {},
+                "version": 1,
+                "acknowledged_conflict_paths": [],
+            },
+        )
+        assert r.status_code == 200
+        data = r.json()["data"]
+        # The response is a full ContentDraft: base_content + working_content
+        # both present (both JSONB fields included in the projection).
+        assert "base_content" in data
+        assert "working_content" in data
+        parsed = ContentDraft.model_validate(data)
+        assert parsed.id == d_id
+        assert parsed.status == ContentDraftStatus.DRAFT

@@ -1,0 +1,398 @@
+"""Unit tests for the 3-way merge service (A1.7 Phase 5).
+
+Coverage targets:
+    - All auto-resolvable cases (both id-list entries and top-level scalars)
+    - All four conflict kinds × both shapes (entry + scalar)
+    - Ordering semantics (ours-first, theirs-only appended)
+    - Mixed content (some conflicts + some auto-resolutions in one tree)
+    - Edge cases: empty list, list without id, base/ours/theirs all missing
+    - Default-to-ours/theirs policy per conflict kind
+"""
+
+from __future__ import annotations
+
+from backend.services.content_packs.merge_service import (
+    ConflictKind,
+    MergeResult,
+    merge_content,
+)
+
+
+def _entry(entry_id: str, text: str) -> dict:
+    return {"id": entry_id, "text_de": text}
+
+
+# ── Auto-resolvable: no-change + one-sided ────────────────────────────────
+
+
+def test_no_changes_anywhere() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    result = merge_content(base, dict(base), dict(base))
+    assert result.conflicts == []
+    assert result.merged == base
+    assert result.auto_resolved_count == 0
+
+
+def test_only_ours_modified() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x-ours")]}
+    theirs = dict(base)
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x-ours")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_only_theirs_modified() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = dict(base)
+    theirs = {"banter": [_entry("a", "x-theirs")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x-theirs")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_convergent_edit_auto_resolves() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    same_edit = {"banter": [_entry("a", "x-shared")]}
+    result = merge_content(base, same_edit, dict(same_edit))
+    assert result.conflicts == []
+    assert result.merged == same_edit
+    assert result.auto_resolved_count == 1
+
+
+def test_ours_adds_entry_theirs_unchanged() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    theirs = dict(base)
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_theirs_adds_entry_ours_unchanged() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = dict(base)
+    theirs = {"banter": [_entry("a", "x"), _entry("c", "z")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x"), _entry("c", "z")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_both_sides_add_disjoint_entries() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x"), _entry("b", "by-ours")]}
+    theirs = {"banter": [_entry("a", "x"), _entry("c", "by-theirs")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    # Output preserves ours-order for "a" + "b"; theirs-only "c" appended.
+    assert result.merged == {
+        "banter": [
+            _entry("a", "x"),
+            _entry("b", "by-ours"),
+            _entry("c", "by-theirs"),
+        ]
+    }
+    assert result.auto_resolved_count == 2
+
+
+def test_both_sides_add_same_entry_same_content() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x"), _entry("b", "same")]}
+    theirs = {"banter": [_entry("a", "x"), _entry("b", "same")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == theirs
+    assert result.auto_resolved_count == 1
+
+
+def test_both_sides_delete_same_entry() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    ours = {"banter": [_entry("a", "x")]}
+    theirs = {"banter": [_entry("a", "x")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_ours_deletes_theirs_unchanged_auto_deletes() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    ours = {"banter": [_entry("a", "x")]}
+    theirs = dict(base)
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x")]}
+    assert result.auto_resolved_count == 1
+
+
+def test_theirs_deletes_ours_unchanged_auto_deletes() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    ours = dict(base)
+    theirs = {"banter": [_entry("a", "x")]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"banter": [_entry("a", "x")]}
+    assert result.auto_resolved_count == 1
+
+
+# ── Conflicts: id-list entry ──────────────────────────────────────────────
+
+
+def test_modify_modify_entry_conflict_defaults_to_ours() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x-ours")]}
+    theirs = {"banter": [_entry("a", "x-theirs")]}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.MODIFY_MODIFY
+    assert c.path == ".banter[id=a]"
+    assert c.base == _entry("a", "x")
+    assert c.ours == _entry("a", "x-ours")
+    assert c.theirs == _entry("a", "x-theirs")
+    # Default-to-ours policy:
+    assert result.merged == {"banter": [_entry("a", "x-ours")]}
+    assert result.auto_resolved_count == 0
+
+
+def test_modify_delete_entry_defaults_to_ours() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    ours = {"banter": [_entry("a", "x"), _entry("b", "y-edited")]}
+    theirs = {"banter": [_entry("a", "x")]}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.MODIFY_DELETE
+    assert c.path == ".banter[id=b]"
+    assert c.theirs is None
+    # Ours wins by default (preserve admin's edit):
+    assert result.merged == {"banter": [_entry("a", "x"), _entry("b", "y-edited")]}
+
+
+def test_delete_modify_entry_defaults_to_theirs() -> None:
+    base = {"banter": [_entry("a", "x"), _entry("b", "y")]}
+    ours = {"banter": [_entry("a", "x")]}
+    theirs = {"banter": [_entry("a", "x"), _entry("b", "y-theirs")]}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.DELETE_MODIFY
+    assert c.path == ".banter[id=b]"
+    assert c.ours is None
+    # Theirs wins by default (preserve non-destructive side):
+    assert result.merged == {"banter": [_entry("a", "x"), _entry("b", "y-theirs")]}
+
+
+def test_add_add_different_entry_defaults_to_ours() -> None:
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "x"), _entry("new", "by-ours")]}
+    theirs = {"banter": [_entry("a", "x"), _entry("new", "by-theirs")]}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.ADD_ADD_DIFFERENT
+    assert c.path == ".banter[id=new]"
+    assert c.base is None
+    assert result.merged == {
+        "banter": [_entry("a", "x"), _entry("new", "by-ours")]
+    }
+
+
+# ── Conflicts: top-level scalar ───────────────────────────────────────────
+
+
+def test_scalar_modify_modify_conflict() -> None:
+    base = {"name": "original"}
+    ours = {"name": "ours-name"}
+    theirs = {"name": "theirs-name"}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.MODIFY_MODIFY
+    assert c.path == ".name"
+    assert result.merged == {"name": "ours-name"}
+
+
+def test_scalar_add_add_different_conflict() -> None:
+    base: dict = {}
+    ours = {"description": "written-by-ours"}
+    theirs = {"description": "written-by-theirs"}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.ADD_ADD_DIFFERENT
+    assert c.base is None
+    assert result.merged == {"description": "written-by-ours"}
+
+
+def test_scalar_modify_delete_conflict() -> None:
+    base = {"name": "original"}
+    ours = {"name": "ours-changed"}
+    theirs: dict = {}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.MODIFY_DELETE
+    assert c.theirs is None
+    assert result.merged == {"name": "ours-changed"}
+
+
+def test_scalar_delete_modify_conflict() -> None:
+    base = {"name": "original"}
+    ours: dict = {}
+    theirs = {"name": "theirs-changed"}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    c = result.conflicts[0]
+    assert c.kind == ConflictKind.DELETE_MODIFY
+    assert c.ours is None
+    # Default-to-theirs (preserve non-destructive side):
+    assert result.merged == {"name": "theirs-changed"}
+
+
+# ── Ordering ──────────────────────────────────────────────────────────────
+
+
+def test_ordering_ours_first_theirs_only_appended() -> None:
+    base = {"banter": [_entry("a", "a"), _entry("b", "b")]}
+    # Ours reorders: b before a, plus adds d at position 0
+    ours = {
+        "banter": [
+            _entry("d", "d-ours"),
+            _entry("b", "b"),
+            _entry("a", "a"),
+        ]
+    }
+    # Theirs adds c at the end
+    theirs = {
+        "banter": [
+            _entry("a", "a"),
+            _entry("b", "b"),
+            _entry("c", "c-theirs"),
+        ]
+    }
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    # Ours order for d,b,a (all present in ours); theirs-only "c" appended:
+    assert [x["id"] for x in result.merged["banter"]] == ["d", "b", "a", "c"]
+
+
+# ── Mixed tree ────────────────────────────────────────────────────────────
+
+
+def test_mixed_tree_some_conflicts_some_auto() -> None:
+    base = {
+        "name": "shadow",
+        "banter": [_entry("a", "a"), _entry("b", "b")],
+        "encounters": [{"id": "e1", "room": 1}],
+    }
+    ours = {
+        "name": "shadow-ours",  # modify-modify
+        "banter": [_entry("a", "a"), _entry("b", "b-ours-edit")],  # modify-modify
+        "encounters": [
+            {"id": "e1", "room": 1},
+            {"id": "e2", "room": 2},  # ours adds
+        ],
+    }
+    theirs = {
+        "name": "shadow-theirs",
+        "banter": [_entry("a", "a"), _entry("b", "b-theirs-edit")],
+        "encounters": [
+            {"id": "e1", "room": 1},
+            {"id": "e3", "room": 3},  # theirs adds
+        ],
+    }
+    result = merge_content(base, ours, theirs)
+    # Conflicts: name (scalar), banter[b] (entry). encounters[e2] and
+    # encounters[e3] are disjoint adds → auto-resolved.
+    kinds = sorted(c.path for c in result.conflicts)
+    assert kinds == [".banter[id=b]", ".name"]
+    assert result.merged["name"] == "shadow-ours"  # default-to-ours
+    # Banter: a (unchanged) + b (defaults to ours)
+    assert result.merged["banter"] == [
+        _entry("a", "a"),
+        _entry("b", "b-ours-edit"),
+    ]
+    # Encounters: e1 unchanged + e2 ours-add + e3 theirs-add (appended)
+    assert [x["id"] for x in result.merged["encounters"]] == ["e1", "e2", "e3"]
+
+
+# ── Edge cases ────────────────────────────────────────────────────────────
+
+
+def test_empty_list_treated_as_scalar_value() -> None:
+    # Empty list on all sides is ambiguous; we treat it as a scalar value.
+    # No change → no conflict, no auto-count increment.
+    base = {"banter": []}
+    result = merge_content(base, dict(base), dict(base))
+    assert result.conflicts == []
+    assert result.merged == {"banter": []}
+
+
+def test_list_without_id_treated_as_scalar() -> None:
+    # A list-of-strings isn't an id-list; treat as atomic.
+    base = {"tags": ["a", "b"]}
+    ours = {"tags": ["a", "b", "c"]}
+    theirs = {"tags": ["a", "b"]}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"tags": ["a", "b", "c"]}
+
+
+def test_list_of_dicts_without_id_treated_as_scalar() -> None:
+    # A list of dicts where not every entry has `id` is treated as atomic.
+    base = {"misc": [{"foo": 1}, {"bar": 2}]}
+    ours = {"misc": [{"foo": 1}, {"bar": 2}, {"baz": 3}]}
+    theirs = dict(base)
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == ours
+
+
+def test_nested_dict_opaque_modify_modify() -> None:
+    # Top-level dicts without id-list shape are opaque — any difference
+    # anywhere inside triggers a whole-value conflict.
+    base = {"metadata": {"tier": 1, "difficulty": 2}}
+    ours = {"metadata": {"tier": 2, "difficulty": 2}}
+    theirs = {"metadata": {"tier": 1, "difficulty": 3}}
+    result = merge_content(base, ours, theirs)
+    assert len(result.conflicts) == 1
+    assert result.conflicts[0].path == ".metadata"
+    assert result.conflicts[0].kind == ConflictKind.MODIFY_MODIFY
+
+
+def test_key_present_only_in_base_both_sides_dropped() -> None:
+    # base had key, neither side has it — treat as both-deleted.
+    base = {"legacy": "x", "keep": "y"}
+    ours = {"keep": "y"}
+    theirs = {"keep": "y"}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == {"keep": "y"}
+
+
+def test_merge_result_model_serializes() -> None:
+    # Round-trip sanity for API transport (FastAPI will JSON-serialize this).
+    base = {"banter": [_entry("a", "x")]}
+    ours = {"banter": [_entry("a", "y")]}
+    theirs = {"banter": [_entry("a", "z")]}
+    result = merge_content(base, ours, theirs)
+    json_dict = result.model_dump()
+    reloaded = MergeResult.model_validate(json_dict)
+    assert reloaded.conflicts[0].kind == ConflictKind.MODIFY_MODIFY
+    assert reloaded.merged == {"banter": [_entry("a", "y")]}
+
+
+def test_both_sides_deleted_entry_not_in_base() -> None:
+    # Neither base nor ours nor theirs has the entry — vacuous case.
+    # Mostly a defensive test: set operations should never produce this path.
+    base = {"banter": [_entry("a", "x")]}
+    ours = dict(base)
+    theirs = dict(base)
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert result.merged == base

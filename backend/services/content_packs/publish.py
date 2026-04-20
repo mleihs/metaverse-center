@@ -344,19 +344,11 @@ class ContentPacksPublishService:
         owner: str,
         repo: str,
     ) -> tuple[str, str]:
-        """Return (default_branch_name, head_sha) for the repo.
-
-        Two REST calls: one to read the repo's default_branch, one to read
-        the ref. Both share the App's persistent httpx client (single TCP
-        connection, single TLS handshake amortized across the publish flow).
+        """Proxy to the module-level helper; kept as a classmethod so existing
+        test patches on ContentPacksPublishService._discover_default_head
+        continue to work without change.
         """
-        repo_info = await client.rest("GET", f"/repos/{owner}/{repo}")
-        default_branch = repo_info["default_branch"]
-        ref_info = await client.rest(
-            "GET", f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
-        )
-        head_oid = ref_info["object"]["sha"]
-        return default_branch, head_oid
+        return await discover_default_head(client, owner, repo)
 
     @classmethod
     async def _create_branch(
@@ -481,6 +473,25 @@ class ContentPacksPublishService:
 
 
 # ── Module-level helpers (testable in isolation) ──────────────────────────
+
+
+async def discover_default_head(
+    client: GitHubAppClient, owner: str, repo: str,
+) -> tuple[str, str]:
+    """Return (default_branch_name, head_sha) for the repo.
+
+    Two REST calls: one to read the repo's default_branch, one to read the
+    ref. Both share the App's persistent httpx client (single TCP connection,
+    single TLS handshake amortized across the flow). Used by both the
+    publish pipeline and the conflict-preview flow.
+    """
+    repo_info = await client.rest("GET", f"/repos/{owner}/{repo}")
+    default_branch = repo_info["default_branch"]
+    ref_info = await client.rest(
+        "GET", f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
+    )
+    head_oid = ref_info["object"]["sha"]
+    return default_branch, head_oid
 
 
 def build_file_path(pack_slug: str, resource_path: str) -> str:
