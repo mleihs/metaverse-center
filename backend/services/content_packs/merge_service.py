@@ -353,9 +353,9 @@ def _three_way_resolve(
          edit = auto; divergent = MODIFY_MODIFY (defaults to ours).
 
     Returns (resolved_value, conflict_or_none, auto_count). `auto_count` is
-    1 for every case the admin didn't need to arbitrate (including trivial
-    "nothing changed on either side" NO — that case returns 0 because there
-    was no work to auto-resolve).
+    1 for every case the merger decided without admin input, EXCEPT the
+    Case-5 "nothing changed on either side" branch which returns 0 (nothing
+    was auto-resolved because nothing diverged in the first place).
     """
     # Case 1: base absent — add on one or both sides.
     if base is missing:

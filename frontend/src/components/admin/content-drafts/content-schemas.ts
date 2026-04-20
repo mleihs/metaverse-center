@@ -232,7 +232,7 @@ const ENCOUNTER_CHOICE: JSONSchema7 = {
     success_effects: {
       type: 'object',
       description:
-        'Applied when the check rolls success. Common keys (applied in `dungeon_movement_service._apply_encounter_effects` + archetype-strategy): `stress` (int, delta to all active party — negative heals), `stress_heal` (int, unconditional heal), `loot` (array of LootItem ids to pend for distribution), `visibility` (Tower), `stability` (Tower), `decay` (Entropy), `attachment` (Mother), `insight` (Prometheus, + add_component/remove_components/add_crafted_item/craft_failed), `water_level` (Deluge), `awareness` (Awakening), `fracture` (Overthrow, + faction_standing/betrayal). Unknown keys are silently ignored by the archetype strategy dispatch.',
+        'Applied when the check rolls success. Stress keys (`stress`, `stress_heal`) are applied directly in `dungeon_movement_service._handle_encounter_choice_locked`; archetype-specific keys are dispatched via `get_archetype_strategy(archetype).apply_encounter_effects(instance, effects)` in `backend/services/dungeon/archetype_strategies.py`. Common keys: `stress` (int, delta to all active party — negative heals), `stress_heal` (int, unconditional heal), `loot` (array of LootItem ids to pend for distribution), `visibility` (Tower), `stability` (Tower), `decay` (Entropy), `attachment` (Mother), `insight` (Prometheus, + add_component/remove_components/add_crafted_item/craft_failed), `water_level` (Deluge), `awareness` (Awakening), `fracture` (Overthrow, + faction_standing/betrayal). Unknown keys are silently ignored by the archetype strategy dispatch.',
       additionalProperties: true,
       examples: [
         { stress: -50 },
@@ -366,7 +366,7 @@ const LOOT_ITEM: JSONSchema7 = {
     effect_type: {
       type: 'string',
       description:
-        'Effect-applier dispatch key. Auto-apply types (handled by `AUTO_APPLY_EFFECT_TYPES` in `backend/services/dungeon_shared.py`): "stress_heal", "dungeon_buff", "event_modifier", "arc_modifier". Player-assigned types: "aptitude_boost" (params: aptitude, amount), "personality_modifier" (params: trait — one of openness/conscientiousness/extraversion/agreeableness/neuroticism — and delta; fixed-trait items may pre-bake the trait), "memory" (adds a memory entry), "simulation_modifier". Adding a new value here requires adding a handler branch in `dungeon_distribution_service._apply_loot_effect` / `dungeon_movement_service`.',
+        'Effect-applier dispatch key. Auto-apply types (listed in `AUTO_APPLY_EFFECT_TYPES` in `backend/services/dungeon_shared.py`): "stress_heal", "dungeon_buff", "event_modifier", "arc_modifier". Player-assigned types: "aptitude_boost" (params: aptitude, amount), "personality_modifier" (params: trait — one of openness/conscientiousness/extraversion/agreeableness/neuroticism — and delta; fixed-trait items may pre-bake the trait), "memory" / "moodlet" (adds to agent memories), "simulation_modifier". Recipient-suggestion logic and per-type branching live in `dungeon_checkpoint_service._compute_loot_suggestions`; validation in `dungeon_distribution_service.assign_loot` / `confirm_distribution`; final persistence via the `fn_apply_dungeon_loot` Postgres RPC. Adding a new value here requires touching all three plus the auto-apply frozenset (if the new type should skip the distribution UI).',
       examples: ['stress_heal', 'dungeon_buff', 'aptitude_boost', 'personality_modifier', 'memory'],
     },
     effect_params: {
