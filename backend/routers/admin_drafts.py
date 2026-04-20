@@ -47,14 +47,19 @@ from backend.models.common import (
 from backend.models.content_drafts import (
     BatchPublishRequest,
     BatchPublishResult,
+    ConflictPreview,
     ContentDraft,
     ContentDraftCreate,
     ContentDraftStatus,
     ContentDraftSummary,
     ContentDraftUpdate,
+    ResolveConflictRequest,
 )
 from backend.services.audit_service import AuditService
 from backend.services.content_drafts_service import ContentDraftsService
+from backend.services.content_packs.conflict_service import (
+    ContentPacksConflictService,
+)
 from backend.services.content_packs.publish import ContentPacksPublishService
 from backend.utils.errors import conflict
 from backend.utils.responses import paginated
@@ -269,6 +274,72 @@ async def delete_content_draft(
         details={"prior_status": current.status.value},
     )
     return SuccessResponse(data=DeleteResponse(deleted=True, id=str(draft_id)))
+
+
+# ── Conflict resolution (Phase 5) ─────────────────────────────────────────
+
+
+@router.get("/{draft_id}/conflict-preview")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def get_conflict_preview(
+    request: Request,
+    draft_id: UUID,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ConflictPreview]:
+    """3-way merge preview for a conflict-status draft.
+
+    Fetches the current main-branch YAML for the draft's resource and runs
+    the semantic merge against base / working / main. Response includes all
+    three trees (for the 3-column UI), an auto-merged `merged` tree (default
+    resolution applied), and the list of admin-gated conflicts.
+
+    Rate-limited as `EXTERNAL_API` because each call hits GitHub Contents API.
+    """
+    preview = await ContentPacksConflictService.generate_preview(
+        supabase, draft_id=draft_id,
+    )
+    return SuccessResponse(data=preview)
+
+
+@router.post("/{draft_id}/resolve")
+@limiter.limit(RATE_LIMIT_ADMIN_MUTATION)
+async def resolve_conflict(
+    request: Request,
+    draft_id: UUID,
+    body: ResolveConflictRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ContentDraft]:
+    """Accept admin-approved merged content. Transitions conflict → draft.
+
+    Writes `merged_working_content` as the draft's new working_content,
+    bumps `version`, and clears publish-era metadata. After this, the draft
+    is back in normal edit mode — the admin can continue editing or
+    re-publish immediately.
+
+    Optimistic-concurrency: `version` must match the DB row's current version
+    (last seen during preview). Mismatch → 409, admin refreshes + retries.
+    """
+    draft = await ContentDraftsService.resolve_conflict(
+        supabase,
+        draft_id=draft_id,
+        merged_working_content=body.merged_working_content,
+        expected_version=body.version,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        draft_id,
+        "resolve_conflict",
+        details={
+            "version": draft.version,
+            "acknowledged_conflict_paths": body.acknowledged_conflict_paths,
+        },
+    )
+    return SuccessResponse(data=draft)
 
 
 # ── Publish ───────────────────────────────────────────────────────────────

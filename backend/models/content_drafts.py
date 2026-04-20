@@ -112,6 +112,26 @@ class ContentDraftUpdate(BaseModel):
     version: int = Field(..., ge=1)
 
 
+class ResolveConflictRequest(BaseModel):
+    """Admin-provided resolution for a conflict draft (A1.7 Phase 5).
+
+    `merged_working_content` is the admin-approved merge output — either
+    the auto-merged tree as-is, or with per-entry take-ours/take-theirs
+    decisions applied. `version` is optimistic-concurrency guard (same
+    pattern as `ContentDraftUpdate`). `acknowledged_conflict_paths` is a
+    list of path strings the admin explicitly resolved — recorded verbatim
+    in the audit log so post-hoc review can see which entries the admin
+    touched.
+    """
+
+    merged_working_content: dict[str, Any]
+    version: int = Field(..., ge=1)
+    acknowledged_conflict_paths: list[str] = Field(
+        default_factory=list,
+        description="Paths (e.g. '.banter[id=sb_01]') the admin explicitly resolved.",
+    )
+
+
 # ── Response / projection models ──────────────────────────────────────────
 
 
@@ -125,6 +145,12 @@ class ContentDraft(BaseModel):
 
     id: UUID
     author_id: UUID
+    # Mirrors `ContentDraftSummary.author_email` to keep the frontend's
+    # `ContentDraft extends ContentDraftSummary` type contract honest.
+    # Not populated on get/update/resolve paths (those return straight from
+    # the DB row without the extra RPC roundtrip) — always null on the wire
+    # unless a future flow explicitly enriches.
+    author_email: str | None = None
 
     pack_slug: str
     resource_path: str
@@ -152,10 +178,17 @@ class ContentDraftSummary(BaseModel):
 
     Excludes `base_content` and `working_content` JSONB blobs to keep the
     list-response payload tight.
+
+    `author_email` is populated by `list_drafts` via a batched
+    `get_user_emails_batch` RPC (migration 044). Nullable because (a) the
+    email may not resolve for deleted users, and (b) sibling endpoints
+    like `list_open_for_resource` leave it unset — the field is intended
+    for the drafts-list display where "who authored this?" matters.
     """
 
     id: UUID
     author_id: UUID
+    author_email: str | None = None
     pack_slug: str
     resource_path: str
     status: ContentDraftStatus
@@ -191,6 +224,55 @@ class BatchPublishRequest(BaseModel):
         default=None,
         max_length=72,
         description="Optional commit headline override (Git convention: ≤72 chars).",
+    )
+
+
+class EntryConflictDTO(BaseModel):
+    """Wire shape for one merge conflict.
+
+    Mirrors `backend.services.content_packs.merge_service.EntryConflict` —
+    kept as a separate class to keep the pure merge module free of API-layer
+    concerns (and to give the frontend a stable schema even if the merge
+    module's internals shift).
+    """
+
+    path: str
+    kind: str
+    base: Any | None = None
+    ours: Any | None = None
+    theirs: Any | None = None
+
+
+class ConflictPreview(BaseModel):
+    """Server-computed 3-way merge preview for a conflict draft (A1.7 Phase 5).
+
+    Returned from GET /admin/content-drafts/{id}/conflict-preview. The UI
+    uses this to render the 3-column resolve view (base / ours / theirs)
+    with per-conflict take-ours/take-theirs affordances.
+
+    `merged` already embeds auto-resolved decisions and default-to-ours/theirs
+    for admin-gated conflicts. A naive admin can accept it as-is; an attentive
+    admin inspects `conflicts` and flips individual entries via the UI.
+
+    `main_base_sha` is the SHA of main's current HEAD (what `theirs` was
+    fetched against). Displayed in the UI header ("upstream now at <sha>")
+    so the admin can audit which main revision their merge was reconciled
+    against. Not persisted back to the draft on resolve — publish.py
+    re-derives the expected-head OID per publish, so the draft's `base_sha`
+    column carries no operational weight here.
+    """
+
+    draft_id: UUID
+    version: int
+    base: dict[str, Any]
+    ours: dict[str, Any]
+    theirs: dict[str, Any]
+    merged: dict[str, Any]
+    conflicts: list[EntryConflictDTO]
+    auto_resolved_count: int
+    main_base_sha: str | None = Field(
+        default=None,
+        description="Current main HEAD SHA (commit) — what `theirs` was fetched against.",
     )
 
 
