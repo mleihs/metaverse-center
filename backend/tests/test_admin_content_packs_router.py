@@ -59,13 +59,17 @@ class TestListManifest:
         assert isinstance(rows, list)
         assert len(rows) > 0, "Repo ships 8 archetype packs — manifest can't be empty."
 
-        # Every row has the expected shape.
+        # Every row has the expected shape. Manifest now spans BOTH archetype
+        # packs (content/dungeon/archetypes/<slug>/*.yaml) and ability packs
+        # (content/dungeon/abilities/*.yaml) since A1.7 Step 5.
         for row in rows:
             assert set(row.keys()) >= {"pack_slug", "resource_path", "entry_count", "file_path"}
             assert isinstance(row["pack_slug"], str)
             assert isinstance(row["resource_path"], str)
             assert isinstance(row["entry_count"], int)
-            assert row["file_path"].startswith("content/dungeon/archetypes/")
+            assert row["file_path"].startswith(
+                ("content/dungeon/archetypes/", "content/dungeon/abilities/"),
+            )
 
         # Shadow/banter is guaranteed to exist (it's the pilot pack); it
         # should carry entries > 0 so the UI can preview counts.

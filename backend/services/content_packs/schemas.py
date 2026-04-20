@@ -247,6 +247,14 @@ PACK_KIND_FOR_FILENAME: dict[str, type[_VersionedPack]] = {
 # strictly the archetype-scoped lookup). The loader dispatches on them via
 # `_load_abilities_tree` directly.
 
+# Sentinel pack_slug for ability-pack drafts. The admin draft system uses
+# `(pack_slug, resource_path)` tuples to address YAML files; for abilities
+# the namespace is flat (one YAML per school, no intermediate archetype dir)
+# so we reserve the literal string "abilities" as the slug and put the
+# school name in resource_path. Shared by loader (overlay key matching) +
+# publish (file-path composition) + read_service (manifest emission).
+ABILITY_PACK_SLUG: str = "abilities"
+
 
 # ── Re-exports ───────────────────────────────────────────────────────────
 #
@@ -256,6 +264,7 @@ PACK_KIND_FOR_FILENAME: dict[str, type[_VersionedPack]] = {
 # double-source-of-truth through this module.
 
 __all__ = [
+    "ABILITY_PACK_SLUG",
     "ARCHETYPE_NAME_TO_SLUG",
     "ARCHETYPE_SLUG_TO_NAME",
     "CONTENT_PACK_SCHEMA_VERSION",
