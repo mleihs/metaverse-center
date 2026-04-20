@@ -717,10 +717,10 @@ export class VelgContentDraftConflictView extends LitElement {
               class="column__select-btn"
               type="button"
               aria-pressed=${choice === 'ours'}
-              ?disabled=${this.submitting || conflict.ours === null}
+              ?disabled=${this.submitting}
               @click=${() => this._setChoice(conflict.path, 'ours')}
             >
-              ${choice === 'ours' ? msg('Selected') : msg('Use ours')}
+              ${this._ourButtonLabel(choice, conflict)}
             </button>
           </div>
           ${this._renderPayload(conflict.ours, 'ours')}
@@ -732,10 +732,10 @@ export class VelgContentDraftConflictView extends LitElement {
               class="column__select-btn"
               type="button"
               aria-pressed=${choice === 'theirs'}
-              ?disabled=${this.submitting || conflict.theirs === null}
+              ?disabled=${this.submitting}
               @click=${() => this._setChoice(conflict.path, 'theirs')}
             >
-              ${choice === 'theirs' ? msg('Selected') : msg('Use theirs')}
+              ${this._theirsButtonLabel(choice, conflict)}
             </button>
           </div>
           ${this._renderPayload(conflict.theirs, 'theirs')}
@@ -823,6 +823,21 @@ export class VelgContentDraftConflictView extends LitElement {
       case 'theirs':
         return msg('Using theirs');
     }
+  }
+
+  /** Button label for the "ours" side — communicates that clicking a null
+   *  side accepts the deletion as the resolution (relevant to MODIFY_DELETE
+   *  where theirs deleted, and DELETE_MODIFY where ours deleted). */
+  private _ourButtonLabel(choice: ConflictChoice, conflict: EntryConflict): string {
+    if (choice === 'ours') return msg('Selected');
+    if (conflict.ours === null) return msg('Accept delete');
+    return msg('Use ours');
+  }
+
+  private _theirsButtonLabel(choice: ConflictChoice, conflict: EntryConflict): string {
+    if (choice === 'theirs') return msg('Selected');
+    if (conflict.theirs === null) return msg('Accept delete');
+    return msg('Use theirs');
   }
 
   private _prettyJson(value: unknown): string {

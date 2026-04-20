@@ -191,12 +191,7 @@ class ContentPacksPublishService:
             raise bad_request("draft_ids must be non-empty.")
 
         client = github_client or get_github_app_client()
-        owner = os.environ.get("GITHUB_REPO_OWNER")
-        repo = os.environ.get("GITHUB_REPO_NAME")
-        if not owner or not repo:
-            raise bad_request(
-                "GITHUB_REPO_OWNER / GITHUB_REPO_NAME must be configured.",
-            )
+        owner, repo = get_github_repo_config()
 
         drafts = await cls._fetch_publishable_drafts(supabase, draft_ids)
         _validate_no_duplicate_resources(drafts)
@@ -473,6 +468,22 @@ class ContentPacksPublishService:
 
 
 # ── Module-level helpers (testable in isolation) ──────────────────────────
+
+
+def get_github_repo_config() -> tuple[str, str]:
+    """Return the configured (owner, repo) pair or raise 400 when unset.
+
+    Single source of truth for the `GITHUB_REPO_OWNER` / `GITHUB_REPO_NAME`
+    env-var lookup shared by publish and conflict-preview flows — keeps
+    the error message uniform and the lookup testable as a seam.
+    """
+    owner = os.environ.get("GITHUB_REPO_OWNER")
+    repo = os.environ.get("GITHUB_REPO_NAME")
+    if not owner or not repo:
+        raise bad_request(
+            "GITHUB_REPO_OWNER / GITHUB_REPO_NAME must be configured.",
+        )
+    return owner, repo
 
 
 async def discover_default_head(
