@@ -44,6 +44,8 @@ import '../../shared/ErrorState.js';
 import '../../shared/VelgBadge.js';
 import { VelgToast } from '../../shared/Toast.js';
 import './VelgContentDraftConflictView.js';
+import { type JsonEditorHandle, mountJsonEditor } from './codemirror-json-editor.js';
+import { getSchemaForResource } from './content-schemas.js';
 
 /** Initial content for a blank-start draft (admin chose a resource that
  *  has no on-disk YAML yet OR explicitly opted for empty). Derives the
@@ -246,34 +248,19 @@ export class VelgContentDraftEditor extends LitElement {
       color: var(--color-text-muted);
     }
 
-    .editor__textarea {
+    /* CodeMirror mount host. Height is bounded so the panel scrolls only
+       the editor viewport rather than the whole side panel. */
+    .editor__host {
       flex: 1;
-      width: 100%;
       min-height: 320px;
-      padding: var(--space-3);
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      line-height: 1.5;
-      background: var(--color-surface-sunken);
-      color: var(--color-text-primary);
-      border: 1px solid var(--color-border);
-      resize: vertical;
+      height: 320px;
+      max-height: 60vh;
       box-sizing: border-box;
-      tab-size: 2;
+      overflow: hidden;
     }
-    .editor__textarea:focus {
-      outline: none;
-      border-color: var(--_accent);
-      box-shadow: 0 0 0 2px var(--_accent-dim);
-    }
-    .editor__textarea[data-invalid='true'] {
-      border-color: var(--color-danger);
+    .editor__host[data-invalid='true'] :first-child {
+      border-color: var(--color-danger) !important;
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 30%, transparent);
-    }
-    .editor__textarea[readonly] {
-      background: color-mix(in srgb, var(--color-surface-sunken) 70%, transparent);
-      color: var(--color-text-secondary);
-      cursor: default;
     }
 
     .editor__parse-error {
@@ -441,6 +428,74 @@ export class VelgContentDraftEditor extends LitElement {
     if (changed.has('createMode') && this.createMode) {
       this._resetForCreate();
       void this._loadManifest();
+    }
+  }
+
+  /**
+   * CodeMirror 6 handle. Mounted lazily on first render that exposes a
+   * `.editor__host` container (which only appears once an entry is
+   * selected). Lifecycle is managed entirely in `updated()` — Lit doesn't
+   * know about CM, so we treat it as an imperative sibling.
+   */
+  private _cmEditor: JsonEditorHandle | null = null;
+  /** Tracks last-pushed readonly so we only reconfigure on change. */
+  private _cmReadOnly = false;
+  /** Tracks last-pushed schema so we only rebuild CM when it changes. */
+  private _cmSchemaKey: string | null = null;
+
+  protected updated(changed: Map<PropertyKey, unknown>): void {
+    const host = this.shadowRoot?.querySelector<HTMLElement>('.editor__host');
+
+    // Rebuild CM when the schema changes (draft switched to a different
+    // resource_path). Teardown + re-mount because jsonSchema() is wired as
+    // a static extension; swapping schemas mid-session isn't supported.
+    const schemaKey = this._draft?.resource_path ?? null;
+    if (this._cmEditor && this._cmSchemaKey !== schemaKey) {
+      this._cmEditor.destroy();
+      this._cmEditor = null;
+    }
+
+    if (host && !this._cmEditor) {
+      this._cmEditor = mountJsonEditor(host, {
+        initialDoc: this._textareaValue,
+        schema: schemaKey ? getSchemaForResource(schemaKey) : undefined,
+        readonly: this._readOnly,
+        rootNode: this.shadowRoot ?? undefined,
+        onChange: (doc) => {
+          this._textareaValue = doc;
+          if (this._parseError !== null) this._parseError = null;
+        },
+      });
+      this._cmSchemaKey = schemaKey;
+      this._cmReadOnly = this._readOnly;
+      return;
+    }
+
+    if (!host && this._cmEditor) {
+      this._cmEditor.destroy();
+      this._cmEditor = null;
+      this._cmSchemaKey = null;
+      return;
+    }
+
+    if (this._cmEditor) {
+      if (changed.has('_selectedEntryKey') || changed.has('_draft')) {
+        this._cmEditor.setDoc(this._textareaValue);
+      }
+      const nextReadOnly = this._readOnly;
+      if (this._cmReadOnly !== nextReadOnly) {
+        this._cmEditor.setReadonly(nextReadOnly);
+        this._cmReadOnly = nextReadOnly;
+      }
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._cmEditor) {
+      this._cmEditor.destroy();
+      this._cmEditor = null;
+      this._cmSchemaKey = null;
     }
   }
 
@@ -707,11 +762,6 @@ export class VelgContentDraftEditor extends LitElement {
     this._commitTextareaIfValid();
     this._selectedEntryKey = key;
     this._textareaValue = this._serializeSelected();
-    this._parseError = null;
-  }
-
-  private _handleTextareaInput(e: Event): void {
-    this._textareaValue = (e.target as HTMLTextAreaElement).value;
     this._parseError = null;
   }
 
@@ -1134,18 +1184,15 @@ export class VelgContentDraftEditor extends LitElement {
                 <label class="editor__label">
                   ${msg(str`JSON for ${this._labelFor(this._selectedEntryKey)}`)}
                 </label>
-                <textarea
-                  class="editor__textarea"
+                <div
+                  class="editor__host"
                   data-invalid=${this._parseError !== null ? 'true' : 'false'}
-                  .value=${this._textareaValue}
-                  spellcheck="false"
-                  ?readonly=${this._readOnly}
+                  role="textbox"
                   aria-label=${msg('Entry JSON editor')}
                   aria-invalid=${this._parseError !== null ? 'true' : 'false'}
                   aria-readonly=${this._readOnly ? 'true' : 'false'}
                   aria-describedby=${this._parseError !== null ? 'entry-parse-error' : nothing}
-                  @input=${this._handleTextareaInput}
-                ></textarea>
+                ></div>
                 ${
                   this._parseError
                     ? html`<div id="entry-parse-error" class="editor__parse-error" role="alert">${this._parseError}</div>`
