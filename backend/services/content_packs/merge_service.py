@@ -258,86 +258,13 @@ def _merge_one_entry(
 ) -> tuple[dict[str, Any] | None, EntryConflict | None, int]:
     """Case analysis for one id-keyed entry.
 
+    Thin wrapper over the generic `_three_way_resolve` with `None` as the
+    "absent" sentinel — entries are dict-or-None inside `_merge_id_list`
+    after `_to_id_map.get(entry_id)`.
+
     Returns (resolved_entry | None_if_deleted, conflict_or_none, auto_count).
     """
-    # Case 1: base missing — entry is new on one or both sides.
-    if base is None:
-        if ours is None:
-            return theirs, None, 1  # theirs-only add
-        if theirs is None:
-            return ours, None, 1  # ours-only add
-        if ours == theirs:
-            return ours, None, 1  # same add on both sides
-        return (
-            ours,
-            EntryConflict(
-                path=path,
-                kind=ConflictKind.ADD_ADD_DIFFERENT,
-                base=None,
-                ours=ours,
-                theirs=theirs,
-            ),
-            0,
-        )
-
-    # Case 2: base present, both sides deleted — stay deleted.
-    if ours is None and theirs is None:
-        return None, None, 1
-
-    # Case 3: base present, ours deleted, theirs present.
-    if ours is None:
-        if theirs == base:
-            return None, None, 1  # theirs unchanged, safe to delete
-        return (
-            theirs,
-            EntryConflict(
-                path=path,
-                kind=ConflictKind.DELETE_MODIFY,
-                base=base,
-                ours=None,
-                theirs=theirs,
-            ),
-            0,
-        )
-
-    # Case 4: base present, ours present, theirs deleted.
-    if theirs is None:
-        if ours == base:
-            return None, None, 1  # ours unchanged, safe to delete
-        return (
-            ours,
-            EntryConflict(
-                path=path,
-                kind=ConflictKind.MODIFY_DELETE,
-                base=base,
-                ours=ours,
-                theirs=None,
-            ),
-            0,
-        )
-
-    # Case 5: all three present — standard 3-way scalar merge on the entry.
-    o_changed = ours != base
-    t_changed = theirs != base
-    if not o_changed and not t_changed:
-        return base, None, 0  # nothing to auto-count — nothing changed
-    if o_changed and not t_changed:
-        return ours, None, 1
-    if not o_changed and t_changed:
-        return theirs, None, 1
-    if ours == theirs:
-        return ours, None, 1  # convergent edit
-    return (
-        ours,
-        EntryConflict(
-            path=path,
-            kind=ConflictKind.MODIFY_MODIFY,
-            base=base,
-            ours=ours,
-            theirs=theirs,
-        ),
-        0,
-    )
+    return _three_way_resolve(path, base, ours, theirs, missing=None)
 
 
 def _restore_order(
@@ -380,44 +307,86 @@ def _merge_scalar(
 ) -> tuple[Any, EntryConflict | None, int]:
     """3-way merge for a top-level scalar or opaque (non-id-list) value.
 
+    Thin wrapper over the generic `_three_way_resolve` with `_MISSING` as the
+    "absent" sentinel — top-level dict keys carry `None` as a valid value
+    (distinct from "key not present"), so we need a sentinel that's identity-
+    comparable and won't collide with author data.
+
     Returns (resolved_value, conflict_or_none, auto_count). `resolved_value`
     of `_MISSING` means "key should be absent in output".
     """
-    path = f".{key}"
-    b_pres = base is not _MISSING
-    o_pres = ours is not _MISSING
-    t_pres = theirs is not _MISSING
+    return _three_way_resolve(f".{key}", base, ours, theirs, missing=_MISSING)
 
-    # Case: base absent, one or both sides add.
-    if not b_pres:
-        if o_pres and t_pres:
-            if ours == theirs:
-                return ours, None, 1
-            return (
-                ours,
-                EntryConflict(
-                    path=path,
-                    kind=ConflictKind.ADD_ADD_DIFFERENT,
-                    base=None,
-                    ours=ours,
-                    theirs=theirs,
-                ),
-                0,
-            )
-        if o_pres:
-            return ours, None, 1
-        if t_pres:
-            return theirs, None, 1
-        return _MISSING, None, 0  # vacuous (shouldn't reach here)
 
-    # Case: base present, both absent — treat as both-deleted (vacuous).
-    if not o_pres and not t_pres:
-        return _MISSING, None, 1
+# ── Generic 3-way resolver (shared by scalar + id-list entry paths) ────────
 
-    # Case: base present, ours absent.
-    if not o_pres:
+
+def _three_way_resolve(
+    path: str,
+    base: Any,
+    ours: Any,
+    theirs: Any,
+    *,
+    missing: Any,
+) -> tuple[Any, EntryConflict | None, int]:
+    """Case analysis for one 3-way-merge unit.
+
+    `missing` is the caller-chosen sentinel for "not present". It's used both
+    to classify inputs (`x is missing`) and as the return value when the
+    output key/entry should be absent. Two callers today:
+
+      - `_merge_scalar`     — passes `missing=_MISSING` (unique object), because
+                              `None` is a valid scalar value in a dict.
+      - `_merge_one_entry`  — passes `missing=None`, because `_to_id_map.get()`
+                              naturally returns `None` for absent ids and no
+                              entry value itself can be `None`.
+
+    The five cases:
+      1. Base absent → new on one or both sides. Same-value on both = auto;
+         different-values = ADD_ADD_DIFFERENT (defaults to ours).
+      2. Base present, both sides absent → stay deleted (auto, count=1).
+      3. Base present, ours absent → safe-delete if theirs unchanged, else
+         DELETE_MODIFY (defaults to theirs — preserves the non-destructive side).
+      4. Base present, theirs absent → safe-delete if ours unchanged, else
+         MODIFY_DELETE (defaults to ours).
+      5. All three present → 3-way compare. Single-sided change or convergent
+         edit = auto; divergent = MODIFY_MODIFY (defaults to ours).
+
+    Returns (resolved_value, conflict_or_none, auto_count). `auto_count` is
+    1 for every case the admin didn't need to arbitrate (including trivial
+    "nothing changed on either side" NO — that case returns 0 because there
+    was no work to auto-resolve).
+    """
+    # Case 1: base absent — add on one or both sides.
+    if base is missing:
+        if ours is missing and theirs is missing:
+            return missing, None, 0  # vacuous — caller shouldn't invoke with all-missing
+        if ours is missing:
+            return theirs, None, 1  # theirs-only add
+        if theirs is missing:
+            return ours, None, 1  # ours-only add
+        if ours == theirs:
+            return ours, None, 1  # convergent add
+        return (
+            ours,
+            EntryConflict(
+                path=path,
+                kind=ConflictKind.ADD_ADD_DIFFERENT,
+                base=None,
+                ours=ours,
+                theirs=theirs,
+            ),
+            0,
+        )
+
+    # Case 2: base present, both sides absent — stay deleted.
+    if ours is missing and theirs is missing:
+        return missing, None, 1
+
+    # Case 3: base present, ours absent.
+    if ours is missing:
         if theirs == base:
-            return _MISSING, None, 1  # theirs unchanged → safe delete
+            return missing, None, 1  # theirs unchanged → safe delete
         return (
             theirs,
             EntryConflict(
@@ -430,10 +399,10 @@ def _merge_scalar(
             0,
         )
 
-    # Case: base present, theirs absent.
-    if not t_pres:
+    # Case 4: base present, theirs absent.
+    if theirs is missing:
         if ours == base:
-            return _MISSING, None, 1  # ours unchanged → safe delete
+            return missing, None, 1  # ours unchanged → safe delete
         return (
             ours,
             EntryConflict(
@@ -446,17 +415,17 @@ def _merge_scalar(
             0,
         )
 
-    # Case: all three present — standard 3-way.
+    # Case 5: all three present — standard 3-way compare.
     o_changed = ours != base
     t_changed = theirs != base
     if not o_changed and not t_changed:
-        return base, None, 0
+        return base, None, 0  # nothing to auto-count — nothing changed
     if o_changed and not t_changed:
         return ours, None, 1
     if not o_changed and t_changed:
         return theirs, None, 1
     if ours == theirs:
-        return ours, None, 1  # convergent
+        return ours, None, 1  # convergent edit
     return (
         ours,
         EntryConflict(
