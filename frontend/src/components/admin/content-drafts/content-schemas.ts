@@ -6,19 +6,73 @@
  * holding `JSON.stringify(entry)`). These schemas describe that single
  * entry shape — not the wrapping pack file.
  *
- * Derived by hand from `backend/services/content_packs/schemas.py` (and
- * for Encounter/Enemy/Loot from `backend/models/resonance_dungeon.py`).
- * The Python models are the source of truth; if those drift, this file
- * needs a matching edit — there is no runtime-type-generation bridge yet.
+ * Source of truth
+ * ---------------
+ * Derived by hand from:
+ *   - `backend/services/content_packs/schemas.py` (BanterItem, AnchorObject,
+ *     SpawnEntry, BarometerEntry — the loader's strict Pydantic models)
+ *   - `backend/models/resonance_dungeon.py` (EnemyTemplate, EncounterTemplate,
+ *     EncounterChoice, LootItem — the runtime dataclasses)
+ *   - `backend/models/resonance.py::ARCHETYPES` (the 8-archetype canonical list)
  *
- * Scope: the 8 archetype-pack resource_paths currently exposed by the
- * admin manifest endpoint (see read_service.list_pack_resources). Ability
- * packs live under content/dungeon/abilities/ and are NOT exposed via the
- * draft workflow yet, so they're absent here — add when the publish
- * pipeline learns to emit ability-school paths.
+ * Manual-sync contract
+ * --------------------
+ * There is no runtime-type-generation bridge from Python → TS yet. If any of
+ * the source files above changes, this file needs a matching edit or admins
+ * see stale completion + wrong lint in the JSON editor. Use this to surface
+ * drift:
+ *
+ *   git log -p --since='1 month ago' \
+ *     backend/services/content_packs/schemas.py \
+ *     backend/models/resonance_dungeon.py \
+ *     backend/models/resonance.py
+ *
+ * Scope
+ * -----
+ * The 8 archetype-pack resource_paths currently exposed by the admin
+ * manifest endpoint (see `read_service.list_pack_resources`). Ability packs
+ * live under `content/dungeon/abilities/` and are NOT exposed via the draft
+ * workflow yet, so they're absent here — add when the publish pipeline
+ * learns to emit ability-school paths.
  */
 
 import type { JSONSchema7 } from 'json-schema';
+
+/** 8 resonance-dungeon archetypes. Canonical list in
+ *  `backend/models/resonance.py::ARCHETYPES`. */
+const ARCHETYPE_ENUM: string[] = [
+  'The Shadow',
+  'The Tower',
+  'The Devouring Mother',
+  'The Entropy',
+  'The Prometheus',
+  'The Deluge',
+  'The Awakening',
+  'The Overthrow',
+];
+
+/** 7 aptitude / ability-school values. Mirrors `content/dungeon/abilities/*.yaml`.
+ *  Used as keys in agent.aptitudes, enemy.resistances/vulnerabilities, and
+ *  ability.school. `universal` is the "no-school" bucket. */
+const APTITUDE_ENUM: string[] = [
+  'assassin',
+  'guardian',
+  'infiltrator',
+  'propagandist',
+  'saboteur',
+  'spy',
+  'universal',
+];
+
+/** 5 Big-Five personality dimensions. Canonical set in
+ *  `backend/models/resonance_dungeon.py::BIG_FIVE_DIMENSIONS`. */
+const BIG_FIVE_ENUM: string[] = [
+  'openness',
+  'conscientiousness',
+  'extraversion',
+  'agreeableness',
+  'neuroticism',
+];
 
 /** Bilingual pair shape shared by many entry schemas. */
 const BILINGUAL: Record<string, JSONSchema7> = {
@@ -26,21 +80,35 @@ const BILINGUAL: Record<string, JSONSchema7> = {
   text_de: { type: 'string', description: 'German text.' },
 };
 
-/** One between-encounter banter line. Mirrors BanterItem. */
+/** One between-encounter banter line. Mirrors BanterItem.
+ *
+ *  Runtime selection happens in `dungeon_banter.select_banter`: filter by
+ *  trigger, exclude already-used IDs, gate by min_depth, then pick the
+ *  highest archetype-tier line that is ≤ current tier. Personality filter is
+ *  consumed upstream of `select_banter` by callers that match banter to
+ *  specific party members — see the loader docstring on BanterItem for the
+ *  dispatch rules. */
 const BANTER_ITEM: JSONSchema7 = {
   type: 'object',
   required: ['id', 'trigger', 'text_en', 'text_de'],
   additionalProperties: false,
   properties: {
-    id: { type: 'string', description: 'Unique banter id within the pack.' },
+    id: {
+      type: 'string',
+      description: 'Unique banter id within the pack (e.g. "sb_01").',
+    },
     trigger: {
       type: 'string',
-      description: 'Event or condition that fires this line.',
+      description:
+        'Event or condition that fires this line. Common triggers: room_entered, combat_start, combat_won, combat_victory, loot_found, elite_spotted, boss_approach, agent_stressed, agent_downed, agent_afflicted, rest_start, rest_safe, rest_ambush, retreat, party_wipe, dungeon_completed. Archetype-specific: decay_critical / decay_degraded (Entropy), attachment_critical / attachment_dependent (Mother), insight_cold / insight_feverish / insight_breakthrough / insight_inspired (Prometheus), flood_imminent / tidal_surge / tidal_recession / waist_threshold / chest_threshold / ankle_threshold / submerged_room_entered (Deluge), stirring / liminal / lucid / awakened / deja_vu (Awakening), stability_critical / stability_collapse / visibility_zero (Tower), dissolution (Overthrow).',
     },
     personality_filter: {
       type: 'object',
       description:
-        'Optional Big-Five filter. Values are [min, max] tuples for traits, or booleans for non-trait flags (e.g. opinion_positive_pair).',
+        'Optional per-agent filter. Keys are either:\n' +
+        `  (a) Big-Five trait names — ${BIG_FIVE_ENUM.join(', ')} — with value \`[min, max]\` (0.0-1.0 range, both inclusive), or\n` +
+        '  (b) Non-trait matchers — currently only `opinion_positive_pair` / `opinion_negative_pair` — with boolean value.\n' +
+        'Values of `null` disable that matcher. Empty object `{}` means no filter. Runtime dispatches on value type in `dungeon_banter.select_banter` (and friends).',
       additionalProperties: {
         oneOf: [
           {
@@ -48,59 +116,148 @@ const BANTER_ITEM: JSONSchema7 = {
             items: { type: 'number' },
             minItems: 2,
             maxItems: 2,
+            description:
+              '[min, max] range for a Big-Five trait, e.g. [0.6, 1.0] for "highly neurotic".',
           },
-          { type: 'boolean' },
-          { type: 'null' },
+          {
+            type: 'boolean',
+            description:
+              'Non-trait flag, e.g. `opinion_positive_pair: true` to gate on party relationships.',
+          },
+          { type: 'null', description: 'Matcher disabled.' },
         ],
       },
+      examples: [
+        { neuroticism: [0.6, 1.0] },
+        { extraversion: [0.0, 0.3], agreeableness: [0.5, 1.0] },
+        { opinion_positive_pair: true },
+      ],
     },
-    text_en: BILINGUAL.text_en,
-    text_de: BILINGUAL.text_de,
-    decay_tier: { type: ['integer', 'null'], description: 'Entropy tier gate.' },
+    text_en: {
+      ...BILINGUAL.text_en,
+      description:
+        "English line. `{agent}` placeholder is substituted with the acting agent's name at render time.",
+    },
+    text_de: {
+      ...BILINGUAL.text_de,
+      description: 'German line. Same `{agent}` substitution as text_en.',
+    },
+    decay_tier: {
+      type: ['integer', 'null'],
+      description:
+        'Entropy tier gate (0-3). 0=decay<40, 1=40-69, 2=70-84, 3=≥85. Line is eligible when archetype tier ≥ this value; preferred when tier equals max available.',
+      minimum: 0,
+      maximum: 3,
+    },
     attachment_tier: {
       type: ['integer', 'null'],
-      description: 'Mother tier gate.',
+      description: 'Devouring Mother tier gate (0-2). 0=attachment<45, 1=45-74, 2=≥75.',
+      minimum: 0,
+      maximum: 2,
     },
     insight_tier: {
       type: ['integer', 'null'],
-      description: 'Prometheus tier gate.',
+      description:
+        'Prometheus tier gate (0-3). 0=insight<20 (cold), 1=20-44 (warming), 2=45-74 (inspired), 3=≥75 (feverish).',
+      minimum: 0,
+      maximum: 3,
     },
-    water_tier: { type: ['integer', 'null'], description: 'Deluge tier gate.' },
+    water_tier: {
+      type: ['integer', 'null'],
+      description:
+        'Deluge tier gate (0-3). 0=water<25 (dry), 1=25-49 (shallow), 2=50-74 (rising), 3=≥75 (critical).',
+      minimum: 0,
+      maximum: 3,
+    },
     awareness_tier: {
       type: ['integer', 'null'],
-      description: 'Awakening tier gate.',
+      description:
+        'Awakening tier gate (0-3). 0=awareness<25 (unconscious), 1=25-49 (stirring), 2=50-69 (liminal), 3=≥70 (lucid/dissolution).',
+      minimum: 0,
+      maximum: 3,
     },
     fracture_tier: {
       type: ['integer', 'null'],
-      description: 'Overthrow tier gate.',
+      description:
+        'Overthrow authority-fracture tier gate (0-3). 0=fracture<20 (Court Order), 1=20-59 (Whispers/Schism), 2=60-79 (Revolution), 3=≥80 (New Regime/Collapse).',
+      minimum: 0,
+      maximum: 3,
     },
   },
 };
 
-/** One encounter choice. Mirrors EncounterChoice. */
+/** One encounter choice. Mirrors EncounterChoice.
+ *
+ *  Each choice is a button the player clicks on the encounter screen. If
+ *  `check_aptitude` is set the click rolls a skill check with difficulty
+ *  `check_difficulty` against the acting agent's aptitude level; the result
+ *  tier (success / partial / fail) decides which `*_effects` dict is applied
+ *  and which `*_narrative_{en,de}` is shown. */
 const ENCOUNTER_CHOICE: JSONSchema7 = {
   type: 'object',
   required: ['id', 'label_en', 'label_de'],
   additionalProperties: false,
   properties: {
-    id: { type: 'string' },
-    label_en: { type: 'string' },
-    label_de: { type: 'string' },
+    id: { type: 'string', description: 'Unique within the parent encounter.' },
+    label_en: { type: 'string', description: 'Button label (English).' },
+    label_de: { type: 'string', description: 'Button label (German).' },
     requires_aptitude: {
       type: ['object', 'null'],
-      description: 'Aptitude gate map, e.g. {courage: 3}.',
-      additionalProperties: { type: 'integer' },
+      description:
+        "Minimum aptitude gate — choice is hidden when ANY party member doesn't meet the bar. Keys are aptitude names, values are integer thresholds. Example: `{spy: 3}` hides the choice unless at least one agent has spy ≥ 3.",
+      additionalProperties: {
+        type: 'integer',
+        minimum: 0,
+      },
+      examples: [{ spy: 3 }, { courage: 2, empathy: 1 }],
     },
-    requires_profession: { type: ['string', 'null'] },
+    requires_profession: {
+      type: ['string', 'null'],
+      description:
+        'Profession gate — choice is hidden unless at least one agent has this profession id.',
+    },
     check_aptitude: {
       type: ['string', 'null'],
-      description: 'Aptitude rolled on click, e.g. "empathy".',
+      description:
+        'Aptitude rolled on click. When null the choice auto-resolves to success (no roll). Use one of the 7 ability-school aptitudes.',
+      enum: [...APTITUDE_ENUM, null] as JSONSchema7['enum'],
     },
-    check_difficulty: { type: 'integer', default: 0 },
-    success_effects: { type: 'object', additionalProperties: true },
-    partial_effects: { type: 'object', additionalProperties: true },
-    fail_effects: { type: 'object', additionalProperties: true },
-    success_narrative_en: { type: 'string', default: '' },
+    check_difficulty: {
+      type: 'integer',
+      description:
+        'Target difficulty for the aptitude check. 0=trivial, 3=standard, 6=hard, 9=expert.',
+      default: 0,
+      minimum: 0,
+    },
+    success_effects: {
+      type: 'object',
+      description:
+        'Applied when the check rolls success. Common keys (applied in `dungeon_movement_service._apply_encounter_effects` + archetype-strategy): `stress` (int, delta to all active party — negative heals), `stress_heal` (int, unconditional heal), `loot` (array of LootItem ids to pend for distribution), `visibility` (Tower), `stability` (Tower), `decay` (Entropy), `attachment` (Mother), `insight` (Prometheus, + add_component/remove_components/add_crafted_item/craft_failed), `water_level` (Deluge), `awareness` (Awakening), `fracture` (Overthrow, + faction_standing/betrayal). Unknown keys are silently ignored by the archetype strategy dispatch.',
+      additionalProperties: true,
+      examples: [
+        { stress: -50 },
+        { stress: -20, insight: 10 },
+        { loot: ['l_minor_gem_01'], stress_heal: 30 },
+      ],
+    },
+    partial_effects: {
+      type: 'object',
+      description:
+        'Applied when the check rolls partial (typically half the success magnitude). Same key schema as success_effects.',
+      additionalProperties: true,
+    },
+    fail_effects: {
+      type: 'object',
+      description:
+        'Applied when the check rolls fail. Usually introduces a penalty (positive stress, state damage). Same key schema as success_effects.',
+      additionalProperties: true,
+      examples: [{ stress: 50 }, { stress: 80, fracture: 5 }],
+    },
+    success_narrative_en: {
+      type: 'string',
+      default: '',
+      description: 'English narrative shown on success. `{agent}` substitution applies.',
+    },
     success_narrative_de: { type: 'string', default: '' },
     partial_narrative_en: { type: 'string', default: '' },
     partial_narrative_de: { type: 'string', default: '' },
@@ -115,51 +272,124 @@ const ENCOUNTER_ITEM: JSONSchema7 = {
   required: ['id', 'archetype', 'room_type'],
   additionalProperties: false,
   properties: {
-    id: { type: 'string' },
-    archetype: { type: 'string', description: 'e.g. "The Shadow".' },
-    room_type: { type: 'string' },
-    min_depth: { type: 'integer', default: 0, minimum: 0 },
-    max_depth: { type: 'integer', default: 99 },
-    min_difficulty: { type: 'integer', default: 1 },
+    id: { type: 'string', description: 'Unique encounter id within the pack.' },
+    archetype: {
+      type: 'string',
+      description:
+        'One of the 8 canonical archetypes. Must match the archetype the dungeon run was spawned with.',
+      enum: ARCHETYPE_ENUM,
+    },
+    room_type: {
+      type: 'string',
+      description:
+        'Room category. Typical values: combat, skill_check, rest, shrine, merchant, archetype-specific (e.g. "forge" for Prometheus, "flooded" for Deluge).',
+    },
+    min_depth: {
+      type: 'integer',
+      description: 'Earliest depth (0-based) where this encounter can spawn.',
+      default: 0,
+      minimum: 0,
+    },
+    max_depth: {
+      type: 'integer',
+      description: 'Latest depth where this encounter can spawn. 99 = no cap.',
+      default: 99,
+    },
+    min_difficulty: {
+      type: 'integer',
+      description:
+        'Difficulty floor (1-3 in current content). Filters at generator time against run difficulty.',
+      default: 1,
+      minimum: 1,
+    },
     requires_aptitude: {
       type: ['object', 'null'],
-      additionalProperties: { type: 'integer' },
+      description:
+        'Minimum aptitude gate for the encounter to spawn at all. Same shape as EncounterChoice.requires_aptitude.',
+      additionalProperties: { type: 'integer', minimum: 0 },
     },
-    description_en: { type: 'string', default: '' },
-    description_de: { type: 'string', default: '' },
-    choices: { type: 'array', items: ENCOUNTER_CHOICE, default: [] },
+    description_en: {
+      type: 'string',
+      description: 'English prose shown above the choice buttons.',
+      default: '',
+    },
+    description_de: {
+      type: 'string',
+      description: 'German prose shown above the choice buttons.',
+      default: '',
+    },
+    choices: {
+      type: 'array',
+      description: 'Player-facing buttons. Order is preserved in UI. 2-4 choices is typical.',
+      items: ENCOUNTER_CHOICE,
+      default: [],
+    },
     combat_encounter_id: {
       type: ['string', 'null'],
-      description: 'References a spawn config id.',
+      description: 'References a SpawnEntry list id. Set for room_type=combat; null otherwise.',
     },
-    is_ambush: { type: 'boolean', default: false },
-    ambush_stress: { type: 'integer', default: 0 },
+    is_ambush: {
+      type: 'boolean',
+      description: 'If true, combat starts with enemies acting first in round 1.',
+      default: false,
+    },
+    ambush_stress: {
+      type: 'integer',
+      description: 'Stress dealt to each party member on ambush-combat entry (before round 1).',
+      default: 0,
+      minimum: 0,
+    },
   },
 };
 
-/** One loot drop. Mirrors LootItem. */
+/** One loot drop. Mirrors LootItem.
+ *
+ *  `effect_type` is a free string on the Python side (no Literal), so this
+ *  schema uses `examples` instead of `enum` — listing an enum here would be
+ *  stricter than the backend and reject valid future additions. Known values
+ *  in use today are documented in the description. */
 const LOOT_ITEM: JSONSchema7 = {
   type: 'object',
   required: ['id', 'name_en', 'name_de', 'tier', 'effect_type'],
   additionalProperties: false,
   properties: {
-    id: { type: 'string' },
-    name_en: { type: 'string' },
-    name_de: { type: 'string' },
+    id: { type: 'string', description: 'Unique loot id within the pack.' },
+    name_en: { type: 'string', description: 'Display name (English).' },
+    name_de: { type: 'string', description: 'Display name (German).' },
     tier: {
       type: 'integer',
-      description: '1=minor, 2=major, 3=legendary.',
+      description:
+        '1=minor (common, auto-apply by default), 2=major (meaningful choice), 3=legendary (rare, lasting). Tier affects drop-weight normalization and loot-distribution UI framing.',
       minimum: 1,
       maximum: 3,
     },
     effect_type: {
       type: 'string',
-      description: 'e.g. "stress_heal", "aptitude_boost", "memory", "moodlet".',
+      description:
+        'Effect-applier dispatch key. Auto-apply types (handled by `AUTO_APPLY_EFFECT_TYPES` in `backend/services/dungeon_shared.py`): "stress_heal", "dungeon_buff", "event_modifier", "arc_modifier". Player-assigned types: "aptitude_boost" (params: aptitude, amount), "personality_modifier" (params: trait — one of openness/conscientiousness/extraversion/agreeableness/neuroticism — and delta; fixed-trait items may pre-bake the trait), "memory" (adds a memory entry), "simulation_modifier". Adding a new value here requires adding a handler branch in `dungeon_distribution_service._apply_loot_effect` / `dungeon_movement_service`.',
+      examples: ['stress_heal', 'dungeon_buff', 'aptitude_boost', 'personality_modifier', 'memory'],
     },
-    effect_params: { type: 'object', additionalProperties: true },
+    effect_params: {
+      type: 'object',
+      description:
+        'Effect-specific parameters. Schema depends on effect_type — see examples. Unknown keys are silently ignored by the applier.',
+      additionalProperties: true,
+      examples: [
+        { amount: 30 },
+        { aptitude: 'spy', amount: 1 },
+        { trait: 'neuroticism', delta: -0.1 },
+        { duration: 3, modifier: 'resilient' },
+      ],
+    },
     description_en: { type: 'string', default: '' },
     description_de: { type: 'string', default: '' },
-    drop_weight: { type: 'integer', default: 10, minimum: 0 },
+    drop_weight: {
+      type: 'integer',
+      description:
+        'Relative weight for the archetype loot pool. Higher = more common. Compared against sibling loot of the same tier.',
+      default: 10,
+      minimum: 0,
+    },
   },
 };
 
@@ -178,38 +408,110 @@ const ENEMY_ITEM: JSONSchema7 = {
   ],
   additionalProperties: false,
   properties: {
-    id: { type: 'string' },
+    id: { type: 'string', description: 'Referenced by SpawnEntry.template_id.' },
     name_en: { type: 'string' },
     name_de: { type: 'string' },
-    archetype: { type: 'string' },
-    condition_threshold: { type: 'integer', minimum: 1 },
-    stress_resistance: { type: 'integer', default: 0 },
+    archetype: {
+      type: 'string',
+      description:
+        'One of the 8 canonical archetypes. Used to scope enemies to the correct dungeon run.',
+      enum: ARCHETYPE_ENUM,
+    },
+    condition_threshold: {
+      type: 'integer',
+      description:
+        'Hit points equivalent — number of damage steps the enemy absorbs before defeat. Standard enemies 2-3, elites 4-6, bosses 8+.',
+      minimum: 1,
+    },
+    stress_resistance: {
+      type: 'integer',
+      description: 'Flat reduction to incoming stress-damage steps. 0 = vulnerable, 2 = bossy.',
+      default: 0,
+      minimum: 0,
+    },
     threat_level: {
       type: 'string',
+      description:
+        'Informational tier. Drives music, UI accent, and whether the enemy counts toward boss-kill achievements.',
       enum: ['standard', 'elite', 'boss'],
       default: 'standard',
     },
-    attack_aptitude: { type: 'string' },
-    attack_power: { type: 'integer' },
-    stress_attack_power: { type: 'integer' },
-    telegraphed_intent: { type: 'boolean', default: true },
-    evasion: { type: 'integer', default: 0 },
-    resistances: { type: 'array', items: { type: 'string' }, default: [] },
-    vulnerabilities: { type: 'array', items: { type: 'string' }, default: [] },
+    attack_aptitude: {
+      type: 'string',
+      description:
+        "Ability school used by the enemy's default attack. Gates hit-chance calculation — agents resist/vulnerable to this school respond accordingly.",
+      enum: APTITUDE_ENUM,
+    },
+    attack_power: {
+      type: 'integer',
+      description: 'Base damage steps on a successful attack (pre-modifiers). Typical range 1-6.',
+      minimum: 0,
+    },
+    stress_attack_power: {
+      type: 'integer',
+      description:
+        'Base stress-damage on a successful stress_attack. Typical range 1-8 (bosses can go higher).',
+      minimum: 0,
+    },
+    telegraphed_intent: {
+      type: 'boolean',
+      description:
+        'If true, the UI shows "will attack X" / "bracing for impact" on the enemy card during the planning phase (Into the Breach style).',
+      default: true,
+    },
+    evasion: {
+      type: 'integer',
+      description:
+        'Evasion rating subtracted from incoming hit-chance rolls. 0-50 typical; disrupted enemies lose 15 effective evasion.',
+      default: 0,
+      minimum: 0,
+    },
+    resistances: {
+      type: 'array',
+      description:
+        'Ability schools this enemy resists (reduced damage). Each entry must be one of the 7 aptitude values.',
+      items: { type: 'string', enum: APTITUDE_ENUM },
+      default: [],
+    },
+    vulnerabilities: {
+      type: 'array',
+      description:
+        'Ability schools this enemy is vulnerable to (amplified damage). Same 7-value enum.',
+      items: { type: 'string', enum: APTITUDE_ENUM },
+      default: [],
+    },
     action_weights: {
       type: 'object',
-      description: 'Map of action_id -> integer weight for the enemy AI chooser.',
-      additionalProperties: { type: 'integer' },
+      description:
+        'Map of action_id → integer weight for the enemy AI chooser (weighted random). Common keys: "attack", "stress_attack", "defend", "evade", "grapple". Archetype-specific keys exist (e.g. "summon_wisps" for Shadow). Default when absent: {attack: 50, stress_attack: 30, defend: 20}.',
+      additionalProperties: { type: 'integer', minimum: 0 },
+      examples: [
+        { attack: 60, stress_attack: 30, defend: 10 },
+        { attack: 40, stress_attack: 40, grapple: 20 },
+      ],
     },
     special_abilities: {
       type: 'array',
+      description:
+        'Ability ids available to this enemy beyond the default attack. References `content/dungeon/abilities/<school>.yaml` entry ids. Decorative unless the AI chooser is extended to include ability actions.',
       items: { type: 'string' },
       default: [],
     },
     description_en: { type: 'string', default: '' },
     description_de: { type: 'string', default: '' },
-    ambient_text_en: { type: 'array', items: { type: 'string' }, default: [] },
-    ambient_text_de: { type: 'array', items: { type: 'string' }, default: [] },
+    ambient_text_en: {
+      type: 'array',
+      description:
+        'Idle / round-start flavour lines rotated randomly. Keep terse — they stack below the portrait.',
+      items: { type: 'string' },
+      default: [],
+    },
+    ambient_text_de: {
+      type: 'array',
+      description: 'German variant of ambient_text_en.',
+      items: { type: 'string' },
+      default: [],
+    },
   },
 };
 
@@ -221,7 +523,13 @@ const ANCHOR_PHASE: JSONSchema7 = {
   properties: {
     text_en: BILINGUAL.text_en,
     text_de: BILINGUAL.text_de,
-    state_effect: { type: 'object', additionalProperties: true },
+    state_effect: {
+      type: 'object',
+      description:
+        'Optional archetype-state delta applied when the anchor transitions into this phase. Same key schema as EncounterChoice.success_effects (archetype-specific — stress, decay, insight, etc.). Defaults to {} (no effect).',
+      additionalProperties: true,
+      examples: [{ decay: 5 }, { insight: 10, stress: -10 }],
+    },
   },
 };
 
@@ -231,9 +539,11 @@ const ANCHOR_ITEM: JSONSchema7 = {
   required: ['id', 'phases'],
   additionalProperties: false,
   properties: {
-    id: { type: 'string' },
+    id: { type: 'string', description: 'Unique anchor id within the pack.' },
     phases: {
       type: 'object',
+      description:
+        'The 4-phase migration arc of an object through the dungeon: discovery (first encounter), echo (resurface), mutation (transformed), climax (final appearance). All four phases are required.',
       required: ['discovery', 'echo', 'mutation', 'climax'],
       additionalProperties: false,
       properties: {
@@ -251,6 +561,8 @@ const BILINGUAL_TEXT_ITEM: JSONSchema7 = {
   type: 'object',
   required: ['text_en', 'text_de'],
   additionalProperties: false,
+  description:
+    'One entrance / atmospheric prose block. Rotated randomly by the dungeon on depth-0 entry.',
   properties: { text_en: BILINGUAL.text_en, text_de: BILINGUAL.text_de },
 };
 
@@ -259,8 +571,15 @@ const BAROMETER_ITEM: JSONSchema7 = {
   type: 'object',
   required: ['tier', 'text_en', 'text_de'],
   additionalProperties: false,
+  description:
+    'One tier of the objektanker barometer — prose shown at the run summary depending on the dominant archetype tier reached. Exactly one entry per tier (0-3) per archetype is expected.',
   properties: {
-    tier: { type: 'integer', minimum: 0, maximum: 3 },
+    tier: {
+      type: 'integer',
+      description: '0=baseline (low archetype pressure), 1=middle, 2=high, 3=peak/climax.',
+      minimum: 0,
+      maximum: 3,
+    },
     text_en: BILINGUAL.text_en,
     text_de: BILINGUAL.text_de,
   },
@@ -273,7 +592,8 @@ const BAROMETER_ITEM: JSONSchema7 = {
  */
 const SPAWN_LIST: JSONSchema7 = {
   type: 'array',
-  description: 'Enemy spawn list for this combat_encounter_id.',
+  description:
+    'Enemy spawn list for one combat_encounter_id. Each entry references an EnemyTemplate. `count` > 1 places multiple instances of the same template on the field.',
   items: {
     type: 'object',
     required: ['template_id'],
@@ -281,9 +601,14 @@ const SPAWN_LIST: JSONSchema7 = {
     properties: {
       template_id: {
         type: 'string',
-        description: 'References an EnemyTemplate id.',
+        description: 'References an EnemyTemplate id (must exist in the enemies pack).',
       },
-      count: { type: 'integer', default: 1, minimum: 1 },
+      count: {
+        type: 'integer',
+        description: 'Instance count. Default 1.',
+        default: 1,
+        minimum: 1,
+      },
     },
   },
 };
