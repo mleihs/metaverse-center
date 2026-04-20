@@ -373,6 +373,24 @@ export class VelgContentDraftConflictView extends LitElement {
       width: 100%;
     }
 
+    /* JSON syntax token colors. Punctuation inherits the pre's text color. */
+    .tok--key {
+      color: var(--color-text-secondary);
+    }
+    .tok--string {
+      color: var(--color-info);
+    }
+    .tok--number {
+      color: var(--color-warning);
+    }
+    .tok--boolean {
+      color: var(--color-success);
+    }
+    .tok--null {
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+
     .column__select-btn {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
@@ -758,7 +776,21 @@ export class VelgContentDraftConflictView extends LitElement {
             : msg('(deleted on main)');
       return html`<pre class="column__payload column__payload--deleted">${label}</pre>`;
     }
-    return html`<pre class="column__payload">${this._prettyJson(value)}</pre>`;
+    const src = this._prettyJson(value);
+    return html`<pre class="column__payload">${this._renderJsonTokens(src)}</pre>`;
+  }
+
+  /** Token-highlight a pretty-printed JSON string. Keys get one color, scalars
+   *  another, punctuation inherits the pre's text color. No dependency — a
+   *  ~40-line tokenizer is cheaper than pulling a highlighter lib for an
+   *  admin-only side-panel. See `tokenizeJson` below for the grammar. */
+  private _renderJsonTokens(src: string): TemplateResult {
+    const tokens = tokenizeJson(src);
+    return html`${tokens.map((t) =>
+      t.type === 'ws' || t.type === 'punct' || t.type === 'other'
+        ? t.text
+        : html`<span class="tok tok--${t.type}">${t.text}</span>`,
+    )}`;
   }
 
   private _renderFooter(preview: ConflictPreview): TemplateResult {
@@ -854,6 +886,65 @@ export class VelgContentDraftConflictView extends LitElement {
       return String(value);
     }
   }
+}
+
+/* ── JSON tokenizer ──────────────────────────── */
+
+type JsonTokenType =
+  | 'key'
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'null'
+  | 'punct'
+  | 'ws'
+  | 'other';
+
+interface JsonToken {
+  type: JsonTokenType;
+  text: string;
+}
+
+/** Single-pass JSON token regex.
+ *  Alternation order matters — string/number/literal first, then punctuation,
+ *  then whitespace, then a final `.` fallback so every character is classified
+ *  (non-JSON inputs from the captureError fallback still round-trip instead of
+ *  dropping characters). */
+const JSON_TOKEN_RE =
+  /"(?:\\.|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null|[{}[\]:,]|\s+|./g;
+
+/** Tokenize pretty-printed JSON for syntax highlighting. Strings immediately
+ *  followed by `:` (past whitespace) are upgraded to `key`. Every input
+ *  character ends up in exactly one token — no dropped input. */
+function tokenizeJson(src: string): JsonToken[] {
+  const tokens: JsonToken[] = [];
+  JSON_TOKEN_RE.lastIndex = 0;
+  let m = JSON_TOKEN_RE.exec(src);
+  while (m !== null) {
+    const text = m[0];
+    let type: JsonTokenType;
+    const first = text[0];
+    if (first === '"') type = 'string';
+    else if (text === 'true' || text === 'false') type = 'boolean';
+    else if (text === 'null') type = 'null';
+    else if (/^\s+$/.test(text)) type = 'ws';
+    else if (text.length === 1 && '{}[]:,'.includes(text)) type = 'punct';
+    else if (/^-?\d/.test(text)) type = 'number';
+    else type = 'other';
+    tokens.push({ type, text });
+    m = JSON_TOKEN_RE.exec(src);
+  }
+  for (let i = 0; i < tokens.length - 1; i++) {
+    if (tokens[i].type !== 'string') continue;
+    for (let j = i + 1; j < tokens.length; j++) {
+      if (tokens[j].type === 'ws') continue;
+      if (tokens[j].type === 'punct' && tokens[j].text === ':') {
+        tokens[i] = { type: 'key', text: tokens[i].text };
+      }
+      break;
+    }
+  }
+  return tokens;
 }
 
 /* ── Path helper ─────────────────────────────── */
