@@ -21,8 +21,10 @@ Flow:
        {merged_working_content, version, acknowledged_conflict_paths}.
     6. `ContentDraftsService.resolve_conflict()` transitions conflict→draft
        and writes the merged content as the new working_content. `base_sha`
-       is updated to the main HEAD captured in step 3, so the NEXT publish
-       compares against the correct fresh baseline.
+       is deliberately NOT updated — publish.py re-fetches main HEAD at
+       every publish, so the stored column carries no operational weight
+       for drift detection. `main_base_sha` in the preview is display-only
+       ("upstream is now at abc123").
 
 Why two endpoints (preview + resolve) instead of one:
     A single endpoint that did "fetch + merge + apply" would have to accept
@@ -45,7 +47,6 @@ from __future__ import annotations
 
 import base64
 import logging
-import os
 from uuid import UUID
 
 import yaml
@@ -65,6 +66,7 @@ from backend.services.content_packs.merge_service import (
 from backend.services.content_packs.publish import (
     build_file_path,
     discover_default_head,
+    get_github_repo_config,
 )
 from backend.services.github_app import (
     GitHubAPIError,
@@ -114,12 +116,7 @@ class ContentPacksConflictService:
             )
 
         client = github_client or get_github_app_client()
-        owner = os.environ.get("GITHUB_REPO_OWNER")
-        repo = os.environ.get("GITHUB_REPO_NAME")
-        if not owner or not repo:
-            raise bad_request(
-                "GITHUB_REPO_OWNER / GITHUB_REPO_NAME must be configured.",
-            )
+        owner, repo = get_github_repo_config()
 
         default_branch, head_sha = await discover_default_head(
             client, owner, repo,

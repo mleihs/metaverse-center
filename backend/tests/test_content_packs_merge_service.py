@@ -396,3 +396,17 @@ def test_both_sides_deleted_entry_not_in_base() -> None:
     result = merge_content(base, ours, theirs)
     assert result.conflicts == []
     assert result.merged == base
+
+
+def test_id_list_key_present_only_in_base_both_sides_dropped() -> None:
+    # Regression for the drop-key guard: when base has an id-list under a
+    # key AND neither ours nor theirs keeps any entries for it (the admin
+    # and main both removed the collection entirely), the merged tree must
+    # omit the key rather than emitting an empty list.
+    base = {"banter": [_entry("a", "x")], "meta": {"v": 1}}
+    ours = {"meta": {"v": 1}}
+    theirs = {"meta": {"v": 1}}
+    result = merge_content(base, ours, theirs)
+    assert result.conflicts == []
+    assert "banter" not in result.merged
+    assert result.merged == {"meta": {"v": 1}}

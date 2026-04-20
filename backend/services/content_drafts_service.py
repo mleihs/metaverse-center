@@ -290,7 +290,7 @@ class ContentDraftsService:
             .execute()
         )
         if not response.data:
-            await cls._raise_conflict_or_not_found(supabase, draft_id)
+            await cls._raise_conflict_or_not_found(supabase, draft_id=draft_id)
         return ContentDraft.model_validate(response.data[0])
 
     # ── Update — single-draft status transitions ──────────────────────
@@ -433,7 +433,11 @@ class ContentDraftsService:
             .execute()
         )
         if not response.data:
-            await cls._raise_conflict_or_not_found_detail(supabase, draft_id)
+            await cls._raise_conflict_or_not_found(
+                supabase,
+                draft_id=draft_id,
+                require_status=ContentDraftStatus.CONFLICT,
+            )
         return ContentDraft.model_validate(response.data[0])
 
     # ── Update — bulk status transitions ──────────────────────────────
@@ -669,41 +673,27 @@ class ContentDraftsService:
     async def _raise_conflict_or_not_found(
         cls,
         supabase: Client,
+        *,
         draft_id: UUID,
+        require_status: ContentDraftStatus | None = None,
     ) -> None:
-        """Disambiguate "doesn't exist" from "version mismatch" on failed update."""
-        response = await (
-            supabase.table(_TABLE)
-            .select("id")
-            .eq("id", str(draft_id))
-            .limit(1)
-            .execute()
-        )
-        if extract_one(response):
-            logger.warning(
-                "Content-draft optimistic-lock conflict (id=%s)",
-                draft_id,
-            )
-            raise conflict(
-                "Draft was modified by another session. Please refresh and retry.",
-            )
-        raise not_found(_TABLE, draft_id)
+        """Classify an empty-result UPDATE into a 404 or 409 and raise.
 
-    @classmethod
-    async def _raise_conflict_or_not_found_detail(
-        cls,
-        supabase: Client,
-        draft_id: UUID,
-    ) -> None:
-        """Like `_raise_conflict_or_not_found`, but also checks status='conflict'.
+        Three failure axes are disambiguated with a single SELECT:
+          1. Row doesn't exist → 404 not_found.
+          2. `require_status` was requested but the row is in a different
+             status (caller's gate predicate lost) → 409 with a status-
+             specific message.
+          3. Row exists and the status gate passed (or wasn't required) →
+             409 optimistic-lock, the admin lost the version predicate.
 
-        Used by `resolve_conflict` which has three possible failure modes
-        (missing, status-mismatch, version-mismatch) and benefits from a
-        status-specific 409 message.
+        Callers reach this helper only after observing `response.data == []`
+        on a gated UPDATE; this function then does the diagnostic SELECT.
         """
+        select_cols = "status, version" if require_status else "id"
         response = await (
             supabase.table(_TABLE)
-            .select("status, version")
+            .select(select_cols)
             .eq("id", str(draft_id))
             .limit(1)
             .execute()
@@ -711,21 +701,29 @@ class ContentDraftsService:
         row = extract_one(response)
         if not row:
             raise not_found(_TABLE, draft_id)
-        current_status = row.get("status")
-        if current_status != ContentDraftStatus.CONFLICT.value:
+        if require_status is not None:
+            current_status = row.get("status")
+            if current_status != require_status.value:
+                logger.warning(
+                    "Draft %s in status %s (require_status=%s)",
+                    draft_id, current_status, require_status.value,
+                )
+                raise conflict(
+                    f"Draft is in status '{current_status}' — this "
+                    f"operation is only allowed for drafts in "
+                    f"'{require_status.value}' status.",
+                )
             logger.warning(
-                "Resolve called on draft %s in status %s (expected 'conflict')",
-                draft_id, current_status,
+                "Draft resolve optimistic-lock conflict (id=%s, db_version=%s)",
+                draft_id, row.get("version"),
             )
             raise conflict(
-                f"Draft is in status '{current_status}' — resolve is only "
-                f"allowed for drafts in 'conflict' status.",
+                "Draft was modified by another session. Please refresh the "
+                "conflict preview and retry.",
             )
         logger.warning(
-            "Content-draft resolve optimistic-lock conflict (id=%s, db_version=%s)",
-            draft_id, row.get("version"),
+            "Draft optimistic-lock conflict (id=%s)", draft_id,
         )
         raise conflict(
-            "Draft was modified by another session. Please refresh the "
-            "conflict preview and retry.",
+            "Draft was modified by another session. Please refresh and retry.",
         )

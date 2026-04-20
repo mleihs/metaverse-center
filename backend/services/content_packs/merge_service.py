@@ -230,7 +230,14 @@ def _merge_id_list(
             conflicts.append(entry_conflict)
         auto += entry_auto
 
-    if not resolved and base is _MISSING and ours is _MISSING and theirs is _MISSING:
+    # Drop the key entirely when BOTH sides signal "no collection here"
+    # (either missing or empty) and no entry survived the merge. Reached
+    # when base had the id-list and ours+theirs both dropped it — without
+    # this guard we'd emit an empty list, re-introducing the key with a
+    # surprising default. Empty-list inputs are already routed to the
+    # scalar path via `_any_is_id_list`, so `not ours_map and not theirs_map`
+    # cleanly classifies "neither side kept any entries of this id-list".
+    if not resolved and not ours_map and not theirs_map:
         return _MISSING, conflicts, auto
 
     ordered = _restore_order(resolved, ours_map, theirs_map)
@@ -337,6 +344,11 @@ def _restore_order(
     Admin's sequencing wins for entries they touched; upstream additions
     appear at the end so the admin can see them as a discrete "and these are
     new" block.
+
+    Invariant: every id in `resolved` appears in either `ours_map` or
+    `theirs_map` — `_merge_one_entry` never returns a non-None entry unless
+    at least one of ours/theirs held it. So the two loops exhaust `resolved`
+    and we don't need a third "present only in resolved" fallback.
     """
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -348,11 +360,6 @@ def _restore_order(
         if entry_id in resolved and entry_id not in seen:
             out.append(resolved[entry_id])
             seen.add(entry_id)
-    # Entries present only in resolved (edge case: base-only revive) — keep
-    # deterministic by appending in dict-insertion order.
-    for entry_id, entry in resolved.items():
-        if entry_id not in seen:
-            out.append(entry)
     return out
 
 
