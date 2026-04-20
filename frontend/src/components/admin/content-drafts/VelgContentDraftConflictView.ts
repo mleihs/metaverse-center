@@ -422,9 +422,13 @@ export class VelgContentDraftConflictView extends LitElement {
     }
 
     .column__select-btn[aria-pressed='true'] {
+      /* Use outline (non-layout-affecting) instead of widening the border —
+       * border-width: 2px would add 1px per side and shift the column head
+       * layout when the admin picks a side. */
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
       background: var(--color-surface);
       color: var(--color-text-primary);
-      border-width: 2px;
     }
 
     /* ── Footer ──────────────────────────────── */
