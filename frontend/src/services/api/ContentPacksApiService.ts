@@ -44,10 +44,7 @@ export class ContentPacksApiService extends BaseApiService {
    * `base_content` + `working_content` when materializing a draft from
    * an existing resource instead of an empty collection.
    */
-  getResource(
-    packSlug: string,
-    resourcePath: string,
-  ): Promise<ApiResponse<PackResourceContent>> {
+  getResource(packSlug: string, resourcePath: string): Promise<ApiResponse<PackResourceContent>> {
     return this.get(
       `${this.base}/${encodeURIComponent(packSlug)}/${encodeURIComponent(resourcePath)}`,
     );

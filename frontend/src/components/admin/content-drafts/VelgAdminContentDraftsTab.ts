@@ -62,19 +62,15 @@ export class VelgAdminContentDraftsTab extends LitElement {
   @state() private _publishDrafts: ContentDraftSummary[] = [];
 
   private _getList(): VelgContentDraftsList | null {
-    return (
-      this.renderRoot?.querySelector('velg-content-drafts-list') as
-        | VelgContentDraftsList
-        | null
-    );
+    return this.renderRoot?.querySelector(
+      'velg-content-drafts-list',
+    ) as VelgContentDraftsList | null;
   }
 
   private _getEditor(): VelgContentDraftEditor | null {
-    return (
-      this.renderRoot?.querySelector('velg-content-draft-editor') as
-        | VelgContentDraftEditor
-        | null
-    );
+    return this.renderRoot?.querySelector(
+      'velg-content-draft-editor',
+    ) as VelgContentDraftEditor | null;
   }
 
   private _handleNewDraft(): void {
@@ -145,7 +141,6 @@ export class VelgAdminContentDraftsTab extends LitElement {
   private _handlePublishClose(): void {
     this._publishOpen = false;
   }
-
 
   protected render(): TemplateResult {
     const sidePanelTitle = this._editorCreateMode

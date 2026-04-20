@@ -16,16 +16,15 @@
 import type { ApiResponse, PaginatedResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
-export type ContentDraftStatus =
-  | 'draft'
-  | 'conflict'
-  | 'published'
-  | 'merged'
-  | 'abandoned';
+export type ContentDraftStatus = 'draft' | 'conflict' | 'published' | 'merged' | 'abandoned';
 
 export interface ContentDraftSummary {
   id: string;
   author_id: string;
+  /** Resolved via `get_user_emails_batch` on the drafts-list endpoint only;
+   *  null for sibling endpoints (e.g. open-for-resource warning) and for
+   *  deleted users whose email no longer resolves. */
+  author_email: string | null;
   pack_slug: string;
   resource_path: string;
   status: ContentDraftStatus;
@@ -73,6 +72,39 @@ export interface BatchPublishResult {
   drafts: ContentDraftSummary[];
 }
 
+/** Taxonomy of admin-gated merge conflicts (mirrors backend ConflictKind). */
+export type ConflictKind =
+  | 'modify_modify'
+  | 'modify_delete'
+  | 'delete_modify'
+  | 'add_add_different';
+
+export interface EntryConflict {
+  path: string;
+  kind: ConflictKind;
+  base: unknown | null;
+  ours: unknown | null;
+  theirs: unknown | null;
+}
+
+export interface ConflictPreview {
+  draft_id: string;
+  version: number;
+  base: Record<string, unknown>;
+  ours: Record<string, unknown>;
+  theirs: Record<string, unknown>;
+  merged: Record<string, unknown>;
+  conflicts: EntryConflict[];
+  auto_resolved_count: number;
+  main_base_sha: string | null;
+}
+
+export interface ResolveConflictBody {
+  merged_working_content: Record<string, unknown>;
+  version: number;
+  acknowledged_conflict_paths?: string[];
+}
+
 export interface ListDraftsParams {
   status?: ContentDraftStatus[];
   author_id?: string;
@@ -84,9 +116,7 @@ export class ContentDraftsApiService extends BaseApiService {
   private readonly base = '/admin/content-drafts';
 
   /** Paginated drafts list. Backend uses limit/offset (not page/per_page). */
-  async listDrafts(
-    params: ListDraftsParams = {},
-  ): Promise<PaginatedResponse<ContentDraftSummary>> {
+  async listDrafts(params: ListDraftsParams = {}): Promise<PaginatedResponse<ContentDraftSummary>> {
     const query: Record<string, string> = {};
     if (params.author_id) query.author_id = params.author_id;
     if (typeof params.limit === 'number') query.limit = String(params.limit);
@@ -150,10 +180,7 @@ export class ContentDraftsApiService extends BaseApiService {
    * Validation piggybacks on this call: Pydantic errors on working_content
    * surface as 422 (the editor maps them to an inline banner).
    */
-  updateWorking(
-    draftId: string,
-    body: ContentDraftUpdateBody,
-  ): Promise<ApiResponse<ContentDraft>> {
+  updateWorking(draftId: string, body: ContentDraftUpdateBody): Promise<ApiResponse<ContentDraft>> {
     return this.patch(`${this.base}/${encodeURIComponent(draftId)}`, body);
   }
 
@@ -170,6 +197,31 @@ export class ContentDraftsApiService extends BaseApiService {
   /** Batch-publish N drafts as a single PR. 1..25 drafts per batch. */
   publishBatch(body: BatchPublishBody): Promise<ApiResponse<BatchPublishResult>> {
     return this.post(`${this.base}/publish`, body);
+  }
+
+  /**
+   * Server-computed 3-way merge preview for a conflict-status draft.
+   *
+   * Fetches main-branch content and runs the semantic merge. Result is
+   * rendered by `VelgContentDraftConflictView` as a 3-column diff (base /
+   * ours / theirs) plus a pre-merged `merged` tree with admin-gated
+   * conflicts enumerated for per-entry flip.
+   *
+   * Only valid when the draft is in 'conflict' status (409 otherwise).
+   */
+  getConflictPreview(draftId: string): Promise<ApiResponse<ConflictPreview>> {
+    return this.get(`${this.base}/${encodeURIComponent(draftId)}/conflict-preview`);
+  }
+
+  /**
+   * Accept admin-approved merged content; transitions conflict → draft.
+   *
+   * `version` must match the DB row's current version (captured at preview
+   * time). Mismatch returns 409, admin refreshes the preview and retries.
+   * After success, the draft is back in normal edit mode and re-publishable.
+   */
+  resolveConflict(draftId: string, body: ResolveConflictBody): Promise<ApiResponse<ContentDraft>> {
+    return this.post(`${this.base}/${encodeURIComponent(draftId)}/resolve`, body);
   }
 }
 
