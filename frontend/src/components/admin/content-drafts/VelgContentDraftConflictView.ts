@@ -890,15 +890,7 @@ export class VelgContentDraftConflictView extends LitElement {
 
 /* ── JSON tokenizer ──────────────────────────── */
 
-type JsonTokenType =
-  | 'key'
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'null'
-  | 'punct'
-  | 'ws'
-  | 'other';
+type JsonTokenType = 'key' | 'string' | 'number' | 'boolean' | 'null' | 'punct' | 'ws' | 'other';
 
 interface JsonToken {
   type: JsonTokenType;

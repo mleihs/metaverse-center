@@ -29,11 +29,19 @@
  *
  * Scope
  * -----
- * The 8 archetype-pack resource_paths currently exposed by the admin
- * manifest endpoint (see `read_service.list_pack_resources`). Ability packs
- * live under `content/dungeon/abilities/` and are NOT exposed via the draft
- * workflow yet, so they're absent here — add when the publish pipeline
- * learns to emit ability-school paths.
+ * Two pack families are addressable from the manifest endpoint
+ * (`read_service.list_pack_resources`):
+ *
+ *   - Archetype packs: 8 `resource_path`s (banter / encounters / loot /
+ *     enemies / anchors / entrance_texts / barometer_texts / spawns).
+ *     Lookup via `SCHEMA_BY_RESOURCE_PATH[resourcePath]`.
+ *
+ *   - Ability packs: `pack_slug = "abilities"` (see `ABILITY_PACK_SLUG`),
+ *     `resource_path = <school>` (spy, assassin, guardian, infiltrator,
+ *     propagandist, saboteur, universal). All 7 schools share the
+ *     `ABILITY_ITEM` schema — dispatched via the `packSlug` argument to
+ *     `getSchemaForResource` because the resource_path alone isn't
+ *     disambiguating here.
  */
 
 import type { JSONSchema7 } from 'json-schema';
@@ -613,9 +621,92 @@ const SPAWN_LIST: JSONSchema7 = {
   },
 };
 
+/** One combat ability. Mirrors the Pydantic `AbilityItem`
+ *  (`backend/services/content_packs/schemas.py`) AND the runtime `Ability`
+ *  dataclass (`backend/services/combat/ability_schools.py`). */
+const ABILITY_ITEM: JSONSchema7 = {
+  type: 'object',
+  required: ['id', 'name_en', 'name_de', 'school', 'description_en', 'description_de'],
+  additionalProperties: false,
+  properties: {
+    id: {
+      type: 'string',
+      description:
+        'Unique ability id within the pack (e.g. "assassin_precision_strike"). Referenced from `EnemyItem.special_abilities` and from combat skill-check code.',
+    },
+    name_en: { type: 'string', description: 'Display name (English).' },
+    name_de: { type: 'string', description: 'Display name (German).' },
+    school: {
+      type: 'string',
+      description:
+        'Ability school bucket. Must match the file stem (abilities/spy.yaml entries all carry school: spy, etc.) — `_ingest_ability_pack` puts the ability into `result.abilities[item.school]`. `universal` is the "any-aptitude" bucket.',
+      enum: APTITUDE_ENUM,
+    },
+    description_en: {
+      type: 'string',
+      description:
+        'Tooltip / combat-log prose (English). Surfaces in the ability picker and in narrative effects lines.',
+    },
+    description_de: {
+      type: 'string',
+      description: 'German variant of description_en.',
+    },
+    min_aptitude: {
+      type: 'integer',
+      description:
+        'Minimum aptitude level required to cast. Gates ability availability in the combat picker — agents below this threshold see the ability greyed out.',
+      default: 3,
+      minimum: 0,
+    },
+    cooldown: {
+      type: 'integer',
+      description:
+        'Rounds between uses. 0 = every round, 1 = every other round, etc. Tracked per-agent per-run.',
+      default: 0,
+      minimum: 0,
+    },
+    effect_type: {
+      type: 'string',
+      description:
+        'Combat dispatch key. Handled in `backend/services/combat/combat_engine.py` — common values: "damage" (deals damage steps, params: power + optional hit_bonus / bonus_vs_debuffed), "stress_damage" (deals stress), "heal_stress" (reduces stress, params: amount), "buff" / "debuff" (adds a named status, params: status + duration), "utility" (side-effects like taunt / evade). Free string on the Python side — adding a new value needs a matching branch in combat_engine.',
+      default: 'damage',
+      examples: ['damage', 'stress_damage', 'heal_stress', 'buff', 'debuff', 'utility'],
+    },
+    effect_params: {
+      type: 'object',
+      description:
+        'Effect-type-specific params. Schema depends on `effect_type` — see examples. Unknown keys are silently ignored by combat_engine.',
+      additionalProperties: true,
+      examples: [
+        { power: 5, hit_bonus: 10 },
+        { power: 7, bonus_vs_debuffed: 1 },
+        { power: 9, requires_first_round_or_dark: true },
+        { amount: 30 },
+        { status: 'evasive', duration: 2 },
+      ],
+    },
+    is_ultimate: {
+      type: 'boolean',
+      description:
+        'If true, the ability is flagged as an ultimate — typically long cooldown + high impact. Currently informational only (UI badge); combat_engine does not special-case.',
+      default: false,
+    },
+    targets: {
+      type: 'string',
+      description: 'Target-selection mode. Drives the UI picker and the effect applier.',
+      enum: ['single_enemy', 'all_enemies', 'single_ally', 'all_allies', 'self'],
+      default: 'single_enemy',
+    },
+  },
+};
+
 /**
- * Resource-path → per-entry schema. Keyed by the `resource_path` field
- * stored on the draft row.
+ * Resource-path → per-entry schema, for archetype-pack drafts.
+ *
+ * Keyed by the `resource_path` field stored on the draft row. Ability packs
+ * use `pack_slug="abilities"` and a school-name resource_path (spy, assassin,
+ * …), so they don't fit this single-key map — `getSchemaForResource` handles
+ * them via the pack_slug argument instead.
  */
 export const SCHEMA_BY_RESOURCE_PATH: Record<string, JSONSchema7> = {
   banter: BANTER_ITEM,
@@ -628,7 +719,27 @@ export const SCHEMA_BY_RESOURCE_PATH: Record<string, JSONSchema7> = {
   spawns: SPAWN_LIST,
 };
 
-/** Fetch the entry schema for a resource_path, or undefined when unknown. */
-export function getSchemaForResource(resourcePath: string): JSONSchema7 | undefined {
+/** Sentinel pack_slug that addresses the flat `content/dungeon/abilities/`
+ *  namespace — mirrors `backend.services.content_packs.schemas.ABILITY_PACK_SLUG`.
+ *  All 7 schools share this slug; the school name lives in resource_path. */
+export const ABILITY_PACK_SLUG = 'abilities';
+
+/** Fetch the entry schema for a draft.
+ *
+ * Dispatches on `packSlug` first:
+ *   - `ABILITY_PACK_SLUG` ("abilities") → returns the shared ABILITY_ITEM
+ *     schema regardless of which school (resource_path) the draft addresses.
+ *   - any other slug → looks up `resourcePath` in the archetype map.
+ *
+ * Returns `undefined` for unknown resource paths so the editor falls back
+ * to generic JSON editing with no validation. `packSlug` is optional for
+ * callers that only have the resource_path (the archetype path is resolvable
+ * from resource_path alone).
+ */
+export function getSchemaForResource(
+  resourcePath: string,
+  packSlug?: string,
+): JSONSchema7 | undefined {
+  if (packSlug === ABILITY_PACK_SLUG) return ABILITY_ITEM;
   return SCHEMA_BY_RESOURCE_PATH[resourcePath];
 }
