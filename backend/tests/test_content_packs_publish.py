@@ -184,6 +184,32 @@ class TestBuildFilePath:
         assert path == "content/dungeon/archetypes/agent_bonds/encounters.yaml"
 
     @pytest.mark.parametrize(
+        "school",
+        ["assassin", "guardian", "infiltrator", "propagandist", "saboteur", "spy", "universal"],
+    )
+    def test_abilities_slug_routes_to_flat_dir(self, school):
+        """pack_slug="abilities" skips the archetype sub-directory.
+
+        The abilities namespace is flat — one YAML per school, no nesting.
+        `build_file_path` must collapse `(abilities, <school>)` to
+        `content/dungeon/abilities/<school>.yaml`, not `archetypes/abilities/<school>.yaml`.
+        """
+        path = build_file_path("abilities", school)
+        assert path == f"content/dungeon/abilities/{school}.yaml"
+
+    def test_abilities_rejects_bracket_notation(self):
+        """Phase-2 resource_path regex applies equally to abilities packs.
+
+        The regex gate is on resource_path (not on pack_slug), so bracket
+        sub-resource notation is rejected whether or not the slug is the
+        abilities sentinel. Ensures the ability publish flow can't bypass
+        the Phase-2 guard via a flat-dir path.
+        """
+        with pytest.raises(HTTPException) as exc_info:
+            build_file_path("abilities", "spy[strike_01]")
+        assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.parametrize(
         "bad_resource_path",
         [
             "banter[ab_01]",        # bracket sub-resource notation

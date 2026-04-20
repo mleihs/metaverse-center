@@ -134,3 +134,72 @@ class TestGetResource:
         # regex is rejected here (tighter regex on path param).
         r = client.get("/api/v1/admin/content-packs/shadow/banter%5Bab_01%5D")
         assert r.status_code == 422
+
+
+# ── Ability packs (A1.7 Step 5) ────────────────────────────────────────────
+
+
+class TestAbilityPacks:
+    """Manifest + resource-read coverage for the ABILITY_PACK_SLUG path.
+
+    Uses the real on-disk ability YAMLs (7 schools ship in the repo) — same
+    posture as the archetype tests above. Verifies the slug sentinel round-
+    trips unchanged and the flat directory layout is composed correctly.
+    """
+
+    def test_manifest_lists_all_seven_ability_schools(self, client):
+        _override_admin()
+        r = client.get("/api/v1/admin/content-packs")
+        assert r.status_code == 200
+        rows = r.json()["data"]
+
+        ability_rows = [row for row in rows if row["pack_slug"] == "abilities"]
+        schools = {row["resource_path"] for row in ability_rows}
+        # Seven schools ship under content/dungeon/abilities/.
+        assert schools == {
+            "assassin",
+            "guardian",
+            "infiltrator",
+            "propagandist",
+            "saboteur",
+            "spy",
+            "universal",
+        }, f"Unexpected ability schools in manifest: {schools}"
+
+        # Each ability row points to the flat directory, not the archetype tree.
+        for row in ability_rows:
+            assert row["file_path"].startswith("content/dungeon/abilities/")
+            assert row["entry_count"] > 0, (
+                f"abilities/{row['resource_path']}.yaml reports no entries; "
+                "_count_entries dispatch for the 'abilities' top-key likely regressed."
+            )
+
+    def test_get_ability_returns_parsed_yaml(self, client):
+        _override_admin()
+        r = client.get("/api/v1/admin/content-packs/abilities/spy")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        payload = body["data"]
+        assert payload["pack_slug"] == "abilities"
+        assert payload["resource_path"] == "spy"
+        # Shape check: content dict contains at least schema_version + abilities.
+        assert "schema_version" in payload["content"]
+        abilities = payload["content"].get("abilities")
+        assert isinstance(abilities, list)
+        assert len(abilities) > 0
+        # Every entry's `school` must equal the file stem — cross-check that
+        # list_pack_resources + get_pack_resource agree on the school<->file mapping.
+        assert all(item.get("school") == "spy" for item in abilities)
+
+    def test_get_unknown_ability_school_returns_404(self, client):
+        _override_admin()
+        r = client.get("/api/v1/admin/content-packs/abilities/not_a_real_school")
+        assert r.status_code == 404
+        # The error context should name the abilities root (not the archetypes
+        # root) so admins see an accurate hint in logs.
+        body = r.json()
+        # The error message shape may vary across the error helpers; we at
+        # least assert we didn't mistakenly name the archetypes root.
+        assert "archetypes" not in (body.get("detail") or "").lower() or \
+               "abilities" in (body.get("detail") or "").lower()

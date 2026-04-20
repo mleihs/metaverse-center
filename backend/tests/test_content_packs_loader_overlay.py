@@ -132,3 +132,103 @@ class TestOverlayValidationError:
             load_packs_with_overlay(
                 overlay={("shadow", "banter"): bad_content},
             )
+
+
+# ── Ability-pack overlay (A1.7 Step 5) ────────────────────────────────────
+
+
+class TestAbilityOverlay:
+    """Cover the new ABILITY_PACK_SLUG-dispatched overlay path.
+
+    Uses the sentinel `(pack_slug, resource_path) = ("abilities", <school>)`
+    convention for addressing ability-school YAMLs inside the draft system.
+    """
+
+    _OVERLAY_ABILITY = {
+        "schema_version": 1,
+        "abilities": [
+            {
+                "id": "test_overlay_spy_strike",
+                "name_en": "Overlay Strike",
+                "name_de": "Overlay-Schlag",
+                "school": "spy",
+                "description_en": "Overlay EN",
+                "description_de": "Overlay DE",
+                "min_aptitude": 3,
+                "cooldown": 0,
+                "effect_type": "damage",
+                "effect_params": {"power": 5},
+                "is_ultimate": False,
+                "targets": "single_enemy",
+            }
+        ],
+    }
+
+    def test_overlay_replaces_on_disk_ability_school(self):
+        """An (abilities, spy) overlay swaps the entire on-disk spy.yaml load.
+
+        Loading a single-entry overlay leaves the spy school holding exactly
+        that one runtime Ability and nothing else — the on-disk spy abilities
+        do NOT leak through. Other schools stay on disk.
+        """
+        baseline = load_packs()
+        overlaid = load_packs_with_overlay(
+            overlay={("abilities", "spy"): self._OVERLAY_ABILITY},
+        )
+
+        # Spy school now holds the single overlay entry — not the disk list.
+        spy_abilities = overlaid.abilities.get("spy", [])
+        assert len(spy_abilities) == 1
+        assert spy_abilities[0].id == "test_overlay_spy_strike"
+
+        # Other schools untouched. Pick guardian as a representative control.
+        assert overlaid.abilities.get("guardian") == baseline.abilities.get("guardian")
+
+    def test_overlay_orphan_for_new_school_ingests(self):
+        """Overlay for a school with no on-disk file still ingests as orphan.
+
+        The orphan path is dispatched by slug in `_ingest_overlay_orphans` —
+        ABILITY_PACK_SLUG routes through `_ingest_ability_pack`. This is
+        how an admin can draft a brand-new ability school (not yet on disk)
+        and preview the publish flow.
+        """
+        new_school_overlay = {
+            "schema_version": 1,
+            "abilities": [
+                {
+                    "id": "new_school_ability_01",
+                    "name_en": "New School Slam",
+                    "name_de": "Neuschul-Hieb",
+                    # The `school` field decides which registry bucket the
+                    # ability lands in — overlay orphan doesn't care what
+                    # the file stem would have been.
+                    "school": "berserker",
+                    "description_en": "EN",
+                    "description_de": "DE",
+                    "effect_type": "damage",
+                    "effect_params": {"power": 7},
+                    "targets": "single_enemy",
+                }
+            ],
+        }
+        overlaid = load_packs_with_overlay(
+            overlay={("abilities", "berserker"): new_school_overlay},
+        )
+        # The new-school runtime bucket is populated.
+        berserker_abilities = overlaid.abilities.get("berserker", [])
+        assert len(berserker_abilities) == 1
+        assert berserker_abilities[0].id == "new_school_ability_01"
+
+    def test_ability_overlay_bad_schema_raises(self):
+        """Pydantic errors from the AbilityPack loader surface the same as archetype packs."""
+        bad = {
+            "schema_version": 1,
+            "abilities": [
+                {
+                    # Missing `id`, `school`, `name_*`, `description_*`.
+                    "effect_type": "damage",
+                }
+            ],
+        }
+        with pytest.raises(ValidationError):
+            load_packs_with_overlay(overlay={("abilities", "spy"): bad})
