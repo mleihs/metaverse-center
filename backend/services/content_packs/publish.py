@@ -530,8 +530,11 @@ def render_yaml(content: dict) -> str:
     """Serialize a draft's working_content as YAML.
 
     Block style, key order preserved, Unicode preserved, 120-char width.
-    Phase 2 limitation: comments are NOT preserved (JSONB round-trip is
-    lossy). Phase 5 will use ruamel.yaml for comment-preserving merges.
+    Comments are NOT preserved (JSONB round-trip strips them at save-time;
+    the dump step here is downstream of that loss, not the cause). A
+    comment-preserving path would need ruamel.yaml both at read-time in
+    the editor and at dump-time here — deferred until authoring workflow
+    actually needs it.
     """
     rendered = yaml.safe_dump(content, **_YAML_DUMP_KWARGS)
     if not rendered.endswith("\n"):
