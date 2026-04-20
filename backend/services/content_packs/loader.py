@@ -51,6 +51,7 @@ import yaml
 
 from backend.services.combat.ability_schools import Ability
 from backend.services.content_packs.schemas import (
+    ABILITY_PACK_SLUG,
     ARCHETYPE_NAME_TO_SLUG,
     ARCHETYPE_SLUG_TO_NAME,
     PACK_KIND_FOR_FILENAME,
@@ -161,8 +162,15 @@ def load_packs_with_overlay(
     _load_archetype_trees(
         root / "archetypes", result, overlay=overlay, consumed=consumed,
     )
+    _load_abilities_tree(
+        root / "abilities", result, overlay=overlay, consumed=consumed,
+    )
+    # Orphans (overlay entries with no on-disk counterpart) are ingested LAST
+    # so both tree-walkers have had their chance to match + mark entries as
+    # consumed. New-file drafts for both archetype packs and ability schools
+    # flow through the same orphan path; the orphan handler dispatches on
+    # slug to pick the right ingestor.
     _ingest_overlay_orphans(overlay, consumed, result)
-    _load_abilities_tree(root / "abilities", result)
     _index_encounters(result)
 
     logger.info(
@@ -266,12 +274,24 @@ def _ingest_overlay_orphans(
     """Ingest overlay entries that had no on-disk file counterpart.
 
     This handles the "new pack file" case — an overlay can introduce a
-    (slug, resource_path) pair that has not been written to disk yet.
+    `(slug, resource_path)` pair that has not been written to disk yet.
     Orphan entries are validated through the same ingestor pipeline as
     on-disk files, so Pydantic schema errors surface identically.
+
+    Two slug dispatches:
+      - Archetype slug (shadow, tower, ...) → look up the PACK_KIND from
+        the resource_path stem, dispatch to the archetype-scoped ingestor.
+      - `ABILITY_PACK_SLUG` ("abilities") → the resource_path is the school
+        stem; validate via `AbilityPack` and append to `result.abilities`.
     """
     for key in sorted(set(overlay) - consumed):
         slug, stem = key
+        if slug == ABILITY_PACK_SLUG:
+            # Ability orphan: new-school draft without an on-disk file yet.
+            # The ingestor is archetype-agnostic (AbilityItem carries `school`
+            # as a first-class field), so we don't need an archetype lookup.
+            _ingest_ability_pack(overlay[key], result)
+            continue
         archetype = ARCHETYPE_SLUG_TO_NAME.get(slug)
         if archetype is None:
             msg = f"overlay references unknown archetype slug: {slug!r}"
@@ -379,17 +399,49 @@ _INGEST_DISPATCH: dict[type, _Ingestor] = {
 # ── Internals: ability tree ───────────────────────────────────────────────
 
 
-def _load_abilities_tree(abilities_root: Path, result: PackLoadResult) -> None:
+def _load_abilities_tree(
+    abilities_root: Path,
+    result: PackLoadResult,
+    *,
+    overlay: OverlayMap,
+    consumed: set[tuple[str, str]],
+) -> None:
+    """Walk `content/dungeon/abilities/` and ingest each school YAML.
+
+    Overlay addressing: ability drafts use `(ABILITY_PACK_SLUG, school_stem)`
+    as their key (`pack_slug="abilities"`, `resource_path="spy"` etc.). When
+    an overlay key matches an on-disk school, the overlay dict replaces the
+    file read. New-school drafts that have no on-disk file yet are picked
+    up by `_ingest_overlay_orphans` after this pass.
+    """
     if not abilities_root.is_dir():
         logger.debug("no abilities directory at %s — skipping", abilities_root)
+        # Overlay entries targeting abilities can still be ingested as orphans
+        # even if the directory doesn't exist yet (first-time author scenario).
         return
 
     for file in sorted(abilities_root.iterdir()):
         if file.suffix not in {".yaml", ".yml"}:
             continue
-        pack = AbilityPack.model_validate(_read_yaml(file))
-        for item in pack.abilities:
-            result.abilities.setdefault(item.school, []).append(_to_runtime_ability(item))
+        stem = file.stem
+        overlay_key = (ABILITY_PACK_SLUG, stem)
+        if overlay_key in overlay:
+            raw = overlay[overlay_key]
+            consumed.add(overlay_key)
+        else:
+            raw = _read_yaml(file)
+        _ingest_ability_pack(raw, result)
+
+
+def _ingest_ability_pack(raw: dict, result: PackLoadResult) -> None:
+    """Validate + append one ability-pack raw dict into the load result.
+
+    Separated from `_load_abilities_tree` so the orphan path can reuse it
+    without re-implementing the per-item school dispatch.
+    """
+    pack = AbilityPack.model_validate(raw)
+    for item in pack.abilities:
+        result.abilities.setdefault(item.school, []).append(_to_runtime_ability(item))
 
 
 def _to_runtime_ability(item: AbilityItem) -> Ability:

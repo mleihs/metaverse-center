@@ -86,6 +86,7 @@ from backend.services.content_packs.loader import (
     OverlayMap,
     load_packs_with_overlay,
 )
+from backend.services.content_packs.schemas import ABILITY_PACK_SLUG
 from backend.services.github_app import (
     GitHubAPIError,
     GitHubAppClient,
@@ -102,8 +103,18 @@ logger = logging.getLogger(__name__)
 _PHASE2_RESOURCE_PATH_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 # Pack file layout under the repo. Aligns with backend/services/content_packs/
-# loader.py DEFAULT_PACK_ROOT and the existing on-disk archetype tree.
+# loader.py DEFAULT_PACK_ROOT and the existing on-disk trees.
+#
+# Archetype packs nest one level deeper than ability packs:
+#   archetypes/<slug>/<resource_path>.yaml   (shadow/banter, tower/encounters, …)
+#   abilities/<resource_path>.yaml           (spy, assassin, guardian, …)
+#
+# The draft system addresses both as `(pack_slug, resource_path)` tuples.
+# For archetypes the slug is the archetype stub; for abilities the slug
+# is the literal sentinel `ABILITY_PACK_SLUG = "abilities"` and the
+# resource_path is the school name.
 _PACK_FILE_TEMPLATE = "content/dungeon/archetypes/{pack_slug}/{resource_path}.yaml"
+_ABILITIES_FILE_TEMPLATE = "content/dungeon/abilities/{resource_path}.yaml"
 
 # YAML serialization defaults — block style, key order preserved,
 # Unicode preserved (German prose uses Umlauts and quotes), generous width
@@ -506,11 +517,19 @@ async def discover_default_head(
 
 
 def build_file_path(pack_slug: str, resource_path: str) -> str:
-    """Map a (pack_slug, resource_path) pair to a YAML file path in the repo.
+    """Map a `(pack_slug, resource_path)` pair to a YAML file path in the repo.
 
-    Phase 2 convention: pack_slug = archetype slug, resource_path = pack-kind
-    file basename. Sub-resource notation (`'banter[ab_01]'`) is rejected at
-    publish time even though the model regex allows it.
+    Two layouts:
+      - Archetype packs: `content/dungeon/archetypes/{slug}/{resource}.yaml`
+        where `slug` is the archetype stub and `resource` is a pack-kind
+        filename (banter, encounters, loot, …).
+      - Ability packs: `content/dungeon/abilities/{resource}.yaml`
+        where the pack_slug is the literal sentinel `ABILITY_PACK_SLUG`
+        ("abilities") and `resource` is the school name.
+
+    Sub-resource notation (`'banter[ab_01]'`) is rejected at publish time
+    for both layouts even though the draft-model regex allows it (that's
+    reserved for Phase 5+ field-level editing).
 
     Raises:
         HTTPException 400: resource_path uses sub-resource notation.
@@ -521,6 +540,8 @@ def build_file_path(pack_slug: str, resource_path: str) -> str:
             f"(e.g. 'banter'). Got: {resource_path!r}. "
             f"Sub-resource publish (bracket / dotted notation) is Phase 5+.",
         )
+    if pack_slug == ABILITY_PACK_SLUG:
+        return _ABILITIES_FILE_TEMPLATE.format(resource_path=resource_path)
     return _PACK_FILE_TEMPLATE.format(
         pack_slug=pack_slug, resource_path=resource_path,
     )
@@ -674,9 +695,10 @@ def _make_commit_message(
         headline = f"content: publish {len(drafts)} drafts"
     body_lines = ["Drafts in this batch:", ""]
     for d in drafts:
-        path = _PACK_FILE_TEMPLATE.format(
-            pack_slug=d.pack_slug, resource_path=d.resource_path,
-        )
+        # Reuse the slug-aware composer so ability-pack drafts land under
+        # content/dungeon/abilities/ in the PR body (rather than being rendered
+        # as if they were nested under an archetype tree).
+        path = build_file_path(d.pack_slug, d.resource_path)
         body_lines.append(f"- {path} (draft {d.id})")
     if migration_path:
         body_lines.extend([
