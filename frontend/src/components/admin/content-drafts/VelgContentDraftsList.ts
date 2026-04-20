@@ -19,11 +19,11 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../../services/AppStateManager.js';
-import { contentDraftsApi } from '../../../services/api/index.js';
 import type {
   ContentDraftStatus,
   ContentDraftSummary,
 } from '../../../services/api/ContentDraftsApiService.js';
+import { contentDraftsApi } from '../../../services/api/index.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/EmptyState.js';
@@ -309,6 +309,10 @@ export class VelgContentDraftsList extends LitElement {
       color: var(--color-text-muted);
       letter-spacing: 0;
       text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .row__version {
@@ -429,8 +433,7 @@ export class VelgContentDraftsList extends LitElement {
       const statuses =
         this._statusTab === 'all' ? undefined : [this._statusTab as ContentDraftStatus];
       const userId = appState.user.value?.id;
-      const authorId =
-        this._authorScope === 'mine' && userId ? userId : undefined;
+      const authorId = this._authorScope === 'mine' && userId ? userId : undefined;
       const response = await contentDraftsApi.listDrafts({
         status: statuses,
         author_id: authorId,
@@ -495,9 +498,7 @@ export class VelgContentDraftsList extends LitElement {
   }
 
   private _handleNewDraft(): void {
-    this.dispatchEvent(
-      new CustomEvent('new-draft', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('new-draft', { bubbles: true, composed: true }));
   }
 
   private _handleEditDraft(draft: ContentDraftSummary): void {
@@ -595,17 +596,27 @@ export class VelgContentDraftsList extends LitElement {
     }
   }
 
-  private _abbreviateAuthor(authorId: string): string {
-    return authorId.slice(0, 8);
+  /**
+   * Resolve an author label for the list row.
+   *
+   * Prefers the resolved email (populated by the backend's
+   * `get_user_emails_batch` join in `list_drafts`). Falls back to the
+   * first 8 hex digits of the UUID when the email is unavailable —
+   * e.g. when a user was deleted since the draft was authored, or when
+   * the backend's SECURITY DEFINER RPC silently failed (logged server
+   * side, non-fatal).
+   */
+  private _renderAuthorLabel(draft: ContentDraftSummary): string {
+    return draft.author_email ?? draft.author_id.slice(0, 8);
   }
 
   /** Group consecutive drafts by pr_number for the PR-group header rows. */
   private _groupByPr(): Array<
-    { type: 'header'; prNumber: number; prUrl: string | null }
+    | { type: 'header'; prNumber: number; prUrl: string | null }
     | { type: 'row'; draft: ContentDraftSummary }
   > {
     const out: Array<
-      { type: 'header'; prNumber: number; prUrl: string | null }
+      | { type: 'header'; prNumber: number; prUrl: string | null }
       | { type: 'row'; draft: ContentDraftSummary }
     > = [];
     let lastPr: number | null = null;
@@ -733,15 +744,17 @@ export class VelgContentDraftsList extends LitElement {
     return html`
       <div class="pr-group" role="listitem">
         <span class="pr-group__label">${msg('PR')}</span>
-        ${g.prUrl
-          ? html`<a
+        ${
+          g.prUrl
+            ? html`<a
               class="pr-group__link"
               href=${g.prUrl}
               target="_blank"
               rel="noopener noreferrer"
               >#${g.prNumber}</a
             >`
-          : html`<span class="pr-group__link">#${g.prNumber}</span>`}
+            : html`<span class="pr-group__link">#${g.prNumber}</span>`
+        }
       </div>
     `;
   }
@@ -770,8 +783,13 @@ export class VelgContentDraftsList extends LitElement {
           <span class="row__pack">${draft.pack_slug}</span>
           <span class="row__resource" title=${draft.resource_path}>${draft.resource_path}</span>
         </div>
-        <div class="row__author" title=${draft.author_id}>
-          ${this._abbreviateAuthor(draft.author_id)}
+        <div
+          class="row__author"
+          title=${
+            draft.author_email ? `${draft.author_email} (${draft.author_id})` : draft.author_id
+          }
+        >
+          ${this._renderAuthorLabel(draft)}
         </div>
         <div class="row__version">v${draft.version}</div>
         <div class="row__time">${this._formatUpdatedAt(draft.updated_at)}</div>

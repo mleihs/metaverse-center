@@ -24,11 +24,11 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { contentDraftsApi } from '../../../services/api/index.js';
 import type {
   BatchPublishResult,
   ContentDraftSummary,
 } from '../../../services/api/ContentDraftsApiService.js';
+import { contentDraftsApi } from '../../../services/api/index.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/BaseModal.js';
@@ -227,9 +227,7 @@ export class VelgPublishBatchModal extends LitElement {
 
   private _handleClose(): void {
     this.open = false;
-    this.dispatchEvent(
-      new CustomEvent('modal-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('modal-close', { bubbles: true, composed: true }));
   }
 
   private async _handleSubmit(): Promise<void> {
@@ -278,13 +276,14 @@ export class VelgPublishBatchModal extends LitElement {
         </div>
 
         <div slot="footer" class="actions">
-          ${this._result
-            ? html`
+          ${
+            this._result
+              ? html`
                 <button class="btn btn--primary" @click=${this._handleClose}>
                   ${msg('Close')}
                 </button>
               `
-            : html`
+              : html`
                 <button
                   class="btn"
                   @click=${this._handleClose}
@@ -294,18 +293,23 @@ export class VelgPublishBatchModal extends LitElement {
                 </button>
                 <button
                   class="btn btn--primary"
-                  ?disabled=${this._submitting
-                    || this.drafts.length === 0
-                    || this._commitMessage.trim().length > COMMIT_MSG_MAX}
+                  ?disabled=${
+                    this._submitting ||
+                    this.drafts.length === 0 ||
+                    this._commitMessage.trim().length > COMMIT_MSG_MAX
+                  }
                   @click=${this._handleSubmit}
                 >
-                  ${this._submitting
-                    ? msg('Publishing...')
-                    : this.drafts.length === 1
-                      ? msg('Publish 1 draft')
-                      : msg(str`Publish ${this.drafts.length} drafts`)}
+                  ${
+                    this._submitting
+                      ? msg('Publishing...')
+                      : this.drafts.length === 1
+                        ? msg('Publish 1 draft')
+                        : msg(str`Publish ${this.drafts.length} drafts`)
+                  }
                 </button>
-              `}
+              `
+          }
         </div>
       </velg-base-modal>
     `;
@@ -317,9 +321,11 @@ export class VelgPublishBatchModal extends LitElement {
 
     return html`
       <p class="count">
-        ${count === 1
-          ? msg('1 draft in this batch. One PR will carry it.')
-          : msg(str`${count} drafts in this batch. One PR covers all of them.`)}
+        ${
+          count === 1
+            ? msg('1 draft in this batch. One PR will carry it.')
+            : msg(str`${count} drafts in this batch. One PR covers all of them.`)
+        }
       </p>
 
       <div class="banner banner--warn">
@@ -329,14 +335,16 @@ export class VelgPublishBatchModal extends LitElement {
         )}
       </div>
 
-      ${this._error
-        ? html`
+      ${
+        this._error
+          ? html`
             <div class="banner banner--error">
               <p class="banner__title">${msg('Publish failed')}</p>
               ${this._error}
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <ul class="drafts">
         ${this.drafts.map(

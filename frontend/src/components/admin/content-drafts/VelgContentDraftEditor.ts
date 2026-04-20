@@ -30,25 +30,27 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { contentDraftsApi, contentPacksApi } from '../../../services/api/index.js';
 import type {
+  ConflictPreview,
   ContentDraft,
   ContentDraftSummary,
 } from '../../../services/api/ContentDraftsApiService.js';
 import type { PackResourceManifest } from '../../../services/api/ContentPacksApiService.js';
+import { contentDraftsApi, contentPacksApi } from '../../../services/api/index.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/LoadingState.js';
 import '../../shared/ErrorState.js';
 import '../../shared/VelgBadge.js';
 import { VelgToast } from '../../shared/Toast.js';
+import './VelgContentDraftConflictView.js';
 
 /** Initial content for a blank-start draft (admin chose a resource that
  *  has no on-disk YAML yet OR explicitly opted for empty). Derives the
  *  collection-key from resource_path so the editor's _collection() lookup
  *  immediately finds an empty array to iterate. */
 function seedContentFor(resourcePath: string): Record<string, unknown> {
-  const key = resourcePath.split(/[.\[]/)[0];
+  const key = resourcePath.split(/[.[]/)[0];
   if (!key) return { schema_version: 1 };
   return { schema_version: 1, [key]: [] };
 }
@@ -399,6 +401,14 @@ export class VelgContentDraftEditor extends LitElement {
   @state() private _staleVersion = false;
   @state() private _sameResourceOthers: ContentDraftSummary[] = [];
 
+  // Conflict-resolution state (Phase 5). When the loaded draft is in
+  // 'conflict' status, we fetch a server-computed 3-way merge preview and
+  // render <velg-content-draft-conflict-view> instead of the hybrid editor.
+  @state() private _conflictPreview: ConflictPreview | null = null;
+  @state() private _conflictLoading = false;
+  @state() private _conflictError: string | null = null;
+  @state() private _resolvingConflict = false;
+
   // Create-form state
   @state() private _manifest: PackResourceManifest[] | null = null;
   @state() private _manifestLoading = false;
@@ -503,6 +513,8 @@ export class VelgContentDraftEditor extends LitElement {
     this._error = null;
     this._parseError = null;
     this._staleVersion = false;
+    this._conflictPreview = null;
+    this._conflictError = null;
     try {
       const response = await contentDraftsApi.getDraft(id);
       if (!response.success) {
@@ -521,12 +533,96 @@ export class VelgContentDraftEditor extends LitElement {
         response.data.resource_path,
         response.data.id,
       );
+      // Phase 5: conflict drafts need a server-computed merge preview.
+      // Fetched sequentially after the draft itself so render() can branch
+      // cleanly on (draft.status === 'conflict' && _conflictPreview) — the
+      // brief window where status is 'conflict' but preview is still
+      // loading shows the dedicated _conflictLoading indicator.
+      if (response.data.status === 'conflict') {
+        await this._loadConflictPreview(id);
+      }
     } catch (err) {
       captureError(err, { source: 'VelgContentDraftEditor._loadDraft' });
       this._error = err instanceof Error ? err.message : msg('Failed to load draft.');
     } finally {
       this._loading = false;
     }
+  }
+
+  private async _loadConflictPreview(id: string): Promise<void> {
+    this._conflictLoading = true;
+    this._conflictError = null;
+    try {
+      const response = await contentDraftsApi.getConflictPreview(id);
+      if (!response.success) {
+        this._conflictError = response.error?.message ?? msg('Failed to load conflict preview.');
+        return;
+      }
+      this._conflictPreview = response.data;
+    } catch (err) {
+      captureError(err, {
+        source: 'VelgContentDraftEditor._loadConflictPreview',
+      });
+      this._conflictError =
+        err instanceof Error ? err.message : msg('Failed to load conflict preview.');
+    } finally {
+      this._conflictLoading = false;
+    }
+  }
+
+  private async _handleResolveSubmit(
+    event: CustomEvent<{
+      merged_working_content: Record<string, unknown>;
+      acknowledged_conflict_paths: string[];
+      version: number;
+    }>,
+  ): Promise<void> {
+    if (!this._draft) return;
+    this._resolvingConflict = true;
+    try {
+      const response = await contentDraftsApi.resolveConflict(this._draft.id, {
+        merged_working_content: event.detail.merged_working_content,
+        version: event.detail.version,
+        acknowledged_conflict_paths: event.detail.acknowledged_conflict_paths,
+      });
+      if (!response.success) {
+        VelgToast.error(response.error?.message ?? msg('Failed to resolve conflict.'));
+        return;
+      }
+      VelgToast.success(msg('Conflict resolved; draft returned to edit mode.'));
+      // Reload: draft is now status='draft', working_content is the merged
+      // tree, and the hybrid editor takes over.
+      await this._loadDraft(this._draft.id);
+      // `draft-saved` is the existing contract for "a draft row mutated,
+      // refresh the list". The wrapper's `_handleDraftSaved` already wires
+      // this to `list.refresh()` (see VelgAdminContentDraftsTab).
+      if (this._draft) {
+        this.dispatchEvent(
+          new CustomEvent('draft-saved', {
+            bubbles: true,
+            composed: true,
+            detail: { draft: this._draft },
+          }),
+        );
+      }
+    } catch (err) {
+      captureError(err, {
+        source: 'VelgContentDraftEditor._handleResolveSubmit',
+      });
+      VelgToast.error(err instanceof Error ? err.message : msg('Failed to resolve conflict.'));
+    } finally {
+      this._resolvingConflict = false;
+    }
+  }
+
+  /**
+   * Bubble the resolve-cancel as `editor-close` so the wrapper's existing
+   * dirty-check prompt (or direct close, since conflict view has no unsaved
+   * working edits — see `hasUnsavedChanges()`) handles panel dismissal
+   * uniformly.
+   */
+  private _handleResolveCancel(): void {
+    this.dispatchEvent(new CustomEvent('editor-close', { bubbles: true, composed: true }));
   }
 
   private async _loadSameResourceWarning(
@@ -552,7 +648,7 @@ export class VelgContentDraftEditor extends LitElement {
    */
   private _collectionKey(): string | null {
     if (!this._draft) return null;
-    const key = this._draft.resource_path.split(/[.\[]/)[0];
+    const key = this._draft.resource_path.split(/[.[]/)[0];
     if (!key) return null;
     const content = this._working;
     if (content && key in content) return key;
@@ -732,9 +828,7 @@ export class VelgContentDraftEditor extends LitElement {
         );
       } else if (response.error?.code === 'HTTP_409') {
         this._staleVersion = true;
-        VelgToast.warning(
-          msg('Another admin saved this draft. Reload to see the latest version.'),
-        );
+        VelgToast.warning(msg('Another admin saved this draft. Reload to see the latest version.'));
       } else {
         VelgToast.error(response.error?.message ?? msg('Save failed.'));
       }
@@ -761,6 +855,10 @@ export class VelgContentDraftEditor extends LitElement {
    */
   hasUnsavedChanges(): boolean {
     if (!this._draft || !this._working) return false;
+    // Conflict view has no in-progress textarea edits — per-entry choices
+    // are committed on click, and the server-computed merged tree is the
+    // source of truth until the admin submits. No prompt needed on close.
+    if (this._draft.status === 'conflict') return false;
     // Build a hypothetical "working if textarea committed" snapshot so the
     // dirty check reflects what the user sees, not just what's been committed
     // on entry-switch.
@@ -798,9 +896,7 @@ export class VelgContentDraftEditor extends LitElement {
    * backdrop/Esc path — both now flow through a single confirmation.
    */
   private _handleClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('editor-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('editor-close', { bubbles: true, composed: true }));
   }
 
   /* ── Create-mode handlers ───────────────────── */
@@ -821,9 +917,7 @@ export class VelgContentDraftEditor extends LitElement {
       if (this._newPreloadFromDisk && this._selectedResourceRow()) {
         const readResp = await contentPacksApi.getResource(packSlug, resourcePath);
         if (!readResp.success) {
-          VelgToast.error(
-            readResp.error?.message ?? msg('Failed to read existing pack content.'),
-          );
+          VelgToast.error(readResp.error?.message ?? msg('Failed to read existing pack content.'));
           this._creating = false;
           return;
         }
@@ -881,7 +975,43 @@ export class VelgContentDraftEditor extends LitElement {
         <div class="editor__empty">${msg('Select a draft to edit.')}</div>
       `;
     }
+    // Phase 5: conflict drafts route to the 3-column resolution view
+    // instead of the hybrid editor. The server's 3-way merge preview is
+    // the source of truth for the admin's decisions.
+    if (this._draft.status === 'conflict') {
+      return this._renderConflictBranch();
+    }
     return this._renderEditor();
+  }
+
+  private _renderConflictBranch(): TemplateResult {
+    if (this._conflictLoading) {
+      return html`<velg-loading-state
+        message=${msg('Computing merge preview...')}
+      ></velg-loading-state>`;
+    }
+    if (this._conflictError) {
+      return html`
+        <velg-error-state
+          message=${this._conflictError}
+          show-retry
+          @retry=${() => this._draft && this._loadConflictPreview(this._draft.id)}
+        ></velg-error-state>
+      `;
+    }
+    if (!this._conflictPreview) {
+      return html`<velg-loading-state
+        message=${msg('Computing merge preview...')}
+      ></velg-loading-state>`;
+    }
+    return html`
+      <velg-content-draft-conflict-view
+        .preview=${this._conflictPreview}
+        ?submitting=${this._resolvingConflict}
+        @resolve-submit=${this._handleResolveSubmit}
+        @resolve-cancel=${this._handleResolveCancel}
+      ></velg-content-draft-conflict-view>
+    `;
   }
 
   private _renderEditor(): TemplateResult {
@@ -906,16 +1036,19 @@ export class VelgContentDraftEditor extends LitElement {
         </div>
       </div>
 
-      ${this._readOnly
-        ? html`
+      ${
+        this._readOnly
+          ? html`
             <div class="banner banner--warn">
               <p class="banner__title">${msg('View-only draft')}</p>
               ${this._readOnlyReason(draft.status)}
             </div>
           `
-        : nothing}
-      ${this._staleVersion
-        ? html`
+          : nothing
+      }
+      ${
+        this._staleVersion
+          ? html`
             <div class="banner banner--error">
               <p class="banner__title">${msg('Stale version')}</p>
               ${msg('Another admin saved this draft. Reload to see the latest.')}
@@ -924,9 +1057,11 @@ export class VelgContentDraftEditor extends LitElement {
               </button>
             </div>
           `
-        : nothing}
-      ${this._sameResourceOthers.length > 0
-        ? html`
+          : nothing
+      }
+      ${
+        this._sameResourceOthers.length > 0
+          ? html`
             <div class="banner banner--warn">
               <p class="banner__title">${msg('Concurrent edit')}</p>
               ${msg(
@@ -934,14 +1069,16 @@ export class VelgContentDraftEditor extends LitElement {
               )}
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <div class="split">
         <aside class="sidebar" aria-label=${msg('Entries')}>
           <div class="sidebar__header">
             <span>${this._collectionKey() ?? msg('Entries')}</span>
-            ${this._collectionKey() && !this._readOnly
-              ? html`
+            ${
+              this._collectionKey() && !this._readOnly
+                ? html`
                   <button
                     class="add-btn"
                     @click=${this._handleAddEntry}
@@ -950,7 +1087,8 @@ export class VelgContentDraftEditor extends LitElement {
                     + ${msg('Add')}
                   </button>
                 `
-              : nothing}
+                : nothing
+            }
           </div>
           <ul class="entry-list">
             ${this._entryKeys().map(
@@ -969,9 +1107,10 @@ export class VelgContentDraftEditor extends LitElement {
                   aria-label=${msg(str`Edit entry ${this._labelFor(k)}`)}
                 >
                   <span class="entry-row__label">${this._labelFor(k)}</span>
-                  ${this._readOnly
-                    ? nothing
-                    : html`
+                  ${
+                    this._readOnly
+                      ? nothing
+                      : html`
                         <button
                           class="entry-row__remove"
                           @click=${(e: Event) => this._handleRemoveEntry(k, e)}
@@ -979,7 +1118,8 @@ export class VelgContentDraftEditor extends LitElement {
                         >
                           ${icons.close(12)}
                         </button>
-                      `}
+                      `
+                  }
                 </li>
               `,
             )}
@@ -987,9 +1127,10 @@ export class VelgContentDraftEditor extends LitElement {
         </aside>
 
         <div class="editor">
-          ${this._selectedEntryKey === null
-            ? html`<div class="editor__empty">${msg('No entries yet. Click "Add" to start.')}</div>`
-            : html`
+          ${
+            this._selectedEntryKey === null
+              ? html`<div class="editor__empty">${msg('No entries yet. Click "Add" to start.')}</div>`
+              : html`
                 <label class="editor__label">
                   ${msg(str`JSON for ${this._labelFor(this._selectedEntryKey)}`)}
                 </label>
@@ -1005,26 +1146,32 @@ export class VelgContentDraftEditor extends LitElement {
                   aria-describedby=${this._parseError !== null ? 'entry-parse-error' : nothing}
                   @input=${this._handleTextareaInput}
                 ></textarea>
-                ${this._parseError
-                  ? html`<div id="entry-parse-error" class="editor__parse-error" role="alert">${this._parseError}</div>`
-                  : nothing}
-              `}
+                ${
+                  this._parseError
+                    ? html`<div id="entry-parse-error" class="editor__parse-error" role="alert">${this._parseError}</div>`
+                    : nothing
+                }
+              `
+          }
         </div>
       </div>
 
       <div class="footer">
         <span class="footer__hint">
-          ${this._readOnly
-            ? msg('Read-only. This draft cannot be mutated from its current status.')
-            : msg('Saves working copy only. Publish a batch to open a PR.')}
+          ${
+            this._readOnly
+              ? msg('Read-only. This draft cannot be mutated from its current status.')
+              : msg('Saves working copy only. Publish a batch to open a PR.')
+          }
         </span>
         <div class="footer__actions">
           <button class="btn" @click=${this._handleClose} ?disabled=${this._saving}>
             ${this._readOnly ? msg('Close') : msg('Cancel')}
           </button>
-          ${this._readOnly
-            ? nothing
-            : html`
+          ${
+            this._readOnly
+              ? nothing
+              : html`
                 <button
                   class="btn btn--primary"
                   @click=${this._handleSave}
@@ -1032,7 +1179,8 @@ export class VelgContentDraftEditor extends LitElement {
                 >
                   ${this._saving ? msg('Saving...') : msg('Save draft')}
                 </button>
-              `}
+              `
+          }
         </div>
       </div>
     `;
@@ -1042,9 +1190,13 @@ export class VelgContentDraftEditor extends LitElement {
   private _readOnlyReason(status: string) {
     switch (status) {
       case 'abandoned':
-        return msg('This draft was abandoned. View-only for audit – create a fresh draft to continue work.');
+        return msg(
+          'This draft was abandoned. View-only for audit – create a fresh draft to continue work.',
+        );
       case 'published':
-        return msg('This draft is attached to an open PR. Edits must happen either via closing the PR (reverts to draft) or through a new draft.');
+        return msg(
+          'This draft is attached to an open PR. Edits must happen either via closing the PR (reverts to draft) or through a new draft.',
+        );
       case 'merged':
         return msg('This draft has been merged into main. Edit the resource through a new draft.');
       default:
@@ -1056,8 +1208,7 @@ export class VelgContentDraftEditor extends LitElement {
     const packSlugs = this._manifestPackSlugs();
     const resourceRows = this._manifestResourcesForPack(this._newPackSlug);
     const selectedRow = this._selectedResourceRow();
-    const createDisabled =
-      this._creating || !this._newPackSlug || !this._newResourcePath;
+    const createDisabled = this._creating || !this._newPackSlug || !this._newResourcePath;
 
     // Drop the H2 title — the side-panel header already reads "New
     // Content Draft", duplicating it here was playtest bug #2. Keep the
@@ -1070,19 +1221,20 @@ export class VelgContentDraftEditor extends LitElement {
         </div>
       </div>
 
-      ${this._manifestLoading
-        ? html`<velg-loading-state
+      ${
+        this._manifestLoading
+          ? html`<velg-loading-state
             message=${msg('Loading content-pack catalog...')}
           ></velg-loading-state>`
-        : this._manifestError
-          ? html`
+          : this._manifestError
+            ? html`
               <velg-error-state
                 message=${this._manifestError}
                 show-retry
                 @retry=${this._loadManifest}
               ></velg-error-state>
             `
-          : html`
+            : html`
               <div class="create-form">
                 <div class="field">
                   <label class="field__label" for="pack-slug-select">
@@ -1100,9 +1252,7 @@ export class VelgContentDraftEditor extends LitElement {
                     <option value="" disabled>
                       ${msg('Select a pack...')}
                     </option>
-                    ${packSlugs.map(
-                      (slug) => html`<option value=${slug}>${slug}</option>`,
-                    )}
+                    ${packSlugs.map((slug) => html`<option value=${slug}>${slug}</option>`)}
                   </select>
                   <div class="field__hint">
                     ${msg('Content pack directory under content/dungeon/archetypes/.')}
@@ -1123,30 +1273,25 @@ export class VelgContentDraftEditor extends LitElement {
                     }}
                   >
                     <option value="" disabled>
-                      ${this._newPackSlug
-                        ? msg('Select a resource...')
-                        : msg('Pick a pack first')}
+                      ${this._newPackSlug ? msg('Select a resource...') : msg('Pick a pack first')}
                     </option>
                     ${resourceRows.map(
                       (row) => html`
                         <option value=${row.resource_path}>
                           ${row.resource_path}
-                          ${row.entry_count >= 0
-                            ? ` (${row.entry_count})`
-                            : ''}
+                          ${row.entry_count >= 0 ? ` (${row.entry_count})` : ''}
                         </option>
                       `,
                     )}
                   </select>
                   <div class="field__hint">
-                    ${msg(
-                      'YAML file under the selected pack. Count shows current entry total.',
-                    )}
+                    ${msg('YAML file under the selected pack. Count shows current entry total.')}
                   </div>
                 </div>
 
-                ${selectedRow
-                  ? html`
+                ${
+                  selectedRow
+                    ? html`
                       <div class="banner banner--warn">
                         <p class="banner__title">${msg('Selected')}</p>
                         ${msg(
@@ -1164,9 +1309,7 @@ export class VelgContentDraftEditor extends LitElement {
                             type="checkbox"
                             .checked=${this._newPreloadFromDisk}
                             @change=${(e: Event) => {
-                              this._newPreloadFromDisk = (
-                                e.target as HTMLInputElement
-                              ).checked;
+                              this._newPreloadFromDisk = (e.target as HTMLInputElement).checked;
                             }}
                           />
                           ${msg('Load current disk content into the draft')}
@@ -1178,13 +1321,16 @@ export class VelgContentDraftEditor extends LitElement {
                         </div>
                       </div>
                     `
-                  : nothing}
+                    : nothing
+                }
 
                 <div class="footer" style="margin-top:0;padding-top:var(--space-3);">
                   <span class="footer__hint">
-                    ${this._newPreloadFromDisk && selectedRow
-                      ? msg('Draft seeded with current on-disk content; edit away.')
-                      : msg('Draft starts empty; populate JSON in the editor.')}
+                    ${
+                      this._newPreloadFromDisk && selectedRow
+                        ? msg('Draft seeded with current on-disk content; edit away.')
+                        : msg('Draft starts empty; populate JSON in the editor.')
+                    }
                   </span>
                   <div class="footer__actions">
                     <button
@@ -1199,16 +1345,19 @@ export class VelgContentDraftEditor extends LitElement {
                       @click=${this._handleCreate}
                       ?disabled=${createDisabled}
                     >
-                      ${this._creating
-                        ? msg('Creating...')
-                        : this._newPreloadFromDisk && selectedRow
-                          ? msg('Load & Edit')
-                          : msg('Create empty draft')}
+                      ${
+                        this._creating
+                          ? msg('Creating...')
+                          : this._newPreloadFromDisk && selectedRow
+                            ? msg('Load & Edit')
+                            : msg('Create empty draft')
+                      }
                     </button>
                   </div>
                 </div>
               </div>
-            `}
+            `
+      }
     `;
   }
 
