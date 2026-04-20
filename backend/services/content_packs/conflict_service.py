@@ -47,10 +47,11 @@ from __future__ import annotations
 
 import base64
 import logging
+from typing import Any
+from urllib.parse import quote
 from uuid import UUID
 
 import yaml
-from pydantic import ValidationError
 
 from backend.models.content_drafts import (
     ConflictPreview,
@@ -154,7 +155,7 @@ async def _fetch_main_content(
     ref: str,
     pack_slug: str,
     resource_path: str,
-) -> dict:
+) -> dict[str, Any]:
     """Fetch + decode + parse the YAML file on `ref` for the given resource.
 
     Returns `{}` when the file doesn't exist on `ref` (e.g. admin is adding
@@ -162,7 +163,12 @@ async def _fetch_main_content(
     write). Any other non-2xx bubbles as 502.
     """
     file_path = build_file_path(pack_slug, resource_path)
-    encoded_path = file_path.replace(" ", "%20")
+    # `quote(..., safe="/")` preserves the path separator while percent-
+    # encoding anything else (spaces, unicode, '#', '?'). Today our
+    # `pack_slug` / `resource_path` regexes reject most of those chars,
+    # but the right tool for URL path components is `quote`, not a
+    # single-char replace.
+    encoded_path = quote(file_path, safe="/")
     try:
         response = await client.rest(
             "GET",
@@ -203,34 +209,35 @@ async def _fetch_main_content(
 def _to_preview(
     draft: ContentDraft,
     result: MergeResult,
-    theirs: dict,
+    theirs: dict[str, Any],
     main_base_sha: str,
 ) -> ConflictPreview:
-    """Assemble the API DTO from merge internals + draft row."""
-    try:
-        return ConflictPreview(
-            draft_id=draft.id,
-            version=draft.version,
-            base=draft.base_content,
-            ours=draft.working_content,
-            theirs=theirs,
-            merged=result.merged,
-            conflicts=[
-                EntryConflictDTO(
-                    path=c.path,
-                    kind=c.kind.value,
-                    base=c.base,
-                    ours=c.ours,
-                    theirs=c.theirs,
-                )
-                for c in result.conflicts
-            ],
-            auto_resolved_count=result.auto_resolved_count,
-            main_base_sha=main_base_sha,
-        )
-    except ValidationError as exc:
-        # Shouldn't happen — merge_content output is already shape-compatible.
-        # Guard for future refactors.
-        raise bad_request(
-            f"Conflict preview failed to serialize: {exc}",
-        ) from exc
+    """Assemble the API DTO from merge internals + draft row.
+
+    Shape-compatibility of the nested dicts is guaranteed by
+    `merge_content`'s return type (`MergeResult` carries already-validated
+    Pydantic models), so no local try/except is warranted — a `ValidationError`
+    here would indicate an upstream regression, which the default FastAPI
+    handler surfaces as a 500 with full traceback (better signal than a
+    swallowed 400).
+    """
+    return ConflictPreview(
+        draft_id=draft.id,
+        version=draft.version,
+        base=draft.base_content,
+        ours=draft.working_content,
+        theirs=theirs,
+        merged=result.merged,
+        conflicts=[
+            EntryConflictDTO(
+                path=c.path,
+                kind=c.kind.value,
+                base=c.base,
+                ours=c.ours,
+                theirs=c.theirs,
+            )
+            for c in result.conflicts
+        ],
+        auto_resolved_count=result.auto_resolved_count,
+        main_base_sha=main_base_sha,
+    )

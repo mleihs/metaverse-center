@@ -188,7 +188,13 @@ def _is_id_list(value: Any) -> bool:
 
 
 def _to_id_map(value: Any) -> dict[str, dict[str, Any]]:
-    """Flatten an id-list into {id: entry}. Absent/non-list → empty map."""
+    """Flatten an id-list into {id: entry}. Absent/non-list → empty map.
+
+    Order invariant: Python dicts preserve insertion order (language
+    guarantee since 3.7), and we iterate `value` in its native list order.
+    `_restore_order` relies on this to emit the merged output in the
+    admin's original sequence.
+    """
     if value is _MISSING or not isinstance(value, list):
         return {}
     return {x["id"]: x for x in value if isinstance(x, dict) and "id" in x}

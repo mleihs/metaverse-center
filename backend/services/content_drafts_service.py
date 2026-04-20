@@ -161,9 +161,9 @@ class ContentDraftsService:
         """
         if not rows:
             return
-        author_ids = sorted(
-            {r["author_id"] for r in rows if r.get("author_id")}
-        )
+        # Deduplicate via set but don't sort — UUID strings sort
+        # lexicographically, which carries no semantic meaning.
+        author_ids = list({r["author_id"] for r in rows if r.get("author_id")})
         if not author_ids:
             return
         try:
