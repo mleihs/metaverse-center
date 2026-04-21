@@ -121,6 +121,7 @@ from backend.routers import (
 )
 from backend.services.ai_usage_rollup_scheduler import AiUsageRollupScheduler
 from backend.services.bluesky_scheduler import BlueskyScheduler
+from backend.services.circuit_revert_sweeper import CircuitRevertSweeper
 from backend.services.content_packs.orphan_sweeper_scheduler import (
     OrphanSweeperScheduler,
 )
@@ -184,9 +185,11 @@ async def lifespan(app: FastAPI):
     epoch_cycle_task = await EpochCycleScheduler.start()
     orphan_sweeper_task = await OrphanSweeperScheduler.start()
     ai_usage_rollup_task = await AiUsageRollupScheduler.start()
+    circuit_revert_task = await CircuitRevertSweeper.start()
     dungeon_cleanup_task = await start_instance_cleanup()
     yield
     dungeon_cleanup_task.cancel()
+    circuit_revert_task.cancel()
     ai_usage_rollup_task.cancel()
     orphan_sweeper_task.cancel()
     epoch_cycle_task.cancel()
