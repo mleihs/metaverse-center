@@ -292,6 +292,68 @@ class BatchPublishResult(BaseModel):
     drafts: list[ContentDraftSummary]
 
 
+# ── Orphan-branch sweeper (Phase 7) ───────────────────────────────────────
+
+
+class SweepOrphansRequest(BaseModel):
+    """Admin request body for the orphan-branch sweep endpoint.
+
+    `dry_run` defaults to True so an accidental invocation is safe — the
+    admin must explicitly pass False to actually delete branches.
+    `min_age_days` guards against racing an in-flight publish that has
+    created the branch but not yet opened the PR.
+    """
+
+    dry_run: bool = Field(
+        default=True,
+        description="When True (default), classify only; no branches are deleted.",
+    )
+    min_age_days: float = Field(
+        default=7.0,
+        ge=0,
+        le=365,
+        description="Minimum commit age (days) before a PR-less branch is eligible for deletion.",
+    )
+
+
+class OrphanBranchClassification(BaseModel):
+    """Per-branch classification from one sweep run.
+
+    Returned for every branch matching the `content/drafts-batch-` prefix,
+    whether kept or deleted. Admin UIs render these as the audit record.
+    """
+
+    name: str = Field(description="Branch name (without `refs/heads/` prefix).")
+    sha: str = Field(description="Commit SHA at branch tip.")
+    age_days: float = Field(description="Age in days (from PR created_at or commit date).")
+    pr_number: int | None = Field(default=None)
+    pr_state: str | None = Field(
+        default=None,
+        description="'open' | 'closed' | 'merged' | None (no PR).",
+    )
+    status: str = Field(description="'keep' | 'delete'.")
+    reason: str = Field(description="Human-readable explanation for the classification.")
+    deleted: bool = Field(
+        default=False,
+        description="True if the branch was actually deleted this run.",
+    )
+    error: str | None = Field(
+        default=None,
+        description="GitHub API error message if deletion failed.",
+    )
+
+
+class SweepOrphansResult(BaseModel):
+    """Outcome of one orphan-branch sweep (dry-run or real)."""
+
+    dry_run: bool
+    total_found: int
+    kept_count: int
+    deleted_count: int
+    error_count: int
+    branches: list[OrphanBranchClassification]
+
+
 # ── Internal models (not exposed via API) ─────────────────────────────────
 
 

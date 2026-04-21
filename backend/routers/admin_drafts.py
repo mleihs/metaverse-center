@@ -54,13 +54,20 @@ from backend.models.content_drafts import (
     ContentDraftSummary,
     ContentDraftUpdate,
     ResolveConflictRequest,
+    SweepOrphansRequest,
+    SweepOrphansResult,
 )
 from backend.services.audit_service import AuditService
 from backend.services.content_drafts_service import ContentDraftsService
 from backend.services.content_packs.conflict_service import (
     ContentPacksConflictService,
 )
-from backend.services.content_packs.publish import ContentPacksPublishService
+from backend.services.content_packs.orphan_sweeper import sweep_orphan_branches
+from backend.services.content_packs.publish import (
+    ContentPacksPublishService,
+    get_github_repo_config,
+)
+from backend.services.github_app import get_github_app_client
 from backend.utils.errors import conflict
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
@@ -379,6 +386,57 @@ async def publish_content_drafts(
             "pr_url": result.pr_url,
             "commit_sha": result.commit_sha,
             "branch_name": result.branch_name,
+        },
+    )
+    return SuccessResponse(data=result)
+
+
+# ── Orphan-branch sweep (Phase 7) ─────────────────────────────────────────
+
+
+@router.post("/sweep-orphans")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def sweep_orphan_branches_endpoint(
+    request: Request,
+    body: SweepOrphansRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[SweepOrphansResult]:
+    """Garbage-collect abandoned `content/drafts-batch-*` branches on the repo.
+
+    Classifies every matching branch (PR state + commit age) and, when
+    `dry_run=False`, deletes the orphans. Always returns the full
+    classification so the admin UI can render a preview before committing.
+
+    Audit-logged even on dry-run — the intent (admin triggered the sweep) is
+    what we care about; the DB record of what was classified is in the
+    response, not the audit row.
+
+    Rate-limited as EXTERNAL_API: a sweep with N branches performs roughly
+    2N GitHub REST calls (list + PR lookup per branch, + optional delete).
+    """
+    owner, repo = get_github_repo_config()
+    client = get_github_app_client()
+    result = await sweep_orphan_branches(
+        client,
+        owner,
+        repo,
+        min_age_days=body.min_age_days,
+        dry_run=body.dry_run,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        None,  # batch op — no entity_id
+        "sweep_orphans",
+        details={
+            "dry_run": body.dry_run,
+            "min_age_days": body.min_age_days,
+            "total_found": result.total_found,
+            "deleted_count": result.deleted_count,
+            "error_count": result.error_count,
         },
     )
     return SuccessResponse(data=result)
