@@ -35,21 +35,34 @@ const WINDOW_DAYS = 1;
 const REASON_MAX_CHARS = 60;
 
 /**
- * action prefix → CSS-token color string. Resolved against the
- * computed style of the host so theme switches recolour the dots
- * without re-compiling. Anything unmapped falls through to muted.
+ * Action prefix → CSS-token color string. The lookup is PREFIX-based
+ * (longest match wins) so a new sub-action like ``kill.cut-all-ai``
+ * automatically inherits the ``kill.*`` danger tint without a code
+ * change. Falls back to muted if no prefix matches.
+ *
+ * Resolved against the computed style of the host (var(--token)) so
+ * theme switches recolour the dots without re-compiling.
  */
-const ACTION_TINT: Record<string, string> = {
-  'kill.trip': 'var(--color-danger)',
-  'kill.revert': 'var(--color-success)',
-  'circuit.reset': 'var(--color-info)',
-  'budget.upsert': 'var(--color-primary)',
-  'budget.delete': 'var(--color-warning)',
-  'sentry.rule.create': 'var(--color-primary)',
-  'sentry.rule.update': 'var(--color-primary)',
-  'sentry.rule.delete': 'var(--color-warning)',
-};
+const ACTION_TINT_PREFIXES: ReadonlyArray<readonly [string, string]> = [
+  // Longest prefixes first so 'sentry.rule.delete' beats 'sentry.rule'.
+  ['sentry.rule.delete', 'var(--color-warning)'],
+  ['sentry.rule', 'var(--color-primary)'],
+  ['kill.revert', 'var(--color-success)'],
+  ['kill', 'var(--color-danger)'],
+  ['circuit.reset', 'var(--color-info)'],
+  ['circuit', 'var(--color-info)'],
+  ['budget.delete', 'var(--color-warning)'],
+  ['budget', 'var(--color-primary)'],
+];
 const DEFAULT_TINT = 'var(--color-text-muted)';
+
+function actionTint(action: string): string {
+  const lowered = action.toLowerCase();
+  for (const [prefix, tint] of ACTION_TINT_PREFIXES) {
+    if (lowered === prefix || lowered.startsWith(`${prefix}.`)) return tint;
+  }
+  return DEFAULT_TINT;
+}
 
 @localized()
 @customElement('velg-ops-dispatch-ticker')
@@ -156,7 +169,7 @@ export class VelgOpsDispatchTicker extends LitElement {
     ].filter(Boolean);
     return {
       text: parts.join(' '),
-      color: ACTION_TINT[entry.action] ?? DEFAULT_TINT,
+      color: actionTint(entry.action),
     };
   }
 
