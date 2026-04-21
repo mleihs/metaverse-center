@@ -1,12 +1,28 @@
 /**
- * AdminOpsTab — Bureau Ops admin cockpit (P1).
+ * AdminOpsTab — Bureau Ops admin cockpit (P2).
  *
  * Single-tab home for the ops control-surface panels defined in
- * docs/plans/bureau-ops-implementation-plan.md §6.1. P1 ships four panels
- * — Ledger, Burn Rate, Quarantine, Firehose — plus a shared 30s poll of
- * /admin/ops/ledger that feeds both Ledger and Burn Rate (they consume
- * the same snapshot). Circuit + Firehose panels own their own refresh
- * cadence.
+ * docs/plans/bureau-ops-implementation-plan.md §6.1. Ships seven
+ * stacked panels plus an on-demand incident-audit drawer:
+ *
+ *   1. Ledger          — today/month/last-hour tiles + breakdowns.
+ *   2. BurnRate        — 24h sparkline + naive projection.
+ *   3. CircuitMatrix   — dot-matrix glyph per scope (observational).
+ *   4. Quarantine      — CUT ALL AI + kill-switch controls (kept
+ *                        above the fold so operators find it fast
+ *                        during an incident).
+ *   5. Heatmap         — hour × key cost attribution (P2.6 MV-backed).
+ *   6. SentryRules     — CRUD UI for sentry_rules (P2.4).
+ *   7. Firehose        — Supabase Realtime stream of ai_usage_log.
+ *
+ *   + IncidentDossierDrawer opens from the header button; reads
+ *     ops_audit_log with action-type + window filters.
+ *
+ * Refresh cadences (parent-owned where shared, panel-owned otherwise):
+ *   - /admin/ops/ledger: 30s, feeds Ledger + BurnRate.
+ *   - /admin/ops/circuit: 10s, feeds CircuitMatrix + Quarantine.
+ *   - Heatmap / SentryRules: panel-owned polls (5 min / on-mount+mutate).
+ *   - Firehose: Supabase Realtime push (no poll).
  *
  * Aesthetic: Bureau-Dispatch cockpit — corner brackets, scanline veil,
  * amber accents on a near-black surface. All animations respect
@@ -241,15 +257,15 @@ export class VelgAdminOpsTab extends LitElement {
           .loading=${this._circuitLoading}
         ></velg-ops-circuit-matrix-panel>
 
-        <velg-ops-heatmap-panel></velg-ops-heatmap-panel>
-
-        <velg-ops-sentry-rules-panel></velg-ops-sentry-rules-panel>
-
         <velg-ops-quarantine-panel
           .matrix=${this._circuit}
           .loading=${this._circuitLoading}
           @ops-circuit-changed=${this._handleCircuitChanged}
         ></velg-ops-quarantine-panel>
+
+        <velg-ops-heatmap-panel></velg-ops-heatmap-panel>
+
+        <velg-ops-sentry-rules-panel></velg-ops-sentry-rules-panel>
 
         <velg-ops-firehose-panel></velg-ops-firehose-panel>
       </div>
