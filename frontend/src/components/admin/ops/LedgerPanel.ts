@@ -178,7 +178,11 @@ export class VelgOpsLedgerPanel extends LitElement {
     if (!iso) return '';
     try {
       const dt = new Date(iso);
-      return dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      return dt.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
     } catch (err) {
       captureError(err, { source: 'LedgerPanel._formatTimestamp' });
       return '';
@@ -246,8 +250,9 @@ export class VelgOpsLedgerPanel extends LitElement {
         </div>
       </div>
 
-      ${s && s.by_purpose.length > 0
-        ? html`
+      ${
+        s && s.by_purpose.length > 0
+          ? html`
             <div class="breakdown">
               <h3 class="breakdown__title">${msg('Today by purpose')}</h3>
               <table class="breakdown__table">
@@ -274,9 +279,10 @@ export class VelgOpsLedgerPanel extends LitElement {
               </table>
             </div>
           `
-        : s && !this.loading && today.calls === 0
-          ? html`<div class="empty">${msg('No usage recorded today yet.')}</div>`
-          : nothing}
+          : s && !this.loading && today.calls === 0
+            ? html`<div class="empty">${msg('No usage recorded today yet.')}</div>`
+            : nothing
+      }
     `;
   }
 }

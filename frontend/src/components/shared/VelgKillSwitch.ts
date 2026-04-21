@@ -394,17 +394,20 @@ export class VelgKillSwitch extends LitElement {
       <div class="body">
         <div class="label">
           <p class="label__title">${this.scopeLabel}</p>
-          ${this.scopeSubtitle
-            ? html`<p class="label__subtitle">${this.scopeSubtitle}</p>`
-            : nothing}
+          ${
+            this.scopeSubtitle
+              ? html`<p class="label__subtitle">${this.scopeSubtitle}</p>`
+              : nothing
+          }
           <span class="label__status" role="switch" aria-checked=${!closed}>
             ${closed ? msg('Closed') : msg('Killed')}
           </span>
         </div>
 
         <div class="switch">
-          ${closed && !this.armed
-            ? html`
+          ${
+            closed && !this.armed
+              ? html`
                 <button
                   class="switch__cover"
                   type="button"
@@ -415,8 +418,8 @@ export class VelgKillSwitch extends LitElement {
                   ${msg('Arm')}
                 </button>
               `
-            : closed
-              ? html`
+              : closed
+                ? html`
                   <button
                     class="switch__btn"
                     type="button"
@@ -426,7 +429,7 @@ export class VelgKillSwitch extends LitElement {
                     ${msg('Cancel')}
                   </button>
                 `
-              : html`
+                : html`
                   <button
                     class="switch__btn"
                     type="button"
@@ -436,12 +439,14 @@ export class VelgKillSwitch extends LitElement {
                   >
                     ${msg('Revert')}
                   </button>
-                `}
+                `
+          }
         </div>
       </div>
 
-      ${closed && this.armed
-        ? html`
+      ${
+        closed && this.armed
+          ? html`
             <div class="confirm" role="region" aria-label=${msg('Trip kill confirmation')}>
               <label class="confirm__label" for="kill-reason">
                 ${msg('Reason (required, appears in audit log)')}
@@ -492,10 +497,12 @@ export class VelgKillSwitch extends LitElement {
               </div>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${!closed && this._confirmingRevert
-        ? html`
+      ${
+        !closed && this._confirmingRevert
+          ? html`
             <div class="confirm" role="region" aria-label=${msg('Revert kill confirmation')}>
               <label class="confirm__label" for="revert-reason">
                 ${msg('Reason for lifting this kill')}
@@ -528,16 +535,19 @@ export class VelgKillSwitch extends LitElement {
               </div>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${!closed && this.killedReason
-        ? html`
+      ${
+        !closed && this.killedReason
+          ? html`
             <div class="killed-info">
               <div class="killed-info__timer">${timer || msg('reverting soon')}</div>
               <div class="killed-info__reason">${this.killedReason}</div>
             </div>
           `
-        : nothing}
+          : nothing
+      }
     `;
   }
 }

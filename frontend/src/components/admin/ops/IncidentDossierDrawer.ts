@@ -27,10 +27,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import {
-  bureauOpsApi,
-  type OpsAuditEntry,
-} from '../../../services/api/BureauOpsApiService.js';
+import { bureauOpsApi, type OpsAuditEntry } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import '../../shared/VelgSidePanel.js';
 
@@ -255,9 +252,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
   }
 
   private _handleClose(): void {
-    this.dispatchEvent(
-      new CustomEvent('dossier-close', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('dossier-close', { bubbles: true, composed: true }));
   }
 
   private _selectDays(days: number): void {
@@ -319,8 +314,9 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
               `,
             )}
           </div>
-          ${actions.length > 1
-            ? html`
+          ${
+            actions.length > 1
+              ? html`
                 <div class="toolbar__group" role="group" aria-label=${msg('Action type')}>
                   <button
                     type="button"
@@ -344,16 +340,18 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
                   )}
                 </div>
               `
-            : nothing}
+              : nothing
+          }
         </div>
 
         ${this._error ? html`<div class="error">${this._error}</div>` : null}
 
-        ${this._loading && this._entries.length === 0
-          ? html`<div class="empty">${msg('Loading dossier')}</div>`
-          : filtered.length === 0
-            ? html`<div class="empty">${msg('No events in the selected window.')}</div>`
-            : html`
+        ${
+          this._loading && this._entries.length === 0
+            ? html`<div class="empty">${msg('Loading dossier')}</div>`
+            : filtered.length === 0
+              ? html`<div class="empty">${msg('No events in the selected window.')}</div>`
+              : html`
                 <div class="list">
                   ${filtered.map(
                     (entry) => html`
@@ -362,30 +360,37 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
                           <span class="entry__time">${formatTimestamp(entry.created_at)}</span>
                           <span class=${this._actionClass(entry.action)}>${entry.action}</span>
                         </div>
-                        ${entry.target_scope || entry.target_key
-                          ? html`<div class="entry__target">
-                              ${entry.target_scope ?? ''}${entry.target_key
-                                ? `:${entry.target_key}`
-                                : ''}
+                        ${
+                          entry.target_scope || entry.target_key
+                            ? html`<div class="entry__target">
+                              ${entry.target_scope ?? ''}${
+                                entry.target_key ? `:${entry.target_key}` : ''
+                              }
                             </div>`
-                          : nothing}
+                            : nothing
+                        }
                         <div class="entry__reason">${entry.reason}</div>
                         <div class="entry__actor">
-                          ${entry.actor_id
-                            ? msg(str`Actor ${entry.actor_id.slice(0, 8)}`)
-                            : msg('System')}
+                          ${
+                            entry.actor_id
+                              ? msg(str`Actor ${entry.actor_id.slice(0, 8)}`)
+                              : msg('System')
+                          }
                         </div>
-                        ${Object.keys(entry.payload).length > 0
-                          ? html`<details class="entry__payload">
+                        ${
+                          Object.keys(entry.payload).length > 0
+                            ? html`<details class="entry__payload">
                               <summary>${msg('Payload')}</summary>
                               ${formatPayload(entry.payload)}
                             </details>`
-                          : nothing}
+                            : nothing
+                        }
                       </div>
                     `,
                   )}
                 </div>
-              `}
+              `
+        }
       </velg-side-panel>
     `;
   }

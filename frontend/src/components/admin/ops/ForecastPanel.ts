@@ -482,11 +482,13 @@ export class VelgOpsForecastPanel extends LitElement {
               .duration=${ADJUSTED_COUNTER_DURATION_MS}
             ></velg-kinetic-counter>
           </span>
-          ${dirty && totalDeltaFormatted.text
-            ? html`<span class="projection__delta ${totalDeltaClass}">
+          ${
+            dirty && totalDeltaFormatted.text
+              ? html`<span class="projection__delta ${totalDeltaClass}">
                 ${totalDeltaFormatted.text} ${msg('vs baseline')}
               </span>`
-            : nothing}
+              : nothing
+          }
         </div>
       </div>
 

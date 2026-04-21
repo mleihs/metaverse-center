@@ -21,10 +21,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-import {
-  bureauOpsApi,
-  type OpsAuditEntry,
-} from '../../../services/api/BureauOpsApiService.js';
+import { bureauOpsApi, type OpsAuditEntry } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import '../../shared/VelgDispatchTicker.js';
 import type { TickerItem } from '../../shared/VelgDispatchTicker.js';

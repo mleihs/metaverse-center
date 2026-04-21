@@ -42,9 +42,9 @@
  *   ></velg-forecast-slider>
  */
 
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { localized, msg } from '@lit/localize';
 
 import { icons } from '../../utils/icons.js';
 
@@ -331,9 +331,7 @@ export class VelgForecastSlider extends LitElement {
     // Compose aria-valuetext so screen readers announce "100% (+$2.34)"
     // when the operator scrubs — the visible delta is otherwise invisible
     // to assistive tech because it lives in a sibling element.
-    const valuetext = this.deltaText
-      ? `${formattedValue} (${this.deltaText})`
-      : formattedValue;
+    const valuetext = this.deltaText ? `${formattedValue} (${this.deltaText})` : formattedValue;
 
     return html`
       <div class="slider" part="root">

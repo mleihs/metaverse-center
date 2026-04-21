@@ -217,18 +217,22 @@ export class VelgFirehoseStream extends LitElement {
                 <td class="num">${this._formatTokens(e.total_tokens)}</td>
                 <td class="num">$${e.estimated_cost_usd.toFixed(4)}</td>
                 <td>
-                  ${e.simulation_id
-                    ? html`<velg-redacted label=${msg('simulation id')}
+                  ${
+                    e.simulation_id
+                      ? html`<velg-redacted label=${msg('simulation id')}
                         >${this._shortId(e.simulation_id)}</velg-redacted
                       >`
-                    : html`<span aria-label=${msg('platform call')}>·</span>`}
+                      : html`<span aria-label=${msg('platform call')}>·</span>`
+                  }
                 </td>
                 <td>
-                  ${e.user_id
-                    ? html`<velg-redacted label=${msg('user id')}
+                  ${
+                    e.user_id
+                      ? html`<velg-redacted label=${msg('user id')}
                         >${this._shortId(e.user_id)}</velg-redacted
                       >`
-                    : html`<span aria-label=${msg('background task')}>·</span>`}
+                      : html`<span aria-label=${msg('background task')}>·</span>`
+                  }
                 </td>
                 <td>
                   <span class=${`badge badge--${e.status === 'error' ? 'error' : 'ok'}`}>
