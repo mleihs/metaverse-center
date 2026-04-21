@@ -511,6 +511,10 @@ export class VelgContentDraftsList extends LitElement {
     this.dispatchEvent(new CustomEvent('sweep-orphans', { bubbles: true, composed: true }));
   }
 
+  private _handleSweepSchedule(): void {
+    this.dispatchEvent(new CustomEvent('sweep-schedule', { bubbles: true, composed: true }));
+  }
+
   private _handleEditDraft(draft: ContentDraftSummary): void {
     this.dispatchEvent(
       new CustomEvent('edit-draft', {
@@ -655,6 +659,14 @@ export class VelgContentDraftsList extends LitElement {
             </span>
           </div>
           <div class="header__actions">
+            <button
+              class="btn"
+              @click=${this._handleSweepSchedule}
+              aria-label=${msg('Configure the weekly orphan-sweep schedule')}
+              title=${msg('Configure the weekly orphan-sweep schedule')}
+            >
+              ${icons.gear(12)} ${msg('Schedule')}
+            </button>
             <button
               class="btn"
               @click=${this._handleSweepOrphans}

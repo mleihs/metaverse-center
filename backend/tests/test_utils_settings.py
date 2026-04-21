@@ -14,7 +14,6 @@ from backend.utils.settings import (
     upsert_platform_setting,
 )
 
-
 # ── parse_setting_bool ──────────────────────────────────────────────────
 
 

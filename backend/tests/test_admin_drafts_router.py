@@ -911,3 +911,84 @@ class TestSweepOrphans:
             json={"min_age_days": -1.0},
         )
         assert r.status_code == 422
+
+
+# ── Orphan-sweeper run-now (Phase 7c) ─────────────────────────────────────
+
+
+class TestOrphanSweeperRunNow:
+    """Covers the /orphan-sweeper/run-now endpoint — bypasses the scheduler
+    throttle, always runs dry_run=False, and persists last_run_at via the
+    shared classmethod so the next scheduled tick starts a fresh interval."""
+
+    def _fake_result(
+        self, *, deleted: int = 0, errors: int = 0,
+    ) -> SweepOrphansResult:
+        branches = [
+            OrphanBranchClassification(
+                name="content/drafts-batch-20260401-000000-aaaaaaaa",
+                sha="a" * 40,
+                age_days=30.0,
+                pr_number=42,
+                pr_state="merged",
+                status="delete",
+                reason="PR merged — GC",
+                deleted=deleted > 0,
+            ),
+        ]
+        return SweepOrphansResult(
+            dry_run=False,
+            total_found=len(branches),
+            kept_count=0,
+            deleted_count=deleted,
+            error_count=errors,
+            branches=branches,
+        )
+
+    def test_invokes_scheduler_classmethod_and_audits(self, client):
+        supabase = _mock_supabase([_exec_result(data=[])])  # audit insert
+        _override_admin(supabase)
+
+        fake = self._fake_result(deleted=1)
+        with patch(
+            "backend.routers.admin_drafts.OrphanSweeperScheduler.run_sweep_and_persist",
+            new=AsyncMock(return_value=fake),
+        ) as mock_run:
+            r = client.post(
+                "/api/v1/admin/content-drafts/orphan-sweeper/run-now",
+            )
+
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["data"]["dry_run"] is False
+        assert body["data"]["deleted_count"] == 1
+        # The endpoint threads the request's supabase client through to
+        # the scheduler helper — no config/now overrides from here.
+        mock_run.assert_awaited_once()
+        call_args = mock_run.call_args
+        assert call_args.args == (supabase,)
+
+    def test_propagates_missing_env_http_exception(self, client):
+        """HTTPException from get_github_repo_config propagates with its
+        original status code — the admin gets a clean 'env missing'
+        error instead of a silent no-op."""
+        from fastapi import HTTPException
+
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        with patch(
+            "backend.routers.admin_drafts.OrphanSweeperScheduler.run_sweep_and_persist",
+            new=AsyncMock(
+                side_effect=HTTPException(
+                    status_code=400, detail="GITHUB_REPO_OWNER not set",
+                ),
+            ),
+        ):
+            r = client.post(
+                "/api/v1/admin/content-drafts/orphan-sweeper/run-now",
+            )
+
+        assert r.status_code == 400
+        assert "GITHUB_REPO_OWNER" in r.json()["detail"]

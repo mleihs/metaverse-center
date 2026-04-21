@@ -29,6 +29,7 @@ import { VelgConfirmDialog } from '../../shared/ConfirmDialog.js';
 import '../../shared/VelgSidePanel.js';
 import './VelgContentDraftsList.js';
 import './VelgContentDraftEditor.js';
+import './VelgOrphanSweeperSettingsModal.js';
 import './VelgPublishBatchModal.js';
 import './VelgSweepOrphansModal.js';
 import type { VelgContentDraftEditor } from './VelgContentDraftEditor.js';
@@ -64,6 +65,9 @@ export class VelgAdminContentDraftsTab extends LitElement {
 
   /** Orphan-sweep modal state. */
   @state() private _sweepOpen = false;
+
+  /** Orphan-sweeper scheduler settings modal state (A1.7 Phase 7c). */
+  @state() private _scheduleOpen = false;
 
   private _getList(): VelgContentDraftsList | null {
     return this.renderRoot?.querySelector(
@@ -154,6 +158,14 @@ export class VelgAdminContentDraftsTab extends LitElement {
     this._sweepOpen = false;
   }
 
+  private _handleSweepSchedule(): void {
+    this._scheduleOpen = true;
+  }
+
+  private _handleScheduleClose(): void {
+    this._scheduleOpen = false;
+  }
+
   protected render(): TemplateResult {
     const sidePanelTitle = this._editorCreateMode
       ? msg('New Content Draft')
@@ -165,6 +177,7 @@ export class VelgAdminContentDraftsTab extends LitElement {
         @edit-draft=${this._handleEditDraft}
         @publish-batch=${this._handlePublishBatch}
         @sweep-orphans=${this._handleSweepOrphans}
+        @sweep-schedule=${this._handleSweepSchedule}
       ></velg-content-drafts-list>
 
       <velg-side-panel
@@ -193,6 +206,11 @@ export class VelgAdminContentDraftsTab extends LitElement {
         ?open=${this._sweepOpen}
         @modal-close=${this._handleSweepClose}
       ></velg-sweep-orphans-modal>
+
+      <velg-orphan-sweeper-settings-modal
+        ?open=${this._scheduleOpen}
+        @modal-close=${this._handleScheduleClose}
+      ></velg-orphan-sweeper-settings-modal>
     `;
   }
 }

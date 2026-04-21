@@ -130,7 +130,13 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
 
     @classmethod
     async def _process_tick(cls, admin: Client, config: dict) -> None:
-        """Throttle-check, run the sweep, persist ``last_run_at``, report."""
+        """Throttle-check, then delegate to :meth:`run_sweep_and_persist`.
+
+        Keeps the tick loop responsible for the *when* decision
+        (``_is_due``) and hands the *how* (sweep + persist + report)
+        to the shared execution method, so the admin "Run now"
+        endpoint reaches the same sweep path minus the throttle.
+        """
         now = datetime.now(UTC)
         if not _is_due(
             now=now,
@@ -139,24 +145,56 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         ):
             return
 
-        try:
-            owner, repo = get_github_repo_config()
-        except HTTPException:
-            logger.warning(
-                "Orphan-sweeper tick: GitHub repo env not configured; skipping",
-                extra={"iteration": cls._iteration_count},
-            )
-            return
-
         logger.info(
             "Orphan-sweeper scheduled run starting",
             extra={
                 "iteration": cls._iteration_count,
+                "trigger": "scheduled",
                 "interval_days": config["interval_days"],
                 "min_age_days": config["min_age_days"],
             },
         )
 
+        try:
+            await cls.run_sweep_and_persist(admin, now=now, config=config)
+        except HTTPException:
+            # get_github_repo_config() signals missing env vars via
+            # HTTPException. Treat as "skip this tick" — next tick
+            # retries after the operator fixes the env.
+            logger.warning(
+                "Orphan-sweeper tick: GitHub repo env not configured; skipping",
+                extra={"iteration": cls._iteration_count},
+            )
+
+    @classmethod
+    async def run_sweep_and_persist(
+        cls,
+        admin: Client,
+        *,
+        now: datetime | None = None,
+        config: dict | None = None,
+    ) -> SweepOrphansResult:
+        """Execute a sweep and persist ``last_run_at``.
+
+        Shared by :meth:`_process_tick` (after the ``_is_due`` guard
+        passes) and the admin ``POST /orphan-sweeper/run-now`` endpoint.
+        Deliberately does **not** gate on the throttle — callers own that
+        decision. Always ``dry_run=False``: the manual preview stays on
+        the existing ``/sweep-orphans`` endpoint.
+
+        Raises :class:`fastapi.HTTPException` from
+        :func:`get_github_repo_config` when the ``GITHUB_REPO_OWNER`` /
+        ``GITHUB_REPO_NAME`` env vars are unset — the scheduler tick
+        catches it; the endpoint surfaces it as the underlying HTTP
+        error so the admin sees a clear "env missing" message rather
+        than a silent no-op.
+        """
+        if now is None:
+            now = datetime.now(UTC)
+        if config is None:
+            config = await cls._load_config(admin)
+
+        owner, repo = get_github_repo_config()
         client = get_github_app_client()
         result: SweepOrphansResult = await sweep_orphan_branches(
             client,
@@ -173,6 +211,7 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         # next tick after a persist failure is safe.
         cls._report_result(result)
         await _persist_last_run_at(admin, now)
+        return result
 
     @classmethod
     def _report_result(cls, result: SweepOrphansResult) -> None:

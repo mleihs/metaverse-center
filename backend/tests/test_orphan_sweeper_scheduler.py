@@ -377,6 +377,97 @@ class TestProcessTick:
         capture.assert_not_called()
 
 
+# ── run_sweep_and_persist ───────────────────────────────────────────────
+
+
+class TestRunSweepAndPersist:
+    """The public classmethod shared by ``_process_tick`` and the admin
+    ``POST /orphan-sweeper/run-now`` endpoint. Unlike ``_process_tick`` it
+    does **not** check the throttle — callers own that decision. Always
+    runs ``dry_run=False`` and persists ``last_run_at``."""
+
+    @pytest.mark.asyncio
+    async def test_runs_without_config_loads_it(self) -> None:
+        admin, execute = _admin_mock_with_upsert()
+        config_loaded = {
+            "enabled": True,
+            "interval": ss._CHECK_INTERVAL_SECONDS,
+            "interval_days": 7.0,
+            "min_age_days": 14.0,
+            "last_run_at": None,
+        }
+        result = _result(branches=[_classification("x", status="delete", deleted=True)])
+        sweep = AsyncMock(return_value=result)
+        with patch.object(ss, "sweep_orphan_branches", sweep), \
+             patch.object(ss, "get_github_app_client", MagicMock()), \
+             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
+             patch.object(
+                 OrphanSweeperScheduler,
+                 "_load_config",
+                 AsyncMock(return_value=config_loaded),
+             ):
+            out = await OrphanSweeperScheduler.run_sweep_and_persist(admin)
+        assert out is result
+        sweep.assert_awaited_once()
+        # dry_run=False always, min_age_days taken from the loaded config.
+        kwargs = sweep.await_args.kwargs
+        assert kwargs["dry_run"] is False
+        assert kwargs["min_age_days"] == 14.0
+        execute.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_uses_provided_config_and_now(self) -> None:
+        """When caller provides config + now (scheduler tick path), the
+        helper must not re-load or re-clock — both are tick-scoped."""
+        admin, _ = _admin_mock_with_upsert()
+        fixed_now = _NOW + timedelta(seconds=5)
+        config = {
+            "enabled": True,
+            "interval": ss._CHECK_INTERVAL_SECONDS,
+            "interval_days": 7.0,
+            "min_age_days": 9.0,
+            "last_run_at": None,
+        }
+        result = _result(branches=[])
+        sweep = AsyncMock(return_value=result)
+        load = AsyncMock()
+        with patch.object(ss, "sweep_orphan_branches", sweep), \
+             patch.object(ss, "get_github_app_client", MagicMock()), \
+             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
+             patch.object(OrphanSweeperScheduler, "_load_config", load):
+            await OrphanSweeperScheduler.run_sweep_and_persist(
+                admin, now=fixed_now, config=config,
+            )
+        load.assert_not_awaited()
+        assert sweep.await_args.kwargs["now"] == fixed_now
+        assert sweep.await_args.kwargs["min_age_days"] == 9.0
+
+    @pytest.mark.asyncio
+    async def test_propagates_http_exception_from_env_config(self) -> None:
+        """``get_github_repo_config`` raises HTTPException on missing
+        env; the helper surfaces it so the endpoint caller can render a
+        proper error. The scheduler tick catches it separately."""
+        admin, _ = _admin_mock_with_upsert()
+        config = {
+            "interval_days": 7.0,
+            "min_age_days": 14.0,
+            "last_run_at": None,
+        }
+        sweep = AsyncMock()
+        with patch.object(ss, "sweep_orphan_branches", sweep), \
+             patch.object(ss, "get_github_app_client", MagicMock()), \
+             patch.object(
+                 ss,
+                 "get_github_repo_config",
+                 MagicMock(side_effect=HTTPException(status_code=400, detail="missing")),
+             ):
+            with pytest.raises(HTTPException):
+                await OrphanSweeperScheduler.run_sweep_and_persist(
+                    admin, now=_NOW, config=config,
+                )
+        sweep.assert_not_called()
+
+
 # ── _persist_last_run_at ─────────────────────────────────────────────────
 
 
