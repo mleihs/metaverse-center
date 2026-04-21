@@ -158,8 +158,22 @@ async def run_ai(
         except ModelHTTPError as exc:
             if exc.status_code != 429:
                 elapsed = time.monotonic() - t0
-                logger.error(
-                    "AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True
+                # Credit/quota-exhaustion (402/403) and provider-unavailability (503)
+                # are ops signals, not programmer errors — warning level keeps them
+                # out of Sentry error budget while still logging.
+                log_fn = (
+                    logger.warning
+                    if exc.status_code in (402, 403, 503)
+                    else logger.error
+                )
+                log_fn(
+                    "AI call failed",
+                    extra={
+                        "purpose": purpose,
+                        "elapsed_s": round(elapsed, 1),
+                        "status_code": exc.status_code,
+                    },
+                    exc_info=True,
                 )
                 raise
             last_exc = exc
@@ -274,12 +288,15 @@ def create_forge_agent(
     system_prompt: str,
     api_key: str | None = None,
     purpose: str = "forge",
-    retries: int = 3,
+    retries: int = 1,
 ) -> Agent:
     """Create a Pydantic AI Agent configured for OpenRouter with sensible defaults.
 
     Centralizes the repeated Agent creation pattern across forge services.
-    All agents get retries=3 by default (up from pydantic-ai's default of 1).
+    Retries default to 1 — ``run_ai`` owns the 429 retry/backoff chain above
+    and the provider-fallback chain, so pydantic-ai retries=3 would multiply
+    up to 12 attempts per logical call. Callers that specifically need more
+    inner retries (e.g. transient tool-output validation) can still opt in.
     """
     return Agent(
         get_openrouter_model(api_key, model_id=get_platform_model(purpose)),

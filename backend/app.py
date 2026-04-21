@@ -20,6 +20,59 @@ from backend.config import settings as app_settings
 # --- Sentry (must initialize before app/middleware creation) ---
 # Only send errors to Sentry in deployed environments (production/staging).
 # Local development and test runs should not pollute the error tracker.
+
+
+def _ops_before_send(event: dict, hint: dict) -> dict | None:
+    """Bureau-Ops P0 static dedup rules.
+
+    Hardcoded rules for the emergency-brake phase. P2 replaces this with a
+    DB-backed rule cache. See docs/plans/bureau-ops-implementation-plan.md §7.
+
+    Rules (applied in order):
+      1. Drop events where the message contains ``Key limit exceeded`` or
+         ``insufficient_quota`` — credit-exhaustion signals are ops noise,
+         not actionable bugs.
+      2. Fingerprint RateLimitError / ModelUnavailableError by
+         (exception_type, model) so all 429/503 bursts collapse into one
+         Sentry-issue-group instead of scattering across dozens.
+      3. Downgrade pydantic-ai ModelHTTPError 402/403/503 to ``warning``
+         so Sentry's error-budget counter doesn't eat them.
+    """
+    exc_info = hint.get("exc_info")
+    if not exc_info:
+        return event
+    exc_type, exc, _tb = exc_info
+    if exc is None:
+        return event
+
+    message = str(exc)
+
+    # Rule 1: drop credit/quota-exhaustion bursts entirely.
+    if "Key limit exceeded" in message or "insufficient_quota" in message:
+        return None
+
+    # Rule 2: collapse rate-limit/model-unavailable into (type, model) groups.
+    exc_name = exc_type.__name__ if exc_type else ""
+    if exc_name in ("RateLimitError", "ModelUnavailableError"):
+        tags_source = event.get("tags", {})
+        if isinstance(tags_source, list):
+            tags = {t["key"]: t["value"] for t in tags_source if isinstance(t, dict)}
+        elif isinstance(tags_source, dict):
+            tags = tags_source
+        else:
+            tags = {}
+        model = tags.get("model", "unknown")
+        event["fingerprint"] = ["openrouter", exc_name, model]
+
+    # Rule 3: downgrade pydantic-ai ModelHTTPError for 402/403/503 to warning.
+    if exc_name == "ModelHTTPError":
+        status = getattr(exc, "status_code", None)
+        if status in (402, 403, 503):
+            event["level"] = "warning"
+
+    return event
+
+
 if app_settings.sentry_dsn and app_settings.environment not in ("development", "test"):
     sentry_sdk.init(
         dsn=app_settings.sentry_dsn,
@@ -28,6 +81,7 @@ if app_settings.sentry_dsn and app_settings.environment not in ("development", "
         traces_sample_rate=app_settings.sentry_traces_sample_rate,
         send_default_pii=False,  # GDPR safe
         enable_tracing=True,
+        before_send=_ops_before_send,
     )
 
 from backend.dependencies import get_admin_supabase
