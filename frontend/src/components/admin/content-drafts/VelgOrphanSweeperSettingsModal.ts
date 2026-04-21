@@ -56,6 +56,16 @@ const KEY_LAST_RUN_AT = 'orphan_sweeper_last_run_at';
  *  writes, small enough that a user blur-away doesn't lose the pending edit. */
 const NUMBER_SAVE_DEBOUNCE_MS = 600;
 
+/** Backend defaults shown as placeholders when the ``platform_settings``
+ *  row isn't seeded yet (fresh DB / migration-lag window). The real
+ *  scheduler falls back to these too — see
+ *  ``backend/services/content_packs/orphan_sweeper_scheduler.py``
+ *  ``_DEFAULT_INTERVAL_DAYS`` and ``orphan_sweeper.DEFAULT_MIN_AGE_DAYS``.
+ *  Keep in sync with those constants. Placeholder-only — we never
+ *  auto-write these; the admin types if they want to accept the default. */
+const DEFAULT_INTERVAL_DAYS_PLACEHOLDER = '7.0';
+const DEFAULT_MIN_AGE_DAYS_PLACEHOLDER = '14.0';
+
 type ModalState = 'loading' | 'loaded' | 'error';
 
 @localized()
@@ -233,6 +243,14 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       font-size: var(--text-sm);
       text-align: right;
       transition: border-color var(--transition-fast);
+    }
+
+    /* Placeholder shows the seeded default from the backend when the
+       row isn't present yet (fresh DB / migration lag). Muted + low
+       opacity so it reads as "suggestion", not as a real value. */
+    .number-input__field::placeholder {
+      color: var(--color-text-muted);
+      opacity: 0.55;
     }
 
     .number-input__field:hover:not(:disabled):not(.number-input__field--saving) {
@@ -619,7 +637,15 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       // chip rounds to minutes anyway). A full _loadSettings reload
       // would race the user's in-flight number edits once _running
       // flips back to false.
-      this._lastRunAt = new Date().toISOString();
+      //
+      // Format: strip the milliseconds that `toISOString()` always
+      // emits, and swap the Z suffix for `+00:00`, so the optimistic
+      // stamp matches the shape the server round-trips on next reopen
+      // (``datetime.now(UTC).isoformat()`` → second-precision with
+      // offset notation). Without normalisation the readout would
+      // flip format between run and reload — same time, different
+      // string on screen.
+      this._lastRunAt = new Date().toISOString().replace(/\.\d+Z$/, '+00:00');
     } catch (err) {
       captureError(err, { source: 'VelgOrphanSweeperSettingsModal._handleRunNow' });
       VelgToast.error(err instanceof Error ? err.message : String(err));
@@ -768,6 +794,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
           step="0.5"
           min="0.5"
+          placeholder=${DEFAULT_INTERVAL_DAYS_PLACEHOLDER}
           .value=${this._intervalDays}
           ?disabled=${this._running}
           @input=${this._handleIntervalInput}
@@ -795,6 +822,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
           step="1"
           min="1"
+          placeholder=${DEFAULT_MIN_AGE_DAYS_PLACEHOLDER}
           .value=${this._minAgeDays}
           ?disabled=${this._running}
           @input=${this._handleMinAgeInput}
