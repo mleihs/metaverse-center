@@ -113,6 +113,12 @@ export class VelgContentDraftsList extends LitElement {
       letter-spacing: var(--tracking-wide);
     }
 
+    .header__actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -501,6 +507,10 @@ export class VelgContentDraftsList extends LitElement {
     this.dispatchEvent(new CustomEvent('new-draft', { bubbles: true, composed: true }));
   }
 
+  private _handleSweepOrphans(): void {
+    this.dispatchEvent(new CustomEvent('sweep-orphans', { bubbles: true, composed: true }));
+  }
+
   private _handleEditDraft(draft: ContentDraftSummary): void {
     this.dispatchEvent(
       new CustomEvent('edit-draft', {
@@ -644,13 +654,23 @@ export class VelgContentDraftsList extends LitElement {
               ${msg(str`${this._total} total`)}
             </span>
           </div>
-          <button
-            class="btn btn--primary"
-            @click=${this._handleNewDraft}
-            aria-label=${msg('Create a new content draft')}
-          >
-            ${icons.plus(12)} ${msg('New Draft')}
-          </button>
+          <div class="header__actions">
+            <button
+              class="btn"
+              @click=${this._handleSweepOrphans}
+              aria-label=${msg('Garbage-collect abandoned draft branches on the repo')}
+              title=${msg('Garbage-collect abandoned draft branches on the repo')}
+            >
+              ${icons.trash(12)} ${msg('Sweep orphans')}
+            </button>
+            <button
+              class="btn btn--primary"
+              @click=${this._handleNewDraft}
+              aria-label=${msg('Create a new content draft')}
+            >
+              ${icons.plus(12)} ${msg('New Draft')}
+            </button>
+          </div>
         </div>
 
         <div

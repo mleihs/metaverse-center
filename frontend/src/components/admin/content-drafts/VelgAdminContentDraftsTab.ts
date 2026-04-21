@@ -30,6 +30,7 @@ import '../../shared/VelgSidePanel.js';
 import './VelgContentDraftsList.js';
 import './VelgContentDraftEditor.js';
 import './VelgPublishBatchModal.js';
+import './VelgSweepOrphansModal.js';
 import type { VelgContentDraftEditor } from './VelgContentDraftEditor.js';
 import type { VelgContentDraftsList } from './VelgContentDraftsList.js';
 
@@ -60,6 +61,9 @@ export class VelgAdminContentDraftsTab extends LitElement {
   /** Publish modal state. */
   @state() private _publishOpen = false;
   @state() private _publishDrafts: ContentDraftSummary[] = [];
+
+  /** Orphan-sweep modal state. */
+  @state() private _sweepOpen = false;
 
   private _getList(): VelgContentDraftsList | null {
     return this.renderRoot?.querySelector(
@@ -142,6 +146,14 @@ export class VelgAdminContentDraftsTab extends LitElement {
     this._publishOpen = false;
   }
 
+  private _handleSweepOrphans(): void {
+    this._sweepOpen = true;
+  }
+
+  private _handleSweepClose(): void {
+    this._sweepOpen = false;
+  }
+
   protected render(): TemplateResult {
     const sidePanelTitle = this._editorCreateMode
       ? msg('New Content Draft')
@@ -152,6 +164,7 @@ export class VelgAdminContentDraftsTab extends LitElement {
         @new-draft=${this._handleNewDraft}
         @edit-draft=${this._handleEditDraft}
         @publish-batch=${this._handlePublishBatch}
+        @sweep-orphans=${this._handleSweepOrphans}
       ></velg-content-drafts-list>
 
       <velg-side-panel
@@ -175,6 +188,11 @@ export class VelgAdminContentDraftsTab extends LitElement {
         @publish-success=${this._handlePublishSuccess}
         @modal-close=${this._handlePublishClose}
       ></velg-publish-batch-modal>
+
+      <velg-sweep-orphans-modal
+        ?open=${this._sweepOpen}
+        @modal-close=${this._handleSweepClose}
+      ></velg-sweep-orphans-modal>
     `;
   }
 }
