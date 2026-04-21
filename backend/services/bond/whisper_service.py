@@ -181,6 +181,13 @@ class WhisperService:
             if stored:
                 stored["agent_name"] = (bond.get("agents") or {}).get("name", "unknown")
                 created_whispers.append(stored)
+                # AD-8: Depth 2+ whispers deposit an Impression fragment into
+                # the Resonance Journal. Non-blocking — the hook method
+                # catches its own errors and logs to Sentry so a journal
+                # failure never breaks heartbeat whisper generation.
+                await cls._enqueue_journal_impression(
+                    supabase, bond, stored, whisper_type, whisper_content,
+                )
 
         return created_whispers
 
@@ -792,6 +799,78 @@ class WhisperService:
             "content_en": content_en,
             "template_tags": list(template.tags),
         }
+
+    # ── Journal integration (AD-8) ─────────────────────────────────────
+
+    @classmethod
+    async def _enqueue_journal_impression(
+        cls,
+        admin: Client,
+        bond: dict,
+        whisper: dict,
+        whisper_type: str,
+        whisper_content: dict,
+    ) -> None:
+        """Enqueue an Impression fragment from a Depth 2+ bond whisper.
+
+        Part of the Resonance Journal integration (AD-8). The journal
+        concept frames bonded agents as the only source of first-person
+        Impression fragments — the agent writes INTO the player's journal
+        when the relationship has crossed the trust threshold (Depth 2 =
+        Vertrauen).
+
+        Fire-and-forget. No-op if bond depth < 2 or if required IDs are
+        missing / malformed. Sentry capture is handled inside
+        ``FragmentService.enqueue_request``; the only thing this method
+        logs directly is the UUID-parse failure path (indicates a bond-row
+        shape regression that warrants triage).
+        """
+        if (bond.get("depth") or 0) < 2:
+            return
+
+        user_id_raw = bond.get("user_id")
+        whisper_id_raw = whisper.get("id")
+        if not user_id_raw or not whisper_id_raw:
+            return
+
+        try:
+            user_id = UUID(str(user_id_raw))
+            whisper_id = UUID(str(whisper_id_raw))
+            sim_id_raw = bond.get("simulation_id")
+            simulation_id = UUID(str(sim_id_raw)) if sim_id_raw else None
+        except (ValueError, TypeError):
+            logger.warning(
+                "Journal impression skipped: UUID parse failed",
+                extra={
+                    "bond_id": bond.get("id"),
+                    "whisper_id": whisper.get("id"),
+                },
+            )
+            return
+
+        agent_data = bond.get("agents") or {}
+        context = {
+            "agent_name": agent_data.get("name", "the agent"),
+            "agent_profession": agent_data.get("primary_profession", ""),
+            "whisper_content_en": whisper_content.get("content_en", ""),
+            "whisper_type": whisper_type,
+            "bond_depth": bond.get("depth", 2),
+        }
+
+        # Late import breaks a potential cycle (FragmentService imports
+        # BudgetContext which imports OpenRouterService; whisper_service
+        # is already in that graph from its own generate path).
+        from backend.services.journal.fragment_service import FragmentService
+
+        await FragmentService.enqueue_request(
+            admin,
+            user_id=user_id,
+            source_type="bond",
+            source_id=whisper_id,
+            fragment_type="impression",
+            context=context,
+            simulation_id=simulation_id,
+        )
 
     # ── Storage ────────────────────────────────────────────────────────
 
