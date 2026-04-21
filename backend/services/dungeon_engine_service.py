@@ -69,6 +69,7 @@ from backend.services.dungeon_shared import (
     log_extra,
     rpc_with_retry,
 )
+from backend.services.journal.hooks import enqueue_dungeon_imprint
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, server_error
@@ -495,6 +496,10 @@ class DungeonEngineService:
             "Dungeon retreat",
             extra=_log_extra(instance, outcome="retreat", rooms_cleared=instance.rooms_cleared),
         )
+
+        # Journal: Imprint fragment on retreat (the archetype notes the
+        # player's choice to withdraw). Fire-and-forget after persist.
+        await enqueue_dungeon_imprint(admin_supabase, instance, outcome="retreat")
 
         banter_data = None
         if retreat_banter:

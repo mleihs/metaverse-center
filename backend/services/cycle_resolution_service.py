@@ -11,6 +11,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
+from backend.services.journal.hooks import enqueue_epoch_signature
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_one
@@ -364,6 +365,11 @@ class CycleResolutionService:
             except (PostgrestAPIError, httpx.HTTPError):
                 logger.warning("Dissolved team cleanup failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
                 sentry_sdk.capture_exception()
+
+        # Journal: Signature fragment per participant. Runs after scoring
+        # is committed so dimension_dominance reflects this cycle's data.
+        # Fire-and-forget — the helper absorbs all failures internally.
+        await enqueue_epoch_signature(db, epoch_id, cycle_number)
 
         return data
 

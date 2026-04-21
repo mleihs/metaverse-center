@@ -16,6 +16,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import serialize_for_json
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.services.journal.hooks import enqueue_bleed_tremor
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -544,13 +545,20 @@ class EchoService:
                 }
             )
 
-            return await cls.update_echo_status(
+            completed_echo = await cls.update_echo_status(
                 admin_supabase,
                 echo_id,
                 "completed",
                 target_event_id=UUID(target_event["id"]),
                 metadata_update=metadata,
             )
+
+            # Journal: Tremor fragment for the recipient sim's owner.
+            # Fires only when echo_strength clears the Tremor threshold
+            # — fainter echoes stay out of the journal. Non-blocking.
+            await enqueue_bleed_tremor(admin_supabase, completed_echo)
+
+            return completed_echo
 
         except HTTPException:
             raise

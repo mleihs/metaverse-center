@@ -20,7 +20,9 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
+from backend.services.journal.hooks import enqueue_achievement_mark
 from supabase import AsyncClient as Client
 
 if TYPE_CHECKING:
@@ -144,19 +146,32 @@ class DungeonAchievementService:
         achievement_id: str,
         extra_context: dict[str, Any] | None = None,
     ) -> None:
-        """Best-effort award via fn_award_achievement RPC. Non-blocking."""
+        """Best-effort award via fn_award_achievement RPC. Non-blocking.
+
+        On a first-time award (RPC returns true), also fans out a
+        Mark fragment into the player's Resonance Journal. Duplicate
+        awards (RPC returns false) do not emit a fragment — the Mark
+        is a one-time carving, not a repeatable stamp.
+        """
         context = {
             "archetype": instance.archetype,
             "run_id": str(instance.run_id),
             "simulation_id": str(instance.simulation_id),
             **(extra_context or {}),
         }
+        condition_notes = (
+            f"{instance.archetype} at depth {instance.depth} "
+            f"(rooms cleared: {instance.rooms_cleared})"
+        )
         for player_id in instance.player_ids:
+            was_newly_awarded = False
             try:
-                await admin_supabase.rpc(
+                resp = await admin_supabase.rpc(
                     "fn_award_achievement",
                     {"p_user_id": str(player_id), "p_achievement_id": achievement_id, "p_context": context},
                 ).execute()
+                # postgrest returns a scalar RPC as resp.data (bool here).
+                was_newly_awarded = resp.data is True
             except Exception:
                 logger.warning(
                     "Badge award failed (non-critical)",
@@ -164,6 +179,27 @@ class DungeonAchievementService:
                            "player_id": str(player_id)},
                     exc_info=True,
                 )
+                continue
+
+            if was_newly_awarded:
+                try:
+                    await enqueue_achievement_mark(
+                        admin_supabase,
+                        user_id=UUID(str(player_id)),
+                        simulation_id=UUID(str(instance.simulation_id)),
+                        source_id=UUID(str(instance.run_id)),
+                        achievement_slug=achievement_id,
+                        condition_notes=condition_notes,
+                    )
+                except (ValueError, TypeError):
+                    logger.warning(
+                        "Journal mark skipped: UUID parse failed",
+                        extra={
+                            "run_id": str(instance.run_id),
+                            "player_id": str(player_id),
+                            "achievement_id": achievement_id,
+                        },
+                    )
 
     # ── Private: Progress Increment Helper ────────────────────────────────
 

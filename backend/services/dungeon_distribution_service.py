@@ -34,6 +34,7 @@ from backend.services.dungeon_shared import (
     log_extra,
     rpc_with_retry,
 )
+from backend.services.journal.hooks import enqueue_dungeon_imprint
 from backend.utils.errors import bad_request, server_error
 from supabase import AsyncClient as Client
 
@@ -141,6 +142,12 @@ class DungeonDistributionService:
                 total_rooms=len(instance.rooms),
             ),
         )
+
+        # Journal: Imprint fragment on boss victory (no-distribution path).
+        # Fire-and-forget; enqueue_request catches its own errors. Runs AFTER
+        # the run is fully persisted + removed from the in-memory store so a
+        # journal-queue hiccup cannot block downstream state.
+        await enqueue_dungeon_imprint(admin_supabase, instance, outcome="victory")
 
     # ── Distribution Phase ─────────────────────────────────────────────────
 
@@ -419,6 +426,9 @@ class DungeonDistributionService:
             "Distribution finalized",
             extra=log_extra(instance, outcome="distributed", loot_items=len(loot_items)),
         )
+
+        # Journal: Imprint fragment on boss victory (distribution path).
+        await enqueue_dungeon_imprint(admin_supabase, instance, outcome="victory")
 
         return DistributeConfirmResponse(
             loot_result=loot_result,
