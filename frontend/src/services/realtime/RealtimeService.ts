@@ -19,7 +19,12 @@
 
 import { signal } from '@preact/signals-core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { ChatMessage, EpochChatMessage, PresenceUser } from '../../types/index.js';
+import type {
+  ChatMessage,
+  DraftPresenceUser,
+  EpochChatMessage,
+  PresenceUser,
+} from '../../types/index.js';
 import { agentTypingPhrase } from '../../utils/agent-colors.js';
 import { chatStore, type TypingUser } from '../chat/ChatSessionStore.js';
 import { captureError } from '../SentryService.js';
@@ -45,6 +50,23 @@ function isPresenceUser(x: unknown): x is PresenceUser {
   );
 }
 
+/**
+ * Runtime guard for `DraftPresenceUser`. Parallel to `isPresenceUser` but
+ * keyed for content-draft editor sessions. Same wire-boundary rationale:
+ * `presenceState()` returns `Record<string, Presence<T>[]>` with no schema
+ * enforcement, so malformed entries are observed via `captureError` and
+ * dropped from the rendered list instead of poisoning the signal.
+ */
+function isDraftPresenceUser(x: unknown): x is DraftPresenceUser {
+  if (x == null || typeof x !== 'object') return false;
+  const r = x as Record<string, unknown>;
+  return (
+    typeof r.user_id === 'string' &&
+    typeof r.user_email === 'string' &&
+    typeof r.joined_at === 'string'
+  );
+}
+
 class RealtimeServiceImpl {
   // ── Signals ──────────────────────────────────────────
   readonly onlineUsers = signal<PresenceUser[]>([]);
@@ -58,6 +80,18 @@ class RealtimeServiceImpl {
   // ── Agent Chat Signals ───────────────────────────────
   readonly chatTypingUsers = signal<TypingUser[]>([]);
 
+  // ── Content-Draft Presence Signals ───────────────────
+  /**
+   * Per-draft presence state. Keyed by `draftId` → list of admins currently
+   * editing that draft. Drafts are platform-level, so there is no
+   * simulation-scoped parallel here. Consumers use `SignalWatcher` + the
+   * draft-scoped slot (`draftPresence.value[draftId]`) to render a live
+   * "others editing" indicator; the keyed shape isolates each draft so
+   * opening several draft editors simultaneously doesn't cross-wire their
+   * state.
+   */
+  readonly draftPresence = signal<Record<string, DraftPresenceUser[]>>({});
+
   // ── Internal state ───────────────────────────────────
   private _chatChannel: RealtimeChannel | null = null;
   private _presenceChannel: RealtimeChannel | null = null;
@@ -67,6 +101,14 @@ class RealtimeServiceImpl {
   private _currentTeamId: string | null = null;
   private _epochChatFocused = true;
   private _teamChatFocused = false;
+
+  /**
+   * Active draft presence channels, keyed by draftId. Multi-channel so a
+   * session that opens draft A then draft B keeps A's channel alive if the
+   * UI still references it (e.g. a stale listener in a disconnecting
+   * component). Explicit `leaveDraft(draftId)` is the cleanup seam.
+   */
+  private _draftPresenceChannels = new Map<string, RealtimeChannel>();
 
   // Agent chat channels
   private _convTypingChannel: RealtimeChannel | null = null;
@@ -229,6 +271,72 @@ class RealtimeServiceImpl {
     this.unreadEpochCount.value = 0;
     this.unreadTeamCount.value = 0;
     this.cycleResolved.value = null;
+  }
+
+  // ── Content-Draft Presence ───────────────────────────
+
+  /**
+   * Subscribe to the draft's presence channel and announce the current
+   * admin as an active editor. Idempotent on `draftId`: calling twice for
+   * the same draft is a no-op so the editor's `willUpdate` + `_loadDraft`
+   * paths can both safely trigger it.
+   *
+   * `leaveDraft(draftId)` is the mirror; callers MUST invoke it in
+   * `disconnectedCallback` or whenever the draft context changes.
+   */
+  joinDraft(draftId: string, userId: string, userEmail: string): void {
+    if (this._draftPresenceChannels.has(draftId)) return;
+
+    const channel = supabase
+      .channel(`draft:${draftId}:presence`, { config: { private: true } })
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const users: DraftPresenceUser[] = [];
+        for (const presences of Object.values(state)) {
+          for (const p of presences) {
+            if (isDraftPresenceUser(p)) {
+              users.push(p);
+            } else {
+              captureError(new Error('Rejected malformed draft presence entry'), {
+                source: 'RealtimeService.draftPresence.sync',
+                draft_id: draftId,
+                presence_keys: Object.keys((p ?? {}) as object).join(','),
+              });
+            }
+          }
+        }
+        // Replace the slot for this draft without disturbing other slots —
+        // signal subscribers see a fresh object reference, as required for
+        // Preact Signals reactivity to fire.
+        this.draftPresence.value = {
+          ...this.draftPresence.value,
+          [draftId]: users,
+        };
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user_id: userId,
+            user_email: userEmail,
+            joined_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    this._draftPresenceChannels.set(draftId, channel);
+  }
+
+  leaveDraft(draftId: string): void {
+    const channel = this._draftPresenceChannels.get(draftId);
+    if (!channel) return;
+    supabase.removeChannel(channel);
+    this._draftPresenceChannels.delete(draftId);
+
+    // Drop the keyed slot so stale presence doesn't linger in the signal.
+    if (draftId in this.draftPresence.value) {
+      const { [draftId]: _dropped, ...rest } = this.draftPresence.value;
+      this.draftPresence.value = rest;
+    }
   }
 
   // ── Unread Management ────────────────────────────────
@@ -410,6 +518,12 @@ class RealtimeServiceImpl {
       this.leaveEpoch(this._currentEpochId);
     }
     this.leaveConversation();
+    // Defensive: drain any draft channels that outlived their mounting
+    // components (shouldn't happen when lifecycle hooks run, but dispose
+    // is the catch-all before service teardown).
+    for (const draftId of Array.from(this._draftPresenceChannels.keys())) {
+      this.leaveDraft(draftId);
+    }
   }
 }
 

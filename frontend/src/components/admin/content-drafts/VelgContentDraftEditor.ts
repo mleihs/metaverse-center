@@ -30,6 +30,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../../services/AppStateManager.js';
 import type {
   ConflictPreview,
   ContentDraft,
@@ -37,6 +38,7 @@ import type {
 } from '../../../services/api/ContentDraftsApiService.js';
 import type { PackResourceManifest } from '../../../services/api/ContentPacksApiService.js';
 import { contentDraftsApi, contentPacksApi } from '../../../services/api/index.js';
+import { realtimeService } from '../../../services/realtime/RealtimeService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/LoadingState.js';
@@ -44,6 +46,7 @@ import '../../shared/ErrorState.js';
 import '../../shared/VelgBadge.js';
 import { VelgToast } from '../../shared/Toast.js';
 import './VelgContentDraftConflictView.js';
+import './VelgDraftPresenceIndicator.js';
 import { type JsonEditorHandle, mountJsonEditor } from './codemirror-json-editor.js';
 import { ABILITY_PACK_SLUG, getSchemaForResource } from './content-schemas.js';
 
@@ -381,6 +384,16 @@ export class VelgContentDraftEditor extends LitElement {
   @state() private _error: string | null = null;
   @state() private _draft: ContentDraft | null = null;
   @state() private _working: Record<string, unknown> | null = null;
+
+  /**
+   * Which draft this editor instance is currently registered as "editing"
+   * in the realtime presence channel. Mirrors `_draft?.id` most of the
+   * time but is tracked separately so (a) we can leave the previous
+   * presence when `draftId` changes mid-lifecycle, and (b) the tear-down
+   * in `disconnectedCallback` doesn't depend on `_draft` still being
+   * populated (it's cleared on create-mode reset).
+   */
+  private _activePresenceDraftId: string | null = null;
   @state() private _selectedEntryKey: string | number | null = null;
   @state() private _textareaValue = '';
   @state() private _parseError: string | null = null;
@@ -505,9 +518,33 @@ export class VelgContentDraftEditor extends LitElement {
       this._cmEditor = null;
       this._cmSchemaKey = null;
     }
+    this._leaveDraftPresence();
+  }
+
+  /**
+   * Leave the previous draft's presence channel (if any) and announce on
+   * the new one. Idempotent on `draftId` — safe to call repeatedly during
+   * `willUpdate` without producing duplicate channels.
+   */
+  private _joinDraftPresence(draftId: string): void {
+    if (this._activePresenceDraftId === draftId) return;
+    this._leaveDraftPresence();
+
+    const user = appState.user.value;
+    if (!user?.id || !user.email) return; // No auth context — skip silently
+
+    realtimeService.joinDraft(draftId, user.id, user.email);
+    this._activePresenceDraftId = draftId;
+  }
+
+  private _leaveDraftPresence(): void {
+    if (!this._activePresenceDraftId) return;
+    realtimeService.leaveDraft(this._activePresenceDraftId);
+    this._activePresenceDraftId = null;
   }
 
   private _resetForCreate(): void {
+    this._leaveDraftPresence();
     this._draft = null;
     this._working = null;
     this._selectedEntryKey = null;
@@ -590,6 +627,10 @@ export class VelgContentDraftEditor extends LitElement {
       // Pick a default entry — first key in the pack-collection.
       this._selectedEntryKey = this._firstEntryKey();
       this._textareaValue = this._serializeSelected();
+      // Announce this admin as an active editor on the draft's presence
+      // channel. Non-authoritative UX signal — optimistic-concurrency on
+      // PATCH remains the real write-race guard.
+      this._joinDraftPresence(response.data.id);
       // Fire the race check in parallel — non-blocking.
       void this._loadSameResourceWarning(
         response.data.pack_slug,
@@ -1093,6 +1134,11 @@ export class VelgContentDraftEditor extends LitElement {
           </velg-badge>
         </div>
       </div>
+
+      <velg-draft-presence-indicator
+        draft-id=${draft.id}
+        self-user-id=${appState.user.value?.id ?? ''}
+      ></velg-draft-presence-indicator>
 
       ${
         this._readOnly
