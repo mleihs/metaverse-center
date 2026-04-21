@@ -1669,15 +1669,18 @@ Generate exactly 3 new agents. Requirements:
                 )
 
                 if agent_rows.data:
-                    await ForgeEntityTranslationService.translate_entities(
+                    translations = await ForgeEntityTranslationService.translate_entities(
+                        agents=agent_rows.data,
+                        buildings=[],
+                        zones=[],
+                        streets=[],
+                        simulation_description=sim.get("description", ""),
+                        openrouter_key=openrouter_key,
+                    )
+                    await ForgeEntityTranslationService.persist_translations(
                         admin_supabase,
                         simulation_id,
-                        agent_rows.data,
-                        [],
-                        [],
-                        [],
-                        sim.get("description", ""),
-                        openrouter_key,
+                        translations,
                     )
             except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
