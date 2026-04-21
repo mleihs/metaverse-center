@@ -61,6 +61,7 @@ from backend.services.dungeon_shared import (
     log_extra,
     rpc_with_retry,
 )
+from backend.services.journal.hooks import enqueue_dungeon_imprint
 from backend.utils.errors import bad_request
 from supabase import AsyncClient as Client
 
@@ -407,6 +408,11 @@ class DungeonCombatService:
             "Party wipe",
             extra=log_extra(instance, outcome="wipe", depth=instance.depth, rooms_cleared=instance.rooms_cleared),
         )
+
+        # Journal: Imprint fragment on party-wipe (defeat voice — the
+        # archetype speaks to the player about the loss). Fire-and-forget
+        # after the wipe is fully persisted.
+        await enqueue_dungeon_imprint(admin_supabase, instance, outcome="defeat")
 
         return {
             "wipe": True,

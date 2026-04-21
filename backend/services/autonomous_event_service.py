@@ -38,6 +38,7 @@ from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
+from backend.services.journal.hooks import enqueue_simulation_echo
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -293,6 +294,11 @@ class AutonomousEventService:
                 await cls._evaluate_bleed(supabase, simulation_id, result)
 
                 created.append(result)
+
+                # Journal: Echo fragment for significant events (≥7). The
+                # helper filters internally and is a no-op below threshold.
+                # Runs after side-effects so downstream state is settled.
+                await cls._enqueue_journal_echo(supabase, simulation_id, event_data, result)
 
                 # Community response: 20% chance to spawn positive event
                 # after negative events (catharsis mechanic — RimWorld/Frostpunk
@@ -827,6 +833,50 @@ class AutonomousEventService:
             )
 
         return result
+
+    # ── Journal Integration ─────────────────────────────────────
+
+    @classmethod
+    async def _enqueue_journal_echo(
+        cls,
+        admin: Client,
+        simulation_id: UUID,
+        event_data: dict,
+        created_event: dict,
+    ) -> None:
+        """Fan out to the journal hook for one created autonomous event.
+
+        Lookup of ``significance`` happens here (rather than on the hook
+        side) so the journal module stays ignorant of the TRIGGERS map —
+        trigger-config shape is an autonomous-event concern, not a
+        cross-cutting one.
+        """
+        trigger_type = event_data.get("trigger", "unknown")
+        trigger_config = TRIGGERS.get(trigger_type, {})
+        significance_raw = trigger_config.get("significance", 5)
+        try:
+            significance = int(significance_raw)
+        except (TypeError, ValueError):
+            significance = 5
+
+        event_id_raw = created_event.get("id")
+        if not event_id_raw:
+            return
+        try:
+            event_id = UUID(str(event_id_raw))
+        except (ValueError, TypeError):
+            return
+
+        summary = created_event.get("description") or event_data.get("context", "")
+
+        await enqueue_simulation_echo(
+            admin,
+            simulation_id,
+            event_id=event_id,
+            trigger_type=trigger_type,
+            significance=significance,
+            event_summary=summary,
+        )
 
     # ── Bleed Integration ────────────────────────────────────────
 
