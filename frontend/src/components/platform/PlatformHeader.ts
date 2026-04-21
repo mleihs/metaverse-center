@@ -30,7 +30,7 @@ import './SimulationSwitcher.js';
 import './CommandPalette.js';
 
 /** Routes that belong to the OPS cluster. */
-const OPS_PATHS = ['/multiverse', '/epoch', '/how-to-play', '/archives'];
+const OPS_PATHS = ['/multiverse', '/epoch', '/how-to-play', '/archives', '/journal'];
 
 /** Routes that belong to the INTEL cluster. */
 const INTEL_PATHS = ['/forge', '/admin'];
@@ -700,6 +700,8 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
         @click=${(e: Event) => this._navigate('/how-to-play', e)}>${msg('Guide')}</a>
       <a href="/archives" class="cluster-link ${path === '/archives' ? 'cluster-link--active' : ''}"
         @click=${(e: Event) => this._navigate('/archives', e)}>${msg('Archives')}</a>
+      <a href="/journal" class="cluster-link ${path === '/journal' ? 'cluster-link--active' : ''}"
+        @click=${(e: Event) => this._navigate('/journal', e)}>${msg('Journal')}</a>
     `;
   }
 
@@ -817,6 +819,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
           class="header__menu-item ${path === '/archives' ? 'header__menu-item--active' : ''}"
           style="--i:${navIdx++}"
           @click=${(e: Event) => this._navigate('/archives', e)}>${msg('Archives')}</a>
+
+        <a href="/journal"
+          class="header__menu-item ${path === '/journal' ? 'header__menu-item--active' : ''}"
+          style="--i:${navIdx++}"
+          @click=${(e: Event) => this._navigate('/journal', e)}>${msg('Journal')}</a>
 
         <a href="/worlds"
           class="header__menu-item ${path === '/worlds' ? 'header__menu-item--active' : ''}"

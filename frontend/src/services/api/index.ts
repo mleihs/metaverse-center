@@ -26,6 +26,7 @@ export { GenerationApiService, generationApi } from './GenerationApiService.js';
 export { HealthApiService, healthApi } from './HealthApiService.js';
 export { HeartbeatApiService, heartbeatApi } from './HeartbeatApiService.js';
 export { InvitationsApiService, invitationsApi } from './InvitationsApiService.js';
+export { JournalApiService, journalApi } from './JournalApiService.js';
 export { LocationsApiService, locationsApi } from './LocationsApiService.js';
 export { LoreApiService, loreApi } from './LoreApiService.js';
 export { MembersApiService, membersApi } from './MembersApiService.js';
