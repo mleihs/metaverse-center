@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -39,6 +39,7 @@ from backend.models.bureau_ops import (
     CircuitMatrix,
     CutAllAIRequest,
     FirehoseEntry,
+    HeatmapCell,
     KillActionResponse,
     LedgerSnapshot,
     OpsAuditEntry,
@@ -96,6 +97,28 @@ async def get_circuit(
 ) -> SuccessResponse[CircuitMatrix]:
     """Combined in-process + persisted circuit state for the Quarantine panel."""
     data = await OpsLedgerService.get_circuit_matrix(admin_supabase)
+    return SuccessResponse(data=data)
+
+
+@router.get("/heatmap")
+async def get_heatmap(
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    days: Annotated[int, Query(ge=1, le=30)] = 7,
+    dimension: Annotated[
+        Literal["purpose", "model", "provider"],
+        Query(description="Which ai_usage_log column drives the row axis."),
+    ] = "purpose",
+) -> SuccessResponse[list[HeatmapCell]]:
+    """24×N heatmap cells aggregated from ``ai_usage_rollup_hour`` (P2.6).
+
+    Default ``days=7`` covers the HeatmapPanel's one-week view; the ops
+    drill-down can pull up to 30. Dimension picks the row axis —
+    purpose (default), model, or provider.
+    """
+    data = await OpsLedgerService.get_heatmap(
+        admin_supabase, days=days, dimension=dimension,
+    )
     return SuccessResponse(data=data)
 
 

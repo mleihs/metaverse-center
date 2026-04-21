@@ -78,6 +78,50 @@ export interface CircuitMatrix {
   generated_at: string;
 }
 
+// ── Heatmap (P2.6) ─────────────────────────────────────────────────────
+
+export type HeatmapDimension = 'purpose' | 'model' | 'provider';
+
+export interface HeatmapCell {
+  hour: string;
+  key: string;
+  calls: number;
+  tokens: number;
+  cost_usd: number;
+}
+
+// ── Sentry rules (P2.3) ────────────────────────────────────────────────
+
+export type SentryRuleKind = 'ignore' | 'fingerprint' | 'downgrade';
+export type SentryDowngradeTo = 'warning' | 'info';
+
+export interface SentryRule {
+  id: string;
+  kind: SentryRuleKind;
+  match_exception_type: string | null;
+  match_message_regex: string | null;
+  match_logger: string | null;
+  fingerprint_template: string | null;
+  downgrade_to: SentryDowngradeTo | null;
+  enabled: boolean;
+  note: string;
+  silenced_count_24h: number;
+  updated_by_id: string | null;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface SentryRuleUpsertBody {
+  kind: SentryRuleKind;
+  match_exception_type?: string | null;
+  match_message_regex?: string | null;
+  match_logger?: string | null;
+  fingerprint_template?: string | null;
+  downgrade_to?: SentryDowngradeTo | null;
+  enabled?: boolean;
+  note: string;
+}
+
 // ── Audit log ──────────────────────────────────────────────────────────
 
 export interface OpsAuditEntry {
@@ -205,6 +249,35 @@ export class BureauOpsApiService extends BaseApiService {
 
   async resetCircuit(body: ResetCircuitBody): Promise<ApiResponse<KillActionResponse>> {
     return this.post('/admin/ops/circuit/reset', body);
+  }
+
+  async getHeatmap(
+    days = 7,
+    dimension: HeatmapDimension = 'purpose',
+  ): Promise<ApiResponse<HeatmapCell[]>> {
+    return this.get('/admin/ops/heatmap', { days: String(days), dimension });
+  }
+
+  async listSentryRules(): Promise<ApiResponse<SentryRule[]>> {
+    return this.get('/admin/ops/sentry/rules');
+  }
+
+  async createSentryRule(body: SentryRuleUpsertBody): Promise<ApiResponse<SentryRule>> {
+    return this.post('/admin/ops/sentry/rules', body);
+  }
+
+  async updateSentryRule(
+    id: string,
+    body: SentryRuleUpsertBody,
+  ): Promise<ApiResponse<SentryRule>> {
+    return this.put(`/admin/ops/sentry/rules/${id}`, body);
+  }
+
+  async deleteSentryRule(
+    id: string,
+    reason: string,
+  ): Promise<ApiResponse<{ deleted: boolean }>> {
+    return this.delete(`/admin/ops/sentry/rules/${id}`, { reason });
   }
 }
 

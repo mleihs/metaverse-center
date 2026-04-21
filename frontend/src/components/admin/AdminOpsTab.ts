@@ -25,6 +25,7 @@ import { captureError } from '../../services/SentryService.js';
 import './ops/BurnRatePanel.js';
 import './ops/CircuitMatrixPanel.js';
 import './ops/FirehosePanel.js';
+import './ops/HeatmapPanel.js';
 import './ops/LedgerPanel.js';
 import './ops/QuarantinePanel.js';
 
@@ -99,6 +100,7 @@ export class VelgAdminOpsTab extends LitElement {
 
     .ops-grid > velg-ops-ledger-panel,
     .ops-grid > velg-ops-circuit-matrix-panel,
+    .ops-grid > velg-ops-heatmap-panel,
     .ops-grid > velg-ops-firehose-panel {
       grid-column: 1 / -1;
     }
@@ -107,6 +109,7 @@ export class VelgAdminOpsTab extends LitElement {
       .ops-grid { grid-template-columns: 1fr; }
       .ops-grid > velg-ops-ledger-panel,
       .ops-grid > velg-ops-circuit-matrix-panel,
+      .ops-grid > velg-ops-heatmap-panel,
       .ops-grid > velg-ops-firehose-panel { grid-column: auto; }
     }
   `;
@@ -199,6 +202,8 @@ export class VelgAdminOpsTab extends LitElement {
           .matrix=${this._circuit}
           .loading=${this._circuitLoading}
         ></velg-ops-circuit-matrix-panel>
+
+        <velg-ops-heatmap-panel></velg-ops-heatmap-panel>
 
         <velg-ops-quarantine-panel
           .matrix=${this._circuit}
