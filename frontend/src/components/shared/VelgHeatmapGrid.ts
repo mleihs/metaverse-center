@@ -18,11 +18,12 @@
  * canvas stays addressable for ECharts' resize observer.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import type { EChartsOption } from 'echarts';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { HeatmapCell } from '../../services/api/BureauOpsApiService.js';
+import { readCssToken } from '../../utils/css-tokens.js';
 import './EchartsChart.js';
 
 @localized()
@@ -56,22 +57,6 @@ export class VelgHeatmapGrid extends LitElement {
    * grid can grow on large screens without breaking the admin layout.
    */
   @property({ type: String }) height = 'clamp(280px, 40vh, 560px)';
-
-  /**
-   * Resolve a CSS custom property to its computed value. ECharts requires
-   * literal color strings — it does not interpret ``var(--token)``. We
-   * therefore read the tokens once at chart-build time so the gradient
-   * adapts automatically to whichever theme preset is active.
-   *
-   * If the style sheet has not resolved yet (e.g. very first render
-   * before the host is attached to the DOM), an empty string is returned
-   * and ECharts falls back to its default — still themeable later when
-   * ``requestUpdate`` triggers a rebuild.
-   */
-  private _token(name: string): string {
-    const styles = getComputedStyle(this);
-    return styles.getPropertyValue(name).trim();
-  }
 
   // ECharts renders tooltip strings as HTML. Keys + hours come from DB
   // columns which are not operator-controlled today, but escaping here
@@ -125,14 +110,14 @@ export class VelgHeatmapGrid extends LitElement {
     // tokens so the heatmap follows the active theme preset (brutalist,
     // sunless-sea, cyberpunk, etc.) without edits.
     const gradient = [
-      this._token('--color-surface'),
-      this._token('--color-surface-raised'),
-      this._token('--color-success'),
-      this._token('--color-warning'),
-      this._token('--color-danger'),
+      readCssToken(this,'--color-surface'),
+      readCssToken(this,'--color-surface-raised'),
+      readCssToken(this,'--color-success'),
+      readCssToken(this,'--color-warning'),
+      readCssToken(this,'--color-danger'),
     ].filter((c): c is string => Boolean(c));
 
-    const emphasisGlow = this._token('--color-primary');
+    const emphasisGlow = readCssToken(this,'--color-primary');
 
     return {
       tooltip: {
@@ -205,10 +190,13 @@ export class VelgHeatmapGrid extends LitElement {
     if (this.cells.length === 0) {
       return html`<div class="empty">${msg('No usage recorded in the selected window.')}</div>`;
     }
+    const label = this.dimensionLabel
+      ? msg(str`AI cost heatmap by ${this.dimensionLabel.toLowerCase()} and hour`)
+      : msg('AI cost heatmap by hour and key');
     return html`
       <velg-echarts-chart
         .option=${this._buildOption()}
-        aria-label=${msg('AI cost heatmap by hour and key')}
+        aria-label=${label}
         height=${this.height}
       ></velg-echarts-chart>
     `;

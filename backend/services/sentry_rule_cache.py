@@ -144,6 +144,17 @@ def reset_for_tests() -> None:
         _snapshot = Snapshot.empty()
 
 
+def seed_for_tests(snapshot: Snapshot) -> None:
+    """Test hook: install a pre-built snapshot without hitting the DB.
+
+    Public counterpart to :func:`reset_for_tests` — preferred over the
+    underscore-prefixed ``_replace_snapshot`` when test fixtures need
+    to prime the cache with specific rule sets (see
+    ``test_sentry_before_send.py``).
+    """
+    _replace_snapshot(snapshot)
+
+
 def _replace_snapshot(new_snapshot: Snapshot) -> None:
     global _snapshot
     with _lock:

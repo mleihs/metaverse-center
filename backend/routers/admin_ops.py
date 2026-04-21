@@ -1,26 +1,32 @@
-"""Bureau Ops admin router (P1) — AI spend + signal control.
+"""Bureau Ops admin router (P2) — AI spend + signal control.
 
 Every endpoint requires ``require_platform_admin`` and uses
 ``get_admin_supabase`` (service_role). Pydantic response models live in
 ``backend/models/bureau_ops.py``; service layer in
-``backend/services/ops_ledger_service.py`` + ``budget_enforcement_service.py``.
+``backend/services/ops_ledger_service.py``,
+``backend/services/budget_enforcement_service.py``, and
+``backend/services/sentry_rule_service.py``.
 
-Endpoint surface (P1 subset of the plan §5.5 list):
-    GET    /admin/ops/ledger         LedgerPanel + BurnRatePanel
-    GET    /admin/ops/firehose       FirehosePanel initial REST page
-    GET    /admin/ops/circuit        QuarantinePanel + future CircuitMatrix
-    GET    /admin/ops/audit          Incident dossier drawer (P2)
-    GET    /admin/ops/budgets        Budget list for the CRUD UI
-    POST   /admin/ops/budget         Create a budget
-    PUT    /admin/ops/budget/{id}    Update a budget
-    DELETE /admin/ops/budget/{id}    Delete a budget
-    POST   /admin/ops/kill           Trip a manual kill on (scope, scope_key)
-    POST   /admin/ops/revert         Lift a manual kill
-    POST   /admin/ops/kill/cut-all-ai Master switch (kills provider:openrouter)
-    POST   /admin/ops/circuit/reset  Clear auto-state (e.g. after a flap)
+Endpoint surface:
+    GET    /admin/ops/ledger               LedgerPanel + BurnRatePanel
+    GET    /admin/ops/firehose             FirehosePanel initial REST page
+    GET    /admin/ops/circuit              CircuitMatrix + Quarantine panels
+    GET    /admin/ops/heatmap              HeatmapPanel (MV-backed, P2.6)
+    GET    /admin/ops/audit                Incident Dossier drawer
+    GET    /admin/ops/budgets              Budget list for the CRUD UI
+    POST   /admin/ops/budget               Create a budget
+    PUT    /admin/ops/budget/{id}          Update a budget
+    DELETE /admin/ops/budget/{id}          Delete a budget
+    POST   /admin/ops/kill                 Trip a manual kill on (scope, scope_key)
+    POST   /admin/ops/revert               Lift a manual kill
+    POST   /admin/ops/kill/cut-all-ai      Master switch (kills provider:openrouter)
+    POST   /admin/ops/circuit/reset        Clear auto-state (e.g. after a flap)
+    GET    /admin/ops/sentry/rules         List all Sentry rules (P2.3)
+    POST   /admin/ops/sentry/rules         Create a Sentry rule
+    PUT    /admin/ops/sentry/rules/{id}    Update a Sentry rule
+    DELETE /admin/ops/sentry/rules/{id}    Delete a Sentry rule
 
-Panels ⑤ (Sentry rules) and ⑦ (Heatmap) + the forecast endpoint land in
-P2/P3; their backing services are not yet implemented.
+Forecast panel (plan §8.4) lands in P3 with its own ``OpsForecastService``.
 """
 
 from __future__ import annotations
@@ -331,6 +337,43 @@ async def cut_all_ai(
     return SuccessResponse(data=data)
 
 
+@router.post("/circuit/reset")
+async def reset_circuit(
+    body: ResetCircuitRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[KillActionResponse]:
+    """Clear the in-process auto-state for (scope, scope_key). Useful when
+    a breaker flapped due to a known-transient issue and the operator
+    wants to skip the exponential backoff delay.
+
+    No cache invalidation: ``reset`` only touches in-process breaker
+    state, which ``OpsLedgerService.get_circuit_matrix`` reads live (no
+    cache). The ledger / budget caches are derived from ``ai_usage_log``,
+    not circuit state.
+    """
+    circuit_breaker.reset(body.scope, body.scope_key)
+
+    await OpsLedgerService.log_action(
+        admin_supabase,
+        actor_id=user.id,
+        action="circuit.reset",
+        target_scope=body.scope,
+        target_key=body.scope_key,
+        reason=body.reason,
+    )
+
+    return SuccessResponse(
+        data=KillActionResponse(
+            scope=body.scope,
+            scope_key=body.scope_key,
+            state="closed",
+            revert_at=None,
+            reason=body.reason,
+        ),
+    )
+
+
 # ── Sentry rules CRUD (P2.3) ─────────────────────────────────────────────
 
 
@@ -386,40 +429,3 @@ async def delete_sentry_rule(
         admin_supabase, actor_id=user.id, rule_id=rule_id, reason=reason,
     )
     return SuccessResponse(data=DeleteResponse(id=str(rule_id)))
-
-
-@router.post("/circuit/reset")
-async def reset_circuit(
-    body: ResetCircuitRequest,
-    user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse[KillActionResponse]:
-    """Clear the in-process auto-state for (scope, scope_key). Useful when
-    a breaker flapped due to a known-transient issue and the operator
-    wants to skip the exponential backoff delay.
-
-    No cache invalidation: ``reset`` only touches in-process breaker
-    state, which ``OpsLedgerService.get_circuit_matrix`` reads live (no
-    cache). The ledger / budget caches are derived from ``ai_usage_log``,
-    not circuit state.
-    """
-    circuit_breaker.reset(body.scope, body.scope_key)
-
-    await OpsLedgerService.log_action(
-        admin_supabase,
-        actor_id=user.id,
-        action="circuit.reset",
-        target_scope=body.scope,
-        target_key=body.scope_key,
-        reason=body.reason,
-    )
-
-    return SuccessResponse(
-        data=KillActionResponse(
-            scope=body.scope,
-            scope_key=body.scope_key,
-            state="closed",
-            revert_at=None,
-            reason=body.reason,
-        ),
-    )

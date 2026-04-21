@@ -15,6 +15,7 @@ import type { EChartsOption } from 'echarts';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { LedgerSnapshot } from '../../../services/api/BureauOpsApiService.js';
+import { readCssToken } from '../../../utils/css-tokens.js';
 import '../../shared/EchartsChart.js';
 import '../../shared/VelgKineticCounter.js';
 
@@ -108,7 +109,7 @@ export class VelgOpsBurnRatePanel extends LitElement {
     // Resolve the accent at build time so the sparkline follows the
     // active theme preset. ECharts needs a literal string (no var() in
     // its color field); empty means "let ECharts pick a default".
-    const accent = getComputedStyle(this).getPropertyValue('--color-accent-amber').trim();
+    const accent = readCssToken(this, '--color-accent-amber');
     return {
       grid: { left: 4, right: 4, top: 4, bottom: 4 },
       xAxis: { type: 'category', show: false, boundaryGap: false, data: points.map((_, i) => String(i)) },
