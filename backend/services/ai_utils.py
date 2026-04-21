@@ -256,7 +256,25 @@ def safe_background(func):
     Starlette's BackgroundTask has zero exception handling — any uncaught
     error propagates silently. This decorator ensures every background task
     failure is logged and reported.
+
+    Bureau Ops Deferral A.2 — ``BudgetExceededError`` is caught explicitly
+    BEFORE the generic exception handler so that an admin's deliberate
+    budget kill (CUT ALL AI, per-scope kill, per-purpose cap) is NOT
+    captured as an error in Sentry. The block is still logged at INFO so
+    the event remains searchable, but Sentry's error budget is not
+    consumed by expected-and-audited admin actions. This matches the
+    graceful-degrade pattern in ``ChatAIService._generate_single_response``
+    and ``AutonomousEventService.create_event``.
+
+    Net effect for forge background paths (recruit_agents, generate_variants,
+    generate_dossier, evolve_section, …): a budget block still aborts the
+    task, the user still sees "feature failed" via the feature_purchases
+    result pattern, but the operator does NOT get a Sentry alert for an
+    event they themselves triggered.
     """
+    # Late import to break a circular import chain:
+    # budget_enforcement_service -> ops_ledger_service -> ai_utils.
+    from backend.services.budget_enforcement_service import BudgetExceededError
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
@@ -267,6 +285,20 @@ def safe_background(func):
             await func(*args, **kwargs)
             elapsed = time.monotonic() - t0
             logger.info("Background task completed: %s (%.1fs)", task_name, elapsed)
+        except BudgetExceededError as exc:
+            # Deliberate admin action — info-level, no Sentry capture.
+            elapsed = time.monotonic() - t0
+            logger.info(
+                "Background task skipped (AI budget blocked): %s (after %.1fs) — "
+                "%s:%s %s $%.4f/$%.4f",
+                task_name,
+                elapsed,
+                exc.scope,
+                exc.scope_key,
+                exc.period,
+                exc.current_usd,
+                exc.max_usd,
+            )
         except Exception:
             elapsed = time.monotonic() - t0
             logger.exception("Background task FAILED: %s (after %.1fs)", task_name, elapsed)

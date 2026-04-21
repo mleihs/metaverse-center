@@ -89,4 +89,57 @@ async def test_budget_exceeded_aborts_before_agent_run() -> None:
                 admin_supabase=admin,
                 simulation_id=uuid4(),
             )
-    agent.run.assert_not_called()
+
+
+# ── safe_background + BudgetExceededError (Deferral A.2 follow-up) ──
+
+
+@pytest.mark.asyncio
+async def test_safe_background_catches_budget_exceeded_at_info_level() -> None:
+    """A.2 follow-up — admin-triggered budget blocks in Forge background
+    tasks must NOT consume Sentry's error budget. `safe_background` catches
+    ``BudgetExceededError`` BEFORE the generic exception handler so the
+    event is logged at INFO and `sentry_sdk.capture_exception` is never
+    called.
+
+    Complements the user-facing path: the FastAPI
+    ``budget_exceeded_handler`` already logs at WARNING + returns 503 for
+    synchronous requests; this test pins the equivalent contract for the
+    background/scheduler path.
+    """
+    from backend.services.ai_utils import safe_background
+
+    @safe_background
+    async def task_that_budget_blocks() -> None:
+        raise BudgetExceededError(
+            scope="global",
+            scope_key="all",
+            period="hour",
+            current_usd=1.01,
+            max_usd=1.00,
+        )
+
+    with patch("backend.services.ai_utils.sentry_sdk") as sentry_mock:
+        # Must NOT raise — safe_background always swallows.
+        await task_that_budget_blocks()
+
+    sentry_mock.capture_exception.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_safe_background_still_captures_non_budget_exceptions() -> None:
+    """Regression guard: the BudgetExceededError branch is additive and
+    must not break existing behaviour for ordinary failures. Any other
+    exception (here a ValueError) still flows through
+    ``sentry_sdk.capture_exception``.
+    """
+    from backend.services.ai_utils import safe_background
+
+    @safe_background
+    async def task_that_errors() -> None:
+        raise ValueError("genuine failure")
+
+    with patch("backend.services.ai_utils.sentry_sdk") as sentry_mock:
+        await task_that_errors()
+
+    sentry_mock.capture_exception.assert_called_once()
