@@ -9,11 +9,13 @@ import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from typing import Any
+from uuid import UUID
 
 import httpx
 
 from backend.config import settings
 from backend.services.circuit_breaker_service import circuit_breaker
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,45 @@ class StreamChunk:
     error: str | None = None
 
 
+@dataclass
+class BudgetContext:
+    """Bureau Ops pre-call budget-enforcement context (Deferral A).
+
+    Pass to :meth:`OpenRouterService.generate` and siblings to enable the
+    AD-3 pre-check. Missing context (no ``admin_supabase``) skips the
+    check — backwards-compatible with pre-Deferral-A callers.
+
+    ``simulation_id`` and ``user_id`` narrow the budget lookup to per-sim
+    and per-user rows; background callers without that context still
+    benefit from global + purpose-scope enforcement.
+    """
+
+    admin_supabase: Client
+    purpose: str
+    simulation_id: UUID | None = None
+    user_id: UUID | None = None
+
+
+async def _pre_check_budget(budget: BudgetContext | None) -> None:
+    """Run BudgetEnforcementService.pre_check if a context was provided.
+
+    Late import breaks a potential cycle: budget_enforcement_service
+    re-uses this module's circuit_breaker import chain indirectly via
+    OpsLedgerService in some test fixtures. Keeping the import inside
+    the function keeps the module-load graph flat at boot.
+    """
+    if budget is None:
+        return
+    from backend.services.budget_enforcement_service import BudgetEnforcementService
+
+    await BudgetEnforcementService.pre_check(
+        budget.admin_supabase,
+        purpose=budget.purpose,
+        simulation_id=budget.simulation_id,
+        user_id=budget.user_id,
+    )
+
+
 class OpenRouterService:
     """Async client for OpenRouter LLM API."""
 
@@ -98,26 +139,31 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        budget: BudgetContext | None = None,
     ) -> str:
         """Generate text using the specified model.
-
-        Raises:
-            OpenRouterError: If no API key is configured.
 
         Args:
             model: OpenRouter model ID (e.g. "deepseek/deepseek-chat-v3-0324")
             messages: Chat messages in OpenAI format [{"role": "...", "content": "..."}]
             temperature: Sampling temperature (0.0-2.0)
             max_tokens: Maximum tokens to generate
+            budget: Optional Bureau-Ops budget-enforcement context
+                (Deferral A). Triggers pre_check before the upstream
+                call; skipped when omitted.
 
         Returns:
             Generated text content.
 
         Raises:
+            OpenRouterError: If no API key is configured.
+            BudgetExceededError: When a budget pre-check hard-blocks.
             RateLimitError: On 429 responses
             ModelUnavailableError: On 503 responses
             OpenRouterError: On other API errors
         """
+        await _pre_check_budget(budget)
+
         if not self.api_key:
             raise OpenRouterError(
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
@@ -256,8 +302,12 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        budget: BudgetContext | None = None,
     ) -> str:
-        """Convenience method: generate with system + user message."""
+        """Convenience method: generate with system + user message.
+
+        Forwards the optional ``budget`` context to :meth:`generate`.
+        """
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -267,6 +317,7 @@ class OpenRouterService:
             messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            budget=budget,
         )
 
     async def stream_completion(
@@ -276,6 +327,7 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        budget: BudgetContext | None = None,
     ) -> AsyncIterator[StreamChunk]:
         """Stream text generation token-by-token via SSE.
 
@@ -284,9 +336,12 @@ class OpenRouterService:
 
         Raises:
             OpenRouterError: If no API key configured or connection fails.
+            BudgetExceededError: When a budget pre-check hard-blocks.
             RateLimitError: On 429 responses.
             ModelUnavailableError: On 503 responses.
         """
+        await _pre_check_budget(budget)
+
         if not self.api_key:
             raise OpenRouterError(
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
@@ -438,6 +493,7 @@ class OpenRouterService:
         *,
         aspect_ratio: str = "16:9",
         image_size: str = "2K",
+        budget: BudgetContext | None = None,
     ) -> bytes:
         """Generate an image using an OpenRouter image model.
 
@@ -447,15 +503,19 @@ class OpenRouterService:
             prompt: Text description of the image to generate.
             aspect_ratio: Aspect ratio — "1:1", "2:3", "3:2", "4:3", "9:16", "16:9", "21:9".
             image_size: Resolution tier — "0.5K", "1K", "2K", "4K".
+            budget: Optional Bureau-Ops budget-enforcement context (Deferral A).
 
         Returns:
             Raw image bytes (PNG or JPEG depending on model).
 
         Raises:
+            BudgetExceededError: When a budget pre-check hard-blocks.
             RateLimitError: On 429 responses.
             ModelUnavailableError: On 503 responses.
             OpenRouterError: On other API errors or missing image data.
         """
+        await _pre_check_budget(budget)
+
         if not self.api_key:
             raise OpenRouterError(
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."

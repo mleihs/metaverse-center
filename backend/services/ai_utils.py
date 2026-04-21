@@ -7,6 +7,7 @@ import functools
 import logging
 import time
 from typing import Any
+from uuid import UUID
 
 import sentry_sdk
 from fastapi import HTTPException
@@ -18,6 +19,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from backend.config import settings
 from backend.services.platform_model_config import get_platform_model
 from backend.utils.errors import bad_gateway, payment_required, service_unavailable, too_many_requests
+from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +106,16 @@ async def run_ai(
     *,
     output_type: type | None = None,
     model_settings: dict[str, Any] | None = None,
+    # Bureau Ops Deferral A — optional budget-enforcement context.
+    # When ``admin_supabase`` is provided, BudgetEnforcementService.pre_check
+    # runs before the upstream call and raises BudgetExceededError if a hard
+    # block is in effect (global / purpose / simulation / user budgets are
+    # all considered). ``simulation_id`` and ``user_id`` narrow the lookup
+    # so per-sim and per-user budgets are enforced; callers without that
+    # context still benefit from global + purpose enforcement.
+    admin_supabase: Client | None = None,
+    simulation_id: UUID | None = None,
+    user_id: UUID | None = None,
 ) -> Any:
     """Central wrapper for every agent.run() call.
 
@@ -118,6 +130,21 @@ async def run_ai(
     On any other failure, logs with exc_info and re-raises so existing
     error-handling continues to work.
     """
+    # Bureau Ops pre-call budget check (AD-3). Imported inside the function
+    # to break a circular import between ai_utils and budget_enforcement_service
+    # (the service itself uses sentry_sdk.add_breadcrumb, which is fine, but
+    # some tests of BudgetEnforcementService construct stub pydantic-ai Agents
+    # to exercise retries — keeping the import late eliminates the cycle risk).
+    if admin_supabase is not None:
+        from backend.services.budget_enforcement_service import BudgetEnforcementService
+
+        await BudgetEnforcementService.pre_check(
+            admin_supabase,
+            purpose=purpose,
+            simulation_id=simulation_id,
+            user_id=user_id,
+        )
+
     ms = dict(model_settings) if model_settings else {}
     ms.setdefault("timeout", PYDANTIC_AI_TIMEOUTS.get(purpose))
     ms.setdefault("max_tokens", PYDANTIC_AI_MAX_TOKENS.get(purpose))

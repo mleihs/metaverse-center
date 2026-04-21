@@ -20,12 +20,15 @@
  *   - Number inputs auto-save on blur + after a 600ms debounce on typing,
  *     so rapid keystrokes don't stamp the DB per keypress.
  *   - Run-now goes through ConfirmDialog (destructive — real branch deletion)
- *     and refreshes `last_run_at` on success.
+ *     and stamps `last_run_at` optimistically on success (see
+ *     `_handleRunNow` — avoids a full reload that would race a user's
+ *     in-flight number edits).
  *
  * Data flow:
  *   open → adminApi.listSettings() → filter to 4 keys → parsed into state
  *   write → adminApi.updateSetting(key, stringified)
- *   run-now → contentDraftsApi.runOrphanSweeperNow() → toast + reload
+ *   run-now → contentDraftsApi.runOrphanSweeperNow() → toast + optimistic
+ *             client-side `_lastRunAt = new Date().toISOString()`
  *
  * The modal does not share the `_sweepOpen` state with the parent — each
  * instance owns its own `_openToken` guard so stale responses from a
@@ -523,7 +526,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     if (!trimmed || !Number.isFinite(parsed) || parsed <= 0) {
       // Reject invalid values with a gentle toast — don't write garbage
       // over the server-side guard.
-      VelgToast.warning(msg('Interval must be a positive number.'));
+      VelgToast.warning(msg('Value must be a positive number.'));
       return;
     }
     await this._saveSetting(key, trimmed);
@@ -541,24 +544,23 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     this._queueNumberSave(KEY_MIN_AGE_DAYS, raw);
   }
 
+  /** Flush any pending debounced save for ``key`` — called from the blur
+   *  handler so a user who types "7.5" and immediately tabs away never
+   *  drops the pending edit. No-op when no timer is queued (already saved). */
+  private _flushNumberDebounce(key: string, raw: string): void {
+    const pending = this._debounceTimers.get(key);
+    if (pending === undefined) return;
+    window.clearTimeout(pending);
+    this._debounceTimers.delete(key);
+    void this._commitNumberEdit(key, raw);
+  }
+
   private _handleIntervalBlur(e: Event): void {
-    const raw = (e.target as HTMLInputElement).value;
-    const pending = this._debounceTimers.get(KEY_INTERVAL_DAYS);
-    if (pending !== undefined) {
-      window.clearTimeout(pending);
-      this._debounceTimers.delete(KEY_INTERVAL_DAYS);
-      void this._commitNumberEdit(KEY_INTERVAL_DAYS, raw);
-    }
+    this._flushNumberDebounce(KEY_INTERVAL_DAYS, (e.target as HTMLInputElement).value);
   }
 
   private _handleMinAgeBlur(e: Event): void {
-    const raw = (e.target as HTMLInputElement).value;
-    const pending = this._debounceTimers.get(KEY_MIN_AGE_DAYS);
-    if (pending !== undefined) {
-      window.clearTimeout(pending);
-      this._debounceTimers.delete(KEY_MIN_AGE_DAYS);
-      void this._commitNumberEdit(KEY_MIN_AGE_DAYS, raw);
-    }
+    this._flushNumberDebounce(KEY_MIN_AGE_DAYS, (e.target as HTMLInputElement).value);
   }
 
   private async _handleRunNow(): Promise<void> {
@@ -584,8 +586,13 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       }
       const result: SweepOrphansResult = res.data;
       this._announceRunResult(result);
-      // Reload so last_run_at reflects the run we just completed.
-      void this._loadSettings(this._openToken);
+      // Optimistic last_run_at refresh — the server just stamped "now"
+      // via _persist_last_run_at, so a client-side now() lands within
+      // a few hundred ms of the real timestamp (and the relative-time
+      // chip rounds to minutes anyway). A full _loadSettings reload
+      // would race the user's in-flight number edits once _running
+      // flips back to false.
+      this._lastRunAt = new Date().toISOString();
     } catch (err) {
       captureError(err, { source: 'VelgOrphanSweeperSettingsModal._handleRunNow' });
       VelgToast.error(err instanceof Error ? err.message : String(err));
@@ -656,138 +663,141 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     `;
   }
 
-  private _renderEnabledField(): TemplateResult {
-    const busy = this._savingKey === KEY_ENABLED || this._running;
+  /**
+   * Shared field shell: label column on the left, control column on the
+   * right, optional "Saved" tick when ``savedKey`` matches the last
+   * successful write. Keeps the three settings fields structurally
+   * identical so drift (spacing, label-id wiring, saved-tick placement)
+   * can only live in one place.
+   */
+  private _renderField(
+    labelId: string,
+    label: string,
+    hint: string,
+    control: TemplateResult,
+    savedKey: string | null,
+  ): TemplateResult {
     return html`
       <div class="field">
         <div>
-          <span class="field__label" id="field-enabled">${msg('Schedule')}</span>
-          <span class="field__hint">
-            ${msg('When off, sweeps only run via the manual button or Run-now.')}
-          </span>
+          <span class="field__label" id=${labelId}>${label}</span>
+          <span class="field__hint">${hint}</span>
         </div>
         <div class="field__control">
-          <label class="toggle">
-            <input
-              type="checkbox"
-              class="toggle__input"
-              .checked=${this._enabled}
-              ?disabled=${busy}
-              @change=${this._handleToggleEnabled}
-              aria-labelledby="field-enabled"
-            />
-          </label>
-          <span class="chip ${this._enabled ? 'chip--active' : ''}">
-            ${this._enabled ? msg('Enabled') : msg('Disabled')}
-          </span>
+          ${control}
           ${
-            this._savedKey === KEY_ENABLED
+            savedKey !== null && this._savedKey === savedKey
               ? html`<span class="saved-tick saved-tick--visible">${msg('Saved')}</span>`
               : nothing
           }
         </div>
       </div>
     `;
+  }
+
+  private _renderEnabledField(): TemplateResult {
+    const busy = this._savingKey === KEY_ENABLED || this._running;
+    const control = html`
+      <label class="toggle">
+        <input
+          type="checkbox"
+          class="toggle__input"
+          .checked=${this._enabled}
+          ?disabled=${busy}
+          @change=${this._handleToggleEnabled}
+          aria-labelledby="field-enabled"
+        />
+      </label>
+      <span class="chip ${this._enabled ? 'chip--active' : ''}">
+        ${this._enabled ? msg('Enabled') : msg('Disabled')}
+      </span>
+    `;
+    return this._renderField(
+      'field-enabled',
+      msg('Schedule'),
+      msg('When off, sweeps only run via the manual button or Run-now.'),
+      control,
+      KEY_ENABLED,
+    );
   }
 
   private _renderIntervalField(): TemplateResult {
     const saving = this._savingKey === KEY_INTERVAL_DAYS;
-    const saved = this._savedKey === KEY_INTERVAL_DAYS;
-    return html`
-      <div class="field">
-        <div>
-          <span class="field__label" id="field-interval">${msg('Interval')}</span>
-          <span class="field__hint">
-            ${msg('Minimum days between scheduled sweeps. Throttle survives restarts.')}
-          </span>
-        </div>
-        <div class="field__control">
-          <div class="number-input">
-            <input
-              type="number"
-              class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
-              step="0.5"
-              min="0.5"
-              .value=${this._intervalDays}
-              ?disabled=${this._running}
-              @input=${this._handleIntervalInput}
-              @blur=${this._handleIntervalBlur}
-              aria-labelledby="field-interval"
-            />
-            <span class="number-input__unit">${msg('days')}</span>
-          </div>
-          ${
-            saved
-              ? html`<span class="saved-tick saved-tick--visible">${msg('Saved')}</span>`
-              : nothing
-          }
-        </div>
+    const control = html`
+      <div class="number-input">
+        <input
+          type="number"
+          class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
+          step="0.5"
+          min="0.5"
+          .value=${this._intervalDays}
+          ?disabled=${this._running}
+          @input=${this._handleIntervalInput}
+          @blur=${this._handleIntervalBlur}
+          aria-labelledby="field-interval"
+        />
+        <span class="number-input__unit">${msg('days')}</span>
       </div>
     `;
+    return this._renderField(
+      'field-interval',
+      msg('Interval'),
+      msg('Minimum days between scheduled sweeps. Throttle survives restarts.'),
+      control,
+      KEY_INTERVAL_DAYS,
+    );
   }
 
   private _renderMinAgeField(): TemplateResult {
     const saving = this._savingKey === KEY_MIN_AGE_DAYS;
-    const saved = this._savedKey === KEY_MIN_AGE_DAYS;
-    return html`
-      <div class="field">
-        <div>
-          <span class="field__label" id="field-min-age">${msg('Min branch age')}</span>
-          <span class="field__hint">
-            ${msg('Commit-age floor before a PR-less draft branch qualifies for deletion.')}
-          </span>
-        </div>
-        <div class="field__control">
-          <div class="number-input">
-            <input
-              type="number"
-              class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
-              step="1"
-              min="1"
-              .value=${this._minAgeDays}
-              ?disabled=${this._running}
-              @input=${this._handleMinAgeInput}
-              @blur=${this._handleMinAgeBlur}
-              aria-labelledby="field-min-age"
-            />
-            <span class="number-input__unit">${msg('days')}</span>
-          </div>
-          ${
-            saved
-              ? html`<span class="saved-tick saved-tick--visible">${msg('Saved')}</span>`
-              : nothing
-          }
-        </div>
+    const control = html`
+      <div class="number-input">
+        <input
+          type="number"
+          class="number-input__field ${saving ? 'number-input__field--saving' : ''}"
+          step="1"
+          min="1"
+          .value=${this._minAgeDays}
+          ?disabled=${this._running}
+          @input=${this._handleMinAgeInput}
+          @blur=${this._handleMinAgeBlur}
+          aria-labelledby="field-min-age"
+        />
+        <span class="number-input__unit">${msg('days')}</span>
       </div>
     `;
+    return this._renderField(
+      'field-min-age',
+      msg('Min branch age'),
+      msg('Commit-age floor before a PR-less draft branch qualifies for deletion.'),
+      control,
+      KEY_MIN_AGE_DAYS,
+    );
   }
 
   private _renderLastRunField(): TemplateResult {
     const hasRun = this._lastRunAt !== null;
-    return html`
-      <div class="field">
-        <div>
-          <span class="field__label">${msg('Last run')}</span>
-          <span class="field__hint">
-            ${msg('Timestamp the scheduler persists after every completed sweep.')}
-          </span>
-        </div>
-        <div class="field__control">
-          <div class="readout">
-            <span class="readout__time ${hasRun ? '' : 'readout__time--unset'}">
-              ${hasRun ? (this._lastRunAt as string) : msg('(never)')}
-            </span>
-            ${
-              hasRun
-                ? html`<span class="readout__chip">
-                  ${this._relativeTime(this._lastRunAt as string)}
-                </span>`
-                : nothing
-            }
-          </div>
-        </div>
+    const control = html`
+      <div class="readout">
+        <span class="readout__time ${hasRun ? '' : 'readout__time--unset'}">
+          ${hasRun ? (this._lastRunAt as string) : msg('(never)')}
+        </span>
+        ${
+          hasRun
+            ? html`<span class="readout__chip">
+              ${this._relativeTime(this._lastRunAt as string)}
+            </span>`
+            : nothing
+        }
       </div>
     `;
+    return this._renderField(
+      'field-last-run',
+      msg('Last run'),
+      msg('Timestamp the scheduler persists after every completed sweep.'),
+      control,
+      null, // read-only — no saved-tick slot needed
+    );
   }
 
   private _renderActions(): TemplateResult {

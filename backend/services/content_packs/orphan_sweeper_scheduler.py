@@ -1,9 +1,9 @@
-"""Scheduled companion to the manual orphan-branch sweep (A1.7 Phase 7b).
+"""Scheduled companion to the manual orphan-branch sweep (A1.7 Phase 7b + 7c).
 
 A weekly tick that runs :func:`sweep_orphan_branches` without the admin
 having to click the Sweep-Orphans button. The sweep itself (classification
 + deletion) lives in :mod:`backend.services.content_packs.orphan_sweeper` —
-this module only adds:
+this module adds the ambient infrastructure around it:
 
   * **Throttling** via a ``last_run_at`` timestamp stored in
     ``platform_settings``. Survives app restarts — when the loop wakes
@@ -13,25 +13,37 @@ this module only adds:
     ``min_age_days`` from ``platform_settings``, read fresh every tick so
     operators can adjust cadence without a redeploy.
   * **Sentry reporting** when per-branch delete failures occur — the
-    manual endpoint surfaces those in its response body; the scheduler
-    has no UI surface, so it pushes a ``capture_message`` so admins get
-    paged instead of the failures disappearing into Railway logs.
+    manual endpoint surfaces those in its response body; a scheduler
+    tick has no UI surface, so it pushes a ``capture_message`` so admins
+    get paged instead of the failures disappearing into Railway logs.
 
-Not in scope (deferred to Phase 7c):
-  * Admin control panel. Until then the settings are flipped via SQL
-    against ``platform_settings`` and observed via ``last_run_at``.
+Two entry paths share the sweep-and-persist logic:
+
+  * :meth:`OrphanSweeperScheduler._process_tick` — the loop body. Gates
+    on ``_is_due`` against ``last_run_at`` and only fires when the
+    throttle has elapsed.
+  * :meth:`OrphanSweeperScheduler.run_sweep_and_persist` — the public
+    classmethod the scheduler tick delegates to, also called directly
+    by the ``POST /api/v1/admin/content-drafts/orphan-sweeper/run-now``
+    endpoint (Phase 7c). Bypasses the throttle; resetting
+    ``last_run_at`` means the next scheduled tick is ``interval_days``
+    out.
 
 Design notes:
   * Default ``orphan_sweeper_enabled`` is ``false`` (gated launch). The
     first operator to flip it kicks off the first real sweep on the next
     tick — up to one ``_CHECK_INTERVAL_SECONDS`` of latency.
-  * Scheduled runs are ``dry_run=False`` — the whole point of automation
-    is actual deletion. Admins who want a preview still use the manual
-    endpoint.
-  * No audit-log entry. ``platform_settings.last_run_at`` + the
-    structured logs below already carry the "when + what" signal; an
-    audit row would need a synthetic system-user FK that ``audit_log``
-    doesn't currently model. Adding one is bigger than this phase.
+  * Scheduled + run-now paths both force ``dry_run=False``. Admins who
+    want a preview still use ``POST /sweep-orphans`` with
+    ``dry_run=true`` — two endpoints for two mental models, rather than
+    one endpoint with a mode flag.
+  * No audit-log entry on the scheduler tick. ``platform_settings
+    .last_run_at`` + the structured logs below already carry the
+    "when + what" signal; an audit row would need a synthetic
+    system-user FK that ``audit_log`` doesn't currently model. Adding
+    one is bigger than this phase. The run-now endpoint DOES audit-log
+    (``orphan_sweeper_run_now`` action) because it has a real
+    ``user.id`` to attribute.
 """
 
 from __future__ import annotations
@@ -146,7 +158,7 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
             return
 
         logger.info(
-            "Orphan-sweeper scheduled run starting",
+            "Orphan-sweeper run starting",
             extra={
                 "iteration": cls._iteration_count,
                 "trigger": "scheduled",
@@ -156,7 +168,9 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         )
 
         try:
-            await cls.run_sweep_and_persist(admin, now=now, config=config)
+            await cls.run_sweep_and_persist(
+                admin, now=now, config=config, trigger="scheduled",
+            )
         except HTTPException:
             # get_github_repo_config() signals missing env vars via
             # HTTPException. Treat as "skip this tick" — next tick
@@ -173,6 +187,7 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         *,
         now: datetime | None = None,
         config: dict | None = None,
+        trigger: str = "admin",
     ) -> SweepOrphansResult:
         """Execute a sweep and persist ``last_run_at``.
 
@@ -181,6 +196,12 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         Deliberately does **not** gate on the throttle — callers own that
         decision. Always ``dry_run=False``: the manual preview stays on
         the existing ``/sweep-orphans`` endpoint.
+
+        ``trigger`` is a free-form string ("scheduled" or "admin")
+        threaded into the completion log + any Sentry message so
+        operations can distinguish the two entry paths. Defaults to
+        ``"admin"`` because the endpoint caller doesn't pass it; the
+        scheduler tick passes ``"scheduled"`` explicitly.
 
         Raises :class:`fastapi.HTTPException` from
         :func:`get_github_repo_config` when the ``GITHUB_REPO_OWNER`` /
@@ -209,19 +230,27 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
         # swallow the sweep summary. Sweep is idempotent (already-deleted
         # refs drop out of ``_list_draft_batch_refs``), so re-running on the
         # next tick after a persist failure is safe.
-        cls._report_result(result)
+        cls._report_result(result, trigger=trigger)
         await _persist_last_run_at(admin, now)
         return result
 
     @classmethod
-    def _report_result(cls, result: SweepOrphansResult) -> None:
-        """Surface the outcome — info log always, Sentry on delete failures."""
+    def _report_result(cls, result: SweepOrphansResult, *, trigger: str) -> None:
+        """Surface the outcome — info log always, Sentry on delete failures.
+
+        ``trigger`` tags both the log record and (when error_count > 0)
+        the Sentry scope so ops can filter admin-triggered runs from
+        scheduled ticks when the same key-revocation incident shows up
+        on both paths.
+        """
         if result.error_count > 0:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("orphan_sweeper_phase", "delete_errors")
+                scope.set_tag("orphan_sweeper_trigger", trigger)
                 scope.set_context(
                     "orphan_sweeper",
                     {
+                        "trigger": trigger,
                         "total_found": result.total_found,
                         "deleted_count": result.deleted_count,
                         "error_count": result.error_count,
@@ -235,13 +264,14 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
                     },
                 )
                 sentry_sdk.capture_message(
-                    f"Orphan-sweeper: {result.error_count} delete failure(s)",
+                    f"Orphan-sweeper ({trigger}): {result.error_count} delete failure(s)",
                     level="warning",
                 )
         logger.info(
-            "Orphan-sweeper scheduled run complete",
+            "Orphan-sweeper run complete",
             extra={
                 "iteration": cls._iteration_count,
+                "trigger": trigger,
                 "total_found": result.total_found,
                 "deleted_count": result.deleted_count,
                 "kept_count": result.kept_count,
