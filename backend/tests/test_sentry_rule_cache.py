@@ -5,18 +5,16 @@ Covers:
     - Malformed regex rows drop silently, do not poison the snapshot.
     - apply_rules: empty cache passes events through unchanged.
     - apply_rules: ignore matches short-circuit to None.
-    - apply_rules: fingerprint template substitutes {exc_type}, {model},
-      {logger}; missing placeholders produce empty strings (no crash).
+    - apply_rules: fingerprint template substitutes canonical and custom
+      tag placeholders; missing placeholders produce empty strings (no crash).
     - apply_rules: downgrade sets event['level'].
     - apply_rules: first match wins within a kind (rules sorted by
       created_at ASC per D-1).
     - apply_rules: match_logger prefix matches the event 'logger' field.
-    - is_stale: True before first reload, False right after, True after TTL.
 """
 
 from __future__ import annotations
 
-import time
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
@@ -383,28 +381,54 @@ def test_apply_rules_logger_prefix_requires_hit() -> None:
     assert match is None
 
 
-# ── is_stale ─────────────────────────────────────────────────────────────
+# ── fingerprint tag spread (F8) ──────────────────────────────────────────
 
 
-def test_is_stale_initially_true() -> None:
-    # reset_for_tests (autouse) wipes state, so loaded_at is 0.
-    assert src.is_stale() is True
+def test_apply_rules_fingerprint_exposes_custom_tags() -> None:
+    # Templates can reference any tag name, not only the three canonical
+    # axes (model / provider / purpose).
+    rule = CompiledRule.from_row(
+        _rule_row(
+            "r",
+            "fingerprint",
+            match_exception_type="RateLimitError",
+            fingerprint_template="sim-{simulation_id}",
+        ),
+    )
+    assert rule is not None
+    snapshot = Snapshot(
+        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+    )
+
+    class RateLimitError(Exception):
+        pass
+
+    event: dict = {"tags": {"simulation_id": "sim-alpha"}}
+    out = apply_rules(event, {"exc_info": (RateLimitError, RateLimitError(), None)}, snapshot)
+    assert out is not None
+    assert out["fingerprint"] == ["sim-sim-alpha"]
 
 
-def test_is_stale_false_right_after_reload() -> None:
-    # Manually seed a fresh snapshot.
-    now = time.monotonic()
-    src._replace_snapshot(Snapshot(
-        ignore=(), fingerprint=(), downgrade=(),
-        loaded_at_monotonic=now,
-    ))
-    assert src.is_stale(now_monotonic=now + 1.0) is False
+def test_apply_rules_fingerprint_explicit_keys_beat_same_named_tags() -> None:
+    # If an event tag happens to be named "exc_type", the canonical
+    # exception type must still win — prevents tag-forged fingerprints.
+    rule = CompiledRule.from_row(
+        _rule_row(
+            "r",
+            "fingerprint",
+            match_exception_type="RateLimitError",
+            fingerprint_template="{exc_type}",
+        ),
+    )
+    assert rule is not None
+    snapshot = Snapshot(
+        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+    )
 
+    class RateLimitError(Exception):
+        pass
 
-def test_is_stale_true_after_ttl() -> None:
-    now = time.monotonic()
-    src._replace_snapshot(Snapshot(
-        ignore=(), fingerprint=(), downgrade=(),
-        loaded_at_monotonic=now,
-    ))
-    assert src.is_stale(now_monotonic=now + 31.0) is True
+    event: dict = {"tags": {"exc_type": "Forged"}}
+    out = apply_rules(event, {"exc_info": (RateLimitError, RateLimitError(), None)}, snapshot)
+    assert out is not None
+    assert out["fingerprint"] == ["RateLimitError"]

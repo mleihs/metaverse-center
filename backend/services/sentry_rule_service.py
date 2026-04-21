@@ -33,6 +33,21 @@ def _row_to_rule(row: dict) -> SentryRule:
     return SentryRule.model_validate(row)
 
 
+def _match_fields(body: SentryRuleUpsertRequest) -> dict[str, object]:
+    """Return the set of match / output fields shared between the DB row
+    payload and the audit-log payload. Centralised so adding a new rule
+    field is a one-liner — both write surfaces pick it up automatically.
+    """
+    return {
+        "kind": body.kind,
+        "match_exception_type": body.match_exception_type,
+        "match_message_regex": body.match_message_regex,
+        "match_logger": body.match_logger,
+        "fingerprint_template": body.fingerprint_template,
+        "downgrade_to": body.downgrade_to,
+    }
+
+
 class SentryRuleService:
     """CRUD + audit-log operations for ``sentry_rules``."""
 
@@ -60,13 +75,9 @@ class SentryRuleService:
         Same shape as ``BudgetEnforcementService.upsert_budget`` so the
         admin router can mount POST and PUT against one service method.
         """
+        match_fields = _match_fields(body)
         payload = {
-            "kind": body.kind,
-            "match_exception_type": body.match_exception_type,
-            "match_message_regex": body.match_message_regex,
-            "match_logger": body.match_logger,
-            "fingerprint_template": body.fingerprint_template,
-            "downgrade_to": body.downgrade_to,
+            **match_fields,
             "enabled": body.enabled,
             "note": body.note,
             "updated_by_id": str(actor_id),
@@ -116,15 +127,7 @@ class SentryRuleService:
             # rationale. Falls back to `note` on create where the two
             # are identical.
             reason=body.audit_reason or body.note,
-            payload={
-                "kind": body.kind,
-                "enabled": body.enabled,
-                "match_exception_type": body.match_exception_type,
-                "match_message_regex": body.match_message_regex,
-                "match_logger": body.match_logger,
-                "fingerprint_template": body.fingerprint_template,
-                "downgrade_to": body.downgrade_to,
-            },
+            payload={**match_fields, "enabled": body.enabled},
         )
 
         return _row_to_rule(row)

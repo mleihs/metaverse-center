@@ -179,7 +179,14 @@ export class VelgOpsHeatmapPanel extends LitElement {
   }
 
   private async _fetch(): Promise<void> {
-    this._loading = true;
+    // Only show the "Loading heatmap" skeleton on the first fetch or
+    // when the current result set is empty. Background polls keep the
+    // previous grid visible so a 5-minute refresh never flickers the
+    // whole panel to a spinner — same pattern as the existing ledger
+    // + circuit polls in AdminOpsTab.
+    if (this._cells.length === 0) {
+      this._loading = true;
+    }
     const resp = await bureauOpsApi.getHeatmap(this._days, this._dimension);
     if (resp.success) {
       this._cells = resp.data;

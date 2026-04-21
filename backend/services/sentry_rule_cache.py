@@ -56,8 +56,6 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-_CACHE_TTL_SECONDS = 30.0
-
 RuleKind = Literal["ignore", "fingerprint", "downgrade"]
 
 
@@ -205,15 +203,6 @@ async def reload(admin: Client) -> Snapshot:
     return new_snapshot
 
 
-def is_stale(now_monotonic: float | None = None) -> bool:
-    """Return True if the snapshot is older than the TTL (or never loaded)."""
-    current = get_snapshot()
-    if current.loaded_at_monotonic <= 0.0:
-        return True
-    now = now_monotonic if now_monotonic is not None else time.monotonic()
-    return (now - current.loaded_at_monotonic) >= _CACHE_TTL_SECONDS
-
-
 # ── Rule application (sync — called from Sentry's before_send hook) ────────
 
 
@@ -324,14 +313,23 @@ def apply_rules(
 
     if snapshot.fingerprint:
         tags = _extract_tags(event)
+        # Build fingerprint context from every available event tag so
+        # admins can write templates like ``{user_id}`` or ``{sim}`` —
+        # the frozen subset of 3 tags (model/provider/purpose) that the
+        # first cut hard-coded would have forced a code change for any
+        # new axis. Explicit keys overwrite tag keys so ``exc_type``
+        # stays stable even if someone sets a tag with the same name.
         context: dict[str, str] = {
+            **tags,
             "exc_type": exc_type_name or "unknown",
             "exc_name": exc_type_name or "unknown",
             "logger": logger_name or "unknown",
-            "model": tags.get("model", "unknown"),
-            "provider": tags.get("provider", "unknown"),
-            "purpose": tags.get("purpose", "unknown"),
         }
+        # Keep "unknown" sentinels for the three canonical axes so
+        # existing P0-equivalent templates render consistently even
+        # when the tag is missing from a particular event.
+        for key in ("model", "provider", "purpose"):
+            context.setdefault(key, "unknown")
         for rule in snapshot.fingerprint:
             if not _rule_matches(
                 rule,
