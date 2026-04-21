@@ -1456,6 +1456,19 @@ export interface PresenceUser {
   online_at: string;
 }
 
+/**
+ * Presence entry for the content-draft editor. Admin-scoped: populated
+ * while an admin has a draft open in `VelgContentDraftEditor` and cleared
+ * on disconnect. Sent via `realtimeService.joinDraft()` and read from the
+ * keyed `draftPresence` signal. Simulation context is deliberately absent
+ * since drafts are platform-level.
+ */
+export interface DraftPresenceUser {
+  user_id: string;
+  user_email: string;
+  joined_at: string;
+}
+
 // --- API Response Types ---
 
 export interface ApiError {
