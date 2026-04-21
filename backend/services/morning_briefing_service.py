@@ -24,11 +24,12 @@ from backend.models.agent_autonomy import (
     MorningBriefingData,
     SimulationMoodSummary,
 )
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -350,6 +351,18 @@ class MorningBriefingService:
             resolved = await model_resolver.resolve_text_model("event_generation")
             openrouter = OpenRouterService(api_key=openrouter_api_key)
 
+            # Bureau Ops Deferral A.3 — simulation_id threaded. The
+            # briefing generator is called on-demand by the user opening
+            # the dashboard, so user_id IS in principle knowable — but the
+            # method signature doesn't carry it today. A future refactor
+            # that threads user_id through the request flow can extend
+            # this BudgetContext.
+            admin_supabase = await get_admin_supabase_client()
+            budget = BudgetContext(
+                admin_supabase=admin_supabase,
+                purpose="morning_briefing",
+                simulation_id=simulation_id,
+            )
             content = await openrouter.generate(
                 model=resolved.model_id,
                 messages=[
@@ -358,6 +371,7 @@ class MorningBriefingService:
                 ],
                 temperature=0.6,
                 max_tokens=800,
+                budget=budget,
             )
             repaired = repair_json_output(content)
             data = json.loads(repaired)

@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.scanning.base_adapter import ScanResult
 
 logger = logging.getLogger(__name__)
@@ -97,12 +97,18 @@ async def classify_batch(
     model: str = "deepseek/deepseek-v3.2",
     *,
     system_prompt_override: str | None = None,
+    budget: BudgetContext | None = None,
 ) -> list[ScanResult]:
     """Classify unstructured results via a single batched LLM call.
 
     Structured results are passed through unchanged.
     Uses system_prompt_override from DB prompt_templates if provided,
     otherwise falls back to the inline _SYSTEM_PROMPT constant.
+
+    ``budget`` (Bureau Ops Deferral A.3) — optional pre-check context.
+    When supplied, the upstream OpenRouter call fires
+    ``BudgetEnforcementService.pre_check`` before the HTTP request. The
+    scanner constructs one and threads it down.
     """
     # Separate structured (already classified) from unstructured
     structured: list[ScanResult] = []
@@ -131,6 +137,7 @@ async def classify_batch(
             user_prompt=user_prompt,
             temperature=0.2,
             max_tokens=1024,
+            budget=budget,
         )
 
         classifications = _parse_json_from_text(raw)

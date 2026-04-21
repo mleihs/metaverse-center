@@ -18,13 +18,14 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from backend.utils.settings import upsert_platform_setting
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 # Resolved template dataclass for cached DB templates
@@ -259,8 +260,14 @@ class ScannerService:
             # Use DB template system_prompt if available, else inline default
             cls_template = templates.get("scanner_classification")
             cls_system_prompt = cls_template["system_prompt"] if cls_template else None
+            # Bureau Ops Deferral A.3 — platform-wide scanner (no sim/user
+            # axis). Global + purpose budgets still apply.
+            cls_budget = BudgetContext(
+                admin_supabase=admin,
+                purpose="scanner_classification",
+            )
             classified = await classifier.classify_batch(
-                novel, openrouter, system_prompt_override=cls_system_prompt,
+                novel, openrouter, system_prompt_override=cls_system_prompt, budget=cls_budget,
             )
             metrics["llm_calls"] = 1
         else:
@@ -458,12 +465,20 @@ class ScannerService:
 
         try:
             openrouter = OpenRouterService(api_key)
+            # Bureau Ops Deferral A.3 — platform-wide dispatch generation;
+            # no sim/user axis. Global + purpose budgets apply.
+            admin_supabase = await get_admin_supabase_client()
+            budget = BudgetContext(
+                admin_supabase=admin_supabase,
+                purpose="scanner_dispatch",
+            )
             dispatch = await openrouter.generate_with_system(
                 model="deepseek/deepseek-v3.2",
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=float(db_template.get("temperature", 0.9)) if db_template else 0.9,
                 max_tokens=int(db_template.get("max_tokens", 512)) if db_template else 512,
+                budget=budget,
             )
             return dispatch.strip()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
