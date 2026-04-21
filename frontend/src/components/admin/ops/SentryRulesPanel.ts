@@ -33,6 +33,7 @@ import {
   type SentryRuleUpsertBody,
 } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import { VelgToast } from '../../shared/Toast.js';
 
 const KIND_ORDER: readonly SentryRuleKind[] = ['ignore', 'fingerprint', 'downgrade'];
@@ -96,7 +97,8 @@ function formToBody(form: RuleFormState): SentryRuleUpsertBody {
 @localized()
 @customElement('velg-ops-sentry-rules-panel')
 export class VelgOpsSentryRulesPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-primary);
       --_danger: var(--color-danger);
@@ -390,7 +392,9 @@ export class VelgOpsSentryRulesPanel extends LitElement {
         grid-template-columns: 1fr;
       }
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @state() private _rules: SentryRule[] = [];
   @state() private _loading = true;

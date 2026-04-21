@@ -23,6 +23,7 @@ import type {
   CircuitMatrix,
   CircuitScope,
 } from '../../../services/api/BureauOpsApiService.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgDotMatrixCell.js';
 
 const SCOPE_ORDER: readonly CircuitScope[] = ['provider', 'model', 'purpose', 'global'];
@@ -30,7 +31,8 @@ const SCOPE_ORDER: readonly CircuitScope[] = ['provider', 'model', 'purpose', 'g
 @localized()
 @customElement('velg-ops-circuit-matrix-panel')
 export class VelgOpsCircuitMatrixPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       display: block;
@@ -193,7 +195,9 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
         align-items: flex-start;
       }
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @property({ type: Object }) matrix: CircuitMatrix | null = null;
   @property({ type: Boolean }) loading = false;

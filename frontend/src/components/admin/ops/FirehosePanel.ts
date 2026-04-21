@@ -18,6 +18,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { bureauOpsApi, type FirehoseEntry } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { supabase } from '../../../services/supabase/client.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgFirehoseStream.js';
 
 const MAX_ENTRIES = 50;
@@ -42,7 +43,8 @@ type RealtimeChannel = ReturnType<typeof supabase.channel>;
 @localized()
 @customElement('velg-ops-firehose-panel')
 export class VelgOpsFirehosePanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       display: block;
@@ -122,7 +124,9 @@ export class VelgOpsFirehosePanel extends LitElement {
       background: var(--color-danger-bg);
       margin-bottom: var(--space-3);
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @state() private _entries: FirehoseEntry[] = [];
   @state() private _loading = true;
