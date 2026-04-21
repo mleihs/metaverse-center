@@ -23,13 +23,34 @@ After this module: **one client per process**, reused for the process
 lifetime. The FastAPI ``Depends`` path still works — it just gets the
 cached instance.
 
-# Thread / async safety
+# Coroutine safety (async, single-threaded)
 
 ``asyncio.Lock`` with double-checked locking around the lazy-init. The
-``create_async_client`` call in ``supabase-py`` 2.x is actually
-synchronous in its body (see supabase/supabase-py#798) — the ``async``
-marker is a forward-compatibility wrapper — so the critical section is
-brief.
+outer ``if _client is not None:`` fast-path costs one load on the
+warm case; concurrent cold-path coroutines serialise on the inner
+lock. Neither the outer nor the inner check contains an ``await``,
+so Python's cooperative scheduler cannot interleave two coroutines
+between the ``_lock is None`` check and the ``_lock =
+asyncio.Lock()`` assignment — no chance of producing two different
+locks for the same cache slot.
+
+``create_async_client`` in supabase-py 2.x does actually await inside
+its body (``AsyncClient.create`` awaits ``client.auth.get_session()``
+when no Authorization header is supplied). The asyncio.Lock handles
+that awaiting cleanly — other coroutines hitting the same cold path
+queue on the lock and get the final cached instance on their turn.
+
+# Thread safety — NOT thread-safe
+
+``asyncio.Lock`` does NOT coordinate across OS threads. If a thread
+runs its own ``asyncio.run(...)`` and calls this getter, the cached
+client belongs to the original event loop and the cross-loop httpx
+primitives will raise at first DB call. The single production
+precedent (``backend/tests/integration/test_race_conditions.py:23``)
+deliberately constructs its own client inside the thread; don't
+route it through this cache. If a future ``run_in_executor`` path
+needs admin access, it must construct its own client inside the
+thread's loop and close it at the thread's exit.
 
 # Event-loop affinity (pytest gotcha)
 

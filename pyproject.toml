@@ -88,6 +88,13 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 asyncio_mode = "auto"
+# Pin to `function` explicitly. The default in pytest-asyncio ≥0.23 is
+# `function`, but an upstream version bump could flip it. Several pieces
+# of our test infrastructure rely on per-test event loops — notably the
+# autouse `_reset_admin_supabase_cache` fixture in
+# `backend/tests/conftest.py`, which only makes sense under function
+# scope. Pinning here keeps the contract explicit.
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "integration: Integration tests requiring app instantiation but not external services",
     "slow: Performance tests that may take several seconds",
