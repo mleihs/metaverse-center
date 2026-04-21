@@ -13,6 +13,7 @@ from typing import Any
 import httpx
 
 from backend.config import settings
+from backend.services.circuit_breaker_service import circuit_breaker
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,17 @@ TIMEOUT_SECONDS = 60
 IMAGE_TIMEOUT_SECONDS = 120  # Image generation takes longer
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+# Circuit-breaker scopes: we check provider + model. Purpose-scope checks live
+# higher up the stack (heartbeat/forge services) — per-request caller context
+# is not available here.
+_PROVIDER_SCOPE = ("provider", "openrouter")
+
+# HTTP statuses that count as circuit-tripping failures. 402/403 = credit
+# exhausted; 429 = rate-limit sustained; 503 = model down. 5xx general are
+# counted too. 4xx other than 402/403/429 are programmer errors, not
+# infrastructure signals — they do not trip the breaker.
+_CIRCUIT_TRIP_STATUSES = {402, 403, 429, 500, 502, 503, 504}
 
 
 class OpenRouterError(Exception):
@@ -34,6 +46,32 @@ class RateLimitError(OpenRouterError):
 
 class ModelUnavailableError(OpenRouterError):
     """Raised when the requested model is unavailable (503)."""
+
+
+class CreditExhaustedError(OpenRouterError):
+    """Raised when OpenRouter returns 402/403 key-limit or credit-exhaustion."""
+
+
+def _trip_circuit(model: str, exception_type: str) -> None:
+    """Record a failure against provider + model scopes."""
+    circuit_breaker.record_failure(*_PROVIDER_SCOPE, exception_type=exception_type)
+    circuit_breaker.record_failure("model", model, exception_type=exception_type)
+
+
+def _record_success(model: str) -> None:
+    """Record a success against provider + model scopes."""
+    circuit_breaker.record_success(*_PROVIDER_SCOPE)
+    circuit_breaker.record_success("model", model)
+
+
+def _precheck_circuits(model: str) -> None:
+    """Fail fast if provider or model circuit is open.
+
+    Raises ``CircuitOpenError`` — the caller catches it and translates it
+    to the caller's expected error surface (HTTP 503 at API boundary, etc.).
+    """
+    circuit_breaker.check(*_PROVIDER_SCOPE)
+    circuit_breaker.check("model", model)
 
 
 @dataclass
@@ -85,6 +123,9 @@ class OpenRouterService:
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
             )
 
+        # Fail fast if the provider or model circuit is open from recent failures.
+        _precheck_circuits(model)
+
         payload = {
             "model": model,
             "messages": messages,
@@ -117,21 +158,35 @@ class OpenRouterService:
                     )
 
                 if response.status_code == 429:
-                    logger.error(
+                    _trip_circuit(model, "HTTP_429")
+                    logger.warning(
                         "OpenRouter rate limited",
                         extra={"model": model, "status": 429},
                     )
                     raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
 
                 if response.status_code == 503:
-                    logger.error(
+                    _trip_circuit(model, "HTTP_503")
+                    logger.warning(
                         "OpenRouter model unavailable",
                         extra={"model": model, "status": 503},
                     )
                     raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
 
+                if response.status_code in (402, 403):
+                    _trip_circuit(model, f"HTTP_{response.status_code}")
+                    logger.warning(
+                        "OpenRouter credit exhausted",
+                        extra={"model": model, "status": response.status_code, "error": response.text[:200]},
+                    )
+                    raise CreditExhaustedError(
+                        f"OpenRouter credit/key exhausted (HTTP {response.status_code}): {response.text[:200]}"
+                    )
+
                 if response.status_code != 200:
                     error_body = response.text
+                    if response.status_code in _CIRCUIT_TRIP_STATUSES:
+                        _trip_circuit(model, f"HTTP_{response.status_code}")
                     if attempt < MAX_RETRIES:
                         logger.warning(
                             "OpenRouter %d error (attempt %d/%d): %s",
@@ -171,9 +226,11 @@ class OpenRouterService:
                         "completion_tokens": self.last_usage["completion_tokens"],
                     },
                 )
+                _record_success(model)
                 return _extract_content(data)
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
+                _trip_circuit(model, "network")
                 if attempt < MAX_RETRIES:
                     logger.warning(
                         "OpenRouter connection error (attempt %d/%d): %s",
@@ -235,6 +292,8 @@ class OpenRouterService:
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
             )
 
+        _precheck_circuits(model)
+
         payload = {
             "model": model,
             "messages": messages,
@@ -270,10 +329,20 @@ class OpenRouterService:
                         headers=headers,
                     ) as response:
                         if response.status_code == 429:
+                            _trip_circuit(model, "HTTP_429")
                             raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
                         if response.status_code == 503:
+                            _trip_circuit(model, "HTTP_503")
                             raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
+                        if response.status_code in (402, 403):
+                            _trip_circuit(model, f"HTTP_{response.status_code}")
+                            body = await response.aread()
+                            raise CreditExhaustedError(
+                                f"OpenRouter credit/key exhausted (HTTP {response.status_code}): {body.decode()[:200]}"
+                            )
                         if response.status_code != 200:
+                            if response.status_code in _CIRCUIT_TRIP_STATUSES:
+                                _trip_circuit(model, f"HTTP_{response.status_code}")
                             body = await response.aread()
                             raise OpenRouterError(f"API error {response.status_code}: {body.decode()[:200]}")
 
@@ -344,9 +413,11 @@ class OpenRouterService:
                                 "completion_tokens": (self.last_usage or {}).get("completion_tokens", 0),
                             },
                         )
+                        _record_success(model)
                         return  # noqa: B012 — generator exhausted normally
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
+                _trip_circuit(model, "network")
                 if attempt < MAX_RETRIES:
                     logger.warning(
                         "OpenRouter stream connection error (attempt %d/%d): %s",
@@ -390,6 +461,8 @@ class OpenRouterService:
                 "OpenRouter API key is not configured. Set OPENROUTER_API_KEY in .env or in simulation settings."
             )
 
+        _precheck_circuits(model)
+
         payload: dict[str, Any] = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
@@ -424,11 +497,20 @@ class OpenRouterService:
                     )
 
                 if response.status_code == 429:
+                    _trip_circuit(model, "HTTP_429")
                     raise RateLimitError(f"Rate limited by OpenRouter (model: {model})")
                 if response.status_code == 503:
+                    _trip_circuit(model, "HTTP_503")
                     raise ModelUnavailableError(f"Model '{model}' is currently unavailable")
+                if response.status_code in (402, 403):
+                    _trip_circuit(model, f"HTTP_{response.status_code}")
+                    raise CreditExhaustedError(
+                        f"OpenRouter credit/key exhausted (HTTP {response.status_code}): {response.text[:200]}"
+                    )
                 if response.status_code != 200:
                     error_body = response.text
+                    if response.status_code in _CIRCUIT_TRIP_STATUSES:
+                        _trip_circuit(model, f"HTTP_{response.status_code}")
                     if attempt < MAX_RETRIES:
                         last_error = OpenRouterError(f"API error {response.status_code}: {error_body[:200]}")
                         continue
@@ -450,9 +532,11 @@ class OpenRouterService:
                     "OpenRouter image response",
                     extra={"model": model, "status": 200, "duration_ms": duration_ms},
                 )
+                _record_success(model)
                 return _extract_image_bytes(data)
 
             except (httpx.TimeoutException, httpx.ConnectError) as e:
+                _trip_circuit(model, "network")
                 if attempt < MAX_RETRIES:
                     last_error = e
                     continue
