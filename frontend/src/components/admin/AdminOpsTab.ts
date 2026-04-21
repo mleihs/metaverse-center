@@ -3,7 +3,8 @@
  *
  * Single-tab home for the ops control-surface panels defined in
  * docs/plans/bureau-ops-implementation-plan.md §6.1. Ships eight
- * stacked panels plus an on-demand incident-audit drawer:
+ * stacked panels plus an on-demand incident-audit drawer and an
+ * ambient dispatch-ticker footer:
  *
  *   1. Ledger          — today/month/last-hour tiles + breakdowns.
  *   2. BurnRate        — 24h sparkline + naive projection.
@@ -19,12 +20,15 @@
  *
  *   + IncidentDossierDrawer opens from the header button; reads
  *     ops_audit_log with action-type + window filters.
+ *   + DispatchTicker footer streams the last 20 ops_audit_log entries
+ *     as an ambient horizontal crawl (P3.4).
  *
  * Refresh cadences (parent-owned where shared, panel-owned otherwise):
  *   - /admin/ops/ledger: 30s, feeds Ledger + BurnRate + Forecast (purpose share).
  *   - /admin/ops/circuit: 10s, feeds CircuitMatrix + Quarantine.
  *   - Heatmap / SentryRules / Forecast (baseline): panel-owned (5 min /
  *     on-mount+mutate / on-mount+manual refresh respectively).
+ *   - DispatchTicker: panel-owned 30s poll of /admin/ops/audit.
  *   - Firehose: Supabase Realtime push (no poll).
  *
  * Aesthetic: Bureau-Dispatch cockpit — corner brackets, scanline veil,
@@ -43,6 +47,7 @@ import {
 import { captureError } from '../../services/SentryService.js';
 import './ops/BurnRatePanel.js';
 import './ops/CircuitMatrixPanel.js';
+import './ops/DispatchTicker.js';
 import './ops/FirehosePanel.js';
 import './ops/ForecastPanel.js';
 import './ops/HeatmapPanel.js';
@@ -277,6 +282,8 @@ export class VelgAdminOpsTab extends LitElement {
 
         <velg-ops-firehose-panel></velg-ops-firehose-panel>
       </div>
+
+      <velg-ops-dispatch-ticker></velg-ops-dispatch-ticker>
 
       <velg-ops-incident-dossier-drawer
         ?open=${this._dossierOpen}
