@@ -1,17 +1,21 @@
 /**
- * VelgAdminContentDraftsTab — wrapper composing the three A1.7 components
- * into a cohesive admin surface.
+ * VelgAdminContentDraftsTab — wrapper composing the A1.7 content-drafts
+ * surface into one cohesive admin panel.
  *
  * Composition:
- *   <velg-content-drafts-list>    — always visible (main pane)
- *   <velg-side-panel>             — lazy-mounted editor for edit + create
+ *   <velg-content-drafts-list>              — always visible (main pane)
+ *   <velg-side-panel>                       — lazy editor for edit + create
  *     <velg-content-draft-editor>
- *   <velg-publish-batch-modal>    — lazy-shown on "Publish Selected"
+ *   <velg-publish-batch-modal>              — on "Publish Selected"
+ *   <velg-sweep-orphans-modal>              — on "Sweep orphans"
+ *   <velg-orphan-sweeper-settings-modal>    — on "Schedule" (Phase 7c)
  *
  * Orchestration summary:
  *   list → new-draft       → open side-panel in create mode
  *   list → edit-draft {id} → open side-panel with draft-id
  *   list → publish-batch   → open publish modal with summaries
+ *   list → sweep-orphans   → open sweep modal (classify + delete preview)
+ *   list → sweep-schedule  → open scheduler settings modal (Phase 7c)
  *   editor → draft-created → swap editor to edit mode on new row + refresh
  *   editor → draft-saved   → refresh list
  *   editor → editor-close  → close side panel

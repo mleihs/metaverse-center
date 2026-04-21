@@ -316,10 +316,11 @@ class TestProcessTick:
             await OrphanSweeperScheduler._process_tick(admin, config)
         # Still persists last_run_at — partial failure doesn't block the clock.
         execute.assert_awaited_once()
-        # Sentry got paged with the summary.
+        # Sentry got paged with the summary + the scheduled-trigger tag.
         capture.assert_called_once()
         msg, *_ = capture.call_args.args
         assert "1 delete failure" in msg
+        assert "(scheduled)" in msg, f"Expected 'scheduled' trigger in Sentry msg: {msg}"
 
     @pytest.mark.asyncio
     async def test_report_runs_before_persist(self) -> None:
@@ -466,6 +467,33 @@ class TestRunSweepAndPersist:
                     admin, now=_NOW, config=config,
                 )
         sweep.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_trigger_default_is_admin_and_threads_to_sentry(self) -> None:
+        """The endpoint path calls the helper without ``trigger``, so
+        the default lands on Sentry tags. Scheduler tick passes
+        ``trigger="scheduled"`` explicitly; both paths must label
+        themselves distinctly on pager duty alerts."""
+        admin, _ = _admin_mock_with_upsert()
+        config = {
+            "interval_days": 7.0,
+            "min_age_days": 14.0,
+            "last_run_at": None,
+        }
+        result = _result(branches=[
+            _classification("x", status="delete", error="boom"),
+        ])
+        sweep = AsyncMock(return_value=result)
+        capture = MagicMock()
+        with patch.object(ss, "sweep_orphan_branches", sweep), \
+             patch.object(ss, "get_github_app_client", MagicMock()), \
+             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
+             patch.object(ss.sentry_sdk, "capture_message", capture):
+            await OrphanSweeperScheduler.run_sweep_and_persist(
+                admin, now=_NOW, config=config,
+            )
+        msg, *_ = capture.call_args.args
+        assert "(admin)" in msg, f"Expected 'admin' trigger in Sentry msg: {msg}"
 
 
 # ── _persist_last_run_at ─────────────────────────────────────────────────

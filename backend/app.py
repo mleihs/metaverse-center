@@ -121,6 +121,7 @@ from backend.routers import (
 )
 from backend.services.ai_usage_rollup_scheduler import AiUsageRollupScheduler
 from backend.services.bluesky_scheduler import BlueskyScheduler
+from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.circuit_revert_sweeper import CircuitRevertSweeper
 from backend.services.content_packs.orphan_sweeper_scheduler import (
     OrphanSweeperScheduler,
@@ -240,6 +241,48 @@ logger = logging.getLogger(__name__)
 # Database connectivity errors are infrastructure failures, not application bugs.
 # Return 503 so clients/load balancers can retry instead of logging a false 500.
 _CONNECTIVITY_ERRORS = frozenset({"ConnectError", "ConnectTimeout", "PoolTimeout"})
+
+
+# Bureau Ops Deferral A — BudgetExceededError bubbles up from
+# ai_utils.run_ai / OpenRouterService.generate* when the pre-call
+# budget check hard-blocks. Map it to 503 + Retry-After so every
+# user-facing router gets consistent semantics without needing to
+# catch the exception individually.
+@app.exception_handler(BudgetExceededError)
+async def budget_exceeded_handler(
+    request: Request, exc: BudgetExceededError,
+) -> JSONResponse:
+    logger.warning(
+        "AI budget exceeded: %s:%s %s $%.4f/$%.4f",
+        exc.scope,
+        exc.scope_key,
+        exc.period,
+        exc.current_usd,
+        exc.max_usd,
+    )
+    return JSONResponse(
+        status_code=503,
+        content={
+            "success": False,
+            "error": {
+                "code": "BUDGET_EXCEEDED",
+                "message": (
+                    f"AI budget exceeded for {exc.scope}:{exc.scope_key} "
+                    f"({exc.period}). Try again later or ask an admin to raise the cap."
+                ),
+                "details": {
+                    "scope": exc.scope,
+                    "scope_key": exc.scope_key,
+                    "period": exc.period,
+                    "current_usd": exc.current_usd,
+                    "max_usd": exc.max_usd,
+                },
+            },
+        },
+        # Daily budget → retry in 5 min is useless; hourly → 60s is
+        # reasonable. Retry-After is a hint, not a guarantee.
+        headers={"Retry-After": "60" if exc.period == "hour" else "300"},
+    )
 
 
 @app.exception_handler(Exception)

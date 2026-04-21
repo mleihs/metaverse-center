@@ -1,10 +1,12 @@
 /**
  * VelgContentDraftsList — admin-only paginated list of content drafts.
  *
- * Emits three custom events for the parent wrapper to orchestrate:
+ * Emits five custom events for the parent wrapper to orchestrate:
  *   - `new-draft`            — "Create draft" button clicked
- *   - `edit-draft`  {id}     — row Edit button clicked
+ *   - `edit-draft` {id}      — row Edit button clicked
  *   - `publish-batch` {ids}  — multi-select "Publish N Selected" clicked
+ *   - `sweep-orphans`        — "Sweep orphans" toolbar button (Phase 7)
+ *   - `sweep-schedule`       — "Schedule" toolbar button (Phase 7c)
  *
  * The parent wrapper calls `list.refresh()` directly after successful
  * mutations (create, update, publish) — no refresh event needed.
