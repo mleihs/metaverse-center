@@ -99,6 +99,7 @@ from backend.routers import (
     admin,
     admin_content_packs,
     admin_drafts,
+    admin_ops,
     agent_autonomy,
     agent_memories,
     agent_professions,
@@ -278,6 +279,7 @@ app.include_router(achievements.router)
 app.include_router(admin.router)
 app.include_router(admin_drafts.router)
 app.include_router(admin_content_packs.router)
+app.include_router(admin_ops.router)
 app.include_router(dungeon_content_admin.router)
 app.include_router(users.router)
 app.include_router(simulations.router)

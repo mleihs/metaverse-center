@@ -16,6 +16,7 @@ import './AdminHealthTab.js';
 import './AdminSocialTab.js';
 import './AdminPlatformConfigTab.js';
 import './AdminAIUsageTab.js';
+import './AdminOpsTab.js';
 import './AdminDungeonsTab.js';
 import './AdminDungeonContentTab.js';
 import './content-drafts/VelgAdminContentDraftsTab.js';
@@ -32,6 +33,7 @@ type AdminTab =
   | 'scanner'
   | 'forge'
   | 'ai_usage'
+  | 'ops'
   | 'platform'
   | 'social'
   | 'cleanup';
@@ -167,6 +169,7 @@ export class VelgAdminPanel extends LitElement {
       { key: 'dungeons', label: msg('Dungeons'), group: msg('Systems') },
       { key: 'dungeon_content', label: msg('Dungeon Content'), group: msg('Systems') },
       { key: 'content_drafts', label: msg('Content Drafts'), group: msg('Systems') },
+      { key: 'ops', label: msg('Bureau Ops'), group: msg('Systems') },
       // AI & Generation
       {
         key: 'forge',
@@ -236,6 +239,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
       case 'ai_usage':
         return html`<velg-admin-ai-usage-tab></velg-admin-ai-usage-tab>`;
+      case 'ops':
+        return html`<velg-admin-ops-tab></velg-admin-ops-tab>`;
       case 'platform':
         return html`<velg-admin-platform-config-tab></velg-admin-platform-config-tab>`;
       case 'social':
