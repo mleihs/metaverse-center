@@ -47,7 +47,8 @@ const STATE_LABELS: Record<DotMatrixState, () => string> = {
 export class VelgDotMatrixCell extends LitElement {
   static styles = css`
     :host {
-      /* Tier 3 — mapped to state color in _stateClass. */
+      /* Tier 3 defaults. State-specific overrides live in
+         :host([state='half_open'|'open'|'killed'|'unknown']) blocks below. */
       --_dot-size: 6px;
       --_dot-gap: 3px;
       --_dot-active: var(--color-success);

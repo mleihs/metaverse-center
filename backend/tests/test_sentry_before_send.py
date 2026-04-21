@@ -17,8 +17,12 @@ from __future__ import annotations
 import pytest
 
 from backend.app import _ops_before_send
-from backend.services import sentry_rule_cache as src
-from backend.services.sentry_rule_cache import CompiledRule, Snapshot, reset_for_tests
+from backend.services.sentry_rule_cache import (
+    CompiledRule,
+    Snapshot,
+    reset_for_tests,
+    seed_for_tests,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -62,7 +66,7 @@ def _seed_p0_equivalent_cache() -> None:
         "downgrade_to": "warning",
     })
     assert ignore_rule and fp_rate_limit and fp_unavailable and downgrade_rule
-    src._replace_snapshot(Snapshot(
+    seed_for_tests(Snapshot(
         ignore=(ignore_rule,),
         fingerprint=(fp_rate_limit, fp_unavailable),
         downgrade=(downgrade_rule,),

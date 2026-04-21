@@ -2,8 +2,10 @@
 --
 -- Hourly rollup of ai_usage_log (30-day rolling window) powering
 -- HeatmapPanel + the sub-second path for budget pre-check (AD-3).
--- Replaces a 40k+ row live scan with an indexed read against ~7k rollup rows
--- (3 days × 24h × ~100 unique (purpose, model, provider, simulation_id)).
+-- Replaces a live scan of ai_usage_log (growing ~40k rows/week) with an
+-- indexed read against at-most ~72k rollup rows (30 days × 24h × ~100
+-- unique (purpose, model, provider, simulation_id) combinations; typical
+-- 7-day HeatmapPanel window queries ~8k).
 --
 -- Refresh strategy:
 --   pg_cron is NOT enabled on the Supabase hosted instance (verified
@@ -57,7 +59,7 @@ GROUP BY 1, 2, 3, 4, 5;
 CREATE UNIQUE INDEX ai_usage_rollup_hour_pk
     ON ai_usage_rollup_hour (hour, purpose, model, provider, simulation_id);
 
--- Heatmap panel (24 × 7 cells) — range scan by hour.
+-- Range scan by hour (HeatmapPanel's window slider, burn-rate polls).
 CREATE INDEX idx_ai_usage_rollup_hour_time
     ON ai_usage_rollup_hour (hour DESC);
 
