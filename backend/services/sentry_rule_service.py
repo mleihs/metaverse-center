@@ -96,9 +96,9 @@ class SentryRuleService:
 
         # Refresh the cache so the Sentry before_send hook applies the
         # change on the very next event. A reload failure after a
-        # successful write is logged and tolerated: the cache's 30-second
-        # TTL will pick up the change on the next load, so we never
-        # propagate the exception back to the admin UI (the row is
+        # successful write is logged and tolerated: the SentryRuleCacheRefresher
+        # scheduler (60s tick) will pick up the change on its next pass, so
+        # we never propagate the exception back to the admin UI (the row is
         # already persisted).
         try:
             await sentry_rule_cache.reload(admin_supabase)
@@ -146,7 +146,7 @@ class SentryRuleService:
 
         try:
             await sentry_rule_cache.reload(admin_supabase)
-        except Exception:  # noqa: BLE001 — same tolerance as upsert
+        except Exception:  # noqa: BLE001 — same tolerance as upsert; scheduler recovers
             logger.exception("sentry_rule_cache reload failed after delete")
 
         await OpsLedgerService.log_action(
