@@ -59,6 +59,17 @@ import './ops/SentryRulesPanel.js';
 const LEDGER_POLL_MS = 30_000;
 const CIRCUIT_POLL_MS = 10_000;
 
+/**
+ * Duration of the CUT-ALL-AI CRT-tube-off animation (full-motion variant).
+ *
+ * MUST stay in sync with the `crt-off` keyframe duration declared on
+ * `.ops-grid--crt-off` below — the JS-side setTimeout removes the class
+ * after this many ms, so if the CSS duration is longer we'd truncate the
+ * restore phase, and if shorter we'd leave the class stuck on.
+ */
+const CRT_OFF_DURATION_MS = 2400;
+const CRT_OFF_DURATION_MS_REDUCED = 600;
+
 @localized()
 @customElement('velg-admin-ops-tab')
 export class VelgAdminOpsTab extends LitElement {
@@ -183,6 +194,8 @@ export class VelgAdminOpsTab extends LitElement {
      */
     .ops-grid--crt-off {
       transform-origin: 50% 50%;
+      /* Duration MUST match CRT_OFF_DURATION_MS (= 2400) declared at
+       * module top. If you change one, change the other. */
       animation: crt-off 2400ms var(--ease-dramatic) forwards;
       /* A11y safety: during the ~480ms blackout window (60%-80% keyframes)
        * the grid hits opacity: 0 but its descendants are still in the
@@ -208,7 +221,8 @@ export class VelgAdminOpsTab extends LitElement {
 
     @media (prefers-reduced-motion: reduce) {
       /* Reduced motion: brief opacity dim, no geometric collapse. Keeps the
-       * "something significant happened" beat without the transform theatre. */
+       * "something significant happened" beat without the transform theatre.
+       * Duration MUST match CRT_OFF_DURATION_MS_REDUCED (= 600). */
       .ops-grid--crt-off {
         animation: crt-off-reduced 600ms ease-in-out forwards;
       }
@@ -301,7 +315,7 @@ export class VelgAdminOpsTab extends LitElement {
   private _handleCutAllEngaged(): void {
     if (this._crtOff) return; // debounce: ignore repeats while already animating
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const durationMs = reduced ? 600 : 2400;
+    const durationMs = reduced ? CRT_OFF_DURATION_MS_REDUCED : CRT_OFF_DURATION_MS;
     this._crtOff = true;
     this._crtOffTimer = window.setTimeout(() => {
       this._crtOff = false;
