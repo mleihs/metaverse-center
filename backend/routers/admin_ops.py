@@ -1,17 +1,19 @@
-"""Bureau Ops admin router (P2) — AI spend + signal control.
+"""Bureau Ops admin router (P3) — AI spend + signal control + forecast.
 
 Every endpoint requires ``require_platform_admin`` and uses
 ``get_admin_supabase`` (service_role). Pydantic response models live in
 ``backend/models/bureau_ops.py``; service layer in
 ``backend/services/ops_ledger_service.py``,
-``backend/services/budget_enforcement_service.py``, and
-``backend/services/sentry_rule_service.py``.
+``backend/services/budget_enforcement_service.py``,
+``backend/services/sentry_rule_service.py``, and
+``backend/services/ops_forecast_service.py``.
 
 Endpoint surface:
     GET    /admin/ops/ledger               LedgerPanel + BurnRatePanel
     GET    /admin/ops/firehose             FirehosePanel initial REST page
     GET    /admin/ops/circuit              CircuitMatrix + Quarantine panels
     GET    /admin/ops/heatmap              HeatmapPanel (MV-backed, P2.6)
+    GET    /admin/ops/forecast             ForecastPanel projection + driver (P3.1)
     GET    /admin/ops/audit                Incident Dossier drawer
     GET    /admin/ops/budgets              Budget list for the CRUD UI
     POST   /admin/ops/budget               Create a budget
@@ -25,8 +27,6 @@ Endpoint surface:
     POST   /admin/ops/sentry/rules         Create a Sentry rule
     PUT    /admin/ops/sentry/rules/{id}    Update a Sentry rule
     DELETE /admin/ops/sentry/rules/{id}    Delete a Sentry rule
-
-Forecast panel (plan §8.4) lands in P3 with its own ``OpsForecastService``.
 """
 
 from __future__ import annotations
@@ -45,6 +45,7 @@ from backend.models.bureau_ops import (
     CircuitMatrix,
     CutAllAIRequest,
     FirehoseEntry,
+    ForecastProjection,
     HeatmapCell,
     KillActionResponse,
     LedgerSnapshot,
@@ -58,6 +59,7 @@ from backend.models.bureau_ops import (
 from backend.models.common import CurrentUser, DeleteResponse, SuccessResponse
 from backend.services.budget_enforcement_service import BudgetEnforcementService
 from backend.services.circuit_breaker_service import circuit_breaker
+from backend.services.ops_forecast_service import OpsForecastService
 from backend.services.ops_ledger_service import OpsLedgerService
 from backend.services.sentry_rule_service import SentryRuleService
 from backend.utils.errors import not_found
@@ -137,6 +139,23 @@ async def get_audit(
 ) -> SuccessResponse[list[OpsAuditEntry]]:
     """Recent ops_audit_log entries (newest first)."""
     data = await OpsLedgerService.get_audit_log(admin_supabase, days=days, limit=limit)
+    return SuccessResponse(data=data)
+
+
+@router.get("/forecast")
+async def get_forecast(
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[ForecastProjection]:
+    """End-of-month projection + Haiku-generated driver text + slider catalog (P3.1).
+
+    Backend computes the baseline once per panel-open (linear + seasonal
+    from the 30-day rollup MV); the client applies slider deltas locally
+    for <100ms response. Driver text is cached 5 minutes and budget-exempt
+    by design (AD-6) — a Haiku failure falls back to a static line so the
+    panel never renders empty.
+    """
+    data = await OpsForecastService.project(admin_supabase)
     return SuccessResponse(data=data)
 
 
