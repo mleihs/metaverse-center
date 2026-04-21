@@ -476,6 +476,7 @@ async def run_orphan_sweeper_now(
         "orphan_sweeper_run_now",
         details={
             "total_found": result.total_found,
+            "kept_count": result.kept_count,
             "deleted_count": result.deleted_count,
             "error_count": result.error_count,
         },

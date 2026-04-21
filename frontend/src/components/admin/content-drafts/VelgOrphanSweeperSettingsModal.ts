@@ -400,6 +400,34 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._clearTimers();
+  }
+
+  protected willUpdate(changed: PropertyValues): void {
+    if (!changed.has('open')) return;
+    const wasOpen = !!changed.get('open');
+    if (!wasOpen && this.open) {
+      // Open transition — fresh token + reload.
+      this._openToken += 1;
+      this._state = 'loading';
+      this._error = null;
+      void this._loadSettings(this._openToken);
+    } else if (wasOpen && !this.open) {
+      // Close transition — cancel any pending debounced save so a timer
+      // created mid-typing can't fire after the modal closes and silently
+      // overwrite the DB with a value the user never got feedback on.
+      // The `open` property toggles without removing the element from
+      // the DOM, so disconnectedCallback alone would miss this path.
+      this._clearTimers();
+    }
+  }
+
+  /** Cancel any pending debounce-save timers and the "Saved" tick
+   *  fade-out timer. Called on close-transition AND on disconnect so
+   *  no stray `setTimeout` can fire after the modal is no longer
+   *  visible — a timer that survives close would either save a stale
+   *  typed value or mutate state on a detached component. */
+  private _clearTimers(): void {
     for (const t of this._debounceTimers.values()) {
       window.clearTimeout(t);
     }
@@ -407,15 +435,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     if (this._tickTimer !== null) {
       window.clearTimeout(this._tickTimer);
       this._tickTimer = null;
-    }
-  }
-
-  protected willUpdate(changed: PropertyValues): void {
-    if (changed.has('open') && this.open && !changed.get('open')) {
-      this._openToken += 1;
-      this._state = 'loading';
-      this._error = null;
-      void this._loadSettings(this._openToken);
     }
   }
 
@@ -677,6 +696,12 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
    * successful write. Keeps the three settings fields structurally
    * identical so drift (spacing, label-id wiring, saved-tick placement)
    * can only live in one place.
+   *
+   * The saved-tick element is rendered unconditionally (when ``savedKey``
+   * is non-null) so the CSS opacity transition actually fires on both
+   * appear AND disappear — toggling a class on a persistent element
+   * triggers the transition, conditionally re-creating the element
+   * does not.
    */
   private _renderField(
     labelId: string,
@@ -685,6 +710,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     control: TemplateResult,
     savedKey: string | null,
   ): TemplateResult {
+    const tickVisible = savedKey !== null && this._savedKey === savedKey;
     return html`
       <div class="field">
         <div>
@@ -694,8 +720,12 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
         <div class="field__control">
           ${control}
           ${
-            savedKey !== null && this._savedKey === savedKey
-              ? html`<span class="saved-tick saved-tick--visible">${msg('Saved')}</span>`
+            savedKey !== null
+              ? html`<span
+                  class="saved-tick ${tickVisible ? 'saved-tick--visible' : ''}"
+                  aria-hidden=${tickVisible ? 'false' : 'true'}
+                  >${msg('Saved')}</span
+                >`
               : nothing
           }
         </div>
