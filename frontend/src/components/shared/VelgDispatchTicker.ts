@@ -10,6 +10,9 @@
  *
  * @element velg-dispatch-ticker
  * @attr {number} speed - Scroll duration in seconds (default: 40)
+ * @attr {boolean} pause-on-hover - Pause animation on host hover/focus
+ *                                  (default: false; opt-in so existing
+ *                                  callers keep their continuous scroll).
  */
 
 import { css, html, LitElement, nothing } from 'lit';
@@ -37,6 +40,11 @@ export class VelgDispatchTicker extends LitElement {
       gap: 48px;
       width: max-content;
       animation: ticker-scroll var(--_speed, 40s) linear infinite;
+    }
+
+    :host([pause-on-hover]:hover) .track,
+    :host([pause-on-hover]:focus-within) .track {
+      animation-play-state: paused;
     }
 
     .item {
@@ -74,6 +82,8 @@ export class VelgDispatchTicker extends LitElement {
 
   @property({ type: Array }) items: TickerItem[] = [];
   @property({ type: Number }) speed = 40;
+  @property({ type: Boolean, attribute: 'pause-on-hover', reflect: true })
+  pauseOnHover = false;
 
   protected render() {
     if (this.items.length === 0) return nothing;
