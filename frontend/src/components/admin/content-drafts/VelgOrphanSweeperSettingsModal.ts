@@ -430,33 +430,29 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     const rows = res.data;
     const byKey = new Map(rows.map((r) => [r.setting_key, r] as const));
     this._enabled = this._parseBool(byKey.get(KEY_ENABLED));
-    this._intervalDays = this._parseNumericString(byKey.get(KEY_INTERVAL_DAYS));
-    this._minAgeDays = this._parseNumericString(byKey.get(KEY_MIN_AGE_DAYS));
+    this._intervalDays = this._settingValue(byKey.get(KEY_INTERVAL_DAYS));
+    this._minAgeDays = this._settingValue(byKey.get(KEY_MIN_AGE_DAYS));
     this._lastRunAt = this._parseLastRunAt(byKey.get(KEY_LAST_RUN_AT));
     this._state = 'loaded';
   }
 
-  private _parseBool(row: PlatformSetting | undefined): boolean {
-    if (!row) return false;
-    const s = String(row.setting_value ?? '')
-      .replace(/"/g, '')
-      .trim()
-      .toLowerCase();
-    return s === 'true' || s === '1' || s === 'yes';
-  }
-
-  private _parseNumericString(row: PlatformSetting | undefined): string {
+  /** Strip the jsonb-encoding double quotes + trim a platform_settings
+   *  row into its plain-text value. `undefined` / missing row → empty
+   *  string so downstream parsers can treat it like a missing value. */
+  private _settingValue(row: PlatformSetting | undefined): string {
     if (!row) return '';
     return String(row.setting_value ?? '')
       .replace(/"/g, '')
       .trim();
   }
 
+  private _parseBool(row: PlatformSetting | undefined): boolean {
+    const s = this._settingValue(row).toLowerCase();
+    return s === 'true' || s === '1' || s === 'yes';
+  }
+
   private _parseLastRunAt(row: PlatformSetting | undefined): string | null {
-    if (!row) return null;
-    const s = String(row.setting_value ?? '')
-      .replace(/"/g, '')
-      .trim();
+    const s = this._settingValue(row);
     if (!s || s.toLowerCase() === 'null') return null;
     return s;
   }
@@ -483,18 +479,23 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     return diffMs >= 0 ? msg(str`${n} d ago`) : msg(str`in ${n} d`);
   }
 
-  private async _saveSetting(key: string, value: string): Promise<void> {
+  /** Persist one setting and update the "Saved" tick. Returns `true` on
+   *  success so optimistic UI updates (currently: the enable toggle) can
+   *  roll themselves back on failure. Returns `false` on failure AND
+   *  when the save was superseded by a newer save for a different key —
+   *  the caller shouldn't claim success either way. */
+  private async _saveSetting(key: string, value: string): Promise<boolean> {
     this._savingKey = key;
     this._savedKey = null;
     const res = await adminApi.updateSetting(key, value);
-    if (this._savingKey !== key) return; // superseded
+    if (this._savingKey !== key) return false; // superseded
     this._savingKey = null;
     if (!res.success) {
       captureError(new Error(res.error.message), {
         source: 'VelgOrphanSweeperSettingsModal._saveSetting',
       });
       VelgToast.error(res.error.message ?? msg('Save failed.'));
-      return;
+      return false;
     }
     this._savedKey = key;
     if (this._tickTimer !== null) window.clearTimeout(this._tickTimer);
@@ -502,12 +503,19 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       this._savedKey = null;
       this._tickTimer = null;
     }, 1500);
+    return true;
   }
 
-  private _handleToggleEnabled(e: Event): void {
+  private async _handleToggleEnabled(e: Event): Promise<void> {
     const next = (e.target as HTMLInputElement).checked;
+    // Optimistic update for instant UI feedback; if the save fails (auth
+    // drop, DB down, postgrest error) roll back so the visible checkbox
+    // state always matches what persisted. Without the rollback the user
+    // sees an error toast but the toggle stays in the new position —
+    // reality/UI diverge until the next modal open.
     this._enabled = next;
-    void this._saveSetting(KEY_ENABLED, next ? 'true' : 'false');
+    const ok = await this._saveSetting(KEY_ENABLED, next ? 'true' : 'false');
+    if (!ok) this._enabled = !next;
   }
 
   private _queueNumberSave(key: string, raw: string): void {
