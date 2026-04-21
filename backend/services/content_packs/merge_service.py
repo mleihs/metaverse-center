@@ -1,4 +1,4 @@
-"""3-way merge for content-draft conflict resolution (A1.7 Phase 5).
+"""3-way merge for content-draft conflict resolution (A1.7 Phase 5 + D1).
 
 When a draft is marked 'conflict' (default-branch drift detected at publish
 time), the admin's edits need to be reconciled with what landed on main in
@@ -13,10 +13,15 @@ and produces:
     merged     = dict                            (auto-resolved where safe)
     conflicts  = list[EntryConflict]             (need admin resolution)
 
-Granularity: **entry-level** for MVP. For list-of-dicts with a stable `id`
-field (our pack convention), the unit of conflict is one entry object.
-Scalar values (top-level strings, numbers, opaque nested dicts) are merged
-as whole values. Field-level merge inside an entry is Phase 5+.
+Granularity: **field-level** (D1). For list-of-dicts with a stable `id` field,
+the merge still keys on id for the entry slot, but WITHIN each entry the
+merge recurses into nested dicts, emitting conflicts at the finest path
+where the two sides actually collide (e.g. ``.banter[id=sb_01].trigger.emotion``
+rather than the whole entry object). Two admins touching DIFFERENT fields of
+the same entry therefore auto-merge; only same-field collisions require
+admin resolution. Recursion applies at any depth as long as all three sides
+have a dict at the same path; lists (id-list or otherwise) remain opaque to
+recursion — list-element merging is a separate problem.
 
 Auto-resolved cases (no admin prompt):
     - Only one side changed → take the changed side.
@@ -24,26 +29,29 @@ Auto-resolved cases (no admin prompt):
     - Both sides added DIFFERENT entries (distinct ids) → union.
     - Both sides deleted the same entry → stay deleted.
     - Base had X; one side deleted; the other left it untouched → delete.
+    - Both sides modified DIFFERENT fields of the same entry/dict → union
+      at the field level (D1).
 
 Conflict cases (admin must choose):
-    MODIFY_MODIFY      — both sides modified the same entry differently.
-    MODIFY_DELETE      — ours modified, theirs deleted.
-    DELETE_MODIFY      — ours deleted, theirs modified.
-    ADD_ADD_DIFFERENT  — both added an entry with the same id, different bodies.
+    MODIFY_MODIFY      — both sides modified the same leaf value differently.
+    MODIFY_DELETE      — ours modified, theirs deleted (at entry or field level).
+    DELETE_MODIFY      — ours deleted, theirs modified (at entry or field level).
+    ADD_ADD_DIFFERENT  — both added the same key with different bodies
+                         (recursion does not apply when base is absent).
 
 Default-to-ours policy:
-    When a conflict is surfaced, `merged` still returns a value — the admin's
-    version (`ours`) for MODIFY_MODIFY / MODIFY_DELETE / ADD_ADD_DIFFERENT,
-    `theirs` for DELETE_MODIFY (preserves the non-destructive side). The admin
-    then flips to `theirs` via the resolve UI where appropriate. This means a
-    naive admin who blindly accepts `merged` preserves their intent rather
-    than silently losing upstream changes.
+    When a conflict is surfaced, `merged` still carries a value — ours for
+    MODIFY_MODIFY / MODIFY_DELETE / ADD_ADD_DIFFERENT, theirs for
+    DELETE_MODIFY (preserves the non-destructive side). A naive admin who
+    blindly accepts `merged` preserves their intent rather than silently
+    losing upstream changes.
 
 Ordering:
-    Output list ordering follows `ours` for entries present there, then
-    appends `theirs`-only entries (newly-added upstream) in their `theirs`
-    order. Deletions drop the slot. This keeps the admin's hand-crafted
-    sequencing visible while making upstream adds visible at the tail.
+    Id-list slots follow `ours` order for entries present there, then append
+    `theirs`-only entries (newly-added upstream) in their `theirs` order.
+    Dict-field recursion preserves key-insertion order via the natural
+    all-keys iteration (ours-first would require a separate pass — deferred
+    since insertion order in JSON-serialised content is cosmetic).
 
 Comment preservation:
     NOT supported. Draft working_content is JSONB (comments already stripped
@@ -78,9 +86,15 @@ class EntryConflict(BaseModel):
     """One admin-gated conflict surfaced by the merge.
 
     `path` addresses the conflict location in the content tree. Formats:
-      - `.banter[id=sb_01]`   — conflicting id-list entry
-      - `.name`               — conflicting top-level scalar
-      - `.metadata`           — conflicting opaque nested value
+      - `.banter[id=sb_01].text_de`   — field-level conflict inside an entry
+      - `.banter[id=sb_01]`           — whole-entry conflict (one side deleted)
+      - `.name`                       — top-level scalar
+      - `.metadata.tier`              — nested dict field (D1 recursion)
+
+    The path is always rooted at the top of ``working_content`` (leading
+    ``.``), so the frontend's grouping logic can split on ``[id=...]`` +
+    the following ``.`` to identify the entry that a field-level conflict
+    belongs to.
     """
 
     path: str = Field(..., description="Conflict location in the content tree.")
@@ -121,19 +135,21 @@ def merge_content(
     ours: dict[str, Any],
     theirs: dict[str, Any],
 ) -> MergeResult:
-    """Entry-level 3-way merge of three top-level dicts.
+    """Field-level 3-way merge of three top-level dicts.
 
     Dispatch per top-level key:
-      - If the value in any of the three sides is a list-of-dicts-with-`id`,
-        treat the key as an id-list and delegate to `_merge_id_list`.
-      - Otherwise, treat the value as atomic and delegate to `_merge_scalar`.
+      - If any of the three sides carries a list-of-dicts-with-`id`, treat
+        the key as an id-list and delegate to `_merge_id_list`, which in
+        turn recurses per entry.
+      - If ALL THREE sides carry a dict at the key, recurse via
+        `_merge_dict_fields` so changes to disjoint nested fields
+        auto-merge and only same-field collisions surface.
+      - Otherwise (missing, scalar, list-of-non-id-dicts, one-sided dict…),
+        resolve atomically via `_merge_scalar`.
 
-    "Atomic" includes nested dicts: they're compared structurally via `==`.
-    A change anywhere inside `metadata: {...}` flags the whole `metadata`
-    key as changed. This is a deliberate MVP simplification — the common
-    pattern in our packs is id-list content (banter, encounters, loot,
-    abilities, enemies, objektanker), with only small scalar/metadata
-    keys alongside. Adding recursive dict-merge is Phase 5+.
+    The "all three dicts → recurse" branch is new in D1 and replaces the
+    old opaque whole-dict comparison for nested structures like
+    ``metadata: {...}``.
     """
     merged: dict[str, Any] = {}
     conflicts: list[EntryConflict] = []
@@ -151,6 +167,15 @@ def merge_content(
                 merged[key] = list_merged
             conflicts.extend(list_conflicts)
             auto_resolved += list_auto
+        elif _all_three_dicts(b, o, t):
+            # Recurse: top-level dict like `metadata: {...}` with all three
+            # sides present. Yields field-level conflicts (e.g. `.metadata.tier`).
+            sub_merged, sub_conflicts, sub_auto = _merge_dict_fields(
+                f".{key}", b, o, t,
+            )
+            merged[key] = sub_merged
+            conflicts.extend(sub_conflicts)
+            auto_resolved += sub_auto
         else:
             scalar_value, scalar_conflict, scalar_auto = _merge_scalar(key, b, o, t)
             if scalar_value is not _MISSING:
@@ -229,11 +254,10 @@ def _merge_id_list(
         t = theirs_map.get(entry_id)
         path = f".{key}[id={entry_id}]"
 
-        entry, entry_conflict, entry_auto = _merge_one_entry(path, b, o, t)
+        entry, entry_conflicts, entry_auto = _merge_one_entry(path, b, o, t)
         if entry is not None:
             resolved[entry_id] = entry
-        if entry_conflict is not None:
-            conflicts.append(entry_conflict)
+        conflicts.extend(entry_conflicts)
         auto += entry_auto
 
     # Drop the key entirely when BOTH sides signal "no collection here"
@@ -255,16 +279,30 @@ def _merge_one_entry(
     base: dict[str, Any] | None,
     ours: dict[str, Any] | None,
     theirs: dict[str, Any] | None,
-) -> tuple[dict[str, Any] | None, EntryConflict | None, int]:
-    """Case analysis for one id-keyed entry.
+) -> tuple[dict[str, Any] | None, list[EntryConflict], int]:
+    """Case analysis for one id-keyed entry, with field-level recursion.
 
-    Thin wrapper over the generic `_three_way_resolve` with `None` as the
-    "absent" sentinel — entries are dict-or-None inside `_merge_id_list`
-    after `_to_id_map.get(entry_id)`.
+    When all three sides are dicts, recurse into `_merge_dict_fields` so
+    disjoint field-edits auto-merge and only same-field collisions surface
+    as conflicts (D1).
 
-    Returns (resolved_entry | None_if_deleted, conflict_or_none, auto_count).
+    Entry-level edges (one side deleted the entry, one-sided add, convergent
+    delete) still resolve at the whole-entry granularity via
+    `_three_way_resolve` — recursion only makes sense when all three have a
+    concrete dict to recurse into.
+
+    Returns (resolved_entry | None_if_deleted, conflicts, auto_count).
+    The conflicts list may be empty, singleton, or carry multiple items
+    when recursion discovers several field-level collisions inside one entry.
     """
-    return _three_way_resolve(path, base, ours, theirs, missing=None)
+    if base is not None and ours is not None and theirs is not None and _all_three_dicts(base, ours, theirs):
+        merged, conflicts, auto = _merge_dict_fields(path, base, ours, theirs)
+        return merged, conflicts, auto
+
+    value, conflict, auto = _three_way_resolve(
+        path, base, ours, theirs, missing=None,
+    )
+    return value, ([conflict] if conflict is not None else []), auto
 
 
 def _restore_order(
@@ -294,6 +332,85 @@ def _restore_order(
             out.append(resolved[entry_id])
             seen.add(entry_id)
     return out
+
+
+# ── Recursive dict-field merge (D1) ───────────────────────────────────────
+
+
+def _all_three_dicts(base: Any, ours: Any, theirs: Any) -> bool:
+    """True iff all three sides are **present** (not `_MISSING`) and dicts.
+
+    The recursion guard for `_merge_dict_fields`. A side that's absent, a
+    scalar, a list, or `None` fails this check and falls back to the
+    entry/scalar comparison path. Importantly, `dict` excludes `list`
+    instances — id-lists are dispatched separately at the layer above.
+    """
+    return (
+        base is not _MISSING
+        and ours is not _MISSING
+        and theirs is not _MISSING
+        and isinstance(base, dict)
+        and isinstance(ours, dict)
+        and isinstance(theirs, dict)
+    )
+
+
+def _merge_dict_fields(
+    path_prefix: str,
+    base: dict[str, Any],
+    ours: dict[str, Any],
+    theirs: dict[str, Any],
+) -> tuple[dict[str, Any], list[EntryConflict], int]:
+    """Recursive field-level merge of three dicts at the same path.
+
+    Caller MUST have verified all three are dicts (`_all_three_dicts`).
+    For each key in the union:
+
+      - All three sides still dicts at that key → recurse.
+      - Otherwise → delegate to `_three_way_resolve` with `_MISSING` as the
+        absence sentinel (a `None` field value is a legitimate scalar).
+
+    Notes:
+      * Id-lists are NOT re-detected inside this function. Our packs don't
+        nest id-lists inside entries (banter/encounter/loot/etc. are all
+        top-level); `_merge_id_list` handles those, and its callback into
+        `_merge_one_entry` still routes back here for within-entry dicts.
+      * The merged dict may be empty when every field was deleted on both
+        sides. The caller decides whether to drop the key (handled by
+        scalar fallback emission `_MISSING`) or keep the empty container —
+        we always return a concrete dict here because the recursion only
+        fires when all three sides had SOMETHING at this path.
+    """
+    merged: dict[str, Any] = {}
+    conflicts: list[EntryConflict] = []
+    auto = 0
+
+    all_keys = set(base) | set(ours) | set(theirs)
+    for key in all_keys:
+        b = base.get(key, _MISSING)
+        o = ours.get(key, _MISSING)
+        t = theirs.get(key, _MISSING)
+        field_path = f"{path_prefix}.{key}"
+
+        if _all_three_dicts(b, o, t):
+            sub_merged, sub_conflicts, sub_auto = _merge_dict_fields(
+                field_path, b, o, t,
+            )
+            merged[key] = sub_merged
+            conflicts.extend(sub_conflicts)
+            auto += sub_auto
+            continue
+
+        value, conflict, n = _three_way_resolve(
+            field_path, b, o, t, missing=_MISSING,
+        )
+        if value is not _MISSING:
+            merged[key] = value
+        if conflict is not None:
+            conflicts.append(conflict)
+        auto += n
+
+    return merged, conflicts, auto
 
 
 # ── Scalar / opaque merge ─────────────────────────────────────────────────
