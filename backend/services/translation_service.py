@@ -12,6 +12,7 @@ import sentry_sdk
 from pydantic_ai import Agent
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.models.translation import TranslationContext, TranslationResult
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
@@ -154,11 +155,17 @@ class TranslationService:
             system_prompt=system,
             retries=3,
         )
+        # Bureau Ops Deferral A.2 — inherit global + purpose budget enforcement.
+        # sim/user context isn't in scope at this call site (translation is a
+        # platform-wide service fan-out from multiple upstream paths), so we
+        # stop at the purpose axis. Global + purpose caps still apply.
+        admin_supabase = await get_admin_supabase()
         result = await run_ai(
             agent,
             f"Translate the following text:\n\n{text}",
             "translation",
             output_type=str,
+            admin_supabase=admin_supabase,
         )
         return result.output
 
@@ -189,11 +196,15 @@ class TranslationService:
             system_prompt=system,
             retries=3,
         )
+        # Bureau Ops Deferral A.2 — global + purpose enforcement only
+        # (see `_translate_claude` for rationale).
+        admin_supabase = await get_admin_supabase()
         result = await run_ai(
             agent,
             "\n".join(prompt_parts),
             "translation",
             output_type=TranslationResult,
+            admin_supabase=admin_supabase,
         )
         return result.output.translations
 

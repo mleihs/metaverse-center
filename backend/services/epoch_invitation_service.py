@@ -6,9 +6,10 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.prompt_service import PromptResolver
 from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
@@ -262,12 +263,22 @@ class EpochInvitationService:
         # Generate via OpenRouter
         openrouter = OpenRouterService()
         model = prompt.default_model or "deepseek/deepseek-chat-v3-0324"
+        # Bureau Ops Deferral A.2 — epoch lore is cached per-epoch; no
+        # simulation_id or user_id in scope (epoch_id is not a budget axis).
+        # Global + purpose enforcement only. The cache above guarantees at
+        # most 1 LLM call per epoch regardless of invitee volume.
+        admin_supabase = await get_admin_supabase()
+        budget = BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose="epoch_invitation_lore",
+        )
         lore_text = await openrouter.generate_with_system(
             model=model,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             temperature=prompt.temperature,
             max_tokens=prompt.max_tokens,
+            budget=budget,
         )
 
         # Cache in config

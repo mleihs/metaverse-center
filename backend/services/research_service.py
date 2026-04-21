@@ -13,6 +13,7 @@ import logging
 import httpx
 import sentry_sdk
 
+from backend.dependencies import get_admin_supabase
 from backend.models.forge import PhilosophicalAnchor
 from backend.services.ai_utils import create_forge_agent, run_ai, validate_bilingual_output
 from backend.services.external.tavily_search import (
@@ -304,8 +305,18 @@ class ResearchService:
             f"framework, and architectural/visual vocabulary for this world."
         )
 
+        # Bureau Ops Deferral A.2 — global + purpose enforcement.
+        # research is platform-wide forge lore scaffolding; no simulation_id
+        # exists yet (this runs pre-materialization) so only the first two
+        # budget axes apply.
+        admin_supabase = await get_admin_supabase()
         try:
-            result = await run_ai(research_agent, research_prompt, "research")
+            result = await run_ai(
+                research_agent,
+                research_prompt,
+                "research",
+                admin_supabase=admin_supabase,
+            )
             parts.append(f"[LLM RESEARCH]\n{result.output}")
         except (httpx.HTTPError, KeyError, TypeError, ValueError):
             with sentry_sdk.push_scope() as scope:
@@ -411,7 +422,16 @@ class ResearchService:
             "originally written in German — not a literal translation."
         )
 
-        result = await run_ai(agent, prompt, "anchors", output_type=list[PhilosophicalAnchor])
+        # Bureau Ops Deferral A.2 — global + purpose enforcement
+        # (same rationale as `research_for_lore` — pre-materialization path).
+        admin_supabase = await get_admin_supabase()
+        result = await run_ai(
+            agent,
+            prompt,
+            "anchors",
+            output_type=list[PhilosophicalAnchor],
+            admin_supabase=admin_supabase,
+        )
         # Patch empty _de fields with EN fallback so downstream never sees blanks
         anchor_de_fields = ["title_de", "literary_influence_de", "core_question_de", "description_de"]
         incomplete = validate_bilingual_output(result.output, anchor_de_fields, "anchor")

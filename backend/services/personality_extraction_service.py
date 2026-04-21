@@ -22,7 +22,8 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.services.external.openrouter import OpenRouterService
+from backend.dependencies import get_admin_supabase
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -144,6 +145,15 @@ class PersonalityExtractionService:
 
         # Call LLM
         openrouter = OpenRouterService(api_key=openrouter_api_key)
+        # Bureau Ops Deferral A.2 — simulation_id in scope via parameter.
+        # Runs as a background onboarding step (no user request), so user_id
+        # stays None; global + purpose + simulation budgets apply.
+        admin_supabase = await get_admin_supabase()
+        budget = BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose="personality_extraction",
+            simulation_id=simulation_id,
+        )
         try:
             content = await openrouter.generate(
                 model=resolved.model_id,
@@ -153,6 +163,7 @@ class PersonalityExtractionService:
                 ],
                 temperature=0.3,
                 max_tokens=512,
+                budget=budget,
             )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("LLM call failed for personality extraction")

@@ -15,6 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.models.forge import (
     ForgeAgentDraft,
     ForgeBuildingDraft,
@@ -440,9 +441,21 @@ class ForgeOrchestratorService:
         logger.debug("Instantiating dynamic Pydantic AI agent for chunk generation")
         dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
 
+        # Bureau Ops Deferral A.2 — user_id is in scope (draft-owned); no
+        # `simulation_id` yet because the sim isn't materialized. Enforce
+        # global + purpose + user budgets; per-sim kicks in post-materialization.
+        admin_supabase = await get_admin_supabase()
+
         try:
             if chunk_type == "geography":
-                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=ForgeGeographyDraft)
+                result = await run_ai(
+                    dynamic_agent,
+                    prompt,
+                    "chunk",
+                    output_type=ForgeGeographyDraft,
+                    admin_supabase=admin_supabase,
+                    user_id=user_id,
+                )
                 geo_data = result.output.model_dump()
                 if not geo_data.get("zones"):
                     raise bad_gateway("AI model returned no zones. Please try again.")
@@ -460,7 +473,14 @@ class ForgeOrchestratorService:
                 return geo_data
 
             elif chunk_type == "agents":
-                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
+                result = await run_ai(
+                    dynamic_agent,
+                    prompt,
+                    "chunk",
+                    output_type=list[ForgeAgentDraft],
+                    admin_supabase=admin_supabase,
+                    user_id=user_id,
+                )
                 agents_list = [a.model_dump() for a in result.output]
                 if not agents_list:
                     raise bad_gateway("AI model returned no agents. Please try again.")
@@ -473,7 +493,14 @@ class ForgeOrchestratorService:
                 return {"agents": agents_list}
 
             elif chunk_type == "buildings":
-                result = await run_ai(dynamic_agent, prompt, "chunk", output_type=list[ForgeBuildingDraft])
+                result = await run_ai(
+                    dynamic_agent,
+                    prompt,
+                    "chunk",
+                    output_type=list[ForgeBuildingDraft],
+                    admin_supabase=admin_supabase,
+                    user_id=user_id,
+                )
                 buildings_list = [b.model_dump() for b in result.output]
                 if not buildings_list:
                     raise bad_gateway("AI model returned no buildings. Please try again.")
@@ -542,11 +569,29 @@ class ForgeOrchestratorService:
             )
             dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
 
+            # Bureau Ops Deferral A.2 — user_id in scope; pre-materialization
+            # so no simulation_id. Enforce global + purpose + user budgets.
+            admin_supabase = await get_admin_supabase()
+
             try:
                 if entity_type == "agents":
-                    result = await run_ai(dynamic_agent, prompt, "entity", output_type=ForgeAgentDraft)
+                    result = await run_ai(
+                        dynamic_agent,
+                        prompt,
+                        "entity",
+                        output_type=ForgeAgentDraft,
+                        admin_supabase=admin_supabase,
+                        user_id=user_id,
+                    )
                 else:
-                    result = await run_ai(dynamic_agent, prompt, "entity", output_type=ForgeBuildingDraft)
+                    result = await run_ai(
+                        dynamic_agent,
+                        prompt,
+                        "entity",
+                        output_type=ForgeBuildingDraft,
+                        admin_supabase=admin_supabase,
+                        user_id=user_id,
+                    )
                 entity = result.output.model_dump()
             except ModelHTTPError as exc:
                 raise ai_error_to_http(exc) from exc
@@ -1548,7 +1593,18 @@ Generate exactly 3 new agents. Requirements:
                 ]
             else:
                 agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=openrouter_key)
-                result = await run_ai(agent, prompt, "chunk", output_type=list[ForgeAgentDraft])
+                # Bureau Ops Deferral A.2 — full 4-axis enforcement.
+                # admin_supabase, simulation_id, and user_id are all on this
+                # method's signature (background task from a feature purchase).
+                result = await run_ai(
+                    agent,
+                    prompt,
+                    "chunk",
+                    output_type=list[ForgeAgentDraft],
+                    admin_supabase=admin_supabase,
+                    simulation_id=simulation_id,
+                    user_id=user_id,
+                )
                 generated = result.output
 
             # 3. Insert agents into the simulation (batch insert — single round-trip)

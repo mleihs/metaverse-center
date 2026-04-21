@@ -30,7 +30,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from backend.services.external.openrouter import OpenRouterService
+from backend.dependencies import get_admin_supabase
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.utils.image import AVIF_QUALITY, convert_to_avif
 from supabase import AsyncClient as Client
 
@@ -379,11 +380,22 @@ async def generate_showcase_image(
         },
     )
 
+    # Bureau Ops Deferral A.2 — platform-wide dungeon showcase; no simulation
+    # or user is in scope (archetype-keyed, not per-sim). Global + purpose
+    # enforcement only. Image generation is especially worth budget-gating
+    # because per-call cost dwarfs text calls.
+    admin_supabase = await get_admin_supabase()
+    budget = BudgetContext(
+        admin_supabase=admin_supabase,
+        purpose="dungeon_showcase_image",
+    )
+
     image_bytes = await openrouter.generate_image(
         model=visual.model,
         prompt=visual.prompt,
         aspect_ratio=visual.aspect_ratio,
         image_size=visual.image_size,
+        budget=budget,
     )
 
     logger.info(

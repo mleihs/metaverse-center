@@ -19,8 +19,10 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 
+from backend.dependencies import get_admin_supabase
 from backend.services.bond.whisper_template_service import WhisperTemplateService
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.budget_enforcement_service import BudgetExceededError
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -509,6 +511,18 @@ class WhisperService:
         max_attempts = 2
         last_error: str = ""
 
+        # Bureau Ops Deferral A.2 — heartbeat path, simulation_id in scope.
+        # Whisper generation is a system/scheduler call (no user_id). If the
+        # budget is exceeded, the BudgetExceededError branch in the retry
+        # loop returns None so the caller falls back to template whispers
+        # — same graceful degradation as an LLM HTTP failure.
+        admin_supabase = await get_admin_supabase()
+        budget = BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose="bond_whisper",
+            simulation_id=simulation_id,
+        )
+
         for attempt in range(max_attempts):
             try:
                 openrouter = OpenRouterService(api_key=openrouter_api_key)
@@ -521,6 +535,7 @@ class WhisperService:
                     ],
                     temperature=0.8,
                     max_tokens=300,
+                    budget=budget,
                 )
 
                 if not content or not content.strip():
@@ -544,6 +559,15 @@ class WhisperService:
 
                 return parsed
 
+            except BudgetExceededError:
+                # Budget block is a deliberate admin action — retrying would
+                # not help (budget window won't lift in <2s). Return None so
+                # the caller falls back to template whispers.
+                logger.info(
+                    "Whisper generation skipped: AI budget blocked",
+                    extra={"simulation_id": str(simulation_id), "whisper_type": whisper_type},
+                )
+                return None
             except httpx.TimeoutException:
                 last_error = "timeout"
                 logger.warning(

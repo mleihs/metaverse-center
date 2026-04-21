@@ -12,6 +12,7 @@ import structlog
 from pydantic_ai import Agent
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
@@ -131,7 +132,18 @@ class ForgeThemeService:
             retries=3,
         )
 
-        result = await run_ai(agent, prompt, "theme", output_type=ForgeThemeOutput)
+        # Bureau Ops Deferral A.2 — global + purpose enforcement only.
+        # `generate_theme` is called pre-materialization and has no
+        # `simulation_id` in scope. When a future refactor threads it down,
+        # extend here for the full 4-axis check.
+        admin_supabase = await get_admin_supabase()
+        result = await run_ai(
+            agent,
+            prompt,
+            "theme",
+            output_type=ForgeThemeOutput,
+            admin_supabase=admin_supabase,
+        )
         theme_data = result.output.model_dump()
 
         logger.info(
@@ -265,7 +277,17 @@ class ForgeThemeService:
         try:
             model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
             agent = Agent(model, system_prompt="You are a visual style director. Be specific, bold, distinctive.")
-            result = await run_ai(agent, prompt, "style_refine")
+            # Bureau Ops Deferral A.2 — simulation_id in scope; user_id is
+            # not available on this path (Phase A orchestration, not a user
+            # request). Enforce global + purpose + simulation budgets.
+            admin_supabase = await get_admin_supabase()
+            result = await run_ai(
+                agent,
+                prompt,
+                "style_refine",
+                admin_supabase=admin_supabase,
+                simulation_id=simulation_id,
+            )
 
             # Parse response
             text = result.output if isinstance(result.output, str) else str(result.output)
@@ -417,7 +439,16 @@ class ForgeThemeService:
                 ),
                 retries=3,
             )
-            result = await run_ai(agent, prompt, "templates")
+            # Bureau Ops Deferral A.2 — simulation_id in scope; user_id not
+            # available (Phase A orchestration). Enforces 3 of 4 budget axes.
+            admin_supabase = await get_admin_supabase()
+            result = await run_ai(
+                agent,
+                prompt,
+                "templates",
+                admin_supabase=admin_supabase,
+                simulation_id=simulation_id,
+            )
             text = result.output if isinstance(result.output, str) else str(result.output)
 
             # Strip markdown code fences if present
@@ -596,7 +627,19 @@ Create a dramatically different interpretation. Different color palette, differe
 different typography. Same world, radically different visual identity."""
 
                     agent = Agent(model, system_prompt=THEME_ARCHITECT_PROMPT)
-                    result = await run_ai(agent, variant_prompt, "theme", output_type=ForgeThemeOutput)
+                    # Bureau Ops Deferral A.2 — full 4-axis enforcement:
+                    # admin_supabase, simulation_id, and user_id are all on
+                    # this method's signature. Per-user budgets now gate
+                    # Darkroom-variant spam.
+                    result = await run_ai(
+                        agent,
+                        variant_prompt,
+                        "theme",
+                        output_type=ForgeThemeOutput,
+                        admin_supabase=admin_supabase,
+                        simulation_id=simulation_id,
+                        user_id=user_id,
+                    )
                     variant_data = result.output.model_dump()
                     variant_data["variant_name"] = f"Variant {i + 1}"
                     variants.append(variant_data)

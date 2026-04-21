@@ -13,6 +13,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
 from backend.utils.db import maybe_single_data
@@ -197,7 +198,19 @@ class ForgeLoreService:
 
         agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
 
-        result = await run_ai(agent, prompt, "lore", output_type=ForgeLoreOutput)
+        # Bureau Ops Deferral A.2 — global + purpose enforcement only.
+        # simulation_id is not in scope yet at lore-generation time (the sim
+        # hasn't been fully materialized when this runs), so per-sim budgets
+        # can't be keyed off anything meaningful here. Add when a future
+        # refactor provides `simulation_id` as a parameter.
+        admin_supabase = await get_admin_supabase()
+        result = await run_ai(
+            agent,
+            prompt,
+            "lore",
+            output_type=ForgeLoreOutput,
+            admin_supabase=admin_supabase,
+        )
         sections = [s.model_dump() for s in result.output.sections]
 
         logger.debug("Lore sections generated", extra={"section_count": len(sections)})
@@ -227,6 +240,11 @@ class ForgeLoreService:
         translations: list[dict[str, Any]] = []
         agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
+        # Bureau Ops Deferral A.2 — fetched once outside the loop so the 15s
+        # BudgetEnforcementService cache handles the repeated pre_check calls
+        # without refetching settings each section.
+        admin_supabase = await get_admin_supabase()
+
         for i, s in enumerate(sections):
             if on_section_start is not None:
                 await on_section_start(i + 1, s["title"])
@@ -245,6 +263,7 @@ class ForgeLoreService:
                     prompt,
                     "lore_translation",
                     output_type=ForgeLoreTranslatedOutput,
+                    admin_supabase=admin_supabase,
                 )
                 translated = result.output.sections[0].model_dump()
                 translations.append(translated)
@@ -542,7 +561,18 @@ REQUIREMENTS:
                 ]
             else:
                 agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
-                result = await run_ai(agent, dossier_prompt, "dossier", output_type=ForgeLoreOutput)
+                # Bureau Ops Deferral A.2 — full 4-axis enforcement here:
+                # admin_supabase, simulation_id, and user_id are all in scope
+                # from the method parameters.
+                result = await run_ai(
+                    agent,
+                    dossier_prompt,
+                    "dossier",
+                    output_type=ForgeLoreOutput,
+                    admin_supabase=admin_supabase,
+                    simulation_id=simulation_id,
+                    user_id=user_id,
+                )
                 sections = [s.model_dump() for s in result.output.sections]
 
             # 3. Translate to German

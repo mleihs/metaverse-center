@@ -161,7 +161,17 @@ class DossierEvolutionService:
                 model_id=get_platform_model("forge"),
             )
             agent = Agent(model, system_prompt="You are the Bureau's Senior Classified Analyst.")
-            result = await run_ai(agent, prompt, "dossier_evolution")
+            # Bureau Ops Deferral A.2 — simulation_id is in scope; thread it
+            # so per-sim budgets can throttle runaway evolution storms. user_id
+            # is not in scope (this runs from a post-trigger flow, not a user
+            # request), so only the global / purpose / simulation axes apply.
+            result = await run_ai(
+                agent,
+                prompt,
+                "dossier_evolution",
+                admin_supabase=admin_supabase,
+                simulation_id=simulation_id,
+            )
             addendum = result.output if isinstance(result.output, str) else str(result.output)
 
             # 5. Append to existing body
