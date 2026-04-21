@@ -18,13 +18,25 @@ from backend.utils.settings import (
 
 
 class TestParseSettingBool:
+    """Fail-closed positive-match contract — the helper returns True only
+    for explicitly truth-carrying values, so a missing row / jsonb null /
+    typo never silently activates a flag-style setting (e.g. the
+    ``*_enabled`` family that gates schedulers)."""
+
     @pytest.mark.parametrize(
         ("raw", "expected"),
         [
+            # Canonical true (case-insensitive, outer quotes stripped).
             ("true", True),
             ("True", True),
+            ("TRUE", True),
             ("1", True),
             ('"true"', True),
+            ("yes", True),
+            ("YES", True),
+            ("on", True),
+            # Canonical false (positive-match means anything NOT in the
+            # true set is false — these pass through as ordinary mismatches).
             ("false", False),
             ("False", False),
             ("0", False),
@@ -33,8 +45,42 @@ class TestParseSettingBool:
             ("", False),
         ],
     )
-    def test_parses_values(self, raw: str, expected: bool):
+    def test_parses_string_values(self, raw: str, expected: bool):
         assert parse_setting_bool(raw) is expected
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            (True, True),
+            (False, False),
+            (1, True),
+            (0, False),
+            (2, False),    # non-canonical int → False (fail-closed)
+            (-1, False),
+            (1.0, False),  # float stringifies to "1.0", not "1" → False
+            (0.0, False),
+        ],
+    )
+    def test_parses_numeric_values(self, raw: object, expected: bool):
+        assert parse_setting_bool(raw) is expected
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            None,          # jsonb null / missing row — the F32 bug
+            "null",        # literal "null" string (postgrest sometimes)
+            "None",        # Python-repr leaking through str()
+            "enabled",     # unknown string — fail-closed tightening
+            "on-standby",  # typo / custom value
+            "foo",         # unrecognised
+            object(),      # unexpected type
+        ],
+    )
+    def test_non_canonical_fails_closed(self, raw: object):
+        """Unknown / unexpected values return False. This locks the
+        fail-closed contract that prevents a typo or a jsonb-null
+        round-trip from silently enabling a gated scheduler."""
+        assert parse_setting_bool(raw) is False
 
 
 # ── decrypt_setting ─────────────────────────────────────────────────────
