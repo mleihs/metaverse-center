@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -295,6 +295,10 @@ class BatchPublishResult(BaseModel):
 # ── Orphan-branch sweeper (Phase 7) ───────────────────────────────────────
 
 
+OrphanStatus = Literal["keep", "delete"]
+OrphanPrState = Literal["open", "closed", "merged"]
+
+
 class SweepOrphansRequest(BaseModel):
     """Admin request body for the orphan-branch sweep endpoint.
 
@@ -309,7 +313,7 @@ class SweepOrphansRequest(BaseModel):
         description="When True (default), classify only; no branches are deleted.",
     )
     min_age_days: float = Field(
-        default=7.0,
+        default=14.0,
         ge=0,
         le=365,
         description="Minimum commit age (days) before a PR-less branch is eligible for deletion.",
@@ -327,11 +331,11 @@ class OrphanBranchClassification(BaseModel):
     sha: str = Field(description="Commit SHA at branch tip.")
     age_days: float = Field(description="Age in days (from PR created_at or commit date).")
     pr_number: int | None = Field(default=None)
-    pr_state: str | None = Field(
+    pr_state: OrphanPrState | None = Field(
         default=None,
-        description="'open' | 'closed' | 'merged' | None (no PR).",
+        description="PR state when a PR exists; None when no PR is associated.",
     )
-    status: str = Field(description="'keep' | 'delete'.")
+    status: OrphanStatus = Field(description="Classification decision for this branch.")
     reason: str = Field(description="Human-readable explanation for the classification.")
     deleted: bool = Field(
         default=False,

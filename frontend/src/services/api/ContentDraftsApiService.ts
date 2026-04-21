@@ -115,21 +115,25 @@ export interface ListDraftsParams {
 // ── Orphan-branch sweeper (Phase 7) ───────────────────────────────────────
 
 export interface SweepOrphansRequest {
-  /** When True (default), classify only; no branches are deleted. */
+  /** When true (server default), classify only; no branches are deleted. */
   dry_run?: boolean;
-  /** Minimum commit age (days) before a PR-less branch is eligible for deletion. Default 7. */
+  /**
+   * Minimum commit age (days) before a PR-less branch is eligible for
+   * deletion. Omit to use the server default
+   * (see `DEFAULT_MIN_AGE_DAYS` in `backend/services/content_packs/orphan_sweeper.py`).
+   */
   min_age_days?: number;
 }
 
 export type OrphanBranchStatus = 'keep' | 'delete';
-export type OrphanPrState = 'open' | 'closed' | 'merged' | null;
+export type OrphanPrState = 'open' | 'closed' | 'merged';
 
 export interface OrphanBranchClassification {
   name: string;
   sha: string;
   age_days: number;
   pr_number: number | null;
-  pr_state: OrphanPrState;
+  pr_state: OrphanPrState | null;
   status: OrphanBranchStatus;
   reason: string;
   deleted: boolean;

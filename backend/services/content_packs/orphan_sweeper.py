@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Any
 
 from backend.models.content_drafts import (
     OrphanBranchClassification,
@@ -56,9 +56,10 @@ logger = logging.getLogger(__name__)
 _ORPHAN_BRANCH_PREFIX = "content/drafts-batch-"
 
 # Default minimum age (days) for deleting a PR-less branch. Generous by
-# design: the publish flow opens the PR within seconds of creating the
-# branch, so anything older than a week with no PR is a failed publish.
-DEFAULT_MIN_AGE_DAYS = 7.0
+# design: publish opens the PR within seconds of creating the branch, so
+# anything older than two weeks with no PR is a failed publish. The wider
+# window absorbs Railway redeploy outages that can stretch a retry loop.
+DEFAULT_MIN_AGE_DAYS = 14.0
 
 
 async def sweep_orphan_branches(
@@ -118,10 +119,13 @@ async def sweep_orphan_branches(
                     c.name, c.reason, c.age_days,
                 )
             except GitHubAPIError as exc:
+                # Log the full GitHub body for incident triage; keep the
+                # admin-visible `error` short so the UI table row stays
+                # readable. 200 chars covers the common error shapes.
                 c.error = f"{exc.status}: {exc.body[:200]}"
                 logger.warning(
-                    "Orphan-sweeper failed to delete %s: %s",
-                    c.name, c.error,
+                    "Orphan-sweeper failed to delete %s (status=%d): %s",
+                    c.name, exc.status, exc.body,
                 )
 
     return SweepOrphansResult(
@@ -146,14 +150,10 @@ async def _list_draft_batch_refs(
     empty list (not a 404) when no refs match — no error handling needed
     for the zero-matches path.
     """
-    response = await client.rest(
+    return await client.rest_list(
         "GET",
         f"/repos/{owner}/{repo}/git/matching-refs/heads/{_ORPHAN_BRANCH_PREFIX}",
     )
-    # `client.rest` returns whatever `resp.json()` yields; for list-returning
-    # endpoints that is a list, even though the annotation says dict. Cast
-    # here (not in the helper) so the public API signature stays honest.
-    return cast(list[dict[str, Any]], response)
 
 
 async def _classify_branch(
@@ -198,7 +198,6 @@ async def _classify_branch(
             ),
         )
 
-    # No PR → fall back to commit age.
     commit = await client.rest(
         "GET", f"/repos/{owner}/{repo}/commits/{sha}",
     )
@@ -237,11 +236,10 @@ async def _find_associated_pr(
     API allows multiple and returns a list — we take the newest so a
     repeated publish (e.g. after admin retry) still classifies correctly.
     """
-    response = await client.rest(
+    prs = await client.rest_list(
         "GET",
         f"/repos/{owner}/{repo}/pulls?head={owner}:{branch_name}&state=all",
     )
-    prs = cast(list[dict[str, Any]], response)
     if not prs:
         return None
     return max(prs, key=lambda p: p["created_at"])

@@ -117,11 +117,17 @@ export class VelgSweepOrphansModal extends LitElement {
       background: var(--color-surface-sunken);
       margin-bottom: var(--space-3);
     }
+    /* Two-row grid per branch:
+         row 1: status | name ........... | age | pr | result
+         row 2: (empty) | reason spans 2..-1
+       Explicit grid-template-rows keeps the intent visible; implicit
+       auto-flow works but hides the 2-row shape from a reader. */
     .row {
       display: grid;
       grid-template-columns: 76px 1fr 60px 90px 24px;
+      grid-template-rows: auto auto;
+      gap: 2px var(--space-2);
       align-items: center;
-      gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
       font-size: var(--text-xs);
       border-bottom: 1px solid var(--color-border-light);
@@ -256,15 +262,13 @@ export class VelgSweepOrphansModal extends LitElement {
   @state() private _state: ModalState = 'loading';
   @state() private _result: SweepOrphansResult | null = null;
   @state() private _error: string | null = null;
-  @state() private _minAgeDays = 7;
 
-  /** Tracks the most-recent open-cycle so a stale request cannot overwrite
-      a fresh state (e.g. admin closes+reopens mid-sweep). */
+  // Tracks the most-recent open-cycle so a stale request cannot overwrite
+  // a fresh state (admin closes + reopens mid-sweep).
   private _openToken = 0;
 
   protected willUpdate(changed: PropertyValues): void {
     if (changed.has('open') && this.open && !changed.get('open')) {
-      // Transition from closed → open: reset + auto-run dry preview.
       this._openToken += 1;
       this._state = 'loading';
       this._result = null;
@@ -276,11 +280,11 @@ export class VelgSweepOrphansModal extends LitElement {
   private async _runSweep(dryRun: boolean, token: number): Promise<void> {
     if (!dryRun) this._state = 'deleting';
     try {
-      const res = await contentDraftsApi.sweepOrphans({
-        dry_run: dryRun,
-        min_age_days: this._minAgeDays,
-      });
-      if (token !== this._openToken) return; // stale response
+      // min_age_days intentionally omitted — backend owns the single
+      // source of truth (DEFAULT_MIN_AGE_DAYS). Customization would
+      // go here if the UI grows a slider.
+      const res = await contentDraftsApi.sweepOrphans({ dry_run: dryRun });
+      if (token !== this._openToken) return;
       if (!res.success) {
         this._error = res.error.message;
         this._state = 'error';
@@ -297,8 +301,8 @@ export class VelgSweepOrphansModal extends LitElement {
   }
 
   private _handleRerunPreview(): void {
-    void this._runSweep(true, this._openToken);
     this._state = 'loading';
+    void this._runSweep(true, this._openToken);
   }
 
   private _handleDelete(): void {
@@ -323,7 +327,7 @@ export class VelgSweepOrphansModal extends LitElement {
         <div>
           <p class="lead">
             ${msg(
-              'Review branches created by the publish flow. Classification considers PR state first; branches with no PR fall back to a 7-day commit-age threshold.',
+              'Review branches created by the publish flow. Classification considers PR state first; branches with no PR fall back to a commit-age threshold applied server-side.',
             )}
           </p>
 
@@ -400,15 +404,25 @@ export class VelgSweepOrphansModal extends LitElement {
         : msg(str`${Math.round(b.age_days * 24)}h`);
 
     return html`
-      <div class="row">
-        <span class="row__status row__status--${b.status}">${statusLabel}</span>
-        <span class="row__name" title=${b.name}>${b.name}</span>
-        <span class="row__age">${age}</span>
-        <span class="row__pr">${prCell}</span>
-        <span class="row__result ${this._resultClass(b)}">${this._resultSymbol(b)}</span>
-        <span class="row__reason">${b.reason}${b.error ? html` · ${b.error}` : nothing}</span>
+      <div class="row" role="row">
+        <span class="row__status row__status--${b.status}" role="cell">${statusLabel}</span>
+        <span class="row__name" title=${b.name} role="cell">${b.name}</span>
+        <span class="row__age" role="cell">${age}</span>
+        <span class="row__pr" role="cell">${prCell}</span>
+        <span class="row__result ${this._resultClass(b)}" role="cell" aria-label=${this._resultAriaLabel(b)}>
+          ${this._resultSymbol(b)}
+        </span>
+        <span class="row__reason" role="cell">
+          ${b.reason}${b.error ? html` · ${b.error}` : nothing}
+        </span>
       </div>
     `;
+  }
+
+  private _resultAriaLabel(b: OrphanBranchClassification): string {
+    if (b.deleted) return msg('Deleted');
+    if (b.error) return msg('Delete failed');
+    return msg('Pending');
   }
 
   private _resultClass(b: OrphanBranchClassification): string {

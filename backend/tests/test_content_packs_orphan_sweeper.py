@@ -77,23 +77,28 @@ def _mock_client(
     commits_by_sha: dict[str, dict[str, Any]] | None = None,
     delete_failures: set[str] | None = None,
 ) -> AsyncMock:
-    """Build a GitHubAppClient mock whose `rest()` routes by path.
+    """Build a GitHubAppClient mock routing both `rest()` and `rest_list()`.
 
-    Each `rest` invocation is dispatched to the appropriate mock payload so
-    tests can set up the full sweep scenario declaratively.
+    Tests declare the full sweep scenario as data (refs, PRs, commits,
+    failures). The mock dispatches on method + path suffix; `rest_list`
+    covers list endpoints (matching-refs, pulls) and `rest` covers
+    dict endpoints (commits, DELETE).
     """
     pr_by_branch = pr_by_branch or {}
     commits_by_sha = commits_by_sha or {}
     delete_failures = delete_failures or set()
     delete_calls: list[str] = []
 
-    async def fake_rest(method: str, path: str, **_: Any) -> Any:
+    async def fake_rest_list(method: str, path: str, **_: Any) -> list[dict[str, Any]]:
         if method == "GET" and "/git/matching-refs/heads/" in path:
             return refs
         if method == "GET" and "/pulls?head=" in path:
             # Path: /repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=all
             branch = path.split("head=")[1].split("&")[0].split(":", 1)[1]
             return pr_by_branch.get(branch, [])
+        raise AssertionError(f"Unexpected rest_list call: {method} {path}")
+
+    async def fake_rest(method: str, path: str, **_: Any) -> dict[str, Any]:
         if method == "GET" and "/commits/" in path:
             sha = path.rsplit("/", 1)[-1]
             return commits_by_sha[sha]
@@ -107,6 +112,7 @@ def _mock_client(
 
     client = AsyncMock()
     client.rest = AsyncMock(side_effect=fake_rest)
+    client.rest_list = AsyncMock(side_effect=fake_rest_list)
     client.delete_calls = delete_calls  # type: ignore[attr-defined]
     return client
 
@@ -201,7 +207,7 @@ class TestSingleBranchClassification:
         sha = "b" * 40
         client = _mock_client(
             refs=[_ref(branch, sha=sha)],
-            commits_by_sha={sha: _commit(_NOW - timedelta(days=10))},
+            commits_by_sha={sha: _commit(_NOW - timedelta(days=20))},
         )
         result = await sweep_orphan_branches(
             client, _OWNER, _REPO, dry_run=True, now=_NOW,
@@ -209,7 +215,7 @@ class TestSingleBranchClassification:
         c = result.branches[0]
         assert c.status == "delete"
         assert c.pr_number is None
-        assert c.age_days == pytest.approx(10.0)
+        assert c.age_days == pytest.approx(20.0)
         assert "failed publish" in c.reason
 
     @pytest.mark.asyncio
@@ -368,8 +374,44 @@ class TestMixedBatch:
         assert by_name[fresh_branch] == "keep"
 
 
+class TestMultiPrBranch:
+    @pytest.mark.asyncio
+    async def test_multiple_prs_picks_newest_and_classifies_on_its_state(self) -> None:
+        """A branch reused across retries can end up with N PRs on it.
+
+        GitHub returns them in repository-creation order. The sweep picks
+        the newest so it reflects the ADMIN'S most recent intent — an
+        older closed PR should not cause a still-active branch (newer
+        PR open) to be wrongly deleted.
+        """
+        branch = "content/drafts-batch-20260401-000000-11112222"
+        old_closed = _pr(
+            number=1,
+            state="closed",
+            merged_at=None,
+            created_at=_NOW - timedelta(days=10),
+        )
+        new_open = _pr(
+            number=2,
+            state="open",
+            created_at=_NOW - timedelta(hours=3),
+        )
+        client = _mock_client(
+            refs=[_ref(branch)],
+            pr_by_branch={branch: [old_closed, new_open]},
+        )
+        result = await sweep_orphan_branches(
+            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+        )
+        c = result.branches[0]
+        assert c.status == "keep"
+        assert c.pr_number == 2
+        assert c.pr_state == "open"
+
+
 class TestDefaultsConstant:
-    def test_default_min_age_days_is_seven(self) -> None:
-        # Guard against silent drift: the docstring + admin UI copy refer
-        # to 7 days. Any change must be intentional + documented.
-        assert DEFAULT_MIN_AGE_DAYS == 7.0
+    def test_default_min_age_days_is_fourteen(self) -> None:
+        # Guard against silent drift: the sweep's safety property depends
+        # on this threshold being generous enough to absorb deploy outages.
+        # Any change must be intentional + reflected in the admin UI copy.
+        assert DEFAULT_MIN_AGE_DAYS == 14.0

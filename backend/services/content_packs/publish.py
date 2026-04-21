@@ -468,7 +468,7 @@ class ContentPacksPublishService:
         Contents API is not paginated for small directories (< ~1000
         entries); current migrations count is ~226 so we don't chunk.
         """
-        items = await client.rest(
+        items = await client.rest_list(
             "GET",
             f"/repos/{owner}/{repo}/contents/{_MIGRATIONS_DIR}?ref={ref}",
         )
