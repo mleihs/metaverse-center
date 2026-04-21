@@ -565,6 +565,29 @@ def test_entry_nested_one_side_replaces_dict_with_scalar_falls_back() -> None:
     assert c.theirs == "legacy-string"
 
 
+def test_merged_dict_preserves_ours_first_key_order() -> None:
+    # Determinism guard: `set()` iteration is order-undefined; if merge
+    # relies on it, the serialised YAML shuffles across runs and produces
+    # spurious git diffs on every publish. Ours-first insertion order
+    # matches the admin's mental model for top-level keys.
+    base = {"a": 1, "b": 2}
+    ours = {"a": 1, "b": 2, "c_ours_add": 3}
+    theirs = {"a": 1, "b": 2, "d_theirs_add": 4}
+    result = merge_content(base, ours, theirs)
+    assert list(result.merged.keys()) == ["a", "b", "c_ours_add", "d_theirs_add"]
+
+
+def test_merged_nested_dict_preserves_ours_first_key_order() -> None:
+    # Same determinism guarantee inside the recursion path: nested field
+    # order must follow ours-first insertion, not set() iteration.
+    base = {"metadata": {"tier": 1, "difficulty": 2}}
+    ours = {"metadata": {"tier": 2, "difficulty": 2, "ours_only": "x"}}
+    theirs = {"metadata": {"tier": 1, "difficulty": 3, "theirs_only": "y"}}
+    result = merge_content(base, ours, theirs)
+    keys = list(result.merged["metadata"].keys())
+    assert keys == ["tier", "difficulty", "ours_only", "theirs_only"]
+
+
 def test_id_list_key_present_only_in_base_both_sides_dropped() -> None:
     # Regression for the drop-key guard: when base has an id-list under a
     # key AND neither ours nor theirs keeps any entries for it (the admin

@@ -155,8 +155,14 @@ def merge_content(
     conflicts: list[EntryConflict] = []
     auto_resolved = 0
 
-    all_keys = set(base) | set(ours) | set(theirs)
-    for key in all_keys:
+    # Deterministic key order: ours → theirs → base by first-seen insertion.
+    # `set()` iteration is order-undefined in CPython across versions, which
+    # would shuffle the merged dict's key order from run to run — producing
+    # spurious git diffs on the published YAML even when no author edited
+    # anything. `dict.fromkeys` preserves the insertion order of the first
+    # appearance, and ours-first matches the admin's mental model
+    # (_restore_order does the same for id-list entries).
+    for key in dict.fromkeys((*ours, *theirs, *base)):
         b = base[key] if key in base else _MISSING
         o = ours[key] if key in ours else _MISSING
         t = theirs[key] if key in theirs else _MISSING
@@ -295,7 +301,10 @@ def _merge_one_entry(
     The conflicts list may be empty, singleton, or carry multiple items
     when recursion discovers several field-level collisions inside one entry.
     """
-    if base is not None and ours is not None and theirs is not None and _all_three_dicts(base, ours, theirs):
+    # `_all_three_dicts` already covers `None` via `isinstance(..., dict)`
+    # returning False, so redundant `is not None` guards would only repeat
+    # the check. Keep the condition to the single predicate that matters.
+    if _all_three_dicts(base, ours, theirs):
         merged, conflicts, auto = _merge_dict_fields(path, base, ours, theirs)
         return merged, conflicts, auto
 
@@ -385,8 +394,12 @@ def _merge_dict_fields(
     conflicts: list[EntryConflict] = []
     auto = 0
 
-    all_keys = set(base) | set(ours) | set(theirs)
-    for key in all_keys:
+    # See `merge_content` for the ours-first insertion-order rationale. The
+    # same determinism property must hold at every recursion level: a dict
+    # whose keys were reshuffled would serialise back to YAML in a
+    # different order on the next merge run even without edits, producing
+    # spurious diffs on every publish.
+    for key in dict.fromkeys((*ours, *theirs, *base)):
         b = base.get(key, _MISSING)
         o = ours.get(key, _MISSING)
         t = theirs.get(key, _MISSING)
