@@ -1656,11 +1656,11 @@ Individual resonance display card with magnitude indicator, status badge, and co
 
 ### AdminPanel (`velg-admin-panel`)
 
-Platform admin dashboard with 10 tabs (consolidated from 13). Hero section with scanlines, tablist navigation, content panel.
+Platform admin dashboard. Hero section with scanlines, tablist navigation, content panel.
 
 **Tag:** `<velg-admin-panel>`
 
-**Tabs (10):**
+**Tabs:**
 
 | Tab | Component | Beschreibung |
 |-----|-----------|-------------|
@@ -1669,8 +1669,13 @@ Platform admin dashboard with 10 tabs (consolidated from 13). Hero section with 
 | Health | `velg-admin-health-tab` | Critical health effects master switch + per-sim overrides |
 | Heartbeat | `velg-admin-heartbeat-tab` | Tick engine config, cascade rules, sim status |
 | Resonances | `velg-admin-resonances-tab` | Substrate resonance CRUD + impact processing |
+| Dungeons | `velg-admin-dungeons-tab` | Dungeon config (cascading per-sim overrides, terminal clearance) |
+| Dungeon Content | `velg-admin-dungeon-content-tab` | 10-table content DB browser (enemies, encounters, banter, loot, objektanker, abilities) |
+| Content Drafts | `velg-admin-content-drafts-tab` | A1.7 YAML pack editing: CodeMirror JSON editor, 3-way conflict merge, batch publish via GitHub App, orphan-branch sweep + scheduler panel (see dedicated section below) |
 | Scanner | `velg-admin-scanner-tab` | Content scanner dashboard, candidates, log |
 | Forge | `velg-admin-forge-tab` | Forge stats, BYOK keys (via `velg-byok-panel`), clearance queue |
+| AI Usage | `velg-admin-ai-usage-tab` | Per-simulation token + cost tracking from `ai_usage_log` |
+| Ops | `velg-admin-ops-tab` | Bureau Ops cockpit: circuit breakers, sentry rules, heatmap, forecast sliders, dispatch ticker |
 | Platform Config | `velg-admin-platform-config-tab` | Sub-tabs: API Keys, Models, Research, Caching |
 | Social Media | `velg-admin-social-tab` | Sub-tabs: Instagram, Bluesky |
 | Data Cleanup | `velg-admin-cleanup-tab` | 6-category data purge with preview |
@@ -1806,6 +1811,66 @@ Platform-level Tavily research domain configuration panel. Allows admin to confi
 **Data Source:** `platform_settings` table (Migration 124 seeds default values)
 
 **API:** `adminApi.getPlatformSettings()`, `adminApi.updatePlatformSetting(key, value)`
+
+---
+
+### AdminContentDraftsTab (`velg-admin-content-drafts-tab`)
+
+A1.7 content-drafts admin surface. Wrapper composing 5 modals into one cohesive panel for authoring + publishing YAML pack edits without direct Git commits. Drafts are platform-level (not per-simulation); all endpoints gate on `require_platform_admin()` server-side.
+
+**Tag:** `<velg-admin-content-drafts-tab>`
+
+**Composition:**
+
+| Component | Role |
+|-----------|------|
+| `<velg-content-drafts-list>` | Main pane. Paginated list with status filter (All / Draft / Conflict / Published / Merged / Abandoned), PR-grouping separator headers, author filter, multi-select checkbox for batch publish, 3 toolbar buttons (Schedule, Sweep orphans, New Draft). Emits 5 events: `new-draft`, `edit-draft {id}`, `publish-batch {ids, drafts}`, `sweep-orphans`, `sweep-schedule` |
+| `<velg-content-draft-editor>` | CodeMirror 6 JSON editor inside `<velg-side-panel>` (1100px wide). Optimistic-concurrency save via `version`. For `conflict` status: surfaces 3-way merge preview (base / ours / theirs) from `ContentPacksConflictService` with admin-gated conflict flip per entry, groups conflicts by entry root |
+| `<velg-publish-batch-modal>` | Batch publish 1–25 drafts as a single PR via GitHub App (`createCommitOnBranch` + open PR). Defaults to auto-generated commit message; admin can override |
+| `<velg-sweep-orphans-modal>` | Orphan-branch classification + delete. Always runs dry-run first; admin reviews the classification table before committing to deletions. Per-branch errors surface in response without aborting the sweep |
+| `<velg-orphan-sweeper-settings-modal>` | **Phase 7c** — scheduler config for the weekly auto-sweep (see below) |
+
+**Data Flow:**
+- List: `contentDraftsApi.listDrafts({ status, author_id, limit, offset })`
+- Editor: `getDraft(id)` → `updateWorking(id, { working_content, version })`; conflict: `getConflictPreview(id)` → `resolveConflict(id, { merged_working_content, version, acknowledged_conflict_paths })`
+- Publish: `publishBatch({ draft_ids, commit_message? })` → `BatchPublishResult` with `pr_number`, `pr_url`
+- Sweep: `sweepOrphans({ dry_run, min_age_days })` → `SweepOrphansResult`
+- Scheduler: `runOrphanSweeperNow()` → same `SweepOrphansResult` shape
+
+**State Machine (enforced DB-side via Migration 226 trigger):**
+- `draft` → `published` (via batch publish)
+- `draft` / `conflict` → `abandoned` (via DELETE, state-gated)
+- `published` → `merged` (via GitHub webhook PR merge event)
+- `published` → `draft` (via GitHub webhook PR close without merge — revert)
+- `merged` / `abandoned` are terminal (409 on delete attempt)
+
+### VelgOrphanSweeperSettingsModal (`velg-orphan-sweeper-settings-modal`)
+
+Brutalist schedule-config modal for the weekly orphan-sweeper (A1.7 Phase 7c). Triggered from the gear-icon "Schedule" button in the content-drafts list toolbar.
+
+**Tag:** `<velg-orphan-sweeper-settings-modal>`
+
+**Controls:**
+
+| Field | Type | Backend Key | Save Semantics |
+|-------|------|-------------|----------------|
+| Schedule | Toggle | `orphan_sweeper_enabled` | Auto-save on change; optimistic UI with rollback on save failure |
+| Interval | Number (days) | `orphan_sweeper_interval_days` | 600ms debounce on typing + immediate commit on blur. Placeholder `7.0` for fresh DB |
+| Min branch age | Number (days) | `orphan_sweeper_min_age_days` | Same debounce + blur semantics. Placeholder `14.0` for fresh DB |
+| Last run | Read-only | `orphan_sweeper_last_run_at` | ISO timestamp + humanised relative-time chip (`3 d ago` / `just now`) |
+| Run now | Button | — | `VelgConfirmDialog` → `POST /orphan-sweeper/run-now` → optimistic `last_run_at` stamp matching server ISO format |
+
+**Architecture Notes:**
+- `_openToken` guard — stale `listSettings()` fetches from a previous open cycle cannot overwrite state after close + reopen
+- `_clearTimers()` called from BOTH `disconnectedCallback` AND the close-transition branch of `willUpdate` — BaseModal's `open` prop toggles without removing the element, so `disconnectedCallback` alone misses this path (F76 fix)
+- Saved-tick: persistent span with `saved-tick--visible` class toggle (not conditional render) so CSS opacity transition fires on both appear + disappear (F77 fix)
+- During `_running` the footer collapses to a single disabled `btn--danger` ("Running…") mirroring `VelgSweepOrphansModal`'s in-flight pattern
+- Placeholder constants link-commented to backend defaults (`_DEFAULT_INTERVAL_DAYS = 7.0`, `orphan_sweeper.DEFAULT_MIN_AGE_DAYS = 14.0`)
+- `aria-describedby` on every control points to `${labelId}-hint` span (a11y: SR announces "Label. Hint." on focus)
+
+**Backend contract:** `OrphanSweeperScheduler.run_sweep_and_persist(admin, *, now=None, config=None, trigger="admin")` is the public classmethod shared by `_process_tick` (scheduler loop) and the run-now endpoint. `trigger` kwarg threads through the completion log, Sentry scope + context, and the capture_message prefix (`Orphan-sweeper (scheduled): …` vs `(admin): …`).
+
+**Platform settings writes:** all go through `upsert_platform_setting(admin, key, value, *, updated_by_id)` from `backend/utils/settings.py` (see F7 audit). Never use the legacy `.update({"setting_value": v}).eq("setting_key", k)` chain — it silently no-ops when the row is absent.
 
 ---
 

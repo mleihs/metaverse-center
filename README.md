@@ -407,7 +407,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Per-simulation theming** – CSS presets with WCAG 2.1 AA validation, light & dark modes
 - **Public-first browsing** – Full read access without authentication
 - **SEO** – Slug URLs, JSON-LD, dynamic sitemap (1500+ URLs), server-side crawler enrichment
-- **Admin panel** – User management, cache TTLs, resonance scheduler, forge clearance, model configuration, social media pipeline
+- **Admin panel** – User management, cache TTLs, resonance scheduler, forge clearance, model configuration, social media pipeline, content drafts (YAML pack editor with 3-way conflict resolution + batch-publish to GitHub PR), orphan-branch sweeper (manual preview + weekly scheduled GC)
 - **Forge token economy** – Token bundles, BYOK bypass (3 control levels), per-key test/revoke, feature purchases
 - **GA4 analytics** – 44 custom events, consent mode v2, GDPR cookie banner
 - **Sentry error tracking** – Backend + frontend with request context enrichment
