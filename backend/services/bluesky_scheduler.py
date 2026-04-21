@@ -16,6 +16,7 @@ Loop:
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, datetime
 from uuid import UUID
@@ -187,7 +188,7 @@ class BlueskyScheduler(BaseSchedulerMixin):
                     sentry_sdk.capture_exception(exc)
                 # Disable posting
                 await upsert_platform_setting(
-                    admin, "bluesky_posting_enabled", '"false"',
+                    admin, "bluesky_posting_enabled", json.dumps(False),
                 )
                 return
             except BlueskyRateLimitError:

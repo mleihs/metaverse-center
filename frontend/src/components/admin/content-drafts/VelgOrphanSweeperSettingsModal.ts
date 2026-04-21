@@ -723,6 +723,12 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
    * identical so drift (spacing, label-id wiring, saved-tick placement)
    * can only live in one place.
    *
+   * A11y: the hint span gets id ``${labelId}-hint``; field methods
+   * wire ``aria-describedby`` on their controls using the same
+   * convention so screen readers announce "Label. Hint." when focus
+   * enters the control. Label id is passed to controls via
+   * ``aria-labelledby``.
+   *
    * The saved-tick element is rendered unconditionally (when ``savedKey``
    * is non-null) so the CSS opacity transition actually fires on both
    * appear AND disappear — toggling a class on a persistent element
@@ -741,7 +747,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       <div class="field">
         <div>
           <span class="field__label" id=${labelId}>${label}</span>
-          <span class="field__hint">${hint}</span>
+          <span class="field__hint" id="${labelId}-hint">${hint}</span>
         </div>
         <div class="field__control">
           ${control}
@@ -770,6 +776,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           ?disabled=${busy}
           @change=${this._handleToggleEnabled}
           aria-labelledby="field-enabled"
+          aria-describedby="field-enabled-hint"
         />
       </label>
       <span class="chip ${this._enabled ? 'chip--active' : ''}">
@@ -800,6 +807,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           @input=${this._handleIntervalInput}
           @blur=${this._handleIntervalBlur}
           aria-labelledby="field-interval"
+          aria-describedby="field-interval-hint"
         />
         <span class="number-input__unit">${msg('days')}</span>
       </div>
@@ -828,6 +836,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           @input=${this._handleMinAgeInput}
           @blur=${this._handleMinAgeBlur}
           aria-labelledby="field-min-age"
+          aria-describedby="field-min-age-hint"
         />
         <span class="number-input__unit">${msg('days')}</span>
       </div>
@@ -867,19 +876,28 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
   }
 
   private _renderActions(): TemplateResult {
-    const busy = this._state !== 'loaded' || this._running;
+    // Match VelgSweepOrphansModal's pattern during in-flight operations:
+    // a single disabled status button instead of two disabled buttons
+    // (Close + Run). Cleaner affordance — the modal reads as
+    // "operation in progress" rather than "here are two things you
+    // can't do right now". Esc / backdrop still close via BaseModal.
+    if (this._running) {
+      return html`
+        <button class="btn btn--danger" disabled aria-busy="true">
+          ${icons.terminal(12)} ${msg('Running…')}
+        </button>
+      `;
+    }
+    const runDisabled = this._state !== 'loaded';
     return html`
-      <button class="btn" @click=${this._handleClose} ?disabled=${this._running}>
-        ${msg('Close')}
-      </button>
+      <button class="btn" @click=${this._handleClose}>${msg('Close')}</button>
       <button
         class="btn btn--danger"
         @click=${this._handleRunNow}
-        ?disabled=${busy}
+        ?disabled=${runDisabled}
         aria-label=${msg('Run scheduled sweep now')}
       >
-        ${icons.terminal(12)}
-        ${this._running ? msg('Running…') : msg('Run now')}
+        ${icons.terminal(12)} ${msg('Run now')}
       </button>
     `;
   }
