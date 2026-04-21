@@ -102,3 +102,30 @@ def mock_current_user():
     app.dependency_overrides[get_current_user] = lambda: user
     yield user
     app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.fixture(autouse=True)
+def _reset_admin_supabase_cache():
+    """Drop the process-wide admin-Supabase client cache between tests.
+
+    Why: ``supabase.AsyncClient`` wraps ``httpx.AsyncClient``, whose
+    internal async primitives are bound to the event loop where they
+    were constructed. Our pytest config uses function-scoped loops
+    (``asyncio_default_fixture_loop_scope=function``) — without this
+    fixture, a client cached during test N would be attached to a
+    dead loop by the time test N+1 runs, raising
+    ``RuntimeError: ... attached to a different loop``.
+
+    Synchronous + autouse + function-scoped so it applies universally
+    to both async and sync tests. No teardown needed — the NEXT
+    test's setup clears again.
+
+    The reset function is a no-op if the cache has never been
+    populated (the case for tests that use
+    ``app.dependency_overrides[get_admin_supabase]``), so this
+    fixture adds essentially zero overhead for the common path.
+    """
+    from backend.utils.supabase_admin_cache import reset_admin_supabase_cache
+
+    reset_admin_supabase_cache()
+    yield

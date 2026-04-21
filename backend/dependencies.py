@@ -13,6 +13,7 @@ from supabase_auth.errors import AuthApiError
 from backend.config import settings
 from backend.models.common import CurrentUser
 from backend.utils.db import maybe_single_data
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 from supabase import create_async_client
 
@@ -178,11 +179,15 @@ async def resolve_simulation_id(
 
 
 async def get_admin_supabase() -> Client:
-    """Create a Supabase client with the service role key.
+    """Return the process-wide Supabase client with the service role key.
 
-    Use sparingly -- bypasses RLS. Only for admin operations.
+    Bypasses RLS — use sparingly, only for admin operations. Backed by
+    a singleton cache in ``backend/utils/supabase_admin_cache.py`` so
+    FastAPI Depends injection and inline service-level callers share
+    ONE client per process instead of constructing a new
+    ``AsyncClient`` (+ httpx subclients) per call.
     """
-    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
+    return await get_admin_supabase_client()
 
 
 async def get_effective_supabase(

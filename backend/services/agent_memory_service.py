@@ -10,8 +10,8 @@ from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
-from supabase import create_async_client
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +25,8 @@ MOCK_REFLECTIONS = [
 
 
 async def _admin_client() -> Client:
-    """Create a service-role Supabase client for memory writes."""
-    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
+    """Return the shared service-role Supabase client for memory writes."""
+    return await get_admin_supabase_client()
 
 
 class AgentMemoryService:

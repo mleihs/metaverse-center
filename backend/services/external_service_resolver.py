@@ -75,16 +75,19 @@ class ExternalServiceResolver:
         self._cache: dict[str, str | None] | None = None
 
     async def _get_admin_client(self) -> Client | None:
-        """Get admin client for platform key lookups, creating lazily if needed."""
+        """Get admin client for platform key lookups.
+
+        Returns the process-wide shared client from
+        ``supabase_admin_cache``. The try/except guards only the first
+        call's construction (network / config failure); subsequent
+        calls return the cached instance and never raise.
+        """
         if self._admin_supabase:
             return self._admin_supabase
         try:
-            from supabase import create_async_client
+            from backend.utils.supabase_admin_cache import get_admin_supabase_client
 
-            self._admin_supabase = await create_async_client(
-                platform_settings.supabase_url,
-                platform_settings.supabase_service_role_key,
-            )
+            self._admin_supabase = await get_admin_supabase_client()
             return self._admin_supabase
         except (PostgrestAPIError, httpx.HTTPError, OSError):
             logger.debug("Could not create admin client for platform key lookup")
