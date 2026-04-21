@@ -14,12 +14,14 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { LedgerSnapshot } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgKineticCounter.js';
 
 @localized()
 @customElement('velg-ops-ledger-panel')
 export class VelgOpsLedgerPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       --_ring: color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
@@ -169,7 +171,9 @@ export class VelgOpsLedgerPanel extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       :host { animation: none; }
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @property({ type: Object }) snapshot: LedgerSnapshot | null = null;
   @property({ type: Boolean }) loading = false;

@@ -34,6 +34,7 @@ import {
 } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgForecastSlider.js';
 import type { ForecastSliderChangeDetail } from '../../shared/VelgForecastSlider.js';
 import '../../shared/VelgKineticCounter.js';
@@ -54,7 +55,8 @@ const ADJUSTED_COUNTER_DURATION_MS = 120;
 @localized()
 @customElement('velg-ops-forecast-panel')
 export class VelgOpsForecastPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       --_glow: color-mix(in srgb, var(--color-accent-amber) 18%, transparent);
@@ -264,7 +266,9 @@ export class VelgOpsForecastPanel extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       .projection__value--adjusted { text-shadow: none; }
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   /** Shared with LedgerPanel; provides per-purpose share for slider deltas. */
   @property({ type: Object }) snapshot: LedgerSnapshot | null = null;

@@ -16,13 +16,15 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { LedgerSnapshot } from '../../../services/api/BureauOpsApiService.js';
 import { readCssToken } from '../../../utils/css-tokens.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/EchartsChart.js';
 import '../../shared/VelgKineticCounter.js';
 
 @localized()
 @customElement('velg-ops-burn-rate-panel')
 export class VelgOpsBurnRatePanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       display: block;
@@ -99,7 +101,9 @@ export class VelgOpsBurnRatePanel extends LitElement {
     velg-echarts-chart {
       --chart-height: 90px;
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @property({ type: Object }) snapshot: LedgerSnapshot | null = null;
   @property({ type: Boolean }) loading = false;

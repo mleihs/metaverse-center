@@ -27,6 +27,7 @@ import {
   type HeatmapDimension,
 } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgHeatmapGrid.js';
 
 const REFRESH_MS = 5 * 60 * 1000;
@@ -45,7 +46,8 @@ const DIMENSION_OPTIONS: readonly { value: HeatmapDimension; label: () => string
 @localized()
 @customElement('velg-ops-heatmap-panel')
 export class VelgOpsHeatmapPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_accent: var(--color-info);
       display: block;
@@ -154,7 +156,9 @@ export class VelgOpsHeatmapPanel extends LitElement {
         flex-wrap: wrap;
       }
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @state() private _cells: HeatmapCell[] = [];
   @state() private _dimension: HeatmapDimension = 'purpose';

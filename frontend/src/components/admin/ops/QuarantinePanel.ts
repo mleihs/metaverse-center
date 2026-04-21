@@ -22,13 +22,15 @@ import {
   type CircuitScope,
 } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/VelgKillSwitch.js';
 
 @localized()
 @customElement('velg-ops-quarantine-panel')
 export class VelgOpsQuarantinePanel extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       --_danger: var(--color-danger);
       --_accent: var(--color-accent-amber);
@@ -238,7 +240,9 @@ export class VelgOpsQuarantinePanel extends LitElement {
       opacity: 0.5;
       cursor: not-allowed;
     }
-  `;
+  `,
+    bureauPanelFrameStyles,
+  ];
 
   @property({ type: Object }) matrix: CircuitMatrix | null = null;
   @property({ type: Boolean }) loading = false;
