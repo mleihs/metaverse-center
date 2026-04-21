@@ -20,57 +20,24 @@ from backend.config import settings as app_settings
 # --- Sentry (must initialize before app/middleware creation) ---
 # Only send errors to Sentry in deployed environments (production/staging).
 # Local development and test runs should not pollute the error tracker.
+from backend.services import sentry_rule_cache
 
 
 def _ops_before_send(event: dict, hint: dict) -> dict | None:
-    """Bureau-Ops P0 static dedup rules.
+    """Bureau-Ops dedup rules driven by the ``sentry_rules`` cache (P2.1).
 
-    Hardcoded rules for the emergency-brake phase. P2 replaces this with a
-    DB-backed rule cache. See docs/plans/bureau-ops-implementation-plan.md §7.
+    Delegates to :func:`backend.services.sentry_rule_cache.apply_rules`,
+    which applies ignore → fingerprint → downgrade rules loaded from the
+    DB. The cache is populated at lifespan startup; events that fire
+    before the first reload pass through unchanged (the previous P0
+    hardcoded rules lived here — they now live in migration 230 as seed
+    rows so admins can edit them from the Ops panel).
 
-    Rules (applied in order):
-      1. Drop events where the message contains ``Key limit exceeded`` or
-         ``insufficient_quota`` — credit-exhaustion signals are ops noise,
-         not actionable bugs.
-      2. Fingerprint RateLimitError / ModelUnavailableError by
-         (exception_type, model) so all 429/503 bursts collapse into one
-         Sentry-issue-group instead of scattering across dozens.
-      3. Downgrade pydantic-ai ModelHTTPError 402/403/503 to ``warning``
-         so Sentry's error-budget counter doesn't eat them.
+    Kept thin on purpose: all rule logic belongs to the cache module so
+    the admin-panel CRUD path (P2.3) and this before-send hook share one
+    source of truth.
     """
-    exc_info = hint.get("exc_info")
-    if not exc_info:
-        return event
-    exc_type, exc, _tb = exc_info
-    if exc is None:
-        return event
-
-    message = str(exc)
-
-    # Rule 1: drop credit/quota-exhaustion bursts entirely.
-    if "Key limit exceeded" in message or "insufficient_quota" in message:
-        return None
-
-    # Rule 2: collapse rate-limit/model-unavailable into (type, model) groups.
-    exc_name = exc_type.__name__ if exc_type else ""
-    if exc_name in ("RateLimitError", "ModelUnavailableError"):
-        tags_source = event.get("tags", {})
-        if isinstance(tags_source, list):
-            tags = {t["key"]: t["value"] for t in tags_source if isinstance(t, dict)}
-        elif isinstance(tags_source, dict):
-            tags = tags_source
-        else:
-            tags = {}
-        model = tags.get("model", "unknown")
-        event["fingerprint"] = ["openrouter", exc_name, model]
-
-    # Rule 3: downgrade pydantic-ai ModelHTTPError for 402/403/503 to warning.
-    if exc_name == "ModelHTTPError":
-        status = getattr(exc, "status_code", None)
-        if status in (402, 403, 503):
-            event["level"] = "warning"
-
-    return event
+    return sentry_rule_cache.apply_rules(event, hint)
 
 
 if app_settings.sentry_dsn and app_settings.environment not in ("development", "test"):
@@ -176,6 +143,20 @@ async def lifespan(app: FastAPI):
     await ensure_model_config(admin_sb)
     await ensure_research_domains(admin_sb)
     await load_dungeon_content(admin_sb)
+
+    # Populate the Sentry rule cache before normal request traffic begins.
+    # A DB failure here is non-fatal — the cache keeps its empty snapshot
+    # (events pass through unchanged) and the 30-second TTL picks up
+    # again on the next reload trigger (admin mutation or a future
+    # poll). Without this, the cache stays empty until the first admin
+    # rule edit, which would regress P0-equivalent filtering.
+    try:
+        await sentry_rule_cache.reload(admin_sb)
+    except Exception:  # noqa: BLE001 — must not prevent app startup
+        logging.getLogger(__name__).exception(
+            "Sentry rule cache initial reload failed; events will pass "
+            "through unfiltered until the next successful reload.",
+        )
 
     # GitHub App config sanity check — non-fatal. If the admin-publish
     # path is mis-configured, the public/member traffic still serves.
