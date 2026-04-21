@@ -131,6 +131,7 @@ from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
 from backend.services.github_app import check_env_config, close_github_app_client
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.instagram_scheduler import InstagramScheduler
+from backend.services.ops_ledger_service import OpsLedgerService
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
 from backend.services.resonance_scheduler import ResonanceScheduler
@@ -148,10 +149,10 @@ async def lifespan(app: FastAPI):
 
     # Populate the Sentry rule cache before normal request traffic begins.
     # A DB failure here is non-fatal — the cache keeps its empty snapshot
-    # (events pass through unchanged) and the 30-second TTL picks up
-    # again on the next reload trigger (admin mutation or a future
-    # poll). Without this, the cache stays empty until the first admin
-    # rule edit, which would regress P0-equivalent filtering.
+    # (events pass through unchanged) and the SentryRuleCacheRefresher
+    # (60s tick) will retry the load. Without this warm-up the cache
+    # stays empty until the first admin rule edit or refresher tick,
+    # which would briefly regress P0-equivalent filtering.
     try:
         await sentry_rule_cache.reload(admin_sb)
     except Exception:  # noqa: BLE001 — must not prevent app startup
@@ -164,8 +165,6 @@ async def lifespan(app: FastAPI):
     # from the durable ai_circuit_state rows so a worker restart does
     # not silently drop admin-killed scopes. OpsLedgerService swallows
     # DB errors internally so startup never fails because of this.
-    from backend.services.ops_ledger_service import OpsLedgerService
-
     await OpsLedgerService.rehydrate_circuit_kills(admin_sb)
 
     # GitHub App config sanity check — non-fatal. If the admin-publish
