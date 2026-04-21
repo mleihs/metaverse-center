@@ -359,6 +359,8 @@ export class VelgOpsQuarantinePanel extends LitElement {
       this._cutAllOpen = false;
       this._cutAllReason = '';
       this.dispatchEvent(new CustomEvent('ops-circuit-changed', { bubbles: true, composed: true }));
+      // P4.3 — notify AdminOpsTab to play the CRT-tube-off animation
+      this.dispatchEvent(new CustomEvent('ops-cut-all-engaged', { bubbles: true, composed: true }));
     } else {
       VelgToast.error(msg(str`CUT ALL failed: ${resp.error.message}`));
       captureError(new Error(resp.error.message), {
