@@ -63,6 +63,9 @@ from backend.services.content_packs.conflict_service import (
     ContentPacksConflictService,
 )
 from backend.services.content_packs.orphan_sweeper import sweep_orphan_branches
+from backend.services.content_packs.orphan_sweeper_scheduler import (
+    OrphanSweeperScheduler,
+)
 from backend.services.content_packs.publish import (
     ContentPacksPublishService,
     get_github_repo_config,
@@ -434,6 +437,44 @@ async def sweep_orphan_branches_endpoint(
         details={
             "dry_run": body.dry_run,
             "min_age_days": body.min_age_days,
+            "total_found": result.total_found,
+            "deleted_count": result.deleted_count,
+            "error_count": result.error_count,
+        },
+    )
+    return SuccessResponse(data=result)
+
+
+# ── Orphan-sweeper scheduler (Phase 7c) ───────────────────────────────────
+
+
+@router.post("/orphan-sweeper/run-now")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def run_orphan_sweeper_now(
+    request: Request,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[SweepOrphansResult]:
+    """Trigger the scheduled orphan-sweeper manually, resetting ``last_run_at``.
+
+    Same sweep path as the weekly scheduler tick (``dry_run=False``, stored
+    ``min_age_days``), with two differences: (1) the throttle is bypassed,
+    (2) the next scheduled run starts its full interval from now. Admins
+    use this to force a run after bumping interval/min-age settings, or
+    to verify a config change immediately instead of waiting for the tick.
+
+    For a preview without mutating state, keep using
+    ``POST /sweep-orphans`` with ``dry_run=true``.
+    """
+    result = await OrphanSweeperScheduler.run_sweep_and_persist(supabase)
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "content_drafts",
+        None,  # batch op — no entity_id
+        "orphan_sweeper_run_now",
+        details={
             "total_found": result.total_found,
             "deleted_count": result.deleted_count,
             "error_count": result.error_count,

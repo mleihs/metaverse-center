@@ -274,6 +274,19 @@ export class ContentDraftsApiService extends BaseApiService {
   sweepOrphans(body: SweepOrphansRequest = {}): Promise<ApiResponse<SweepOrphansResult>> {
     return this.post(`${this.base}/sweep-orphans`, body);
   }
+
+  /**
+   * Trigger the scheduled orphan-sweeper immediately, bypassing the weekly
+   * throttle and resetting `orphan_sweeper_last_run_at` to now.
+   *
+   * Always runs `dry_run=False` with the stored `min_age_days`. Returns the
+   * same `SweepOrphansResult` shape as the manual sweep so the UI can render
+   * a summary without extra adapters. For a non-mutating classification
+   * preview, keep using `sweepOrphans({ dry_run: true })`.
+   */
+  runOrphanSweeperNow(): Promise<ApiResponse<SweepOrphansResult>> {
+    return this.post(`${this.base}/orphan-sweeper/run-now`, {});
+  }
 }
 
 export const contentDraftsApi = new ContentDraftsApiService();
