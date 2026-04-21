@@ -263,18 +263,21 @@ class CircuitBreakerService:
     def force_open(self, scope: str, scope_key: str, *, open_for_s: float) -> None:
         """Admin hook: force-open a breaker for ``open_for_s`` seconds.
 
-        Used by the Bureau Ops kill-switch (AD-5). Unlike an automatic
-        open transition, this does not count as a "consecutive open" so the
-        next natural open after revert returns to the baseline backoff.
-        The DB row in ``ai_circuit_state`` is the source of truth for
-        durability; this call just mirrors the kill into in-process state
-        so ``check()`` fails fast without a DB hit.
+        Used by the Bureau Ops kill-switch (AD-5). Resets the failure
+        window and the consecutive-opens count so the breaker behaves as
+        if the admin's intervention is a clean-slate event: after revert,
+        the next auto-open starts from the baseline backoff, not from
+        wherever the breaker was before the kill. The DB row in
+        ``ai_circuit_state`` is the source of truth for durability; this
+        call just mirrors the kill into in-process state so ``check()``
+        fails fast without a DB hit.
         """
         with self._lock:
             counter = self._get(scope, scope_key)
             counter.state = "open"
             counter.opens_until = time.monotonic() + max(open_for_s, 0.0)
             counter.failures.clear()
+            counter.consecutive_opens = 0
             logger.info(
                 "Circuit force-opened (admin kill)",
                 extra={

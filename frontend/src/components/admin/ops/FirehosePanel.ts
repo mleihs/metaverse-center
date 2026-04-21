@@ -179,7 +179,20 @@ export class VelgOpsFirehosePanel extends LitElement {
         },
       )
       .subscribe((status) => {
-        this._live = status === 'SUBSCRIBED';
+        // Track SUBSCRIBED for the "live" indicator; surface all other
+        // terminal statuses via captureError so operators are not left
+        // wondering why the stream went stale.
+        if (status === 'SUBSCRIBED') {
+          this._live = true;
+          return;
+        }
+        this._live = false;
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          captureError(new Error(`Firehose Realtime subscription ${status}`), {
+            source: 'FirehosePanel._subscribeRealtime',
+            status,
+          });
+        }
       });
   }
 
@@ -196,9 +209,14 @@ export class VelgOpsFirehosePanel extends LitElement {
   }
 
   private _statusLabel(): string {
+    // Only 3 honest states: we never fall back to REST polling.
+    //   loading  — initial REST fetch in flight
+    //   offline  — REST fetch failed outright
+    //   live     — Realtime channel SUBSCRIBED
+    //   stale    — REST succeeded but Realtime not yet / no longer active
     if (this._loading) return msg('loading…');
     if (this._error) return msg('offline');
-    return this._live ? msg('live') : msg('polling');
+    return this._live ? msg('live') : msg('stale');
   }
 
   private _statusDotClass(): string {

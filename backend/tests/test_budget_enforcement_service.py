@@ -17,6 +17,7 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
+from fastapi import HTTPException
 
 from backend.models.bureau_ops import BudgetUpsertRequest
 from backend.services import budget_enforcement_service
@@ -191,7 +192,7 @@ class TestPreCheck:
 
 class TestUpsertBudget:
     @pytest.mark.asyncio
-    async def test_invalid_soft_gt_hard_raises(self):
+    async def test_invalid_soft_gt_hard_raises_400(self):
         invalidate_budget_cache()
         mock, _, _ = _mock_supabase_with_rpc()
         body = BudgetUpsertRequest(
@@ -204,10 +205,11 @@ class TestUpsertBudget:
             reason="invalid test",
         )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(HTTPException) as exc_info:
             await BudgetEnforcementService.upsert_budget(
                 mock, actor_id=USER_ID, body=body,
             )
+        assert exc_info.value.status_code == 400
 
     @pytest.mark.asyncio
     async def test_create_invalidates_cache(self):

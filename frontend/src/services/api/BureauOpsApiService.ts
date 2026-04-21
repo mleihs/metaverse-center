@@ -188,8 +188,7 @@ export class BureauOpsApiService extends BaseApiService {
   }
 
   async deleteBudget(id: string, reason: string): Promise<ApiResponse<{ deleted: boolean }>> {
-    const qs = new URLSearchParams({ reason }).toString();
-    return this.delete(`/admin/ops/budget/${id}?${qs}`);
+    return this.delete(`/admin/ops/budget/${id}`, { reason });
   }
 
   async tripKill(body: TripKillBody): Promise<ApiResponse<KillActionResponse>> {

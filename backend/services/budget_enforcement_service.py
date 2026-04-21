@@ -29,16 +29,18 @@ from __future__ import annotations
 import logging
 import time
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 import sentry_sdk
 
 from backend.models.bureau_ops import BudgetCap, BudgetUpsertRequest
 from backend.services.ops_ledger_service import OpsLedgerService
-from backend.utils.errors import not_found
+from backend.utils.errors import bad_request, not_found
 from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
+
+BudgetDecision = Literal["ok", "warn", "block"]
 
 logger = logging.getLogger(__name__)
 
@@ -239,6 +241,11 @@ class BudgetEnforcementService:
                 "enabled": body.enabled,
             },
         )
+        # The DB row lacks the rolled-up current spend (it comes from the
+        # get_budget_states RPC, not the base table). Return zeros here
+        # and let the admin panel refresh via list_budgets — the 15s
+        # budget cache has already been invalidated above so the next
+        # list call returns fresh numbers.
         return _row_to_budget({**row, "current_usd": 0, "current_calls": 0})
 
     @staticmethod
@@ -284,7 +291,7 @@ class BudgetEnforcementService:
 # ── Internals ────────────────────────────────────────────────────────────
 
 
-def _evaluate_budget(row: dict[str, Any]) -> str:
+def _evaluate_budget(row: dict[str, Any]) -> BudgetDecision:
     """Map a budget row to one of 'ok' / 'warn' / 'block'."""
     max_usd = float(row.get("max_usd") or 0.0)
     current = float(row.get("current_usd") or 0.0)
@@ -303,9 +310,13 @@ def _evaluate_budget(row: dict[str, Any]) -> str:
 def _validate_budget_invariants(body: BudgetUpsertRequest) -> None:
     """DB CHECKs cover most cases; this enforces soft <= hard at the
     service layer (migration 228 leaves this as a service invariant for
-    experimentation flexibility — see plan §4.3 invariant #3)."""
+    experimentation flexibility — see plan §4.3 invariant #3).
+
+    Raises HTTP 400 so API consumers see a client-error for bad input,
+    not a 500.
+    """
     if body.soft_warn_pct > body.hard_block_pct:
-        raise ValueError(
+        raise bad_request(
             f"soft_warn_pct ({body.soft_warn_pct}) must be "
             f"<= hard_block_pct ({body.hard_block_pct})"
         )

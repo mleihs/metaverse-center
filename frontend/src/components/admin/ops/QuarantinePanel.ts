@@ -246,6 +246,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
   @state() private _cutAllOpen = false;
   @state() private _cutAllReason = '';
   @state() private _busyKey: string | null = null;
+  @state() private _resetPrompt: { entry: CircuitEntry; reason: string } | null = null;
 
   private _keyOf(entry: CircuitEntry): string {
     return `${entry.scope}:${entry.scope_key}`;
@@ -296,24 +297,35 @@ export class VelgOpsQuarantinePanel extends LitElement {
     }
   }
 
-  private async _handleReset(entry: CircuitEntry): Promise<void> {
-    const reason = window.prompt(msg('Reason for reset (required, audit log):'));
-    if (!reason || reason.trim().length < 3) return;
+  private _onRequestReset(entry: CircuitEntry): void {
+    this._resetPrompt = { entry, reason: '' };
+  }
+
+  private _onCancelReset(): void {
+    this._resetPrompt = null;
+  }
+
+  private async _onConfirmReset(): Promise<void> {
+    if (!this._resetPrompt) return;
+    const { entry, reason } = this._resetPrompt;
+    const trimmed = reason.trim();
+    if (trimmed.length < 3) return;
     const key = this._keyOf(entry);
     this._busyKey = key;
     const resp = await bureauOpsApi.resetCircuit({
       scope: entry.scope,
       scope_key: entry.scope_key,
-      reason: reason.trim(),
+      reason: trimmed,
     });
     this._busyKey = null;
+    this._resetPrompt = null;
     if (resp.success) {
       VelgToast.success(msg(str`Reset ${entry.scope}:${entry.scope_key}`));
       this.dispatchEvent(new CustomEvent('ops-circuit-changed', { bubbles: true, composed: true }));
     } else {
       VelgToast.error(msg(str`Reset failed: ${resp.error.message}`));
       captureError(new Error(resp.error.message), {
-        source: 'QuarantinePanel._handleReset',
+        source: 'QuarantinePanel._onConfirmReset',
         code: resp.error.code,
       });
     }
@@ -461,7 +473,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
                         ? html`<button
                             class="auto-row__reset"
                             type="button"
-                            @click=${() => void this._handleReset(entry)}
+                            @click=${() => this._onRequestReset(entry)}
                             ?disabled=${this._busyKey === this._keyOf(entry)}
                           >
                             ${msg('Reset')}
@@ -476,6 +488,52 @@ export class VelgOpsQuarantinePanel extends LitElement {
                             ${msg(
                               str`${Math.round(entry.opens_until_s)}s until half-open probe • ${entry.consecutive_opens} consecutive opens`,
                             )}
+                          </div>
+                        `
+                      : nothing}
+                    ${this._resetPrompt && this._keyOf(this._resetPrompt.entry) === this._keyOf(entry)
+                      ? html`
+                          <div
+                            class="cut-all-confirm"
+                            role="region"
+                            aria-label=${msg('Circuit reset confirmation')}
+                          >
+                            <label class="cut-all-confirm__label" for="reset-reason-${this._keyOf(entry)}">
+                              ${msg('Reason for reset (audit log):')}
+                            </label>
+                            <input
+                              id="reset-reason-${this._keyOf(entry)}"
+                              class="cut-all-confirm__input"
+                              type="text"
+                              minlength="3"
+                              maxlength="500"
+                              autocomplete="off"
+                              .value=${this._resetPrompt.reason}
+                              @input=${(e: Event) => {
+                                if (!this._resetPrompt) return;
+                                this._resetPrompt = {
+                                  ...this._resetPrompt,
+                                  reason: (e.target as HTMLInputElement).value,
+                                };
+                              }}
+                            />
+                            <div class="cut-all-confirm__actions">
+                              <button
+                                class="cut-all-confirm__btn"
+                                type="button"
+                                @click=${this._onCancelReset}
+                              >
+                                ${msg('Cancel')}
+                              </button>
+                              <button
+                                class="cut-all-confirm__btn cut-all-confirm__btn--danger"
+                                type="button"
+                                @click=${() => void this._onConfirmReset()}
+                                ?disabled=${this._resetPrompt.reason.trim().length < 3}
+                              >
+                                ${msg('Reset')}
+                              </button>
+                            </div>
                           </div>
                         `
                       : nothing}
