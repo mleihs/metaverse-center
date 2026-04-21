@@ -33,12 +33,23 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
     BudgetContext,
+    CreditExhaustedError,
     OpenRouterError,
     OpenRouterService,
 )
 from backend.services.journal.fragment_prompts import (
+    ECHO_SYSTEM_PROMPT,
     IMPRESSION_SYSTEM_PROMPT,
+    IMPRINT_SYSTEM_PROMPT,
+    MARK_SYSTEM_PROMPT,
+    SIGNATURE_SYSTEM_PROMPT,
+    TREMOR_SYSTEM_PROMPT,
+    build_echo_user_prompt,
     build_impression_user_prompt,
+    build_imprint_user_prompt,
+    build_mark_user_prompt,
+    build_signature_user_prompt,
+    build_tremor_user_prompt,
 )
 from backend.services.platform_model_config import get_platform_model
 from backend.utils.db import maybe_single_data
@@ -66,14 +77,22 @@ _LLM_MAX_TOKENS = 400
 # Strip markdown code fences from LLM output (some models wrap JSON).
 _FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?\s*```", re.DOTALL)
 
-# Default model when platform_model_config has no fragment_generation row.
-# DeepSeek V3 tier per plan §7 (research model purpose).
-_DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324"
+# Per plan §7: fragment_generation uses the platform "research" model
+# purpose (DeepSeek V3 / Gemini-Flash tier — cheap, fast, literary enough).
+# constellation_insight (P2) also uses "research"; palimpsest_reflection
+# (P4) uses "forge" (Claude Sonnet tier — the Palimpsest is literary).
+_MODEL_PURPOSE_RESEARCH = "research"
 
 # Map fragment_type -> (system_prompt, user_prompt_builder).
-# Extend in P1 as other integration hooks land.
+# All 6 source systems register their voices here. Imprint (dungeon) and
+# the rest landed in P1 alongside their integration hooks.
 _PROMPT_TABLE: dict[str, tuple[str, Any]] = {
     "impression": (IMPRESSION_SYSTEM_PROMPT, build_impression_user_prompt),
+    "imprint": (IMPRINT_SYSTEM_PROMPT, build_imprint_user_prompt),
+    "signature": (SIGNATURE_SYSTEM_PROMPT, build_signature_user_prompt),
+    "echo": (ECHO_SYSTEM_PROMPT, build_echo_user_prompt),
+    "mark": (MARK_SYSTEM_PROMPT, build_mark_user_prompt),
+    "tremor": (TREMOR_SYSTEM_PROMPT, build_tremor_user_prompt),
 }
 
 
@@ -263,7 +282,11 @@ class FragmentService:
         system_prompt, user_prompt_builder = _PROMPT_TABLE[fragment_type]
         user_prompt = user_prompt_builder(req.get("context", {}))
 
-        model_id = get_platform_model("fragment_generation") or _DEFAULT_MODEL
+        # get_platform_model always returns a string (falls back to
+        # HARDCODED_DEFAULTS internally), so no `or` default is needed here.
+        # Pass "research" as the purpose alias — fragment_generation belongs
+        # to the same model tier per plan §7.
+        model_id = get_platform_model(_MODEL_PURPOSE_RESEARCH)
 
         budget = BudgetContext(
             admin_supabase=admin,
@@ -288,6 +311,17 @@ class FragmentService:
             # Budget block is a deliberate admin action. No retry.
             logger.info(
                 "Fragment generation blocked by budget",
+                extra={"request_id": req.get("id"), "fragment_type": fragment_type},
+            )
+            return "failed"
+        except CreditExhaustedError:
+            # OpenRouter key is out of credits (402/403). Retrying would hit
+            # the same wall on the next tick, burning attempts + circuit
+            # breaker. Terminal like BudgetExceededError; surface to admin
+            # via processed_at timestamp and the default 'max retries
+            # exceeded' last_error would be misleading, so log explicitly.
+            logger.warning(
+                "Fragment generation skipped: OpenRouter credit exhausted",
                 extra={"request_id": req.get("id"), "fragment_type": fragment_type},
             )
             return "failed"
