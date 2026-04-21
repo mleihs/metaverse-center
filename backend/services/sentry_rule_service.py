@@ -111,7 +111,11 @@ class SentryRuleService:
             action=action,
             target_scope="sentry",
             target_key=str(row["id"]),
-            reason=body.note,
+            # `audit_reason` captures "why this mutation happened" —
+            # distinct from `note` which is the rule's existence
+            # rationale. Falls back to `note` on create where the two
+            # are identical.
+            reason=body.audit_reason or body.note,
             payload={
                 "kind": body.kind,
                 "enabled": body.enabled,

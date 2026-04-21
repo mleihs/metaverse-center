@@ -237,7 +237,15 @@ class SentryRule(BaseModel):
 
 
 class SentryRuleUpsertRequest(BaseModel):
-    """Body for POST/PUT /admin/ops/sentry/rules."""
+    """Body for POST/PUT /admin/ops/sentry/rules.
+
+    ``note`` is the rule's permanent documentation (why the rule exists).
+    ``audit_reason`` is optional and records why this specific mutation
+    happened — operators should pass it when the mutation intent differs
+    from the rule's existence rationale (e.g. toggling enabled off as a
+    short-term silencer). Falls back to ``note`` when omitted, matching
+    the create-rule case where the two are identical.
+    """
 
     kind: SentryRuleKind
     match_exception_type: str | None = Field(default=None, max_length=128)
@@ -247,6 +255,7 @@ class SentryRuleUpsertRequest(BaseModel):
     downgrade_to: SentryDowngradeTo | None = None
     enabled: bool = True
     note: str = Field(..., min_length=3, max_length=500)
+    audit_reason: str | None = Field(default=None, min_length=3, max_length=500)
 
 
 # ── Kill / revert (Quarantine panel) ─────────────────────────────────────

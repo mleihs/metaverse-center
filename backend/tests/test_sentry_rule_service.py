@@ -56,12 +56,14 @@ def _admin_mock(result_data: list[dict] | dict | None) -> MagicMock:
     return admin
 
 
-def _body() -> SentryRuleUpsertRequest:
-    return SentryRuleUpsertRequest(
-        kind="ignore",
-        match_message_regex="(boom)",
-        note="test rule rationale",
-    )
+def _body(**overrides: object) -> SentryRuleUpsertRequest:
+    defaults: dict[str, object] = {
+        "kind": "ignore",
+        "match_message_regex": "(boom)",
+        "note": "test rule rationale",
+    }
+    defaults.update(overrides)
+    return SentryRuleUpsertRequest(**defaults)  # type: ignore[arg-type]
 
 
 # ── list_rules ───────────────────────────────────────────────────────────
@@ -139,6 +141,44 @@ async def test_upsert_rule_update_raises_not_found_for_missing_id() -> None:
 
 
 # ── upsert_rule: cache-reload tolerance ──────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_upsert_rule_uses_audit_reason_when_provided() -> None:
+    # audit_reason overrides note as the audit-log reason so toggling
+    # enabled does not masquerade as a content edit.
+    row = _rule_row()
+    admin = _admin_mock([row])
+    with (
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
+              new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
+              new_callable=AsyncMock) as audit_mock,
+    ):
+        await SentryRuleService.upsert_rule(
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(audit_reason="toggled off during playtest"),
+        )
+    assert audit_mock.call_args.kwargs["reason"] == "toggled off during playtest"
+
+
+@pytest.mark.asyncio
+async def test_upsert_rule_falls_back_to_note_when_audit_reason_missing() -> None:
+    # The common create case — operator writes the rule rationale once,
+    # no separate mutation reason required.
+    row = _rule_row()
+    admin = _admin_mock([row])
+    with (
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
+              new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
+              new_callable=AsyncMock) as audit_mock,
+    ):
+        await SentryRuleService.upsert_rule(
+            admin, actor_id=_ACTOR_ID, body=_body(),
+        )
+    assert audit_mock.call_args.kwargs["reason"] == "test rule rationale"
 
 
 @pytest.mark.asyncio
