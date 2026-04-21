@@ -40,7 +40,12 @@ from backend.services.social.constants import (
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.services.social.types import AdaptedContent
 from backend.utils.responses import extract_list
-from backend.utils.settings import decrypt_setting, load_platform_settings, parse_setting_bool
+from backend.utils.settings import (
+    decrypt_setting,
+    load_platform_settings,
+    parse_setting_bool,
+    upsert_platform_setting,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -181,13 +186,8 @@ class BlueskyScheduler(BaseSchedulerMixin):
                     )
                     sentry_sdk.capture_exception(exc)
                 # Disable posting
-                await (
-                    admin.table("platform_settings")
-                    .update(
-                        {"setting_value": '"false"'},
-                    )
-                    .eq("setting_key", "bluesky_posting_enabled")
-                    .execute()
+                await upsert_platform_setting(
+                    admin, "bluesky_posting_enabled", '"false"',
                 )
                 return
             except BlueskyRateLimitError:

@@ -64,12 +64,16 @@ def _result(*, branches: list[OrphanBranchClassification], dry_run: bool = False
     )
 
 
-def _admin_mock_with_update() -> tuple[MagicMock, AsyncMock]:
-    """Return (admin, execute_mock). admin.table('...').update(...).eq(...).execute()."""
+def _admin_mock_with_upsert() -> tuple[MagicMock, AsyncMock]:
+    """Return (admin, execute_mock) wired for ``.upsert(...).execute()``.
+
+    Mirrors the shape used by :func:`upsert_platform_setting` — the
+    scheduler persists ``last_run_at`` through the helper, not via the
+    old ``.update().eq()`` chain.
+    """
     admin = MagicMock()
     chain = MagicMock()
-    chain.update.return_value = chain
-    chain.eq.return_value = chain
+    chain.upsert.return_value = chain
     execute = AsyncMock(return_value=MagicMock(data=None))
     chain.execute = execute
     admin.table.return_value = chain
@@ -213,7 +217,7 @@ class TestLoadConfig:
 class TestProcessTick:
     @pytest.mark.asyncio
     async def test_not_due_is_a_noop(self) -> None:
-        admin, execute = _admin_mock_with_update()
+        admin, execute = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -231,7 +235,7 @@ class TestProcessTick:
 
     @pytest.mark.asyncio
     async def test_due_runs_sweep_and_persists_timestamp(self) -> None:
-        admin, execute = _admin_mock_with_update()
+        admin, execute = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -255,7 +259,7 @@ class TestProcessTick:
 
     @pytest.mark.asyncio
     async def test_first_run_fires_and_persists(self) -> None:
-        admin, execute = _admin_mock_with_update()
+        admin, execute = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -272,7 +276,7 @@ class TestProcessTick:
 
     @pytest.mark.asyncio
     async def test_github_env_missing_skips_gracefully(self) -> None:
-        admin, execute = _admin_mock_with_update()
+        admin, execute = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -293,7 +297,7 @@ class TestProcessTick:
 
     @pytest.mark.asyncio
     async def test_error_count_pushes_sentry_message(self) -> None:
-        admin, execute = _admin_mock_with_update()
+        admin, execute = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -327,8 +331,7 @@ class TestProcessTick:
         admin = MagicMock()
         # Persist call raises — we want to verify the report still happened.
         chain = MagicMock()
-        chain.update.return_value = chain
-        chain.eq.return_value = chain
+        chain.upsert.return_value = chain
         chain.execute = AsyncMock(side_effect=RuntimeError("db down"))
         admin.table.return_value = chain
 
@@ -357,7 +360,7 @@ class TestProcessTick:
 
     @pytest.mark.asyncio
     async def test_no_errors_does_not_call_sentry(self) -> None:
-        admin, _ = _admin_mock_with_update()
+        admin, _ = _admin_mock_with_upsert()
         config = {
             "interval_days": 7.0,
             "min_age_days": 14.0,
@@ -382,14 +385,16 @@ class TestPersistLastRunAt:
     async def test_writes_iso_string_with_outer_quotes(self) -> None:
         admin = MagicMock()
         chain = MagicMock()
-        chain.update.return_value = chain
-        chain.eq.return_value = chain
+        chain.upsert.return_value = chain
         chain.execute = AsyncMock(return_value=MagicMock(data=None))
         admin.table.return_value = chain
 
         await ss._persist_last_run_at(admin, _NOW)
 
         admin.table.assert_called_once_with("platform_settings")
-        update_args = chain.update.call_args.args[0]
-        assert update_args == {"setting_value": '"2026-04-21T12:00:00+00:00"'}
-        chain.eq.assert_called_once_with("setting_key", "orphan_sweeper_last_run_at")
+        payload, kwargs = chain.upsert.call_args.args[0], chain.upsert.call_args.kwargs
+        assert payload == {
+            "setting_key": "orphan_sweeper_last_run_at",
+            "setting_value": '"2026-04-21T12:00:00+00:00"',
+        }
+        assert kwargs == {"on_conflict": "setting_key"}

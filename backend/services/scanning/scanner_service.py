@@ -24,6 +24,7 @@ from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
+from backend.utils.settings import upsert_platform_setting
 from supabase import AsyncClient as Client
 
 # Resolved template dataclass for cached DB templates
@@ -498,13 +499,8 @@ class ScannerService:
         elif not enabled and name in current:
             current.remove(name)
 
-        await (
-            admin.table("platform_settings")
-            .update(
-                {"setting_value": json.dumps(current)},
-            )
-            .eq("setting_key", "news_scanner_adapters")
-            .execute()
+        await upsert_platform_setting(
+            admin, "news_scanner_adapters", json.dumps(current),
         )
 
         return {"name": name, "enabled": enabled}
