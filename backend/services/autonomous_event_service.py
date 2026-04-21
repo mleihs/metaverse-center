@@ -32,9 +32,11 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.dependencies import get_admin_supabase
 from backend.services.agent_mood_service import AgentMoodService
+from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
@@ -527,6 +529,18 @@ class AutonomousEventService:
             resolved = await model_resolver.resolve_text_model("event_generation")
             openrouter = OpenRouterService(api_key=openrouter_api_key)
 
+            # Bureau Ops Deferral A.2 — thread simulation context into the
+            # budget pre-check. Autonomous event generation runs from the
+            # scheduler (no user JWT), so admin_supabase is fetched inline.
+            # user_id is intentionally None — this is a system call, not a
+            # user action.
+            admin_supabase = await get_admin_supabase()
+            budget = BudgetContext(
+                admin_supabase=admin_supabase,
+                purpose="event_generation",
+                simulation_id=simulation_id,
+            )
+
             content = await openrouter.generate(
                 model=resolved.model_id,
                 messages=[
@@ -535,9 +549,20 @@ class AutonomousEventService:
                 ],
                 temperature=0.7,
                 max_tokens=512,
+                budget=budget,
             )
             repaired = repair_json_output(content)
             narrative = json.loads(repaired)
+
+        except BudgetExceededError:
+            # Budget block is a deliberate, audited admin action — fall
+            # back to the template narrative (same behaviour as an LLM
+            # failure) instead of letting the event silently drop.
+            logger.info(
+                "Event narrative skipped: AI budget blocked",
+                extra={"simulation_id": str(simulation_id), "trigger": trigger},
+            )
+            narrative = cls._template_narrative(trigger, agent_names, zone_name)
 
         except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             logger.warning("LLM narrative failed, using template", exc_info=True)

@@ -12,9 +12,10 @@ from typing import Any
 from uuid import UUID
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
     MOOD_CONTEXT_TEMPLATES,
@@ -180,6 +181,17 @@ class ChatAIService:
             extra_context=extra_context,
         )
 
+        # Bureau Ops Deferral A.2 — attach simulation context to the budget
+        # pre-check. user_id is not threaded through _generate_single_response
+        # today; global + purpose + simulation budgets still apply. When the
+        # chat router passes user_id down in a future refactor, extend here.
+        admin_supabase = await get_admin_supabase()
+        budget = BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose="chat",
+            simulation_id=self._simulation_id,
+        )
+
         # Generate via OpenRouter
         t0 = time.monotonic()
         response_text = await self._openrouter.generate(
@@ -187,6 +199,7 @@ class ChatAIService:
             messages=messages,
             temperature=model.temperature,
             max_tokens=model.max_tokens,
+            budget=budget,
         )
         generation_ms = int((time.monotonic() - t0) * 1000)
 
