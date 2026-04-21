@@ -69,8 +69,11 @@ class TestParseSettingBool:
         [
             None,          # jsonb null / missing row — the F32 bug
             "null",        # literal "null" string (postgrest sometimes)
+            '"null"',      # JSON-quoted null (strip('"') unwraps it)
             "None",        # Python-repr leaking through str()
+            '"None"',      # JSON-quoted Python-repr
             "enabled",     # unknown string — fail-closed tightening
+            '"enabled"',   # JSON-quoted unknown — same fail-closed path
             "on-standby",  # typo / custom value
             "foo",         # unrecognised
             object(),      # unexpected type
@@ -79,7 +82,12 @@ class TestParseSettingBool:
     def test_non_canonical_fails_closed(self, raw: object):
         """Unknown / unexpected values return False. This locks the
         fail-closed contract that prevents a typo or a jsonb-null
-        round-trip from silently enabling a gated scheduler."""
+        round-trip from silently enabling a gated scheduler.
+
+        Includes JSON-quoted variants (``'"null"'``, ``'"None"'``,
+        ``'"enabled"'``) because postgrest round-trips stored JSON
+        strings with their outer quotes preserved — the ``strip('"')``
+        step must not salvage them as truthy."""
         assert parse_setting_bool(raw) is False
 
 
