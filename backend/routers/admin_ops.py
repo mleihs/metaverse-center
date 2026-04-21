@@ -44,12 +44,15 @@ from backend.models.bureau_ops import (
     OpsAuditEntry,
     ResetCircuitRequest,
     RevertKillRequest,
+    SentryRule,
+    SentryRuleUpsertRequest,
     TripKillRequest,
 )
 from backend.models.common import CurrentUser, DeleteResponse, SuccessResponse
 from backend.services.budget_enforcement_service import BudgetEnforcementService
 from backend.services.circuit_breaker_service import circuit_breaker
 from backend.services.ops_ledger_service import OpsLedgerService
+from backend.services.sentry_rule_service import SentryRuleService
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
@@ -303,6 +306,63 @@ async def cut_all_ai(
     )
     data = await _do_trip_kill(admin_supabase, actor_id=user.id, body=trip_body)
     return SuccessResponse(data=data)
+
+
+# ── Sentry rules CRUD (P2.3) ─────────────────────────────────────────────
+
+
+@router.get("/sentry/rules")
+async def list_sentry_rules(
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[list[SentryRule]]:
+    """All rows in ``sentry_rules`` for the SentryRulesPanel grid."""
+    data = await SentryRuleService.list_rules(admin_supabase)
+    return SuccessResponse(data=data)
+
+
+@router.post("/sentry/rules")
+async def create_sentry_rule(
+    body: SentryRuleUpsertRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[SentryRule]:
+    """Create a new Sentry rule. Cache refresh + audit entry are atomic
+    with the row insert — the Sentry hook picks up the change on the
+    next event.
+    """
+    data = await SentryRuleService.upsert_rule(
+        admin_supabase, actor_id=user.id, body=body,
+    )
+    return SuccessResponse(data=data)
+
+
+@router.put("/sentry/rules/{rule_id}")
+async def update_sentry_rule(
+    rule_id: UUID,
+    body: SentryRuleUpsertRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[SentryRule]:
+    """Update a Sentry rule by id."""
+    data = await SentryRuleService.upsert_rule(
+        admin_supabase, actor_id=user.id, body=body, rule_id=rule_id,
+    )
+    return SuccessResponse(data=data)
+
+
+@router.delete("/sentry/rules/{rule_id}")
+async def delete_sentry_rule(
+    rule_id: UUID,
+    reason: Annotated[str, Query(min_length=3, max_length=500)],
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[DeleteResponse]:
+    """Delete a Sentry rule. ``reason`` is required for the audit log."""
+    await SentryRuleService.delete_rule(
+        admin_supabase, actor_id=user.id, rule_id=rule_id, reason=reason,
+    )
+    return SuccessResponse(data=DeleteResponse(id=str(rule_id)))
 
 
 @router.post("/circuit/reset")
