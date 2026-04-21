@@ -12,6 +12,7 @@ import httpx
 import sentry_sdk
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.models.generation import (
     ChronicleEntryDraft,
     CycleSitrepDraft,
@@ -28,6 +29,7 @@ from backend.services.embassy_prompts import (
     VECTOR_VISUAL_LANGUAGE,
 )
 from backend.services.external.openrouter import (
+    BudgetContext,
     ModelUnavailableError,
     OpenRouterService,
     RateLimitError,
@@ -1059,6 +1061,19 @@ class GenerationService:
         Layer 2: If retries exhausted, fall back to platform fallback model.
         Layer 3: On ModelUnavailableError, fall back to platform default.
         """
+        # Bureau Ops Deferral A.2 — simulation_id is on ``self``; user_id
+        # is not threaded into GenerationService (instance-scoped to a
+        # simulation, not a user action). Enforce global + purpose + sim
+        # budgets. The budget pre_check fires on layer 1; if exceeded,
+        # layers 2 and 3 are skipped (exceeded budget must NOT fall back
+        # to another model — that just spends more budget).
+        admin_supabase = await get_admin_supabase()
+        budget = BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose=purpose,
+            simulation_id=self._simulation_id,
+        )
+
         # ── Layer 1: backoff-retry on same model ────────────────────
         for attempt, backoff in enumerate((0, *self._BACKOFFS)):
             if backoff:
@@ -1080,6 +1095,7 @@ class GenerationService:
                     user_prompt=user_prompt,
                     temperature=model.temperature,
                     max_tokens=model.max_tokens,
+                    budget=budget,
                 )
                 await AIUsageService.log(
                     self._supabase,
@@ -1113,6 +1129,7 @@ class GenerationService:
                 user_prompt=user_prompt,
                 temperature=fallback.temperature,
                 max_tokens=fallback.max_tokens,
+                budget=budget,
             )
             await AIUsageService.log(
                 self._supabase,
@@ -1136,6 +1153,7 @@ class GenerationService:
             model=default_model,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            budget=budget,
         )
         await AIUsageService.log(
             self._supabase,

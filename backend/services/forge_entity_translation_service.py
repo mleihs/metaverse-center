@@ -6,6 +6,7 @@ import logging
 from typing import Any
 from uuid import UUID
 
+from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeEntityTranslationOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
 from supabase import AsyncClient as Client
@@ -99,7 +100,17 @@ class ForgeEntityTranslationService:
 
         agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key)
 
-        result = await run_ai(agent, prompt, "translation", output_type=ForgeEntityTranslationOutput)
+        # Bureau Ops Deferral A.2 — inherit global + purpose budget enforcement.
+        # simulation_id is not threaded down to this static method today;
+        # extend when a caller has it in scope. Global + purpose budgets still apply.
+        admin_supabase = await get_admin_supabase()
+        result = await run_ai(
+            agent,
+            prompt,
+            "translation",
+            output_type=ForgeEntityTranslationOutput,
+            admin_supabase=admin_supabase,
+        )
         output = result.output
 
         logger.debug(
