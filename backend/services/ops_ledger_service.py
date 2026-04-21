@@ -257,16 +257,26 @@ class OpsLedgerService:
         Source is the ``ai_usage_rollup_hour`` materialized view (migration
         229). The MV groups by ``(hour, purpose, model, provider,
         simulation_id)`` — this method rolls those buckets up to the chosen
-        dimension so the 24×7 panel gets one row per cell.
+        dimension so the panel gets one row per cell.
 
         Aggregation happens in Python because the rollup window is small
-        (7 days × 24h × ≤ ~50 unique keys ≈ 8400 rows max) and doing it
-        here avoids adding yet another RPC for every dimension variant.
+        (30 days × 24h × ≤ ~100 unique keys ≈ 72k rows max; typical
+        7-day default is ~8k) and doing it here avoids adding yet another
+        RPC for every dimension variant.
+
+        The ``dimension`` kwarg is type-gated by ``Literal`` at the router
+        boundary, but we also look it up in an explicit allowlist here so
+        any non-router caller (scheduled reports, future code paths) can
+        never inject an arbitrary column name into the postgrest select.
         """
+        allowed_columns = {"purpose": "purpose", "model": "model", "provider": "provider"}
+        column = allowed_columns.get(dimension)
+        if column is None:
+            raise ValueError(f"invalid heatmap dimension: {dimension!r}")
         since = _iso_days_ago(days)
         resp = await (
             admin_supabase.table("ai_usage_rollup_hour")
-            .select(f"hour, {dimension}, calls, tokens, usd")
+            .select(f"hour, {column}, calls, tokens, usd")
             .gte("hour", since)
             .order("hour", desc=False)
             .execute()
@@ -275,7 +285,7 @@ class OpsLedgerService:
         buckets: dict[tuple[str, str], dict[str, float]] = {}
         for row in rows:
             hour = str(row.get("hour") or "")
-            key = str(row.get(dimension) or "")
+            key = str(row.get(column) or "")
             if not hour or not key:
                 continue
             bucket_key = (hour, key)

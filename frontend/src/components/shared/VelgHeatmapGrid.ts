@@ -73,6 +73,19 @@ export class VelgHeatmapGrid extends LitElement {
     return styles.getPropertyValue(name).trim();
   }
 
+  // ECharts renders tooltip strings as HTML. Keys + hours come from DB
+  // columns which are not operator-controlled today, but escaping here
+  // keeps the primitive safe against any future source (user-owned
+  // tags, purpose strings from admin UI, etc.).
+  private _escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   private _buildOption(): EChartsOption {
     const hours = [...new Set(this.cells.map((c) => c.hour))].sort();
     const keys = [...new Set(this.cells.map((c) => c.key))].sort();
@@ -134,8 +147,8 @@ export class VelgHeatmapGrid extends LitElement {
           const cell = meta.get(`${hour}|${key}`);
           if (!cell) return '';
           return [
-            `<strong>${key}</strong>`,
-            `${hourLabel(hour)}`,
+            `<strong>${this._escapeHtml(key)}</strong>`,
+            this._escapeHtml(hourLabel(hour)),
             `$${cell.cost_usd.toFixed(4)}`,
             `${cell.calls.toLocaleString()} calls`,
             `${cell.tokens.toLocaleString()} tokens`,
