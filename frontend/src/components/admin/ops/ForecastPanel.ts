@@ -24,7 +24,7 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -35,6 +35,7 @@ import {
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/VelgForecastSlider.js';
+import type { ForecastSliderChangeDetail } from '../../shared/VelgForecastSlider.js';
 import '../../shared/VelgKineticCounter.js';
 
 interface SliderDelta {
@@ -42,6 +43,13 @@ interface SliderDelta {
   text: string;
   sign: 1 | 0 | -1;
 }
+
+/** Slider keys that scale the entire baseline rather than a single purpose. */
+const GLOBAL_SCALE_KEYS = new Set<string>(['growth_multiplier', 'model_efficiency_pct']);
+
+/** Faster kinetic-counter cycle on the adjusted value so slider drag tracks
+ * smoothly instead of stuttering through the default 800 ms animation. */
+const ADJUSTED_COUNTER_DURATION_MS = 120;
 
 @localized()
 @customElement('velg-ops-forecast-panel')
@@ -297,7 +305,7 @@ export class VelgOpsForecastPanel extends LitElement {
     this._refreshing = false;
   }
 
-  private _handleSliderChange(e: CustomEvent<{ key: string; value: number }>): void {
+  private _handleSliderChange(e: CustomEvent<ForecastSliderChangeDetail>): void {
     const { key, value } = e.detail;
     this._sliderValues = { ...this._sliderValues, [key]: value };
   }
@@ -316,23 +324,34 @@ export class VelgOpsForecastPanel extends LitElement {
    *
    * - growth_multiplier: scales the entire projection (baseline × (m - 1)).
    * - model_efficiency_pct: scales the entire projection.
-   * - other *_pct sliders: scale the matching purpose share only.
+   * - *_pct sliders: scale the matching purpose share only.
    *
    * Purpose-share keys map to ai_usage_log.purpose values via prefix
    * match — "chat_pct" matches both "chat" and "chat_memory" rows so
    * the operator's mental model ("chat traffic") aligns with what they
    * see in the heatmap.
+   *
+   * Unknown slider keys (no recognized suffix, not in the global-scale
+   * allowlist) log a warning and contribute zero delta — the operator
+   * sees the slider move but no projection change, and Sentry captures
+   * the contract drift so it gets noticed.
    */
   private _computeDelta(sliderKey: string, value: number, baseline: number): number {
     if (sliderKey === 'growth_multiplier') {
       return baseline * (value - 1);
     }
-    if (sliderKey === 'model_efficiency_pct') {
+    if (GLOBAL_SCALE_KEYS.has(sliderKey)) {
       return baseline * ((value - 100) / 100);
     }
-    const purposePrefix = sliderKey.replace(/_pct$/, '');
-    const share = this._purposeShare(purposePrefix);
-    return baseline * share * ((value - 100) / 100);
+    if (sliderKey.endsWith('_pct')) {
+      const purposePrefix = sliderKey.slice(0, -'_pct'.length);
+      const share = this._purposeShare(purposePrefix);
+      return baseline * share * ((value - 100) / 100);
+    }
+    captureError(new Error(`ForecastPanel: unknown slider key '${sliderKey}'`), {
+      source: 'ForecastPanel._computeDelta',
+    });
+    return 0;
   }
 
   private _purposeShare(prefix: string): number {
@@ -373,13 +392,41 @@ export class VelgOpsForecastPanel extends LitElement {
     );
   }
 
+  /** Header is shared across all three render states (loading, error,
+   * content) — extracting it ensures the refresh button behaves the same
+   * everywhere instead of degrading into a styled <span> in the loading
+   * branch. ``state`` controls the disabled/label combo. */
+  private _renderHeader(state: 'loading' | 'refreshing' | 'idle'): TemplateResult {
+    const disabled = state !== 'idle';
+    const label =
+      state === 'loading'
+        ? msg('loading…')
+        : state === 'refreshing'
+          ? msg('refreshing…')
+          : msg('refresh');
+    return html`
+      <div class="header">
+        <span class="header__label">${msg('Forecast // Oracle')}</span>
+        <button
+          class="header__refresh"
+          type="button"
+          ?disabled=${disabled}
+          @click=${this._fetch}
+          title=${msg('Refresh projection from server')}
+        >
+          ${icons.refresh(12)} ${label}
+        </button>
+      </div>
+    `;
+  }
+
   protected render() {
     if (this._loading) {
-      return html`<div class="header"><span class="header__label">${msg('Forecast // Oracle')}</span><span class="header__refresh">${msg('loading…')}</span></div>`;
+      return this._renderHeader('loading');
     }
     if (this._error || !this._forecast) {
       return html`
-        <div class="header"><span class="header__label">${msg('Forecast // Oracle')}</span></div>
+        ${this._renderHeader('idle')}
         <div class="error">${msg('Forecast unavailable:')} ${this._error ?? msg('no data')}</div>
       `;
     }
@@ -397,23 +444,17 @@ export class VelgOpsForecastPanel extends LitElement {
       sliderDeltas.set(slider.key, this._formatSignedDelta(delta));
     }
     const adjusted = baseline + totalDelta;
-    const totalSign: 1 | 0 | -1 = totalDelta > 0.005 ? 1 : totalDelta < -0.005 ? -1 : 0;
+    const totalDeltaFormatted = this._formatSignedDelta(totalDelta);
+    const totalDeltaClass =
+      totalDeltaFormatted.sign > 0
+        ? 'projection__delta--up'
+        : totalDeltaFormatted.sign < 0
+          ? 'projection__delta--down'
+          : '';
     const dirty = this._isAnyDirty();
 
     return html`
-      <div class="header">
-        <span class="header__label">${msg('Forecast // Oracle')}</span>
-        <button
-          class="header__refresh"
-          type="button"
-          ?disabled=${this._refreshing}
-          @click=${this._fetch}
-          title=${msg('Refresh projection from server')}
-        >
-          ${icons.refresh(12)}
-          ${this._refreshing ? msg('refreshing…') : msg('refresh')}
-        </button>
-      </div>
+      ${this._renderHeader(this._refreshing ? 'refreshing' : 'idle')}
 
       <div class="projection">
         <div class="projection__cell">
@@ -438,13 +479,12 @@ export class VelgOpsForecastPanel extends LitElement {
               .value=${adjusted}
               prefix="$"
               .precision=${2}
+              .duration=${ADJUSTED_COUNTER_DURATION_MS}
             ></velg-kinetic-counter>
           </span>
-          ${dirty
-            ? html`<span
-                class="projection__delta ${totalSign > 0 ? 'projection__delta--up' : totalSign < 0 ? 'projection__delta--down' : ''}"
-              >
-                ${totalSign > 0 ? '+' : totalSign < 0 ? '−' : ''}${this._formatUsd(Math.abs(totalDelta))} ${msg('vs baseline')}
+          ${dirty && totalDeltaFormatted.text
+            ? html`<span class="projection__delta ${totalDeltaClass}">
+                ${totalDeltaFormatted.text} ${msg('vs baseline')}
               </span>`
             : nothing}
         </div>
@@ -475,7 +515,7 @@ export class VelgOpsForecastPanel extends LitElement {
               .max=${slider.max}
               .default=${slider.default}
               .value=${value}
-              .step=${slider.unit === 'x' ? 0.1 : 1}
+              .step=${slider.step}
               unit=${slider.unit}
               delta-text=${delta?.text ?? ''}
               .deltaSign=${delta?.sign ?? 0}

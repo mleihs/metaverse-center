@@ -17,13 +17,24 @@
  *   - Dashed border around the panel
  *
  * Events:
- *   slider-change → { key, value, default, raw }
+ *   slider-change → ForecastSliderChangeDetail
+ *     (exported below so consumers narrow type-safely)
+ *
+ * Accessibility:
+ *   - Native ``<input type="range">`` (full keyboard support).
+ *   - ``aria-valuetext`` carries the value + unit ("100%").
+ *   - When delta-text is non-empty it is exposed via ``aria-describedby``
+ *     so screen readers announce "moving this slider adds $2.34" along
+ *     with the value change.
+ *   - Reset button is a 30×30 icon target (project IconButton convention,
+ *     above the WCAG AA 24×24 minimum for non-essential controls; the
+ *     same effect is also reachable by dragging back to default).
  *
  * Usage:
  *   <velg-forecast-slider
  *     key="forge_runs_pct"
  *     label="Forge ignites vs current"
- *     min=${0} max=${300} default=${100} value=${value}
+ *     min=${0} max=${300} default=${100} value=${value} step=${5}
  *     unit="%"
  *     delta-text="+$2.34"
  *     delta-sign=${1}
@@ -36,6 +47,19 @@ import { customElement, property } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 
 import { icons } from '../../utils/icons.js';
+
+/**
+ * Detail payload of the ``slider-change`` CustomEvent. Exported so panels
+ * can narrow event handlers type-safely without relying on structural
+ * subset-matching that would silently drift if the slider extended its
+ * payload later.
+ */
+export interface ForecastSliderChangeDetail {
+  key: string;
+  value: number;
+  default: number;
+  raw: string;
+}
 
 @localized()
 @customElement('velg-forecast-slider')
@@ -248,8 +272,8 @@ export class VelgForecastSlider extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 30px;
+      height: 30px;
       padding: 0;
       background: transparent;
       border: 1px solid var(--color-border);
@@ -293,21 +317,29 @@ export class VelgForecastSlider extends LitElement {
         : this.deltaSign < 0
           ? 'slider__delta--down'
           : 'slider__delta--zero';
+    const inputId = `range-${this.key}`;
+    const deltaId = `delta-${this.key}`;
+    // Compose aria-valuetext so screen readers announce "100% (+$2.34)"
+    // when the operator scrubs — the visible delta is otherwise invisible
+    // to assistive tech because it lives in a sibling element.
+    const valuetext = this.deltaText
+      ? `${formattedValue} (${this.deltaText})`
+      : formattedValue;
 
     return html`
       <div class="slider" part="root">
         <header class="slider__header">
-          <label class="slider__label" for="range-${this.key}">${this.label}</label>
+          <label class="slider__label" for=${inputId}>${this.label}</label>
           <output
             class="slider__value ${isDirty ? 'slider__value--dirty' : ''}"
-            for="range-${this.key}"
+            for=${inputId}
           >
             ${formattedValue}
           </output>
         </header>
         <div class="slider__track-wrapper">
           <input
-            id="range-${this.key}"
+            id=${inputId}
             class="slider__input"
             type="range"
             min=${this.min}
@@ -316,7 +348,8 @@ export class VelgForecastSlider extends LitElement {
             .value=${String(this.value)}
             ?disabled=${this.disabled}
             aria-label=${this.label}
-            aria-valuetext=${formattedValue}
+            aria-valuetext=${valuetext}
+            aria-describedby=${this.deltaText ? deltaId : nothing}
             @input=${this._onInput}
           />
           <span class="slider__default-tick" style="left: ${trackPct}%" aria-hidden="true"></span>
@@ -327,7 +360,7 @@ export class VelgForecastSlider extends LitElement {
           </span>
           ${
             this.deltaText
-              ? html`<span class="slider__delta ${deltaClass}">${this.deltaText}</span>`
+              ? html`<span id=${deltaId} class="slider__delta ${deltaClass}">${this.deltaText}</span>`
               : html`<span
                   class="slider__delta slider__delta--placeholder"
                   aria-hidden="true"
@@ -352,34 +385,44 @@ export class VelgForecastSlider extends LitElement {
     `;
   }
 
+  private _clamp(value: number): number {
+    if (Number.isNaN(value)) return this.default;
+    if (this.max < this.min) return value;
+    return Math.min(this.max, Math.max(this.min, value));
+  }
+
   private _onInput(e: Event) {
     const input = e.currentTarget as HTMLInputElement;
     const raw = input.value;
-    const value = Number(raw);
-    if (Number.isNaN(value)) return;
+    const parsed = Number(raw);
+    if (Number.isNaN(parsed)) return;
+    // Defensive clamp: native <input type="range"> already enforces bounds,
+    // but a misconfigured caller passing min > max or external value
+    // injections via JS could leak out-of-range values. Clamp here so the
+    // dispatched event is always within [min, max].
+    const value = this._clamp(parsed);
     this.value = value;
-    this.dispatchEvent(
-      new CustomEvent('slider-change', {
-        bubbles: true,
-        composed: true,
-        detail: { key: this.key, value, default: this.default, raw },
-      }),
-    );
+    this._emit(value, raw);
   }
 
   private _reset() {
     if (this.value === this.default) return;
     this.value = this.default;
+    this._emit(this.default, String(this.default));
+  }
+
+  private _emit(value: number, raw: string): void {
+    const detail: ForecastSliderChangeDetail = {
+      key: this.key,
+      value,
+      default: this.default,
+      raw,
+    };
     this.dispatchEvent(
-      new CustomEvent('slider-change', {
+      new CustomEvent<ForecastSliderChangeDetail>('slider-change', {
         bubbles: true,
         composed: true,
-        detail: {
-          key: this.key,
-          value: this.default,
-          default: this.default,
-          raw: String(this.default),
-        },
+        detail,
       }),
     );
   }

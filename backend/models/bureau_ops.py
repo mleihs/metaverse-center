@@ -126,13 +126,19 @@ class HeatmapCell(BaseModel):
 
 
 class ForecastSlider(BaseModel):
-    """One what-if slider definition returned with the projection."""
+    """One what-if slider definition returned with the projection.
+
+    ``step`` is the slider's increment — backend owns this so the frontend
+    never has to derive it from ``unit`` heuristics. Defaults to 1 to
+    match the most common percent-style slider.
+    """
 
     key: str
     label: str
     min: float
     max: float
     default: float
+    step: float = 1.0
     unit: str = ""
 
 

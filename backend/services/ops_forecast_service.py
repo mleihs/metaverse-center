@@ -26,6 +26,7 @@ import logging
 import math
 import statistics
 import time
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Final
 
@@ -59,6 +60,7 @@ _DEFAULT_SLIDERS: Final[list[ForecastSlider]] = [
         min=0.5,
         max=2.0,
         default=1.0,
+        step=0.1,
         unit="x",
     ),
     ForecastSlider(
@@ -67,6 +69,7 @@ _DEFAULT_SLIDERS: Final[list[ForecastSlider]] = [
         min=0,
         max=300,
         default=100,
+        step=5,
         unit="%",
     ),
     ForecastSlider(
@@ -75,6 +78,7 @@ _DEFAULT_SLIDERS: Final[list[ForecastSlider]] = [
         min=50,
         max=200,
         default=100,
+        step=5,
         unit="%",
     ),
     ForecastSlider(
@@ -83,6 +87,7 @@ _DEFAULT_SLIDERS: Final[list[ForecastSlider]] = [
         min=0,
         max=300,
         default=100,
+        step=5,
         unit="%",
     ),
     ForecastSlider(
@@ -91,6 +96,7 @@ _DEFAULT_SLIDERS: Final[list[ForecastSlider]] = [
         min=20,
         max=200,
         default=100,
+        step=5,
         unit="%",
     ),
 ]
@@ -124,6 +130,39 @@ def reset_driver_text_cache() -> None:
     _driver_text_cache = {}
 
 
+# ── Internal DTOs ────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class _PurposeShare:
+    """One row in the top-purposes attribution list."""
+
+    purpose: str
+    usd_30d: float
+    pct: float
+
+
+@dataclass(frozen=True)
+class _ProjectionSnapshot:
+    """Snapshot computed by ``_build_snapshot``.
+
+    Typed so renames don't drift silently between the snapshot producer
+    and its four consumers (``project``, ``_driver_text``, ``_call_haiku``,
+    ``_fallback_driver_text``, ``_driver_cache_key``).
+    """
+
+    mtd_usd: float
+    days_elapsed: int
+    days_remaining: int
+    linear_projected_usd: float
+    projected_usd: float
+    confidence_low_usd: float
+    confidence_high_usd: float
+    daily_mean: float
+    daily_stdev: float
+    top_purposes: tuple[_PurposeShare, ...]
+
+
 # ── Service ──────────────────────────────────────────────────────────────
 
 
@@ -134,28 +173,35 @@ class OpsForecastService:
     async def project(cls, admin_supabase: Client) -> ForecastProjection:
         """Return the end-of-month projection + driver text + slider catalog.
 
-        Single endpoint surface — the client polls this on panel-open and
-        applies slider deltas locally via a fixed formula. The 30-day
-        materialized view drives both the projection math and the
-        driver-text prompt.
+        Single entry point — the client polls this on panel-open and applies
+        slider deltas locally via a fixed formula. The 30-day materialized
+        view drives both the projection math and the driver-text prompt.
+        A single ``now`` is captured here and threaded into the helpers so
+        ``generated_at``, the rollup-window cutoff, and the month-boundary
+        math are all coherent against one logical clock.
         """
-        rows = await cls._fetch_rollup(admin_supabase)
-        snapshot = cls._build_snapshot(rows)
+        now = datetime.now(UTC)
+        rows = await cls._fetch_rollup(admin_supabase, now=now)
+        snapshot = cls._build_snapshot(rows, now=now)
         driver_text = await cls._driver_text(snapshot)
         return ForecastProjection(
-            projected_usd=snapshot["projected_usd"],
-            confidence_low_usd=snapshot["confidence_low_usd"],
-            confidence_high_usd=snapshot["confidence_high_usd"],
-            days_remaining=snapshot["days_remaining"],
+            projected_usd=snapshot.projected_usd,
+            confidence_low_usd=snapshot.confidence_low_usd,
+            confidence_high_usd=snapshot.confidence_high_usd,
+            days_remaining=snapshot.days_remaining,
             driver_text=driver_text,
             sliders=list(_DEFAULT_SLIDERS),
-            generated_at=datetime.now(UTC),
+            generated_at=now,
         )
 
     # ── Snapshot assembly ───────────────────────────────────────────────
 
     @staticmethod
-    async def _fetch_rollup(admin_supabase: Client) -> list[dict[str, Any]]:
+    async def _fetch_rollup(
+        admin_supabase: Client,
+        *,
+        now: datetime,
+    ) -> list[dict[str, Any]]:
         """Pull last 30 days of (hour, purpose, usd, calls) rows from the MV.
 
         The materialized view is refreshed every 60s by the rollup
@@ -164,7 +210,7 @@ class OpsForecastService:
         next refresh corrects it, and the daily-resolution math here is
         not sensitive to single-hour gaps.
         """
-        since = (datetime.now(UTC) - timedelta(days=_LOOKBACK_DAYS)).isoformat()
+        since = (now - timedelta(days=_LOOKBACK_DAYS)).isoformat()
         resp = await (
             admin_supabase.table("ai_usage_rollup_hour")
             .select("hour, purpose, calls, usd")
@@ -175,7 +221,12 @@ class OpsForecastService:
         return extract_list(resp)
 
     @classmethod
-    def _build_snapshot(cls, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    def _build_snapshot(
+        cls,
+        rows: list[dict[str, Any]],
+        *,
+        now: datetime | None = None,
+    ) -> _ProjectionSnapshot:
         """Compute baseline projection from rollup rows.
 
         Linear: ``mtd + daily_mean * days_remaining``.
@@ -187,9 +238,13 @@ class OpsForecastService:
         slightly underestimates early in the day and corrects through
         the day. Within-day refinement is deferred (would require an
         intraday spend curve we don't yet model).
+
+        ``now`` is optional so tests can call this method directly without
+        threading a clock through; production callers always pass it from
+        ``project()`` for cross-helper coherence.
         """
-        now = datetime.now(UTC)
-        today = now.date()
+        when = now or datetime.now(UTC)
+        today = when.date()
         per_day: dict[date, float] = {}
         per_purpose_30d: dict[str, float] = {}
         for row in rows:
@@ -216,14 +271,17 @@ class OpsForecastService:
                 dow_mult[dow] = 1.0
         daily_stdev = statistics.stdev(all_daily) if len(all_daily) >= 2 else 0.0
 
-        # Month boundaries
+        # Month boundaries. ``days_elapsed`` counts COMPLETE days finished
+        # before today (e.g. on April 21, twenty days have finished); the
+        # ``- 1`` excludes today (which is partial) from the future-projection
+        # window so we don't double-count today's MTD spend.
         month_start = today.replace(day=1)
         if month_start.month == 12:
             next_month = month_start.replace(year=month_start.year + 1, month=1)
         else:
             next_month = month_start.replace(month=month_start.month + 1)
         days_in_month = (next_month - month_start).days
-        days_elapsed = (today - month_start).days  # today is day (elapsed + 1)
+        days_elapsed = (today - month_start).days
         days_remaining = max(0, days_in_month - days_elapsed - 1)
 
         mtd_usd = sum(usd for day, usd in per_day.items() if day >= month_start)
@@ -248,32 +306,32 @@ class OpsForecastService:
             reverse=True,
         )[:_TOP_PURPOSE_COUNT]
         total_30d = sum(per_purpose_30d.values()) or 1.0
-        top_purposes = [
-            {
-                "purpose": purpose,
-                "usd_30d": round(usd, 4),
-                "pct": round(usd / total_30d * 100, 1),
-            }
+        top_purposes = tuple(
+            _PurposeShare(
+                purpose=purpose,
+                usd_30d=round(usd, 4),
+                pct=round(usd / total_30d * 100, 1),
+            )
             for purpose, usd in sorted_purposes
-        ]
+        )
 
-        return {
-            "mtd_usd": round(mtd_usd, 4),
-            "days_elapsed": days_elapsed,
-            "days_remaining": days_remaining,
-            "linear_projected_usd": round(mtd_usd + linear_extra, 4),
-            "projected_usd": round(projected_usd, 4),
-            "confidence_low_usd": round(max(0.0, projected_usd - ci_half), 4),
-            "confidence_high_usd": round(projected_usd + ci_half, 4),
-            "daily_mean": round(overall_mean, 4),
-            "daily_stdev": round(daily_stdev, 4),
-            "top_purposes": top_purposes,
-        }
+        return _ProjectionSnapshot(
+            mtd_usd=round(mtd_usd, 4),
+            days_elapsed=days_elapsed,
+            days_remaining=days_remaining,
+            linear_projected_usd=round(mtd_usd + linear_extra, 4),
+            projected_usd=round(projected_usd, 4),
+            confidence_low_usd=round(max(0.0, projected_usd - ci_half), 4),
+            confidence_high_usd=round(projected_usd + ci_half, 4),
+            daily_mean=round(overall_mean, 4),
+            daily_stdev=round(daily_stdev, 4),
+            top_purposes=top_purposes,
+        )
 
     # ── NL driver text via Haiku ────────────────────────────────────────
 
     @classmethod
-    async def _driver_text(cls, snapshot: dict[str, Any]) -> str:
+    async def _driver_text(cls, snapshot: _ProjectionSnapshot) -> str:
         """Generate driver text via Haiku, cached 5 minutes.
 
         Cache key is a content-hash over the projection inputs that
@@ -292,7 +350,7 @@ class OpsForecastService:
         return cls._fallback_driver_text(snapshot)
 
     @staticmethod
-    async def _call_haiku(snapshot: dict[str, Any]) -> str | None:
+    async def _call_haiku(snapshot: _ProjectionSnapshot) -> str | None:
         """One Haiku call. Returns None on any failure (logged at warning).
 
         ``admin_supabase`` is intentionally omitted from ``run_ai`` —
@@ -310,18 +368,18 @@ class OpsForecastService:
             )
             top_lines = (
                 "\n".join(
-                    f"  - {p['purpose']}: ${p['usd_30d']:.2f} "
-                    f"({p['pct']:.0f}% of 30d spend)"
-                    for p in snapshot["top_purposes"]
+                    f"  - {p.purpose}: ${p.usd_30d:.2f} "
+                    f"({p.pct:.0f}% of 30d spend)"
+                    for p in snapshot.top_purposes
                 )
                 or "  - (no spend recorded in the last 30 days)"
             )
-            ci_half = snapshot["confidence_high_usd"] - snapshot["projected_usd"]
+            ci_half = snapshot.confidence_high_usd - snapshot.projected_usd
             prompt = (
-                f"Month-to-date: ${snapshot['mtd_usd']:.2f}\n"
-                f"Projected end-of-month: ${snapshot['projected_usd']:.2f} "
+                f"Month-to-date: ${snapshot.mtd_usd:.2f}\n"
+                f"Projected end-of-month: ${snapshot.projected_usd:.2f} "
                 f"(±${ci_half:.2f})\n"
-                f"Days remaining: {snapshot['days_remaining']}\n"
+                f"Days remaining: {snapshot.days_remaining}\n"
                 f"Top purposes (last 30d):\n{top_lines}\n\n"
                 "Summarize the projection and call out the 1-2 biggest cost "
                 "drivers."
@@ -340,7 +398,10 @@ class OpsForecastService:
                 ),
                 timeout=_DRIVER_TEXT_TIMEOUT_S,
             )
-            text = str(getattr(result, "output", result)).strip()
+            # pydantic-ai's RunResult always exposes ``.output``; AttributeError
+            # here means the upstream contract changed and we want it loud
+            # rather than masked by a fallback that prints the repr.
+            text = str(result.output).strip()
             return text or None
         except Exception:  # noqa: BLE001 — driver text is best-effort
             logger.warning(
@@ -350,46 +411,43 @@ class OpsForecastService:
             return None
 
     @staticmethod
-    def _fallback_driver_text(snapshot: dict[str, Any]) -> str:
+    def _fallback_driver_text(snapshot: _ProjectionSnapshot) -> str:
         """Static fallback when Haiku call fails or returns empty.
 
         Always present — the panel never renders without a driver line so
         the UX stays calm during provider outages. The fallback names the
         top purpose so operators still see attribution at a glance.
         """
-        top = snapshot["top_purposes"]
-        ci_half = snapshot["confidence_high_usd"] - snapshot["projected_usd"]
+        top = snapshot.top_purposes
+        ci_half = snapshot.confidence_high_usd - snapshot.projected_usd
         if not top:
             return (
-                f"Projected ${snapshot['projected_usd']:.2f} by month-end "
-                f"({snapshot['days_remaining']} days remaining); "
+                f"Projected ${snapshot.projected_usd:.2f} by month-end "
+                f"({snapshot.days_remaining} days remaining); "
                 "no recent spend recorded."
             )
         leader = top[0]
         return (
-            f"Projected ${snapshot['projected_usd']:.2f} by month-end "
-            f"(±${ci_half:.2f}); {leader['purpose']} drives "
-            f"{leader['pct']:.0f}% of recent spend."
+            f"Projected ${snapshot.projected_usd:.2f} by month-end "
+            f"(±${ci_half:.2f}); {leader.purpose} drives "
+            f"{leader.pct:.0f}% of recent spend."
         )
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
 
-def _driver_cache_key(snapshot: dict[str, Any]) -> str:
+def _driver_cache_key(snapshot: _ProjectionSnapshot) -> str:
     """Stable key over inputs that materially affect the driver text.
 
     Rounded to dollars + integer percentages so successive panel-opens
     within the same projection neighborhood hit the same cache entry.
     """
     payload = (
-        round(snapshot["projected_usd"], 0),
-        round(snapshot["mtd_usd"], 0),
-        snapshot["days_remaining"],
-        tuple(
-            (p["purpose"], int(p["pct"]))
-            for p in snapshot["top_purposes"]
-        ),
+        round(snapshot.projected_usd, 0),
+        round(snapshot.mtd_usd, 0),
+        snapshot.days_remaining,
+        tuple((p.purpose, int(p.pct)) for p in snapshot.top_purposes),
     )
     return hashlib.sha256(repr(payload).encode("utf-8")).hexdigest()
 

@@ -148,20 +148,20 @@ class TestSeasonalAdjustment:
         # days_remaining) linear projection unless every remaining day
         # has the average DOW weight. Build the comparison:
         snapshot = OpsForecastService._build_snapshot(rows)
-        linear = snapshot["linear_projected_usd"]
-        seasonal = snapshot["projected_usd"]
+        linear = snapshot.linear_projected_usd
+        seasonal = snapshot.projected_usd
 
         # The two will only equal when remaining days perfectly balance
         # the historical DOW distribution. With the strong 5/2 weekday
         # bias, all remaining-day-windows of length ≥1 produce a delta.
-        if snapshot["days_remaining"] >= 1:
+        if snapshot.days_remaining >= 1:
             assert linear != seasonal, (
                 f"Seasonal adjustment had zero effect: linear={linear}, "
-                f"seasonal={seasonal}, days_remaining={snapshot['days_remaining']}"
+                f"seasonal={seasonal}, days_remaining={snapshot.days_remaining}"
             )
 
         # Both projections must be non-negative and within sanity bounds.
-        assert seasonal >= snapshot["mtd_usd"]
+        assert seasonal >= snapshot.mtd_usd
         assert seasonal >= 0
 
 

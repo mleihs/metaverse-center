@@ -98,6 +98,7 @@ export interface ForecastSlider {
   min: number;
   max: number;
   default: number;
+  step: number;
   unit: string;
 }
 
