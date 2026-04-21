@@ -36,6 +36,7 @@ import type {
 } from '../../../services/api/ContentDraftsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
+import { conflictSubPath, groupByEntryRoot } from './conflict-grouping.js';
 
 /** Per-conflict admin choice. `auto` = use the server's merged-default. */
 type ConflictChoice = 'auto' | 'ours' | 'theirs';
@@ -201,11 +202,55 @@ export class VelgContentDraftConflictView extends LitElement {
       margin: 0 0 var(--space-3);
     }
 
+    /* ── Entry group (D2) ─────────────────────── */
+    /* Wraps N field-level conflicts that all belong to the same entry
+       root (e.g. everything under .banter[id=sb_01]). Collapses visual
+       noise: admin reads "one entry, 3 conflicting fields" instead of
+       three anonymous rows sharing 90% of their path. */
+
+    .group {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      margin-bottom: var(--space-4);
+    }
+
+    .group__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px dashed var(--color-border);
+      background: var(--color-surface-sunken);
+    }
+
+    .group__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-primary);
+    }
+
+    .group__count {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: uppercase;
+    }
+
+    .group__items {
+      padding: var(--space-3);
+      display: grid;
+      gap: var(--space-3);
+    }
+
     .conflict {
       position: relative;
       background: var(--color-surface-raised);
       border: 1px solid var(--color-border);
-      margin-bottom: var(--space-3);
       opacity: 0;
       animation: conflict-in var(--duration-entrance, 350ms)
         var(--ease-dramatic, ease-out) forwards;
@@ -694,29 +739,61 @@ export class VelgContentDraftConflictView extends LitElement {
   }
 
   private _renderConflictList(preview: ConflictPreview): TemplateResult {
+    const groups = groupByEntryRoot(preview.conflicts);
+    // Stagger indices are computed across ALL cards so the entrance cascade
+    // flows through groups in reading order rather than restarting per group.
+    let staggerIndex = 0;
     return html`
       <h3 class="conflicts__heading">
         ${msg(str`${preview.conflicts.length} conflict(s) require a decision`)}
       </h3>
-      ${preview.conflicts.map(
-        (c, i) => html`
-          <div
-            class="conflict conflict--${this._choiceFor(c.path)}"
-            style="--i: ${i}"
-          >
-            ${this._renderConflictCard(c)}
-          </div>
-        `,
-      )}
+      ${groups.map((group) => {
+        const groupStart = staggerIndex;
+        staggerIndex += group.items.length;
+        return this._renderGroup(group, groupStart);
+      })}
     `;
   }
 
-  private _renderConflictCard(conflict: EntryConflict): TemplateResult {
+  private _renderGroup(
+    group: { rootPath: string; label: string; items: EntryConflict[] },
+    staggerStart: number,
+  ): TemplateResult {
+    return html`
+      <section class="group">
+        <header class="group__head" role="heading" aria-level="3">
+          <span class="group__label">${group.label}</span>
+          <span class="group__count">
+            ${msg(str`${group.items.length} conflicting field(s)`)}
+          </span>
+        </header>
+        <div class="group__items">
+          ${group.items.map(
+            (c, i) => html`
+              <div
+                class="conflict conflict--${this._choiceFor(c.path)}"
+                style="--i: ${staggerStart + i}"
+              >
+                ${this._renderConflictCard(c, group.rootPath)}
+              </div>
+            `,
+          )}
+        </div>
+      </section>
+    `;
+  }
+
+  private _renderConflictCard(conflict: EntryConflict, groupRoot: string): TemplateResult {
     const choice = this._choiceFor(conflict.path);
+    // Display the path relative to the group root so the card header reads
+    // `.trigger.emotion` instead of the repetitive full `.banter[id=sb_01].trigger.emotion`.
+    // Whole-entry edges (`conflict.path === groupRoot`) fall back to the full
+    // path — there's nothing to trim.
+    const displayPath = conflictSubPath(groupRoot, conflict.path);
     return html`
       <div class="conflict__head">
         <span class="conflict__path" role="heading" aria-level="4">
-          ${conflict.path}
+          ${displayPath}
         </span>
         <div class="conflict__badges">
           <span class="conflict__kind">${this._kindLabel(conflict.kind)}</span>
