@@ -274,7 +274,7 @@ export class VelgOpsLedgerPanel extends LitElement {
               </table>
             </div>
           `
-        : s && !this.loading
+        : s && !this.loading && today.calls === 0
           ? html`<div class="empty">${msg('No usage recorded today yet.')}</div>`
           : nothing}
     `;

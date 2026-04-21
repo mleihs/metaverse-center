@@ -318,14 +318,18 @@ export class VelgKillSwitch extends LitElement {
   @state() private _confirmingRevert = false;
   @state() private _revertReason = '';
 
+  private async _focusReasonInput(): Promise<void> {
+    // updateComplete resolves once Lit finishes rendering the armed state,
+    // so the .confirm__input is guaranteed present before we focus it.
+    await this.updateComplete;
+    const el = this.shadowRoot?.querySelector<HTMLInputElement>('.confirm__input');
+    el?.focus();
+  }
+
   private _onLiftCover = (): void => {
     if (this.disabled) return;
     this.armed = true;
-    // Focus input after the DOM updates
-    queueMicrotask(() => {
-      const el = this.shadowRoot?.querySelector<HTMLInputElement>('.confirm__input');
-      el?.focus();
-    });
+    void this._focusReasonInput();
   };
 
   private _onCancelArm = (): void => {
@@ -349,10 +353,7 @@ export class VelgKillSwitch extends LitElement {
 
   private _onRequestRevert = (): void => {
     this._confirmingRevert = true;
-    queueMicrotask(() => {
-      const el = this.shadowRoot?.querySelector<HTMLInputElement>('.confirm__input');
-      el?.focus();
-    });
+    void this._focusReasonInput();
   };
 
   private _onCancelRevert = (): void => {

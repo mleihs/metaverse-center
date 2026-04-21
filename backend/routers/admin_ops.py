@@ -47,15 +47,9 @@ from backend.models.bureau_ops import (
     TripKillRequest,
 )
 from backend.models.common import CurrentUser, DeleteResponse, SuccessResponse
-from backend.services.budget_enforcement_service import (
-    BudgetEnforcementService,
-    invalidate_budget_cache,
-)
+from backend.services.budget_enforcement_service import BudgetEnforcementService
 from backend.services.circuit_breaker_service import circuit_breaker
-from backend.services.ops_ledger_service import (
-    OpsLedgerService,
-    invalidate_ledger_cache,
-)
+from backend.services.ops_ledger_service import OpsLedgerService
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list, extract_one
 from supabase import AsyncClient as Client
@@ -171,16 +165,22 @@ async def delete_budget(
 # ── Kill / revert (Quarantine panel) ─────────────────────────────────────
 
 
-@router.post("/kill")
-async def trip_kill(
+async def _do_trip_kill(
+    admin_supabase: Client,
+    *,
+    actor_id: UUID,
     body: TripKillRequest,
-    user: Annotated[CurrentUser, Depends(require_platform_admin())],
-    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse[KillActionResponse]:
-    """Trip a manual kill on (scope, scope_key). Auto-reverts after
-    ``revert_after_minutes`` (AD-5). New calls to the scope fail fast with
-    ``CircuitOpenError`` until the revert timer elapses or an admin lifts
-    the kill explicitly."""
+) -> KillActionResponse:
+    """Shared kill-implementation used by /kill and /kill/cut-all-ai.
+
+    Three steps, same order every time:
+      1. Persist the kill row (DB is the source of truth for durability).
+      2. Mirror into in-process circuit_breaker so check() fails fast
+         without a DB hit.
+      3. Append an ops_audit_log entry. The audit write is fire-and-forget
+         (see OpsLedgerService.log_action) so a logging outage cannot mask
+         the kill.
+    """
     revert_at = datetime.now(UTC) + timedelta(minutes=body.revert_after_minutes)
     open_for_s = float(body.revert_after_minutes * 60)
 
@@ -191,7 +191,7 @@ async def trip_kill(
                 "scope": body.scope,
                 "scope_key": body.scope_key,
                 "state": "killed",
-                "triggered_by_id": str(user.id),
+                "triggered_by_id": str(actor_id),
                 "reason": body.reason,
                 "revert_at": revert_at.isoformat(),
             },
@@ -207,7 +207,7 @@ async def trip_kill(
 
     await OpsLedgerService.log_action(
         admin_supabase,
-        actor_id=user.id,
+        actor_id=actor_id,
         action="kill.trip",
         target_scope=body.scope,
         target_key=body.scope_key,
@@ -218,15 +218,27 @@ async def trip_kill(
         },
     )
 
-    return SuccessResponse(
-        data=KillActionResponse(
-            scope=body.scope,
-            scope_key=body.scope_key,
-            state="killed",
-            revert_at=revert_at,
-            reason=body.reason,
-        ),
+    return KillActionResponse(
+        scope=body.scope,
+        scope_key=body.scope_key,
+        state="killed",
+        revert_at=revert_at,
+        reason=body.reason,
     )
+
+
+@router.post("/kill")
+async def trip_kill(
+    body: TripKillRequest,
+    user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[KillActionResponse]:
+    """Trip a manual kill on (scope, scope_key). Auto-reverts after
+    ``revert_after_minutes`` (AD-5). New calls to the scope fail fast with
+    ``CircuitOpenError`` until the revert timer elapses or an admin lifts
+    the kill explicitly."""
+    data = await _do_trip_kill(admin_supabase, actor_id=user.id, body=body)
+    return SuccessResponse(data=data)
 
 
 @router.post("/revert")
@@ -289,7 +301,8 @@ async def cut_all_ai(
         reason=body.reason,
         revert_after_minutes=body.revert_after_minutes,
     )
-    return await trip_kill(trip_body, user, admin_supabase)
+    data = await _do_trip_kill(admin_supabase, actor_id=user.id, body=trip_body)
+    return SuccessResponse(data=data)
 
 
 @router.post("/circuit/reset")
@@ -300,7 +313,13 @@ async def reset_circuit(
 ) -> SuccessResponse[KillActionResponse]:
     """Clear the in-process auto-state for (scope, scope_key). Useful when
     a breaker flapped due to a known-transient issue and the operator
-    wants to skip the exponential backoff delay."""
+    wants to skip the exponential backoff delay.
+
+    No cache invalidation: ``reset`` only touches in-process breaker
+    state, which ``OpsLedgerService.get_circuit_matrix`` reads live (no
+    cache). The ledger / budget caches are derived from ``ai_usage_log``,
+    not circuit state.
+    """
     circuit_breaker.reset(body.scope, body.scope_key)
 
     await OpsLedgerService.log_action(
@@ -311,9 +330,6 @@ async def reset_circuit(
         target_key=body.scope_key,
         reason=body.reason,
     )
-    # Ledger cache may contain stale circuit counts exposed indirectly.
-    invalidate_ledger_cache()
-    invalidate_budget_cache()
 
     return SuccessResponse(
         data=KillActionResponse(

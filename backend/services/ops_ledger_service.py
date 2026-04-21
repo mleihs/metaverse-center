@@ -217,32 +217,24 @@ class OpsLedgerService:
         )
         for row in extract_list(resp):
             scope = _coerce_scope(row.get("scope"))
-            if scope is None:
+            if scope is None or str(row.get("state") or "") != "killed":
                 continue
             key = str(row.get("scope_key") or "")
-            state_raw = str(row.get("state") or "")
-            revert_at = _parse_timestamp(row.get("revert_at"))
-            reason = str(row.get("reason") or "")
-            killed_by = _parse_uuid(row.get("triggered_by_id"))
-            if state_raw == "killed":
-                auto_entries[(scope, key)] = CircuitEntry(
-                    scope=scope,
-                    scope_key=key,
-                    state="killed",
-                    failures_in_window=auto_entries.get(
-                        (scope, key),
-                        CircuitEntry(
-                            scope=scope,
-                            scope_key=key,
-                            state="killed",
-                        ),
-                    ).failures_in_window,
-                    opens_until_s=0.0,
-                    consecutive_opens=0,
-                    killed_reason=reason,
-                    killed_revert_at=revert_at,
-                    killed_by_id=killed_by,
-                )
+            # Preserve failures_in_window from the in-process entry if present —
+            # the admin panel shows it as context ("5 failures seen before kill").
+            existing = auto_entries.get((scope, key))
+            failures = existing.failures_in_window if existing else 0
+            auto_entries[(scope, key)] = CircuitEntry(
+                scope=scope,
+                scope_key=key,
+                state="killed",
+                failures_in_window=failures,
+                opens_until_s=0.0,
+                consecutive_opens=0,
+                killed_reason=str(row.get("reason") or ""),
+                killed_revert_at=_parse_timestamp(row.get("revert_at")),
+                killed_by_id=_parse_uuid(row.get("triggered_by_id")),
+            )
 
         entries = sorted(
             auto_entries.values(),
