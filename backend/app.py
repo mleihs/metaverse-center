@@ -98,6 +98,9 @@ from backend.routers import (
     zone_actions,
 )
 from backend.services.bluesky_scheduler import BlueskyScheduler
+from backend.services.content_packs.orphan_sweeper_scheduler import (
+    OrphanSweeperScheduler,
+)
 from backend.services.dungeon_content_service import load_all_content as load_dungeon_content
 from backend.services.dungeon_engine_service import start_instance_cleanup
 from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
@@ -134,9 +137,11 @@ async def lifespan(app: FastAPI):
     instagram_task = await InstagramScheduler.start()
     bluesky_task = await BlueskyScheduler.start()
     epoch_cycle_task = await EpochCycleScheduler.start()
+    orphan_sweeper_task = await OrphanSweeperScheduler.start()
     dungeon_cleanup_task = await start_instance_cleanup()
     yield
     dungeon_cleanup_task.cancel()
+    orphan_sweeper_task.cancel()
     epoch_cycle_task.cancel()
     bluesky_task.cancel()
     instagram_task.cancel()
