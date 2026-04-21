@@ -28,6 +28,7 @@ import './ops/FirehosePanel.js';
 import './ops/HeatmapPanel.js';
 import './ops/LedgerPanel.js';
 import './ops/QuarantinePanel.js';
+import './ops/SentryRulesPanel.js';
 
 const LEDGER_POLL_MS = 30_000;
 const CIRCUIT_POLL_MS = 10_000;
@@ -101,6 +102,7 @@ export class VelgAdminOpsTab extends LitElement {
     .ops-grid > velg-ops-ledger-panel,
     .ops-grid > velg-ops-circuit-matrix-panel,
     .ops-grid > velg-ops-heatmap-panel,
+    .ops-grid > velg-ops-sentry-rules-panel,
     .ops-grid > velg-ops-firehose-panel {
       grid-column: 1 / -1;
     }
@@ -110,6 +112,7 @@ export class VelgAdminOpsTab extends LitElement {
       .ops-grid > velg-ops-ledger-panel,
       .ops-grid > velg-ops-circuit-matrix-panel,
       .ops-grid > velg-ops-heatmap-panel,
+      .ops-grid > velg-ops-sentry-rules-panel,
       .ops-grid > velg-ops-firehose-panel { grid-column: auto; }
     }
   `;
@@ -204,6 +207,8 @@ export class VelgAdminOpsTab extends LitElement {
         ></velg-ops-circuit-matrix-panel>
 
         <velg-ops-heatmap-panel></velg-ops-heatmap-panel>
+
+        <velg-ops-sentry-rules-panel></velg-ops-sentry-rules-panel>
 
         <velg-ops-quarantine-panel
           .matrix=${this._circuit}
