@@ -42,11 +42,16 @@ export function entryRootPath(path: string): string {
 
   // Rule 2: fall back to the first dot-delimited segment after the
   // leading `.`. `split('.')` on `.foo.bar` yields `['', 'foo', 'bar']`.
+  // The `parts[0] === ''` guard rejects paths that don't start with `.` —
+  // those are off-contract for merge_service output, but malformed input
+  // should round-trip verbatim rather than silently re-rooting under
+  // `parts[1]` (which would group `.metadata.tier` with `metadata.tier`
+  // in two different buckets).
   const parts = path.split('.');
-  if (parts.length >= 2 && parts[1]) return `.${parts[1]}`;
+  if (parts[0] === '' && parts.length >= 2 && parts[1]) return `.${parts[1]}`;
 
-  // Degenerate input (empty or `.` only). Return verbatim so the group
-  // label is visible to the admin and not silently swallowed.
+  // Degenerate input (empty, `.` only, or no leading dot). Return verbatim
+  // so the group label is visible to the admin and not silently swallowed.
   return path;
 }
 

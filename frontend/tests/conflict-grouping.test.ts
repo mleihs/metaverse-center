@@ -44,6 +44,15 @@ describe('entryRootPath', () => {
     expect(entryRootPath('.')).toBe('.');
   });
 
+  it('returns paths without a leading dot verbatim (off-contract)', () => {
+    // merge_service always emits paths starting with `.`. Off-contract
+    // input must not be silently re-rooted under `parts[1]`, which would
+    // create two different buckets for `.metadata.tier` vs
+    // `metadata.tier` and scramble the conflict grouping.
+    expect(entryRootPath('metadata.tier')).toBe('metadata.tier');
+    expect(entryRootPath('name')).toBe('name');
+  });
+
   it('is anchored — a stray [id= buried in a value cannot hijack the root', () => {
     // A field path shouldn't ever contain this, but we guard against regex
     // drift anyway. The anchor `^` in the pattern is the load-bearing part.

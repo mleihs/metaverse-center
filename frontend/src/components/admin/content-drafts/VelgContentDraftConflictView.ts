@@ -760,13 +760,19 @@ export class VelgContentDraftConflictView extends LitElement {
     staggerStart: number,
   ): TemplateResult {
     return html`
-      <section class="group">
-        <header class="group__head" role="heading" aria-level="3">
-          <span class="group__label">${group.label}</span>
+      <section class="group" aria-labelledby=${`group-${group.rootPath}`}>
+        <div class="group__head">
+          <span
+            id=${`group-${group.rootPath}`}
+            class="group__label"
+            role="heading"
+            aria-level="3"
+            >${group.label}</span
+          >
           <span class="group__count">
             ${msg(str`${group.items.length} conflicting field(s)`)}
           </span>
-        </header>
+        </div>
         <div class="group__items">
           ${group.items.map(
             (c, i) => html`
