@@ -868,7 +868,7 @@ class TestSweepOrphans:
         # Service received the default threshold and dry_run=True.
         call_kwargs = mock_sweep.call_args.kwargs
         assert call_kwargs["dry_run"] is True
-        assert call_kwargs["min_age_days"] == 7.0
+        assert call_kwargs["min_age_days"] == 14.0
 
     def test_real_run_forwards_flag_and_counts_deletes(self, client):
         supabase = _mock_supabase([_exec_result(data=[])])

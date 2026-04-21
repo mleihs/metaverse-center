@@ -328,10 +328,50 @@ class GitHubAppClient:
         *,
         json_body: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """REST API helper. `path` starts with `/` (e.g. `/repos/owner/name`).
+        """REST API helper for endpoints that return a JSON object.
+
+        For endpoints that return an array (e.g. `/pulls`, `/matching-refs`,
+        `/contents/{dir}`), call :meth:`rest_list` instead so the caller
+        receives a correctly-typed list without a cast.
 
         Returns parsed JSON on 2xx; empty dict on 204. Raises
         GitHubAPIError on non-2xx.
+        """
+        raw = await self._rest_raw(method, path, json_body=json_body)
+        return raw if isinstance(raw, dict) else {}
+
+    async def rest_list(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_body: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """REST helper for endpoints that return a JSON array.
+
+        GitHub's list endpoints (`/pulls`, `/git/matching-refs/...`,
+        `/contents/{dir}`, …) return a top-level array. Using
+        :meth:`rest` for these silently returned an array aliased as
+        `dict[str, Any]` — type-safe only by accident. This method
+        surfaces the list shape at the signature level so callers can
+        iterate without a cast.
+
+        Raises GitHubAPIError on non-2xx, matching :meth:`rest`.
+        """
+        raw = await self._rest_raw(method, path, json_body=json_body)
+        return raw if isinstance(raw, list) else []
+
+    async def _rest_raw(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_body: dict[str, Any] | None,
+    ) -> Any:
+        """Shared transport for :meth:`rest` and :meth:`rest_list`.
+
+        Returns the parsed JSON body (dict, list, or None for 204). Both
+        public wrappers re-shape to their declared return type.
         """
         url = f"{_GITHUB_API_BASE}{path}"
         resp = await self._request(
@@ -343,7 +383,7 @@ class GitHubAppClient:
         if not (200 <= resp.status_code < 300):
             raise GitHubAPIError(resp.status_code, resp.text, url)
         if resp.status_code == 204:
-            return {}
+            return None
         return resp.json()
 
 

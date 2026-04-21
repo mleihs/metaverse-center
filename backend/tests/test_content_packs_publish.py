@@ -137,10 +137,12 @@ def _mock_github_client(
             {"type": "file", "name": "20260419400000_226_trigger.sql"},
         ]
     if rest_side_effects is None:
+        # Dict-returning endpoints in publish order: repo metadata → ref
+        # SHA → create branch → open PR. The `/contents/` list now routes
+        # through `rest_list` (see `migrations_listing` below).
         rest_side_effects = [
             {"default_branch": default_branch},
             {"object": {"sha": head_oid}},
-            migrations_listing,
             {"ref": f"refs/heads/{default_branch}", "object": {"sha": head_oid}},
             {"number": pr_number, "html_url": pr_url},
         ]
@@ -155,6 +157,7 @@ def _mock_github_client(
             }
         ]
     client.rest = AsyncMock(side_effect=rest_side_effects)
+    client.rest_list = AsyncMock(side_effect=[migrations_listing])
     client.graphql = AsyncMock(side_effect=graphql_side_effects)
     return client
 
@@ -456,15 +459,14 @@ class TestPublishBatch:
             _exec_result(data=[conflict_row]),
         ])
 
-        # GitHub: head + ref + migrations-listing + branch creation succeed;
-        # createCommitOnBranch raises a drift error.
+        # GitHub: head + ref + branch creation succeed (migrations listing
+        # goes through `rest_list`); createCommitOnBranch raises a drift error.
         drift_exc = GitHubAPIError(
             200, "expected head oid did not match", "https://api.github.com/graphql",
         )
         rest_side = [
             {"default_branch": "main"},
             {"object": {"sha": "headsha"}},
-            [{"type": "file", "name": "20260419400000_226_x.sql"}],
             {"ref": "refs/heads/x", "object": {"sha": "headsha"}},
         ]
         client = _mock_github_client(
@@ -477,9 +479,10 @@ class TestPublishBatch:
                 supabase, draft_ids=[d_id], github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_409_CONFLICT
-        # PR creation MUST NOT have been attempted
-        # (head + head_oid + migrations listing + branch creation = 4 REST calls).
-        assert client.rest.call_count == 4
+        # PR creation MUST NOT have been attempted (head + head_oid + branch
+        # creation = 3 dict-returning calls; migrations listing is in `rest_list`).
+        assert client.rest.call_count == 3
+        assert client.rest_list.call_count == 1
 
     async def test_non_drift_github_error_bubbles(self, monkeypatch):
         monkeypatch.setenv("GITHUB_REPO_OWNER", "x")
@@ -495,7 +498,6 @@ class TestPublishBatch:
         rest_side = [
             {"default_branch": "main"},
             {"object": {"sha": "headsha"}},
-            [{"type": "file", "name": "20260419400000_226_x.sql"}],
             {"ref": "refs/heads/x", "object": {"sha": "headsha"}},
         ]
         client = _mock_github_client(
