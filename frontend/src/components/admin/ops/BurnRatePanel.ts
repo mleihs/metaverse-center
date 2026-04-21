@@ -112,7 +112,12 @@ export class VelgOpsBurnRatePanel extends LitElement {
     const accent = readCssToken(this, '--color-accent-amber');
     return {
       grid: { left: 4, right: 4, top: 4, bottom: 4 },
-      xAxis: { type: 'category', show: false, boundaryGap: false, data: points.map((_, i) => String(i)) },
+      xAxis: {
+        type: 'category',
+        show: false,
+        boundaryGap: false,
+        data: points.map((_, i) => String(i)),
+      },
       yAxis: { type: 'value', show: false, min: 0 },
       tooltip: {
         trigger: 'axis',
@@ -147,8 +152,9 @@ export class VelgOpsBurnRatePanel extends LitElement {
     return html`
       <div class="heading">${msg('Burn rate // 24h')}</div>
 
-      ${s
-        ? html`
+      ${
+        s
+          ? html`
             <div class="row">
               <span class="row__label">${msg('Last hour')}</span>
               <span class="row__value">
@@ -171,18 +177,21 @@ export class VelgOpsBurnRatePanel extends LitElement {
             </div>
 
             <div class="sparkline">
-              ${s.hourly_trend.length > 0
-                ? html`<velg-echarts-chart
+              ${
+                s.hourly_trend.length > 0
+                  ? html`<velg-echarts-chart
                     .option=${this._buildSparkline(s)}
                     aria-label=${msg('24-hour hourly cost trend')}
                     height="90px"
                   ></velg-echarts-chart>`
-                : html`<div class="empty">${msg('No hourly data yet.')}</div>`}
+                  : html`<div class="empty">${msg('No hourly data yet.')}</div>`
+              }
             </div>
           `
-        : this.loading
-          ? html`<div class="empty">${msg('loading…')}</div>`
-          : nothing}
+          : this.loading
+            ? html`<div class="empty">${msg('loading…')}</div>`
+            : nothing
+      }
     `;
   }
 }

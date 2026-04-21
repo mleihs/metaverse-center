@@ -26,7 +26,10 @@ export type DotMatrixState = 'closed' | 'half_open' | 'open' | 'killed' | 'unkno
 
 // Dot patterns as 9-bit tuples (row-major: top-left, top-center, top-right, …).
 // 1 = active (full color), 0 = dim (ghosted placeholder).
-const PATTERNS: Record<DotMatrixState, readonly [number, number, number, number, number, number, number, number, number]> = {
+const PATTERNS: Record<
+  DotMatrixState,
+  readonly [number, number, number, number, number, number, number, number, number]
+> = {
   closed: [0, 0, 0, 0, 1, 0, 0, 0, 0],
   half_open: [0, 1, 0, 1, 1, 1, 0, 1, 0],
   open: [1, 0, 1, 0, 1, 0, 1, 0, 1],

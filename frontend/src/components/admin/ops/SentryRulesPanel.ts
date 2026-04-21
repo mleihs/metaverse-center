@@ -400,9 +400,8 @@ export class VelgOpsSentryRulesPanel extends LitElement {
   @state() private _form: RuleFormState = emptyForm();
   @state() private _submitting = false;
   @state() private _deletePrompt: { id: string; reason: string } | null = null;
-  @state() private _togglePrompt:
-    | { id: string; nextEnabled: boolean; reason: string }
-    | null = null;
+  @state() private _togglePrompt: { id: string; nextEnabled: boolean; reason: string } | null =
+    null;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -449,10 +448,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
 
   private _isFormValid(): boolean {
     if (this._form.note.trim().length < 3) return false;
-    if (
-      this._form.kind === 'fingerprint' &&
-      this._form.fingerprint_template.trim().length === 0
-    ) {
+    if (this._form.kind === 'fingerprint' && this._form.fingerprint_template.trim().length === 0) {
       return false;
     }
     if (this._form.kind === 'downgrade' && this._form.downgrade_to === '') {
@@ -519,9 +515,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
     this._submitting = false;
     this._togglePrompt = null;
     if (resp.success) {
-      VelgToast.success(
-        body.enabled ? msg('Sentry rule enabled.') : msg('Sentry rule disabled.'),
-      );
+      VelgToast.success(body.enabled ? msg('Sentry rule enabled.') : msg('Sentry rule disabled.'));
       await this._fetch();
     } else {
       VelgToast.error(msg(str`Toggle failed: ${resp.error.message}`));
@@ -588,9 +582,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
       return html`<span class="rule__match"><em>${msg('matches anything')}</em></span>`;
     return html`
       <span class="rule__match">
-        ${chips.map(
-          (c) => html`<span><strong>${c.label}</strong> ${c.value}</span>`,
-        )}
+        ${chips.map((c) => html`<span><strong>${c.label}</strong> ${c.value}</span>`)}
       </span>
     `;
   }
@@ -669,8 +661,9 @@ export class VelgOpsSentryRulesPanel extends LitElement {
           />
         </div>
 
-        ${this._form.kind === 'fingerprint'
-          ? html`
+        ${
+          this._form.kind === 'fingerprint'
+            ? html`
               <div class="form__row form__row--full">
                 <label class="form__label" for="rule-fp">
                   ${msg('Fingerprint template, e.g. openrouter.{exc_type}.{model}')}
@@ -682,17 +675,16 @@ export class VelgOpsSentryRulesPanel extends LitElement {
                   maxlength="256"
                   .value=${this._form.fingerprint_template}
                   @input=${(e: Event) =>
-                    this._updateForm(
-                      'fingerprint_template',
-                      (e.target as HTMLInputElement).value,
-                    )}
+                    this._updateForm('fingerprint_template', (e.target as HTMLInputElement).value)}
                 />
               </div>
             `
-          : nothing}
+            : nothing
+        }
 
-        ${this._form.kind === 'downgrade'
-          ? html`
+        ${
+          this._form.kind === 'downgrade'
+            ? html`
               <div class="form__row">
                 <label class="form__label" for="rule-downgrade">${msg('Downgrade to')}</label>
                 <select
@@ -711,7 +703,8 @@ export class VelgOpsSentryRulesPanel extends LitElement {
                 </select>
               </div>
             `
-          : nothing}
+            : nothing
+        }
 
         <div class="form__row form__row--full">
           <label class="form__label" for="rule-note">
@@ -781,8 +774,9 @@ export class VelgOpsSentryRulesPanel extends LitElement {
           </button>
         </div>
       </div>
-      ${isToggling
-        ? html`
+      ${
+        isToggling
+          ? html`
             <div class="delete-prompt" role="region" aria-label=${msg('Toggle confirmation')}>
               <input
                 class="form__input"
@@ -805,17 +799,18 @@ export class VelgOpsSentryRulesPanel extends LitElement {
               <button
                 class="form__btn form__btn--primary"
                 type="button"
-                ?disabled=${(this._togglePrompt?.reason.trim().length ?? 0) < 3 ||
-                  this._submitting}
+                ?disabled=${(this._togglePrompt?.reason.trim().length ?? 0) < 3 || this._submitting}
                 @click=${() => void this._confirmToggle(rule)}
               >
                 ${msg('Confirm')}
               </button>
             </div>
           `
-        : nothing}
-      ${isDeleting
-        ? html`
+          : nothing
+      }
+      ${
+        isDeleting
+          ? html`
             <div class="delete-prompt" role="region" aria-label=${msg('Delete confirmation')}>
               <input
                 class="form__input"
@@ -838,15 +833,15 @@ export class VelgOpsSentryRulesPanel extends LitElement {
               <button
                 class="form__btn form__btn--primary"
                 type="button"
-                ?disabled=${(this._deletePrompt?.reason.trim().length ?? 0) < 3 ||
-                  this._submitting}
+                ?disabled=${(this._deletePrompt?.reason.trim().length ?? 0) < 3 || this._submitting}
                 @click=${() => void this._confirmDelete()}
               >
                 ${msg('Confirm')}
               </button>
             </div>
           `
-        : nothing}
+          : nothing
+      }
     `;
   }
 
@@ -872,26 +867,28 @@ export class VelgOpsSentryRulesPanel extends LitElement {
         </button>
       </div>
 
-      ${this._error
-        ? html`<div class="error">${msg('Rules failed:')} ${this._error}</div>`
-        : null}
+      ${this._error ? html`<div class="error">${msg('Rules failed:')} ${this._error}</div>` : null}
 
       ${this._formOpen ? this._renderForm() : nothing}
 
-      ${this._loading && this._rules.length === 0
-        ? html`<div class="empty">${msg('Loading rules')}</div>`
-        : KIND_ORDER.map(
-            (kind) => html`
+      ${
+        this._loading && this._rules.length === 0
+          ? html`<div class="empty">${msg('Loading rules')}</div>`
+          : KIND_ORDER.map(
+              (kind) => html`
               <section class="group">
                 <h3 class="group__title">
                   ${this._kindHeading(kind)} (${grouped.get(kind)?.length ?? 0})
                 </h3>
-                ${(grouped.get(kind) ?? []).length === 0
-                  ? html`<div class="empty">${msg('No rules in this kind.')}</div>`
-                  : (grouped.get(kind) ?? []).map((rule) => this._renderRule(rule))}
+                ${
+                  (grouped.get(kind) ?? []).length === 0
+                    ? html`<div class="empty">${msg('No rules in this kind.')}</div>`
+                    : (grouped.get(kind) ?? []).map((rule) => this._renderRule(rule))
+                }
               </section>
             `,
-          )}
+            )
+      }
     `;
   }
 }

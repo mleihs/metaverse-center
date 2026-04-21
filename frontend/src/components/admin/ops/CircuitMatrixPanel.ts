@@ -239,11 +239,13 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
         <span class="cell__detail cell__detail--danger">
           ${reason ? msg(str`Kill: ${reason}`) : msg('Admin kill')}
         </span>
-        ${minutesLeft !== null
-          ? html`<span class="cell__detail">
+        ${
+          minutesLeft !== null
+            ? html`<span class="cell__detail">
               ${msg(str`Auto-revert in ${minutesLeft} min`)}
             </span>`
-          : nothing}
+            : nothing
+        }
       `;
     }
     if (entry.state === 'open') {
@@ -253,11 +255,13 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
             str`${Math.round(entry.opens_until_s)}s to probe – ${entry.consecutive_opens} opens`,
           )}
         </span>
-        ${entry.failures_in_window
-          ? html`<span class="cell__detail">
+        ${
+          entry.failures_in_window
+            ? html`<span class="cell__detail">
               ${msg(str`${entry.failures_in_window} failures in window`)}
             </span>`
-          : nothing}
+            : nothing
+        }
       `;
     }
     if (entry.state === 'half_open') {
@@ -269,9 +273,11 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
     }
     return html`
       <span class="cell__detail">
-        ${entry.failures_in_window
-          ? msg(str`${entry.failures_in_window} failures tracked`)
-          : msg('Healthy – no recent failures')}
+        ${
+          entry.failures_in_window
+            ? msg(str`${entry.failures_in_window} failures tracked`)
+            : msg('Healthy – no recent failures')
+        }
       </span>
     `;
   }
@@ -282,18 +288,21 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
         <h3 class="group__title">
           ${this._scopeHeading(scope)} (${entries.length})
         </h3>
-        ${entries.length === 0
-          ? html`<div class="empty">${msg('No activity recorded in this scope.')}</div>`
-          : html`
+        ${
+          entries.length === 0
+            ? html`<div class="empty">${msg('No activity recorded in this scope.')}</div>`
+            : html`
               <div class="grid">
                 ${entries.map(
                   (entry) => html`
                     <div class="cell">
                       <velg-dot-matrix-cell
                         state=${entry.state}
-                        label=${entry.scope_key.length > 8
-                          ? entry.scope_key.slice(0, 7) + '…'
-                          : entry.scope_key}
+                        label=${
+                          entry.scope_key.length > 8
+                            ? entry.scope_key.slice(0, 7) + '…'
+                            : entry.scope_key
+                        }
                       ></velg-dot-matrix-cell>
                       <div class="cell__meta">
                         <span class="cell__key" title="${entry.scope}:${entry.scope_key}">
@@ -305,7 +314,8 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
                   `,
                 )}
               </div>
-            `}
+            `
+        }
       </section>
     `;
   }
@@ -335,11 +345,13 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
         </div>
       </div>
 
-      ${totalEntries === 0 && this.loading
-        ? html`<div class="empty">${msg('Loading circuit state')}</div>`
-        : totalEntries === 0
-          ? html`<div class="empty">${msg('No circuit activity recorded.')}</div>`
-          : SCOPE_ORDER.map((scope) => this._renderGroup(scope, groups.get(scope) ?? []))}
+      ${
+        totalEntries === 0 && this.loading
+          ? html`<div class="empty">${msg('Loading circuit state')}</div>`
+          : totalEntries === 0
+            ? html`<div class="empty">${msg('No circuit activity recorded.')}</div>`
+            : SCOPE_ORDER.map((scope) => this._renderGroup(scope, groups.get(scope) ?? []))
+      }
     `;
   }
 }

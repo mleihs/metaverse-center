@@ -294,17 +294,11 @@ export class BureauOpsApiService extends BaseApiService {
     return this.post('/admin/ops/sentry/rules', body);
   }
 
-  async updateSentryRule(
-    id: string,
-    body: SentryRuleUpsertBody,
-  ): Promise<ApiResponse<SentryRule>> {
+  async updateSentryRule(id: string, body: SentryRuleUpsertBody): Promise<ApiResponse<SentryRule>> {
     return this.put(`/admin/ops/sentry/rules/${id}`, body);
   }
 
-  async deleteSentryRule(
-    id: string,
-    reason: string,
-  ): Promise<ApiResponse<{ deleted: boolean }>> {
+  async deleteSentryRule(id: string, reason: string): Promise<ApiResponse<{ deleted: boolean }>> {
     return this.delete(`/admin/ops/sentry/rules/${id}`, { reason });
   }
 }

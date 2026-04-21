@@ -253,16 +253,18 @@ export class VelgOpsHeatmapPanel extends LitElement {
         </div>
       </div>
 
-      ${this._error
-        ? html`<div class="error">${msg('Heatmap failed:')} ${this._error}</div>`
-        : null}
+      ${
+        this._error ? html`<div class="error">${msg('Heatmap failed:')} ${this._error}</div>` : null
+      }
 
-      ${this._loading && this._cells.length === 0
-        ? html`<div class="loading">${msg('Loading heatmap')}</div>`
-        : html`<velg-heatmap-grid
+      ${
+        this._loading && this._cells.length === 0
+          ? html`<div class="loading">${msg('Loading heatmap')}</div>`
+          : html`<velg-heatmap-grid
             .cells=${this._cells}
             dimension-label=${this._dimensionLabel()}
-          ></velg-heatmap-grid>`}
+          ></velg-heatmap-grid>`
+      }
     `;
   }
 }

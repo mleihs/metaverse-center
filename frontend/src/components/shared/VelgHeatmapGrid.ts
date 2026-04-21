@@ -88,9 +88,7 @@ export class VelgHeatmapGrid extends LitElement {
 
     // Build a cheat-sheet keyed by "hour|key" so the tooltip can pull
     // tokens/calls without re-searching the cell array.
-    const meta = new Map<string, HeatmapCell>(
-      this.cells.map((c) => [`${c.hour}|${c.key}`, c]),
-    );
+    const meta = new Map<string, HeatmapCell>(this.cells.map((c) => [`${c.hour}|${c.key}`, c]));
 
     // Format hour label as "Mon 14:00" – wall-clock in the browser's
     // timezone keeps "yesterday at 3am" legible to European operators
@@ -110,14 +108,14 @@ export class VelgHeatmapGrid extends LitElement {
     // tokens so the heatmap follows the active theme preset (brutalist,
     // sunless-sea, cyberpunk, etc.) without edits.
     const gradient = [
-      readCssToken(this,'--color-surface'),
-      readCssToken(this,'--color-surface-raised'),
-      readCssToken(this,'--color-success'),
-      readCssToken(this,'--color-warning'),
-      readCssToken(this,'--color-danger'),
+      readCssToken(this, '--color-surface'),
+      readCssToken(this, '--color-surface-raised'),
+      readCssToken(this, '--color-success'),
+      readCssToken(this, '--color-warning'),
+      readCssToken(this, '--color-danger'),
     ].filter((c): c is string => Boolean(c));
 
-    const emphasisGlow = readCssToken(this,'--color-primary');
+    const emphasisGlow = readCssToken(this, '--color-primary');
 
     return {
       tooltip: {
@@ -178,9 +176,7 @@ export class VelgHeatmapGrid extends LitElement {
           type: 'heatmap',
           data: heatmapData,
           label: { show: false },
-          emphasis: emphasisGlow
-            ? { itemStyle: { shadowBlur: 6, shadowColor: emphasisGlow } }
-            : {},
+          emphasis: emphasisGlow ? { itemStyle: { shadowBlur: 6, shadowColor: emphasisGlow } } : {},
         },
       ],
     };

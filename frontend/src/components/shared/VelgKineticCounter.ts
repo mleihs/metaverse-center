@@ -99,7 +99,7 @@ export class VelgKineticCounter extends LitElement {
     const elapsed = now - this._animationStart;
     const progress = Math.min(1, elapsed / this.duration);
     // Cubic ease-out — the classic "settle" curve.
-    const eased = 1 - Math.pow(1 - progress, 3);
+    const eased = 1 - (1 - progress) ** 3;
     this._display = this._animationFrom + (this._animationTo - this._animationFrom) * eased;
     if (progress < 1) {
       this._animationHandle = window.requestAnimationFrame(this._tick);

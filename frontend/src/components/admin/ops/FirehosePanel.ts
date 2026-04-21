@@ -15,10 +15,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import {
-  bureauOpsApi,
-  type FirehoseEntry,
-} from '../../../services/api/BureauOpsApiService.js';
+import { bureauOpsApi, type FirehoseEntry } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
 import { supabase } from '../../../services/supabase/client.js';
 import '../../shared/VelgFirehoseStream.js';
@@ -249,7 +246,9 @@ export class VelgOpsFirehosePanel extends LitElement {
 function _rowToEntry(row: AiUsageLogRow): FirehoseEntry {
   const metadata = row.metadata ?? {};
   const status =
-    typeof metadata === 'object' && metadata !== null && (metadata as { status?: string }).status === 'error'
+    typeof metadata === 'object' &&
+    metadata !== null &&
+    (metadata as { status?: string }).status === 'error'
       ? 'error'
       : 'ok';
   return {

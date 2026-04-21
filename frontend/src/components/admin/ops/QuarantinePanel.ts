@@ -399,8 +399,9 @@ export class VelgOpsQuarantinePanel extends LitElement {
         </button>
       </div>
 
-      ${this._cutAllOpen
-        ? html`
+      ${
+        this._cutAllOpen
+          ? html`
             <div class="cut-all-confirm" role="region" aria-label=${msg('Cut all AI confirmation')}>
               <label class="cut-all-confirm__label" for="cut-all-reason">
                 ${msg('This kills all OpenRouter calls for 60 minutes. Reason (audit log):')}
@@ -432,12 +433,14 @@ export class VelgOpsQuarantinePanel extends LitElement {
               </div>
             </div>
           `
-        : nothing}
+          : nothing
+      }
 
       <div class="section">
         <h3 class="section__title">${msg('Active kills')}</h3>
-        ${killed.length > 0
-          ? html`
+        ${
+          killed.length > 0
+            ? html`
               <div class="list">
                 ${killed.map(
                   (entry) => html`
@@ -454,13 +457,15 @@ export class VelgOpsQuarantinePanel extends LitElement {
                 )}
               </div>
             `
-          : html`<div class="empty">${msg('No manual kills active.')}</div>`}
+            : html`<div class="empty">${msg('No manual kills active.')}</div>`
+        }
       </div>
 
       <div class="section">
         <h3 class="section__title">${msg('Auto-circuit state')}</h3>
-        ${auto.length > 0
-          ? html`
+        ${
+          auto.length > 0
+            ? html`
               <div class="list">
                 ${auto.map(
                   (entry) => html`
@@ -469,8 +474,9 @@ export class VelgOpsQuarantinePanel extends LitElement {
                       <span class="auto-row__state auto-row__state--${entry.state}">
                         ${entry.state.replace('_', '-')}
                       </span>
-                      ${entry.state !== 'closed'
-                        ? html`<button
+                      ${
+                        entry.state !== 'closed'
+                          ? html`<button
                             class="auto-row__reset"
                             type="button"
                             @click=${() => this._onRequestReset(entry)}
@@ -478,10 +484,12 @@ export class VelgOpsQuarantinePanel extends LitElement {
                           >
                             ${msg('Reset')}
                           </button>`
-                        : html`<span></span>`}
+                          : html`<span></span>`
+                      }
                     </div>
-                    ${entry.state === 'open'
-                      ? html`
+                    ${
+                      entry.state === 'open'
+                        ? html`
                           <div
                             style="font-size: var(--text-xs); color: var(--color-text-muted); padding-left: var(--space-3);"
                           >
@@ -490,9 +498,12 @@ export class VelgOpsQuarantinePanel extends LitElement {
                             )}
                           </div>
                         `
-                      : nothing}
-                    ${this._resetPrompt && this._keyOf(this._resetPrompt.entry) === this._keyOf(entry)
-                      ? html`
+                        : nothing
+                    }
+                    ${
+                      this._resetPrompt &&
+                      this._keyOf(this._resetPrompt.entry) === this._keyOf(entry)
+                        ? html`
                           <div
                             class="cut-all-confirm"
                             role="region"
@@ -536,14 +547,16 @@ export class VelgOpsQuarantinePanel extends LitElement {
                             </div>
                           </div>
                         `
-                      : nothing}
+                        : nothing
+                    }
                   `,
                 )}
               </div>
             `
-          : this.loading
-            ? html`<div class="empty">${msg('loading…')}</div>`
-            : html`<div class="empty">${msg('No circuit activity recorded.')}</div>`}
+            : this.loading
+              ? html`<div class="empty">${msg('loading…')}</div>`
+              : html`<div class="empty">${msg('No circuit activity recorded.')}</div>`
+        }
       </div>
 
       <div class="section">
