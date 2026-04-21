@@ -90,6 +90,27 @@ export interface HeatmapCell {
   cost_usd: number;
 }
 
+// ── Forecast (P3.1) ────────────────────────────────────────────────────
+
+export interface ForecastSlider {
+  key: string;
+  label: string;
+  min: number;
+  max: number;
+  default: number;
+  unit: string;
+}
+
+export interface ForecastProjection {
+  projected_usd: number;
+  confidence_low_usd: number;
+  confidence_high_usd: number;
+  days_remaining: number;
+  driver_text: string;
+  sliders: ForecastSlider[];
+  generated_at: string;
+}
+
 // ── Sentry rules (P2.3) ────────────────────────────────────────────────
 
 export type SentryRuleKind = 'ignore' | 'fingerprint' | 'downgrade';
@@ -258,6 +279,10 @@ export class BureauOpsApiService extends BaseApiService {
     dimension: HeatmapDimension = 'purpose',
   ): Promise<ApiResponse<HeatmapCell[]>> {
     return this.get('/admin/ops/heatmap', { days: String(days), dimension });
+  }
+
+  async getForecast(): Promise<ApiResponse<ForecastProjection>> {
+    return this.get('/admin/ops/forecast');
   }
 
   async listSentryRules(): Promise<ApiResponse<SentryRule[]>> {

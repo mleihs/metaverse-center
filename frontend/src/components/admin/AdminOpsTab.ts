@@ -1,8 +1,8 @@
 /**
- * AdminOpsTab — Bureau Ops admin cockpit (P2).
+ * AdminOpsTab — Bureau Ops admin cockpit (P3).
  *
  * Single-tab home for the ops control-surface panels defined in
- * docs/plans/bureau-ops-implementation-plan.md §6.1. Ships seven
+ * docs/plans/bureau-ops-implementation-plan.md §6.1. Ships eight
  * stacked panels plus an on-demand incident-audit drawer:
  *
  *   1. Ledger          — today/month/last-hour tiles + breakdowns.
@@ -12,16 +12,19 @@
  *                        above the fold so operators find it fast
  *                        during an incident).
  *   5. Heatmap         — hour × key cost attribution (P2.6 MV-backed).
- *   6. SentryRules     — CRUD UI for sentry_rules (P2.4).
- *   7. Firehose        — Supabase Realtime stream of ai_usage_log.
+ *   6. Forecast        — end-of-month projection + 5 what-if sliders
+ *                        with client-side delta computation (P3.1/P3.3).
+ *   7. SentryRules     — CRUD UI for sentry_rules (P2.4).
+ *   8. Firehose        — Supabase Realtime stream of ai_usage_log.
  *
  *   + IncidentDossierDrawer opens from the header button; reads
  *     ops_audit_log with action-type + window filters.
  *
  * Refresh cadences (parent-owned where shared, panel-owned otherwise):
- *   - /admin/ops/ledger: 30s, feeds Ledger + BurnRate.
+ *   - /admin/ops/ledger: 30s, feeds Ledger + BurnRate + Forecast (purpose share).
  *   - /admin/ops/circuit: 10s, feeds CircuitMatrix + Quarantine.
- *   - Heatmap / SentryRules: panel-owned polls (5 min / on-mount+mutate).
+ *   - Heatmap / SentryRules / Forecast (baseline): panel-owned (5 min /
+ *     on-mount+mutate / on-mount+manual refresh respectively).
  *   - Firehose: Supabase Realtime push (no poll).
  *
  * Aesthetic: Bureau-Dispatch cockpit — corner brackets, scanline veil,
@@ -41,6 +44,7 @@ import { captureError } from '../../services/SentryService.js';
 import './ops/BurnRatePanel.js';
 import './ops/CircuitMatrixPanel.js';
 import './ops/FirehosePanel.js';
+import './ops/ForecastPanel.js';
 import './ops/HeatmapPanel.js';
 import './ops/IncidentDossierDrawer.js';
 import './ops/LedgerPanel.js';
@@ -142,6 +146,7 @@ export class VelgAdminOpsTab extends LitElement {
     .ops-grid > velg-ops-ledger-panel,
     .ops-grid > velg-ops-circuit-matrix-panel,
     .ops-grid > velg-ops-heatmap-panel,
+    .ops-grid > velg-ops-forecast-panel,
     .ops-grid > velg-ops-sentry-rules-panel,
     .ops-grid > velg-ops-firehose-panel {
       grid-column: 1 / -1;
@@ -152,6 +157,7 @@ export class VelgAdminOpsTab extends LitElement {
       .ops-grid > velg-ops-ledger-panel,
       .ops-grid > velg-ops-circuit-matrix-panel,
       .ops-grid > velg-ops-heatmap-panel,
+      .ops-grid > velg-ops-forecast-panel,
       .ops-grid > velg-ops-sentry-rules-panel,
       .ops-grid > velg-ops-firehose-panel { grid-column: auto; }
     }
@@ -264,6 +270,8 @@ export class VelgAdminOpsTab extends LitElement {
         ></velg-ops-quarantine-panel>
 
         <velg-ops-heatmap-panel></velg-ops-heatmap-panel>
+
+        <velg-ops-forecast-panel .snapshot=${this._ledger}></velg-ops-forecast-panel>
 
         <velg-ops-sentry-rules-panel></velg-ops-sentry-rules-panel>
 
