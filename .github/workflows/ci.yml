@@ -61,6 +61,10 @@ jobs:
         run: bash frontend/scripts/lint-no-cast-unknown.sh
         working-directory: .
 
+      - name: Bureau Ops frame cascade-order lint
+        run: bash frontend/scripts/lint-bureau-panel-frame-last.sh
+        working-directory: .
+
       - name: Backend lint (GenerationService._generate privacy)
         run: bash scripts/lint-no-private-generate.sh
         working-directory: .
