@@ -14,9 +14,10 @@ import httpx
 
 from backend.config import settings
 from backend.services.bot_game_state import BotGameState
-from backend.services.external.openrouter import OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -350,6 +351,16 @@ class BotChatService:
             context = cls._build_context_summary(game_state)
 
             openrouter = OpenRouterService()
+            # Bureau Ops Deferral A.3 — simulation_id threaded from the
+            # participant record. Bot chat runs as a system/scheduler
+            # action (no user_id). Enforces global + purpose + simulation
+            # budget axes.
+            admin_supabase = await get_admin_supabase_client()
+            budget = BudgetContext(
+                admin_supabase=admin_supabase,
+                purpose="bot_chat",
+                simulation_id=participant["simulation_id"],
+            )
             response = await openrouter.generate(
                 model=model.model_id,
                 messages=[
@@ -363,6 +374,7 @@ class BotChatService:
                 ],
                 temperature=0.9,
                 max_tokens=100,
+                budget=budget,
             )
             return response.strip() if response else None
         except (httpx.HTTPError, KeyError, TypeError, ValueError):
