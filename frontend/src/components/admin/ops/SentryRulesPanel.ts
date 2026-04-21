@@ -400,6 +400,9 @@ export class VelgOpsSentryRulesPanel extends LitElement {
   @state() private _form: RuleFormState = emptyForm();
   @state() private _submitting = false;
   @state() private _deletePrompt: { id: string; reason: string } | null = null;
+  @state() private _togglePrompt:
+    | { id: string; nextEnabled: boolean; reason: string }
+    | null = null;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -481,7 +484,26 @@ export class VelgOpsSentryRulesPanel extends LitElement {
     }
   }
 
-  private async _toggleEnabled(rule: SentryRule): Promise<void> {
+  private _requestToggle(rule: SentryRule): void {
+    // Open an inline reason prompt — same UX as delete — so the audit
+    // log captures why the operator flipped the switch. `note` is the
+    // rule's permanent documentation, not the mutation reason.
+    this._togglePrompt = {
+      id: rule.id,
+      nextEnabled: !rule.enabled,
+      reason: '',
+    };
+  }
+
+  private _cancelToggle(): void {
+    this._togglePrompt = null;
+  }
+
+  private async _confirmToggle(rule: SentryRule): Promise<void> {
+    if (!this._togglePrompt || this._togglePrompt.id !== rule.id) return;
+    const reason = this._togglePrompt.reason.trim();
+    if (reason.length < 3) return;
+    this._submitting = true;
     const body: SentryRuleUpsertBody = {
       kind: rule.kind,
       match_exception_type: rule.match_exception_type,
@@ -489,16 +511,22 @@ export class VelgOpsSentryRulesPanel extends LitElement {
       match_logger: rule.match_logger,
       fingerprint_template: rule.fingerprint_template,
       downgrade_to: rule.downgrade_to,
-      enabled: !rule.enabled,
+      enabled: this._togglePrompt.nextEnabled,
       note: rule.note,
+      audit_reason: reason,
     };
     const resp = await bureauOpsApi.updateSentryRule(rule.id, body);
+    this._submitting = false;
+    this._togglePrompt = null;
     if (resp.success) {
+      VelgToast.success(
+        body.enabled ? msg('Sentry rule enabled.') : msg('Sentry rule disabled.'),
+      );
       await this._fetch();
     } else {
       VelgToast.error(msg(str`Toggle failed: ${resp.error.message}`));
       captureError(new Error(resp.error.message), {
-        source: 'SentryRulesPanel._toggleEnabled',
+        source: 'SentryRulesPanel._confirmToggle',
         code: resp.error.code,
       });
     }
@@ -719,6 +747,10 @@ export class VelgOpsSentryRulesPanel extends LitElement {
 
   private _renderRule(rule: SentryRule) {
     const isDeleting = this._deletePrompt?.id === rule.id;
+    const isToggling = this._togglePrompt?.id === rule.id;
+    const togglePlaceholder = this._togglePrompt?.nextEnabled
+      ? msg('Reason for re-enabling (audit log)')
+      : msg('Reason for disabling (audit log)');
     return html`
       <div class="rule ${rule.enabled ? '' : 'rule--disabled'}">
         <div class="rule__body">
@@ -732,7 +764,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
           <button
             class="rule__btn"
             type="button"
-            @click=${() => void this._toggleEnabled(rule)}
+            @click=${() => this._requestToggle(rule)}
             aria-pressed=${rule.enabled}
           >
             ${rule.enabled ? msg('On') : msg('Off')}
@@ -749,6 +781,39 @@ export class VelgOpsSentryRulesPanel extends LitElement {
           </button>
         </div>
       </div>
+      ${isToggling
+        ? html`
+            <div class="delete-prompt" role="region" aria-label=${msg('Toggle confirmation')}>
+              <input
+                class="form__input"
+                type="text"
+                placeholder=${togglePlaceholder}
+                minlength="3"
+                maxlength="500"
+                .value=${this._togglePrompt?.reason ?? ''}
+                @input=${(e: Event) => {
+                  if (!this._togglePrompt) return;
+                  this._togglePrompt = {
+                    ...this._togglePrompt,
+                    reason: (e.target as HTMLInputElement).value,
+                  };
+                }}
+              />
+              <button class="form__btn" type="button" @click=${this._cancelToggle}>
+                ${msg('Cancel')}
+              </button>
+              <button
+                class="form__btn form__btn--primary"
+                type="button"
+                ?disabled=${(this._togglePrompt?.reason.trim().length ?? 0) < 3 ||
+                  this._submitting}
+                @click=${() => void this._confirmToggle(rule)}
+              >
+                ${msg('Confirm')}
+              </button>
+            </div>
+          `
+        : nothing}
       ${isDeleting
         ? html`
             <div class="delete-prompt" role="region" aria-label=${msg('Delete confirmation')}>

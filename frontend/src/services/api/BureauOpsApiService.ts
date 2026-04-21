@@ -120,6 +120,8 @@ export interface SentryRuleUpsertBody {
   downgrade_to?: SentryDowngradeTo | null;
   enabled?: boolean;
   note: string;
+  /** Why this mutation happened (audit log). Falls back to `note` on backend if omitted. */
+  audit_reason?: string | null;
 }
 
 // ── Audit log ──────────────────────────────────────────────────────────
