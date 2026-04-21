@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
+import { numberInputStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -92,6 +93,7 @@ export class VelgAdminCachingTab extends LitElement {
     adminButtonStyles,
     adminLoadingStyles,
     infoBubbleStyles,
+    numberInputStyles,
     css`
       :host {
         display: block;
@@ -158,13 +160,8 @@ export class VelgAdminCachingTab extends LitElement {
         border: 1px solid var(--color-border);
         border-radius: 0;
         transition: border-color 0.2s ease;
-        -moz-appearance: textfield;
-      }
-
-      .cache-card__input::-webkit-outer-spin-button,
-      .cache-card__input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
+        /* Native spinner arrows hidden via shared numberInputStyles
+           (imported below); no per-component rule needed. */
       }
 
       .cache-card__input:focus {

@@ -199,3 +199,38 @@ export const formStyles = css`
     }
   }
 `;
+
+/**
+ * Hide native ``<input type="number">`` spinner buttons so numeric inputs
+ * render as plain text fields under the brutalist theme. The native
+ * up/down arrows clash visually with right-aligned numeric content
+ * (they sit inside the input's right padding and crowd the value) and
+ * don't match the platform's disciplined aesthetic anywhere they appear.
+ *
+ * Apply via ``:host`` composition:
+ *
+ *   static styles = [numberInputStyles, css\`...\`];
+ *
+ * Applies globally within the host's shadow tree — all
+ * ``input[type="number"]`` elements get the hide. If a specific site
+ * genuinely needs the spinners back, override with
+ * ``input[type="number"].with-spinners { -moz-appearance: auto; … }``.
+ *
+ * Before this module: AdminCleanupTab, AdminCachingTab, AdminHeartbeatTab
+ * each inlined the same 6-line rule against their local ``.xxx__input``
+ * selector; every new number-input site had to remember to copy it.
+ * Missing the rule produced the "value crowds the spinners" visual bug
+ * WebMCP-caught on VelgOrphanSweeperSettingsModal.
+ */
+export const numberInputStyles = css`
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+`;
