@@ -38,7 +38,12 @@ from backend.services.social.constants import (
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.services.social_story_service import SocialStoryService
 from backend.utils.responses import extract_list
-from backend.utils.settings import decrypt_setting, load_platform_settings, parse_setting_bool
+from backend.utils.settings import (
+    decrypt_setting,
+    load_platform_settings,
+    parse_setting_bool,
+    upsert_platform_setting,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -207,13 +212,8 @@ class InstagramScheduler(BaseSchedulerMixin):
                     )
                     sentry_sdk.capture_exception(exc)
                 # Disable posting (not the whole pipeline — drafts can still be generated)
-                await (
-                    admin.table("platform_settings")
-                    .update(
-                        {"setting_value": json.dumps(False)},
-                    )
-                    .eq("setting_key", "instagram_posting_enabled")
-                    .execute()
+                await upsert_platform_setting(
+                    admin, "instagram_posting_enabled", json.dumps(False),
                 )
                 return
             except InstagramRateLimitError:
@@ -705,13 +705,8 @@ class InstagramScheduler(BaseSchedulerMixin):
                     from backend.utils.encryption import encrypt
 
                     encrypted = encrypt(new_token)
-                    await (
-                        admin.table("platform_settings")
-                        .update(
-                            {"setting_value": encrypted},
-                        )
-                        .eq("setting_key", "instagram_access_token")
-                        .execute()
+                    await upsert_platform_setting(
+                        admin, "instagram_access_token", encrypted,
                     )
 
                     logger.info(

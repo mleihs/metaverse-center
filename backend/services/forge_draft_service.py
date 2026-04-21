@@ -16,6 +16,7 @@ from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt, encrypt
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.settings import upsert_platform_setting
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -536,16 +537,11 @@ class ForgeDraftService:
         admin_id: UUID,
     ) -> dict:
         """Toggle system-wide BYOK bypass (admin only)."""
-        await (
-            admin_supabase.table("platform_settings")
-            .update(
-                {
-                    "setting_value": enabled,
-                    "updated_by_id": str(admin_id),
-                }
-            )
-            .eq("setting_key", "byok_bypass_enabled")
-            .execute()
+        await upsert_platform_setting(
+            admin_supabase,
+            "byok_bypass_enabled",
+            enabled,
+            updated_by_id=admin_id,
         )
         return {"byok_bypass_enabled": enabled}
 
@@ -556,16 +552,11 @@ class ForgeDraftService:
         admin_id: UUID,
     ) -> dict:
         """Set global BYOK access policy: 'none', 'all', or 'per_user' (admin only)."""
-        await (
-            admin_supabase.table("platform_settings")
-            .update(
-                {
-                    "setting_value": policy,
-                    "updated_by_id": str(admin_id),
-                }
-            )
-            .eq("setting_key", "byok_access_policy")
-            .execute()
+        await upsert_platform_setting(
+            admin_supabase,
+            "byok_access_policy",
+            policy,
+            updated_by_id=admin_id,
         )
         return {"byok_access_policy": policy}
 

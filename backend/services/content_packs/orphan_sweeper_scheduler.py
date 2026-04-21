@@ -53,7 +53,11 @@ from backend.services.content_packs.orphan_sweeper import (
 from backend.services.content_packs.publish import get_github_repo_config
 from backend.services.github_app import get_github_app_client
 from backend.services.social.scheduler_base import BaseSchedulerMixin
-from backend.utils.settings import load_platform_settings, parse_setting_bool
+from backend.utils.settings import (
+    load_platform_settings,
+    parse_setting_bool,
+    upsert_platform_setting,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -260,9 +264,6 @@ async def _persist_last_run_at(admin: Client, now: datetime) -> None:
     so postgrest stores a JSON string that ``_parse_last_run_at`` then
     round-trips on the next tick.
     """
-    await (
-        admin.table("platform_settings")
-        .update({"setting_value": json.dumps(now.isoformat())})
-        .eq("setting_key", _SETTING_LAST_RUN_AT)
-        .execute()
+    await upsert_platform_setting(
+        admin, _SETTING_LAST_RUN_AT, json.dumps(now.isoformat()),
     )
