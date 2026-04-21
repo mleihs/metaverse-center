@@ -112,6 +112,39 @@ export interface ListDraftsParams {
   offset?: number;
 }
 
+// ── Orphan-branch sweeper (Phase 7) ───────────────────────────────────────
+
+export interface SweepOrphansRequest {
+  /** When True (default), classify only; no branches are deleted. */
+  dry_run?: boolean;
+  /** Minimum commit age (days) before a PR-less branch is eligible for deletion. Default 7. */
+  min_age_days?: number;
+}
+
+export type OrphanBranchStatus = 'keep' | 'delete';
+export type OrphanPrState = 'open' | 'closed' | 'merged' | null;
+
+export interface OrphanBranchClassification {
+  name: string;
+  sha: string;
+  age_days: number;
+  pr_number: number | null;
+  pr_state: OrphanPrState;
+  status: OrphanBranchStatus;
+  reason: string;
+  deleted: boolean;
+  error: string | null;
+}
+
+export interface SweepOrphansResult {
+  dry_run: boolean;
+  total_found: number;
+  kept_count: number;
+  deleted_count: number;
+  error_count: number;
+  branches: OrphanBranchClassification[];
+}
+
 export class ContentDraftsApiService extends BaseApiService {
   private readonly base = '/admin/content-drafts';
 
@@ -222,6 +255,20 @@ export class ContentDraftsApiService extends BaseApiService {
    */
   resolveConflict(draftId: string, body: ResolveConflictBody): Promise<ApiResponse<ContentDraft>> {
     return this.post(`${this.base}/${encodeURIComponent(draftId)}/resolve`, body);
+  }
+
+  /**
+   * Garbage-collect abandoned `content/drafts-batch-*` branches on the repo.
+   *
+   * Always runs dry-run by default (body.dry_run defaults to True server-side,
+   * but we mirror the shape here explicitly). Admins see a full classification
+   * table before committing to actual deletions.
+   *
+   * Per-branch errors during deletion are surfaced in the response's
+   * `branches[].error` — one failure never aborts the sweep.
+   */
+  sweepOrphans(body: SweepOrphansRequest = {}): Promise<ApiResponse<SweepOrphansResult>> {
+    return this.post(`${this.base}/sweep-orphans`, body);
   }
 }
 
