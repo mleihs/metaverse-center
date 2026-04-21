@@ -2,8 +2,10 @@
 
 Centralizes the pattern of loading settings from the platform_settings table,
 parsing booleans, decrypting encrypted values, and writing updates safely.
-Used by InstagramScheduler, BlueskyScheduler, SocialStoryService, and the
-orphan-sweeper scheduler.
+Used across backend schedulers and services that read/write platform_settings
+(social schedulers, orphan-sweeper, forge BYOK toggles, news scanner, …);
+prefer these helpers over ad-hoc postgrest chains so encoding + safety
+invariants live in one place.
 """
 
 from __future__ import annotations

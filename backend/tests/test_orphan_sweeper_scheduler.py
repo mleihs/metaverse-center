@@ -11,6 +11,12 @@ Covers:
     - _process_tick: skips when not due, runs + persists when due,
       reports Sentry on error_count>0, skips gracefully when
       GITHUB_REPO_* env vars are unset.
+    - run_sweep_and_persist: auto-loads config when omitted, respects
+      caller-provided now/config (scheduler-tick path), propagates
+      HTTPException from env-config, threads `trigger` into the Sentry
+      payload (default "admin" for the endpoint path).
+    - _persist_last_run_at: writes ISO string with outer quotes via
+      upsert(on_conflict="setting_key").
 """
 
 from __future__ import annotations
@@ -254,7 +260,7 @@ class TestProcessTick:
         kwargs = sweep.await_args.kwargs
         assert kwargs["dry_run"] is False
         assert kwargs["min_age_days"] == 14.0
-        # last_run_at was persisted (admin.update was executed).
+        # last_run_at was persisted (admin.upsert was executed).
         execute.assert_awaited_once()
 
     @pytest.mark.asyncio
