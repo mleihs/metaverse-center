@@ -135,7 +135,9 @@ async def test_generate_preview_success_with_conflict(supabase):
     assert preview.merged == {"banter": [{"id": "a", "text_de": "x-ours"}]}
     assert len(preview.conflicts) == 1
     assert preview.conflicts[0].kind == "modify_modify"
-    assert preview.conflicts[0].path == ".banter[id=a]"
+    # D1 field-level recursion: id matches on all sides, so the conflict
+    # narrows to `.text_de` under the entry.
+    assert preview.conflicts[0].path == ".banter[id=a].text_de"
 
 
 async def test_generate_preview_resource_not_on_main_treats_as_empty(supabase):
