@@ -309,6 +309,15 @@ export class VelgForecastSlider extends LitElement {
     const isDirty = this.value !== this.default;
     const trackPct =
       this.max === this.min ? 0 : ((this.default - this.min) / (this.max - this.min)) * 100;
+    // Native <input type="range">'s track is inset by half a thumb-width on
+    // each end (the thumb is centered when at min/max). Without this
+    // correction, the tick at trackPct=0 would sit at the visual left edge
+    // while the thumb at min sits inset by thumb/2. The shift maps trackPct
+    // ∈ [0, 100] to a multiplier ∈ [+0.5, -0.5] so the tick aligns with the
+    // thumb at every position. Verified at extremes (0/50/100) and quarter
+    // points; matches the native browser geometry of WebKit/Gecko range
+    // tracks (Chromium/Firefox/Safari all inset by half-thumb).
+    const thumbShift = 0.5 - trackPct / 100;
     const formattedValue = `${this.value}${this.unit}`;
     const formattedDefault = `${this.default}${this.unit}`;
     const deltaClass =
@@ -352,7 +361,11 @@ export class VelgForecastSlider extends LitElement {
             aria-describedby=${this.deltaText ? deltaId : nothing}
             @input=${this._onInput}
           />
-          <span class="slider__default-tick" style="left: ${trackPct}%" aria-hidden="true"></span>
+          <span
+            class="slider__default-tick"
+            style="left: calc(${trackPct}% + ${thumbShift} * var(--_thumb-size))"
+            aria-hidden="true"
+          ></span>
         </div>
         <footer class="slider__footer">
           <span class="slider__default-label">
