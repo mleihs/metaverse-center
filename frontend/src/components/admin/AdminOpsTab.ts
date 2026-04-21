@@ -26,6 +26,7 @@ import './ops/BurnRatePanel.js';
 import './ops/CircuitMatrixPanel.js';
 import './ops/FirehosePanel.js';
 import './ops/HeatmapPanel.js';
+import './ops/IncidentDossierDrawer.js';
 import './ops/LedgerPanel.js';
 import './ops/QuarantinePanel.js';
 import './ops/SentryRulesPanel.js';
@@ -84,6 +85,29 @@ export class VelgAdminOpsTab extends LitElement {
       margin: 0 0 var(--space-6) 0;
     }
 
+    .ops-dossier-btn {
+      padding: var(--space-1-5) var(--space-3);
+      font-family: var(--font-brutalist);
+      font-size: 10px;
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: uppercase;
+      border: 2px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      cursor: pointer;
+      margin-bottom: var(--space-4);
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .ops-dossier-btn:hover,
+    .ops-dossier-btn:focus-visible {
+      background: var(--color-accent-amber);
+      color: var(--color-text-inverse);
+      border-color: var(--color-accent-amber);
+      outline: none;
+    }
+
     .ops-error {
       padding: var(--space-4);
       background: var(--color-danger-bg);
@@ -122,6 +146,7 @@ export class VelgAdminOpsTab extends LitElement {
   @state() private _ledgerLoading = true;
   @state() private _circuitLoading = true;
   @state() private _error: string | null = null;
+  @state() private _dossierOpen = false;
 
   private _ledgerTimer: number | null = null;
   private _circuitTimer: number | null = null;
@@ -188,6 +213,16 @@ export class VelgAdminOpsTab extends LitElement {
         ${msg('Live AI spend, circuit posture, and incident audit log. Mutations require a reason.')}
       </p>
 
+      <button
+        class="ops-dossier-btn"
+        type="button"
+        @click=${() => {
+          this._dossierOpen = true;
+        }}
+      >
+        ${msg('Open incident dossier')}
+      </button>
+
       ${this._error ? html`<div class="ops-error">${msg('Ledger unavailable:')} ${this._error}</div>` : nothing}
 
       <div class="ops-grid">
@@ -218,6 +253,13 @@ export class VelgAdminOpsTab extends LitElement {
 
         <velg-ops-firehose-panel></velg-ops-firehose-panel>
       </div>
+
+      <velg-ops-incident-dossier-drawer
+        ?open=${this._dossierOpen}
+        @dossier-close=${() => {
+          this._dossierOpen = false;
+        }}
+      ></velg-ops-incident-dossier-drawer>
     `;
   }
 }
