@@ -15,7 +15,7 @@ from backend.tests.integration.game_constants import (
     SIM_STATION_NULL,
     SIM_VELGARIEN,
 )
-from supabase import AsyncClient, Client, create_async_client, create_client
+from supabase import AsyncClient, Client, create_client
 
 
 def _supabase_available() -> bool:
@@ -96,8 +96,17 @@ def admin_client() -> Client:
 
 @pytest.fixture()
 async def async_admin_client() -> AsyncClient:
-    """Async Supabase client with service_role — for calling async services."""
-    return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
+    """Async Supabase client with service_role — for calling async services.
+
+    Delegates to the process-wide cache (``supabase_admin_cache``) so
+    integration tests use the same client that production paths would
+    use. The autouse ``_reset_admin_supabase_cache`` fixture in
+    ``backend/tests/conftest.py`` guarantees each test gets a fresh
+    client bound to its own event loop.
+    """
+    from backend.utils.supabase_admin_cache import get_admin_supabase_client
+
+    return await get_admin_supabase_client()
 
 
 @pytest.fixture(scope="session")
