@@ -1,0 +1,392 @@
+/**
+ * VelgForecastSlider — range input with live-delta label primitive (P3.2).
+ *
+ * Generic shared primitive used by ForecastPanel and any future what-if
+ * surface that needs a numerical input with side-by-side delta feedback.
+ * The slider itself is purely visual: the parent computes the delta
+ * string (e.g. "+$2.34", "-12 calls/min") and passes it via the
+ * ``delta-text`` attribute. The ``delta-sign`` attribute drives the
+ * delta colour (positive → warning amber, negative → success green,
+ * zero → muted) so the same primitive can frame any signed metric.
+ *
+ * Brutalist aesthetics:
+ *   - Hard-edge square thumb with offset shadow
+ *   - Default-position tick on the track for "where you started"
+ *   - Reset icon-button appears only when the value is dirty
+ *   - Monospace tabular-nums value display, amber when off-default
+ *   - Dashed border around the panel
+ *
+ * Events:
+ *   slider-change → { key, value, default, raw }
+ *
+ * Usage:
+ *   <velg-forecast-slider
+ *     key="forge_runs_pct"
+ *     label="Forge ignites vs current"
+ *     min=${0} max=${300} default=${100} value=${value}
+ *     unit="%"
+ *     delta-text="+$2.34"
+ *     delta-sign=${1}
+ *     @slider-change=${onSliderChange}
+ *   ></velg-forecast-slider>
+ */
+
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { localized, msg } from '@lit/localize';
+
+import { icons } from '../../utils/icons.js';
+
+@localized()
+@customElement('velg-forecast-slider')
+export class VelgForecastSlider extends LitElement {
+  /** Stable key used in slider-change events; matches the backend slider catalog. */
+  @property({ type: String }) key = '';
+  /** Visible label rendered above the slider. Parent provides translated text. */
+  @property({ type: String }) label = '';
+  @property({ type: Number }) min = 0;
+  @property({ type: Number }) max = 100;
+  /** The "no change" baseline. A tick is rendered at this position. */
+  @property({ type: Number }) default = 50;
+  @property({ type: Number }) value = 50;
+  @property({ type: Number }) step = 1;
+  /** Unit suffix shown after the value (e.g. "%", "x"). */
+  @property({ type: String }) unit = '';
+  /** Pre-formatted delta string (e.g. "+$2.34"). Parent owns formatting. */
+  @property({ type: String, attribute: 'delta-text' }) deltaText = '';
+  /** Sign of the delta drives colour: 1 = up/warning, -1 = down/success, 0 = neutral. */
+  @property({ type: Number, attribute: 'delta-sign' }) deltaSign = 0;
+  @property({ type: Boolean }) disabled = false;
+
+  static styles = css`
+    :host {
+      --_track-h: 4px;
+      --_thumb-size: 18px;
+      --_track-bg: var(--color-border);
+      --_track-fill: var(--color-primary);
+      --_thumb: var(--color-primary);
+      --_thumb-active: var(--color-primary-active);
+      --_value-default: var(--color-text-primary);
+      --_value-dirty: var(--color-primary);
+      --_delta-up: var(--color-warning);
+      --_delta-down: var(--color-success);
+      --_delta-zero: var(--color-text-muted);
+
+      display: block;
+    }
+
+    .slider {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-3) var(--space-2-5);
+      background: var(--color-surface-raised);
+      border: 1px dashed var(--color-border);
+    }
+
+    .slider__header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .slider__label {
+      flex: 1;
+      min-width: 0;
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+    }
+
+    .slider__value {
+      font-family: var(--font-mono);
+      font-size: var(--text-md);
+      font-weight: var(--font-semibold);
+      color: var(--_value-default);
+      font-variant-numeric: tabular-nums;
+      transition: color var(--transition-fast);
+      min-width: 4ch;
+      text-align: right;
+    }
+
+    .slider__value--dirty {
+      color: var(--_value-dirty);
+    }
+
+    .slider__track-wrapper {
+      position: relative;
+      height: var(--_thumb-size);
+      display: flex;
+      align-items: center;
+    }
+
+    .slider__input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      height: var(--_thumb-size);
+      background: transparent;
+      cursor: pointer;
+      margin: 0;
+      padding: 0;
+    }
+
+    .slider__input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .slider__input::-webkit-slider-runnable-track {
+      height: var(--_track-h);
+      background: var(--_track-bg);
+      border: none;
+    }
+
+    .slider__input::-moz-range-track {
+      height: var(--_track-h);
+      background: var(--_track-bg);
+      border: none;
+    }
+
+    .slider__input::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: var(--_thumb-size);
+      height: var(--_thumb-size);
+      background: var(--_thumb);
+      border: 2px solid var(--color-text-inverse);
+      box-shadow: var(--shadow-xs);
+      margin-top: calc((var(--_thumb-size) - var(--_track-h)) / -2);
+      cursor: grab;
+      transition: background var(--transition-fast);
+    }
+
+    .slider__input::-moz-range-thumb {
+      width: var(--_thumb-size);
+      height: var(--_thumb-size);
+      background: var(--_thumb);
+      border: 2px solid var(--color-text-inverse);
+      box-shadow: var(--shadow-xs);
+      cursor: grab;
+      transition: background var(--transition-fast);
+    }
+
+    .slider__input:focus-visible {
+      outline: none;
+    }
+
+    .slider__input:focus-visible::-webkit-slider-thumb {
+      box-shadow: var(--shadow-xs), var(--ring-focus);
+    }
+
+    .slider__input:focus-visible::-moz-range-thumb {
+      box-shadow: var(--shadow-xs), var(--ring-focus);
+    }
+
+    .slider__input:active::-webkit-slider-thumb {
+      background: var(--_thumb-active);
+      cursor: grabbing;
+    }
+
+    .slider__input:active::-moz-range-thumb {
+      background: var(--_thumb-active);
+      cursor: grabbing;
+    }
+
+    .slider__default-tick {
+      position: absolute;
+      top: calc(50% - 6px);
+      width: 2px;
+      height: 12px;
+      background: var(--color-text-muted);
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+
+    .slider__footer {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+    }
+
+    .slider__default-label {
+      color: var(--color-text-muted);
+      letter-spacing: var(--tracking-wide);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .slider__default-label strong {
+      color: var(--color-text-secondary);
+      font-weight: var(--font-semibold);
+    }
+
+    .slider__delta {
+      font-variant-numeric: tabular-nums;
+      font-weight: var(--font-semibold);
+      white-space: nowrap;
+    }
+
+    .slider__delta--up { color: var(--_delta-up); }
+    .slider__delta--down { color: var(--_delta-down); }
+    .slider__delta--zero { color: var(--_delta-zero); }
+    .slider__delta--placeholder {
+      color: var(--color-text-muted);
+      opacity: 0.4;
+    }
+
+    .slider__reset {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: color var(--transition-fast), border-color var(--transition-fast),
+        background var(--transition-fast);
+    }
+
+    .slider__reset:hover,
+    .slider__reset:focus-visible {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+      background: var(--color-primary-bg);
+      outline: none;
+    }
+
+    .slider__reset:focus-visible {
+      box-shadow: var(--ring-focus);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slider__value,
+      .slider__input::-webkit-slider-thumb,
+      .slider__input::-moz-range-thumb,
+      .slider__reset {
+        transition: none;
+      }
+    }
+  `;
+
+  protected render() {
+    const isDirty = this.value !== this.default;
+    const trackPct =
+      this.max === this.min ? 0 : ((this.default - this.min) / (this.max - this.min)) * 100;
+    const formattedValue = `${this.value}${this.unit}`;
+    const formattedDefault = `${this.default}${this.unit}`;
+    const deltaClass =
+      this.deltaSign > 0
+        ? 'slider__delta--up'
+        : this.deltaSign < 0
+          ? 'slider__delta--down'
+          : 'slider__delta--zero';
+
+    return html`
+      <div class="slider" part="root">
+        <header class="slider__header">
+          <label class="slider__label" for="range-${this.key}">${this.label}</label>
+          <output
+            class="slider__value ${isDirty ? 'slider__value--dirty' : ''}"
+            for="range-${this.key}"
+          >
+            ${formattedValue}
+          </output>
+        </header>
+        <div class="slider__track-wrapper">
+          <input
+            id="range-${this.key}"
+            class="slider__input"
+            type="range"
+            min=${this.min}
+            max=${this.max}
+            step=${this.step}
+            .value=${String(this.value)}
+            ?disabled=${this.disabled}
+            aria-label=${this.label}
+            aria-valuetext=${formattedValue}
+            @input=${this._onInput}
+          />
+          <span class="slider__default-tick" style="left: ${trackPct}%" aria-hidden="true"></span>
+        </div>
+        <footer class="slider__footer">
+          <span class="slider__default-label">
+            ${msg('default:')} <strong>${formattedDefault}</strong>
+          </span>
+          ${
+            this.deltaText
+              ? html`<span class="slider__delta ${deltaClass}">${this.deltaText}</span>`
+              : html`<span
+                  class="slider__delta slider__delta--placeholder"
+                  aria-hidden="true"
+                  >–</span
+                >`
+          }
+          ${
+            isDirty
+              ? html`<button
+                  class="slider__reset"
+                  type="button"
+                  @click=${this._reset}
+                  aria-label=${msg('Reset to default')}
+                  title=${msg('Reset to default')}
+                >
+                  ${icons.refresh(14)}
+                </button>`
+              : nothing
+          }
+        </footer>
+      </div>
+    `;
+  }
+
+  private _onInput(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const raw = input.value;
+    const value = Number(raw);
+    if (Number.isNaN(value)) return;
+    this.value = value;
+    this.dispatchEvent(
+      new CustomEvent('slider-change', {
+        bubbles: true,
+        composed: true,
+        detail: { key: this.key, value, default: this.default, raw },
+      }),
+    );
+  }
+
+  private _reset() {
+    if (this.value === this.default) return;
+    this.value = this.default;
+    this.dispatchEvent(
+      new CustomEvent('slider-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          key: this.key,
+          value: this.default,
+          default: this.default,
+          raw: String(this.default),
+        },
+      }),
+    );
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'velg-forecast-slider': VelgForecastSlider;
+  }
+}
