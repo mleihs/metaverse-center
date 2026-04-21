@@ -2,17 +2,25 @@
 
 Replaces the hardcoded rules that shipped with P0 (``backend/app.py::
 _ops_before_send``) with a DB-driven cache. Rules live in ``sentry_rules``
-(migration 228); the cache refreshes every 30 seconds (plan §7.3 TTL)
-and is invalidated in-process by ``admin_ops`` mutation handlers so rule
-changes take effect immediately on a single-worker Railway deployment
-(AD-1).
+(migration 228). Three complementary reload triggers keep the cache
+fresh:
+
+  * Lifespan startup in ``backend/app.py`` primes the cache before
+    traffic arrives.
+  * Admin mutations in
+    :mod:`backend.services.sentry_rule_service` call ``reload`` directly
+    after every insert/update/delete for sub-second visibility.
+  * :class:`backend.services.sentry_rule_cache_refresher.SentryRuleCacheRefresher`
+    ticks every 60 seconds and re-pulls the table so a missed mutation
+    (transient DB error, multi-worker drift once we outgrow AD-1) can
+    never leave the cache permanently stale.
 
 Why not ``NOTIFY`` + LISTEN:
     Supabase Python client is HTTP-based (postgrest) and does not expose
     a persistent TCP connection for LISTEN. Multi-worker coordination
     would need a raw asyncpg connection — deferred until we outgrow a
-    single worker. In the meantime the 30-second TTL is the upper bound
-    on staleness and the in-process invalidation covers the hot path.
+    single worker. The 60-second refresher is the upper bound on
+    staleness across any failure mode.
 
 Thread-safety:
     Sentry's ``before_send`` runs on the SDK's synchronous event-flush

@@ -135,6 +135,7 @@ from backend.services.platform_model_config import ensure_loaded as ensure_model
 from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
 from backend.services.resonance_scheduler import ResonanceScheduler
 from backend.services.scanning.scanner_service import ScannerService
+from backend.services.sentry_rule_cache_refresher import SentryRuleCacheRefresher
 
 
 @asynccontextmanager
@@ -186,9 +187,11 @@ async def lifespan(app: FastAPI):
     orphan_sweeper_task = await OrphanSweeperScheduler.start()
     ai_usage_rollup_task = await AiUsageRollupScheduler.start()
     circuit_revert_task = await CircuitRevertSweeper.start()
+    sentry_rule_refresh_task = await SentryRuleCacheRefresher.start()
     dungeon_cleanup_task = await start_instance_cleanup()
     yield
     dungeon_cleanup_task.cancel()
+    sentry_rule_refresh_task.cancel()
     circuit_revert_task.cancel()
     ai_usage_rollup_task.cancel()
     orphan_sweeper_task.cancel()
