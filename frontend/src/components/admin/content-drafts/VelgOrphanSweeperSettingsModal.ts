@@ -16,9 +16,14 @@
  *   cadence". Shared spatial proximity via the parent's gear button.
  *
  * Save semantics:
- *   - Toggle auto-saves on change (matches AdminAnnouncementsTab pattern).
- *   - Number inputs auto-save on blur + after a 600ms debounce on typing,
- *     so rapid keystrokes don't stamp the DB per keypress.
+ *   - Toggle auto-saves on change (matches AdminAnnouncementsTab pattern);
+ *     optimistic UI with rollback on save failure.
+ *   - Number inputs auto-save on a 600ms debounce after the last keystroke.
+ *     No blur-commit — a blur fires synchronously BEFORE a click event
+ *     elsewhere in the modal (Close / Run-now), and a blur-commit would
+ *     persist mid-edit values the user was about to abandon. The close-
+ *     transition branch of `willUpdate` cancels any pending timer so a
+ *     fast "type then close" interaction drops the edit cleanly.
  *   - Run-now goes through ConfirmDialog (destructive — real branch deletion)
  *     and stamps `last_run_at` optimistically on success (see
  *     `_handleRunNow` — avoids a full reload that would race a user's
@@ -43,9 +48,15 @@ import { adminApi, contentDraftsApi } from '../../../services/api/index.js';
 import { captureError } from '../../../services/SentryService.js';
 import type { PlatformSetting } from '../../../types/index.js';
 import { icons } from '../../../utils/icons.js';
+import { buttonStyles } from '../../shared/button-styles.js';
 import { VelgConfirmDialog } from '../../shared/ConfirmDialog.js';
+import { numberInputStyles } from '../../shared/form-styles.js';
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/BaseModal.js';
+import '../../shared/ErrorState.js';
+import '../../shared/LoadingState.js';
+import '../../shared/VelgBadge.js';
+import '../../shared/VelgToggle.js';
 
 const KEY_ENABLED = 'orphan_sweeper_enabled';
 const KEY_INTERVAL_DAYS = 'orphan_sweeper_interval_days';
@@ -71,14 +82,13 @@ type ModalState = 'loading' | 'loaded' | 'error';
 @localized()
 @customElement('velg-orphan-sweeper-settings-modal')
 export class VelgOrphanSweeperSettingsModal extends LitElement {
-  static styles = css`
+  static styles = [
+    buttonStyles,
+    numberInputStyles,
+    css`
     :host {
       --_accent: var(--color-accent-amber);
-      --_accent-dim: color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
-      --_accent-bg: color-mix(in srgb, var(--color-accent-amber) 8%, transparent);
       --_divider: color-mix(in srgb, var(--color-border) 70%, transparent);
-      --_danger-bg: color-mix(in srgb, var(--color-danger) 10%, transparent);
-      --_danger-border: color-mix(in srgb, var(--color-danger) 40%, transparent);
       display: block;
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
@@ -89,27 +99,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       line-height: 1.55;
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-4);
-    }
-
-    .loading,
-    .error {
-      padding: var(--space-5);
-      text-align: center;
-      color: var(--color-text-muted);
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-    }
-
-    .error {
-      color: var(--color-danger);
-      background: var(--_danger-bg);
-      border-left: 3px solid var(--color-danger);
-      text-align: left;
-      font-family: var(--font-mono);
-      letter-spacing: normal;
-      text-transform: none;
     }
 
     .field {
@@ -152,77 +141,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       align-items: center;
       gap: var(--space-3);
       flex-wrap: wrap;
-    }
-
-    /* ── Toggle ───────────────────────────────────────────────────── */
-
-    .toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .toggle__input {
-      appearance: none;
-      width: 40px;
-      height: 22px;
-      background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
-      position: relative;
-      cursor: pointer;
-      transition: background var(--transition-fast), border-color var(--transition-fast);
-      flex-shrink: 0;
-    }
-
-    .toggle__input::before {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      background: var(--color-text-muted);
-      transition: transform var(--transition-fast), background var(--transition-fast);
-    }
-
-    .toggle__input:checked {
-      background: color-mix(in srgb, var(--_accent) 20%, var(--color-surface-sunken));
-      border-color: var(--_accent);
-    }
-
-    .toggle__input:checked::before {
-      transform: translateX(18px);
-      background: var(--_accent);
-    }
-
-    .toggle__input:focus-visible {
-      outline: var(--ring-focus);
-      outline-offset: 2px;
-    }
-
-    .toggle__input:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .chip {
-      font-family: var(--font-brutalist);
-      font-size: 10px;
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      padding: 2px 8px;
-      border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
-      white-space: nowrap;
-    }
-
-    .chip--active {
-      color: var(--_accent);
-      border-color: var(--_accent-dim);
-      background: var(--_accent-bg);
     }
 
     /* ── Number input ──────────────────────────────────────────────── */
@@ -324,49 +242,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       color: var(--color-text-secondary);
     }
 
-    /* ── Buttons ───────────────────────────────────────────────────── */
-
-    .btn {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      padding: var(--space-2) var(--space-4);
-      border: 1px solid var(--color-border);
-      background: var(--color-surface-raised);
-      color: var(--color-text-primary);
-      cursor: pointer;
-      transition: background var(--transition-fast), border-color var(--transition-fast);
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1-5);
-    }
-
-    .btn:hover:not(:disabled) {
-      background: var(--color-surface-header);
-    }
-
-    .btn:focus-visible {
-      outline: var(--ring-focus);
-      outline-offset: 1px;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn--danger {
-      border-color: var(--_danger-border);
-      color: var(--color-danger);
-      background: var(--_danger-bg);
-    }
-
-    .btn--danger:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--color-danger) 18%, transparent);
-      border-color: var(--color-danger);
-    }
+    /* ── Buttons: via shared buttonStyles (.btn, .btn--danger). ──── */
 
     .actions {
       display: flex;
@@ -383,15 +259,13 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .toggle__input,
-      .toggle__input::before,
-      .btn,
       .saved-tick,
       .number-input__field {
         transition: none;
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Boolean, reflect: true }) open = false;
 
@@ -543,10 +417,10 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     return true;
   }
 
-  private async _handleToggleEnabled(e: Event): Promise<void> {
-    const next = (e.target as HTMLInputElement).checked;
+  private async _handleToggleEnabled(e: CustomEvent<{ checked: boolean }>): Promise<void> {
+    const next = e.detail.checked;
     // Optimistic update for instant UI feedback; if the save fails (auth
-    // drop, DB down, postgrest error) roll back so the visible checkbox
+    // drop, DB down, postgrest error) roll back so the visible toggle
     // state always matches what persisted. Without the rollback the user
     // sees an error toast but the toggle stays in the new position —
     // reality/UI diverge until the next modal open.
@@ -587,25 +461,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     const raw = (e.target as HTMLInputElement).value;
     this._minAgeDays = raw;
     this._queueNumberSave(KEY_MIN_AGE_DAYS, raw);
-  }
-
-  /** Flush any pending debounced save for ``key`` — called from the blur
-   *  handler so a user who types "7.5" and immediately tabs away never
-   *  drops the pending edit. No-op when no timer is queued (already saved). */
-  private _flushNumberDebounce(key: string, raw: string): void {
-    const pending = this._debounceTimers.get(key);
-    if (pending === undefined) return;
-    window.clearTimeout(pending);
-    this._debounceTimers.delete(key);
-    void this._commitNumberEdit(key, raw);
-  }
-
-  private _handleIntervalBlur(e: Event): void {
-    this._flushNumberDebounce(KEY_INTERVAL_DAYS, (e.target as HTMLInputElement).value);
-  }
-
-  private _handleMinAgeBlur(e: Event): void {
-    this._flushNumberDebounce(KEY_MIN_AGE_DAYS, (e.target as HTMLInputElement).value);
   }
 
   private async _handleRunNow(): Promise<void> {
@@ -698,11 +553,13 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
 
   private _renderBody(): TemplateResult {
     if (this._state === 'loading') {
-      return html`<div class="loading">${msg('Loading schedule…')}</div>`;
+      return html`<velg-loading-state message=${msg('Loading schedule…')}></velg-loading-state>`;
     }
     if (this._state === 'error') {
       return html`
-        <div class="error">${this._error ?? msg('Failed to load settings.')}</div>
+        <velg-error-state
+          message=${this._error ?? msg('Failed to load settings.')}
+        ></velg-error-state>
       `;
     }
 
@@ -768,20 +625,15 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
   private _renderEnabledField(): TemplateResult {
     const busy = this._savingKey === KEY_ENABLED || this._running;
     const control = html`
-      <label class="toggle">
-        <input
-          type="checkbox"
-          class="toggle__input"
-          .checked=${this._enabled}
-          ?disabled=${busy}
-          @change=${this._handleToggleEnabled}
-          aria-labelledby="field-enabled"
-          aria-describedby="field-enabled-hint"
-        />
-      </label>
-      <span class="chip ${this._enabled ? 'chip--active' : ''}">
+      <velg-toggle
+        variant="scif"
+        .checked=${this._enabled}
+        ?disabled=${busy}
+        @toggle-change=${this._handleToggleEnabled}
+      ></velg-toggle>
+      <velg-badge variant=${this._enabled ? 'primary' : 'default'}>
         ${this._enabled ? msg('Enabled') : msg('Disabled')}
-      </span>
+      </velg-badge>
     `;
     return this._renderField(
       'field-enabled',
@@ -805,7 +657,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           .value=${this._intervalDays}
           ?disabled=${this._running}
           @input=${this._handleIntervalInput}
-          @blur=${this._handleIntervalBlur}
           aria-labelledby="field-interval"
           aria-describedby="field-interval-hint"
         />
@@ -834,7 +685,6 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
           .value=${this._minAgeDays}
           ?disabled=${this._running}
           @input=${this._handleMinAgeInput}
-          @blur=${this._handleMinAgeBlur}
           aria-labelledby="field-min-age"
           aria-describedby="field-min-age-hint"
         />
@@ -890,7 +740,9 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     }
     const runDisabled = this._state !== 'loaded';
     return html`
-      <button class="btn" @click=${this._handleClose}>${msg('Close')}</button>
+      <button class="btn btn--secondary" @click=${this._handleClose}>
+        ${msg('Close')}
+      </button>
       <button
         class="btn btn--danger"
         @click=${this._handleRunNow}

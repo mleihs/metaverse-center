@@ -10,6 +10,7 @@ import type {
   CleanupType,
 } from '../../types/index.js';
 import { adminLoadingStyles } from '../shared/admin-shared-styles.js';
+import { numberInputStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -116,6 +117,7 @@ export class VelgAdminCleanupTab extends LitElement {
   static styles = [
     adminLoadingStyles,
     infoBubbleStyles,
+    numberInputStyles,
     css`
     :host {
       display: block;
@@ -237,13 +239,8 @@ export class VelgAdminCleanupTab extends LitElement {
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
-      -moz-appearance: textfield;
-    }
-
-    .controls-row__input::-webkit-outer-spin-button,
-    .controls-row__input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+      /* Native spinner arrows hidden via shared numberInputStyles
+         (imported below); no per-component rule needed. */
     }
 
     .controls-row__input:focus {
