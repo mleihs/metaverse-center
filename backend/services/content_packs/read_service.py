@@ -180,10 +180,16 @@ def _build_manifest_row(
 
 
 def get_pack_resource(pack_slug: str, resource_path: str) -> dict[str, Any]:
-    """Read a single archetype YAML file and return its parsed dict.
+    """Read a single pack YAML file and return its parsed dict.
+
+    Dispatches on `pack_slug`: archetype slugs resolve to
+    `archetypes/<slug>/<resource>.yaml`, `ABILITY_PACK_SLUG` resolves to
+    the flat `abilities/<resource>.yaml`. The 404 `context` names the
+    correct root so admins see a hint pointing at the right filesystem
+    location.
 
     Raises 404 when the file is missing (no packs are auto-created from
-    admin read requests), 400 on path-resolve failures.
+    admin read requests), 400 on path-resolve / YAML-parse failures.
     """
     candidate = _resource_file_path(pack_slug, resource_path)
     if not candidate.is_file():

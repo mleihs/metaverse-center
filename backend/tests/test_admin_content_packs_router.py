@@ -196,10 +196,11 @@ class TestAbilityPacks:
         _override_admin()
         r = client.get("/api/v1/admin/content-packs/abilities/not_a_real_school")
         assert r.status_code == 404
-        # The error context should name the abilities root (not the archetypes
-        # root) so admins see an accurate hint in logs.
-        body = r.json()
-        # The error message shape may vary across the error helpers; we at
-        # least assert we didn't mistakenly name the archetypes root.
-        assert "archetypes" not in (body.get("detail") or "").lower() or \
-               "abilities" in (body.get("detail") or "").lower()
+        # The 404 context string should NOT mention the archetypes root —
+        # pointing at the wrong filesystem location would be a misleading
+        # hint. The context is free to mention "abilities" or omit a root
+        # entirely; only the wrong-root leak is a regression.
+        detail = (r.json().get("detail") or "").lower()
+        assert "archetypes" not in detail, (
+            f"404 detail names the wrong root: {detail!r}"
+        )

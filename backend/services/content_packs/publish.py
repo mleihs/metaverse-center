@@ -52,12 +52,17 @@ Phase 2.5: auto-generated migration (Option A, atomic publish)
     (the revert-diff is visible); Phase 5+ will move disk-reads to a
     GitHub-API fetch from default-branch HEAD to eliminate the race.
 
-Phase 2 limitations:
+Phase 2 limitations (as extended by Step 5):
     - working_content is treated as the FULL contents of a YAML pack file.
-      `pack_slug` must be an archetype slug (e.g. 'shadow', 'awakening');
-      `resource_path` must be a plain pack-kind name (e.g. 'banter') with
+    - `pack_slug` is either an archetype stub ('shadow', 'awakening', …)
+      OR the sentinel `ABILITY_PACK_SLUG` ("abilities") for ability-school
+      drafts. `build_file_path` dispatches on the slug: archetype drafts
+      compose `archetypes/<slug>/<resource>.yaml`; ability drafts compose
+      the flat `abilities/<resource>.yaml`.
+    - `resource_path` must be a plain pack-kind name (e.g. 'banter') with
       no brackets, slashes, or .yaml suffix. The bracket notation allowed
-      by the model regex is reserved for sub-resource editing in Phase 5.
+      by the ContentDraftCreate model regex is reserved for sub-resource
+      editing in Phase 5.
     - YAML comment preservation is NOT supported (JSONB round-trip is
       lossy). Phase 5 will use ruamel.yaml for comment-preserving merges.
 """

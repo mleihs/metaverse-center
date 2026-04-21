@@ -668,21 +668,35 @@ const ABILITY_ITEM: JSONSchema7 = {
     effect_type: {
       type: 'string',
       description:
-        'Combat dispatch key. Handled in `backend/services/combat/combat_engine.py` — common values: "damage" (deals damage steps, params: power + optional hit_bonus / bonus_vs_debuffed), "stress_damage" (deals stress), "heal_stress" (reduces stress, params: amount), "buff" / "debuff" (adds a named status, params: status + duration), "utility" (side-effects like taunt / evade). Free string on the Python side — adding a new value needs a matching branch in combat_engine.',
+        'Combat dispatch key. Handled in `backend/services/combat/combat_engine.py`. Known values with their `effect_params` keys:\n' +
+        '  - "damage" — attack deals damage steps. Params: `power` (base, int), optional `hit_bonus` (int, percent), `bonus_vs_debuffed` (int, +steps vs enemies with any active effect), `aoe` (bool, hits all enemies), `requires_first_round_or_dark` (bool — degrades power/2 if not met).\n' +
+        '  - "stress_damage" — deals stress to an enemy (and often applies a debuff alongside). Params: `stress_power` (int), optional `debuff` (string id), `duration` (int rounds), effect-specific riders like `attack_reduction`.\n' +
+        '  - "heal_stress" — reduces stress on an ally (or self). Params: `stress_heal` (int, default 60).\n' +
+        '  - "buff" — applies a named status to ally/self. Params: `buff` (string id like `evasive`, `taunting`), `duration` (int), plus per-buff riders (`evasion_bonus`, `untargetable`, …).\n' +
+        '  - "debuff" — applies a named status to an enemy. Params: `debuff` (string id), `duration`, riders like `attack_reduction`.\n' +
+        '  - "utility" — side-effects not captured by the above: `visibility_restore` (int, Shadow Observe), `stability_restore` (int, Tower Reinforce), `trap` (bool), etc.\n' +
+        'Free string on the Python side — adding a new value needs a matching branch in combat_engine.',
       default: 'damage',
       examples: ['damage', 'stress_damage', 'heal_stress', 'buff', 'debuff', 'utility'],
     },
     effect_params: {
       type: 'object',
       description:
-        'Effect-type-specific params. Schema depends on `effect_type` — see examples. Unknown keys are silently ignored by combat_engine.',
+        'Effect-type-specific params. Schema depends on `effect_type` — see the `effect_type` description for the key legend + the examples below for shapes pulled from real pack content. Unknown keys are silently ignored by combat_engine.',
       additionalProperties: true,
       examples: [
+        // damage — Precision Strike (hit bonus)
         { power: 5, hit_bonus: 10 },
+        // damage — Exploit Weakness (bonus vs debuffed)
         { power: 7, bonus_vs_debuffed: 1 },
+        // damage — Ambush Strike (opener gate)
         { power: 9, requires_first_round_or_dark: true },
-        { amount: 30 },
-        { status: 'evasive', duration: 2 },
+        // heal_stress — Propagandist Rally
+        { stress_heal: 60 },
+        // buff — Infiltrator Evade
+        { buff: 'evasive', evasion_bonus: 30, untargetable: true, duration: 1 },
+        // stress_damage — Propagandist Demoralize
+        { stress_power: 5, debuff: 'demoralized', attack_reduction: 1, duration: 2 },
       ],
     },
     is_ultimate: {
