@@ -33,6 +33,8 @@ from backend.models.content_drafts import (
     ContentDraftStatus,
     ContentDraftSummary,
     EntryConflictDTO,
+    OrphanBranchClassification,
+    SweepOrphansResult,
 )
 
 # ── Test helpers ──────────────────────────────────────────────────────────
@@ -787,3 +789,125 @@ class TestResolveConflict:
         parsed = ContentDraft.model_validate(data)
         assert parsed.id == d_id
         assert parsed.status == ContentDraftStatus.DRAFT
+
+
+# ── Orphan-branch sweep (Phase 7) ─────────────────────────────────────────
+
+
+class TestSweepOrphans:
+    def _fake_result(
+        self,
+        *,
+        dry_run: bool = True,
+        deleted: int = 0,
+        errors: int = 0,
+    ) -> SweepOrphansResult:
+        branches = [
+            OrphanBranchClassification(
+                name="content/drafts-batch-20260401-000000-aaaaaaaa",
+                sha="a" * 40,
+                age_days=20.0,
+                pr_number=42,
+                pr_state="merged",
+                status="delete",
+                reason="PR merged — GC",
+                deleted=(deleted > 0 and not dry_run),
+            ),
+            OrphanBranchClassification(
+                name="content/drafts-batch-20260420-120000-bbbbbbbb",
+                sha="b" * 40,
+                age_days=1.0,
+                pr_number=43,
+                pr_state="open",
+                status="keep",
+                reason="PR open (active review)",
+            ),
+        ]
+        return SweepOrphansResult(
+            dry_run=dry_run,
+            total_found=len(branches),
+            kept_count=1,
+            deleted_count=deleted if not dry_run else 0,
+            error_count=errors,
+            branches=branches,
+        )
+
+    def test_dry_run_default_never_deletes_and_audits(self, client):
+        supabase = _mock_supabase([_exec_result(data=[])])  # audit insert only
+        _override_admin(supabase)
+
+        fake = self._fake_result(dry_run=True)
+        with (
+            patch(
+                "backend.routers.admin_drafts.get_github_repo_config",
+                return_value=("acme", "world"),
+            ),
+            patch(
+                "backend.routers.admin_drafts.get_github_app_client",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "backend.routers.admin_drafts.sweep_orphan_branches",
+                new=AsyncMock(return_value=fake),
+            ) as mock_sweep,
+        ):
+            r = client.post(
+                "/api/v1/admin/content-drafts/sweep-orphans",
+                json={},  # rely on Pydantic defaults (dry_run=True)
+            )
+
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["data"]["dry_run"] is True
+        assert body["data"]["total_found"] == 2
+        assert body["data"]["kept_count"] == 1
+        assert body["data"]["deleted_count"] == 0
+        assert len(body["data"]["branches"]) == 2
+
+        # Service received the default threshold and dry_run=True.
+        call_kwargs = mock_sweep.call_args.kwargs
+        assert call_kwargs["dry_run"] is True
+        assert call_kwargs["min_age_days"] == 7.0
+
+    def test_real_run_forwards_flag_and_counts_deletes(self, client):
+        supabase = _mock_supabase([_exec_result(data=[])])
+        _override_admin(supabase)
+
+        fake = self._fake_result(dry_run=False, deleted=1)
+        with (
+            patch(
+                "backend.routers.admin_drafts.get_github_repo_config",
+                return_value=("acme", "world"),
+            ),
+            patch(
+                "backend.routers.admin_drafts.get_github_app_client",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "backend.routers.admin_drafts.sweep_orphan_branches",
+                new=AsyncMock(return_value=fake),
+            ) as mock_sweep,
+        ):
+            r = client.post(
+                "/api/v1/admin/content-drafts/sweep-orphans",
+                json={"dry_run": False, "min_age_days": 3.5},
+            )
+
+        assert r.status_code == 200
+        body = r.json()
+        assert body["data"]["dry_run"] is False
+        assert body["data"]["deleted_count"] == 1
+        call_kwargs = mock_sweep.call_args.kwargs
+        assert call_kwargs["dry_run"] is False
+        assert call_kwargs["min_age_days"] == 3.5
+
+    def test_negative_min_age_days_returns_422(self, client):
+        supabase = _mock_supabase([])
+        _override_admin(supabase)
+
+        r = client.post(
+            "/api/v1/admin/content-drafts/sweep-orphans",
+            json={"min_age_days": -1.0},
+        )
+        assert r.status_code == 422
