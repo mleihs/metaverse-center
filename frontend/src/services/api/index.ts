@@ -8,6 +8,7 @@ export { BondsApiService, bondsApi } from './BondsApiService.js';
 export { BroadsheetApiService, broadsheetApi } from './BroadsheetApiService.js';
 export { BuildingsApiService, buildingsApi } from './BuildingsApiService.js';
 export { BureauApiService, bureauApi } from './BureauApiService.js';
+export { BureauOpsApiService, bureauOpsApi } from './BureauOpsApiService.js';
 export { CampaignsApiService, campaignsApi } from './CampaignsApiService.js';
 export { ChatApiService, chatApi } from './ChatApiService.js';
 export { ChronicleApiService, chronicleApi } from './ChronicleApiService.js';
