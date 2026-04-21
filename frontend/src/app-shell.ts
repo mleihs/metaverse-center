@@ -353,6 +353,28 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/journal',
+        render: () => html`<velg-resonance-journal></velg-resonance-journal>`,
+        enter: async () => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          if (!(await this._lazy(() => import('./components/journal/VelgResonanceJournal.js'))))
+            return false;
+          seoService.setTitle(['Resonance Journal']);
+          seoService.setDescription(
+            'Your personal record of fragments gathered from every simulation, dungeon, and epoch – a journal that reflects how you played.',
+          );
+          seoService.setCanonical('/journal');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Dashboard', url: 'https://metaverse.center/dashboard' },
+            { name: 'Journal', url: 'https://metaverse.center/journal' },
+          ]);
+          analyticsService.trackPageView('/journal', document.title);
+          return true;
+        },
+      },
+      {
         path: '/archetypes/:archetypeId',
         render: ({ archetypeId }) =>
           html`<velg-archetype-detail .archetypeId=${archetypeId ?? ''}></velg-archetype-detail>`,
