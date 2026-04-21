@@ -31,7 +31,7 @@ from __future__ import annotations
 import logging
 import time
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from backend.models.bureau_ops import (
@@ -40,6 +40,7 @@ from backend.models.bureau_ops import (
     CircuitScope,
     CircuitState,
     FirehoseEntry,
+    HeatmapCell,
     LedgerBreakdownRow,
     LedgerMetric,
     LedgerSnapshot,
@@ -241,6 +242,65 @@ class OpsLedgerService:
             key=lambda e: (e.scope, e.scope_key),
         )
         return CircuitMatrix(entries=entries, generated_at=datetime.now(UTC))
+
+    # ── Heatmap (P2.6) ──────────────────────────────────────────────────
+
+    @staticmethod
+    async def get_heatmap(
+        admin_supabase: Client,
+        *,
+        days: int = 7,
+        dimension: Literal["purpose", "model", "provider"] = "purpose",
+    ) -> list[HeatmapCell]:
+        """Return flat ``HeatmapCell`` list aggregated by ``(hour, dimension)``.
+
+        Source is the ``ai_usage_rollup_hour`` materialized view (migration
+        229). The MV groups by ``(hour, purpose, model, provider,
+        simulation_id)`` — this method rolls those buckets up to the chosen
+        dimension so the 24×7 panel gets one row per cell.
+
+        Aggregation happens in Python because the rollup window is small
+        (7 days × 24h × ≤ ~50 unique keys ≈ 8400 rows max) and doing it
+        here avoids adding yet another RPC for every dimension variant.
+        """
+        since = _iso_days_ago(days)
+        resp = await (
+            admin_supabase.table("ai_usage_rollup_hour")
+            .select(f"hour, {dimension}, calls, tokens, usd")
+            .gte("hour", since)
+            .order("hour", desc=False)
+            .execute()
+        )
+        rows = extract_list(resp)
+        buckets: dict[tuple[str, str], dict[str, float]] = {}
+        for row in rows:
+            hour = str(row.get("hour") or "")
+            key = str(row.get(dimension) or "")
+            if not hour or not key:
+                continue
+            bucket_key = (hour, key)
+            bucket = buckets.setdefault(
+                bucket_key, {"calls": 0, "tokens": 0, "usd": 0.0},
+            )
+            bucket["calls"] += int(row.get("calls") or 0)
+            bucket["tokens"] += int(row.get("tokens") or 0)
+            bucket["usd"] += float(row.get("usd") or 0.0)
+
+        cells: list[HeatmapCell] = []
+        for (hour_str, key), bucket in sorted(buckets.items()):
+            parsed_hour = _parse_timestamp(hour_str)
+            if parsed_hour is None:
+                continue
+            cells.append(
+                HeatmapCell(
+                    hour=parsed_hour,
+                    key=key,
+                    calls=int(bucket["calls"]),
+                    tokens=int(bucket["tokens"]),
+                    cost_usd=round(bucket["usd"], 6),
+                ),
+            )
+        return cells
 
     # ── Audit log (read) ────────────────────────────────────────────────
 

@@ -105,6 +105,10 @@ export class VelgOpsBurnRatePanel extends LitElement {
 
   private _buildSparkline(snap: LedgerSnapshot): EChartsOption {
     const points = snap.hourly_trend.map((h) => Math.round(h.cost_usd * 10000) / 10000);
+    // Resolve the accent at build time so the sparkline follows the
+    // active theme preset. ECharts needs a literal string (no var() in
+    // its color field); empty means "let ECharts pick a default".
+    const accent = getComputedStyle(this).getPropertyValue('--color-accent-amber').trim();
     return {
       grid: { left: 4, right: 4, top: 4, bottom: 4 },
       xAxis: { type: 'category', show: false, boundaryGap: false, data: points.map((_, i) => String(i)) },
@@ -126,7 +130,7 @@ export class VelgOpsBurnRatePanel extends LitElement {
           showSymbol: false,
           lineStyle: { width: 2 },
           areaStyle: { opacity: 0.25 },
-          color: '#d4a24e',
+          ...(accent ? { color: accent } : {}),
         },
       ],
     };
