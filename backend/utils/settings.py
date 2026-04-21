@@ -22,12 +22,43 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 
-def parse_setting_bool(value: str) -> bool:
-    """Parse a platform_settings string as a boolean.
+_TRUE_STRINGS = frozenset({"true", "1", "yes", "on"})
 
-    Handles quoted values from JSON storage (e.g. '"true"').
+
+def parse_setting_bool(value: object) -> bool:
+    """Parse a platform_settings value as a boolean (fail-closed).
+
+    Accepts:
+      * Python ``bool`` — returned verbatim. postgrest unwraps jsonb
+        bool to Python bool, so a migration-seeded ``'false'::jsonb``
+        arrives here as Python ``False``.
+      * Python ``int`` / ``float`` — stringified, matched case-
+        insensitively against the TRUE set (so ``1`` → True, ``0`` /
+        ``2`` / ``1.0`` → False).
+      * ``str`` — lower-cased, outer whitespace + double-quotes
+        trimmed, matched against ``{"true", "1", "yes", "on"}``.
+        Catches both the JSON-quoted shape (``'"true"'``) the admin
+        UI writes and the plain form (``"true"``).
+
+    Everything else — ``None`` (jsonb null, missing rows),
+    unrecognised strings (``"foo"``, ``"enabled"``, ``"null"``) — is
+    ``False``. Flag-style settings like ``orphan_sweeper_enabled`` and
+    ``instagram_posting_enabled`` MUST fail closed: an accidental null
+    in a manual SQL edit or a typo that lands something non-canonical
+    must not activate a dormant scheduler.
+
+    Rationale for the fail-closed positive-match (replacing the prior
+    "anything not in {false,0,no,''}" negation): the old behavior
+    returned True for ``parse_setting_bool(None)``, which silently
+    armed schedulers whenever postgrest handed back a jsonb null.
+    Positive-match closes that gap and all its siblings ("None",
+    "null", unknown strings) in one stroke.
     """
-    return str(value).lower().strip('"') not in ("false", "0", "no", "")
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().strip('"').lower() in _TRUE_STRINGS
 
 
 def decrypt_setting(raw: str) -> str:
