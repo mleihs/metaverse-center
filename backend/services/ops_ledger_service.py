@@ -324,6 +324,63 @@ class OpsLedgerService:
         rows = extract_list(resp)
         return [_row_to_audit(r) for r in rows]
 
+    # ── Startup rehydration (Deferral B) ────────────────────────────────
+
+    @staticmethod
+    async def rehydrate_circuit_kills(admin_supabase: Client) -> int:
+        """Load every active ``ai_circuit_state`` kill into the in-process
+        circuit breaker.
+
+        P1 persists admin-triggered kills to the DB so they survive a
+        Railway worker restart (AD-1 keeps the auto state machine
+        in-process, but the durable override is DB-backed). Without a
+        rehydration step, a restart silently drops every admin kill until
+        the next UI mutation recomputes state — an operator who killed a
+        scope five minutes before deploy would see it quietly revert.
+
+        Called from ``app.py::lifespan`` right after the other ops caches
+        warm up. Returns the number of kills loaded so startup logs can
+        surface "rehydrated 3 active kills". Missing ``ai_circuit_state``
+        (pre-migration-228 DB state) is treated as zero without raising.
+        """
+        try:
+            resp = await (
+                admin_supabase.table("ai_circuit_state")
+                .select("scope, scope_key, revert_at")
+                .execute()
+            )
+        except Exception:  # noqa: BLE001 — startup path must not fail on DB hiccups
+            logger.warning(
+                "rehydrate_circuit_kills: ai_circuit_state read failed; "
+                "kills will be re-populated when the admin UI next mutates.",
+                exc_info=True,
+            )
+            return 0
+
+        from backend.services.circuit_breaker_service import circuit_breaker
+
+        rows = extract_list(resp)
+        now = datetime.now(UTC)
+        loaded = 0
+        for row in rows:
+            scope = str(row.get("scope") or "")
+            scope_key = str(row.get("scope_key") or "")
+            revert_at = _parse_timestamp(row.get("revert_at"))
+            if not scope or not scope_key or revert_at is None:
+                continue
+            if revert_at <= now:
+                # Expired kill that the revert sweep (Deferral C) has not
+                # yet reaped. Skip — the sweep will clean it up in its
+                # next tick, and the in-process breaker is already closed.
+                continue
+            seconds_remaining = max(1.0, (revert_at - now).total_seconds())
+            circuit_breaker.force_open(scope, scope_key, open_for_s=seconds_remaining)
+            loaded += 1
+
+        if loaded:
+            logger.info("rehydrate_circuit_kills: restored %d active kill(s)", loaded)
+        return loaded
+
     # ── Audit log (write) ───────────────────────────────────────────────
 
     @staticmethod

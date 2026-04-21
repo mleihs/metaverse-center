@@ -158,6 +158,14 @@ async def lifespan(app: FastAPI):
             "through unfiltered until the next successful reload.",
         )
 
+    # Bureau Ops Deferral B: restore in-process circuit-breaker state
+    # from the durable ai_circuit_state rows so a worker restart does
+    # not silently drop admin-killed scopes. OpsLedgerService swallows
+    # DB errors internally so startup never fails because of this.
+    from backend.services.ops_ledger_service import OpsLedgerService
+
+    await OpsLedgerService.rehydrate_circuit_kills(admin_sb)
+
     # GitHub App config sanity check — non-fatal. If the admin-publish
     # path is mis-configured, the public/member traffic still serves.
     missing_github_app_env = check_env_config()
