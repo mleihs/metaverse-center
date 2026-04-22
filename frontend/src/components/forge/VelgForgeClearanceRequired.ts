@@ -248,7 +248,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
             @click=${this._handleByokLink}
             aria-label=${msg('Learn about Bring Your Own Key')}
           >
-            <div class="alt__icon" aria-hidden="true">${icons.key(20)}</div>
+            <div class="alt__icon" aria-hidden="true">${icons.badgeLightning(20)}</div>
             <div class="alt__text">
               <div class="alt__title">${msg('Bring Your Own Key')}</div>
               <div class="alt__desc">${msg('Use your own AI API key to bypass the clearance queue.')}</div>
@@ -263,7 +263,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
             @click=${this._handleAcademy}
             aria-label=${msg('Start Academy training match')}
           >
-            <div class="alt__icon" aria-hidden="true">${icons.crossedSwords(20)}</div>
+            <div class="alt__icon" aria-hidden="true">${icons.mapCombat(20)}</div>
             <div class="alt__text">
               <div class="alt__title">${msg('Start Academy Training')}</div>
               <div class="alt__desc">${msg('Solo tutorial match vs 3 AI opponents. Quick, auto-resolve.')}</div>
