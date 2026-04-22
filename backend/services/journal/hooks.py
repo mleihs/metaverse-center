@@ -48,13 +48,27 @@ _EPOCH_DIMENSION_COLUMNS = (
     ("military_score", "military"),
 )
 
+# postgrest select list for the participant-scoring join. Built once at
+# module load rather than on every invocation of enqueue_epoch_signature.
+_EPOCH_SCORE_SELECT = "simulation_id," + ",".join(col for col, _ in _EPOCH_DIMENSION_COLUMNS)
+
+# Summary trim cap for Echo fragments. Controls prompt token cost on the
+# simulation-event path — the tick can produce one Echo per heartbeat, so
+# the budget is the lever we can tune without rearchitecting.
+_ECHO_SUMMARY_MAX_CHARS = 240
+
 
 # ── Dungeon → Imprint ──────────────────────────────────────────────────────
 
 
 def _archetype_to_slug(archetype_name: str) -> str:
-    """Turn ``"The Devouring Mother"`` → ``"devouring_mother"`` for tags."""
-    return archetype_name.lower().removeprefix("the ").strip().replace(" ", "_")
+    """Turn ``"The Devouring Mother"`` → ``"devouring_mother"`` for tags.
+
+    ``.strip()`` must precede ``.removeprefix()`` — otherwise a leading-
+    whitespace input slips through the prefix check and the literal
+    ``"the "`` survives into the slug.
+    """
+    return archetype_name.strip().lower().removeprefix("the ").replace(" ", "_")
 
 
 async def enqueue_dungeon_imprint(
@@ -197,27 +211,26 @@ async def enqueue_epoch_signature(
     # Load per-simulation scores for this cycle in one shot.
     scores_by_sim: dict[str, dict] = {}
     try:
-        score_columns = ",".join(col for col, _ in _EPOCH_DIMENSION_COLUMNS)
         scores_resp = await (
             admin.table("epoch_scores")
-            .select(f"simulation_id,{score_columns}")
+            .select(_EPOCH_SCORE_SELECT)
             .eq("epoch_id", str(epoch_id))
             .eq("cycle_number", cycle_number)
             .execute()
         )
-        for row in extract_list(scores_resp):
-            sim_id = row.get("simulation_id")
+        for score_row in extract_list(scores_resp):
+            sim_id = score_row.get("simulation_id")
             if sim_id:
-                scores_by_sim[str(sim_id)] = row
+                scores_by_sim[str(sim_id)] = score_row
     except Exception:  # noqa: BLE001 -- fire-and-forget: journal must never block cycle resolve
         # Scoring load is best-effort. If it fails we fall back to the
         # "uncertain" dominance label so every participant still gets a
         # fragment — the LLM can still craft a dispatch.
         logger.debug("Epoch signature: score load failed, falling back", exc_info=True)
 
-    for row in participants:
-        sim_id_raw = row.get("simulation_id")
-        sim_row = row.get("simulations") or {}
+    for participant in participants:
+        sim_id_raw = participant.get("simulation_id")
+        sim_row = participant.get("simulations") or {}
         user_id_raw = sim_row.get("created_by_id")
         if not sim_id_raw or not user_id_raw:
             continue
@@ -233,8 +246,9 @@ async def enqueue_epoch_signature(
             sentry_sdk.capture_exception(err)
             continue
 
-        score_row = scores_by_sim.get(str(sim_id_raw), {})
-        dominance = _pick_epoch_dimension_dominance(score_row) if score_row else "uncertain"
+        # _pick_epoch_dimension_dominance returns "uncertain" for an empty
+        # dict, so the missing-scores fallback needs no extra branch here.
+        dominance = _pick_epoch_dimension_dominance(scores_by_sim.get(str(sim_id_raw), {}))
 
         context: dict[str, Any] = {
             "cycle_number": cycle_number,
@@ -336,7 +350,7 @@ async def enqueue_simulation_echo(
         return
 
     # Trim summary to keep prompt token budget predictable.
-    trimmed_summary = (event_summary or "").strip()[:240]
+    trimmed_summary = (event_summary or "").strip()[:_ECHO_SUMMARY_MAX_CHARS]
 
     context: dict[str, Any] = {
         "event_type": trigger_type,
@@ -374,6 +388,15 @@ async def _lookup_achievement_metadata(admin: Client, slug: str) -> dict:
             .maybe_single()
         )
     except Exception:  # noqa: BLE001 -- fire-and-forget: journal must never block
+        # Lookup failure is non-critical: the prompt accepts a slug-only
+        # context, so we degrade gracefully rather than dropping the Mark.
+        # Surfaced at DEBUG for observability, no Sentry because a missing
+        # achievements table is an admin-visible problem already.
+        logger.debug(
+            "Achievement metadata lookup failed, using slug fallback",
+            extra={"slug": slug},
+            exc_info=True,
+        )
         row = None
     if not row:
         return {"slug": slug, "name_en": slug, "description_en": ""}
@@ -438,9 +461,18 @@ _TREMOR_STRENGTH_THRESHOLD = 0.4
 
 
 def _tremor_significance_label(echo_strength: float) -> str:
+    """Map echo strength to the prompt's significance vocabulary.
+
+    The function is standalone-correct for the full [0, 1] strength range.
+    Callers additionally gate emission at ``_TREMOR_STRENGTH_THRESHOLD`` so
+    below-threshold strengths never reach the prompt, but the mapping
+    itself stays defensible in isolation.
+    """
     if echo_strength >= 0.7:
         return "high"
-    return "medium"  # caller gates below-threshold via _TREMOR_STRENGTH_THRESHOLD
+    if echo_strength >= _TREMOR_STRENGTH_THRESHOLD:
+        return "medium"
+    return "low"
 
 
 async def enqueue_bleed_tremor(
@@ -508,6 +540,10 @@ async def enqueue_bleed_tremor(
     try:
         user_id = UUID(str(owner_id_raw))
     except (ValueError, TypeError) as err:
+        logger.warning(
+            "Bleed tremor skipped: owner UUID invalid",
+            extra={"echo_id": str(echo_id), "owner": str(owner_id_raw)},
+        )
         sentry_sdk.capture_exception(err)
         return
 
