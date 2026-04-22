@@ -12,7 +12,7 @@
  *   4. First Mission — Academy Epoch or free exploration
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -141,7 +141,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     .step-dot--nav::after {
       content: '';
       position: absolute;
-      inset: -8px;
+      inset: -18px;
     }
 
     .step-dot--nav:hover {
@@ -829,14 +829,16 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     }
   }
 
-  private async _complete(action: 'academy' | 'explore'): Promise<void> {
+  private _finishOnboarding(): void {
     appState.setOnboardingCompleted(true);
     usersApi
       .completeOnboarding()
-      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._complete' }));
-
+      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._finishOnboarding' }));
     this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
+  }
 
+  private _complete(action: 'academy' | 'explore'): void {
+    this._finishOnboarding();
     if (action === 'academy') {
       this.dispatchEvent(
         new CustomEvent('onboarding-start-academy', { bubbles: true, composed: true }),
@@ -846,38 +848,17 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
 
   private _handlePathSelect(path: 'create' | 'browse' | 'skip'): void {
     this._selectedPath = path;
-
-    if (path === 'create' || path === 'browse') {
-      this._intent = path;
-      this.dispatchEvent(
-        new CustomEvent(
-          path === 'create' ? 'onboarding-create-simulation' : 'onboarding-browse',
-          { bubbles: true, composed: true },
-        ),
-      );
-    } else {
-      this._intent = null;
-    }
-
+    this._intent = path === 'skip' ? null : path;
     setTimeout(() => this._goForward(), 300);
   }
 
-  private async _completeAndNavigate(target: string): Promise<void> {
-    appState.setOnboardingCompleted(true);
-    usersApi
-      .completeOnboarding()
-      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._completeAndNavigate' }));
-
-    this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
+  private _completeAndNavigate(target: string): void {
+    this._finishOnboarding();
     navigate(target);
   }
 
-  private async _skipAll(): Promise<void> {
-    appState.setOnboardingCompleted(true);
-    usersApi
-      .completeOnboarding()
-      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._skipAll' }));
-    this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
+  private _skipAll(): void {
+    this._finishOnboarding();
   }
 
   // ── Render ──
@@ -971,11 +952,12 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
           ]
             .filter(Boolean)
             .join(' ');
+          const stepNum = s + 1;
           const dot = isNav
             ? html`<button
                 type="button"
                 class=${cls}
-                aria-label=${msg(`Go back to step ${s + 1}: ${label}`)}
+                aria-label=${msg(str`Go back to step ${stepNum}: ${label}`)}
                 @click=${() => this._jumpToStep(s)}
               ></button>`
             : html`<div

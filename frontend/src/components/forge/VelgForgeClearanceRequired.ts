@@ -234,9 +234,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
           ${msg('The Forge is where Architects shape new worlds. Architect clearance is required to create a simulation. Apply for a tier upgrade below, or use one of the alternate paths while you wait.')}
         </p>
 
-        <div style="--i: 2">
-          <velg-clearance-card></velg-clearance-card>
-        </div>
+        <velg-clearance-card style="--i: 2"></velg-clearance-card>
 
         <div class="alt-separator" style="--i: 3" aria-hidden="true">
           ${msg('Alternative paths')}
@@ -250,7 +248,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
             @click=${this._handleByokLink}
             aria-label=${msg('Learn about Bring Your Own Key')}
           >
-            <div class="alt__icon" aria-hidden="true">${icons.sparkle(20)}</div>
+            <div class="alt__icon" aria-hidden="true">${icons.key(20)}</div>
             <div class="alt__text">
               <div class="alt__title">${msg('Bring Your Own Key')}</div>
               <div class="alt__desc">${msg('Use your own AI API key to bypass the clearance queue.')}</div>
