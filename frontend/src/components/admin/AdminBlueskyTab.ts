@@ -20,6 +20,7 @@ import {
   adminTabNavStyles,
 } from '../shared/admin-shared-styles.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { fieldRowDividerStyles, fieldRowStyles } from '../shared/field-row-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -48,6 +49,8 @@ export class VelgAdminBlueskyTab extends LitElement {
     adminDispatchStyles,
     adminBadgeStyles,
     adminActionStyles,
+    fieldRowStyles,
+    fieldRowDividerStyles,
     css`
     :host {
       display: block;
@@ -130,7 +133,12 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     .config-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      /* auto-fit (not auto-fill) so empty tracks collapse when only the
+         Credentials + Pipeline cards render — the 2 cards stretch to fill
+         the container instead of being crammed into 3 narrow 389px tracks
+         with a blank right column. Natural stacking below the 340px+gap
+         breakpoint eliminates the need for a dedicated mobile media query. */
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       gap: var(--space-4);
     }
 
@@ -172,21 +180,14 @@ export class VelgAdminBlueskyTab extends LitElement {
     .config-card__status--active { color: var(--color-success); }
     .config-card__status--inactive { color: var(--color-text-muted); }
 
-    .config-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-3);
+    /* Row layout + dividers + label-group come from fieldRowStyles /
+       fieldRowDividerStyles. Local overrides: tighter vertical padding
+       (Bluesky uses space-2, shared --divided defaults to space-4) and
+       body-weight labels (shared labels are brutalist uppercase; Bluesky
+       wants bold body-text labels with a muted description underneath). */
+
+    .field-row--divided.pipeline-row {
       padding: var(--space-2) 0;
-    }
-
-    .config-row + .config-row {
-      border-top: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
-    }
-
-    .config-row__label {
-      flex: 1;
-      min-width: 0;
     }
 
     .config-row__name {
@@ -198,7 +199,6 @@ export class VelgAdminBlueskyTab extends LitElement {
     .config-row__desc {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
-      margin-top: 2px;
     }
 
     .config-input {
@@ -812,8 +812,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             </span>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('Handle')} ${renderInfoBubble(msg('Your Bluesky handle (e.g. bureau.bsky.social). This is the account that will publish Bureau dispatches. Create a dedicated account for the pipeline – do not use a personal account.'))}</div>
               <div class="config-row__desc">${msg('Bluesky account handle (e.g. bureau.bsky.social)')}</div>
             </div>
@@ -836,8 +836,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             </div>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('App Password')} ${renderInfoBubble(msg('App-specific password from bsky.app/settings/app-passwords. NOT your main account password. App passwords can be revoked individually without affecting your account. Stored encrypted at rest.'))}</div>
               <div class="config-row__desc">${msg('Generate at bsky.app/settings/app-passwords')}</div>
             </div>
@@ -860,8 +860,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             </div>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('PDS URL')} ${renderInfoBubble(msg('AT Protocol Personal Data Server. Use https://bsky.social for the main Bluesky network. Only change this if you run a self-hosted PDS or use a different AT Protocol provider.'))}</div>
               <div class="config-row__desc">${msg('Personal Data Server (default: bsky.social)')}</div>
             </div>
@@ -896,8 +896,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             </span>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('Bluesky Enabled')} ${renderInfoBubble(msg('Master switch for the entire Bluesky pipeline. When off, no posts are created or published – even if Auto Cross-Post is on. Turn this on after configuring Handle + App Password above.'))}</div>
               <div class="config-row__desc">${msg('Master switch for the Bluesky pipeline')}</div>
             </div>
@@ -908,8 +908,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             >${enabled ? msg('On') : msg('Off')}</button>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('Posting Enabled')} ${renderInfoBubble(msg('When Off, the pipeline creates draft posts but does not actually publish them to Bluesky (dry-run mode). Use this to verify post quality before going live. When On, scheduled posts are published automatically.'))}</div>
               <div class="config-row__desc">${msg('Actually publish to Bluesky (vs dry-run mode)')}</div>
             </div>
@@ -920,8 +920,8 @@ export class VelgAdminBlueskyTab extends LitElement {
             >${postingEnabled ? msg('On') : msg('Off')}</button>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided pipeline-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">${msg('Auto Cross-Post')} ${renderInfoBubble(msg("When enabled, every Instagram post that gets published automatically creates a corresponding Bluesky post. The caption is reformatted for Bluesky (300 char limit with facets/links). Images are re-uploaded to Bluesky's blob store."))}</div>
               <div class="config-row__desc">${msg('Automatically create Bluesky posts from Instagram')}</div>
             </div>

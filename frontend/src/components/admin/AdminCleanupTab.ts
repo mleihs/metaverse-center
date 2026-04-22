@@ -10,6 +10,7 @@ import type {
   CleanupType,
 } from '../../types/index.js';
 import { adminLoadingStyles } from '../shared/admin-shared-styles.js';
+import { fieldRowStyles } from '../shared/field-row-styles.js';
 import { numberInputStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -116,6 +117,7 @@ const DEFAULT_THRESHOLD = 30;
 export class VelgAdminCleanupTab extends LitElement {
   static styles = [
     adminLoadingStyles,
+    fieldRowStyles,
     infoBubbleStyles,
     numberInputStyles,
     css`
@@ -212,24 +214,26 @@ export class VelgAdminCleanupTab extends LitElement {
       margin: 0 0 var(--space-3) 0;
     }
 
-    /* ── Controls row ────────────────────────────── */
+    /* ── Controls row — composed from fieldRowStyles (.field-row--inline) ── */
 
-    .controls-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
+    /* Wrapper spacing not in the shared primitive (inline rows elsewhere
+       don't follow this one's bottom margin). */
+    .field-row--inline.op-card__controls {
       margin-bottom: var(--space-3);
+      gap: var(--space-2);
     }
 
-    .controls-row__label {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    /* Local label override: Cleanup uses --tracking-brutalist (0.08em),
+       not the shared --muted default (--tracking-wide = 0.025em). Also
+       keeps the single-line white-space that the inline 4-item row
+       needs so "MIN AGE" never wraps next to the input. */
+    .cleanup-label {
+      letter-spacing: var(--tracking-brutalist);
       white-space: nowrap;
     }
 
-    .controls-row__input {
+    /* Input chrome — width/padding/font unique to this tab. */
+    .cleanup-input {
       width: 70px;
       padding: var(--space-1) var(--space-2);
       font-family: var(--font-mono, monospace);
@@ -239,17 +243,15 @@ export class VelgAdminCleanupTab extends LitElement {
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       border-radius: 0;
-      /* Native spinner arrows hidden via shared numberInputStyles
-         (imported below); no per-component rule needed. */
     }
 
-    .controls-row__input:focus {
+    .cleanup-input:focus {
       outline: none;
       border-color: var(--color-danger);
       box-shadow: 0 0 0 1px var(--color-danger);
     }
 
-    .controls-row__unit {
+    .cleanup-unit {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
     }
@@ -674,11 +676,13 @@ export class VelgAdminCleanupTab extends LitElement {
               </div>
               <p class="op-card__desc">${m.description}</p>
 
-              <div class="controls-row">
-                <span class="controls-row__label">${msg('Min age')}</span>
+              <div class="field-row field-row--inline op-card__controls">
+                <span class="field-row__label field-row__label--muted cleanup-label"
+                  >${msg('Min age')}</span
+                >
                 <input
                   type="number"
-                  class="controls-row__input"
+                  class="cleanup-input"
                   min="0"
                   max="3650"
                   aria-label=${msg(str`Minimum age in days for ${m.label}`)}
@@ -700,7 +704,7 @@ export class VelgAdminCleanupTab extends LitElement {
                     }
                   }}
                 />
-                <span class="controls-row__unit">${msg('days')}</span>
+                <span class="cleanup-unit">${msg('days')}</span>
                 <button
                   class="btn btn--scan"
                   ?disabled=${isScanning || isExecuting}
