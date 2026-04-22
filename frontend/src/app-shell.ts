@@ -246,9 +246,7 @@ export class VelgApp extends LitElement {
           if (!ok) return false;
           if (!appState.canForge.value) {
             if (
-              !(await this._lazy(
-                () => import('./components/forge/VelgForgeClearanceRequired.js'),
-              ))
+              !(await this._lazy(() => import('./components/forge/VelgForgeClearanceRequired.js')))
             )
               return false;
             seoService.setTitle(['Forge \u2013 Clearance Required']);

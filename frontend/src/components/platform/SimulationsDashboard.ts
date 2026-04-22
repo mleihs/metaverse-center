@@ -1860,11 +1860,7 @@ export class VelgSimulationsDashboard extends LitElement {
               ? html`<velg-achievement-summary-card style="--i: 3"></velg-achievement-summary-card>`
               : nothing
           }
-          ${
-            !isGuest
-              ? html`<velg-clearance-card style="--i: 4"></velg-clearance-card>`
-              : nothing
-          }
+          ${!isGuest ? html`<velg-clearance-card style="--i: 4"></velg-clearance-card>` : nothing}
         </div>
       </div>
     `;
