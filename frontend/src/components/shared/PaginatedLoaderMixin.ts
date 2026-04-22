@@ -24,10 +24,14 @@
 
 import type { ReactiveElement } from 'lit';
 import { state } from 'lit/decorators.js';
-import { DataLoaderMixin, type DataLoaderMixinInterface } from './DataLoaderMixin.js';
+import {
+  DataLoaderMixin,
+  type DataLoaderMixinInterface,
+  type MixinCtor,
+} from './DataLoaderMixin.js';
 import type { FilterChangeDetail } from './SharedFilterBar.js';
 
-type ReactiveElementCtor = abstract new (...args: any[]) => ReactiveElement;
+type ReactiveElementCtor = MixinCtor<ReactiveElement>;
 
 /** Type-only declaration for PaginatedLoaderMixin's added members. */
 export declare abstract class PaginatedLoaderMixinInterface extends DataLoaderMixinInterface {
@@ -42,7 +46,7 @@ export declare abstract class PaginatedLoaderMixinInterface extends DataLoaderMi
 
 export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
   Base: TBase,
-): TBase & (abstract new (...args: any[]) => PaginatedLoaderMixinInterface) {
+): TBase & MixinCtor<PaginatedLoaderMixinInterface> {
   abstract class PaginatedHost extends DataLoaderMixin(Base) {
     /* ── Pagination state ──────────────────── */
 
@@ -100,8 +104,5 @@ export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
   // signature. See the Lit mixin guide (https://lit.dev/docs/composition/mixins/
   // #creating-a-mixin). This `as unknown as` cast is the documented escape
   // hatch and is whitelisted in `scripts/lint-no-cast-unknown.sh`.
-  return PaginatedHost as unknown as TBase &
-    (abstract new (
-      ...args: any[]
-    ) => PaginatedLoaderMixinInterface);
+  return PaginatedHost as unknown as TBase & MixinCtor<PaginatedLoaderMixinInterface>;
 }

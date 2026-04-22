@@ -269,7 +269,7 @@ class AnalyticsService {
     // which breaks consent commands and config queued before script load.
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () {
-      // eslint-disable-next-line prefer-rest-params
+      // biome-ignore lint/complexity/noArguments: gtag.js REQUIRES Arguments object (not rest-params array). See https://developers.google.com/analytics/devguides/collection/ga4#install_the_google_tag.
       window.dataLayer.push(arguments);
     };
 

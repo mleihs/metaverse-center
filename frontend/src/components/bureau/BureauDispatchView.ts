@@ -92,6 +92,7 @@ export class VelgBureauDispatch extends LitElement {
     this._countdownTimer = setInterval(() => {
       this._countdownSeconds--;
       if (this._countdownSeconds <= 0) {
+        // biome-ignore lint/style/noNonNullAssertion: timer is guaranteed non-null here — we're inside the setInterval callback that was assigned to _countdownTimer on the previous line.
         clearInterval(this._countdownTimer!);
         this._countdownTimer = null;
         this._state = 'idle';
