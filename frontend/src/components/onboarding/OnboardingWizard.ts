@@ -1190,7 +1190,9 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       return {
         ariaLabel: msg('Request Architect clearance for Forge access'),
         title: msg('Request Clearance'),
-        desc: msg('Architect clearance required to shape new worlds. Apply now or bring your own key.'),
+        desc: msg(
+          'Architect clearance required to shape new worlds. Apply now or bring your own key.',
+        ),
         icon: icons.badgeWard(20),
         onClick: () => this._completeAndNavigate('/forge'),
       };
