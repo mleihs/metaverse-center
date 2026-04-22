@@ -19,6 +19,16 @@ export class VelgClearanceCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+    }
+
+    /* Entry animation runs on the leaf .card element, NOT on :host or
+       any layout container. A forwards-filled transform on an
+       ancestor creates a new containing block and breaks the nested
+       ForgeAccessRequestModal's position:fixed backdrop — the modal
+       gets clipped to the card bounds and the submit button falls
+       offscreen. Moving the animation to .card keeps the containing
+       block clean. See CLAUDE.md "No layout container effects". */
+    .card {
       opacity: 0;
       animation: shard-enter 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
       animation-delay: calc(var(--i, 0) * 80ms);
@@ -234,7 +244,7 @@ export class VelgClearanceCard extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      :host {
+      .card {
         animation: none;
         opacity: 1;
       }

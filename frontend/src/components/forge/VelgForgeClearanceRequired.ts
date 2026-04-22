@@ -50,9 +50,15 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       gap: var(--space-8, 32px);
     }
 
-    /* ── Entry cascade ── */
+    /* ── Entry cascade ──
+       EXCLUDES velg-clearance-card because its shadow hosts a
+       position:fixed modal. A forwards-filled transform on the host
+       creates a containing block and clips the modal to the card's
+       bounds (submit button falls offscreen). velg-clearance-card
+       runs its own internal entrance on its .card leaf. See
+       CLAUDE.md "No layout container effects". */
 
-    .wrap > * {
+    .wrap > :not(velg-clearance-card) {
       animation: clearance-enter var(--duration-entrance, 350ms)
         var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
       animation-delay: calc(var(--i, 0) * var(--duration-cascade, 60ms));
@@ -209,7 +215,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
     /* ── Reduced motion ── */
 
     @media (prefers-reduced-motion: reduce) {
-      .wrap > *,
+      .wrap > :not(velg-clearance-card),
       .heading {
         animation: none;
       }
