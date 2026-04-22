@@ -47,8 +47,40 @@ export interface FragmentFilters {
   offset?: number;
 }
 
+// ── Constellation (P2) ───────────────────────────────────────────────────
+
+export type ConstellationStatus = 'drafting' | 'crystallized' | 'archived';
+
+export type ResonanceType = 'archetype' | 'emotional' | 'temporal' | 'contradiction';
+
+export interface ConstellationFragmentPlacement {
+  fragment_id: string;
+  position_x: number;
+  position_y: number;
+  placed_at: string | null;
+}
+
+export interface Constellation {
+  id: string;
+  user_id: string;
+  name_de: string | null;
+  name_en: string | null;
+  status: ConstellationStatus;
+  insight_de: string | null;
+  insight_en: string | null;
+  resonance_type: ResonanceType | null;
+  attunement_id: string | null;
+  created_at: string;
+  crystallized_at: string | null;
+  archived_at: string | null;
+  updated_at: string;
+  fragments: ConstellationFragmentPlacement[];
+}
+
 export class JournalApiService extends BaseApiService {
   private readonly base = '/journal';
+
+  // ── Fragments ─────────────────────────────────────────────────────────
 
   /** List fragments for the authenticated user with optional filters. */
   listFragments(filters: FragmentFilters = {}): Promise<PaginatedResponse<Fragment>> {
@@ -65,6 +97,65 @@ export class JournalApiService extends BaseApiService {
   /** Get a single fragment by id. 404 if not owned by the caller. */
   getFragment(fragmentId: string): Promise<ApiResponse<Fragment>> {
     return this.get(`${this.base}/fragments/${fragmentId}`);
+  }
+
+  // ── Constellations (P2) ───────────────────────────────────────────────
+
+  /** List constellations for the user, newest-first, optionally filtered by status. */
+  listConstellations(status?: ConstellationStatus): Promise<ApiResponse<Constellation[]>> {
+    const params: Record<string, string> = {};
+    if (status) params.status = status;
+    return this.get(`${this.base}/constellations`, params);
+  }
+
+  /** Get a single constellation with its fragment placements. */
+  getConstellation(constellationId: string): Promise<ApiResponse<Constellation>> {
+    return this.get(`${this.base}/constellations/${constellationId}`);
+  }
+
+  /** Create a new drafting constellation. Names are optional. */
+  createConstellation(body: {
+    name_de?: string | null;
+    name_en?: string | null;
+  }): Promise<ApiResponse<Constellation>> {
+    return this.post(`${this.base}/constellations`, body);
+  }
+
+  /** Rename a constellation (updates either / both locale names). */
+  renameConstellation(
+    constellationId: string,
+    body: { name_de?: string | null; name_en?: string | null },
+  ): Promise<ApiResponse<Constellation>> {
+    return this.patch(`${this.base}/constellations/${constellationId}`, body);
+  }
+
+  /** Archive a constellation (works on any status). */
+  archiveConstellation(constellationId: string): Promise<ApiResponse<Constellation>> {
+    return this.post(`${this.base}/constellations/${constellationId}/archive`);
+  }
+
+  /** Add or move a fragment on the canvas. Idempotent via composite PK. */
+  placeFragment(
+    constellationId: string,
+    body: { fragment_id: string; position_x: number; position_y: number },
+  ): Promise<ApiResponse<Constellation>> {
+    return this.post(`${this.base}/constellations/${constellationId}/place`, body);
+  }
+
+  /** Remove a fragment from the canvas. Only permitted on drafts. */
+  removeFragment(constellationId: string, fragmentId: string): Promise<ApiResponse<Constellation>> {
+    return this.delete(`${this.base}/constellations/${constellationId}/fragments/${fragmentId}`);
+  }
+
+  /**
+   * Crystallize a drafting constellation. Server runs the rule-based
+   * detector + research-tier LLM for the Insight text. Errors surface
+   * via the standard ApiResponse envelope — 429 for credit / budget
+   * block, 502 for transient LLM failure, 409 for too-few fragments or
+   * no-rule-match, 500 for unparseable output.
+   */
+  crystallizeConstellation(constellationId: string): Promise<ApiResponse<Constellation>> {
+    return this.post(`${this.base}/constellations/${constellationId}/crystallize`);
   }
 }
 
