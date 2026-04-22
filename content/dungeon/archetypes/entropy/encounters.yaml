@@ -97,8 +97,8 @@ encounters:
       with envy.
     success_narrative_de: Ihr isoliert ein Artefakt, das sich noch erinnert, was es ist. Die Regale
       ächzen vor Neid.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You isolate the object most likely to remember itself. It remembers, in parts. The edges dissolve; the core still holds a name. You carry it. What it was called, it mostly still is. The mostly is the best you will get.'
+    partial_narrative_de: 'Ihr isoliert das Objekt, das sich am wahrscheinlichsten an sich selbst erinnert. Es erinnert sich, in Teilen. Die Ränder lösen sich auf; der Kern hält noch einen Namen. Ihr tragt es. Wie es hieß, ist es meistens noch. Das Meistens ist das Beste, was ihr bekommen werdet.'
     fail_narrative_en: The object dissolves in your hands. It was already too late. Everything is
       always already too late here.
     fail_narrative_de: Der Gegenstand löst sich in euren Händen auf. Es war bereits zu spät. Hier
@@ -119,8 +119,8 @@ encounters:
     success_narrative_en: You map the rate of dissolution. The data is valuable. Briefly.
     success_narrative_de: Ihr kartiert die Geschwindigkeit der Auflösung. Die Daten sind wertvoll.
       Kurz.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You map part of the rate. The first few readings are crisp. The later ones average with the earlier. By the end of the page, the data is like the room – technically there. The shelves do not care whether it was mapped or not. The mapping is something you did. That counts. For now.'
+    partial_narrative_de: 'Ihr kartiert einen Teil der Geschwindigkeit. Die ersten Messungen sind scharf. Die späteren mitteln sich mit den früheren. Am Ende der Seite ist die Datenlage wie der Raum – technisch da. Die Regale kümmert es nicht, ob sie kartiert wurde oder nicht. Die Kartierung ist etwas, das ihr getan habt. Das zählt. Vorerst.'
     fail_narrative_en: The pattern is there. You are certain. The certainty dissolves on examination.
     fail_narrative_de: Das Muster ist da. Ihr seid sicher. Die Sicherheit löst sich bei Untersuchung
       auf.
@@ -140,8 +140,8 @@ encounters:
       stress: 40
     success_narrative_en: The decay flows outward, briefly. The room clarifies. For now.
     success_narrative_de: Der Verfall fließt nach außen, kurz. Der Raum klärt sich. Vorerst.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The decay flows outward for a moment. The room clarifies – a corner, a shelf, the lamp. Then the current turns. You feel the temperature of the dissolution you redirected tap against your spine. You kept the room. The room kept your measurement.'
+    partial_narrative_de: 'Der Verfall fließt einen Moment lang nach außen. Der Raum klärt sich – eine Ecke, ein Regal, die Lampe. Dann dreht sich die Strömung. Ihr spürt die Temperatur der Auflösung, die ihr umgelenkt habt, gegen eure Wirbelsäule tippen. Ihr habt den Raum behalten. Der Raum hat euer Maß behalten.'
     fail_narrative_en: The decay redirects into you. Briefly, you understand what the objects felt.
     fail_narrative_de: Der Verfall leitet sich in euch um. Kurz versteht ihr, was die Gegenstände
       empfanden.
@@ -191,8 +191,8 @@ encounters:
       confirm it. Confirmation feels like a small victory against thermodynamics.
     success_narrative_de: Es GIBT einen Unterschied. Haarfein, mikroskopisch, aber real. Die Instrumente
       bestätigen ihn. Die Bestätigung fühlt sich an wie ein kleiner Sieg gegen die Thermodynamik.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The instruments find a difference. Probably real. The second reading disagrees with the first, slightly. The third sides with the first. The room is different. Your memory of different is stable enough to name what you are looking at. For this sentence.'
+    partial_narrative_de: 'Die Instrumente finden einen Unterschied. Wahrscheinlich real. Die zweite Messung widerspricht der ersten, leicht. Die dritte stellt sich auf die Seite der ersten. Der Raum ist anders. Eure Erinnerung an anders ist stabil genug, um zu benennen, was ihr anseht. Für diesen Satz.'
     fail_narrative_en: You look. You compare. The rooms are the same. Your memory of 'different' may
       itself be decaying.
     fail_narrative_de: Ihr schaut. Ihr vergleicht. Die Räume sind gleich. Eure Erinnerung an 'verschieden'
@@ -213,8 +213,8 @@ encounters:
       persists. For now.
     success_narrative_de: Ihr markiert die Wände. Dieser Raum ist DIESER Raum. Die Markierungen halten.
       Die Unterscheidung besteht. Vorerst.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You mark the walls. Three marks hold. The fourth fades as you write it – not immediately, slowly, politely. The room is, for a while, distinguishable. Distinguishability is a form of love, here. You perform it on purpose.'
+    partial_narrative_de: 'Ihr markiert die Wände. Drei Markierungen halten. Die vierte verblasst, während ihr sie schreibt – nicht sofort, langsam, höflich. Der Raum ist, eine Weile lang, unterscheidbar. Unterscheidbarkeit ist hier eine Form der Liebe. Ihr vollzieht sie absichtlich.'
     fail_narrative_en: You mark the walls. The marks are already there. You marked them last time.
       Or the room did.
     fail_narrative_de: Ihr markiert die Wände. Die Markierungen sind schon da. Ihr habt sie letztes
@@ -268,8 +268,8 @@ encounters:
     success_narrative_de: Ihr gebt dem Mechanismus Bedeutung zurück. Die Maschine hält inne, kalibriert
       sich neu und produziert etwas, das unmissverständlich ein Ding ist. Der Raum wird um eine Kategorie
       heller.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You restore the smaller of two functions. The machine produces something that is almost one thing. The category does not quite close, but it narrows. The room does not brighten. The room declines to dim. Brief equilibrium. You take it.'
+    partial_narrative_de: 'Ihr stellt die kleinere der zwei Funktionen wieder her. Die Maschine produziert etwas, das beinahe ein Ding ist. Die Kategorie schließt nicht ganz, aber sie verengt sich. Der Raum hellt nicht auf. Der Raum weigert sich zu verdunkeln. Kurzes Gleichgewicht. Ihr nehmt es.'
     fail_narrative_en: The repair accelerates the wrong function. The machine produces sameness more
       efficiently.
     fail_narrative_de: Die Reparatur beschleunigt die falsche Funktion. Die Maschine produziert Gleichheit
@@ -291,8 +291,8 @@ encounters:
       what was lost is a form of preservation.
     success_narrative_de: Die Baupläne sind zu 40% lesbar. Genug, um zu verstehen, was verloren ging.
       Zu verstehen, was verloren ging, ist eine Form der Bewahrung.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The blueprints are 20% legible. Enough to see the shape. Not enough to see the purpose. You understand what the machine wanted to do before the words faded. What it does now, you still do not know. The difference is shrinking.'
+    partial_narrative_de: 'Die Baupläne sind zu 20% lesbar. Genug, um die Form zu sehen. Nicht genug, um den Zweck zu sehen. Ihr versteht, was die Maschine tun wollte, bevor die Worte verblassten. Was sie jetzt tut, wisst ihr immer noch nicht. Der Unterschied schrumpft.'
     fail_narrative_en: The blueprints describe a machine. Or this machine. Or all machines. The specificity
       has bled away.
     fail_narrative_de: Die Baupläne beschreiben eine Maschine. Oder diese Maschine. Oder alle Maschinen.
@@ -350,8 +350,8 @@ encounters:
     success_narrative_de: Ihr antwortet. Der Inhalt ist unwichtig – die Überzeugung zählt. Einen Moment
       lang löst sich das Gesicht des Wesens zu einem einzelnen Ausdruck auf. Es nickt. Dann mittelt
       sich der Ausdruck wieder. Aber langsamer.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You answer. The entity''s face almost resolves – a single expression nearly arriving. It holds for a second, then averages again, slower than before. It did not nod. It came close to nodding. That is new here. That counts.'
+    partial_narrative_de: 'Ihr antwortet. Das Gesicht des Wesens löst sich beinahe auf – ein einzelner Ausdruck, der fast ankommt. Er hält eine Sekunde, mittelt sich dann wieder, langsamer als zuvor. Es hat nicht genickt. Es war kurz davor zu nicken. Das ist neu hier. Das zählt.'
     fail_narrative_en: You answer. The words arrive. They arrive the same as the silence they replaced.
     fail_narrative_de: Ihr antwortet. Die Worte kommen an. Sie kommen genauso an wie die Stille, die
       sie ersetzt haben.
@@ -374,8 +374,8 @@ encounters:
     success_narrative_de: Unter der Entropie eine Frage. Eine echte. Über Zweck. Darüber, ob Fortbestehen
       ohne Zweck überhaupt Fortbestehen ist. Ihr habt keine Antwort. Aber die Frage zu identifizieren
       ist etwas.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'Beneath the entropy: the outline of a question. About purpose. The full phrasing stays in a register the decoding cannot reach. You have the shape. You do not have the sentence. A shape with no sentence is still more than the silence offered before.'
+    partial_narrative_de: 'Unter der Entropie: der Umriss einer Frage. Über Zweck. Die vollständige Formulierung bleibt in einem Register, das die Entschlüsselung nicht erreicht. Ihr habt die Form. Ihr habt den Satz nicht. Eine Form ohne Satz ist immer noch mehr als das Schweigen, das zuvor angeboten wurde.'
     fail_narrative_en: You analyze. The question was about something. The analysis yields more questions.
       The questions are about the same something. The something is nothing.
     fail_narrative_de: Ihr analysiert. Die Frage handelte von etwas. Die Analyse ergibt weitere Fragen.
@@ -432,8 +432,8 @@ encounters:
     success_narrative_de: Ihr erzeugt ein Differential. Reibung, Bewegung, Widerstand – irgendetwas,
       um eine Lücke zwischen einer Temperatur und einer anderen zu schaffen. Der Gradient hält. Temperatur
       existiert wieder. Es hat euch etwas gekostet.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'You generate the differential. It holds a degree, two, then yields one of them back to the room. The temperature is a thing again, for now. Your breath is cold. The room''s breath is warmer. The gap will close. You felt the gap. That was the point.'
+    partial_narrative_de: 'Ihr erzeugt das Differential. Es hält ein Grad, zwei, gibt dann eines davon an den Raum zurück. Die Temperatur ist wieder ein Ding, vorerst. Euer Atem ist kalt. Der Atem des Raums ist wärmer. Die Lücke wird sich schließen. Ihr habt die Lücke gespürt. Darum ging es.'
     fail_narrative_en: You push against equilibrium. Equilibrium does not push back. It simply absorbs
       the push.
     fail_narrative_de: Ihr drückt gegen das Gleichgewicht. Das Gleichgewicht drückt nicht zurück.
@@ -587,8 +587,8 @@ encounters:
       – more time. Time is the most decaying currency here.
     success_narrative_de: Der Mechanismus stabilisiert sich. Die Artefakte halten. Ihr habt ihnen
       – und euch – mehr Zeit erkauft. Zeit ist die am schnellsten verfallende Währung hier.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The mechanism steadies. Not for long. The artifacts gain back a small amount of time – minutes, maybe. You have bought minutes with hours. In this archive, that is a fair exchange. You leave the room before the minutes run out.'
+    partial_narrative_de: 'Der Mechanismus stabilisiert sich. Nicht lange. Die Artefakte gewinnen eine kleine Menge Zeit zurück – Minuten, vielleicht. Ihr habt Minuten mit Stunden erkauft. In diesem Archiv ist das ein fairer Tausch. Ihr verlasst den Raum, bevor die Minuten ablaufen.'
     fail_narrative_en: The mechanism fails under your hands. Not dramatically. Quietly. The way everything
       here fails.
     fail_narrative_de: Der Mechanismus versagt unter euren Händen. Nicht dramatisch. Leise. So wie
@@ -635,8 +635,8 @@ encounters:
       are partially legible. Enough to learn from. Not enough to replicate.
     success_narrative_de: Der Mechanismus wurde von jemandem gebaut, der verstand, was kommen würde.
       Die Notizen sind teilweise leserlich. Genug, um daraus zu lernen. Nicht genug, um es nachzubauen.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The notes are partially legible. The builder understood decay. The builder did not understand it well enough to finish the sentence about the solution. You leave with the method up to step three. Step four, where it mattered, is weather.'
+    partial_narrative_de: 'Die Notizen sind teilweise leserlich. Der Erbauer verstand den Verfall. Der Erbauer verstand ihn nicht gut genug, um den Satz über die Lösung zu beenden. Ihr geht mit der Methode bis Schritt drei. Schritt vier, wo es darauf ankam, ist Wetter.'
     fail_narrative_en: The notes dissolve as you read them. The information they contained is now
       in you, and will decay at the same rate.
     fail_narrative_de: Die Notizen lösen sich auf, während ihr sie lest. Die Information, die sie

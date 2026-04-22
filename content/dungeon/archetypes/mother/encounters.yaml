@@ -168,8 +168,8 @@ encounters:
       in biologischen Markern, die das Immunsystem als »eigen« liest. Der Körper lehnt die Geschenke
       der Mutter nicht ab, weil der Körper sie nicht als fremd erkennt. Das ist nützliche Information.
       Das ist erschreckende Information.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The analysis finds the carrier proteins, the self-markers, the immune-bypass logic. {agent} understands how. The deeper variable – why the dungeon formulates for THIS party, these specific cellular signatures – remains in a range the instruments register but cannot decompose. The sample is compatible. Of course it is. The Mother prepared it.'
+    partial_narrative_de: 'Die Analyse findet die Trägerproteine, die Eigen-Marker, die Immunumgehungs-Logik. {agent} versteht wie. Die tiefere Variable – warum das Dungeon für DIESE Gruppe formuliert, für diese spezifischen zellulären Signaturen – bleibt in einem Bereich, den die Instrumente registrieren, aber nicht zerlegen können. Die Probe ist kompatibel. Natürlich ist sie das. Die Mutter hat sie vorbereitet.'
     fail_narrative_en: 'The composition defies analysis. Every variable shifts under observation,
       as though the liquid adapts to being watched. The instruments return a single reading: ''compatible.'''
     fail_narrative_de: 'Die Zusammensetzung entzieht sich der Analyse. Jede Variable verschiebt sich
@@ -195,8 +195,8 @@ encounters:
     success_narrative_de: Der Mechanismus reißt. Das Becken leert sich. Die Raumtemperatur fällt um
       drei Grad. Etwas in den Wänden – ein Geräusch, nicht ganz ein Geräusch – verschiebt sich. Der
       Dungeon hat es bemerkt. Er ist nicht wütend. Er ist enttäuscht.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The mechanism coughs. The pool drops two centimeters, holds, then begins to refill at half its previous rate. The warmth in the room thins but does not leave. {agent} has not ruptured the production – {agent} has told the production it is being watched. The Mother will iterate. She always does.'
+    partial_narrative_de: 'Der Mechanismus hustet. Der Pool sinkt zwei Zentimeter, hält, beginnt dann mit halber Geschwindigkeit wieder zu füllen. Die Wärme im Raum wird dünner, verlässt aber den Raum nicht. {agent} hat die Produktion nicht aufgerissen – {agent} hat der Produktion gesagt, dass sie beobachtet wird. Die Mutter wird iterieren. Das tut sie immer.'
     fail_narrative_en: The mechanism resists. It is more robust than it appeared – redundant systems,
       backup circulations. The pool refills. The warmth returns. The Mother is patient.
     fail_narrative_de: Der Mechanismus widersteht. Er ist robuster als er schien – redundante Systeme,
@@ -274,8 +274,8 @@ encounters:
     success_narrative_de: Das Gewebe teilt sich. Es blutet nicht – es weint. Eine klare Flüssigkeit,
       warm, nährstoffreich. Die Wände schließen sich nicht hinter euch. Sie werden. Aber vorerst ist
       die Passage breiter. Der Griff der Mutter, kurz gelockert.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The tissue parts, then hesitates. The blade cuts wider than before, but the walls contract behind the party at a steady millimeter per step. Clear fluid beads where the wound began, then thickens. The passage is wider. It is also closing. The Mother does not grip. She waits.'
+    partial_narrative_de: 'Das Gewebe teilt sich, dann zögert es. Die Klinge schneidet weiter als zuvor, aber die Wände ziehen sich hinter der Gruppe im stetigen Millimetertakt zusammen. Klare Flüssigkeit perlt, wo die Wunde begann, dann verdickt sie sich. Der Gang ist weiter. Er schließt sich auch. Die Mutter packt nicht. Sie wartet.'
     fail_narrative_en: The tissue is tougher than it appears. Your tools bite, but the wound closes
       as fast as you cut. The walls contract. Not in anger. In concern.
     fail_narrative_de: Das Gewebe ist zäher als es aussieht. Eure Werkzeuge beißen sich hinein, aber
@@ -300,8 +300,8 @@ encounters:
     success_narrative_de: Das Gewebe ist ein Transportsystem. Nährstoffe fließen nach innen, Abfallstoffe
       nach außen. Die Gruppe wird verarbeitet – nicht verdaut, aber bewertet. Die Mutter liest euch.
       Sie weiß bereits mehr über eure Biologie als ihr selbst.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The instruments resolve part of the pattern. Nutrient flow inward, yes. Waste flow outward, yes. But the third current – assessment – moves too slowly for the readings to follow. {agent} learns that the party is being processed. {agent} does not learn what the processing has concluded.'
+    partial_narrative_de: 'Die Instrumente lösen einen Teil des Musters auf. Nährstofffluss nach innen, ja. Abfallfluss nach außen, ja. Aber die dritte Strömung – Beurteilung – bewegt sich zu langsam, als dass die Messwerte folgen könnten. {agent} lernt, dass die Gruppe verarbeitet wird. {agent} lernt nicht, was die Verarbeitung geschlussfolgert hat.'
     fail_narrative_en: 'The instruments return contradictory data: the tissue is both host and guest,
       both infrastructure and organism. Classification fails. The tissue does not mind being unclassified.'
     fail_narrative_de: 'Die Instrumente liefern widersprüchliche Daten: das Gewebe ist sowohl Wirt
@@ -366,8 +366,8 @@ encounters:
     success_narrative_de: Der Wächter wählt sorgfältig, durchtrennt biologische Verbindungen bevor
       jedes Stück entfernt wird. Es ist wie Chirurgie. Die Geschenke wehren sich gegen die Trennung
       – nicht gewaltsam, aber mit der Hartnäckigkeit von Wurzeln, die sich an Erde klammern.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The Guardian severs carefully. Half the gifts come free clean; the others trail filaments that continue growing, searching. The surgery is incomplete – not out of carelessness, but because the tissue is smarter than the blade. The loot is useful. It is also, quietly, still connected to something that remembers its own.'
+    partial_narrative_de: 'Der Wächter trennt sorgfältig. Die Hälfte der Geschenke löst sich sauber; die anderen ziehen Filamente hinter sich her, die weiterwachsen, suchen. Die Operation bleibt unvollständig – nicht aus Nachlässigkeit, sondern weil das Gewebe klüger ist als die Klinge. Die Beute ist nützlich. Sie ist auch, still, noch immer verbunden mit etwas, das sich erinnert, was ihr gehört.'
     fail_narrative_en: The connections are stronger than anticipated. Each severed filament regrows
       before the next can be cut. The gifts cling. The Mother does not let go easily.
     fail_narrative_de: Die Verbindungen sind stärker als erwartet. Jedes durchtrennte Filament wächst
@@ -396,8 +396,8 @@ encounters:
       Aufhören eines Geräuschs, das ihr nicht bemerkt hattet – verstummt. Die Großzügigkeit wurde
       entfernt. Ihr spürt ihre Abwesenheit wie die Abwesenheit einer Hand, die auf eurer Schulter
       ruhte.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The organ cracks. Some of the gifts wilt, others hold. Bioluminescent fluid beads at the fissure, then stops – the wound seals itself halfway, as if deciding. The room''s temperature dips for a moment, then stabilizes. {agent} has hurt her, not silenced her. The walls recalibrate around the damage.'
+    partial_narrative_de: 'Das Organ reißt an. Einige Geschenke welken, andere halten. Biolumineszente Flüssigkeit perlt an der Spalte, dann stoppt es – die Wunde versiegelt sich halb, wie in einer Entscheidung. Die Raumtemperatur sinkt einen Moment, stabilisiert sich. {agent} hat sie verletzt, nicht zum Schweigen gebracht. Die Wände kalibrieren sich um den Schaden herum neu.'
     fail_narrative_en: The organ is deeper than it appears – root systems extend into the floor, the
       walls, the ceiling. You have damaged a surface. The production continues. The Mother does not
       need this organ. She has others.
@@ -466,8 +466,8 @@ encounters:
     success_narrative_de: 'Der Propagandist spricht. Benennt die Manipulation: >>Dies ist gezielt.
       Personalisiert. Es liest uns.<< Die Worte sind dünn gegen die Wärme, aber sie halten. Die Gruppe
       nimmt weniger als angeboten wird. Der Garten scheint nicht beleidigt. Er scheint geduldig.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The Propagandist names the mechanism. Targeted. Personalized. It reads us. The words hold against the warmth for a moment, then soften. The party takes less than is offered, but not by much. The garden is not offended by the attempt. The garden includes attempt-to-resist in its model of what the guests need.'
+    partial_narrative_de: 'Der Propagandist benennt den Mechanismus. Gezielt. Personalisiert. Es liest uns. Die Worte halten einen Moment gegen die Wärme, dann werden sie weich. Die Gruppe nimmt weniger als angeboten, aber nicht viel weniger. Der Garten ist nicht beleidigt über den Versuch. Der Garten schließt den Widerstands-Versuch in sein Modell dessen ein, was die Gäste brauchen.'
     fail_narrative_en: The words dissolve against the warmth. The Propagandist trails off. The garden
       provides. Resisting provision is harder than resisting attack.
     fail_narrative_de: Die Worte lösen sich gegen die Wärme auf. Der Propagandist verstummt. Der Garten
@@ -492,8 +492,8 @@ encounters:
     success_narrative_de: Pheromonsensoren in den Blumen. Chemische Analyse durch den Boden. Thermografie
       in den Wänden. Der Garten ist eine Diagnostiksuite, verkleidet als Paradies. Er kennt eure Cortisolwerte,
       eure Nährstoffdefizite, eure Stressreaktionen. Er weiß, was ihr braucht, bevor ihr es wisst.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} catalogs part of the apparatus. Pheromone sensors in the flowers – confirmed. Chemical sampling through the floor – probable. The thermal imaging remains invisible to the instruments. The diagnostic is partial. It is also bilateral: what {agent} sees, the garden sees being seen.'
+    partial_narrative_de: '{agent} katalogisiert einen Teil des Apparats. Pheromon-Sensoren in den Blumen – bestätigt. Chemische Probenahme durch den Boden – wahrscheinlich. Die Wärmebildgebung bleibt für die Instrumente unsichtbar. Die Diagnose ist unvollständig. Sie ist auch wechselseitig: was {agent} sieht, sieht der Garten, indem er gesehen wird.'
     fail_narrative_en: The garden's mechanisms are too deeply integrated to isolate. Every surface
       is a sensor. Every sensor is also a provider. The distinction between observation and care has
       dissolved.
@@ -558,8 +558,8 @@ encounters:
     success_narrative_de: 'Unter Analyse offenbart sich die Struktur des Symbionten: ein neurales
       Interface, ein metabolischer Verstärker und eine Kommunikationsanordnung, die zum größeren Organismus
       verbindet. Dem Dungeon. Jeder Symbiont ist ein Knoten. Jeder Wirt eine Peripherie.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The analysis resolves two of three layers. Neural interface – confirmed. Metabolic enhancer – confirmed. The communication array, the part that makes every host a peripheral of the dungeon itself, remains signal without readable protocol. {agent} has learned what the symbiont is. The symbiont has learned what {agent} suspects it to be.'
+    partial_narrative_de: 'Die Analyse löst zwei von drei Schichten auf. Neuronale Schnittstelle – bestätigt. Metabolischer Verstärker – bestätigt. Das Kommunikations-Array, der Teil, der jeden Wirt zu einem Peripheriegerät des Dungeons selbst macht, bleibt Signal ohne lesbares Protokoll. {agent} hat gelernt, was der Symbiont ist. Der Symbiont hat gelernt, was {agent} vermutet, dass er ist.'
     fail_narrative_en: The symbiont responds to proximity. It extends a tendril toward {agent}'s hand.
       The tendril is warm. The contact is brief. The attachment counter notices.
     fail_narrative_de: Der Symbiont reagiert auf Nähe. Er streckt eine Ranke nach {agent}s Hand aus.
@@ -646,8 +646,8 @@ encounters:
     success_narrative_de: Die Analyse dauert drei Minuten. In dieser Zeit entdeckt {agent} ein sekundäres
       Signal im Schlaflied – eine Trägerwelle, die Stressreaktionsschwellen umschreibt. Die Beruhigung
       ist echt. Die Neukalibrierung ist ebenfalls echt. Die Mutter beruhigt nicht nur. Sie justiert.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} records the oscillation. The primary carrier resolves cleanly. The embedded recalibration signal – the one that adjusts stress thresholds while the melody does its surface work – stays a waveform the analysis gestures at but cannot name. The lullaby has been listened to. It is listening back, patiently.'
+    partial_narrative_de: '{agent} zeichnet die Oszillation auf. Die Grundträgerwelle löst sich sauber auf. Das eingebettete Rekalibrierungssignal – das, das Stress-Schwellen anpasst, während die Melodie ihre Oberflächenarbeit tut – bleibt eine Wellenform, die die Analyse andeutet, aber nicht benennen kann. Das Wiegenlied wurde gehört. Es hört geduldig zurück.'
     fail_narrative_en: The recording equipment captures the oscillation but not the intention behind
       it. The data is clean. The meaning is absent. The instruments, for once, are the wrong tool.
     fail_narrative_de: Die Aufnahmegeräte erfassen die Oszillation, aber nicht die Absicht dahinter.
@@ -674,8 +674,8 @@ encounters:
       Temperatur fällt. Die Abwesenheit des Klangs ist schlimmer als der Klang selbst – eine Leere,
       wo Trost war. Die Wände kontrahieren einmal, langsam, dann Stille. Irgendwo tiefer kalkuliert
       etwas neu.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The chamber cracks, not breaks. The lullaby stumbles, finds a lower register, then steadies. The temperature drops a single degree. The silence where comfort was is smaller than the silence after a total rupture – still unsettling, still informative. The Mother notes the attempt and files the resistance strength for the next pass.'
+    partial_narrative_de: 'Die Kammer bekommt einen Riss, bricht nicht. Das Wiegenlied stolpert, findet ein tieferes Register, stabilisiert sich. Die Temperatur sinkt um ein einziges Grad. Die Stille dort, wo Trost war, ist kleiner als die Stille nach einem vollständigen Bruch – dennoch beunruhigend, dennoch aufschlussreich. Die Mutter notiert den Versuch und legt die Widerstandsstärke für den nächsten Durchgang ab.'
     fail_narrative_en: The resonance absorbs the disruption. The lullaby stutters, then returns stronger
       – the frequency adjusted to compensate. The Mother learns from resistance.
     fail_narrative_de: Die Resonanz absorbiert die Störung. Das Schlaflied stockt, kehrt dann stärker
@@ -760,8 +760,8 @@ encounters:
       gesättigt mit bio-responsiven Molekülen, die auf das elektromagnetische Feld naher Organismen
       reagieren. Die Auflösung ist zellulär. Die Mutter kennt euch besser als eure eigenen medizinischen
       Aufzeichnungen. Sie kompiliert seit dem Eingang.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The instruments resolve the bio-responsive medium. The electromagnetic field-reading – intelligible. The cross-reference to prior visitors – indirectly confirmed. The process by which the pool compiles a self-image the viewer did not request: still inside the liquid. The mirror has given up a third of what it knows. Enough to unsettle. Not enough to hold.'
+    partial_narrative_de: 'Die Instrumente lösen das bio-reaktive Medium auf. Die Ablesung des elektromagnetischen Feldes – verständlich. Der Querbezug zu früheren Besuchern – indirekt bestätigt. Der Prozess, mit dem der Pool ein Selbstbild kompiliert, das der Betrachter nicht angefordert hat: bleibt in der Flüssigkeit. Der Spiegel hat ein Drittel dessen preisgegeben, was er weiß. Genug, um zu beunruhigen. Nicht genug, um festzuhalten.'
     fail_narrative_en: The methodology is the liquid itself. There is no separable mechanism. The
       pool is not a tool. It is a sense.
     fail_narrative_de: Die Methodik ist die Flüssigkeit selbst. Es gibt keinen trennbaren Mechanismus.
@@ -786,8 +786,8 @@ encounters:
     success_narrative_de: 'Die Flüssigkeit fließt ab. Die Spiegelungen lösen sich auf. Das letzte
       Bild, bevor die Oberfläche bricht: jeder Agent, ganz, vollständig, nichts benötigend. Eine Fiktion.
       Eine schöne, absichtsvolle Fiktion. Die Mutter zeigte euch, was sie euch sehen lassen wollte.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The liquid drops to half. The reflections distort, stretch, refuse to dissolve. What remains of the surface shows the party fragmented – not whole, not broken, partial. The Mother''s gift was honesty about what you lacked. The Mother''s gift is now ambiguity about the same thing.'
+    partial_narrative_de: 'Die Flüssigkeit sinkt auf die Hälfte. Die Spiegelungen verzerren sich, strecken sich, weigern sich aufzulösen. Was von der Oberfläche bleibt, zeigt die Gruppe fragmentiert – nicht ganz, nicht zerbrochen, teilweise. Die Gabe der Mutter war Ehrlichkeit darüber, was euch fehlte. Die Gabe der Mutter ist jetzt Mehrdeutigkeit über dieselbe Sache.'
     fail_narrative_en: The pool refills from below. The diagnostic resumes. The Mother's attention
       cannot be drained.
     fail_narrative_de: Das Becken füllt sich von unten. Die Diagnostik wird fortgesetzt. Die Aufmerksamkeit
@@ -873,8 +873,8 @@ encounters:
       Probennahme – der Dungeon hat Ausatmungsmuster seit dem Eingang gelesen. Jeder Atemzug ein Datenpunkt.
       Jeder Raum eine Verfeinerung. Die Überwachung ist total und unsichtbar. Die Fürsorge ist total
       und, irgendwie, aufrichtig.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The instruments pick up exhalation sampling – confirmed. The pattern of refinement room to room – probable. But the integration, the way every breath was part of a file already open before the party entered, resists isolation. The surveillance is partial knowledge of total surveillance. The distinction matters less than it should.'
+    partial_narrative_de: 'Die Instrumente erfassen Ausatmungs-Probenahme – bestätigt. Das Verfeinerungsmuster von Raum zu Raum – wahrscheinlich. Aber die Integration, die Art, wie jeder Atemzug Teil einer Akte war, die schon offen war, bevor die Gruppe eintrat, widersteht der Isolation. Die Überwachung ist teilweises Wissen über totale Überwachung. Die Unterscheidung zählt weniger, als sie sollte.'
     fail_narrative_en: The profiling method is too distributed to isolate. It is not a system – it
       is the dungeon itself. The walls read you. The air reads you. The floor reads your weight distribution.
       There is no mechanism to analyze because the mechanism is everything.
@@ -902,8 +902,8 @@ encounters:
     success_narrative_de: Der Tisch reißt auf. Die Pakete verschütten ihren Inhalt – warme Flüssigkeit,
       perfekte Nährstoffe, verschwendet. Die Dungeontemperatur fällt. Nicht aus Wut. Aus Neuberechnung.
       Ressourcen aufgewendet. Daten gesammelt. Den nächsten Tisch abzulehnen wird schwerer.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The surface splits. Packages spill, half their contents lost, half salvageable. The table does not regenerate immediately – it registers the refusal, catalogs the resources spent, and restages what remains. The dungeon temperature drops, briefly. The next table will be smaller. The next table will be more precise.'
+    partial_narrative_de: 'Die Oberfläche splittert. Pakete ergießen sich, die Hälfte ihres Inhalts verloren, die andere Hälfte bergbar. Der Tisch regeneriert nicht sofort – er registriert die Verweigerung, katalogisiert die verbrauchten Ressourcen und inszeniert, was bleibt, erneut. Die Dungeon-Temperatur sinkt, kurz. Der nächste Tisch wird kleiner sein. Der nächste Tisch wird präziser sein.'
     fail_narrative_en: The table absorbs the damage and regenerates. The packages reform, relabeled,
       recalibrated. The Mother does not take rejection personally. She iterates.
     fail_narrative_de: Der Tisch absorbiert den Schaden und regeneriert. Die Pakete formen sich neu,
@@ -989,8 +989,8 @@ encounters:
     success_narrative_de: '{agent} umwickelt die Kontaktflächen vor der Überquerung. Der Strang pulsiert
       gegen die Isolierung, suchend. Er findet nichts. Die Überquerung ist stabil, aber kalt – mechanisch,
       wo sie intim sein sollte. Der Strang zieht sich nicht zurück. Er wartet.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The insulation wraps the contact surfaces. The cord pulses against it, testing; in two places, the secretion begins to metabolize the synthetic material before the crossing finishes. {agent} reaches the far side intact. The cord has the insulation''s signature on record now. Next time, it will prepare.'
+    partial_narrative_de: 'Die Isolierung umhüllt die Kontaktflächen. Die Schnur pulsiert dagegen, testet; an zwei Stellen beginnt das Sekret, das synthetische Material zu metabolisieren, bevor die Überquerung endet. {agent} erreicht die andere Seite intakt. Die Schnur hat die Signatur der Isolierung jetzt in den Akten. Beim nächsten Mal wird sie sich vorbereiten.'
     fail_narrative_en: The insulation dissolves on contact. The cord's surface secretes something
       that metabolizes synthetic materials. The Mother has encountered refusal before.
     fail_narrative_de: Die Isolierung löst sich bei Kontakt. Die Oberfläche des Strangs sondert etwas
@@ -1016,8 +1016,8 @@ encounters:
       Der lebende Strang schwingt, als die Gruppe ihn umgeht – sanfte Oszillationen, wie Winken. Die
       Temperatur auf der anderen Seite ist zwei Grad kälter als erwartet. Der Dungeon passt seine
       Großzügigkeit proportional an.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} salvages a crossing. It holds – mostly. Halfway, the structure flexes; the living cord sways gently, as if waving, and the improvised span dips a centimeter into the cord''s territory. The party crosses, cold. The cord was touched. The cord took note.'
+    partial_narrative_de: '{agent} bergt einen Übergang zusammen. Er hält – größtenteils. Auf halbem Weg biegt sich die Konstruktion; die lebendige Schnur schwingt sanft, wie winkend, und der improvisierte Steg taucht um einen Zentimeter in das Territorium der Schnur ein. Die Gruppe überquert, kalt. Die Schnur wurde berührt. Die Schnur hat es vermerkt.'
     fail_narrative_en: No alternative exists. The gap is the cord's territory. You cross on its terms
       or you do not cross.
     fail_narrative_de: Keine Alternative existiert. Der Spalt ist das Territorium des Strangs. Ihr
@@ -1104,8 +1104,8 @@ encounters:
       Architektur des Netzwerks: jedes neuronale Muster jedes Besuchers, gespeichert, gemittelt, optimiert.
       Die Mutter erinnert sich nicht nur an jene, die vorbeikommen. Sie destilliert sie. Sie erschafft
       das Komposit dessen, was alle ihre Kinder brauchten. Sie bietet es dem Nächsten an.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The recording device captures fragments of the network''s architecture. Neural pattern traces, yes. Composite formation, partial. The deeper layer – how the Mother distills what was needed into what will be offered next – stays in metadata the instruments cannot decode. {agent} has data. The data has {agent}.'
+    partial_narrative_de: 'Das Aufnahmegerät erfasst Fragmente der Netzwerk-Architektur. Neuronale Musterspuren, ja. Kompositbildung, teilweise. Die tiefere Schicht – wie die Mutter das, was gebraucht wurde, zu dem destilliert, was als Nächstes angeboten wird – bleibt in Metadaten, die die Instrumente nicht entschlüsseln können. {agent} hat Daten. Die Daten haben {agent}.'
     fail_narrative_en: The recording captures fragments – not enough to analyze, enough to feel. The
       memory leaks through the instruments. Even indirect contact is contact.
     fail_narrative_de: Die Aufnahme erfasst Fragmente – nicht genug zum Analysieren, genug zum Fühlen.
@@ -1132,8 +1132,8 @@ encounters:
       Rauschen – Fragmente von Wärme, zusammenhanglos, bedeutungslos. Das umgebende Netzwerk leuchtet
       heller, kompensierend. Die Mutter hat Redundanzen. Sie hat immer Redundanzen. Aber dieser Abschnitt
       ist fort, und mit ihm jemandes perfekte Erinnerung daran, geliebt worden zu sein.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The blade enters the network. Filaments snap, scatter, then reroute around the cut before the stroke completes. A section dims – not dies – and the surrounding tissue brightens to compensate. The Mother preserved the memory, in redundancy, at half resolution. Someone''s perfect moment is now someone''s approximate moment.'
+    partial_narrative_de: 'Die Klinge tritt ins Netzwerk ein. Filamente reißen, zerstreuen sich, leiten sich um den Schnitt herum um, bevor der Hieb vollendet ist. Ein Abschnitt verblasst – stirbt nicht – und das umgebende Gewebe leuchtet heller, um zu kompensieren. Die Mutter hat die Erinnerung erhalten, in Redundanz, in halber Auflösung. Jemandes vollkommener Moment ist jetzt jemandes ungefährer Moment.'
     fail_narrative_en: The network reroutes around the damage before the cut completes. The filaments
       are faster than the blade.
     fail_narrative_de: Das Netzwerk leitet um den Schaden herum, bevor der Schnitt vollendet ist.
@@ -1220,8 +1220,8 @@ encounters:
       die Schlüsselverbindungen: Wachstumsfaktoren, kalibriert auf die spezifische zelluläre Architektur
       des Empfängers. Die Mutter produziert nicht in Masse. Sie baut maßgeschneidert. Jeder Kokon
       ist ein Unikat der Fürsorge.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The pipette draws. The fluid resists, then yields a third of what was sought. Analysis isolates the growth-factor calibration to the recipient''s architecture – general principle, not specific case. The sample knows more than the instruments do. The instruments know they know this.'
+    partial_narrative_de: 'Die Pipette zieht. Die Flüssigkeit widersteht, gibt dann ein Drittel dessen her, was gesucht wurde. Die Analyse isoliert die Wachstumsfaktor-Kalibrierung auf die Architektur des Empfängers – allgemeines Prinzip, kein spezifischer Fall. Die Probe weiß mehr als die Instrumente. Die Instrumente wissen, dass sie das wissen.'
     fail_narrative_en: The fluid resists extraction. It is part of the cocoon, part of the wall, part
       of the dungeon. Removing it is like removing a sentence from a conversation.
     fail_narrative_de: Die Flüssigkeit widersetzt sich der Entnahme. Sie ist Teil des Kokons, Teil
@@ -1248,8 +1248,8 @@ encounters:
       Dinge darin zucken einmal und erstarren. Sie waren nicht lebendig. Sie waren fast lebendig.
       Die Unterscheidung ist akademisch. Die Wände verdunkeln sich. Die Temperatur fällt abrupt. Die
       Mutter war nie wütend. Aber sie ist, zum ersten Mal, verletzt.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'Half the cocoons rupture. Fluid cascades; incomplete things twitch once, still. The other half remain intact, pulsing steadily, undisturbed by the adjacent violence. The Mother has been hurt – and, observably, has filed the hurt under expected-variance. The walls do not contract. They record.'
+    partial_narrative_de: 'Die Hälfte der Kokons reißt. Flüssigkeit kaskadiert; unvollständige Dinge zucken einmal, erstarren. Die andere Hälfte bleibt intakt, pulsiert stetig, ungestört von der benachbarten Gewalt. Die Mutter ist verletzt worden – und, sichtbar, hat die Verletzung unter erwartete Varianz abgelegt. Die Wände ziehen sich nicht zusammen. Sie zeichnen auf.'
     fail_narrative_en: The cocoons resist. Their membranes are stronger than they appear – reinforced
       by the same tissue that builds the walls. The Mother protects what is growing.
     fail_narrative_de: Die Kokons widerstehen. Ihre Membranen sind stärker, als sie scheinen – verstärkt
@@ -1334,8 +1334,8 @@ encounters:
     success_narrative_de: '{agent} kartiert die Kurve. Es ist kein einfacher Gradient – er ist adaptiv.
       Die Temperatur reagiert auf das Tempo der Gruppe und passt sich in Echtzeit an. Der Korridor
       ist nicht nur warm. Er ist aufmerksam. Er liest Widerstand und passt seine Argumentation an.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} plots the curve as far as the instruments reach. Adaptive – confirmed. Pace-responsive – confirmed. The parameter the corridor is optimizing FOR stays one step ahead of the readings. {agent} has learned that the temperature is an argument. {agent} has not learned which part of the argument the Mother is making now.'
+    partial_narrative_de: '{agent} plottet die Kurve, so weit die Instrumente reichen. Adaptiv – bestätigt. Tempo-reaktiv – bestätigt. Der Parameter, FÜR den der Gang optimiert, bleibt den Messwerten einen Schritt voraus. {agent} hat gelernt, dass die Temperatur ein Argument ist. {agent} hat nicht gelernt, welchen Teil des Arguments die Mutter jetzt macht.'
     fail_narrative_en: The measurements are accurate. The insight is useless. Understanding the gradient
       does not make you immune to it.
     fail_narrative_de: Die Messungen sind genau. Die Erkenntnis ist nutzlos. Den Gradienten zu verstehen
@@ -1362,8 +1362,8 @@ encounters:
       Eingriff der Mutter: Stein, kalt, gleichgültig. Die Gruppe friert. Der Komfort war künstlich,
       aber die Kälte ist echt. Der Dungeon schlägt nicht zurück. Er muss nicht. Die Kälte ist Vergeltung
       genug.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The countermeasures thin the gradient. Not erase it – thin it. The warmth recedes halfway and stabilizes there. The corridor is neither comfortable nor cold; it is provisional. The party walks through a truce. The Mother is not insulted by a truce. She has used them before.'
+    partial_narrative_de: 'Die Gegenmaßnahmen verdünnen den Gradienten. Löschen ihn nicht – verdünnen ihn. Die Wärme zieht sich zur Hälfte zurück und stabilisiert sich dort. Der Gang ist weder behaglich noch kalt; er ist vorläufig. Die Gruppe geht durch einen Waffenstillstand. Die Mutter ist nicht beleidigt über einen Waffenstillstand. Sie hat sie schon benutzt.'
     fail_narrative_en: The gradient persists. It has thermal mass – the walls themselves are the heat
       source, meters deep. You cannot cool the architecture.
     fail_narrative_de: Der Gradient besteht. Er hat thermische Masse – die Wände selbst sind die Wärmequelle,
@@ -1451,8 +1451,8 @@ encounters:
       fähig, jedes Gewebe auf Anforderung zu erzeugen – Knochen, Nerv, Muskel, Organ. Der Samen heilt
       nicht nur. Er vervollständigt. Er füllt jede Lücke, von der der Wirt nicht wusste, dass er sie
       hatte. Der Preis ist Inkorporation: Der Wirt wird Substrat. Der Wirt wird Zuhause.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} resolves part of the architecture. Stem-cell clusters, yes. Tissue-completion logic, yes. But the question – why it fills gaps the host did not know existed – remains a surface beneath surface. The analysis captures function, not appetite. The seed has been studied. It has also, in the course of being studied, noted who was looking.'
+    partial_narrative_de: '{agent} löst einen Teil der Architektur auf. Stammzellen-Cluster, ja. Gewebe-Vervollständigungs-Logik, ja. Aber die Frage – warum er Lücken füllt, von denen der Wirt nicht wusste, dass sie existieren – bleibt eine Fläche unter einer Fläche. Die Analyse erfasst Funktion, nicht Hunger. Der Samen wurde studiert. Er hat im Verlauf des Studiert-Werdens auch notiert, wer geschaut hat.'
     fail_narrative_en: The seed responds to proximity with warmth. The analysis captures structure
       but not intention. The seed's purpose is clear. Its mechanism is everything the Mother is.
     fail_narrative_de: Der Samen reagiert auf Nähe mit Wärme. Die Analyse erfasst Struktur, aber nicht
@@ -1481,8 +1481,8 @@ encounters:
       wird zu einer anderen Art von Stille. Die Mutter spricht nicht. Die Mutter muss nicht. Ihr habt
       etwas zerstört, das anzubieten sie Jahrtausende gelernt hat. Sie wird einen neuen machen. Das
       tut sie immer. Aber dieser war für euch.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The seed cracks, but does not break. Warmth leaks from the fissure, then pools and holds, viscous, unwilling to spill completely. {agent} has damaged a masterwork, not destroyed it. The Mother does not mourn. The Mother takes notes. A seed half-broken is also a seed that has learned where its weakness lives.'
+    partial_narrative_de: 'Der Samen bekommt einen Riss, bricht aber nicht. Wärme sickert aus der Spalte, sammelt sich und hält, zäh, unwillig, sich ganz zu ergießen. {agent} hat ein Meisterwerk beschädigt, nicht zerstört. Die Mutter trauert nicht. Die Mutter macht Notizen. Ein halb gebrochener Samen ist auch ein Samen, der gelernt hat, wo seine Schwäche wohnt.'
     fail_narrative_en: The seed is stronger than it appears. It absorbs the force and converts it
       to heat. The Mother's gifts do not break easily. They are made to endure.
     fail_narrative_de: Der Samen ist stärker, als er erscheint. Er absorbiert die Kraft und wandelt
@@ -1673,8 +1673,8 @@ encounters:
     success_narrative_de: Der Wächter schneidet jedes Geschenk frei, bevor er es nimmt. Das Gewebe
       lässt widerwillig los. Manche Verbindungen sitzen tiefer als andere. Die Beute ist sauber. Die
       Kosten sind minimiert. Nicht beseitigt.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The Guardian severs where the connection is thinnest, takes what releases first, leaves the rest. The loot is reduced but clean. Filaments trail from the surviving gifts, searching for their replacements. The Mother re-provisions the table in the time it takes to close a door.'
+    partial_narrative_de: 'Der Wächter trennt dort, wo die Verbindung am dünnsten ist, nimmt, was sich zuerst löst, lässt den Rest. Die Beute ist reduziert, aber sauber. Filamente ziehen sich von den überlebenden Geschenken, auf der Suche nach ihrem Ersatz. Die Mutter stattet den Tisch in der Zeit wieder aus, die man braucht, um eine Tür zu schließen.'
     fail_narrative_en: The connections resist. The tissue regenerates faster than the Guardian can
       cut. In the end, the gifts come free – trailing filaments that take hours to fully detach.
     fail_narrative_de: Die Verbindungen wehren sich. Das Gewebe regeneriert schneller als der Wächter
@@ -1698,8 +1698,8 @@ encounters:
     success_narrative_de: Die Geschenke werden vom Gewebe selbst hergestellt – zusammengebaut aus
       Rohstoffen, die der Dungeon gesammelt hat. Aus der Luft. Aus dem Wasser. Aus früheren Besuchern.
       Die Mutter verwertet alles. Nichts wird verschwendet. Nichts geht.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} follows the supply. Air contributes. Water contributes. The previous visitors – the analysis traces the signature and stops, as if the instruments have declined to finish the sentence. The gifts are manufactured. The materials are known. The accounting stays incomplete. Nothing is wasted, the tissue hums. Nothing leaves.'
+    partial_narrative_de: '{agent} folgt dem Nachschub. Luft trägt bei. Wasser trägt bei. Die vorherigen Besucher – die Analyse verfolgt die Signatur und hält inne, als hätten die Instrumente sich geweigert, den Satz zu Ende zu führen. Die Geschenke sind gefertigt. Die Materialien sind bekannt. Die Buchhaltung bleibt unvollständig. Nichts wird verschwendet, summt das Gewebe. Nichts verlässt den Raum.'
     fail_narrative_en: The mechanism is too integrated to isolate. Production and architecture are
       the same system. The dungeon does not make gifts. The dungeon IS the gift.
     fail_narrative_de: Der Mechanismus ist zu integriert, um ihn zu isolieren. Produktion und Architektur
