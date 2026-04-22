@@ -237,21 +237,27 @@ export class DungeonContentEditor extends LitElement {
       }
 
       /* ── Inline fields ── */
+      /* The block name is editor-fieldset (not field-row) and element is
+         editor-field (not field). Naming avoids a namespace clash with
+         the shared field-row primitive in components/shared/field-row-styles.ts
+         and with forge-console-styles.ts. Both would be Shadow-DOM-isolated
+         from this editor today, but matching names across modules invites
+         confusion if a future refactor ever imports them here. */
 
-      .field-row {
+      .editor-fieldset {
         display: flex;
         gap: var(--space-3);
         margin-bottom: var(--space-3);
       }
 
-      .field {
+      .editor-field {
         flex: 1;
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
       }
 
-      .field__label {
+      .editor-field__label {
         font-family: var(--font-brutalist);
         font-size: 8px;
         font-weight: var(--font-bold, 700);
@@ -260,8 +266,8 @@ export class DungeonContentEditor extends LitElement {
         color: var(--color-text-muted);
       }
 
-      .field__input,
-      .field__select {
+      .editor-field__input,
+      .editor-field__select {
         padding: var(--space-1-5) var(--space-2);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
@@ -271,8 +277,8 @@ export class DungeonContentEditor extends LitElement {
         transition: border-color 0.2s ease;
       }
 
-      .field__input:focus,
-      .field__select:focus {
+      .editor-field__input:focus,
+      .editor-field__select:focus {
         outline: none;
         border-color: var(--color-accent-gold, var(--color-accent-amber));
       }
@@ -679,12 +685,12 @@ export class DungeonContentEditor extends LitElement {
     switch (this.contentType) {
       case 'banter':
         return html`
-          <div class="field-row">
-            <div class="field">
-              <label class="field__label" for="field-trigger">${msg('Trigger')}</label>
+          <div class="editor-fieldset">
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-trigger">${msg('Trigger')}</label>
               <select
                 id="field-trigger"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.trigger ?? '')}
                 @change=${(e: Event) => this._updateField('trigger', (e.target as HTMLSelectElement).value)}
               >
@@ -703,11 +709,11 @@ export class DungeonContentEditor extends LitElement {
                 )}
               </select>
             </div>
-            <div class="field">
-              <label class="field__label" for="field-decay">${msg('Decay Tier')}</label>
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-decay">${msg('Decay Tier')}</label>
               <input
                 id="field-decay"
-                class="field__input"
+                class="editor-field__input"
                 type="number"
                 min="0"
                 max="3"
@@ -718,11 +724,11 @@ export class DungeonContentEditor extends LitElement {
                 }}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-attach">${msg('Attachment Tier')}</label>
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-attach">${msg('Attachment Tier')}</label>
               <input
                 id="field-attach"
-                class="field__input"
+                class="editor-field__input"
                 type="number"
                 min="0"
                 max="2"
@@ -746,12 +752,12 @@ export class DungeonContentEditor extends LitElement {
 
       case 'enemies':
         return html`
-          <div class="field-row">
-            <div class="field">
-              <label class="field__label" for="field-threat">${msg('Threat Level')}</label>
+          <div class="editor-fieldset">
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-threat">${msg('Threat Level')}</label>
               <select
                 id="field-threat"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.threat_level ?? 'standard')}
                 @change=${(e: Event) => this._updateField('threat_level', (e.target as HTMLSelectElement).value)}
               >
@@ -761,23 +767,23 @@ export class DungeonContentEditor extends LitElement {
                 )}
               </select>
             </div>
-            <div class="field">
-              <label class="field__label" for="field-hp">${msg('Condition')}</label>
-              <input id="field-hp" class="field__input" type="number" min="1"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-hp">${msg('Condition')}</label>
+              <input id="field-hp" class="editor-field__input" type="number" min="1"
                 .value=${String(this._draft.condition_threshold ?? '')}
                 @input=${(e: InputEvent) => this._updateField('condition_threshold', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-atk">${msg('Attack')}</label>
-              <input id="field-atk" class="field__input" type="number" min="0"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-atk">${msg('Attack')}</label>
+              <input id="field-atk" class="editor-field__input" type="number" min="0"
                 .value=${String(this._draft.attack_power ?? '')}
                 @input=${(e: InputEvent) => this._updateField('attack_power', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-evasion">${msg('Evasion')}</label>
-              <input id="field-evasion" class="field__input" type="number" min="0"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-evasion">${msg('Evasion')}</label>
+              <input id="field-evasion" class="editor-field__input" type="number" min="0"
                 .value=${String(this._draft.evasion ?? '')}
                 @input=${(e: InputEvent) => this._updateField('evasion', Number((e.target as HTMLInputElement).value))}
               />
@@ -795,12 +801,12 @@ export class DungeonContentEditor extends LitElement {
 
       case 'encounters':
         return html`
-          <div class="field-row">
-            <div class="field">
-              <label class="field__label" for="field-room">${msg('Room Type')}</label>
+          <div class="editor-fieldset">
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-room">${msg('Room Type')}</label>
               <select
                 id="field-room"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.room_type ?? '')}
                 @change=${(e: Event) => this._updateField('room_type', (e.target as HTMLSelectElement).value)}
               >
@@ -810,16 +816,16 @@ export class DungeonContentEditor extends LitElement {
                 )}
               </select>
             </div>
-            <div class="field">
-              <label class="field__label" for="field-mind">${msg('Min Depth')}</label>
-              <input id="field-mind" class="field__input" type="number" min="0"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-mind">${msg('Min Depth')}</label>
+              <input id="field-mind" class="editor-field__input" type="number" min="0"
                 .value=${String(this._draft.min_depth ?? '')}
                 @input=${(e: InputEvent) => this._updateField('min_depth', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-maxd">${msg('Max Depth')}</label>
-              <input id="field-maxd" class="field__input" type="number" min="0"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-maxd">${msg('Max Depth')}</label>
+              <input id="field-maxd" class="editor-field__input" type="number" min="0"
                 .value=${String(this._draft.max_depth ?? '')}
                 @input=${(e: InputEvent) => this._updateField('max_depth', Number((e.target as HTMLInputElement).value))}
               />
@@ -829,12 +835,12 @@ export class DungeonContentEditor extends LitElement {
 
       case 'loot':
         return html`
-          <div class="field-row">
-            <div class="field">
-              <label class="field__label" for="field-tier">${msg('Tier')}</label>
+          <div class="editor-fieldset">
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-tier">${msg('Tier')}</label>
               <select
                 id="field-tier"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.tier ?? '1')}
                 @change=${(e: Event) => this._updateField('tier', Number((e.target as HTMLSelectElement).value))}
               >
@@ -843,16 +849,16 @@ export class DungeonContentEditor extends LitElement {
                 <option value="3" ?selected=${this._draft.tier === 3}>${msg('3 - Legendary')}</option>
               </select>
             </div>
-            <div class="field">
-              <label class="field__label" for="field-weight">${msg('Drop Weight')}</label>
-              <input id="field-weight" class="field__input" type="number" min="1"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-weight">${msg('Drop Weight')}</label>
+              <input id="field-weight" class="editor-field__input" type="number" min="1"
                 .value=${String(this._draft.drop_weight ?? '')}
                 @input=${(e: InputEvent) => this._updateField('drop_weight', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-effect">${msg('Effect Type')}</label>
-              <input id="field-effect" class="field__input" type="text"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-effect">${msg('Effect Type')}</label>
+              <input id="field-effect" class="editor-field__input" type="text"
                 .value=${String(this._draft.effect_type ?? '')}
                 @input=${(e: InputEvent) => this._updateField('effect_type', (e.target as HTMLInputElement).value)}
               />
@@ -870,12 +876,12 @@ export class DungeonContentEditor extends LitElement {
 
       case 'abilities':
         return html`
-          <div class="field-row">
-            <div class="field">
-              <label class="field__label" for="field-school">${msg('School')}</label>
+          <div class="editor-fieldset">
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-school">${msg('School')}</label>
               <select
                 id="field-school"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.school ?? '')}
                 @change=${(e: Event) => this._updateField('school', (e.target as HTMLSelectElement).value)}
               >
@@ -893,25 +899,25 @@ export class DungeonContentEditor extends LitElement {
                 )}
               </select>
             </div>
-            <div class="field">
-              <label class="field__label" for="field-apt">${msg('Min Aptitude')}</label>
-              <input id="field-apt" class="field__input" type="number" min="0" max="9"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-apt">${msg('Min Aptitude')}</label>
+              <input id="field-apt" class="editor-field__input" type="number" min="0" max="9"
                 .value=${String(this._draft.min_aptitude ?? '')}
                 @input=${(e: InputEvent) => this._updateField('min_aptitude', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-cd">${msg('Cooldown')}</label>
-              <input id="field-cd" class="field__input" type="number" min="0"
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-cd">${msg('Cooldown')}</label>
+              <input id="field-cd" class="editor-field__input" type="number" min="0"
                 .value=${String(this._draft.cooldown ?? '')}
                 @input=${(e: InputEvent) => this._updateField('cooldown', Number((e.target as HTMLInputElement).value))}
               />
             </div>
-            <div class="field">
-              <label class="field__label" for="field-targets">${msg('Targets')}</label>
+            <div class="editor-field">
+              <label class="editor-field__label" for="field-targets">${msg('Targets')}</label>
               <select
                 id="field-targets"
-                class="field__select"
+                class="editor-field__select"
                 .value=${String(this._draft.targets ?? 'single_enemy')}
                 @change=${(e: Event) => this._updateField('targets', (e.target as HTMLSelectElement).value)}
               >
