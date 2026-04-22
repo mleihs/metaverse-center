@@ -39,13 +39,14 @@ export function t<T extends object>(entity: T, field: string): string {
  *   localized(encounter, 'description')  // encounter.description_de when DE
  *   localized(item, 'name')         // item.name_de when DE
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function localized(obj: any, key: string): string {
-  if (!obj) return '';
+export function localized(obj: unknown, key: string): string {
+  if (!obj || typeof obj !== 'object') return '';
+  const record = obj as Record<string, unknown>;
   const useDe = localeService.currentLocale !== 'en';
-  const deVal = obj[`${key}_de`];
-  const enVal = obj[`${key}_en`];
-  return ((useDe && deVal) || enVal || '') as string;
+  const deVal = record[`${key}_de`];
+  const enVal = record[`${key}_en`];
+  const picked = useDe && deVal ? deVal : enVal;
+  return typeof picked === 'string' ? picked : '';
 }
 
 /**

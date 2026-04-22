@@ -225,11 +225,18 @@ export class VelgAchievementBadge extends LitElement {
   @property({ type: Number }) target = 1;
 
   private _renderIcon() {
-    const key = this.iconKey as string;
+    const key = this.iconKey;
     if (key in icons) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fn = (icons as any)[key];
-      if (typeof fn === 'function') return fn(RARITY_ICON_SIZE);
+      // icons is a record of heterogeneous signatures (most are (size?: number),
+      // a few take extra args like resonanceArchetype). Dynamic lookup by
+      // string key cannot be narrowed without a discriminator — the `in` check
+      // above is our safety gate.
+      // biome-ignore lint/suspicious/noExplicitAny: heterogeneous icons record — `in` check is the narrowing; runtime guards the signature.
+      const fn = (icons as Record<string, (...args: any[]) => unknown>)[key];
+      if (typeof fn === 'function') {
+        const result = fn(RARITY_ICON_SIZE);
+        return result as ReturnType<typeof icons.trophy>;
+      }
     }
     return icons.trophy(RARITY_ICON_SIZE);
   }

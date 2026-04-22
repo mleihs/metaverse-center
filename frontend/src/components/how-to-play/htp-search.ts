@@ -189,11 +189,9 @@ export interface DebouncedFn<T extends (...args: never[]) => void> {
   cancel(): void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function debounce<T extends (...args: any[]) => void>(fn: T, ms = 150): DebouncedFn<T> {
+export function debounce<T extends (...args: never[]) => void>(fn: T, ms = 150): DebouncedFn<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const debounced = ((...args: any[]) => {
+  const debounced = ((...args: Parameters<T>) => {
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), ms);
   }) as DebouncedFn<T>;
