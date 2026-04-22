@@ -12,6 +12,7 @@
     "lint": "cd .. && biome check",
     "lint:fix": "cd .. && biome check --write",
     "lint:lit": "lit-analyzer src/**/*.ts",
+    "lint:full": "npm run typecheck && npm run lint && cd .. && bash frontend/scripts/lint-color-tokens.sh && bash frontend/scripts/lint-llm-content.sh && bash frontend/scripts/lint-no-empty-catch.sh && bash frontend/scripts/lint-no-cast-unknown.sh && bash frontend/scripts/lint-no-appstate-access-reads.sh && bash frontend/scripts/lint-bureau-panel-frame-last.sh && bash frontend/scripts/lint-no-pushstate.sh",
     "typecheck": "tsc --noEmit",
     "lint:docs": "markdownlint-cli2 '../docs/**/*.md'",
     "docs:index": "node ../scripts/generate-docs-index.mjs"
