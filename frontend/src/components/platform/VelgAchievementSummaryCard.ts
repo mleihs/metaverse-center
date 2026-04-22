@@ -292,9 +292,12 @@ export class VelgAchievementSummaryCard extends LitElement {
     if (!def) return nothing;
 
     const key = def.icon_key as string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const iconFn = (icons as any)[key];
-    const icon = typeof iconFn === 'function' ? iconFn(16) : icons.trophy(16);
+    // biome-ignore lint/suspicious/noExplicitAny: heterogeneous icons record — dynamic lookup, runtime guards the signature via typeof check.
+    const iconFn = (icons as Record<string, (...args: any[]) => unknown>)[key];
+    const icon =
+      typeof iconFn === 'function'
+        ? (iconFn(16) as ReturnType<typeof icons.trophy>)
+        : icons.trophy(16);
     const locale = localeService.currentLocale;
     const name = locale === 'de' ? def.name_de : def.name_en;
 
