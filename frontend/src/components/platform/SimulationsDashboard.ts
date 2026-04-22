@@ -1861,7 +1861,7 @@ export class VelgSimulationsDashboard extends LitElement {
               : nothing
           }
           ${
-            !isGuest && this._simulations.length > 0
+            !isGuest
               ? html`<velg-clearance-card style="--i: 4"></velg-clearance-card>`
               : nothing
           }
