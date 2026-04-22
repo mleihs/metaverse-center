@@ -30,8 +30,14 @@ import './LoadingState.js';
 import './ErrorState.js';
 import './EmptyState.js';
 
-// Same constraint SignalWatcher uses — ensures composability
-type ReactiveElementCtor = abstract new (...args: any[]) => ReactiveElement;
+// Lit mixin constructor type. `any[]` is mandated by the Lit mixin pattern —
+// the true variadic constructor signature cannot be expressed in TypeScript
+// without it. See https://lit.dev/docs/composition/mixins/#typing-the-mixin
+// biome-ignore lint/suspicious/noExplicitAny: Lit mixin constructor — see comment above.
+export type MixinCtor<T> = abstract new (...args: any[]) => T;
+
+// Same constraint SignalWatcher uses — ensures composability.
+type ReactiveElementCtor = MixinCtor<ReactiveElement>;
 
 /**
  * Type-only declaration so the mixin's added members are visible to subclasses
@@ -59,7 +65,7 @@ export declare abstract class DataLoaderMixinInterface {
 
 export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
   Base: TBase,
-): TBase & (abstract new (...args: any[]) => DataLoaderMixinInterface) {
+): TBase & MixinCtor<DataLoaderMixinInterface> {
   abstract class DataLoaderHost extends Base {
     /* ── Reactive state ────────────────────── */
 
@@ -196,8 +202,5 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
   // signature. See the Lit mixin guide (https://lit.dev/docs/composition/mixins/
   // #creating-a-mixin). This `as unknown as` cast is the documented escape
   // hatch and is whitelisted in `scripts/lint-no-cast-unknown.sh`.
-  return DataLoaderHost as unknown as TBase &
-    (abstract new (
-      ...args: any[]
-    ) => DataLoaderMixinInterface);
+  return DataLoaderHost as unknown as TBase & MixinCtor<DataLoaderMixinInterface>;
 }

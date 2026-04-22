@@ -286,6 +286,7 @@ export class VelgAchievementGrid extends LitElement {
 
     let globalIdx = 0;
     return sections.map((category) => {
+      // biome-ignore lint/style/noNonNullAssertion: `category` is filtered through `grouped.has(c)` two lines above, so `grouped.get(category)` is always defined here.
       const defs = grouped.get(category)!;
       const catTotal = this._definitions.filter((d) => d.category === category).length;
       const catEarned = defs.filter((d) => this._earnedIds.has(d.id)).length;

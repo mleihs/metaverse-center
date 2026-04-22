@@ -121,6 +121,7 @@ export function layoutDungeonMap(
 
   for (let layerIdx = 0; layerIdx < depths.length; layerIdx++) {
     const depth = depths[layerIdx];
+    // biome-ignore lint/style/noNonNullAssertion: `depth` iterates over `depths` which is `Array.from(byDepth.keys())`, so `byDepth.get(depth)` is always defined.
     const layer = byDepth.get(depth)!;
     layer.sort((a, b) => a.index - b.index);
 

@@ -347,6 +347,7 @@ export class ChatBubble extends LitElement {
     super.connectedCallback();
     // Adopt the shared highlight.js stylesheet into this shadow root.
     // Using adoptedStyleSheets avoids <style> duplication across instances.
+    // biome-ignore lint/style/noNonNullAssertion: Lit always attaches shadowRoot before connectedCallback runs (super.connectedCallback() line above triggers it).
     const root = this.shadowRoot!;
     if (!root.adoptedStyleSheets.includes(hljsStyleSheet)) {
       root.adoptedStyleSheets = [...root.adoptedStyleSheets, hljsStyleSheet];
