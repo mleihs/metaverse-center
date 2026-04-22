@@ -742,7 +742,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
               class="lobby-dungeon ${d.available ? 'lobby-dungeon--available' : 'lobby-dungeon--unavailable'}"
               role=${d.available ? 'button' : 'listitem'}
               tabindex=${d.available ? '0' : '-1'}
-              aria-label=${d.available ? msg('Enter') + ' ' + getArchetypeDisplayName(d.archetype) : ''}
+              aria-label=${d.available ? `${msg('Enter')} ${getArchetypeDisplayName(d.archetype)}` : ''}
               @click=${() =>
                 d.available &&
                 this._handleTerminalCommand(

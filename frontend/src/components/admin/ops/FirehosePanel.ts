@@ -174,7 +174,7 @@ export class VelgOpsFirehosePanel extends LitElement {
         },
         (payload) => {
           const row = payload.new as AiUsageLogRow | undefined;
-          if (!row || !row.id) return;
+          if (!row?.id) return;
           const entry = _rowToEntry(row);
           this._entries = [entry, ...this._entries].slice(0, MAX_ENTRIES);
         },
