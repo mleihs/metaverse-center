@@ -491,12 +491,16 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
       const recovered = await dungeonState.tryRecover();
 
       if (recovered) {
-        // Active dungeon found — sync terminal mode + acquire wake lock
-        terminalState.initializeDungeon(
-          dungeonState.runId.value!,
-          getArchetypeDisplayName(dungeonState.clientState.value?.archetype ?? ''),
-        );
-        await this._acquireWakeLock();
+        // Active dungeon found — sync terminal mode + acquire wake lock.
+        // tryRecover() guarantees runId is set when it returns truthy.
+        const runId = dungeonState.runId.value;
+        if (runId) {
+          terminalState.initializeDungeon(
+            runId,
+            getArchetypeDisplayName(dungeonState.clientState.value?.archetype ?? ''),
+          );
+          await this._acquireWakeLock();
+        }
       } else {
         // No active dungeon — load available archetypes for lobby
         await dungeonState.loadAvailable(sid);

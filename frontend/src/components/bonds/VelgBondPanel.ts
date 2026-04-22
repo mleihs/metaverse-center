@@ -402,17 +402,16 @@ export class VelgBondPanel extends LitElement {
   }
 
   private async _markVisibleWhispersRead() {
-    if (!this._detail) return;
-    const unread = this._detail.recent_whispers.filter((w: Whisper) => !w.read_at);
+    const detail = this._detail;
+    if (!detail) return;
+    const unread = detail.recent_whispers.filter((w: Whisper) => !w.read_at);
     if (!unread.length) return;
 
     const now = new Date().toISOString();
-    await Promise.all(unread.map((w) => bondsApi.markWhisperRead(this._detail!.id, w.id)));
+    await Promise.all(unread.map((w) => bondsApi.markWhisperRead(detail.id, w.id)));
     this._detail = {
-      ...this._detail,
-      recent_whispers: this._detail.recent_whispers.map((w) =>
-        w.read_at ? w : { ...w, read_at: now },
-      ),
+      ...detail,
+      recent_whispers: detail.recent_whispers.map((w) => (w.read_at ? w : { ...w, read_at: now })),
       unread_count: 0,
     };
     this._loadBonds();

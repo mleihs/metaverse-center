@@ -613,7 +613,7 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
     restArgs.length >= 2 &&
     BIG_FIVE.has(restArgs[restArgs.length - 1].toLowerCase())
   ) {
-    dimension = restArgs.pop()!.toLowerCase();
+    dimension = restArgs.pop()?.toLowerCase();
   }
 
   const agentNameInput = restArgs.join(' ').toLowerCase();
@@ -623,10 +623,10 @@ async function handleDungeonAssign(ctx: CommandContext): Promise<TerminalLine[]>
     .filter((a) => a.condition !== 'captured')
     .map((a) => a.agent_name);
   const matchedName = fuzzyName(agentNameInput, operationalNames);
-  if (!matchedName) {
+  const agent = matchedName ? state.party.find((a) => a.agent_name === matchedName) : undefined;
+  if (!agent) {
     return [errorLine(msg('Agent not found or captured.'))];
   }
-  const agent = state.party.find((a) => a.agent_name === matchedName)!;
 
   // For personality_modifier items: dimension is required (player choice
   // or auto-extracted from effect_params.trait on the backend).
@@ -747,14 +747,12 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
 
   // Auto-select best agent for skill check (if check_aptitude specified)
   let agentId: string | undefined;
-  if (choice.check_aptitude) {
+  const aptitudeKey = choice.check_aptitude;
+  if (aptitudeKey) {
     const party = dungeonState.party.value;
     const candidates = party
       .filter((a) => a.condition !== 'captured')
-      .sort(
-        (a, b) =>
-          (b.aptitudes[choice.check_aptitude!] ?? 0) - (a.aptitudes[choice.check_aptitude!] ?? 0),
-      );
+      .sort((a, b) => (b.aptitudes[aptitudeKey] ?? 0) - (a.aptitudes[aptitudeKey] ?? 0));
     agentId = candidates[0]?.agent_id;
   }
 
@@ -862,10 +860,12 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
   // Step 1: agent (cap prefix length to leave room for ability)
   const agentNames = party.map((a) => a.agent_name);
   const agentResult = resolveToken(ctx.args, agentNames, Math.min(ctx.args.length - 1, 3));
-  if (!agentResult.match) {
+  const agent = agentResult.match
+    ? party.find((a) => a.agent_name === agentResult.match)
+    : undefined;
+  if (!agent) {
     return [errorLine(`${msg('Unknown agent')}: ${ctx.args[0]}`)];
   }
-  const agent = party.find((a) => a.agent_name === agentResult.match)!;
 
   // Step 2: ability
   if (agentResult.rest.length === 0) {
@@ -875,12 +875,12 @@ function handleDungeonAttack(ctx: CommandContext): TerminalLine[] {
     .filter((a) => a.cooldown_remaining === 0)
     .map((a) => localized(a, 'name'));
   const abilityResult = resolveToken(agentResult.rest, abilityNames);
-  if (!abilityResult.match) {
+  const ability = abilityResult.match
+    ? agent.available_abilities.find((a) => localized(a, 'name') === abilityResult.match)
+    : undefined;
+  if (!ability) {
     return [errorLine(`${msg('Unknown or unavailable ability')}: ${agentResult.rest.join(' ')}`)];
   }
-  const ability = agent.available_abilities.find(
-    (a) => localized(a, 'name') === abilityResult.match,
-  )!;
 
   // Step 3: target (remainder — already multi-word via resolveToken)
   let targetId: string | undefined;

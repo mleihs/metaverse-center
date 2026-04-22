@@ -2062,21 +2062,21 @@ export class VelgForgeCeremony extends LitElement {
                 ? html`<span class="ceremony__lore-title">${this._progress.lore_progress.section_title}</span>`
                 : nothing
             }
-            ${
-              this._progress.lore_progress.phase === 'translating' &&
-              (this._progress.lore_progress.total ?? 0) > 0
-                ? html`
+            ${(() => {
+              const total = this._progress.lore_progress.total ?? 0;
+              if (this._progress.lore_progress.phase !== 'translating' || total <= 0)
+                return nothing;
+              return html`
               <div class="ceremony__lore-dots" aria-hidden="true">
-                ${Array.from({ length: this._progress.lore_progress.total! }, (_, i) => {
+                ${Array.from({ length: total }, (_, i) => {
                   const current = this._progress?.lore_progress?.current ?? 0;
                   const isDone = i + 1 < current;
                   const isActive = i + 1 === current;
                   return html`<div class="ceremony__lore-dot ${isDone ? 'ceremony__lore-dot--done' : ''} ${isActive ? 'ceremony__lore-dot--active' : ''}"></div>`;
                 })}
               </div>
-            `
-                : nothing
-            }
+            `;
+            })()}
           </div>
         `
             : nothing
