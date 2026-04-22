@@ -20,11 +20,14 @@
  *      better a11y at equivalent implementation cost.
  *
  *   2. No client-side resonance detector. The backend owns the rule
- *      set; duplicating it here would invite sync drift. During
- *      drafting the canvas renders NO connection lines — the lines
- *      draw only on crystallize. This aligns with Principle 1
- *      ("proximity encodes resonance before lines make it explicit")
- *      and Principle 5 ("juxtaposition must earn itself").
+ *      set; duplicating it here would invite sync drift. Pair-level
+ *      matches ride along on every constellation response as
+ *      `pair_matches` (P3 addition) — the canvas just draws them.
+ *      Drafting shows dim lines with verb labels to confirm detected
+ *      resonances as the player composes; crystallized shows them in
+ *      full amber. Principle 1 ("proximity encodes resonance before
+ *      lines make it explicit") is respected via the dim register —
+ *      the eye still finds the cluster before reading the word.
  *
  *   3. Transform is applied to the fragment leaf-wrapper, never the
  *      canvas container. CLAUDE.md forbids `filter`, `transform`,
@@ -34,11 +37,12 @@
  *      laying out correctly). The canvas container uses only `position:
  *      relative`; transforms live on the .card-wrap leaf.
  *
- *   4. Connection lines chain fragments in placed_at order. A minimum
- *      spanning tree would require knowing which pairs the server
- *      considers resonant, and the detector only returns an aggregate
- *      type. A placement-order chain is deterministic, requires no
- *      server changes, and conveys the arc of composition.
+ *   4. Connection lines draw from backend-computed pair_matches
+ *      (P3). Each unordered pair that triggered a rule emits one
+ *      ResonancePair entry with its resonance type + evidence tags;
+ *      we render one `<g>` per entry, using Lit's repeat() key to
+ *      keep existing pairs stable across pointer-throttled rerenders
+ *      while newly-detected pairs mount with a draw-in animation.
  *
  *   5. Position updates during drag are rAF-throttled and reflected
  *      through a `_positionOverrides` Map. On pointerup we POST /place
@@ -49,15 +53,19 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import { journalApi } from '../../services/api/index.js';
 import type {
+  Attunement,
   Constellation,
   ConstellationFragmentPlacement,
   Fragment,
   FragmentType,
+  ResonancePair,
+  ResonanceType,
 } from '../../services/api/JournalApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
@@ -87,6 +95,19 @@ const TYPE_LABELS: Record<FragmentType, () => string> = {
   impression: () => msg('Impression'),
   mark: () => msg('Mark'),
   tremor: () => msg('Tremor'),
+};
+
+/**
+ * Resonance-type → verb mapping for mid-line labels (design-direction
+ * §3.3, Kinopio pattern). Each line shows ONE word that names the
+ * relation; the word is the relation, not a description of it — same
+ * principle as the Insight aphorism.
+ */
+const RESONANCE_VERB: Record<ResonanceType, () => string> = {
+  archetype: () => msg('anchors'),
+  emotional: () => msg('echoes'),
+  temporal: () => msg('returns'),
+  contradiction: () => msg('contradicts'),
 };
 
 interface DragState {
@@ -318,17 +339,37 @@ export class VelgConstellationCanvas extends LitElement {
       overflow: visible;
     }
 
+    .line-pair {
+      /* Draw-in microanimation on mount. rAF handles repositioning via
+         pointer-throttled rerenders; the opacity+slide plays once per
+         freshly-keyed pair (Lit's repeat() key keeps existing lines
+         mounted across drag reflows, so this fires only when a new
+         resonance detection crosses in or when a pair's resonance type
+         changes). 280ms matches design-direction §6 "confirmation, not
+         announcement." */
+      animation: line-pair-in 280ms var(--ease-out) both;
+    }
+
+    @keyframes line-pair-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
     .line {
       fill: none;
       stroke: var(--_accent-dim);
       stroke-width: 1.5;
       stroke-linecap: round;
-      /* Draw-in via stroke-dasharray / stroke-dashoffset, set per-path. */
       transition: stroke var(--transition-normal);
     }
 
-    .line--active {
+    .lines.line-group--active .line {
       stroke: var(--_accent);
+      stroke-width: 1.75;
     }
 
     .line__label {
@@ -337,12 +378,24 @@ export class VelgConstellationCanvas extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       fill: var(--color-text-muted);
+      /* Mid-line verb label (Kinopio pattern, design-direction §3.3).
+         Fades in at 60% of the line draw (~170ms in) so the eye finds
+         the line first, then the word names the relation. */
       opacity: 0;
-      transition: opacity var(--transition-normal);
+      animation: line-label-in 160ms var(--ease-out) 170ms both;
     }
 
-    .line__label--visible {
-      opacity: 1;
+    .lines.line-group--active .line__label {
+      fill: color-mix(in srgb, var(--color-text-primary) 70%, transparent);
+    }
+
+    @keyframes line-label-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
 
     /* ── Fragment card on canvas (leaf-wrapper — transform OK) ────── */
@@ -633,7 +686,10 @@ export class VelgConstellationCanvas extends LitElement {
       .card-wrap,
       .card,
       .line,
-      .line__label {
+      .line__label,
+      .line-pair {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
         transition-duration: 0.01ms !important;
       }
     }
@@ -666,6 +722,7 @@ export class VelgConstellationCanvas extends LitElement {
   @state() private _nameDraft = '';
   @state() private _crystallizing = false;
   @state() private _revealing = false;
+  @state() private _newlyUnlockedAttunement: Attunement | null = null;
   @state() private _announcement = '';
   @state() private _canvasSize: { w: number; h: number } = { w: 0, h: 0 };
 
@@ -1042,8 +1099,15 @@ export class VelgConstellationCanvas extends LitElement {
         }
         return;
       }
-      this._constellation = resp.data;
-      this._announcement = msg('Constellation crystallized.');
+      // Server returns CrystallizeResult (P3): constellation +
+      // optional newly_unlocked_attunement. The unlock field is null
+      // when the user already held the attunement — the reveal then
+      // skips the flourish and runs as a pure Insight ceremony.
+      this._constellation = resp.data.constellation;
+      this._newlyUnlockedAttunement = resp.data.newly_unlocked_attunement;
+      this._announcement = this._newlyUnlockedAttunement
+        ? msg('Constellation crystallized, attunement awakens.')
+        : msg('Constellation crystallized.');
     } catch (err) {
       captureError(err, { source: 'VelgConstellationCanvas._crystallize' });
       this._revealing = false;
@@ -1055,6 +1119,8 @@ export class VelgConstellationCanvas extends LitElement {
 
   private _onRevealComplete(): void {
     this._revealing = false;
+    // Clear so the ceremony does not resurface if the canvas re-renders.
+    this._newlyUnlockedAttunement = null;
   }
 
   // ── Move dialog (a11y) ──────────────────────────────────────────────
@@ -1095,42 +1161,74 @@ export class VelgConstellationCanvas extends LitElement {
     }
   }
 
-  // ── Connection lines (crystallized only) ────────────────────────────
+  // ── Connection lines (pair-level, P3) ───────────────────────────────
 
+  /**
+   * Reads the backend-computed pair_matches on the constellation —
+   * zero client-side rule duplication. Both drafting and crystallized
+   * state render lines; the visual register differs (dim amber for
+   * drafts, full amber for crystallized) so drafting still respects
+   * Principle 1 (the lines hint without declaring). Each new pair
+   * fades + draws in via a keyed mount; Lit's repeat() key keeps
+   * existing lines stable across placements.
+   */
   private _renderLines() {
     if (!this._constellation) return '';
-    // Lines only on crystallized state — Principle 1 says proximity
-    // encodes resonance BEFORE lines make it explicit; drafts stay
-    // unmarked so the player reads the arrangement first.
-    if (this._constellation.status !== 'crystallized') return '';
     const { w, h } = this._canvasSize;
     if (w === 0 || h === 0) return '';
+    const pairs = this._constellation.pair_matches ?? [];
+    if (pairs.length === 0) return '';
+
     const cx = w / 2;
     const cy = h / 2;
-    const placed = [...this._constellation.fragments].sort((a, b) => {
-      const at = a.placed_at ?? '';
-      const bt = b.placed_at ?? '';
-      return at.localeCompare(bt);
-    });
-    if (placed.length < 2) return '';
-    const segments = [];
-    for (let i = 1; i < placed.length; i += 1) {
-      const a = placed[i - 1];
-      const b = placed[i];
-      const ax = a.position_x + cx;
-      const ay = a.position_y + cy;
-      const bx = b.position_x + cx;
-      const by = b.position_y + cy;
-      // Cubic bezier with control points offset horizontally by |dx|/2 —
-      // yields a gentle S-curve for horizontally offset endpoints, near-
-      // straight when vertically stacked. Design-direction §6.
-      const dx = Math.abs(bx - ax) * 0.5;
-      const d = `M ${ax},${ay} C ${ax + dx},${ay} ${bx - dx},${by} ${bx},${by}`;
-      segments.push(html`<path class="line line--active" d=${d}></path>`);
+    const posById = new Map<string, { x: number; y: number }>();
+    for (const p of this._constellation.fragments) {
+      const override = this._positionOverrides.get(p.fragment_id);
+      const x = (override?.x ?? p.position_x) + cx;
+      const y = (override?.y ?? p.position_y) + cy;
+      posById.set(p.fragment_id, { x, y });
     }
+
+    const isCrystallized = this._constellation.status === 'crystallized';
+    const stateClass = isCrystallized ? 'line-group--active' : 'line-group--draft';
+
+    const keyOf = (pair: ResonancePair): string =>
+      `${pair.fragment_a_id}::${pair.fragment_b_id}::${pair.resonance_type}`;
+
+    const renderPair = (pair: ResonancePair) => {
+      const a = posById.get(pair.fragment_a_id);
+      const b = posById.get(pair.fragment_b_id);
+      if (!a || !b) return svg``;
+      const dx = Math.abs(b.x - a.x) * 0.5;
+      const d = `M ${a.x},${a.y} C ${a.x + dx},${a.y} ${b.x - dx},${b.y} ${b.x},${b.y}`;
+      const midX = (a.x + b.x) / 2;
+      // Offset label 10px above the curve midpoint to avoid overlap.
+      const midY = (a.y + b.y) / 2 - 10;
+      // Defensive: if a future backend type lands ahead of the frontend
+      // enum, fall back to the raw string rather than crashing on
+      // undefined().call(). Still user-legible even if slightly off-tone.
+      const verb = RESONANCE_VERB[pair.resonance_type]?.() ?? pair.resonance_type;
+      const typeMod = `line-pair--${pair.resonance_type}`;
+      return svg`
+        <g class="line-pair ${typeMod}">
+          <path class="line" d=${d}></path>
+          <text
+            class="line__label"
+            x=${midX}
+            y=${midY}
+            text-anchor="middle"
+          >${verb}</text>
+        </g>
+      `;
+    };
+
     return html`
-      <svg class="lines" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        ${segments}
+      <svg
+        class="lines ${stateClass}"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        ${repeat(pairs, keyOf, renderPair)}
       </svg>
     `;
   }
@@ -1423,6 +1521,7 @@ export class VelgConstellationCanvas extends LitElement {
               <velg-insight-reveal
                 .insight=${this._insightText() ?? ''}
                 .active=${this._revealing}
+                .attunement=${this._newlyUnlockedAttunement}
                 @reveal-complete=${this._onRevealComplete}
               ></velg-insight-reveal>
             `
