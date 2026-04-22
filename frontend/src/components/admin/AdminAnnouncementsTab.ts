@@ -18,6 +18,7 @@ import { alphaStatus } from '../../services/AlphaStatusService.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
+import { fieldRowStyles } from '../shared/field-row-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 const KEY_ENABLED = 'alpha_first_contact_modal_enabled';
@@ -29,6 +30,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
   static styles = [
     adminButtonStyles,
     adminLoadingStyles,
+    fieldRowStyles,
     css`
       :host {
         display: block;
@@ -59,17 +61,24 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         margin: 0 0 var(--space-4, 16px);
       }
 
-      .row {
-        display: flex;
-        align-items: center;
+      /* Row layout (display:flex + align:center) comes from
+         fieldRowStyles (.field-row--inline). Local overrides scoped via
+         .announcement-row: wider gap (space-4 vs shared space-3),
+         flex-wrap:wrap so 3-item rows flow on narrow screens, and
+         margin-bottom spacing between rows (last child flush). Label /
+         value chrome stays local: label uses tracking-wide + min-width
+         (shared --muted variant uses tracking-wide too but adds bold +
+         line-height that diverge from this tab's inherited styles). */
+
+      .announcement-row {
         gap: var(--space-4, 16px);
         flex-wrap: wrap;
         margin-bottom: var(--space-3, 12px);
       }
 
-      .row:last-child { margin-bottom: 0; }
+      .announcement-row:last-child { margin-bottom: 0; }
 
-      .row__label {
+      .announcement-row__label {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
@@ -78,7 +87,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         min-width: 96px;
       }
 
-      .row__value {
+      .announcement-row__value {
         font-family: var(--font-mono);
         font-size: var(--text-sm);
         color: var(--color-text-primary);
@@ -239,8 +248,8 @@ export class VelgAdminAnnouncementsTab extends LitElement {
           )}
         </p>
 
-        <div class="row">
-          <span class="row__label">${msg('Status')}</span>
+        <div class="field-row field-row--inline announcement-row">
+          <span class="announcement-row__label">${msg('Status')}</span>
           <label class="toggle">
             <input
               type="checkbox"
@@ -257,9 +266,9 @@ export class VelgAdminAnnouncementsTab extends LitElement {
           </span>
         </div>
 
-        <div class="row">
-          <span class="row__label">${msg('Version')}</span>
-          <span class="row__value">${this._version || msg('(unset)')}</span>
+        <div class="field-row field-row--inline announcement-row">
+          <span class="announcement-row__label">${msg('Version')}</span>
+          <span class="announcement-row__value">${this._version || msg('(unset)')}</span>
           <button
             class="btn btn--reset"
             ?disabled=${this._saving}
@@ -268,8 +277,8 @@ export class VelgAdminAnnouncementsTab extends LitElement {
           >${msg('Bump version')}</button>
         </div>
 
-        <div class="row">
-          <span class="row__label">${msg('Preview')}</span>
+        <div class="field-row field-row--inline announcement-row">
+          <span class="announcement-row__label">${msg('Preview')}</span>
           <button
             class="btn btn--save"
             ?disabled=${this._saving}

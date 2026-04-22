@@ -163,6 +163,15 @@ export class VelgAdminHeartbeatTab extends LitElement {
       }
 
       /* ── Config Grid ─────────────────────── */
+      /* Intentionally NOT migrated to shared fieldRowCardStyles. The card
+         here is a composite data-readout widget (label on the left, colored
+         value badge on the right via __header, optional input row below)
+         whose chrome diverges from the generic "label + description + input"
+         primitive: 3px brutalist border (vs shared 1px), surface-raised
+         background (vs surface), asymmetric padding (12px/16px vs uniform
+         16px), and __value has enabled/disabled color variants the shared
+         module doesn't provide. Forcing a migration would require four
+         local overrides for three shared props — zero net deduplication. */
 
       .config-grid {
         display: grid;

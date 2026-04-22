@@ -16,6 +16,7 @@ import { captureError } from '../../services/SentryService.js';
 import { formatDateTimeShort } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
+import { fieldRowDividerStyles, fieldRowStyles } from '../shared/field-row-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgToggle.js';
@@ -125,6 +126,8 @@ export class VelgAdminInstagramTab extends LitElement {
     adminDispatchStyles,
     adminBadgeStyles,
     adminActionStyles,
+    fieldRowStyles,
+    fieldRowDividerStyles,
     css`
     :host {
       display: block;
@@ -753,30 +756,23 @@ export class VelgAdminInstagramTab extends LitElement {
       color: var(--color-text-muted);
     }
 
-    /* Config rows */
-    .config-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-3);
+    /* Row layout + dividers + label-group + --disabled come from
+       fieldRowStyles / fieldRowDividerStyles. Local overrides scoped via
+       .instagram-row: tighter vertical padding (space-2 vs --divided's
+       space-4 default), z-index:1 so the .config-card::after scanline
+       overlay (positioned above with pointer-events:none) does not mask
+       row content, and 30%-opacity divider (subtler than shared 50%) to
+       match the cipher panel's atmospheric intent. .config-row__name
+       keeps its 0.06em letter-spacing (shared uses tracking-widest = 0.1em)
+       and .config-row__desc keeps its 280px max-width + 9px font-size. */
+
+    .field-row.instagram-row {
       padding: var(--space-2) 0;
-      position: relative;
       z-index: 1;
     }
 
-    .config-row + .config-row {
-      border-top: 1px solid color-mix(in srgb, var(--color-border) 30%, transparent);
-    }
-
-    .config-row--disabled {
-      opacity: 0.35;
-      pointer-events: none;
-    }
-
-    .config-row__label {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .field-row--divided.instagram-row {
+      border-bottom-color: color-mix(in srgb, var(--color-border) 30%, transparent);
     }
 
     .config-row__name {
@@ -2210,8 +2206,8 @@ export class VelgAdminInstagramTab extends LitElement {
             </span>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided instagram-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">
                 ${msg('Cipher Enabled')}
                 ${renderInfoBubble(msg('When enabled, every generated Instagram draft receives a unique unlock code. Followers decode the cipher hint in the caption (or image) and enter the code at /bureau/dispatch to claim a reward.'))}
@@ -2221,8 +2217,8 @@ export class VelgAdminInstagramTab extends LitElement {
             ${this._renderToggle('instagram_cipher_enabled', c.cipher_enabled)}
           </div>
 
-          <div class="config-row ${c.cipher_enabled ? '' : 'config-row--disabled'}">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided instagram-row ${c.cipher_enabled ? '' : 'field-row--disabled'}">
+            <div class="field-row__label-group">
               <div class="config-row__name">
                 ${msg('Difficulty')}
                 ${renderInfoBubble(msg('Easy: Base64-encoded code (simple decode). Medium: Caesar-shifted then Base64 (ROT-13 puzzle). Hard: Reversed, Caesar-shifted, then Base64 (multi-step decode). Higher difficulty = fewer successful redemptions but more engaged players.'))}
@@ -2232,8 +2228,8 @@ export class VelgAdminInstagramTab extends LitElement {
             ${this._renderSegmented('instagram_cipher_difficulty', c.cipher_difficulty, DIFFICULTY_OPTIONS)}
           </div>
 
-          <div class="config-row ${c.cipher_enabled ? '' : 'config-row--disabled'}">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided instagram-row ${c.cipher_enabled ? '' : 'field-row--disabled'}">
+            <div class="field-row__label-group">
               <div class="config-row__name">
                 ${msg('Hint Format')}
                 ${renderInfoBubble(msg('Footer: cipher hint appended at the end of the caption. Caption: hint inserted inline before the ADDENDUM section. Steganographic: hint rendered as faint rotated text in the composed image – caption only shows a "decode at" notice.'))}
@@ -2255,8 +2251,8 @@ export class VelgAdminInstagramTab extends LitElement {
             </span>
           </div>
 
-          <div class="config-row">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided instagram-row">
+            <div class="field-row__label-group">
               <div class="config-row__name">
                 ${msg('Auto-Schedule')}
                 ${renderInfoBubble(msg('When enabled, the scheduler automatically publishes approved posts at the configured interval. When disabled, posts must be manually force-published from the Operations tab.'))}
@@ -2266,8 +2262,8 @@ export class VelgAdminInstagramTab extends LitElement {
             ${this._renderToggle('instagram_auto_schedule', c.auto_schedule)}
           </div>
 
-          <div class="config-row ${c.auto_schedule ? '' : 'config-row--disabled'}">
-            <div class="config-row__label">
+          <div class="field-row field-row--inline field-row--apart field-row--divided instagram-row ${c.auto_schedule ? '' : 'field-row--disabled'}">
+            <div class="field-row__label-group">
               <div class="config-row__name">
                 ${msg('Publish Interval')}
                 ${renderInfoBubble(msg('Minimum hours between automated publications (1-168). The scheduler picks the next approved post from the queue. Lower values = more frequent posts. Instagram recommends 1-2 posts per day for optimal engagement.'))}

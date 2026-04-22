@@ -11,6 +11,8 @@ import {
   signatureLabel as sigLabel,
 } from '../../utils/resonance-labels.js';
 
+import { fieldRowStyles } from '../shared/field-row-styles.js';
+
 import '../shared/BaseModal.js';
 
 const SOURCE_CATEGORY_KEYS: SourceCategory[] = [
@@ -27,7 +29,9 @@ const SOURCE_CATEGORY_KEYS: SourceCategory[] = [
 @localized()
 @customElement('velg-admin-resonance-form-modal')
 export class VelgAdminResonanceFormModal extends LitElement {
-  static styles = css`
+  static styles = [
+    fieldRowStyles,
+    css`
     :host {
       display: block;
     }
@@ -42,24 +46,13 @@ export class VelgAdminResonanceFormModal extends LitElement {
       gap: var(--space-4);
     }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-    }
+    /* Field-row layout + label styling come from fieldRowStyles
+       (.field-row--stacked + .field-row__label--secondary). Input chrome
+       below is local (form-input styling is not field-row's concern). */
 
-    .field__label {
-      font-family: var(--font-brutalist);
-      font-size: var(--text-xs);
-      font-weight: var(--font-bold);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-secondary);
-    }
-
-    .field__input,
-    .field__select,
-    .field__textarea {
+    .resonance-input,
+    .resonance-select,
+    .resonance-textarea {
       padding: var(--space-2) var(--space-3);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
@@ -69,20 +62,20 @@ export class VelgAdminResonanceFormModal extends LitElement {
       transition: border-color 0.2s ease;
     }
 
-    .field__input:focus,
-    .field__select:focus,
-    .field__textarea:focus {
+    .resonance-input:focus,
+    .resonance-select:focus,
+    .resonance-textarea:focus {
       outline: none;
       border-color: var(--color-info);
       box-shadow: 0 0 0 1px var(--color-info);
     }
 
-    .field__textarea {
+    .resonance-textarea {
       min-height: 80px;
       resize: vertical;
     }
 
-    .field__textarea--mono {
+    .resonance-textarea--mono {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       line-height: 1.5;
@@ -223,7 +216,8 @@ export class VelgAdminResonanceFormModal extends LitElement {
       color: var(--color-text-inverse);
       border-color: var(--color-info);
     }
-  `;
+  `,
+  ];
 
   @property({ type: Object }) resonance: Resonance | null = null;
 
@@ -330,10 +324,10 @@ export class VelgAdminResonanceFormModal extends LitElement {
             this._isEdit
               ? nothing
               : html`
-            <div class="field">
-              <label class="field__label">${msg('Source Category')}</label>
+            <div class="field-row field-row--stacked">
+              <label class="field-row__label field-row__label--secondary">${msg('Source Category')}</label>
               <select
-                class="field__select"
+                class="resonance-select"
                 .value=${this._category}
                 @change=${(e: Event) => {
                   this._category = (e.target as HTMLSelectElement).value as SourceCategory;
@@ -362,10 +356,10 @@ export class VelgAdminResonanceFormModal extends LitElement {
           `
           }
 
-          <div class="field">
-            <label class="field__label">${msg('Title')}</label>
+          <div class="field-row field-row--stacked">
+            <label class="field-row__label field-row__label--secondary">${msg('Title')}</label>
             <input
-              class="field__input"
+              class="resonance-input"
               type="text"
               .value=${this._title}
               @input=${(e: Event) => {
@@ -375,10 +369,10 @@ export class VelgAdminResonanceFormModal extends LitElement {
             />
           </div>
 
-          <div class="field">
-            <label class="field__label">${msg('Description')}</label>
+          <div class="field-row field-row--stacked">
+            <label class="field-row__label field-row__label--secondary">${msg('Description')}</label>
             <textarea
-              class="field__textarea"
+              class="resonance-textarea"
               .value=${this._description}
               @input=${(e: Event) => {
                 this._description = (e.target as HTMLTextAreaElement).value;
@@ -387,10 +381,10 @@ export class VelgAdminResonanceFormModal extends LitElement {
             ></textarea>
           </div>
 
-          <div class="field">
-            <label class="field__label">${msg('Bureau Dispatch')}</label>
+          <div class="field-row field-row--stacked">
+            <label class="field-row__label field-row__label--secondary">${msg('Bureau Dispatch')}</label>
             <textarea
-              class="field__textarea field__textarea--mono"
+              class="resonance-textarea resonance-textarea--mono"
               .value=${this._bureauDispatch}
               @input=${(e: Event) => {
                 this._bureauDispatch = (e.target as HTMLTextAreaElement).value;
@@ -399,8 +393,8 @@ export class VelgAdminResonanceFormModal extends LitElement {
             ></textarea>
           </div>
 
-          <div class="field magnitude-field">
-            <label class="field__label">${msg('Magnitude')}</label>
+          <div class="magnitude-field">
+            <label class="field-row__label field-row__label--secondary">${msg('Magnitude')}</label>
             <div class="magnitude-row">
               <input
                 class="magnitude-slider"
@@ -419,10 +413,10 @@ export class VelgAdminResonanceFormModal extends LitElement {
             </div>
           </div>
 
-          <div class="field">
-            <label class="field__label">${msg('Impacts At')}</label>
+          <div class="field-row field-row--stacked">
+            <label class="field-row__label field-row__label--secondary">${msg('Impacts At')}</label>
             <input
-              class="field__input"
+              class="resonance-input"
               type="datetime-local"
               .value=${this._impactsAt}
               @input=${(e: Event) => {

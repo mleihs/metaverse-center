@@ -50,6 +50,7 @@ import type { PlatformSetting } from '../../../types/index.js';
 import { icons } from '../../../utils/icons.js';
 import { buttonStyles } from '../../shared/button-styles.js';
 import { VelgConfirmDialog } from '../../shared/ConfirmDialog.js';
+import { fieldRowDividerStyles, fieldRowStyles } from '../../shared/field-row-styles.js';
 import { numberInputStyles } from '../../shared/form-styles.js';
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/BaseModal.js';
@@ -84,11 +85,12 @@ type ModalState = 'loading' | 'loaded' | 'error';
 export class VelgOrphanSweeperSettingsModal extends LitElement {
   static styles = [
     buttonStyles,
+    fieldRowStyles,
+    fieldRowDividerStyles,
     numberInputStyles,
     css`
     :host {
       --_accent: var(--color-accent-amber);
-      --_divider: color-mix(in srgb, var(--color-border) 70%, transparent);
       display: block;
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
@@ -101,47 +103,9 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       margin: 0 0 var(--space-4);
     }
 
-    .field {
-      display: grid;
-      grid-template-columns: minmax(140px, 180px) 1fr;
-      gap: var(--space-4);
-      align-items: start;
-      padding: var(--space-4) 0;
-      border-bottom: 1px dashed var(--_divider);
-    }
-
-    .field:last-of-type {
-      border-bottom: none;
-    }
-
-    .field__label {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      color: var(--color-text-primary);
-      line-height: 1.4;
-    }
-
-    .field__hint {
-      display: block;
-      margin-top: var(--space-1);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--color-text-muted);
-      text-transform: none;
-      letter-spacing: normal;
-      font-weight: var(--font-normal);
-      line-height: 1.5;
-    }
-
-    .field__control {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      flex-wrap: wrap;
-    }
+    /* Field-row layout + divided/dashed separators come from
+       fieldRowStyles + fieldRowDividerStyles (shared module). Local
+       CSS below is only the chrome unique to this modal. */
 
     /* ── Number input ──────────────────────────────────────────────── */
 
@@ -251,12 +215,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       flex-wrap: wrap;
     }
 
-    @media (max-width: 640px) {
-      .field {
-        grid-template-columns: 1fr;
-        gap: var(--space-2);
-      }
-    }
+    /* Mobile stacking handled by fieldRowStyles (shared module). */
 
     @media (prefers-reduced-motion: reduce) {
       .saved-tick,
@@ -601,12 +560,12 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
   ): TemplateResult {
     const tickVisible = savedKey !== null && this._savedKey === savedKey;
     return html`
-      <div class="field">
+      <div class="field-row field-row--divided field-row--dashed">
         <div>
-          <span class="field__label" id=${labelId}>${label}</span>
-          <span class="field__hint" id="${labelId}-hint">${hint}</span>
+          <span class="field-row__label" id=${labelId}>${label}</span>
+          <span class="field-row__hint" id="${labelId}-hint">${hint}</span>
         </div>
-        <div class="field__control">
+        <div class="field-row__control">
           ${control}
           ${
             savedKey !== null

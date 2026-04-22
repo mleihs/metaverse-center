@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { adminApi } from '../../services/api/index.js';
 import type { PlatformSetting } from '../../types/index.js';
 import { adminButtonStyles, adminLoadingStyles } from '../shared/admin-shared-styles.js';
+import { fieldRowCardStyles } from '../shared/field-row-styles.js';
 import { numberInputStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -94,6 +95,7 @@ export class VelgAdminCachingTab extends LitElement {
     adminLoadingStyles,
     infoBubbleStyles,
     numberInputStyles,
+    fieldRowCardStyles,
     css`
       :host {
         display: block;
@@ -108,46 +110,10 @@ export class VelgAdminCachingTab extends LitElement {
         margin-bottom: var(--space-6);
       }
 
-      .cache-card {
-        padding: var(--space-4);
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        transition:
-          border-color 0.2s ease,
-          box-shadow 0.2s ease;
-      }
-
-      .cache-card:hover {
-        border-color: var(--color-text-muted);
-      }
-
-      .cache-card--dirty {
-        border-color: var(--color-warning);
-        box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent);
-      }
-
-      .cache-card__label {
-        font-family: var(--font-brutalist);
-        font-size: var(--text-sm);
-        font-weight: var(--font-bold);
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wide);
-        color: var(--color-text-primary);
-        margin: 0 0 var(--space-2) 0;
-      }
-
-      .cache-card__description {
-        font-size: var(--text-xs);
-        color: var(--color-text-secondary);
-        line-height: 1.5;
-        margin: 0 0 var(--space-3) 0;
-      }
-
-      .cache-card__input-row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-      }
+      /* Card container + hover + --dirty state + __label / __description
+         / __input-row come from fieldRowCardStyles. Local: just the number
+         input chrome (__input / __unit / __default) that isn't part of the
+         shared primitive. */
 
       .cache-card__input {
         width: 90px;
@@ -284,10 +250,10 @@ export class VelgAdminCachingTab extends LitElement {
           const tip = tips[setting.setting_key];
 
           return html`
-            <div class="cache-card ${isDirty ? 'cache-card--dirty' : ''}">
-              <p class="cache-card__label">${m.label} ${tip ? renderInfoBubble(tip, `tip-${setting.setting_key}`) : nothing}</p>
-              <p class="cache-card__description">${m.description}</p>
-              <div class="cache-card__input-row">
+            <div class="field-row-card ${isDirty ? 'field-row-card--dirty' : ''}">
+              <p class="field-row-card__label">${m.label} ${tip ? renderInfoBubble(tip, `tip-${setting.setting_key}`) : nothing}</p>
+              <p class="field-row-card__description">${m.description}</p>
+              <div class="field-row-card__input-row">
                 <input
                   type="number"
                   class="cache-card__input"
