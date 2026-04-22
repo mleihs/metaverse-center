@@ -13,18 +13,20 @@
  */
 
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
 import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
+import { navigate } from '../../utils/navigation.js';
 
 type WizardStep = 0 | 1 | 2 | 3;
 
 @localized()
 @customElement('velg-onboarding-wizard')
-export class VelgOnboardingWizard extends LitElement {
+export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
   static styles = css`
     /* ── Overlay ── */
 
@@ -112,13 +114,48 @@ export class VelgOnboardingWizard extends LitElement {
     }
 
     .step-dot {
+      appearance: none;
+      font: inherit;
+      padding: 0;
+      margin: 0;
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: var(--color-border);
       border: 1px solid var(--color-border);
-      transition: all 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+      transition:
+        width 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+        height 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+        background 200ms,
+        border-color 200ms,
+        box-shadow 200ms,
+        transform 200ms;
       flex-shrink: 0;
+      position: relative;
+    }
+
+    .step-dot--nav {
+      cursor: pointer;
+    }
+
+    .step-dot--nav::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+    }
+
+    .step-dot--nav:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 6px var(--color-accent-amber-glow);
+    }
+
+    .step-dot--nav:focus-visible {
+      outline: 2px solid var(--color-accent-amber);
+      outline-offset: 3px;
+    }
+
+    .step-dot--nav:active {
+      transform: scale(0.9);
     }
 
     .step-dot--active {
@@ -630,6 +667,7 @@ export class VelgOnboardingWizard extends LitElement {
       padding: 18px 16px;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
+      box-sizing: border-box;
       cursor: pointer;
       transition: border-color 200ms, transform 200ms, box-shadow 200ms;
       opacity: 0;
@@ -707,6 +745,53 @@ export class VelgOnboardingWizard extends LitElement {
       transform: translateX(2px);
     }
 
+    /* ── Intent-aware primary CTA (Browse / Open Forge / Request Clearance) ── */
+
+    .mission-card--intent-primary {
+      position: relative;
+      border-color: var(--color-warning-border);
+      border-left: none;
+      animation: intent-reveal 420ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) 80ms both;
+    }
+
+    .mission-card--intent-primary::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: -1px;
+      bottom: -1px;
+      width: 3px;
+      background: var(--color-accent-amber);
+      transform: scaleY(0);
+      transform-origin: top;
+      animation: intent-accent-slide 280ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) 200ms forwards;
+    }
+
+    .mission-card--intent-primary:hover {
+      border-color: var(--color-accent-amber-dim, var(--color-accent-amber));
+      box-shadow: 0 2px 12px var(--color-primary-bg);
+    }
+
+    @keyframes intent-reveal {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes intent-accent-slide {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mission-card--intent-primary,
+      .mission-card--intent-primary::before {
+        animation: none;
+      }
+      .mission-card--intent-primary::before {
+        transform: scaleY(1);
+      }
+    }
+
     /* ── Responsive ── */
 
     @media (max-width: 480px) {
@@ -722,6 +807,13 @@ export class VelgOnboardingWizard extends LitElement {
   @state() private _step: WizardStep = 0;
   @state() private _direction: 'forward' | 'backward' = 'forward';
   @state() private _selectedPath: 'create' | 'browse' | 'skip' | null = null;
+  @state() private _intent: 'browse' | 'create' | null = null;
+
+  private _jumpToStep(target: WizardStep): void {
+    if (target >= this._step) return;
+    this._direction = 'backward';
+    this._step = target;
+  }
 
   private _goForward(): void {
     if (this._step < 3) {
@@ -755,16 +847,29 @@ export class VelgOnboardingWizard extends LitElement {
   private _handlePathSelect(path: 'create' | 'browse' | 'skip'): void {
     this._selectedPath = path;
 
-    if (path === 'create') {
+    if (path === 'create' || path === 'browse') {
+      this._intent = path;
       this.dispatchEvent(
-        new CustomEvent('onboarding-create-simulation', { bubbles: true, composed: true }),
+        new CustomEvent(
+          path === 'create' ? 'onboarding-create-simulation' : 'onboarding-browse',
+          { bubbles: true, composed: true },
+        ),
       );
-    } else if (path === 'browse') {
-      this.dispatchEvent(new CustomEvent('onboarding-browse', { bubbles: true, composed: true }));
+    } else {
+      this._intent = null;
     }
 
-    // Auto-advance after brief delay
     setTimeout(() => this._goForward(), 300);
+  }
+
+  private async _completeAndNavigate(target: string): Promise<void> {
+    appState.setOnboardingCompleted(true);
+    usersApi
+      .completeOnboarding()
+      .catch((err) => captureError(err, { source: 'VelgOnboardingWizard._completeAndNavigate' }));
+
+    this.dispatchEvent(new CustomEvent('onboarding-complete', { bubbles: true, composed: true }));
+    navigate(target);
   }
 
   private async _skipAll(): Promise<void> {
@@ -843,26 +948,52 @@ export class VelgOnboardingWizard extends LitElement {
   }
 
   private _renderStepIndicator() {
-    const steps = [0, 1, 2, 3] as const;
+    const steps: readonly { i: WizardStep; label: string }[] = [
+      { i: 0, label: msg('Welcome') },
+      { i: 1, label: msg('Your First World') },
+      { i: 2, label: msg('Systems Overview') },
+      { i: 3, label: msg('First Mission') },
+    ];
     return html`
       <div class="step-indicator" role="progressbar"
         aria-valuenow=${this._step + 1} aria-valuemin=${1} aria-valuemax=${4}
         aria-label=${msg('Onboarding progress')}
       >
-        ${steps.map(
-          (s, i) => html`
-          ${
-            i > 0
-              ? html`
-            <div class="step-connector ${s <= this._step ? 'step-connector--active' : ''}"></div>
-          `
-              : nothing
-          }
-          <div class="step-dot ${
-            s === this._step ? 'step-dot--active' : s < this._step ? 'step-dot--completed' : ''
-          }"></div>
-        `,
-        )}
+        ${steps.map(({ i: s, label }, idx) => {
+          const isActive = s === this._step;
+          const isCompleted = s < this._step;
+          const isNav = isCompleted;
+          const cls = [
+            'step-dot',
+            isActive ? 'step-dot--active' : '',
+            isCompleted ? 'step-dot--completed' : '',
+            isNav ? 'step-dot--nav' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          const dot = isNav
+            ? html`<button
+                type="button"
+                class=${cls}
+                aria-label=${msg(`Go back to step ${s + 1}: ${label}`)}
+                @click=${() => this._jumpToStep(s)}
+              ></button>`
+            : html`<div
+                class=${cls}
+                aria-current=${isActive ? 'step' : nothing}
+                aria-label=${label}
+              ></div>`;
+          return html`
+            ${
+              idx > 0
+                ? html`<div
+                    class=${`step-connector ${s <= this._step ? 'step-connector--active' : ''}`}
+                  ></div>`
+                : nothing
+            }
+            ${dot}
+          `;
+        })}
       </div>
     `;
   }
@@ -991,6 +1122,8 @@ export class VelgOnboardingWizard extends LitElement {
   }
 
   private _renderMission() {
+    const intentCta = this._resolveIntentCta();
+
     return html`
       <div class="mission">
         <h2 class="mission__heading">${msg('First Mission')}</h2>
@@ -999,9 +1132,29 @@ export class VelgOnboardingWizard extends LitElement {
         </p>
 
         <div class="mission-cards">
+          ${
+            intentCta
+              ? html`
+            <button
+              type="button"
+              class="mission-card mission-card--primary mission-card--intent-primary"
+              aria-label=${intentCta.ariaLabel}
+              @click=${intentCta.onClick}
+            >
+              <div class="mission-card__icon" aria-hidden="true">${intentCta.icon}</div>
+              <div class="mission-card__text">
+                <div class="mission-card__title">${intentCta.title}</div>
+                <div class="mission-card__desc">${intentCta.desc}</div>
+              </div>
+              <div class="mission-card__arrow" aria-hidden="true">${icons.chevronRight(14)}</div>
+            </button>
+          `
+              : nothing
+          }
+
           <button
             type="button"
-            class="mission-card mission-card--primary"
+            class=${intentCta ? 'mission-card' : 'mission-card mission-card--primary'}
             aria-label=${msg('Start Academy Epoch')}
             @click=${() => this._complete('academy')}
           >
@@ -1019,7 +1172,7 @@ export class VelgOnboardingWizard extends LitElement {
             aria-label=${msg('Explore on my own')}
             @click=${() => this._complete('explore')}
           >
-            <div class="mission-card__icon" aria-hidden="true">${icons.book(20)}</div>
+            <div class="mission-card__icon" aria-hidden="true">${icons.footprints(20)}</div>
             <div class="mission-card__text">
               <div class="mission-card__title">${msg('Explore on My Own')}</div>
               <div class="mission-card__desc">${msg('Head to the dashboard and discover at your own pace.')}</div>
@@ -1029,6 +1182,39 @@ export class VelgOnboardingWizard extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private _resolveIntentCta() {
+    if (this._intent === 'browse') {
+      return {
+        ariaLabel: msg('Browse existing shards'),
+        title: msg('Browse Shards'),
+        desc: msg('Head to the dashboard and discover active worlds.'),
+        icon: icons.compassRose(20),
+        onClick: () => this._completeAndNavigate('/dashboard'),
+      };
+    }
+
+    if (this._intent === 'create') {
+      if (appState.canForge.value) {
+        return {
+          ariaLabel: msg('Open the Simulation Forge'),
+          title: msg('Open the Forge'),
+          desc: msg('Shape your first world in the Forge.'),
+          icon: icons.sparkle(20),
+          onClick: () => this._completeAndNavigate('/forge'),
+        };
+      }
+      return {
+        ariaLabel: msg('Request Architect clearance for Forge access'),
+        title: msg('Request Clearance'),
+        desc: msg('Architect clearance required to shape new worlds. Apply now or bring your own key.'),
+        icon: icons.stampClassified(20),
+        onClick: () => this._completeAndNavigate('/forge'),
+      };
+    }
+
+    return null;
   }
 }
 

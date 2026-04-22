@@ -237,19 +237,33 @@ export class VelgApp extends LitElement {
       },
       {
         path: '/forge',
-        render: () => html`<velg-forge-wizard></velg-forge-wizard>`,
+        render: () =>
+          appState.canForge.value
+            ? html`<velg-forge-wizard></velg-forge-wizard>`
+            : html`<velg-forge-clearance-required></velg-forge-clearance-required>`,
         enter: async () => {
           const ok = await this._guardAuth();
           if (!ok) return false;
           if (!appState.canForge.value) {
-            this._router.goto('/dashboard');
-            return false;
+            if (
+              !(await this._lazy(
+                () => import('./components/forge/VelgForgeClearanceRequired.js'),
+              ))
+            )
+              return false;
+            seoService.setTitle(['Forge \u2013 Clearance Required']);
+            seoService.setDescription(
+              'Architect clearance is required to shape new worlds in the Forge.',
+            );
+            seoService.setCanonical('/forge');
+            analyticsService.trackPageView('/forge', document.title);
+            return true;
           }
           if (!(await this._lazy(() => import('./components/forge/VelgForgeWizard.js'))))
             return false;
           seoService.setTitle(['The Simulation Forge']);
           seoService.setDescription(
-            'Create new simulations with the Simulation Forge — design worlds, set parameters, and launch your game.',
+            'Create new simulations with the Simulation Forge \u2013 design worlds, set parameters, and launch your game.',
           );
           seoService.setCanonical('/forge');
           analyticsService.trackPageView('/forge', document.title);
@@ -1201,8 +1215,6 @@ export class VelgApp extends LitElement {
           .open=${true}
           @onboarding-complete=${this._handleOnboardingComplete}
           @onboarding-start-academy=${this._handleOnboardingAcademy}
-          @onboarding-create-simulation=${this._handleOnboardingCreateSim}
-          @onboarding-browse=${this._handleOnboardingBrowse}
         ></velg-onboarding-wizard>
       `
           : nothing
@@ -1231,17 +1243,6 @@ export class VelgApp extends LitElement {
         }
       })
       .catch((err) => captureError(err, { source: 'VelgApp._handleOnboardingAcademy' }));
-  }
-
-  private _handleOnboardingCreateSim(): void {
-    this._showOnboarding = false;
-    // CreateSimulationWizard is opened from the dashboard
-    navigate('/dashboard');
-  }
-
-  private _handleOnboardingBrowse(): void {
-    this._showOnboarding = false;
-    navigate('/dashboard');
   }
 }
 
