@@ -22,7 +22,6 @@ from backend.services.journal.constellation_service import (
 )
 from backend.services.journal.resonance_detector import ResonanceMatch, ResonanceType
 
-
 USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 SIM_ID = UUID("40000000-0000-0000-0000-000000000001")
 

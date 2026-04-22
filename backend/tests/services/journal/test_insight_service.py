@@ -20,7 +20,6 @@ from backend.models.journal import ConstellationResponse, FragmentResponse
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
     CreditExhaustedError,
-    OpenRouterError,
 )
 from backend.services.journal.insight_service import (
     InsightBlockedError,
@@ -30,7 +29,6 @@ from backend.services.journal.insight_service import (
     parse_insight_response,
 )
 from backend.services.journal.resonance_detector import ResonanceMatch, ResonanceType
-
 
 USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
