@@ -24,12 +24,12 @@ to the fragment storage backend.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 from enum import StrEnum
 
-from backend.models.journal import FragmentResponse
+from backend.models.journal import FragmentResponse, ResonancePair
 
 
 class ResonanceType(StrEnum):
@@ -206,6 +206,50 @@ def detect_pair(a: FragmentResponse, b: FragmentResponse) -> ResonanceMatch | No
     return None
 
 
+def _iter_pair_matches(
+    fragments: Sequence[FragmentResponse],
+) -> Iterator[tuple[int, int, ResonanceMatch]]:
+    """Yield ``(i, j, match)`` for every matching pair in upper-
+    triangle (``i < j``) order.
+
+    Shared helper for ``detect_all_pairs`` (needs the full list) and
+    ``detect_constellation`` (aggregates into one winner). Keeps the
+    O(n²) loop + priority rules in one place.
+    """
+    if len(fragments) < 2:
+        return
+    for i in range(len(fragments)):
+        for j in range(i + 1, len(fragments)):
+            match = detect_pair(fragments[i], fragments[j])
+            if match is not None:
+                yield i, j, match
+
+
+def detect_all_pairs(
+    fragments: Sequence[FragmentResponse],
+) -> list[ResonancePair]:
+    """Return every pair-level resonance match in the composition.
+
+    Unlike ``detect_constellation`` (which picks the one aggregate
+    winner), this returns one entry per matching unordered pair so the
+    UI can draw a connection line between each resonant pair. Each
+    pair is emitted exactly once — index ``i<j`` indexing avoids both
+    duplicates and self-pairs.
+
+    Pure function; no DB access. O(n²) bounded by the AD-3 cap of 12
+    fragments = 66 comparisons worst case.
+    """
+    return [
+        ResonancePair(
+            fragment_a_id=fragments[i].id,
+            fragment_b_id=fragments[j].id,
+            resonance_type=str(match.resonance_type),
+            evidence_tags=list(match.evidence_tags),
+        )
+        for i, j, match in _iter_pair_matches(fragments)
+    ]
+
+
 def detect_constellation(
     fragments: Sequence[FragmentResponse],
 ) -> ResonanceMatch | None:
@@ -219,25 +263,18 @@ def detect_constellation(
     Returns ``None`` for a solo or empty constellation, or when no
     pair matched any rule.
     """
-    if len(fragments) < 2:
-        return None
-
     best_type: ResonanceType | None = None
     best_priority = -1
     accumulated: set[str] = set()
 
-    for i in range(len(fragments)):
-        for j in range(i + 1, len(fragments)):
-            match = detect_pair(fragments[i], fragments[j])
-            if match is None:
-                continue
-            pri = _PRIORITY[match.resonance_type]
-            if pri > best_priority:
-                best_priority = pri
-                best_type = match.resonance_type
-                accumulated = set(match.evidence_tags)
-            elif pri == best_priority and match.resonance_type == best_type:
-                accumulated.update(match.evidence_tags)
+    for _i, _j, match in _iter_pair_matches(fragments):
+        pri = _PRIORITY[match.resonance_type]
+        if pri > best_priority:
+            best_priority = pri
+            best_type = match.resonance_type
+            accumulated = set(match.evidence_tags)
+        elif pri == best_priority and match.resonance_type == best_type:
+            accumulated.update(match.evidence_tags)
 
     if best_type is None:
         return None

@@ -1,8 +1,10 @@
-"""Resonance Journal endpoints -- fragments + constellations.
+"""Resonance Journal endpoints -- fragments + constellations + attunements.
 
-P0 shipped fragment list + detail. P2 adds the constellation surface:
-create, list, get, rename, archive, place / remove fragment, and
-crystallize (runs the rule-based detector, then the Insight LLM).
+P0 shipped fragment list + detail. P2 added the constellation surface
+(create, list, get, rename, archive, place / remove fragment,
+crystallize). P3 extends crystallize to return ``CrystallizeResult``
+(constellation + optional newly-unlocked attunement) and adds
+``GET /attunements`` for the catalog + per-user unlock state.
 
 The journal is USER-GLOBAL per AD-5 (plan §2): fragments carry an optional
 simulation_id for narrative grounding, but the default list is the user's
@@ -15,7 +17,7 @@ the journal exists above simulations. RLS enforces owner scoping
 rows belonging to other users are invisible even without an extra
 service-layer check.
 
-Attunement / palimpsest endpoints ship in P3-P4.
+Palimpsest endpoints ship in P4.
 """
 
 from __future__ import annotations
@@ -37,7 +39,13 @@ from backend.models.common import (
     PaginatedResponse,
     SuccessResponse,
 )
-from backend.models.journal import ConstellationResponse, FragmentResponse
+from backend.models.journal import (
+    AttunementCatalogEntry,
+    ConstellationResponse,
+    CrystallizeResult,
+    FragmentResponse,
+)
+from backend.services.journal.attunement_service import AttunementService
 from backend.services.journal.constellation_service import ConstellationService
 from backend.services.journal.fragment_service import FragmentService
 from backend.services.journal.insight_service import (
@@ -257,12 +265,18 @@ async def crystallize_constellation(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     admin: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse[ConstellationResponse]:
+) -> SuccessResponse[CrystallizeResult]:
     """Crystallize a drafting constellation.
 
     Runs the rule-based resonance detector on the composed fragments,
     then the research-tier LLM for the Insight, then commits the
-    crystallized state + Insight + resonance type in one atomic write.
+    crystallized state + Insight + resonance type in one atomic
+    write. If the resonance type matches a starter attunement
+    (emotional→Hesitation, archetype→Mercy, temporal→Tremor), the
+    attunement is recorded on the constellation and idempotently
+    unlocked for the user; ``newly_unlocked_attunement`` is populated
+    only when THIS crystallization was the first to unlock it, so the
+    frontend fires the unlock ceremony exactly once.
 
     Error surface:
       * 404 — constellation not found
@@ -286,3 +300,27 @@ async def crystallize_constellation(
         # 502 Bad Gateway — the upstream LLM failed transiently.
         raise HTTPException(status_code=502, detail=f"insight generation failed: {err}") from err
     return SuccessResponse(data=data)
+
+
+# ── Attunements (P3 — catalog + per-user unlock status) ────────────────
+
+
+@router.get("/attunements")
+async def list_attunements(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[list[AttunementCatalogEntry]]:
+    """Return the attunement catalog enriched with the caller's unlock
+    status in one round trip.
+
+    Locked attunements appear with ``unlocked=False`` and no unlock
+    metadata; unlocked ones carry ``unlocked_at`` + ``constellation_id``
+    (the crystallization that triggered the unlock, if still present).
+    Order: catalog order by ``seeded_at``, regardless of unlock
+    state — the frontend sorts unlocked-first for display. Catalog
+    order first mirrors the Principle 9 stance (no progress bars; no
+    "3/3 complete" framing), keeping the locked entries visible as
+    invitations rather than chores.
+    """
+    entries = await AttunementService.list_catalog_with_status(supabase, user.id)
+    return SuccessResponse(data=entries)

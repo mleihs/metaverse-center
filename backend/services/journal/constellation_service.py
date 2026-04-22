@@ -29,9 +29,11 @@ from backend.models.journal import (
     ConstellationFragmentPlacement,
     ConstellationResponse,
     FragmentResponse,
+    ResonancePair,
 )
 from backend.services.journal.resonance_detector import (
     ResonanceMatch,
+    detect_all_pairs,
     detect_constellation,
 )
 from backend.utils.db import maybe_single_data
@@ -89,8 +91,19 @@ def _placement_from_row(row: dict) -> ConstellationFragmentPlacement:
     )
 
 
-def _constellation_from_row(row: dict, placements: list[dict] | None = None) -> ConstellationResponse:
-    """Build the DTO from a constellation row + optional junction rows."""
+def _constellation_from_row(
+    row: dict,
+    placements: list[dict] | None = None,
+    *,
+    pair_matches: list[ResonancePair] | None = None,
+) -> ConstellationResponse:
+    """Build the DTO from a constellation row + optional junction rows.
+
+    ``pair_matches`` is optional so legacy call sites that don't need
+    the detector output (e.g. a bare constellation row returned on
+    create-before-placements) can omit it — the default empty list is
+    semantically correct: no placements means no pairs.
+    """
     return ConstellationResponse(
         id=row["id"],
         user_id=row["user_id"],
@@ -106,6 +119,7 @@ def _constellation_from_row(row: dict, placements: list[dict] | None = None) -> 
         archived_at=row.get("archived_at"),
         updated_at=row["updated_at"],
         fragments=[_placement_from_row(p) for p in (placements or [])],
+        pair_matches=list(pair_matches or []),
     )
 
 
@@ -117,6 +131,50 @@ class ConstellationService:
     _FRAGMENTS = "journal_fragments"
 
     # ── Public query API ──────────────────────────────────────────────
+
+    @classmethod
+    async def _load_fragments_by_id(
+        cls,
+        supabase: Client,
+        user_id: UUID,
+        fragment_ids: list[str],
+    ) -> dict[str, FragmentResponse]:
+        """Fetch the user's fragments for a list of IDs, keyed by id.
+
+        Returns a dict (missing IDs absent from the result) rather than
+        a list so callers can look up per constellation without
+        re-scanning. Single ``.in_`` query regardless of how many IDs —
+        Postgrest's URL-limit caveat applies (~2000 IDs per call) but
+        the AD-3 fragment cap keeps us orders of magnitude under that.
+        """
+        if not fragment_ids:
+            return {}
+        resp = await (
+            supabase.table(cls._FRAGMENTS)
+            .select("*")
+            .in_("id", fragment_ids)
+            .eq("user_id", str(user_id))
+            .execute()
+        )
+        fragments = [_fragment_from_row(r) for r in extract_list(resp)]
+        return {str(f.id): f for f in fragments}
+
+    @staticmethod
+    def _placements_to_fragments(
+        placements: list[dict],
+        fragments_by_id: dict[str, FragmentResponse],
+    ) -> list[FragmentResponse]:
+        """Project ordered junction rows to full-fragment DTOs in the
+        same order. Missing fragments (a referenced fragment was
+        deleted after the junction row was written — CASCADE should
+        cover this, but defend anyway) are skipped silently rather
+        than raising; the pair detector tolerates the shorter list."""
+        out: list[FragmentResponse] = []
+        for p in placements:
+            frag = fragments_by_id.get(str(p["fragment_id"]))
+            if frag is not None:
+                out.append(frag)
+        return out
 
     @classmethod
     async def list_for_user(
@@ -131,6 +189,11 @@ class ConstellationService:
         RLS ensures the user_id filter matches the policy's ``auth.uid()
         = user_id`` check; we add the explicit ``.eq`` anyway for
         defense-in-depth and for clarity in query logs.
+
+        Fetches full fragments in a single ``.in_`` query so
+        ``pair_matches`` can be computed per constellation without
+        an O(n) fan-out. Three queries total regardless of the number
+        of constellations or fragments referenced.
         """
         query = (
             supabase.table(cls._TABLE)
@@ -145,24 +208,32 @@ class ConstellationService:
         if not rows:
             return []
 
-        # Fan out a single junction query for all returned constellations
-        # — O(1) round trips instead of O(n). Each row's placements are
-        # filtered in Python.
         ids = [r["id"] for r in rows]
         junction_resp = await (
             supabase.table(cls._JUNCTION)
             .select("*")
             .in_("constellation_id", ids)
+            .order("placed_at")
             .execute()
         )
+        junctions = extract_list(junction_resp)
         placements_by_id: dict[str, list[dict]] = {}
-        for jrow in extract_list(junction_resp):
+        all_fragment_ids: set[str] = set()
+        for jrow in junctions:
             placements_by_id.setdefault(str(jrow["constellation_id"]), []).append(jrow)
+            all_fragment_ids.add(str(jrow["fragment_id"]))
 
-        return [
-            _constellation_from_row(r, placements_by_id.get(str(r["id"]), []))
-            for r in rows
-        ]
+        fragments_by_id = await cls._load_fragments_by_id(
+            supabase, user_id, list(all_fragment_ids)
+        )
+
+        result: list[ConstellationResponse] = []
+        for r in rows:
+            placements = placements_by_id.get(str(r["id"]), [])
+            fragments = cls._placements_to_fragments(placements, fragments_by_id)
+            pairs = detect_all_pairs(fragments)
+            result.append(_constellation_from_row(r, placements, pair_matches=pairs))
+        return result
 
     @classmethod
     async def get(
@@ -171,8 +242,17 @@ class ConstellationService:
         user_id: UUID,
         constellation_id: UUID,
     ) -> ConstellationResponse | None:
-        """Return a single constellation with its fragment placements, or
-        ``None`` if not owned by the caller."""
+        """Return a single constellation with fragment placements and
+        pair-level resonance matches, or ``None`` if not owned by the
+        caller.
+
+        Loads full fragments so the detector can emit ``pair_matches``
+        for the frontend's live-line rendering. Three queries (row,
+        junctions, fragments) — the extra fragment fetch is the cost
+        of exposing pair-level detection at the canvas level; the
+        Insight path still makes its own fragment load via
+        ``load_composed_fragments`` to keep that seam independent.
+        """
         row = await maybe_single_data(
             supabase.table(cls._TABLE)
             .select("*")
@@ -186,9 +266,17 @@ class ConstellationService:
             supabase.table(cls._JUNCTION)
             .select("*")
             .eq("constellation_id", str(constellation_id))
+            .order("placed_at")
             .execute()
         )
-        return _constellation_from_row(row, extract_list(junction_resp))
+        placements = extract_list(junction_resp)
+        fragment_ids = [str(p["fragment_id"]) for p in placements]
+        fragments_by_id = await cls._load_fragments_by_id(
+            supabase, user_id, fragment_ids
+        )
+        fragments = cls._placements_to_fragments(placements, fragments_by_id)
+        pairs = detect_all_pairs(fragments)
+        return _constellation_from_row(row, placements, pair_matches=pairs)
 
     # ── Mutations ──────────────────────────────────────────────────────
 

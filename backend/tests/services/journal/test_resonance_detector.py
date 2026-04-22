@@ -14,6 +14,7 @@ from uuid import uuid4
 from backend.models.journal import FragmentResponse
 from backend.services.journal.resonance_detector import (
     ResonanceType,
+    detect_all_pairs,
     detect_constellation,
     detect_pair,
 )
@@ -231,3 +232,95 @@ def test_constellation_returns_none_when_no_pair_matches():
     # Timestamps default to "now" so temporal window qualifies — but
     # there's no shared tag, so temporal also fails.
     assert detect_constellation([a, b, c]) is None
+
+
+# ── detect_all_pairs (P3 — full pair list for UI line drawing) ──────────
+
+
+def test_all_pairs_empty_returns_empty():
+    assert detect_all_pairs([]) == []
+
+
+def test_all_pairs_single_fragment_returns_empty():
+    assert detect_all_pairs([_frag(["shadow"])]) == []
+
+
+def test_all_pairs_no_matches_returns_empty():
+    a = _frag(["aleph"])
+    b = _frag(["beth"])
+    c = _frag(["gimel"])
+    assert detect_all_pairs([a, b, c]) == []
+
+
+def test_all_pairs_single_match():
+    a = _frag(["shadow", "ritual"])
+    b = _frag(["shadow", "other"])
+    pairs = detect_all_pairs([a, b])
+    assert len(pairs) == 1
+    assert pairs[0].resonance_type == "archetype"
+    assert pairs[0].fragment_a_id == a.id
+    assert pairs[0].fragment_b_id == b.id
+    assert pairs[0].evidence_tags == ["shadow"]
+
+
+def test_all_pairs_three_fragments_three_matches():
+    """Triangle: all three pairs match on same archetype. Each
+    unordered pair emits exactly one entry."""
+    a = _frag(["shadow", "grief"])
+    b = _frag(["shadow", "peace"])
+    c = _frag(["shadow", "fear"])
+    pairs = detect_all_pairs([a, b, c])
+    assert len(pairs) == 3
+    # Each pair (i<j) appears exactly once.
+    seen = {(p.fragment_a_id, p.fragment_b_id) for p in pairs}
+    assert seen == {(a.id, b.id), (a.id, c.id), (b.id, c.id)}
+    # All are archetype matches with the same evidence.
+    assert all(p.resonance_type == "archetype" for p in pairs)
+    assert all(p.evidence_tags == ["shadow"] for p in pairs)
+
+
+def test_all_pairs_mixed_types():
+    """Three fragments produce different resonance types per pair."""
+    # (a,b): contradiction — victory vs defeat
+    # (a,c): archetype   — shadow / shadow
+    # (b,c): archetype   — (no shadow on b) → depends on rules
+    a = _frag(["shadow", "victory"])
+    b = _frag(["ordnung", "defeat"])  # no shadow, no overlapping valence ≥2
+    c = _frag(["shadow", "ritual"])
+    pairs = detect_all_pairs([a, b, c])
+    # (a,b) → victory/defeat contradiction
+    # (a,c) → shadow archetype
+    # (b,c) → no shared archetype, no overlapping valence, no non-valence
+    #         tag overlap ("ordnung"/"defeat" vs "shadow"/"ritual" = no
+    #         intersection) → None
+    assert len(pairs) == 2
+    by_type = {p.resonance_type for p in pairs}
+    assert by_type == {"contradiction", "archetype"}
+
+
+def test_all_pairs_priority_matches_detect_pair():
+    """Each entry in detect_all_pairs agrees with the corresponding
+    detect_pair result — no divergence in rule application."""
+    a = _frag(["shadow", "victory", "grief", "ruhe"])
+    b = _frag(["shadow", "defeat", "grief", "ruhe"])  # contradiction wins
+    pairs = detect_all_pairs([a, b])
+    assert len(pairs) == 1
+    individual = detect_pair(a, b)
+    assert individual is not None
+    assert pairs[0].resonance_type == str(individual.resonance_type)
+
+
+def test_all_pairs_bounded_order_stable():
+    """Pair ordering is i<j in the input — caller-provided order
+    dictates (fragment_a, fragment_b) assignment. The frontend relies
+    on this for stable rendering across renders."""
+    a = _frag(["shadow"])
+    b = _frag(["shadow"])
+    c = _frag(["shadow"])
+    pairs = detect_all_pairs([a, b, c])
+    # Emissions walk upper triangle (i<j): (a,b), (a,c), (b,c).
+    assert [(p.fragment_a_id, p.fragment_b_id) for p in pairs] == [
+        (a.id, b.id),
+        (a.id, c.id),
+        (b.id, c.id),
+    ]

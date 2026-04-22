@@ -16,7 +16,11 @@ from uuid import UUID, uuid4
 import httpx
 import pytest
 
-from backend.models.journal import ConstellationResponse, FragmentResponse
+from backend.models.journal import (
+    AttunementResponse,
+    ConstellationResponse,
+    FragmentResponse,
+)
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
     CreditExhaustedError,
@@ -148,6 +152,9 @@ async def test_crystallize_raises_on_budget_exhausted():
             return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
         ),
     ), patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=None),
+    ), patch(
         "backend.services.journal.insight_service.OpenRouterService",
     ) as fake_or:
         fake_or.return_value.generate = AsyncMock(side_effect=_budget_exhausted())
@@ -167,6 +174,9 @@ async def test_crystallize_raises_on_credit_exhausted():
         new=AsyncMock(
             return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
         ),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=None),
     ), patch(
         "backend.services.journal.insight_service.OpenRouterService",
     ) as fake_or:
@@ -190,6 +200,9 @@ async def test_crystallize_raises_on_transient_llm_error():
             return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
         ),
     ), patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=None),
+    ), patch(
         "backend.services.journal.insight_service.OpenRouterService",
     ) as fake_or:
         fake_or.return_value.generate = AsyncMock(
@@ -211,6 +224,9 @@ async def test_crystallize_server_error_on_unparseable():
             return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
         ),
     ), patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=None),
+    ), patch(
         "backend.services.journal.insight_service.OpenRouterService",
     ) as fake_or:
         fake_or.return_value.generate = AsyncMock(return_value="not json")
@@ -229,10 +245,38 @@ async def test_crystallize_server_error_on_unparseable():
 # ── crystallize: happy path ─────────────────────────────────────────────
 
 
+_VALID_INSIGHT_JSON = (
+    '{"content_de": "Wer am Rand zögert, lernt nichts vom gewagten Schritt.", '
+    '"content_en": "Who hesitates at the threshold learns nothing from the step taken."}'
+)
+
+
+def _mercy_attunement() -> AttunementResponse:
+    """Starter Mercy attunement as AttunementService.evaluate would
+    return it for an archetype-resonance match."""
+    return AttunementResponse(
+        id=uuid4(),
+        slug="einstimmung_gnade",
+        name_de="Einstimmung der Gnade",
+        name_en="Mercy Attunement",
+        description_de="…",
+        description_en="…",
+        system_hook="epoch_option",
+        effect={"hook": "epoch_operative_class", "class_slug": "observer"},
+        required_resonance={},
+        required_resonance_type="archetype",
+        enabled=True,
+    )
+
+
 @pytest.mark.asyncio
-async def test_crystallize_happy_path_commits():
+async def test_crystallize_happy_path_commits_with_attunement():
+    """Archetype resonance → Mercy evaluates → commit carries the
+    attunement FK, unlock succeeds (newly=True), the result bundles
+    the newly_unlocked_attunement for the ceremony."""
     cid = uuid4()
     committed = _constellation(cid)
+    mercy = _mercy_attunement()
 
     with patch(
         "backend.services.journal.insight_service.ConstellationService.prepare_crystallization",
@@ -243,20 +287,138 @@ async def test_crystallize_happy_path_commits():
         "backend.services.journal.insight_service.ConstellationService.commit_crystallization",
         new=AsyncMock(return_value=committed),
     ) as mock_commit, patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=mercy),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.unlock",
+        new=AsyncMock(return_value=True),
+    ) as mock_unlock, patch(
         "backend.services.journal.insight_service.OpenRouterService",
     ) as fake_or:
-        fake_or.return_value.generate = AsyncMock(
-            return_value='{"content_de": "Wer am Rand zögert, lernt nichts vom gewagten Schritt.", "content_en": "Who hesitates at the threshold learns nothing from the step taken."}',
-        )
+        fake_or.return_value.generate = AsyncMock(return_value=_VALID_INSIGHT_JSON)
         result = await InsightService.crystallize(
             supabase=MagicMock(), admin=MagicMock(),
             user_id=USER_ID, constellation_id=cid,
         )
-        assert result is committed
-        mock_commit.assert_awaited_once()
+        assert result.constellation is committed
+        assert result.newly_unlocked_attunement is mercy
         kwargs = mock_commit.await_args.kwargs
         assert kwargs["insight_en"].startswith("Who hesitates")
         assert kwargs["insight_de"].startswith("Wer am Rand")
         assert kwargs["match"].resonance_type is ResonanceType.ARCHETYPE
-        # Attunement deferred to P3.
-        assert kwargs["attunement_id"] is None
+        assert kwargs["attunement_id"] == mercy.id
+        mock_unlock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_crystallize_contradiction_no_attunement_match():
+    """Contradiction resonance: starter set has no matching attunement
+    (migration 232 comment). evaluate returns None; commit carries
+    None; newly_unlocked stays None; unlock is not called."""
+    cid = uuid4()
+    committed = _constellation(cid)
+    contradiction_match = ResonanceMatch(
+        resonance_type=ResonanceType.CONTRADICTION,
+        evidence_tags=("victory", "defeat"),
+    )
+
+    with patch(
+        "backend.services.journal.insight_service.ConstellationService.prepare_crystallization",
+        new=AsyncMock(
+            return_value=(_constellation(cid), [_frag(["victory"]), _frag(["defeat"])], contradiction_match),
+        ),
+    ), patch(
+        "backend.services.journal.insight_service.ConstellationService.commit_crystallization",
+        new=AsyncMock(return_value=committed),
+    ) as mock_commit, patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.unlock",
+        new=AsyncMock(return_value=True),
+    ) as mock_unlock, patch(
+        "backend.services.journal.insight_service.OpenRouterService",
+    ) as fake_or:
+        fake_or.return_value.generate = AsyncMock(return_value=_VALID_INSIGHT_JSON)
+        result = await InsightService.crystallize(
+            supabase=MagicMock(), admin=MagicMock(),
+            user_id=USER_ID, constellation_id=cid,
+        )
+        assert result.newly_unlocked_attunement is None
+        assert mock_commit.await_args.kwargs["attunement_id"] is None
+        mock_unlock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_crystallize_re_unlock_leaves_newly_unlocked_none():
+    """Second crystallization of the same resonance type: user already
+    has the attunement; unlock returns False (no row inserted); the
+    result should NOT signal newly_unlocked so the ceremony doesn't
+    replay. The commit still carries the attunement FK to record this
+    as a mercy-type crystallization."""
+    cid = uuid4()
+    committed = _constellation(cid)
+    mercy = _mercy_attunement()
+
+    with patch(
+        "backend.services.journal.insight_service.ConstellationService.prepare_crystallization",
+        new=AsyncMock(
+            return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
+        ),
+    ), patch(
+        "backend.services.journal.insight_service.ConstellationService.commit_crystallization",
+        new=AsyncMock(return_value=committed),
+    ) as mock_commit, patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=mercy),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.unlock",
+        new=AsyncMock(return_value=False),
+    ):
+        fake_or_patch = patch(
+            "backend.services.journal.insight_service.OpenRouterService",
+        )
+        with fake_or_patch as fake_or:
+            fake_or.return_value.generate = AsyncMock(return_value=_VALID_INSIGHT_JSON)
+            result = await InsightService.crystallize(
+                supabase=MagicMock(), admin=MagicMock(),
+                user_id=USER_ID, constellation_id=cid,
+            )
+            assert result.newly_unlocked_attunement is None
+            # Commit still records the attunement FK.
+            assert mock_commit.await_args.kwargs["attunement_id"] == mercy.id
+
+
+@pytest.mark.asyncio
+async def test_crystallize_unlock_failure_does_not_fail_crystallize():
+    """Unlock-side exception (e.g. admin-client auth hiccup) is logged
+    but the user still receives their crystallized constellation — a
+    subsequent crystallize idempotently retries the unlock."""
+    cid = uuid4()
+    committed = _constellation(cid)
+    mercy = _mercy_attunement()
+
+    with patch(
+        "backend.services.journal.insight_service.ConstellationService.prepare_crystallization",
+        new=AsyncMock(
+            return_value=(_constellation(cid), [_frag(["shadow"]), _frag(["shadow"])], _match()),
+        ),
+    ), patch(
+        "backend.services.journal.insight_service.ConstellationService.commit_crystallization",
+        new=AsyncMock(return_value=committed),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.evaluate",
+        new=AsyncMock(return_value=mercy),
+    ), patch(
+        "backend.services.journal.insight_service.AttunementService.unlock",
+        new=AsyncMock(side_effect=RuntimeError("postgrest 500")),
+    ), patch(
+        "backend.services.journal.insight_service.OpenRouterService",
+    ) as fake_or:
+        fake_or.return_value.generate = AsyncMock(return_value=_VALID_INSIGHT_JSON)
+        result = await InsightService.crystallize(
+            supabase=MagicMock(), admin=MagicMock(),
+            user_id=USER_ID, constellation_id=cid,
+        )
+        assert result.constellation is committed
+        assert result.newly_unlocked_attunement is None
