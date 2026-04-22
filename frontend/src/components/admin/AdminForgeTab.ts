@@ -15,12 +15,14 @@ import {
   adminForgeSectionStyles,
   adminLoadingStyles,
 } from '../shared/admin-shared-styles.js';
+import { fieldRowDividerStyles, fieldRowStyles } from '../shared/field-row-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../forge/ClearanceQueue.js';
 import '../forge/VelgByokPanel.js';
 import '../shared/VelgMetricCard.js';
+import '../shared/VelgToggle.js';
 
 /**
  * AdminForgeTab – Global Simulation Forge settings, token economy admin tools,
@@ -35,6 +37,8 @@ export class VelgAdminForgeTab extends LitElement {
     adminForgeSectionStyles,
     adminLoadingStyles,
     infoBubbleStyles,
+    fieldRowStyles,
+    fieldRowDividerStyles,
     css`
       /* (stat-card keyframes removed — using VelgMetricCard) */
 
@@ -81,6 +85,16 @@ export class VelgAdminForgeTab extends LitElement {
         display: flex;
         flex-direction: column;
         gap: var(--space-4);
+      }
+
+      /* BYOK settings group wraps 4 field-rows. The shared .field-row--divided
+         modifier provides the between-row borders and vertical padding.
+         Only the number inputs need a local width override (80px, matches
+         the sibling select's compact sizing). */
+
+      .byok-settings-group__number {
+        width: 80px;
+        text-align: right;
       }
 
       .byok-input {
@@ -740,31 +754,27 @@ export class VelgAdminForgeTab extends LitElement {
             <h3 class="forge-section__title">${msg('Global Economic Controls')}</h3>
           </div>
           <div class="forge-section__divider"></div>
-          <div class="settings-group">
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('BYOK Free Access')}</div>
-                <div class="settings-item__description">${msg('When enabled, users with both BYOK keys bypass token costs entirely.')}</div>
+          <div class="byok-settings-group">
+            <div class="field-row field-row--inline field-row--apart field-row--divided">
+              <div class="field-row__label-group">
+                <span class="field-row__label">${msg('BYOK Free Access')}</span>
+                <p class="field-row__description">${msg('When enabled, users with both BYOK keys bypass token costs entirely.')}</p>
               </div>
-              <label class="settings-toggle" aria-label=${msg('BYOK Free Access')}>
-                <input
-                  class="settings-toggle__input"
-                  type="checkbox"
-                  role="switch"
-                  .checked=${this._byokSystemEnabled}
-                  @change=${this._toggleBYOKSystem}
-                />
-                <span class="settings-toggle__slider"></span>
-              </label>
+              <velg-toggle
+                variant="scif"
+                .checked=${this._byokSystemEnabled}
+                @toggle-change=${this._toggleBYOKSystem}
+                aria-label=${msg('BYOK Free Access')}
+              ></velg-toggle>
             </div>
 
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('BYOK Access Policy')}</div>
-                <div class="settings-item__description">${msg('Controls which users can bring their own API keys.')}</div>
+            <div class="field-row field-row--inline field-row--apart field-row--divided">
+              <div class="field-row__label-group">
+                <span class="field-row__label">${msg('BYOK Access Policy')}</span>
+                <p class="field-row__description">${msg('Controls which users can bring their own API keys.')}</p>
               </div>
               <select
-                class="membership-role-select"
+                class="settings-form__select settings-form__select--sm"
                 aria-label=${msg('BYOK Access Policy')}
                 .value=${this._byokAccessPolicy}
                 @change=${this._changeBYOKAccessPolicy}
@@ -775,24 +785,34 @@ export class VelgAdminForgeTab extends LitElement {
               </select>
             </div>
 
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('Default Architect Grant')}</div>
-                <div class="settings-item__description">${msg('Number of forge tokens given to new architects.')}</div>
+            <div class="field-row field-row--inline field-row--apart field-row--divided">
+              <div class="field-row__label-group">
+                <span class="field-row__label">${msg('Default Architect Grant')}</span>
+                <p class="field-row__description">${msg('Number of forge tokens given to new architects.')}</p>
               </div>
-              <input type="number" class="membership-role-select" style="width: 80px" value="1"
+              <input
+                type="number"
+                class="settings-form__input settings-form__input--sm byok-settings-group__number"
+                value="1"
                 aria-label=${msg('Default Architect Grant')}
-                disabled title=${msg('Not yet configurable')} />
+                disabled
+                title=${msg('Not yet configurable')}
+              />
             </div>
 
-            <div class="settings-item">
-              <div class="settings-item__info">
-                <div class="settings-item__label">${msg('Darkroom Test Limit')}</div>
-                <div class="settings-item__description">${msg('Max test renders allowed per simulation draft.')}</div>
+            <div class="field-row field-row--inline field-row--apart field-row--divided">
+              <div class="field-row__label-group">
+                <span class="field-row__label">${msg('Darkroom Test Limit')}</span>
+                <p class="field-row__description">${msg('Max test renders allowed per simulation draft.')}</p>
               </div>
-              <input type="number" class="membership-role-select" style="width: 80px" value="5"
+              <input
+                type="number"
+                class="settings-form__input settings-form__input--sm byok-settings-group__number"
+                value="5"
                 aria-label=${msg('Darkroom Test Limit')}
-                disabled title=${msg('Not yet configurable')} />
+                disabled
+                title=${msg('Not yet configurable')}
+              />
             </div>
           </div>
         </div>
@@ -920,16 +940,13 @@ export class VelgAdminForgeTab extends LitElement {
             isSystem
               ? html`<span style="color: var(--color-text-muted)">${msg('System')}</span>`
               : html`
-              <label class="settings-toggle" aria-label=${msg('Active')}>
-                <input
-                  class="settings-toggle__input"
-                  type="checkbox"
-                  role="switch"
-                  .checked=${bundle.is_active}
-                  @change=${() => this._toggleBundleActive(bundle)}
-                />
-                <span class="settings-toggle__slider"></span>
-              </label>
+              <velg-toggle
+                variant="scif"
+                size="sm"
+                .checked=${bundle.is_active}
+                @toggle-change=${() => this._toggleBundleActive(bundle)}
+                aria-label=${msg('Active')}
+              ></velg-toggle>
             `
           }
         </td>
