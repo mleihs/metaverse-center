@@ -23,6 +23,7 @@ import { customElement, state } from 'lit/decorators.js';
 
 type JournalTabKey = 'fragments' | 'constellations' | 'palimpsest';
 
+import './VelgConstellationList.js';
 import './VelgFragmentGrid.js';
 
 @localized()
@@ -172,10 +173,10 @@ export class VelgResonanceJournal extends LitElement {
   @state() private _activeTab: JournalTabKey = 'fragments';
 
   private _selectTab(tab: JournalTabKey): void {
-    if (tab === 'fragments') {
+    if (tab === 'fragments' || tab === 'constellations') {
       this._activeTab = tab;
     }
-    // Constellations + Palimpsest are disabled for P0; selection ignored.
+    // Palimpsest remains disabled until P4.
   }
 
   private _renderTabs() {
@@ -184,8 +185,7 @@ export class VelgResonanceJournal extends LitElement {
       {
         key: 'constellations',
         label: msg('Constellations'),
-        disabled: true,
-        sublabel: msg('forming'),
+        disabled: false,
       },
       {
         key: 'palimpsest',
@@ -234,12 +234,13 @@ export class VelgResonanceJournal extends LitElement {
 
     if (this._activeTab === 'constellations') {
       return html`
-        <section class="panel" role="tabpanel" id="panel-constellations">
-          <p class="panel__note">
-            ${msg(
-              'Constellations are not yet open. When enough fragments have gathered, they can be arranged into groupings whose juxtaposition produces meaning of its own.',
-            )}
-          </p>
+        <section
+          class="panel"
+          role="tabpanel"
+          id="panel-constellations"
+          aria-labelledby="tab-constellations"
+        >
+          <velg-constellation-list></velg-constellation-list>
         </section>
       `;
     }

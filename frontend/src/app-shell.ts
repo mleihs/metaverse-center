@@ -375,6 +375,35 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        path: '/journal/constellations/:id',
+        render: ({ id }) =>
+          html`<velg-constellation-canvas
+            constellation-id=${id ?? ''}
+          ></velg-constellation-canvas>`,
+        enter: async ({ id }) => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          if (!(await this._lazy(() => import('./components/journal/VelgConstellationCanvas.js'))))
+            return false;
+          seoService.setTitle(['Constellation']);
+          seoService.setDescription(
+            'A composition of journal fragments arranged on a canvas – a pattern that produces meaning of its own.',
+          );
+          seoService.setCanonical(`/journal/constellations/${id ?? ''}`);
+          seoService.setRobots('noindex, nofollow');
+          seoService.setBreadcrumbs([
+            { name: 'Home', url: 'https://metaverse.center/' },
+            { name: 'Journal', url: 'https://metaverse.center/journal' },
+            {
+              name: 'Constellation',
+              url: `https://metaverse.center/journal/constellations/${id ?? ''}`,
+            },
+          ]);
+          analyticsService.trackPageView(`/journal/constellations/${id ?? ''}`, document.title);
+          return true;
+        },
+      },
+      {
         path: '/archetypes/:archetypeId',
         render: ({ archetypeId }) =>
           html`<velg-archetype-detail .archetypeId=${archetypeId ?? ''}></velg-archetype-detail>`,
