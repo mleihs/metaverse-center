@@ -3,15 +3,14 @@
  *
  * User-global surface (AD-5): fragments span all the user's simulations,
  * the Palimpsest reflects on the full arc, constellations are composed
- * from everything. The shell hosts three tabs; P0 ships only the
- * Fragments tab as functional content, with the others rendering a
- * restrained "still forming" marker that fits the journal's voice
- * (no "Coming Soon" banner chrome).
+ * from everything. The shell hosts four tabs; Fragments (P0),
+ * Constellations (P2), and Attunements (P3) are live. Palimpsest
+ * remains "unwritten" until P4 — it surfaces as a disabled tab so the
+ * depth is visible without a release commitment.
  *
  * Design-direction principles load-bearing on this shell:
- *  - Principle 9: no progress, no completion. The tabs for
- *    Constellations / Palimpsest surface future depth without
- *    promising a release date.
+ *  - Principle 9: no progress, no completion. The disabled Palimpsest
+ *    tab surfaces future depth without promising a release date.
  *  - Principle 11: the margin is first-class. The header carries a
  *    lore strap-line in the bureau-archives register so the feature
  *    reads as diegetic.
@@ -21,8 +20,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-type JournalTabKey = 'fragments' | 'constellations' | 'palimpsest';
+type JournalTabKey = 'fragments' | 'constellations' | 'attunements' | 'palimpsest';
 
+import './VelgAttunementPanel.js';
 import './VelgConstellationList.js';
 import './VelgFragmentGrid.js';
 
@@ -173,7 +173,7 @@ export class VelgResonanceJournal extends LitElement {
   @state() private _activeTab: JournalTabKey = 'fragments';
 
   private _selectTab(tab: JournalTabKey): void {
-    if (tab === 'fragments' || tab === 'constellations') {
+    if (tab === 'fragments' || tab === 'constellations' || tab === 'attunements') {
       this._activeTab = tab;
     }
     // Palimpsest remains disabled until P4.
@@ -185,6 +185,11 @@ export class VelgResonanceJournal extends LitElement {
       {
         key: 'constellations',
         label: msg('Constellations'),
+        disabled: false,
+      },
+      {
+        key: 'attunements',
+        label: msg('Attunements'),
         disabled: false,
       },
       {
@@ -241,6 +246,19 @@ export class VelgResonanceJournal extends LitElement {
           aria-labelledby="tab-constellations"
         >
           <velg-constellation-list></velg-constellation-list>
+        </section>
+      `;
+    }
+
+    if (this._activeTab === 'attunements') {
+      return html`
+        <section
+          class="panel"
+          role="tabpanel"
+          id="panel-attunements"
+          aria-labelledby="tab-attunements"
+        >
+          <velg-attunement-panel></velg-attunement-panel>
         </section>
       `;
     }

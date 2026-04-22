@@ -137,4 +137,108 @@ describe('JournalApiService — constellation endpoints', () => {
       expect(resp.error.message).toContain('credit');
     }
   });
+
+  it('crystallize response returns the CrystallizeResult shape verbatim (P3)', async () => {
+    vi.unstubAllGlobals();
+    const payload = {
+      data: {
+        constellation: {
+          id: 'const-3',
+          user_id: 'u-1',
+          name_de: null,
+          name_en: 'Mercy pattern',
+          status: 'crystallized',
+          insight_de: 'DE insight',
+          insight_en: 'EN insight',
+          resonance_type: 'archetype',
+          attunement_id: 'att-2',
+          created_at: '2026-04-22T00:00:00Z',
+          crystallized_at: '2026-04-22T00:01:00Z',
+          archived_at: null,
+          updated_at: '2026-04-22T00:01:00Z',
+          fragments: [],
+          pair_matches: [
+            {
+              fragment_a_id: 'f-1',
+              fragment_b_id: 'f-2',
+              resonance_type: 'archetype',
+              evidence_tags: ['shadow'],
+            },
+          ],
+        },
+        newly_unlocked_attunement: {
+          id: 'att-2',
+          slug: 'einstimmung_gnade',
+          name_de: 'Einstimmung der Gnade',
+          name_en: 'Mercy Attunement',
+          description_de: 'DE',
+          description_en: 'EN',
+          system_hook: 'epoch_option',
+          effect: { hook: 'epoch_operative_class', class_slug: 'observer' },
+          required_resonance_type: 'archetype',
+          enabled: true,
+        },
+      },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify(payload), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+      ),
+    );
+    const resp = await api.crystallizeConstellation('const-3');
+    expect(resp.success).toBe(true);
+    if (resp.success) {
+      expect(resp.data.constellation.id).toBe('const-3');
+      expect(resp.data.constellation.pair_matches).toHaveLength(1);
+      expect(resp.data.constellation.pair_matches[0].resonance_type).toBe('archetype');
+      expect(resp.data.newly_unlocked_attunement?.slug).toBe('einstimmung_gnade');
+    }
+  });
+
+  it('crystallize response with newly_unlocked_attunement=null is valid', async () => {
+    vi.unstubAllGlobals();
+    const payload = {
+      data: {
+        constellation: {
+          id: 'const-4',
+          user_id: 'u-1',
+          name_de: null,
+          name_en: null,
+          status: 'crystallized',
+          insight_de: 'X',
+          insight_en: 'Y',
+          resonance_type: 'contradiction',
+          attunement_id: null,
+          created_at: '2026-04-22T00:00:00Z',
+          crystallized_at: '2026-04-22T00:01:00Z',
+          archived_at: null,
+          updated_at: '2026-04-22T00:01:00Z',
+          fragments: [],
+          pair_matches: [],
+        },
+        newly_unlocked_attunement: null,
+      },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify(payload), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+      ),
+    );
+    const resp = await api.crystallizeConstellation('const-4');
+    expect(resp.success).toBe(true);
+    if (resp.success) {
+      expect(resp.data.newly_unlocked_attunement).toBeNull();
+      expect(resp.data.constellation.resonance_type).toBe('contradiction');
+    }
+  });
 });

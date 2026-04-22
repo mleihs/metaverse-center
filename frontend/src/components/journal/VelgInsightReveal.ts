@@ -38,12 +38,17 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import type { Attunement } from '../../services/api/JournalApiService.js';
+import { localeService } from '../../services/i18n/locale-service.js';
+
 const TIMING = {
   DIM_IN: 180,
   LINE_WINDOW_END: 900,
   FRAME_IN_END: 1100,
   TYPE_START: 1100,
   TOTAL: 2200,
+  ATTUNEMENT_PAUSE: 800,
+  ATTUNEMENT_FLOURISH: 480,
 } as const;
 
 @localized()
@@ -174,12 +179,107 @@ export class VelgInsightReveal extends LitElement {
       opacity: 0.7;
     }
 
+    /* ── Attunement flourish (P3, shown only when a new attunement
+       unlocks alongside the insight) ─────────────────────────────── */
+
+    .attunement {
+      position: absolute;
+      left: 50%;
+      top: calc(50% + var(--space-12));
+      width: min(520px, 78%);
+      padding: var(--space-4) var(--space-5);
+      background: color-mix(in srgb, var(--_accent) 6%, var(--color-surface-raised));
+      border-left: 3px solid var(--_accent);
+      border-top: 1px solid color-mix(in srgb, var(--_accent) 40%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--_accent) 40%, transparent);
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      /* Leaf-only transform (sibling of .frame, not nested inside a
+         layout container). Scale 0.92 → 1.0 so the entrance reads as
+         presence, not impact. */
+      transform: translate(-50%, 0) scale(0.92);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .attunement--visible {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+      transition:
+        opacity 320ms var(--ease-out),
+        transform 480ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .attunement__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: color-mix(in srgb, var(--_accent) 80%, var(--color-text-muted));
+      margin: 0 0 var(--space-1);
+    }
+
+    .attunement__name {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-md);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-2);
+      line-height: var(--leading-tight);
+    }
+
+    .attunement__description {
+      font-family: var(--font-prose);
+      font-size: var(--text-sm);
+      line-height: var(--leading-relaxed);
+      font-style: italic;
+      color: color-mix(in srgb, var(--color-text-primary) 82%, transparent);
+      margin: 0;
+    }
+
+    /* Soft amber ring pulse on the accent bar when the flourish lands —
+       a one-shot 900ms signal so the eye catches "something awakened".
+       CLAUDE.md ok: we only animate box-shadow on a leaf, not a layout
+       container. */
+    .attunement--visible::before {
+      content: '';
+      position: absolute;
+      left: -3px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--_accent);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--_accent) 60%, transparent);
+      animation: attunement-pulse 900ms var(--ease-out) 120ms both;
+      pointer-events: none;
+    }
+
+    @keyframes attunement-pulse {
+      0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--_accent) 60%, transparent);
+      }
+      60% {
+        box-shadow: 0 0 12px 2px color-mix(in srgb, var(--_accent) 55%, transparent);
+      }
+      100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--_accent) 0%, transparent);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .dim,
-      .frame {
-        transition-duration: 0.01ms;
+      .frame,
+      .attunement {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
       }
       .frame__caret {
+        animation: none;
+      }
+      .attunement--visible::before {
         animation: none;
       }
     }
@@ -192,10 +292,19 @@ export class VelgInsightReveal extends LitElement {
    * the timeline. */
   @property({ type: Boolean }) active = false;
 
+  /**
+   * Newly-unlocked attunement to reveal AFTER the insight typewriter
+   * completes. Null for re-crystallizations of a resonance type the
+   * user already holds, and for contradictions (no starter attunement).
+   * When null the ceremony ends on typewriter complete.
+   */
+  @property({ attribute: false }) attunement: Attunement | null = null;
+
   @state() private _dimVisible = false;
   @state() private _frameVisible = false;
   @state() private _typedText = '';
   @state() private _typingComplete = false;
+  @state() private _attunementVisible = false;
   @state() private _announceText = '';
   @state() private _skipHintVisible = false;
 
@@ -250,6 +359,7 @@ export class VelgInsightReveal extends LitElement {
     this._frameVisible = false;
     this._typedText = '';
     this._typingComplete = false;
+    this._attunementVisible = false;
     this._announceText = '';
     this._skipHintVisible = false;
 
@@ -260,7 +370,8 @@ export class VelgInsightReveal extends LitElement {
       this._frameVisible = true;
       this._typedText = this.insight;
       this._typingComplete = true;
-      this._announceText = this.insight;
+      this._attunementVisible = this.attunement !== null;
+      this._announceText = this._buildAnnouncement();
       this._timers.push(window.setTimeout(() => this._complete(), 20));
       return;
     }
@@ -312,13 +423,56 @@ export class VelgInsightReveal extends LitElement {
         this._typewriterTimer = window.setTimeout(step, perChar);
       } else {
         this._typingComplete = true;
-        this._announceText = full;
-        // Total ceremony time is honoured even if typewriter finishes
-        // slightly early: use a small grace before firing complete.
-        this._timers.push(window.setTimeout(() => this._complete(), 120));
+        // Announce the insight immediately; the attunement is appended
+        // on its own beat when the flourish lands so a screen reader
+        // doesn't collapse them into one run-on utterance.
+        this._announceText = this.insight;
+        if (this.attunement !== null) {
+          // Stage 4: pause, then show the flourish.
+          this._timers.push(
+            window.setTimeout(() => this._revealAttunement(), TIMING.ATTUNEMENT_PAUSE),
+          );
+        } else {
+          // Total ceremony time is honoured even if typewriter finishes
+          // slightly early: use a small grace before firing complete.
+          this._timers.push(window.setTimeout(() => this._complete(), 120));
+        }
       }
     };
     this._typewriterTimer = window.setTimeout(step, perChar);
+  }
+
+  private _revealAttunement(): void {
+    this._attunementVisible = true;
+    // After the scale-in settles, re-announce with the attunement
+    // name + description appended so the screen-reader user hears
+    // both beats. Then fire complete.
+    this._timers.push(
+      window.setTimeout(() => {
+        this._announceText = this._buildAnnouncement();
+      }, TIMING.ATTUNEMENT_FLOURISH),
+    );
+    this._timers.push(window.setTimeout(() => this._complete(), TIMING.ATTUNEMENT_FLOURISH + 120));
+  }
+
+  private _buildAnnouncement(): string {
+    if (this.attunement === null) return this.insight;
+    const name = this._attunementName();
+    const description = this._attunementDescription();
+    // Join with period so screen readers pause cleanly.
+    return `${this.insight}. ${msg('Attunement awakens')}: ${name}. ${description}`;
+  }
+
+  private _attunementName(): string {
+    if (this.attunement === null) return '';
+    return localeService.currentLocale === 'de' ? this.attunement.name_de : this.attunement.name_en;
+  }
+
+  private _attunementDescription(): string {
+    if (this.attunement === null) return '';
+    return localeService.currentLocale === 'de'
+      ? this.attunement.description_de
+      : this.attunement.description_en;
   }
 
   private _skip(): void {
@@ -327,7 +481,8 @@ export class VelgInsightReveal extends LitElement {
     this._frameVisible = true;
     this._typedText = this.insight;
     this._typingComplete = true;
-    this._announceText = this.insight;
+    this._attunementVisible = this.attunement !== null;
+    this._announceText = this._buildAnnouncement();
     this._timers.push(window.setTimeout(() => this._complete(), 30));
   }
 
@@ -336,6 +491,7 @@ export class VelgInsightReveal extends LitElement {
   }
 
   protected render() {
+    const showAttunementCard = this.attunement !== null && this._attunementVisible;
     return html`
       <div class=${`dim ${this._dimVisible ? 'dim--visible' : ''}`} aria-hidden="true"></div>
       <div
@@ -351,6 +507,21 @@ export class VelgInsightReveal extends LitElement {
           >
         </p>
       </div>
+      ${
+        this.attunement !== null
+          ? html`
+            <div
+              class=${`attunement ${showAttunementCard ? 'attunement--visible' : ''}`}
+              role="presentation"
+              aria-hidden="true"
+            >
+              <p class="attunement__label">${msg('Attunement awakens')}</p>
+              <p class="attunement__name">${this._attunementName()}</p>
+              <p class="attunement__description">${this._attunementDescription()}</p>
+            </div>
+          `
+          : ''
+      }
       <p
         class=${`skip-hint ${this._skipHintVisible && !this._typingComplete ? 'skip-hint--visible' : ''}`}
         aria-hidden="true"
