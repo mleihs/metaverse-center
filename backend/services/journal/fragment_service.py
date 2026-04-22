@@ -178,6 +178,9 @@ class FragmentService:
         that MUST NOT be blocked by journal infrastructure.
         """
         try:
+            # postgrest's insert() returns the inserted row(s) by default
+            # (Prefer: return=representation). A chained .select() on the
+            # AsyncQueryRequestBuilder is invalid and raises AttributeError.
             resp = await (
                 admin.table("fragment_generation_requests")
                 .insert(
@@ -190,7 +193,6 @@ class FragmentService:
                         "context": context,
                     }
                 )
-                .select("id")
                 .execute()
             )
             rows = extract_list(resp)
@@ -365,6 +367,8 @@ class FragmentService:
     ) -> UUID | None:
         """Insert a journal_fragments row from a parsed LLM response."""
         try:
+            # See ``enqueue_request`` comment — ``.insert()`` already returns
+            # the inserted row; a chained ``.select()`` is invalid here.
             resp = await (
                 admin.table("journal_fragments")
                 .insert(
@@ -382,7 +386,6 @@ class FragmentService:
                         "rarity": "common",
                     }
                 )
-                .select("id")
                 .execute()
             )
             rows = extract_list(resp)

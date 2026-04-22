@@ -250,6 +250,13 @@ def _fake_admin_for_epoch(
         def eq(self, *_a, **_kw):
             return self
 
+        @property
+        def not_(self):
+            return self
+
+        def is_(self, *_a, **_kw):
+            return self
+
         async def execute(self):
             if isinstance(self._resp_or_err, Exception):
                 raise self._resp_or_err
@@ -278,8 +285,8 @@ async def test_epoch_signature_enqueues_per_participant_with_dominance():
     epoch_id = uuid4()
     admin = _fake_admin_for_epoch(
         participants=[
-            {"simulation_id": str(sim_a), "simulations": {"created_by_id": str(user_a)}},
-            {"simulation_id": str(sim_b), "simulations": {"created_by_id": str(user_b)}},
+            {"user_id": str(user_a), "simulation_id": str(sim_a)},
+            {"user_id": str(user_b), "simulation_id": str(sim_b)},
         ],
         scores=[
             {
@@ -331,11 +338,14 @@ async def test_epoch_signature_noop_when_no_participants():
 
 @pytest.mark.asyncio
 async def test_epoch_signature_skips_participant_without_user_id():
-    """A participant row whose simulation is missing created_by_id
-    (e.g. a migrated-owner edge case) must be skipped, not crashed on."""
+    """A participant row where ``user_id`` is absent (e.g. a bot slot or
+    a partially-backfilled row) must be skipped, not crashed on. The
+    live query gates bots via ``.not_.is_('user_id', None)``, but the
+    defensive ``continue`` in the hook guards against any row that
+    slipped through (e.g. future query change)."""
     admin = _fake_admin_for_epoch(
         participants=[
-            {"simulation_id": str(uuid4()), "simulations": {"created_by_id": None}},
+            {"user_id": None, "simulation_id": str(uuid4())},
         ],
     )
     with patch(
@@ -355,7 +365,7 @@ async def test_epoch_signature_falls_back_when_scores_missing():
     user = uuid4()
     admin = _fake_admin_for_epoch(
         participants=[
-            {"simulation_id": str(sim), "simulations": {"created_by_id": str(user)}},
+            {"user_id": str(user), "simulation_id": str(sim)},
         ],
         scores=[],  # no score row for this cycle
     )
@@ -421,7 +431,7 @@ def _fake_admin_for_simulation_owner(owner_id_raw):
                 resp.data = None
                 return resp
             resp = MagicMock()
-            resp.data = {"created_by_id": owner_id_raw}
+            resp.data = {"owner_id": owner_id_raw}
             return resp
 
     admin = MagicMock()
@@ -511,8 +521,8 @@ async def test_simulation_echo_trims_long_summary():
 
 @pytest.mark.asyncio
 async def test_simulation_echo_skips_when_owner_missing():
-    """A sim with no created_by_id (migration-edge state) should not
-    enqueue — the fragment has no recipient."""
+    """A sim with no owner_id (migration-edge state from 113 transfer)
+    should not enqueue — the fragment has no recipient."""
     admin = _fake_admin_for_simulation_owner(None)
     with patch(
         "backend.services.journal.hooks.FragmentService.enqueue_request",
@@ -600,7 +610,7 @@ async def test_achievement_mark_enqueues_with_lookup_metadata():
     run_id = uuid4()
     admin = _fake_admin_for_achievement_lookup(
         {
-            "slug": "the_remnant",
+            "id": "the_remnant",
             "name_en": "The Remnant",
             "description_en": "Defeat the Shadow boss at visibility 0.",
         }
@@ -662,7 +672,7 @@ async def test_achievement_mark_preserves_name_but_prunes_empty_description():
     """Half-filled row: name present but description empty. Mark should
     include the name and silently drop the empty description."""
     admin = _fake_admin_for_achievement_lookup(
-        {"slug": "pacifist", "name_en": "Pacifist", "description_en": ""}
+        {"id": "pacifist", "name_en": "Pacifist", "description_en": ""}
     )
     with patch(
         "backend.services.journal.hooks.FragmentService.enqueue_request",
