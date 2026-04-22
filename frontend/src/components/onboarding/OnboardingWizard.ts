@@ -2,11 +2,11 @@
  * Onboarding Wizard — Full-screen immersive 4-step induction sequence.
  *
  * Aesthetic: Military intelligence briefing terminal. The user is being
- * inducted into a classified multiverse monitoring program. Each step
+ * inducted into a classified metaverse monitoring program. Each step
  * feels like declassifying the next dossier section.
  *
  * Steps:
- *   1. Welcome — "Welcome to the Multiverse" atmospheric intro
+ *   1. Welcome — "Welcome to the Metaverse" atmospheric intro
  *   2. Your First World — Create / Browse / Skip paths
  *   3. Quick Tour — 5 highlight cards in horizontal scroll
  *   4. First Mission — Academy Epoch or free exploration
@@ -985,7 +985,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       <div class="welcome">
         <div class="welcome__glow" aria-hidden="true"></div>
         <div class="welcome__classification">${msg('Classified Briefing // Eyes Only')}</div>
-        <h2 class="welcome__title">${msg('Welcome to the Multiverse')}</h2>
+        <h2 class="welcome__title">${msg('Welcome to the Metaverse')}</h2>
         <ul class="welcome__pitch">
           <li>${msg('Build a world with its own agents, buildings, factions, and events.')}</li>
           <li>${msg('Deploy operatives against rival civilizations in competitive epochs.')}</li>
@@ -999,19 +999,19 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     const paths = [
       {
         id: 'create' as const,
-        icon: icons.sparkle(18),
+        icon: icons.badgeAnvil(18),
         title: msg('Create a New World'),
         desc: msg('Start with a blank shard and build from scratch.'),
       },
       {
         id: 'browse' as const,
-        icon: icons.book(18),
+        icon: icons.badgeCompass(18),
         title: msg('Browse Existing Worlds'),
         desc: msg('Explore flagship simulations and request access.'),
       },
       {
         id: 'skip' as const,
-        icon: icons.chevronRight(18),
+        icon: icons.footprints(18),
         title: msg("I'll do this later"),
         desc: msg('Skip for now and head to the dashboard.'),
       },
@@ -1057,27 +1057,27 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
   private _renderTour() {
     const topics = [
       {
-        icon: icons.building(22),
+        icon: icons.badgeDungeonGate(22),
         title: msg('Your Simulation'),
         desc: msg('Agents, buildings, and zones form a living world.'),
       },
       {
-        icon: icons.sparkle(22),
+        icon: icons.badgeAnvil(22),
         title: msg('The Forge'),
         desc: msg('AI-powered worldbuilding tools shape your reality.'),
       },
       {
-        icon: icons.crossedSwords(22),
+        icon: icons.mapCombat(22),
         title: msg('Epochs'),
         desc: msg('Competitive seasons where civilizations clash.'),
       },
       {
-        icon: icons.deploy(22),
+        icon: icons.badgeSpy(22),
         title: msg('Operatives'),
         desc: msg('Spies, saboteurs, and guardians carry out covert missions.'),
       },
       {
-        icon: icons.substrateTremor(22),
+        icon: icons.badgeWave(22),
         title: msg('The Substrate'),
         desc: msg('Real-world events bleed through and reshape every shard.'),
       },
@@ -1140,7 +1140,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
             aria-label=${msg('Start Academy Epoch')}
             @click=${() => this._complete('academy')}
           >
-            <div class="mission-card__icon" aria-hidden="true">${icons.crossedSwords(20)}</div>
+            <div class="mission-card__icon" aria-hidden="true">${icons.mapCombat(20)}</div>
             <div class="mission-card__text">
               <div class="mission-card__title">${msg('Start Academy Epoch')}</div>
               <div class="mission-card__desc">${msg('Solo training vs 3 AI opponents. Quick match, auto-resolve.')}</div>
@@ -1172,7 +1172,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
         ariaLabel: msg('Browse existing shards'),
         title: msg('Browse Shards'),
         desc: msg('Head to the dashboard and discover active worlds.'),
-        icon: icons.compassRose(20),
+        icon: icons.badgeCompass(20),
         onClick: () => this._completeAndNavigate('/dashboard'),
       };
     }
@@ -1183,7 +1183,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
           ariaLabel: msg('Open the Simulation Forge'),
           title: msg('Open the Forge'),
           desc: msg('Shape your first world in the Forge.'),
-          icon: icons.sparkle(20),
+          icon: icons.badgeAnvil(20),
           onClick: () => this._completeAndNavigate('/forge'),
         };
       }
@@ -1191,7 +1191,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
         ariaLabel: msg('Request Architect clearance for Forge access'),
         title: msg('Request Clearance'),
         desc: msg('Architect clearance required to shape new worlds. Apply now or bring your own key.'),
-        icon: icons.stampClassified(20),
+        icon: icons.badgeWard(20),
         onClick: () => this._completeAndNavigate('/forge'),
       };
     }
