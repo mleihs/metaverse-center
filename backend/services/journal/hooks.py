@@ -188,11 +188,19 @@ async def enqueue_epoch_signature(
     Non-blocking. All DB errors degrade to "skip without enqueue" rather
     than raising — the epoch cycle pipeline is the caller's priority.
     """
+    # epoch_participants carries user_id directly (migration 049); bot
+    # participants have user_id IS NULL (CHECK constraint:
+    # ``is_bot = true OR user_id IS NOT NULL``). Filtering on non-null
+    # user_id excludes bots — they have no journal — while still covering
+    # all human players, including those using a shared simulation
+    # template where ``simulations.owner_id`` would point to someone
+    # other than the participant.
     try:
         participants_resp = await (
             admin.table("epoch_participants")
-            .select("simulation_id, simulations(created_by_id)")
+            .select("user_id, simulation_id")
             .eq("epoch_id", str(epoch_id))
+            .not_.is_("user_id", None)
             .execute()
         )
         participants = extract_list(participants_resp)
@@ -230,8 +238,7 @@ async def enqueue_epoch_signature(
 
     for participant in participants:
         sim_id_raw = participant.get("simulation_id")
-        sim_row = participant.get("simulations") or {}
-        user_id_raw = sim_row.get("created_by_id")
+        user_id_raw = participant.get("user_id")
         if not sim_id_raw or not user_id_raw:
             continue
 
@@ -322,7 +329,7 @@ async def enqueue_simulation_echo(
     try:
         owner_row = await maybe_single_data(
             admin.table("simulations")
-            .select("created_by_id")
+            .select("owner_id")
             .eq("id", str(simulation_id))
             .maybe_single()
         )
@@ -335,7 +342,7 @@ async def enqueue_simulation_echo(
         sentry_sdk.capture_exception(err)
         return
 
-    owner_id_raw = (owner_row or {}).get("created_by_id")
+    owner_id_raw = (owner_row or {}).get("owner_id")
     if not owner_id_raw:
         return
 
@@ -380,11 +387,15 @@ async def _lookup_achievement_metadata(admin: Client, slug: str) -> dict:
     nothing — the Mark prompt tolerates a slug-only context. Keeps the
     hook fire-and-forget.
     """
+    # ``achievement_definitions.id`` IS the slug — it's a TEXT primary key
+    # matching the ``p_achievement_id TEXT`` param of ``fn_award_achievement``
+    # (migration 197). There is no separate ``slug`` column and no table
+    # named ``achievements``.
     try:
         row = await maybe_single_data(
-            admin.table("achievements")
-            .select("slug, name_en, description_en")
-            .eq("slug", slug)
+            admin.table("achievement_definitions")
+            .select("id, name_en, description_en")
+            .eq("id", slug)
             .maybe_single()
         )
     except Exception:  # noqa: BLE001 -- fire-and-forget: journal must never block
@@ -401,7 +412,7 @@ async def _lookup_achievement_metadata(admin: Client, slug: str) -> dict:
     if not row:
         return {"slug": slug, "name_en": slug, "description_en": ""}
     return {
-        "slug": row.get("slug", slug),
+        "slug": row.get("id", slug),
         "name_en": row.get("name_en") or slug,
         "description_en": row.get("description_en") or "",
     }
@@ -520,7 +531,7 @@ async def enqueue_bleed_tremor(
     try:
         owner_row = await maybe_single_data(
             admin.table("simulations")
-            .select("created_by_id")
+            .select("owner_id")
             .eq("id", str(target_simulation_id))
             .maybe_single()
         )
@@ -533,7 +544,7 @@ async def enqueue_bleed_tremor(
         sentry_sdk.capture_exception(err)
         return
 
-    owner_id_raw = (owner_row or {}).get("created_by_id")
+    owner_id_raw = (owner_row or {}).get("owner_id")
     if not owner_id_raw:
         return
 
