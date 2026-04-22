@@ -304,7 +304,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
                         state=${entry.state}
                         label=${
                           entry.scope_key.length > 8
-                            ? entry.scope_key.slice(0, 7) + '…'
+                            ? `${entry.scope_key.slice(0, 7)}…`
                             : entry.scope_key
                         }
                       ></velg-dot-matrix-cell>
