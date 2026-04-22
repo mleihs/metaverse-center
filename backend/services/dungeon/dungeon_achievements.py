@@ -163,15 +163,18 @@ class DungeonAchievementService:
             f"{instance.archetype} at depth {instance.depth} "
             f"(rooms cleared: {instance.rooms_cleared})"
         )
+        # Instance-level UUIDs are stable across the per-player loop.
+        # Pydantic already guarantees UUID types on the model, so these
+        # round-trips never raise — computing once keeps the loop tight.
+        sim_uuid = UUID(str(instance.simulation_id))
+        run_uuid = UUID(str(instance.run_id))
+
         for player_id in instance.player_ids:
-            was_newly_awarded = False
             try:
                 resp = await admin_supabase.rpc(
                     "fn_award_achievement",
                     {"p_user_id": str(player_id), "p_achievement_id": achievement_id, "p_context": context},
                 ).execute()
-                # postgrest returns a scalar RPC as resp.data (bool here).
-                was_newly_awarded = resp.data is True
             except Exception:
                 logger.warning(
                     "Badge award failed (non-critical)",
@@ -181,25 +184,33 @@ class DungeonAchievementService:
                 )
                 continue
 
-            if was_newly_awarded:
-                try:
-                    await enqueue_achievement_mark(
-                        admin_supabase,
-                        user_id=UUID(str(player_id)),
-                        simulation_id=UUID(str(instance.simulation_id)),
-                        source_id=UUID(str(instance.run_id)),
-                        achievement_slug=achievement_id,
-                        condition_notes=condition_notes,
-                    )
-                except (ValueError, TypeError):
-                    logger.warning(
-                        "Journal mark skipped: UUID parse failed",
-                        extra={
-                            "run_id": str(instance.run_id),
-                            "player_id": str(player_id),
-                            "achievement_id": achievement_id,
-                        },
-                    )
+            # postgrest returns a scalar RPC as resp.data (bool here).
+            # False ⇒ achievement already unlocked for this user; skip
+            # the journal emission to keep Marks single-carving.
+            if resp.data is not True:
+                continue
+
+            try:
+                player_uuid = UUID(str(player_id))
+            except (ValueError, TypeError):
+                logger.warning(
+                    "Journal mark skipped: player UUID parse failed",
+                    extra={
+                        "run_id": str(instance.run_id),
+                        "player_id": str(player_id),
+                        "achievement_id": achievement_id,
+                    },
+                )
+                continue
+
+            await enqueue_achievement_mark(
+                admin_supabase,
+                user_id=player_uuid,
+                simulation_id=sim_uuid,
+                source_id=run_uuid,
+                achievement_slug=achievement_id,
+                condition_notes=condition_notes,
+            )
 
     # ── Private: Progress Increment Helper ────────────────────────────────
 

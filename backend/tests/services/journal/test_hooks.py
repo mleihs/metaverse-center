@@ -68,6 +68,14 @@ def test_archetype_slug_multiword():
     assert _archetype_to_slug("The Devouring Mother") == "devouring_mother"
 
 
+def test_archetype_slug_tolerates_surrounding_whitespace():
+    """Leading whitespace must not defeat the "the " prefix strip —
+    otherwise literal 'the_' slips into the slug (caught during a
+    fresh-eyes audit)."""
+    assert _archetype_to_slug("  The Shadow  ") == "shadow"
+    assert _archetype_to_slug("The Shadow\n") == "shadow"
+
+
 # ── Dungeon → Imprint ──────────────────────────────────────────────────
 
 
@@ -676,8 +684,11 @@ async def test_achievement_mark_preserves_name_but_prunes_empty_description():
 
 
 def test_tremor_significance_bands():
-    # Above-threshold strengths map to medium or high only.
-    assert _tremor_significance_label(0.41) == "medium"
+    """Standalone-correct across the full [0, 1] range. Callers still gate
+    at the 0.4 threshold, but the mapping is defensible in isolation."""
+    assert _tremor_significance_label(0.00) == "low"
+    assert _tremor_significance_label(0.35) == "low"
+    assert _tremor_significance_label(0.40) == "medium"
     assert _tremor_significance_label(0.69) == "medium"
     assert _tremor_significance_label(0.70) == "high"
     assert _tremor_significance_label(1.00) == "high"
