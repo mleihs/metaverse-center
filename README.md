@@ -5,7 +5,7 @@
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Lit 3.3](https://img.shields.io/badge/Lit-3.3-324FFF?logo=lit&logoColor=white)](https://lit.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.135-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com)
 [![Sentry](https://img.shields.io/badge/Sentry-Error_Tracking-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 
@@ -283,7 +283,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.135 | Async web framework, 48 routers |
+| FastAPI | 0.136 | Async web framework, 49 routers |
 | Pydantic v2 | 2.12 | Request/response validation, typed API responses (45 response models), settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.28 | Native AsyncClient with RLS enforcement |
