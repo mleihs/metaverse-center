@@ -45,6 +45,15 @@ import { css } from 'lit';
  *   where space-between would stretch the middle weirdly; the scan button
  *   uses its own `margin-left: auto` to push right. Consumers that want
  *   space-between add `--apart` explicitly.
+ * - `--apart` relies on the control being sized to its content so the
+ *   space-between gap has something to distribute. Full-width children
+ *   (inputs/selects with `width: 100%` — notably `settingsStyles`
+ *   `.settings-form__input` / `__textarea` / `__select`) will stretch
+ *   across the flex item, collapsing the gap and pushing the label-group
+ *   toward zero width. AdminForgeTab's BYOK panel hit this exact trap
+ *   and had to locally override the select to `width: auto`. If you use
+ *   `.settings-form__*` chrome inside a `--apart` row, either override
+ *   the width or switch to an intrinsically-sized wrapper.
  * - Base `.field-row` includes `position: relative` so consumer z-index works
  *   (AdminInstagramTab's `.config-card::after` scanline overlay requires this).
  * - Mobile (640px) stacks horizontal/inline to single-column. Consumers that
