@@ -19,13 +19,12 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any
 from uuid import UUID
 
 import httpx
 import sentry_sdk
 
-from backend.models.journal import FragmentResponse
+from backend.models.journal import AttunementResponse, CrystallizeResult, FragmentResponse
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
     BudgetContext,
@@ -33,6 +32,7 @@ from backend.services.external.openrouter import (
     OpenRouterError,
     OpenRouterService,
 )
+from backend.services.journal.attunement_service import AttunementService
 from backend.services.journal.constellation_service import ConstellationService
 from backend.services.journal.resonance_detector import ResonanceMatch
 from backend.services.platform_model_config import get_platform_model
@@ -165,11 +165,13 @@ class InsightService:
 
     One public method: ``crystallize``. It composes the prompt,
     enforces budget, calls the research-tier model, parses the
-    response, and hands off to ``ConstellationService.commit_crystallization``
-    for the atomic DB write.
-
-    Attunement unlock is deferred to P3 (plan §9). The commit path
-    leaves ``attunement_id=None`` until then.
+    response, hands off to
+    ``ConstellationService.commit_crystallization`` for the atomic DB
+    write, then delegates to ``AttunementService`` to evaluate +
+    idempotently unlock a matching starter attunement. Returns a
+    ``CrystallizeResult`` bundling the committed constellation with
+    ``newly_unlocked_attunement`` populated only on first unlock so
+    the frontend can fire the ceremony exactly once.
     """
 
     @classmethod
@@ -179,10 +181,20 @@ class InsightService:
         admin: Client,
         user_id: UUID,
         constellation_id: UUID,
-    ) -> Any:
+    ) -> CrystallizeResult:
         """Crystallize a drafting constellation.
 
-        Returns the updated ``ConstellationResponse``. Raises:
+        Returns a ``CrystallizeResult`` bundling the updated
+        ``ConstellationResponse`` with the optional
+        ``newly_unlocked_attunement`` — the latter populated ONLY when
+        the crystallization triggered a new unlock, so the frontend
+        can fire the ceremony one-shot. Re-crystallizing the same
+        resonance type the user already had leaves the constellation's
+        ``attunement_id`` set (record of "this was a mercy-type
+        crystallization") but ``newly_unlocked_attunement`` stays
+        None (no second ceremony).
+
+        Raises:
           * ``conflict`` (pre-flight: status / fragment count / no resonance)
           * ``InsightBlockedError`` (budget or credit block — retryable
             later, NOT retried here)
@@ -191,12 +203,24 @@ class InsightService:
 
         ``supabase`` is the user-scoped client for the CRUD path (RLS-
         enforced); ``admin`` is the service-role client used by
-        ``BudgetContext`` for budget ledger writes.
+        ``BudgetContext`` for budget ledger writes and by the
+        attunement unlock (user_attunements INSERT needs service_role
+        per migration-232 RLS).
         """
         # Preflight: load constellation + its fragments, run detector.
         # Raises conflict before we spend the LLM call if preconditions fail.
         _constellation, fragments, match = await ConstellationService.prepare_crystallization(
             supabase, user_id, constellation_id,
+        )
+
+        # Evaluate attunement candidate BEFORE the LLM call — the
+        # lookup is a single-row catalog read, cheap, and lets us
+        # record the attunement FK in the same commit as the insight.
+        # If the resonance type has no matching starter attunement
+        # (e.g. contradiction) this returns None and the crystallize
+        # proceeds without unlock.
+        candidate = await AttunementService.evaluate(
+            supabase, str(match.resonance_type)
         )
 
         model_id = get_platform_model(_MODEL_PURPOSE_RESEARCH)
@@ -256,15 +280,49 @@ class InsightService:
             # unusable). Client can retry; the draft is untouched.
             raise server_error("insight generation produced unparseable output")
 
-        # Attunement unlock is P3 scope; pass None for now.
-        return await ConstellationService.commit_crystallization(
+        constellation = await ConstellationService.commit_crystallization(
             supabase,
             user_id,
             constellation_id,
             match=match,
             insight_de=parsed["content_de"],
             insight_en=parsed["content_en"],
-            attunement_id=None,
+            attunement_id=candidate.id if candidate else None,
+        )
+
+        # Idempotent unlock. When the user already holds the attunement
+        # (re-crystallizing the same resonance type), ``newly`` is False
+        # and we leave ``newly_unlocked_attunement`` None so the
+        # frontend doesn't re-run the ceremony. A unlock-side failure
+        # (rare: admin client auth issue) is logged but does not fail
+        # the crystallize — the user got their insight, and a
+        # subsequent crystallize will re-attempt unlock idempotently.
+        newly_unlocked: AttunementResponse | None = None
+        if candidate is not None:
+            try:
+                newly = await AttunementService.unlock(
+                    admin,
+                    user_id,
+                    candidate.id,
+                    constellation_id,
+                )
+                if newly:
+                    newly_unlocked = candidate
+            except Exception as unlock_err:
+                sentry_sdk.capture_exception(unlock_err)
+                logger.warning(
+                    "Attunement unlock write failed (constellation committed)",
+                    extra={
+                        "user_id": str(user_id),
+                        "constellation_id": str(constellation_id),
+                        "attunement_id": str(candidate.id),
+                    },
+                    exc_info=True,
+                )
+
+        return CrystallizeResult(
+            constellation=constellation,
+            newly_unlocked_attunement=newly_unlocked,
         )
 
 

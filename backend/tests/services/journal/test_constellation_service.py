@@ -289,3 +289,142 @@ async def test_commit_crystallization_idempotency_guard():
             match=match, insight_de="DE", insight_en="EN",
         )
     assert "draft" in str(excinfo.value).lower() or "crystalliz" in str(excinfo.value).lower()
+
+
+# ── pair_matches via .get() (P3 — live line drawing) ───────────────────
+
+
+class _ScriptedChain:
+    """Pluggable query-builder mock that swallows any chained call and
+    returns a prescribed response on execute(). One chain instance
+    per .table() call; the caller supplies the response map at
+    construction time.
+    """
+
+    def __init__(self, response_by_table: dict[str, object], table_name: str):
+        self._response = response_by_table[table_name]
+        self._table_name = table_name
+
+    def __getattr__(self, _name):
+        # Any builder method (.select, .eq, .in_, .order, .maybe_single,
+        # .upsert, .update, .delete, …) returns self so chains keep flowing.
+        return lambda *a, **kw: self
+
+    async def execute(self):
+        return _mk_response(self._response)
+
+
+def _scripted_supabase(response_by_table: dict[str, object]) -> MagicMock:
+    """Build a Supabase-like mock that dispatches per-table responses."""
+    client = MagicMock()
+    client.table.side_effect = lambda name: _ScriptedChain(response_by_table, name)
+    return client
+
+
+@pytest.mark.asyncio
+async def test_get_populates_pair_matches_from_fragments():
+    """With two fragments sharing an archetype tag, .get() surfaces one
+    ResonancePair carrying the matching resonance type and evidence."""
+    cid = uuid4()
+    fid_a = uuid4()
+    fid_b = uuid4()
+
+    responses = {
+        "journal_constellations": _constellation_row(cid),
+        "constellation_fragments": [
+            _placement_row(cid, fid_a),
+            _placement_row(cid, fid_b),
+        ],
+        "journal_fragments": [
+            _frag_row(fragment_id=fid_a, tags=["shadow", "ritual"]),
+            _frag_row(fragment_id=fid_b, tags=["shadow", "grief"]),
+        ],
+    }
+    client = _scripted_supabase(responses)
+
+    result = await ConstellationService.get(client, USER_ID, cid)
+    assert result is not None
+    assert len(result.pair_matches) == 1
+    pair = result.pair_matches[0]
+    assert pair.resonance_type == "archetype"
+    assert pair.evidence_tags == ["shadow"]
+    # Pair endpoints cover both fragments, in some order.
+    assert {pair.fragment_a_id, pair.fragment_b_id} == {fid_a, fid_b}
+
+
+@pytest.mark.asyncio
+async def test_get_empty_pair_matches_for_solo_fragment():
+    """A single-fragment constellation exposes an empty pair list —
+    the detector short-circuits and no line-drawing is needed."""
+    cid = uuid4()
+    fid = uuid4()
+
+    responses = {
+        "journal_constellations": _constellation_row(cid),
+        "constellation_fragments": [_placement_row(cid, fid)],
+        "journal_fragments": [_frag_row(fragment_id=fid, tags=["shadow"])],
+    }
+    client = _scripted_supabase(responses)
+
+    result = await ConstellationService.get(client, USER_ID, cid)
+    assert result is not None
+    assert result.pair_matches == []
+
+
+@pytest.mark.asyncio
+async def test_get_zero_fragments_skips_fragment_query():
+    """Empty constellation returns an empty placements + pair_matches
+    list and doesn't crash on the fragment fetch path."""
+    cid = uuid4()
+
+    responses = {
+        "journal_constellations": _constellation_row(cid),
+        "constellation_fragments": [],
+        "journal_fragments": [],
+    }
+    client = _scripted_supabase(responses)
+
+    result = await ConstellationService.get(client, USER_ID, cid)
+    assert result is not None
+    assert result.fragments == []
+    assert result.pair_matches == []
+
+
+@pytest.mark.asyncio
+async def test_list_for_user_populates_pair_matches_per_constellation():
+    """list_for_user batches fragment loads across all constellations
+    but still attributes pair_matches to the correct constellation."""
+    cid_1 = uuid4()
+    cid_2 = uuid4()
+    fid_a = uuid4()
+    fid_b = uuid4()
+    fid_c = uuid4()
+    fid_d = uuid4()
+
+    rows = [_constellation_row(cid_1), _constellation_row(cid_2)]
+
+    responses = {
+        "journal_constellations": rows,
+        "constellation_fragments": [
+            _placement_row(cid_1, fid_a),
+            _placement_row(cid_1, fid_b),
+            _placement_row(cid_2, fid_c),
+            _placement_row(cid_2, fid_d),
+        ],
+        "journal_fragments": [
+            _frag_row(fragment_id=fid_a, tags=["shadow", "ritual"]),
+            _frag_row(fragment_id=fid_b, tags=["shadow", "grief"]),
+            _frag_row(fragment_id=fid_c, tags=["beth"]),
+            _frag_row(fragment_id=fid_d, tags=["gimel"]),
+        ],
+    }
+    client = _scripted_supabase(responses)
+
+    results = await ConstellationService.list_for_user(client, USER_ID)
+    assert len(results) == 2
+    # cid_1 fragments share 'shadow' → archetype pair
+    by_id = {r.id: r for r in results}
+    assert len(by_id[cid_1].pair_matches) == 1
+    assert by_id[cid_1].pair_matches[0].resonance_type == "archetype"
+    # cid_2 fragments share nothing (distinct non-valence tags) → empty
+    assert by_id[cid_2].pair_matches == []
