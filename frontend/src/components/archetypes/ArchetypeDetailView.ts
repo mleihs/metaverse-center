@@ -1396,7 +1396,8 @@ export class VelgArchetypeDetail extends LitElement {
 
     // Compute localized data fresh on each render — @localized() triggers
     // re-renders on locale change, so this always reflects the current locale.
-    const d = getLocalizedArchetypeDetail(this.archetypeId)!;
+    const d = getLocalizedArchetypeDetail(this.archetypeId);
+    if (!d) return this._renderNotFound();
     const imageUrl = `${STORAGE_BASE}/dungeon-${d.id}.avif`;
     const depthUrl = `${STORAGE_BASE}/dungeon-${d.id}-depth.avif`;
     const whispersUrl = `${STORAGE_BASE}/dungeon-${d.id}-whispers.avif`;

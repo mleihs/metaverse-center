@@ -935,6 +935,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       return html`<div class="empty">${msg('Failed to load dashboard.')}</div>`;
     }
 
+    const d = this._dashboard;
     return html`
       ${this._renderGlobalConfig()}
       ${this._renderConfigGrid()}
@@ -942,9 +943,9 @@ export class VelgAdminHeartbeatTab extends LitElement {
       ${this._renderAttunementTuning()}
       ${this._renderAnchorTuning()}
       ${this._renderEventAgingRules()}
-      ${this._renderOverrideEditor()}
+      ${this._renderOverrideEditor(d)}
       ${this._renderCascadeRules()}
-      ${this._renderSimulations()}
+      ${this._renderSimulations(d)}
     `;
   }
 
@@ -1255,8 +1256,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
 
   /* ── Section 2: Per-Simulation Overrides ─ */
 
-  private _renderOverrideEditor() {
-    const d = this._dashboard!;
+  private _renderOverrideEditor(d: HeartbeatDashboard) {
     const selectedSim = this._selectedOverrideSimId
       ? d.simulations.find((s) => s.simulation_id === this._selectedOverrideSimId)
       : null;
@@ -1433,9 +1433,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
 
   /* ── Section 4: Simulation Cards ───────── */
 
-  private _renderSimulations() {
-    const d = this._dashboard!;
-
+  private _renderSimulations(d: HeartbeatDashboard) {
     return html`
       <div class="section">
         <div class="section-header">

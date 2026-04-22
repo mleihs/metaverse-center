@@ -400,8 +400,10 @@ class ForgeStateManager {
 
     try {
       for (let i = 0; i < total; i++) {
+        const prev: EntityGenerationProgress | null = this.generationProgress.value;
+        if (!prev) break;
         this.generationProgress.value = {
-          ...this.generationProgress.value!,
+          ...prev,
           current: i,
           currentEntityStartedAt: Date.now(),
         };

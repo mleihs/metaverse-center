@@ -511,8 +511,12 @@ export class VelgLandingAgentShowcase extends LitElement {
           // Build aptitude sets per agent
           const aptMap = new Map<string, Record<string, number>>();
           for (const apt of aptitudes) {
-            if (!aptMap.has(apt.agent_id)) aptMap.set(apt.agent_id, {});
-            aptMap.get(apt.agent_id)![apt.operative_type] = apt.aptitude_level;
+            let entry = aptMap.get(apt.agent_id);
+            if (!entry) {
+              entry = {};
+              aptMap.set(apt.agent_id, entry);
+            }
+            entry[apt.operative_type] = apt.aptitude_level;
           }
 
           // Score: portrait (+3), ambassador (+2), character text (+1)

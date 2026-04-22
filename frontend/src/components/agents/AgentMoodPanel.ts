@@ -854,6 +854,7 @@ export class AgentMoodPanel extends LitElement {
     }
 
     if (!this._mood) return nothing;
+    const mood = this._mood;
 
     return html`
       <div class="mood-panel">
@@ -861,19 +862,18 @@ export class AgentMoodPanel extends LitElement {
         <span class="mood-panel__stamp">${msg('Psych profile')}</span>
 
         <div class="mood-panel__grid">
-          ${this._renderGaugeSection()}
+          ${this._renderGaugeSection(mood)}
           ${this._renderNeedsRadar()}
           ${this._renderMoodlets()}
         </div>
-        ${this._renderStressBar()}
+        ${this._renderStressBar(mood)}
       </div>
     `;
   }
 
   // ── Mood Gauge ──────────────────────────────────────────────
 
-  private _renderGaugeSection() {
-    const mood = this._mood!;
+  private _renderGaugeSection(mood: AgentMood) {
     const score = mood.mood_score;
 
     // Compute arc offset: -100 → full left, +100 → full right, 0 → middle
@@ -926,8 +926,7 @@ export class AgentMoodPanel extends LitElement {
 
   // ── Stress Bar (full-width below grid) ──────────────────────
 
-  private _renderStressBar() {
-    const mood = this._mood!;
+  private _renderStressBar(mood: AgentMood) {
     const stress = mood.stress_level;
     const sColor = stressColor(stress);
 
