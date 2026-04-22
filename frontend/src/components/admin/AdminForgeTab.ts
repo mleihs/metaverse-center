@@ -89,8 +89,15 @@ export class VelgAdminForgeTab extends LitElement {
 
       /* BYOK settings group wraps 4 field-rows. The shared .field-row--divided
          modifier provides the between-row borders and vertical padding.
-         Only the number inputs need a local width override (80px, matches
-         the sibling select's compact sizing). */
+         Local overrides contain the width:100% default that the shared
+         .settings-form__input / __select rules ship with — inside a flex
+         --apart row the controls must size to their content so space-between
+         can push them to the right, not stretch across the container. */
+
+      .byok-settings-group .settings-form__select--sm {
+        width: auto;
+        min-width: 200px;
+      }
 
       .byok-settings-group__number {
         width: 80px;
