@@ -6,7 +6,10 @@ import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentAutonomyApi, agentsApi, chatApi } from '../../services/api/index.js';
 import { chatAudio } from '../../services/ChatAudioService.js';
-import { ChatExporter } from '../../services/chat/ChatExporter.js';
+import {
+  exportJSON as exportChatJSON,
+  exportMarkdown as exportChatMarkdown,
+} from '../../services/chat/ChatExporter.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
@@ -886,13 +889,13 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   private _handleExportMarkdown(): void {
     if (!this.conversation) return;
     const session = chatStore.getOrCreate(this.conversation.id);
-    ChatExporter.exportMarkdown(this.conversation, session.messages.value);
+    exportChatMarkdown(this.conversation, session.messages.value);
   }
 
   private _handleExportJSON(): void {
     if (!this.conversation) return;
     const session = chatStore.getOrCreate(this.conversation.id);
-    ChatExporter.exportJSON(this.conversation, session.messages.value);
+    exportChatJSON(this.conversation, session.messages.value);
   }
 
   private _handleAddAgent(): void {
