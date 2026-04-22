@@ -104,8 +104,8 @@ encounters:
     success_narrative_de: Die Späne lösen sich aus der Schublade, als hätten sie gewartet. Sie sind
       schwerer, als sie sein sollten. Dichter. Als erinnere sich das Metall, etwas mehr gewesen zu
       sein.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'Half the filings lift clean from the drawer. The other half settle into a pattern on the tray – not random, not legible. {agent} takes what came, leaves what has decided to stay. The metal kept its denser fraction. The workshop filed the preference.'
+    partial_narrative_de: 'Die Hälfte der Späne hebt sich sauber aus der Schublade. Die andere Hälfte setzt sich auf dem Tablett zu einem Muster – nicht zufällig, nicht lesbar. {agent} nimmt, was kam, lässt, was beschlossen hat zu bleiben. Das Metall hat seine dichtere Fraktion behalten. Die Werkstatt hat die Präferenz archiviert.'
     fail_narrative_en: The filings scatter. Not randomly – they form a pattern on the floor that {agent}
       cannot read. The workshop is disappointed.
     fail_narrative_de: Die Späne zerstreuen sich. Nicht zufällig – sie bilden ein Muster auf dem Boden,
@@ -131,8 +131,8 @@ encounters:
       – not away, but toward. It wants to merge.
     success_narrative_de: Das Fläschchen ist warm. Die Flüssigkeit darin reagiert auf {agent}s Berührung
       – nicht weg, sondern hin. Sie will verschmelzen.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The vial is warm. The fluid inside leans toward {agent}''s hand, not in resistance – in welcome. {agent} secures the seal; the fluid registers the refusal and settles. Not all of it. A thin line along the meniscus stays oriented to {agent}, remembering the direction of interest.'
+    partial_narrative_de: 'Das Fläschchen ist warm. Die Flüssigkeit darin lehnt sich zu {agent}s Hand – nicht im Widerstand – im Willkommen. {agent} sichert das Siegel; die Flüssigkeit registriert die Ablehnung und beruhigt sich. Nicht alles davon. Eine dünne Linie entlang des Meniskus bleibt auf {agent} orientiert, erinnert die Richtung des Interesses.'
     fail_narrative_en: The seal resists. Inside, the fluid settles into stillness. It has decided
       {agent} is not ready.
     fail_narrative_de: Das Siegel widersteht. Darin kommt die Flüssigkeit zur Ruhe. Sie hat entschieden,
@@ -159,8 +159,8 @@ encounters:
     success_narrative_de: Der Kristall löst sich mit einem sauberen, präzisen Bruch. Er vibriert auf
       einer Frequenz, die {agent}s Instrumente erkennen, aber nicht identifizieren können. Eine Stimmgabel
       für etwas Unbenanntes.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The crystal fractures along the clean line – then deviates. {agent} harvests most of what was intended; a thumb-sized fragment breaks along a secondary axis and enters a frequency the instruments track but cannot tune to. The crystal gave what was asked, and kept a chord of itself.'
+    partial_narrative_de: 'Der Kristall bricht entlang der sauberen Linie – dann weicht er ab. {agent} erntet das meiste, was beabsichtigt war; ein daumengroßes Fragment bricht entlang einer Sekundärachse und geht in eine Frequenz über, die die Instrumente verfolgen, aber nicht einstellen können. Der Kristall hat gegeben, worum gebeten wurde, und einen Akkord von sich behalten.'
     fail_narrative_en: The crystal shatters precisely. Every shard is identical. The workshop has
       demonstrated the concept of replication.
     fail_narrative_de: Der Kristall zersplittert präzise. Jeder Splitter ist identisch. Die Werkstatt
@@ -201,8 +201,8 @@ encounters:
       to be portable. It wanted to be used.
     success_narrative_de: Die Energie fließt in die Eindämmung. Nicht widerwillig – eifrig. Sie wollte
       tragbar sein. Sie wollte benutzt werden.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The energy flows into containment – half of it with appetite, half with reluctance. The containment fills; the conduit stabilizes at a lower reading than expected. {agent} has the portable fire. {agent} also has the sense that the conduit decided how much to give.'
+    partial_narrative_de: 'Die Energie fließt in die Eindämmung – die Hälfte mit Appetit, die Hälfte mit Widerwillen. Die Eindämmung füllt sich; die Leitung stabilisiert sich bei einem niedrigeren Messwert als erwartet. {agent} hat das tragbare Feuer. {agent} hat auch das Gefühl, dass die Leitung entschieden hat, wie viel sie gibt.'
     fail_narrative_en: The energy arcs. {agent}'s instruments spike. The conduit seals itself – offended,
       perhaps.
     fail_narrative_de: Die Energie entlädt sich. {agent}s Instrumente schlagen aus. Die Leitung versiegelt
@@ -224,8 +224,8 @@ encounters:
       place will produce. The workshop has shown you its blueprint.
     success_narrative_de: Die Diagramme klären sich. Sie sind eine Karte – nicht von diesem Ort, sondern
       von dem, was dieser Ort hervorbringen wird. Die Werkstatt hat euch ihre Blaupause gezeigt.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The diagrams come into focus as {agent} watches – partial focus. The map of what the workshop intends is there, most of it. Two regions stay in motion, geometries that refuse to stand still long enough to be copied. The blueprint has been shown. It has also been curated.'
+    partial_narrative_de: 'Die Diagramme kommen in Fokus, während {agent} zuschaut – teilweiser Fokus. Die Karte dessen, was die Werkstatt beabsichtigt, ist da, das meiste davon. Zwei Regionen bleiben in Bewegung, Geometrien, die sich weigern, still genug zu stehen, um kopiert zu werden. Die Blaupause wurde gezeigt. Sie wurde auch kuratiert.'
     fail_narrative_en: The patterns move faster than {agent} can process. The energy is speaking a
       language you almost know.
     fail_narrative_de: Die Muster bewegen sich schneller, als {agent} verarbeiten kann. Die Energie
@@ -307,8 +307,8 @@ encounters:
       works.
     success_narrative_de: Ihr beobachtet. Der Tiegel führt Phantomkombinationen durch – erhitzt, mischt,
       testet unsichtbare Reagenzien. Er tut dies seit langer Zeit. Er hat Meinungen darüber, was funktioniert.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The crucible performs a cycle and pauses. {agent} observes the first combination, the heating curve, the test. The second combination never begins – the crucible has opinions, and one of them is that {agent} has seen enough to decide whether to try and earn the rest. The demonstration was generous. It was also a question.'
+    partial_narrative_de: 'Der Tiegel führt einen Zyklus durch und hält inne. {agent} beobachtet die erste Kombination, die Erwärmungskurve, den Test. Die zweite Kombination beginnt nie – der Tiegel hat Meinungen, und eine davon ist, dass {agent} genug gesehen hat, um zu entscheiden, ob es sich lohnt, den Rest zu verdienen. Die Vorführung war großzügig. Sie war auch eine Frage.'
     fail_narrative_en: The crucible goes silent. It does not perform for audiences.
     fail_narrative_de: Der Tiegel verstummt. Er führt nicht für Zuschauer vor.
   is_ambush: false
@@ -345,8 +345,8 @@ encounters:
     success_narrative_de: '{agent} fügt eine Linie hinzu. Die Blaupause hält inne. Erwägt. Akzeptiert.
       Die Anmerkungen hören auf zu streiten. Für einen Moment erreicht die Blaupause Kohärenz. Es
       ist schön.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} adds the line. The blueprint pauses, considers, half-accepts: the annotation is annotated itself. One margin reads yes, continue, the other not with this premise. The coherence the blueprint almost achieved was almost enough. The blueprint keeps the half-annotation and waits.'
+    partial_narrative_de: '{agent} fügt die Linie hinzu. Die Blaupause hält inne, erwägt, akzeptiert halb: die Anmerkung wird selbst annotiert. Ein Rand liest ja, weiter, der andere nicht mit dieser Prämisse. Die Kohärenz, die die Blaupause beinahe erreicht hat, war beinahe genug. Die Blaupause behält die halbe Anmerkung und wartet.'
     fail_narrative_en: 'The blueprint rejects {agent}''s contribution with a sharp erasure. The annotations
       resume with renewed intensity. The blueprint has added a note: ''NOT THIS.'''
     fail_narrative_de: 'Die Blaupause verwirft {agent}s Beitrag mit einer scharfen Löschung. Die Anmerkungen
@@ -369,8 +369,8 @@ encounters:
     success_narrative_de: Ihr erfasst einen Schnappschuss. Als ihr aufblickt, hat sich die Blaupause
       geändert. Aber der Schnappschuss reicht – er zeigt das beabsichtigte Layout der Werkstatt. Kurz
       wisst ihr, wo die Dinge sind.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The snapshot captures most of the layout. Two sections drift during the exposure; {agent} walks away with a map that is accurate for a workshop that has already moved on. Knowing where things were is different from knowing where they are. Both knowings have use.'
+    partial_narrative_de: 'Der Schnappschuss erfasst das meiste des Layouts. Zwei Abschnitte driften während der Aufnahme; {agent} geht mit einer Karte davon, die korrekt ist für eine Werkstatt, die bereits weitergezogen ist. Zu wissen, wo die Dinge waren, ist etwas anderes als zu wissen, wo sie sind. Beide Kenntnisse haben Nutzen.'
     fail_narrative_en: The blueprint moves too fast. Every copy is already outdated.
     fail_narrative_de: Die Blaupause bewegt sich zu schnell. Jede Kopie ist bereits veraltet.
   is_ambush: false
@@ -413,8 +413,8 @@ encounters:
     success_narrative_de: 'Im Wrack: ein Pulver, das bei Kontakt katalysiert. Das gescheiterte Experiment
       hat es als Nebenprodukt erzeugt. Die Werkstatt hat nicht versagt – sie hat etwas entdeckt, wonach
       sie nicht gesucht hat.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'Among the wreckage: a residue that catalyzes on contact, but only when the sample is held still. {agent} stabilizes two grams and loses the rest when a third component – unknown, reactive – flashes and ashes. Salvage is real. The workshop has shown what it is willing to give in damaged conditions.'
+    partial_narrative_de: 'Im Wrack: ein Rückstand, der bei Kontakt katalysiert, aber nur, wenn die Probe still gehalten wird. {agent} stabilisiert zwei Gramm und verliert den Rest, als eine dritte Komponente – unbekannt, reaktiv – aufflammt und zu Asche wird. Die Bergung ist real. Die Werkstatt hat gezeigt, was sie in beschädigtem Zustand zu geben bereit ist.'
     fail_narrative_en: The wreckage shifts. Components you thought were inert react to {agent}'s touch.
       Not helpfully.
     fail_narrative_de: Das Wrack verschiebt sich. Komponenten, die ihr für inert hieltet, reagieren
@@ -435,8 +435,8 @@ encounters:
       sequence: component, catalyst, interaction, detonation. Understanding failure IS understanding.'
     success_narrative_de: 'Das Scheitern hatte eine Ursache. Die Ursache ist lehrreich. {agent} katalogisiert
       die Sequenz: Komponente, Katalysator, Interaktion, Detonation. Scheitern zu verstehen IST Verstehen.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} recovers three steps of four. Component, catalyst, interaction – clear. Detonation – the last step blurs into the wreckage''s noise, traceable in outline only. The failure is partially instructive. The instructive part is also the humbling part. The workshop favors instruction that humbles.'
+    partial_narrative_de: '{agent} rekonstruiert drei von vier Schritten. Komponente, Katalysator, Interaktion – klar. Detonation – der letzte Schritt verschwimmt im Lärm des Wracks, nur in Umrissen nachvollziehbar. Das Scheitern ist teilweise lehrreich. Der lehrreiche Teil ist auch der demütigende Teil. Die Werkstatt bevorzugt Belehrung, die demütigt.'
     fail_narrative_en: The sequence is too complex. Or {agent} is too simple. The experiment offers
       no comment.
     fail_narrative_de: Die Sequenz ist zu komplex. Oder {agent} ist zu einfach. Das Experiment kommentiert
@@ -534,8 +534,8 @@ encounters:
       catalogs the harmonics. The workshop has been singing this song for a long time.
     success_narrative_de: Die Frequenz des Geräts löst sich in Daten auf. Nicht Klang – Information.
       {agent} katalogisiert die Harmonien. Die Werkstatt singt dieses Lied schon lange.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The device sings. {agent} catalogs the lower harmonics cleanly. The upper registers resolve into information that does not fit the decoding frame – not noise, not signal, something between. The song is long. {agent} transcribed the verse. The chorus continued without them.'
+    partial_narrative_de: 'Das Gerät singt. {agent} katalogisiert die tieferen Harmonien sauber. Die oberen Register lösen sich in Information auf, die nicht in den Entschlüsselungsrahmen passt – kein Rauschen, kein Signal, etwas dazwischen. Das Lied ist lang. {agent} hat die Strophe transkribiert. Der Refrain ging ohne sie weiter.'
     fail_narrative_en: The harmonics are beyond {agent}'s range. Some songs are not for human ears.
     fail_narrative_de: Die Harmonien liegen jenseits von {agent}s Bereich. Manche Lieder sind nicht
       für menschliche Ohren.
@@ -617,8 +617,8 @@ encounters:
       – dissolutions it has performed before, preserved in its molecular structure like scars.
     success_narrative_de: '{agent} beobachtet die Flüssigkeit beim Durchlaufen von Phantomreaktionen
       – Auflösungen, die sie zuvor durchgeführt hat, konserviert in ihrer Molekularstruktur wie Narben.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The fluid runs through a rehearsal of what it has dissolved before. {agent} recognizes two of the signatures; the third is a material the dungeon archived and will not release to analysis. The memory is demonstrable in fragments. The coherence of it stays the fluid''s.'
+    partial_narrative_de: 'Die Flüssigkeit läuft durch eine Probe dessen, was sie zuvor aufgelöst hat. {agent} erkennt zwei der Signaturen; die dritte ist ein Material, das das Dungeon archiviert hat und nicht zur Analyse freigibt. Die Erinnerung ist in Fragmenten demonstrierbar. Die Kohärenz davon bleibt die der Flüssigkeit.'
     fail_narrative_en: The fluid goes still. It does not perform for the unprepared.
     fail_narrative_de: Die Flüssigkeit erstarrt. Sie führt nicht für Unvorbereitete vor.
   is_ambush: false
@@ -704,8 +704,8 @@ encounters:
     success_narrative_de: Die Presse durchläuft Phantomkompressionen – absorbiert Kräfte, die nicht
       mehr da sind. {agent} katalogisiert die Muster. Die Presse erinnert sich an jede Kraft, die
       sie je eingedämmt hat.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The press cycles. {agent} catalogs the phantom compressions that resolve; two more remain just outside the instrument''s range, absorbed forces with no origin the readings can name. The press remembers everything. It will not let {agent} catalog everything.'
+    partial_narrative_de: 'Die Presse zyklisiert. {agent} katalogisiert die Phantomkompressionen, die sich auflösen; zwei weitere bleiben knapp außerhalb der Reichweite des Instruments, absorbierte Kräfte ohne Ursprung, den die Messwerte benennen können. Die Presse erinnert alles. Sie wird {agent} nicht erlauben, alles zu katalogisieren.'
     fail_narrative_en: The press goes dormant. It does not demonstrate for observers.
     fail_narrative_de: Die Presse fällt in Ruhezustand. Sie demonstriert nicht für Beobachter.
   is_ambush: false
@@ -798,8 +798,8 @@ encounters:
     success_narrative_de: In der Stille untersucht {agent} die Komponenten genauer. Muster treten
       hervor. Verbindungen, die in der Hitze der Werkstatt unsichtbar waren, offenbaren sich in der
       Kühle.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'In the cold, connections surface. Two of them name themselves clearly; a third remains on the edge of legibility, almost a schematic, not quite. {agent} closes the examination with more than {agent} started with – and the sense of a conversation left open on purpose.'
+    partial_narrative_de: 'In der Kühle tauchen Verbindungen auf. Zwei benennen sich klar; eine dritte bleibt am Rand der Lesbarkeit, beinahe ein Schema, nicht ganz. {agent} beendet die Untersuchung mit mehr, als {agent} begonnen hat – und dem Gefühl eines Gesprächs, das absichtlich offen gelassen wurde.'
     fail_narrative_en: The components do not cooperate in the cold. They prefer the heat.
     fail_narrative_de: Die Komponenten kooperieren nicht in der Kühle. Sie bevorzugen die Hitze.
   is_ambush: false
@@ -839,8 +839,8 @@ encounters:
       – a property it shares with confidence.
     success_narrative_de: Das Pulver setzt sich in seinem Behälter ab. Vorerst. Es verflüchtigt sich
       unter Stress – eine Eigenschaft, die es mit Zuversicht teilt.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The powder rests in the container – most of it. A thin layer migrates along the glass wall, not quite dissipating. {agent} shares the same property with the volatile: stability under observation, less so when observed closely. The workshop approves of the honesty.'
+    partial_narrative_de: 'Das Pulver ruht im Behälter – das meiste davon. Eine dünne Schicht wandert die Glaswand entlang, nicht ganz verflüchtigend. {agent} teilt dieselbe Eigenschaft mit dem Flüchtigen: Stabilität unter Beobachtung, weniger, wenn genau beobachtet. Die Werkstatt nickt der Ehrlichkeit zu.'
     fail_narrative_en: The powder reacts to {agent}'s uncertainty. It dissipates. Proving its point.
     fail_narrative_de: Das Pulver reagiert auf {agent}s Unsicherheit. Es verflüchtigt sich. Seinen
       Punkt beweisend.
@@ -865,8 +865,8 @@ encounters:
       a weapon – but this one is honest about it.
     success_narrative_de: Der Kern summt. Ein eingedämmtes Feuer. Er WILL benutzt werden. Jede Gabe
       ist auch eine Waffe – aber diese ist ehrlich darüber.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The core comes free halfway. It wants to be used – that registers clearly. Its containment wavers for a breath, then holds. {agent} secures the extraction, uneven. The fire is portable. Not fully tamed. The workshop has decided to see what {agent} does next.'
+    partial_narrative_de: 'Der Kern löst sich zur Hälfte. Er will benutzt werden – das registriert klar. Seine Eindämmung wankt einen Atemzug lang, dann hält sie. {agent} sichert die Extraktion, uneben. Das Feuer ist tragbar. Nicht vollständig gezähmt. Die Werkstatt hat beschlossen zu sehen, was {agent} als Nächstes tut.'
     fail_narrative_en: The core pulses once. A warning. {agent} withdraws.
     fail_narrative_de: Der Kern pulsiert einmal. Eine Warnung. {agent} zieht sich zurück.
   is_ambush: false

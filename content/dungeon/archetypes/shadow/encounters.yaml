@@ -368,10 +368,10 @@ encounters:
       map what you see.
     success_narrative_de: Die Spiegel reflektieren nicht nur – sie zeigen angrenzende Räume. Ihr kartiert,
       was ihr seht.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
-    fail_narrative_en: ''
-    fail_narrative_de: ''
+    partial_narrative_en: 'The mirrors show three rooms. Two resolve. The third flickers between two possibilities. {agent} maps what holds. The rest, {agent} marks and keeps moving.'
+    partial_narrative_de: 'Die Spiegel zeigen drei Räume. Zwei lösen sich auf. Der dritte flackert zwischen zwei Möglichkeiten. {agent} kartiert, was hält. Den Rest markiert {agent} und geht weiter.'
+    fail_narrative_en: 'The mirrors show {agent} watching. Then watching {agent} watching. The map does not finish.'
+    fail_narrative_de: 'Die Spiegel zeigen {agent} beim Beobachten. Dann beim Beobachten von {agent} beim Beobachten. Die Karte wird nicht fertig.'
   - id: smash_mirrors
     label_en: Smash the mirrors
     label_de: Spiegel zerschlagen
@@ -422,10 +422,10 @@ encounters:
       fabric of the simulation relaxes.
     success_narrative_de: Die Geschichte verschiebt sich. Das Echo spielt sich mit eurer Änderung
       ab, und etwas im Gewebe der Simulation entspannt sich.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
-    fail_narrative_en: ''
-    fail_narrative_de: ''
+    partial_narrative_en: 'You change the choice. The echo shifts, then shrugs. Half the pattern bends to the new line. Half remembers the original. The simulation remembers both.'
+    partial_narrative_de: 'Ihr ändert die Entscheidung. Das Echo verschiebt sich, dann zuckt es. Die Hälfte des Musters biegt sich zur neuen Linie. Die Hälfte erinnert das Original. Die Simulation erinnert beides.'
+    fail_narrative_en: 'The echo refuses the substitution. History is not taking notes today.'
+    fail_narrative_de: 'Das Echo lehnt die Ersetzung ab. Geschichte macht heute keine Notizen.'
   - id: observe_replay
     label_en: Observe without intervening
     label_de: Beobachten ohne einzugreifen
@@ -440,10 +440,10 @@ encounters:
       about the patterns at work here.
     success_narrative_de: Zuzusehen, wie sich Geschichte wiederholt, ist schmerzhaft, aber lehrreich.
       Ihr lernt etwas über die Muster, die hier am Werk sind.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
-    fail_narrative_en: ''
-    fail_narrative_de: ''
+    partial_narrative_en: 'You watch. Half of it lands. The pattern names itself once, then hides again. {agent} catches the shape. Not the reason.'
+    partial_narrative_de: 'Ihr schaut zu. Die Hälfte davon kommt an. Das Muster benennt sich einmal, versteckt sich dann wieder. {agent} fängt die Form ein. Nicht den Grund.'
+    fail_narrative_en: 'You watch. You look away. The replay finishes without you.'
+    fail_narrative_de: 'Ihr schaut zu. Ihr schaut weg. Die Wiederholung endet ohne euch.'
   is_ambush: false
   ambush_stress: 0
 - id: shadow_the_remnant
@@ -578,10 +578,10 @@ encounters:
       stress: 50
     success_narrative_en: Controlled demolition. The container shatters on your terms.
     success_narrative_de: Kontrollierte Sprengung. Der Behälter zerbricht nach euren Regeln.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
-    fail_narrative_en: ''
-    fail_narrative_de: ''
+    partial_narrative_en: 'Hinge gives, lock does not. The container cracks. Not open. Enough. {agent} gets two fingers in. Two fingers is a beginning.'
+    partial_narrative_de: 'Scharnier gibt nach, Schloss nicht. Der Behälter bekommt einen Riss. Nicht offen. Genug. {agent} bekommt zwei Finger hinein. Zwei Finger sind ein Anfang.'
+    fail_narrative_en: 'The container holds. Your tools give up first. The cache listens.'
+    fail_narrative_de: 'Der Behälter hält. Eure Werkzeuge geben zuerst auf. Der Vorrat lauscht.'
   - id: leave_cache
     label_en: Leave it (no risk)
     label_de: Liegenlassen (kein Risiko)

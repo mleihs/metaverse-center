@@ -535,8 +535,8 @@ encounters:
     success_narrative_de: Koestlers zwei Ethiken, gegen den Inquisitor gewandt. {agent} gewinnt die
       Debatte nicht — {agent} macht die Logik des Inquisitors sichtbar. Der Mechanismus, einmal entlarvt,
       verliert seinen Griff.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} lifts one edge of the Inquisitor''s logic and shows the frame underneath. Only one edge. The other three remain lacquered. The mechanism is partially visible. Partial visibility is not confession. But it is also not the sealed silence the Inquisitor prefers.'
+    partial_narrative_de: '{agent} hebt einen Rand der Inquisitorslogik und zeigt den Rahmen darunter. Nur einen Rand. Die anderen drei bleiben lackiert. Der Mechanismus ist teilweise sichtbar. Teilweise Sichtbarkeit ist kein Geständnis. Aber sie ist auch nicht das versiegelte Schweigen, das der Inquisitor bevorzugt.'
     fail_narrative_en: The Inquisitor's logic is self-sealing. Given the premises, confession is the
       logical conclusion. {agent} follows the path and recoils.
     fail_narrative_de: Die Logik des Inquisitors ist selbstversiegelnd. Ausgehend von den Prämissen
@@ -620,8 +620,8 @@ encounters:
       knowledge that everyone is being discussed is less so.
     success_narrative_de: Koestlers Klopfzeichen. {agent} lauscht. Die Aufklärung ist nützlich. Das
       Wissen, dass alle besprochen werden, weniger.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The tapping code resolves in phrases. Half the intelligence arrives clean. The other half is someone else''s name being said, more often than {agent} would like. The wall is thin in both directions. {agent} now knows the exchange rate.'
+    partial_narrative_de: 'Der Klopfkode löst sich in Phrasen auf. Die Hälfte der Aufklärung kommt sauber an. Die andere Hälfte ist jemandes anderer Name, der öfter gesagt wird, als {agent} es möchte. Die Wand ist dünn in beiden Richtungen. {agent} kennt jetzt den Wechselkurs.'
     fail_narrative_en: The wall is thinner than expected. In both directions.
     fail_narrative_de: Die Wand ist dünner als erwartet. In beiden Richtungen.
   is_ambush: false

@@ -112,8 +112,8 @@ encounters:
       the tide's rhythm, predictable as breathing. The next recession will be stronger.
     success_narrative_de: '{agent} liest die Abstände zwischen den Markierungen – der Rhythmus der
       Gezeiten, vorhersagbar wie Atmen. Der nächste Rückgang wird stärker sein.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The intervals almost resolve. Three cycles fit the pattern; the fourth skips, not randomly. The recession will come – probably stronger, probably sooner than last time. {agent} has one useful prediction and one missing variable. The tide does not need {agent} to know everything.'
+    partial_narrative_de: 'Die Intervalle lösen sich fast auf. Drei Zyklen passen zum Muster; der vierte springt, nicht zufällig. Der Rückgang wird kommen – wahrscheinlich stärker, wahrscheinlich früher als letztes Mal. {agent} hat eine nützliche Vorhersage und eine fehlende Variable. Die Flut braucht es nicht, dass {agent} alles weiß.'
     fail_narrative_en: The marks blur. Time wasted. The water does not wait for comprehension.
     fail_narrative_de: Die Markierungen verschwimmen. Verschwendete Zeit. Das Wasser wartet nicht
       auf Verständnis.
@@ -132,8 +132,8 @@ encounters:
       hands are raw but the arithmetic improves.
     success_narrative_de: Die Abdichtung hält. Das Wasser unterhalb der Markierung ist eingedämmt
       – vorerst. {agent}s Hände sind wund, aber die Arithmetik verbessert sich.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The seal holds below the mark – uneven, but holding. {agent}''s hands shake with cold by the time the work is finished. The arithmetic improves, not enough to relax about. The tide will test the seal by morning. It will find the uneven line first.'
+    partial_narrative_de: 'Die Abdichtung hält unterhalb der Markierung – uneben, aber haltend. {agent}s Hände zittern vor Kälte, als die Arbeit beendet ist. Die Arithmetik verbessert sich, nicht genug, um sich darüber zu entspannen. Die Flut wird die Abdichtung bis zum Morgen prüfen. Sie wird die unebene Linie zuerst finden.'
     fail_narrative_en: The seal breaches. The water finds the weakness before {agent} can reinforce
       it.
     fail_narrative_de: Die Abdichtung bricht. Das Wasser findet die Schwachstelle, bevor {agent} sie
@@ -179,8 +179,8 @@ encounters:
       carried this from somewhere valuable.'
     success_narrative_de: '{agent} taucht mit einem versiegelten Behälter auf. Der Inhalt ist trocken.
       Die Flut trug dies von irgendwo Wertvollem hierher.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} surfaces with the container. The seal failed during the ascent; half the contents are intact, half are flood. Salvage is real. The flood kept its share. The transaction was closer to fair than the water usually allows.'
+    partial_narrative_de: '{agent} taucht mit dem Behälter auf. Die Versiegelung hat während des Aufstiegs versagt; die Hälfte des Inhalts ist intakt, die Hälfte ist Flut. Die Bergung ist real. Die Flut hat ihren Anteil behalten. Der Tausch war fairer, als das Wasser es üblicherweise zulässt.'
     fail_narrative_en: The current pulls {agent} deeper than intended. Nothing retrieved. Stress accumulated.
     fail_narrative_de: Die Strömung zieht {agent} tiefer als beabsichtigt. Nichts geborgen. Stress
       angesammelt.
@@ -198,8 +198,8 @@ encounters:
       Precise. The flood reveals to those who observe.'
     success_narrative_de: '{agent} identifiziert den besten Behälter durch die Verzerrung des Wassers.
       Präzise. Die Flut offenbart sich denen, die beobachten.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'Through the distortion, one container resolves. The second – the possibly-better one – blurs into the current and stays there. {agent} marks the first. Enough. The flood catalogs what was seen and what was missed. Both entries count.'
+    partial_narrative_de: 'Durch die Verzerrung klärt sich ein Behälter. Der zweite – der möglicherweise bessere – verschwimmt in der Strömung und bleibt dort. {agent} markiert den ersten. Genug. Die Flut katalogisiert, was gesehen wurde und was verfehlt wurde. Beide Einträge zählen.'
     fail_narrative_en: The water distorts. Nothing distinct. The flood keeps its inventory.
     fail_narrative_de: Das Wasser verzerrt. Nichts Deutliches. Die Flut behält ihr Inventar.
   - id: cache_leave
@@ -244,8 +244,8 @@ encounters:
       that holds against water's patience.
     success_narrative_de: Die Bresche ist abgedichtet. {agent}s Arbeit ist präzise – die Art Ingenieurkunst,
       die der Geduld des Wassers standhält.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The seal holds against the primary pressure. At the margin, a hairline of seepage forms, stabilizes, does not grow. The engineering is good enough – which is what the water calls a draw. {agent}''s hands will remember the cold. The breach will remember {agent}''s precision.'
+    partial_narrative_de: 'Die Abdichtung hält gegen den Hauptdruck. Am Rand bildet sich eine haarfeine Durchsickerung, stabilisiert sich, wächst nicht. Die Ingenieurskunst ist gut genug – was das Wasser ein Unentschieden nennt. {agent}s Hände werden die Kälte erinnern. Die Bresche wird {agent}s Präzision erinnern.'
     fail_narrative_en: The breach widens. The water had already planned for this.
     fail_narrative_de: Die Bresche verbreitert sich. Das Wasser hatte dies bereits eingeplant.
   - id: breach_redirect
@@ -263,8 +263,8 @@ encounters:
       corridor. The breach remains, but its consequences are elsewhere.'
     success_narrative_de: '{agent} liest die Absicht des Wassers und lenkt den Fluss in einen benachbarten
       Korridor. Die Bresche bleibt, aber ihre Konsequenzen sind anderswo.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} turns the flow. For three rooms, yes. For the fourth, the water remembers the old path and takes it anyway, more slowly than before. The redirection bought time. It did not buy conclusion. The flood negotiates.'
+    partial_narrative_de: '{agent} lenkt den Fluss um. Für drei Räume, ja. Für den vierten erinnert sich das Wasser an den alten Weg und nimmt ihn trotzdem, langsamer als zuvor. Die Umleitung hat Zeit gekauft. Sie hat keinen Abschluss gekauft. Die Flut verhandelt.'
     fail_narrative_en: The redirection fails. The water knows this route better.
     fail_narrative_de: Die Umleitung scheitert. Das Wasser kennt diesen Weg besser.
   - id: breach_use
@@ -283,8 +283,8 @@ encounters:
       already battered by the water''s force.'
     success_narrative_de: '{agent} macht die Bresche zur Waffe. Der nächste Kampf beginnt mit Feinden,
       die bereits von der Kraft des Wassers geschwächt sind.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} routes the breach into the next chamber. Some enemies will be battered; others, in the side passages, stay dry. The first strike will land on prepared ground. The second will have to earn itself. The water served, briefly, before remembering its own plans.'
+    partial_narrative_de: '{agent} leitet die Bresche in die nächste Kammer. Einige Feinde werden geschwächt sein; andere, in den Seitengängen, bleiben trocken. Der erste Schlag wird auf vorbereitetem Boden landen. Der zweite wird sich selbst verdienen müssen. Das Wasser diente, kurz, bevor es sich an seine eigenen Pläne erinnerte.'
     fail_narrative_en: The breach becomes a flood. The water does not serve.
     fail_narrative_de: Die Bresche wird zur Flut. Das Wasser dient nicht.
   is_ambush: false
@@ -315,8 +315,8 @@ encounters:
     success_narrative_de: Die Nachricht ist eine Karte. Unvollständig, aber lesbar. {agent} entschlüsselt
       die Beobachtungen der vorherigen Gruppe – Raumtypen, Wasserwege, eine Warnung über die Tiefe
       darunter.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The handwriting resolves partly. Room-types surface; the route through them stays in a dialect {agent} almost speaks. Two words land – one useful, one a warning the warning itself cannot finish. The previous party said what they could. The water took the rest.'
+    partial_narrative_de: 'Die Handschrift klärt sich teilweise. Raumtypen tauchen auf; der Weg durch sie bleibt in einem Dialekt, den {agent} fast spricht. Zwei Wörter landen – eines nützlich, eines eine Warnung, die die Warnung selbst nicht beenden kann. Die vorherige Gruppe hat gesagt, was sie konnte. Das Wasser hat den Rest genommen.'
     fail_narrative_en: The message is unsettling. The handwriting deteriorates. The last word is either
       'rising' or 'run'.
     fail_narrative_de: Die Nachricht ist beunruhigend. Die Handschrift verschlechtert sich. Das letzte
@@ -334,8 +334,8 @@ encounters:
       parties will find better intelligence.'
     success_narrative_de: '{agent} ritzt Beobachtungen in die Wand. Präzise. Ökonomisch. Zukünftige
       Gruppen werden bessere Informationen finden.'
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: '{agent} starts the incision. Three lines legible, a fourth smudging as the stone weeps. The observations are there – abridged, honest about the abridgment. Future parties will find half a map. Half a map is still a map. The flood will read it too.'
+    partial_narrative_de: '{agent} beginnt die Einritzung. Drei Zeilen leserlich, eine vierte verwischt, während der Stein weint. Die Beobachtungen sind da – gekürzt, ehrlich über die Kürzung. Zukünftige Gruppen werden eine halbe Karte finden. Eine halbe Karte ist immer noch eine Karte. Die Flut wird sie auch lesen.'
     fail_narrative_en: Time wasted. The water rises while {agent} carves.
     fail_narrative_de: Verschwendete Zeit. Das Wasser steigt, während {agent} ritzt.
   is_ambush: false
@@ -365,8 +365,8 @@ encounters:
       its weakness. The first strike will find the fault line.
     success_narrative_de: Die Resonanz offenbart ein Muster. {agent} versteht – den Rhythmus des Bosses,
       seine Schwäche. Der erste Schlag wird die Bruchlinie finden.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The resonance approaches a pattern. {agent} hears the boss''s rhythm – three beats of it – before the water shifts its cadence. Enough to place the first strike. Not enough to place the second. The depth has been listening too.'
+    partial_narrative_de: 'Die Resonanz nähert sich einem Muster. {agent} hört den Rhythmus des Bosses – drei Takte davon – bevor das Wasser seine Kadenz verschiebt. Genug, um den ersten Schlag zu setzen. Nicht genug, um den zweiten zu setzen. Die Tiefe hat auch zugehört.'
     fail_narrative_en: The sound is disorienting. It fills {agent}'s head and refuses to leave.
     fail_narrative_de: Das Geräusch ist desorientierend. Es füllt {agent}s Kopf und weigert sich zu
       gehen.
@@ -383,8 +383,8 @@ encounters:
       the submerged threshold. The arithmetic is merciless but clear.
     success_narrative_de: Präzise Berechnungen. {agent} weiß jetzt genau, wie viele Räume bis zur
       Überschwemmungsschwelle verbleiben. Die Arithmetik ist gnadenlos, aber klar.
-    partial_narrative_en: ''
-    partial_narrative_de: ''
+    partial_narrative_en: 'The instruments return. Room-count approximate. Threshold-depth approximate. The arithmetic holds but rounds the wrong way on two variables. {agent} knows how many rooms may remain. The water knows the exact number. It is not going to say.'
+    partial_narrative_de: 'Die Instrumente kehren zurück. Raumanzahl ungefähr. Schwellenhöhe ungefähr. Die Arithmetik hält, rundet aber bei zwei Variablen in die falsche Richtung. {agent} weiß, wie viele Räume möglicherweise verbleiben. Das Wasser kennt die genaue Zahl. Es wird sie nicht sagen.'
     fail_narrative_en: Instruments damaged. The water's vibration is not compatible with measurement.
     fail_narrative_de: Instrumente beschädigt. Die Vibration des Wassers ist nicht messungskompatibel.
   - id: depth_block
