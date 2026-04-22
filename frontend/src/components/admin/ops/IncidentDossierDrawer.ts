@@ -52,7 +52,8 @@ function formatPayload(payload: Record<string, unknown>): string {
   if (Object.keys(payload).length === 0) return '';
   try {
     return JSON.stringify(payload, null, 2);
-  } catch {
+  } catch (err) {
+    captureError(err, { source: 'IncidentDossierDrawer.formatPayload' });
     return String(payload);
   }
 }
