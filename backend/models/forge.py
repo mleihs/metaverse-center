@@ -271,6 +271,7 @@ class ForgeDraftBase(BaseModel):
     generation_config: dict[str, Any] = Field(default_factory=dict)
     theme_config: dict[str, Any] = Field(default_factory=dict)
     status: ForgeStatus = "draft"
+    map_status: Literal["pending", "generating", "succeeded", "failed"] = "pending"
 
 
 class ForgeDraftCreate(BaseModel):
@@ -293,6 +294,7 @@ class ForgeDraftUpdate(BaseModel):
     generation_config: dict[str, Any] | None = None
     theme_config: dict[str, Any] | None = None
     status: ForgeStatus | None = None
+    map_status: Literal["pending", "generating", "succeeded", "failed"] | None = None
     error_log: str | None = None
 
 

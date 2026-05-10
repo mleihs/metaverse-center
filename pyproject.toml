@@ -25,6 +25,7 @@ dependencies = [
     "deepl>=1.21.0",
     "pyfiglet>=1.0.2",
     "pyyaml>=6.0.2",
+    "shapely>=2.0.0",  # Geometry ops for ForgeMapService (Voronoi, polygon containment). C-extension, ~3MB. NOT scipy.
 ]
 
 [project.optional-dependencies]
@@ -83,6 +84,7 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN
 "backend/services/dungeon/dungeon_objektanker.py" = ["E501"]  # Bilingual anchor/barometer prose
 "backend/services/content_packs/generate_migration.py" = ["S608", "T201"]  # CLI generator: SQL is built from static TableSpec definitions (not user input); print() is the intended output channel for --output/--stdout modes
 "backend/services/ambient_weather_service.py" = ["S311"]  # SHA-256 seeded PRNG is intentional (deterministic text, not crypto)
+"backend/services/forge_map_generators.py" = ["S311", "S324"]  # Seeded PRNG + md5 are deterministic map-layout primitives (not crypto)
 "scripts/**/*.py" = ["T201", "E402"]
 
 [tool.pytest.ini_options]
