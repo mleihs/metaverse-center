@@ -118,6 +118,7 @@ from backend.routers import (
     taxonomies,
     users,
     webhooks,
+    world_map,
     zone_actions,
 )
 from backend.services.ai_usage_rollup_scheduler import AiUsageRollupScheduler
@@ -375,6 +376,8 @@ app.include_router(bluesky.router)
 app.include_router(social_stories.router)
 app.include_router(cipher.public_router)
 app.include_router(cipher.admin_router)
+app.include_router(world_map.public_router)
+app.include_router(world_map.admin_router)
 app.include_router(public.router)
 app.include_router(seo.router)
 app.include_router(webhooks.router)

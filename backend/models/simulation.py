@@ -45,6 +45,9 @@ class SimulationResponse(BaseModel):
     simulation_type: str = "template"
     source_template_id: UUID | None = None
     epoch_id: UUID | None = None
+    map_seed: str | None = None
+    map_generator_preset: str | None = None
+    map_geometry_version: int = 0
     created_at: datetime
     updated_at: datetime
     archived_at: datetime | None = None

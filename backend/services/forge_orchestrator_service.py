@@ -32,6 +32,7 @@ from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_image_service import ForgeImageService
 from backend.services.forge_lore_service import ForgeLoreService
+from backend.services.forge_map_service import ForgeMapService
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
@@ -1153,6 +1154,87 @@ class ForgeOrchestratorService:
                     exc_info=True,
                 )
 
+        # ── Phase A.7: World map generation ──
+        # Builds zone polygons + street network + building positions via shapely
+        # (Python) and persists atomically via fn_apply_map_geometry (SQL).
+        # Failure does NOT fail ignition — the simulation comes online without a
+        # map; admins recover via POST /api/v1/admin/simulations/{id}/map/regenerate.
+        # See docs/plans/per-simulation-world-map-plan.md.
+        if draft_data:
+            draft_id_raw = draft_data.get("id")
+            map_draft_id: UUID | None = None
+            if draft_id_raw:
+                try:
+                    map_draft_id = UUID(str(draft_id_raw))
+                except (ValueError, TypeError):
+                    map_draft_id = None
+
+            # Pre-call: mark draft as generating (Python-side single-row write).
+            # Wrapped because the draft may already be advanced past this state in
+            # rare retry/regen flows; we don't want a stale UPDATE to abort ignition.
+            if map_draft_id is not None:
+                try:
+                    await (
+                        supabase.table("forge_drafts")
+                        .update({"map_status": "generating"})
+                        .eq("id", str(map_draft_id))
+                        .execute()
+                    )
+                except (PostgrestAPIError, httpx.HTTPError) as exc:
+                    logger.warning(
+                        "Failed to mark forge_drafts.map_status='generating' (continuing)",
+                        extra={"draft_id": str(map_draft_id), "error": str(exc)},
+                    )
+
+            try:
+                map_result = await ForgeMapService.generate_map(
+                    simulation_id,
+                    forge_draft_id=map_draft_id,
+                )
+                logger.info(
+                    "World map generated",
+                    extra={
+                        "simulation_id": str(simulation_id),
+                        "preset": map_result.preset_used,
+                        "geometry_version": map_result.geometry_version,
+                        "zones": map_result.zones_updated,
+                        "streets": map_result.streets_inserted,
+                        "buildings": map_result.buildings_updated,
+                        "lives_at": map_result.lives_at_inserted,
+                        "duration_s": map_result.duration_seconds,
+                    },
+                )
+            except Exception as exc:  # noqa: BLE001 — map errors must not fail ignition
+                # Mark draft as failed (Python-side; the SQL function never ran,
+                # so its 'succeeded' transition did not occur).
+                if map_draft_id is not None:
+                    try:
+                        await (
+                            supabase.table("forge_drafts")
+                            .update({"map_status": "failed"})
+                            .eq("id", str(map_draft_id))
+                            .execute()
+                        )
+                    except (PostgrestAPIError, httpx.HTTPError):
+                        logger.exception(
+                            "Failed to mark forge_drafts.map_status='failed' after map error",
+                            extra={"draft_id": str(map_draft_id)},
+                        )
+
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("simulation_id", str(simulation_id))
+                    scope.set_tag("phase", "A.7_world_map")
+                    if map_draft_id:
+                        scope.set_tag("forge_draft_id", str(map_draft_id))
+                    sentry_sdk.capture_exception(exc)
+
+                logger.warning(
+                    "World map generation failed — simulation will come online without a map "
+                    "(admin can regenerate via /api/v1/admin/simulations/{id}/map/regenerate)",
+                    extra={"simulation_id": str(simulation_id), "error": str(exc)},
+                    exc_info=True,
+                )
+
         # ── Phase B: Image generation ──
         logger.info("Phase B: image generation")
         t_b = time.monotonic()
@@ -1289,8 +1371,14 @@ class ForgeOrchestratorService:
                         "yes" if banner_url else "figlet-only",
                     )
                 except (
-                    httpx.HTTPError, ReplicateError, OpenRouterError, ImportError,
-                    KeyError, TypeError, ValueError, OSError,
+                    httpx.HTTPError,
+                    ReplicateError,
+                    OpenRouterError,
+                    ImportError,
+                    KeyError,
+                    TypeError,
+                    ValueError,
+                    OSError,
                 ):
                     logger.warning("Terminal boot art generation failed", exc_info=True)
 
