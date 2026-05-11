@@ -1,3 +1,14 @@
+---
+title: "Per-Simulation World Map — Handover (Phases 4-7)"
+id: doc-per-sim-world-map-handover
+version: 1.0
+lang: en
+type: plan
+status: active
+date: 2026-05-10
+tags: [world-map, maplibre, handover, geometry]
+---
+
 # Per-Simulation World Map — Handover (Phases 4-7)
 
 **Status as of 2026-05-10**: Phases 1-4 complete (schema + service + orchestrator hook + API endpoints). Phases 5-7 outstanding.

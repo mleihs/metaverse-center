@@ -1,3 +1,14 @@
+---
+title: "Per-Simulation Procedural World Map — Implementation Plan"
+id: doc-per-sim-world-map-plan
+version: 1.0
+lang: en
+type: plan
+status: implementing
+date: 2026-05-10
+tags: [world-map, maplibre, forge, geometry, simulations]
+---
+
 # Per-Simulation Procedural World Map — Implementation Plan
 
 **Status**: Draft pending review.

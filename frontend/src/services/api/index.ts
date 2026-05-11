@@ -41,4 +41,5 @@ export { SocialTrendsApiService, socialTrendsApi } from './SocialTrendsApiServic
 export { StyleReferenceApiService, styleReferenceApi } from './StyleReferenceApiService.js';
 export { TaxonomiesApiService, taxonomiesApi } from './TaxonomiesApiService.js';
 export { UsersApiService, usersApi } from './UsersApiService.js';
+export { WorldMapApiService, worldMapApi } from './WorldMapApiService.js';
 export { ZoneActionApiService, zoneActionsApi } from './ZoneActionApiService.js';

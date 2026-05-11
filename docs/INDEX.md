@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 77 documents, 10 categories + 9 ADRs.
+> Auto-generated from frontmatter. 80 documents, 11 categories + 9 ADRs.
 
 ## Specifications (19)
 
@@ -45,7 +45,7 @@ tags: [index, catalog, documentation]
 | [Feature Catalog](references/feature-catalog.md) | 3.7 | 2026-04-16 | de | active |
 | [Frontend Components](references/frontend-components.md) | 4.1 | 2026-04-16 | de | active |
 
-## Guides (14)
+## Guides (15)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -63,6 +63,7 @@ tags: [index, catalog, documentation]
 | [Simulation Blueprint](guides/simulation-blueprint.md) | 1.0 | 2026-03-07 | de | active |
 | [Simulation Creation Guide](guides/simulation-creation.md) | 1.0 | — | en | active |
 | [Testing Strategy](guides/testing-strategy.md) | 2.3 | 2026-03-09 | de | active |
+| [World Map — Observability](guides/world-map-observability.md) | — | 2026-05-11 | en | active |
 
 ## Explanations (5)
 
@@ -74,11 +75,10 @@ tags: [index, catalog, documentation]
 | [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Analysis (8)
+## Analysis (7)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
-| [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md) | — | 2026-04-17 | de | active |
 | [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md) | 1.0 | 2026-03-08 | de | active |
 | [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md) | 1.0 | 2026-02-28 | en | active |
@@ -92,6 +92,14 @@ tags: [index, catalog, documentation]
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
+
+## Plans (3)
+
+| Document | Version | Date | Lang | Status |
+|----------|---------|------|------|--------|
+| [Bureau Ops — AI Spend & Signal Control Center Implementation Plan](plans/bureau-ops-implementation-plan.md) | 1.0 | 2026-04-21 | en | ready-to-implement |
+| [Per-Simulation World Map — Handover (Phases 4-7)](plans/per-simulation-world-map-handover.md) | 1.0 | 2026-05-10 | en | active |
+| [Per-Simulation Procedural World Map — Implementation Plan](plans/per-simulation-world-map-plan.md) | 1.0 | 2026-05-10 | en | implementing |
 
 ## Other (1)
 

@@ -39,6 +39,7 @@ function getTabLabel(path: string): string {
     chat: () => msg('Chat'),
     social: () => msg('Social'),
     locations: () => msg('Locations'),
+    atlas: () => msg('Atlas'),
     terminal: () => msg('Terminal'),
     settings: () => msg('Settings'),
   };
