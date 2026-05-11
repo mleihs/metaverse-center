@@ -47,9 +47,14 @@ for TARGET in "${RGBA_ENFORCED_DIRS[@]}"; do
 done
 
 # --- Check 3: Raw #hex in component CSS ---
+# Covers both `css`...`` blocks in .ts files AND standalone .css files under
+# components/ (e.g. world-map.css for light-DOM components that can't use
+# static styles). Token source files in `styles/tokens/` are NOT scanned —
+# they're the source of truth and legitimately contain hex.
 # Exceptions are filtered AFTER grep to support subdirectory paths.
 RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   --include='*.ts' \
+  --include='*.css' \
   "$COMPONENTS_DIR" 2>/dev/null | \
   grep -v 'lint-color-ok' | \
   grep -v 'var(--' | \

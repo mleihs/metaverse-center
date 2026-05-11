@@ -55,7 +55,7 @@ function findMarkdownFiles(dir, base = dir) {
 }
 
 // Group docs by type
-const TYPE_ORDER = ['spec', 'reference', 'guide', 'explanation', 'analysis', 'audit', 'other'];
+const TYPE_ORDER = ['spec', 'reference', 'guide', 'explanation', 'analysis', 'audit', 'plan', 'other'];
 const TYPE_LABELS = {
   spec: 'Specifications',
   reference: 'References',
@@ -63,6 +63,7 @@ const TYPE_LABELS = {
   explanation: 'Explanations',
   analysis: 'Analysis',
   audit: 'Audits',
+  plan: 'Plans',
   other: 'Other',
 };
 

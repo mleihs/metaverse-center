@@ -16,6 +16,7 @@ const viewImports: Record<string, () => Promise<unknown>> = {
   settings: () => import('../components/settings/SettingsView.js'),
   social: () => import('../components/social/SocialTrendsView.js'),
   locations: () => import('../components/locations/LocationsView.js'),
+  atlas: () => import('../components/world-map/SimulationWorldMap.js'),
   terminal: () => import('../components/terminal/TerminalView.js'),
   dungeon: () => import('../components/dungeon/DungeonTerminalView.js'),
 };

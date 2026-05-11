@@ -49,6 +49,7 @@
 - [Simulation Blueprint](guides/simulation-blueprint.md)
 - [Simulation Creation Guide](guides/simulation-creation.md)
 - [Testing Strategy](guides/testing-strategy.md)
+- [World Map — Observability](guides/world-map-observability.md)
 
 ## Explanations
 - [The Velgarien Multiverse — Game Design Proposal](explanations/concept-lore.md)
@@ -58,7 +59,6 @@
 - [Techstack Recommendation](explanations/techstack-recommendation.md)
 
 ## Analysis
-- [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md)
 - [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
 - [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md)
 - [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md)

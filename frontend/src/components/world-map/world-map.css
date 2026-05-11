@@ -1,0 +1,507 @@
+/*
+ * Component CSS for <velg-simulation-world-map>.
+ *
+ * Loaded as a string via Vite's `?inline` query and injected at runtime into
+ * the appropriate scope (Document or containing ShadowRoot) — see
+ * `ensureComponentStyles` in SimulationWorldMap.ts. Selectors are prefixed
+ * with the component tag name to prevent leakage when the styles land in a
+ * shared shadow root (e.g. velg-app's).
+ */
+
+velg-simulation-world-map {
+  display: block;
+  width: 100%;
+}
+
+velg-simulation-world-map .world-map {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: var(--border-width-default, 2px) solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  /* 320px reserves header/breadcrumb/nav above + cookie-banner clearance below */
+  height: clamp(480px, calc(100vh - 320px), 800px);
+  overflow: hidden;
+}
+
+velg-simulation-world-map .world-map__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2-5) var(--space-4);
+  background: var(--color-surface-raised);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-brutalist);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  flex-wrap: wrap;
+}
+
+velg-simulation-world-map .world-map__stamp {
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: var(--space-0-5) var(--space-2);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-brutalist);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+velg-simulation-world-map .world-map__sim {
+  color: var(--color-text-primary);
+  font-weight: var(--font-bold);
+}
+
+velg-simulation-world-map .world-map__sep {
+  color: var(--color-text-muted);
+}
+
+velg-simulation-world-map .world-map__kind {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-weight: var(--font-medium);
+  letter-spacing: var(--tracking-wider);
+}
+
+velg-simulation-world-map .world-map__kind--instance {
+  color: var(--color-epoch-influence);
+}
+
+velg-simulation-world-map .world-map__version {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+velg-simulation-world-map .world-map__body {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  min-height: 0;
+}
+
+velg-simulation-world-map .world-map__canvas-wrap {
+  flex: 1 1 0;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+velg-simulation-world-map .world-map__canvas {
+  position: absolute;
+  inset: 0;
+  background: var(--color-surface);
+  outline: none;
+}
+
+velg-simulation-world-map .world-map__corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+velg-simulation-world-map .world-map__corner--tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid var(--color-primary);
+  border-left: 2px solid var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__corner--tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid var(--color-primary);
+  border-right: 2px solid var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__corner--bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid var(--color-primary);
+  border-left: 2px solid var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__corner--br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid var(--color-primary);
+  border-right: 2px solid var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    color-mix(in srgb, var(--color-text-primary) 5%, transparent) 3px,
+    color-mix(in srgb, var(--color-text-primary) 5%, transparent) 4px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  velg-simulation-world-map .world-map__scanlines {
+    display: none;
+  }
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-canvas:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-ctrl-group {
+  background: var(--color-surface);
+  border: 2px solid var(--color-text-primary);
+  border-radius: 0;
+  box-shadow: var(--shadow-md);
+  margin: var(--space-5, 20px);
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-ctrl-group button {
+  background: var(--color-surface);
+  width: 40px;
+  height: 40px;
+  border-bottom: 1px solid var(--color-text-primary);
+  transition: background var(--transition-fast, 100ms ease);
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-ctrl-group button:last-child {
+  border-bottom: none;
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-ctrl-group button:hover {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-surface));
+}
+
+velg-simulation-world-map .world-map__canvas .maplibregl-ctrl-group button:focus-visible {
+  outline: var(--ring-focus, 3px solid color-mix(in srgb, var(--color-primary) 40%, transparent));
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+velg-simulation-world-map .world-map__sidebar {
+  flex: 0 0 320px;
+  background: var(--color-surface-raised);
+  border-left: 3px solid var(--color-primary);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: world-map-sidebar-enter var(--duration-entrance, 350ms) var(--ease-dramatic, ease) both;
+  overflow-y: auto;
+}
+
+@keyframes world-map-sidebar-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+velg-simulation-world-map .world-map__sidebar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px dashed var(--color-border);
+  padding-bottom: var(--space-3);
+}
+
+velg-simulation-world-map .world-map__sidebar-kind {
+  font-family: var(--font-brutalist);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+velg-simulation-world-map .world-map__sidebar-name {
+  font-family: var(--font-brutalist);
+  font-size: var(--text-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-primary);
+  font-weight: var(--font-bold);
+  margin: var(--space-1) 0 0;
+  word-break: break-word;
+}
+
+velg-simulation-world-map .world-map__sidebar-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast, 100ms ease), border-color var(--transition-fast, 100ms ease);
+}
+
+velg-simulation-world-map .world-map__sidebar-close:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__sidebar-close:focus-visible {
+  outline: var(--ring-focus, 3px solid color-mix(in srgb, var(--color-primary) 40%, transparent));
+}
+
+velg-simulation-world-map .world-map__sidebar-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+velg-simulation-world-map .world-map__sidebar-label {
+  font-family: var(--font-brutalist);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-text-muted);
+}
+
+velg-simulation-world-map .world-map__sidebar-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+velg-simulation-world-map .world-map__footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-sunken);
+  border-top: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-wider);
+}
+
+velg-simulation-world-map .world-map__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+velg-simulation-world-map .world-map__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+velg-simulation-world-map .world-map__legend-swatch {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border: 1px solid var(--color-border);
+}
+
+velg-simulation-world-map .world-map__legend-swatch--zone {
+  background: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+}
+
+velg-simulation-world-map .world-map__legend-swatch--street {
+  width: 14px;
+  height: 2px;
+  background: var(--color-primary);
+  border: none;
+}
+
+velg-simulation-world-map .world-map__legend-swatch--building {
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+}
+
+velg-simulation-world-map .world-map__legend-swatch--agent {
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+velg-simulation-world-map .world-map__attribution {
+  margin-left: auto;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+}
+
+velg-simulation-world-map .velg-map-label {
+  font-family: var(--font-brutalist);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  text-align: center;
+  text-shadow:
+    0 0 2px var(--color-surface),
+    0 0 4px var(--color-surface),
+    0 0 6px var(--color-surface);
+}
+
+velg-simulation-world-map .velg-map-label--city {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+  border-top: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  padding: var(--space-0-5, 2px) var(--space-2, 8px);
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+velg-simulation-world-map .velg-map-label--zone {
+  font-size: 10px;
+  color: var(--color-text-primary);
+  line-height: 1.15;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  /* Matches city-label: 80% surface + 2px blur to mask street lines
+     that would otherwise show through letter kernings. */
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  backdrop-filter: blur(2px);
+  border-left: 2px solid var(--_zone-tint, var(--color-text-primary));
+}
+
+velg-simulation-world-map .velg-map-label__name {
+  font-weight: var(--font-bold);
+}
+
+velg-simulation-world-map .velg-map-label__kind {
+  font-size: 8px;
+  color: var(--_zone-tint, var(--color-text-muted));
+  letter-spacing: var(--tracking-widest);
+  margin-top: 1px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  velg-simulation-world-map .velg-map-label--zone {
+    background: var(--color-surface);
+    backdrop-filter: none;
+  }
+}
+
+velg-simulation-world-map .velg-map-event-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 60%, transparent);
+  position: relative;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+velg-simulation-world-map .velg-map-event-marker:focus-visible {
+  outline: var(--ring-focus, 3px solid color-mix(in srgb, var(--color-danger) 50%, transparent));
+  outline-offset: 4px;
+}
+
+velg-simulation-world-map .velg-map-event-marker__ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-danger);
+  pointer-events: none;
+  animation: velg-map-event-pulse 2s ease-out infinite;
+}
+
+velg-simulation-world-map .velg-map-event-marker__ripple--delayed {
+  animation-delay: 1s;
+}
+
+@keyframes velg-map-event-pulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+velg-simulation-world-map .velg-map-event-marker--fading {
+  animation: velg-map-event-fade 1s ease-out forwards;
+}
+
+@keyframes velg-map-event-fade {
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .velg-map-event-marker__ripple {
+    animation: none;
+  }
+  velg-simulation-world-map .velg-map-event-marker--fading {
+    animation-duration: 0.01ms;
+  }
+}
+
+velg-simulation-world-map .maplibregl-popup.velg-map-popup .maplibregl-popup-content {
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: 0;
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--shadow-md);
+}
+
+velg-simulation-world-map .maplibregl-popup.velg-map-popup .maplibregl-popup-tip {
+  border-top-color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+velg-simulation-world-map .velg-map-popup__body {
+  font-family: var(--font-brutalist);
+}
+
+velg-simulation-world-map .velg-map-popup__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: var(--color-text-primary);
+}
+
+velg-simulation-world-map .velg-map-popup__meta {
+  margin-top: 2px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-text-muted);
+}
+
+velg-simulation-world-map .world-map__state-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-6);
+}
+
+@media (max-width: 768px) {
+  velg-simulation-world-map .world-map__sidebar {
+    flex: 0 0 auto;
+    border-left: none;
+    border-top: 3px solid var(--color-primary);
+  }
+  velg-simulation-world-map .world-map__body {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .world-map__sidebar {
+    animation: none;
+  }
+}
