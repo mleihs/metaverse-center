@@ -533,10 +533,13 @@ velg-simulation-world-map .world-map__decoding-msg {
   overflow: hidden;
   white-space: nowrap;
   color: var(--color-text-primary);
-  /* ch-width typewriter — width animates 0 → (chars × 1ch) in chars × 65ms,
-     stepped per character. --_chars defaults to 28 if the inline style is
-     ever missing. */
-  width: calc(var(--_chars, 28) * 1ch);
+  /* ch-width typewriter — width animates 0 → full text width in chars × 65ms,
+     stepped per character. The text inherits letter-spacing
+     (--tracking-brutalist) from .world-map__decoding-head, so each glyph
+     advances 1ch + that tracking; the box width must include the tracking or
+     `overflow: hidden` clips the tail and the typewriter never completes the
+     word. --_chars defaults to 28 if the inline style is ever missing. */
+  width: calc(var(--_chars, 28) * (1ch + var(--tracking-brutalist, 0.08em)));
   animation: world-map-typewriter calc(var(--_chars, 28) * 65ms)
     steps(var(--_chars, 28), end) forwards;
 }
@@ -595,7 +598,7 @@ velg-simulation-world-map .world-map__decoding-sub {
 
 @media (prefers-reduced-motion: reduce) {
   velg-simulation-world-map .world-map__decoding-msg {
-    width: calc(var(--_chars, 28) * 1ch);
+    width: calc(var(--_chars, 28) * (1ch + var(--tracking-brutalist, 0.08em)));
     animation: none;
   }
   velg-simulation-world-map .world-map__decoding-caret {
@@ -629,10 +632,28 @@ velg-simulation-world-map .world-map__decoding-sub {
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Building markers — brutalist icon-in-a-frame, color from building type.
- * Frame color comes from --_marker-color (set per-marker via inline style);
- * icon stroke inherits `currentColor` from the same property.
+ * Frame color comes from --_marker-color (set per-marker via inline style on
+ * the outer element; the inner __frame inherits it); icon stroke inherits
+ * `currentColor` from the same property.
+ *
+ * The outer .velg-map-building-marker is only a positioning wrapper: MapLibre
+ * writes `transform: translate(...)` directly on it (it's the element passed
+ * to `new Marker({element})`), so a `transform` here would be clobbered and a
+ * `transition` here is overridden by maplibre-gl's own `.maplibregl-marker`
+ * rule (which loads after this stylesheet, same specificity → wins). The
+ * visual frame and its hover lift therefore live on the inner __frame child,
+ * which MapLibre never touches — same reason the agent marker scales its
+ * __dot child rather than the marker element.
  * ────────────────────────────────────────────────────────────────────────── */
 velg-simulation-world-map .velg-map-building-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+velg-simulation-world-map .velg-map-building-marker__frame {
   width: 22px;
   height: 22px;
   display: inline-flex;
@@ -641,20 +662,18 @@ velg-simulation-world-map .velg-map-building-marker {
   background: var(--color-surface);
   border: 2px solid var(--_marker-color, var(--color-text-secondary));
   color: var(--_marker-color, var(--color-text-secondary));
-  cursor: pointer;
-  pointer-events: auto;
   transition: transform var(--transition-fast, 100ms ease),
     box-shadow var(--transition-fast, 100ms ease);
   box-shadow: 1px 1px 0 0 color-mix(in srgb, var(--_marker-color, var(--color-text-secondary)) 30%, transparent);
 }
 
-velg-simulation-world-map .velg-map-building-marker > svg {
+velg-simulation-world-map .velg-map-building-marker__frame > svg {
   width: 12px;
   height: 12px;
 }
 
-velg-simulation-world-map .velg-map-building-marker:hover,
-velg-simulation-world-map .velg-map-building-marker:focus-visible {
+velg-simulation-world-map .velg-map-building-marker:hover .velg-map-building-marker__frame,
+velg-simulation-world-map .velg-map-building-marker:focus-visible .velg-map-building-marker__frame {
   transform: scale(1.15);
   box-shadow: 2px 2px 0 0 color-mix(in srgb, var(--_marker-color, var(--color-text-secondary)) 70%, transparent);
 }
@@ -665,11 +684,11 @@ velg-simulation-world-map .velg-map-building-marker:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  velg-simulation-world-map .velg-map-building-marker {
+  velg-simulation-world-map .velg-map-building-marker__frame {
     transition: none;
   }
-  velg-simulation-world-map .velg-map-building-marker:hover,
-  velg-simulation-world-map .velg-map-building-marker:focus-visible {
+  velg-simulation-world-map .velg-map-building-marker:hover .velg-map-building-marker__frame,
+  velg-simulation-world-map .velg-map-building-marker:focus-visible .velg-map-building-marker__frame {
     transform: none;
   }
 }

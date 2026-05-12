@@ -918,8 +918,14 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       el.setAttribute('tabindex', '0');
       el.setAttribute('aria-label', building.name);
       el.style.setProperty('--_marker-color', buildingMarkerColorVar(building.building_type));
-      const iconTpl = buildingIcon(building.building_type)(14);
-      render(iconTpl, el);
+      // The icon lives in an inner __frame span, not in `el` directly:
+      // MapLibre overwrites `transform` on `el` for positioning, so the
+      // frame's hover-scale + transition only work on a child it doesn't
+      // touch. The frame inherits --_marker-color from `el`. See world-map.css.
+      const frame = document.createElement('span');
+      frame.className = 'velg-map-building-marker__frame';
+      render(buildingIcon(building.building_type)(12), frame);
+      el.appendChild(frame);
 
       el.addEventListener('mouseenter', () => this._showBuildingPopup(map, building));
       el.addEventListener('mouseleave', () => this._hideBuildingPopup());
@@ -1381,6 +1387,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    */
   private async _handleRegenerate(): Promise<void> {
     if (!this.simulationId) return;
+    const generation = this._loadGeneration;
     // Switch to loading state immediately so the empty-state CTA disappears
     // and the user sees feedback. Regenerate can take several seconds — a
     // silent click would feel broken.
@@ -1388,6 +1395,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     this._error = null;
     try {
       const result = await worldMapApi.regenerate(this.simulationId);
+      // A sim-switch during the (multi-second) regenerate kicks off a fresh
+      // _loadData with a new generation — don't stomp its state with this
+      // now-stale result.
+      if (generation !== this._loadGeneration) return;
       if (result.success) {
         await this._loadData();
       } else {
@@ -1399,8 +1410,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         source: 'SimulationWorldMap._handleRegenerate',
         simulationId: this.simulationId,
       });
-      this._error = msg('Could not regenerate map geometry.');
-      this._loading = false;
+      if (generation === this._loadGeneration) {
+        this._error = msg('Could not regenerate map geometry.');
+        this._loading = false;
+      }
     }
   }
 
