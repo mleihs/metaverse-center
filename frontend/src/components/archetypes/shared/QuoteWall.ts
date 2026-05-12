@@ -101,7 +101,7 @@ export class VelgQuoteWall extends LitElement {
           `
           : nothing
       }
-      <cite>\u2014 ${this.author}</cite>
+      <cite>\u2013 ${this.author}</cite>
     `;
   }
 }

@@ -35,7 +35,7 @@ export function toMarkdown(conversation: ChatConversation, messages: ChatMessage
   for (const msg of messages) {
     const sender = msg.sender_role === 'user' ? 'You' : (msg.agent?.name ?? 'Agent');
     const time = _formatDate(msg.created_at);
-    lines.push(`**${sender}** \u2014 *${time}*`);
+    lines.push(`**${sender}** \u2013 *${time}*`);
     lines.push('');
     lines.push(msg.content);
     lines.push('');

@@ -48,7 +48,7 @@ const COMPLETE_MARKS: Record<string, string> = {
   'deep-space-horror': '> END TRANSMISSION_',
   vbdos: 'C:\\> EXIT',
   solarpunk: '\u2736',
-  'nordic-noir': '\u2014',
+  'nordic-noir': '\u2013',
   'arc-raiders': '\u2736 \u2736 \u2736',
   'deep-fried-horror': '!!!',
 };

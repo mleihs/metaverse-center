@@ -505,7 +505,7 @@ export class VelgAdminCleanupTab extends LitElement {
   }
 
   private _formatAge(dateStr: string | null): string {
-    if (!dateStr) return '\u2014';
+    if (!dateStr) return '\u2013';
     const diff = Date.now() - new Date(dateStr).getTime();
     const days = Math.floor(diff / 86_400_000);
     if (days < 1) return msg('< 1d');
@@ -535,7 +535,7 @@ export class VelgAdminCleanupTab extends LitElement {
             <velg-metric-card
               label=${m.label}
               value=${String(cat.count)}
-              sublabel=${hasRecords ? msg(str`oldest: ${this._formatAge(cat.oldest_at)}`) : '\u2014'}
+              sublabel=${hasRecords ? msg(str`oldest: ${this._formatAge(cat.oldest_at)}`) : '\u2013'}
               variant=${hasRecords ? 'warning' : 'default'}
             ></velg-metric-card>
           `;

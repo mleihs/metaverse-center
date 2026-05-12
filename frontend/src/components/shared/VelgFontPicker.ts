@@ -485,7 +485,7 @@ export class VelgFontPicker extends LitElement {
     const displayName =
       GOOGLE_FONTS.find((f) => f.family.toLowerCase() === (this.value || '').toLowerCase())?.name ||
       this.value ||
-      '\u2014';
+      '\u2013';
     const groups = this._filtered;
     const flat = this._flatFiltered;
 
@@ -577,7 +577,7 @@ export class VelgFontPicker extends LitElement {
           The quick brown fox jumps over the lazy dog
         </p>
         <p class="picker__specimen-body" style="font-family: '${this.value || 'inherit'}', sans-serif">
-          ABCDEFGHIJKLM \u2014 abcdefghijklm \u2014 0123456789
+          ABCDEFGHIJKLM \u2013 abcdefghijklm \u2013 0123456789
         </p>
       </div>
     `;

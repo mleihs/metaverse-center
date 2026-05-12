@@ -736,7 +736,7 @@ export class HowToPlayWarRoom extends LitElement {
           <div class="callout__label">${msg('What This Means For Players')}</div>
           <div class="callout__text">
             ${msg(
-              'All simulations are competitively viable. Choose any simulation \u2014 your skill and strategy matter more than your faction. With v2.2, offensive and hybrid strategies should be more viable alongside defensive play. The expanded RP economy enables multi-pronged approaches.',
+              'All simulations are competitively viable. Choose any simulation \u2013 your skill and strategy matter more than your faction. With v2.2, offensive and hybrid strategies should be more viable alongside defensive play. The expanded RP economy enables multi-pronged approaches.',
             )}
           </div>
         </div>
@@ -989,7 +989,7 @@ export class HowToPlayWarRoom extends LitElement {
           label: {
             show: true,
             formatter: (params: { value: [number, number, number] }) =>
-              params.value[0] === params.value[1] ? '\u2014' : `${params.value[2]}%`,
+              params.value[0] === params.value[1] ? '\u2013' : `${params.value[2]}%`,
             color: '#e2e8f0',
             fontSize: 13,
             fontWeight: 'bold',

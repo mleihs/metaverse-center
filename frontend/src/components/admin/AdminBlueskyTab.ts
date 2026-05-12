@@ -968,7 +968,7 @@ export class VelgAdminBlueskyTab extends LitElement {
         ></velg-metric-card>
         <velg-metric-card
           label=${msg('Avg Likes')}
-          value=${String(a.avg_likes ?? '\u2014')}
+          value=${String(a.avg_likes ?? '\u2013')}
         ></velg-metric-card>
         <velg-metric-card
           label=${msg('Total Reposts')}

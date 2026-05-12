@@ -472,7 +472,7 @@ function match3(): MatchConfig {
             simulation: 'Velgarien',
             action: 'Counter-Intel Sweep',
             rpCost: 3,
-            note: msg('Too late \u2014 assassin already resolved'),
+            note: msg('Too late \u2013 assassin already resolved'),
           },
         ],
       },
@@ -567,13 +567,13 @@ function match3(): MatchConfig {
     ],
     keyMoments: [
       msg(
-        "Cycle 8: Station Null's assassin blocks Ambassador Aldric \u2014 Velgarien loses embassy effectiveness.",
+        "Cycle 8: Station Null's assassin blocks Ambassador Aldric \u2013 Velgarien loses embassy effectiveness.",
       ),
       msg(
-        "Cycle 13: Speranza's infiltrator compromises Station Null's embassy \u2014 50% penalty for 3 cycles.",
+        "Cycle 13: Speranza's infiltrator compromises Station Null's embassy \u2013 50% penalty for 3 cycles.",
       ),
       msg(
-        "Cycle 15: Velgarien's revenge assassin is detected \u2014 costly failure with Warmonger's 40% military weight.",
+        "Cycle 15: Velgarien's revenge assassin is detected \u2013 costly failure with Warmonger's 40% military weight.",
       ),
       msg(
         "Warmonger preset makes military the decisive dimension. Station Null's successful assassin (+8) vs Velgarien's detected attempt (\u22123) creates a 11-point swing.",
@@ -592,7 +592,7 @@ function match4(): MatchConfig {
     cycles: 21,
     preset: 'Diplomat',
     description: msg(
-      "Alliance with betrayal enabled. One player secretly attacks their ally in cycle 15, gets detected in cycle 18 \u2014 alliance dissolves, \u221220% diplomatic penalty. Shows how betrayal can backfire with Diplomat preset's 35% diplomatic weight.",
+      "Alliance with betrayal enabled. One player secretly attacks their ally in cycle 15, gets detected in cycle 18 \u2013 alliance dissolves, \u221220% diplomatic penalty. Shows how betrayal can backfire with Diplomat preset's 35% diplomatic weight.",
     ),
     specialRules: msg(
       'allow_betrayal = true. Detected betrayal dissolves the entire alliance and applies \u221220% diplomatic penalty to the betrayer.',
@@ -768,14 +768,14 @@ function match4(): MatchConfig {
     ],
     keyMoments: [
       msg(
-        'Cycle 15: Gaslit Reach secretly deploys against ally Velgarien \u2014 a desperate gambit to seize first place.',
+        'Cycle 15: Gaslit Reach secretly deploys against ally Velgarien \u2013 a desperate gambit to seize first place.',
       ),
       msg("Cycle 17: Velgarien's routine counter-intel sweep reveals the saboteur."),
       msg(
         'Cycle 18: Betrayal detected! Dawn Covenant dissolves. Gaslit Reach loses 20% diplomatic score.',
       ),
       msg(
-        'With Diplomat preset (diplomatic weight 35%), the \u221220% penalty is devastating \u2014 Gaslit Reach drops from 2nd to last place.',
+        'With Diplomat preset (diplomatic weight 35%), the \u221220% penalty is devastating \u2013 Gaslit Reach drops from 2nd to last place.',
       ),
       msg(
         'Lesson: Betrayal is high-risk. The Diplomat preset punishes it hardest because diplomatic score carries the most weight.',
@@ -788,13 +788,13 @@ function match4(): MatchConfig {
 function match5(): MatchConfig {
   return {
     title: msg('The Complete Campaign'),
-    subtitle: msg('Full Replay \u2014 Every Cycle'),
+    subtitle: msg('Full Replay \u2013 Every Cycle'),
     players: ['Velgarien', 'The Gaslit Reach', 'Station Null'],
     duration: '5 days',
     cycles: 15,
     preset: 'Balanced',
     description: msg(
-      'A complete 3-player free-for-all with every single cycle shown \u2014 no skipped turns. Tracks RP budgets, deployment timing, resolution outcomes, phase transitions, and score evolution from start to finish. Demonstrates all six operative types, counter-intel, and phase-specific strategy.',
+      'A complete 3-player free-for-all with every single cycle shown \u2013 no skipped turns. Tracks RP budgets, deployment timing, resolution outcomes, phase transitions, and score evolution from start to finish. Demonstrates all six operative types, counter-intel, and phase-specific strategy.',
     ),
     cycleData: [
       // ── Foundation: cycles 1-3 (15 RP/cycle, guardians only) ──
@@ -1128,7 +1128,7 @@ function match5(): MatchConfig {
             rpCost: 0,
             outcome: 'failed',
             note: msg(
-              'Embassy infiltration fails \u2014 Velgarien guardians too strong. 6 RP wasted.',
+              'Embassy infiltration fails \u2013 Velgarien guardians too strong. 6 RP wasted.',
             ),
           },
           {
@@ -1153,7 +1153,7 @@ function match5(): MatchConfig {
             action: msg('Save RP'),
             rpCost: 0,
             note: msg(
-              'Leading comfortably. Reckoning begins \u2014 bleed amplified. Balance: 25+10 = 30 (cap)',
+              'Leading comfortably. Reckoning begins \u2013 bleed amplified. Balance: 25+10 = 30 (cap)',
             ),
           },
           {
@@ -1257,16 +1257,16 @@ function match5(): MatchConfig {
     ],
     keyMoments: [
       msg(
-        "Cycle 6\u20137: Velgarien's counter-intel sweep catches the Gaslit Reach's propagandist \u2014 a 6-point swing (\u22123 for Gaslit Reach, +0 saved for Velgarien).",
+        "Cycle 6\u20137: Velgarien's counter-intel sweep catches the Gaslit Reach's propagandist \u2013 a 6-point swing (\u22123 for Gaslit Reach, +0 saved for Velgarien).",
       ),
       msg(
         "Cycle 8\u201311: Velgarien's assassin blocks The Marchioness for 3 cycles, crippling the Gaslit Reach's diplomatic score during mid-game.",
       ),
       msg(
-        "Cycle 11: The Gaslit Reach's saboteur fails against 3 guardians in Velgarien's library zone \u2014 the Foundation Wall strategy pays off.",
+        "Cycle 11: The Gaslit Reach's saboteur fails against 3 guardians in Velgarien's library zone \u2013 the Foundation Wall strategy pays off.",
       ),
       msg(
-        'Cycle 10\u201312: Station Null plays kingmaker \u2014 Drowned Bell sabotage + propaganda push Gaslit Reach to last place.',
+        'Cycle 10\u201312: Station Null plays kingmaker \u2013 Drowned Bell sabotage + propaganda push Gaslit Reach to last place.',
       ),
       msg(
         "Cycle 14\u201315: Station Null's second saboteur degrades the already-moderate Drowned Bell to poor, while the Gaslit Reach's desperate saboteur is detected. A brutal final act.",

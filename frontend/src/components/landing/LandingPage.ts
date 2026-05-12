@@ -2144,7 +2144,7 @@ export class VelgLandingPage extends LitElement {
               <div class="stat-cell__signal" style="--i: 0" aria-hidden="true"></div>
               <p class="stat-cell__label">${msg('Active Worlds')}</p>
               <p class="stat-cell__value" aria-label=${msg('Active world count')}>
-                ${sims !== null ? sims : '\u2014'}
+                ${sims !== null ? sims : '\u2013'}
               </p>
               <p class="stat-cell__unit">${msg('simulations online')}</p>
             </div>
@@ -2153,7 +2153,7 @@ export class VelgLandingPage extends LitElement {
               <div class="stat-cell__signal" style="--i: 1" aria-hidden="true"></div>
               <p class="stat-cell__label">${msg('Live Epochs')}</p>
               <p class="stat-cell__value" aria-label=${msg('Active epoch count')}>
-                ${epochs !== null ? epochs : '\u2014'}
+                ${epochs !== null ? epochs : '\u2013'}
               </p>
               <p class="stat-cell__unit">${msg('competitive seasons')}</p>
             </div>
@@ -2162,7 +2162,7 @@ export class VelgLandingPage extends LitElement {
               <div class="stat-cell__signal" style="--i: 2" aria-hidden="true"></div>
               <p class="stat-cell__label">${msg('Resonances')}</p>
               <p class="stat-cell__value" aria-label=${msg('Resonance count')}>
-                ${resonances !== null ? resonances : '\u2014'}
+                ${resonances !== null ? resonances : '\u2013'}
               </p>
               <p class="stat-cell__unit">${msg('substrate events')}</p>
             </div>

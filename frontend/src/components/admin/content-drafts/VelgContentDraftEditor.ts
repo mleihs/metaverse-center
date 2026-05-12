@@ -1396,7 +1396,7 @@ export class VelgContentDraftEditor extends LitElement {
                       <div class="banner banner--warn">
                         <p class="banner__title">${msg('Selected')}</p>
                         ${msg(
-                          str`${selectedRow.file_path} — ${selectedRow.entry_count >= 0 ? selectedRow.entry_count : '?'} entries on disk.`,
+                          str`${selectedRow.file_path} – ${selectedRow.entry_count >= 0 ? selectedRow.entry_count : '?'} entries on disk.`,
                         )}
                       </div>
                       <div class="field">
@@ -1417,7 +1417,7 @@ export class VelgContentDraftEditor extends LitElement {
                         </label>
                         <div class="field__hint">
                           ${msg(
-                            'Recommended. Unchecked means the draft starts empty — use only when adding a brand-new resource.',
+                            'Recommended. Unchecked means the draft starts empty – use only when adding a brand-new resource.',
                           )}
                         </div>
                       </div>

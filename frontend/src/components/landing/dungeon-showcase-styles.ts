@@ -371,7 +371,7 @@ export const showcaseLayoutStyles = css`
     color: var(--_accent);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.5);
   }
-  .quote-block__author::before { content: '\u2014\u2009'; }
+  .quote-block__author::before { content: '\u2013\u2009'; }
 
   /* ── Navigation ── */
 

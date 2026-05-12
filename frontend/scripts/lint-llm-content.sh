@@ -18,8 +18,14 @@ SRC_DIR="src"
 
 EM_DASH=$'\xe2\x80\x94'  # U+2014
 
-# Search .ts files for em dash inside msg() or template literals
-EM_HITS=$(grep -rn "$EM_DASH" "$SRC_DIR" --include='*.ts' \
+# Search .ts files for an em dash inside msg() / template literals / aria
+# labels. Matches all three ways it can be written in source:
+#   - the literal UTF-8 byte  —
+#   - the — escape       (lit-localize resolves this to a literal em dash
+#                              in de.xlf, so the byte-only check used to miss
+#                              every escape-written one — see commit history)
+#   - the \u{2014} ES6 escape
+EM_HITS=$(grep -rn -e "$EM_DASH" -e '\\u2014' -e '\\u{2014}' "$SRC_DIR" --include='*.ts' \
   --exclude-dir='locales' \
   | grep -v '// ' \
   | grep -v ' \* ' \
@@ -29,7 +35,7 @@ EM_HITS=$(grep -rn "$EM_DASH" "$SRC_DIR" --include='*.ts' \
   || true)
 
 if [ -n "$EM_HITS" ]; then
-  echo "ERROR: Em dashes (U+2014) found in user-facing strings."
+  echo "ERROR: Em dashes (U+2014 — literal or \\u2014 escape) found in user-facing strings."
   echo "       Use en dashes (U+2013) instead: –"
   echo ""
   echo "$EM_HITS"

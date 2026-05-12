@@ -1052,7 +1052,7 @@ export class VelgAdminResonancesTab extends LitElement {
             </div>
           `
               : html`
-            <div>${formatDate(r.updated_at, { fallback: '\u2014' })}</div>
+            <div>${formatDate(r.updated_at, { fallback: '\u2013' })}</div>
           `
           }
         </div>
