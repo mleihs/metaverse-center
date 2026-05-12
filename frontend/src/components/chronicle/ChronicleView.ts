@@ -856,7 +856,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
     return html`
       <article class="front-page">
         <div class="front-page__vol">
-          ${msg('Vol.')} ${c.edition_number} \u2014 ${formatDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}
+          ${msg('Vol.')} ${c.edition_number} \u2013 ${formatDateRange(c.period_start, c.period_end, { locale: getDateLocale() })}
         </div>
         <h2 class="front-page__headline">${t(c, 'title')}</h2>
         ${c.headline ? html`<div class="front-page__subhead">${t(c, 'headline')}</div>` : nothing}

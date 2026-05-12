@@ -2079,7 +2079,7 @@ export class VelgAdminInstagramTab extends LitElement {
             <span class="story-card__type">${typeLabel}</span>
             <span class="story-card__seq">#${story.sequence_index}</span>
             <span class="badge badge--${badgeColor}">${story.status}</span>
-            <span class="story-card__time">${formatDateTimeShort(story.scheduled_at, { fallback: '\u2014' })}</span>
+            <span class="story-card__time">${formatDateTimeShort(story.scheduled_at, { fallback: '\u2013' })}</span>
           </div>
           <div class="story-card__caption">${story.caption ?? ''}</div>
           ${
@@ -2463,7 +2463,7 @@ export class VelgAdminInstagramTab extends LitElement {
             value=${
               a?.avg_engagement_rate != null
                 ? `${(a.avg_engagement_rate * 100).toFixed(1)}%`
-                : '\u2014'
+                : '\u2013'
             }
             sublabel=${msg('avg across published')}
           ></velg-metric-card>
@@ -2556,7 +2556,7 @@ export class VelgAdminInstagramTab extends LitElement {
               ${cs.recent_redemptions.slice(0, 10).map(
                 (r: CipherRedemptionRecord) => html`
                   <div class="cipher-table__row">
-                    <span>${formatDateTimeShort(r.redeemed_at, { fallback: '\u2014' })}</span>
+                    <span>${formatDateTimeShort(r.redeemed_at, { fallback: '\u2013' })}</span>
                     <span class="dispatch__type-tag">${r.reward_type}</span>
                     <span style="color: var(--color-text-muted)">
                       ${r.user_id ? `${r.user_id.slice(0, 8)}\u2026` : msg('Anonymous')}

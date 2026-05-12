@@ -426,7 +426,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Run scheduled sweep now?'),
       message: msg(
-        'This runs a full sweep immediately and resets the weekly clock. Branches classified for deletion will be removed from the repository — not reversible from this UI.',
+        'This runs a full sweep immediately and resets the weekly clock. Branches classified for deletion will be removed from the repository – not reversible from this UI.',
       ),
       confirmLabel: msg('Run now'),
       cancelLabel: msg('Cancel'),

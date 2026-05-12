@@ -454,7 +454,7 @@ export class VelgDungeonShowcase extends LitElement {
         @touchend=${this._onTouchEnd}
       >
         <div class="classification" aria-hidden="true">
-          ${msg('Resonance Dungeons')} \u2014 ${msg('Archetype Registry')}
+          ${msg('Resonance Dungeons')} \u2013 ${msg('Archetype Registry')}
         </div>
 
         ${ARCHETYPES.map(

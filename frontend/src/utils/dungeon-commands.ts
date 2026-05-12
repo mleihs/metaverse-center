@@ -973,7 +973,7 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       // Victory → show loot
       if (resp.data.round_result.victory && resp.data.state.phase === 'room_clear') {
         dungeonAudio.play('victory');
-        lines.push(combatSystemLine(msg('VICTORY \u2014 ROOM CLEARED')));
+        lines.push(combatSystemLine(msg('VICTORY \u2013 ROOM CLEARED')));
         if (resp.data.loot && resp.data.loot.length > 0) {
           dungeonAudio.play('loot-found');
           lines.push(...formatLootDrop(resp.data.loot));

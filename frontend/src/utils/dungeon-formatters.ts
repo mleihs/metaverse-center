@@ -416,7 +416,7 @@ export function formatDungeonEntry(
   lines.push(systemLine('\u2550'.repeat(50)));
   lines.push(
     systemLine(
-      `  ${msg('RESONANCE DUNGEON')} \u2014 ${getArchetypeDisplayName(state.archetype).toUpperCase()}`,
+      `  ${msg('RESONANCE DUNGEON')} \u2013 ${getArchetypeDisplayName(state.archetype).toUpperCase()}`,
     ),
   );
   const depthDisplay = getMaxDepth(state.rooms) || '?';
@@ -442,7 +442,7 @@ export function formatDungeonEntry(
       : '';
     lines.push(
       responseLine(
-        `  ${agent.agent_name} \u2014 ${aptStr} \u2014 ${getConditionLabel(agent.condition).toUpperCase()}`,
+        `  ${agent.agent_name} \u2013 ${aptStr} \u2013 ${getConditionLabel(agent.condition).toUpperCase()}`,
       ),
     );
   }
@@ -615,7 +615,7 @@ export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
 
   lines.push(
     systemLine(
-      `DUNGEON MAP \u2014 ${state.archetype.toUpperCase()}, ${msg('Depth')} ${state.depth}/${mxDepth}`,
+      `DUNGEON MAP \u2013 ${state.archetype.toUpperCase()}, ${msg('Depth')} ${state.depth}/${mxDepth}`,
     ),
   );
   lines.push(systemLine(''));
@@ -688,7 +688,7 @@ export function formatRoomEntry(
   lines.push(responseLine(''));
   lines.push(
     systemLine(
-      `\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2014 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`,
+      `\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2013 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`,
     ),
   );
 
@@ -772,7 +772,7 @@ export function formatCombatStart(combat: CombatStateClient): TerminalLine[] {
   lines.push(systemLine(''));
   lines.push(
     systemLine(
-      `\u2550\u2550\u2550 ${msg('COMBAT')} \u2014 ${msg('Round')} ${combat.round_num}/${combat.max_rounds} \u2550\u2550\u2550`,
+      `\u2550\u2550\u2550 ${msg('COMBAT')} \u2013 ${msg('Round')} ${combat.round_num}/${combat.max_rounds} \u2550\u2550\u2550`,
     ),
   );
   lines.push(systemLine(''));
@@ -849,7 +849,7 @@ export function formatCombatResolution(
 
   lines.push(
     combatSystemLine(
-      `\u2550\u2550\u2550 ${msg('RESOLUTION')} \u2014 ${msg('Round')} ${result.round} \u2550\u2550\u2550`,
+      `\u2550\u2550\u2550 ${msg('RESOLUTION')} \u2013 ${msg('Round')} ${result.round} \u2550\u2550\u2550`,
     ),
   );
 
@@ -1289,7 +1289,7 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
   lines.push(
     combatSystemLine(
       '\u2551' +
-        `${state.archetype.toUpperCase()} \u2014 ${msg('DIFFICULTY')} ${state.difficulty}`
+        `${state.archetype.toUpperCase()} \u2013 ${msg('DIFFICULTY')} ${state.difficulty}`
           .padStart(Math.floor((W - 2 + state.archetype.length + 16) / 2))
           .padEnd(W - 2) +
         '\u2551',
@@ -1326,7 +1326,7 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
       const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
       lines.push(
         combatHealLine(
-          `  ${marker} ${localized(item, 'name')} \u2014 ${localized(item, 'description')}`,
+          `  ${marker} ${localized(item, 'name')} \u2013 ${localized(item, 'description')}`,
         ),
       );
     }
@@ -1436,7 +1436,7 @@ export function formatLootDistribution(
     for (const item of autoItems) {
       lines.push(
         combatMissLine(
-          `  [${msg('AUTO')}] ${_effectLabel(item.effect_type)} \u2014 ${localized(item, 'description')}`,
+          `  [${msg('AUTO')}] ${_effectLabel(item.effect_type)} \u2013 ${localized(item, 'description')}`,
         ),
       );
     }
@@ -1509,7 +1509,7 @@ export function formatDungeonStatus(state: DungeonClientState): TerminalLine[] {
 
   lines.push(
     systemLine(
-      `\u2550\u2550\u2550 ${state.archetype.toUpperCase()} \u2014 ${msg('STATUS')} \u2550\u2550\u2550`,
+      `\u2550\u2550\u2550 ${state.archetype.toUpperCase()} \u2013 ${msg('STATUS')} \u2550\u2550\u2550`,
     ),
   );
   lines.push(systemLine(''));

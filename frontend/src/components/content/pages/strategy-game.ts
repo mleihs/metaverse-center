@@ -45,10 +45,10 @@ export function getStrategyGamePage(): ContentPageData {
         title: msg('Strategy as Old as Civilization'),
         content: html`
           <p>
-            ${msg('Sun Tzu wrote it twenty-five centuries ago: "All warfare is based on deception. Hence, when we are able to attack, we must seem unable; when using our forces, we must appear inactive." The Art of War endures because its principles are universal \u2014 applicable to any domain where agents with competing interests make decisions under uncertainty.')}
+            ${msg('Sun Tzu wrote it twenty-five centuries ago: "All warfare is based on deception. Hence, when we are able to attack, we must seem unable; when using our forces, we must appear inactive." The Art of War endures because its principles are universal \u2013 applicable to any domain where agents with competing interests make decisions under uncertainty.')}
           </p>
           <p>
-            ${msg('Carl von Clausewitz added the concept of friction \u2014 the gap between a perfect plan and messy reality. "Everything in war is very simple," he wrote in On War (1832), "but the simplest thing is difficult." And the fog of war: the impossibility of complete information, the necessity of acting on incomplete intelligence, the cascade of unintended consequences.')}
+            ${msg('Carl von Clausewitz added the concept of friction \u2013 the gap between a perfect plan and messy reality. "Everything in war is very simple," he wrote in On War (1832), "but the simplest thing is difficult." And the fog of war: the impossibility of complete information, the necessity of acting on incomplete intelligence, the cascade of unintended consequences.')}
           </p>
           <p>
             ${msg('Competitive Epochs on metaverse.center embody both traditions. Sun Tzu\u2019s deception manifests in spy operations, feints, and misdirection. Clausewitz\u2019s friction emerges from the interaction of multiple players in a system too complex for any single mind to predict. You plan. Your opponents plan. And then reality happens.')}
@@ -62,13 +62,13 @@ export function getStrategyGamePage(): ContentPageData {
         title: msg('The Mathematics of Conflict'),
         content: html`
           <p>
-            ${msg('In 1944, John von Neumann and Oskar Morgenstern published Theory of Games and Economic Behavior, founding a mathematical framework for strategic interaction. Six years later, John Nash proved that every finite game has at least one equilibrium \u2014 a set of strategies where no player can improve their outcome by unilaterally changing their approach.')}
+            ${msg('In 1944, John von Neumann and Oskar Morgenstern published Theory of Games and Economic Behavior, founding a mathematical framework for strategic interaction. Six years later, John Nash proved that every finite game has at least one equilibrium \u2013 a set of strategies where no player can improve their outcome by unilaterally changing their approach.')}
           </p>
           <p>
-            ${msg('The prisoner\u2019s dilemma, the most famous game-theoretic scenario, captures the tension at the heart of every Epoch: cooperation yields the best collective outcome, but betrayal tempts with individual advantage. In metaverse.center\u2019s alliance system, this dilemma is not abstract. You can form alliances for diplomatic bonuses \u2014 but attacking an ally dissolves the alliance and may trigger score penalties. Trust is a resource. Betrayal is a weapon.')}
+            ${msg('The prisoner\u2019s dilemma, the most famous game-theoretic scenario, captures the tension at the heart of every Epoch: cooperation yields the best collective outcome, but betrayal tempts with individual advantage. In metaverse.center\u2019s alliance system, this dilemma is not abstract. You can form alliances for diplomatic bonuses \u2013 but attacking an ally dissolves the alliance and may trigger score penalties. Trust is a resource. Betrayal is a weapon.')}
           </p>
           <p>
-            ${msg('Five scoring dimensions \u2014 stability, influence, sovereignty, diplomatic, and military \u2014 create a multi-objective optimization problem with no single dominant strategy. A military juggernaut can be outmaneuvered diplomatically. A diplomatic powerhouse can be undermined by espionage. The Nash equilibrium, if one exists, is emergent and unknowable in advance.')}
+            ${msg('Five scoring dimensions \u2013 stability, influence, sovereignty, diplomatic, and military \u2013 create a multi-objective optimization problem with no single dominant strategy. A military juggernaut can be outmaneuvered diplomatically. A diplomatic powerhouse can be undermined by espionage. The Nash equilibrium, if one exists, is emergent and unknowable in advance.')}
           </p>
         `,
       },
@@ -85,7 +85,7 @@ export function getStrategyGamePage(): ContentPageData {
             <div class="feature-card">
               <div class="feature-card__title">${msg('Spy')}</div>
               <div class="feature-card__text">
-                ${msg('Intelligence gathering. Reveals target zone security levels and guardian deployments. Knowledge is the prerequisite of effective action \u2014 Sun Tzu placed espionage as the highest form of warfare.')}
+                ${msg('Intelligence gathering. Reveals target zone security levels and guardian deployments. Knowledge is the prerequisite of effective action \u2013 Sun Tzu placed espionage as the highest form of warfare.')}
               </div>
             </div>
             <div class="feature-card">
@@ -128,17 +128,17 @@ export function getStrategyGamePage(): ContentPageData {
         title: msg('When Players Write the Rules'),
         content: html`
           <p>
-            ${msg('The most compelling strategy games are those where player behavior produces complexity that the designers never anticipated. Allan Calhamer\u2019s Diplomacy (1959) stripped away dice and chance entirely \u2014 seven players negotiating, promising, and betraying across a map of pre-WWI Europe. The game\u2019s depth comes entirely from human interaction, not mechanical complexity.')}
+            ${msg('The most compelling strategy games are those where player behavior produces complexity that the designers never anticipated. Allan Calhamer\u2019s Diplomacy (1959) stripped away dice and chance entirely \u2013 seven players negotiating, promising, and betraying across a map of pre-WWI Europe. The game\u2019s depth comes entirely from human interaction, not mechanical complexity.')}
           </p>
           <p>
-            ${msg('EVE Online took this further. In January 2014, the Battle of B-R5RB erupted from a missed sovereignty payment \u2014 a clerical error that triggered the largest virtual battle in gaming history. Over 7,500 players fought for 21 hours, destroying virtual assets worth an estimated $300,000 in real currency. No designer scripted this. The game\u2019s economic and political systems created the conditions; players created the history.')}
+            ${msg('EVE Online took this further. In January 2014, the Battle of B-R5RB erupted from a missed sovereignty payment \u2013 a clerical error that triggered the largest virtual battle in gaming history. Over 7,500 players fought for 21 hours, destroying virtual assets worth an estimated $300,000 in real currency. No designer scripted this. The game\u2019s economic and political systems created the conditions; players created the history.')}
           </p>
           <p>
             ${msg('metaverse.center is designed for this kind of emergence. Epochs provide the competitive framework, but the strategic landscape is shaped by player decisions: alliance formations, intelligence operations, resource allocation, and the cascading consequences of actions taken across a multiverse of connected worlds. Every epoch writes its own history, and no two play out the same way.')}
           </p>
           <blockquote>
             ${msg('"In war, the way is to avoid what is strong, and strike at what is weak."')}
-            <cite>${msg('\u2014 Sun Tzu, The Art of War')}</cite>
+            <cite>${msg('\u2013 Sun Tzu, The Art of War')}</cite>
           </blockquote>
         `,
       },
@@ -184,7 +184,7 @@ export function getStrategyGamePage(): ContentPageData {
             </div>
           </div>
           <p>
-            ${msg('The composite score determines final ranking. There is no single path to victory \u2014 a diplomatic mastermind, a military juggernaut, and a cultural powerhouse all have viable routes to the top.')}
+            ${msg('The composite score determines final ranking. There is no single path to victory \u2013 a diplomatic mastermind, a military juggernaut, and a cultural powerhouse all have viable routes to the top.')}
           </p>
         `,
       },
@@ -195,7 +195,7 @@ export function getStrategyGamePage(): ContentPageData {
         title: msg('Enter the Arena'),
         content: html`
           <p>
-            ${msg('Epochs are time-limited competitive matches. Build your simulation, populate it with agents and buildings, and enter an epoch when you\u2019re ready. Game instances are normalized at the start for fair competition \u2014 every player begins on equal footing regardless of how long they\u2019ve been building.')}
+            ${msg('Epochs are time-limited competitive matches. Build your simulation, populate it with agents and buildings, and enter an epoch when you\u2019re ready. Game instances are normalized at the start for fair competition \u2013 every player begins on equal footing regardless of how long they\u2019ve been building.')}
           </p>
           <p>
             ${msg('Deploy operatives. Form alliances. Gather intelligence. Strike at weaknesses. Defend your sovereignty. And when the epoch ends, see where you stand across five dimensions of strategic performance.')}
@@ -223,13 +223,13 @@ export function getStrategyGamePage(): ContentPageData {
       {
         question: msg('How does the alliance system work?'),
         answer: msg(
-          'Players can propose and accept alliances during an epoch. Active alliances provide a +15% diplomatic bonus. However, attacking an ally dissolves the alliance and may incur score penalties \u2014 the prisoner\u2019s dilemma in action.',
+          'Players can propose and accept alliances during an epoch. Active alliances provide a +15% diplomatic bonus. However, attacking an ally dissolves the alliance and may incur score penalties \u2013 the prisoner\u2019s dilemma in action.',
         ),
       },
       {
         question: msg('What are Resource Points (RP)?'),
         answer: msg(
-          'RP is the currency for deploying operatives. Each operative type has a different RP cost. Managing RP allocation \u2014 deciding between offense, defense, intelligence, and diplomacy \u2014 is a core strategic decision.',
+          'RP is the currency for deploying operatives. Each operative type has a different RP cost. Managing RP allocation \u2013 deciding between offense, defense, intelligence, and diplomacy \u2013 is a core strategic decision.',
         ),
       },
       {

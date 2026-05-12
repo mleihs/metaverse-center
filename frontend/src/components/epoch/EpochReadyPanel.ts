@@ -614,7 +614,7 @@ export class VelgEpochReadyPanel extends LitElement {
     if (p.is_bot) {
       return html`
         <div class="participant">
-          <span class="participant__icon participant__icon--waiting">\u2014</span>
+          <span class="participant__icon participant__icon--waiting">\u2013</span>
           <span class="participant__name"
             >${name}${
               afkReplaced
@@ -632,7 +632,7 @@ export class VelgEpochReadyPanel extends LitElement {
         <span
           class="participant__icon ${ready ? 'participant__icon--ready' : 'participant__icon--waiting'}"
         >
-          ${ready ? '\u2713' : '\u2014'}
+          ${ready ? '\u2713' : '\u2013'}
         </span>
         <span class="participant__name">${name}</span>
         ${

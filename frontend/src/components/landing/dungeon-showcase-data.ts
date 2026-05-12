@@ -49,7 +49,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
     accent: '#7c5ce7',
     quotes: [
       {
-        text: 'The instruments read nothing. Not zero\u2009\u2014\u2009nothing. As if measurement itself has been consumed.',
+        text: 'The instruments read nothing. Not zero\u2009\u2013\u2009nothing. As if measurement itself has been consumed.',
         author: 'Reconnaissance Banter',
       },
       {
@@ -57,7 +57,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
         author: 'Reconnaissance Banter',
       },
       {
-        text: 'The corridors converge here\u2009\u2014\u2009not architecturally, but ontologically.',
+        text: 'The corridors converge here\u2009\u2013\u2009not architecturally, but ontologically.',
         author: 'Reconnaissance Banter',
       },
       {
@@ -69,7 +69,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
         author: 'Reconnaissance Banter',
       },
       {
-        text: 'A gap in the darkness\u2009\u2014\u2009not light, exactly, but the absence of active malice.',
+        text: 'A gap in the darkness\u2009\u2013\u2009not light, exactly, but the absence of active malice.',
         author: 'Reconnaissance Banter',
       },
     ],
@@ -93,7 +93,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
         originalLang: 'Deutsch',
       },
       {
-        text: 'The stairwell narrows. Not the walls\u2009\u2014\u2009the sense that return is possible.',
+        text: 'The stairwell narrows. Not the walls\u2009\u2013\u2009the sense that return is possible.',
         author: 'Structural Banter',
       },
       {
@@ -106,7 +106,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
       { text: 'Only momentum and gravity, negotiating terms.', author: 'Structural Banter' },
       {
-        text: 'The geometry here is wrong. Not broken\u2009\u2014\u2009bankrupt.',
+        text: 'The geometry here is wrong. Not broken\u2009\u2013\u2009bankrupt.',
         author: 'Structural Banter',
       },
     ],
@@ -326,7 +326,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
         author: 'Philip K. Dick, Ubik',
       },
     ],
-    tagline: 'The dungeon is not a container for memories\u2009\u2014\u2009it IS memory.',
+    tagline: 'The dungeon is not a container for memories\u2009\u2013\u2009it IS memory.',
     cssClass: 'slide--awakening',
     imageUrl: `${STORAGE_BASE}/dungeon-awakening.avif`,
     scrim: [10, 0.5, 0.55],
@@ -372,7 +372,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
         author: 'Regime Banter',
       },
     ],
-    tagline: 'Power changes hands. The old order does not die\u2009\u2014\u2009it metamorphoses.',
+    tagline: 'Power changes hands. The old order does not die\u2009\u2013\u2009it metamorphoses.',
     cssClass: 'slide--overthrow',
     imageUrl: `${STORAGE_BASE}/dungeon-overthrow.avif`,
     scrim: [22, 0.22, 0.4],

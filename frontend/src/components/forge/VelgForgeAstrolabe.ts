@@ -729,7 +729,7 @@ export class VelgForgeAstrolabe extends LitElement {
         'A floating archipelago where memories solidify into islands and forgetting causes erosion. Cartographers wage silent wars over which memories are worth preserving.',
       ),
       msg(
-        'A city that only exists during solar eclipses — its inhabitants live compressed lifetimes in minutes of darkness. Between eclipses, they are nothing but equations scratched into observatory walls.',
+        'A city that only exists during solar eclipses – its inhabitants live compressed lifetimes in minutes of darkness. Between eclipses, they are nothing but equations scratched into observatory walls.',
       ),
       msg(
         'An underground network of libraries where books rewrite themselves based on who reads them. The librarians have stopped reading entirely, terrified of what the books might become.',
@@ -770,7 +770,7 @@ export class VelgForgeAstrolabe extends LitElement {
             <span class="seed-box__title">${msg('The Initial Seed')}</span>
             ${this._renderInfoBubble(
               msg(
-                'Describe the core concept of your simulation world. Think in themes, contradictions, and atmospheres — not plot.',
+                'Describe the core concept of your simulation world. Think in themes, contradictions, and atmospheres – not plot.',
               ),
               msg(
                 'A floating archipelago where memories solidify into islands and forgetting causes erosion',
@@ -790,10 +790,10 @@ export class VelgForgeAstrolabe extends LitElement {
             <span class="seed-box__lang-hint">
               ${this._renderInfoBubble(
                 msg(
-                  'Write in any language — the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.',
+                  'Write in any language – the AI interprets your concept regardless of language. Focus on atmosphere, themes, and contradictions.',
                 ),
                 msg(
-                  'Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren — works just as well as English.',
+                  'Ein schwimmender Archipel, wo Erinnerungen zu Inseln erstarren – works just as well as English.',
                 ),
               )}
               <span>${msg('Any language')}</span>

@@ -313,10 +313,10 @@ export class VelgAcademyEpochCard extends LitElement {
           ${
             this.academyEpochsPlayed === 0
               ? msg(
-                  'Initialize your first training simulation. Solo training vs 3 AI opponents — learn operative deployment, score mechanics, and alliance tactics.',
+                  'Initialize your first training simulation. Solo training vs 3 AI opponents – learn operative deployment, score mechanics, and alliance tactics.',
                 )
               : msg(
-                  'Continue your training regimen. Solo training vs 3 AI opponents — refine your operative strategy and score optimization.',
+                  'Continue your training regimen. Solo training vs 3 AI opponents – refine your operative strategy and score optimization.',
                 )
           }
         </p>

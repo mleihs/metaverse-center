@@ -56,7 +56,7 @@ export function getDemoSteps(): DemoStep[] {
         'Before the epoch starts, draft your agent lineup. The full-screen draft overlay shows all your template agents with their aptitude profiles. Pick specialists who match the operative types you plan to deploy.',
       ),
       detail: msg(
-        'Each agent has 6 aptitude scores (3\u20139) totaling 36 points. A spy aptitude of 9 gives +27% success, while 3 gives only +9%. Choose wisely \u2014 the wrong agent on the wrong mission costs you 18 percentage points.',
+        'Each agent has 6 aptitude scores (3\u20139) totaling 36 points. A spy aptitude of 9 gives +27% success, while 3 gives only +9%. Choose wisely \u2013 the wrong agent on the wrong mission costs you 18 percentage points.',
       ),
       readout: [
         { label: msg('Doktor Fenn'), value: msg('Infiltrator 9') },
@@ -104,7 +104,7 @@ export function getDemoSteps(): DemoStep[] {
         { label: msg('RP remaining'), value: '14 / 40' },
       ],
       tip: msg(
-        'Deploy 1\u20132 guardians during Foundation, then save the rest of your RP for Competition. Three guardians reach the 15% cap \u2014 more is wasted.',
+        'Deploy 1\u20132 guardians during Foundation, then save the rest of your RP for Competition. Three guardians reach the 15% cap \u2013 more is wasted.',
       ),
       image: demoImage('demo-05-deploy-guardian.avif'),
       imageAlt: msg('Guardian deployment confirmation with dossier summary'),
@@ -117,7 +117,7 @@ export function getDemoSteps(): DemoStep[] {
         'Competition unlocks all 6 operative types. Deploy Elena Voss (spy aptitude 9) against The Gaslit Reach. Spies cost only 3 RP, deploy instantly, and resolve after 3 cycles with valuable intelligence.',
       ),
       detail: msg(
-        'The success formula accounts for agent aptitude, target zone security, your guardian count, and embassy effectiveness. Elena\u2019s spy aptitude of 9 gives her a 66% success probability \u2014 significantly better than a generalist agent at aptitude 6 (48%).',
+        'The success formula accounts for agent aptitude, target zone security, your guardian count, and embassy effectiveness. Elena\u2019s spy aptitude of 9 gives her a 66% success probability \u2013 significantly better than a generalist agent at aptitude 6 (48%).',
       ),
       readout: [
         { label: msg('Agent'), value: msg('Elena Voss') },
@@ -137,7 +137,7 @@ export function getDemoSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Wait for Resolution'),
       narration: msg(
-        'Spy missions take 3 cycles to resolve. During this time, continue deploying other operatives or saving RP. Each cycle grants 12 RP (up to the 40 cap). The bot opponent is also making moves \u2014 you cannot see their deployments until the battle log reveals outcomes.',
+        'Spy missions take 3 cycles to resolve. During this time, continue deploying other operatives or saving RP. Each cycle grants 12 RP (up to the 40 cap). The bot opponent is also making moves \u2013 you cannot see their deployments until the battle log reveals outcomes.',
       ),
       tip: msg(
         'Use the waiting cycles to deploy a propagandist (4 RP, 2 cycles) or save for an expensive assassin (7 RP, 2-cycle deploy). Timing is everything.',
@@ -149,7 +149,7 @@ export function getDemoSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Spy Intel Report'),
       narration: msg(
-        'After 3 cycles, the spy mission resolves. On success, the battle log reveals the target\u2019s zone security levels and guardian count \u2014 critical intelligence for planning your next strike.',
+        'After 3 cycles, the spy mission resolves. On success, the battle log reveals the target\u2019s zone security levels and guardian count \u2013 critical intelligence for planning your next strike.',
       ),
       readout: [
         { label: msg('Status'), value: msg('Mission Success') },
@@ -158,7 +158,7 @@ export function getDemoSteps(): DemoStep[] {
         { label: msg('Influence'), value: msg('+2 points (espionage bonus)') },
       ],
       detail: msg(
-        'The intel reveals no guardians protecting The Gaslit Reach \u2014 a wide-open target. A saboteur aimed at the low-security zone would have near-maximum success. This is the spy\u2192saboteur combo in action.',
+        'The intel reveals no guardians protecting The Gaslit Reach \u2013 a wide-open target. A saboteur aimed at the low-security zone would have near-maximum success. This is the spy\u2192saboteur combo in action.',
       ),
       image: demoImage('demo-08-spy-intel.avif'),
       imageAlt: msg('Battle log showing spy intel report with zone security data'),
@@ -168,7 +168,7 @@ export function getDemoSteps(): DemoStep[] {
       phase: 'reckoning',
       title: msg('Final Push'),
       narration: msg(
-        'Reckoning is the endgame. Bleed threshold drops by 2 and cascade depth increases by 1 \u2014 events that wouldn\u2019t bleed during Competition suddenly punch through. Sovereignty scores can shift dramatically. Deploy your remaining operatives for maximum impact before scores freeze.',
+        'Reckoning is the endgame. Bleed threshold drops by 2 and cascade depth increases by 1 \u2013 events that wouldn\u2019t bleed during Competition suddenly punch through. Sovereignty scores can shift dramatically. Deploy your remaining operatives for maximum impact before scores freeze.',
       ),
       warning: msg(
         'Reckoning is short. Operatives with 2+ cycle deploy times may not resolve before the epoch ends. Prioritize fast-deploying types: spies (instant), propagandists (1 cycle), guardians (instant).',
@@ -184,13 +184,13 @@ export function getDemoSteps(): DemoStep[] {
         'When the epoch ends, scores freeze across all 5 dimensions. The composite score determines your final ranking. Titles are awarded based on your strongest dimension: The Unshaken (stability), The Resonant (influence), The Sovereign (sovereignty), The Architect (diplomatic), The Shadow (military).',
       ),
       readout: [
-        { label: msg('1st Place'), value: msg('Velgarien \u2014 100.0 pts') },
-        { label: msg('2nd Place'), value: msg('The Gaslit Reach \u2014 57.3 pts') },
+        { label: msg('1st Place'), value: msg('Velgarien \u2013 100.0 pts') },
+        { label: msg('2nd Place'), value: msg('The Gaslit Reach \u2013 57.3 pts') },
         { label: msg('Key move'), value: msg('Spy intel \u2192 exposed weak zones') },
         { label: msg('Game time'), value: msg('5 cycles across 3 phases') },
       ],
       tip: msg(
-        'One successful spy mission swung this match by 43 points. Intelligence is the foundation of every winning strategy \u2014 always deploy a spy early.',
+        'One successful spy mission swung this match by 43 points. Intelligence is the foundation of every winning strategy \u2013 always deploy a spy early.',
       ),
       image: demoImage('demo-10-final-standings.avif'),
       imageAlt: msg('Final epoch standings with composite scores and titles'),
