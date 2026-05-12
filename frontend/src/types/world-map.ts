@@ -60,6 +60,11 @@ export interface WorldMapAgentMarker {
   agent_id: UUID;
   name: string;
   home_building_id: UUID | null;
+  /** Free-text profession (mirrors `agents.primary_profession`). The map
+   *  buckets this into a small set of role archetypes for the marker tint;
+   *  the detail panel shows the localised text. NULL when unrecorded. */
+  profession: string | null;
+  profession_de: string | null;
 }
 
 /**

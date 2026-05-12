@@ -9,7 +9,9 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  agentRoleColorVar,
   buildZonesData,
+  categoriseAgentRole,
   categoriseZoneType,
   computeBounds,
   type MapColors,
@@ -418,5 +420,101 @@ describe('buildZonesData', () => {
     ]);
     expect(fc.features[0].properties.stability).toBe(0.42);
     expect(fc.features[0].properties.stability_label).toBe('unstable');
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────
+// categoriseAgentRole — free-text profession → role archetype
+// ───────────────────────────────────────────────────────────────────
+
+describe('categoriseAgentRole', () => {
+  it('returns "other" for null / undefined / empty', () => {
+    expect(categoriseAgentRole(null)).toBe('other');
+    expect(categoriseAgentRole(undefined)).toBe('other');
+    expect(categoriseAgentRole('')).toBe('other');
+  });
+
+  it('categorises the lore bucket', () => {
+    expect(categoriseAgentRole('Archivist')).toBe('lore');
+    expect(categoriseAgentRole('Lorekeeper of the Vault')).toBe('lore');
+    expect(categoriseAgentRole('Cartographer')).toBe('lore');
+    expect(categoriseAgentRole('Story Distiller')).toBe('lore');
+    expect(categoriseAgentRole('Resonance Attuner')).toBe('lore');
+    expect(categoriseAgentRole('Court Historian')).toBe('lore');
+  });
+
+  it('categorises the craft bucket', () => {
+    expect(categoriseAgentRole('Forgewright')).toBe('craft');
+    expect(categoriseAgentRole('Blacksmith')).toBe('craft');
+    expect(categoriseAgentRole('Stonemason')).toBe('craft');
+    expect(categoriseAgentRole('Mason')).toBe('craft');
+    expect(categoriseAgentRole('Cooper')).toBe('craft');
+    expect(categoriseAgentRole('Shipwright')).toBe('craft');
+  });
+
+  it('categorises the trade bucket', () => {
+    expect(categoriseAgentRole('Merchant')).toBe('trade');
+    expect(categoriseAgentRole('Grain Trader')).toBe('trade');
+    expect(categoriseAgentRole('Moneylender')).toBe('trade');
+    expect(categoriseAgentRole('Broker')).toBe('trade');
+  });
+
+  it('categorises the civic bucket', () => {
+    expect(categoriseAgentRole('Magistrate')).toBe('civic');
+    expect(categoriseAgentRole('Tide Clerk')).toBe('civic');
+    expect(categoriseAgentRole('Harbour Warden')).toBe('civic');
+    expect(categoriseAgentRole('Diplomat')).toBe('civic');
+    expect(categoriseAgentRole('Registrar')).toBe('civic');
+  });
+
+  it('prefers lore over trade for "Resonance Broker"', () => {
+    // Regression guard: "broker" alone is a trade keyword, but "resonance"
+    // is the distinctive part — a Resonance Broker is a keeper of arcane
+    // knowledge, not a market trader. Lore is tested first so it wins.
+    expect(categoriseAgentRole('Resonance Broker')).toBe('lore');
+    // And a plain "Broker" still falls through to trade.
+    expect(categoriseAgentRole('Broker')).toBe('trade');
+  });
+
+  it('matches "mason" only as a whole word but "stonemason" via its own arm', () => {
+    // \bmason\b would miss "stonemason" (no boundary before "mason"), so
+    // the craft arm carries an explicit "stonemason" alternative.
+    expect(categoriseAgentRole('Stonemason')).toBe('craft');
+    expect(categoriseAgentRole('Mason')).toBe('craft');
+  });
+
+  it('does not let bare "sage" match inside other words', () => {
+    // \bsage\b — "Message Clerk" must read as civic (clerk), not lore.
+    expect(categoriseAgentRole('Message Clerk')).toBe('civic');
+    expect(categoriseAgentRole('Court Sage')).toBe('lore');
+  });
+
+  it('matches "keeper" only as a whole word — "shopkeeper" is trade, not lore', () => {
+    // Regression guard: bare /keeper/ caught "shopkeeper"/"innkeeper"; the
+    // \bkeeper\b anchor + the explicit "shopkeep" arm of trade fix it.
+    expect(categoriseAgentRole('Shopkeeper')).toBe('trade');
+    expect(categoriseAgentRole('Records Keeper')).toBe('lore');
+    expect(categoriseAgentRole('Lorekeeper of the Vault')).toBe('lore');
+  });
+
+  it('falls back to "other" for unrecognised / plain professions', () => {
+    expect(categoriseAgentRole('laborer')).toBe('other');
+    expect(categoriseAgentRole('Field Hand')).toBe('other');
+    expect(categoriseAgentRole('Wanderer')).toBe('other');
+  });
+
+  it('is case-insensitive', () => {
+    expect(categoriseAgentRole('ARCHIVIST')).toBe('lore');
+    expect(categoriseAgentRole('blackSMITH')).toBe('craft');
+  });
+});
+
+describe('agentRoleColorVar', () => {
+  it('maps each archetype to its CSS-token var reference', () => {
+    expect(agentRoleColorVar('civic')).toBe('var(--color-primary)');
+    expect(agentRoleColorVar('craft')).toBe('var(--color-warning)');
+    expect(agentRoleColorVar('lore')).toBe('var(--color-info)');
+    expect(agentRoleColorVar('trade')).toBe('var(--color-epoch-influence)');
+    expect(agentRoleColorVar('other')).toBe('var(--color-success)');
   });
 });

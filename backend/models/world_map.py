@@ -202,11 +202,17 @@ class WorldMapAgentMarker(BaseModel):
 
     The frontend looks up `home_building_id` against the buildings list to get
     the actual coordinate. Agents without a `lives_at` relation are omitted.
+    `profession` / `profession_de` mirror `agents.primary_profession[_de]` —
+    the frontend buckets the free-text profession into a small set of role
+    archetypes to tint the marker, and shows the (localised) text in the
+    detail panel. Both are NULL when the agent has no recorded profession.
     """
 
     agent_id: UUID
     name: str
     home_building_id: UUID | None = None
+    profession: str | None = None
+    profession_de: str | None = None
 
 
 class WorldMapThemeHints(BaseModel):

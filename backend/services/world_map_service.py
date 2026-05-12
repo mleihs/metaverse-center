@@ -150,15 +150,17 @@ class WorldMapService:
             for b in buildings_rows
         ]
 
-        agent_name_by_id: dict[str, str] = {a["id"]: a["name"] for a in agents_rows}
+        agents_by_id: dict[str, dict[str, Any]] = {a["id"]: a for a in agents_rows}
         agent_markers = [
             WorldMapAgentMarker(
                 agent_id=UUID(r["agent_id"]),
-                name=agent_name_by_id[r["agent_id"]],
+                name=agents_by_id[r["agent_id"]]["name"],
                 home_building_id=UUID(r["building_id"]) if r.get("building_id") else None,
+                profession=agents_by_id[r["agent_id"]].get("primary_profession"),
+                profession_de=agents_by_id[r["agent_id"]].get("primary_profession_de"),
             )
             for r in relations_rows
-            if r.get("agent_id") in agent_name_by_id
+            if r.get("agent_id") in agents_by_id
         ]
 
         theme_hints = WorldMapThemeHints(
@@ -240,7 +242,7 @@ class WorldMapService:
     async def _fetch_agents(admin: Client, sim_id: UUID) -> list[dict]:
         resp = await (
             admin.table("agents")
-            .select("id, name")
+            .select("id, name, primary_profession, primary_profession_de")
             .eq("simulation_id", str(sim_id))
             .is_("deleted_at", "null")
             .execute()

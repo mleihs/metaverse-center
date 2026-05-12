@@ -22,9 +22,13 @@ import type {
   WorldMapZone,
 } from '../../types/world-map.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import {
+  type AgentRoleArchetype,
+  agentRoleColorVar,
   buildMapStyle,
   buildZonesData,
+  categoriseAgentRole,
   categoriseZoneType,
   computeBounds,
   polygonCentroid,
@@ -235,6 +239,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    */
   private _focusReturnEl: HTMLElement | null = null;
   private _keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  /** Which `world-map--zoom-{far,mid,near}` class is currently on the host —
+   *  null when no map is mounted. Tracked so _applyZoomTier only writes the
+   *  DOM when the threshold is actually crossed. */
+  private _appliedZoomTier: 'far' | 'mid' | 'near' | null = null;
   private _loadGeneration = 0;
   private _buildingsById: Map<string, WorldMapBuilding> = new Map();
   private _zonesById: Map<string, WorldMapZone> = new Map();
@@ -284,6 +292,19 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    * Phase 6.2 will replace polling with a Supabase Realtime broadcast.
    */
   private static readonly _STABILITY_REFRESH_MS = 60_000;
+
+  /**
+   * Zoom-tier thresholds (the map runs minZoom 10 → maxZoom 20). Below MID
+   * only city labels + zone fills show; from MID up, zone name labels and
+   * building icons appear; from NEAR up, agent dots appear too. A zoomed-out
+   * view of a multi-city sim would otherwise be a sea of overlapping 22 px
+   * icons — this keeps the overview legible and reveals detail on zoom-in,
+   * the same way an OSM-style slippy map does. Tier classes
+   * (`world-map--zoom-{far,mid,near}`) live on the host; the visibility rules
+   * are in world-map.css.
+   */
+  private static readonly _ZOOM_TIER_MID = 12;
+  private static readonly _ZOOM_TIER_NEAR = 14;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -416,12 +437,17 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
           this._renderLabels(map, Marker);
           this._renderBuildingMarkers(map, Marker);
           this._renderAgentMarkers(map, Marker);
+          this._applyZoomTier();
           this._startStabilityRefresh();
           this._subscribeToEvents(map, Marker);
         } catch (err) {
           captureError(err, { source: 'SimulationWorldMap._initMap.onLoad' });
         }
       });
+
+      // Zoom-tier marker visibility — fires continuously during a zoom gesture,
+      // but _applyZoomTier only touches the DOM when a threshold is crossed.
+      map.on('zoom', () => this._applyZoomTier());
 
       // Zones stay as MapLibre fill layers (clickable via layer hit-testing);
       // buildings + agents are DOM markers (their click/hover are wired in
@@ -469,6 +495,33 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     this._map = null;
     this._hoveredZoneId = null;
     this._fittedBounds = null;
+    if (this._appliedZoomTier) {
+      this.classList.remove(`world-map--zoom-${this._appliedZoomTier}`);
+      this._appliedZoomTier = null;
+    }
+  }
+
+  /**
+   * Toggle the host's zoom-tier class so CSS can hide/show marker layers by
+   * zoom level (see `_ZOOM_TIER_*` and the rules in world-map.css). Called on
+   * every `zoom` event, but only writes the DOM when the tier actually
+   * changes — the per-frame cost during a zoom gesture is a getZoom() read
+   * plus a comparison.
+   */
+  private _applyZoomTier(): void {
+    const map = this._map;
+    if (!map) return;
+    const z = map.getZoom();
+    const tier: 'far' | 'mid' | 'near' =
+      z >= VelgSimulationWorldMap._ZOOM_TIER_NEAR
+        ? 'near'
+        : z >= VelgSimulationWorldMap._ZOOM_TIER_MID
+          ? 'mid'
+          : 'far';
+    if (tier === this._appliedZoomTier) return;
+    if (this._appliedZoomTier) this.classList.remove(`world-map--zoom-${this._appliedZoomTier}`);
+    this.classList.add(`world-map--zoom-${tier}`);
+    this._appliedZoomTier = tier;
   }
 
   /**
@@ -913,6 +966,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       el.className = 'velg-map-agent-marker';
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
+      // Tint the dot by the click-target agent's role archetype (the one the
+      // marker selects), so the colour matches the panel that opens. Falls
+      // back to phosphor-green for unrecognised / missing professions.
+      el.style.setProperty('--_agent-color', agentRoleColorVar(categoriseAgentRole(first.profession)));
       // str-template keeps the full sentence translatable as one unit —
       // German translators can reorder to "${count} Agenten wohnen in ${name}"
       // rather than being stuck with the English word order.
@@ -1060,13 +1117,27 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
 
   private _renderFooter(): TemplateResult {
     const presentCategories: ZoneCategory[] = [];
+    // Recognised agent-role archetypes present in the data. `other` is
+    // intentionally excluded — the generic "Agent home" swatch already
+    // covers it (its colour IS the `other` tint), so listing it again would
+    // just be a redundant chip with a different label than the zone "Other".
+    const presentAgentRoles: AgentRoleArchetype[] = [];
     if (this._data) {
-      const seen = new Set<ZoneCategory>();
+      const seenCats = new Set<ZoneCategory>();
       for (const zone of this._data.zones) {
         const cat = categoriseZoneType(zone.zone_type);
-        if (!seen.has(cat)) {
-          seen.add(cat);
+        if (!seenCats.has(cat)) {
+          seenCats.add(cat);
           presentCategories.push(cat);
+        }
+      }
+      const seenRoles = new Set<AgentRoleArchetype>();
+      for (const m of this._data.agent_markers) {
+        const arch = categoriseAgentRole(m.profession);
+        if (arch === 'other') continue;
+        if (!seenRoles.has(arch)) {
+          seenRoles.add(arch);
+          presentAgentRoles.push(arch);
         }
       }
     }
@@ -1098,12 +1169,38 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
             <span class="world-map__legend-swatch world-map__legend-swatch--agent"></span>
             ${msg('Agent home')}
           </span>
+          ${presentAgentRoles.map(
+            (arch) => html`
+              <span class="world-map__legend-item">
+                <span
+                  class="world-map__legend-swatch world-map__legend-swatch--agent-role"
+                  style="background:${agentRoleColorVar(arch)}; border-color:${agentRoleColorVar(arch)};"
+                ></span>
+                ${this._localizeAgentRole(arch)}
+              </span>
+            `,
+          )}
         </div>
         <span class="world-map__attribution">
           ${msg('Synthetic geometry – Bureau Cartographic Section')}
         </span>
       </footer>
     `;
+  }
+
+  private _localizeAgentRole(arch: AgentRoleArchetype): string {
+    switch (arch) {
+      case 'civic':
+        return msg('Civic');
+      case 'craft':
+        return msg('Craft');
+      case 'lore':
+        return msg('Lore');
+      case 'trade':
+        return msg('Trade');
+      case 'other':
+        return msg('Other');
+    }
   }
 
   private _localizeCategory(cat: ZoneCategory): string {
@@ -1163,10 +1260,12 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         };
       }
       case 'agent': {
+        const profession = t(sel.agent, 'profession');
         return {
           kindLabel: msg('Agent'),
           name: sel.agent.name,
           rows: [
+            profession ? this._renderRow(msg('Profession'), profession) : html``,
             sel.building
               ? this._renderRow(msg('Lives at'), sel.building.name)
               : this._renderRow(msg('Home'), msg('Unassigned')),
