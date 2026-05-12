@@ -98,7 +98,13 @@ def _sample_payload(*, version: int = 1, is_instance: bool = False) -> WorldMapR
             WorldMapBuilding(id=BUILDING_ID, name="Rathaus", building_type="government"),
         ],
         agent_markers=[
-            WorldMapAgentMarker(agent_id=AGENT_ID, name="Herr Korn", home_building_id=BUILDING_ID),
+            WorldMapAgentMarker(
+                agent_id=AGENT_ID,
+                name="Herr Korn",
+                home_building_id=BUILDING_ID,
+                profession="Tide Clerk",
+                profession_de="Gezeitenschreiber",
+            ),
         ],
         theme_hints=WorldMapThemeHints(color_primary="#aa0000", font_heading="serif"),
     )
@@ -155,6 +161,8 @@ class TestPublicWorldMap:
         assert data["zones"][0]["stability"] == 0.62
         assert data["zones"][0]["stability_label"] == "functional"
         assert data["agent_markers"][0]["name"] == "Herr Korn"
+        assert data["agent_markers"][0]["profession"] == "Tide Clerk"
+        assert data["agent_markers"][0]["profession_de"] == "Gezeitenschreiber"
         assert data["theme_hints"]["color_primary"] == "#aa0000"
 
     @patch(

@@ -26,6 +26,7 @@ ZONE_ID_B = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
 BUILDING_ID = UUID("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
 AGENT_ID = UUID("ffffffff-ffff-ffff-ffff-ffffffffffff")
 ORPHAN_AGENT_ID = UUID("99999999-9999-9999-9999-999999999999")
+UNNAMED_PROF_AGENT_ID = UUID("88888888-8888-8888-8888-888888888888")
 
 MSD_PATH = "backend.services.world_map_service.maybe_single_data"
 
@@ -278,6 +279,35 @@ class TestGetPublicMap:
         assert result.agent_markers[0].agent_id == AGENT_ID
         assert result.agent_markers[0].name == "Anchored"
         assert result.agent_markers[0].home_building_id == BUILDING_ID
+
+    @pytest.mark.asyncio
+    async def test_agent_marker_carries_profession(self, monkeypatch):
+        """`primary_profession[_de]` from the agents fetch flows onto the marker;
+        an agent row missing the columns yields NULL profession (no KeyError)."""
+        _setup_service_mocks(
+            monkeypatch,
+            sim=_sim_row(),
+            agents=[
+                {
+                    "id": str(AGENT_ID),
+                    "name": "Tide Clerk Vel",
+                    "primary_profession": "Tide Clerk",
+                    "primary_profession_de": "Gezeitenschreiber",
+                },
+                {"id": str(UNNAMED_PROF_AGENT_ID), "name": "No-Profession Ren"},
+            ],
+            relations=[
+                {"agent_id": str(AGENT_ID), "building_id": str(BUILDING_ID)},
+                {"agent_id": str(UNNAMED_PROF_AGENT_ID), "building_id": str(BUILDING_ID)},
+            ],
+        )
+        result = await WorldMapService.get_public_map(MagicMock(), SIM_ID)
+        assert result is not None
+        by_id = {m.agent_id: m for m in result.agent_markers}
+        assert by_id[AGENT_ID].profession == "Tide Clerk"
+        assert by_id[AGENT_ID].profession_de == "Gezeitenschreiber"
+        assert by_id[UNNAMED_PROF_AGENT_ID].profession is None
+        assert by_id[UNNAMED_PROF_AGENT_ID].profession_de is None
 
     @pytest.mark.asyncio
     async def test_lives_at_for_unknown_agent_is_skipped(self, monkeypatch):

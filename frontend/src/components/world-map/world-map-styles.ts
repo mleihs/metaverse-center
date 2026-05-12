@@ -142,6 +142,69 @@ export function zoneCategoryColor(category: ZoneCategory, colors: MapColors): st
   return colors[ZONE_CATEGORY_STYLE[category].color];
 }
 
+// Agent professions are free text and vary widely per simulation (medieval
+// sims: "Forgewright"; coastal: "Tide Clerk"; literary: "Story Distiller").
+// Bucket them into four broad role archetypes for the marker tint —
+// everything we can't place (including the plain "laborer" default) falls
+// back to `other`, which keeps the familiar phosphor-green agent dot.
+export type AgentRoleArchetype = 'civic' | 'craft' | 'lore' | 'trade' | 'other';
+
+// Order matters: the most distinctive patterns are tested first so a broad
+// keyword in a later arm can't swallow a precise match. e.g. "Resonance
+// Broker" / "Memory Scribe" must read as `lore`, not be caught by the
+// "broker" arm of `trade` or the "scribe" arm of `civic`.
+export function categoriseAgentRole(profession: string | null | undefined): AgentRoleArchetype {
+  if (!profession) return 'other';
+  const p = profession.toLowerCase();
+  // `\bkeeper\b` (whole word) not bare `keeper` — "shopkeeper"/"innkeeper"
+  // are trade, not lore; only a standalone "Keeper" / "Records Keeper" reads
+  // as lore.
+  if (
+    /archiv|scholar|scribe|loremaster|lorekeeper|\bkeeper\b|librar|histor|chronicl|\bsage\b|distill|cartograph|mapmaker|attun|resonan|seer|oracle|mystic|divin|alchem|augur|astronom|philosoph|scient|research|analyst|teacher|professor|recorder/.test(
+      p,
+    )
+  )
+    return 'lore';
+  if (
+    /smith|wright|forge|carpenter|joiner|weaver|spinner|potter|baker|brewer|tailor|\bcooper\b|builder|maker|artisan|mechan|engineer|machin|fabricat|founder|miller|woodwork|stonemason|\bmason\b|glazier|tanner|\bdyer\b|cobbler|mill\b/.test(
+      p,
+    )
+  )
+    return 'craft';
+  if (
+    /broker|merchant|trader|tradesman|tradeswoman|dealer|vendor|peddler|banker|financ|accountant|\bfactor\b|shopkeep|stockist|auctioneer|moneylender|exchanger/.test(
+      p,
+    )
+  )
+    return 'trade';
+  if (
+    /govern|marshal|warden|magistrat|official|clerk|bureaucrat|administrat|minister|steward|constable|sheriff|judge|council|mayor|prefect|commission|inspector|registrar|notary|chancellor|overseer|envoy|ambassador|diplomat|secretary|adjudicat|prosecutor|bailiff/.test(
+      p,
+    )
+  )
+    return 'civic';
+  return 'other';
+}
+
+// Single source of truth for agent-role marker tint — yields a `var(--color-…)`
+// reference (not a resolved hex) so the DOM markers + legend swatches re-tint
+// live if the theme tokens shift; same pattern as buildingMarkerColorVar /
+// eventColorVar in SimulationWorldMap.ts. `other` keeps the original
+// phosphor-green dot, so an unrecognised profession (the majority on most
+// sims) is visually unchanged from before this pass. Adding an archetype
+// forces an entry here (TypeScript enforces the Record).
+const AGENT_ROLE_COLOR_VAR: Record<AgentRoleArchetype, string> = {
+  civic: 'var(--color-primary)',
+  craft: 'var(--color-warning)',
+  lore: 'var(--color-info)',
+  trade: 'var(--color-epoch-influence)',
+  other: 'var(--color-success)',
+};
+
+export function agentRoleColorVar(archetype: AgentRoleArchetype): string {
+  return AGENT_ROLE_COLOR_VAR[archetype];
+}
+
 interface BuildingPosition {
   id: string;
   lng: number;

@@ -336,6 +336,12 @@ velg-simulation-world-map .world-map__legend-swatch--agent {
   background: var(--color-success);
 }
 
+/* Agent role-archetype chip — a round dot like --agent; the fill + border
+   colour come from an inline style (agentRoleColorVar of the archetype). */
+velg-simulation-world-map .world-map__legend-swatch--agent-role {
+  border-radius: 50%;
+}
+
 velg-simulation-world-map .world-map__attribution {
   margin-left: auto;
   text-transform: uppercase;
@@ -683,13 +689,16 @@ velg-simulation-world-map .velg-map-agent-marker {
   pointer-events: auto;
 }
 
+/* --_agent-color is set per-marker from the agent's role archetype
+   (agentRoleColorVar); it defaults to the original phosphor-green so an
+   unrecognised / missing profession looks exactly as it did pre-phase-8. */
 velg-simulation-world-map .velg-map-agent-marker__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-success);
+  background: var(--_agent-color, var(--color-success));
   box-shadow:
-    0 0 4px color-mix(in srgb, var(--color-success) 50%, transparent),
+    0 0 4px color-mix(in srgb, var(--_agent-color, var(--color-success)) 50%, transparent),
     0 0 0 1px var(--color-surface);
   transition: transform var(--transition-fast, 100ms ease);
 }
@@ -710,8 +719,8 @@ velg-simulation-world-map .velg-map-agent-marker__count {
   align-items: center;
   justify-content: center;
   background: var(--color-surface);
-  color: var(--color-success);
-  border: 1px solid var(--color-success);
+  color: var(--_agent-color, var(--color-success));
+  border: 1px solid var(--_agent-color, var(--color-success));
   font-family: var(--font-brutalist);
   font-size: 8px;
   font-weight: var(--font-bold);
@@ -720,7 +729,7 @@ velg-simulation-world-map .velg-map-agent-marker__count {
 }
 
 velg-simulation-world-map .velg-map-agent-marker:focus-visible {
-  outline: 2px solid var(--color-success);
+  outline: 2px solid var(--_agent-color, var(--color-success));
   outline-offset: 4px;
 }
 
@@ -732,6 +741,26 @@ velg-simulation-world-map .velg-map-agent-marker:focus-visible {
   velg-simulation-world-map .velg-map-agent-marker:focus-visible .velg-map-agent-marker__dot {
     transform: none;
   }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Zoom-tier marker visibility. _applyZoomTier puts one of
+ * world-map--zoom-{far,mid,near} on the host (<velg-simulation-world-map>);
+ * markers that would clutter the zoomed-out view are hidden until you zoom
+ * in. far  → city labels + zone fills only. mid  → + zone name labels +
+ * building icons. near → + agent dots. City labels and the transient
+ * high-impact event pulse markers stay visible at every tier. Instant
+ * toggle (no transition) — content appearing on zoom-in is expected, the
+ * way it is on any OSM-style slippy map.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map.world-map--zoom-far .velg-map-label--zone,
+velg-simulation-world-map.world-map--zoom-far .velg-map-building-marker,
+velg-simulation-world-map.world-map--zoom-far .velg-map-agent-marker {
+  display: none;
+}
+
+velg-simulation-world-map.world-map--zoom-mid .velg-map-agent-marker {
+  display: none;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
