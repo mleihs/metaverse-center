@@ -20,7 +20,7 @@
  *    screen.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -467,7 +467,7 @@ export class VelgConstellationList extends LitElement {
             ${
               fragmentCount === 1
                 ? msg('1 fragment')
-                : msg(`${fragmentCount} fragments`, { id: 'journal-constellation-count' })
+                : msg(str`${fragmentCount} fragments`, { id: 'journal-constellation-count' })
             }
           </span>
           <time class="row__time" datetime=${this._timestamp(row)}>

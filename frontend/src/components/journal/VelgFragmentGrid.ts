@@ -14,7 +14,7 @@
  *    pagination footer shows counts, not percentages.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { journalApi } from '../../services/api/index.js';
@@ -369,7 +369,7 @@ export class VelgFragmentGrid extends LitElement {
       </div>
       <div class="meta-row">
         <span class="count">
-          ${msg(`${this._fragments.length} of ${this._total}`, { id: 'journal-fragment-count' })}
+          ${msg(str`${this._fragments.length} of ${this._total}`, { id: 'journal-fragment-count' })}
         </span>
         <div class="pager">
           <button
