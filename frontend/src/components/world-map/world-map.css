@@ -401,15 +401,15 @@ velg-simulation-world-map .velg-map-event-marker {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--color-danger);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 60%, transparent);
+  background: var(--_event-color, var(--color-danger));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--_event-color, var(--color-danger)) 60%, transparent);
   position: relative;
   pointer-events: auto;
   cursor: pointer;
 }
 
 velg-simulation-world-map .velg-map-event-marker:focus-visible {
-  outline: var(--ring-focus, 3px solid color-mix(in srgb, var(--color-danger) 50%, transparent));
+  outline: var(--ring-focus, 3px solid color-mix(in srgb, var(--_event-color, var(--color-danger)) 50%, transparent));
   outline-offset: 4px;
 }
 
@@ -417,7 +417,7 @@ velg-simulation-world-map .velg-map-event-marker__ripple {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid var(--color-danger);
+  border: 2px solid var(--_event-color, var(--color-danger));
   pointer-events: none;
   animation: velg-map-event-pulse 2s ease-out infinite;
 }
@@ -489,6 +489,121 @@ velg-simulation-world-map .world-map__state-wrap {
   padding: var(--space-12) var(--space-6);
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * Decoding state — the atlas's bespoke loading panel. Brutalist terminal
+ * frame, a CSS typewriter driven by --_chars (set per-render to the rendered
+ * string's length so it's i18n-robust), a blinking block caret, and an
+ * indeterminate scan bar that signals "still working" after the prompt types.
+ * No outer wrapper — `.world-map__state-wrap` already centers its single child.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map .world-map__decoding-frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-surface-raised);
+  border: var(--border-width-default, 2px) dashed var(--color-border);
+  box-shadow: var(--shadow-md);
+  max-width: min(90vw, 460px);
+}
+
+velg-simulation-world-map .world-map__decoding-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1-5);
+  font-family: var(--font-brutalist);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-brutalist);
+  text-transform: uppercase;
+}
+
+velg-simulation-world-map .world-map__decoding-prompt {
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+velg-simulation-world-map .world-map__decoding-msg {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+  /* ch-width typewriter — width animates 0 → (chars × 1ch) in chars × 65ms,
+     stepped per character. --_chars defaults to 28 if the inline style is
+     ever missing. */
+  width: calc(var(--_chars, 28) * 1ch);
+  animation: world-map-typewriter calc(var(--_chars, 28) * 65ms)
+    steps(var(--_chars, 28), end) forwards;
+}
+
+@keyframes world-map-typewriter {
+  from { width: 0; }
+}
+
+velg-simulation-world-map .world-map__decoding-caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1em;
+  align-self: center;
+  background: var(--color-primary);
+  animation: world-map-caret-blink 1s step-end infinite;
+}
+
+@keyframes world-map-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+velg-simulation-world-map .world-map__decoding-bar {
+  position: relative;
+  height: 4px;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+velg-simulation-world-map .world-map__decoding-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  background: var(--color-primary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary) 45%, transparent);
+  /* linear — an indeterminate sweep should move at constant speed, not
+     ease in/out (which reads as "hesitating" at the edges). */
+  animation: world-map-decode-scan 1.6s linear infinite;
+}
+
+@keyframes world-map-decode-scan {
+  0% { left: -35%; }
+  100% { left: 100%; }
+}
+
+velg-simulation-world-map .world-map__decoding-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .world-map__decoding-msg {
+    width: calc(var(--_chars, 28) * 1ch);
+    animation: none;
+  }
+  velg-simulation-world-map .world-map__decoding-caret {
+    animation: none;
+    opacity: 1;
+  }
+  velg-simulation-world-map .world-map__decoding-bar-fill {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
 @media (max-width: 768px) {
   velg-simulation-world-map .world-map__sidebar {
     flex: 0 0 auto;
@@ -503,5 +618,237 @@ velg-simulation-world-map .world-map__state-wrap {
 @media (prefers-reduced-motion: reduce) {
   velg-simulation-world-map .world-map__sidebar {
     animation: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Building markers — brutalist icon-in-a-frame, color from building type.
+ * Frame color comes from --_marker-color (set per-marker via inline style);
+ * icon stroke inherits `currentColor` from the same property.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map .velg-map-building-marker {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 2px solid var(--_marker-color, var(--color-text-secondary));
+  color: var(--_marker-color, var(--color-text-secondary));
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform var(--transition-fast, 100ms ease),
+    box-shadow var(--transition-fast, 100ms ease);
+  box-shadow: 1px 1px 0 0 color-mix(in srgb, var(--_marker-color, var(--color-text-secondary)) 30%, transparent);
+}
+
+velg-simulation-world-map .velg-map-building-marker > svg {
+  width: 12px;
+  height: 12px;
+}
+
+velg-simulation-world-map .velg-map-building-marker:hover,
+velg-simulation-world-map .velg-map-building-marker:focus-visible {
+  transform: scale(1.15);
+  box-shadow: 2px 2px 0 0 color-mix(in srgb, var(--_marker-color, var(--color-text-secondary)) 70%, transparent);
+}
+
+velg-simulation-world-map .velg-map-building-marker:focus-visible {
+  outline: 2px solid var(--_marker-color, var(--color-primary));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .velg-map-building-marker {
+    transition: none;
+  }
+  velg-simulation-world-map .velg-map-building-marker:hover,
+  velg-simulation-world-map .velg-map-building-marker:focus-visible {
+    transform: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Agent markers — small phosphor dot anchored offset from its home building.
+ * Count badge appears when N agents share a home.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map .velg-map-agent-marker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+velg-simulation-world-map .velg-map-agent-marker__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow:
+    0 0 4px color-mix(in srgb, var(--color-success) 50%, transparent),
+    0 0 0 1px var(--color-surface);
+  transition: transform var(--transition-fast, 100ms ease);
+}
+
+velg-simulation-world-map .velg-map-agent-marker:hover .velg-map-agent-marker__dot,
+velg-simulation-world-map .velg-map-agent-marker:focus-visible .velg-map-agent-marker__dot {
+  transform: scale(1.4);
+}
+
+velg-simulation-world-map .velg-map-agent-marker__count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+  font-family: var(--font-brutalist);
+  font-size: 8px;
+  font-weight: var(--font-bold);
+  line-height: 1;
+  letter-spacing: var(--tracking-brutalist);
+}
+
+velg-simulation-world-map .velg-map-agent-marker:focus-visible {
+  outline: 2px solid var(--color-success);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .velg-map-agent-marker__dot {
+    transition: none;
+  }
+  velg-simulation-world-map .velg-map-agent-marker:hover .velg-map-agent-marker__dot,
+  velg-simulation-world-map .velg-map-agent-marker:focus-visible .velg-map-agent-marker__dot {
+    transform: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Stability gauge — bar in sidebar for zone detail. The `data-tier` attribute
+ * (critical/unstable/functional/stable/exemplary) drives the bar color via
+ * --_tier-color, mapped 1:1 to the backend stability_label thresholds.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map .world-map__sidebar-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  /* Default tier color — overridden by data-tier-specific rules below.
+     Attribute selectors win on specificity (class+attr vs bare class),
+     so the order of the override rules is read-order, not cascade-fight. */
+  --_tier-color: var(--color-text-muted);
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge[data-tier='critical'] {
+  --_tier-color: var(--color-danger);
+}
+velg-simulation-world-map .world-map__sidebar-gauge[data-tier='unstable'] {
+  --_tier-color: var(--color-warning);
+}
+velg-simulation-world-map .world-map__sidebar-gauge[data-tier='functional'] {
+  --_tier-color: var(--color-info);
+}
+velg-simulation-world-map .world-map__sidebar-gauge[data-tier='stable'] {
+  --_tier-color: var(--color-success);
+}
+velg-simulation-world-map .world-map__sidebar-gauge[data-tier='exemplary'] {
+  --_tier-color: var(--color-primary);
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge-track {
+  position: relative;
+  height: 8px;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge-fill {
+  height: 100%;
+  background: var(--_tier-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--_tier-color) 45%, transparent);
+  transition: width var(--duration-slow, 300ms) var(--ease-dramatic, ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  velg-simulation-world-map .world-map__sidebar-gauge-fill {
+    transition: none;
+  }
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge-tier {
+  font-family: var(--font-brutalist);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: var(--_tier-color);
+  font-weight: var(--font-bold);
+}
+
+velg-simulation-world-map .world-map__sidebar-gauge-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Bureau watermark — diagonal CLASSIFIED // <slug> stamp behind the canvas.
+ * Visually-decorative (aria-hidden); positioned absolute, low opacity, ignores
+ * pointer events so MapLibre still receives all gestures.
+ * ────────────────────────────────────────────────────────────────────────── */
+velg-simulation-world-map .world-map__watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+velg-simulation-world-map .world-map__watermark-text {
+  font-family: var(--font-brutalist);
+  font-size: clamp(36px, 8vw, 96px);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  border: 4px solid color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+  padding: var(--space-3) var(--space-6);
+  transform: rotate(-14deg);
+  white-space: nowrap;
+  user-select: none;
+}
+
+velg-simulation-world-map .world-map__watermark-sep {
+  color: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  margin: 0 var(--space-2);
+}
+
+velg-simulation-world-map .world-map__watermark-slug {
+  color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+@media (max-width: 640px) {
+  velg-simulation-world-map .world-map__watermark-text {
+    font-size: clamp(24px, 12vw, 48px);
   }
 }

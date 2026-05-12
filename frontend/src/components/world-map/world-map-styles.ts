@@ -370,16 +370,6 @@ const STREET_WIDTH: ExpressionSpecification = [
   ['match', ['get', 'street_type'], 'arterial', 4, 'secondary', 2.6, 'tertiary', 1.6, 0.8],
 ];
 
-const BUILDING_RADIUS: ExpressionSpecification = [
-  'interpolate',
-  ['linear'],
-  ['zoom'],
-  12,
-  ['match', ['get', 'building_type'], 'government', 3, 'religious', 2.8, 'industrial', 2.4, 2],
-  18,
-  ['match', ['get', 'building_type'], 'government', 7, 'religious', 6.5, 'industrial', 5.5, 4.5],
-];
-
 export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): StyleSpecification {
   const zonesFC = buildZonesData(payload.zones);
   const streetsFC = streetsToFeatures(payload.streets);
@@ -476,49 +466,12 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
         'line-opacity': 0.85,
       },
     },
-    {
-      id: 'buildings-shadow',
-      type: 'circle',
-      source: 'buildings',
-      paint: {
-        'circle-radius': BUILDING_RADIUS,
-        'circle-color': colors.surface,
-        'circle-translate': [1, 1],
-        'circle-opacity': 0.9,
-      },
-    },
-    {
-      id: 'buildings',
-      type: 'circle',
-      source: 'buildings',
-      paint: {
-        'circle-radius': BUILDING_RADIUS,
-        'circle-color': [
-          'match',
-          ['get', 'building_type'],
-          'government',
-          colors.primary,
-          'religious',
-          colors.primary,
-          colors.textSecondary,
-        ],
-        'circle-stroke-width': 1,
-        'circle-stroke-color': colors.surface,
-        'circle-pitch-alignment': 'map',
-      },
-    },
-    {
-      id: 'agents',
-      type: 'circle',
-      source: 'agents',
-      paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 1.2, 18, 2.6],
-        'circle-color': colors.success,
-        'circle-stroke-width': 0.5,
-        'circle-stroke-color': colors.surface,
-        'circle-opacity': 0.85,
-      },
-    },
+    // NOTE: buildings and agents are rendered as DOM markers (Lit-rendered
+    // icons + count badges) instead of MapLibre circle layers — see
+    // SimulationWorldMap._renderBuildingMarkers / _renderAgentMarkers. The
+    // buildings/agents *sources* stay populated so queryRenderedFeatures
+    // and any future symbol-layer overlay remain available without a
+    // source rebuild.
   ];
 
   return {

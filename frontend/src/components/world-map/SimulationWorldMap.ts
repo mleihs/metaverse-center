@@ -1,6 +1,7 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, LitElement, nothing, render, type TemplateResult } from 'lit';
+import type { SVGTemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type {
   Map as MapLibreMap,
@@ -34,7 +35,6 @@ import {
 
 import '../shared/EmptyState.js';
 import '../shared/ErrorState.js';
-import '../shared/LoadingState.js';
 
 // Component CSS is loaded as a string via Vite's `?inline` query and injected
 // at runtime into the appropriate scope (Document or containing ShadowRoot) —
@@ -49,6 +49,119 @@ type SelectedEntity =
   | { kind: 'building'; building: WorldMapBuilding }
   | { kind: 'agent'; agent: WorldMapAgentMarker; building: WorldMapBuilding | null }
   | { kind: 'event'; event: WorldMapEvent; zone: WorldMapZone | null };
+
+/**
+ * Building-type → icon dispatch. Each entry returns a callable that yields a
+ * Lit SVGTemplateResult so we can render directly into the marker's div via
+ * Lit's `render()`. Unknown types fall back to a generic building outline.
+ */
+function buildingIcon(buildingType: string | null): (size?: number) => SVGTemplateResult {
+  switch (buildingType) {
+    case 'government':
+      return icons.archetypeTower;
+    case 'religious':
+      return icons.sparkle;
+    case 'cultural':
+      return icons.palette;
+    case 'archive':
+      return icons.book;
+    case 'restricted_zone':
+      return icons.lock;
+    case 'commercial':
+      return icons.columns;
+    case 'residential':
+      return icons.users;
+    case 'industrial':
+      return icons.gear;
+    default:
+      return icons.building;
+  }
+}
+
+/**
+ * Event-type → CSS-token-var dispatch (Phase 8). Returned as a `var(--color-…)`
+ * reference (not a resolved hex) so the marker live-updates if the theme
+ * tokens shift. Drives the per-marker `--_event-color` custom property; the
+ * pulse CSS reads from there with a danger fallback.
+ */
+function eventColorVar(eventType: string | null): string {
+  switch (eventType) {
+    case 'crisis':
+    case 'conflict_wave':
+    case 'biological_tide':
+      return 'var(--color-danger)';
+    case 'social':
+    case 'consciousness_drift':
+      return 'var(--color-info)';
+    case 'economic_tremor':
+    case 'innovation_spark':
+      return 'var(--color-warning)';
+    case 'cultural':
+    case 'authority_fracture':
+      return 'var(--color-epoch-influence)';
+    case 'decay_bloom':
+    case 'elemental_surge':
+      return 'var(--color-success)';
+    default:
+      return 'var(--color-danger)';
+  }
+}
+
+/**
+ * Building-type → CSS-token-var dispatch — same theme-reactive pattern as
+ * eventColorVar. Drives the per-marker `--_marker-color` for the brutalist
+ * icon frame (border + icon stroke).
+ */
+function buildingMarkerColorVar(buildingType: string | null): string {
+  switch (buildingType) {
+    case 'government':
+    case 'religious':
+      return 'var(--color-primary)';
+    case 'restricted_zone':
+      return 'var(--color-danger)';
+    case 'industrial':
+      return 'var(--color-warning)';
+    case 'commercial':
+      return 'var(--color-info)';
+    case 'cultural':
+    case 'archive':
+      return 'var(--color-epoch-influence)';
+    case 'residential':
+      return 'var(--color-success)';
+    default:
+      return 'var(--color-text-secondary)';
+  }
+}
+
+/**
+ * Padding (px) applied when fitting the map to its bounds. Larger on the
+ * horizontal axis because the city / zone labels are `anchor: 'center'` DOM
+ * markers that extend ~half their width past their geo point — a tight
+ * padding clips long names (e.g. "Hafenstadt Korrin") at the viewport edge
+ * even before the detail sidebar narrows the canvas. ~90px comfortably fits
+ * labels up to ~180px wide. Used by both the initial fit and the re-fit on
+ * sidebar toggle so the two stay consistent.
+ */
+const FIT_PADDING = { top: 40, bottom: 40, left: 90, right: 90 } as const;
+
+/**
+ * Wire a click + Enter/Space keyboard activation handler onto a DOM marker.
+ * Centralises the pattern used by building / agent / event markers — without
+ * this, each marker site duplicates ~6 lines of `addEventListener` + keydown
+ * branching. The activate callback receives the Event so it can call
+ * stopPropagation when the marker stacks above other interactive elements.
+ */
+function attachActivation(el: HTMLElement, onActivate: (e: Event) => void): void {
+  el.addEventListener('click', onActivate);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      // Space normally scrolls — kill it so the marker behaves like any
+      // other activatable control.
+      e.preventDefault();
+      onActivate(e);
+    }
+  });
+}
 
 // Both this component's CSS and MapLibre's bundled CSS must be injected into
 // the SAME shadow scope as the host element. Document-level styles do not
@@ -108,6 +221,20 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   private _appliedSimulationId = '';
   private _hoveredZoneId: string | null = null;
   private _resizeObserver: ResizeObserver | null = null;
+  /**
+   * The geographic bounds the map was fitted to on init — cached so the map
+   * can be re-fitted when the layout changes (the detail sidebar opening /
+   * closing resizes the canvas; without a re-fit, edge labels get clipped by
+   * the now-narrower viewport).
+   */
+  private _fittedBounds: [[number, number], [number, number]] | null = null;
+  /**
+   * Element that had focus when the sidebar was opened — the close button and
+   * the Escape key restore focus here so keyboard users aren't dumped at the
+   * top of the document. Cleared once consumed.
+   */
+  private _focusReturnEl: HTMLElement | null = null;
+  private _keydownHandler: ((e: KeyboardEvent) => void) | null = null;
   private _loadGeneration = 0;
   private _buildingsById: Map<string, WorldMapBuilding> = new Map();
   private _zonesById: Map<string, WorldMapZone> = new Map();
@@ -143,6 +270,13 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   private static readonly _EVENT_MARKER_FADE_MS = 1_000;
 
   /**
+   * Cap on concurrent event markers. A burst of high-impact events (e.g. a
+   * chronicle batch) would otherwise blanket the map with pulse rings; past
+   * this many, the oldest marker is evicted so the cluster stays readable.
+   */
+  private static readonly _EVENT_MARKER_MAX = 8;
+
+  /**
    * Polling interval for the live stability overlay (Phase 6.1).
    * Matched to the public-map endpoint's `Cache-Control: max-age=60` so the
    * browser HTTP cache absorbs polls that fire within the same cache window
@@ -154,12 +288,26 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   connectedCallback(): void {
     super.connectedCallback();
     ensureComponentStyles(this);
+    // Escape closes the detail sidebar from anywhere inside the atlas (the
+    // sidebar is non-modal, so this is a convenience dismiss, not a focus
+    // trap). Not stopped — MapLibre still gets the event for box-zoom cancel.
+    this._keydownHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && this._selected !== null) {
+        this._closeSidebar();
+      }
+    };
+    this.addEventListener('keydown', this._keydownHandler);
     if (this.simulationId) {
       void this._loadData();
     }
   }
 
   disconnectedCallback(): void {
+    if (this._keydownHandler) {
+      this.removeEventListener('keydown', this._keydownHandler);
+      this._keydownHandler = null;
+    }
+    this._focusReturnEl = null;
     this._destroyMap();
     super.disconnectedCallback();
   }
@@ -237,13 +385,14 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       if (bounds === null) {
         return;
       }
+      this._fittedBounds = bounds;
       const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       const map = new MapLibreCtor({
         container: containerEl,
         style,
         bounds,
-        fitBoundsOptions: { padding: 36, animate, duration: animate ? 600 : 0 },
+        fitBoundsOptions: { padding: FIT_PADDING, animate, duration: animate ? 600 : 0 },
         attributionControl: false,
         renderWorldCopies: false,
         dragRotate: false,
@@ -259,10 +408,14 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
 
       map.addControl(new NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right');
 
+      this._createBuildingPopup(map, Popup);
+
       map.on('load', () => {
         try {
           map.resize();
           this._renderLabels(map, Marker);
+          this._renderBuildingMarkers(map, Marker);
+          this._renderAgentMarkers(map, Marker);
           this._startStabilityRefresh();
           this._subscribeToEvents(map, Marker);
         } catch (err) {
@@ -270,23 +423,18 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         }
       });
 
-      this._wireBuildingPopup(map, Popup);
-
+      // Zones stay as MapLibre fill layers (clickable via layer hit-testing);
+      // buildings + agents are DOM markers (their click/hover are wired in
+      // the renderMarkers methods directly).
       map.on('mousemove', 'zones-fill', (e: MapLayerMouseEvent) => this._handleZoneHover(map, e));
       map.on('mouseleave', 'zones-fill', () => this._clearZoneHover(map));
       map.on('click', 'zones-fill', (e: MapLayerMouseEvent) => this._handleZoneClick(e));
-      map.on('click', 'buildings', (e: MapLayerMouseEvent) => this._handleBuildingClick(e));
-      map.on('click', 'agents', (e: MapLayerMouseEvent) => this._handleAgentClick(e));
-
-      const cursorLayers = ['zones-fill', 'buildings', 'agents'];
-      for (const layerId of cursorLayers) {
-        map.on('mouseenter', layerId, () => {
-          map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', layerId, () => {
-          map.getCanvas().style.cursor = '';
-        });
-      }
+      map.on('mouseenter', 'zones-fill', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'zones-fill', () => {
+        map.getCanvas().style.cursor = '';
+      });
 
       if (typeof ResizeObserver !== 'undefined') {
         this._resizeObserver = new ResizeObserver(() => {
@@ -320,6 +468,34 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     this._hoverPopup = null;
     this._map = null;
     this._hoveredZoneId = null;
+    this._fittedBounds = null;
+  }
+
+  /**
+   * Re-fit the map to its cached bounds after a layout change. The detail
+   * sidebar opening/closing changes the canvas dimensions (narrower on
+   * desktop, shorter on mobile); a plain `resize()` keeps the geographic
+   * centre fixed, which pushes edge labels (e.g. "Hafenstadt Korrin") past
+   * the new viewport edge where `overflow: hidden` clips them. `fitBounds`
+   * re-derives zoom + centre for whatever the canvas size now is, so all
+   * content stays inside. Runs after `updateComplete` so the sidebar is in
+   * the DOM and the canvas has its final size; `resize()` first in case the
+   * ResizeObserver hasn't fired yet (idempotent).
+   */
+  private _refitForLayout(): void {
+    const map = this._map;
+    const bounds = this._fittedBounds;
+    if (!map || !bounds) return;
+    const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    void this.updateComplete.then(() => {
+      if (this._map !== map) return; // sim switched out from under us
+      try {
+        map.resize();
+        map.fitBounds(bounds, { padding: FIT_PADDING, duration: animate ? 280 : 0, maxZoom: 20 });
+      } catch (err) {
+        captureError(err, { source: 'SimulationWorldMap._refitForLayout' });
+      }
+    });
   }
 
   private _startStabilityRefresh(): void {
@@ -464,15 +640,24 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       }
       this._eventsChannel = null;
     }
-    for (const { marker, timeout } of this._eventMarkers.values()) {
-      clearTimeout(timeout);
-      try {
-        marker.remove();
-      } catch (err) {
-        captureError(err, { source: 'SimulationWorldMap._unsubscribeFromEvents.marker' });
-      }
+    // Snapshot keys before disposing — _disposeEventMarker mutates the map.
+    for (const id of [...this._eventMarkers.keys()]) this._disposeEventMarker(id);
+  }
+
+  /**
+   * Tear down one event-marker entry: stop its TTL timer, remove the MapLibre
+   * marker, drop it from the registry. Safe to call for an unknown id (no-op).
+   */
+  private _disposeEventMarker(id: string): void {
+    const entry = this._eventMarkers.get(id);
+    if (!entry) return;
+    clearTimeout(entry.timeout);
+    try {
+      entry.marker.remove();
+    } catch (err) {
+      captureError(err, { source: 'SimulationWorldMap._disposeEventMarker' });
     }
-    this._eventMarkers.clear();
+    this._eventMarkers.delete(id);
   }
 
   private _dropEventMarker(
@@ -494,17 +679,18 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     if (centroid === null) return;
 
     // Replace any existing marker for the same event id (re-fired INSERTs).
-    const existing = this._eventMarkers.get(event.id);
-    if (existing) {
-      clearTimeout(existing.timeout);
-      existing.marker.remove();
-    }
+    // Dispose fully so the re-inserted entry lands at the END of the Map's
+    // insertion order — keeps "oldest" eviction (below) honest.
+    this._disposeEventMarker(event.id);
 
     const el = document.createElement('div');
     el.className = 'velg-map-event-marker';
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
     el.setAttribute('aria-label', event.title || msg('Event'));
+    // Per-marker color from event-type dispatch; CSS reads via --_event-color
+    // with danger as the fallback for unknown / null types.
+    el.style.setProperty('--_event-color', eventColorVar(event.event_type));
     const ripple1 = document.createElement('div');
     ripple1.className = 'velg-map-event-marker__ripple';
     el.appendChild(ripple1);
@@ -512,18 +698,9 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     ripple2.className = 'velg-map-event-marker__ripple velg-map-event-marker__ripple--delayed';
     el.appendChild(ripple2);
 
-    const onActivate = (e: Event): void => {
+    attachActivation(el, (e) => {
       e.stopPropagation();
       this._selectEvent(event.id);
-    };
-    el.addEventListener('click', onActivate);
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        // Space normally scrolls the page — kill it so the marker behaves
-        // like any other activatable control.
-        e.preventDefault();
-        onActivate(e);
-      }
     });
 
     const marker = new MarkerCtor({ element: el, anchor: 'center' })
@@ -532,7 +709,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
 
     const timeout = setTimeout(() => {
       el.classList.add('velg-map-event-marker--fading');
-      setTimeout(() => {
+      const fadeTimer = setTimeout(() => {
         try {
           marker.remove();
         } catch (err) {
@@ -543,6 +720,11 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         // data is still valid, and auto-closing a panel the user opened to
         // read is jarring. They close manually when done.
       }, VelgSimulationWorldMap._EVENT_MARKER_FADE_MS);
+      // Hand the active timer to the registry entry so _disposeEventMarker can
+      // cancel whichever phase (TTL or fade) the marker is currently in — the
+      // TTL timer above has already fired by the time this runs.
+      const entry = this._eventMarkers.get(event.id);
+      if (entry) entry.timeout = fadeTimer;
     }, VelgSimulationWorldMap._EVENT_MARKER_TTL_MS);
 
     this._eventMarkers.set(event.id, {
@@ -551,17 +733,33 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       event,
       zoneId: matchedZone.id,
     });
+
+    // Evict the oldest while over the cap. The just-added entry is at the end
+    // of the insertion order (we disposed any same-id entry above), so
+    // `keys().next()` always yields a strictly-older marker.
+    while (this._eventMarkers.size > VelgSimulationWorldMap._EVENT_MARKER_MAX) {
+      const oldest = this._eventMarkers.keys().next().value;
+      if (oldest === undefined) break;
+      this._disposeEventMarker(oldest);
+    }
   }
 
   private _selectEvent(id: string): void {
     const entry = this._eventMarkers.get(id);
     if (!entry) return;
     const zone = entry.zoneId !== null ? (this._zonesById.get(entry.zoneId) ?? null) : null;
-    this._selected = { kind: 'event', event: entry.event, zone };
+    this._setSelection({ kind: 'event', event: entry.event, zone });
   }
 
-  private _wireBuildingPopup(
-    map: MapLibreMap,
+  /**
+   * Create the singleton building popup instance — Phase 8 refactor: the
+   * trigger is now DOM mouseenter/leave on building-marker elements (since
+   * buildings render as DOM markers, not MapLibre circle features). The
+   * popup itself is still a MapLibre Popup so it leverages the map's
+   * projection on pan/zoom.
+   */
+  private _createBuildingPopup(
+    _map: MapLibreMap,
     PopupCtor: new (opts: {
       closeButton: boolean;
       closeOnClick: boolean;
@@ -569,48 +767,34 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       className: string;
     }) => MapLibrePopup,
   ): void {
-    const popup = new PopupCtor({
+    this._hoverPopup = new PopupCtor({
       closeButton: false,
       closeOnClick: false,
       offset: 10,
       className: 'velg-map-popup',
     });
-    this._hoverPopup = popup;
-    // Track which building the popup is currently showing, so mousemove
-    // (which fires every frame inside the hovered feature) only rebuilds
-    // the DOM when the user actually crosses to a different building.
-    let popupBuildingId: string | null = null;
+  }
 
-    const setPopup = (e: MapLayerMouseEvent): void => {
-      const feature = e.features?.[0];
-      const id = feature?.properties?.id;
-      if (typeof id !== 'string') return;
-      if (id === popupBuildingId) return;
-      const building = this._buildingsById.get(id);
-      if (!building || !building.geojson) return;
-      popupBuildingId = id;
-      const [lng, lat] = building.geojson.coordinates;
-      const el = document.createElement('div');
-      el.className = 'velg-map-popup__body';
-      const name = document.createElement('div');
-      name.className = 'velg-map-popup__name';
-      name.textContent = building.name;
-      el.appendChild(name);
-      if (building.building_type) {
-        const type = document.createElement('div');
-        type.className = 'velg-map-popup__meta';
-        type.textContent = building.building_type;
-        el.appendChild(type);
-      }
-      popup.setLngLat([lng, lat]).setDOMContent(el).addTo(map);
-    };
+  private _showBuildingPopup(map: MapLibreMap, building: WorldMapBuilding): void {
+    if (!this._hoverPopup || !building.geojson) return;
+    const [lng, lat] = building.geojson.coordinates;
+    const el = document.createElement('div');
+    el.className = 'velg-map-popup__body';
+    const name = document.createElement('div');
+    name.className = 'velg-map-popup__name';
+    name.textContent = building.name;
+    el.appendChild(name);
+    if (building.building_type) {
+      const type = document.createElement('div');
+      type.className = 'velg-map-popup__meta';
+      type.textContent = building.building_type;
+      el.appendChild(type);
+    }
+    this._hoverPopup.setLngLat([lng, lat]).setDOMContent(el).addTo(map);
+  }
 
-    map.on('mouseenter', 'buildings', setPopup);
-    map.on('mousemove', 'buildings', setPopup);
-    map.on('mouseleave', 'buildings', () => {
-      popupBuildingId = null;
-      popup.remove();
-    });
+  private _hideBuildingPopup(): void {
+    this._hoverPopup?.remove();
   }
 
   private _renderLabels(
@@ -657,6 +841,111 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     }
   }
 
+  /**
+   * Render building markers as DOM elements (Phase 8). Each marker is a
+   * brutalist icon-in-a-frame whose icon + frame color is dispatched from the
+   * building's type — government tower, sacred sparkle, archive book, etc.
+   * Click activates the sidebar; mouseenter shows the floating popup.
+   *
+   * DOM markers (not MapLibre circle layers) so we can render SVG icons via
+   * Lit's `render()` and keep the layer count low. MapLibre re-projects the
+   * marker's screen position on every pan/zoom — no manual sync needed.
+   */
+  private _renderBuildingMarkers(
+    map: MapLibreMap,
+    MarkerCtor: new (opts: { element: HTMLElement; anchor?: 'center' }) => MapLibreMarker,
+  ): void {
+    if (!this._data) return;
+    for (const building of this._data.buildings) {
+      if (!building.geojson) continue;
+      const [lng, lat] = building.geojson.coordinates;
+      const el = document.createElement('div');
+      el.className = 'velg-map-building-marker';
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', building.name);
+      el.style.setProperty('--_marker-color', buildingMarkerColorVar(building.building_type));
+      const iconTpl = buildingIcon(building.building_type)(14);
+      render(iconTpl, el);
+
+      el.addEventListener('mouseenter', () => this._showBuildingPopup(map, building));
+      el.addEventListener('mouseleave', () => this._hideBuildingPopup());
+      el.addEventListener('focus', () => this._showBuildingPopup(map, building));
+      el.addEventListener('blur', () => this._hideBuildingPopup());
+      attachActivation(el, (e) => {
+        e.stopPropagation();
+        this._selectBuilding(building.id);
+      });
+
+      const marker = new MarkerCtor({ element: el, anchor: 'center' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+      this._markers.push(marker);
+    }
+  }
+
+  /**
+   * Render agent markers grouped by home_building_id. When N agents share a
+   * home, one marker shows the count badge (clicking selects the first agent
+   * in the group). Marker is anchored slightly NE of the building icon so
+   * the two don't visually stack.
+   */
+  private _renderAgentMarkers(
+    map: MapLibreMap,
+    MarkerCtor: new (opts: { element: HTMLElement; anchor?: 'center' }) => MapLibreMarker,
+  ): void {
+    if (!this._data) return;
+    const groups = new Map<string, WorldMapAgentMarker[]>();
+    for (const agent of this._data.agent_markers) {
+      if (!agent.home_building_id) continue;
+      const existing = groups.get(agent.home_building_id);
+      if (existing) existing.push(agent);
+      else groups.set(agent.home_building_id, [agent]);
+    }
+    for (const [buildingId, agents] of groups) {
+      const building = this._buildingsById.get(buildingId);
+      if (!building?.geojson) continue;
+      const [lng, lat] = building.geojson.coordinates;
+      const first = agents[0];
+      const count = agents.length;
+
+      const el = document.createElement('div');
+      el.className = 'velg-map-agent-marker';
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      // str-template keeps the full sentence translatable as one unit —
+      // German translators can reorder to "${count} Agenten wohnen in ${name}"
+      // rather than being stuck with the English word order.
+      el.setAttribute(
+        'aria-label',
+        count === 1
+          ? first.name
+          : msg(str`${count} agents living at ${building.name}`),
+      );
+      const dot = document.createElement('span');
+      dot.className = 'velg-map-agent-marker__dot';
+      el.appendChild(dot);
+      if (count > 1) {
+        const badge = document.createElement('span');
+        badge.className = 'velg-map-agent-marker__count';
+        badge.textContent = String(count);
+        el.appendChild(badge);
+      }
+
+      attachActivation(el, (e) => {
+        e.stopPropagation();
+        this._selectAgent(first.agent_id);
+      });
+
+      const marker = new MarkerCtor({ element: el, anchor: 'center' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+      // Offset NE so the agent dot rides on the shoulder of the building icon.
+      marker.setOffset([14, -14]);
+      this._markers.push(marker);
+    }
+  }
+
   private _handleZoneHover(map: MapLibreMap, e: MapLayerMouseEvent): void {
     // Hover state uses MapLibre's auto-assigned numeric feature.id (not our
     // UUID from properties.id) because setFeatureState is keyed on the same
@@ -687,29 +976,67 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     const id = feature?.properties?.id;
     if (typeof id !== 'string') return;
     const zone = this._zonesById.get(id);
-    if (zone) this._selected = { kind: 'zone', zone };
+    if (zone) this._setSelection({ kind: 'zone', zone });
   }
 
-  private _handleBuildingClick(e: MapLayerMouseEvent): void {
-    const feature = e.features?.[0];
-    const id = feature?.properties?.id;
-    if (typeof id !== 'string') return;
+  private _selectBuilding(id: string): void {
     const building = this._buildingsById.get(id);
-    if (building) this._selected = { kind: 'building', building };
+    if (building) this._setSelection({ kind: 'building', building });
   }
 
-  private _handleAgentClick(e: MapLayerMouseEvent): void {
-    const feature = e.features?.[0];
-    const id = feature?.properties?.id;
-    if (typeof id !== 'string') return;
+  private _selectAgent(id: string): void {
     const agent = this._agentsById.get(id);
     if (!agent) return;
-    const building = agent.home_building_id ? (this._buildingsById.get(agent.home_building_id) ?? null) : null;
-    this._selected = { kind: 'agent', agent, building };
+    const building = agent.home_building_id
+      ? (this._buildingsById.get(agent.home_building_id) ?? null)
+      : null;
+    this._setSelection({ kind: 'agent', agent, building });
   }
 
   private _closeSidebar(): void {
-    this._selected = null;
+    this._setSelection(null);
+  }
+
+  /**
+   * Single entry point for changing the sidebar selection. Responsibilities:
+   *  - hide the hover popup (a clicked marker's mouseenter popup must not
+   *    visually duplicate the sidebar content)
+   *  - on open: remember the focus origin, then move focus to the sidebar's
+   *    close button after the re-render (keyboard users land in the panel)
+   *  - on close: restore focus to the origin (or the canvas as a fallback if
+   *    the origin element is gone — e.g. an event marker that faded out)
+   * Setting `_selected` on a `@state` field auto-triggers the re-render.
+   */
+  private _setSelection(entity: SelectedEntity | null): void {
+    this._hideBuildingPopup();
+    const wasOpen = this._selected !== null;
+    const willOpen = entity !== null;
+    if (willOpen && !wasOpen) {
+      const root = this.getRootNode();
+      const active =
+        root instanceof ShadowRoot || root instanceof Document ? root.activeElement : null;
+      this._focusReturnEl =
+        active instanceof HTMLElement && this.contains(active) ? active : null;
+    }
+    this._selected = entity;
+    // Open ⇄ closed transitions resize the canvas — re-fit so edge labels
+    // don't get clipped. Switching between entities (open → open) leaves the
+    // canvas size unchanged, so skip the (wasteful) re-fit then.
+    if (wasOpen !== willOpen) this._refitForLayout();
+    if (willOpen) {
+      void this.updateComplete.then(() => {
+        this.querySelector<HTMLButtonElement>('.world-map__sidebar-close')?.focus();
+      });
+    } else if (wasOpen) {
+      const target = this._focusReturnEl;
+      this._focusReturnEl = null;
+      void this.updateComplete.then(() => {
+        if (target && target.isConnected) target.focus();
+        // MapLibre's <canvas> carries tabindex=0; fall back there so focus
+        // lands somewhere meaningful rather than the document body.
+        else this.querySelector<HTMLElement>('.maplibregl-canvas')?.focus();
+      });
+    }
   }
 
   private _renderHeader(): TemplateResult {
@@ -816,8 +1143,8 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
           name: z.name,
           rows: [
             this._renderRow(msg('Zone type'), z.zone_type ?? msg('Unspecified')),
-            z.stability_label != null
-              ? this._renderRow(msg('Stability'), z.stability_label)
+            z.stability != null || z.stability_label != null
+              ? this._renderStabilityGauge(z)
               : html``,
           ],
         };
@@ -902,6 +1229,83 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   }
 
   /**
+   * Render a horizontal gauge bar for zone stability. The bar width tracks
+   * the 0..1 stability number; the color tier comes from the discrete
+   * stability_label (critical / unstable / functional / stable / exemplary)
+   * so the bar maps 1:1 to the categorical state shown in the label below.
+   */
+  private _renderStabilityGauge(zone: WorldMapZone): TemplateResult {
+    const pct = typeof zone.stability === 'number' ? Math.max(0, Math.min(1, zone.stability)) * 100 : null;
+    const tier = zone.stability_label ?? 'unknown';
+    const localized = this._localizeStabilityTier(tier);
+    const value = pct !== null ? `${Math.round(pct)}%` : '–';
+    return html`
+      <div class="world-map__sidebar-row">
+        <span class="world-map__sidebar-label">${msg('Stability')}</span>
+        <div class="world-map__sidebar-gauge" data-tier=${tier}>
+          <div class="world-map__sidebar-gauge-track">
+            <div
+              class="world-map__sidebar-gauge-fill"
+              style=${pct !== null ? `width:${pct}%` : 'width:0'}
+            ></div>
+          </div>
+          <div class="world-map__sidebar-gauge-row">
+            <span class="world-map__sidebar-gauge-tier">${localized}</span>
+            <span class="world-map__sidebar-gauge-value">${value}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _localizeStabilityTier(tier: string): string {
+    switch (tier) {
+      case 'critical':
+        return msg('Critical');
+      case 'unstable':
+        return msg('Unstable');
+      case 'functional':
+        return msg('Functional');
+      case 'stable':
+        return msg('Stable');
+      case 'exemplary':
+        return msg('Exemplary');
+      default:
+        return msg('Unknown');
+    }
+  }
+
+  /**
+   * Trigger map regeneration. Reachable only when the empty-state CTA is
+   * shown to a platform admin or owner; the backend enforces the same
+   * permission check, so this is a UX accelerator, not a security gate.
+   */
+  private async _handleRegenerate(): Promise<void> {
+    if (!this.simulationId) return;
+    // Switch to loading state immediately so the empty-state CTA disappears
+    // and the user sees feedback. Regenerate can take several seconds — a
+    // silent click would feel broken.
+    this._loading = true;
+    this._error = null;
+    try {
+      const result = await worldMapApi.regenerate(this.simulationId);
+      if (result.success) {
+        await this._loadData();
+      } else {
+        this._error = result.error?.message ?? msg('Could not regenerate map geometry.');
+        this._loading = false;
+      }
+    } catch (err) {
+      captureError(err, {
+        source: 'SimulationWorldMap._handleRegenerate',
+        simulationId: this.simulationId,
+      });
+      this._error = msg('Could not regenerate map geometry.');
+      this._loading = false;
+    }
+  }
+
+  /**
    * Render-state predicate. Content is shown only when a load has completed
    * (`_data` populated) AND the geometry has at least one ingestable point
    * (`computeBounds` returns non-null). Loading/error/empty states all share
@@ -921,13 +1325,38 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     return html`<div class="world-map__state-wrap">${this._renderStateContent()}</div>`;
   }
 
+  /**
+   * Bespoke loading panel for the atlas — a brutalist "decoding terminal"
+   * with a CSS typewriter that's i18n-robust: the `--_chars` custom property
+   * is the rendered string's code-unit count, so the `steps()` / `ch`-width
+   * animation lands on whole characters regardless of the translation's
+   * length (monospace `--font-brutalist` makes 1 code unit ≈ 1 cell). The
+   * indeterminate scan bar signals "still working" once the prompt finishes
+   * typing. `role="status"` + `aria-live="polite"` announces it to AT; the
+   * caret and bar are `aria-hidden` decoration.
+   */
+  private _renderDecodingState(): TemplateResult {
+    const decodeMsg = msg('Decoding cartographic archive');
+    // No wrapper div — the parent `.world-map__state-wrap` already centers its
+    // single child, so the frame is the status region directly.
+    return html`
+      <div class="world-map__decoding-frame" role="status" aria-live="polite">
+        <div class="world-map__decoding-head">
+          <span class="world-map__decoding-prompt" aria-hidden="true">&gt;</span>
+          <span class="world-map__decoding-msg" style="--_chars:${decodeMsg.length}">${decodeMsg}</span>
+          <span class="world-map__decoding-caret" aria-hidden="true"></span>
+        </div>
+        <div class="world-map__decoding-bar" aria-hidden="true">
+          <span class="world-map__decoding-bar-fill"></span>
+        </div>
+        <span class="world-map__decoding-sub">${msg('Bureau Cartographic Section · stand by')}</span>
+      </div>
+    `;
+  }
+
   private _renderStateContent(): TemplateResult {
     if (this._loading) {
-      return html`
-        <velg-loading-state
-          message=${msg('Decoding cartographic archive...')}
-        ></velg-loading-state>
-      `;
+      return this._renderDecodingState();
     }
     if (this._error) {
       return html`
@@ -938,14 +1367,20 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         ></velg-error-state>
       `;
     }
+    // Owners and platform admins can trigger a regenerate from the empty
+    // state — backend enforces the same role check via require_owner_or_platform_admin.
+    const canRegenerate = appState.isOwner.value || appState.isPlatformAdmin.value;
     return html`
       <velg-empty-state
         message=${msg('No cartographic data has been generated for this simulation yet.')}
+        cta-label=${canRegenerate ? msg('Generate cartographic data') : ''}
+        @cta-click=${() => this._handleRegenerate()}
       ></velg-empty-state>
     `;
   }
 
   private _renderContent(): TemplateResult {
+    const slug = this._data?.simulation_slug ?? appState.currentSimulation.value?.slug ?? '';
     return html`
       <div class="world-map__body">
         <div class="world-map__canvas-wrap">
@@ -959,6 +1394,12 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
           <span class="world-map__corner world-map__corner--bl" aria-hidden="true"></span>
           <span class="world-map__corner world-map__corner--br" aria-hidden="true"></span>
           <div class="world-map__scanlines" aria-hidden="true"></div>
+          <div class="world-map__watermark" aria-hidden="true">
+            <span class="world-map__watermark-text">
+              ${msg('Classified')} <span class="world-map__watermark-sep">//</span>
+              <span class="world-map__watermark-slug">${slug || msg('Bureau')}</span>
+            </span>
+          </div>
         </div>
         ${this._renderSidebar()}
       </div>
