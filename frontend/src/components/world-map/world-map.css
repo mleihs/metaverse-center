@@ -356,6 +356,9 @@ velg-simulation-world-map .velg-map-label {
   user-select: none;
   white-space: nowrap;
   text-align: center;
+  /* Labels sit above building / agent markers so a residual overlap stays
+     fully legible (markers carry no z-index → default stacking). */
+  z-index: var(--z-raised, 10);
   text-shadow:
     0 0 2px var(--color-surface),
     0 0 4px var(--color-surface),
@@ -378,10 +381,9 @@ velg-simulation-world-map .velg-map-label--zone {
   color: var(--color-text-primary);
   line-height: 1.15;
   padding: var(--space-1, 4px) var(--space-2, 8px);
-  /* Matches city-label: 80% surface + 2px blur to mask street lines
-     that would otherwise show through letter kernings. */
-  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
-  backdrop-filter: blur(2px);
+  /* Fully opaque chip — a clean backplate so the label always reads crisply,
+     even where a building marker passes behind it. */
+  background: var(--color-surface);
   border-left: 2px solid var(--_zone-tint, var(--color-text-primary));
 }
 
@@ -394,13 +396,6 @@ velg-simulation-world-map .velg-map-label__kind {
   color: var(--_zone-tint, var(--color-text-muted));
   letter-spacing: var(--tracking-widest);
   margin-top: 1px;
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  velg-simulation-world-map .velg-map-label--zone {
-    background: var(--color-surface);
-    backdrop-filter: none;
-  }
 }
 
 velg-simulation-world-map .velg-map-event-marker {
@@ -452,6 +447,13 @@ velg-simulation-world-map .velg-map-event-marker--fading {
   velg-simulation-world-map .velg-map-event-marker--fading {
     animation-duration: 0.01ms;
   }
+}
+
+/* The hover popup is a transient tooltip — it must clear the zone/city labels
+   (which now carry z-index var(--z-raised)), otherwise the bubble vanishes
+   behind a label it overlaps. */
+velg-simulation-world-map .maplibregl-popup.velg-map-popup {
+  z-index: var(--z-tooltip, 700);
 }
 
 velg-simulation-world-map .maplibregl-popup.velg-map-popup .maplibregl-popup-content {
@@ -854,49 +856,4 @@ velg-simulation-world-map .world-map__sidebar-gauge-value {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-text-muted);
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
- * Bureau watermark — diagonal CLASSIFIED // <slug> stamp behind the canvas.
- * Visually-decorative (aria-hidden); positioned absolute, low opacity, ignores
- * pointer events so MapLibre still receives all gestures.
- * ────────────────────────────────────────────────────────────────────────── */
-velg-simulation-world-map .world-map__watermark {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-velg-simulation-world-map .world-map__watermark-text {
-  font-family: var(--font-brutalist);
-  font-size: clamp(36px, 8vw, 96px);
-  font-weight: var(--font-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-brutalist);
-  color: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
-  border: 4px solid color-mix(in srgb, var(--color-text-primary) 7%, transparent);
-  padding: var(--space-3) var(--space-6);
-  transform: rotate(-14deg);
-  white-space: nowrap;
-  user-select: none;
-}
-
-velg-simulation-world-map .world-map__watermark-sep {
-  color: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  margin: 0 var(--space-2);
-}
-
-velg-simulation-world-map .world-map__watermark-slug {
-  color: color-mix(in srgb, var(--color-primary) 10%, transparent);
-}
-
-@media (max-width: 640px) {
-  velg-simulation-world-map .world-map__watermark-text {
-    font-size: clamp(24px, 12vw, 48px);
-  }
 }
