@@ -597,8 +597,7 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/atlas',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'atlas'),
-        enter: async ({ id, entitySlug }) =>
-          this._enterSimulationRoute(id, 'atlas', entitySlug),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'atlas', entitySlug),
       },
       {
         path: '/simulations/:id/terminal',
