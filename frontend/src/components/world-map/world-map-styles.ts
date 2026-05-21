@@ -111,11 +111,11 @@ export function categoriseZoneType(zoneType: string | null | undefined): ZoneCat
   const t = zoneType.toLowerCase();
   if (/govern|capital|command|admin|throne|palace|citadel|seat/.test(t)) return 'authority';
   if (/relig|sacred|temple|shrine|chapel|cathedral|monaster/.test(t)) return 'sacred';
-  if (/industri|workshop|factory|forge|engineering|firmware|refiner|mill/.test(t)) return 'industrial';
+  if (/industri|workshop|factory|forge|engineering|firmware|refiner|mill/.test(t))
+    return 'industrial';
   if (/commerc|market|bazaar|trade|hub|port/.test(t)) return 'commercial';
   if (/resid|habit|housing|quarter|domest|dwelling/.test(t)) return 'residential';
-  if (/science|memory|topside|liminal|astral|reality|deck|segment|access/.test(t))
-    return 'liminal';
+  if (/science|memory|topside|liminal|astral|reality|deck|segment|access/.test(t)) return 'liminal';
   if (/slum|worker|ruin|waste|decay|abandoned/.test(t)) return 'marginal';
   return 'other';
 }
@@ -128,14 +128,21 @@ export function categoriseZoneType(zoneType: string | null | undefined): ZoneCat
 // MapLibre's ExpressionSpecification tuple typing makes dynamic construction
 // awkward; comments below remind contributors to extend them in lockstep.
 const ZONE_CATEGORY_STYLE: Record<ZoneCategory, { color: keyof MapColors; opacity: number }> = {
-  authority: { color: 'primary', opacity: 0.26 },
-  sacred: { color: 'success', opacity: 0.22 },
-  industrial: { color: 'warning', opacity: 0.24 },
-  commercial: { color: 'info', opacity: 0.22 },
-  residential: { color: 'textSecondary', opacity: 0.16 },
-  marginal: { color: 'danger', opacity: 0.2 },
-  liminal: { color: 'epochInfluence', opacity: 0.24 },
-  other: { color: 'textSecondary', opacity: 0.18 },
+  authority: { color: 'primary', opacity: 0.34 },
+  sacred: { color: 'success', opacity: 0.3 },
+  // Industrial uses epochInfluence (purple), NOT `warning`: in the default
+  // theme `--color-warning` resolves to the same amber as `--color-primary`,
+  // so authority and industrial zones were visually identical. Purple also
+  // matches the OSM convention for industrial land. The rare `liminal`
+  // category gives up purple and takes the neutral grey in exchange, so the
+  // four common categories (authority/residential/industrial/commercial) all
+  // get a distinct hue: amber / grey / purple / blue.
+  industrial: { color: 'epochInfluence', opacity: 0.32 },
+  commercial: { color: 'info', opacity: 0.3 },
+  residential: { color: 'textSecondary', opacity: 0.24 },
+  marginal: { color: 'danger', opacity: 0.28 },
+  liminal: { color: 'textMuted', opacity: 0.42 },
+  other: { color: 'textSecondary', opacity: 0.26 },
 };
 
 export function zoneCategoryColor(category: ZoneCategory, colors: MapColors): string {
@@ -260,6 +267,19 @@ interface AgentFeature {
   geometry: { type: 'Point'; coordinates: number[] };
 }
 
+interface BuildingFootprintFeature {
+  type: 'Feature';
+  id: string;
+  properties: { id: string };
+  geometry: { type: 'Polygon'; coordinates: number[][][] };
+}
+
+interface GraticuleFeature {
+  type: 'Feature';
+  properties: Record<string, never>;
+  geometry: { type: 'LineString'; coordinates: number[][] };
+}
+
 interface FeatureCollection<F> {
   type: 'FeatureCollection';
   features: F[];
@@ -269,8 +289,9 @@ export function buildZonesData(zones: WorldMapZone[]): FeatureCollection<ZoneFea
   return {
     type: 'FeatureCollection',
     features: zones
-      .filter((z): z is WorldMapZone & { geojson: NonNullable<WorldMapZone['geojson']> } =>
-        z.geojson != null,
+      .filter(
+        (z): z is WorldMapZone & { geojson: NonNullable<WorldMapZone['geojson']> } =>
+          z.geojson != null,
       )
       .map((z) => ({
         type: 'Feature',
@@ -292,8 +313,9 @@ function streetsToFeatures(streets: WorldMapStreet[]): FeatureCollection<StreetF
   return {
     type: 'FeatureCollection',
     features: streets
-      .filter((s): s is WorldMapStreet & { geojson: NonNullable<WorldMapStreet['geojson']> } =>
-        s.geojson != null,
+      .filter(
+        (s): s is WorldMapStreet & { geojson: NonNullable<WorldMapStreet['geojson']> } =>
+          s.geojson != null,
       )
       .map((s) => ({
         type: 'Feature',
@@ -309,12 +331,20 @@ function streetsToFeatures(streets: WorldMapStreet[]): FeatureCollection<StreetF
   };
 }
 
+// Half-extent of a synthesised building footprint, in degrees (≈ 22 m at the
+// equator). Buildings are stored as Points; the frontend buffers each into a
+// small square so the map reads as structures, not floating icons. Real
+// generator-emitted footprint polygons are a future backend follow-up.
+const FOOTPRINT_HALF_DEG = 0.0002;
+
 function buildingsToFeatures(buildings: WorldMapBuilding[]): {
   collection: FeatureCollection<BuildingFeature>;
+  footprints: FeatureCollection<BuildingFootprintFeature>;
   positions: Map<string, BuildingPosition>;
 } {
   const positions = new Map<string, BuildingPosition>();
   const features: BuildingFeature[] = [];
+  const footprints: BuildingFootprintFeature[] = [];
   for (const b of buildings) {
     if (!b.geojson) continue;
     const [lng, lat] = b.geojson.coordinates;
@@ -330,8 +360,30 @@ function buildingsToFeatures(buildings: WorldMapBuilding[]): {
       },
       geometry: { type: 'Point', coordinates: [lng, lat] },
     });
+    const h = FOOTPRINT_HALF_DEG;
+    footprints.push({
+      type: 'Feature',
+      id: b.id,
+      properties: { id: b.id },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [lng - h, lat - h],
+            [lng + h, lat - h],
+            [lng + h, lat + h],
+            [lng - h, lat + h],
+            [lng - h, lat - h],
+          ],
+        ],
+      },
+    });
   }
-  return { collection: { type: 'FeatureCollection', features }, positions };
+  return {
+    collection: { type: 'FeatureCollection', features },
+    footprints: { type: 'FeatureCollection', features: footprints },
+    positions,
+  };
 }
 
 function agentsToFeatures(
@@ -357,18 +409,71 @@ function agentsToFeatures(
   return { type: 'FeatureCollection', features };
 }
 
+// A faint reference grid for the map base — turns the empty margin around the
+// geometry into "archive paper" rather than a broken-looking void. Generated
+// over a generous span around the content so a pan never reaches its edge.
+function buildGraticule(
+  bounds: [[number, number], [number, number]],
+): FeatureCollection<GraticuleFeature> {
+  const [[minLng, minLat], [maxLng, maxLat]] = bounds;
+  const spanLng = Math.max(maxLng - minLng, 1e-6);
+  const spanLat = Math.max(maxLat - minLat, 1e-6);
+  // ~8 grid cells across the content; the grid extends one content-span past
+  // every edge so a pan stays on-grid.
+  const step = Math.max(spanLng, spanLat) / 8;
+  const startLng = Math.floor((minLng - spanLng) / step) * step;
+  const endLng = maxLng + spanLng;
+  const startLat = Math.floor((minLat - spanLat) / step) * step;
+  const endLat = maxLat + spanLat;
+  const features: GraticuleFeature[] = [];
+  for (let lng = startLng; lng <= endLng; lng += step) {
+    features.push({
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [lng, startLat],
+          [lng, endLat],
+        ],
+      },
+    });
+  }
+  for (let lat = startLat; lat <= endLat; lat += step) {
+    features.push({
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [startLng, lat],
+          [endLng, lat],
+        ],
+      },
+    });
+  }
+  return { type: 'FeatureCollection', features };
+}
+
 // MapLibre match expression — keep arms aligned with ZONE_CATEGORY_STYLE.
 function zoneFillColorExpr(colors: MapColors): ExpressionSpecification {
   return [
     'match',
     ['get', 'category'],
-    'authority', colors[ZONE_CATEGORY_STYLE.authority.color],
-    'sacred', colors[ZONE_CATEGORY_STYLE.sacred.color],
-    'industrial', colors[ZONE_CATEGORY_STYLE.industrial.color],
-    'commercial', colors[ZONE_CATEGORY_STYLE.commercial.color],
-    'residential', colors[ZONE_CATEGORY_STYLE.residential.color],
-    'marginal', colors[ZONE_CATEGORY_STYLE.marginal.color],
-    'liminal', colors[ZONE_CATEGORY_STYLE.liminal.color],
+    'authority',
+    colors[ZONE_CATEGORY_STYLE.authority.color],
+    'sacred',
+    colors[ZONE_CATEGORY_STYLE.sacred.color],
+    'industrial',
+    colors[ZONE_CATEGORY_STYLE.industrial.color],
+    'commercial',
+    colors[ZONE_CATEGORY_STYLE.commercial.color],
+    'residential',
+    colors[ZONE_CATEGORY_STYLE.residential.color],
+    'marginal',
+    colors[ZONE_CATEGORY_STYLE.marginal.color],
+    'liminal',
+    colors[ZONE_CATEGORY_STYLE.liminal.color],
     /* default */ colors[ZONE_CATEGORY_STYLE.other.color],
   ];
 }
@@ -376,38 +481,69 @@ function zoneFillColorExpr(colors: MapColors): ExpressionSpecification {
 const ZONE_CATEGORY_OPACITY_EXPR: ExpressionSpecification = [
   'match',
   ['get', 'category'],
-  'authority', ZONE_CATEGORY_STYLE.authority.opacity,
-  'sacred', ZONE_CATEGORY_STYLE.sacred.opacity,
-  'industrial', ZONE_CATEGORY_STYLE.industrial.opacity,
-  'commercial', ZONE_CATEGORY_STYLE.commercial.opacity,
-  'residential', ZONE_CATEGORY_STYLE.residential.opacity,
-  'marginal', ZONE_CATEGORY_STYLE.marginal.opacity,
-  'liminal', ZONE_CATEGORY_STYLE.liminal.opacity,
+  'authority',
+  ZONE_CATEGORY_STYLE.authority.opacity,
+  'sacred',
+  ZONE_CATEGORY_STYLE.sacred.opacity,
+  'industrial',
+  ZONE_CATEGORY_STYLE.industrial.opacity,
+  'commercial',
+  ZONE_CATEGORY_STYLE.commercial.opacity,
+  'residential',
+  ZONE_CATEGORY_STYLE.residential.opacity,
+  'marginal',
+  ZONE_CATEGORY_STYLE.marginal.opacity,
+  'liminal',
+  ZONE_CATEGORY_STYLE.liminal.opacity,
   /* default */ ZONE_CATEGORY_STYLE.other.opacity,
 ];
 
 // Stability label config (matches the 5 canonical bands from mv_zone_stability
 // in migration 031). Same pattern as ZONE_CATEGORY_STYLE: single source of
 // truth, match expressions below derive their values from here.
+//
+// Stability is rendered as a RESTRAINED accent, not a wash: a faint fill tint
+// for the two urgent bands only, plus a solid coloured zone edge (the
+// `zones-stability-edge` layer). The old heavy full-fill (critical at 0.32)
+// buried the category colours and made an all-critical map read as one red
+// hazard zone. functional/stable/exemplary contribute no fill — a healthy map
+// stays calm and lets the category colours carry.
 type StabilityLabel = 'critical' | 'unstable' | 'functional' | 'stable' | 'exemplary';
 
 const STABILITY_STYLE: Record<StabilityLabel, { color: keyof MapColors; opacity: number }> = {
-  critical: { color: 'danger', opacity: 0.32 },
-  unstable: { color: 'danger', opacity: 0.2 },
-  functional: { color: 'warning', opacity: 0.1 },
-  stable: { color: 'success', opacity: 0.04 },
-  exemplary: { color: 'success', opacity: 0.08 },
+  critical: { color: 'danger', opacity: 0.1 },
+  unstable: { color: 'danger', opacity: 0.06 },
+  functional: { color: 'warning', opacity: 0 },
+  stable: { color: 'success', opacity: 0 },
+  exemplary: { color: 'success', opacity: 0 },
 };
+
+// Zone-edge width per stability band — the primary stability signal now that
+// the fill is demoted. Only the two urgent bands get a visible edge.
+const STABILITY_EDGE_WIDTH: ExpressionSpecification = [
+  'match',
+  ['get', 'stability_label'],
+  'critical',
+  2.6,
+  'unstable',
+  1.8,
+  /* default */ 0,
+];
 
 function stabilityFillColorExpr(colors: MapColors): ExpressionSpecification {
   return [
     'match',
     ['get', 'stability_label'],
-    'critical', colors[STABILITY_STYLE.critical.color],
-    'unstable', colors[STABILITY_STYLE.unstable.color],
-    'functional', colors[STABILITY_STYLE.functional.color],
-    'stable', colors[STABILITY_STYLE.stable.color],
-    'exemplary', colors[STABILITY_STYLE.exemplary.color],
+    'critical',
+    colors[STABILITY_STYLE.critical.color],
+    'unstable',
+    colors[STABILITY_STYLE.unstable.color],
+    'functional',
+    colors[STABILITY_STYLE.functional.color],
+    'stable',
+    colors[STABILITY_STYLE.stable.color],
+    'exemplary',
+    colors[STABILITY_STYLE.exemplary.color],
     /* default */ colors.surface,
   ];
 }
@@ -415,29 +551,83 @@ function stabilityFillColorExpr(colors: MapColors): ExpressionSpecification {
 const STABILITY_OPACITY_EXPR: ExpressionSpecification = [
   'match',
   ['get', 'stability_label'],
-  'critical', STABILITY_STYLE.critical.opacity,
-  'unstable', STABILITY_STYLE.unstable.opacity,
-  'functional', STABILITY_STYLE.functional.opacity,
-  'stable', STABILITY_STYLE.stable.opacity,
-  'exemplary', STABILITY_STYLE.exemplary.opacity,
+  'critical',
+  STABILITY_STYLE.critical.opacity,
+  'unstable',
+  STABILITY_STYLE.unstable.opacity,
+  'functional',
+  STABILITY_STYLE.functional.opacity,
+  'stable',
+  STABILITY_STYLE.stable.opacity,
+  'exemplary',
+  STABILITY_STYLE.exemplary.opacity,
   /* default */ 0,
 ];
 
-const STREET_WIDTH: ExpressionSpecification = [
-  'interpolate',
-  ['linear'],
-  ['zoom'],
-  10,
-  ['match', ['get', 'street_type'], 'arterial', 1.2, 'secondary', 0.8, 'tertiary', 0.5, 0.3],
-  18,
-  ['match', ['get', 'street_type'], 'arterial', 4, 'secondary', 2.6, 'tertiary', 1.6, 0.8],
-];
+// Street line-width interpolation, parameterised by a flat px addend so the
+// per-tier hierarchy lives in exactly one place. Used for the road itself
+// (`STREET_WIDTH`, addend 0) and its casing (`STREET_CASING_WIDTH`, addend 3).
+// A factory — not `['+', STREET_WIDTH, 3]` — because MapLibre requires the
+// zoom `interpolate` to be the TOP-LEVEL property value; nesting it inside a
+// `+` expression is rejected at style-load time.
+function streetWidthExpr(addend: number): ExpressionSpecification {
+  return [
+    'interpolate',
+    ['linear'],
+    ['zoom'],
+    10,
+    [
+      'match',
+      ['get', 'street_type'],
+      'arterial',
+      1.6 + addend,
+      'secondary',
+      1 + addend,
+      'tertiary',
+      0.6 + addend,
+      'alley',
+      0.4 + addend,
+      0.4 + addend,
+    ],
+    18,
+    [
+      'match',
+      ['get', 'street_type'],
+      'arterial',
+      6 + addend,
+      'secondary',
+      3.6 + addend,
+      'tertiary',
+      2.2 + addend,
+      'alley',
+      1.2 + addend,
+      1.2 + addend,
+    ],
+  ];
+}
 
-export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): StyleSpecification {
+const STREET_WIDTH: ExpressionSpecification = streetWidthExpr(0);
+
+// Casing — a dark sleeve 3px wider than the road, peeking ~1.5px past each edge
+// to separate the street from the coloured zone fill it crosses.
+const STREET_CASING_WIDTH: ExpressionSpecification = streetWidthExpr(3);
+
+// `bounds` is the geometry extent the caller already computed (for fitBounds) —
+// passed in rather than recomputed here so computeBounds runs once per init.
+export function buildMapStyle(
+  payload: WorldMapResponse,
+  colors: MapColors,
+  bounds: [[number, number], [number, number]],
+): StyleSpecification {
   const zonesFC = buildZonesData(payload.zones);
   const streetsFC = streetsToFeatures(payload.streets);
-  const { collection: buildingsFC, positions } = buildingsToFeatures(payload.buildings);
+  const {
+    collection: buildingsFC,
+    footprints: footprintsFC,
+    positions,
+  } = buildingsToFeatures(payload.buildings);
   const agentsFC = agentsToFeatures(payload.agent_markers, positions);
+  const graticuleFC = buildGraticule(bounds);
 
   // Hoist: the zone category-color expression is identical across three
   // layers (fill, line, hover) — build the array once instead of per-layer.
@@ -450,9 +640,11 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
   //  - preserves feature-state across setData refreshes (Phase 6 live overlay)
   //  - aligns setFeatureState lookups with our _zonesById/_buildingsById maps
   const sources: Record<string, GeoJSONSourceSpecification> = {
+    graticule: { type: 'geojson', data: graticuleFC },
     zones: { type: 'geojson', data: zonesFC, promoteId: 'id' },
     streets: { type: 'geojson', data: streetsFC, promoteId: 'id' },
     buildings: { type: 'geojson', data: buildingsFC, promoteId: 'id' },
+    buildingFootprints: { type: 'geojson', data: footprintsFC },
     agents: { type: 'geojson', data: agentsFC, promoteId: 'id' },
   };
 
@@ -461,6 +653,18 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
       id: 'background',
       type: 'background',
       paint: { 'background-color': colors.surface },
+    },
+    {
+      // Faint reference grid — turns the empty margin into archive paper
+      // rather than a broken-looking void.
+      id: 'graticule',
+      type: 'line',
+      source: 'graticule',
+      paint: {
+        'line-color': colors.border,
+        'line-width': 0.5,
+        'line-opacity': 0.4,
+      },
     },
     {
       // Category fill — static once geometry is loaded; no transition needed.
@@ -473,14 +677,14 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
       },
     },
     {
+      // Crisp solid category outline (replaces the old sketchy dashes).
       id: 'zones-line',
       type: 'line',
       source: 'zones',
       paint: {
         'line-color': categoryColorExpr,
-        'line-width': 1.2,
-        'line-dasharray': [3, 2],
-        'line-opacity': 0.65,
+        'line-width': 1.4,
+        'line-opacity': 0.85,
       },
     },
     {
@@ -500,6 +704,21 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
       },
     },
     {
+      // Stability as a zone-edge signal — solid coloured border, thicker for
+      // the more urgent bands, invisible for healthy zones. The primary
+      // stability cue now that the fill wash is demoted (see STABILITY_STYLE).
+      id: 'zones-stability-edge',
+      type: 'line',
+      source: 'zones',
+      layout: { 'line-join': 'round' },
+      paint: {
+        'line-color': stabilityColorExpr,
+        'line-width': STABILITY_EDGE_WIDTH,
+        'line-opacity': 0.9,
+        'line-width-transition': { duration: 600 },
+      },
+    },
+    {
       // Hover overlay sits LAST among zone layers so the user's active
       // pointer signal wins over ambient stability colour.
       id: 'zones-fill-hover',
@@ -508,6 +727,19 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
       paint: {
         'fill-color': categoryColorExpr,
         'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.18, 0],
+      },
+    },
+    {
+      // Casing — a dark sleeve under each street so it reads crisply where it
+      // crosses a coloured zone fill.
+      id: 'streets-casing',
+      type: 'line',
+      source: 'streets',
+      layout: { 'line-cap': 'butt', 'line-join': 'miter' },
+      paint: {
+        'line-color': colors.surface,
+        'line-width': STREET_CASING_WIDTH,
+        'line-opacity': 0.85,
       },
     },
     {
@@ -526,7 +758,29 @@ export function buildMapStyle(payload: WorldMapResponse, colors: MapColors): Sty
           colors.textMuted,
         ],
         'line-width': STREET_WIDTH,
-        'line-opacity': 0.85,
+        'line-opacity': 0.95,
+      },
+    },
+    {
+      // Synthesised building footprints — buildings are stored as Points;
+      // buildingsToFeatures buffers each into a small square so structures
+      // read as shapes. The type icon rides above as a DOM marker.
+      id: 'building-footprints-fill',
+      type: 'fill',
+      source: 'buildingFootprints',
+      paint: {
+        'fill-color': colors.textSecondary,
+        'fill-opacity': 0.55,
+      },
+    },
+    {
+      id: 'building-footprints-line',
+      type: 'line',
+      source: 'buildingFootprints',
+      paint: {
+        'line-color': colors.textSecondary,
+        'line-width': 1,
+        'line-opacity': 0.9,
       },
     },
     // NOTE: buildings and agents are rendered as DOM markers (Lit-rendered
@@ -553,7 +807,9 @@ export function polygonCentroid(polygon: { coordinates: number[][][] }): [number
   let area = 0;
   let cx = 0;
   let cy = 0;
-  const n = ring.length - (ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1] ? 1 : 0);
+  const n =
+    ring.length -
+    (ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1] ? 1 : 0);
   for (let i = 0; i < n; i++) {
     const [x0, y0] = ring[i];
     const [x1, y1] = ring[(i + 1) % n];
@@ -575,7 +831,29 @@ export function polygonCentroid(polygon: { coordinates: number[][][] }): [number
   return [cx / (6 * area), cy / (6 * area)];
 }
 
-export function computeBounds(payload: WorldMapResponse): [[number, number], [number, number]] | null {
+/**
+ * Label anchor for a zone polygon: horizontally centred on the centroid,
+ * vertically near the top edge. Area labels read better at the top of the
+ * shape than dead-centre, and it frees the polygon interior for building
+ * markers — de-conflicting the zone-label and building-marker layers.
+ */
+export function zoneLabelAnchor(polygon: { coordinates: number[][][] }): [number, number] | null {
+  const centroid = polygonCentroid(polygon);
+  if (!centroid) return null;
+  const ring = polygon.coordinates[0];
+  if (!ring || ring.length === 0) return null;
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+  for (const [, lat] of ring) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+  }
+  return [centroid[0], maxLat - (maxLat - minLat) * 0.15];
+}
+
+export function computeBounds(
+  payload: WorldMapResponse,
+): [[number, number], [number, number]] | null {
   let minLng = Infinity;
   let minLat = Infinity;
   let maxLng = -Infinity;
@@ -603,9 +881,16 @@ export function computeBounds(payload: WorldMapResponse): [[number, number], [nu
     const [lng, lat] = b.geojson.coordinates;
     ingest(lng, lat);
   }
-  for (const c of payload.cities) {
-    if (c.map_center_lat == null || c.map_center_lng == null) continue;
-    ingest(c.map_center_lng, c.map_center_lat);
+  // City centers are label anchors, not content extent. Fold them into the
+  // bounds only as a fallback when there is no geometry at all — otherwise an
+  // empty city (a center coordinate with zero zones/streets/buildings, e.g.
+  // Hafenstadt Korrin) drags the fitted box far past the real content and
+  // leaves half the canvas dead. With geometry present, fit to it alone.
+  if (!Number.isFinite(minLng)) {
+    for (const c of payload.cities) {
+      if (c.map_center_lat == null || c.map_center_lng == null) continue;
+      ingest(c.map_center_lng, c.map_center_lat);
+    }
   }
 
   if (!Number.isFinite(minLng)) return null;
@@ -613,4 +898,17 @@ export function computeBounds(payload: WorldMapResponse): [[number, number], [nu
     [minLng, minLat],
     [maxLng, maxLat],
   ];
+}
+
+/**
+ * True if (lng, lat) lies inside the bounding box. Used to drop the label for a
+ * city that has no geometry — computeBounds fits to geometry alone, so an empty
+ * city's centre falls outside the returned bounds.
+ */
+export function pointInBounds(
+  lng: number,
+  lat: number,
+  bounds: [[number, number], [number, number]],
+): boolean {
+  return lng >= bounds[0][0] && lng <= bounds[1][0] && lat >= bounds[0][1] && lat <= bounds[1][1];
 }

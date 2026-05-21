@@ -1,15 +1,15 @@
 import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
-import { html, LitElement, nothing, render, type TemplateResult } from 'lit';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { SVGTemplateResult } from 'lit';
+import { html, LitElement, nothing, render, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type {
-  Map as MapLibreMap,
   MapLayerMouseEvent,
+  Map as MapLibreMap,
   Marker as MapLibreMarker,
   Popup as MapLibrePopup,
 } from 'maplibre-gl';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 import { appState } from '../../services/AppStateManager.js';
 import { worldMapApi } from '../../services/api/WorldMapApiService.js';
 import { captureError } from '../../services/SentryService.js';
@@ -31,10 +31,12 @@ import {
   categoriseAgentRole,
   categoriseZoneType,
   computeBounds,
+  pointInBounds,
   polygonCentroid,
   readMapColors,
   type ZoneCategory,
   zoneCategoryColor,
+  zoneLabelAnchor,
 } from './world-map-styles.js';
 
 import '../shared/EmptyState.js';
@@ -147,6 +149,11 @@ function buildingMarkerColorVar(buildingType: string | null): string {
  * sidebar toggle so the two stay consistent.
  */
 const FIT_PADDING = { top: 40, bottom: 40, left: 90, right: 90 } as const;
+
+// Base vertical offset (px) lifting a building icon to float above its
+// footprint as a pin. _deconflictMarkers adds a downward nudge to this when a
+// marker would otherwise overlap a label chip.
+const BUILDING_MARKER_OFFSET_Y = -14;
 
 /**
  * Wire a click + Enter/Space keyboard activation handler onto a DOM marker.
@@ -399,14 +406,14 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       // longer the active load.
       if (generation !== this._loadGeneration) return;
 
-      const colors = readMapColors(this, this._data.theme_hints);
-      const style = buildMapStyle(this._data, colors);
-
       const bounds = computeBounds(this._data);
       if (bounds === null) {
         return;
       }
       this._fittedBounds = bounds;
+
+      const colors = readMapColors(this, this._data.theme_hints);
+      const style = buildMapStyle(this._data, colors, bounds);
       const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       const map = new MapLibreCtor({
@@ -427,7 +434,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       this._map = map;
       map.touchZoomRotate.disableRotation();
 
-      map.addControl(new NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right');
+      map.addControl(
+        new NavigationControl({ showCompass: false, visualizePitch: false }),
+        'top-right',
+      );
 
       this._createBuildingPopup(map, Popup);
 
@@ -437,6 +447,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
           this._renderLabels(map, Marker);
           this._renderBuildingMarkers(map, Marker);
           this._renderAgentMarkers(map, Marker);
+          this._deconflictMarkers();
           this._applyZoomTier();
           this._startStabilityRefresh();
           this._subscribeToEvents(map, Marker);
@@ -448,6 +459,10 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       // Zoom-tier marker visibility — fires continuously during a zoom gesture,
       // but _applyZoomTier only touches the DOM when a threshold is crossed.
       map.on('zoom', () => this._applyZoomTier());
+
+      // Re-run building-marker / label de-confliction once a pan or zoom
+      // settles — screen positions, and thus overlaps, shift with the camera.
+      map.on('moveend', () => this._deconflictMarkers());
 
       // Zones stay as MapLibre fill layers (clickable via layer hit-testing);
       // buildings + agents are DOM markers (their click/hover are wired in
@@ -756,9 +771,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       this._selectEvent(event.id);
     });
 
-    const marker = new MarkerCtor({ element: el, anchor: 'center' })
-      .setLngLat(centroid)
-      .addTo(map);
+    const marker = new MarkerCtor({ element: el, anchor: 'center' }).setLngLat(centroid).addTo(map);
 
     const timeout = setTimeout(() => {
       el.classList.add('velg-map-event-marker--fading');
@@ -858,6 +871,13 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
 
     for (const city of this._data.cities) {
       if (city.map_center_lat == null || city.map_center_lng == null) continue;
+      // Skip cities with no geometry: computeBounds fits to geometry alone, so
+      // an empty city's center falls outside _fittedBounds. Rendering its label
+      // would strand it alone in the empty margin (e.g. Hafenstadt Korrin).
+      const fb = this._fittedBounds;
+      if (fb && !pointInBounds(city.map_center_lng, city.map_center_lat, fb)) {
+        continue;
+      }
       const el = document.createElement('div');
       el.className = 'velg-map-label velg-map-label--city';
       el.textContent = city.name;
@@ -870,8 +890,8 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
     const colors = readMapColors(this, this._data.theme_hints);
     for (const zone of this._data.zones) {
       if (!zone.geojson) continue;
-      const centroid = polygonCentroid(zone.geojson);
-      if (!centroid) continue;
+      const anchor = zoneLabelAnchor(zone.geojson);
+      if (!anchor) continue;
       const category = categoriseZoneType(zone.zone_type);
       const tint = zoneCategoryColor(category, colors);
       const el = document.createElement('div');
@@ -887,9 +907,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         kind.textContent = zone.zone_type;
         el.appendChild(kind);
       }
-      const marker = new MarkerCtor({ element: el, anchor: 'center' })
-        .setLngLat(centroid)
-        .addTo(map);
+      const marker = new MarkerCtor({ element: el, anchor: 'center' }).setLngLat(anchor).addTo(map);
       this._markers.push(marker);
     }
   }
@@ -939,7 +957,51 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       const marker = new MarkerCtor({ element: el, anchor: 'center' })
         .setLngLat([lng, lat])
         .addTo(map);
+      // Lift the icon to float above its footprint as a pin. _deconflictMarkers
+      // (after render + on moveend) adds a further downward nudge if this base
+      // offset still leaves the marker overlapping a label chip.
+      marker.setOffset([0, BUILDING_MARKER_OFFSET_Y]);
       this._markers.push(marker);
+    }
+  }
+
+  /**
+   * Nudge building markers clear of zone / city label chips. A label names its
+   * area (a fixed semantic anchor that stays put); a building marker that
+   * collides with one is pushed straight down — out of the top-anchored label,
+   * into the zone interior — by exactly the measured overlap. Re-runs on
+   * moveend because screen positions shift with pan / zoom; each pass resets to
+   * the base offset first so repeated moves never accumulate drift. Single-pass
+   * by design: it clears the label collision, not a pushed-into-a-lower-label
+   * cascade (which the sparse marker density never produces in practice).
+   */
+  private _deconflictMarkers(): void {
+    const labelRects: DOMRect[] = [];
+    const buildingMarkers: MapLibreMarker[] = [];
+    for (const m of this._markers) {
+      const cls = m.getElement().classList;
+      if (cls.contains('velg-map-label')) {
+        labelRects.push(m.getElement().getBoundingClientRect());
+      } else if (cls.contains('velg-map-building-marker')) {
+        buildingMarkers.push(m);
+      }
+    }
+    if (labelRects.length === 0 || buildingMarkers.length === 0) return;
+
+    for (const bm of buildingMarkers) {
+      // Reset to the base offset before measuring so a previous nudge does not
+      // compound across map moves.
+      bm.setOffset([0, BUILDING_MARKER_OFFSET_Y]);
+      const r = bm.getElement().getBoundingClientRect();
+      // A zoom-tier-hidden marker reports an empty rect — nothing to de-conflict.
+      if (r.width === 0) continue;
+      let push = 0;
+      for (const lr of labelRects) {
+        const overlaps =
+          r.left < lr.right && r.right > lr.left && r.top < lr.bottom && r.bottom > lr.top;
+        if (overlaps) push = Math.max(push, lr.bottom - r.top + 4);
+      }
+      if (push > 0) bm.setOffset([0, BUILDING_MARKER_OFFSET_Y + push]);
     }
   }
 
@@ -975,15 +1037,16 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       // Tint the dot by the click-target agent's role archetype (the one the
       // marker selects), so the colour matches the panel that opens. Falls
       // back to phosphor-green for unrecognised / missing professions.
-      el.style.setProperty('--_agent-color', agentRoleColorVar(categoriseAgentRole(first.profession)));
+      el.style.setProperty(
+        '--_agent-color',
+        agentRoleColorVar(categoriseAgentRole(first.profession)),
+      );
       // str-template keeps the full sentence translatable as one unit —
       // German translators can reorder to "${count} Agenten wohnen in ${name}"
       // rather than being stuck with the English word order.
       el.setAttribute(
         'aria-label',
-        count === 1
-          ? first.name
-          : msg(str`${count} agents living at ${building.name}`),
+        count === 1 ? first.name : msg(str`${count} agents living at ${building.name}`),
       );
       const dot = document.createElement('span');
       dot.className = 'velg-map-agent-marker__dot';
@@ -1078,8 +1141,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       const root = this.getRootNode();
       const active =
         root instanceof ShadowRoot || root instanceof Document ? root.activeElement : null;
-      this._focusReturnEl =
-        active instanceof HTMLElement && this.contains(active) ? active : null;
+      this._focusReturnEl = active instanceof HTMLElement && this.contains(active) ? active : null;
     }
     this._selected = entity;
     // Open ⇄ closed transitions resize the canvas — re-fit so edge labels
@@ -1094,7 +1156,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
       const target = this._focusReturnEl;
       this._focusReturnEl = null;
       void this.updateComplete.then(() => {
-        if (target && target.isConnected) target.focus();
+        if (target?.isConnected) target.focus();
         // MapLibre's <canvas> carries tabindex=0; fall back there so focus
         // lands somewhere meaningful rather than the document body.
         else this.querySelector<HTMLElement>('.maplibregl-canvas')?.focus();
@@ -1235,9 +1297,11 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    * union. Pure: returns label/name/rows; the render template below stays
    * structural-only.
    */
-  private _sidebarFields(
-    sel: SelectedEntity,
-  ): { kindLabel: string; name: string; rows: TemplateResult[] } {
+  private _sidebarFields(sel: SelectedEntity): {
+    kindLabel: string;
+    name: string;
+    rows: TemplateResult[];
+  } {
     switch (sel.kind) {
       case 'zone': {
         const z = sel.zone;
@@ -1340,7 +1404,8 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    * so the bar maps 1:1 to the categorical state shown in the label below.
    */
   private _renderStabilityGauge(zone: WorldMapZone): TemplateResult {
-    const pct = typeof zone.stability === 'number' ? Math.max(0, Math.min(1, zone.stability)) * 100 : null;
+    const pct =
+      typeof zone.stability === 'number' ? Math.max(0, Math.min(1, zone.stability)) * 100 : null;
     const tier = zone.stability_label ?? 'unknown';
     const localized = this._localizeStabilityTier(tier);
     const value = pct !== null ? `${Math.round(pct)}%` : '–';
@@ -1426,10 +1491,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
    */
   private _isContentReady(): boolean {
     return (
-      !this._loading &&
-      !this._error &&
-      this._data !== null &&
-      computeBounds(this._data) !== null
+      !this._loading && !this._error && this._data !== null && computeBounds(this._data) !== null
     );
   }
 
@@ -1492,7 +1554,6 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   }
 
   private _renderContent(): TemplateResult {
-    const slug = this._data?.simulation_slug ?? appState.currentSimulation.value?.slug ?? '';
     return html`
       <div class="world-map__body">
         <div class="world-map__canvas-wrap">
@@ -1506,12 +1567,6 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
           <span class="world-map__corner world-map__corner--bl" aria-hidden="true"></span>
           <span class="world-map__corner world-map__corner--br" aria-hidden="true"></span>
           <div class="world-map__scanlines" aria-hidden="true"></div>
-          <div class="world-map__watermark" aria-hidden="true">
-            <span class="world-map__watermark-text">
-              ${msg('Classified')} <span class="world-map__watermark-sep">//</span>
-              <span class="world-map__watermark-slug">${slug || msg('Bureau')}</span>
-            </span>
-          </div>
         </div>
         ${this._renderSidebar()}
       </div>
