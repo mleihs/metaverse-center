@@ -34,6 +34,7 @@ python-multipart==0.0.22
 PyYAML==6.0.3
 realtime==2.25.1
 replicate==1.0.7
+shapely==2.1.2
 slowapi==0.1.9
 starlette==0.52.1
 storage3==2.25.1
