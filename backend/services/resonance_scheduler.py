@@ -58,6 +58,15 @@ class ResonanceScheduler:
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Resonance scheduler loop error")
                 sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                # Last-resort guard: an unexpected exception type must not kill the loop —
+                # a propagating exception ends the task (silent stop while /health stays 200).
+                # Report and keep looping.
+                logger.exception("Resonance scheduler loop: unexpected error, continuing")
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "ResonanceScheduler")
+                    scope.set_tag("phase", "scheduler_loop_unexpected")
+                    sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
     @classmethod

@@ -68,6 +68,15 @@ class EpochCycleScheduler:
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Epoch cycle scheduler sweep error")
                 sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                # Last-resort guard: an unexpected exception type must not kill the sweep loop —
+                # a propagating exception ends the task (silent stop while /health stays 200).
+                # Report and keep looping.
+                logger.exception("Epoch cycle scheduler sweep: unexpected error, continuing")
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "EpochCycleScheduler")
+                    scope.set_tag("phase", "scheduler_loop_unexpected")
+                    sentry_sdk.capture_exception(exc)
             await asyncio.sleep(_SWEEP_INTERVAL)
 
     @classmethod
