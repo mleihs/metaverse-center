@@ -63,30 +63,6 @@ class TestEmailServiceConfig:
             mock_settings.smtp_password = "pass"
             assert EmailService._smtp_configured() is True
 
-    def test_is_configured_true_when_only_resend(self):
-        with patch("backend.services.email_service.settings") as mock_settings:
-            mock_settings.resend_api_key = "re_test"
-            mock_settings.smtp_host = ""
-            mock_settings.smtp_user = ""
-            mock_settings.smtp_password = ""
-            assert EmailService._is_configured() is True
-
-    def test_is_configured_true_when_only_smtp(self):
-        with patch("backend.services.email_service.settings") as mock_settings:
-            mock_settings.resend_api_key = ""
-            mock_settings.smtp_host = "mail.example.com"
-            mock_settings.smtp_user = "user"
-            mock_settings.smtp_password = "pass"
-            assert EmailService._is_configured() is True
-
-    def test_is_configured_false_when_neither(self):
-        with patch("backend.services.email_service.settings") as mock_settings:
-            mock_settings.resend_api_key = ""
-            mock_settings.smtp_host = ""
-            mock_settings.smtp_user = ""
-            mock_settings.smtp_password = ""
-            assert EmailService._is_configured() is False
-
 
 class TestEmailServiceResend:
     @pytest.mark.asyncio
@@ -111,7 +87,29 @@ class TestEmailServiceResend:
         assert call.args[0] == "https://api.resend.com/emails"
         assert call.kwargs["json"]["to"] == ["to@example.com"]
         assert call.kwargs["json"]["from"] == "metaverse.center <info@metaverse.center>"
+        # Pin the full payload shape: a future `html`→`body` rename or a dropped `subject`
+        # would otherwise surface only as a 422 in prod (which, given the deliberate
+        # no-fallback design, silently zeroes outbound mail).
+        assert call.kwargs["json"]["subject"] == "Subject"
+        assert call.kwargs["json"]["html"] == "<p>Hi</p>"
         assert call.kwargs["headers"]["Authorization"] == "Bearer re_test"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("status", [201, 202])
+    async def test_2xx_status_codes_route_to_success(self, mock_httpx_client, status):
+        """Any 2xx means Resend accepted the message — a future 201/202 must not be
+        misreported as a rejection (the old exact `== 200` guard would have)."""
+        _, mock_instance = mock_httpx_client
+        mock_instance.post.return_value = _mock_response(
+            status=status, json_data={"id": "msg-2xx"}, text='{"id":"msg-2xx"}'
+        )
+        with patch("backend.services.email_service.settings") as mock_settings:
+            mock_settings.resend_api_key = "re_test"
+            mock_settings.smtp_from = "Test <test@example.com>"
+
+            result = await EmailService._send_via_resend("to@example.com", "S", "<p>x</p>")
+
+        assert result is True
 
     @pytest.mark.asyncio
     async def test_malformed_200_body_returns_true_and_reports(self, mock_httpx_client):

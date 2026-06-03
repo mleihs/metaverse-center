@@ -183,20 +183,15 @@ async def lifespan(app: FastAPI):
             ", ".join(missing_github_app_env),
         )
 
-    # Background schedulers — gated by RUN_SCHEDULERS so a deployment that
-    # shares another instance's database (e.g. a staging box pointed at the
-    # production Supabase) can boot PASSIVE: it still serves HTTP reads/writes
-    # but never autonomously ticks the heartbeat, posts to Instagram/Bluesky,
-    # resolves epochs, sweeps orphan branches, etc. Exactly one deployment may
-    # own the tick at a time. Default is ON, so production (and the box that
-    # owns the tick after a cutover) is unchanged when the var is absent — only
-    # an explicit falsey value disables it.
-    run_schedulers = os.environ.get("RUN_SCHEDULERS", "true").strip().lower() not in (
-        "false",
-        "0",
-        "no",
-        "off",
-    )
+    # Background schedulers — gated by app_settings.run_schedulers (env RUN_SCHEDULERS).
+    # A deployment that shares another instance's database (e.g. a staging box pointed at
+    # the production Supabase) sets it false to boot PASSIVE: it still serves HTTP
+    # reads/writes but never autonomously ticks the heartbeat, posts to Instagram/Bluesky,
+    # resolves epochs, sweeps orphan branches, etc. Exactly one deployment owns the tick at
+    # a time. Default is ON, so production (and the box that owns the tick after a cutover)
+    # is unchanged. The flag is a typed bool, so a malformed value fails loud at boot rather
+    # than silently arming a double-run against the shared DB.
+    run_schedulers = app_settings.run_schedulers
     scheduler_tasks: list = []
     if run_schedulers:
         scheduler_tasks = [
