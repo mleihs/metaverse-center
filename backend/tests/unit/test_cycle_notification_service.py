@@ -448,6 +448,7 @@ class TestSendCycleNotifications:
     async def test_skips_when_smtp_not_configured(self):
         """Should return False when SMTP is not configured."""
         with patch("backend.services.email_service.settings") as mock_settings:
+            mock_settings.resend_api_key = ""
             mock_settings.smtp_host = ""
             mock_settings.smtp_user = ""
             mock_settings.smtp_password = ""
@@ -467,6 +468,7 @@ class TestSendCycleNotifications:
 
         with patch.object(EmailService, "_send_sync", return_value=True) as mock_sync:
             with patch("backend.services.email_service.settings") as mock_settings:
+                mock_settings.resend_api_key = ""
                 mock_settings.smtp_host = "mail.example.com"
                 mock_settings.smtp_user = "user"
                 mock_settings.smtp_password = "pass"
