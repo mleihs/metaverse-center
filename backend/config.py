@@ -24,15 +24,17 @@ class Settings(BaseSettings):
     # Security
     settings_encryption_key: str = ""
 
-    # Email (SMTP)
+    # Email — Resend API is the primary transport (DKIM d=metaverse.center, DMARC-aligned).
+    # When resend_api_key is set, EmailService sends via Resend; otherwise it falls back to
+    # SMTP SSL below (prossl gateway signs d=prossl.de, not aligned, so it may spam-folder).
+    resend_api_key: str = ""
+
+    # Email (SMTP SSL fallback). smtp_from is the From header for both transports.
     smtp_host: str = ""
     smtp_port: int = 465
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = "metaverse.center <info@metaverse.center>"
-
-    # Email (legacy — Resend API, deprecated)
-    resend_api_key: str = ""
 
     # Platform admin
     platform_admin_emails: str = Field(default="", alias="PLATFORM_ADMIN_EMAILS")
