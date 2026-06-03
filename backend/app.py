@@ -183,31 +183,44 @@ async def lifespan(app: FastAPI):
             ", ".join(missing_github_app_env),
         )
 
-    resonance_task = await ResonanceScheduler.start()
-    scanner_task = await ScannerService.start()
-    heartbeat_task = await HeartbeatService.start()
-    instagram_task = await InstagramScheduler.start()
-    bluesky_task = await BlueskyScheduler.start()
-    epoch_cycle_task = await EpochCycleScheduler.start()
-    orphan_sweeper_task = await OrphanSweeperScheduler.start()
-    ai_usage_rollup_task = await AiUsageRollupScheduler.start()
-    circuit_revert_task = await CircuitRevertSweeper.start()
-    sentry_rule_refresh_task = await SentryRuleCacheRefresher.start()
-    fragment_generation_task = await FragmentGenerationScheduler.start()
-    dungeon_cleanup_task = await start_instance_cleanup()
+    # Background schedulers — gated by RUN_SCHEDULERS so a deployment that
+    # shares another instance's database (e.g. a staging box pointed at the
+    # production Supabase) can boot PASSIVE: it still serves HTTP reads/writes
+    # but never autonomously ticks the heartbeat, posts to Instagram/Bluesky,
+    # resolves epochs, sweeps orphan branches, etc. Exactly one deployment may
+    # own the tick at a time. Default is ON, so production (and the box that
+    # owns the tick after a cutover) is unchanged when the var is absent — only
+    # an explicit falsey value disables it.
+    run_schedulers = os.environ.get("RUN_SCHEDULERS", "true").strip().lower() not in (
+        "false",
+        "0",
+        "no",
+        "off",
+    )
+    scheduler_tasks: list = []
+    if run_schedulers:
+        scheduler_tasks = [
+            await ResonanceScheduler.start(),
+            await ScannerService.start(),
+            await HeartbeatService.start(),
+            await InstagramScheduler.start(),
+            await BlueskyScheduler.start(),
+            await EpochCycleScheduler.start(),
+            await OrphanSweeperScheduler.start(),
+            await AiUsageRollupScheduler.start(),
+            await CircuitRevertSweeper.start(),
+            await SentryRuleCacheRefresher.start(),
+            await FragmentGenerationScheduler.start(),
+            await start_instance_cleanup(),
+        ]
+    else:
+        logging.getLogger(__name__).warning(
+            "RUN_SCHEDULERS is disabled — background schedulers not started. "
+            "This instance is passive; another deployment owns the tick.",
+        )
     yield
-    dungeon_cleanup_task.cancel()
-    fragment_generation_task.cancel()
-    sentry_rule_refresh_task.cancel()
-    circuit_revert_task.cancel()
-    ai_usage_rollup_task.cancel()
-    orphan_sweeper_task.cancel()
-    epoch_cycle_task.cancel()
-    bluesky_task.cancel()
-    instagram_task.cancel()
-    heartbeat_task.cancel()
-    scanner_task.cancel()
-    resonance_task.cancel()
+    for task in reversed(scheduler_tasks):
+        task.cancel()
     # Release the persistent GitHub App httpx client pool.
     await close_github_app_client()
 
