@@ -51,6 +51,12 @@ ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 USER appuser
 
 EXPOSE ${PORT:-8000}
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# start-period=120s (matches railway.toml healthcheckTimeout): the FastAPI lifespan runs
+# serial Supabase round-trips before serving (model config, research domains, a 10-table
+# dungeon-content load, sentry-rule cache, circuit-kill rehydrate). On a cold/slow DB,
+# readiness can exceed 10s; failing probes during start-period don't count toward retries,
+# so this is pure additive grace — it cannot mark a healthy container unhealthy, and it
+# avoids a restart-on-unhealthy crash-loop under Coolify.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/api/v1/health || exit 1
 CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
