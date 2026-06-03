@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     # Environment — reads RAILWAY_ENVIRONMENT on Railway, defaults to "development" locally
     environment: str = Field(default="development", alias="RAILWAY_ENVIRONMENT")
 
+    # Background schedulers — gate the 12 autonomous workers (heartbeat tick, social
+    # posting, epoch resolution, sweepers, …). Default ON. Set false on a passive box that
+    # shares another instance's database so exactly one deployment owns the tick. Typed bool
+    # (fail-loud): a malformed RUN_SCHEDULERS raises at boot instead of silently arming a
+    # double-run. pydantic-settings maps run_schedulers → RUN_SCHEDULERS (case-insensitive).
+    run_schedulers: bool = True
+
     # Sentry
     sentry_dsn: str = ""
     sentry_traces_sample_rate: float = 0.1
