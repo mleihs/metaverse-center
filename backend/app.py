@@ -208,6 +208,25 @@ async def lifespan(app: FastAPI):
             await FragmentGenerationScheduler.start(),
             await start_instance_cleanup(),
         ]
+
+        # Supervisor: surface any scheduler task that ends other than via cancellation
+        # (graceful shutdown). Each loop already has a last-resort `except Exception` that
+        # keeps it alive; this is the belt-and-suspenders that makes a truly fatal exit
+        # (e.g. one slipping past a loop, or a non-loop task) observable instead of silent —
+        # a dead scheduler would otherwise stop ticking while the app keeps serving 200s.
+        def _on_scheduler_done(task) -> None:
+            if task.cancelled():
+                return
+            exc = task.exception()
+            if exc is not None:
+                logging.getLogger(__name__).error("Scheduler task exited unexpectedly: %r", exc)
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "lifespan")
+                    scope.set_tag("phase", "scheduler_supervisor")
+                    sentry_sdk.capture_exception(exc)
+
+        for task in scheduler_tasks:
+            task.add_done_callback(_on_scheduler_done)
     else:
         logging.getLogger(__name__).warning(
             "RUN_SCHEDULERS is disabled — background schedulers not started. "

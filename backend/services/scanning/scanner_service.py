@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
+import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
@@ -70,8 +71,18 @@ class ScannerService:
             except asyncio.CancelledError:
                 logger.info("Substrate Scanner shutting down")
                 raise
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Scanner loop error")
+                sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                # Last-resort guard: an unexpected exception type must not kill the loop —
+                # a propagating exception ends the task (silent stop while /health stays 200).
+                # Report and keep looping.
+                logger.exception("Scanner loop: unexpected error, continuing")
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "ScannerService")
+                    scope.set_tag("phase", "scheduler_loop_unexpected")
+                    sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
     # ── Configuration ─────────────────────────────────────────────────────
