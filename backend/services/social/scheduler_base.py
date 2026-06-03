@@ -87,6 +87,21 @@ class BaseSchedulerMixin:
                         {"iteration": cls._iteration_count},
                     )
                     sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                # Last-resort guard: any exception type NOT matched above must not escape the
+                # loop. A propagating exception ends the task permanently, so the scheduler
+                # stops ticking while /health still returns 200 (silent tick-death). Report and
+                # keep looping — a per-tick poison pill therefore re-alerts each interval rather
+                # than dying once and going dark.
+                logger.exception(
+                    "%s scheduler loop: unexpected error, continuing",
+                    cls._scheduler_name.capitalize(),
+                    extra={"iteration": cls._iteration_count},
+                )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag(f"{cls._scheduler_name}_phase", "scheduler_loop_unexpected")
+                    scope.set_context(cls._scheduler_name, {"iteration": cls._iteration_count})
+                    sentry_sdk.capture_exception(exc)
             await asyncio.sleep(interval)
 
     @classmethod

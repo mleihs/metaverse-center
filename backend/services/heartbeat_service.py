@@ -157,6 +157,15 @@ class HeartbeatService:
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
                 logger.exception("Heartbeat service loop error")
                 sentry_sdk.capture_exception(exc)
+            except Exception as exc:
+                # Last-resort guard: an unexpected exception type must not kill the game tick.
+                # A propagating exception ends the task and the heartbeat stops while /health
+                # stays 200 (silent tick-death). Report and keep looping.
+                logger.exception("Heartbeat service loop: unexpected error, continuing")
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "HeartbeatService")
+                    scope.set_tag("phase", "scheduler_loop_unexpected")
+                    sentry_sdk.capture_exception(exc)
             # Check every 60s for due simulations (not the full interval)
             await asyncio.sleep(min(60, interval))
 
