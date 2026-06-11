@@ -11,8 +11,6 @@ Covers the 6 canonical scenarios from the Bureau-Ops plan §10:
 
 from __future__ import annotations
 
-import time
-
 import pytest
 
 from backend.services.circuit_breaker_service import (
@@ -22,6 +20,33 @@ from backend.services.circuit_breaker_service import (
 
 SCOPE = "provider"
 KEY = "openrouter"
+
+
+class FakeClock:
+    """Deterministic stand-in for time.monotonic.
+
+    Replaces the former real ``time.sleep(0.08)`` waits, which left only a
+    30ms margin over the 0.05s open_duration — a flake on loaded CI runners.
+    Tests advance time explicitly instead of racing the wall clock.
+    """
+
+    def __init__(self) -> None:
+        self.now = 1000.0
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, seconds: float) -> None:
+        self.now += seconds
+
+
+@pytest.fixture
+def clock(monkeypatch: pytest.MonkeyPatch) -> FakeClock:
+    fake = FakeClock()
+    monkeypatch.setattr(
+        "backend.services.circuit_breaker_service.time.monotonic", fake,
+    )
+    return fake
 
 
 def _make_cb(**overrides) -> CircuitBreakerService:
@@ -55,31 +80,31 @@ class TestThresholdAndStateMachine:
         with pytest.raises(CircuitOpenError):
             cb.check(SCOPE, KEY)
 
-    def test_half_open_after_timeout(self):
+    def test_half_open_after_timeout(self, clock: FakeClock):
         cb = _make_cb(failure_threshold=2, open_duration=0.05)
         cb.record_failure(SCOPE, KEY)
         cb.record_failure(SCOPE, KEY)
-        time.sleep(0.08)
+        clock.advance(0.08)
         cb.check(SCOPE, KEY)  # no raise — transitions to half_open
         assert cb.get_state(SCOPE, KEY)["state"] == "half_open"
 
-    def test_half_open_failure_reopens_with_backoff(self):
+    def test_half_open_failure_reopens_with_backoff(self, clock: FakeClock):
         cb = _make_cb(failure_threshold=2, open_duration=0.05, max_open_duration=10.0)
         cb.record_failure(SCOPE, KEY)
         cb.record_failure(SCOPE, KEY)
         first = cb.get_state(SCOPE, KEY)["opens_until_s"]
-        time.sleep(0.08)
+        clock.advance(0.08)
         cb.check(SCOPE, KEY)  # half_open
         cb.record_failure(SCOPE, KEY)  # re-open with backoff ×2
         second = cb.get_state(SCOPE, KEY)["opens_until_s"]
         assert second > first, "backoff should double on re-open"
         assert cb.get_state(SCOPE, KEY)["consecutive_opens"] == 2
 
-    def test_half_open_success_closes(self):
+    def test_half_open_success_closes(self, clock: FakeClock):
         cb = _make_cb(failure_threshold=2, open_duration=0.05)
         cb.record_failure(SCOPE, KEY)
         cb.record_failure(SCOPE, KEY)
-        time.sleep(0.08)
+        clock.advance(0.08)
         cb.check(SCOPE, KEY)  # half_open
         cb.record_success(SCOPE, KEY)
         state = cb.get_state(SCOPE, KEY)
@@ -142,11 +167,11 @@ class TestPurposeScope:
 
 
 class TestWindowExpiry:
-    def test_old_failures_outside_window_dont_count(self):
+    def test_old_failures_outside_window_dont_count(self, clock: FakeClock):
         cb = _make_cb(failure_threshold=3, window_seconds=0.05)
         cb.record_failure(SCOPE, KEY)
         cb.record_failure(SCOPE, KEY)
-        time.sleep(0.08)  # window expires
+        clock.advance(0.08)  # window expires
         cb.record_failure(SCOPE, KEY)
         # Should still be closed — only 1 failure in current window
         assert cb.get_state(SCOPE, KEY)["state"] == "closed"
