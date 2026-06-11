@@ -18,6 +18,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
 from backend.utils.responses import extract_list
+from backend.utils.settings import parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -92,7 +93,9 @@ class ResonanceScheduler:
                 key = row["setting_key"]
                 val = row["setting_value"]
                 if key == "resonance_auto_process_enabled":
-                    enabled = str(val).lower() not in ("false", "0", "no")
+                    # F32 semantics: fail-closed positive match. A jsonb null
+                    # or unrecognised string must not arm the scheduler.
+                    enabled = parse_setting_bool(val)
                 elif key == "resonance_auto_process_interval_seconds":
                     try:
                         interval = max(10, int(val))  # floor at 10s
