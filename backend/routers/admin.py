@@ -50,6 +50,8 @@ from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
 from backend.services.dungeon.showcase_image_service import ARCHETYPE_VISUALS, generate_and_upload_showcase
+from backend.services.forge_lore_service import ForgeLoreService
+from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_model_config import invalidate as invalidate_model_config
@@ -795,8 +797,6 @@ async def _regenerate_lore_task(
     include_images: bool = False,
 ) -> None:
     """Background task for lore regeneration (+ optional image generation)."""
-    from backend.services.forge_lore_service import ForgeLoreService
-
     seed = draft_data.get("seed_prompt", "")
     anchor = (draft_data.get("philosophical_anchor") or {}).get("selected", {})
     geography = draft_data.get("geography", {})
@@ -833,8 +833,6 @@ async def _regenerate_lore_task(
 
     # Generate lore images if requested
     if include_images:
-        from backend.services.forge_orchestrator_service import ForgeOrchestratorService
-
         await ForgeOrchestratorService.run_batch_generation(
             supabase,
             simulation_id,
@@ -869,8 +867,6 @@ async def regenerate_images(
     Accepts a list of entity types to regenerate (banner, agent, building, lore).
     Runs in background to avoid Cloudflare timeout.
     """
-    from backend.services.forge_orchestrator_service import ForgeOrchestratorService
-
     background_tasks.add_task(
         safe_background(ForgeOrchestratorService.run_batch_generation),
         admin_supabase,
