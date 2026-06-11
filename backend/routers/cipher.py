@@ -63,8 +63,11 @@ async def redeem_cipher(
         try:
             user = await get_current_user(auth_header)
             user_id = user.id
-        except Exception:  # noqa: S110
-            pass
+        except Exception:
+            # Anonymous redemption is a supported path, but a systematically
+            # broken token-verify pipeline must not be invisible — keep it
+            # observable at debug level without failing the request.
+            logger.debug("Optional user lookup failed; continuing as anonymous", exc_info=True)
 
     # Hash IP for rate limiting (never store raw IPs)
     client_ip = request.client.host if request.client else "unknown"
