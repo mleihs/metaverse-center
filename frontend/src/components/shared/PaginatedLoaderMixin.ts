@@ -58,7 +58,7 @@ export function PaginatedLoaderMixin<TBase extends ReactiveElementCtor>(
     /* ── Lifecycle: reset pagination on simulationId change ── */
 
     protected willUpdate(changed: Map<PropertyKey, unknown>): void {
-      if (changed.has('simulationId') && !!(this as Record<string, unknown>).simulationId) {
+      if (changed.has('simulationId') && (this as Record<string, unknown>).simulationId) {
         this._offset = 0;
         this._search = '';
         this._filters = {};
