@@ -136,7 +136,7 @@ class ForgeStateManager {
   );
   readonly canIgnite = computed(() => {
     const d = this.draft.value;
-    if (!d || d.current_phase !== 'ignition' || d.status !== 'draft') return false;
+    if (d?.current_phase !== 'ignition' || d.status !== 'draft') return false;
     return this.walletBalance.value > 0 || this.hasTokenBypass.value;
   });
 

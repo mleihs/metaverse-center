@@ -1371,7 +1371,7 @@ export class VelgEventDetailsPanel extends LitElement {
 
   private _renderBleedProvenance() {
     const evt = this.event;
-    if (!evt || evt.data_source !== 'bleed' || !evt.external_refs) return null;
+    if (evt?.data_source !== 'bleed' || !evt.external_refs) return null;
 
     const refs = evt.external_refs as Record<string, unknown>;
     const sourceSimId = refs.source_simulation_id as string | undefined;

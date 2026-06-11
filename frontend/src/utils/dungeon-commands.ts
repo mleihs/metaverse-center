@@ -493,7 +493,7 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
 
   // Validate: current room is a rest site
   const currentRoom = dungeonState.currentRoom.value;
-  if (!currentRoom || currentRoom.room_type !== 'rest') {
+  if (currentRoom?.room_type !== 'rest') {
     return [errorLine(msg('Not at a rest site.'))];
   }
 
