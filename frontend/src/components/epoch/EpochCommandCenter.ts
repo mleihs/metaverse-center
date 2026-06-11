@@ -1425,6 +1425,10 @@ export class VelgEpochCommandCenter extends LitElement {
 
   private _disposeCycleEffect?: () => void;
 
+  /** Overlay/animation timers — cleared on disconnect so a fast
+   *  mount/unmount cycle can't fire state updates on a dead component. */
+  private _timers: ReturnType<typeof setTimeout>[] = [];
+
   async connectedCallback() {
     super.connectedCallback();
     seoService.setTitle([msg('Epoch Command Center')]);
@@ -1445,6 +1449,8 @@ export class VelgEpochCommandCenter extends LitElement {
 
   disconnectedCallback() {
     this._disposeCycleEffect?.();
+    for (const t of this._timers) clearTimeout(t);
+    this._timers = [];
     if (this._epoch) {
       realtimeService.leaveEpoch(this._epoch.id);
     } else if (this._commsEpoch) {
@@ -1531,9 +1537,11 @@ export class VelgEpochCommandCenter extends LitElement {
           ) {
             this._phaseOverlayPhase = stillValid.status;
             this._showPhaseOverlay = true;
-            setTimeout(() => {
-              this._showPhaseOverlay = false;
-            }, 2500);
+            this._timers.push(
+              setTimeout(() => {
+                this._showPhaseOverlay = false;
+              }, 2500),
+            );
           }
           this._prevEpochStatus = stillValid.status;
           this._epoch = stillValid;
@@ -2527,22 +2535,30 @@ export class VelgEpochCommandCenter extends LitElement {
     this._cycleJustResolved = true;
 
     // Auto-dismiss overlay after 2.2s (matches animation duration)
-    setTimeout(() => {
-      this._showCycleOverlay = false;
-    }, 2200);
+    this._timers.push(
+      setTimeout(() => {
+        this._showCycleOverlay = false;
+      }, 2200),
+    );
 
     // Remove bump class after animation
-    setTimeout(() => {
-      this._cycleBump = false;
-    }, 600);
+    this._timers.push(
+      setTimeout(() => {
+        this._cycleBump = false;
+      }, 600),
+    );
 
     // Remove pulse prop after animation
-    setTimeout(() => {
-      this._cycleJustResolved = false;
-    }, 800);
+    this._timers.push(
+      setTimeout(() => {
+        this._cycleJustResolved = false;
+      }, 800),
+    );
 
     // Reload all epoch data
-    this._loadData();
+    this._loadData().catch((err) =>
+      captureError(err, { source: 'EpochCommandCenter._onCycleResolved' }),
+    );
   }
 
   private async _onCancelEpoch() {
