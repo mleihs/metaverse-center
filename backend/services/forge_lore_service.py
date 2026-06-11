@@ -383,6 +383,25 @@ class ForgeLoreService:
         logger.debug("Lore persisted", extra={"simulation_id": str(simulation_id)})
 
     @staticmethod
+    async def replace_for_simulation(
+        supabase: Client,
+        simulation_id: UUID,
+        sections: list[dict[str, Any]],
+        translations: list[dict[str, Any]] | None = None,
+    ) -> None:
+        """Replace a simulation's lore with freshly generated sections.
+
+        Delete + insert run back-to-back inside the service so callers
+        cannot interleave the destructive delete with fallible work —
+        generate first, then call this. Empty ``sections`` is rejected
+        instead of silently wiping the existing lore.
+        """
+        if not sections:
+            raise ValueError("replace_for_simulation requires non-empty sections")
+        await supabase.table("simulation_lore").delete().eq("simulation_id", str(simulation_id)).execute()
+        await ForgeLoreService.persist_lore(supabase, simulation_id, sections, translations)
+
+    @staticmethod
     async def generate_dossier(
         admin_supabase: Client,
         simulation_id: UUID,

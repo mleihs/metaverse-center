@@ -50,6 +50,7 @@ from backend.services.cache_config import invalidate as invalidate_cache_config
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
 from backend.services.dungeon.showcase_image_service import ARCHETYPE_VISUALS, generate_and_upload_showcase
+from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -765,15 +766,7 @@ async def regenerate_lore(
     to avoid Cloudflare's 100s timeout.
     """
     # Find the most recent completed draft (source data for the simulation)
-    draft_resp = await (
-        admin_supabase.table("forge_drafts")
-        .select("seed_prompt, philosophical_anchor, geography, agents, buildings, research_context")
-        .eq("status", "completed")
-        .order("updated_at", desc=True)
-        .limit(1)
-        .execute()
-    )
-    draft_data = (draft_resp.data or [None])[0]
+    draft_data = await ForgeDraftService.get_latest_completed_source(admin_supabase)
     if not draft_data:
         raise HTTPException(status_code=404, detail="No completed forge draft found")
 
@@ -807,10 +800,9 @@ async def _regenerate_lore_task(
     if isinstance(raw, dict):
         research_ctx = raw.get("raw_data", "")
 
-    # Delete existing lore
-    await supabase.table("simulation_lore").delete().eq("simulation_id", str(simulation_id)).execute()
-
-    # Generate lore
+    # Generate lore FIRST — the existing lore is only replaced after the
+    # fallible LLM step succeeded. (Previously: delete-then-generate, which
+    # left the simulation with NO lore whenever generation failed.)
     lore_sections = await ForgeLoreService.generate_lore(
         seed=seed,
         anchor=anchor,
@@ -827,8 +819,8 @@ async def _regenerate_lore_task(
     except Exception:
         logger.exception("Lore translation failed during regeneration")
 
-    # Persist
-    await ForgeLoreService.persist_lore(supabase, simulation_id, lore_sections, translations)
+    # Replace (delete + persist, encapsulated in the service)
+    await ForgeLoreService.replace_for_simulation(supabase, simulation_id, lore_sections, translations)
     logger.info("Lore regenerated", extra={"simulation_id": str(simulation_id), "sections": len(lore_sections)})
 
     # Generate lore images if requested
