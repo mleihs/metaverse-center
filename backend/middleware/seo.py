@@ -527,8 +527,8 @@ def _inject_meta(
     placeholder values from index.html are left unchanged (platform defaults).
     """
     html = base_html
-    html = re.sub(r"<title>[^<]*</title>", f"<title>{_escape(title)}</title>", html)
-    html = re.sub(
+    html = _sub_literal(r"<title>[^<]*</title>", f"<title>{_escape(title)}</title>", html)
+    html = _sub_literal(
         r'<meta name="description" content="[^"]*"',
         f'<meta name="description" content="{_escape(description)}"',
         html,
@@ -547,7 +547,11 @@ def _inject_meta(
     html = _replace_meta(html, 'name', 'twitter:description', _escape(description))
     if og_image:
         html = _replace_meta(html, 'name', 'twitter:image', _escape(og_image))
-    html = re.sub(r'<link rel="canonical" href="[^"]*"', f'<link rel="canonical" href="{_escape(canonical)}"', html)
+    html = _sub_literal(
+        r'<link rel="canonical" href="[^"]*"',
+        f'<link rel="canonical" href="{_escape(canonical)}"',
+        html,
+    )
     # Inject extra JSON-LD (breadcrumbs) before </head>
     if extra_jsonld:
         jsonld_tag = f'<script type="application/ld+json">{extra_jsonld}</script>'
@@ -555,11 +559,24 @@ def _inject_meta(
     return html
 
 
+def _sub_literal(pattern: str, replacement: str, html: str) -> str:
+    """``re.sub`` with the replacement treated as a LITERAL string.
+
+    A plain-string replacement is parsed as a template: backslash
+    sequences in entity-derived content (lore descriptions, titles)
+    raise ``PatternError: bad escape`` and 500 the crawler-facing SPA
+    route (Sentry issue 117184501 — ``\\D`` in a lore description).
+    ``_escape()`` HTML-escapes but leaves backslashes intact, so the
+    replacement must bypass template parsing via a callable.
+    """
+    return re.sub(pattern, lambda _m: replacement, html)
+
+
 def _replace_meta(html: str, attr: str, key: str, value: str) -> str:
     """Replace a meta tag's content attribute value."""
     pattern = f'<meta {attr}="{key}" content="[^"]*"'
     replacement = f'<meta {attr}="{key}" content="{value}"'
-    return re.sub(pattern, replacement, html)
+    return _sub_literal(pattern, replacement, html)
 
 
 
