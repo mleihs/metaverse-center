@@ -127,6 +127,24 @@ class ForgeDraftService:
         return response.data
 
     @staticmethod
+    async def get_latest_completed_source(supabase: Client) -> dict | None:
+        """Source data of the most recently completed draft, or None.
+
+        Narrow column set on purpose: callers (lore regeneration) only need
+        the generation inputs, not image URLs or status bookkeeping.
+        """
+        response = await (
+            supabase.table("forge_drafts")
+            .select("seed_prompt, philosophical_anchor, geography, agents, buildings, research_context")
+            .eq("status", "completed")
+            .order("updated_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        rows = extract_list(response)
+        return rows[0] if rows else None
+
+    @staticmethod
     async def create_draft(
         supabase: Client,
         user_id: UUID,
