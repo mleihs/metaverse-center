@@ -38,15 +38,14 @@ import hmac
 import json
 import logging
 import os
-from datetime import UTC, datetime
 from typing import Annotated, Any
 
 import sentry_sdk
 from fastapi import APIRouter, Depends, Header, Request, Response
-from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
 from backend.services.content_drafts_service import ContentDraftsService
+from backend.services.github_webhook_event_service import GithubWebhookEventService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
 
 _SIGNATURE_PREFIX = "sha256="
-_EVENTS_TABLE = "github_webhook_events"
 _PROCESSING_RESULT_SUCCESS = "success"
 _PROCESSING_RESULT_IGNORED = "ignored"
 _PROCESSING_RESULT_ERROR = "error"
@@ -96,29 +94,21 @@ async def receive_github_webhook(
 
     action = payload.get("action") if isinstance(payload, dict) else None
 
-    # Idempotency dedup: INSERT with UNIQUE on delivery_id. A 23505 means
-    # we've already seen this delivery (GitHub retried) — short-circuit 200.
-    try:
-        await (
-            admin_supabase.table(_EVENTS_TABLE)
-            .insert(
-                {
-                    "delivery_id": x_github_delivery,
-                    "event_type": x_github_event,
-                    "action": action,
-                    "payload": payload,
-                }
-            )
-            .execute()
+    # Idempotency dedup: INSERT with UNIQUE on delivery_id. A duplicate
+    # means GitHub retried — short-circuit 200.
+    is_new = await GithubWebhookEventService.record_delivery(
+        admin_supabase,
+        delivery_id=x_github_delivery,
+        event_type=x_github_event,
+        action=action,
+        payload=payload,
+    )
+    if not is_new:
+        logger.info(
+            "Duplicate GitHub webhook delivery %s — ignored",
+            x_github_delivery,
         )
-    except PostgrestAPIError as exc:
-        if getattr(exc, "code", None) == "23505":
-            logger.info(
-                "Duplicate GitHub webhook delivery %s — ignored",
-                x_github_delivery,
-            )
-            return Response(status_code=200, content="duplicate, ignored")
-        raise
+        return Response(status_code=200, content="duplicate, ignored")
 
     # From here on every error path returns 200 + records error context on
     # the event row. GitHub doesn't dead-letter, so 5xx would just multiply
@@ -143,17 +133,11 @@ async def receive_github_webhook(
         result = _PROCESSING_RESULT_ERROR
         error_message = str(exc)[:500]
 
-    await (
-        admin_supabase.table(_EVENTS_TABLE)
-        .update(
-            {
-                "processed_at": datetime.now(UTC).isoformat(),
-                "processing_result": result,
-                "error_message": error_message,
-            }
-        )
-        .eq("delivery_id", x_github_delivery)
-        .execute()
+    await GithubWebhookEventService.finalize_delivery(
+        admin_supabase,
+        delivery_id=x_github_delivery,
+        result=result,
+        error_message=error_message,
     )
 
     return Response(status_code=200, content=f"processed: {result}")

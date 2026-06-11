@@ -108,7 +108,10 @@ source = ["backend"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 30
+# Actual coverage is ~74% (measured 2026-06-11, 3265 tests). 65 leaves
+# headroom for normal churn while still catching real coverage erosion —
+# the previous 30 was decorative (no realistic regression could trip it).
+fail_under = 65
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
