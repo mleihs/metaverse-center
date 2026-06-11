@@ -10,6 +10,7 @@ from backend.dependencies import get_admin_supabase, get_current_user, get_effec
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.epoch import LeaderboardEntry, ScoreResponse
 from backend.services.audit_service import AuditService
+from backend.services.epoch_service import EpochService
 from backend.services.scoring_service import ScoringService
 from supabase import AsyncClient as Client
 
@@ -89,8 +90,6 @@ async def compute_scores(
     cycle: Annotated[int | None, Query(description="Cycle number (default: current)")] = None,
 ) -> SuccessResponse[list[ScoreResponse]]:
     """Compute and store scores for the current or specified cycle. Creator only."""
-    from backend.services.epoch_service import EpochService
-
     epoch = await EpochService.get(supabase, epoch_id)
     cycle_number = cycle or epoch.get("current_cycle", 1)
     data = await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
