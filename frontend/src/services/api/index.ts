@@ -15,6 +15,7 @@ export { ChronicleApiService, chronicleApi } from './ChronicleApiService.js';
 export { ConnectionsApiService, connectionsApi } from './ConnectionsApiService.js';
 export { ContentDraftsApiService, contentDraftsApi } from './ContentDraftsApiService.js';
 export { ContentPacksApiService, contentPacksApi } from './ContentPacksApiService.js';
+export { DriftApiService, driftApi } from './DriftApiService.js';
 export { DungeonApiService, dungeonApi } from './DungeonApiService.js';
 export { DungeonContentAdminApi, dungeonContentApi } from './DungeonContentAdminApi.js';
 export { EchoesApiService, echoesApi } from './EchoesApiService.js';
