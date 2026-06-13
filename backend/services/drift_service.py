@@ -25,6 +25,7 @@ from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.drift import (
+    CargoResponse,
     ChartGenerationResponse,
     DockAgentResponse,
     DockLoreResponse,
@@ -33,6 +34,12 @@ from backend.models.drift import (
     DriftChartResponse,
     DriftDockResponse,
     DriftTuningResponse,
+    QuestAcceptResponse,
+    QuestDeliverResponse,
+    QuestEffectsResponse,
+    QuestInstanceResponse,
+    QuestOfferResponse,
+    QuestStateResponse,
     TravelRunResponse,
 )
 from backend.utils.db import maybe_single_data
@@ -209,6 +216,129 @@ class DriftService:
         rows = resp.data or []
         return TravelRunResponse(**rows[0]) if rows else None
 
+    # ── quest reads (owner-RLS; offers computed, no writes) ─────────────────────
+
+    @staticmethod
+    async def get_quest_state(supabase: Client, user_id: UUID) -> QuestStateResponse:
+        """The HUD's quest snapshot: acceptable offers here + the carried Depesche + the
+        manifest. Pure reads + offer assembly (no fetch-compute-WRITE — ADR-007 is about
+        concurrent writes, which all go through the RPCs)."""
+        run = await DriftService.get_current_run(supabase, user_id)
+
+        inst_resp = await (
+            supabase.table("travel_quest_instances")
+            .select("*")
+            .eq("owner_user_id", str(user_id))
+            .eq("status", "active")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        inst_rows = inst_resp.data or []
+        active = await DriftService._enrich_instance(supabase, inst_rows[0]) if inst_rows else None
+
+        cargo: list[CargoResponse] = []
+        if run is not None:
+            cargo_resp = await (
+                supabase.table("travel_cargo")
+                .select("id, family, vector, twists, quest_instance_id, run_id")
+                .eq("owner_user_id", str(user_id))
+                .eq("run_id", str(run.id))
+                .execute()
+            )
+            cargo = [CargoResponse(**c) for c in (cargo_resp.data or [])]
+
+        offers = await DriftService._compute_offers(supabase, run, active)
+        return QuestStateResponse(offers=offers, active=active, cargo=cargo)
+
+    @staticmethod
+    async def _enrich_instance(supabase: Client, row: dict) -> QuestInstanceResponse:
+        """Add HUD dressing to a raw instance row: the template's title + the target
+        world's display name (from the resolved slots)."""
+        tmpl = await maybe_single_data(
+            supabase.table("travel_quest_templates")
+            .select("definition")
+            .eq("template_key", row["template_key"])
+            .maybe_single()
+        )
+        prose = (tmpl.get("definition") or {}).get("prose", {}) if tmpl else {}
+        target_sim = (row.get("slots") or {}).get("target_sim")
+        target_name = None
+        if target_sim:
+            sim = await maybe_single_data(
+                supabase.table("simulations").select("name").eq("id", target_sim).maybe_single()
+            )
+            target_name = sim.get("name") if sim else None
+        return QuestInstanceResponse(
+            **row, title=prose.get("title_de"), target_simulation_name=target_name
+        )
+
+    @staticmethod
+    async def _compute_offers(
+        supabase: Client, run: TravelRunResponse | None, active: QuestInstanceResponse | None
+    ) -> list[QuestOfferResponse]:
+        """Deliver Depeschen the traveler can accept right now: only while on an active
+        run, carrying no quest yet (P0 one-at-a-time), standing on a world edge — one
+        offer per deliver template × each foreign broadcast world on the chart.
+
+        P0c-mechanical: the offered set is template × worlds. WHICH Depeschen a world
+        actually issues (the storylet/selector layer, §9) is later content work."""
+        if run is None or active is not None or run.position_node_id is None:
+            return []
+        node = await maybe_single_data(
+            supabase.table("drift_chart_nodes")
+            .select("simulation_id")
+            .eq("id", str(run.position_node_id))
+            .eq("chart_version", run.chart_version)
+            .maybe_single()
+        )
+        origin_sim = node.get("simulation_id") if node else None
+        if not origin_sim:
+            return []  # mid-Drift (no sim) — Depeschen are taken at world edges only
+
+        tmpl_resp = await (
+            supabase.table("travel_quest_templates")
+            .select("template_key, family, definition")
+            .eq("family", "deliver")
+            .execute()
+        )
+        templates = tmpl_resp.data or []
+        if not templates:
+            return []
+
+        worlds_resp = await (
+            supabase.table("drift_chart_nodes")
+            .select("simulation_id, simulations(name)")
+            .eq("chart_version", run.chart_version)
+            .eq("node_type", "broadcast_rand")
+            .neq("simulation_id", origin_sim)
+            .execute()
+        )
+        offers: list[QuestOfferResponse] = []
+        for tmpl in templates:
+            definition = tmpl.get("definition") or {}
+            prose = definition.get("prose", {})
+            cargo = definition.get("cargo", {})
+            for world in worlds_resp.data or []:
+                sim_id = world.get("simulation_id")
+                if not sim_id:
+                    continue
+                embed = world.get("simulations")
+                world_name = embed.get("name") if isinstance(embed, dict) else None
+                offers.append(
+                    QuestOfferResponse(
+                        template_key=tmpl["template_key"],
+                        family=tmpl["family"],
+                        title=prose.get("title_de") or tmpl["template_key"],
+                        brief=prose.get("brief_de") or "",
+                        cargo_family=cargo.get("family", "erinnerungsstuecke"),
+                        cargo_vector=cargo.get("vector", "memory"),
+                        target_simulation_id=sim_id,
+                        target_simulation_name=world_name or "Unbenannt",
+                    )
+                )
+        return offers
+
     # ── mutations (player-class RPCs — user JWT client, auth.uid() = p_user) ────
 
     @staticmethod
@@ -258,7 +388,68 @@ class DriftService:
             {"p_user": str(user_id), "p_run": str(run_id), "p_run_version": run_version},
         )
 
+    @staticmethod
+    async def accept_quest(
+        supabase: Client,
+        user_id: UUID,
+        run_id: UUID,
+        run_version: int,
+        template_key: str,
+        target_simulation_id: UUID,
+    ) -> QuestAcceptResponse:
+        """Take a deliver Depesche: instantiate it + bind the cargo to the run (CAS)."""
+        data = await DriftService._call_quest_rpc(
+            supabase,
+            "fn_quest_accept",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_template_key": template_key,
+                "p_target_sim": str(target_simulation_id),
+            },
+        )
+        return QuestAcceptResponse(
+            run=TravelRunResponse(**data["run"]),
+            instance=QuestInstanceResponse(**data["instance"]),
+            cargo=CargoResponse(**data["cargo"]),
+        )
+
+    @staticmethod
+    async def deliver_quest(
+        supabase: Client, user_id: UUID, run_id: UUID, run_version: int, instance_id: UUID
+    ) -> QuestDeliverResponse:
+        """Deliver a Depesche at the target edge: fires the effects through the gate (CAS)."""
+        data = await DriftService._call_quest_rpc(
+            supabase,
+            "fn_quest_advance",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_instance": str(instance_id),
+            },
+        )
+        return QuestDeliverResponse(
+            run=TravelRunResponse(**data["run"]),
+            instance=QuestInstanceResponse(**data["instance"]),
+            effects=QuestEffectsResponse(**data["effects"]),
+        )
+
     # ── internal ────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    async def _call_quest_rpc(supabase: Client, rpc_name: str, params: dict) -> dict:
+        """Call a quest RPC (composite jsonb return), mapping its SQLSTATE to HTTP. Shares
+        _rpc_error with the run RPCs: RUN_STALE→409, 42501→403, P0002→404, 22023→400
+        (QUEST_ACTIVE / NOT_AT_TARGET / CARGO_MISSING / not-active). The RPC audits in-txn."""
+        try:
+            resp = await supabase.rpc(rpc_name, params).execute()
+        except PostgrestAPIError as exc:
+            raise DriftService._rpc_error(rpc_name, exc) from exc
+        if not resp.data:
+            raise server_error(f"{rpc_name} returned no payload.")
+        return resp.data
 
     @staticmethod
     async def _call_run_rpc(supabase: Client, rpc_name: str, params: dict) -> TravelRunResponse:

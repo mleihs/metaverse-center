@@ -34,7 +34,12 @@ from backend.models.drift import (
     DriftChartResponse,
     DriftDockResponse,
     DriftTuningResponse,
+    QuestAcceptResponse,
+    QuestDeliverResponse,
+    QuestStateResponse,
     TravelMoveRequest,
+    TravelQuestAcceptRequest,
+    TravelQuestAdvanceRequest,
     TravelRunOpenRequest,
     TravelRunResponse,
     TravelRunVersionRequest,
@@ -160,3 +165,46 @@ async def abandon_run(
     """Rückzug — abandon the run (unanchored cargo forfeited)."""
     run = await DriftService.abandon_run(supabase, user.id, run_id, body.run_version)
     return SuccessResponse(data=run)
+
+
+# ── quests / Depeschen (P0c deliver) ──────────────────────────────────────────
+
+
+@router.get("/quests")
+async def get_quests(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[QuestStateResponse]:
+    """The caller's quest snapshot: acceptable Depeschen here + the carried one + manifest."""
+    state = await DriftService.get_quest_state(supabase, user.id)
+    return SuccessResponse(data=state)
+
+
+@router.post("/quests/accept", status_code=201)
+async def accept_quest(
+    body: TravelQuestAcceptRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[QuestAcceptResponse]:
+    """Take a deliver Depesche at the current world edge (cargo bound to the run)."""
+    result = await DriftService.accept_quest(
+        supabase, user.id, body.run_id, body.run_version, body.template_key, body.target_simulation_id
+    )
+    return SuccessResponse(data=result)
+
+
+@router.post("/quests/{instance_id}/advance")
+async def advance_quest(
+    instance_id: UUID,
+    body: TravelQuestAdvanceRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[QuestDeliverResponse]:
+    """Deliver a Depesche at the target world's broadcast edge (fires the hospitality gate)."""
+    result = await DriftService.deliver_quest(
+        supabase, user.id, body.run_id, body.run_version, instance_id
+    )
+    return SuccessResponse(data=result)
