@@ -613,7 +613,11 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/drift',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'drift'),
-        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'drift', entitySlug),
+        enter: async ({ id, entitySlug }) => {
+          const ok = await this._guardAuth();
+          if (!ok) return false;
+          return this._enterSimulationRoute(id, 'drift', entitySlug);
+        },
       },
       {
         path: '/simulations/:id/settings',

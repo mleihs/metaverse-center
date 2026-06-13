@@ -193,7 +193,19 @@ export class VelgDriftView extends LitElement {
     try {
       const res = await fn();
       if (res.success) {
-        this._run = res.data;
+        const run = res.data;
+        if (run.status === 'completed' || run.status === 'abandoned') {
+          // Terminal: the run closed — drop back to the "Aufbruch" state so the HUD
+          // does not keep showing a finished run as if it were still active.
+          this._run = null;
+          VelgToast.success(
+            run.status === 'completed'
+              ? msg('Entladung abgeschlossen.')
+              : msg('Rückzug eingeleitet.'),
+          );
+        } else {
+          this._run = run;
+        }
       } else {
         VelgToast.error(res.error.message || msg('The Drift refused that action.'));
         await this._refreshRun();
