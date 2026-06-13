@@ -82,6 +82,7 @@ from backend.routers import (
     chronicles,
     cipher,
     connections,
+    drift,
     dungeon_content_admin,
     echoes,
     embassies,
@@ -377,6 +378,7 @@ app.include_router(relationships.router)
 app.include_router(echoes.router)
 app.include_router(embassies.router)
 app.include_router(connections.router)
+app.include_router(drift.router)
 app.include_router(forge.router)
 app.include_router(forge_access.router)
 app.include_router(broadsheets.router)
