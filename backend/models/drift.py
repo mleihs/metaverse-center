@@ -148,3 +148,97 @@ class DriftDockResponse(BaseModel):
     theme: str | None = None
     lore: list[DockLoreResponse]
     agents: list[DockAgentResponse]
+
+
+# ── Quests & cargo (P0c deliver Depesche) ───────────────────────────────────────
+
+
+class TravelQuestAcceptRequest(BaseModel):
+    """Accept a deliver Depesche on the active run. run_version is the CAS token; the
+    target is the world the Depesche is bound for (must have a broadcast edge)."""
+
+    run_id: UUID
+    run_version: int = Field(ge=0)
+    template_key: str
+    target_simulation_id: UUID
+
+
+class TravelQuestAdvanceRequest(BaseModel):
+    """Deliver a Depesche at the target world's broadcast edge (run_version CAS)."""
+
+    run_id: UUID
+    run_version: int = Field(ge=0)
+
+
+class CargoResponse(BaseModel):
+    """A travel_cargo manifest item — the one-of-a-kind payload carried on a run."""
+
+    id: UUID
+    family: str
+    vector: str
+    twists: list = Field(default_factory=list)
+    quest_instance_id: UUID | None = None
+    run_id: UUID | None = None
+
+
+class QuestOfferResponse(BaseModel):
+    """An offered deliver Depesche the traveler can accept at a world edge (P0c: the
+    deliver template bound to each reachable foreign world)."""
+
+    template_key: str
+    family: str
+    title: str
+    brief: str
+    cargo_family: str
+    cargo_vector: str
+    target_simulation_id: UUID
+    target_simulation_name: str
+
+
+class QuestInstanceResponse(BaseModel):
+    """An accepted quest instance — the Depesche the traveler carries. Parsed from the
+    raw travel_quest_instances row (extra columns ignored); title + target world name
+    are enrichments the quest-state read adds for the HUD."""
+
+    id: UUID
+    template_key: str
+    simulation_id: UUID
+    status: str
+    slots: dict = Field(default_factory=dict)
+    title: str | None = None
+    target_simulation_name: str | None = None
+
+
+class QuestEffectsResponse(BaseModel):
+    """The hospitality-gate outcome for a delivery: which effects fired vs were filtered
+    (each skipped entry carries a reason, e.g. hospitality_nur_echos)."""
+
+    already_applied: bool = False
+    applied: list[dict] = Field(default_factory=list)
+    skipped: list[dict] = Field(default_factory=list)
+
+
+class QuestStateResponse(BaseModel):
+    """The HUD's quest snapshot: what you can accept here, the Depesche you carry, and
+    your manifest. One round-trip for the whole quest surface."""
+
+    offers: list[QuestOfferResponse]
+    active: QuestInstanceResponse | None = None
+    cargo: list[CargoResponse]
+
+
+class QuestAcceptResponse(BaseModel):
+    """fn_quest_accept result: the version-bumped run + the new instance + bound cargo."""
+
+    run: TravelRunResponse
+    instance: QuestInstanceResponse
+    cargo: CargoResponse
+
+
+class QuestDeliverResponse(BaseModel):
+    """fn_quest_advance result: the version-bumped run + the completed instance + the
+    hospitality-gate effect summary."""
+
+    run: TravelRunResponse
+    instance: QuestInstanceResponse
+    effects: QuestEffectsResponse
