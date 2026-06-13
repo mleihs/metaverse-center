@@ -104,6 +104,12 @@ export class VelgDriftView extends LitElement {
         font-weight: var(--font-bold);
         color: var(--color-primary);
       }
+      .hud__warn {
+        margin: 0 0 var(--space-3);
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-warning);
+      }
       .hud__hint {
         margin: 0 0 var(--space-4);
         font-size: var(--text-sm);
@@ -226,7 +232,7 @@ export class VelgDriftView extends LitElement {
           this._run = run;
         }
       } else {
-        VelgToast.error(res.error.message || msg('The Drift refused that action.'));
+        VelgToast.error(this._friendlyError(res.error.message ?? ''));
         await this._refreshRun();
       }
     } catch (err) {
@@ -281,6 +287,14 @@ export class VelgDriftView extends LitElement {
     void this._act(() => driftApi.abandon(run.id, run.run_version), 'VelgDriftView._abandon');
   }
 
+  /** Map a raw RPC error to a friendly, in-world German message. */
+  private _friendlyError(message: string): string {
+    if (message.includes('NOT_AT_HOME')) return msg('Entladung nur an deiner Heimat-Broadcast.');
+    if (message.includes('NOT_ADJACENT')) return msg('Dieser Node ist von hier nicht erreichbar.');
+    if (message.includes('RUN_STALE')) return msg('Aus dem Takt geraten, neu synchronisiert.');
+    return message || msg('Der Drift hat das verweigert.');
+  }
+
   private _positionName(): string {
     const id = this._run?.position_node_id;
     const node = id ? this._chart?.nodes.find((n) => n.id === id) : null;
@@ -332,6 +346,9 @@ export class VelgDriftView extends LitElement {
         </div>
       `;
     }
+    const posNode = this._chart?.nodes.find((n) => n.id === run.position_node_id);
+    const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
+    const atHome = posNode?.node_type === 'broadcast_rand' && posNode.simulation_id === anchor;
     return html`
       <div class="hud">
         <p class="hud__title">${msg('Träger')} · ${this._positionName()}</p>
@@ -347,8 +364,17 @@ export class VelgDriftView extends LitElement {
         <p class="hud__takt">
           ${msg('Takte übrig')} ${run.window_remaining}/${WINDOW_BASE} · ${msg('Takt')} ${run.takt_count}
         </p>
+        ${atHome
+          ? ''
+          : html`<p class="hud__warn">
+              ${msg('Entladung nur an deiner Heimat-Broadcast. Kehre zurück.')}
+            </p>`}
         <div class="hud__actions">
-          <button class="btn btn--secondary" ?disabled=${this._busy} @click=${this._complete}>
+          <button
+            class="btn btn--secondary"
+            ?disabled=${this._busy || !atHome}
+            @click=${this._complete}
+          >
             ${msg('Entladung')}
           </button>
           <button class="btn btn--ghost" ?disabled=${this._busy} @click=${this._abandon}>
