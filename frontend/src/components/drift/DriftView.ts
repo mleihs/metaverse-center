@@ -16,6 +16,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
+import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
+import { themeService } from '../../services/ThemeService.js';
 import type { DriftChart, DriftDock, DriftTuning, TravelRun } from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import '../shared/ErrorState.js';
@@ -211,6 +213,14 @@ export class VelgDriftView extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    // DRIFT is the Zwischenraum between worlds, not a simulation interior. The shell
+    // applies the anchor sim's per-sim theme to its own host, which cascades into this
+    // view (Velgarien → light surfaces + Oswald). Re-assert platform-dark on our own
+    // host so the chart, HUD, node labels and dock dossier stay dark-brutalist no matter
+    // which world is the anchor. The element is destroyed on route change, taking these
+    // inline tokens with it — no teardown needed (and we must not call resetTheme, which
+    // would remove the shell's shared custom-CSS element).
+    themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
     void this._load();
   }
 
