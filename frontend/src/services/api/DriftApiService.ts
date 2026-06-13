@@ -1,4 +1,4 @@
-import type { DriftChart, TravelRun } from '../../types/drift.js';
+import type { DriftChart, DriftTuning, TravelRun } from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -14,6 +14,11 @@ export class DriftApiService extends BaseApiService {
   /** Active chart version's public topology; data is null until a chart is seeded. */
   getChart(): Promise<ApiResponse<DriftChart | null>> {
     return this.get('/drift/chart');
+  }
+
+  /** HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning. */
+  getTuning(): Promise<ApiResponse<DriftTuning>> {
+    return this.get('/drift/tuning');
   }
 
   /** The caller's current open run, or null. */

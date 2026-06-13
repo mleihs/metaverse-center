@@ -45,6 +45,8 @@ export interface DriftChartNode {
   stable_key: string;
   node_type: string;
   simulation_id: UUID | null;
+  /** World display name for broadcast_rand homes (null for interstitials/core). */
+  simulation_name: string | null;
   x: number;
   y: number;
   frequency_mask: number;
@@ -66,4 +68,12 @@ export interface DriftChart {
   chart_version: number;
   nodes: DriftChartNode[];
   edges: DriftChartEdge[];
+}
+
+/** HUD gauge scalars from drift_tuning (§2) — the source of truth for bar maxima. */
+export interface DriftTuning {
+  window_base: number;
+  dz_cap: number;
+  /** Bandbreite max keyed by bandwidth class ("1".."4"); P0 travellers are class 1. */
+  bandwidth_class_bb_max: Record<string, number>;
 }
