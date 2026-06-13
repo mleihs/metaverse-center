@@ -104,6 +104,36 @@ class TestConstraints:
             ).execute()
 
 
+class TestBackfillService:
+    """ForgeMapService.backfill_zone_adjacencies: shapely compute → SQL persist."""
+
+    @pytest.mark.asyncio
+    async def test_backfill_velgarien_geometry(self, admin_client):
+        if not _zones_present(admin_client):
+            pytest.skip("Velgarien zones not seeded")
+        from backend.services.forge_map_service import ForgeMapService
+
+        sim = str(SIM_VELGARIEN)
+        try:
+            result = await ForgeMapService.backfill_zone_adjacencies(SIM_VELGARIEN)
+            assert result["pairs"] >= 1, f"expected geometry adjacencies from 3 zones, got {result}"
+            assert result["inserted"] == result["pairs"]
+
+            rows = (
+                admin_client.table("zone_adjacencies")
+                .select("zone_a,zone_b,derivation")
+                .eq("simulation_id", sim)
+                .execute()
+            ).data
+            assert len(rows) == result["pairs"]
+            # One city → all edges are intra-city 'geometry', over the real zone ids.
+            assert all(r["derivation"] == "geometry" for r in rows)
+            ids = {ZONE_A1, ZONE_A2, ZONE_A3}
+            assert all(r["zone_a"] in ids and r["zone_b"] in ids for r in rows)
+        finally:
+            admin_client.table("zone_adjacencies").delete().eq("simulation_id", sim).execute()
+
+
 class TestPublicRead:
     """zone_adjacencies is public-read map topology (anon can SELECT)."""
 

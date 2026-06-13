@@ -28,6 +28,7 @@ from backend.models.world_map import (
     CityGeometryPatch,
     MapGeometryPayload,
     StreetGeometryInsert,
+    ZoneAdjacencyPair,
     ZoneGeometryPatch,
 )
 
@@ -115,6 +116,8 @@ def generate_medieval_walled(
 
     payload = MapGeometryPayload()
     invariant_failures: list[str] = []
+    # DRIFT (migration 245): collect (zone_id, city_id, polygon) for the adjacency pass.
+    zone_geoms: list[tuple[UUID, UUID, Polygon]] = []
 
     for city_idx, city in enumerate(cities_sorted):
         city_polygon, city_lat, city_lng = _build_city_patch(city_idx)
@@ -135,6 +138,7 @@ def generate_medieval_walled(
         for zone in zone_inputs:
             polygon = zone_polygons[zone.id]
             payload.zones.append(ZoneGeometryPatch(id=zone.id, geojson=mapping(polygon)))
+            zone_geoms.append((zone.id, city.id, polygon))
 
             # Streets for this zone — IDs and cut positions both derived from
             # (user_seed, city.id, zone.id). The user seed MUST be in the token
@@ -173,7 +177,74 @@ def generate_medieval_walled(
             f"{len(invariant_failures)} building(s) outside their zone polygon: " + "; ".join(invariant_failures[:5])
         )
 
+    # DRIFT (migration 245): derive the Begehung zone-adjacency graph from the
+    # zone polygons (intra-city border-sharing) + inter-city transit edges.
+    payload.adjacencies = compute_zone_adjacencies(zone_geoms)
+
     return payload
+
+
+def compute_zone_adjacencies(
+    zone_geoms: list[tuple[UUID, UUID, Polygon]],
+) -> list[ZoneAdjacencyPair]:
+    """Derive the DRIFT Begehung movement graph from zone polygons.
+
+    Pure + deterministic (every iteration is over sorted keys), so it is reused by
+    both the forge generator (above) and the one-shot backfill of existing sims
+    (which reconstructs polygons from `zones.geojson` via shapely.geometry.shape).
+
+    Two edge kinds (concept §8.2, plan §3.7):
+      * 'geometry' — two zones in the SAME city whose polygons share a BORDER
+        (a shared edge of positive length; a mere shared corner does not count —
+        you cannot walk through a point).
+      * 'transit'  — inter-city Stadtfahrt edges. City center-points share no
+        border, so cross-city movement is modeled by connecting each city's
+        ANCHOR zone (its lowest-id zone, deterministic) to every other city's
+        anchor — an all-city-pairs graph.
+
+    The SQL writer normalizes pair order and de-dups, so order here is irrelevant.
+    """
+    zones_by_city: dict[UUID, list[tuple[UUID, Polygon]]] = {}
+    for zone_id, city_id, polygon in zone_geoms:
+        zones_by_city.setdefault(city_id, []).append((zone_id, polygon))
+
+    pairs: list[ZoneAdjacencyPair] = []
+
+    # Intra-city geometry adjacency: shared border of positive length.
+    for city_id in sorted(zones_by_city):
+        zlist = sorted(zones_by_city[city_id], key=lambda t: t[0])
+        for i in range(len(zlist)):
+            for j in range(i + 1, len(zlist)):
+                if _zones_share_border(zlist[i][1], zlist[j][1]):
+                    pairs.append(
+                        ZoneAdjacencyPair(zone_a=zlist[i][0], zone_b=zlist[j][0], derivation="geometry")
+                    )
+
+    # Inter-city transit: anchor zone (lowest id) per city, all city pairs.
+    anchors = [
+        (city_id, min(zone_id for zone_id, _ in zones_by_city[city_id]))
+        for city_id in sorted(zones_by_city)
+    ]
+    for i in range(len(anchors)):
+        for j in range(i + 1, len(anchors)):
+            pairs.append(
+                ZoneAdjacencyPair(zone_a=anchors[i][1], zone_b=anchors[j][1], derivation="transit")
+            )
+
+    return pairs
+
+
+# Minimum shared-boundary length (degrees) to count two zones as adjacent. Real
+# tiling polygons share an edge ~1e-3 long; a shared corner is a Point (length 0).
+# 1e-9 cleanly separates a genuine edge from a corner-touch or float noise.
+_ADJACENCY_MIN_SHARED_EDGE = 1e-9
+
+
+def _zones_share_border(poly_a: Polygon, poly_b: Polygon) -> bool:
+    """True iff the two polygons share a border edge (not just a corner point)."""
+    intersection = poly_a.intersection(poly_b)
+    # LineString shared edge → positive length; Point corner-touch → 0.
+    return intersection.length > _ADJACENCY_MIN_SHARED_EDGE
 
 
 # ── City patch placement ─────────────────────────────────────────────────────

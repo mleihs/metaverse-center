@@ -31,6 +31,7 @@ from backend.services.forge_map_generators import (
     BuildingInput,
     CityInput,
     ZoneInput,
+    compute_zone_adjacencies,
     generate_medieval_walled,
     serialize_payload_for_rpc,
 )
@@ -186,6 +187,57 @@ class ForgeMapService:
                 lives_at_inserted=counts["lives_at_inserted"],
                 duration_seconds=round(duration, 3),
             )
+
+    @classmethod
+    async def backfill_zone_adjacencies(cls, simulation_id: UUID) -> dict:
+        """Recompute + persist the DRIFT Begehung zone-adjacency graph for one sim.
+
+        Reads the simulation's zone polygons (``zones.geojson``), runs the shapely
+        border-sharing pass (``compute_zone_adjacencies``), and persists via
+        ``fn_apply_zone_adjacencies`` (migration 245) — the same Postgres-first
+        contract as ``generate_map``: shapely computes, the SQL function writes.
+
+        This is the one-shot backfill for simulations whose maps were generated
+        before ``fn_apply_map_geometry`` learned to forward adjacencies (step 6b).
+        Safe to re-run — the SQL function full-replaces the sim's rows. A sim with
+        no zone geojson yields zero pairs (DriftChartService computes its
+        list-shaped graph at read time instead).
+        """
+        from shapely.geometry import shape  # local: geometry-only dependency
+
+        admin = await get_admin_supabase()
+        resp = await (
+            admin.table("zones")
+            .select("id, city_id, geojson")
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        zone_geoms: list[tuple[UUID, UUID, object]] = []
+        for row in resp.data or []:
+            geojson = row.get("geojson")
+            city_id = row.get("city_id")
+            if not geojson or not city_id:
+                continue  # no polygon or unassigned to a city → not part of the graph
+            zone_geoms.append((UUID(row["id"]), UUID(city_id), shape(geojson)))
+
+        pairs = compute_zone_adjacencies(zone_geoms)  # type: ignore[arg-type]
+        rpc_resp = await admin.rpc(
+            "fn_apply_zone_adjacencies",
+            {
+                "p_simulation_id": str(simulation_id),
+                "p_pairs": [p.model_dump(mode="json") for p in pairs],
+                "p_bump_version": True,
+            },
+        ).execute()
+        applied = rpc_resp.data if isinstance(rpc_resp.data, dict) else {}
+        slog.info(
+            "forge_map.adjacency_backfill",
+            simulation_id=str(simulation_id),
+            zones=len(zone_geoms),
+            pairs=len(pairs),
+            **applied,
+        )
+        return {"zones": len(zone_geoms), "pairs": len(pairs), **applied}
 
     # ── Internal helpers ────────────────────────────────────────────────────
 
