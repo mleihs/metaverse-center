@@ -9,7 +9,7 @@
  * (the RPC validates ownership + adjacency); a refused action resyncs the run.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -33,8 +33,9 @@ const FREQUENCIES = [
   'dream',
   'desire',
 ] as const;
-const DZ_CAP = 74; // the P0 Dissonanz ceiling (drift_tuning dz_p0_cap)
-const BB_SCALE = 120; // bandwidth class-IV max, the bar's headroom
+const DZ_CAP = 20; // the P0 Dissonanz ceiling (mirrors drift_tuning dz_p0_cap)
+const BB_SCALE = 6; // class-I bandwidth max (mirrors drift_tuning bandwidth_class_bb_max)
+const WINDOW_BASE = 6; // Aufenthaltsfenster Takte (mirrors drift_tuning window_base)
 
 @localized()
 @customElement('velg-drift-view')
@@ -80,6 +81,28 @@ export class VelgDriftView extends LitElement {
         letter-spacing: var(--tracking-brutalist);
         font-size: var(--text-sm);
         color: var(--color-text-primary);
+      }
+      .hud__haul {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin: 0 0 var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-primary-bg);
+        border-left: var(--border-width-thick) solid var(--color-primary);
+      }
+      .hud__haul-label {
+        font-family: var(--font-brutalist);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+      }
+      .hud__haul-value {
+        font-family: var(--font-mono);
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        color: var(--color-primary);
       }
       .hud__hint {
         margin: 0 0 var(--space-4);
@@ -195,14 +218,10 @@ export class VelgDriftView extends LitElement {
       if (res.success) {
         const run = res.data;
         if (run.status === 'completed' || run.status === 'abandoned') {
-          // Terminal: the run closed — drop back to the "Aufbruch" state so the HUD
-          // does not keep showing a finished run as if it were still active.
+          // Terminal: announce the haul banked / lost, then drop back to the "Aufbruch"
+          // state (don't keep showing a finished run as if it were still active).
           this._run = null;
-          VelgToast.success(
-            run.status === 'completed'
-              ? msg('Entladung abgeschlossen.')
-              : msg('Rückzug eingeleitet.'),
-          );
+          this._announceClose(run);
         } else {
           this._run = run;
         }
@@ -215,6 +234,20 @@ export class VelgDriftView extends LitElement {
       VelgToast.error(msg('Something faltered on the chart.'));
     } finally {
       this._busy = false;
+    }
+  }
+
+  /** Toast a closed run's outcome: haul banked (Entladung), lost (recall), or Rückzug. */
+  private _announceClose(run: TravelRun): void {
+    const cp = run.checkpoint;
+    const recall = typeof cp.recall === 'string' ? cp.recall : null;
+    if (run.status === 'completed') {
+      VelgToast.success(msg(str`Entladung: ${Number(cp.haul_banked ?? 0)} Vermessung gesichert.`));
+    } else if (recall) {
+      const reason = recall === 'kohaerenz' ? msg('Kohärenz zerfasert') : msg('Fenster abgelaufen');
+      VelgToast.error(msg(str`Recall (${reason}): ${Number(cp.haul_lost ?? 0)} Vermessung verloren.`));
+    } else {
+      VelgToast.info(msg('Rückzug eingeleitet.'));
     }
   }
 
@@ -302,12 +335,18 @@ export class VelgDriftView extends LitElement {
     return html`
       <div class="hud">
         <p class="hud__title">${msg('Träger')} · ${this._positionName()}</p>
+        <div class="hud__haul">
+          <span class="hud__haul-label">${msg('Vermessung (Haul)')}</span>
+          <span class="hud__haul-value">${Number(run.checkpoint.haul ?? 0)}</span>
+        </div>
         <dl class="hud__stats">
           ${this._stat(msg('Kohärenz'), run.kohaerenz, 100, 'kh')}
           ${this._stat(msg('Bandbreite'), run.bandbreite, BB_SCALE, 'bb')}
           ${this._stat(msg('Dissonanz'), run.dissonanz, DZ_CAP, 'dz')}
         </dl>
-        <p class="hud__takt">${msg('Takt')} ${run.takt_count}</p>
+        <p class="hud__takt">
+          ${msg('Takte übrig')} ${run.window_remaining}/${WINDOW_BASE} · ${msg('Takt')} ${run.takt_count}
+        </p>
         <div class="hud__actions">
           <button class="btn btn--secondary" ?disabled=${this._busy} @click=${this._complete}>
             ${msg('Entladung')}
