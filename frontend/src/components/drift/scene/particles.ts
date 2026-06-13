@@ -32,7 +32,7 @@ void main() {
 }
 `;
 
-export function createParticles(count: number, pixelRatio: number) {
+export function createParticles(count: number, pixelRatio: number, seedTint?: THREE.Color) {
   const positions = new Float32Array(count * 3);
   const seeds = new Float32Array(count);
   for (let i = 0; i < count; i++) {
@@ -50,7 +50,8 @@ export function createParticles(count: number, pixelRatio: number) {
     uniforms: {
       uTime: { value: 0 },
       uPixelRatio: { value: pixelRatio },
-      uTint: { value: new THREE.Color('#9a7fe8') },
+      // Seed from the freq-2 palette token; overwritten on the first frame by the live tint.
+      uTint: { value: seedTint ? seedTint.clone() : new THREE.Color('#9a7fe8') },
     },
     vertexShader: VERT,
     fragmentShader: FRAG,

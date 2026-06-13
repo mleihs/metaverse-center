@@ -128,6 +128,9 @@ function buildGeometry(nodes: NodeSpec[]): THREE.InstancedBufferGeometry {
   geo.index = base.index;
   geo.setAttribute('position', base.getAttribute('position'));
   geo.setAttribute('uv', base.getAttribute('uv'));
+  // The index + position/uv BufferAttributes are now shared by `geo`; dispose
+  // the base PlaneGeometry wrapper so its GPU-side bookkeeping is released.
+  base.dispose();
 
   const n = nodes.length;
   const offset = new Float32Array(n * 2);

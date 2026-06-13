@@ -112,5 +112,13 @@ export function createComposer(
       grade.uniforms.uTime.value = time;
       grade.uniforms.uDissonance.value = dissonance;
     },
+    dispose() {
+      // EffectComposer.dispose() only disposes its internal ping-pong targets;
+      // it does NOT loop over passes. Dispose each pass explicitly first.
+      for (const pass of composer.passes) {
+        (pass as { dispose?: () => void }).dispose?.();
+      }
+      composer.dispose();
+    },
   };
 }

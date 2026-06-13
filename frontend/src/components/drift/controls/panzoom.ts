@@ -27,8 +27,17 @@ export class PanZoomController {
     el.addEventListener('pointermove', this.onMove);
     el.addEventListener('pointerup', this.onUp);
     el.addEventListener('pointercancel', this.onUp);
-    el.addEventListener('pointerleave', () => (this.pointer.inside = false));
+    el.addEventListener('pointerleave', this.onLeave);
     el.addEventListener('wheel', this.onWheel, { passive: false });
+  }
+
+  dispose(): void {
+    this.el.removeEventListener('pointerdown', this.onDown);
+    this.el.removeEventListener('pointermove', this.onMove);
+    this.el.removeEventListener('pointerup', this.onUp);
+    this.el.removeEventListener('pointercancel', this.onUp);
+    this.el.removeEventListener('pointerleave', this.onLeave);
+    this.el.removeEventListener('wheel', this.onWheel);
   }
 
   get unitsPerPixel(): number {
@@ -50,6 +59,10 @@ export class PanZoomController {
       y: (this.center.y - wy) / upp + this.el.clientHeight / 2,
     };
   }
+
+  private onLeave = () => {
+    this.pointer.inside = false;
+  };
 
   private onDown = (e: PointerEvent) => {
     this.dragging = true;
