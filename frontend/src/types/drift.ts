@@ -70,6 +70,30 @@ export interface DriftChart {
   edges: DriftChartEdge[];
 }
 
+/** A Träger of a world, surfaced on docking (active_agents, public-read). */
+export interface DriftDockAgent {
+  id: UUID;
+  name: string;
+  primary_profession: string | null;
+  portrait_image_url: string | null;
+}
+
+/** A lore chapter's voice (simulation_lore) shown at the broadcast edge. */
+export interface DriftDockLore {
+  title: string | null;
+  epigraph: string | null;
+}
+
+/** A world's identity surfaced on docking at its broadcast edge. */
+export interface DriftDock {
+  simulation_id: UUID;
+  name: string;
+  description: string | null;
+  theme: string | null;
+  lore: DriftDockLore[];
+  agents: DriftDockAgent[];
+}
+
 /** HUD gauge scalars from drift_tuning (§2) — the source of truth for bar maxima. */
 export interface DriftTuning {
   window_base: number;

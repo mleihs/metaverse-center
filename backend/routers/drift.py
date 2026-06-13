@@ -32,6 +32,7 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.drift import (
     ChartGenerationResponse,
     DriftChartResponse,
+    DriftDockResponse,
     DriftTuningResponse,
     TravelMoveRequest,
     TravelRunOpenRequest,
@@ -71,6 +72,17 @@ async def get_tuning(
     """HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning."""
     tuning = await DriftService.get_tuning(supabase)
     return SuccessResponse(data=tuning)
+
+
+@router.get("/dock/{simulation_id}")
+async def get_dock(
+    simulation_id: UUID,
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[DriftDockResponse | None]:
+    """A world's identity for the dock panel (name + lore voice + a few Träger)."""
+    dock = await DriftService.get_dock_info(supabase, simulation_id)
+    return SuccessResponse(data=dock)
 
 
 @router.post("/admin/regenerate")

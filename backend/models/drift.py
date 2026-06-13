@@ -117,3 +117,34 @@ class ChartGenerationResponse(BaseModel):
     worlds: int
     nodes: int
     edges: int
+
+
+# ── Dock experience (arriving at a broadcast edge) ──────────────────────────────
+
+
+class DockLoreResponse(BaseModel):
+    """A lore chapter's voice — the world speaking (simulation_lore, §6.4 dressing)."""
+
+    title: str | None = None
+    epigraph: str | None = None
+
+
+class DockAgentResponse(BaseModel):
+    """A Träger of the world (agents) — the people you meet at the broadcast edge."""
+
+    id: UUID
+    name: str
+    primary_profession: str | None = None
+    portrait_image_url: str | None = None
+
+
+class DriftDockResponse(BaseModel):
+    """A world's identity surfaced on docking at its broadcast edge: name + blurb +
+    a lore epigraph (its voice) + a few agents (its people). All public sim data."""
+
+    simulation_id: UUID
+    name: str
+    description: str | None = None
+    theme: str | None = None
+    lore: list[DockLoreResponse]
+    agents: list[DockAgentResponse]

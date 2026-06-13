@@ -1,4 +1,4 @@
-import type { DriftChart, DriftTuning, TravelRun } from '../../types/drift.js';
+import type { DriftChart, DriftDock, DriftTuning, TravelRun } from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -19,6 +19,11 @@ export class DriftApiService extends BaseApiService {
   /** HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning. */
   getTuning(): Promise<ApiResponse<DriftTuning>> {
     return this.get('/drift/tuning');
+  }
+
+  /** A world's identity for the dock panel (name + lore voice + a few Träger). */
+  getDock(simulationId: string): Promise<ApiResponse<DriftDock | null>> {
+    return this.get(`/drift/dock/${simulationId}`);
   }
 
   /** The caller's current open run, or null. */
