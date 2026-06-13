@@ -113,6 +113,10 @@ export class VelgDriftChartHost extends LitElement {
   private _pointerDownAt: { x: number; y: number; t: number } | null = null;
   private _adjacentIds = new Set<string>();
 
+  // HTML world-name labels over the canvas (homes only); transforms updated per frame.
+  private _labelLayer: HTMLElement | null = null;
+  private _labels: { el: HTMLElement; id: string; x: number; y: number }[] = [];
+
   // Light DOM so canvas pointer coordinates resolve correctly (see header).
   protected createRenderRoot(): HTMLElement {
     return this;
@@ -161,6 +165,7 @@ export class VelgDriftChartHost extends LitElement {
     const canvas = this.querySelector<HTMLCanvasElement>('canvas.drift-chart__canvas');
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     if (!canvas || !wrap) return;
+    this._labelLayer = this.querySelector<HTMLElement>('.drift-chart__labels');
 
     try {
       this._renderer = new THREE.WebGLRenderer({
@@ -272,14 +277,50 @@ export class VelgDriftChartHost extends LitElement {
     if (!this.chartData?.nodes.length) return;
     this._gameGraph = createGameGraph(this.chartData, this._freqColors);
     this._scene.add(this._gameGraph.group);
-    // Hide the spike's ambient sample layers (scatter nodes, sample corridors +
-    // broadcast glows) so the real gameplay graph reads clearly; the deep-field
-    // background + Bleed particles stay as atmosphere.
-    if (this._nodes) this._nodes.mesh.visible = false;
+    // Keep the spike's ambient scatter + broadcast halos as the deep glowing Bleed
+    // field BEHIND the board (they render at a lower order; the gameplay nodes are
+    // bigger, ringed, labelled → still read clearly). Only the sample corridors are
+    // hidden — fake Strömungsbänder would compete with the real edges. Background fbm
+    // + Bleed particles + UnrealBloom stay on as before.
+    if (this._nodes) this._nodes.mesh.visible = true;
+    if (this._broadcasts) this._broadcasts.group.visible = true;
     if (this._corridors) this._corridors.group.visible = false;
-    if (this._broadcasts) this._broadcasts.group.visible = false;
     this._frameCameraToGraph();
+    this._buildLabels();
     this._syncRunState();
+  }
+
+  /** (Re)build the HTML world-name labels for broadcast_rand homes (imperative DOM,
+   *  preserved across Lit re-renders; positioned each frame in _positionLabels). */
+  private _buildLabels(): void {
+    const layer = this._labelLayer;
+    if (!layer) return;
+    layer.replaceChildren();
+    this._labels = [];
+    for (const node of this.chartData?.nodes ?? []) {
+      if (node.node_type !== 'broadcast_rand' || !node.simulation_name) continue;
+      const el = document.createElement('span');
+      el.className = 'drift-chart__label';
+      el.textContent = node.simulation_name;
+      layer.appendChild(el);
+      this._labels.push({ el, id: node.id, x: node.x, y: node.y });
+    }
+  }
+
+  /** Project each home label to screen space; cull labels panned off the viewport. */
+  private _positionLabels(wrap: HTMLElement): void {
+    if (!this._controller || !this._labels.length) return;
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    for (const label of this._labels) {
+      const s = this._controller.worldToScreen(label.x, label.y);
+      const onscreen = s.x >= -80 && s.x <= w + 80 && s.y >= -40 && s.y <= h + 120;
+      label.el.style.display = onscreen ? 'block' : 'none';
+      if (onscreen) {
+        label.el.style.left = `${s.x}px`;
+        label.el.style.top = `${s.y}px`;
+      }
+    }
   }
 
   /** Center + zoom the camera so the whole graph fits, with padding. */
@@ -298,10 +339,10 @@ export class VelgDriftChartHost extends LitElement {
     }
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     const aspect = wrap ? this._aspect(wrap) : 1.6;
-    const fitH = Math.max(maxY - minY, (maxX - minX) / aspect) * 1.5 + 240;
-    this._controller.center.x = (minX + maxX) / 2;
-    this._controller.center.y = (minY + maxY) / 2;
-    this._controller.viewHeight = Math.max(420, fitH);
+    const fitH = Math.max(maxY - minY, (maxX - minX) / aspect) * 1.25 + 200;
+    // frameTo sets BOTH live + target zoom; a bare viewHeight assignment is eased
+    // back to the controller's initial target on the next frame (the ring overflowed).
+    this._controller.frameTo({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, Math.max(420, fitH));
   }
 
   /** Push the traveler's position + reachable neighbours into the graph highlight. */
@@ -317,6 +358,10 @@ export class VelgDriftChartHost extends LitElement {
     }
     this._adjacentIds = adjacent;
     this._gameGraph.setRunState(positionId, adjacent);
+    // Mark the label of the world the traveller is standing on (amber accent).
+    for (const label of this._labels) {
+      label.el.classList.toggle('drift-chart__label--position', label.id === positionId);
+    }
   }
 
   private _onPointerDown = (e: PointerEvent): void => {
@@ -383,6 +428,7 @@ export class VelgDriftChartHost extends LitElement {
 
     this._controller.update(dt);
     this._applyCamera(wrap);
+    this._positionLabels(wrap);
 
     const ctx: FrameCtx = {
       time: this._elapsed,
@@ -430,6 +476,8 @@ export class VelgDriftChartHost extends LitElement {
 
     this._controller?.dispose();
     this._gameGraph?.dispose();
+    this._labelLayer?.replaceChildren();
+    this._labels = [];
     this._renderer = null;
     this._scene = null;
     this._post = null;
@@ -461,6 +509,9 @@ export class VelgDriftChartHost extends LitElement {
             @pointerdown=${this._onPointerDown}
             @pointerup=${this._onPointerUp}
           ></canvas>
+          <!-- World-name labels (homes); imperative children, positioned each frame.
+               aria-hidden: a non-visual ChartAccessibilityList is the a11y path (§11.3). -->
+          <div class="drift-chart__labels" aria-hidden="true"></div>
         </div>
       </div>
     `;

@@ -44,6 +44,19 @@ export class PanZoomController {
     return this.viewHeight / this.el.clientHeight;
   }
 
+  /**
+   * Snap the camera to frame a region. Sets BOTH the live and the target zoom (and
+   * kills inertia) — setting only `viewHeight` is overridden a frame later because
+   * `update()` eases viewHeight toward `targetViewHeight`. Used to fit the graph.
+   */
+  frameTo(center: { x: number; y: number }, viewHeight: number): void {
+    this.center = { ...center };
+    this.viewHeight = viewHeight;
+    this.targetViewHeight = viewHeight;
+    this.velocity = { x: 0, y: 0 };
+    this.zoomAnchor = null;
+  }
+
   screenToWorld(sx: number, sy: number): { x: number; y: number } {
     const upp = this.unitsPerPixel;
     return {

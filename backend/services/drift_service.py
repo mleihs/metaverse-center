@@ -25,9 +25,11 @@ from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.drift import (
+    ChartGenerationResponse,
     DriftChartEdgeResponse,
     DriftChartNodeResponse,
     DriftChartResponse,
+    DriftTuningResponse,
     TravelRunResponse,
 )
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
@@ -84,9 +86,15 @@ class DriftService:
             return None
         version = versions[0]["version"]
 
+        # Embed the world name (LEFT JOIN simulations.name) so broadcast_rand homes
+        # carry their display label for the on-board labels. simulations is public-read,
+        # so the embed resolves on the user/anon client; interstitials → null embed.
         nodes_resp = await (
             supabase.table("drift_chart_nodes")
-            .select("id, stable_key, node_type, simulation_id, x, y, frequency_mask, distance_band, payload")
+            .select(
+                "id, stable_key, node_type, simulation_id, x, y, "
+                "frequency_mask, distance_band, payload, simulations(name)"
+            )
             .eq("chart_version", version)
             .execute()
         )
@@ -98,9 +106,42 @@ class DriftService:
         )
         return DriftChartResponse(
             chart_version=version,
-            nodes=[DriftChartNodeResponse(**n) for n in (nodes_resp.data or [])],
+            nodes=[DriftChartNodeResponse(**DriftService._flatten_node(n)) for n in (nodes_resp.data or [])],
             edges=[DriftChartEdgeResponse(**e) for e in (edges_resp.data or [])],
         )
+
+    @staticmethod
+    def _flatten_node(node: dict) -> dict:
+        """Lift the embedded simulations(name) onto simulation_name (None for non-homes)."""
+        embed = node.pop("simulations", None)
+        node["simulation_name"] = embed.get("name") if isinstance(embed, dict) else None
+        return node
+
+    @staticmethod
+    async def get_tuning(supabase: Client) -> DriftTuningResponse:
+        """HUD-relevant tuning scalars (drift_tuning is public-read). Defaults mirror 248."""
+        resp = await (
+            supabase.table("drift_tuning")
+            .select("setting_key, value")
+            .in_("setting_key", ["window_base", "dz_p0_cap", "bandwidth_class_bb_max"])
+            .execute()
+        )
+        values = {row["setting_key"]: row["value"] for row in (resp.data or [])}
+        bb_max = values.get("bandwidth_class_bb_max") or {}
+        return DriftTuningResponse(
+            window_base=int(values.get("window_base", 8)),
+            dz_cap=int(values.get("dz_p0_cap", 20)),
+            bandwidth_class_bb_max={str(k): int(v) for k, v in bb_max.items()},
+        )
+
+    @staticmethod
+    async def regenerate_chart(admin_supabase: Client) -> ChartGenerationResponse:
+        """Regenerate the chart from the CURRENT active worlds (newly published worlds
+        appear); emits a new chart_version. service_role only (fn is backend-class)."""
+        resp = await admin_supabase.rpc("fn_generate_drift_chart", {}).execute()
+        if not resp.data:
+            raise server_error("fn_generate_drift_chart returned no summary.")
+        return ChartGenerationResponse(**resp.data)
 
     @staticmethod
     async def get_current_run(supabase: Client, user_id: UUID) -> TravelRunResponse | None:

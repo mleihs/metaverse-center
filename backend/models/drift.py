@@ -68,6 +68,9 @@ class DriftChartNodeResponse(BaseModel):
     stable_key: str
     node_type: str
     simulation_id: UUID | None = None
+    # The world's display name, for broadcast_rand homes (LEFT JOIN simulations.name);
+    # None for interstitials/core. Drives the on-board node labels.
+    simulation_name: str | None = None
     x: float
     y: float
     frequency_mask: int
@@ -92,3 +95,25 @@ class DriftChartResponse(BaseModel):
     chart_version: int
     nodes: list[DriftChartNodeResponse]
     edges: list[DriftChartEdgeResponse]
+
+
+class DriftTuningResponse(BaseModel):
+    """HUD-relevant Zahlenwerk scalars (drift_tuning, §2) for client gauge scaling.
+
+    The HUD reads these instead of hardcoding bar maxima — the single source of truth
+    is the drift_tuning table, so a re-tune reshapes the gauges without a frontend
+    change. bandwidth_class_bb_max is keyed by bandwidth class ("1".."4"); P0 = class 1.
+    """
+
+    window_base: int
+    dz_cap: int
+    bandwidth_class_bb_max: dict[str, int]
+
+
+class ChartGenerationResponse(BaseModel):
+    """Summary of an fn_generate_drift_chart run (admin regenerate)."""
+
+    version: int
+    worlds: int
+    nodes: int
+    edges: int

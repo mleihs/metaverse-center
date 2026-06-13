@@ -26,10 +26,13 @@ from backend.dependencies import (
     get_current_user,
     get_effective_supabase,
     get_supabase,
+    require_platform_admin,
 )
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.drift import (
+    ChartGenerationResponse,
     DriftChartResponse,
+    DriftTuningResponse,
     TravelMoveRequest,
     TravelRunOpenRequest,
     TravelRunResponse,
@@ -58,6 +61,31 @@ async def get_chart(
     """The active chart version's public topology (nodes + edges); null if unseeded."""
     chart = await DriftService.get_active_chart(supabase)
     return SuccessResponse(data=chart)
+
+
+@router.get("/tuning")
+async def get_tuning(
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[DriftTuningResponse]:
+    """HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning."""
+    tuning = await DriftService.get_tuning(supabase)
+    return SuccessResponse(data=tuning)
+
+
+@router.post("/admin/regenerate")
+async def regenerate_chart(
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[ChartGenerationResponse]:
+    """Regenerate the chart from the current active worlds (platform-admin only).
+
+    Emits a new chart_version so newly published worlds appear; in-flight runs keep
+    their pinned version. The fn is service_role-only, hence the admin client.
+    """
+    result = await DriftService.regenerate_chart(admin_supabase)
+    return SuccessResponse(data=result)
 
 
 @router.get("/run")

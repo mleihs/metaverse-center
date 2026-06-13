@@ -16,7 +16,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
-import type { DriftChart, TravelRun } from '../../types/drift.js';
+import type { DriftChart, DriftTuning, TravelRun } from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
@@ -33,9 +33,11 @@ const FREQUENCIES = [
   'dream',
   'desire',
 ] as const;
-const DZ_CAP = 20; // the P0 Dissonanz ceiling (mirrors drift_tuning dz_p0_cap)
-const BB_SCALE = 6; // class-I bandwidth max (mirrors drift_tuning bandwidth_class_bb_max)
-const WINDOW_BASE = 6; // Aufenthaltsfenster Takte (mirrors drift_tuning window_base)
+// Gauge maxima come from the tuning API (drift_tuning is the source of truth); these
+// are only the fail-soft fallbacks if that fetch fails. P0 travellers are class 1.
+const DZ_CAP_FALLBACK = 20;
+const BB_MAX_FALLBACK = 11;
+const WINDOW_BASE_FALLBACK = 8;
 
 @localized()
 @customElement('velg-drift-view')
@@ -185,9 +187,21 @@ export class VelgDriftView extends LitElement {
 
   @state() private _chart: DriftChart | null = null;
   @state() private _run: TravelRun | null = null;
+  @state() private _tuning: DriftTuning | null = null;
   @state() private _loading = true;
   @state() private _error = false;
   @state() private _busy = false;
+
+  /** Gauge maxima — from drift_tuning when loaded, else the fail-soft fallbacks. */
+  private get _dzCap(): number {
+    return this._tuning?.dz_cap ?? DZ_CAP_FALLBACK;
+  }
+  private get _bbMax(): number {
+    return this._tuning?.bandwidth_class_bb_max?.['1'] ?? BB_MAX_FALLBACK;
+  }
+  private get _windowBase(): number {
+    return this._tuning?.window_base ?? WINDOW_BASE_FALLBACK;
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -198,9 +212,14 @@ export class VelgDriftView extends LitElement {
     this._loading = true;
     this._error = false;
     try {
-      const [chartRes, runRes] = await Promise.all([driftApi.getChart(), driftApi.getRun()]);
+      const [chartRes, runRes, tuningRes] = await Promise.all([
+        driftApi.getChart(),
+        driftApi.getRun(),
+        driftApi.getTuning(),
+      ]);
       this._chart = chartRes.success ? (chartRes.data ?? null) : null;
       this._run = runRes.success ? (runRes.data ?? null) : null;
+      if (tuningRes.success) this._tuning = tuningRes.data;
       if (!chartRes.success) this._error = true;
     } catch (err) {
       captureError(err, { source: 'VelgDriftView._load' });
@@ -251,7 +270,9 @@ export class VelgDriftView extends LitElement {
       VelgToast.success(msg(str`Entladung: ${Number(cp.haul_banked ?? 0)} Vermessung gesichert.`));
     } else if (recall) {
       const reason = recall === 'kohaerenz' ? msg('Kohärenz zerfasert') : msg('Fenster abgelaufen');
-      VelgToast.error(msg(str`Recall (${reason}): ${Number(cp.haul_lost ?? 0)} Vermessung verloren.`));
+      VelgToast.error(
+        msg(str`Recall (${reason}): ${Number(cp.haul_lost ?? 0)} Vermessung verloren.`),
+      );
     } else {
       VelgToast.info(msg('Rückzug eingeleitet.'));
     }
@@ -315,7 +336,7 @@ export class VelgDriftView extends LitElement {
 
     const run = this._run;
     const freqIndex = run ? Math.max(0, FREQUENCIES.indexOf(run.frequency)) : 2;
-    const dz = run ? Math.min(1, run.dissonanz / DZ_CAP) : 0.12;
+    const dz = run ? Math.min(1, run.dissonanz / this._dzCap) : 0.12;
 
     return html`
       <div class="drift">
@@ -358,17 +379,19 @@ export class VelgDriftView extends LitElement {
         </div>
         <dl class="hud__stats">
           ${this._stat(msg('Kohärenz'), run.kohaerenz, 100, 'kh')}
-          ${this._stat(msg('Bandbreite'), run.bandbreite, BB_SCALE, 'bb')}
-          ${this._stat(msg('Dissonanz'), run.dissonanz, DZ_CAP, 'dz')}
+          ${this._stat(msg('Bandbreite'), run.bandbreite, this._bbMax, 'bb')}
+          ${this._stat(msg('Dissonanz'), run.dissonanz, this._dzCap, 'dz')}
         </dl>
         <p class="hud__takt">
-          ${msg('Takte übrig')} ${run.window_remaining}/${WINDOW_BASE} · ${msg('Takt')} ${run.takt_count}
+          ${msg('Takte übrig')} ${run.window_remaining}/${this._windowBase} · ${msg('Takt')} ${run.takt_count}
         </p>
-        ${atHome
-          ? ''
-          : html`<p class="hud__warn">
+        ${
+          atHome
+            ? ''
+            : html`<p class="hud__warn">
               ${msg('Entladung nur an deiner Heimat-Broadcast. Kehre zurück.')}
-            </p>`}
+            </p>`
+        }
         <div class="hud__actions">
           <button
             class="btn btn--secondary"
