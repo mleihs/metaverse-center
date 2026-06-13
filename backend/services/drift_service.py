@@ -40,12 +40,13 @@ _P0_GATE_KEY = "drift_p0_enabled"
 
 # SQLSTATE → HTTP error factory for the run-lifecycle RPCs (migration 246).
 #   42501 caller-is-not-owner · P0002 not-found · 22023 bad-state
-#   (NOT_ADJACENT / NOT_AT_HOME / not-active) · 40001 RUN_STALE (CAS miss).
+#   (NOT_ADJACENT / NOT_AT_HOME / not-active). RUN_STALE is matched by message, not
+#   code: the RPC raises it as P0001, NOT 40001 — PostgREST auto-retries
+#   serialization_failure (40001), which hangs a deterministic optimistic-lock miss.
 _RPC_ERROR_FACTORIES = {
     "42501": forbidden,
     "P0002": not_found,
     "22023": bad_request,
-    "40001": conflict,
 }
 
 
@@ -187,6 +188,10 @@ class DriftService:
         """Map a run-lifecycle RPC SQLSTATE to the matching HTTPException."""
         code = getattr(exc, "code", None) or ""
         message = getattr(exc, "message", None) or str(exc)
+        # The optimistic-lock CAS miss surfaces by message (raised as P0001 to dodge
+        # PostgREST's 40001 retry) → 409 Conflict: the client refetches + retries.
+        if message == "RUN_STALE":
+            return conflict(message)
         factory = _RPC_ERROR_FACTORIES.get(code)
         if factory is None:
             logger.warning("DRIFT %s raised unmapped SQLSTATE %s: %s", rpc_name, code, message)

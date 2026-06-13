@@ -30,6 +30,10 @@
 --     direct default grants), GRANT service_role only — the admin kill-switch.
 -- Every mutating RPC calls travel_audit(...) in-transaction; every RPC that
 -- touches travel_runs carries p_run_version and raises RUN_STALE on mismatch.
+-- RUN_STALE uses ERRCODE P0001, NOT 40001: PostgREST auto-retries
+-- serialization_failure (40001), which would hang a *deterministic* CAS miss in an
+-- endless retry. P0001 returns cleanly; the backend maps the 'RUN_STALE' message to
+-- HTTP 409. (Found via the HTTP-layer test — the in-DB smoke can't see PostgREST.)
 --
 -- P0 simplifications (documented, wired fuller later): the off-vector frequency
 -- multiplier uses the affinity-band table from tuning but not yet the per-edge
@@ -265,7 +269,7 @@ BEGIN
         RAISE EXCEPTION 'fn_travel_move: run is %, not active', v_run.status USING ERRCODE = '22023';
     END IF;
     IF v_run.run_version <> p_run_version THEN
-        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = '40001';
+        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
     END IF;
 
     -- Adjacency: an edge between the current position and the target in this chart.
@@ -404,7 +408,7 @@ BEGIN
         RAISE EXCEPTION 'fn_travel_complete: run is %, not active', v_run.status USING ERRCODE = '22023';
     END IF;
     IF v_run.run_version <> p_run_version THEN
-        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = '40001';
+        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
     END IF;
 
     -- Must be standing on the anchor's home broadcast node.
@@ -461,7 +465,7 @@ BEGIN
         RAISE EXCEPTION 'fn_travel_abandon: run is %, not abandonable', v_run.status USING ERRCODE = '22023';
     END IF;
     IF v_run.run_version <> p_run_version THEN
-        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = '40001';
+        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
     END IF;
 
     -- Rückzug: unanchored cargo (run_id set) is forfeited; discoveries are kept.
