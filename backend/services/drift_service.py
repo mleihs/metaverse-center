@@ -26,12 +26,16 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.drift import (
     ChartGenerationResponse,
+    DockAgentResponse,
+    DockLoreResponse,
     DriftChartEdgeResponse,
     DriftChartNodeResponse,
     DriftChartResponse,
+    DriftDockResponse,
     DriftTuningResponse,
     TravelRunResponse,
 )
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.settings import load_platform_settings, parse_setting_bool
 from supabase import AsyncClient as Client
@@ -142,6 +146,53 @@ class DriftService:
         if not resp.data:
             raise server_error("fn_generate_drift_chart returned no summary.")
         return ChartGenerationResponse(**resp.data)
+
+    @staticmethod
+    async def get_dock_info(supabase: Client, simulation_id: UUID) -> DriftDockResponse | None:
+        """A world's identity for the dock panel: name + blurb + a lore epigraph + a
+        few Träger. All public sim data (public-first); None if the sim is absent."""
+        sim = await maybe_single_data(
+            supabase.table("simulations")
+            .select("id, name, description, theme")
+            .eq("id", str(simulation_id))
+            .maybe_single()
+        )
+        if not sim:
+            return None
+
+        lore_resp = await (
+            supabase.table("simulation_lore")
+            .select("title, epigraph")
+            .eq("simulation_id", str(simulation_id))
+            .order("sort_order")
+            .limit(3)
+            .execute()
+        )
+        # active_agents (not agents): the public-read view — anon/authenticated granted,
+        # so the dock surfaces a FOREIGN world's Träger even when the traveller isn't a
+        # member (the agents table itself is membership-gated). Public-first.
+        agents_resp = await (
+            supabase.table("active_agents")
+            .select("id, name, primary_profession, portrait_image_url")
+            .eq("simulation_id", str(simulation_id))
+            .order("created_at")
+            .limit(4)
+            .execute()
+        )
+        # Keep only lore rows that actually carry a voice (some chapters are body-only).
+        lore = [
+            DockLoreResponse(title=row.get("title"), epigraph=row.get("epigraph"))
+            for row in (lore_resp.data or [])
+            if row.get("title") or row.get("epigraph")
+        ][:2]
+        return DriftDockResponse(
+            simulation_id=sim["id"],
+            name=sim["name"],
+            description=sim.get("description"),
+            theme=sim.get("theme"),
+            lore=lore,
+            agents=[DockAgentResponse(**a) for a in (agents_resp.data or [])],
+        )
 
     @staticmethod
     async def get_current_run(supabase: Client, user_id: UUID) -> TravelRunResponse | None:

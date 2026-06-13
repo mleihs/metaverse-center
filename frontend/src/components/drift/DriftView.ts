@@ -16,13 +16,14 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
-import type { DriftChart, DriftTuning, TravelRun } from '../../types/drift.js';
+import type { DriftChart, DriftDock, DriftTuning, TravelRun } from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import './DriftChartHost.js';
+import './DriftDockPanel.js';
 
 const FREQUENCIES = [
   'commerce',
@@ -188,9 +189,14 @@ export class VelgDriftView extends LitElement {
   @state() private _chart: DriftChart | null = null;
   @state() private _run: TravelRun | null = null;
   @state() private _tuning: DriftTuning | null = null;
+  @state() private _dock: DriftDock | null = null;
+  @state() private _dockOpen = false;
   @state() private _loading = true;
   @state() private _error = false;
   @state() private _busy = false;
+
+  /** The sim whose dock is currently surfaced — avoids refetching while you stand on it. */
+  private _dockSimId: string | null = null;
 
   /** Gauge maxima — from drift_tuning when loaded, else the fail-soft fallbacks. */
   private get _dzCap(): number {
@@ -221,6 +227,8 @@ export class VelgDriftView extends LitElement {
       this._run = runRes.success ? (runRes.data ?? null) : null;
       if (tuningRes.success) this._tuning = tuningRes.data;
       if (!chartRes.success) this._error = true;
+      // Resumed onto a foreign broadcast edge? Surface its dossier.
+      if (this._run) void this._maybeDock(this._run);
     } catch (err) {
       captureError(err, { source: 'VelgDriftView._load' });
       this._error = true;
@@ -234,6 +242,37 @@ export class VelgDriftView extends LitElement {
     if (res.success) this._run = res.data ?? null;
   }
 
+  /** Surface a FOREIGN world's dossier on docking at its broadcast edge; dismiss it
+   *  when the traveller is anywhere else (home, an interstitial, the core). */
+  private async _maybeDock(run: TravelRun): Promise<void> {
+    const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
+    const node = this._chart?.nodes.find((n) => n.id === run.position_node_id);
+    const foreignSim =
+      node?.node_type === 'broadcast_rand' && node.simulation_id && node.simulation_id !== anchor
+        ? node.simulation_id
+        : null;
+    if (!foreignSim) {
+      this._dockOpen = false;
+      this._dockSimId = null;
+      return;
+    }
+    if (foreignSim === this._dockSimId) return; // already showing this world
+    this._dockSimId = foreignSim;
+    try {
+      const res = await driftApi.getDock(foreignSim);
+      if (res.success && res.data) {
+        this._dock = res.data;
+        this._dockOpen = true;
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgDriftView._maybeDock' });
+    }
+  }
+
+  private _closeDock = (): void => {
+    this._dockOpen = false;
+  };
+
   /** Run a mutation, adopt the returned run, resync on a refused action. */
   private async _act(fn: () => Promise<ApiResponse<TravelRun>>, source: string): Promise<void> {
     if (this._busy) return;
@@ -246,9 +285,11 @@ export class VelgDriftView extends LitElement {
           // Terminal: announce the haul banked / lost, then drop back to the "Aufbruch"
           // state (don't keep showing a finished run as if it were still active).
           this._run = null;
+          this._closeDock();
           this._announceClose(run);
         } else {
           this._run = run;
+          void this._maybeDock(run);
         }
       } else {
         VelgToast.error(this._friendlyError(res.error.message ?? ''));
@@ -349,6 +390,14 @@ export class VelgDriftView extends LitElement {
           @drift-node-pick=${this._onNodePick}
         ></velg-drift-chart>
         ${this._renderHud(run)}
+        ${
+          this._dockOpen && this._dock
+            ? html`<velg-drift-dock-panel
+              .dock=${this._dock}
+              @dock-close=${this._closeDock}
+            ></velg-drift-dock-panel>`
+            : ''
+        }
       </div>
     `;
   }
