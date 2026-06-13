@@ -30,6 +30,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import * as THREE from 'three';
 
 import { captureError } from '../../services/SentryService.js';
+import type { DriftChart, TravelRun } from '../../types/drift.js';
 import { generateChart } from './chart/generate.js';
 import type { ChartData, FrameCtx } from './chart/types.js';
 import { PanZoomController } from './controls/panzoom.js';
@@ -42,6 +43,7 @@ import { createComposer } from './post/composer.js';
 import { createBackground } from './scene/background.js';
 import { createBroadcasts } from './scene/broadcasts.js';
 import { createCorridors } from './scene/corridors.js';
+import { createGameGraph } from './scene/gameGraph.js';
 import { createNodes } from './scene/nodes.js';
 import { createParticles } from './scene/particles.js';
 
@@ -77,6 +79,11 @@ export class VelgDriftChartHost extends LitElement {
   /** Dissonance 0–1 — drives the grade pass (tear bands, redaction, scanlines). */
   @property({ type: Number }) dissonance = 0.12;
 
+  /** Real chart topology (from driftApi). When set, the playable graph board renders. */
+  @property({ attribute: false }) chartData: DriftChart | null = null;
+  /** The traveler's current run — drives the position + adjacency highlight. */
+  @property({ attribute: false }) run: TravelRun | null = null;
+
   @state() private _offline = false;
 
   // Three.js graph — created on mount, disposed on teardown.
@@ -91,6 +98,7 @@ export class VelgDriftChartHost extends LitElement {
   private _broadcasts: ReturnType<typeof createBroadcasts> | null = null;
   private _nodes: ReturnType<typeof createNodes> | null = null;
   private _particles: ReturnType<typeof createParticles> | null = null;
+  private _gameGraph: ReturnType<typeof createGameGraph> | null = null;
   private _post: ReturnType<typeof createComposer> | null = null;
 
   private _resizeObserver: ResizeObserver | null = null;
@@ -136,6 +144,13 @@ export class VelgDriftChartHost extends LitElement {
     // matching the spike's onTuneSnap; dissonance is read live in the frame.
     if (changed.has('frequency') && this._scene) {
       this._tween = { from: this._tune, to: this.frequency, start: this._elapsed, dur: 1.1 };
+    }
+    // Real data arriving (or changing) rebuilds the board; a run change just
+    // re-highlights the position + reachable neighbours.
+    if (changed.has('chartData') && this._scene) {
+      this._buildGameGraph();
+    } else if (changed.has('run')) {
+      this._syncRunState();
     }
   }
 
@@ -200,6 +215,9 @@ export class VelgDriftChartHost extends LitElement {
     this._resizeObserver = new ResizeObserver(() => this._resize());
     this._resizeObserver.observe(wrap);
 
+    // Real graph board (if the data is already present; else updated() builds it).
+    this._buildGameGraph();
+
     this._lastTime = performance.now();
     this._rafId = requestAnimationFrame(this._frame);
     this._mounted = true;
@@ -239,6 +257,57 @@ export class VelgDriftChartHost extends LitElement {
     const f0 = Math.floor(this._tune);
     const f1 = Math.min(f0 + 1, 6);
     return this._tint.copy(this._freqColors[f0]).lerp(this._freqColors[f1], this._tune - f0);
+  }
+
+  /** (Re)build the playable graph board from chartData; frame the camera to it. */
+  private _buildGameGraph(): void {
+    if (!this._scene) return;
+    if (this._gameGraph) {
+      this._scene.remove(this._gameGraph.group);
+      this._gameGraph.dispose();
+      this._gameGraph = null;
+    }
+    if (!this.chartData?.nodes.length) return;
+    this._gameGraph = createGameGraph(this.chartData, this._freqColors);
+    this._scene.add(this._gameGraph.group);
+    this._frameCameraToGraph();
+    this._syncRunState();
+  }
+
+  /** Center + zoom the camera so the whole graph fits, with padding. */
+  private _frameCameraToGraph(): void {
+    const nodes = this.chartData?.nodes;
+    if (!this._controller || !nodes?.length) return;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const n of nodes) {
+      minX = Math.min(minX, n.x);
+      maxX = Math.max(maxX, n.x);
+      minY = Math.min(minY, n.y);
+      maxY = Math.max(maxY, n.y);
+    }
+    const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
+    const aspect = wrap ? this._aspect(wrap) : 1.6;
+    const fitH = Math.max(maxY - minY, (maxX - minX) / aspect) * 1.5 + 240;
+    this._controller.center.x = (minX + maxX) / 2;
+    this._controller.center.y = (minY + maxY) / 2;
+    this._controller.viewHeight = Math.max(420, fitH);
+  }
+
+  /** Push the traveler's position + reachable neighbours into the graph highlight. */
+  private _syncRunState(): void {
+    if (!this._gameGraph) return;
+    const positionId = this.run?.position_node_id ?? null;
+    const adjacent = new Set<string>();
+    if (positionId && this.chartData) {
+      for (const e of this.chartData.edges) {
+        if (e.from_node === positionId) adjacent.add(e.to_node);
+        else if (e.to_node === positionId) adjacent.add(e.from_node);
+      }
+    }
+    this._gameGraph.setRunState(positionId, adjacent);
   }
 
   private _frame = (now: number): void => {
@@ -286,6 +355,7 @@ export class VelgDriftChartHost extends LitElement {
     this._corridors.update(ctx);
     this._broadcasts.update(ctx);
     this._nodes.update(ctx);
+    this._gameGraph?.update(ctx, tint);
     this._particles.update(ctx, tint);
     this._post.update(this._elapsed, this.dissonance);
     this._post.composer.render();
@@ -314,10 +384,12 @@ export class VelgDriftChartHost extends LitElement {
     this._renderer?.dispose();
 
     this._controller?.dispose();
+    this._gameGraph?.dispose();
     this._renderer = null;
     this._scene = null;
     this._post = null;
     this._controller = null;
+    this._gameGraph = null;
     this._mounted = false;
   }
 
