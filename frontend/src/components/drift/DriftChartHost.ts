@@ -110,6 +110,8 @@ export class VelgDriftChartHost extends LitElement {
   private _tune = 2;
   private readonly _tint = new THREE.Color();
   private _mounted = false;
+  private _pointerDownAt: { x: number; y: number; t: number } | null = null;
+  private _adjacentIds = new Set<string>();
 
   // Light DOM so canvas pointer coordinates resolve correctly (see header).
   protected createRenderRoot(): HTMLElement {
@@ -270,6 +272,12 @@ export class VelgDriftChartHost extends LitElement {
     if (!this.chartData?.nodes.length) return;
     this._gameGraph = createGameGraph(this.chartData, this._freqColors);
     this._scene.add(this._gameGraph.group);
+    // Hide the spike's ambient sample layers (scatter nodes, sample corridors +
+    // broadcast glows) so the real gameplay graph reads clearly; the deep-field
+    // background + Bleed particles stay as atmosphere.
+    if (this._nodes) this._nodes.mesh.visible = false;
+    if (this._corridors) this._corridors.group.visible = false;
+    if (this._broadcasts) this._broadcasts.group.visible = false;
     this._frameCameraToGraph();
     this._syncRunState();
   }
@@ -307,8 +315,45 @@ export class VelgDriftChartHost extends LitElement {
         else if (e.to_node === positionId) adjacent.add(e.from_node);
       }
     }
+    this._adjacentIds = adjacent;
     this._gameGraph.setRunState(positionId, adjacent);
   }
+
+  private _onPointerDown = (e: PointerEvent): void => {
+    this._pointerDownAt = { x: e.clientX, y: e.clientY, t: performance.now() };
+  };
+
+  // A click (little movement, short dwell) on a reachable node emits a move intent;
+  // a drag is a pan and is ignored. The server still authorises the move (the RPC
+  // validates the edge) — adjacency here only gates the click + the highlight.
+  private _onPointerUp = (e: PointerEvent): void => {
+    const down = this._pointerDownAt;
+    this._pointerDownAt = null;
+    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
+    if (performance.now() - down.t > 500) return;
+    if (!this._controller || !this._gameGraph) return;
+
+    const world = this._controller.screenToWorld(e.offsetX, e.offsetY);
+    const radius = 30 * this._controller.unitsPerPixel; // forgiving tap target
+    let bestId: string | null = null;
+    let bestDist = radius;
+    for (const node of this._gameGraph.nodeWorldPositions) {
+      const d = Math.hypot(node.x - world.x, node.y - world.y);
+      if (d < bestDist) {
+        bestDist = d;
+        bestId = node.id;
+      }
+    }
+    if (bestId && this._adjacentIds.has(bestId)) {
+      this.dispatchEvent(
+        new CustomEvent('drift-node-pick', {
+          detail: { nodeId: bestId },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  };
 
   private _frame = (now: number): void => {
     this._rafId = requestAnimationFrame(this._frame);
@@ -411,7 +456,11 @@ export class VelgDriftChartHost extends LitElement {
           role="img"
           aria-label=${msg('DRIFT navigation chart – the frequency-layered Bleed')}
         >
-          <canvas class="drift-chart__canvas"></canvas>
+          <canvas
+            class="drift-chart__canvas"
+            @pointerdown=${this._onPointerDown}
+            @pointerup=${this._onPointerUp}
+          ></canvas>
         </div>
       </div>
     `;
