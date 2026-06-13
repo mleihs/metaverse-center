@@ -97,7 +97,7 @@ void main() {
 }
 `;
 
-export function createBackground(chart: ChartData, aspect: number) {
+export function createBackground(chart: ChartData, aspect: number, seedTint?: THREE.Color) {
   const anchors = chart.sims.map((s) => new THREE.Vector4(s.x, s.y, s.light, s.radius * 1.6));
 
   const material = new THREE.ShaderMaterial({
@@ -106,7 +106,8 @@ export function createBackground(chart: ChartData, aspect: number) {
       uCamCenter: { value: new THREE.Vector2() },
       uViewHeight: { value: 1500 },
       uAspect: { value: aspect },
-      uTint: { value: new THREE.Color('#9a7fe8') },
+      // Seed from the freq-2 palette token; overwritten on the first frame by the live tint.
+      uTint: { value: seedTint ? seedTint.clone() : new THREE.Color('#9a7fe8') },
       uAnchors: { value: anchors },
     },
     vertexShader: VERT,

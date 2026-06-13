@@ -101,6 +101,7 @@ export class VelgDriftChartHost extends LitElement {
   private _tween: { from: number; to: number; start: number; dur: number } | null = null;
   private _tune = 2;
   private readonly _tint = new THREE.Color();
+  private _mounted = false;
 
   // Light DOM so canvas pointer coordinates resolve correctly (see header).
   protected createRenderRoot(): HTMLElement {
@@ -110,6 +111,14 @@ export class VelgDriftChartHost extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     ensureComponentStyles(this);
+    // On disconnect→reconnect Lit reuses the instance but does NOT re-fire
+    // firstUpdated, so the scene would never re-initialize. Schedule a re-mount
+    // once the render root has the canvas again (mirrors SimulationWorldMap pattern).
+    if (!this._mounted && !this._offline) {
+      void this.updateComplete.then(() => {
+        if (!this._mounted && !this._offline) this._mount();
+      });
+    }
   }
 
   disconnectedCallback(): void {
@@ -131,6 +140,7 @@ export class VelgDriftChartHost extends LitElement {
   }
 
   private _mount(): void {
+    if (this._mounted) return;
     const canvas = this.querySelector<HTMLCanvasElement>('canvas.drift-chart__canvas');
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     if (!canvas || !wrap) return;
@@ -162,11 +172,13 @@ export class VelgDriftChartHost extends LitElement {
     this._chart = generateChart(SAMPLE_SEED, SAMPLE_NODE_COUNT);
 
     const aspect = this._aspect(wrap);
-    this._background = createBackground(this._chart, aspect);
+    // Pass the freq-2 (memory) color as the seed tint; overwritten on frame 1.
+    const seedTint = this._freqColors[this.frequency] ?? this._freqColors[2];
+    this._background = createBackground(this._chart, aspect, seedTint);
     this._corridors = createCorridors(this._chart);
     this._broadcasts = createBroadcasts(this._chart);
     this._nodes = createNodes(this._chart, this._freqColors);
-    this._particles = createParticles(PARTICLE_COUNT, this._pixelRatio);
+    this._particles = createParticles(PARTICLE_COUNT, this._pixelRatio, seedTint);
     this._scene.add(
       this._background.mesh,
       this._corridors.group,
@@ -190,6 +202,7 @@ export class VelgDriftChartHost extends LitElement {
 
     this._lastTime = performance.now();
     this._rafId = requestAnimationFrame(this._frame);
+    this._mounted = true;
   }
 
   private _aspect(wrap: HTMLElement): number {
@@ -297,13 +310,15 @@ export class VelgDriftChartHost extends LitElement {
         material?.dispose();
       }
     });
-    this._post?.composer.dispose();
+    this._post?.dispose();
     this._renderer?.dispose();
 
+    this._controller?.dispose();
     this._renderer = null;
     this._scene = null;
     this._post = null;
     this._controller = null;
+    this._mounted = false;
   }
 
   protected render() {
