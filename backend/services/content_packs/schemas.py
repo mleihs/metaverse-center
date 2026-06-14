@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
 # Re-use runtime models where possible: `EncounterTemplate`, `EnemyTemplate`
 # and `LootItem` already exist in backend.models.resonance_dungeon. They're
@@ -34,6 +34,15 @@ from backend.models.resonance_dungeon import (
     EncounterTemplate,
     EnemyTemplate,
     LootItem,
+)
+from backend.services.content_packs.pack_base import (
+    CONTENT_PACK_SCHEMA_VERSION,
+)
+from backend.services.content_packs.pack_base import (
+    StrictModel as _StrictModel,
+)
+from backend.services.content_packs.pack_base import (
+    VersionedPack as _VersionedPack,
 )
 
 # ── Archetype path mapping ────────────────────────────────────────────────
@@ -69,18 +78,6 @@ TIER_FIELD_FOR_ARCHETYPE: dict[str, str] = {
     "The Awakening": "awareness_tier",
     "The Overthrow": "fracture_tier",
 }
-
-
-# ── Forbid-extra base ─────────────────────────────────────────────────────
-
-
-class _StrictModel(BaseModel):
-    """Base class: unknown YAML keys raise ValidationError.
-
-    Catches author typos at load time (e.g. `desciption_en` → fail).
-    """
-
-    model_config = ConfigDict(extra="forbid")
 
 
 # ── Pack-level items (one per DB table) ───────────────────────────────────
@@ -170,15 +167,8 @@ class AbilityItem(_StrictModel):
 
 # ── Pack root types (one class per YAML file layout) ──────────────────────
 #
-# Every pack has `schema_version` so the loader can reject future
-# incompatible schemas explicitly. Increment on breaking changes; migrate
-# old packs in-place or write a one-shot upgrade script.
-
-CONTENT_PACK_SCHEMA_VERSION: int = 1
-
-
-class _VersionedPack(_StrictModel):
-    schema_version: int = CONTENT_PACK_SCHEMA_VERSION
+# Every pack carries `schema_version` (via _VersionedPack, from pack_base) so
+# the loader can reject a future incompatible schema explicitly.
 
 
 class EncounterPack(_VersionedPack):

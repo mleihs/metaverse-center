@@ -74,4 +74,18 @@
   --color-accent-green: #4ade80;
   --color-mint-brass: #b8860b;
 
+  /* === DRIFT BLEED-VECTOR PALETTE ===
+     The 7 frequency colors of the DRIFT travel chart, one per bleed vector
+     (concept §6.1 order). The Three.js renderer reads these via getComputedStyle
+     (the token bridge — the canvas palette comes from the design system, not
+     duplicated constants). Indices match traveler_profiles.affinities key order
+     and the chart frequency_mask bits. */
+  --drift-freq-0: #d8a64a; /* commerce     — Handel */
+  --drift-freq-1: #5fd4e8; /* language     — Sprache */
+  --drift-freq-2: #9a7fe8; /* memory       — Gedächtnis (P0 vector) */
+  --drift-freq-3: #5fe8a0; /* resonance    — Resonanz */
+  --drift-freq-4: #7fa6d8; /* architecture — Architektur (P0 pair) */
+  --drift-freq-5: #c75fe8; /* dream        — Traum */
+  --drift-freq-6: #e85f7f; /* desire       — Begehren */
+
 }

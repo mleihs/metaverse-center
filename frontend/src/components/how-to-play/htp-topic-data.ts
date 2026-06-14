@@ -74,7 +74,8 @@ export type TopicSlug =
   | 'diplomacy'
   | 'advanced'
   | 'terminal'
-  | 'dungeons';
+  | 'dungeons'
+  | 'drift';
 
 export type CalloutType = 'info' | 'tip' | 'warn' | 'danger';
 
@@ -129,7 +130,7 @@ export interface TopicDefinition {
 // Re-export for consumer convenience
 export type { IconKey } from '../../utils/icons.js';
 
-/** All 12 topic definitions, ordered as they appear in the grid. */
+/** All topic definitions, ordered as they appear in the grid. */
 export const TOPICS: TopicDefinition[] = [
   // ────────────────────────────────────────────────────────────────────────
   // 01: THE SIMULATION WORLD
@@ -1068,6 +1069,135 @@ export const TOPICS: TopicDefinition[] = [
       },
     ],
     related: ['terminal', 'agents', 'operatives', 'advanced'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 16: THE DRIFT (travel game)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'drift',
+    title: msg('The Drift'),
+    icon: 'antenna',
+    description: msg(
+      'A solo push-your-luck travel game across the multiverse – pilot a carrier through the Drift between worlds.',
+    ),
+    accent: '--color-primary',
+    readTime: msg('7 min'),
+    tldr: () => [
+      msg(
+        'A solo travel game layered on the multiverse: pilot a Träger (carrier) across the Driftkarte, the chart of every connected world.',
+      ),
+      msg(
+        'Survey nodes to build Vermessung (your haul), then choose – bank it safe at home, or push deeper for more.',
+      ),
+      msg(
+        'Balance Kohärenz, Bandbreite and Dissonanz against a closing stay-window. Let your coherence fray to nothing and the run collapses.',
+      ),
+      msg(
+        'Carry Depeschen to foreign worlds; a collapse scatters your lost cargo as echoes into the worlds it was bound for.',
+      ),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'The Drift is a solo travel game layered over the multiverse. You pilot a Träger – a carrier – out from your home world and across the Driftkarte, the living chart of every connected simulation. Between the worlds lies the Drift itself: an unstable medium of broadcast-noise and bleed where coherence frays the deeper you go. Every excursion is a wager against it.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('Alpha feature'),
+            text: msg(
+              'The Drift is in alpha and opens only when your platform operator enables it. If a simulation shows no Drift tab, the mode is not switched on for this deployment yet.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'The core loop is push-your-luck. You set out, move from node to node, and survey each new world or waypoint you reach – every first arrival adds Vermessung to your haul. But surveying is worth nothing until you carry it home: bank it at your home broadcast and it is locked in for good; lose the run before you return and the entire haul is gone. The whole game lives in the tension between one more crossing and the safe road back.',
+        ),
+      },
+      {
+        kind: 'readout',
+        title: msg('Your gauges, and the window'),
+        data: () => [
+          {
+            label: msg('Kohärenz (KH)'),
+            value: msg(
+              'Your hold on yourself. Starts at 100; deep Drift and emergency moves erode it. At 0 the run collapses.',
+            ),
+          },
+          {
+            label: msg('Bandbreite (BB)'),
+            value: msg(
+              'Movement fuel. Every crossing spends it; at 0 you can still limp on Notfrequenz, paying in Kohärenz instead.',
+            ),
+          },
+          {
+            label: msg('Dissonanz (DZ)'),
+            value: msg(
+              'The Drift’s pressure on you. Rises the deeper and longer you travel; past a threshold it bleeds Kohärenz.',
+            ),
+          },
+          {
+            label: msg('Aufenthaltsfenster'),
+            value: msg(
+              'Your stay-window, counted in Takte (turns). Let it run out while abroad and you are stranded – a collapse.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'tip',
+            label: msg('Depeschen'),
+            text: msg(
+              'Foreign worlds post Depeschen – dispatches asking you to carry a piece of cargo across the Drift. Deliver one to its destination and it lands real consequences there: a faint echo, a fresh event, a memory in an agent’s mind, all filtered through that world’s hospitality.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Hospitality'),
+            text: msg(
+              'Every world decides how open it is to the Drift: geschlossen (closed), nur Echos (echoes only), standard, or offen (open). A closed world turns your delivery away; a generous one lets it ripple deep. You cannot force a threshold – only respect it.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'Be the first traveller ever to chart a node and you win an Erstvermessung – a permanent seal that stands on the shared Driftkarte under your name, plus Vermessungspunkte toward your clearance rank. First-to-chart is decided once, for everyone: the seal is yours until the world ends.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'danger',
+            label: msg('Collapse, and the scatter'),
+            text: msg(
+              'If your Kohärenz hits 0, or your window expires while you are still abroad, the run collapses. You are snapped home empty-handed and the haul is lost. And the Depeschen you carried do not simply vanish: they scatter as faint echoes into the very worlds they were bound for – the deliveries that never arrived. Pushing too far leaves a mark on the map.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('Rückzug'),
+            text: msg(
+              'Sense a collapse coming? Call a Rückzug and retreat. You forfeit any carried cargo, but cleanly – no scatter – and you keep every node you surveyed. Knowing when to fold is the skill the Drift rewards.',
+            ),
+          },
+        ],
+      },
+    ],
+    related: ['map', 'world', 'diplomacy'],
   },
 ];
 

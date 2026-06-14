@@ -1,0 +1,392 @@
+/* VelgDriftChartHost — light-DOM component CSS (injected via ?inline + getRootNode).
+   Light DOM has no shadow encapsulation, so every selector is BEM-scoped under
+   .drift-chart to avoid leaking. Tokens only — no raw colors. */
+
+velg-drift-chart {
+  display: block;
+}
+
+.drift-chart {
+  /* Explicit height bounds the MapLibre/canvas ResizeObserver chain — a flex/auto
+     height lets the WebGL canvas grow unbounded (the documented 23000px bug). */
+  position: relative;
+  width: 100%;
+  height: clamp(540px, calc(100vh - 240px), 880px);
+  min-height: 0;
+  background: var(--color-surface-sunken);
+  border: var(--border-width-thin) solid var(--color-border);
+  overflow: hidden;
+}
+
+.drift-chart__viewport {
+  position: relative; /* the absolute canvas anchors here */
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.drift-chart__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* The pan/zoom controller owns pointer gestures; disable native touch panning. */
+  touch-action: none;
+  cursor: grab;
+}
+
+.drift-chart__canvas:active {
+  cursor: grabbing;
+}
+
+/* ── World-name labels (broadcast_rand homes) ───────────────────────────────
+   HTML chips over the canvas, anchored centred-above each home node and
+   re-projected every frame in JS (left/top). Declassified-chart annotation:
+   tracked Courier on a near-black chip with a thin border + a connector tick
+   down to the node glyph. The traveller's current world takes the amber accent.
+   pointer-events: none so the canvas keeps every pan/zoom/pick gesture. */
+.drift-chart__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: var(--z-raised);
+}
+
+.drift-chart__label {
+  position: absolute;
+  /* left/top are the node's screen point (set per frame); lift the chip
+     centred above it, leaving room for the connector tick. */
+  transform: translate(-50%, calc(-100% - var(--space-2)));
+  padding: var(--space-0-5) var(--space-2);
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-brutalist);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+  border: var(--border-width-thin) solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+  animation: drift-label-in var(--duration-entrance) var(--ease-out) both;
+}
+
+/* The connector tick from the chip's bottom-centre down to the node. */
+.drift-chart__label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(-1 * var(--space-2));
+  width: var(--border-width-thin);
+  height: var(--space-2);
+  transform: translateX(-50%);
+  background: var(--color-border);
+}
+
+/* The world the traveller is standing on — amber accent, brighter chip. */
+.drift-chart__label--position {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.drift-chart__label--position::after {
+  background: var(--color-primary);
+}
+
+@keyframes drift-label-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-chart__label {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* ── Erstvermessung seals (chart_honors / C4) ───────────────────────────────
+   A surveyor's claim seal stamped onto each charted node: an octagonal Bureau
+   medallion bearing a compass-rose first-survey mark, planted just right of the
+   node glyph and re-projected every frame. A muted hollow medallion marks another
+   traveller's first-survey; the amber --self variant (filled, glowing) marks the
+   viewer's own. Offset to the node's right so it never collides with a home label
+   sitting above. pointer-events: none keeps every pan/zoom/pick gesture on canvas. */
+.drift-chart__seals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: var(--z-raised);
+}
+
+/* Positioning box — left/top are the node's screen point (set per frame); the
+   transform plants the medallion to the node's right, vertically centred. */
+.drift-chart__seal {
+  position: absolute;
+  /* --seal-scale (set per frame from the zoom) makes the medallion shrink/grow with the
+     map instead of staying a fixed-size pin; the stamp animation lives on the inner. */
+  transform: translate(var(--space-3), -50%) scale(var(--seal-scale, 1));
+  display: block;
+  pointer-events: none;
+}
+
+/* The pressed medallion: presses in like a stamp, carries the hard offset shadow.
+   The stamp scale lives here (not on the positioning box) so the per-frame left/top
+   never fights the entrance transform. */
+.drift-chart__seal-inner {
+  position: relative;
+  display: block;
+  width: var(--space-5);
+  height: var(--space-5);
+  filter: drop-shadow(2px 2px 0 var(--color-surface-sunken));
+  transform-origin: center;
+  animation: drift-seal-stamp 900ms var(--ease-out) both;
+}
+
+/* Octagon backing — a frame ring (the element) wrapping an inset face (::before). */
+.drift-chart__seal-stamp {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  background: var(--color-text-muted);
+}
+
+.drift-chart__seal-stamp::before {
+  content: '';
+  position: absolute;
+  inset: var(--border-width-default);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  background: var(--color-surface-sunken);
+}
+
+/* The compass-rose first-survey mark, centred and upright over the medallion.
+   The glyph sizes itself via the icons.compassRose(14) argument (the single source
+   of truth for the mark size); this layer only centres it over the octagon. */
+.drift-chart__seal-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+/* The viewer's own first-survey — amber medallion, lit face, glowing, heavier. */
+.drift-chart__seal--self .drift-chart__seal-inner {
+  filter: drop-shadow(2px 2px 0 var(--color-surface-sunken))
+    drop-shadow(0 0 5px color-mix(in srgb, var(--color-primary) 60%, transparent));
+}
+
+.drift-chart__seal--self .drift-chart__seal-stamp {
+  background: var(--color-primary);
+}
+
+.drift-chart__seal--self .drift-chart__seal-stamp::before {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface-sunken));
+}
+
+.drift-chart__seal--self .drift-chart__seal-mark {
+  color: var(--color-primary);
+}
+
+/* The Erstvermessung ceremony: the seal presses down like a stamp, overshooting
+   past its mark before settling — a first-to-chart claim taking the board. */
+@keyframes drift-seal-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-chart__seal-inner {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* ── Hover dossier (inspect a node without moving there) ─────────────────────
+   A brutalist Bureau readout anchored beside the hovered node (left/top set per
+   frame in JS, flipped at the edges). Eyebrow + name, then the node's active
+   bleed vectors, its distance band (near→deep risk colour), and which vectors
+   bleed through the corridors here. pointer-events: none so it never steals the
+   canvas gesture or its own hover; offset from the node so the cursor stays clear. */
+.drift-chart__dossier {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: var(--z-tooltip);
+  width: max-content;
+  max-width: 240px;
+  padding: var(--space-2-5) var(--space-3);
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-left: var(--border-width-thick) solid var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  animation: drift-dossier-in var(--duration-fast) var(--ease-out) both;
+}
+
+.drift-chart__dossier-eyebrow {
+  margin: 0 0 var(--space-0-5);
+  font-family: var(--font-brutalist);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: var(--color-text-muted);
+}
+
+.drift-chart__dossier-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-brutalist);
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+.drift-chart__dossier-rows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+
+.drift-chart__dossier-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.drift-chart__dossier-row dt {
+  font-family: var(--font-brutalist);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-muted);
+}
+
+.drift-chart__dossier-row dd {
+  margin: 0;
+}
+
+.drift-chart__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5);
+}
+
+.drift-chart__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.drift-chart__chip-dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border: var(--border-width-thin) solid color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+}
+
+.drift-chart__dossier-band {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.drift-chart__dossier-band--near {
+  color: var(--color-success);
+}
+
+.drift-chart__dossier-band--mid {
+  color: var(--color-warning);
+}
+
+.drift-chart__dossier-band--deep {
+  color: var(--color-danger);
+}
+
+.drift-chart__dossier-none {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+@keyframes drift-dossier-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-chart__dossier {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* ── Offline fallback (WebGL2 unavailable) ──────────────────────────────────
+   Brutalist dossier-stamp framing: dashed border, tracked Courier heading. */
+.drift-chart--offline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: clamp(540px, calc(100vh - 240px), 880px);
+  padding: var(--space-8);
+  text-align: center;
+  background: var(--color-surface-sunken);
+  border: var(--border-width-default) dashed var(--color-border);
+}
+
+.drift-chart__offline-title {
+  margin: 0;
+  font-family: var(--font-brutalist);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-brutalist);
+  color: var(--color-warning);
+}
+
+.drift-chart__offline-body {
+  margin: 0;
+  max-width: 42ch;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}

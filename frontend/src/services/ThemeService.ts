@@ -181,7 +181,13 @@ function computeAnimationDurations(speed: number): Record<string, string> {
 
 class ThemeService {
   private styleElement: HTMLStyleElement | null = null;
-  private appliedTokens: string[] = [];
+  /**
+   * Inline tokens applied per host element. Keyed by host so the service can theme
+   * multiple hosts at once — the simulation shell AND a platform-level view that
+   * re-asserts platform-dark on its own host (e.g. the DRIFT Zwischenraum). A single
+   * shared list would let one host's clear-before-reapply corrupt the other's tokens.
+   */
+  private appliedTokensByHost = new WeakMap<HTMLElement, string[]>();
 
   /**
    * Load design settings for the given simulation and apply them
@@ -385,7 +391,7 @@ class ThemeService {
       tokensApplied.push('--font-prose');
     }
 
-    this.appliedTokens = tokensApplied;
+    this.appliedTokensByHost.set(hostElement, tokensApplied);
 
     // 10. Dynamically load any Google Fonts referenced by the config
     const fontKeys = ['font_heading', 'font_body', 'font_mono'] as const;
@@ -400,7 +406,6 @@ class ThemeService {
     this.clearInlineTokens(hostElement);
     delete hostElement.dataset.simulation;
     this.removeCustomStyleElement();
-    this.appliedTokens = [];
   }
 
   // ensureGoogleFonts removed — fonts are now loaded on demand via loadGoogleFont()
@@ -409,12 +414,15 @@ class ThemeService {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  /** Remove only the tokens we applied (avoids clearing unrelated inline styles). */
+  /** Remove only the tokens we applied to THIS host (avoids clearing unrelated inline
+   *  styles, and avoids one host's reset touching another host's tokens). */
   private clearInlineTokens(hostElement: HTMLElement): void {
-    for (const token of this.appliedTokens) {
+    const tokens = this.appliedTokensByHost.get(hostElement);
+    if (!tokens) return;
+    for (const token of tokens) {
       hostElement.style.removeProperty(token);
     }
-    this.appliedTokens = [];
+    this.appliedTokensByHost.delete(hostElement);
   }
 
   /**
