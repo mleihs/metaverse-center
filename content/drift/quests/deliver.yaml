@@ -1,0 +1,137 @@
+# Drift Depesche templates — deliver family.
+#
+# Each entry becomes one `travel_quest_templates` row. The quest family
+# ('deliver') is the filename and is injected by the loader, so it is not
+# repeated per item. The loader assembles the `definition` JSONB the runtime
+# reads from cargo + effects + prose.
+#
+# Authored bilingual (de + en). {sim} = target world name and {agent} = target
+# agent name are the ONLY tokens the hospitality gate substitutes at delivery;
+# any other {placeholder} fails validation. En dashes only, no em dashes.
+#
+# Cargo family <-> vector pairing is 1:1 and validated (travel_schema.py).
+# Effect shape is kind-dependent: emit_echo + spawn_event require a bilingual
+# title; inject_agent_memory requires `importance`; spawn_event requires
+# `impact_level`.
+#
+# Regenerate the seed after editing:
+#   .venv/bin/python -m backend.services.content_packs.generate_drift_migration \
+#     --output supabase/migrations/<ts>_<n>_drift_content_seed.sql
+schema_version: 1
+pack_slug: drift_p0c_seed
+quests:
+  # (1) erinnerungsstuecke / memory — the original P0c seed, prose-complete.
+  - template_key: deliver_memory_parcel
+    tier: 1
+    cargo: { family: erinnerungsstuecke, vector: memory }
+    effects:
+      - kind: emit_fragment
+        text_de: "Ich habe ein Erinnerungsstück über den Drift getragen. An der Schwelle wurde es kurz schwer, als wöge die fremde Erinnerung mehr als die eigene."
+        text_en: "I carried a memory-relic across the Drift. At the threshold it grew briefly heavy, as if the borrowed memory weighed more than my own."
+      - kind: emit_echo
+        title_de: "Echo aus dem Drift"
+        title_en: "Echo from the Drift"
+        text_de: "Ein verklingendes Echo streift {sim}. Irgendwo in der Nähe hat eine Erinnerung, die nicht hierher gehört, die Schwelle berührt."
+        text_en: "A fading echo brushes {sim}. Somewhere close, a memory that does not belong here has touched the threshold."
+      - kind: inject_agent_memory
+        importance: 4
+        text_de: "Ein Träger brachte {agent} ein Erinnerungsstück aus einer anderen Welt. Es zeigt einen Ort, den es hier nie gegeben hat, und doch kommt er bekannt vor."
+        text_en: "A courier brought {agent} a memory-relic from another world. It shows a place that never existed here, and yet it feels familiar."
+      - kind: spawn_event
+        impact_level: 3
+        title_de: "Drift-Depesche · Erinnerungsstück"
+        title_en: "Drift Dispatch · Memory-Relic"
+        text_de: "In {sim} ist ein Erinnerungsstück aus dem Drift eingetroffen. Wer es ansieht, erinnert sich an Dinge, die nie geschehen sind."
+        text_en: "A memory-relic from the Drift has arrived in {sim}. Those who look at it remember things that never happened."
+    prose:
+      title_de: "Depesche · Erinnerungsstück"
+      title_en: "Dispatch · Memory-Relic"
+      brief_de: "Ein Erinnerungsstück will über den Drift getragen werden, ein Gegenstand, der sich an einen anderen Ort erinnert."
+      brief_en: "A memory-relic asks to be carried across the Drift, an object that remembers somewhere else."
+
+  # (2) kontrakte / commerce — a sealed obligation honored in another world.
+  - template_key: deliver_sealed_contract
+    tier: 1
+    cargo: { family: kontrakte, vector: commerce }
+    effects:
+      - kind: emit_fragment
+        text_de: "Ich habe einen versiegelten Kontrakt über den Drift getragen. Solange das Wachs hielt, fühlte sich die Reise an wie eine Schuld, die ich noch nicht kannte."
+        text_en: "I carried a sealed contract across the Drift. As long as the wax held, the journey felt like a debt I did not yet know I owed."
+      - kind: emit_echo
+        title_de: "Echo aus dem Drift"
+        title_en: "Echo from the Drift"
+        text_de: "Ein verklingendes Echo streift {sim}. Eine Unterschrift, die niemand hier geleistet hat, beginnt zu binden."
+        text_en: "A fading echo brushes {sim}. A signature no one here ever made begins to bind."
+      - kind: inject_agent_memory
+        importance: 4
+        text_de: "Ein Träger legte {agent} einen versiegelten Kontrakt aus einer anderen Welt vor. Die Klauseln sind in einer Hand geschrieben, die {agent} zu kennen glaubt."
+        text_en: "A courier presented {agent} a sealed contract from another world. Its clauses are written in a hand {agent} believes they recognise."
+      - kind: spawn_event
+        impact_level: 3
+        title_de: "Drift-Depesche · Versiegelter Kontrakt"
+        title_en: "Drift Dispatch · Sealed Contract"
+        text_de: "In {sim} wurde ein Kontrakt aus dem Drift eingelöst. Eine Abmachung gilt nun, die diese Welt nie geschlossen hat."
+        text_en: "A contract from the Drift has been honored in {sim}. An agreement now holds that this world never made."
+    prose:
+      title_de: "Depesche · Versiegelter Kontrakt"
+      title_en: "Dispatch · Sealed Contract"
+      brief_de: "Ein versiegelter Kontrakt sucht den Ort, an dem er eingelöst werden muss. Das Siegel darf erst am Ziel brechen."
+      brief_en: "A sealed contract seeks the place where it must be honored. The seal may break only at its destination."
+
+  # (3) idiome / language — an untranslatable phrase carried to a world without it.
+  - template_key: deliver_borrowed_idiom
+    tier: 1
+    cargo: { family: idiome, vector: language }
+    effects:
+      - kind: emit_fragment
+        text_de: "Ich habe ein Idiom über den Drift getragen, das sich nicht übersetzen lässt. Unterwegs ertappte ich mich, wie ich in einer Sprache dachte, die ich nie gelernt habe."
+        text_en: "I carried an idiom across the Drift that cannot be translated. On the way I caught myself thinking in a language I never learned."
+      - kind: emit_echo
+        title_de: "Echo aus dem Drift"
+        title_en: "Echo from the Drift"
+        text_de: "Ein verklingendes Echo streift {sim}. Ein Satz, den niemand hier sprechen kann, hängt einen Moment in der Luft."
+        text_en: "A fading echo brushes {sim}. A sentence no one here can speak hangs in the air for a moment."
+      - kind: inject_agent_memory
+        importance: 4
+        text_de: "Ein Träger sprach {agent} ein Idiom aus einer anderen Welt vor. {agent} versteht es nicht, und kann es trotzdem nicht mehr vergessen."
+        text_en: "A courier spoke {agent} an idiom from another world. {agent} does not understand it, and still cannot forget it."
+      - kind: spawn_event
+        impact_level: 3
+        title_de: "Drift-Depesche · Geliehenes Idiom"
+        title_en: "Drift Dispatch · Borrowed Idiom"
+        text_de: "In {sim} ist eine Redewendung aus dem Drift angekommen. Sie hat hier noch keine Bedeutung, aber die Münder formen sie schon."
+        text_en: "A turn of phrase from the Drift has reached {sim}. It has no meaning here yet, but the mouths are already shaping it."
+    prose:
+      title_de: "Depesche · Geliehenes Idiom"
+      title_en: "Dispatch · Borrowed Idiom"
+      brief_de: "Eine Redewendung, für die es hier kein Wort gibt, will in eine Welt getragen werden, die sie noch nicht kennt."
+      brief_en: "A turn of phrase with no word for it here wants carrying to a world that does not yet know it."
+
+  # (4) traumfracht / dream — volatile dream-freight that must arrive before waking.
+  - template_key: deliver_dream_cargo
+    tier: 2
+    cargo: { family: traumfracht, vector: dream }
+    effects:
+      - kind: emit_fragment
+        text_de: "Ich habe Traumfracht über den Drift getragen. Sie wollte ständig woanders sein als in meinen Händen, und einmal träumte ich ihren Inhalt, statt ihn zu tragen."
+        text_en: "I carried dream-freight across the Drift. It kept wanting to be anywhere but in my hands, and once I dreamed its contents instead of carrying them."
+      - kind: emit_echo
+        title_de: "Echo aus dem Drift"
+        title_en: "Echo from the Drift"
+        text_de: "Ein verklingendes Echo streift {sim}. Für einen Lidschlag träumt die Stadt etwas, das ihr nicht gehört."
+        text_en: "A fading echo brushes {sim}. For the space of a blink the city dreams something that is not its own."
+      - kind: inject_agent_memory
+        importance: 4
+        text_de: "Ein Träger überließ {agent} eine Traumfracht aus einer anderen Welt. {agent} wird heute Nacht etwas träumen, das jemand anderes erfunden hat."
+        text_en: "A courier left {agent} a dream-freight from another world. Tonight {agent} will dream something that someone else invented."
+      - kind: spawn_event
+        impact_level: 3
+        title_de: "Drift-Depesche · Traumfracht"
+        title_en: "Drift Dispatch · Dream-Freight"
+        text_de: "In {sim} ist Traumfracht aus dem Drift eingetroffen. Am Rand des Schlafs sickert etwas Fremdes in die Welt."
+        text_en: "Dream-freight from the Drift has arrived in {sim}. At the edge of sleep something foreign seeps into the world."
+    prose:
+      title_de: "Depesche · Traumfracht"
+      title_en: "Dispatch · Dream-Freight"
+      brief_de: "Flüchtige Traumfracht, luzide und ungeduldig. Sie muss ankommen, bevor sie sich beim Wachwerden auflöst."
+      brief_en: "Volatile dream-freight, lucid and impatient. It must arrive before waking dissolves it."

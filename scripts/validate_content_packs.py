@@ -25,6 +25,7 @@ Usage:
     python scripts/validate_content_packs.py
     python scripts/validate_content_packs.py --strict
     python scripts/validate_content_packs.py --root /path/to/content/dungeon
+    python scripts/validate_content_packs.py --domain drift --strict
 """
 
 from __future__ import annotations
@@ -40,13 +41,16 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.services.content_packs.loader import (  # noqa: E402
-    DEFAULT_PACK_ROOT,
     PackLoadResult,
     load_packs,
 )
 from backend.services.content_packs.schemas import (  # noqa: E402
     ARCHETYPE_NAME_TO_SLUG,
     ARCHETYPE_SLUG_TO_NAME,
+)
+from backend.services.content_packs.travel_loader import (  # noqa: E402
+    QuestTemplateRecord,
+    load_quest_templates,
 )
 
 
@@ -72,6 +76,24 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     warnings.extend(_check_choice_narrative_coverage(result))
 
     return violations, warnings
+
+
+def validate_drift(records: list[QuestTemplateRecord]) -> tuple[list[str], list[str]]:
+    """Cross-file invariants for the drift (travel) pack.
+
+    Per-item invariants (family/vector pairing, effect shape, bilingual
+    completeness, prose-token sanity) are enforced by the Pydantic models at
+    load time. The only cross-item invariant is `template_key` global
+    uniqueness — the soft FK target that `travel_quest_instances` references.
+    """
+    violations: list[str] = []
+    keys = [record.template_key for record in records]
+    for dup, count in Counter(keys).items():
+        if count > 1:
+            violations.append(
+                f"quest template_key '{dup}' appears {count}× (must be globally unique)"
+            )
+    return violations, []
 
 
 # ── Invariants ───────────────────────────────────────────────────────────
@@ -168,12 +190,18 @@ def _check_choice_narrative_coverage(result: PackLoadResult) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate dungeon content packs.")
+    parser = argparse.ArgumentParser(description="Validate content packs.")
+    parser.add_argument(
+        "--domain",
+        choices=("dungeon", "drift"),
+        default="dungeon",
+        help="Which content domain to validate (default: dungeon).",
+    )
     parser.add_argument(
         "--root",
         type=Path,
         default=None,
-        help=f"Pack root (defaults to {DEFAULT_PACK_ROOT}).",
+        help="Pack root (defaults to the domain's content/ root).",
     )
     parser.add_argument(
         "--strict",
@@ -183,12 +211,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        result = load_packs(args.root)
+        if args.domain == "drift":
+            records = load_quest_templates(args.root)
+            violations, warnings = validate_drift(records)
+            summary = f"{len(records)} drift quest template(s)"
+        else:
+            result = load_packs(args.root)
+            violations, warnings = validate(result)
+            summary = result.summary()
     except Exception as exc:  # pydantic.ValidationError or yaml.YAMLError
         print(f"STRUCTURAL ERROR: {exc}", file=sys.stderr)
         return 2
-
-    violations, warnings = validate(result)
 
     if warnings:
         print(f"{len(warnings)} warning(s):", file=sys.stderr)
@@ -205,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
         print("FAILED: --strict enabled and warnings present", file=sys.stderr)
         return 1
 
-    print(f"OK: {result.summary()}")
+    print(f"OK: {summary}")
     return 0
 
 
