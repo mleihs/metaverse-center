@@ -31,7 +31,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import * as THREE from 'three';
 
 import { captureError } from '../../services/SentryService.js';
-import type { DriftChart, TravelRun } from '../../types/drift.js';
+import type { DriftChart, DriftChartNode, TravelRun } from '../../types/drift.js';
 import { icons } from '../../utils/icons.js';
 import { generateChart } from './chart/generate.js';
 import type { ChartData, FrameCtx } from './chart/types.js';
@@ -40,7 +40,7 @@ import { PanZoomController } from './controls/panzoom.js';
 // containing scope — a plain import would auto-inject into document.head and
 // never reach an ancestor shadow root. See SimulationWorldMap for the rationale.
 import COMPONENT_CSS from './drift-chart.css?inline';
-import { readFreqPalette } from './palette.js';
+import { FREQUENCIES, freqColorByName, readFreqPalette } from './palette.js';
 import { createComposer } from './post/composer.js';
 import { createBackground } from './scene/background.js';
 import { createBroadcasts } from './scene/broadcasts.js';
@@ -76,6 +76,56 @@ const easeInOutCubic = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - (-2
 /** One Erstvermessung claim to stamp on the board: a charted node + whether it's mine. */
 type SealDatum = { key: string; x: number; y: number; mine: boolean };
 
+/** German display label for a node type (the dossier eyebrow / interstitial title). */
+function nodeTypeLabel(type: string): string {
+  switch (type) {
+    case 'broadcast_rand':
+      return msg('Broadcast-Welt');
+    case 'interstitial':
+      return msg('Zwischenraum');
+    case 'tiefdrift-core':
+      return msg('Tiefdrift-Kern');
+    default:
+      return type;
+  }
+}
+
+/** German display label for a distance band (near→deep is the push-your-luck risk read). */
+function distanceBandLabel(band: string): string {
+  switch (band) {
+    case 'near':
+      return msg('Nah');
+    case 'mid':
+      return msg('Mittel');
+    case 'deep':
+      return msg('Tief');
+    default:
+      return band;
+  }
+}
+
+/** German display label for a bleed vector (palette FREQUENCIES order, index 0–6). */
+function vectorLabel(vector: string): string {
+  switch (vector) {
+    case 'commerce':
+      return msg('Handel');
+    case 'language':
+      return msg('Sprache');
+    case 'memory':
+      return msg('Gedächtnis');
+    case 'resonance':
+      return msg('Resonanz');
+    case 'architecture':
+      return msg('Architektur');
+    case 'dream':
+      return msg('Traum');
+    case 'desire':
+      return msg('Begehren');
+    default:
+      return vector;
+  }
+}
+
 @localized()
 @customElement('velg-drift-chart')
 export class VelgDriftChartHost extends LitElement {
@@ -95,6 +145,8 @@ export class VelgDriftChartHost extends LitElement {
   @property({ attribute: false }) selfKeys: Set<string> = new Set();
 
   @state() private _offline = false;
+  /** The node under the cursor — drives the hover dossier (inspect without moving). */
+  @state() private _hoverNode: DriftChartNode | null = null;
 
   // Three.js graph — created on mount, disposed on teardown.
   private _renderer: THREE.WebGLRenderer | null = null;
@@ -118,6 +170,8 @@ export class VelgDriftChartHost extends LitElement {
   private _pixelRatio = 1;
   private _tween: { from: number; to: number; start: number; dur: number } | null = null;
   private _tune = 2;
+  // The framed-to-graph view height — the reference zoom at which seals render ~1×.
+  private _refViewHeight = INITIAL_VIEW_HEIGHT;
   private readonly _tint = new THREE.Color();
   private _mounted = false;
   private _pointerDownAt: { x: number; y: number; t: number } | null = null;
@@ -186,6 +240,14 @@ export class VelgDriftChartHost extends LitElement {
     // freshly-rendered seal elements (declared in render(); no imperative rebuild).
     if (changed.has('claimedKeys') || changed.has('selfKeys') || changed.has('chartData')) {
       this._resyncSeals();
+    }
+    // Hover dossier: drop a stale hover if the topology changed, else anchor a fresh
+    // hover beside its node before paint (the frame loop then keeps it glued on pan).
+    if (changed.has('chartData') && this._hoverNode) {
+      this._hoverNode = null;
+    } else if (changed.has('_hoverNode') && this._hoverNode) {
+      const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
+      if (wrap) this._positionDossier(wrap);
     }
   }
 
@@ -423,7 +485,12 @@ export class VelgDriftChartHost extends LitElement {
     const fitH = Math.max(maxY - minY, (maxX - minX) / aspect) * 1.25 + 200;
     // frameTo sets BOTH live + target zoom; a bare viewHeight assignment is eased
     // back to the controller's initial target on the next frame (the ring overflowed).
-    this._controller.frameTo({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, Math.max(420, fitH));
+    const fitView = Math.max(420, fitH);
+    // Reference zoom for the seal scale: ~1× at the framed view, then the seals shrink
+    // when you zoom out (so they don't dwarf the shrinking nodes) and grow when you zoom
+    // in — both clamped in _frame so a claim marker never vanishes or turns gigantic.
+    this._refViewHeight = fitView;
+    this._controller.frameTo({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, fitView);
   }
 
   /** Push the traveler's position + reachable neighbours into the graph highlight. */
@@ -449,17 +516,10 @@ export class VelgDriftChartHost extends LitElement {
     this._pointerDownAt = { x: e.clientX, y: e.clientY, t: performance.now() };
   };
 
-  // A click (little movement, short dwell) on a reachable node emits a move intent;
-  // a drag is a pan and is ignored. The server still authorises the move (the RPC
-  // validates the edge) — adjacency here only gates the click + the highlight.
-  private _onPointerUp = (e: PointerEvent): void => {
-    const down = this._pointerDownAt;
-    this._pointerDownAt = null;
-    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
-    if (performance.now() - down.t > 500) return;
-    if (!this._controller || !this._gameGraph) return;
-
-    const world = this._controller.screenToWorld(e.offsetX, e.offsetY);
+  /** The gameplay node nearest a canvas point, within a forgiving tap radius (or null). */
+  private _nodeAt(offsetX: number, offsetY: number): string | null {
+    if (!this._controller || !this._gameGraph) return null;
+    const world = this._controller.screenToWorld(offsetX, offsetY);
     const radius = 30 * this._controller.unitsPerPixel; // forgiving tap target
     let bestId: string | null = null;
     let bestDist = radius;
@@ -470,6 +530,18 @@ export class VelgDriftChartHost extends LitElement {
         bestId = node.id;
       }
     }
+    return bestId;
+  }
+
+  // A click (little movement, short dwell) on a reachable node emits a move intent;
+  // a drag is a pan and is ignored. The server still authorises the move (the RPC
+  // validates the edge) — adjacency here only gates the click + the highlight.
+  private _onPointerUp = (e: PointerEvent): void => {
+    const down = this._pointerDownAt;
+    this._pointerDownAt = null;
+    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
+    if (performance.now() - down.t > 500) return;
+    const bestId = this._nodeAt(e.offsetX, e.offsetY);
     if (bestId && this._adjacentIds.has(bestId)) {
       this.dispatchEvent(
         new CustomEvent('drift-node-pick', {
@@ -480,6 +552,60 @@ export class VelgDriftChartHost extends LitElement {
       );
     }
   };
+
+  // Hover dossier: surface the node under the cursor for inspection (no move). Suppressed
+  // mid-drag (the pan owns the gesture); the cursor turns into a pointer over a pickable
+  // node so the inspect/click affordance reads.
+  private _onPointerMove = (e: PointerEvent): void => {
+    if (this._pointerDownAt) {
+      if (this._hoverNode) this._hoverNode = null;
+      return;
+    }
+    const id = this._nodeAt(e.offsetX, e.offsetY);
+    (e.currentTarget as HTMLElement).style.cursor = id ? 'pointer' : '';
+    if (id !== (this._hoverNode?.id ?? null)) {
+      this._hoverNode = id ? (this.chartData?.nodes.find((n) => n.id === id) ?? null) : null;
+    }
+  };
+
+  private _onPointerLeave = (): void => {
+    if (this._hoverNode) this._hoverNode = null;
+  };
+
+  /** Bleed vectors active at a node, decoded from its 7-bit frequency_mask. */
+  private _freqVectors(mask: number): string[] {
+    return FREQUENCIES.filter((_, i) => (mask & (1 << i)) !== 0);
+  }
+
+  /** Vectors that bleed through the corridors touching a node (union of edge permeability). */
+  private _permeableVectors(node: DriftChartNode): string[] {
+    const open = new Set<string>();
+    for (const e of this.chartData?.edges ?? []) {
+      if (e.from_node !== node.id && e.to_node !== node.id) continue;
+      for (const [vec, mult] of Object.entries(e.permeability)) {
+        if (mult > 0) open.add(vec);
+      }
+    }
+    return FREQUENCIES.filter((v) => open.has(v));
+  }
+
+  /** Anchor the hover dossier beside its node (upper-right by default; flips at edges). */
+  private _positionDossier(wrap: HTMLElement): void {
+    const node = this._hoverNode;
+    const el = this.querySelector<HTMLElement>('.drift-chart__dossier');
+    if (!node || !el || !this._controller) return;
+    const s = this._controller.worldToScreen(node.x, node.y);
+    const pw = el.offsetWidth;
+    const ph = el.offsetHeight;
+    let left = s.x + 18;
+    if (left + pw > wrap.clientWidth - 8) left = s.x - pw - 18;
+    left = Math.max(8, left);
+    let top = s.y - ph - 12;
+    if (top < 8) top = s.y + 18;
+    top = Math.min(top, wrap.clientHeight - ph - 8);
+    el.style.left = `${left}px`;
+    el.style.top = `${top}px`;
+  }
 
   private _frame = (now: number): void => {
     this._rafId = requestAnimationFrame(this._frame);
@@ -509,8 +635,16 @@ export class VelgDriftChartHost extends LitElement {
 
     this._controller.update(dt);
     this._applyCamera(wrap);
+    // Seals scale with the zoom (clamped) so they read as planted-on-the-map markers,
+    // not fixed-size pins that dwarf the nodes when you zoom out.
+    const sealScale = Math.max(
+      0.45,
+      Math.min(1.15, this._refViewHeight / this._controller.viewHeight),
+    );
+    wrap.style.setProperty('--seal-scale', sealScale.toFixed(3));
     this._projectLayer(this._labels, wrap);
     this._projectLayer(this._seals, wrap);
+    if (this._hoverNode) this._positionDossier(wrap); // keep the dossier glued during pan
 
     const ctx: FrameCtx = {
       time: this._elapsed,
@@ -564,6 +698,7 @@ export class VelgDriftChartHost extends LitElement {
     // willUpdate may not re-fire), so _sealData is intentionally retained as the render
     // source; only the projection refs to the now-stale DOM are dropped here.
     this._seals = [];
+    this._hoverNode = null;
     this._renderer = null;
     this._scene = null;
     this._post = null;
@@ -594,6 +729,8 @@ export class VelgDriftChartHost extends LitElement {
             class="drift-chart__canvas"
             @pointerdown=${this._onPointerDown}
             @pointerup=${this._onPointerUp}
+            @pointermove=${this._onPointerMove}
+            @pointerleave=${this._onPointerLeave}
           ></canvas>
           <!-- World-name labels (homes); imperative children, positioned each frame.
                aria-hidden: a non-visual ChartAccessibilityList is the a11y path (§11.3). -->
@@ -608,8 +745,71 @@ export class VelgDriftChartHost extends LitElement {
               (d) => this._renderSeal(d),
             )}
           </div>
+          <!-- Hover dossier (inspect a node without moving). aria-hidden: a mouse-only
+               affordance; the non-visual ChartAccessibilityList is the a11y path (§11.3). -->
+          ${this._hoverNode ? this._renderDossier(this._hoverNode) : null}
         </div>
       </div>
+    `;
+  }
+
+  /** The hover dossier: world/type, the node's active bleed vectors, its distance band,
+   *  and which vectors bleed through the corridors here — all without moving there. */
+  private _renderDossier(node: DriftChartNode) {
+    const open = this._permeableVectors(node);
+    return html`
+      <div class="drift-chart__dossier" aria-hidden="true">
+        ${
+          node.simulation_name
+            ? html`<p class="drift-chart__dossier-eyebrow">${nodeTypeLabel(node.node_type)}</p>`
+            : null
+        }
+        <p class="drift-chart__dossier-title">
+          ${node.simulation_name ?? nodeTypeLabel(node.node_type)}
+        </p>
+        <dl class="drift-chart__dossier-rows">
+          <div class="drift-chart__dossier-row">
+            <dt>${msg('Frequenzen')}</dt>
+            <dd>${this._renderVectorChips(this._freqVectors(node.frequency_mask))}</dd>
+          </div>
+          <div class="drift-chart__dossier-row">
+            <dt>${msg('Distanz')}</dt>
+            <dd>
+              <span
+                class="drift-chart__dossier-band drift-chart__dossier-band--${node.distance_band}"
+              >
+                ${distanceBandLabel(node.distance_band)}
+              </span>
+            </dd>
+          </div>
+          <div class="drift-chart__dossier-row">
+            <dt>${msg('Durchlässig')}</dt>
+            <dd>
+              ${
+                open.length
+                  ? this._renderVectorChips(open)
+                  : html`<span class="drift-chart__dossier-none">${msg('versiegelt')}</span>`
+              }
+            </dd>
+          </div>
+        </dl>
+      </div>
+    `;
+  }
+
+  private _renderVectorChips(vectors: string[]) {
+    if (!vectors.length) return html`<span class="drift-chart__dossier-none">–</span>`;
+    return html`
+      <span class="drift-chart__chips">
+        ${vectors.map(
+          (v) => html`
+            <span class="drift-chart__chip">
+              <span class="drift-chart__chip-dot" style="background:${freqColorByName(v)}"></span>
+              ${vectorLabel(v)}
+            </span>
+          `,
+        )}
+      </span>
     `;
   }
 }
