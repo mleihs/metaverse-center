@@ -33,6 +33,7 @@ from backend.models.drift import (
     DriftChartNodeResponse,
     DriftChartResponse,
     DriftDockResponse,
+    DriftHonorResponse,
     DriftTuningResponse,
     QuestAcceptResponse,
     QuestDeliverResponse,
@@ -145,6 +146,29 @@ class DriftService:
             dz_cap=int(values.get("dz_p0_cap", 20)),
             bandwidth_class_bb_max={str(k): int(v) for k, v in bb_max.items()},
         )
+
+    @staticmethod
+    async def get_chart_honors(supabase: Client, user_id: UUID) -> list[DriftHonorResponse]:
+        """Erstvermessung claims on the shared chart (chart_honors, public read). The chart
+        overlays a seal on each claimed node, keyed by node_stable_key; is_self marks the
+        caller's own claims. Holder names stay anonymous in P0 (callsign surfacing is P1b),
+        so user_id never leaves the service — it collapses to the is_self bit here."""
+        resp = await (
+            supabase.table("chart_honors")
+            .select("node_stable_key, kind, user_id, claimed_at")
+            .eq("kind", "erstvermessung")
+            .execute()
+        )
+        uid = str(user_id)
+        return [
+            DriftHonorResponse(
+                node_stable_key=row["node_stable_key"],
+                kind=row["kind"],
+                claimed_at=row["claimed_at"],
+                is_self=row.get("user_id") == uid,
+            )
+            for row in (resp.data or [])
+        ]
 
     @staticmethod
     async def regenerate_chart(admin_supabase: Client) -> ChartGenerationResponse:

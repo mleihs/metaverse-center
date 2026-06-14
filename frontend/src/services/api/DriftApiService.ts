@@ -1,6 +1,7 @@
 import type {
   DriftChart,
   DriftDock,
+  DriftHonor,
   DriftQuestAcceptResult,
   DriftQuestDeliverResult,
   DriftQuestState,
@@ -32,6 +33,11 @@ export class DriftApiService extends BaseApiService {
   /** A world's identity for the dock panel (name + lore voice + a few Träger). */
   getDock(simulationId: string): Promise<ApiResponse<DriftDock | null>> {
     return this.get(`/drift/dock/${simulationId}`);
+  }
+
+  /** Erstvermessung claims on the shared chart (seal-per-node overlay; is_self = yours). */
+  getHonors(): Promise<ApiResponse<DriftHonor[]>> {
+    return this.get('/drift/honors');
   }
 
   /** The caller's current open run, or null. */

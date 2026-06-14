@@ -119,6 +119,18 @@ class ChartGenerationResponse(BaseModel):
     edges: int
 
 
+class DriftHonorResponse(BaseModel):
+    """An Erstvermessung claim on the shared Driftkarte (chart_honors, C4). Keyed by
+    stable_key so it survives chart regeneration; the chart overlays a seal on claimed
+    nodes. is_self marks the caller's own claims (a brighter seal). Holder identity stays
+    anonymous in P0 — public callsign surfacing is P1b (§19, leaderboards)."""
+
+    node_stable_key: str
+    kind: str
+    claimed_at: datetime
+    is_self: bool = False
+
+
 # ── Dock experience (arriving at a broadcast edge) ──────────────────────────────
 
 

@@ -84,6 +84,11 @@ export class VelgDriftChartHost extends LitElement {
   /** The traveler's current run — drives the position + adjacency highlight. */
   @property({ attribute: false }) run: TravelRun | null = null;
 
+  /** Erstvermessung claims keyed by node_stable_key — a seal is planted on each. */
+  @property({ attribute: false }) claimedKeys: Set<string> = new Set();
+  /** The subset of claimedKeys the viewer owns — rendered as the amber --self seal. */
+  @property({ attribute: false }) selfKeys: Set<string> = new Set();
+
   @state() private _offline = false;
 
   // Three.js graph — created on mount, disposed on teardown.
@@ -116,6 +121,10 @@ export class VelgDriftChartHost extends LitElement {
   // HTML world-name labels over the canvas (homes only); transforms updated per frame.
   private _labelLayer: HTMLElement | null = null;
   private _labels: { el: HTMLElement; id: string; x: number; y: number }[] = [];
+
+  // Erstvermessung seals over the canvas (any claimed node); projected per frame.
+  private _sealLayer: HTMLElement | null = null;
+  private _seals: { el: HTMLElement; id: string; x: number; y: number }[] = [];
 
   // Light DOM so canvas pointer coordinates resolve correctly (see header).
   protected createRenderRoot(): HTMLElement {
@@ -158,6 +167,11 @@ export class VelgDriftChartHost extends LitElement {
     } else if (changed.has('run')) {
       this._syncRunState();
     }
+    // Honor claims can change independently of the topology (e.g. a refetch after an
+    // Entladung) — re-plant the seals without rebuilding the whole graph.
+    if ((changed.has('claimedKeys') || changed.has('selfKeys')) && this._scene) {
+      this._buildSeals();
+    }
   }
 
   private _mount(): void {
@@ -166,6 +180,7 @@ export class VelgDriftChartHost extends LitElement {
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     if (!canvas || !wrap) return;
     this._labelLayer = this.querySelector<HTMLElement>('.drift-chart__labels');
+    this._sealLayer = this.querySelector<HTMLElement>('.drift-chart__seals');
 
     try {
       this._renderer = new THREE.WebGLRenderer({
@@ -287,6 +302,7 @@ export class VelgDriftChartHost extends LitElement {
     if (this._corridors) this._corridors.group.visible = false;
     this._frameCameraToGraph();
     this._buildLabels();
+    this._buildSeals();
     this._syncRunState();
   }
 
@@ -307,18 +323,40 @@ export class VelgDriftChartHost extends LitElement {
     }
   }
 
-  /** Project each home label to screen space; cull labels panned off the viewport. */
-  private _positionLabels(wrap: HTMLElement): void {
-    if (!this._controller || !this._labels.length) return;
+  /** (Re)build the Erstvermessung seals — one stamp per claimed node (any node_type, so
+   *  interstitials count, not just homes). selfKeys gets the amber --self variant. */
+  private _buildSeals(): void {
+    const layer = this._sealLayer;
+    if (!layer) return;
+    layer.replaceChildren();
+    this._seals = [];
+    if (!this.claimedKeys.size) return;
+    for (const node of this.chartData?.nodes ?? []) {
+      if (!this.claimedKeys.has(node.stable_key)) continue;
+      const mine = this.selfKeys.has(node.stable_key);
+      const el = document.createElement('span');
+      el.className = mine ? 'drift-chart__seal drift-chart__seal--self' : 'drift-chart__seal';
+      el.title = mine ? msg('Erstvermessung – von dir') : msg('Erstvermessung – vergeben');
+      layer.appendChild(el);
+      this._seals.push({ el, id: node.id, x: node.x, y: node.y });
+    }
+  }
+
+  /** Project an overlay layer (labels or seals) to screen space; cull off-viewport. */
+  private _projectLayer(
+    items: { el: HTMLElement; x: number; y: number }[],
+    wrap: HTMLElement,
+  ): void {
+    if (!this._controller || !items.length) return;
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
-    for (const label of this._labels) {
-      const s = this._controller.worldToScreen(label.x, label.y);
+    for (const item of items) {
+      const s = this._controller.worldToScreen(item.x, item.y);
       const onscreen = s.x >= -80 && s.x <= w + 80 && s.y >= -40 && s.y <= h + 120;
-      label.el.style.display = onscreen ? 'block' : 'none';
+      item.el.style.display = onscreen ? 'block' : 'none';
       if (onscreen) {
-        label.el.style.left = `${s.x}px`;
-        label.el.style.top = `${s.y}px`;
+        item.el.style.left = `${s.x}px`;
+        item.el.style.top = `${s.y}px`;
       }
     }
   }
@@ -428,7 +466,8 @@ export class VelgDriftChartHost extends LitElement {
 
     this._controller.update(dt);
     this._applyCamera(wrap);
-    this._positionLabels(wrap);
+    this._projectLayer(this._labels, wrap);
+    this._projectLayer(this._seals, wrap);
 
     const ctx: FrameCtx = {
       time: this._elapsed,
@@ -512,6 +551,8 @@ export class VelgDriftChartHost extends LitElement {
           <!-- World-name labels (homes); imperative children, positioned each frame.
                aria-hidden: a non-visual ChartAccessibilityList is the a11y path (§11.3). -->
           <div class="drift-chart__labels" aria-hidden="true"></div>
+          <!-- Erstvermessung seals (any claimed node); same per-frame projection. -->
+          <div class="drift-chart__seals" aria-hidden="true"></div>
         </div>
       </div>
     `;

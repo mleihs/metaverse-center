@@ -70,6 +70,15 @@ export interface DriftChart {
   edges: DriftChartEdge[];
 }
 
+/** An Erstvermessung claim on the shared chart (chart_honors, first-write-wins / C4).
+ *  Keyed by node_stable_key so it survives regeneration; is_self marks the caller's own. */
+export interface DriftHonor {
+  node_stable_key: string;
+  kind: 'erstvermessung' | 'erstkontakt';
+  claimed_at: string;
+  is_self: boolean;
+}
+
 /** A Träger of a world, surfaced on docking (active_agents, public-read). */
 export interface DriftDockAgent {
   id: UUID;

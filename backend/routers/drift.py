@@ -33,6 +33,7 @@ from backend.models.drift import (
     ChartGenerationResponse,
     DriftChartResponse,
     DriftDockResponse,
+    DriftHonorResponse,
     DriftTuningResponse,
     QuestAcceptResponse,
     QuestDeliverResponse,
@@ -77,6 +78,18 @@ async def get_tuning(
     """HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning."""
     tuning = await DriftService.get_tuning(supabase)
     return SuccessResponse(data=tuning)
+
+
+@router.get("/honors")
+async def get_honors(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[list[DriftHonorResponse]]:
+    """Erstvermessung claims on the shared Driftkarte — a seal per charted node; is_self
+    flags the caller's own. Drives the chart honor overlay (refetched after an Entladung)."""
+    honors = await DriftService.get_chart_honors(supabase, user.id)
+    return SuccessResponse(data=honors)
 
 
 @router.get("/dock/{simulation_id}")
