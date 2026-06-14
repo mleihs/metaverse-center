@@ -11,7 +11,7 @@
 
 import { localized, msg, str } from '@lit/localize';
 import { effect } from '@preact/signals-core';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
@@ -21,6 +21,7 @@ import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
 import type {
   DriftChart,
   DriftDock,
+  DriftHonor,
   DriftQuestOffer,
   DriftQuestState,
   DriftTuning,
@@ -302,6 +303,12 @@ export class VelgDriftView extends LitElement {
   @state() private _run: TravelRun | null = null;
   @state() private _tuning: DriftTuning | null = null;
   @state() private _quests: DriftQuestState | null = null;
+  /** Erstvermessung claims on the shared chart — drives the seal overlay on the board. */
+  @state() private _honors: DriftHonor[] = [];
+  // Stable-identity sets derived from _honors (recomputed only when _honors changes, so
+  // the chart's seal layer is not torn down + re-animated on every unrelated re-render).
+  private _claimedKeys: Set<string> = new Set();
+  private _selfKeys: Set<string> = new Set();
   @state() private _dock: DriftDock | null = null;
   @state() private _dockOpen = false;
   @state() private _loading = true;
@@ -365,20 +372,29 @@ export class VelgDriftView extends LitElement {
     super.disconnectedCallback();
   }
 
+  protected willUpdate(changed: PropertyValues): void {
+    if (changed.has('_honors')) {
+      this._claimedKeys = new Set(this._honors.map((h) => h.node_stable_key));
+      this._selfKeys = new Set(this._honors.filter((h) => h.is_self).map((h) => h.node_stable_key));
+    }
+  }
+
   private _load = async (): Promise<void> => {
     this._loading = true;
     this._error = false;
     try {
-      const [chartRes, runRes, tuningRes, questRes] = await Promise.all([
+      const [chartRes, runRes, tuningRes, questRes, honorRes] = await Promise.all([
         driftApi.getChart(),
         driftApi.getRun(),
         driftApi.getTuning(),
         driftApi.getQuests(),
+        driftApi.getHonors(),
       ]);
       this._chart = chartRes.success ? (chartRes.data ?? null) : null;
       this._run = runRes.success ? (runRes.data ?? null) : null;
       if (tuningRes.success) this._tuning = tuningRes.data;
       if (questRes.success) this._quests = questRes.data;
+      if (honorRes.success) this._honors = honorRes.data ?? [];
       if (!chartRes.success) this._error = true;
       // Resumed onto a foreign broadcast edge? Surface its dossier.
       if (this._run) void this._maybeDock(this._run);
@@ -398,6 +414,12 @@ export class VelgDriftView extends LitElement {
   private async _refreshQuests(): Promise<void> {
     const res = await driftApi.getQuests();
     if (res.success) this._quests = res.data;
+  }
+
+  /** Re-pull the shared-chart honors (after an Entladung, newly-won seals appear). */
+  private async _refreshHonors(): Promise<void> {
+    const res = await driftApi.getHonors();
+    if (res.success) this._honors = res.data ?? [];
   }
 
   /** Accept a deliver Depesche at the current world edge → cargo bound to the run. */
@@ -568,6 +590,16 @@ export class VelgDriftView extends LitElement {
     const recall = typeof cp.recall === 'string' ? cp.recall : null;
     if (run.status === 'completed') {
       VelgToast.success(msg(str`Entladung: ${Number(cp.haul_banked ?? 0)} Vermessung gesichert.`));
+      const honors = Number(cp.honors_won ?? 0);
+      if (honors > 0) {
+        // The Erstvermessung ceremony (§19.4): a first-to-chart claim now stands on the
+        // shared Driftkarte. A toast is the static-flag ceremony (reduced-motion safe).
+        VelgToast.success(
+          msg(
+            str`Erstvermessung: ${honors} Knoten zuerst kartiert – dein Siegel steht auf der Karte.`,
+          ),
+        );
+      }
     } else if (recall) {
       const reason = recall === 'kohaerenz' ? msg('Kohärenz zerfasert') : msg('Fenster abgelaufen');
       VelgToast.error(
@@ -602,7 +634,10 @@ export class VelgDriftView extends LitElement {
     if (!run) return;
     void this._mutate(
       () => driftApi.complete(run.id, run.run_version),
-      this._adoptRun,
+      (closed) => {
+        this._adoptRun(closed);
+        void this._refreshHonors(); // newly-won seals appear on the board
+      },
       'VelgDriftView._complete',
     );
   }
@@ -659,6 +694,8 @@ export class VelgDriftView extends LitElement {
           .run=${run}
           .frequency=${freqIndex}
           .dissonance=${dz}
+          .claimedKeys=${this._claimedKeys}
+          .selfKeys=${this._selfKeys}
           @drift-node-pick=${this._onNodePick}
         ></velg-drift-chart>
         ${this._renderHud(run)}

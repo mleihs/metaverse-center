@@ -117,6 +117,46 @@ velg-drift-chart {
   }
 }
 
+/* ── Erstvermessung seals (chart_honors / C4) ───────────────────────────────
+   A claim stamp planted at each charted node, re-projected every frame beside the
+   node glyph. A muted stake marks any traveller's first-survey; the amber --self
+   variant marks the viewer's own. Offset to the node's right so it never collides
+   with a home label sitting above. pointer-events: none keeps canvas gestures. */
+.drift-chart__seals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: var(--z-raised);
+}
+
+.drift-chart__seal {
+  position: absolute;
+  /* left/top are the node's screen point (per frame); plant the stamp just to its
+     right, vertically centred on the glyph. */
+  transform: translate(var(--space-2), -50%);
+  width: var(--space-2-5);
+  height: var(--space-2-5);
+  background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
+  border: var(--border-width-default) solid var(--color-text-muted);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+  animation: drift-label-in var(--duration-entrance) var(--ease-out) both;
+}
+
+/* The viewer's own first-survey — amber, filled, a touch heavier. */
+.drift-chart__seal--self {
+  background: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-chart__seal {
+    animation-duration: 0.01ms;
+  }
+}
+
 /* ── Offline fallback (WebGL2 unavailable) ──────────────────────────────────
    Brutalist dossier-stamp framing: dashed border, tracked Courier heading. */
 .drift-chart--offline {
