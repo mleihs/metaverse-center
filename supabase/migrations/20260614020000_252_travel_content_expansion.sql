@@ -55,121 +55,17 @@
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 1. Deliver Depesche templates — prose-complete, pack-ready shape
+-- 1. Deliver Depesche templates — now sourced from the drift content pack
 -- ═══════════════════════════════════════════════════════════════════
--- Each effect element now co-locates its prose with its mechanics. The gate reads
--- title_de/text_de/text_en off the element; advance forwards the element verbatim.
--- {sim} = target world name, {agent} = target agent name (substituted in the gate).
-
-INSERT INTO travel_quest_templates (template_key, family, tier, pack_slug, definition) VALUES
-
--- (1) erinnerungsstuecke / memory — the original P0c seed, now prose-complete.
-('deliver_memory_parcel', 'deliver', 1, 'drift_p0c_seed',
- jsonb_build_object(
-   'cargo', jsonb_build_object('family', 'erinnerungsstuecke', 'vector', 'memory'),
-   'effects', jsonb_build_array(
-     jsonb_build_object('kind', 'emit_fragment',
-       'text_de', 'Ich habe ein Erinnerungsstück über den Drift getragen. An der Schwelle wurde es kurz schwer, als wöge die fremde Erinnerung mehr als die eigene.',
-       'text_en', 'I carried a memory-relic across the Drift. At the threshold it grew briefly heavy, as if the borrowed memory weighed more than my own.'),
-     jsonb_build_object('kind', 'emit_echo',
-       'title_de', 'Echo aus dem Drift', 'title_en', 'Echo from the Drift',
-       'text_de', 'Ein verklingendes Echo streift {sim}. Irgendwo in der Nähe hat eine Erinnerung, die nicht hierher gehört, die Schwelle berührt.',
-       'text_en', 'A fading echo brushes {sim}. Somewhere close, a memory that does not belong here has touched the threshold.'),
-     jsonb_build_object('kind', 'inject_agent_memory', 'importance', 4,
-       'text_de', 'Ein Träger brachte {agent} ein Erinnerungsstück aus einer anderen Welt. Es zeigt einen Ort, den es hier nie gegeben hat, und doch kommt er bekannt vor.',
-       'text_en', 'A courier brought {agent} a memory-relic from another world. It shows a place that never existed here, and yet it feels familiar.'),
-     jsonb_build_object('kind', 'spawn_event', 'impact_level', 3,
-       'title_de', 'Drift-Depesche · Erinnerungsstück', 'title_en', 'Drift Dispatch · Memory-Relic',
-       'text_de', 'In {sim} ist ein Erinnerungsstück aus dem Drift eingetroffen. Wer es ansieht, erinnert sich an Dinge, die nie geschehen sind.',
-       'text_en', 'A memory-relic from the Drift has arrived in {sim}. Those who look at it remember things that never happened.')
-   ),
-   'prose', jsonb_build_object(
-     'title_de', 'Depesche · Erinnerungsstück', 'title_en', 'Dispatch · Memory-Relic',
-     'brief_de', 'Ein Erinnerungsstück will über den Drift getragen werden, ein Gegenstand, der sich an einen anderen Ort erinnert.',
-     'brief_en', 'A memory-relic asks to be carried across the Drift, an object that remembers somewhere else.')
- )),
-
--- (2) kontrakte / commerce — a sealed obligation honored in another world.
-('deliver_sealed_contract', 'deliver', 1, 'drift_p0c_seed',
- jsonb_build_object(
-   'cargo', jsonb_build_object('family', 'kontrakte', 'vector', 'commerce'),
-   'effects', jsonb_build_array(
-     jsonb_build_object('kind', 'emit_fragment',
-       'text_de', 'Ich habe einen versiegelten Kontrakt über den Drift getragen. Solange das Wachs hielt, fühlte sich die Reise an wie eine Schuld, die ich noch nicht kannte.',
-       'text_en', 'I carried a sealed contract across the Drift. As long as the wax held, the journey felt like a debt I did not yet know I owed.'),
-     jsonb_build_object('kind', 'emit_echo',
-       'title_de', 'Echo aus dem Drift', 'title_en', 'Echo from the Drift',
-       'text_de', 'Ein verklingendes Echo streift {sim}. Eine Unterschrift, die niemand hier geleistet hat, beginnt zu binden.',
-       'text_en', 'A fading echo brushes {sim}. A signature no one here ever made begins to bind.'),
-     jsonb_build_object('kind', 'inject_agent_memory', 'importance', 4,
-       'text_de', 'Ein Träger legte {agent} einen versiegelten Kontrakt aus einer anderen Welt vor. Die Klauseln sind in einer Hand geschrieben, die {agent} zu kennen glaubt.',
-       'text_en', 'A courier presented {agent} a sealed contract from another world. Its clauses are written in a hand {agent} believes they recognise.'),
-     jsonb_build_object('kind', 'spawn_event', 'impact_level', 3,
-       'title_de', 'Drift-Depesche · Versiegelter Kontrakt', 'title_en', 'Drift Dispatch · Sealed Contract',
-       'text_de', 'In {sim} wurde ein Kontrakt aus dem Drift eingelöst. Eine Abmachung gilt nun, die diese Welt nie geschlossen hat.',
-       'text_en', 'A contract from the Drift has been honored in {sim}. An agreement now holds that this world never made.')
-   ),
-   'prose', jsonb_build_object(
-     'title_de', 'Depesche · Versiegelter Kontrakt', 'title_en', 'Dispatch · Sealed Contract',
-     'brief_de', 'Ein versiegelter Kontrakt sucht den Ort, an dem er eingelöst werden muss. Das Siegel darf erst am Ziel brechen.',
-     'brief_en', 'A sealed contract seeks the place where it must be honored. The seal may break only at its destination.')
- )),
-
--- (3) idiome / language — an untranslatable phrase carried to a world without it.
-('deliver_borrowed_idiom', 'deliver', 1, 'drift_p0c_seed',
- jsonb_build_object(
-   'cargo', jsonb_build_object('family', 'idiome', 'vector', 'language'),
-   'effects', jsonb_build_array(
-     jsonb_build_object('kind', 'emit_fragment',
-       'text_de', 'Ich habe ein Idiom über den Drift getragen, das sich nicht übersetzen lässt. Unterwegs ertappte ich mich, wie ich in einer Sprache dachte, die ich nie gelernt habe.',
-       'text_en', 'I carried an idiom across the Drift that cannot be translated. On the way I caught myself thinking in a language I never learned.'),
-     jsonb_build_object('kind', 'emit_echo',
-       'title_de', 'Echo aus dem Drift', 'title_en', 'Echo from the Drift',
-       'text_de', 'Ein verklingendes Echo streift {sim}. Ein Satz, den niemand hier sprechen kann, hängt einen Moment in der Luft.',
-       'text_en', 'A fading echo brushes {sim}. A sentence no one here can speak hangs in the air for a moment.'),
-     jsonb_build_object('kind', 'inject_agent_memory', 'importance', 4,
-       'text_de', 'Ein Träger sprach {agent} ein Idiom aus einer anderen Welt vor. {agent} versteht es nicht, und kann es trotzdem nicht mehr vergessen.',
-       'text_en', 'A courier spoke {agent} an idiom from another world. {agent} does not understand it, and still cannot forget it.'),
-     jsonb_build_object('kind', 'spawn_event', 'impact_level', 3,
-       'title_de', 'Drift-Depesche · Geliehenes Idiom', 'title_en', 'Drift Dispatch · Borrowed Idiom',
-       'text_de', 'In {sim} ist eine Redewendung aus dem Drift angekommen. Sie hat hier noch keine Bedeutung, aber die Münder formen sie schon.',
-       'text_en', 'A turn of phrase from the Drift has reached {sim}. It has no meaning here yet, but the mouths are already shaping it.')
-   ),
-   'prose', jsonb_build_object(
-     'title_de', 'Depesche · Geliehenes Idiom', 'title_en', 'Dispatch · Borrowed Idiom',
-     'brief_de', 'Eine Redewendung, für die es hier kein Wort gibt, will in eine Welt getragen werden, die sie noch nicht kennt.',
-     'brief_en', 'A turn of phrase with no word for it here wants carrying to a world that does not yet know it.')
- )),
-
--- (4) traumfracht / dream — volatile dream-freight that must arrive before waking.
-('deliver_dream_cargo', 'deliver', 2, 'drift_p0c_seed',
- jsonb_build_object(
-   'cargo', jsonb_build_object('family', 'traumfracht', 'vector', 'dream'),
-   'effects', jsonb_build_array(
-     jsonb_build_object('kind', 'emit_fragment',
-       'text_de', 'Ich habe Traumfracht über den Drift getragen. Sie wollte ständig woanders sein als in meinen Händen, und einmal träumte ich ihren Inhalt, statt ihn zu tragen.',
-       'text_en', 'I carried dream-freight across the Drift. It kept wanting to be anywhere but in my hands, and once I dreamed its contents instead of carrying them.'),
-     jsonb_build_object('kind', 'emit_echo',
-       'title_de', 'Echo aus dem Drift', 'title_en', 'Echo from the Drift',
-       'text_de', 'Ein verklingendes Echo streift {sim}. Für einen Lidschlag träumt die Stadt etwas, das ihr nicht gehört.',
-       'text_en', 'A fading echo brushes {sim}. For the space of a blink the city dreams something that is not its own.'),
-     jsonb_build_object('kind', 'inject_agent_memory', 'importance', 4,
-       'text_de', 'Ein Träger überließ {agent} eine Traumfracht aus einer anderen Welt. {agent} wird heute Nacht etwas träumen, das jemand anderes erfunden hat.',
-       'text_en', 'A courier left {agent} a dream-freight from another world. Tonight {agent} will dream something that someone else invented.'),
-     jsonb_build_object('kind', 'spawn_event', 'impact_level', 3,
-       'title_de', 'Drift-Depesche · Traumfracht', 'title_en', 'Drift Dispatch · Dream-Freight',
-       'text_de', 'In {sim} ist Traumfracht aus dem Drift eingetroffen. Am Rand des Schlafs sickert etwas Fremdes in die Welt.',
-       'text_en', 'Dream-freight from the Drift has arrived in {sim}. At the edge of sleep something foreign seeps into the world.')
-   ),
-   'prose', jsonb_build_object(
-     'title_de', 'Depesche · Traumfracht', 'title_en', 'Dispatch · Dream-Freight',
-     'brief_de', 'Flüchtige Traumfracht, luzide und ungeduldig. Sie muss ankommen, bevor sie sich beim Wachwerden auflöst.',
-     'brief_en', 'Volatile dream-freight, lucid and impatient. It must arrive before waking dissolves it.')
- ))
-
-ON CONFLICT (template_key) DO UPDATE
-   SET family = EXCLUDED.family, tier = EXCLUDED.tier,
-       pack_slug = EXCLUDED.pack_slug, definition = EXCLUDED.definition;
+-- The four deliver Depeschen previously hand-seeded here now live in
+-- content/drift/quests/deliver.yaml and are seeded by migration 254 (the
+-- drift content pack, §9.1), generated via
+--   backend/services/content_packs/generate_drift_migration.
+-- The pack is the single source of truth: 254 TRUNCATE+reseeds
+-- travel_quest_templates, so do NOT re-add template rows here. The
+-- fn_apply_quest_effects change below (the actual fix — template-driven
+-- effect prose) and the Conventional Memory lore (a shared simulation_lore
+-- seed, not pack-owned) remain in this migration.
 
 
 -- ═══════════════════════════════════════════════════════════════════

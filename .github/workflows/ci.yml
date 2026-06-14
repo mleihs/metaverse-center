@@ -154,7 +154,9 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Content packs validation
-        run: python scripts/validate_content_packs.py
+        run: |
+          python scripts/validate_content_packs.py
+          python scripts/validate_content_packs.py --domain drift --strict
 
       - name: Run tests with coverage
         run: python -m pytest --cov
