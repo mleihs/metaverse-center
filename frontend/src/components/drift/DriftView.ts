@@ -16,9 +16,16 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
-import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
 import { themeService } from '../../services/ThemeService.js';
-import type { DriftChart, DriftDock, DriftTuning, TravelRun } from '../../types/drift.js';
+import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
+import type {
+  DriftChart,
+  DriftDock,
+  DriftQuestOffer,
+  DriftQuestState,
+  DriftTuning,
+  TravelRun,
+} from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
@@ -177,6 +184,91 @@ export class VelgDriftView extends LitElement {
         flex-wrap: wrap;
         gap: var(--space-2);
       }
+      .hud__section-label {
+        margin: 0 0 var(--space-2);
+        font-family: var(--font-brutalist);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+      .hud__manifest,
+      .hud__depesche {
+        margin: 0 0 var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-surface-raised);
+        border-left: var(--border-width-thick) solid var(--color-info);
+      }
+      .hud__depesche {
+        border-left-color: var(--color-primary);
+      }
+      .manifest__item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-0-5) 0;
+      }
+      .manifest__dot {
+        width: 8px;
+        height: 8px;
+        flex: none;
+        background: var(--_v, var(--color-text-muted));
+        box-shadow: 0 0 6px var(--_v, transparent);
+      }
+      .manifest__name {
+        flex: 1;
+        font-size: var(--text-sm);
+        color: var(--color-text-primary);
+      }
+      .manifest__vec {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+      .depesche__title {
+        margin: 0 0 var(--space-1);
+        font-family: var(--font-brutalist);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        font-size: var(--text-sm);
+        color: var(--color-text-primary);
+      }
+      .depesche__route,
+      .depesche__hint {
+        margin: 0 0 var(--space-2);
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-text-secondary);
+      }
+      .depesche__hint {
+        color: var(--color-warning);
+      }
+      .depesche__offers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-1-5);
+      }
+      .depesche__offer {
+        padding: var(--space-1) var(--space-2);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-primary);
+        background: var(--color-surface-sunken);
+        border: var(--border-width-thin) solid var(--color-primary-border);
+        cursor: pointer;
+        transition:
+          background var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+      .depesche__offer:hover:not(:disabled) {
+        background: var(--color-primary-bg);
+        border-color: var(--color-primary);
+      }
+      .depesche__offer:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
       @media (prefers-reduced-motion: reduce) {
         .stat__bar > span {
           transition-duration: 0.01ms;
@@ -191,6 +283,7 @@ export class VelgDriftView extends LitElement {
   @state() private _chart: DriftChart | null = null;
   @state() private _run: TravelRun | null = null;
   @state() private _tuning: DriftTuning | null = null;
+  @state() private _quests: DriftQuestState | null = null;
   @state() private _dock: DriftDock | null = null;
   @state() private _dockOpen = false;
   @state() private _loading = true;
@@ -228,14 +321,16 @@ export class VelgDriftView extends LitElement {
     this._loading = true;
     this._error = false;
     try {
-      const [chartRes, runRes, tuningRes] = await Promise.all([
+      const [chartRes, runRes, tuningRes, questRes] = await Promise.all([
         driftApi.getChart(),
         driftApi.getRun(),
         driftApi.getTuning(),
+        driftApi.getQuests(),
       ]);
       this._chart = chartRes.success ? (chartRes.data ?? null) : null;
       this._run = runRes.success ? (runRes.data ?? null) : null;
       if (tuningRes.success) this._tuning = tuningRes.data;
+      if (questRes.success) this._quests = questRes.data;
       if (!chartRes.success) this._error = true;
       // Resumed onto a foreign broadcast edge? Surface its dossier.
       if (this._run) void this._maybeDock(this._run);
@@ -250,6 +345,100 @@ export class VelgDriftView extends LitElement {
   private async _refreshRun(): Promise<void> {
     const res = await driftApi.getRun();
     if (res.success) this._run = res.data ?? null;
+  }
+
+  private async _refreshQuests(): Promise<void> {
+    const res = await driftApi.getQuests();
+    if (res.success) this._quests = res.data;
+  }
+
+  /** Accept a deliver Depesche at the current world edge → cargo bound to the run. */
+  private _acceptOffer(offer: DriftQuestOffer): void {
+    const run = this._run;
+    if (!run || this._busy) return;
+    this._busy = true;
+    void (async () => {
+      try {
+        const res = await driftApi.acceptQuest(
+          run.id,
+          run.run_version,
+          offer.template_key,
+          offer.target_simulation_id,
+        );
+        if (res.success) {
+          this._run = res.data.run;
+          await this._refreshQuests();
+          VelgToast.success(msg(str`Depesche angenommen – Ziel: ${offer.target_simulation_name}.`));
+        } else {
+          VelgToast.error(this._friendlyError(res.error.message ?? ''));
+          await this._refreshRun();
+          await this._refreshQuests();
+        }
+      } catch (err) {
+        captureError(err, { source: 'VelgDriftView._acceptOffer' });
+        VelgToast.error(msg('Die Depesche ließ sich nicht annehmen.'));
+      } finally {
+        this._busy = false;
+      }
+    })();
+  }
+
+  /** Deliver the carried Depesche at the target broadcast edge → fires the gate. */
+  private _deliver(): void {
+    const run = this._run;
+    const active = this._quests?.active;
+    if (!run || !active || this._busy) return;
+    this._busy = true;
+    void (async () => {
+      try {
+        const res = await driftApi.advanceQuest(active.id, run.id, run.run_version);
+        if (res.success) {
+          this._run = res.data.run;
+          const fired = res.data.effects.applied.length;
+          await this._refreshQuests();
+          VelgToast.success(
+            msg(str`Depesche abgeliefert – ${fired} Wirkung${fired === 1 ? '' : 'en'} ausgelöst.`),
+          );
+        } else {
+          VelgToast.error(this._friendlyError(res.error.message ?? ''));
+          await this._refreshRun();
+          await this._refreshQuests();
+        }
+      } catch (err) {
+        captureError(err, { source: 'VelgDriftView._deliver' });
+        VelgToast.error(msg('Die Ablieferung scheiterte.'));
+      } finally {
+        this._busy = false;
+      }
+    })();
+  }
+
+  /** A bleed vector's chart color token (the canvas palette bridge, _colors.css). */
+  private _vectorColor(vector: string): string {
+    const i = Math.max(0, (FREQUENCIES as readonly string[]).indexOf(vector));
+    return `var(--drift-freq-${i})`;
+  }
+
+  /** Display label for a cargo family (the 7 frequency-matter slugs, concept §7.8). */
+  private _cargoLabel(family: string): string {
+    switch (family) {
+      case 'kontrakte':
+        return msg('Kontrakte');
+      case 'idiome':
+        return msg('Idiome');
+      case 'erinnerungsstuecke':
+        return msg('Erinnerungsstück');
+      case 'resonanzkerne':
+        return msg('Resonanzkern');
+      case 'blaupausen':
+        return msg('Blaupause');
+      case 'traumfracht':
+        return msg('Traumfracht');
+      case 'sehnsuchtsgut':
+        return msg('Sehnsuchtsgut');
+      default:
+        return family;
+    }
   }
 
   /** Surface a FOREIGN world's dossier on docking at its broadcast edge; dismiss it
@@ -295,15 +484,19 @@ export class VelgDriftView extends LitElement {
           // Terminal: announce the haul banked / lost, then drop back to the "Aufbruch"
           // state (don't keep showing a finished run as if it were still active).
           this._run = null;
+          this._quests = null;
           this._closeDock();
           this._announceClose(run);
         } else {
           this._run = run;
           void this._maybeDock(run);
+          // Position/cargo changed → refresh offers, the carried Depesche, the manifest.
+          void this._refreshQuests();
         }
       } else {
         VelgToast.error(this._friendlyError(res.error.message ?? ''));
         await this._refreshRun();
+        void this._refreshQuests();
       }
     } catch (err) {
       captureError(err, { source });
@@ -363,6 +556,10 @@ export class VelgDriftView extends LitElement {
   private _friendlyError(message: string): string {
     if (message.includes('NOT_AT_HOME')) return msg('Entladung nur an deiner Heimat-Broadcast.');
     if (message.includes('NOT_ADJACENT')) return msg('Dieser Node ist von hier nicht erreichbar.');
+    if (message.includes('NOT_AT_TARGET'))
+      return msg('Trage die Depesche erst zur Ziel-Broadcast.');
+    if (message.includes('QUEST_ACTIVE')) return msg('Du trägst bereits eine Depesche.');
+    if (message.includes('CARGO_MISSING')) return msg('Die Fracht ist nicht mehr an Bord.');
     if (message.includes('RUN_STALE')) return msg('Aus dem Takt geraten, neu synchronisiert.');
     return message || msg('Der Drift hat das verweigert.');
   }
@@ -444,6 +641,7 @@ export class VelgDriftView extends LitElement {
         <p class="hud__takt">
           ${msg('Takte übrig')} ${run.window_remaining}/${this._windowBase} · ${msg('Takt')} ${run.takt_count}
         </p>
+        ${this._renderQuests(run)}
         ${
           atHome
             ? ''
@@ -464,6 +662,69 @@ export class VelgDriftView extends LitElement {
           </button>
         </div>
       </div>
+    `;
+  }
+
+  /** Manifest (carried cargo) + Depesche section (the active quest's deliver control, or
+   *  the offers acceptable at this world edge). Hidden when nothing applies. */
+  private _renderQuests(run: TravelRun) {
+    const q = this._quests;
+    if (!q) return '';
+    const active = q.active;
+    const atTarget = !!active && run.position_node_id === active.slots.target_node;
+    return html`
+      ${
+        q.cargo.length
+          ? html`<div class="hud__manifest">
+            <p class="hud__section-label">${msg('Fracht')}</p>
+            ${q.cargo.map(
+              (c) => html`<div class="manifest__item">
+                <span class="manifest__dot" style="--_v:${this._vectorColor(c.vector)}"></span>
+                <span class="manifest__name">${this._cargoLabel(c.family)}</span>
+                <span class="manifest__vec">${c.vector}</span>
+              </div>`,
+            )}
+          </div>`
+          : ''
+      }
+      ${
+        active
+          ? html`<div class="hud__depesche">
+            <p class="hud__section-label">${msg('Depesche')}</p>
+            <p class="depesche__title">${active.title ?? msg('Depesche')}</p>
+            <p class="depesche__route">
+              ${msg('Ziel')}: ${active.target_simulation_name ?? msg('Unbekannt')}
+            </p>
+            ${
+              atTarget
+                ? html`<button
+                    class="btn btn--primary btn--sm"
+                    ?disabled=${this._busy}
+                    @click=${this._deliver}
+                  >
+                    ${msg('Depesche abliefern')}
+                  </button>`
+                : html`<p class="depesche__hint">${msg('Trage sie zur Ziel-Broadcast.')}</p>`
+            }
+          </div>`
+          : q.offers.length
+            ? html`<div class="hud__depesche">
+              <p class="hud__section-label">${msg('Depeschen verfügbar')}</p>
+              <div class="depesche__offers">
+                ${q.offers.map(
+                  (o) => html`<button
+                    class="depesche__offer"
+                    ?disabled=${this._busy}
+                    title=${o.brief}
+                    @click=${() => this._acceptOffer(o)}
+                  >
+                    ${o.target_simulation_name}
+                  </button>`,
+                )}
+              </div>
+            </div>`
+            : ''
+      }
     `;
   }
 
