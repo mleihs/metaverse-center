@@ -236,12 +236,30 @@ export class VelgDriftView extends LitElement {
       .depesche__hint {
         color: var(--color-warning);
       }
+      .depesche__groups {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2-5);
+        max-height: 240px;
+        overflow-y: auto;
+      }
+      .depesche__dest {
+        margin: 0 0 var(--space-1);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        color: var(--color-text-secondary);
+      }
       .depesche__offers {
         display: flex;
         flex-wrap: wrap;
         gap: var(--space-1-5);
       }
       .depesche__offer {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
         padding: var(--space-1) var(--space-2);
         font-family: var(--font-mono);
         font-size: var(--text-xs);
@@ -260,6 +278,13 @@ export class VelgDriftView extends LitElement {
       .depesche__offer:disabled {
         opacity: 0.5;
         cursor: default;
+      }
+      .depesche__offer-dot {
+        width: 7px;
+        height: 7px;
+        flex: none;
+        background: var(--_v, var(--color-text-muted));
+        box-shadow: 0 0 5px var(--_v, transparent);
       }
       @media (prefers-reduced-motion: reduce) {
         .stat__bar > span,
@@ -435,6 +460,29 @@ export class VelgDriftView extends LitElement {
       default:
         return family;
     }
+  }
+
+  /** Group acceptable Depeschen by destination world so the HUD reads as "where can I
+   *  send a dispatch, and what can I carry there" instead of a flat wall of look-alike
+   *  buttons (template × world is the P0c offer set — §9 selector curation is later).
+   *  Sorted by world name = stable order across refetches. */
+  private _groupOffers(
+    offers: DriftQuestOffer[],
+  ): { id: string; name: string; offers: DriftQuestOffer[] }[] {
+    const groups = new Map<string, { id: string; name: string; offers: DriftQuestOffer[] }>();
+    for (const o of offers) {
+      const g = groups.get(o.target_simulation_id);
+      if (g) {
+        g.offers.push(o);
+      } else {
+        groups.set(o.target_simulation_id, {
+          id: o.target_simulation_id,
+          name: o.target_simulation_name,
+          offers: [o],
+        });
+      }
+    }
+    return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   /** Surface a FOREIGN world's dossier on docking at its broadcast edge; dismiss it
@@ -727,17 +775,29 @@ export class VelgDriftView extends LitElement {
           : q.offers.length
             ? html`<div class="hud__depesche">
               <p class="hud__section-label">${msg('Depeschen verfügbar')}</p>
-              <div class="depesche__offers">
-                ${q.offers.map(
-                  (o) => html`<button
-                    class="depesche__offer"
-                    ?disabled=${this._busy}
-                    title=${o.brief}
-                    aria-label=${str`Depesche annehmen – Ziel ${o.target_simulation_name}`}
-                    @click=${() => this._acceptOffer(o)}
-                  >
-                    ${o.target_simulation_name}
-                  </button>`,
+              <div class="depesche__groups">
+                ${this._groupOffers(q.offers).map(
+                  (g) => html`<div class="depesche__group" role="group" aria-label=${g.name}>
+                    <p class="depesche__dest">${g.name}</p>
+                    <div class="depesche__offers">
+                      ${g.offers.map(
+                        (o) => html`<button
+                          class="depesche__offer"
+                          ?disabled=${this._busy}
+                          title=${o.brief}
+                          aria-label=${str`${o.title} annehmen – Ziel ${o.target_simulation_name}`}
+                          @click=${() => this._acceptOffer(o)}
+                        >
+                          <span
+                            class="depesche__offer-dot"
+                            style="--_v:${freqColorByName(o.cargo_vector)}"
+                            aria-hidden="true"
+                          ></span>
+                          ${this._cargoLabel(o.cargo_family)}
+                        </button>`,
+                      )}
+                    </div>
+                  </div>`,
                 )}
               </div>
             </div>`
