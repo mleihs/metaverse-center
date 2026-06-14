@@ -1,4 +1,12 @@
-import type { DriftChart, DriftDock, DriftTuning, TravelRun } from '../../types/drift.js';
+import type {
+  DriftChart,
+  DriftDock,
+  DriftQuestAcceptResult,
+  DriftQuestDeliverResult,
+  DriftQuestState,
+  DriftTuning,
+  TravelRun,
+} from '../../types/drift.js';
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -52,6 +60,38 @@ export class DriftApiService extends BaseApiService {
   /** Rückzug — abandon the run (unanchored cargo forfeited). */
   abandon(runId: string, runVersion: number): Promise<ApiResponse<TravelRun>> {
     return this.post(`/drift/run/${runId}/abandon`, { run_version: runVersion });
+  }
+
+  /** The caller's quest snapshot: acceptable Depeschen here + the carried one + manifest. */
+  getQuests(): Promise<ApiResponse<DriftQuestState>> {
+    return this.get('/drift/quests');
+  }
+
+  /** Take a deliver Depesche at the current world edge (cargo bound to the run). */
+  acceptQuest(
+    runId: string,
+    runVersion: number,
+    templateKey: string,
+    targetSimulationId: string,
+  ): Promise<ApiResponse<DriftQuestAcceptResult>> {
+    return this.post('/drift/quests/accept', {
+      run_id: runId,
+      run_version: runVersion,
+      template_key: templateKey,
+      target_simulation_id: targetSimulationId,
+    });
+  }
+
+  /** Deliver a Depesche at the target world's broadcast edge (fires the hospitality gate). */
+  advanceQuest(
+    instanceId: string,
+    runId: string,
+    runVersion: number,
+  ): Promise<ApiResponse<DriftQuestDeliverResult>> {
+    return this.post(`/drift/quests/${instanceId}/advance`, {
+      run_id: runId,
+      run_version: runVersion,
+    });
   }
 }
 

@@ -101,3 +101,66 @@ export interface DriftTuning {
   /** Bandbreite max keyed by bandwidth class ("1".."4"); P0 travellers are class 1. */
   bandwidth_class_bb_max: Record<string, number>;
 }
+
+/* === Quests / Depeschen (P0c deliver) === */
+
+/** A travel_cargo manifest item — the one-of-a-kind payload carried on a run. */
+export interface DriftCargo {
+  id: UUID;
+  family: string;
+  vector: DriftFrequency;
+  twists: unknown[];
+  quest_instance_id: UUID | null;
+  run_id: UUID | null;
+}
+
+/** An offered deliver Depesche (the deliver template bound to a foreign world). */
+export interface DriftQuestOffer {
+  template_key: string;
+  family: string;
+  title: string;
+  brief: string;
+  cargo_family: string;
+  cargo_vector: DriftFrequency;
+  target_simulation_id: UUID;
+  target_simulation_name: string;
+}
+
+/** The accepted Depesche the traveler carries (raw instance + HUD enrichment). */
+export interface DriftQuestInstance {
+  id: UUID;
+  template_key: string;
+  simulation_id: UUID;
+  status: string;
+  slots: Record<string, unknown>;
+  title: string | null;
+  target_simulation_name: string | null;
+}
+
+/** The hospitality-gate outcome of a delivery (applied vs filtered, with reasons). */
+export interface DriftQuestEffects {
+  already_applied: boolean;
+  applied: Array<Record<string, unknown>>;
+  skipped: Array<Record<string, unknown>>;
+}
+
+/** The HUD's quest snapshot: acceptable offers here + the carried one + the manifest. */
+export interface DriftQuestState {
+  offers: DriftQuestOffer[];
+  active: DriftQuestInstance | null;
+  cargo: DriftCargo[];
+}
+
+/** fn_quest_accept result — the version-bumped run + the new instance + bound cargo. */
+export interface DriftQuestAcceptResult {
+  run: TravelRun;
+  instance: DriftQuestInstance;
+  cargo: DriftCargo;
+}
+
+/** fn_quest_advance result — the version-bumped run + completed instance + effects. */
+export interface DriftQuestDeliverResult {
+  run: TravelRun;
+  instance: DriftQuestInstance;
+  effects: DriftQuestEffects;
+}
