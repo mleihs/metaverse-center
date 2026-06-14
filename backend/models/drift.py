@@ -111,7 +111,7 @@ class DriftTuningResponse(BaseModel):
 
 
 class ChartGenerationResponse(BaseModel):
-    """Summary of an fn_generate_drift_chart run (admin regenerate)."""
+    """Summary of a chart regeneration (ChartGeneratorService → fn_apply_drift_chart)."""
 
     version: int
     worlds: int

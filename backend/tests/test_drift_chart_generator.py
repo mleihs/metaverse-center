@@ -137,6 +137,22 @@ def test_isolated_worlds_are_reachable_only_via_deep_off_vector():
         assert all(e["permeability"] == {} and not e["corridor"] for e in touching)
 
 
+def test_frontier_worlds_are_a_deep_haul_not_a_back_door():
+    """A frontier world hangs off the chart via a CHAIN of raw deep nodes, so it sits
+    genuinely far — never as near as a connected neighbour (the Conventional-Memory-at-3
+    regression a single frontier edge produced)."""
+    draft = _build()
+    adj = _adjacency(draft)
+    d = _dist(adj, "home-velgarien")
+    nearest_connected = d["home-the-gaslit-reach"]  # strongest connection (0.70) = nearest
+    for iso in ("spengbabs-grease-pit", "conventional-memory"):
+        chain = [n for n in draft.nodes if n["stable_key"].startswith(f"front-{iso}-")]
+        assert len(chain) >= 2  # a dedicated raw deep chain, not a single edge
+        assert all(n["distance_band"] == "deep" and n["simulation_id"] is None for n in chain)
+        # and the world is a deeper haul than the nearest connected neighbour
+        assert d[f"home-{iso}"] > nearest_connected
+
+
 def test_ward_drops_a_vector_from_permeability():
     """An embassy ward_vector on a pair removes that vector from the corridor's permeability."""
     embassies = [Embassy("v", "g", ward_vector="memory")]
