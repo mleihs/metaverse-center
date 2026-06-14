@@ -149,10 +149,14 @@ class DriftService:
 
     @staticmethod
     async def get_chart_honors(supabase: Client, user_id: UUID) -> list[DriftHonorResponse]:
-        """Erstvermessung claims on the shared chart (chart_honors, public read). The chart
-        overlays a seal on each claimed node, keyed by node_stable_key; is_self marks the
-        caller's own claims. Holder names stay anonymous in P0 (callsign surfacing is P1b),
-        so user_id never leaves the service — it collapses to the is_self bit here."""
+        """Erstvermessung claims on the shared chart. The chart overlays a seal on each
+        claimed node, keyed by node_stable_key; is_self marks the caller's own claims.
+
+        chart_honors carries public-read RLS, but this read is member-gated today: it needs
+        a caller to resolve is_self, and the whole /drift/* surface is still member-only
+        (the anon-capable /api/v1/public/drift/* path is a separate deferred package). Holder
+        names stay anonymous in P0 (callsign surfacing is P1b), so user_id never leaves the
+        service — it collapses to the is_self bit here."""
         resp = await (
             supabase.table("chart_honors")
             .select("node_stable_key, kind, user_id, claimed_at")

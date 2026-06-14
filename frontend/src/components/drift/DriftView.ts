@@ -635,8 +635,11 @@ export class VelgDriftView extends LitElement {
     void this._mutate(
       () => driftApi.complete(run.id, run.run_version),
       (closed) => {
+        // Two deliberately separate sources, written in the same fn_travel_complete
+        // transaction: the ceremony toast reads the count off the completion checkpoint
+        // (via _adoptRun), the seal overlay refetches the canonical chart_honors table.
         this._adoptRun(closed);
-        void this._refreshHonors(); // newly-won seals appear on the board
+        void this._refreshHonors();
       },
       'VelgDriftView._complete',
     );
