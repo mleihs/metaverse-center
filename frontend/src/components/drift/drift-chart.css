@@ -149,8 +149,8 @@ velg-drift-chart {
 .drift-chart__seal-inner {
   position: relative;
   display: block;
-  width: var(--space-6);
-  height: var(--space-6);
+  width: var(--space-5);
+  height: var(--space-5);
   filter: drop-shadow(2px 2px 0 var(--color-surface-sunken));
   transform-origin: center;
   animation: drift-seal-stamp 900ms var(--ease-out) both;
@@ -173,7 +173,7 @@ velg-drift-chart {
 }
 
 /* The compass-rose first-survey mark, centred and upright over the medallion.
-   The glyph sizes itself via the icons.compassRose(16) argument (the single source
+   The glyph sizes itself via the icons.compassRose(14) argument (the single source
    of truth for the mark size); this layer only centres it over the octagon. */
 .drift-chart__seal-mark {
   position: absolute;
