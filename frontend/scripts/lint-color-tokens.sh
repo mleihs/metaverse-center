@@ -77,6 +77,10 @@ RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   grep -v '/VelgDesignPreview\.ts:' | \
   grep -v '/map-data\.ts:' | \
   grep -v '/map-three-render\.ts:' | \
+  grep -v '/drift/chart/' | \
+  grep -v '/drift/scene/' | \
+  grep -v '/drift/post/' | \
+  grep -v '/drift/controls/' | \
   grep -v '/HowToPlayView\.ts:' | \
   grep -v '/VelgForgeDarkroom\.ts:' | \
   grep -v '/CartographerMap\.ts:' | \
