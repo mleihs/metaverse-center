@@ -391,6 +391,53 @@ export const THEME_PRESETS: Record<ThemePresetName, Record<string, string>> = {
   },
 };
 
+/**
+ * Platform-dark "Zwischenraum" config — the platform-chrome theme (amber-on-near-black,
+ * Courier headings), mirroring the `:root` token values in `styles/tokens/`.
+ *
+ * Unlike the 10 sim presets above, this is NOT a selectable simulation theme (it is
+ * absent from PRESET_NAMES, so it never appears in the design-settings picker). It exists
+ * so a PLATFORM-LEVEL view that happens to render INSIDE a themed simulation shell can
+ * re-assert the platform defaults on its own host, neutralising the inherited per-sim
+ * theme. The DRIFT view (the Zwischenraum between worlds) applies it so the chart, HUD,
+ * labels and dock dossier stay dark-brutalist regardless of which world the traveller is
+ * anchored to. Apply via `themeService.applyConfig(PLATFORM_DARK_CONFIG, hostElement)`.
+ *
+ * Values are kept in sync with `styles/tokens/_colors.css`, `_typography.css`, `_borders.css`.
+ */
+export const PLATFORM_DARK_CONFIG: Record<string, string> = {
+  color_primary: '#f59e0b',
+  color_secondary: '#3b82f6',
+  color_accent: '#f59e0b',
+  color_background: '#0a0a0a',
+  color_surface: '#111111',
+  color_surface_sunken: '#060606',
+  color_surface_header: '#0a0a0a',
+  color_text: '#e5e5e5',
+  color_text_secondary: '#a0a0a0',
+  color_text_muted: '#888888',
+  color_border: '#333333',
+  color_border_light: '#222222',
+  color_danger: '#ef4444',
+  color_success: '#22c55e',
+  text_inverse: '#0a0a0a',
+  font_heading: "'Courier New', 'Monaco', 'Lucida Console', monospace",
+  font_body: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  font_mono: "'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace",
+  heading_weight: '700',
+  heading_transform: 'uppercase',
+  heading_tracking: '0.08em',
+  font_base_size: '16px',
+  border_radius: '0',
+  border_width: '3px',
+  border_width_default: '2px',
+  shadow_style: 'offset',
+  shadow_color: '#000000',
+  hover_effect: 'translate',
+  animation_speed: '1',
+  animation_easing: 'ease',
+};
+
 /** Maps SimulationTheme types to suggested preset names. */
 export function getPresetForTheme(theme: SimulationTheme, slug?: string): ThemePresetName {
   if (slug === 'spengbabs-grease-pit') return 'deep-fried-horror';

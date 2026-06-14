@@ -83,17 +83,36 @@ class BuildingGeometryPatch(BaseModel):
     street_id: UUID | None = None
 
 
+class ZoneAdjacencyPair(BaseModel):
+    """An undirected zone-adjacency edge for the DRIFT Begehung movement graph.
+
+    Persisted via fn_apply_zone_adjacencies (migration 245), either standalone
+    (backfill) or forwarded by fn_apply_map_geometry's step 6b. The SQL side
+    normalizes pair order (LEAST/GREATEST) and de-dups, so the generator may emit
+    pairs in any order. derivation: 'geometry' (zone polygons share a border),
+    'transit' (inter-city Stadtfahrt edge), 'fallback' (degraded geometry).
+    """
+
+    zone_a: UUID
+    zone_b: UUID
+    derivation: Literal["geometry", "transit", "fallback"]
+
+
 class MapGeometryPayload(BaseModel):
     """The complete payload handed to fn_apply_map_geometry as a jsonb.
 
     Field names must match the jsonb keys the SQL function expects (see
-    `supabase/migrations/20260510130000_236_fn_apply_map_geometry.sql`).
+    `supabase/migrations/20260510130000_236_fn_apply_map_geometry.sql` and the
+    `adjacencies` extension in migration 245).
     """
 
     cities: list[CityGeometryPatch] = Field(default_factory=list)
     zones: list[ZoneGeometryPatch] = Field(default_factory=list)
     streets: list[StreetGeometryInsert] = Field(default_factory=list)
     buildings: list[BuildingGeometryPatch] = Field(default_factory=list)
+    # DRIFT (migration 245): the Begehung zone-adjacency graph. fn_apply_map_geometry
+    # forwards this to fn_apply_zone_adjacencies when present; absent → unchanged.
+    adjacencies: list[ZoneAdjacencyPair] = Field(default_factory=list)
 
 
 # ── Generator result ─────────────────────────────────────────────────────────

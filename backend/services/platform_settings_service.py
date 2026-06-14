@@ -31,6 +31,7 @@ DEFAULT_SETTINGS: dict[str, int] = {
     "cache_http_map_data_max_age": 15,
     "cache_http_battle_feed_max_age": 10,
     "cache_http_connections_max_age": 60,
+    "cache_http_drift_chart_max_age": 300,
 }
 
 

@@ -19,6 +19,7 @@ from backend.services.forge_map_generators import (
     BuildingInput,
     CityInput,
     ZoneInput,
+    compute_zone_adjacencies,
     generate_medieval_walled,
     serialize_payload_for_rpc,
 )
@@ -218,3 +219,54 @@ def test_invariant_violation_raises_value_error():
     bld = BuildingInput(id=BLD_HOUSE1_ID, zone_id=None, name="Orphan", building_type="residential")
     payload = generate_medieval_walled("edge-orphan", cities, [], [bld])
     assert len(payload.buildings) == 0
+
+
+# ── DRIFT (migration 245): the Begehung zone-adjacency graph ─────────────────
+
+_C1 = UUID("c1110000-0000-0000-0000-000000000001")
+_C2 = UUID("c2220000-0000-0000-0000-000000000001")
+_ZA = UUID("aaaa0000-0000-0000-0000-000000000001")
+_ZB = UUID("aaaa0000-0000-0000-0000-000000000002")
+_ZC = UUID("aaaa0000-0000-0000-0000-000000000003")
+_ZD = UUID("dddd0000-0000-0000-0000-000000000001")
+
+
+def _square(x0: float, y0: float, x1: float, y1: float) -> Polygon:
+    return Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
+
+
+def _pairset(pairs) -> set[tuple[frozenset[str], str]]:
+    return {(frozenset((str(p.zone_a), str(p.zone_b))), p.derivation) for p in pairs}
+
+
+def test_adjacency_shared_edge_is_geometry_corner_is_not():
+    """A|B share the x=1 edge, B|C share the y=1 edge; A|C touch only at a corner."""
+    a, b, c = _square(0, 0, 1, 1), _square(1, 0, 2, 1), _square(1, 1, 2, 2)
+    pairs = compute_zone_adjacencies([(_ZA, _C1, a), (_ZB, _C1, b), (_ZC, _C1, c)])
+    geom = {fs for fs, d in _pairset(pairs) if d == "geometry"}
+    assert frozenset((str(_ZA), str(_ZB))) in geom, "A and B share an edge"
+    assert frozenset((str(_ZB), str(_ZC))) in geom, "B and C share an edge"
+    assert frozenset((str(_ZA), str(_ZC))) not in geom, "A and C share only a corner — not adjacent"
+
+
+def test_adjacency_inter_city_transit_between_anchors():
+    """Cross-city movement = one transit edge between each city's anchor (lowest-id) zone."""
+    a, b, d = _square(0, 0, 1, 1), _square(1, 0, 2, 1), _square(5, 5, 6, 6)
+    pairs = compute_zone_adjacencies([(_ZA, _C1, a), (_ZB, _C1, b), (_ZD, _C2, d)])
+    transit = {fs for fs, dv in _pairset(pairs) if dv == "transit"}
+    assert transit == {frozenset((str(_ZA), str(_ZD)))}, "anchor(_C1)=_ZA, anchor(_C2)=_ZD"
+
+
+def test_adjacency_is_deterministic_regardless_of_input_order():
+    geoms = [(_ZA, _C1, _square(0, 0, 1, 1)), (_ZB, _C1, _square(1, 0, 2, 1))]
+    assert compute_zone_adjacencies(geoms) == compute_zone_adjacencies(list(reversed(geoms)))
+
+
+def test_generator_emits_serializable_adjacencies():
+    cities, zones, buildings = _velgarien_inputs()
+    payload = generate_medieval_walled("adjacency-serialize", cities, zones, buildings)
+    assert len(payload.adjacencies) > 0, "3-zone Velgarien should yield geometry adjacencies"
+    rpc = serialize_payload_for_rpc(payload)
+    assert "adjacencies" in rpc
+    assert all({"zone_a", "zone_b", "derivation"} <= set(a) for a in rpc["adjacencies"])
+    assert all(a["derivation"] in ("geometry", "transit", "fallback") for a in rpc["adjacencies"])

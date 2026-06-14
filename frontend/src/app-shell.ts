@@ -24,6 +24,7 @@ import './components/auth/LoginPanel.js';
 import './components/auth/RegisterView.js';
 import './components/platform/PlatformHeader.js';
 import './components/platform/SimulationsDashboard.js';
+import './components/drift/DriftView.js';
 import './components/layout/SimulationShell.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
@@ -610,6 +611,14 @@ export class VelgApp extends LitElement {
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'dungeon', entitySlug),
       },
       {
+        path: '/simulations/:id/drift',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'drift'),
+        // Public-first (plan §22.2): the shared Driftkarte topology is the public face,
+        // so anon / non-members may browse it. The membership-gated run + quest HUD is
+        // the view's own concern; the nav tab is gated on drift_p0_enabled (driftStatus).
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'drift', entitySlug),
+      },
+      {
         path: '/simulations/:id/settings',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'settings'),
         enter: async ({ id, entitySlug }) => {
@@ -1178,6 +1187,9 @@ export class VelgApp extends LitElement {
         break;
       case 'dungeon':
         content = html`<velg-dungeon-terminal-view .simulationId=${resolvedId}></velg-dungeon-terminal-view>`;
+        break;
+      case 'drift':
+        content = html`<velg-drift-view .anchorSimulationId=${resolvedId}></velg-drift-view>`;
         break;
       default:
         content = html`

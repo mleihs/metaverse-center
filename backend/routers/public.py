@@ -17,6 +17,7 @@ from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.alpha_state import AlphaStatePublic, FirstContactPublic
 from backend.models.broadsheet import BroadsheetResponse
 from backend.models.common import PaginatedResponse, SuccessResponse
+from backend.models.drift import DriftChartResponse, DriftPublicState
 from backend.models.gazette import GazetteEntry
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.agent_service import AgentService
@@ -38,6 +39,7 @@ from backend.services.constants import (
     OPERATIVE_TARGET_TYPE,
     OPERATIVE_TYPE_COLORS,
 )
+from backend.services.drift_service import DriftService
 from backend.services.dungeon_query_service import DungeonQueryService
 from backend.services.echo_service import EchoService
 from backend.services.embassy_service import EmbassyService
@@ -1071,6 +1073,49 @@ async def get_alpha_state(
         first_contact=FirstContactPublic(enabled=config["enabled"], version=config["version"]),
     )
     return SuccessResponse(data=payload)
+
+
+# ── DRIFT (public face — phase-gate state + chart topology, plan §11/§22.2) ──
+
+
+@router.get("/drift/state")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_drift_state(
+    request: Request, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
+) -> SuccessResponse[DriftPublicState]:
+    """Public DRIFT phase-gate snapshot (alpha-state DTO pattern).
+
+    Always 200: the frontend polls this to decide whether to surface the DRIFT
+    nav-tab + view at all, so a closed gate reports enabled=False (never 404).
+    Uses admin_supabase because platform_settings has no anon RLS policy; the DTO
+    exposes only the boolean gate.
+    """
+    state = await DriftService.get_public_state(admin_supabase)
+    return SuccessResponse(data=state)
+
+
+@router.get("/drift/chart")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_drift_chart(
+    request: Request,
+    http_response: Response,
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[DriftChartResponse | None]:
+    """The shared Driftkarte topology (nodes + edges) — the public face of DRIFT
+    (plan §22.2). Topology only: no per-user discovery state crosses this boundary.
+    404 while the gate is closed (keeps the feature invisible, not a permission wall).
+
+    Two clients by design: the gate read needs the admin client (platform_settings is
+    service_role-only), while the topology read uses the anon client to prove the chart
+    is genuinely public-readable through its RLS policies (migration 240). 5-min
+    Cache-Control so the public landing never hammers the chart query.
+    """
+    await DriftService.assert_p0_enabled(admin_supabase)
+    max_age = get_ttl("cache_http_drift_chart_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
+    chart = await DriftService.get_active_chart(anon)
+    return SuccessResponse(data=chart)
 
 
 # ── Agent Bonds ──────────────────────────────────────────────────────────
