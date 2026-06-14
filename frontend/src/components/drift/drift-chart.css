@@ -118,10 +118,12 @@ velg-drift-chart {
 }
 
 /* ── Erstvermessung seals (chart_honors / C4) ───────────────────────────────
-   A claim stamp planted at each charted node, re-projected every frame beside the
-   node glyph. A muted stake marks any traveller's first-survey; the amber --self
-   variant marks the viewer's own. Offset to the node's right so it never collides
-   with a home label sitting above. pointer-events: none keeps canvas gestures. */
+   A surveyor's claim seal stamped onto each charted node: an octagonal Bureau
+   medallion bearing a compass-rose first-survey mark, planted just right of the
+   node glyph and re-projected every frame. A muted hollow medallion marks another
+   traveller's first-survey; the amber --self variant (filled, glowing) marks the
+   viewer's own. Offset to the node's right so it never collides with a home label
+   sitting above. pointer-events: none keeps every pan/zoom/pick gesture on canvas. */
 .drift-chart__seals {
   position: absolute;
   inset: 0;
@@ -130,29 +132,96 @@ velg-drift-chart {
   z-index: var(--z-raised);
 }
 
+/* Positioning box — left/top are the node's screen point (set per frame); the
+   transform plants the medallion to the node's right, vertically centred. */
 .drift-chart__seal {
   position: absolute;
-  /* left/top are the node's screen point (per frame); plant the stamp just to its
-     right, vertically centred on the glyph. */
-  transform: translate(var(--space-2), -50%);
-  width: var(--space-2-5);
-  height: var(--space-2-5);
-  background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
-  border: var(--border-width-default) solid var(--color-text-muted);
-  box-shadow: var(--shadow-xs);
+  transform: translate(var(--space-3), -50%);
+  display: block;
   pointer-events: none;
-  animation: drift-label-in var(--duration-entrance) var(--ease-out) both;
 }
 
-/* The viewer's own first-survey — amber, filled, a touch heavier. */
-.drift-chart__seal--self {
-  background: color-mix(in srgb, var(--color-primary) 55%, transparent);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
+/* The pressed medallion: presses in like a stamp, carries the hard offset shadow.
+   The stamp scale lives here (not on the positioning box) so the per-frame left/top
+   never fights the entrance transform. */
+.drift-chart__seal-inner {
+  position: relative;
+  display: block;
+  width: var(--space-6);
+  height: var(--space-6);
+  filter: drop-shadow(2px 2px 0 var(--color-surface-sunken));
+  transform-origin: center;
+  animation: drift-seal-stamp 900ms var(--ease-out) both;
+}
+
+/* Octagon backing — a frame ring (the element) wrapping an inset face (::before). */
+.drift-chart__seal-stamp {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  background: var(--color-text-muted);
+}
+
+.drift-chart__seal-stamp::before {
+  content: '';
+  position: absolute;
+  inset: var(--border-width-default);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  background: var(--color-surface-sunken);
+}
+
+/* The compass-rose first-survey mark, centred and upright over the medallion. */
+.drift-chart__seal-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.drift-chart__seal-mark svg {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+/* The viewer's own first-survey — amber medallion, lit face, glowing, heavier. */
+.drift-chart__seal--self .drift-chart__seal-inner {
+  filter: drop-shadow(2px 2px 0 var(--color-surface-sunken))
+    drop-shadow(0 0 5px color-mix(in srgb, var(--color-primary) 60%, transparent));
+}
+
+.drift-chart__seal--self .drift-chart__seal-stamp {
+  background: var(--color-primary);
+}
+
+.drift-chart__seal--self .drift-chart__seal-stamp::before {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface-sunken));
+}
+
+.drift-chart__seal--self .drift-chart__seal-mark {
+  color: var(--color-primary);
+}
+
+/* The Erstvermessung ceremony: the seal presses down like a stamp, overshooting
+   past its mark before settling — a first-to-chart claim taking the board. */
+@keyframes drift-seal-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .drift-chart__seal {
+  .drift-chart__seal-inner {
     animation-duration: 0.01ms;
   }
 }
