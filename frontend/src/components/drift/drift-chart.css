@@ -170,7 +170,9 @@ velg-drift-chart {
   background: var(--color-surface-sunken);
 }
 
-/* The compass-rose first-survey mark, centred and upright over the medallion. */
+/* The compass-rose first-survey mark, centred and upright over the medallion.
+   The glyph sizes itself via the icons.compassRose(16) argument (the single source
+   of truth for the mark size); this layer only centres it over the octagon. */
 .drift-chart__seal-mark {
   position: absolute;
   inset: 0;
@@ -178,11 +180,6 @@ velg-drift-chart {
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted);
-}
-
-.drift-chart__seal-mark svg {
-  width: var(--space-4);
-  height: var(--space-4);
 }
 
 /* The viewer's own first-survey — amber medallion, lit face, glowing, heavier. */

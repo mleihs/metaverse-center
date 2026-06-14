@@ -560,7 +560,10 @@ export class VelgDriftChartHost extends LitElement {
     this._gameGraph?.dispose();
     this._labelLayer?.replaceChildren();
     this._labels = [];
-    this._seals = []; // the seal elements are Lit-owned; just drop our projection refs
+    // The seal elements are Lit-owned (re-rendered from _sealData on reconnect, when
+    // willUpdate may not re-fire), so _sealData is intentionally retained as the render
+    // source; only the projection refs to the now-stale DOM are dropped here.
+    this._seals = [];
     this._renderer = null;
     this._scene = null;
     this._post = null;
