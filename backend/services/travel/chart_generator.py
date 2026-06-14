@@ -479,7 +479,11 @@ class ChartGeneratorService:
 
         emb_resp = await (
             admin_client.table("embassies")
-            .select("simulation_a_id, simulation_b_id, bleed_vector")
+            # ward_vector (migration 191) is the player's opt-in defensive ward (usually
+            # NULL), which build_chart drops from corridor permeability. NOT bleed_vector
+            # (the embassy's thematic channel, set on every embassy) — reading that would
+            # ward every pair and invert the opt-in design.
+            .select("simulation_a_id, simulation_b_id, ward_vector")
             .eq("status", "active")
             .execute()
         )
@@ -487,7 +491,7 @@ class ChartGeneratorService:
             Embassy(
                 a_id=r["simulation_a_id"],
                 b_id=r["simulation_b_id"],
-                ward_vector=r["bleed_vector"],
+                ward_vector=r["ward_vector"],
             )
             for r in (emb_resp.data or [])
         ]

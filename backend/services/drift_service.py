@@ -329,7 +329,14 @@ class DriftService:
 
         P0c-mechanical: the offered set is template × worlds. WHICH Depeschen a world
         actually issues (the storylet/selector layer, §9) is later content work."""
-        if run is None or active is not None or run.position_node_id is None:
+        # Only an ACTIVE run can accept a Depesche (fn_quest_accept rejects frozen/distress
+        # with QUEST_ACTIVE/22023 → 400); don't offer what the click would reject.
+        if (
+            run is None
+            or run.status != "active"
+            or active is not None
+            or run.position_node_id is None
+        ):
             return []
         node = await maybe_single_data(
             supabase.table("drift_chart_nodes")

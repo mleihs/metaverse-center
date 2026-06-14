@@ -1129,6 +1129,10 @@ export class VelgHowToPlayTopic extends LitElement {
   @state() private _sidebarOpen = false;
 
   private _observer: IntersectionObserver | null = null;
+  // page_view fires once per topic slug. connectedCallback AND the first updated()
+  // (changed.has('topic')) both call _resolveTopic on mount; without this guard each mount
+  // would emit a duplicate analytics page_view (across all 16 topics).
+  private _trackedSlug = '';
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -1179,7 +1183,10 @@ export class VelgHowToPlayTopic extends LitElement {
       { name: msg('Game Guide'), url: 'https://metaverse.center/how-to-play/guide' },
       { name: def.title, url: `https://metaverse.center/how-to-play/guide/${def.slug}` },
     ]);
-    analyticsService.trackPageView(`/how-to-play/guide/${def.slug}`, document.title);
+    if (this._trackedSlug !== def.slug) {
+      analyticsService.trackPageView(`/how-to-play/guide/${def.slug}`, document.title);
+      this._trackedSlug = def.slug;
+    }
 
     // Build section ID list for sidebar nav
     this._sectionIds = [];
