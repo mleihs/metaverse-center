@@ -34,6 +34,7 @@ from backend.models.drift import (
     DriftChartResponse,
     DriftDockResponse,
     DriftHonorResponse,
+    DriftPublicState,
     DriftTuningResponse,
     QuestAcceptResponse,
     QuestDeliverResponse,
@@ -81,6 +82,19 @@ class DriftService:
         settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
         if not parse_setting_bool(settings_map.get(_P0_GATE_KEY)):
             raise not_found("DRIFT is not available.")
+
+    @staticmethod
+    async def get_public_state(admin_supabase: Client) -> DriftPublicState:
+        """The public phase-gate snapshot (drift_p0_enabled), always 200.
+
+        Unlike assert_p0_enabled, this never raises: the frontend polls it to decide
+        whether to surface the DRIFT nav-tab + view at all, so a closed gate must
+        report enabled=False rather than 404. Reuses the same fail-closed read so the
+        public snapshot and the gate can never disagree. platform_settings is
+        service_role-only → admin client.
+        """
+        settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
+        return DriftPublicState(enabled=parse_setting_bool(settings_map.get(_P0_GATE_KEY)))
 
     # ── reads ─────────────────────────────────────────────────────────────────
 

@@ -15,6 +15,11 @@ export type DriftFrequency =
 
 export type DriftDistanceBand = 'near' | 'mid' | 'deep';
 
+/** Public phase-gate snapshot from GET /api/v1/public/drift/state (no JWT). */
+export interface DriftPublicState {
+  enabled: boolean;
+}
+
 /** A travel_runs row as returned by the run-lifecycle RPCs (mirrors TravelRunResponse). */
 export interface TravelRun {
   id: UUID;

@@ -2,6 +2,7 @@ import type {
   DriftChart,
   DriftDock,
   DriftHonor,
+  DriftPublicState,
   DriftQuestAcceptResult,
   DriftQuestDeliverResult,
   DriftQuestState,
@@ -20,9 +21,16 @@ import { BaseApiService } from './BaseApiService.js';
  * (RUN_STALE) means another tab advanced the run, so refetch and retry.
  */
 export class DriftApiService extends BaseApiService {
-  /** Active chart version's public topology; data is null until a chart is seeded. */
-  getChart(): Promise<ApiResponse<DriftChart | null>> {
-    return this.get('/drift/chart');
+  /** Active chart version's topology; data is null until a chart is seeded. The chart is
+   *  public-first (plan §22.2): pass 'public' for an anonymous spectator (no JWT, hits
+   *  /api/v1/public/drift/chart) or 'member' for an authenticated traveler. */
+  getChart(mode: 'public' | 'member'): Promise<ApiResponse<DriftChart | null>> {
+    return this.getSimulationData('/drift/chart', mode);
+  }
+
+  /** Public DRIFT phase-gate snapshot (no JWT) — drives the gated nav tab + view. */
+  getPublicState(): Promise<ApiResponse<DriftPublicState>> {
+    return this.getPublic('/drift/state');
   }
 
   /** HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning. */

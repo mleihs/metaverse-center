@@ -613,11 +613,10 @@ export class VelgApp extends LitElement {
       {
         path: '/simulations/:id/drift',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'drift'),
-        enter: async ({ id, entitySlug }) => {
-          const ok = await this._guardAuth();
-          if (!ok) return false;
-          return this._enterSimulationRoute(id, 'drift', entitySlug);
-        },
+        // Public-first (plan §22.2): the shared Driftkarte topology is the public face,
+        // so anon / non-members may browse it. The membership-gated run + quest HUD is
+        // the view's own concern; the nav tab is gated on drift_p0_enabled (driftStatus).
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'drift', entitySlug),
       },
       {
         path: '/simulations/:id/settings',
