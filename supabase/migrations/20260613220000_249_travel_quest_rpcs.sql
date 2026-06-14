@@ -101,6 +101,15 @@ ON CONFLICT (template_key) DO UPDATE
     SET family = EXCLUDED.family, tier = EXCLUDED.tier,
         pack_slug = EXCLUDED.pack_slug, definition = EXCLUDED.definition;
 
+-- Hospitality caps as DATA (not plpgsql literals) — same tuning-as-data posture as 246
+-- (the §10 matrix per-level ceilings; "never hardcode mappings that should be
+-- configurable"). drift_tuning (246) is the single home; the gate reads via drift_tuning_value.
+INSERT INTO drift_tuning (setting_key, value, description) VALUES
+    ('hospitality_caps',
+     '{"memory_importance": 5, "event_impact_off_home": 3, "event_impact_home": 10}'::jsonb,
+     'Per-effect ceilings the §10 hospitality gate (fn_apply_quest_effects) clamps to off Home: agent-memory importance and spawn_event impact_level (foreign standard/offen); event_impact_home is the full-vocabulary ceiling at Home.')
+ON CONFLICT (setting_key) DO NOTHING;
+
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 2. fn_apply_quest_effects(instance, effects[]) — the single hospitality gate
@@ -131,6 +140,7 @@ DECLARE
     v_ag_name     TEXT;
     v_impact      INT;
     v_importance  INT;
+    v_caps        JSONB;
     v_applied     JSONB := '[]'::jsonb;
     v_skipped     JSONB := '[]'::jsonb;
 BEGIN
@@ -147,6 +157,7 @@ BEGIN
 
     v_owner := v_inst.owner_user_id;
     SELECT anchor_simulation_id INTO v_anchor FROM traveler_profiles WHERE user_id = v_owner;
+    v_caps := drift_tuning_value('hospitality_caps');  -- §10 per-effect ceilings (data, not literals)
 
     FOR v_effect IN SELECT * FROM jsonb_array_elements(COALESCE(p_effects, '[]'::jsonb))
     LOOP
@@ -208,7 +219,9 @@ BEGIN
             -- Home (full) or standard/offen (importance ≤ 5).
             IF v_hosp = 'home' OR v_hosp IN ('standard', 'offen') THEN
                 v_importance := COALESCE((v_effect ->> 'importance')::int, 4);
-                IF v_hosp <> 'home' THEN v_importance := LEAST(v_importance, 5); END IF;
+                IF v_hosp <> 'home' THEN
+                    v_importance := LEAST(v_importance, COALESCE((v_caps ->> 'memory_importance')::int, 5));
+                END IF;
                 IF v_target_ag IS NOT NULL THEN
                     SELECT name INTO v_ag_name FROM agents WHERE id = v_target_ag;
                     INSERT INTO agent_memories (agent_id, simulation_id, memory_type, content, importance, source_type)
@@ -231,9 +244,9 @@ BEGIN
             IF v_hosp = 'home' OR v_hosp IN ('standard', 'offen') THEN
                 v_impact := COALESCE((v_effect ->> 'impact_level')::int, 3);
                 IF v_hosp = 'home' THEN
-                    v_impact := LEAST(GREATEST(v_impact, 1), 10);
+                    v_impact := LEAST(GREATEST(v_impact, 1), COALESCE((v_caps ->> 'event_impact_home')::int, 10));
                 ELSE
-                    v_impact := LEAST(GREATEST(v_impact, 1), 3);
+                    v_impact := LEAST(GREATEST(v_impact, 1), COALESCE((v_caps ->> 'event_impact_off_home')::int, 3));
                 END IF;
                 INSERT INTO events (simulation_id, title, event_type, description, impact_level, metadata)
                 VALUES (v_target_sim,
@@ -342,14 +355,25 @@ BEGIN
             USING ERRCODE = '22023';
     END IF;
 
-    -- Resolve provenance agents (P0: first active agent per sim — the selector DSL is later).
-    SELECT id INTO v_origin_ag FROM active_agents WHERE simulation_id = v_origin_sim LIMIT 1;
-    SELECT id INTO v_target_ag FROM active_agents WHERE simulation_id = p_target_sim LIMIT 1;
+    -- Resolve provenance agents (P0: oldest active agent per sim — the selector DSL is
+    -- later). ORDER BY created_at makes the pick deterministic-by-construction (no arbitrary
+    -- LIMIT-without-ORDER row), matching the home-node invariant's determinism posture.
+    SELECT id INTO v_origin_ag FROM active_agents WHERE simulation_id = v_origin_sim ORDER BY created_at LIMIT 1;
+    SELECT id INTO v_target_ag FROM active_agents WHERE simulation_id = p_target_sim ORDER BY created_at LIMIT 1;
     IF v_origin_ag IS NOT NULL THEN
         v_refs := v_refs || jsonb_build_object('kind', 'agent', 'id', v_origin_ag, 'sim', v_origin_sim);
     END IF;
     IF v_target_ag IS NOT NULL THEN
         v_refs := v_refs || jsonb_build_object('kind', 'agent', 'id', v_target_ag, 'sim', p_target_sim);
+    END IF;
+
+    -- KPI-1: a Depesche references ≥2 real entities (the 241 schema delegates this
+    -- cardinality to "the service layer" — for this write path that IS this RPC). A world
+    -- without live agents surfaces as an honest reject, not a silently degraded quest whose
+    -- inject_agent_memory effect later no-ops with no signal.
+    IF jsonb_array_length(v_refs) < 2 THEN
+        RAISE EXCEPTION 'fn_quest_accept: origin/target world lacks the live agents a Depesche needs (KPI-1)'
+            USING ERRCODE = '22023';
     END IF;
 
     v_cargo_fam := COALESCE(v_tmpl.definition #>> '{cargo,family}', 'erinnerungsstuecke');
@@ -413,7 +437,6 @@ DECLARE
     v_cargo_id    UUID;
     v_effects_in  JSONB := '[]'::jsonb;
     v_effect      JSONB;
-    v_resolved    JSONB;
     v_result      JSONB;
 BEGIN
     IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
@@ -456,17 +479,16 @@ BEGIN
         RAISE EXCEPTION 'CARGO_MISSING' USING ERRCODE = '22023';
     END IF;
 
-    -- Build the effect specs from the template vocabulary, binding each cross-sim effect
-    -- to the resolved target sim/agent. emit_fragment (self) carries the target sim only
-    -- (for the journal's simulation_id), no agent.
+    -- Annotate every effect with the resolved deliver targets; the gate picks what each
+    -- kind needs (target_sim for echo/event, target_agent for memory, neither for the self
+    -- fragment). Uniform annotation keeps advance free of per-effect knowledge and preserves
+    -- the effects-carry-their-own-targets contract the P2 Zerfaserung scatter relies on
+    -- (scatter targets many worlds, so the gate can't just read one instance slot).
     SELECT * INTO v_tmpl FROM travel_quest_templates WHERE template_key = v_inst.template_key;
     FOR v_effect IN SELECT * FROM jsonb_array_elements(COALESCE(v_tmpl.definition -> 'effects', '[]'::jsonb))
     LOOP
-        v_resolved := v_effect || jsonb_build_object('target_sim', v_target_sim);
-        IF (v_effect ->> 'kind') = 'inject_agent_memory' THEN
-            v_resolved := v_resolved || jsonb_build_object('target_agent', v_target_ag);
-        END IF;
-        v_effects_in := v_effects_in || v_resolved;
+        v_effects_in := v_effects_in
+            || (v_effect || jsonb_build_object('target_sim', v_target_sim, 'target_agent', v_target_ag));
     END LOOP;
 
     -- Fire through the single gate (internal DEFINER call — runs as owner/postgres,
