@@ -878,7 +878,7 @@ export class VelgDriftView extends LitElement {
                           class="depesche__offer"
                           ?disabled=${this._busy}
                           title=${o.brief}
-                          aria-label=${str`${o.title} annehmen – Ziel ${o.target_simulation_name}`}
+                          aria-label=${msg(str`${o.title} annehmen – Ziel ${o.target_simulation_name}`)}
                           @click=${() => this._acceptOffer(o)}
                         >
                           <span
