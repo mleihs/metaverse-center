@@ -19,6 +19,7 @@ const FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
 uniform float uTime;
+uniform float uMotion;
 uniform vec2 uCamCenter;
 uniform float uViewHeight;
 uniform float uAspect;
@@ -70,10 +71,17 @@ void main() {
   }
   light = clamp(light, 0.0, 1.0) * 0.8;
 
-  // Drifting medium, parallax against the chart (factor < 1 fakes depth)
-  vec2 np = world * 0.0016 - uCamCenter * 0.0005 + vec2(uTime * 0.012, -uTime * 0.007);
-  float n1 = fbm(np);
-  float n2 = fbm(np * 3.1 - vec2(uTime * 0.02, 0.0));
+  // The Bleed medium. A slow, barely-there current advects the field — uMotion damps it
+  // to a standstill under prefers-reduced-motion. Domain-warping the fbm sample by a
+  // second fbm (iq's technique) turns flat noise into organic, drifting filaments; the
+  // structure is spatial, so the medium stays rich even frozen. Parallax (< 1) fakes depth.
+  float drift = uTime * uMotion;
+  vec2 base = world * 0.0016 - uCamCenter * 0.0005;
+  vec2 current = vec2(drift * 0.010, -drift * 0.0065);
+  vec2 warp = vec2(fbm(base + current), fbm(base + vec2(5.2, 1.3) - current * 0.7));
+  float n1 = fbm(base + 1.15 * warp);
+  float n2 = fbm(base * 3.1 + 1.6 * warp - vec2(drift * 0.016, 0.0));
+  float filament = warp.x * warp.y; // the warp cross-term reads as wispy strands
   // sRGB lifts darks hard: keep deep-Drift sums below ~0.01 linear
   float noiseAmp = mix(0.045, 0.018, light); // the deep Drift is staticky
 
@@ -83,6 +91,8 @@ void main() {
   col += uTint * (0.006 + 0.016 * light);
   col += (n1 * n1) * noiseAmp * vec3(0.30, 0.42, 0.85);
   col += n2 * noiseAmp * 0.30 * vec3(0.5, 0.45, 0.9);
+  // very subtle freq-tinted filaments, breathing with the current tuning colour
+  col += smoothstep(0.40, 0.95, filament) * (0.008 + 0.012 * light) * uTint;
 
   // Survey graticule
   float wMinor = 1.1 * upp;
@@ -103,6 +113,7 @@ export function createBackground(chart: ChartData, aspect: number, seedTint?: TH
   const material = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
+      uMotion: { value: 1 },
       uCamCenter: { value: new THREE.Vector2() },
       uViewHeight: { value: 1500 },
       uAspect: { value: aspect },
@@ -125,8 +136,9 @@ export function createBackground(chart: ChartData, aspect: number, seedTint?: TH
     setAspect(a: number) {
       material.uniforms.uAspect.value = a;
     },
-    update(ctx: FrameCtx, tint: THREE.Color) {
+    update(ctx: FrameCtx, tint: THREE.Color, motion = 1) {
       material.uniforms.uTime.value = ctx.time;
+      material.uniforms.uMotion.value = motion;
       material.uniforms.uCamCenter.value.set(ctx.camCenter.x, ctx.camCenter.y);
       material.uniforms.uViewHeight.value = ctx.viewHeight;
       (material.uniforms.uTint.value as THREE.Color).copy(tint);

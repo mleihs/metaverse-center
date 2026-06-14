@@ -166,6 +166,8 @@ export class VelgDriftChartHost extends LitElement {
   private _resizeObserver: ResizeObserver | null = null;
   private _rafId = 0;
   private _elapsed = 0;
+  /** 0 when the user prefers reduced motion (freezes the background drift), else 1. */
+  private _bgMotion = 1;
   private _lastTime = 0;
   private _pixelRatio = 1;
   private _tween: { from: number; to: number; start: number; dur: number } | null = null;
@@ -287,6 +289,7 @@ export class VelgDriftChartHost extends LitElement {
     const aspect = this._aspect(wrap);
     // Pass the freq-2 (memory) color as the seed tint; overwritten on frame 1.
     const seedTint = this._freqColors[this.frequency] ?? this._freqColors[2];
+    this._bgMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
     this._background = createBackground(this._chart, aspect, seedTint);
     this._corridors = createCorridors(this._chart);
     this._broadcasts = createBroadcasts(this._chart);
@@ -658,7 +661,7 @@ export class VelgDriftChartHost extends LitElement {
     };
 
     const tint = this._currentTint();
-    this._background.update(ctx, tint);
+    this._background.update(ctx, tint, this._bgMotion);
     this._corridors.update(ctx);
     this._broadcasts.update(ctx);
     this._nodes.update(ctx);
