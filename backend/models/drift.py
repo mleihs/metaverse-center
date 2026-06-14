@@ -97,6 +97,18 @@ class DriftChartResponse(BaseModel):
     edges: list[DriftChartEdgeResponse]
 
 
+class DriftPublicState(BaseModel):
+    """Public phase-gate snapshot returned by GET /api/v1/public/drift/state.
+
+    A narrow projection of the drift_* platform_settings gates so an anonymous
+    landing/spectator can tell whether DRIFT is live without a JWT (alpha-state DTO
+    pattern). P0 surfaces only the master gate; further phase flags are an additive
+    extension on this model, never a new endpoint.
+    """
+
+    enabled: bool
+
+
 class DriftTuningResponse(BaseModel):
     """HUD-relevant Zahlenwerk scalars (drift_tuning, §2) for client gauge scaling.
 

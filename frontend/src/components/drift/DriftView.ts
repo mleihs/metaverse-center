@@ -320,6 +320,9 @@ export class VelgDriftView extends LitElement {
 
   /** The access token the current data reflects — drives the auth-ready self-heal below. */
   private _loadedToken: string | null = null;
+  /** Whether the current data was loaded as a member (full HUD) vs. an anon spectator
+   *  (public chart only). A guest who logs in mid-view triggers a full member reload. */
+  private _loadedAsMember = false;
   private _disposeAuthEffect?: () => void;
 
   /** Gauge maxima — from drift_tuning when loaded, else the fail-soft fallbacks. */
@@ -358,7 +361,10 @@ export class VelgDriftView extends LitElement {
       const token = appState.accessToken.value;
       if (!token || token === this._loadedToken) return;
       this._loadedToken = token;
-      if (this._error) {
+      // Full reload if the first load failed (token absent at mount) or if a guest just
+      // became a member (the anon load fetched only the public chart); otherwise the cheap
+      // run + quest refresh covers the common already-member token-refresh race.
+      if (this._error || !this._loadedAsMember) {
         void this._load();
       } else {
         void this._refreshRun();
@@ -383,21 +389,37 @@ export class VelgDriftView extends LitElement {
     this._loading = true;
     this._error = false;
     try {
-      const [chartRes, runRes, tuningRes, questRes, honorRes] = await Promise.all([
-        driftApi.getChart(),
-        driftApi.getRun(),
-        driftApi.getTuning(),
-        driftApi.getQuests(),
-        driftApi.getHonors(),
-      ]);
-      this._chart = chartRes.success ? (chartRes.data ?? null) : null;
-      this._run = runRes.success ? (runRes.data ?? null) : null;
-      if (tuningRes.success) this._tuning = tuningRes.data;
-      if (questRes.success) this._quests = questRes.data;
-      if (honorRes.success) this._honors = honorRes.data ?? [];
-      if (!chartRes.success) this._error = true;
-      // Resumed onto a foreign broadcast edge? Surface its dossier.
-      if (this._run) void this._maybeDock(this._run);
+      // Public-first (plan §22.2): the shared chart topology is the public face, so an
+      // anonymous spectator loads only the chart. Run / quests / honors / tuning are
+      // membership-gated by design — a guest sees the Driftkarte but no personal HUD,
+      // manifest or seal overlay. The mode decision lives here at the call site (never in
+      // the API layer); appState.isAuthenticated is the canonical authed signal.
+      if (appState.isAuthenticated.value) {
+        const [chartRes, runRes, tuningRes, questRes, honorRes] = await Promise.all([
+          driftApi.getChart('member'),
+          driftApi.getRun(),
+          driftApi.getTuning(),
+          driftApi.getQuests(),
+          driftApi.getHonors(),
+        ]);
+        this._chart = chartRes.success ? (chartRes.data ?? null) : null;
+        this._run = runRes.success ? (runRes.data ?? null) : null;
+        if (tuningRes.success) this._tuning = tuningRes.data;
+        if (questRes.success) this._quests = questRes.data;
+        if (honorRes.success) this._honors = honorRes.data ?? [];
+        if (!chartRes.success) this._error = true;
+        this._loadedAsMember = true;
+        // Resumed onto a foreign broadcast edge? Surface its dossier.
+        if (this._run) void this._maybeDock(this._run);
+      } else {
+        const chartRes = await driftApi.getChart('public');
+        this._chart = chartRes.success ? (chartRes.data ?? null) : null;
+        this._run = null;
+        this._quests = null;
+        this._honors = [];
+        if (!chartRes.success) this._error = true;
+        this._loadedAsMember = false;
+      }
     } catch (err) {
       captureError(err, { source: 'VelgDriftView._load' });
       this._error = true;
@@ -716,15 +738,28 @@ export class VelgDriftView extends LitElement {
 
   private _renderHud(run: TravelRun | null) {
     if (!run) {
+      // Public-first (plan §22.2): a guest reads the shared chart but cannot open a run
+      // (openRun requires auth). Show a spectator prompt instead of an AUFBRUCH control
+      // that would only error. The auth-token effect re-runs _load on sign-in, so the
+      // member HUD swaps in the moment a guest authenticates.
+      const isMember = appState.isAuthenticated.value;
       return html`
         <div class="hud">
           <p class="hud__title">${msg('No active drift')}</p>
           <p class="hud__hint">
-            ${msg('Open a run at your home broadcast, then click a lit node to cross the Bleed.')}
+            ${
+              isMember
+                ? msg('Open a run at your home broadcast, then click a lit node to cross the Bleed.')
+                : msg('You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.')
+            }
           </p>
-          <button class="btn btn--primary" ?disabled=${this._busy} @click=${this._open}>
-            ${msg('Aufbruch')}
-          </button>
+          ${
+            isMember
+              ? html`<button class="btn btn--primary" ?disabled=${this._busy} @click=${this._open}>
+                  ${msg('Aufbruch')}
+                </button>`
+              : ''
+          }
         </div>
       `;
     }

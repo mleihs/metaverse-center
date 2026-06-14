@@ -3,6 +3,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { driftStatus } from '../../services/DriftStatusService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -14,6 +15,10 @@ interface NavTab {
   requireAdmin?: boolean;
   /** Only show this tab if the named setting_key is 'true' in appState.settings. */
   requireSetting?: string;
+  /** Only show this tab if this predicate returns true. For platform-level phase gates
+   *  that live outside appState.settings (e.g. DRIFT's drift_p0_enabled). The predicate
+   *  may read a signal — it runs during render, so the nav stays reactive. */
+  requireFlag?: () => boolean;
 }
 
 function getTabs(): NavTab[] {
@@ -38,6 +43,12 @@ function getTabs(): NavTab[] {
     { label: msg('Atlas'), path: 'atlas', icon: () => icons.compassRose(14) },
     { label: msg('Terminal'), path: 'terminal', icon: () => icons.terminal(14) },
     { label: msg('Dungeon'), path: 'dungeon', icon: () => icons.dungeonDepth(14) },
+    {
+      label: msg('Drift'),
+      path: 'drift',
+      icon: () => icons.antenna(14),
+      requireFlag: () => driftStatus.enabled.value,
+    },
     { label: msg('Settings'), path: 'settings', icon: () => icons.gear(14), requireAdmin: true },
   ];
 }
@@ -408,6 +419,9 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
   connectedCallback(): void {
     super.connectedCallback();
     this._detectActiveTab();
+    // Resolve the DRIFT phase gate (drift_p0_enabled) so the Drift tab appears once the
+    // public state confirms it is live. Idempotent + self-observing — never rejects.
+    void driftStatus.ensureLoaded();
     this._boundClickOutside = this._handleClickOutside.bind(this);
     this._boundKeyDown = this._handleKeyDown.bind(this);
     this._boundDetectActiveTab = () => this._detectActiveTab();
@@ -474,6 +488,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         const setting = appState.settings.value.find((s) => s.setting_key === tab.requireSetting);
         if (!setting || String(setting.setting_value) !== 'true') return false;
       }
+      if (tab.requireFlag && !tab.requireFlag()) return false;
       return true;
     });
   }
