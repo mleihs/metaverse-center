@@ -33,16 +33,8 @@ import { buttonStyles } from '../shared/button-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import './DriftChartHost.js';
 import './DriftDockPanel.js';
+import { FREQUENCIES, freqColorByName } from './palette.js';
 
-const FREQUENCIES = [
-  'commerce',
-  'language',
-  'memory',
-  'resonance',
-  'architecture',
-  'dream',
-  'desire',
-] as const;
 // Gauge maxima come from the tuning API (drift_tuning is the source of truth); these
 // are only the fail-soft fallbacks if that fetch fails. P0 travellers are class 1.
 const DZ_CAP_FALLBACK = 20;
@@ -270,7 +262,8 @@ export class VelgDriftView extends LitElement {
         cursor: default;
       }
       @media (prefers-reduced-motion: reduce) {
-        .stat__bar > span {
+        .stat__bar > span,
+        .depesche__offer {
           transition-duration: 0.01ms;
         }
       }
@@ -355,68 +348,41 @@ export class VelgDriftView extends LitElement {
   /** Accept a deliver Depesche at the current world edge → cargo bound to the run. */
   private _acceptOffer(offer: DriftQuestOffer): void {
     const run = this._run;
-    if (!run || this._busy) return;
-    this._busy = true;
-    void (async () => {
-      try {
-        const res = await driftApi.acceptQuest(
+    if (!run) return;
+    void this._mutate(
+      () =>
+        driftApi.acceptQuest(
           run.id,
           run.run_version,
           offer.template_key,
           offer.target_simulation_id,
-        );
-        if (res.success) {
-          this._run = res.data.run;
-          await this._refreshQuests();
-          VelgToast.success(msg(str`Depesche angenommen – Ziel: ${offer.target_simulation_name}.`));
-        } else {
-          VelgToast.error(this._friendlyError(res.error.message ?? ''));
-          await this._refreshRun();
-          await this._refreshQuests();
-        }
-      } catch (err) {
-        captureError(err, { source: 'VelgDriftView._acceptOffer' });
-        VelgToast.error(msg('Die Depesche ließ sich nicht annehmen.'));
-      } finally {
-        this._busy = false;
-      }
-    })();
+        ),
+      async (data) => {
+        this._run = data.run;
+        await this._refreshQuests();
+        VelgToast.success(msg(str`Depesche angenommen – Ziel: ${offer.target_simulation_name}.`));
+      },
+      'VelgDriftView._acceptOffer',
+    );
   }
 
   /** Deliver the carried Depesche at the target broadcast edge → fires the gate. */
   private _deliver(): void {
     const run = this._run;
     const active = this._quests?.active;
-    if (!run || !active || this._busy) return;
-    this._busy = true;
-    void (async () => {
-      try {
-        const res = await driftApi.advanceQuest(active.id, run.id, run.run_version);
-        if (res.success) {
-          this._run = res.data.run;
-          const fired = res.data.effects.applied.length;
-          await this._refreshQuests();
-          VelgToast.success(
-            msg(str`Depesche abgeliefert – ${fired} Wirkung${fired === 1 ? '' : 'en'} ausgelöst.`),
-          );
-        } else {
-          VelgToast.error(this._friendlyError(res.error.message ?? ''));
-          await this._refreshRun();
-          await this._refreshQuests();
-        }
-      } catch (err) {
-        captureError(err, { source: 'VelgDriftView._deliver' });
-        VelgToast.error(msg('Die Ablieferung scheiterte.'));
-      } finally {
-        this._busy = false;
-      }
-    })();
-  }
-
-  /** A bleed vector's chart color token (the canvas palette bridge, _colors.css). */
-  private _vectorColor(vector: string): string {
-    const i = Math.max(0, (FREQUENCIES as readonly string[]).indexOf(vector));
-    return `var(--drift-freq-${i})`;
+    if (!run || !active) return;
+    void this._mutate(
+      () => driftApi.advanceQuest(active.id, run.id, run.run_version),
+      async (data) => {
+        this._run = data.run;
+        const fired = data.effects.applied.length;
+        await this._refreshQuests();
+        VelgToast.success(
+          msg(str`Depesche abgeliefert – ${fired} Wirkung${fired === 1 ? '' : 'en'} ausgelöst.`),
+        );
+      },
+      'VelgDriftView._deliver',
+    );
   }
 
   /** Display label for a cargo family (the 7 frequency-matter slugs, concept §7.8). */
@@ -472,39 +438,51 @@ export class VelgDriftView extends LitElement {
     this._dockOpen = false;
   };
 
-  /** Run a mutation, adopt the returned run, resync on a refused action. */
-  private async _act(fn: () => Promise<ApiResponse<TravelRun>>, source: string): Promise<void> {
+  /**
+   * The one mutation runner: busy-guard, call the RPC, hand a success payload to the
+   * caller's `onSuccess`, and on a refused action map the error to a friendly toast +
+   * resync (the server is the only truth). Generic over the response type so the run
+   * lifecycle, accept and deliver all share the guard + error/resync path.
+   */
+  private async _mutate<T>(
+    fn: () => Promise<ApiResponse<T>>,
+    onSuccess: (data: T) => void | Promise<void>,
+    source: string,
+  ): Promise<void> {
     if (this._busy) return;
     this._busy = true;
     try {
       const res = await fn();
       if (res.success) {
-        const run = res.data;
-        if (run.status === 'completed' || run.status === 'abandoned') {
-          // Terminal: announce the haul banked / lost, then drop back to the "Aufbruch"
-          // state (don't keep showing a finished run as if it were still active).
-          this._run = null;
-          this._quests = null;
-          this._closeDock();
-          this._announceClose(run);
-        } else {
-          this._run = run;
-          void this._maybeDock(run);
-          // Position/cargo changed → refresh offers, the carried Depesche, the manifest.
-          void this._refreshQuests();
-        }
+        await onSuccess(res.data);
       } else {
         VelgToast.error(this._friendlyError(res.error.message ?? ''));
         await this._refreshRun();
-        void this._refreshQuests();
+        await this._refreshQuests();
       }
     } catch (err) {
       captureError(err, { source });
-      VelgToast.error(msg('Something faltered on the chart.'));
+      VelgToast.error(msg('Etwas im Drift hat versagt.'));
     } finally {
       this._busy = false;
     }
   }
+
+  /** onSuccess for the run-lifecycle mutations (open/move/complete/abandon): a terminal
+   *  status drops back to the Aufbruch state + announces the outcome; otherwise adopt the
+   *  run, surface a foreign dock, and refresh the quest snapshot (position/cargo changed). */
+  private _adoptRun = (run: TravelRun): void => {
+    if (run.status === 'completed' || run.status === 'abandoned') {
+      this._run = null;
+      this._quests = null;
+      this._closeDock();
+      this._announceClose(run);
+    } else {
+      this._run = run;
+      void this._maybeDock(run);
+      void this._refreshQuests();
+    }
+  };
 
   /** Toast a closed run's outcome: haul banked (Entladung), lost (recall), or Rückzug. */
   private _announceClose(run: TravelRun): void {
@@ -528,14 +506,15 @@ export class VelgDriftView extends LitElement {
       VelgToast.error(msg('Anchor to a home simulation before you set out.'));
       return;
     }
-    void this._act(() => driftApi.openRun(anchor), 'VelgDriftView._open');
+    void this._mutate(() => driftApi.openRun(anchor), this._adoptRun, 'VelgDriftView._open');
   }
 
   private _onNodePick(e: CustomEvent<{ nodeId: string }>): void {
     const run = this._run;
     if (!run) return;
-    void this._act(
+    void this._mutate(
       () => driftApi.move(run.id, run.run_version, e.detail.nodeId),
+      this._adoptRun,
       'VelgDriftView._move',
     );
   }
@@ -543,13 +522,21 @@ export class VelgDriftView extends LitElement {
   private _complete(): void {
     const run = this._run;
     if (!run) return;
-    void this._act(() => driftApi.complete(run.id, run.run_version), 'VelgDriftView._complete');
+    void this._mutate(
+      () => driftApi.complete(run.id, run.run_version),
+      this._adoptRun,
+      'VelgDriftView._complete',
+    );
   }
 
   private _abandon(): void {
     const run = this._run;
     if (!run) return;
-    void this._act(() => driftApi.abandon(run.id, run.run_version), 'VelgDriftView._abandon');
+    void this._mutate(
+      () => driftApi.abandon(run.id, run.run_version),
+      this._adoptRun,
+      'VelgDriftView._abandon',
+    );
   }
 
   /** Map a raw RPC error to a friendly, in-world German message. */
@@ -679,7 +666,7 @@ export class VelgDriftView extends LitElement {
             <p class="hud__section-label">${msg('Fracht')}</p>
             ${q.cargo.map(
               (c) => html`<div class="manifest__item">
-                <span class="manifest__dot" style="--_v:${this._vectorColor(c.vector)}"></span>
+                <span class="manifest__dot" style="--_v:${freqColorByName(c.vector)}"></span>
                 <span class="manifest__name">${this._cargoLabel(c.family)}</span>
                 <span class="manifest__vec">${c.vector}</span>
               </div>`,
@@ -716,6 +703,7 @@ export class VelgDriftView extends LitElement {
                     class="depesche__offer"
                     ?disabled=${this._busy}
                     title=${o.brief}
+                    aria-label=${str`Depesche annehmen – Ziel ${o.target_simulation_name}`}
                     @click=${() => this._acceptOffer(o)}
                   >
                     ${o.target_simulation_name}
