@@ -28,6 +28,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
+import { driftStatus } from '../../services/DriftStatusService.js';
 import { seoService } from '../../services/SeoService.js';
 import { type IconKey, icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
@@ -1134,6 +1135,13 @@ export class VelgHowToPlayTopic extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._resolveTopic();
+    // The Drift topic is gated on the public drift_p0_enabled flag (like its nav tab + hub
+    // card). The flag starts false, so a cold deep-link first resolves to 404; once the gate
+    // loads, re-resolve — when the flag is on this reveals the page (the @state write
+    // re-renders), when off it stays 404. ensureLoaded never rejects (observed internally).
+    void driftStatus.ensureLoaded().then(() => {
+      if (this.topic === 'drift') this._resolveTopic();
+    });
   }
 
   disconnectedCallback(): void {
@@ -1152,7 +1160,12 @@ export class VelgHowToPlayTopic extends LitElement {
   }
 
   private _resolveTopic() {
-    this._topicDef = getTopicBySlug(this.topic);
+    const resolved = getTopicBySlug(this.topic);
+    // Drift is flag-gated: when drift_p0_enabled is off it resolves to 404 here, so no SEO
+    // title / canonical / analytics for an unreleased mode leaks (the gate also hides the
+    // hub card + search hit). connectedCallback re-resolves once the public flag loads.
+    this._topicDef =
+      resolved?.slug === 'drift' && !driftStatus.enabled.value ? undefined : resolved;
     if (!this._topicDef) return;
 
     const def = this._topicDef;
