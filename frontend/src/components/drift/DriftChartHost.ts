@@ -27,10 +27,12 @@
 import { localized, msg } from '@lit/localize';
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import * as THREE from 'three';
 
 import { captureError } from '../../services/SentryService.js';
 import type { DriftChart, TravelRun } from '../../types/drift.js';
+import { icons } from '../../utils/icons.js';
 import { generateChart } from './chart/generate.js';
 import type { ChartData, FrameCtx } from './chart/types.js';
 import { PanZoomController } from './controls/panzoom.js';
@@ -70,6 +72,9 @@ function ensureComponentStyles(host: HTMLElement): void {
 }
 
 const easeInOutCubic = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+/** One Erstvermessung claim to stamp on the board: a charted node + whether it's mine. */
+type SealDatum = { key: string; x: number; y: number; mine: boolean };
 
 @localized()
 @customElement('velg-drift-chart')
@@ -122,9 +127,11 @@ export class VelgDriftChartHost extends LitElement {
   private _labelLayer: HTMLElement | null = null;
   private _labels: { el: HTMLElement; id: string; x: number; y: number }[] = [];
 
-  // Erstvermessung seals over the canvas (any claimed node); projected per frame.
-  private _sealLayer: HTMLElement | null = null;
-  private _seals: { el: HTMLElement; id: string; x: number; y: number }[] = [];
+  // Erstvermessung seals over the canvas — rendered declaratively (Lit, so the icon
+  // glyph comes from icons.ts) and projected to screen each frame. _sealData is the
+  // claimed-node list the template maps; _seals is the live projection list.
+  private _sealData: SealDatum[] = [];
+  private _seals: { el: HTMLElement; x: number; y: number }[] = [];
 
   // Light DOM so canvas pointer coordinates resolve correctly (see header).
   protected createRenderRoot(): HTMLElement {
@@ -154,6 +161,14 @@ export class VelgDriftChartHost extends LitElement {
     this._mount();
   }
 
+  protected willUpdate(changed: Map<string, unknown>): void {
+    // Recompute the claimed-node list the seal layer renders from — only when its
+    // inputs change, so unrelated re-renders (frequency, run, offline) stay cheap.
+    if (changed.has('claimedKeys') || changed.has('selfKeys') || changed.has('chartData')) {
+      this._sealData = this._computeSealData();
+    }
+  }
+
   protected updated(changed: Map<string, unknown>): void {
     // Reflect a frequency change as an eased Umstimmung (ceremonial retune),
     // matching the spike's onTuneSnap; dissonance is read live in the frame.
@@ -167,10 +182,10 @@ export class VelgDriftChartHost extends LitElement {
     } else if (changed.has('run')) {
       this._syncRunState();
     }
-    // Honor claims can change independently of the topology (e.g. a refetch after an
-    // Entladung) — re-plant the seals without rebuilding the whole graph.
-    if ((changed.has('claimedKeys') || changed.has('selfKeys')) && this._scene) {
-      this._buildSeals();
+    // Honor claims or topology changed → re-point the per-frame projection at the
+    // freshly-rendered seal elements (declared in render(); no imperative rebuild).
+    if (changed.has('claimedKeys') || changed.has('selfKeys') || changed.has('chartData')) {
+      this._resyncSeals();
     }
   }
 
@@ -180,7 +195,6 @@ export class VelgDriftChartHost extends LitElement {
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     if (!canvas || !wrap) return;
     this._labelLayer = this.querySelector<HTMLElement>('.drift-chart__labels');
-    this._sealLayer = this.querySelector<HTMLElement>('.drift-chart__seals');
 
     try {
       this._renderer = new THREE.WebGLRenderer({
@@ -239,6 +253,7 @@ export class VelgDriftChartHost extends LitElement {
 
     // Real graph board (if the data is already present; else updated() builds it).
     this._buildGameGraph();
+    this._resyncSeals(); // point + place any seals the first render produced
 
     this._lastTime = performance.now();
     this._rafId = requestAnimationFrame(this._frame);
@@ -302,7 +317,6 @@ export class VelgDriftChartHost extends LitElement {
     if (this._corridors) this._corridors.group.visible = false;
     this._frameCameraToGraph();
     this._buildLabels();
-    this._buildSeals();
     this._syncRunState();
   }
 
@@ -323,23 +337,52 @@ export class VelgDriftChartHost extends LitElement {
     }
   }
 
-  /** (Re)build the Erstvermessung seals — one stamp per claimed node (any node_type, so
-   *  interstitials count, not just homes). selfKeys gets the amber --self variant. */
-  private _buildSeals(): void {
-    const layer = this._sealLayer;
-    if (!layer) return;
-    layer.replaceChildren();
-    this._seals = [];
-    if (!this.claimedKeys.size) return;
+  /** The claimed nodes the seal layer renders — derived from chartData + the honor Sets
+   *  in willUpdate (any node_type, so interstitials count, not just homes). */
+  private _computeSealData(): SealDatum[] {
+    if (!this.claimedKeys.size) return [];
+    const out: SealDatum[] = [];
     for (const node of this.chartData?.nodes ?? []) {
       if (!this.claimedKeys.has(node.stable_key)) continue;
-      const mine = this.selfKeys.has(node.stable_key);
-      const el = document.createElement('span');
-      el.className = mine ? 'drift-chart__seal drift-chart__seal--self' : 'drift-chart__seal';
-      el.title = mine ? msg('Erstvermessung – von dir') : msg('Erstvermessung – vergeben');
-      layer.appendChild(el);
-      this._seals.push({ el, id: node.id, x: node.x, y: node.y });
+      out.push({
+        key: node.stable_key,
+        x: node.x,
+        y: node.y,
+        mine: this.selfKeys.has(node.stable_key),
+      });
     }
+    return out;
+  }
+
+  /** Re-point the per-frame projection at the freshly-rendered seal elements and place
+   *  them once now (in updated(), before paint). The seals are declared in render()
+   *  (keyed by stable_key), so a newly-won claim mounts a fresh element and runs the
+   *  stamp ceremony at its node — not for one frame at the layer's corner — while
+   *  existing seals keep their DOM and never replay. */
+  private _resyncSeals(): void {
+    this._seals = [...this.querySelectorAll<HTMLElement>('.drift-chart__seal')].map((el) => ({
+      el,
+      x: Number(el.dataset.x),
+      y: Number(el.dataset.y),
+    }));
+    const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
+    if (wrap) this._projectLayer(this._seals, wrap);
+  }
+
+  /** One Erstvermessung seal: an octagonal Bureau medallion with a compass-rose mark. */
+  private _renderSeal(d: SealDatum) {
+    return html`
+      <span
+        class="drift-chart__seal ${d.mine ? 'drift-chart__seal--self' : ''}"
+        data-x=${d.x}
+        data-y=${d.y}
+      >
+        <span class="drift-chart__seal-inner">
+          <span class="drift-chart__seal-stamp"></span>
+          <span class="drift-chart__seal-mark">${icons.compassRose(16)}</span>
+        </span>
+      </span>
+    `;
   }
 
   /** Project an overlay layer (labels or seals) to screen space; cull off-viewport. */
@@ -517,6 +560,7 @@ export class VelgDriftChartHost extends LitElement {
     this._gameGraph?.dispose();
     this._labelLayer?.replaceChildren();
     this._labels = [];
+    this._seals = []; // the seal elements are Lit-owned; just drop our projection refs
     this._renderer = null;
     this._scene = null;
     this._post = null;
@@ -551,8 +595,16 @@ export class VelgDriftChartHost extends LitElement {
           <!-- World-name labels (homes); imperative children, positioned each frame.
                aria-hidden: a non-visual ChartAccessibilityList is the a11y path (§11.3). -->
           <div class="drift-chart__labels" aria-hidden="true"></div>
-          <!-- Erstvermessung seals (any claimed node); same per-frame projection. -->
-          <div class="drift-chart__seals" aria-hidden="true"></div>
+          <!-- Erstvermessung seals (any claimed node): declared here (keyed by
+               stable_key) so the glyph comes from icons.ts and a newly-won claim runs
+               the stamp ceremony; projected to each node's screen point per frame. -->
+          <div class="drift-chart__seals" aria-hidden="true">
+            ${repeat(
+              this._sealData,
+              (d) => d.key,
+              (d) => this._renderSeal(d),
+            )}
+          </div>
         </div>
       </div>
     `;
