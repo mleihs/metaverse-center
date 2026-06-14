@@ -21,9 +21,11 @@
  */
 
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
+import { driftStatus } from '../../services/DriftStatusService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { IconKey } from '../../utils/icons.js';
 import { icons } from '../../utils/icons.js';
@@ -47,7 +49,7 @@ import { TOPICS, type TopicDefinition } from './htp-topic-data.js';
 
 @localized()
 @customElement('velg-how-to-play-guide-hub')
-export class VelgHowToPlayGuideHub extends LitElement {
+export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
   // ── Styles ───────────────────────────────────────────────────────────────
 
   static styles = [
@@ -541,6 +543,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    // The Drift topic is flag-gated like its nav tab — load the public gate so the grid
+    // and search show it only when drift_p0_enabled (SignalWatcher re-renders on resolve).
+    void driftStatus.ensureLoaded();
     seoService.setTitle([msg('Game Guide'), msg('How to Play')]);
     seoService.setDescription(
       msg('Browse 12 topics covering every game system in metaverse.center.'),
@@ -586,7 +591,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
       this._showDropdown = false;
       return;
     }
-    this._searchResults = searchTopics(q);
+    this._searchResults = searchTopics(q).filter(
+      (r) => r.topic.slug !== 'drift' || driftStatus.enabled.value,
+    );
     this._showDropdown = this._searchResults.length > 0 || q.length >= 2;
     this._activeResultIdx = -1;
   }
@@ -781,7 +788,9 @@ export class VelgHowToPlayGuideHub extends LitElement {
   private _renderGrid() {
     return html`
       <div class="grid" role="list" aria-label=${msg('Game guide topics')}>
-        ${TOPICS.map((topic, i) => this._renderCard(topic, i))}
+        ${TOPICS.filter((t) => t.slug !== 'drift' || driftStatus.enabled.value).map((topic, i) =>
+          this._renderCard(topic, i),
+        )}
       </div>
     `;
   }
