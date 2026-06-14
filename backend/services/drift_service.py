@@ -42,6 +42,7 @@ from backend.models.drift import (
     QuestStateResponse,
     TravelRunResponse,
 )
+from backend.services.travel.chart_generator import ChartGeneratorService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.settings import load_platform_settings, parse_setting_bool
@@ -147,12 +148,15 @@ class DriftService:
 
     @staticmethod
     async def regenerate_chart(admin_supabase: Client) -> ChartGenerationResponse:
-        """Regenerate the chart from the CURRENT active worlds (newly published worlds
-        appear); emits a new chart_version. service_role only (fn is backend-class)."""
-        resp = await admin_supabase.rpc("fn_generate_drift_chart", {}).execute()
-        if not resp.data:
-            raise server_error("fn_generate_drift_chart returned no summary.")
-        return ChartGenerationResponse(**resp.data)
+        """Regenerate the chart from the CURRENT active worlds + their real
+        relationships (simulation_connections + embassies). The topology is DERIVED in
+        Python (ChartGeneratorService.regenerate, force-directed layout) and written
+        atomically via fn_apply_drift_chart; emits a new chart_version (newly published
+        worlds/connections appear). service_role only (the writer is backend-class)."""
+        summary = await ChartGeneratorService.regenerate(admin_supabase)
+        if not summary:
+            raise server_error("fn_apply_drift_chart returned no summary.")
+        return ChartGenerationResponse(**summary)
 
     @staticmethod
     async def get_dock_info(supabase: Client, simulation_id: UUID) -> DriftDockResponse | None:

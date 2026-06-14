@@ -29,9 +29,16 @@ edges; the service reads the DB, calls it, and hands the result to fn_apply_drif
 
 from __future__ import annotations
 
+import logging
 import math
 import random
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # keep the pure builder section below free of framework imports
+    from supabase import AsyncClient
+
+logger = logging.getLogger(__name__)
 
 # The 7 bleed vectors in concept §6.1 bit order (mirrors frontend palette.FREQUENCIES +
 # the drift_chart_nodes.frequency_mask bits + travel_runs.frequency).
@@ -74,6 +81,9 @@ class ChartTuning:
     home_radius: float = 1400.0  # initial home ring radius (chart units; camera auto-frames)
     layout_iterations: int = 500
     cross_cuts: int = 3  # deep shortcut edges between far corridors' deep midpoints
+    frontier_chain: int = 2  # raw deep interstitials between a frontier world and the chart
+    # (a single edge can land a frontier world as near as a connected one — a chain keeps
+    #  the Tiefdrift frontier a genuine deep haul, not a cheap back door)
 
 
 # ── Inputs / output shapes ───────────────────────────────────────────────────────
@@ -326,8 +336,10 @@ def build_chart(
         if deepest is not None:
             corridor_deep_keys.append((deepest[1], deepest[2]))
 
-    # TIEFDRIFT FRONTIER: each isolated world hangs off the nearest corridor deep node via
-    # a raw, off-vector (empty permeability → always off-vector → Bandbreite-hungry) deep edge.
+    # TIEFDRIFT FRONTIER: each isolated world hangs off the nearest corridor deep node via a
+    # CHAIN of raw, off-vector (empty permeability → always off-vector → Bandbreite-hungry)
+    # deep nodes. A single edge could land a frontier world as near as a connected one; the
+    # chain keeps the frontier a genuine deep haul — the gamble prize.
     for w in isolated:
         wx, wy = pos[w.id]
         nearest = min(
@@ -335,16 +347,45 @@ def build_chart(
             key=lambda dk: (dk[1][0] - wx) ** 2 + (dk[1][1] - wy) ** 2,
             default=None,
         )
-        if nearest is not None:
+        if nearest is None:
+            continue
+        nx, ny = nearest[1]
+        prev_key = nearest[0]
+        for i in range(t.frontier_chain):
+            f = (i + 1) / (t.frontier_chain + 1)
+            cxp, cyp = nx + (wx - nx) * f, ny + (wy - ny) * f
+            key = f"front-{w.slug}-{i}"
+            draft.nodes.append(
+                {
+                    "stable_key": key,
+                    "node_type": "interstitial",
+                    "simulation_id": None,
+                    "x": round(cxp, 2),
+                    "y": round(cyp, 2),
+                    "frequency_mask": 127,  # raw tissue, no single vector — neutral full
+                    "distance_band": "deep",
+                    "region_cell": "r0",
+                }
+            )
             draft.edges.append(
                 {
-                    "from_key": nearest[0],
-                    "to_key": f"home-{w.slug}",
+                    "from_key": prev_key,
+                    "to_key": key,
                     "weight": t.deep_weight,
-                    "permeability": {},  # no vector permeable → raw Drift, always off-vector
+                    "permeability": {},
                     "corridor": False,
                 }
             )
+            prev_key = key
+        draft.edges.append(
+            {
+                "from_key": prev_key,
+                "to_key": f"home-{w.slug}",
+                "weight": t.deep_weight,
+                "permeability": {},  # no vector permeable → raw Drift, always off-vector
+                "corridor": False,
+            }
+        )
 
     # DEEP CROSS-CUTS: a few off-vector links between FAR corridors' deep midpoints — the
     # "riskant-tief" gamble (skip the long way) without recreating a universal hub.
@@ -376,5 +417,102 @@ def build_chart(
             made += 1
 
     return draft
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# I/O orchestration — read the real relationships, build, write atomically
+# ════════════════════════════════════════════════════════════════════════════════
+# build_chart above is pure (no DB, no framework — unit-tested in isolation,
+# test_drift_chart_generator.py). This service is the thin orchestrator, mirroring
+# ForgeMapService: read the source rows → call the pure builder → hand the result to
+# the single atomic SQL writer (fn_apply_drift_chart, migration 251). NO
+# fetch-compute-update — the layout is the Python work, persistence is one RPC
+# (ADR-007 / Postgres-first).
+
+# A fixed default seed → regenerating with unchanged worlds/connections reproduces an
+# identical layout (only the chart_version increments). Pass a seed to reshuffle.
+DEFAULT_CHART_SEED = 20260614
+
+# Stamped onto chart_versions.generator_version so a chart's provenance is legible.
+GENERATOR_VERSION = "derived-topology-1"
+
+
+class ChartGeneratorService:
+    """Reads the platform's active worlds + their real relationships, derives the
+    travel topology (build_chart), and writes it atomically as a new chart_version."""
+
+    @staticmethod
+    async def regenerate(admin_client: AsyncClient, seed: int | None = None) -> dict:
+        """Regenerate the chart from the CURRENT active template sims +
+        simulation_connections + embassies; emits a new chart_version. service_role
+        only (fn_apply_drift_chart is backend-class). Returns the writer's
+        {version, worlds, nodes, edges} summary. The <2-worlds / empty-nodes guards are
+        the SQL writer's (single authority) — this stays a thin read→build→write."""
+        effective_seed = DEFAULT_CHART_SEED if seed is None else seed
+
+        sims_resp = await (
+            admin_client.table("simulations")
+            .select("id, slug, name")
+            .eq("status", "active")
+            .eq("simulation_type", "template")
+            .execute()
+        )
+        worlds = [
+            World(id=r["id"], slug=r["slug"], name=r["name"]) for r in (sims_resp.data or [])
+        ]
+
+        conn_resp = await (
+            admin_client.table("simulation_connections")
+            .select("simulation_a_id, simulation_b_id, bleed_vectors, strength")
+            .eq("is_active", True)
+            .execute()
+        )
+        connections = [
+            Connection(
+                a_id=r["simulation_a_id"],
+                b_id=r["simulation_b_id"],
+                bleed_vectors=list(r["bleed_vectors"]),
+                strength=float(r["strength"]),
+            )
+            for r in (conn_resp.data or [])
+        ]
+
+        emb_resp = await (
+            admin_client.table("embassies")
+            .select("simulation_a_id, simulation_b_id, bleed_vector")
+            .eq("status", "active")
+            .execute()
+        )
+        embassies = [
+            Embassy(
+                a_id=r["simulation_a_id"],
+                b_id=r["simulation_b_id"],
+                ward_vector=r["bleed_vector"],
+            )
+            for r in (emb_resp.data or [])
+        ]
+
+        draft = build_chart(worlds, connections, embassies, seed=effective_seed)
+
+        resp = await admin_client.rpc(
+            "fn_apply_drift_chart",
+            {
+                "p_seed": effective_seed,
+                "p_generator_version": GENERATOR_VERSION,
+                "p_nodes": draft.nodes,
+                "p_edges": draft.edges,
+            },
+        ).execute()
+        if not resp.data or not isinstance(resp.data, dict):
+            raise RuntimeError(f"fn_apply_drift_chart returned unexpected payload: {resp.data!r}")
+
+        logger.info(
+            "drift.chart.regenerated worlds=%d connections=%d embassies=%d -> %r",
+            len(worlds),
+            len(connections),
+            len(embassies),
+            resp.data,
+        )
+        return resp.data
 
 
