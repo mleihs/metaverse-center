@@ -441,7 +441,7 @@ export class VelgDriftChartHost extends LitElement {
       >
         <span class="drift-chart__seal-inner">
           <span class="drift-chart__seal-stamp"></span>
-          <span class="drift-chart__seal-mark">${icons.compassRose(16)}</span>
+          <span class="drift-chart__seal-mark">${icons.compassRose(14)}</span>
         </span>
       </span>
     `;
