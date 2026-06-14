@@ -10,9 +10,9 @@
  */
 
 import { localized, msg, str } from '@lit/localize';
+import { effect } from '@preact/signals-core';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
@@ -286,6 +286,10 @@ export class VelgDriftView extends LitElement {
   /** The sim whose dock is currently surfaced — avoids refetching while you stand on it. */
   private _dockSimId: string | null = null;
 
+  /** The access token the current data reflects — drives the auth-ready self-heal below. */
+  private _loadedToken: string | null = null;
+  private _disposeAuthEffect?: () => void;
+
   /** Gauge maxima — from drift_tuning when loaded, else the fail-soft fallbacks. */
   private get _dzCap(): number {
     return this._tuning?.dz_cap ?? DZ_CAP_FALLBACK;
@@ -307,7 +311,33 @@ export class VelgDriftView extends LitElement {
     // inline tokens with it — no teardown needed (and we must not call resetTheme, which
     // would remove the shell's shared custom-CSS element).
     themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
+    this._loadedToken = appState.accessToken.value;
     void this._load();
+    // Self-heal the auth-token race. On a hard reload the persisted access token can
+    // still be stale when this view mounts; /drift/run is strict (get_current_user →
+    // 401 on a not-yet-refreshed token) while /drift/chart is not, so the initial load
+    // renders the chart but silently drops the active run (the HUD shows AUFBRUCH even
+    // though a run exists). When Supabase refreshes the token (onAuthStateChange →
+    // appState.accessToken changes) we re-pull the run + quests — or a full reload if
+    // the initial load failed outright (token was absent at mount). The first
+    // synchronous effect run is a no-op (token === the one _load already used).
+    this._disposeAuthEffect?.();
+    this._disposeAuthEffect = effect(() => {
+      const token = appState.accessToken.value;
+      if (!token || token === this._loadedToken) return;
+      this._loadedToken = token;
+      if (this._error) {
+        void this._load();
+      } else {
+        void this._refreshRun();
+        void this._refreshQuests();
+      }
+    });
+  }
+
+  disconnectedCallback(): void {
+    this._disposeAuthEffect?.();
+    super.disconnectedCallback();
   }
 
   private _load = async (): Promise<void> => {
