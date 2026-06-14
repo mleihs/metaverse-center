@@ -627,6 +627,20 @@ export class VelgDriftView extends LitElement {
       VelgToast.error(
         msg(str`Recall (${reason}): ${Number(cp.haul_lost ?? 0)} Vermessung verloren.`),
       );
+      // §19.4 failure floor: the collapsed run's carried Depeschen don't just vanish – they
+      // scatter as faint echoes into the worlds they were bound for (hospitality-gated).
+      // cp.scattered is the floor's {scattered, applied, skipped} summary; a second toast
+      // marks the lost cargo's diegetic afterlife in the Drift.
+      const scatter = cp.scattered;
+      const scattered =
+        scatter !== null && typeof scatter === 'object' && 'scattered' in scatter
+          ? Number(scatter.scattered)
+          : 0;
+      if (scattered > 0) {
+        VelgToast.warning(
+          msg(str`Fracht zerfasert – ${scattered} Depesche(n) als Echo in den Drift verweht.`),
+        );
+      }
     } else {
       VelgToast.info(msg('Rückzug eingeleitet.'));
     }
@@ -749,8 +763,12 @@ export class VelgDriftView extends LitElement {
           <p class="hud__hint">
             ${
               isMember
-                ? msg('Open a run at your home broadcast, then click a lit node to cross the Bleed.')
-                : msg('You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.')
+                ? msg(
+                    'Open a run at your home broadcast, then click a lit node to cross the Bleed.',
+                  )
+                : msg(
+                    'You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.',
+                  )
             }
           </p>
           ${
