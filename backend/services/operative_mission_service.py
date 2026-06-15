@@ -25,6 +25,7 @@ from backend.services.epoch_service import EpochService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -126,11 +127,13 @@ class OperativeMissionService:
 
         config = {**DEFAULT_EPOCH_CONFIG, **epoch.get("config", {})}
 
-        # Check RP cost (resonance ops add extra RP cost)
+        # Compute RP cost (resonance ops add extra). RP is NOT spent here: the
+        # debit happens atomically with the mission insert in
+        # fn_deploy_operative_atomic below, so the reads/computation between here
+        # and the insert can never leave RP debited without a mission created.
         cost = OPERATIVE_RP_COSTS.get(body.operative_type, 5)
         if body.resonance_op and body.resonance_op.value == "substrate_tap":
             cost += 2  # Substrate Tap costs +2 RP on top of base
-        await EpochService.spend_rp(supabase, epoch_id, simulation_id, cost)
 
         # Validate resonance op eligibility
         resonance_surge_bonus = 0.0
@@ -174,29 +177,44 @@ class OperativeMissionService:
         if body.operative_type == "guardian":
             resolves_at = datetime.now(UTC) + timedelta(days=365)
 
-        mission_data = {
-            "epoch_id": str(epoch_id),
-            "agent_id": str(body.agent_id),
-            "operative_type": body.operative_type,
-            "source_simulation_id": str(simulation_id),
-            "target_simulation_id": str(body.target_simulation_id) if body.target_simulation_id else None,
-            "embassy_id": str(body.embassy_id) if body.embassy_id else None,
-            "target_entity_id": str(body.target_entity_id) if body.target_entity_id else None,
-            "target_entity_type": body.target_entity_type,
-            "target_zone_id": str(body.target_zone_id) if body.target_zone_id else None,
-            "status": "active" if deploy_cycles == 0 else "deploying",
-            "cost_rp": cost,
-            "success_probability": float(success_prob),
-            "resolves_at": resolves_at.isoformat(),
-            "deployed_cycle": epoch.get("current_cycle", 1),
-            "resonance_op": body.resonance_op.value if body.resonance_op else None,
-        }
-
-        resp = await supabase.table("operative_missions").insert(mission_data).execute()
-        if not resp.data:
+        # Atomic RP-spend + mission-insert in one transaction (fn_deploy_operative_
+        # atomic, migration 260): on any failure the whole thing rolls back, so RP
+        # is never debited without a mission. The RPC is service_role-only, so it
+        # runs on the admin client (the router always passes one; fall back to the
+        # cached singleton otherwise). Surrounding reads stay on the user client.
+        deploy_client = admin_supabase or await get_admin_supabase_client()
+        deploy_resp = await deploy_client.rpc(
+            "fn_deploy_operative_atomic",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_agent_id": str(body.agent_id),
+                "p_operative_type": body.operative_type,
+                "p_cost_rp": cost,
+                "p_target_simulation_id": str(body.target_simulation_id) if body.target_simulation_id else None,
+                "p_target_zone_id": str(body.target_zone_id) if body.target_zone_id else None,
+                "p_target_entity_id": str(body.target_entity_id) if body.target_entity_id else None,
+                "p_target_entity_type": body.target_entity_type,
+                "p_embassy_id": str(body.embassy_id) if body.embassy_id else None,
+                "p_success_probability": float(success_prob),
+                "p_resolves_at": resolves_at.isoformat(),
+                "p_status": "active" if deploy_cycles == 0 else "deploying",
+                "p_deployed_cycle": epoch.get("current_cycle", 1),
+                "p_resonance_op": body.resonance_op.value if body.resonance_op else None,
+            },
+        ).execute()
+        deploy_result = deploy_resp.data or {}
+        if deploy_result.get("error") == "insufficient_rp":
+            raise bad_request(f"Insufficient RP (need {cost}) or participant not found.")
+        mission_id = deploy_result.get("mission_id")
+        if not mission_id:
             raise server_error("Failed to create operative mission.")
 
-        mission = resp.data[0]
+        mission = await maybe_single_data(
+            supabase.table("operative_missions").select("*").eq("id", str(mission_id)).maybe_single()
+        )
+        if not mission:
+            raise server_error("Failed to create operative mission.")
 
         # Build context from data already available in this method
         # Agent name already fetched at line 172 (validation query)
