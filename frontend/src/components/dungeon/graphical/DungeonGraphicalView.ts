@@ -525,19 +525,40 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         filter: drop-shadow(0 0 6px color-mix(in srgb, var(--_cond) 45%, transparent));
         border: 1px solid color-mix(in srgb, var(--_cond) 55%, transparent);
       }
-      /* Ground shadow grounding the figure on the floor. */
+      /* Ground shadow grounding the figure on the floor. Sits over a wider,
+         softer light pool so the operative reads as standing IN the chamber,
+         not as a chip pasted on the backdrop. */
       .party-token__shadow {
         position: absolute;
         left: 50%;
-        bottom: -9px;
-        width: 88%;
-        height: 9px;
-        margin-left: -44%;
+        bottom: -11px;
+        width: 132%;
+        height: 16px;
+        margin-left: -66%;
         border-radius: 50%;
         background: radial-gradient(
           closest-side,
-          color-mix(in srgb, var(--color-surface) 75%, transparent),
+          color-mix(in srgb, var(--color-surface) 92%, transparent),
+          color-mix(in srgb, var(--color-surface) 45%, transparent) 60%,
           transparent
+        );
+        filter: blur(2px);
+      }
+      /* Soft standing-light pool: a warm floor halo that anchors the figure to
+         the ground plane and lifts it off the busy backdrop. */
+      .party-token__shadow::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -3px;
+        width: 168%;
+        height: 30px;
+        margin-left: -84%;
+        border-radius: 50%;
+        background: radial-gradient(
+          closest-side,
+          color-mix(in srgb, var(--_cond) 22%, transparent),
+          transparent 70%
         );
       }
       .party-token__name {
