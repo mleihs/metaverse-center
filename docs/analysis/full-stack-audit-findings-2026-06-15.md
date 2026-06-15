@@ -262,7 +262,7 @@ This is a read-append-write on a JSON array plus an unguarded counter increment.
 ## cross-cutting-DRY — 4 findings
 
 
-### [ ] `P1` · duplication — Two schedulers reimplement BaseSchedulerMixin's run-loop scaffold verbatim instead of inheriting it
+### [x] `P1` · duplication — Two schedulers reimplement BaseSchedulerMixin's run-loop scaffold verbatim instead of inheriting it
 
 - **Files:** backend/services/resonance_scheduler.py, backend/services/epoch_cycle_scheduler.py
 - **Lines:** resonance_scheduler.py:36-71; epoch_cycle_scheduler.py:46-80
