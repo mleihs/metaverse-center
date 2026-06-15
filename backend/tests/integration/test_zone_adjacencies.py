@@ -36,6 +36,23 @@ def _zones_present(admin_client) -> bool:
     return len(resp.data or []) == 3
 
 
+def _zones_have_geometry(admin_client) -> bool:
+    """test_backfill derives adjacencies from zone polygons, so it needs the
+    three Velgarien zones present under SIM_VELGARIEN AND carrying geojson. That
+    geometry is not part of the CI seed set (the zones may exist as bare rows for
+    the insert-based tests), so the geometry test skips where it is absent.
+    """
+    resp = (
+        admin_client.table("zones")
+        .select("id, geojson")
+        .eq("simulation_id", str(SIM_VELGARIEN))
+        .in_("id", [ZONE_A1, ZONE_A2, ZONE_A3])
+        .execute()
+    )
+    rows = resp.data or []
+    return len(rows) == 3 and all(r.get("geojson") for r in rows)
+
+
 class TestApplyZoneAdjacencies:
     """fn_apply_zone_adjacencies normalizes, dedups, drops self-pairs, bumps version."""
 
@@ -109,8 +126,8 @@ class TestBackfillService:
 
     @pytest.mark.asyncio
     async def test_backfill_velgarien_geometry(self, admin_client):
-        if not _zones_present(admin_client):
-            pytest.skip("Velgarien zones not seeded")
+        if not _zones_have_geometry(admin_client):
+            pytest.skip("Velgarien zone geometry not seeded")
         from backend.services.forge_map_service import ForgeMapService
 
         sim = str(SIM_VELGARIEN)
