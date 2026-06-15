@@ -10,6 +10,7 @@ from backend.services.epoch_service import EpochService
 from backend.utils.db import maybe_single_data, resolve_epoch_sim_names
 from backend.utils.errors import bad_request
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,9 @@ class ScoringService:
             "military": weights.get("military", 20),
         }
 
-        resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
             "fn_compute_cycle_scores",
             {
                 "p_epoch_id": str(epoch_id),

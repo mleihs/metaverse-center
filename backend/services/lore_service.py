@@ -11,6 +11,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -131,7 +132,9 @@ class LoreService:
         transaction. Replaces the prior delete-then-loop pattern which
         could produce sort_order gaps under concurrent edits.
         """
-        rpc_resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        rpc_resp = await admin.rpc(
             "fn_delete_lore_section_atomic",
             {
                 "p_simulation_id": str(simulation_id),
@@ -166,7 +169,9 @@ class LoreService:
         reorders.
         """
         try:
-            rpc_resp = await supabase.rpc(
+            # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+            admin = await get_admin_supabase_client()
+            rpc_resp = await admin.rpc(
                 "fn_reorder_lore_sections_atomic",
                 {
                     "p_simulation_id": str(simulation_id),
