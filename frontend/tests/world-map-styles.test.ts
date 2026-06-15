@@ -170,11 +170,15 @@ describe('zoneCategoryColor', () => {
   it('maps each category to its configured colour', () => {
     expect(zoneCategoryColor('authority', TEST_COLORS)).toBe(TEST_COLORS.primary);
     expect(zoneCategoryColor('sacred', TEST_COLORS)).toBe(TEST_COLORS.success);
-    expect(zoneCategoryColor('industrial', TEST_COLORS)).toBe(TEST_COLORS.warning);
+    // industrial is deliberately epochInfluence (purple), NOT warning: in the
+    // default theme warning resolves to the same amber as primary, which would
+    // make authority and industrial zones visually identical. liminal gives up
+    // purple in exchange and takes the neutral textMuted grey. (ZONE_CATEGORY_STYLE)
+    expect(zoneCategoryColor('industrial', TEST_COLORS)).toBe(TEST_COLORS.epochInfluence);
     expect(zoneCategoryColor('commercial', TEST_COLORS)).toBe(TEST_COLORS.info);
     expect(zoneCategoryColor('residential', TEST_COLORS)).toBe(TEST_COLORS.textSecondary);
     expect(zoneCategoryColor('marginal', TEST_COLORS)).toBe(TEST_COLORS.danger);
-    expect(zoneCategoryColor('liminal', TEST_COLORS)).toBe(TEST_COLORS.epochInfluence);
+    expect(zoneCategoryColor('liminal', TEST_COLORS)).toBe(TEST_COLORS.textMuted);
     expect(zoneCategoryColor('other', TEST_COLORS)).toBe(TEST_COLORS.textSecondary);
   });
 });
@@ -298,7 +302,7 @@ describe('computeBounds', () => {
     ]);
   });
 
-  it('expands the bbox to include streets, buildings, and cities', () => {
+  it('fits to geometry (streets, buildings); excludes city centres when geometry is present', () => {
     const payload = emptyPayload();
     payload.zones = [
       makeZone({
@@ -342,9 +346,23 @@ describe('computeBounds', () => {
         map_default_zoom: 12,
       },
     ];
+    // City centre (10, -3) sits far from the actual geometry. computeBounds
+    // intentionally ignores it while geometry exists, so the fitted box hugs the
+    // real content instead of leaving half the canvas dead; the out-of-bounds
+    // city label is dropped separately via pointInBounds. Bounds therefore come
+    // from the street (min -1,-1) and building (max 7,8) only.
     expect(computeBounds(payload)).toEqual([
-      [-1, -3],
-      [10, 8],
+      [-1, -1],
+      [7, 8],
+    ]);
+
+    // Fallback: with no geometry at all, the city centre anchors the bounds.
+    payload.zones = [];
+    payload.streets = [];
+    payload.buildings = [];
+    expect(computeBounds(payload)).toEqual([
+      [10, -3],
+      [10, -3],
     ]);
   });
 
