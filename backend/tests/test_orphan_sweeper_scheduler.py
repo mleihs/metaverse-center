@@ -231,7 +231,15 @@ class TestProcessTick:
         }
         sweep = AsyncMock()
         get_client = MagicMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
+        # Pin the scheduler clock to _NOW so "last run 1 day ago" is genuinely
+        # within the 7-day interval. Without this the throttle compares against
+        # the real wall clock; once real time drifts past _NOW + interval the
+        # config reads as overdue, the noop assertion breaks, and the run reaches
+        # _report_result with the bare-AsyncMock sweep result (AsyncMock > int).
+        clock = MagicMock(wraps=datetime)
+        clock.now.return_value = _NOW
+        with patch.object(ss, "datetime", clock), \
+             patch.object(ss, "sweep_orphan_branches", sweep), \
              patch.object(ss, "get_github_app_client", get_client), \
              patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))):
             await OrphanSweeperScheduler._process_tick(admin, config)
