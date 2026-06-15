@@ -444,6 +444,12 @@ class EventService(BaseService):
         """
         await GameMechanicsService.refresh_metrics(supabase)
 
+        # narrative_arcs + building_condition are service-role-managed (RLS grants
+        # authenticated only SELECT; fn_degrade_building is service_role-only since
+        # migration 258), so the heartbeat enrichment below runs on the admin
+        # client. Surrounding RLS-scoped reads stay on the user `supabase` client.
+        admin = await get_admin_supabase_client()
+
         # ── Heartbeat integration: attach new events to matching arcs ──
         try:
             _resp = await (
@@ -473,17 +479,13 @@ class EventService(BaseService):
                         if sig in tags:
                             existing_ids = arc.get("source_event_ids") or []
                             if event["id"] not in existing_ids:
-                                existing_ids.append(event["id"])
-                                await (
-                                    supabase.table("narrative_arcs")
-                                    .update(
-                                        {
-                                            "source_event_ids": existing_ids,
-                                        }
-                                    )
-                                    .eq("id", arc["id"])
-                                    .execute()
-                                )
+                                # Atomic dedup-append (migration 259) — the RPC's
+                                # NOT (... = ANY(...)) guard is the race-free dedup;
+                                # the snapshot check above is just a cheap pre-filter.
+                                await admin.rpc(
+                                    "fn_arc_attach_event",
+                                    {"p_arc_id": arc["id"], "p_event_id": event["id"]},
+                                ).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError):
             logger.debug("Heartbeat arc attachment unavailable")
 
@@ -553,7 +555,6 @@ class EventService(BaseService):
                 # condition filtering, and codex/Forge rendering. fn_degrade_building
                 # is service_role-only since migration 258, so it runs on the admin
                 # client; the surrounding reads stay on the RLS-scoped user client.
-                admin = await get_admin_supabase_client()
                 for ev in crisis_events:
                     _resp = await (
                         supabase.table("event_zone_links").select("zone_id").eq("event_id", ev["id"]).execute()
