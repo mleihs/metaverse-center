@@ -301,6 +301,14 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
     // Room entry formatting
     const room = result.state.rooms.find((r) => r.index === result.state.current_room);
+
+    // Publish room narrative for the graphical scene (no terminal buffer there).
+    dungeonState.publishRoomNarrative({
+      banter: result.banter ? localized(result.banter, 'text') || null : null,
+      barometer: result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
+      roomType: room?.room_type ?? '',
+      depth: result.state.depth,
+    });
     if (room) {
       // SFX: boss reveal vs. normal room enter
       if (room.room_type === 'boss') {
