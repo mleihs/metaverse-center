@@ -42,10 +42,19 @@ import { terminalState } from './TerminalStateManager.js';
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'dungeon_active_run';
+// View-mode preference (terminal vs graphical). Persisted separately from run
+// state and deliberately NOT touched by applyState()/clear() — the chosen view
+// is a UI preference that must survive run start, run end, wipe, and recovery.
+const VIEW_MODE_STORAGE_KEY = 'dungeon_view_mode';
 // 250ms tick — 4 updates/sec is visually smooth for the CSS-transitioned fill bar.
 // Tradeoff: auto-submit may fire up to 250ms after server deadline. The backend
 // grants a grace period (see combat_submit timeout_tolerance_ms), so this is safe.
 const TIMER_TICK_MS = 250;
+
+// ── Types ────────────────────────────────────────────────────────────────
+
+/** Which rendering of the dungeon the player is using. */
+export type DungeonViewMode = 'terminal' | 'graphical';
 
 // ── State Manager ──────────────────────────────────────────────────────────
 
@@ -113,6 +122,13 @@ class DungeonStateManager {
 
   /** Whether the SVG map panel is expanded (default: collapsed for terminal-first layout). */
   readonly mapExpanded = signal(false);
+
+  /** Which dungeon rendering is active. Default 'terminal'. Persisted to
+   *  localStorage; never reset by applyState()/clear() so the preference
+   *  survives across runs. The graphical view is a second, additive consumer
+   *  of the same server-authoritative state — switching modes changes nothing
+   *  about the run itself. */
+  readonly viewMode = signal<DungeonViewMode>(this._getPersistedViewMode());
 
   // ── Timer ──────────────────────────────────────────────────────────────
 
@@ -189,6 +205,16 @@ class DungeonStateManager {
     const maxDepth = Math.max(...this.rooms.value.map((r) => r.depth), 1);
     return state.depth / maxDepth;
   });
+
+  // ── View Mode ──────────────────────────────────────────────────────────
+
+  /** Switch the active dungeon rendering and persist the preference. */
+  setViewMode(mode: DungeonViewMode): void {
+    if (this.viewMode.value === mode) return;
+    this.viewMode.value = mode;
+    this._persistViewMode(mode);
+    analyticsService.trackEvent('dungeon_view_mode_changed', { mode });
+  }
 
   // ── Lifecycle Methods ─────────────────────────────────────────────────
 
@@ -586,6 +612,25 @@ class DungeonStateManager {
       localStorage.removeItem(STORAGE_KEY);
     } catch (err) {
       captureError(err, { source: 'DungeonStateManager._clearPersistedRunId' });
+    }
+  }
+
+  // ── localStorage Persistence (viewMode) ───────────────────────────────
+
+  private _getPersistedViewMode(): DungeonViewMode {
+    try {
+      return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'graphical' ? 'graphical' : 'terminal';
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._getPersistedViewMode' });
+      return 'terminal';
+    }
+  }
+
+  private _persistViewMode(mode: DungeonViewMode): void {
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._persistViewMode' });
     }
   }
 }
