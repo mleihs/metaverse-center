@@ -49,7 +49,7 @@ class TestRouteRegistration:
 
     def test_all_routes_registered(self, client: TestClient):
         """Check that the app has routes for all expected prefixes."""
-        routes = [route.path for route in app.routes if hasattr(route, "path")]
+        routes = list(app.openapi()["paths"].keys())
         route_str = "\n".join(routes)
 
         for prefix in self.EXPECTED_PREFIXES:
@@ -60,7 +60,7 @@ class TestRouteRegistration:
 
     def test_simulation_scoped_routes_registered(self, client: TestClient):
         """Check that simulation-scoped entity routes exist."""
-        routes = [route.path for route in app.routes if hasattr(route, "path")]
+        routes = list(app.openapi()["paths"].keys())
 
         for entity in self.EXPECTED_SIMULATION_SCOPED:
             matching = [r for r in routes if entity in r]
@@ -68,7 +68,7 @@ class TestRouteRegistration:
 
     def test_total_route_count(self, client: TestClient):
         """Ensure we have a substantial number of routes (70+)."""
-        routes = [route.path for route in app.routes if hasattr(route, "path")]
+        routes = list(app.openapi()["paths"].keys())
         # Filter out docs/openapi routes
         api_routes = [r for r in routes if r.startswith("/api/")]
         assert len(api_routes) >= 200, (
@@ -77,7 +77,7 @@ class TestRouteRegistration:
 
     def test_chat_group_endpoints_registered(self, client: TestClient):
         """Verify multi-agent chat endpoints are registered."""
-        routes = [route.path for route in app.routes if hasattr(route, "path")]
+        routes = list(app.openapi()["paths"].keys())
         route_str = "\n".join(routes)
 
         # Conversation agent management
