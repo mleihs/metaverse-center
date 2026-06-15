@@ -328,7 +328,7 @@ class TestParticipants:
     # Flow: get epoch → check sim type → RPC join → fetch participant.
 
     @pytest.mark.asyncio
-    async def test_join_epoch_in_lobby(self):
+    async def test_join_epoch_in_lobby(self, route_secdef_admin):
         sb = MagicMock()
         participant_id = str(uuid4())
         participant = {
@@ -365,6 +365,7 @@ class TestParticipants:
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=participant_id))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         result = await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
         assert result["epoch_id"] == str(EPOCH_ID)
 
@@ -415,7 +416,7 @@ class TestParticipants:
         assert exc.value.status_code == 400
 
     @pytest.mark.asyncio
-    async def test_join_rejects_duplicate_simulation(self):
+    async def test_join_rejects_duplicate_simulation(self, route_secdef_admin):
         """RPC returns None on duplicate sim (ON CONFLICT DO NOTHING)."""
         sb = MagicMock()
 
@@ -440,12 +441,13 @@ class TestParticipants:
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with pytest.raises(HTTPException) as exc:
             await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
         assert exc.value.status_code == 409
 
     @pytest.mark.asyncio
-    async def test_join_rejects_duplicate_user(self):
+    async def test_join_rejects_duplicate_user(self, route_secdef_admin):
         """RPC returns None on duplicate user (checked inside RPC)."""
         sb = MagicMock()
 
@@ -470,6 +472,7 @@ class TestParticipants:
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with pytest.raises(HTTPException) as exc:
             await EpochService.join_epoch(sb, EPOCH_ID, SIM_ID, USER_ID)
         assert exc.value.status_code == 409
@@ -701,36 +704,39 @@ class TestRPManagement:
     # Tests mock the RPC response (int = new balance, None = insufficient).
 
     @pytest.mark.asyncio
-    async def test_spend_rp_success(self):
+    async def test_spend_rp_success(self, route_secdef_admin):
         sb = MagicMock()
         rpc_chain = MagicMock()
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=15))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         result = await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
         assert result == 15
 
     @pytest.mark.asyncio
-    async def test_spend_rp_insufficient_balance(self):
+    async def test_spend_rp_insufficient_balance(self, route_secdef_admin):
         sb = MagicMock()
         rpc_chain = MagicMock()
         # RPC returns None when WHERE current_rp >= amount doesn't match
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with pytest.raises(HTTPException) as exc:
             await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
         assert exc.value.status_code == 400
         assert "insufficient" in exc.value.detail.lower()
 
     @pytest.mark.asyncio
-    async def test_spend_rp_not_a_participant(self):
+    async def test_spend_rp_not_a_participant(self, route_secdef_admin):
         sb = MagicMock()
         rpc_chain = MagicMock()
         # RPC returns None for non-existent participant too
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=None))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with pytest.raises(HTTPException) as exc:
             await EpochService.spend_rp(sb, EPOCH_ID, SIM_ID, 5)
         assert exc.value.status_code == 400

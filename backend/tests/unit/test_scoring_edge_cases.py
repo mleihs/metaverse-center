@@ -327,7 +327,7 @@ class TestScoreComputationEdgeCases:
     """Edge cases for compute_cycle_scores: empty participants, all-bot epochs."""
 
     @pytest.mark.asyncio
-    async def test_zero_participants_empty_result(self):
+    async def test_zero_participants_empty_result(self, route_secdef_admin):
         """Epoch with zero participants returns empty list from RPC, not a crash."""
         sb = MagicMock()
 
@@ -342,6 +342,7 @@ class TestScoreComputationEdgeCases:
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with patch(
             "backend.services.scoring_service.EpochService.get",
             new_callable=AsyncMock,
@@ -352,7 +353,7 @@ class TestScoreComputationEdgeCases:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_all_bot_epoch_scores(self):
+    async def test_all_bot_epoch_scores(self, route_secdef_admin):
         """All-bot epoch still returns valid scores from the RPC."""
         sb = MagicMock()
 
@@ -391,6 +392,7 @@ class TestScoreComputationEdgeCases:
         rpc_chain.execute = AsyncMock(return_value=MagicMock(data=rpc_scores))
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         with patch(
             "backend.services.scoring_service.EpochService.get",
             new_callable=AsyncMock,

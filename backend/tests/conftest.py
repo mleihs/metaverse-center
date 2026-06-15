@@ -129,3 +129,35 @@ def _reset_admin_supabase_cache():
 
     reset_admin_supabase_cache()
     yield
+
+
+@pytest.fixture()
+def route_secdef_admin(monkeypatch):
+    """Route migration-258 service_role RPC calls to a test's mock client.
+
+    Since ADR-006 part 2 (migration 258), the privileged SECURITY DEFINER write
+    service methods obtain the RPC client via ``get_admin_supabase_client()``
+    (service_role) instead of the caller-supplied client, so an authenticated
+    user can no longer reach them directly. Unit tests that pass a mock client
+    and assert on / depend on ``.rpc()`` must point that getter at their mock —
+    otherwise the call falls through to a real service-role client (a live DB
+    hit, which fails in CI). Usage: ``route_secdef_admin(sb)`` after ``sb`` is
+    configured, before invoking the service method.
+    """
+
+    def _route(client):
+        for module in (
+            "cycle_resolution_service",
+            "epoch_participation_service",
+            "scoring_service",
+            "forge_feature_service",
+            "lore_service",
+            "forge_orchestrator_service",
+        ):
+            monkeypatch.setattr(
+                f"backend.services.{module}.get_admin_supabase_client",
+                AsyncMock(return_value=client),
+                raising=False,
+            )
+
+    return _route

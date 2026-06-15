@@ -9,6 +9,7 @@ from backend.services.bot_personality import auto_draft
 from backend.utils.db import resolve_epoch_sim_names
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,9 @@ class EpochParticipationService:
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
 
         # Atomic join — handles both sim and user uniqueness in one transaction
-        resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
             "fn_join_epoch_atomic",
             {
                 "p_epoch_id": str(epoch_id),
@@ -270,7 +273,9 @@ class EpochParticipationService:
 
         # Atomic team join with size enforcement (migration 214).
         # Returns: true (joined), false (full), NULL (team not found/dissolved).
-        resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
             "fn_join_team_checked",
             {
                 "p_epoch_id": str(epoch_id),

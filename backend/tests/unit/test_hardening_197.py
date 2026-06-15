@@ -94,7 +94,7 @@ class TestAtomicRPCPaths:
         )
 
     @pytest.mark.asyncio
-    async def test_grant_rp_calls_rpc_directly(self):
+    async def test_grant_rp_calls_rpc_directly(self, route_secdef_admin):
         """grant_rp must call fn_grant_rp_single without PlatformConfigService check."""
         epoch_chain = _mock_chain(
             execute=AsyncMock(return_value=MagicMock(data={"config": {"rp_cap": 40}}))
@@ -105,6 +105,7 @@ class TestAtomicRPCPaths:
             rpc_map={"fn_grant_rp_single": rpc_chain},
         )
 
+        route_secdef_admin(sb)
         result = await CycleResolutionService.grant_rp(sb, EPOCH_ID, SIM_ID, 5)
 
         sb.rpc.assert_called_once_with(

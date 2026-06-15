@@ -11,6 +11,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, payment_required, server_error
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,9 @@ class ForgeFeatureService:
             raise bad_request(f"Unknown feature type: {feature_type}")
 
         try:
-            resp = await supabase.rpc(
+            # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+            admin = await get_admin_supabase_client()
+            resp = await admin.rpc(
                 "fn_purchase_feature",
                 {
                     "p_user_id": str(user_id),
@@ -97,7 +100,9 @@ class ForgeFeatureService:
     ) -> None:
         """Mark feature as failed and trigger token refund via RPC."""
         try:
-            await supabase.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
+            # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+            admin = await get_admin_supabase_client()
+            await admin.rpc("fn_refund_feature", {"p_purchase_id": purchase_id}).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception(
                 "Refund failed for purchase %s",
@@ -169,7 +174,9 @@ class ForgeFeatureService:
     ) -> int:
         """Decrement darkroom regen budget. Returns remaining count."""
         try:
-            resp = await supabase.rpc(
+            # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+            admin = await get_admin_supabase_client()
+            resp = await admin.rpc(
                 "fn_darkroom_use_regen",
                 {
                     "p_purchase_id": purchase_id,
