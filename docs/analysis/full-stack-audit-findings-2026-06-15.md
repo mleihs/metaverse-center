@@ -82,7 +82,7 @@
 ## SQL/migrations + Postgres-first — 7 findings
 
 
-### [ ] `P1` · postgres-first — _post_event_mutation degrades building_condition with a Python read-modify-write that ALSO corrupts the column type (float written into a TEXT enum); atomic fn_degrade_building already exists
+### [x] `P1` · postgres-first — _post_event_mutation degrades building_condition with a Python read-modify-write that ALSO corrupts the column type (float written into a TEXT enum); atomic fn_degrade_building already exists
 
 - **Files:** backend/services/event_service.py
 - **Lines:** 557-581
