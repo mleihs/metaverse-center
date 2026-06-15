@@ -144,6 +144,11 @@ jobs:
             psql -h localhost -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
+      - name: SECDEF anon-RPC grant guard (ADR-006)
+        env:
+          PGPASSWORD: postgres
+        run: bash scripts/lint-no-secdef-public-grant.sh
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
