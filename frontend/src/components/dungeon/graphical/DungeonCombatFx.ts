@@ -61,6 +61,48 @@ const CRIT_DAMAGE = 3;
 /** Clamp per-frame delta so a backgrounded tab doesn't fast-forward FX. */
 const MAX_FRAME_MS = 50;
 
+// ── Phase 2.1 juice: hit-stop, trauma-shake, overshoot ───────────────────────
+// Hit-stop ("freeze frame"): on impact the FX clock nearly stops for a beat, so
+// the flash + shake + particles register before the next event spawns. This is
+// the single biggest "weight" lever — a heavy blow that pauses time reads as
+// heavier than the same blow at full speed. Durations scale with severity.
+const HITSTOP_STRESS_MS = 30;
+const HITSTOP_LIGHT_MS = 60;
+const HITSTOP_MED_MS = 150;
+const HITSTOP_CRIT_MS = 260;
+/** During hit-stop the clock advances at this fraction of real time (a hair of
+ *  motion, not a dead hang). The schedule + sprites + shake all run off the
+ *  scaled clock, so everything freezes together. */
+const FREEZE_TIME_SCALE = 0.06;
+
+// Trauma-shake (Nilson, GDC 2013): shake magnitude is trauma², trauma decays
+// linearly, and the offset is sampled from coherent value-noise — NOT
+// Math.random, which reads as jittery static. Axes (and rotation) use different
+// noise seeds so the shake never collapses onto a diagonal.
+/** Trauma lost per second (full trauma settles in ~1/this seconds). */
+const TRAUMA_DECAY_PER_S = 2.2;
+/** Max layer translation in px at trauma=1 (shake=1). */
+const SHAKE_MAX_PX = 22;
+/** Max layer rotation in radians at trauma=1. */
+const SHAKE_MAX_ROT = 0.045;
+/** Value-noise sampling frequency (Hz) — higher = busier shake. */
+const SHAKE_FREQ = 19;
+// Per-event trauma contributions (clamped to 1).
+const TRAUMA_ENEMY_HIT = 0.28;
+const TRAUMA_PARTY_HIT = 0.42;
+const TRAUMA_CRIT = 0.7;
+const TRAUMA_VICTORY = 0.4;
+const TRAUMA_DEFEAT = 1;
+/** Crit-only squash/stretch punch on the FX layer (decays fast). */
+const PUNCH_DECAY_PER_S = 7;
+
+/** Back-out easing: overshoots past 1 then settles. `s` controls overshoot
+ *  amount (1.70158 ≈ +10%, ~3.4 ≈ +30%). p in [0,1] → eased value. */
+function easeOutBack(p: number, s = 1.70158): number {
+  const c3 = s + 1;
+  return 1 + c3 * (p - 1) ** 3 + s * (p - 1) ** 2;
+}
+
 /** A live FX element: a Pixi display object plus its own per-frame updater. */
 interface FxSprite {
   node: Container;
@@ -102,8 +144,12 @@ export class VelgDungeonCombatFx extends LitElement {
   private _schedule: { at: number; run: () => void }[] = [];
   /** Monotonic FX clock in ms (advanced by the ticker, drives the schedule). */
   private _clock = 0;
-  /** Decaying screen-shake magnitude in px. */
-  private _shake = 0;
+  /** Decaying screen-shake energy in [0,1]; applied magnitude is trauma². */
+  private _trauma = 0;
+  /** Real-time ms of hit-stop remaining (the clock crawls while this burns). */
+  private _freeze = 0;
+  /** Crit-only squash/stretch punch on the FX layer, in [0,~0.07]. */
+  private _punch = 0;
 
   private _palette: Palette = {
     danger: 'red',
@@ -221,7 +267,9 @@ export class VelgDungeonCombatFx extends LitElement {
     this._layer = null;
     this._PIXI = null;
     this._clock = 0;
-    this._shake = 0;
+    this._trauma = 0;
+    this._freeze = 0;
+    this._punch = 0;
     this._ready = false;
   }
 
@@ -253,7 +301,16 @@ export class VelgDungeonCombatFx extends LitElement {
     const app = this._app;
     const layer = this._layer;
     if (!app || !layer) return;
-    const dt = Math.min(MAX_FRAME_MS, deltaMs);
+    const real = Math.min(MAX_FRAME_MS, deltaMs);
+
+    // Hit-stop: while frozen the FX clock crawls (FREEZE_TIME_SCALE of real
+    // time), so the schedule, sprites AND shake all hang on the impact frame
+    // together. The freeze timer itself burns down in real time.
+    let dt = real;
+    if (this._freeze > 0) {
+      this._freeze -= real;
+      dt = real * FREEZE_TIME_SCALE;
+    }
     this._clock += dt;
 
     // Fire any scheduled spawns whose time has come.
@@ -274,25 +331,62 @@ export class VelgDungeonCombatFx extends LitElement {
       }
     }
 
-    // Screen-shake: jitter the whole FX layer, decaying toward rest.
-    if (this._shake > 0.2 && !this._reducedMotion) {
-      layer.x = (Math.random() - 0.5) * this._shake;
-      layer.y = (Math.random() - 0.5) * this._shake;
-      this._shake *= 0.86;
+    // Trauma-shake: magnitude is trauma², the offset comes from coherent
+    // value-noise (decoupled per-axis seeds) rather than per-frame random, and
+    // trauma decays linearly. A crit also adds a fast-decaying squash punch.
+    this._trauma = Math.max(0, this._trauma - TRAUMA_DECAY_PER_S * (dt / 1000));
+    this._punch = Math.max(0, this._punch - PUNCH_DECAY_PER_S * (dt / 1000));
+    const shake = this._reducedMotion ? 0 : this._trauma * this._trauma;
+    if (shake > 0.0004) {
+      const nt = (this._clock / 1000) * SHAKE_FREQ;
+      layer.x = this._noise(nt, 11) * shake * SHAKE_MAX_PX;
+      layer.y = this._noise(nt, 29) * shake * SHAKE_MAX_PX;
+      layer.rotation = this._noise(nt, 53) * shake * SHAKE_MAX_ROT;
     } else {
       layer.x = 0;
       layer.y = 0;
-      this._shake = 0;
+      layer.rotation = 0;
+    }
+    // Squash/stretch punch about the layer centre (x stretches, y squashes).
+    if (this._punch > 0.0005 && !this._reducedMotion) {
+      layer.pivot.set(app.screen.width / 2, app.screen.height / 2);
+      layer.position.set(layer.x + app.screen.width / 2, layer.y + app.screen.height / 2);
+      layer.scale.set(1 + this._punch, 1 - this._punch * 0.6);
+    } else if (layer.scale.x !== 1 || layer.scale.y !== 1) {
+      layer.pivot.set(0, 0);
+      layer.scale.set(1);
     }
 
-    // Idle: no scheduled spawns, no live sprites, shake settled → stop the render
-    // loop so a dormant combat layer doesn't burn the GPU between rounds.
-    // _playRound restarts it. Render the now-empty stage once before stopping so
-    // the cleared frame is what remains on screen.
-    if (!this._schedule.length && !this._sprites.length && this._shake === 0) {
+    // Idle: no scheduled spawns, no live sprites, shake + freeze settled → stop
+    // the render loop so a dormant combat layer doesn't burn the GPU between
+    // rounds. _playRound restarts it. Render the now-empty stage once before
+    // stopping so the cleared frame is what remains on screen.
+    if (
+      !this._schedule.length &&
+      !this._sprites.length &&
+      this._trauma === 0 &&
+      this._freeze <= 0
+    ) {
       app.render();
       app.ticker.stop();
     }
+  }
+
+  /** Cheap coherent 1-D value-noise in [-1,1] (smootherstep-interpolated hashed
+   *  lattice). Used for shake offsets — coherent, so the jitter reads as a
+   *  physical wobble instead of random static. */
+  private _noise(x: number, seed: number): number {
+    const i = Math.floor(x);
+    const f = x - i;
+    const u = f * f * f * (f * (f * 6 - 15) + 10); // smootherstep
+    const a = this._hash(i, seed);
+    const b = this._hash(i + 1, seed);
+    return (a + (b - a) * u) * 2 - 1;
+  }
+
+  private _hash(n: number, seed: number): number {
+    const s = Math.sin(n * 127.1 + seed * 311.7) * 43758.5453;
+    return s - Math.floor(s);
   }
 
   // ── Round playback ──────────────────────────────────────────────────────────
@@ -315,17 +409,17 @@ export class VelgDungeonCombatFx extends LitElement {
     if (result.victory) {
       this._schedule.push({
         at: flourishAt,
-        run: () => this._playFlourish(msg('VICTORY'), this._palette.success, 0.26),
+        run: () => this._playFlourish(msg('VICTORY'), this._palette.success, 0.26, TRAUMA_VICTORY),
       });
     } else if (result.wipe) {
       this._schedule.push({
         at: flourishAt,
-        run: () => this._playFlourish(msg('DEFEAT'), this._palette.danger, 0.38),
+        run: () => this._playFlourish(msg('DEFEAT'), this._palette.danger, 0.38, TRAUMA_DEFEAT),
       });
     } else if (result.stalemate) {
       this._schedule.push({
         at: flourishAt,
-        run: () => this._playFlourish(msg('STALEMATE'), this._palette.muted, 0),
+        run: () => this._playFlourish(msg('STALEMATE'), this._palette.muted, 0, 0),
       });
     }
     // Keep the schedule ordered: a new round arriving mid-playback would
@@ -375,12 +469,29 @@ export class VelgDungeonCombatFx extends LitElement {
     }
     this._spawnBurst(color, x, y, crit ? 18 : 10, crit ? 1.2 : 0.8);
     this._spawnRing(color, x, y, crit ? 1.4 : 1);
+
+    // Layered impact (same frame): flash → trauma → hit-stop → squash, scaled by
+    // severity. Hit-stop is the weight lever; trauma is the felt recoil.
+    this._addTrauma(targetIsParty ? TRAUMA_PARTY_HIT : TRAUMA_ENEMY_HIT);
+    this._freeze = Math.max(this._freeze, this._hitStopMs(event.damage, event.stress, crit));
     if (crit) {
       this._spawnFlash(color, 0.16);
-      this._shake = Math.max(this._shake, 14);
-    } else if (targetIsParty) {
-      this._shake = Math.max(this._shake, 6);
+      this._addTrauma(TRAUMA_CRIT);
+      this._punch = Math.max(this._punch, 0.06);
     }
+  }
+
+  /** Trauma is additive but capped — a flurry of hits can't run the shake away. */
+  private _addTrauma(amount: number): void {
+    this._trauma = Math.min(1, this._trauma + amount);
+  }
+
+  /** Hit-stop duration scales with how hard the blow reads. */
+  private _hitStopMs(damage: number, stress: number, crit: boolean): number {
+    if (crit) return HITSTOP_CRIT_MS;
+    if (damage >= 2) return HITSTOP_MED_MS;
+    if (damage >= 1) return HITSTOP_LIGHT_MS;
+    return stress > 0 ? HITSTOP_STRESS_MS : 0;
   }
 
   // ── Spawn primitives ────────────────────────────────────────────────────────
@@ -421,8 +532,15 @@ export class VelgDungeonCombatFx extends LitElement {
         s.node.y = y - rise * t;
         // Hold, then fade over the last 45%.
         s.node.alpha = baseAlpha * (t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45);
-        const pop = t < 0.18 ? 0.7 + (t / 0.18) * 0.4 : 1;
-        s.node.scale.set(this._reducedMotion ? 1 : pop);
+        // Overshoot: scale 0 → ~1.3× → 1× via back-out ease over the first 22%
+        // of life. Linear scale-in was the #1 "un-juiced" tell; the snap-and-
+        // settle gives each number a physical pop.
+        if (this._reducedMotion) {
+          s.node.scale.set(1);
+        } else {
+          const POP_IN = 0.22;
+          s.node.scale.set(t < POP_IN ? easeOutBack(t / POP_IN, 3.4) : 1);
+        }
       },
     });
   }
@@ -505,13 +623,13 @@ export class VelgDungeonCombatFx extends LitElement {
     });
   }
 
-  private _playFlourish(text: string, color: string, flashAlpha: number): void {
+  private _playFlourish(text: string, color: string, flashAlpha: number, trauma: number): void {
     const PIXI = this._PIXI;
     const app = this._app;
     const layer = this._layer;
     if (!PIXI || !app || !layer) return;
     this._spawnFlash(color, flashAlpha);
-    if (flashAlpha > 0 && !this._reducedMotion) this._shake = Math.max(this._shake, 10);
+    if (trauma > 0) this._addTrauma(trauma);
 
     const node = new PIXI.Text({
       text,
@@ -538,9 +656,9 @@ export class VelgDungeonCombatFx extends LitElement {
           s.node.alpha = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
           return;
         }
-        // Slam in (overshoot), hold, fade out.
-        const inK = t < 0.16 ? 1.4 - (t / 0.16) * 0.4 : 1;
-        s.node.scale.set(inK);
+        // Slam in with a back-out overshoot, hold, fade out.
+        const SLAM_IN = 0.18;
+        s.node.scale.set(t < SLAM_IN ? easeOutBack(t / SLAM_IN, 2.2) : 1);
         s.node.alpha = t < 0.7 ? Math.min(1, t / 0.12) : 1 - (t - 0.7) / 0.3;
       },
     });
