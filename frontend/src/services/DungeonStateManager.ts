@@ -56,6 +56,18 @@ const TIMER_TICK_MS = 250;
 /** Which rendering of the dungeon the player is using. */
 export type DungeonViewMode = 'terminal' | 'graphical';
 
+/** Room-entry narrative surfaced to the graphical scene (no terminal buffer). */
+export interface RoomNarrative {
+  /** Localized archetype banter for the entered room. */
+  banter: string | null;
+  /** Localized resource-barometer line (e.g. rising-water warning). */
+  barometer: string | null;
+  /** Room type of the entered room ('combat' | 'boss' | 'rest' | …). */
+  roomType: string;
+  /** Dungeon depth after the move. */
+  depth: number;
+}
+
 // ── State Manager ──────────────────────────────────────────────────────────
 
 class DungeonStateManager {
@@ -109,6 +121,12 @@ class DungeonStateManager {
 
   /** Encounter choices for the current room. Set from move response, cleared on phase change. */
   readonly encounterChoices = signal<EncounterChoiceClient[]>([]);
+
+  /** Last room-entry narrative (banter + barometer), published at the move site.
+   *  Client-only: like CombatRoundResult.events, this lives on the move response
+   *  and is discarded by applyState(). The graphical view (which has no terminal
+   *  buffer) reads it for its banter overlay. Null until the first move. */
+  readonly lastRoomNarrative = signal<RoomNarrative | null>(null);
 
   // ── Combat Planning (client-only, ephemeral) ───────────────────────────
 
@@ -206,6 +224,14 @@ class DungeonStateManager {
     return state.depth / maxDepth;
   });
 
+  // ── Room Narrative (client-only publication) ───────────────────────────
+
+  /** Publish the room-entry narrative for the graphical scene. Called at the
+   *  move resolution site (utils/dungeon-commands.ts) after applyState(). */
+  publishRoomNarrative(narrative: RoomNarrative): void {
+    this.lastRoomNarrative.value = narrative;
+  }
+
   // ── View Mode ──────────────────────────────────────────────────────────
 
   /** Switch the active dungeon rendering and persist the preference. */
@@ -301,6 +327,7 @@ class DungeonStateManager {
     this.clientState.value = null;
     this.runId.value = null;
     this.selectedActions.value = new Map();
+    this.lastRoomNarrative.value = null;
     this.error.value = null;
     this.loading.value = false;
     this.combatSubmitting.value = false;
