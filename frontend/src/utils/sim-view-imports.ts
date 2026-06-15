@@ -18,7 +18,7 @@ const viewImports: Record<string, () => Promise<unknown>> = {
   locations: () => import('../components/locations/LocationsView.js'),
   atlas: () => import('../components/world-map/SimulationWorldMap.js'),
   terminal: () => import('../components/terminal/TerminalView.js'),
-  dungeon: () => import('../components/dungeon/DungeonTerminalView.js'),
+  dungeon: () => import('../components/dungeon/DungeonView.js'),
 };
 
 export function getSimViewImport(view: string): (() => Promise<unknown>) | undefined {
