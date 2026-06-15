@@ -32,7 +32,7 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 import { appState } from '../../../services/AppStateManager.js';
 import { dungeonState } from '../../../services/DungeonStateManager.js';
@@ -65,6 +65,10 @@ import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
 import './DungeonCombatFx.js';
+
+/** localStorage key for the map-rail collapsed preference (client-only UI
+ *  state, like the view-mode key — never reset by applyState()/clear()). */
+const RAIL_COLLAPSED_STORAGE_KEY = 'dungeon_map_rail_collapsed';
 
 /** Localized meter labels per fx profile (resolver returns no user strings). */
 function meterLabelFor(fx: FxProfile): string {
@@ -142,28 +146,45 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         color: var(--color-danger);
       }
 
-      /* ── HUD grid (mirrors DungeonTerminalView layout) ── */
+      /* ── HUD grid — [ map rail | scene | party ].
+         The map is the primary navigation surface, so it lives in a persistent
+         left rail at its native ~320px width (the same sidebar mode the terminal
+         view uses) instead of a modal that over-scaled it 2× and hid the current
+         room below the fold. ── */
       .dungeon-hud {
         display: grid;
         grid-template-rows: auto 1fr auto;
-        grid-template-columns: 1fr 280px;
+        grid-template-columns: 320px 1fr 280px;
         flex: 1;
         min-height: 0;
         gap: 0;
+      }
+      .dungeon-hud--rail-collapsed {
+        grid-template-columns: 40px 1fr 280px;
       }
       .dungeon-hud__header {
         grid-column: 1 / -1;
         grid-row: 1;
       }
-      .dungeon-hud__main {
+      .dungeon-hud__rail {
         grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        border-right: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+        background: var(--color-surface);
+      }
+      .dungeon-hud__main {
+        grid-column: 2;
         grid-row: 2;
         display: flex;
         flex-direction: column;
         min-height: 0;
       }
       .dungeon-hud__party {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 2;
         overflow-y: auto;
         border-left: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
@@ -180,21 +201,114 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         z-index: 21;
       }
 
+      /* ── Map rail internals ── */
+      /* Override the map component's own :host{flex-shrink:0} so it fills the
+         rail and scrolls internally (its .map-content has overflow-y:auto). */
+      .dungeon-hud__rail velg-dungeon-map {
+        flex: 1 1 0;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        /* Keep rail scrolling self-contained — don't bubble to the page once the
+           map reaches its scroll limit (the document is slightly scrollable). */
+        overscroll-behavior: contain;
+      }
+      .rail-header {
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 5px 6px;
+        border-bottom: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+      }
+      .rail-collapse-btn,
+      .rail-expand-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 6px;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 35%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 85%, transparent);
+        color: var(--_phosphor-dim);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition:
+          color var(--transition-fast, 100ms ease),
+          border-color var(--transition-fast, 100ms ease);
+      }
+      .rail-collapse-btn:hover,
+      .rail-expand-btn:hover {
+        color: var(--_phosphor);
+        border-color: var(--_phosphor);
+      }
+      .rail-collapse-btn:focus-visible,
+      .rail-expand-btn:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      .rail-collapse-btn__icon {
+        display: flex;
+        /* chevronRight → left (collapse toward the edge). */
+        transform: rotate(180deg);
+      }
+
+      /* Collapsed: a thin vertical strip with a single "open map" control. */
+      .rail-strip {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 0;
+      }
+      .rail-expand-btn--vertical {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 4px;
+        writing-mode: vertical-rl;
+      }
+      .rail-expand-btn--vertical .rail-expand-btn__map {
+        writing-mode: horizontal-tb;
+      }
+
       @media (max-width: 1199px) {
-        .dungeon-hud {
+        .dungeon-hud,
+        .dungeon-hud--rail-collapsed {
           grid-template-columns: 1fr;
+        }
+        .dungeon-hud__header {
+          grid-column: 1;
+          grid-row: 1;
+        }
+        .dungeon-hud__main {
+          grid-column: 1;
+          grid-row: 2;
         }
         .dungeon-hud__party {
           grid-column: 1;
-          grid-row: unset;
+          grid-row: 3;
           max-height: 96px;
           border-left: none;
           border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
           overflow-x: auto;
           overflow-y: hidden;
         }
+        .dungeon-hud__rail {
+          grid-column: 1;
+          grid-row: 4;
+          border-right: none;
+          border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+          height: clamp(200px, 38vh, 340px);
+        }
+        .dungeon-hud--rail-collapsed .dungeon-hud__rail {
+          height: auto;
+        }
         .dungeon-hud__actions {
           grid-column: 1;
+          grid-row: 5;
         }
       }
 
@@ -854,97 +968,6 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         }
       }
 
-      /* ── Map FAB + dialog ── navigation surface for the graphical view.
-         The FAB floats over the immersive scene; the dialog hosts the room DAG
-         at full size so the select→move interaction (room detail panel) has room
-         to breathe instead of being crammed into the sidebar. */
-      .map-fab {
-        position: fixed;
-        bottom: 88px;
-        right: 28px;
-        z-index: var(--z-overlay, 400);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        border: 1px solid color-mix(in srgb, var(--_phosphor) 50%, transparent);
-        background: color-mix(in srgb, var(--_screen-bg) 92%, black); /* lint-color-ok */
-        color: var(--_phosphor);
-        font-family: var(--font-brutalist, var(--_mono));
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        cursor: pointer;
-        backdrop-filter: blur(4px);
-        transition:
-          border-color var(--transition-fast, 100ms ease),
-          color var(--transition-fast, 100ms ease);
-      }
-      .map-fab:hover {
-        border-color: var(--_phosphor);
-        color: var(--_phosphor);
-      }
-      .map-fab:focus-visible {
-        outline: 2px solid var(--_phosphor);
-        outline-offset: 2px;
-      }
-
-      .map-dialog {
-        border: 1px solid color-mix(in srgb, var(--_phosphor) 40%, transparent);
-        background: color-mix(in srgb, var(--_screen-bg) 98%, black); /* lint-color-ok */
-        color: var(--_phosphor);
-        padding: 0;
-        max-width: min(92vw, 620px);
-        max-height: 84vh;
-        width: 100%;
-      }
-      .map-dialog::backdrop {
-        background: color-mix(in srgb, var(--color-surface) 70%, transparent);
-        backdrop-filter: blur(2px);
-      }
-      .map-dialog__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 12px;
-        border-bottom: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
-        font-family: var(--font-brutalist, var(--_mono));
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-      }
-      .map-dialog__close {
-        border: none;
-        background: none;
-        color: var(--_phosphor-dim);
-        font-size: 20px;
-        line-height: 1;
-        cursor: pointer;
-        padding: 0 4px;
-      }
-      .map-dialog__close:hover {
-        color: var(--_phosphor);
-      }
-
-      @media (max-width: 640px) {
-        .map-fab {
-          bottom: 72px;
-          right: 12px;
-          padding: 6px 10px;
-          font-size: 9px;
-        }
-        .map-dialog {
-          max-width: 100vw;
-          max-height: 100vh;
-          width: 100vw;
-          height: 100vh;
-          margin: 0;
-          border: none;
-        }
-      }
-
       @media (prefers-reduced-motion: reduce) {
         .scene__plane,
         .scene__alarm,
@@ -965,13 +988,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
   @state() private _initialized = false;
   @state() private _error: string | null = null;
-  @state() private _mapDialogOpen = false;
+  /** Whether the left map rail is collapsed to a thin strip (reclaiming scene
+   *  width). Client-only UI preference, persisted to localStorage and never
+   *  touched by applyState()/clear() — mirrors viewMode. */
+  @state() private _railCollapsed = this._getPersistedRailCollapsed();
   /** Backdrop URL that failed to load (local storage missing the asset, 404,
    *  etc.) → fall back to the CSS-only chamber for that URL. Keyed by URL so a
    *  new archetype's backdrop is retried. */
   @state() private _failedBackdrop: string | null = null;
-
-  @query('.map-dialog') private _mapDialog?: HTMLDialogElement;
 
   private _wakeLock: WakeLockReleasable | null = null;
 
@@ -1052,36 +1076,39 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     }
   }
 
-  // ── Command routing (same pipeline as the terminal view) ─────────────────
-
-  // ── Map dialog ───────────────────────────────────────────────────────────
-  // The dungeon map (room DAG) is the navigation surface — clicking a room node
+  // ── Map rail ─────────────────────────────────────────────────────────────
+  // The dungeon map (room DAG) is the primary navigation surface — it lives in
+  // a persistent left rail at its native ~320px width. Clicking a room node
   // dispatches a `terminal-command` move that the .dungeon-hud @terminal-command
-  // handler routes through the same pipeline. The map opens as a modal so the
-  // immersive scene stays unobstructed and the room-detail/move panel has room.
+  // handler routes through the same pipeline. The rail can be collapsed to a
+  // thin strip to reclaim scene width; the preference persists in localStorage.
 
-  private _openMapDialog(): void {
-    this._mapDialogOpen = true;
-    this._mapDialog?.showModal();
+  private _toggleRail(): void {
+    this._railCollapsed = !this._railCollapsed;
+    this._persistRailCollapsed(this._railCollapsed);
   }
 
-  private _onMapDialogClose(): void {
-    this._mapDialogOpen = false;
-  }
-
-  private _onMapDialogBackdropClick(e: MouseEvent): void {
-    if (e.target === this._mapDialog) {
-      this._mapDialog?.close();
+  private _getPersistedRailCollapsed(): boolean {
+    try {
+      return globalThis.localStorage?.getItem(RAIL_COLLAPSED_STORAGE_KEY) === 'true';
+    } catch (err) {
+      captureError(err, { source: 'VelgDungeonGraphicalView._getPersistedRailCollapsed' });
+      return false;
     }
   }
+
+  private _persistRailCollapsed(collapsed: boolean): void {
+    try {
+      globalThis.localStorage?.setItem(RAIL_COLLAPSED_STORAGE_KEY, collapsed ? 'true' : 'false');
+    } catch (err) {
+      captureError(err, { source: 'VelgDungeonGraphicalView._persistRailCollapsed' });
+    }
+  }
+
+  // ── Command routing (same pipeline as the terminal view) ─────────────────
 
   private _handleTerminalCommand(e: CustomEvent<string>): void {
     e.stopPropagation();
-    // A command issued from the open map dialog (a room move) closes it so the
-    // updated scene is revealed; hud-issued commands fire while it is closed.
-    if (this._mapDialog?.open) {
-      this._mapDialog.close();
-    }
     void this._runCommand(e.detail);
   }
 
@@ -1126,12 +1153,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
     return html`
       <div
-        class="dungeon-hud"
+        class="dungeon-hud ${this._railCollapsed ? 'dungeon-hud--rail-collapsed' : ''}"
         @terminal-command=${this._handleTerminalCommand}
       >
         <div class="dungeon-hud__header" role="banner" aria-label=${msg('Dungeon status')}>
           <velg-dungeon-header></velg-dungeon-header>
         </div>
+
+        ${this._renderRail()}
 
         <div class="dungeon-hud__main" role="main" aria-label=${msg('Dungeon scene')}>
           ${
@@ -1209,34 +1238,45 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           }
         </div>
       </div>
+    `;
+  }
 
-      <button
-        class="map-fab"
-        @click=${this._openMapDialog}
-        aria-label=${msg('Open dungeon map')}
-      >
-        ${icons.dungeonMap(16)}
-        <span>${msg('Map')}</span>
-      </button>
-
-      <dialog
-        class="map-dialog"
-        @terminal-command=${this._handleTerminalCommand}
-        @close=${this._onMapDialogClose}
-        @click=${this._onMapDialogBackdropClick}
-      >
-        <div class="map-dialog__header">
-          <span>${msg('Dungeon Map')}</span>
+  /** Persistent left navigation rail hosting the room DAG at its native sidebar
+   *  width. Collapses to a thin strip to reclaim scene width. The map dispatches
+   *  `terminal-command` move events that bubble to the .dungeon-hud handler. */
+  private _renderRail() {
+    if (this._railCollapsed) {
+      return html`
+        <div class="dungeon-hud__rail" role="region" aria-label=${msg('Dungeon map')}>
+          <div class="rail-strip">
+            <button
+              class="rail-expand-btn rail-expand-btn--vertical"
+              @click=${this._toggleRail}
+              aria-label=${msg('Show dungeon map')}
+              aria-expanded="false"
+            >
+              <span class="rail-expand-btn__map">${icons.dungeonMap(16)}</span>
+              <span>${msg('Map')}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    return html`
+      <div class="dungeon-hud__rail" role="region" aria-label=${msg('Dungeon map')}>
+        <div class="rail-header">
           <button
-            class="map-dialog__close"
-            @click=${() => this._mapDialog?.close()}
-            aria-label=${msg('Close map')}
+            class="rail-collapse-btn"
+            @click=${this._toggleRail}
+            aria-label=${msg('Hide dungeon map')}
+            aria-expanded="true"
           >
-            &times;
+            <span class="rail-collapse-btn__icon">${icons.chevronRight(12)}</span>
+            <span>${msg('Hide')}</span>
           </button>
         </div>
-        ${this._mapDialogOpen ? html`<velg-dungeon-map persistent></velg-dungeon-map>` : nothing}
-      </dialog>
+        <velg-dungeon-map persistent></velg-dungeon-map>
+      </div>
     `;
   }
 
