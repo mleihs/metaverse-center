@@ -15,6 +15,7 @@ from backend.services.journal.hooks import enqueue_epoch_signature
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_one
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,9 @@ class CycleResolutionService:
         Uses ``fn_batch_grant_rp`` RPC (migration 126) — a single UPDATE
         with LEAST() for cap enforcement.
         """
-        await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        await admin.rpc(
             "fn_batch_grant_rp",
             {"p_epoch_id": str(epoch_id), "p_amount": amount, "p_rp_cap": rp_cap},
         ).execute()
@@ -62,7 +65,9 @@ class CycleResolutionService:
         if amount <= 0:
             raise bad_request("RP spend amount must be positive.")
 
-        resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
             "fn_spend_rp_atomic",
             {
                 "p_epoch_id": str(epoch_id),
@@ -95,7 +100,9 @@ class CycleResolutionService:
         rp_cap = config["rp_cap"]
 
         # Atomic RP grant with cap enforcement (migration 148)
-        rpc_resp = await supabase.rpc(
+        # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+        admin = await get_admin_supabase_client()
+        rpc_resp = await admin.rpc(
             "fn_grant_rp_single",
             {
                 "p_epoch_id": str(epoch_id),

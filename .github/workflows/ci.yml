@@ -152,7 +152,7 @@ jobs:
         # integration suite. Re-grant to match prod: RLS still gates anon /
         # authenticated; service_role bypasses RLS as designed. Routines are
         # deliberately NOT granted here — per-function EXECUTE is governed by the
-        # migrations (ADR-006) and the SECDEF anon-RPC guard.
+        # migrations (ADR-006) and the SECDEF anon-RPC guard below.
         env:
           PGPASSWORD: postgres
         run: |
@@ -160,6 +160,11 @@ jobs:
             -c "GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;" \
             -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;" \
             -c "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;"
+
+      - name: SECDEF anon-RPC grant guard (ADR-006)
+        env:
+          PGPASSWORD: postgres
+        run: bash scripts/lint-no-secdef-public-grant.sh
 
       - uses: actions/setup-python@v5
         with:

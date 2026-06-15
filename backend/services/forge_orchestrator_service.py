@@ -39,6 +39,7 @@ from backend.services.seo_service import notify_search_engines
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_gateway, bad_request, server_error
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -664,7 +665,9 @@ class ForgeOrchestratorService:
 
         try:
             try:
-                response = await supabase.rpc("fn_materialize_shard", {"p_draft_id": str(draft_id)}).execute()
+                # SECDEF privileged write: service_role only (ADR-006 / migration 258).
+                admin = await get_admin_supabase_client()
+                response = await admin.rpc("fn_materialize_shard", {"p_draft_id": str(draft_id)}).execute()
             except (PostgrestAPIError, httpx.HTTPError) as rpc_err:
                 # Parse PostgreSQL RAISE EXCEPTION into semantic HTTP codes
                 err_msg = str(rpc_err)

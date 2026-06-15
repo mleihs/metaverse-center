@@ -923,7 +923,7 @@ class TestScoringServiceLogging:
     """Verify logging output for scoring operations."""
 
     @pytest.mark.asyncio
-    async def test_compute_logs_start(self, caplog):
+    async def test_compute_logs_start(self, caplog, route_secdef_admin):
         """compute_cycle_scores should log INFO at start with epoch_id and cycle_number."""
         sb = MagicMock()
 
@@ -932,6 +932,7 @@ class TestScoringServiceLogging:
         rpc_chain.execute = AsyncMock(return_value=MagicMock())
         sb.rpc.return_value = rpc_chain
 
+        route_secdef_admin(sb)
         # Mock EpochService.get and list_participants
         with (
             patch(
@@ -955,7 +956,7 @@ class TestScoringServiceLogging:
         assert record.cycle_number == 3
 
     @pytest.mark.asyncio
-    async def test_empty_rpc_logs_warning(self, caplog):
+    async def test_empty_rpc_logs_warning(self, caplog, route_secdef_admin):
         """Scoring RPC returning no data should log WARNING."""
         sb = MagicMock()
 
@@ -972,6 +973,7 @@ class TestScoringServiceLogging:
 
         sb.rpc.side_effect = rpc_side_effect
 
+        route_secdef_admin(sb)
         with (
             patch(
                 "backend.services.scoring_service.EpochService.get",
