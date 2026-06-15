@@ -16,6 +16,7 @@ import type {
   ArchetypeState,
   AvailableDungeonResponse,
   CombatAction,
+  CombatRoundResult,
   CombatStateClient,
   CombatSubmission,
   DungeonClientState,
@@ -128,6 +129,16 @@ class DungeonStateManager {
    *  buffer) reads it for its banter overlay. Null until the first move. */
   readonly lastRoomNarrative = signal<RoomNarrative | null>(null);
 
+  /** Last resolved combat round, published at the two submit-resolution sites
+   *  (manual submit in dungeon-commands + auto-submit on timer expiry). Like
+   *  lastRoomNarrative this lives on the CombatSubmitResponse — NOT on the
+   *  DungeonClientState — so applyState() never sees it and would discard it.
+   *  The graphical view's PixiJS combat-FX host (a second consumer) subscribes
+   *  to this signal and plays per-event juice; the terminal view ignores it.
+   *  A fresh object is published per round, so reference identity dedupes
+   *  replays. Null until the first resolved round. */
+  readonly lastRoundResult = signal<CombatRoundResult | null>(null);
+
   // ── Combat Planning (client-only, ephemeral) ───────────────────────────
 
   /** Selected combat actions keyed by agent_id. Cleared on phase change. */
@@ -232,6 +243,13 @@ class DungeonStateManager {
     this.lastRoomNarrative.value = narrative;
   }
 
+  /** Publish a resolved combat round for the graphical combat-FX host. Called
+   *  at the two submit-resolution sites after applyState() (applyState lives on
+   *  the state object and would otherwise drop round_result). */
+  publishRoundResult(result: CombatRoundResult): void {
+    this.lastRoundResult.value = result;
+  }
+
   // ── View Mode ──────────────────────────────────────────────────────────
 
   /** Switch the active dungeon rendering and persist the preference. */
@@ -328,6 +346,7 @@ class DungeonStateManager {
     this.runId.value = null;
     this.selectedActions.value = new Map();
     this.lastRoomNarrative.value = null;
+    this.lastRoundResult.value = null;
     this.error.value = null;
     this.loading.value = false;
     this.combatSubmitting.value = false;
@@ -549,6 +568,10 @@ class DungeonStateManager {
         // resolution results stay visible instead of being pushed off
         // screen by 40+ lines of ability descriptions.
         if (resp.data.round_result) {
+          // Publish for the graphical combat-FX host (second consumer). Safe on
+          // every terminal outcome too: on completed/wipe the dungeon view
+          // unmounts before any FX could replay, and clear() nulls this anyway.
+          this.publishRoundResult(resp.data.round_result);
           const partyNames = this.party.value.map((a) => a.agent_name);
           const lines = [
             combatSystemLine('[AUTO] Timer expired. Actions submitted.'),

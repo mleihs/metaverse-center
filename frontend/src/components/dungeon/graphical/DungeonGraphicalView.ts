@@ -38,7 +38,12 @@ import { appState } from '../../../services/AppStateManager.js';
 import { dungeonState } from '../../../services/DungeonStateManager.js';
 import { captureError } from '../../../services/SentryService.js';
 import { terminalState } from '../../../services/TerminalStateManager.js';
-import type { AvailableDungeonResponse } from '../../../types/dungeon.js';
+import type {
+  AgentCombatStateClient,
+  AvailableDungeonResponse,
+  Condition,
+} from '../../../types/dungeon.js';
+import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
 import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeon-environment.js';
 import { getArchetypeDisplayName } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
@@ -47,6 +52,7 @@ import { initializeTerminalZones } from '../../../utils/terminal-initialization.
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/EmptyState.js';
 import '../../shared/LoadingState.js';
+import '../../shared/VelgAvatar.js';
 import {
   terminalAnimations,
   terminalComponentTokens,
@@ -58,6 +64,7 @@ import '../DungeonHeader.js';
 import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
+import './DungeonCombatFx.js';
 
 /** Localized meter labels per fx profile (resolver returns no user strings). */
 function meterLabelFor(fx: FxProfile): string {
@@ -206,7 +213,53 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         --_p: var(--_pressure, 0);
       }
 
-      /* Backdrop leaf: safe place for filter/transform (no fixed children). */
+      /* Establishing-art layer: a full-bleed room image behind the FX, so the
+         stage reads as a real chamber (the prototype's proven look). Dimmed +
+         scrimmed so the environment FX, readout, banter and party still read.
+         Filter on the <img> leaf only (no fixed descendants → no containing-block
+         hazard for the embedded panels). Falls back to the CSS chamber on error. */
+      .scene__art {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .scene__art-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Dim at rest, dimmer + desaturated as pressure rises (foreboding). */
+        filter: brightness(calc(0.6 - var(--_p) * 0.24)) saturate(calc(0.9 - var(--_p) * 0.35))
+          contrast(1.03);
+        transition: filter 600ms var(--ease-out, ease);
+      }
+      /* Scrim: vignette enclosure + top/bottom darkening for text legibility. */
+      .scene__art::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            125% 95% at 50% 32%,
+            transparent 38%,
+            color-mix(in srgb, var(--color-surface) 78%, transparent) 100%
+          ),
+          linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--color-surface) 50%, transparent) 0%,
+            transparent 26%,
+            transparent 60%,
+            color-mix(in srgb, var(--color-surface) 82%, transparent) 100%
+          );
+      }
+
+      /* Backdrop leaf: safe place for filter/transform (no fixed children).
+         This is the always-on CHAMBER: an overhead light pool, a faintly
+         structured back wall lit near the top, settling to surface mid-height
+         and warming toward the floor. It must read as a dim room at rest (no
+         pressure) — the pressure treatment plane intensifies ON TOP of it. */
       .scene__backdrop {
         position: absolute;
         inset: 0;
@@ -214,14 +267,20 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         pointer-events: none;
         background:
           radial-gradient(
-            120% 90% at 50% 8%,
-            color-mix(in srgb, var(--_fx-accent) calc(8% + var(--_p) * 22%), transparent),
-            transparent 70%
+            74% 58% at 50% -10%,
+            color-mix(in srgb, var(--_fx-accent) calc(16% + var(--_p) * 22%), transparent),
+            transparent 60%
+          ),
+          repeating-linear-gradient(
+            to right,
+            transparent 0 76px,
+            color-mix(in srgb, var(--_fx-accent) 5%, transparent) 76px 77px
           ),
           linear-gradient(
             to bottom,
-            var(--color-surface),
-            color-mix(in srgb, var(--color-surface) 80%, var(--_fx-accent))
+            color-mix(in srgb, var(--color-surface) 76%, var(--_fx-accent)) 0%,
+            var(--color-surface) 52%,
+            color-mix(in srgb, var(--color-surface) 86%, var(--_fx-accent)) 100%
           );
         transition: background 600ms var(--ease-out, ease);
       }
@@ -292,7 +351,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           color-mix(in srgb, var(--color-warning) 40%, transparent) 50.5%,
           transparent 52%
         );
-        opacity: calc(0.3 + var(--_p) * 0.7);
+        /* Fade the structural crack in quadratically: invisible at rest (a sound
+           tower shows no fracture), ramping to full at collapse. Keeps the
+           low-pressure scene clean instead of a lone crack on a void. */
+        opacity: calc(var(--_p) * var(--_p));
       }
 
       /* PULSE — parasitic breathing radial; faster + stronger with pressure. */
@@ -344,6 +406,157 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         );
       }
 
+      /* ── Persistent ambient (pressure-independent) ──
+         The stage must never read as an empty void. Floor + horizon + drifting
+         motes are always present; the pressure treatments wash OVER them. */
+
+      /* Floor: a chamber ground receding to a faintly lit horizon. */
+      .scene__floor {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 46%;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          color-mix(in srgb, var(--color-surface) 86%, var(--_fx-accent)) 55%,
+          color-mix(in srgb, var(--color-surface) 70%, var(--_fx-accent)) 100%
+        );
+      }
+      /* Horizon line: a thin accent rule with a soft glow, brighter under pressure. */
+      .scene__floor::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1px;
+        background: color-mix(in srgb, var(--_fx-accent) 55%, transparent);
+        box-shadow: 0 0 18px 2px color-mix(in srgb, var(--_fx-accent) 28%, transparent);
+        opacity: calc(0.28 + var(--_p) * 0.5);
+      }
+      /* Receding floor banding — implies depth without a transform. */
+      .scene__floor::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent 0 17px,
+          color-mix(in srgb, var(--_fx-accent) 9%, transparent) 17px 18px
+        );
+        -webkit-mask-image: linear-gradient(to bottom, transparent, black 80%);
+        mask-image: linear-gradient(to bottom, transparent, black 80%);
+        opacity: 0.55;
+      }
+
+      /* Drifting dust motes — a handful of soft points, slow vertical current. */
+      .scene__motes {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.5;
+        background-image:
+          radial-gradient(
+            2px 2px at 18% 32%,
+            color-mix(in srgb, var(--_fx-accent) 45%, transparent),
+            transparent
+          ),
+          radial-gradient(
+            1.5px 1.5px at 64% 22%,
+            color-mix(in srgb, var(--_fx-accent) 35%, transparent),
+            transparent
+          ),
+          radial-gradient(
+            1.5px 1.5px at 82% 58%,
+            color-mix(in srgb, var(--_fx-accent) 40%, transparent),
+            transparent
+          ),
+          radial-gradient(
+            2px 2px at 42% 70%,
+            color-mix(in srgb, var(--_fx-accent) 30%, transparent),
+            transparent
+          ),
+          radial-gradient(
+            1px 1px at 30% 52%,
+            color-mix(in srgb, var(--_fx-accent) 35%, transparent),
+            transparent
+          );
+        animation: motes-drift 22s linear infinite;
+      }
+
+      /* In-scene party presence — the operatives stand in the chamber, not just
+         in the side panel. Lower band (party zone), centered, on the floor. */
+      .scene__party {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 23%;
+        z-index: 2;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: clamp(12px, 4vw, 40px);
+        padding: 0 16px;
+      }
+      .party-token {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        animation: token-rise var(--duration-entrance, 350ms) var(--ease-dramatic, ease) both;
+        animation-delay: calc(var(--i, 0) * 80ms);
+      }
+      .party-token__figure {
+        position: relative;
+        width: clamp(42px, 5.5vw, 60px);
+        animation: token-bob 4.2s var(--ease-in-out, ease-in-out) infinite;
+        animation-delay: calc(var(--i, 0) * -700ms);
+      }
+      .party-token__figure velg-avatar {
+        display: block;
+        width: 100%;
+        /* Condition-tinted halo so health reads from the figure alone. */
+        filter: drop-shadow(0 0 6px color-mix(in srgb, var(--_cond) 45%, transparent));
+        border: 1px solid color-mix(in srgb, var(--_cond) 55%, transparent);
+      }
+      /* Ground shadow grounding the figure on the floor. */
+      .party-token__shadow {
+        position: absolute;
+        left: 50%;
+        bottom: -9px;
+        width: 88%;
+        height: 9px;
+        margin-left: -44%;
+        border-radius: 50%;
+        background: radial-gradient(
+          closest-side,
+          color-mix(in srgb, var(--color-surface) 75%, transparent),
+          transparent
+        );
+      }
+      .party-token__name {
+        max-width: 88px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--_phosphor-dim);
+        text-shadow: 0 1px 2px var(--color-surface);
+      }
+      .party-token--down {
+        opacity: 0.5;
+      }
+
       /* Critical edge alarm — pulsing inset ring at high pressure. */
       .scene__alarm {
         position: absolute;
@@ -356,6 +569,22 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       }
       .scene[data-tier='critical'] .scene__alarm {
         opacity: 1;
+      }
+
+      /* Combat-FX layer (PixiJS, Phase 2): a light-DOM WebGL canvas overlaying
+         the scene. Above the environment plane/alarm, below the readout/banter
+         text so damage numbers never occlude the meter or narrative. Inert —
+         pointer events fall through to the HUD beneath. */
+      velg-dungeon-combat-fx {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+      }
+      velg-dungeon-combat-fx canvas.fx-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
       }
 
       /* ── Foreground content ── */
@@ -566,6 +795,43 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           transform: translateY(0);
         }
       }
+      @keyframes motes-drift {
+        from {
+          background-position:
+            0 0,
+            0 0,
+            0 0,
+            0 0,
+            0 0;
+        }
+        to {
+          background-position:
+            0 -60px,
+            0 -90px,
+            0 -50px,
+            0 -75px,
+            0 -110px;
+        }
+      }
+      @keyframes token-rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes token-bob {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
 
       /* ── Map FAB + dialog ── navigation surface for the graphical view.
          The FAB floats over the immersive scene; the dialog hosts the room DAG
@@ -662,7 +928,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         .scene__plane,
         .scene__alarm,
         .scene__banter,
-        .scene__backdrop {
+        .scene__backdrop,
+        .scene__motes,
+        .scene__art-img,
+        .party-token,
+        .party-token__figure {
           animation: none !important;
           transition: none !important;
         }
@@ -675,6 +945,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   @state() private _initialized = false;
   @state() private _error: string | null = null;
   @state() private _mapDialogOpen = false;
+  /** Backdrop URL that failed to load (local storage missing the asset, 404,
+   *  etc.) → fall back to the CSS-only chamber for that URL. Keyed by URL so a
+   *  new archetype's backdrop is retried. */
+  @state() private _failedBackdrop: string | null = null;
 
   @query('.map-dialog') private _mapDialog?: HTMLDialogElement;
 
@@ -826,6 +1100,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const narrative = dungeonState.lastRoomNarrative.value;
     const meterLabel = meterLabelFor(env.fxProfile);
     const accent = ACCENT_BY_FX[env.fxProfile];
+    const backdropUrl = dungeonBackdropUrl(archetype);
+    const showArt = backdropUrl !== null && backdropUrl !== this._failedBackdrop;
 
     return html`
       <div
@@ -850,7 +1126,28 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             <div class="scene__backdrop" data-fx=${env.fxProfile} aria-hidden="true">
               <div class="scene__plane"></div>
             </div>
+            ${
+              showArt
+                ? html`<div class="scene__art" aria-hidden="true">
+                  <img
+                    class="scene__art-img"
+                    src=${backdropUrl}
+                    alt=""
+                    decoding="async"
+                    @error=${() => {
+                      this._failedBackdrop = backdropUrl;
+                    }}
+                  />
+                </div>`
+                : html`
+                  <div class="scene__floor" aria-hidden="true"></div>
+                  <div class="scene__motes" aria-hidden="true"></div>
+                `
+            }
+            ${this._renderParty()}
             <div class="scene__alarm" aria-hidden="true"></div>
+
+            <velg-dungeon-combat-fx></velg-dungeon-combat-fx>
 
             <div
               class="scene__readout"
@@ -922,6 +1219,36 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     `;
   }
 
+  /** In-scene party presence: the operatives standing in the chamber. Reads the
+   *  same server-authoritative party signal the side panel uses; condition tints
+   *  each figure's halo so health reads from the stage alone. */
+  private _renderParty() {
+    const party = dungeonState.party.value;
+    if (party.length === 0) return nothing;
+    return html`
+      <div class="scene__party" aria-hidden="true">
+        ${party.map(
+          (agent: AgentCombatStateClient, i: number) => html`
+            <div
+              class="party-token ${agent.condition === 'captured' ? 'party-token--down' : ''}"
+              style="--i:${i};--_cond:${CONDITION_RING[agent.condition]}"
+            >
+              <div class="party-token__figure">
+                <velg-avatar
+                  size="full"
+                  .src=${agent.portrait_url ?? ''}
+                  .name=${agent.agent_name}
+                ></velg-avatar>
+                <div class="party-token__shadow"></div>
+              </div>
+              <span class="party-token__name">${agent.agent_name}</span>
+            </div>
+          `,
+        )}
+      </div>
+    `;
+  }
+
   private _renderLobby(_simulationId: string) {
     const available = dungeonState.availableDungeons.value;
     const loading = dungeonState.loading.value;
@@ -986,6 +1313,16 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     `;
   }
 }
+
+/** Condition → halo color for in-scene party figures (mirrors the side-panel
+ *  CONDITION_COLOR map in DungeonPartyPanel). */
+const CONDITION_RING: Record<Condition, string> = {
+  operational: 'var(--color-success)',
+  stressed: 'var(--color-warning)',
+  wounded: 'var(--color-danger)',
+  afflicted: 'var(--color-danger)',
+  captured: 'var(--color-text-muted)',
+};
 
 /** Per-fx accent color (token-based; drives backdrop tint + readout fill). */
 const ACCENT_BY_FX: Record<FxProfile, string> = {

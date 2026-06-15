@@ -973,6 +973,10 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Round resolved
     if (resp.data.round_result) {
+      // Publish for the graphical combat-FX host (second consumer of the state).
+      // round_result lives on the submit response, not on the state, so
+      // applyState() above never carried it — the FX host reads it from here.
+      dungeonState.publishRoundResult(resp.data.round_result);
       const partyNames = dungeonState.party.value.map((a) => a.agent_name);
       // SFX: play dominant combat sound from round events
       _playCombatRoundSfx(resp.data.round_result.events, new Set(partyNames));
