@@ -149,7 +149,7 @@ def _mock_supabase_for_deploy(
     missions_chain = make_chain()
     missions_execute_responses = [
         MagicMock(data=existing_missions or []),  # existing check
-        MagicMock(data=[insert_data]),  # insert
+        MagicMock(data=insert_data),  # re-fetch after atomic deploy (maybe_single -> dict)
     ]
     missions_chain.execute = AsyncMock(side_effect=missions_execute_responses)
 
@@ -187,7 +187,10 @@ def _mock_supabase_for_deploy(
             return prof_chain
         if name == "zones":
             return zone_chain
-        return make_chain()
+        # Unrouted tables (e.g. simulations/battle_logs in the deploy tail) get an
+        # async-safe empty chain so `await builder.execute()` never trips a
+        # non-awaitable MagicMock.
+        return make_chain(execute=AsyncMock(return_value=MagicMock(data=None, count=0)))
 
     sb.table.side_effect = table_side_effect
     return sb
@@ -375,6 +378,80 @@ class TestDeployDuplicatePrevention:
             await OperativeService.deploy(sb, EPOCH_ID, SIM_ID, body)
         assert exc.value.status_code == 409
         assert "already" in exc.value.detail.lower()
+
+
+# ── Deploy success path (atomic RP-spend + insert) ────────────
+
+
+class TestDeploySuccess:
+    @pytest.mark.asyncio
+    async def test_deploy_spy_uses_atomic_rpc_and_refetches(self):
+        """Happy-path deploy goes through fn_deploy_operative_atomic (one txn:
+        RP debit + mission insert) on the admin client, then re-fetches the row.
+        Regression guard for the ADR-007 RP-loss fix (migration 260)."""
+        mid = str(uuid4())
+        insert_data = {
+            "id": mid,
+            "epoch_id": str(EPOCH_ID),
+            "agent_id": str(AGENT_ID),
+            "operative_type": "spy",
+            "source_simulation_id": str(SIM_ID),
+            "status": "active",
+        }
+        sb = _mock_supabase_for_deploy(insert_data=insert_data)
+
+        admin = MagicMock()
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(
+            return_value=MagicMock(data={"mission_id": mid, "new_rp": 17, "participant_id": str(uuid4())})
+        )
+        admin.rpc.return_value = rpc_chain
+
+        body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
+        with (
+            patch(
+                "backend.services.operative_mission_service.OperativeMissionService._calculate_success_probability",
+                new=AsyncMock(return_value=0.6),
+            ),
+            patch(
+                "backend.services.operative_mission_service.BattleLogService.log_operative_deployed",
+                new=AsyncMock(),
+            ),
+        ):
+            mission = await OperativeService.deploy(sb, EPOCH_ID, SIM_ID, body, admin_supabase=admin)
+
+        # Spend + insert went through the single atomic RPC, not two statements.
+        admin.rpc.assert_called_once()
+        rpc_name, rpc_params = admin.rpc.call_args.args
+        assert rpc_name == "fn_deploy_operative_atomic"
+        assert rpc_params["p_cost_rp"] == OPERATIVE_RP_COSTS["spy"]
+        assert rpc_params["p_status"] == "active"  # spy has deploy_cycles == 0
+        assert rpc_params["p_resonance_op"] is None
+        assert rpc_params["p_deployed_cycle"] == 3  # epoch_data default current_cycle
+        # Returned mission is the re-fetched row with attached display context.
+        assert mission["id"] == mid
+        assert mission["agents"] == {"name": "Agent X"}
+
+    @pytest.mark.asyncio
+    async def test_deploy_insufficient_rp_raises_without_mission(self):
+        """If the atomic RPC reports insufficient_rp, deploy raises 400 and never
+        returns a mission (RP debit + insert both rolled back inside the RPC)."""
+        sb = _mock_supabase_for_deploy()
+
+        admin = MagicMock()
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data={"error": "insufficient_rp"}))
+        admin.rpc.return_value = rpc_chain
+
+        body = _make_deploy_body("spy", TARGET_SIM_ID, EMBASSY_ID)
+        with patch(
+            "backend.services.operative_mission_service.OperativeMissionService._calculate_success_probability",
+            new=AsyncMock(return_value=0.6),
+        ):
+            with pytest.raises(HTTPException) as exc:
+                await OperativeService.deploy(sb, EPOCH_ID, SIM_ID, body, admin_supabase=admin)
+        assert exc.value.status_code == 400
+        assert "rp" in exc.value.detail.lower()
 
 
 # ── Success Probability ───────────────────────────────────────
