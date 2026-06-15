@@ -43,15 +43,15 @@ def _admin_raising(exc: Exception) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_load_config_defaults_when_no_rows() -> None:
-    enabled, interval = await ResonanceScheduler._load_config(_admin_with_rows([]))
-    assert (enabled, interval) == (True, 60)
+    config = await ResonanceScheduler._load_config(_admin_with_rows([]))
+    assert (config["enabled"], config["interval"]) == (True, 60)
 
 
 @pytest.mark.asyncio
 async def test_load_config_defaults_when_query_fails() -> None:
     admin = _admin_raising(PostgrestAPIError({"code": "42P01", "message": "missing"}))
-    enabled, interval = await ResonanceScheduler._load_config(admin)
-    assert (enabled, interval) == (True, 60)
+    config = await ResonanceScheduler._load_config(admin)
+    assert (config["enabled"], config["interval"]) == (True, 60)
 
 
 @pytest.mark.asyncio
@@ -60,9 +60,9 @@ async def test_load_config_parses_enabled_and_interval_floor() -> None:
         {"setting_key": "resonance_auto_process_enabled", "setting_value": "true"},
         {"setting_key": "resonance_auto_process_interval_seconds", "setting_value": "3"},
     ]
-    enabled, interval = await ResonanceScheduler._load_config(_admin_with_rows(rows))
-    assert enabled is True
-    assert interval == 10  # floored at 10s
+    config = await ResonanceScheduler._load_config(_admin_with_rows(rows))
+    assert config["enabled"] is True
+    assert config["interval"] == 10  # floored at 10s
 
 
 @pytest.mark.asyncio
@@ -74,15 +74,15 @@ async def test_load_config_enabled_fails_closed_on_non_canonical_values(raw: obj
     (``str(None) == 'none'``) silently armed the gate.
     """
     rows = [{"setting_key": "resonance_auto_process_enabled", "setting_value": raw}]
-    enabled, _interval = await ResonanceScheduler._load_config(_admin_with_rows(rows))
-    assert enabled is False
+    config = await ResonanceScheduler._load_config(_admin_with_rows(rows))
+    assert config["enabled"] is False
 
 
 @pytest.mark.asyncio
 async def test_load_config_ignores_bad_interval() -> None:
     rows = [{"setting_key": "resonance_auto_process_interval_seconds", "setting_value": "soon"}]
-    _enabled, interval = await ResonanceScheduler._load_config(_admin_with_rows(rows))
-    assert interval == 60
+    config = await ResonanceScheduler._load_config(_admin_with_rows(rows))
+    assert config["interval"] == 60
 
 
 # ── _check_and_process ───────────────────────────────────────────────────

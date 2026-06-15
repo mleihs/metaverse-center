@@ -6,17 +6,15 @@ service_role (admin) client pattern as bot architecture — this is a system act
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
-import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.dependencies import get_admin_supabase
 from backend.services.resonance_service import ResonanceService
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.responses import extract_list
 from backend.utils.settings import parse_setting_bool
 from supabase import AsyncClient as Client
@@ -28,51 +26,26 @@ _DEFAULT_CHECK_INTERVAL = 60  # seconds
 _DEFAULT_ENABLED = True
 
 
-class ResonanceScheduler:
-    """Periodic background task that auto-processes due resonances."""
+class ResonanceScheduler(BaseSchedulerMixin):
+    """Periodic background task that auto-processes due resonances.
 
-    _task: asyncio.Task | None = None
+    Inherits the resilient run-loop from BaseSchedulerMixin (the silent-tick-death
+    guard, tagged Sentry capture, and transient-connectivity handling); only the
+    config gate and the per-tick work are resonance-specific. Previously this
+    class hand-rolled the exact same 5-clause loop, with weaker observability (an
+    untagged capture_exception in the middle clause).
+    """
 
-    @classmethod
-    async def start(cls) -> asyncio.Task:
-        """Launch the scheduler loop. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_loop())
-        logger.info("Resonance auto-processor started")
-        return cls._task
-
-    @classmethod
-    async def _run_loop(cls) -> None:
-        """Infinite loop: sleep → check for due resonances → process."""
-        while True:
-            interval = _DEFAULT_CHECK_INTERVAL
-            try:
-                admin = await get_admin_supabase()
-                enabled, interval = await cls._load_config(admin)
-                if enabled:
-                    await cls._check_and_process(admin)
-            except asyncio.CancelledError:
-                logger.info("Resonance scheduler shutting down")
-                raise
-            except (httpx.ConnectError, httpx.ConnectTimeout):
-                # Transient connectivity errors are expected during DB restarts
-                logger.warning("Resonance scheduler: database unavailable, retrying in %ds", interval)
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception("Resonance scheduler loop error")
-                sentry_sdk.capture_exception(exc)
-            except Exception as exc:
-                # Last-resort guard: an unexpected exception type must not kill the loop —
-                # a propagating exception ends the task (silent stop while /health stays 200).
-                # Report and keep looping.
-                logger.exception("Resonance scheduler loop: unexpected error, continuing")
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("service", "ResonanceScheduler")
-                    scope.set_tag("phase", "scheduler_loop_unexpected")
-                    sentry_sdk.capture_exception(exc)
-            await asyncio.sleep(interval)
+    _scheduler_name = "resonance"
 
     @classmethod
-    async def _load_config(cls, admin: Client) -> tuple[bool, int]:
-        """Read scheduler config from platform_settings. Returns (enabled, interval)."""
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One scheduler tick: process all due resonances."""
+        await cls._check_and_process(admin)
+
+    @classmethod
+    async def _load_config(cls, admin: Client) -> dict:
+        """Read scheduler config from platform_settings. Returns {enabled, interval}."""
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_CHECK_INTERVAL
         try:
@@ -103,7 +76,7 @@ class ResonanceScheduler:
                         pass
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning("Failed to load resonance scheduler config, using defaults")
-        return enabled, interval
+        return {"enabled": enabled, "interval": interval}
 
     @classmethod
     async def _check_and_process(cls, admin: Client) -> None:
