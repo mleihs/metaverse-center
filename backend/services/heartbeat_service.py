@@ -1213,7 +1213,8 @@ class HeartbeatService:
         )
         sim = _resp.data
         if not sim:
-            return {"last_tick": 0}
+            # Full default overview (all other HeartbeatOverview fields default).
+            return {"simulation_id": str(simulation_id), "last_tick": 0}
 
         sim = sim[0]
         last_tick = sim.get("last_heartbeat_tick", 0)
