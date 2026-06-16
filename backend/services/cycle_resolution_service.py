@@ -12,9 +12,7 @@ from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.journal.hooks import enqueue_epoch_signature
-from backend.services.platform_config_service import PlatformConfigService
-from backend.utils.errors import bad_request, conflict, not_found, server_error
-from backend.utils.responses import extract_one
+from backend.utils.errors import bad_request, conflict, not_found
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
@@ -424,12 +422,14 @@ class CycleResolutionService:
         epoch_id: UUID,
         admin_supabase: Client | None = None,
     ) -> dict:
-        """Resolve a cycle: allocate RP, increment cycle counter.
+        """Resolve a cycle: grant RP, reset flags, advance timers, increment cycle.
 
-        When ``use_atomic_cycle_advance`` platform setting is enabled,
-        cycle increment + phase transition use ``fn_advance_epoch_cycle``
-        RPC (migration 167) for atomicity. Otherwise falls back to
-        separate PostgREST UPDATEs.
+        The entire resolution is one atomic, CAS-guarded transaction
+        (``fn_advance_epoch_cycle``, migrations 167 + 263): SELECT FOR UPDATE
+        serializes concurrent resolvers, the compare-and-swap rejects a stale
+        resolve, and the RP grant + cycle_ready/has_acted reset + mission-timer
+        advance + cycle increment + phase transition all commit together — so
+        concurrent resolves cannot double-grant RP (ADR-007).
 
         Mission resolution and scoring are handled by OperativeService
         and ScoringService respectively.
@@ -441,164 +441,69 @@ class CycleResolutionService:
             raise bad_request(f"Cannot resolve cycle for epoch with status '{epoch['status']}'.")
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
-        new_cycle = epoch["current_cycle"] + 1
-
         # Use admin client for all writes to bypass RLS restrictions
-        # (e.g. non-creator triggering auto-resolve via toggle_ready)
+        # (e.g. non-creator triggering auto-resolve via toggle_ready).
         db = admin_supabase or supabase
 
-        # Grant RP to all participants
-        rp_amount = config["rp_per_cycle"]
-        if epoch["status"] == "foundation":
-            rp_amount = int(rp_amount * 1.5)  # Foundation bonus
-
-        await cls._grant_rp_batch(db, epoch_id, rp_amount, config["rp_cap"])
-
-        # Reset cycle_ready + has_acted_this_cycle flags before advancing
-        await (
-            db.table("epoch_participants")
-            .update({"cycle_ready": False, "has_acted_this_cycle": False})
-            .eq("epoch_id", str(epoch_id))
-            .execute()
-        )
-
-        # Advance mission timers by one cycle interval (atomic, migration 214).
-        # Single UPDATE subtracting cycle_hours from resolves_at for all
-        # non-guardian missions — replaces Python read-group-batch-update pattern.
-        cycle_hours = config.get("cycle_hours", 8)
-        await db.rpc(
-            "fn_advance_mission_timers",
-            {"p_epoch_id": str(epoch_id), "p_cycle_hours": cycle_hours},
+        # Atomic cycle resolution (fn_advance_epoch_cycle, migration 263):
+        # SELECT FOR UPDATE + compare-and-swap on the cycle, then RP grant +
+        # cycle_ready/has_acted reset + mission-timer advance + cycle increment +
+        # phase transition ALL commit in one transaction. A concurrent resolver
+        # that loses the CAS returns 'concurrent_resolution' having mutated
+        # nothing — no partial double-grant (ADR-007). This replaced a racy path
+        # that granted RP + reset flags + advanced timers BEFORE the CAS, so two
+        # concurrent resolves double-credited RP. The grant now lives inside the
+        # RPC, so resolve_cycle no longer reaches the process-global admin cache.
+        rpc_resp = await db.rpc(
+            "fn_advance_epoch_cycle",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_expected_cycle": epoch["current_cycle"],
+            },
         ).execute()
+        result = rpc_resp.data or {}
 
-        # ─── Atomic cycle advancement (migration 167) ───────────────
-        use_atomic_advance = await PlatformConfigService.get(
-            db,
-            "use_atomic_cycle_advance",
-            False,
-        )
-        if use_atomic_advance:
-            rpc_resp = await db.rpc(
-                "fn_advance_epoch_cycle",
-                {
-                    "p_epoch_id": str(epoch_id),
-                    "p_expected_cycle": epoch["current_cycle"],
-                },
-            ).execute()
-            result = rpc_resp.data or {}
-
-            if result.get("error_code") == "concurrent_resolution":
-                raise conflict("Cycle was resolved concurrently. Please retry.")
-            if result.get("error_code") == "epoch_not_found":
-                raise not_found(detail="Epoch not found.")
-
-            # Phase overlap warning
-            foundation_end = result.get("foundation_end", 0)
-            reckoning_start = result.get("reckoning_start", 0)
-            if reckoning_start <= foundation_end:
-                logger.warning(
-                    "Phase overlap detected",
-                    extra={
-                        "epoch_id": str(epoch_id),
-                        "foundation_end": foundation_end,
-                        "reckoning_start": reckoning_start,
-                    },
-                )
-
-            # Post-transition side effects (same as legacy path)
-            if result.get("phase_changed"):
-                old_status = result["old_status"]
-                new_status = result["new_status"]
-                new_cycle_num = result["new_cycle"]
-                logger.info(
-                    "Epoch auto-advancing phase",
-                    extra={
-                        "epoch_id": str(epoch_id),
-                        "old_status": old_status,
-                        "new_status": new_status,
-                        "cycle_number": new_cycle_num,
-                    },
-                )
-                await cls._apply_phase_transition(
-                    db, epoch_id, new_cycle_num, old_status, new_status,
-                    admin_supabase=admin_supabase,
-                )
-
-            # Re-fetch full epoch row for downstream consumers
-            epoch_resp = await db.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
-
-            # Set next cycle deadline + register eager timer
-            await cls._set_next_cycle_deadline(db, epoch_id, config, (epoch_resp.data or {}).get("status", "completed"))
-
-            return epoch_resp.data
-
-        # ─── Legacy path: separate cycle-increment + phase-update ───
-
-        # Increment cycle (optimistic lock: only if current_cycle hasn't changed)
-        resp = await (
-            db.table("game_epochs")
-            .update({"current_cycle": new_cycle})
-            .eq("id", str(epoch_id))
-            .eq("current_cycle", epoch["current_cycle"])
-            .execute()
-        )
-
-        if not resp.data:
+        if result.get("error_code") == "concurrent_resolution":
             raise conflict("Cycle was resolved concurrently. Please retry.")
+        if result.get("error_code") == "epoch_not_found":
+            raise not_found(detail="Epoch not found.")
 
-        # Auto-advance phase if cycle crosses a boundary
-        current_status = epoch["status"]
-        total_cycles = (config["duration_days"] * 24) // config["cycle_hours"]
-
-        # Support both new absolute cycles and legacy percentage-based configs
-        if "foundation_cycles" in config:
-            foundation_end = config["foundation_cycles"]
-        else:
-            foundation_end = round(total_cycles * config.get("foundation_pct", 10) / 100)
-
-        if "reckoning_cycles" in config:
-            reckoning_start = total_cycles - config["reckoning_cycles"]
-        else:
-            reckoning_cycles = round(total_cycles * config.get("reckoning_pct", 15) / 100)
-            reckoning_start = total_cycles - reckoning_cycles
-
-        # Validate phases don't overlap
+        # Phase overlap warning
+        foundation_end = result.get("foundation_end", 0)
+        reckoning_start = result.get("reckoning_start", 0)
         if reckoning_start <= foundation_end:
             logger.warning(
                 "Phase overlap detected",
-                extra={"epoch_id": str(epoch_id), "foundation_end": foundation_end, "reckoning_start": reckoning_start},
+                extra={
+                    "epoch_id": str(epoch_id),
+                    "foundation_end": foundation_end,
+                    "reckoning_start": reckoning_start,
+                },
             )
 
-        new_status = current_status
-        if current_status == "foundation" and new_cycle > foundation_end:
-            new_status = "competition"
-        elif current_status == "competition" and new_cycle > reckoning_start:
-            new_status = "reckoning"
-        elif current_status == "reckoning" and new_cycle >= total_cycles:
-            new_status = "completed"
-
-        if new_status != current_status:
+        # Post-transition side effects (notifications, scoring, etc.)
+        if result.get("phase_changed"):
+            old_status = result["old_status"]
+            new_status = result["new_status"]
+            new_cycle_num = result["new_cycle"]
             logger.info(
                 "Epoch auto-advancing phase",
                 extra={
                     "epoch_id": str(epoch_id),
-                    "old_status": current_status,
+                    "old_status": old_status,
                     "new_status": new_status,
-                    "cycle_number": new_cycle,
+                    "cycle_number": new_cycle_num,
                 },
             )
-            phase_resp = await db.table("game_epochs").update({"status": new_status}).eq("id", str(epoch_id)).execute()
-            if phase_resp.data:
-                resp = phase_resp
-                await cls._apply_phase_transition(
-                    db, epoch_id, new_cycle, current_status, new_status,
-                    admin_supabase=admin_supabase,
-                )
+            await cls._apply_phase_transition(
+                db, epoch_id, new_cycle_num, old_status, new_status,
+                admin_supabase=admin_supabase,
+            )
+
+        # Re-fetch full epoch row for downstream consumers
+        epoch_resp = await db.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
 
         # Set next cycle deadline + register eager timer
-        await cls._set_next_cycle_deadline(db, epoch_id, config, new_status)
+        await cls._set_next_cycle_deadline(db, epoch_id, config, (epoch_resp.data or {}).get("status", "completed"))
 
-        result = extract_one(resp)
-        if result is None:
-            raise server_error("Cycle resolution returned no data.")
-        return result
+        return epoch_resp.data
