@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from backend.models.common import PaginationMeta
+
 
 class ScanCandidateResponse(BaseModel):
     """Response model for a scan candidate."""
@@ -81,3 +83,18 @@ class DashboardResponse(BaseModel):
     config: dict
     adapters: list[dict]
     metrics: ScanMetricsResponse
+
+
+class ScanCandidateListResponse(BaseModel):
+    """Envelope for the candidates list: items + pagination meta + the
+    recommended magnitude threshold derived from the returned set.
+
+    Preserves the FE-consumed ``{items, meta, recommended_threshold}`` shape
+    (the admin scanner UI reads ``.items`` and ``.recommended_threshold``) while
+    making it typed — so it is NOT switched to the standard ``paginated()``
+    ``{data, meta}`` envelope, which would break those reads.
+    """
+
+    items: list[ScanCandidateResponse]
+    meta: PaginationMeta
+    recommended_threshold: float

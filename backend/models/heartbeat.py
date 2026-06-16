@@ -43,7 +43,7 @@ class HeartbeatTickResponse(BaseModel):
 
 HeartbeatEntryType = Literal[
     "zone_shift", "event_aging", "event_escalation", "event_resolution",
-    "scar_tissue", "resonance_pressure", "cascade_spawn", "bureau_response",
+    "scar_tissue", "resonance_pressure", "resonance_mood", "cascade_spawn", "bureau_response",
     "attunement_deepen", "anchor_strengthen", "convergence", "positive_event",
     "narrative_arc", "system_note",
     # Phase A5 autonomy entry types (CHECK constraint extended in migration 156)
