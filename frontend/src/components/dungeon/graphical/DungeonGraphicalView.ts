@@ -122,7 +122,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         width: 100%;
-        height: calc(100vh - var(--header-height, 64px) - var(--sim-nav-height, 48px));
+        /* Fill from the view's real top (below the global header + the
+           simulation header/nav bars) down to the viewport bottom. The static
+           100vh-minus-header-minus-nav calc undercounts the simulation header
+           bar by ~106px, pushing the quick-actions row and rail floor below the
+           fold; --_host-offset is measured from the host's actual top in
+           _measureHostOffset() (resize-tracked). 108px fallback = the legacy
+           calc until the first measurement lands. */
+        height: calc(100dvh - var(--_host-offset, 108px));
         min-height: 400px;
         padding: 0 16px 16px;
         box-sizing: border-box;
@@ -1259,17 +1266,36 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   @state() private _startingRun = false;
 
   private _wakeLock: WakeLockReleasable | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback();
+    // Measure the host's real top offset (below the global header + simulation
+    // header/nav) so the view fills exactly to the viewport bottom. Re-measure
+    // on viewport resize — the chrome above can change height (responsive,
+    // theme, alpha build-strip). rAF defers the first read past initial layout.
+    requestAnimationFrame(() => this._measureHostOffset());
+    this._resizeObserver = new ResizeObserver(() => this._measureHostOffset());
+    this._resizeObserver.observe(document.documentElement);
     await this._initialize();
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
     this._releaseWakeLock();
     terminalState.clearDungeon();
     terminalState.dispose();
+  }
+
+  /** Couple the host height to its real top offset (see the `:host` height
+   *  rule). Measured only at rest — once the view fits, the page no longer
+   *  scrolls, so a scrolled reading would be a transient we skip. */
+  private _measureHostOffset(): void {
+    if (window.scrollY > 4) return;
+    const top = Math.round(this.getBoundingClientRect().top);
+    if (top > 0) this.style.setProperty('--_host-offset', `${top}px`);
   }
 
   // ── Initialization (mirrors DungeonTerminalView) ─────────────────────────
