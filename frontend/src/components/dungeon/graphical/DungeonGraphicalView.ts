@@ -46,7 +46,12 @@ import type {
 } from '../../../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../../../types/index.js';
 import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
-import { autoPickPartyIds, startDungeonRun } from '../../../utils/dungeon-entry-flow.js';
+import {
+  autoPickPartyIds,
+  checkPartyComposition,
+  partyCompositionWarningText,
+  startDungeonRun,
+} from '../../../utils/dungeon-entry-flow.js';
 import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeon-environment.js';
 import { getArchetypeDisplayName, topAptitudes } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
@@ -1091,6 +1096,24 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         opacity: 0.4;
         cursor: default;
       }
+      .picker__warn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 7px 10px;
+        font-family: var(--_mono);
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--color-warning);
+        background: var(--color-warning-bg);
+        border: 1px solid var(--color-warning-border);
+      }
+      .picker__warn-icon {
+        flex-shrink: 0;
+        display: inline-flex;
+        color: var(--color-warning);
+      }
 
       /* ── Keyframes ── */
       @keyframes tide {
@@ -1701,6 +1724,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const agents = dungeonState.pickerAgents.value;
     const count = this._pickerSelection.length;
     const canBegin = count >= 2 && count <= 4 && !this._startingRun;
+    // Non-blocking composition warning (shared with the terminal entry flow):
+    // surfaces once a viable party is selected but misses the archetype's
+    // critical aptitude — informational, never gates BEGIN DESCENT.
+    const warning =
+      count >= 2
+        ? checkPartyComposition(
+            archetype,
+            this._pickerSelection,
+            dungeonState.pickerAptitudes.value,
+          )
+        : null;
 
     return html`
       <div class="picker">
@@ -1727,6 +1761,19 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   message=${msg('Need at least 2 agents for a dungeon party. Recruit more agents first.')}
                 ></velg-empty-state>`
               : this._renderPickerRoster(agents)
+        }
+
+        ${
+          warning
+            ? html`
+                <div class="picker__warn" role="status">
+                  <span class="picker__warn-icon" aria-hidden="true"
+                    >${icons.alertTriangle(13)}</span
+                  >
+                  <span>${partyCompositionWarningText(warning)}</span>
+                </div>
+              `
+            : nothing
         }
 
         ${

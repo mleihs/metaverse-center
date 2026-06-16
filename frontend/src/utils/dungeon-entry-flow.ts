@@ -17,7 +17,7 @@ import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse, DungeonRunCreate } from '../types/dungeon.js';
-import type { Agent, AptitudeSet } from '../types/index.js';
+import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
   formatAgentPicker,
@@ -251,42 +251,60 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   dungeonState.pendingArchetypeForPicker.value = null;
 
   // Party composition warning — non-blocking, informational only
-  const warnings = checkPartyComposition(selectedDungeon.archetype, partyIds, aptMap);
+  const warning = checkPartyComposition(selectedDungeon.archetype, partyIds, aptMap);
+  const warningLines = warning ? [hintLine(`⚠ ${partyCompositionWarningText(warning)}`)] : [];
 
   const runResult = await startDungeonRun(sid, {
     archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
     party_agent_ids: partyIds,
     difficulty: selectedDungeon.suggested_difficulty,
   });
-  return [...warnings, ...runResult];
+  return [...warningLines, ...runResult];
+}
+
+/** Non-blocking party-composition warning when the party lacks coverage of an
+ *  archetype's critical aptitude. Shared by the terminal entry flow and the
+ *  graphical party picker; render the message via {@link partyCompositionWarningText}. */
+export interface PartyCompositionWarning {
+  /** Localized aptitude label (e.g. "Spy"). */
+  aptitudeLabel: string;
+  /** Minimum per-agent aptitude value the party should cover. */
+  threshold: number;
+  /** Ability rendered unavailable without coverage (e.g. "GROUND"), or null. */
+  ability: string | null;
 }
 
 /**
- * Check if the selected party covers the archetype's critical aptitude.
- * Returns warning lines (non-blocking) if the party lacks coverage.
+ * Check whether the selected party covers the archetype's critical aptitude.
+ * Pure \u2014 returns a structured warning when coverage is missing, else null.
  */
-function checkPartyComposition(
+export function checkPartyComposition(
   archetype: string,
   partyIds: string[],
-  aptMap: Map<string, import('../types/index.js').AptitudeSet>,
-): TerminalLine[] {
+  aptMap: Map<string, AptitudeSet>,
+): PartyCompositionWarning | null {
   const criticalApt = ARCHETYPE_CRITICAL_APTITUDE[archetype];
-  if (!criticalApt) return [];
+  if (!criticalApt) return null;
 
   const MIN_THRESHOLD = 4;
   const hasCoverage = partyIds.some((id) => {
     const apts = aptMap.get(id);
     return apts && ((apts as Record<string, number>)[criticalApt] ?? 0) >= MIN_THRESHOLD;
   });
+  if (hasCoverage) return null;
 
-  if (hasCoverage) return [];
+  return {
+    aptitudeLabel: OPERATIVE_LABEL[criticalApt as OperativeType] ?? criticalApt.toUpperCase(),
+    threshold: MIN_THRESHOLD,
+    ability: ABILITY_BY_APTITUDE[criticalApt] ?? null,
+  };
+}
 
-  const aptLabel =
-    OPERATIVE_LABEL[criticalApt as import('../types/index.js').OperativeType] ??
-    criticalApt.toUpperCase();
-  const ability = ABILITY_BY_APTITUDE[criticalApt];
-  const abilityNote = ability ? ` ${ability} ${msg('will be unavailable')}.` : '';
-  return [hintLine(`\u26A0 ${msg('No agent has')} ${aptLabel} ${MIN_THRESHOLD}+.${abilityNote}`)];
+/** Human-readable composition-warning sentence (no leading marker \u2014 each surface
+ *  prepends its own: terminal a \u26A0 glyph, graphical an alert icon). */
+export function partyCompositionWarningText(w: PartyCompositionWarning): string {
+  const abilityNote = w.ability ? ` ${w.ability} ${msg('will be unavailable')}.` : '';
+  return `${msg('No agent has')} ${w.aptitudeLabel} ${w.threshold}+.${abilityNote}`;
 }
 
 // ── Run Creation ────────────────────────────────────────────────────────────
