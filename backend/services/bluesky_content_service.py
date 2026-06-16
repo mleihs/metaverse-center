@@ -8,7 +8,6 @@ queue management, and analytics.
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import UTC, datetime
 from uuid import UUID
@@ -21,7 +20,7 @@ from backend.services.external.bluesky import BlueskyService
 from backend.services.social.constants import BLUESKY_SKIP_TAG_PATTERNS, BLUESKY_WORTHY_TAGS
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
-from backend.utils.settings import decrypt_setting
+from backend.utils.settings import decrypt_setting, load_settings_with_description
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -328,28 +327,7 @@ class BlueskyContentService:
     @classmethod
     async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
         """Get all Bluesky pipeline configuration settings as a flat dict."""
-        resp = await (
-            admin_supabase.table("platform_settings")
-            .select("setting_key, setting_value, description")
-            .in_("setting_key", cls.PIPELINE_SETTINGS_KEYS)
-            .execute()
-        )
-        settings_map = {}
-        for row in extract_list(resp):
-            raw = row["setting_value"]
-            if isinstance(raw, dict | list):
-                value = json.dumps(raw)
-            elif isinstance(raw, bool):
-                value = "true" if raw else "false"
-            elif raw is not None:
-                value = str(raw)
-            else:
-                value = ""
-            settings_map[row["setting_key"]] = {
-                "value": value,
-                "description": row.get("description", ""),
-            }
-        return settings_map
+        return await load_settings_with_description(admin_supabase, cls.PIPELINE_SETTINGS_KEYS)
 
     @classmethod
     async def load_bluesky_credentials(cls, admin_supabase: Client) -> dict[str, str]:
