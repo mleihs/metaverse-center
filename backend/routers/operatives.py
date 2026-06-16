@@ -215,7 +215,7 @@ async def recall_operative(
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MissionResponse]:
     """Recall an active operative. Must be a participant in the epoch."""
-    data = await OperativeService.recall(supabase, mission_id, simulation_id)
+    data = await OperativeService.recall(supabase, mission_id, simulation_id, admin_supabase=admin_supabase)
 
     await CycleResolutionService.mark_acted(admin_supabase, epoch_id, simulation_id)
 
