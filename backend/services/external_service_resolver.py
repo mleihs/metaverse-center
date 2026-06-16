@@ -11,8 +11,8 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings as platform_settings
 from backend.services.platform_api_keys import get_platform_api_key
-from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
+from backend.utils.settings import decrypt_setting
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -117,16 +117,9 @@ class ExternalServiceResolver:
         value = settings.get(key)
         if not value or not isinstance(value, str):
             return None
-
-        # Fernet tokens start with "gAAAAA"
-        if value.startswith("gAAAAA"):
-            try:
-                return decrypt(value)
-            except (ValueError, Exception):
-                logger.warning("Failed to decrypt setting '%s'", key)
-                return None
-
-        return value
+        # decrypt_setting returns "" on decrypt failure / empty; map back to None
+        # so callers keep their "credential missing" semantics.
+        return decrypt_setting(value) or None
 
     async def get_facebook_config(self) -> FacebookConfig | None:
         """Get Facebook integration config if enabled."""

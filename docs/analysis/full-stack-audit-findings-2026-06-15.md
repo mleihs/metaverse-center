@@ -20,7 +20,15 @@
 ## backend-services — 3 findings
 
 
-### [ ] `P2` · shared-reuse-gap — Fernet platform-setting decryption reimplemented inline in 6 service files instead of using the existing decrypt_setting() helper
+### [x] `P2` · shared-reuse-gap — Fernet platform-setting decryption reimplemented inline in 6 service files instead of using the existing decrypt_setting() helper
+
+> **Remediated (4 of 6 — the other 2 are a different operation, see below).** Routed the four *decrypt-to-use* sites through `decrypt_setting()`:
+> - `instagram_content_service` + `bluesky_content_service`: failure→"" (field pre-init "") exactly matches the helper → `result[...] = decrypt_setting(raw)`.
+> - `platform_api_keys` + `external_service_resolver`: their cache/return is `str | None` with failure/empty→**None**, so `decrypt_setting(raw) or None` preserves the "credential missing" semantics callers rely on. Removed the inline `from backend.utils.encryption import decrypt` late-imports (also fixes the module-level-import rule) and the redundant `except (ValueError, Exception)`.
+>
+> **Deliberately NOT changed — `settings_service` + `platform_settings_service`:** these decrypt **to mask for display**, falling back to the *ciphertext* / `"***"` on failure (then `mask(...)`). `decrypt_setting` returns `""` on failure, which would change the masking fallback — a different operation the audit wrongly lumped in. Left as-is (verified). The finding's intent (unify *credential* decryption) is fully met.
+>
+> VERIFY-DON'T-TRUST: confirmed each site's failure semantics before touching — only 2 of 6 were byte-clean for the helper; the other 2 needed `or None`; 2 were the wrong operation entirely. 191 settings/resolver/credential/instagram/bluesky tests green.
 
 - **Files:** backend/services/platform_api_keys.py, backend/services/settings_service.py, backend/services/platform_settings_service.py, backend/services/external_service_resolver.py, backend/services/instagram_content_service.py, backend/services/bluesky_content_service.py
 - **Lines:** platform_api_keys.py:50-58; settings_service.py:211-215; instagram_content_service.py:1100-1108; bluesky_content_service.py:389-397; platform_settings_service.py:76; external_service_resolver.py:125

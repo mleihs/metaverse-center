@@ -21,6 +21,7 @@ from backend.services.external.bluesky import BlueskyService
 from backend.services.social.constants import BLUESKY_SKIP_TAG_PATTERNS, BLUESKY_WORTHY_TAGS
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
+from backend.utils.settings import decrypt_setting
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -386,15 +387,7 @@ class BlueskyContentService:
             elif key == "bluesky_pds_url" and raw:
                 result["pds_url"] = raw
             elif key == "bluesky_app_password":
-                if raw.startswith("gAAAAA"):
-                    try:
-                        from backend.utils.encryption import decrypt
-
-                        result["app_password"] = decrypt(raw)
-                    except (ValueError, Exception):
-                        logger.warning("Failed to decrypt Bluesky app password")
-                else:
-                    result["app_password"] = raw
+                result["app_password"] = decrypt_setting(raw)
 
         logger.info(
             "Bluesky credentials loaded",
