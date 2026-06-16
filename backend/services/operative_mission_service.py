@@ -1065,11 +1065,23 @@ class OperativeMissionService:
     # ── Recall ────────────────────────────────────────────
 
     @classmethod
-    async def recall(cls, supabase: Client, mission_id: UUID, simulation_id: UUID | None = None) -> dict:
+    async def recall(
+        cls,
+        supabase: Client,
+        mission_id: UUID,
+        simulation_id: UUID | None = None,
+        admin_supabase: Client | None = None,
+    ) -> dict:
         """Recall an active operative (returns next cycle, 50% RP refund).
 
         If simulation_id is provided, verifies the caller owns the source simulation.
         Refunds 50% of the operative's deployment cost (rounded down).
+
+        The status flip and the refund are a single atomic transaction
+        (``fn_recall_operative``, migration 261): the flip is a compare-and-swap on
+        the mission status and the refund is conditional on the winning transition,
+        so two concurrent recalls (double-click / retry) cannot double-refund
+        (ADR-007). Mirrors the deploy path's ``fn_deploy_operative_atomic``.
         """
         from backend.services.operative_service import OperativeService
 
@@ -1085,27 +1097,29 @@ class OperativeMissionService:
         if mission["status"] not in ("deploying", "active"):
             raise bad_request(f"Cannot recall mission with status '{mission['status']}'.")
 
-        # Refund 50% of deployment cost (rounded down)
+        # Refund 50% of deployment cost (rounded down); the RPC caps it at rp_cap.
         op_type = mission.get("operative_type", "")
-        cost = OPERATIVE_RP_COSTS.get(op_type, 5)
-        refund = cost // 2
-        if refund > 0:
-            epoch_id = UUID(mission["epoch_id"])
-            source_sim_id = UUID(mission["source_simulation_id"])
-            await EpochService.grant_rp(supabase, epoch_id, source_sim_id, refund)
+        refund = OPERATIVE_RP_COSTS.get(op_type, 5) // 2
+        config = {**DEFAULT_EPOCH_CONFIG, **(epoch.get("config") or {})}
 
-        resp = await (
-            supabase.table("operative_missions")
-            .update(
-                {
-                    "status": "returning",
-                    "resolved_at": datetime.now(UTC).isoformat(),
-                }
-            )
-            .eq("id", str(mission_id))
-            .execute()
-        )
-        return resp.data[0] if resp.data else mission
+        # Atomic CAS-flip + conditional refund in one transaction (fn_recall_operative).
+        # The RPC is service_role-only, so it runs on the admin client (the router
+        # passes one; fall back to the cached singleton otherwise).
+        recall_client = admin_supabase or await get_admin_supabase_client()
+        resp = await recall_client.rpc(
+            "fn_recall_operative",
+            {
+                "p_mission_id": str(mission_id),
+                "p_source_simulation_id": mission["source_simulation_id"],
+                "p_epoch_id": mission["epoch_id"],
+                "p_refund_rp": refund,
+                "p_rp_cap": config["rp_cap"],
+            },
+        ).execute()
+        result = resp.data or {}
+        if result.get("error") == "already_recalled":
+            raise conflict("This operative has already been recalled or resolved.")
+        return result.get("mission") or mission
 
     # ── Counter-Intelligence ──────────────────────────────
 

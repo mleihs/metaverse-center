@@ -1037,22 +1037,11 @@ class TestRecall:
             data={"id": str(EPOCH_ID), "status": "competition"}
         ))
 
-        # update chain (operative_missions update)
-        update_chain = MagicMock()
-        update_chain.update.return_value = update_chain
-        update_chain.eq.return_value = update_chain
-        update_chain.execute = AsyncMock(return_value=MagicMock(data=[{**mission_data, "status": "returning"}]))
-
-        mission_call_count = {"n": 0}
-
         def table_router(name):
             if name == "game_epochs":
                 return epoch_chain
             if name == "operative_missions":
-                mission_call_count["n"] += 1
-                if mission_call_count["n"] == 1:
-                    return get_chain
-                return update_chain
+                return get_chain
             # Fallback with async execute
             fc = MagicMock()
             fc.select.return_value = fc
@@ -1063,12 +1052,67 @@ class TestRecall:
 
         sb.table.side_effect = table_router
 
-        with patch("backend.services.operative_mission_service.EpochService.grant_rp", new_callable=AsyncMock):
-            result = await OperativeService.recall(
-                sb, UUID(mission_data["id"]), SIM_ID,
-            )
+        # Admin client: the atomic recall RPC flips the status and refunds in one
+        # transaction, returning the updated mission + the refund amount.
+        admin = MagicMock()
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"mission": {**mission_data, "status": "returning"}, "refunded": 2}
+        ))
+        admin.rpc.return_value = rpc_chain
+
+        result = await OperativeService.recall(
+            sb, UUID(mission_data["id"]), SIM_ID, admin_supabase=admin,
+        )
         assert result is not None
         assert result["status"] == "returning"
+        # The refund flows through the atomic RPC (CAS-gated), not a separate grant.
+        admin.rpc.assert_called_once()
+        assert admin.rpc.call_args[0][0] == "fn_recall_operative"
+        assert admin.rpc.call_args[0][1]["p_refund_rp"] == OPERATIVE_RP_COSTS.get("spy", 5) // 2
+
+    @pytest.mark.asyncio
+    async def test_recall_already_recalled_raises_conflict(self):
+        """A concurrent recall that loses the CAS gets a 409 and NO refund.
+
+        The refund lives inside fn_recall_operative and only fires on the winning
+        status transition, so the loser ({"error":"already_recalled"}) is refunded
+        zero times — closing the double-refund race.
+        """
+        sb = MagicMock()
+        mission_data = {
+            "id": str(uuid4()),
+            "epoch_id": str(EPOCH_ID),
+            "source_simulation_id": str(SIM_ID),
+            "status": "active",
+            "operative_type": "spy",
+        }
+        get_chain = MagicMock()
+        get_chain.select.return_value = get_chain
+        get_chain.eq.return_value = get_chain
+        get_chain.single.return_value = get_chain
+        get_chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
+
+        epoch_chain = MagicMock()
+        epoch_chain.select.return_value = epoch_chain
+        epoch_chain.eq.return_value = epoch_chain
+        epoch_chain.single.return_value = epoch_chain
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"id": str(EPOCH_ID), "status": "competition"}
+        ))
+
+        sb.table.side_effect = lambda name: epoch_chain if name == "game_epochs" else get_chain
+
+        admin = MagicMock()
+        rpc_chain = MagicMock()
+        rpc_chain.execute = AsyncMock(return_value=MagicMock(data={"error": "already_recalled"}))
+        admin.rpc.return_value = rpc_chain
+
+        with pytest.raises(HTTPException) as exc:
+            await OperativeService.recall(
+                sb, UUID(mission_data["id"]), SIM_ID, admin_supabase=admin,
+            )
+        assert exc.value.status_code == 409
 
     @pytest.mark.asyncio
     async def test_recall_rejects_wrong_simulation(self):
