@@ -13,6 +13,7 @@ from backend.services.battle_log_service import BattleLogService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.responses import extract_list, extract_one
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -96,14 +97,26 @@ class AllianceService:
                 "Alliance proposal auto-accepted (solo team)",
                 extra={"epoch_id": str(epoch_id), "team_id": str(team_id), "proposer_id": str(proposer_simulation_id)},
             )
-            # Directly join the proposer to the team
-            await (
-                supabase.table("epoch_participants")
-                .update({"team_id": str(team_id)})
-                .eq("epoch_id", str(epoch_id))
-                .eq("simulation_id", str(proposer_simulation_id))
-                .execute()
-            )
+            # Atomic join with size enforcement (epoch_teams locked FOR UPDATE)
+            # — replaces the count-then-update race the line-90 check could not
+            # close. fn_join_team_checked is SECDEF / service_role-only
+            # (migration 258), so it must run on the admin client; authorization
+            # was already validated above (proposer is an unaligned participant,
+            # team is active).
+            admin = await get_admin_supabase_client()
+            join_resp = await admin.rpc(
+                "fn_join_team_checked",
+                {
+                    "p_epoch_id": str(epoch_id),
+                    "p_team_id": str(team_id),
+                    "p_simulation_id": str(proposer_simulation_id),
+                    "p_max_size": config["max_team_size"],
+                },
+            ).execute()
+            if join_resp.data is None:
+                raise not_found(detail="Team not found or has been dissolved.")
+            if join_resp.data is False:
+                raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
             # Create proposal record as accepted
             resp = await (
