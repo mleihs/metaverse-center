@@ -17,6 +17,7 @@ import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse, DungeonRunCreate } from '../types/dungeon.js';
+import type { Agent, AptitudeSet } from '../types/index.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import {
   formatAgentPicker,
@@ -119,6 +120,27 @@ export function resolveEntryArgs(
   return { archetype: _resolveByIndex(firstArgNum, available), selectionArgs: args.slice(1) };
 }
 
+/**
+ * Auto-pick the strongest party (default 3) by aggregate aptitude score.
+ * Pure + shared between the terminal entry flow ("dungeon <archetype> auto")
+ * and the graphical lobby picker's Auto-select, so both rank identically.
+ */
+export function autoPickPartyIds(
+  agents: Agent[],
+  aptitudeMap: Map<string, AptitudeSet>,
+  count = 3,
+): string[] {
+  return agents
+    .map((a) => {
+      const apts = aptitudeMap.get(a.id);
+      const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
+      return { id: a.id, score: total };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, count)
+    .map((s) => s.id);
+}
+
 // ── Command: dungeon ─────────────────────────────────────────────────────────
 
 export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalLine[]> {
@@ -197,13 +219,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   // "auto" → smart-pick top 3 by aggregate aptitude score
   if (selectionArgs[0] === 'auto') {
     dungeonState.pendingArchetypeForPicker.value = null;
-    const scored = agents.map((a) => {
-      const apts = aptMap.get(a.id);
-      const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
-      return { agent: a, score: total };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    const partyIds = scored.slice(0, 3).map((s) => s.agent.id);
+    const partyIds = autoPickPartyIds(agents, aptMap);
     return startDungeonRun(sid, {
       archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
       party_agent_ids: partyIds,

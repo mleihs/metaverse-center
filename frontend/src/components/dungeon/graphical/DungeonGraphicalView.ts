@@ -42,13 +42,18 @@ import type {
   AgentCombatStateClient,
   AvailableDungeonResponse,
   Condition,
+  DungeonRunCreate,
 } from '../../../types/dungeon.js';
+import type { Agent, AptitudeSet } from '../../../types/index.js';
 import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
+import { autoPickPartyIds, startDungeonRun } from '../../../utils/dungeon-entry-flow.js';
 import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeon-environment.js';
-import { getArchetypeDisplayName } from '../../../utils/dungeon-formatters.js';
+import { getArchetypeDisplayName, topAptitudes } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
+import { OPERATIVE_LABEL } from '../../../utils/operative-constants.js';
 import { parseAndExecute } from '../../../utils/terminal-commands.js';
 import { initializeTerminalZones } from '../../../utils/terminal-initialization.js';
+import { getInitials } from '../../../utils/text.js';
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/EmptyState.js';
 import '../../shared/LoadingState.js';
@@ -603,80 +608,121 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         animation: motes-drift 22s linear infinite;
       }
 
-      /* In-scene party presence — the operatives stand in the chamber, not just
-         in the side panel. Lower band (party zone), centered, on the floor. */
+      /* In-scene party presence — the operatives stand in the chamber as
+         luminous standees: an identity disc (monogram or portrait) atop a
+         tapering column of condition-tinted light (the silhouette), grounded by
+         a floor light-pool + contact shadow. Reads as a figure standing in the
+         room, not a UI chip pasted on the backdrop. */
       .scene__party {
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 23%;
+        bottom: 21%;
         z-index: 2;
         pointer-events: none;
         display: flex;
         justify-content: center;
         align-items: flex-end;
-        gap: clamp(12px, 4vw, 40px);
+        gap: clamp(16px, 5vw, 52px);
         padding: 0 16px;
       }
-      .party-token {
+      .op {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 5px;
+        gap: 9px;
         animation: token-rise var(--duration-entrance, 350ms) var(--ease-dramatic, ease) both;
-        animation-delay: calc(var(--i, 0) * 80ms);
+        animation-delay: calc(var(--i, 0) * 90ms);
       }
-      .party-token__figure {
+      .op__figure {
         position: relative;
-        width: clamp(42px, 5.5vw, 60px);
-        animation: token-bob 4.2s var(--ease-in-out, ease-in-out) infinite;
-        animation-delay: calc(var(--i, 0) * -700ms);
+        display: flex;
+        justify-content: center;
+        width: clamp(44px, 5vw, 60px);
+        animation: token-bob 4.6s var(--ease-in-out, ease-in-out) infinite;
+        animation-delay: calc(var(--i, 0) * -800ms);
       }
-      .party-token__figure velg-avatar {
-        display: block;
+      /* Tapering column of light beneath the disc — the operative's silhouette. */
+      .op__beam {
+        position: absolute;
+        bottom: -3px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 62%;
+        height: clamp(52px, 7vw, 76px);
+        background: linear-gradient(
+          to top,
+          color-mix(in srgb, var(--_cond) 34%, transparent),
+          color-mix(in srgb, var(--_cond) 7%, transparent) 58%,
+          transparent
+        );
+        clip-path: polygon(26% 100%, 74% 100%, 60% 0, 40% 0);
+      }
+      /* Identity disc — monogram or portrait, condition-haloed. */
+      .op__disc {
+        position: relative;
+        z-index: 1;
         width: 100%;
-        /* Condition-tinted halo so health reads from the figure alone. */
-        filter: drop-shadow(0 0 6px color-mix(in srgb, var(--_cond) 45%, transparent));
-        border: 1px solid color-mix(in srgb, var(--_cond) 55%, transparent);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: radial-gradient(
+          circle at 50% 36%,
+          color-mix(in srgb, var(--_cond) 28%, var(--color-surface-raised)),
+          color-mix(in srgb, var(--color-surface) 86%, var(--_cond))
+        );
+        box-shadow:
+          0 0 15px color-mix(in srgb, var(--_cond) 42%, transparent),
+          inset 0 0 0 1px color-mix(in srgb, var(--_cond) 60%, transparent);
       }
-      /* Ground shadow grounding the figure on the floor. Sits over a wider,
-         softer light pool so the operative reads as standing IN the chamber,
-         not as a chip pasted on the backdrop. */
-      .party-token__shadow {
+      .op__mono {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-weight: 700;
+        font-size: clamp(13px, 1.7vw, 18px);
+        letter-spacing: 0.5px;
+        color: color-mix(in srgb, var(--_cond) 50%, var(--color-text-primary));
+      }
+      .op__disc img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      /* Floor light-pool grounding the figure on the chamber floor. */
+      .op__pool {
         position: absolute;
         left: 50%;
-        bottom: -11px;
-        width: 132%;
-        height: 16px;
-        margin-left: -66%;
+        bottom: -13px;
+        width: 156%;
+        height: 24px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: radial-gradient(
+          closest-side,
+          color-mix(in srgb, var(--_cond) 26%, transparent),
+          transparent 72%
+        );
+      }
+      /* Hard contact shadow nested in the pool for a crisp ground anchor. */
+      .op__pool::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 7px;
+        width: 58%;
+        height: 9px;
+        transform: translateX(-50%);
         border-radius: 50%;
         background: radial-gradient(
           closest-side,
           color-mix(in srgb, var(--color-surface) 92%, transparent),
-          color-mix(in srgb, var(--color-surface) 45%, transparent) 60%,
-          transparent
+          transparent 70%
         );
         filter: blur(2px);
       }
-      /* Soft standing-light pool: a warm floor halo that anchors the figure to
-         the ground plane and lifts it off the busy backdrop. */
-      .party-token__shadow::before {
-        content: '';
-        position: absolute;
-        left: 50%;
-        bottom: -3px;
-        width: 168%;
-        height: 30px;
-        margin-left: -84%;
-        border-radius: 50%;
-        background: radial-gradient(
-          closest-side,
-          color-mix(in srgb, var(--_cond) 22%, transparent),
-          transparent 70%
-        );
-      }
-      .party-token__name {
-        max-width: 88px;
+      .op__name {
+        max-width: 92px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -688,8 +734,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         color: var(--_phosphor-dim);
         text-shadow: 0 1px 2px var(--color-surface);
       }
-      .party-token--down {
-        opacity: 0.5;
+      .op--down {
+        opacity: 0.45;
+      }
+      .op--down .op__beam {
+        opacity: 0.4;
       }
 
       /* Critical edge alarm — pulsing inset ring at high pressure. */
@@ -863,6 +912,186 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         opacity: 0.75;
       }
 
+      /* ── Agent picker ── */
+      .picker {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        flex: 1;
+        min-height: 0;
+      }
+      .picker__head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .picker__back {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        font-family: var(--_mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--_phosphor-dim);
+        background: transparent;
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+        cursor: pointer;
+        transition:
+          color var(--transition-fast, 100ms ease),
+          border-color var(--transition-fast, 100ms ease);
+      }
+      .picker__back:hover:not(:disabled) {
+        color: var(--_phosphor);
+        border-color: var(--_phosphor);
+      }
+      .picker__back:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .picker__back-icon {
+        display: inline-flex;
+        transform: scaleX(-1);
+      }
+      .picker__title {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor);
+      }
+      .picker__title span {
+        color: var(--_phosphor-dim);
+        font-weight: 400;
+        letter-spacing: 1px;
+      }
+      .picker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px;
+        overflow-y: auto;
+      }
+      .picker-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        text-align: left;
+        background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition:
+          border-color var(--transition-fast, 100ms ease),
+          box-shadow var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease);
+      }
+      .picker-card:hover:not(:disabled) {
+        border-color: var(--_phosphor);
+        box-shadow: var(--shadow-md);
+      }
+      .picker-card:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      .picker-card--selected {
+        border-color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_phosphor) 12%, var(--color-surface-raised));
+      }
+      .picker-card:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .picker-card__body {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+      }
+      .picker-card__name {
+        font-family: var(--_mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .picker-card__apts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .apt-chip {
+        font-family: var(--_mono);
+        font-size: 9px;
+        letter-spacing: 0.5px;
+        padding: 1px 5px;
+        color: var(--_phosphor-dim);
+        border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
+      }
+      .picker-card__check {
+        display: inline-flex;
+        align-items: center;
+        color: var(--_phosphor);
+        flex-shrink: 0;
+        width: 14px;
+      }
+      .picker__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+      }
+      .picker__count {
+        font-family: var(--_mono);
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--_phosphor-dim);
+      }
+      .picker__actions {
+        display: flex;
+        gap: 8px;
+      }
+      .picker__btn {
+        padding: 7px 16px;
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--_phosphor-dim);
+        background: transparent;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 40%, transparent);
+        cursor: pointer;
+        transition:
+          color var(--transition-fast, 100ms ease),
+          border-color var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease);
+      }
+      .picker__btn:hover:not(:disabled) {
+        color: var(--_phosphor);
+        border-color: var(--_phosphor);
+      }
+      .picker__btn--primary {
+        color: var(--color-surface);
+        background: var(--_phosphor);
+        border-color: var(--_phosphor);
+      }
+      .picker__btn--primary:hover:not(:disabled) {
+        color: var(--color-surface);
+        background: color-mix(in srgb, var(--_phosphor) 85%, var(--color-text-primary));
+      }
+      .picker__btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
       /* ── Keyframes ── */
       @keyframes tide {
         0%,
@@ -975,8 +1204,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         .scene__backdrop,
         .scene__motes,
         .scene__art-img,
-        .party-token,
-        .party-token__figure {
+        .op,
+        .op__figure {
           animation: none !important;
           transition: none !important;
         }
@@ -996,6 +1225,15 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
    *  etc.) → fall back to the CSS-only chamber for that URL. Keyed by URL so a
    *  new archetype's backdrop is retried. */
   @state() private _failedBackdrop: string | null = null;
+  /** Archetype whose party is being assembled in the graphical picker. Null =
+   *  show the archetype grid; non-null = show the agent picker. This replaces
+   *  the terminal-only agent picker so a run can start entirely from the
+   *  graphical lobby (no terminal toggle required). */
+  @state() private _pickerArchetype: string | null = null;
+  /** Agent IDs selected for the descent party (2–4 required to begin). */
+  @state() private _pickerSelection: string[] = [];
+  /** True while the create-run request is in flight (disables the controls). */
+  @state() private _startingRun = false;
 
   private _wakeLock: WakeLockReleasable | null = null;
 
@@ -1128,6 +1366,78 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     }
   }
 
+  // ── Agent picker (graphical lobby → party assembly → run start) ────────────
+
+  /** Open the party picker for an archetype. Loads the roster lazily (cached
+   *  in dungeonState until clear()). */
+  private async _openPicker(archetype: string): Promise<void> {
+    this._pickerArchetype = archetype;
+    this._pickerSelection = [];
+    const sid = this.simulationId || appState.simulationId.value || '';
+    if (!sid) return;
+    try {
+      await dungeonState.loadPickerAgents(sid);
+    } catch (err) {
+      captureError(err, { source: 'VelgDungeonGraphicalView._openPicker', command: archetype });
+      VelgToast.error(msg('Failed to load agents.'));
+    }
+  }
+
+  private _closePicker(): void {
+    this._pickerArchetype = null;
+    this._pickerSelection = [];
+  }
+
+  /** Toggle an agent in/out of the party. Caps the party at 4. */
+  private _toggleAgent(agentId: string): void {
+    const sel = this._pickerSelection;
+    if (sel.includes(agentId)) {
+      this._pickerSelection = sel.filter((id) => id !== agentId);
+    } else if (sel.length < 4) {
+      this._pickerSelection = [...sel, agentId];
+    }
+  }
+
+  /** Auto-pick the top 3 agents by aggregate aptitude — same heuristic as the
+   *  terminal `dungeon <archetype> auto` path (shared autoPickPartyIds). */
+  private _autoSelect(): void {
+    this._pickerSelection = autoPickPartyIds(
+      dungeonState.pickerAgents.value,
+      dungeonState.pickerAptitudes.value,
+    );
+  }
+
+  /** Start the run with the selected party. startDungeonRun applies the new
+   *  state, so isInDungeon flips true and render() swaps to the scene. */
+  private async _beginRun(): Promise<void> {
+    const archetype = this._pickerArchetype;
+    const party = this._pickerSelection;
+    if (!archetype || party.length < 2 || this._startingRun) return;
+    const sid = this.simulationId || appState.simulationId.value || '';
+    if (!sid) return;
+    const dungeon = dungeonState.availableDungeons.value.find((d) => d.archetype === archetype);
+    if (!dungeon) return;
+
+    this._startingRun = true;
+    terminalState.isLoading.value = true;
+    try {
+      const lines = await startDungeonRun(sid, {
+        archetype: archetype as DungeonRunCreate['archetype'],
+        party_agent_ids: party,
+        difficulty: dungeon.suggested_difficulty,
+      });
+      // Keep the terminal buffer in sync for players who toggle back.
+      terminalState.appendOutput(lines);
+      this._closePicker();
+    } catch (err) {
+      captureError(err, { source: 'VelgDungeonGraphicalView._beginRun', command: archetype });
+      VelgToast.error(err instanceof Error ? err.message : msg('Failed to begin the descent.'));
+    } finally {
+      this._startingRun = false;
+      terminalState.isLoading.value = false;
+    }
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   protected render() {
@@ -1233,7 +1543,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
           ${
             inCombat
-              ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
+              ? html`<velg-dungeon-combat-bar compact></velg-dungeon-combat-bar>`
               : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
           }
         </div>
@@ -1288,24 +1598,28 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     if (party.length === 0) return nothing;
     return html`
       <div class="scene__party" aria-hidden="true">
-        ${party.map(
-          (agent: AgentCombatStateClient, i: number) => html`
+        ${party.map((agent: AgentCombatStateClient, i: number) => {
+          const portrait = agent.portrait_url;
+          return html`
             <div
-              class="party-token ${agent.condition === 'captured' ? 'party-token--down' : ''}"
+              class="op ${agent.condition === 'captured' ? 'op--down' : ''}"
               style="--i:${i};--_cond:${CONDITION_RING[agent.condition]}"
             >
-              <div class="party-token__figure">
-                <velg-avatar
-                  size="full"
-                  .src=${agent.portrait_url ?? ''}
-                  .name=${agent.agent_name}
-                ></velg-avatar>
-                <div class="party-token__shadow"></div>
+              <div class="op__figure">
+                <div class="op__beam"></div>
+                <div class="op__disc">
+                  ${
+                    portrait
+                      ? html`<img src=${portrait} alt="" />`
+                      : html`<span class="op__mono">${getInitials(agent.agent_name)}</span>`
+                  }
+                </div>
+                <div class="op__pool"></div>
               </div>
-              <span class="party-token__name">${agent.agent_name}</span>
+              <span class="op__name">${agent.agent_name}</span>
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
@@ -1313,6 +1627,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   private _renderLobby(_simulationId: string) {
     const available = dungeonState.availableDungeons.value;
     const loading = dungeonState.loading.value;
+
+    // Archetype chosen → assemble the party in-view (no terminal needed).
+    if (this._pickerArchetype) {
+      return html`<div class="dungeon-lobby">${this._renderPicker()}</div>`;
+    }
 
     return html`
       <div class="dungeon-lobby">
@@ -1353,11 +1672,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   ? `${msg('Enter')} ${getArchetypeDisplayName(d.archetype)}`
                   : getArchetypeDisplayName(d.archetype)
               }
-              @click=${() => d.available && this._runCommand(`dungeon ${d.archetype}`)}
+              @click=${() => d.available && this._openPicker(d.archetype)}
               @keydown=${(e: KeyboardEvent) => {
                 if (d.available && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
-                  void this._runCommand(`dungeon ${d.archetype}`);
+                  void this._openPicker(d.archetype);
                 }
               }}
             >
@@ -1372,6 +1691,119 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         )}
       </div>
     `;
+  }
+
+  // ── Agent picker render ───────────────────────────────────────────────────
+
+  private _renderPicker() {
+    const archetype = this._pickerArchetype ?? '';
+    const loading = dungeonState.loading.value;
+    const agents = dungeonState.pickerAgents.value;
+    const count = this._pickerSelection.length;
+    const canBegin = count >= 2 && count <= 4 && !this._startingRun;
+
+    return html`
+      <div class="picker">
+        <div class="picker__head">
+          <button
+            class="picker__back"
+            type="button"
+            aria-label=${msg('Back to archetypes')}
+            ?disabled=${this._startingRun}
+            @click=${this._closePicker}
+          >
+            <span class="picker__back-icon">${icons.chevronRight(14)}</span> ${msg('Back')}
+          </button>
+          <div class="picker__title">
+            ${getArchetypeDisplayName(archetype)} <span>// ${msg('Assemble party')}</span>
+          </div>
+        </div>
+
+        ${
+          loading && agents.length === 0
+            ? html`<velg-loading-state message=${msg('Mustering operatives...')}></velg-loading-state>`
+            : agents.length < 2
+              ? html`<velg-empty-state
+                  message=${msg('Need at least 2 agents for a dungeon party. Recruit more agents first.')}
+                ></velg-empty-state>`
+              : this._renderPickerRoster(agents)
+        }
+
+        ${
+          agents.length >= 2
+            ? html`
+                <div class="picker__footer">
+                  <span class="picker__count" aria-live="polite">
+                    ${msg('Party')}: ${count}/4
+                  </span>
+                  <div class="picker__actions">
+                    <button
+                      class="picker__btn"
+                      type="button"
+                      ?disabled=${this._startingRun}
+                      @click=${this._autoSelect}
+                    >
+                      ${msg('Auto-select')}
+                    </button>
+                    <button
+                      class="picker__btn picker__btn--primary"
+                      type="button"
+                      ?disabled=${!canBegin}
+                      @click=${this._beginRun}
+                    >
+                      ${this._startingRun ? msg('Descending...') : msg('Begin descent')}
+                    </button>
+                  </div>
+                </div>
+              `
+            : nothing
+        }
+      </div>
+    `;
+  }
+
+  private _renderPickerRoster(agents: Agent[]) {
+    const aptMap = dungeonState.pickerAptitudes.value;
+    return html`
+      <div class="picker-grid" role="group" aria-label=${msg('Select party members')}>
+        ${agents.map((agent) => {
+          const selected = this._pickerSelection.includes(agent.id);
+          const atCap = this._pickerSelection.length >= 4 && !selected;
+          return html`
+            <button
+              class="picker-card ${selected ? 'picker-card--selected' : ''}"
+              type="button"
+              role="checkbox"
+              aria-checked=${selected ? 'true' : 'false'}
+              ?disabled=${atCap || this._startingRun}
+              @click=${() => this._toggleAgent(agent.id)}
+            >
+              <velg-avatar
+                class="picker-card__avatar"
+                size="sm"
+                .src=${agent.portrait_image_url ?? ''}
+                .name=${agent.name}
+              ></velg-avatar>
+              <span class="picker-card__body">
+                <span class="picker-card__name">${agent.name}</span>
+                <span class="picker-card__apts">${this._renderAptChips(aptMap.get(agent.id))}</span>
+              </span>
+              <span class="picker-card__check" aria-hidden="true">
+                ${selected ? icons.checkCircle(14) : nothing}
+              </span>
+            </button>
+          `;
+        })}
+      </div>
+    `;
+  }
+
+  /** Top-3 aptitudes as compact chips (shared computation with the terminal
+   *  picker formatter via topAptitudes — generalists fall back to a baseline). */
+  private _renderAptChips(apts: AptitudeSet | undefined) {
+    return topAptitudes(apts).map(
+      ([k, v]) => html`<span class="apt-chip">${OPERATIVE_LABEL[k] ?? k.toUpperCase()} ${v}</span>`,
+    );
   }
 }
 
