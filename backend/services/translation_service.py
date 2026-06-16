@@ -16,6 +16,7 @@ from backend.dependencies import get_admin_supabase
 from backend.models.translation import TranslationContext, TranslationResult
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
+from backend.services.simulation_service import SimulationService
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -303,6 +304,20 @@ def null_de_fields_for_update(table: str, update_data: dict) -> dict:
     return nulls
 
 
+def merge_stale_de_nulls(table: str, update_data: dict) -> dict:
+    """Merge stale ``_de`` nulls into ``update_data`` in place; return the nulls.
+
+    Wraps the ``null_de_fields_for_update`` + ``update_data.update(...)`` two-liner
+    the agents/buildings update routers used to duplicate. The returned dict is
+    truthy exactly when an EN field changed, so the caller can gate
+    re-translation on it (``if de_nulls: await schedule_entity_translation(...)``).
+    """
+    de_nulls = null_de_fields_for_update(table, update_data)
+    if de_nulls:
+        update_data.update(de_nulls)
+    return de_nulls
+
+
 async def _run_auto_translate(
     supabase: Client,
     table: str,
@@ -387,3 +402,33 @@ def schedule_auto_translation(
         _run_auto_translate(supabase, table, str(entity_id), entity_data, context),
     )
     task.add_done_callback(_on_translate_task_done)
+
+
+async def schedule_entity_translation(
+    supabase: Client,
+    table: str,
+    entity: dict,
+    simulation_id: UUID,
+    *,
+    entity_type: str,
+) -> None:
+    """Resolve the simulation context and fire a best-effort entity translation.
+
+    Centralises the create/update orchestration the agents + buildings routers
+    used to duplicate: fetch the lightweight simulation context (name + theme),
+    no-op when the simulation is missing, and forward to the fire-and-forget
+    ``schedule_auto_translation`` task. Keeps translation orchestration out of
+    the HTTP layer (the routers only know "this entity changed, translate it").
+    """
+    sim = await SimulationService.get_simulation_context(supabase, simulation_id)
+    if not sim:
+        return
+    schedule_auto_translation(
+        supabase,
+        table,
+        entity["id"],
+        entity,
+        simulation_name=sim["name"],
+        simulation_theme=sim.get("theme", ""),
+        entity_type=entity_type,
+    )
