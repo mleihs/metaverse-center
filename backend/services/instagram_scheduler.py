@@ -35,7 +35,7 @@ from backend.services.social.constants import (
     MAX_PUBLISH_RETRIES,
     METRICS_COLLECT_DELAYS,
 )
-from backend.services.social.scheduler_base import BaseSchedulerMixin
+from backend.services.social.scheduler_base import BaseSchedulerMixin, SocialCredentialsError
 from backend.services.social_story_service import SocialStoryService
 from backend.utils.responses import extract_list
 from backend.utils.settings import (
@@ -56,8 +56,21 @@ class InstagramScheduler(BaseSchedulerMixin):
     """Periodic background task that publishes scheduled Instagram posts."""
 
     _scheduler_name = "instagram"
+    _content_service = InstagramContentService
+    _force_publish_statuses = ("draft", "scheduled")
     _last_token_refresh: datetime | None = None
     _TOKEN_REFRESH_INTERVAL_DAYS = 50  # Refresh every 50 days (tokens last 60)
+
+    @classmethod
+    async def _build_publish_client(cls, admin: Client) -> InstagramService:
+        """Load Instagram credentials and return a configured API client."""
+        config = await InstagramContentService.load_instagram_credentials(admin)
+        if not config["access_token"] or not config["ig_user_id"]:
+            raise SocialCredentialsError("Instagram credentials not configured.")
+        return InstagramService(
+            access_token=config["access_token"],
+            ig_user_id=config["ig_user_id"],
+        )
 
     @classmethod
     async def _process_tick(cls, admin: Client, config: dict) -> None:
@@ -83,16 +96,19 @@ class InstagramScheduler(BaseSchedulerMixin):
         }
 
         try:
-            sm = await load_platform_settings(admin, [
-                "instagram_enabled",
-                "instagram_posting_enabled",
-                "instagram_access_token",
-                "instagram_ig_user_id",
-                "instagram_approval_required",
-                "instagram_posts_per_day",
-                "instagram_posting_hours",
-                "instagram_scheduler_interval_seconds",
-            ])
+            sm = await load_platform_settings(
+                admin,
+                [
+                    "instagram_enabled",
+                    "instagram_posting_enabled",
+                    "instagram_access_token",
+                    "instagram_ig_user_id",
+                    "instagram_approval_required",
+                    "instagram_posts_per_day",
+                    "instagram_posting_hours",
+                    "instagram_scheduler_interval_seconds",
+                ],
+            )
 
             config["enabled"] = parse_setting_bool(sm.get("instagram_enabled", "false"))
             config["posting_enabled"] = parse_setting_bool(sm.get("instagram_posting_enabled", "false"))
@@ -213,7 +229,9 @@ class InstagramScheduler(BaseSchedulerMixin):
                     sentry_sdk.capture_exception(exc)
                 # Disable posting (not the whole pipeline — drafts can still be generated)
                 await upsert_platform_setting(
-                    admin, "instagram_posting_enabled", json.dumps(False),
+                    admin,
+                    "instagram_posting_enabled",
+                    json.dumps(False),
                 )
                 return
             except InstagramRateLimitError:
@@ -706,7 +724,9 @@ class InstagramScheduler(BaseSchedulerMixin):
 
                     encrypted = encrypt(new_token)
                     await upsert_platform_setting(
-                        admin, "instagram_access_token", encrypted,
+                        admin,
+                        "instagram_access_token",
+                        encrypted,
                     )
 
                     logger.info(
@@ -831,5 +851,3 @@ class InstagramScheduler(BaseSchedulerMixin):
                         "iteration": cls._iteration_count,
                     },
                 )
-
-

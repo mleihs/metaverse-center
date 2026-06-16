@@ -44,7 +44,9 @@
 ## routers+models — 5 findings
 
 
-### [ ] `P1` · duplication — Force-publish orchestration (with sentry-scope + error compensation) duplicated across instagram.py and bluesky.py
+### [x] `P1` · duplication — Force-publish orchestration (with sentry-scope + error compensation) duplicated across instagram.py and bluesky.py
+
+> **Remediated.** Hoisted the whole publish-with-compensation workflow onto the shared `BaseSchedulerMixin` (both schedulers already inherit it) as `force_publish_post(admin, post_id, *, actor_id) -> dict`: get_post → status guard → build client → publish → on-error reset_post_status + tagged Sentry → re-fetch. It raises typed domain errors (`PostNotPublishableError`/`SocialCredentialsError`→400, `PublishFailedError`→502, all in scheduler_base.py); the two routers shrink to admin-log + one call + 2 except-arms + audit + return. Per-platform deltas are now just three class attrs/hooks: `_content_service`, `_force_publish_statuses`, `_build_publish_client` (the latter absorbs the router's old `_get_*_service` credential loaders, which were force-publish-only). HTTP responses byte-identical (PostNotPublishableError reproduces "Cannot publish post with status '…'." and the 400/502 detail strings verbatim; Sentry context key stays "user_id"). Removed the now-unused `sentry_sdk` import from both routers. New `test_force_publish_workflow.py` (6 tests: happy path / wrong-status / missing-creds / publish-failure-resets+raises+captures / concrete IG+BS wiring) — path had zero prior coverage. 197 scheduler/social tests green.
 
 - **Files:** backend/routers/instagram.py, backend/routers/bluesky.py
 - **Lines:** instagram.py:290-359, bluesky.py:161-230
