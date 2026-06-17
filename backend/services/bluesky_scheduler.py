@@ -38,7 +38,7 @@ from backend.services.social.constants import (
     MAX_PUBLISH_RETRIES,
     METRICS_COLLECT_DELAYS,
 )
-from backend.services.social.scheduler_base import BaseSchedulerMixin
+from backend.services.social.scheduler_base import BaseSchedulerMixin, SocialCredentialsError
 from backend.services.social.types import AdaptedContent
 from backend.utils.responses import extract_list
 from backend.utils.settings import (
@@ -59,6 +59,20 @@ class BlueskyScheduler(BaseSchedulerMixin):
     """Periodic background task that publishes scheduled Bluesky posts."""
 
     _scheduler_name = "bluesky"
+    _content_service = BlueskyContentService
+    _force_publish_statuses = ("pending", "failed")
+
+    @classmethod
+    async def _build_publish_client(cls, admin: Client) -> BlueskyService:
+        """Load Bluesky credentials and return a configured API client."""
+        config = await BlueskyContentService.load_bluesky_credentials(admin)
+        if not config["handle"] or not config["app_password"]:
+            raise SocialCredentialsError("Bluesky credentials not configured.")
+        return BlueskyService(
+            handle=config["handle"],
+            app_password=config["app_password"],
+            pds_url=config["pds_url"],
+        )
 
     @classmethod
     async def _process_tick(cls, admin: Client, config: dict) -> None:
@@ -79,19 +93,24 @@ class BlueskyScheduler(BaseSchedulerMixin):
         }
 
         try:
-            sm = await load_platform_settings(admin, [
-                "bluesky_enabled",
-                "bluesky_posting_enabled",
-                "bluesky_handle",
-                "bluesky_app_password",
-                "bluesky_pds_url",
-                "bluesky_scheduler_interval_seconds",
-            ])
+            sm = await load_platform_settings(
+                admin,
+                [
+                    "bluesky_enabled",
+                    "bluesky_posting_enabled",
+                    "bluesky_handle",
+                    "bluesky_app_password",
+                    "bluesky_pds_url",
+                    "bluesky_scheduler_interval_seconds",
+                ],
+            )
 
             config["enabled"] = parse_setting_bool(sm.get("bluesky_enabled", "false"))
             config["posting_enabled"] = parse_setting_bool(sm.get("bluesky_posting_enabled", "false"))
             config["handle"] = str(sm.get("bluesky_handle", "")).strip().strip('"')
-            config["pds_url"] = str(sm.get("bluesky_pds_url", "https://bsky.social")).strip().strip('"') or "https://bsky.social"
+            config["pds_url"] = (
+                str(sm.get("bluesky_pds_url", "https://bsky.social")).strip().strip('"') or "https://bsky.social"
+            )
             config["app_password"] = decrypt_setting(sm.get("bluesky_app_password", ""))
 
             try:
@@ -188,7 +207,9 @@ class BlueskyScheduler(BaseSchedulerMixin):
                     sentry_sdk.capture_exception(exc)
                 # Disable posting
                 await upsert_platform_setting(
-                    admin, "bluesky_posting_enabled", json.dumps(False),
+                    admin,
+                    "bluesky_posting_enabled",
+                    json.dumps(False),
                 )
                 return
             except BlueskyRateLimitError:
@@ -479,5 +500,3 @@ class BlueskyScheduler(BaseSchedulerMixin):
                         "iteration": cls._iteration_count,
                     },
                 )
-
-

@@ -53,15 +53,15 @@ class ForgeImageService:
         import re
 
         # Remove markdown bold/italic markers
-        text = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', description)
+        text = re.sub(r"\*{1,3}([^*]+)\*{1,3}", r"\1", description)
         # Remove markdown headings
-        text = re.sub(r'^#{1,4}\s*', '', text, flags=re.MULTILINE)
+        text = re.sub(r"^#{1,4}\s*", "", text, flags=re.MULTILINE)
         # Remove markdown list markers
-        text = re.sub(r'^[-*]\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r"^[-*]\s+", "", text, flags=re.MULTILINE)
         # Remove "Image Generation Prompt:" meta-text
-        text = re.sub(r'(?i)image generation prompt:?\s*', '', text)
+        text = re.sub(r"(?i)image generation prompt:?\s*", "", text)
         # Collapse excessive whitespace
-        text = re.sub(r'\n{2,}', '\n', text).strip()
+        text = re.sub(r"\n{2,}", "\n", text).strip()
         return text
 
     async def _log_image_usage(self, model: str, purpose: str) -> None:
@@ -98,6 +98,57 @@ class ForgeImageService:
         buf.seek(0)
         buf.name = "reference.png"  # Replicate SDK uses .name for content-type
         return buf
+
+    async def generate_entity_image(
+        self,
+        entity_type: str,
+        entity_id: UUID,
+        entity_name: str,
+        extra: dict | None = None,
+    ) -> str:
+        """Generate an image for an agent portrait, building, or banner.
+
+        Owns the request-payload shaping the generation router previously did
+        inline (popping ``description_override`` and, for buildings, assembling
+        the ``building_data`` field set), so the controller stays HTTP-only.
+        ``entity_type`` other than "agent"/"banner" is treated as a building.
+        """
+        extra = dict(extra or {})
+        description_override = extra.pop("description_override", None)
+
+        if entity_type == "agent":
+            return await self.generate_agent_portrait(
+                agent_id=entity_id,
+                agent_name=entity_name,
+                agent_data=extra or None,
+                description_override=description_override,
+            )
+        if entity_type == "banner":
+            return await self.generate_banner_image(
+                sim_name=entity_name,
+                sim_description=extra.get("description", ""),
+                anchor_data=extra.get("anchor_data"),
+            )
+
+        building_data = {
+            "building_condition": extra.get("building_condition", ""),
+            "building_style": extra.get("building_style", ""),
+            "description": extra.get("description", ""),
+            "special_type": extra.get("special_type", ""),
+            "construction_year": extra.get("construction_year", ""),
+            "population_capacity": extra.get("population_capacity", ""),
+            "zone_name": extra.get("zone_name", ""),
+            "embassy_id": extra.get("embassy_id", ""),
+            "partner_simulation_id": extra.get("partner_simulation_id", ""),
+            "special_attributes": extra.get("special_attributes"),
+        }
+        return await self.generate_building_image(
+            building_id=entity_id,
+            building_name=entity_name,
+            building_type=extra.get("building_type", "residential"),
+            building_data=building_data,
+            description_override=description_override,
+        )
 
     async def generate_agent_portrait(
         self,

@@ -125,13 +125,21 @@ class TestLinearProjection:
 class TestSeasonalAdjustment:
     @pytest.mark.asyncio
     async def test_weekday_heavy_history_changes_projection_vs_linear(self):
-        """Weekday $10, weekend $0 → seasonal ≠ linear unless symmetric."""
-        # Find a recent stretch where each weekday is represented at least once.
-        # Use 28 days = 4 full weeks for clean DOW coverage.
-        now = datetime.now(UTC)
+        """Weekday $10, weekend $0 → seasonal ≠ linear for a partial-week tail.
+
+        Seasonal and linear coincide EXACTLY when ``days_remaining`` is a
+        multiple of 7: a whole-week tail covers every weekday once, so its mean
+        DOW multiplier is 1.0 and the seasonal sum collapses to the linear one.
+        A real-clock test (``datetime.now``) therefore flaked on ~1-in-7
+        calendar days (e.g. 2026-06-16 → days_remaining 14). Pin a fixed
+        reference date with a partial-week tail so the delta is guaranteed:
+        2026-01-15 → days_remaining 16 (16 % 7 = 2). The history is built
+        relative to the SAME reference so the DOW buckets are stable.
+        """
+        ref = datetime(2026, 1, 15, 12, 0, 0, tzinfo=UTC)
         rows = []
         for i in range(28):
-            d = now - timedelta(days=i)
+            d = ref - timedelta(days=i)
             usd = 10.0 if d.weekday() < 5 else 0.0  # Mon-Fri = weekday
             rows.append(
                 _rollup_row(
@@ -144,21 +152,19 @@ class TestSeasonalAdjustment:
 
         await OpsForecastService.project(supabase)
 
-        # Seasonal projection must differ from a naive (overall_mean ×
-        # days_remaining) linear projection unless every remaining day
-        # has the average DOW weight. Build the comparison:
-        snapshot = OpsForecastService._build_snapshot(rows)
+        snapshot = OpsForecastService._build_snapshot(rows, now=ref)
         linear = snapshot.linear_projected_usd
         seasonal = snapshot.projected_usd
 
-        # The two will only equal when remaining days perfectly balance
-        # the historical DOW distribution. With the strong 5/2 weekday
-        # bias, all remaining-day-windows of length ≥1 produce a delta.
-        if snapshot.days_remaining >= 1:
-            assert linear != seasonal, (
-                f"Seasonal adjustment had zero effect: linear={linear}, "
-                f"seasonal={seasonal}, days_remaining={snapshot.days_remaining}"
-            )
+        # Precondition: a partial-week tail. With dow_mults in {1.4 (weekday),
+        # 0 (weekend)}, no partial week (1–6 days) can average to 1.0, so the
+        # seasonal sum must diverge from the naive overall_mean × days_remaining.
+        assert snapshot.days_remaining >= 1
+        assert snapshot.days_remaining % 7 != 0
+        assert linear != seasonal, (
+            f"Seasonal adjustment had zero effect: linear={linear}, "
+            f"seasonal={seasonal}, days_remaining={snapshot.days_remaining}"
+        )
 
         # Both projections must be non-negative and within sanity bounds.
         assert seasonal >= snapshot.mtd_usd
@@ -229,9 +235,7 @@ class TestDriverTextCache:
         first = await OpsForecastService.project(supabase)
         second = await OpsForecastService.project(supabase)
 
-        assert haiku_mock.await_count == 1, (
-            f"Haiku should be called exactly once, got {haiku_mock.await_count}"
-        )
+        assert haiku_mock.await_count == 1, f"Haiku should be called exactly once, got {haiku_mock.await_count}"
         assert first.driver_text == "Cached forecast text."
         assert second.driver_text == "Cached forecast text."
 

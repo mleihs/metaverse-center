@@ -19,8 +19,7 @@ from backend.services.agent_service import AgentService
 from backend.services.audit_service import AuditService
 from backend.services.bond.bond_service import BondService
 from backend.services.event_service import EventService
-from backend.services.simulation_service import SimulationService
-from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
+from backend.services.translation_service import merge_stale_de_nulls, schedule_entity_translation
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -86,17 +85,7 @@ async def create_agent(
     agent = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent["id"], "create")
     # Auto-translate in background (best-effort)
-    sim = await SimulationService.get_simulation_context(supabase, simulation_id)
-    if sim:
-        schedule_auto_translation(
-            supabase,
-            "agents",
-            agent["id"],
-            agent,
-            simulation_name=sim["name"],
-            simulation_theme=sim.get("theme", ""),
-            entity_type="agent",
-        )
+    await schedule_entity_translation(supabase, "agents", agent, simulation_id, entity_type="agent")
     return SuccessResponse(data=agent)
 
 
@@ -113,9 +102,7 @@ async def update_agent(
     """Update an existing agent."""
     update_data = body.model_dump(exclude_none=True)
     # Null stale _de fields for changed EN fields
-    de_nulls = null_de_fields_for_update("agents", update_data)
-    if de_nulls:
-        update_data.update(de_nulls)
+    de_nulls = merge_stale_de_nulls("agents", update_data)
     agent = await _service.update(
         supabase,
         simulation_id,
@@ -124,19 +111,9 @@ async def update_agent(
         if_updated_at=if_updated_at,
     )
     await AuditService.safe_log(supabase, simulation_id, user.id, "agents", agent_id, "update")
-    # Re-translate in background (best-effort)
+    # Re-translate in background (best-effort) when an EN source field changed
     if de_nulls:
-        sim = await SimulationService.get_simulation_context(supabase, simulation_id)
-        if sim:
-            schedule_auto_translation(
-                supabase,
-                "agents",
-                agent["id"],
-                agent,
-                simulation_name=sim["name"],
-                simulation_theme=sim.get("theme", ""),
-                entity_type="agent",
-            )
+        await schedule_entity_translation(supabase, "agents", agent, simulation_id, entity_type="agent")
     return SuccessResponse(data=agent)
 
 

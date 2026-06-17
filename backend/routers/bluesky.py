@@ -19,7 +19,6 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
@@ -31,6 +30,11 @@ from backend.services.audit_service import AuditService
 from backend.services.bluesky_content_service import BlueskyContentService
 from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.external.bluesky import BlueskyService
+from backend.services.social.scheduler_base import (
+    PostNotPublishableError,
+    PublishFailedError,
+    SocialCredentialsError,
+)
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -40,24 +44,6 @@ router = APIRouter(
     prefix="/api/v1/admin/bluesky",
     tags=["Bluesky"],
 )
-
-
-# ── Helpers ────────────────────────────────────────────────────────────
-
-
-async def _get_bluesky_service(admin_supabase: Client) -> BlueskyService:
-    """Load Bluesky credentials and return a configured service client."""
-    config = await BlueskyContentService.load_bluesky_credentials(admin_supabase)
-    if not config["handle"] or not config["app_password"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bluesky credentials not configured.",
-        )
-    return BlueskyService(
-        handle=config["handle"],
-        app_password=config["app_password"],
-        pds_url=config["pds_url"],
-    )
 
 
 # ── Queue Management ────────────────────────────────────────────────────
@@ -176,41 +162,11 @@ async def force_publish(
         },
     )
 
-    post = await BlueskyContentService.get_post(admin_supabase, post_id)
-
-    if post["status"] not in ("pending", "failed"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot publish post with status '{post['status']}'.",
-        )
-
-    bsky = await _get_bluesky_service(admin_supabase)
-
     try:
-        await BlueskyScheduler.publish_post(admin_supabase, bsky, post)
-    except Exception as exc:
-        logger.exception(
-            "Bluesky force-publish failed",
-            extra={
-                "post_id": str(post_id),
-                "user_id": str(user.id),
-            },
-        )
-        with sentry_sdk.push_scope() as scope:
-            scope.set_tag("bluesky_phase", "force_publish")
-            scope.set_context(
-                "bluesky",
-                {
-                    "post_id": str(post_id),
-                    "user_id": str(user.id),
-                },
-            )
-            sentry_sdk.capture_exception(exc)
-        await BlueskyContentService.reset_post_status(
-            admin_supabase,
-            str(post_id),
-            f"Force-publish failed: {str(exc)[:300]}",
-        )
+        updated = await BlueskyScheduler.force_publish_post(admin_supabase, post_id, actor_id=user.id)
+    except (PostNotPublishableError, SocialCredentialsError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except PublishFailedError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Force-publish failed: {str(exc)[:200]}",
@@ -226,7 +182,6 @@ async def force_publish(
         {"action": "force_publish"},
     )
 
-    updated = await BlueskyContentService.get_post(admin_supabase, post_id)
     return SuccessResponse(data=updated)
 
 

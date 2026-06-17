@@ -1,0 +1,100 @@
+"""Tests for the generation-router AI failure guard (_ai_generation_guard).
+
+The seven AI-generation endpoints share one ``@asynccontextmanager`` that maps
+upstream failures to HTTP responses and records a tagged Sentry context. These
+tests pin that contract directly (the endpoints carry no other logic in the
+failure path):
+
+1. Clean pass-through when the body succeeds.
+2. ``OpenRouterError`` (and its subclasses) -> 503 + capture_exception.
+3. Any other exception -> 500 with the endpoint's ``fail_detail`` + capture.
+4. An ``HTTPException`` raised inside the block propagates unchanged, with NO
+   capture (it is an expected control-flow signal, e.g. a 404 lookup miss).
+"""
+
+from __future__ import annotations
+
+from unittest.mock import patch
+from uuid import UUID
+
+import pytest
+from fastapi import HTTPException
+
+from backend.routers.generation import _ai_generation_guard
+from backend.services.external.openrouter import OpenRouterError, RateLimitError
+
+SIM = UUID("22222222-2222-2222-2222-222222222222")
+
+
+async def test_guard_success_passes_through() -> None:
+    """A succeeding body runs to completion and raises nothing."""
+    ran = False
+    async with _ai_generation_guard("generate_agent", simulation_id=SIM, fail_detail="x"):
+        ran = True
+    assert ran is True
+
+
+async def test_guard_openrouter_error_maps_to_503() -> None:
+    with patch("backend.routers.generation.sentry_sdk") as mock_sentry:
+        with pytest.raises(HTTPException) as exc_info:
+            async with _ai_generation_guard(
+                "generate_agent",
+                simulation_id=SIM,
+                fail_detail="Agent generation failed. Please try again.",
+                context={"agent_name": "Tessa"},
+            ):
+                raise OpenRouterError("upstream timeout")
+
+    assert exc_info.value.status_code == 503
+    assert "temporarily unavailable" in exc_info.value.detail
+    mock_sentry.capture_exception.assert_called_once()
+    # The Sentry scope is tagged with the endpoint name + generation context.
+    scope = mock_sentry.push_scope.return_value.__enter__.return_value
+    scope.set_tag.assert_called_once_with("generation_endpoint", "generate_agent")
+    scope.set_context.assert_called_once_with("generation", {"simulation_id": str(SIM), "agent_name": "Tessa"})
+
+
+async def test_guard_openrouter_subclass_also_maps_to_503() -> None:
+    """A RateLimitError (subclass) takes the same 503 path, not the 500 path."""
+    with patch("backend.routers.generation.sentry_sdk"):
+        with pytest.raises(HTTPException) as exc_info:
+            async with _ai_generation_guard("generate_event", simulation_id=SIM, fail_detail="x"):
+                raise RateLimitError("429")
+    assert exc_info.value.status_code == 503
+
+
+async def test_guard_generic_exception_maps_to_500_with_detail() -> None:
+    with patch("backend.routers.generation.sentry_sdk") as mock_sentry:
+        with pytest.raises(HTTPException) as exc_info:
+            async with _ai_generation_guard(
+                "generate_image",
+                simulation_id=SIM,
+                fail_detail="Image generation failed. Please try again.",
+            ):
+                raise ValueError("boom")
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == "Image generation failed. Please try again."
+    mock_sentry.capture_exception.assert_called_once()
+
+
+async def test_guard_http_exception_propagates_without_capture() -> None:
+    """A 404 raised by a pre-flight lookup must reach the client unchanged."""
+    with patch("backend.routers.generation.sentry_sdk") as mock_sentry:
+        with pytest.raises(HTTPException) as exc_info:
+            async with _ai_generation_guard("generate_relationships", simulation_id=SIM, fail_detail="x"):
+                raise HTTPException(status_code=404, detail="Agent not found")
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Agent not found"
+    mock_sentry.capture_exception.assert_not_called()
+
+
+async def test_guard_context_defaults_to_simulation_id_only() -> None:
+    """With no ``context`` supplied, the Sentry scope still carries simulation_id."""
+    with patch("backend.routers.generation.sentry_sdk") as mock_sentry:
+        with pytest.raises(HTTPException):
+            async with _ai_generation_guard("generate_lore_image", simulation_id=SIM, fail_detail="x"):
+                raise ValueError("boom")
+    scope = mock_sentry.push_scope.return_value.__enter__.return_value
+    scope.set_context.assert_called_once_with("generation", {"simulation_id": str(SIM)})

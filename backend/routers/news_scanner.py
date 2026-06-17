@@ -14,6 +14,8 @@ from backend.middleware.rate_limit import RATE_LIMIT_EXTERNAL_API, RATE_LIMIT_ST
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.models.news_scanner import (
     ApproveCandidateRequest,
+    DashboardResponse,
+    ScanCandidateListResponse,
     TriggerScanRequest,
     UpdateCandidateRequest,
 )
@@ -34,7 +36,7 @@ router = APIRouter(
 async def get_dashboard(
     _user: Annotated[CurrentUser, Depends(require_platform_admin())],
     admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> SuccessResponse:
+) -> SuccessResponse[DashboardResponse]:
     """Scanner dashboard: adapter status, metrics, config."""
     data = await ScannerService.get_dashboard(admin_supabase)
     return SuccessResponse(data=data)
@@ -105,7 +107,7 @@ async def list_candidates(
     source: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
-) -> SuccessResponse:
+) -> SuccessResponse[ScanCandidateListResponse]:
     """List scan candidates with filters.
 
     Returns SuccessResponse wrapping items, pagination meta, and the

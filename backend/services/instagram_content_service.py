@@ -26,6 +26,7 @@ from backend.services.instagram_image_service import InstagramImageService
 from backend.services.social.constants import BROAD_TAG_POOL, DEFAULT_CONTENT_MIX, NICHE_TAG_POOLS
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.settings import decrypt_setting, load_settings_with_description
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -125,28 +126,7 @@ class InstagramContentService:
     @classmethod
     async def get_pipeline_settings(cls, admin_supabase: Client) -> dict:
         """Get all Instagram pipeline configuration settings as a flat dict."""
-        resp = await (
-            admin_supabase.table("platform_settings")
-            .select("setting_key, setting_value, description")
-            .in_("setting_key", cls.PIPELINE_SETTINGS_KEYS)
-            .execute()
-        )
-        settings_map = {}
-        for row in extract_list(resp):
-            raw = row["setting_value"]
-            if isinstance(raw, dict | list):
-                value = json.dumps(raw)
-            elif isinstance(raw, bool):
-                value = "true" if raw else "false"
-            elif raw is not None:
-                value = str(raw)
-            else:
-                value = ""
-            settings_map[row["setting_key"]] = {
-                "value": value,
-                "description": row.get("description", ""),
-            }
-        return settings_map
+        return await load_settings_with_description(admin_supabase, cls.PIPELINE_SETTINGS_KEYS)
 
     @classmethod
     async def select_candidates(
@@ -1097,15 +1077,7 @@ class InstagramContentService:
                 result["ig_user_id"] = str(row["setting_value"] or "")
             elif row["setting_key"] == "instagram_access_token":
                 raw = str(row["setting_value"] or "")
-                if raw.startswith("gAAAAA"):
-                    try:
-                        from backend.utils.encryption import decrypt
-
-                        result["access_token"] = decrypt(raw)
-                    except (ValueError, Exception):
-                        logger.warning("Failed to decrypt Instagram access token")
-                else:
-                    result["access_token"] = raw
+                result["access_token"] = decrypt_setting(raw)
 
         logger.info(
             "Instagram credentials loaded",

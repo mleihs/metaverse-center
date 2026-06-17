@@ -245,6 +245,14 @@ class InstagramImageService:
         return url
 
     # ── Story Template Delegation ─────────────────────────────────────────
+    # Intentional façade, NOT dead indirection: these forward to StoryComposer
+    # so the entire story-image pipeline flows through ONE image entry-point.
+    # SocialStoryService.compose_story_image already holds an InstagramImageService
+    # (it calls upload_to_staging on the composed bytes on the same instance), so
+    # routing template composition through it too keeps a single image service per
+    # story rather than a parallel StoryComposer handle. Division of labour:
+    # StoryComposer owns the pure Pillow template rendering; this class owns image
+    # I/O (staging upload, compositing helpers). Do not "inline" these away.
 
     def compose_story_detection(self, **kwargs) -> bytes:
         """Story 1: SUBSTRATE ANOMALY DETECTED. Delegates to StoryComposer."""

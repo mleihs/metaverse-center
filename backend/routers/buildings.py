@@ -22,8 +22,7 @@ from backend.models.common import (
 )
 from backend.services.audit_service import AuditService
 from backend.services.building_service import BuildingService
-from backend.services.simulation_service import SimulationService
-from backend.services.translation_service import null_de_fields_for_update, schedule_auto_translation
+from backend.services.translation_service import merge_stale_de_nulls, schedule_entity_translation
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -90,17 +89,8 @@ async def create_building(
     """Create a new building."""
     building = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building["id"], "create")
-    sim = await SimulationService.get_simulation_context(supabase, simulation_id)
-    if sim:
-        schedule_auto_translation(
-            supabase,
-            "buildings",
-            building["id"],
-            building,
-            simulation_name=sim["name"],
-            simulation_theme=sim.get("theme", ""),
-            entity_type="building",
-        )
+    # Auto-translate in background (best-effort)
+    await schedule_entity_translation(supabase, "buildings", building, simulation_id, entity_type="building")
     return SuccessResponse(data=building)
 
 
@@ -116,9 +106,8 @@ async def update_building(
 ) -> SuccessResponse[BuildingResponse]:
     """Update a building."""
     update_data = body.model_dump(exclude_none=True)
-    de_nulls = null_de_fields_for_update("buildings", update_data)
-    if de_nulls:
-        update_data.update(de_nulls)
+    # Null stale _de fields for changed EN fields
+    de_nulls = merge_stale_de_nulls("buildings", update_data)
     building = await _service.update(
         supabase,
         simulation_id,
@@ -127,18 +116,9 @@ async def update_building(
         if_updated_at=if_updated_at,
     )
     await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building_id, "update")
+    # Re-translate in background (best-effort) when an EN source field changed
     if de_nulls:
-        sim = await SimulationService.get_simulation_context(supabase, simulation_id)
-        if sim:
-            schedule_auto_translation(
-                supabase,
-                "buildings",
-                building["id"],
-                building,
-                simulation_name=sim["name"],
-                simulation_theme=sim.get("theme", ""),
-                entity_type="building",
-            )
+        await schedule_entity_translation(supabase, "buildings", building, simulation_id, entity_type="building")
     return SuccessResponse(data=building)
 
 
